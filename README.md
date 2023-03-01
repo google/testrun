@@ -1,8 +1,30 @@
-# <img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Test Run">
+  <img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Test Run">
 
-A tool to automate the validation of network-based functionality of IoT devices.
+## Introduction :wave:
+Test Run is a tool to automate the validation of network-based functionality of IoT devices. Any device which is capable of receiving an IP address via DHCP is considered an IoT device by Test Run and can be tested.
 
-## Minimum Requirements
+## Motivation :bulb:
+Without tools like Test Run, testing labs may be maintaining a large and complex network using equipment such as: A managed layer 3 switch, an enterprise-grade network router, virtualized or physical servers to provide DNS, NTP, 802.1x etc. With this amount of moving parts, all with dynamic configuration files and constant software updates, more time is likely to be spent on preparation and clean up of functinality or penetration testing - not forgetting the number of software tools required to perform the testing. The major issues which can and should be solved:
+ 1) The complexity of managing a testing network
+ 2) The time required to perform testing of network functionality
+ 3) The accuracy and consistency of testing network functionality
+
+## How it works :triangular_ruler:
+Test Run creates an isolated and controlled network environment to fully simulate enterprise network deployments in your device testing lab. 
+This removes the necessity for complex hardware, advanced knowledge and networking experience whilst enabling semi-technical engineers to validate device 
+behaviour against industry cyber standards. 
+
+Two runtime modes will be supported by Test Run:
+
+1) <strong>Automated Testing</strong>
+
+Once the device has become operational (steady state), automated testing of the device under test will begin. Containerized test modules will then execute against the device (one module at a time). Once all test modules have completed execution, a final test report will be produced - presenting the results and further description of findings.
+
+2) <strong>Lab network</strong>
+
+Test Run cannot automate everything, and so additional manual testing may be required (or configuration changes may be required on the device). Rather than having to maintain a separate but idential lab network, Test Run will provide the network and some tools to assist an engineer performing the additional testing. At the same time, packet captures of the device behaviour will be recorded, alongside logs for each network service, for further debugging.
+
+## Minimum Requirements :computer:
 ### Hardware
  - PC running Ubuntu LTS (laptop or desktop)
  - 2x USB ethernet adapter (One may be built in ethernet)
@@ -12,15 +34,13 @@ A tool to automate the validation of network-based functionality of IoT devices.
  - Docker - [Install guide](https://docs.docker.com/engine/install/ubuntu/)
  - Open vSwitch ``sudo apt-get install openvswitch-common openvswitch-switch``
 
-## How it works
-Test Run creates an isolated and controlled network environment to fully simulate enterprise network deployments in your device testing lab. 
-This removes the necessity for complex hardware, advanced knowledge and networking experience whilst enabling semi-technical engineers to validate device 
-behaviour against industry cyber standards.
+## Roadmap :chart_with_upwards_trend:
+Test Run will constantly evolve to further support end-users by automating device network behaviour against industry standards.
 
-## Contributing
-The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md).
+## Contributing :keyboard:
+The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md). In short, checkout the [Google CLA](https://cla.developers.google.com/) site to get started.
 
-## FAQ
+## FAQ :raising_hand:
 1) What device networking functionality is validated by Test Run?
 
   Best practices and requirements for IoT devices are constantly changing due to technological advances and discovery of vulnerabilities. 
@@ -39,3 +59,7 @@ The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md)
 
   Probably. Provided that the required 2x USB ethernet adapters are passed to the virtual machine as USB devices rather than network adapters, Test Run should
   still work. We will look to test and approve the use of virtualisation to run Test Run in the future.
+
+ 4) Can I connect multiple devices to Test Run?
+
+  In short, Yes you can. The way in which multiple devices could be tested simultaneously is yet to be decided. However, if you simply want to add field/peer devices during runtime (even another laptop performing manual testing) then you may connect the USB ethernet adapter to an unmanaged switch.
