@@ -1,0 +1,17 @@
+#!/bin/bash -e
+
+if [[ "$EUID" -ne 0 ]]; then
+    echo "Must run as root. Use sudo cmd/start"
+    exit 1
+fi
+
+# Check if python modules exist. Install if not
+[ ! -d "venv" ] && cmd/install
+
+# Activate Python virtual environment
+source venv/bin/activate
+
+# TODO: Execute python code
+python -u framework/run.py
+
+deactivate
