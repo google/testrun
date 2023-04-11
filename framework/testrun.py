@@ -57,7 +57,7 @@ class TestRun:
         signal.signal(signal.SIGABRT, self._exit_handler)
         signal.signal(signal.SIGQUIT, self._exit_handler)
 
-    def _exit_handler(self, signum):
+    def _exit_handler(self, signum, arg):
         LOGGER.debug("Exit signal received: " + str(signum))
         if signum in (2, signal.SIGTERM):
             LOGGER.info("Exit signal received.")
