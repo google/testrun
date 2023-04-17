@@ -1,0 +1,18 @@
+#!/bin/bash -e
+
+GIT_URL=https://github.com/auto-iot
+NET_ORC_DIR=net_orc
+
+python3 -m venv venv
+
+source venv/bin/activate
+
+pip3 install -r etc/requirements.txt
+
+rm -rf $NET_ORC_DIR
+git clone $GIT_URL/network-orchestrator $NET_ORC_DIR
+chown -R $USER $NET_ORC_DIR
+
+pip3 install -r $NET_ORC_DIR/python/requirements.txt
+
+deactivate
