@@ -27,7 +27,7 @@ import network_orchestrator as net_orc # pylint: disable=wrong-import-position
 LOGGER = logger.get_logger('test_run')
 CONFIG_FILE = "conf/system.json"
 EXAMPLE_CONFIG_FILE = "conf/system.json.example"
-RUNTIME = 10
+RUNTIME = 300
 
 class TestRun: # pylint: disable=too-few-public-methods
     """Test Run controller.
@@ -89,7 +89,10 @@ class TestRun: # pylint: disable=too-few-public-methods
         # Launch network service containers
         self._net_orc.start_network_services()
 
+        LOGGER.info("Network is ready.")
+
     def _stop_network(self):
-        LOGGER.info("Stopping network")
-        self._net_orc.stop_networking_services()
+        LOGGER.info("Stopping Test Run")
+        self._net_orc.stop_networking_services(kill=True)
         self._net_orc.restore_net()
+        sys.exit(0)
