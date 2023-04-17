@@ -7,8 +7,6 @@ Run using the provided command scripts in the cmd folder.
 E.g sudo cmd/start
 """
 
-#!/usr/bin/env python3
-
 import os
 import sys
 import json
@@ -24,14 +22,14 @@ parent_dir = os.path.dirname(current_dir)
 net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
 sys.path.append(net_orc_dir)
 
-import network_orchestrator as net_orc
+import network_orchestrator as net_orc # pylint: disable=wrong-import-position
 
 LOGGER = logger.get_logger('test_run')
 CONFIG_FILE = "conf/system.json"
 EXAMPLE_CONFIG_FILE = "conf/system.json.example"
 RUNTIME = 10
 
-class TestRun:
+class TestRun: # pylint: disable=too-few-public-methods
     """Test Run controller.
 
     Creates an instance of the network orchestrator, test
@@ -57,7 +55,7 @@ class TestRun:
         signal.signal(signal.SIGABRT, self._exit_handler)
         signal.signal(signal.SIGQUIT, self._exit_handler)
 
-    def _exit_handler(self, signum, arg):
+    def _exit_handler(self, signum, arg): # pylint: disable=unused-argument
         LOGGER.debug("Exit signal received: " + str(signum))
         if signum in (2, signal.SIGTERM):
             LOGGER.info("Exit signal received.")

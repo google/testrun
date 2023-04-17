@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
+"""Starts Test Run."""
 
-from testrun import *
+from testrun import TestRun
 
 testrun = TestRun()
