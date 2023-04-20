@@ -4,7 +4,7 @@
 MODULE_NAME=$1
 
 # Define the local file location for the capture to be saved
-PCAP_DIR="/runtime/network/"
+PCAP_DIR="/runtime/testing/"
 PCAP_FILE=$MODULE_NAME.pcap
 
 # Default interface should be veth0 for all containers
@@ -24,6 +24,7 @@ fi
 # Create the output directory and start the capture
 mkdir -p $PCAP_DIR
 chown $HOST_USER:$HOST_USER $PCAP_DIR
+echo "PCAP Dir: $PCAP_DIR/$PCAP_FILE"
 tcpdump -i $INTERFACE -w $PCAP_DIR/$PCAP_FILE -Z $HOST_USER &
 
 #Small pause to let the capture to start

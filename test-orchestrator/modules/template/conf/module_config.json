@@ -17,8 +17,8 @@
       "enable_container": true,
       "mounts": [
         {
-          "source": "runtime/network",
-          "target": "/runtime/network"
+          "source": "runtime/testing",
+          "target": "/runtime/testing"
         }
       ]
     }

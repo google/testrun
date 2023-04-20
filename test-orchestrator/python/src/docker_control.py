@@ -15,8 +15,15 @@ class DockerControl:
 
     def __init__(self):
         self._modules = []
+
+        #Resolve the path to the test-orchestrator folder
         self._path = os.path.dirname(os.path.dirname(
             os.path.dirname(os.path.realpath(__file__))))
+        
+        #Resolve the path to the test-run folder
+        self._root_path = os.path.abspath(os.path.join(self._path,os.pardir))
+
+        LOGGER.info("Orchestrator path: " + self._root_path)
 
     def _build_modules(self):
         LOGGER.info("Building docker images...")
@@ -136,7 +143,7 @@ class DockerControl:
                         module.mounts.append(Mount(
                             target=mount_point['target'],
                             source=os.path.join(
-                                self._path, mount_point['source']),
+                                self._root_path, mount_point['source']),
                             type='bind'
                         ))
 

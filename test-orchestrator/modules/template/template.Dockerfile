@@ -1,5 +1,5 @@
 # Image name: test-run/dhcp-primary
-FROM test-run/base:latest
+FROM test-run/base-test:latest
 
 # Copy over all configuration files
 COPY modules/template/conf /testrun/conf

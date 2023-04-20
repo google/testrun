@@ -11,7 +11,7 @@ _DATE_FORMAT = '%b %02d %H:%M:%S'
 _DEFAULT_LEVEL = logging.INFO
 _CONF_DIR = "conf"
 _CONF_FILE_NAME = "system.json"
-_LOG_DIR = "/runtime/network/"
+_LOG_DIR = "/runtime/testing/"
 
 # Set log level
 try:

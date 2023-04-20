@@ -4,7 +4,7 @@ import logger
 import json
 
 LOGGER = logger.get_logger('test_orc')
-RUNTIME_DIR = "runtime/network"
+RUNTIME_DIR = "runtime/testing"
 TEST_MODULES_DIR = "tests/modules"
 CONFIG_FILE = "conf/system.json"
 
@@ -18,8 +18,11 @@ class TestOrchestrator:
         self._path = os.path.dirname(os.path.dirname(
             os.path.dirname(os.path.realpath(__file__))))
 
+        #Resolve the path to the test-run folder
+        self._root_path = os.path.abspath(os.path.join(self._path,os.pardir))
+
         # os.rmdir(os.path.join(self._path, RUNTIME_DIR))
-        os.makedirs(os.path.join(self._path, RUNTIME_DIR), exist_ok=True)
+        os.makedirs(os.path.join(self._root_path, RUNTIME_DIR), exist_ok=True)
 
         self._docker_cntrl = DockerControl()
 
