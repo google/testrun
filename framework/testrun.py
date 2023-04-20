@@ -103,7 +103,12 @@ class TestRun: # pylint: disable=too-few-public-methods
 
         LOGGER.info("Network is ready.")
 
+        # Begin testing
         self._test_orc.run_test_modules()
+
+        # Shutdown after testing completed
+        self._stop_network()
+
 
     def _stop_network(self):
         LOGGER.info("Stopping Test Run")
