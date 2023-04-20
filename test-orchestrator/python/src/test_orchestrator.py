@@ -40,6 +40,7 @@ class TestOrchestrator:
         for module in self._test_modules:
             if module["enabled"]:
                 self.run_test_module(module)
+        LOGGER.info("All tests complete")
 
     def run_test_module(self, module_config):
         # Start the test container
@@ -53,13 +54,13 @@ class TestOrchestrator:
 
         # Wait for the container to exit
         status = self._docker_cntrl._get_module_status(module)
-        LOGGER.info("Test module " + module.name + " status: " + status)
+        LOGGER.info("Test module " + module.display_name + " status: " + status)
         if status == "running":
-            LOGGER.info("Waiting for test module " + module.name + " to complete")
+            LOGGER.info("Waiting for test module " + module.display_name + " to complete")
             while status == "running":
                 time.sleep(1)
                 status = self._docker_cntrl._get_module_status(module)
-            LOGGER.info("Test module " + module.name + " done")
+            LOGGER.info("Test module " + module.display_name + " done")
 
     def start_modules(self):
         self._docker_cntrl._start_modules()
