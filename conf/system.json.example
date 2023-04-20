@@ -5,7 +5,8 @@
   },
   "modules": [
     {
-      "template": true
+      "name": "template",
+      "enabled": true
     }
   ],
   "log_level": "INFO"

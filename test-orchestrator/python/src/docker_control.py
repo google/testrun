@@ -6,14 +6,15 @@ import os
 import json
 from docker.types import Mount
 
-LOGGER = logger.get_logger('docker_cntl')
+LOG_NAME = "docker_cntl"
+LOGGER = None
 MODULES_DIR = "modules"
 MODULE_CONFIG = "conf/module_config.json"
 
 
 class DockerControl:
 
-    def __init__(self):
+    def __init__(self,module):
         self._modules = []
 
         #Resolve the path to the test-orchestrator folder
@@ -23,7 +24,12 @@ class DockerControl:
         #Resolve the path to the test-run folder
         self._root_path = os.path.abspath(os.path.join(self._path,os.pardir))
 
+        self.add_logger(module)
         LOGGER.info("Orchestrator path: " + self._root_path)
+
+    def add_logger(self, module):
+        global LOGGER
+        LOGGER = logger.get_logger(LOG_NAME, module)
 
     def _build_modules(self):
         LOGGER.info("Building docker images...")
@@ -39,6 +45,18 @@ class DockerControl:
             forcerm=True,# Cleans up intermediate containers during build
             tag=module.image_name
         )
+
+    def _get_module(self,name):
+        for module in self._modules:
+            if name == module.name:
+                return module
+        return None
+
+    def _get_module_status(self,module):
+        container = self._get_module_container(module)
+        if container is not None:
+            return container.status
+        return None
 
     def _get_module_container(self, module):
         LOGGER.debug("Resolving test module container: " +
