@@ -6,12 +6,11 @@ import time
 import shutil
 
 LOG_NAME = "test_orc"
-LOGGER = logger.get_logger('LOG_NAME')
+LOGGER = None
 RUNTIME_DIR = "runtime/testing"
 TEST_MODULES_DIR = "tests/modules"
 CONFIG_FILE = "conf/system.json"
 MODULE_NAME = "test_orchestrator"
-
 
 class TestOrchestrator:
 
@@ -28,13 +27,13 @@ class TestOrchestrator:
         shutil.rmtree(os.path.join(self._root_path, RUNTIME_DIR))
         os.makedirs(os.path.join(self._root_path, RUNTIME_DIR), exist_ok=True)
 
-        self.add_logger()
+        self.add_logger(MODULE_NAME)
 
         self._docker_cntrl = DockerControl(MODULE_NAME)
 
-    def add_logger(self):
+    def add_logger(self,module):
         global LOGGER
-        LOGGER = logger.get_logger(LOG_NAME, MODULE_NAME)
+        LOGGER = logger.get_logger(LOG_NAME, module)
 
     def run_test_modules(self):
         LOGGER.info("Running test modules")

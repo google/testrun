@@ -25,7 +25,6 @@ class DockerControl:
         self._root_path = os.path.abspath(os.path.join(self._path,os.pardir))
 
         self.add_logger(module)
-        LOGGER.info("Orchestrator path: " + self._root_path)
 
     def add_logger(self, module):
         global LOGGER
