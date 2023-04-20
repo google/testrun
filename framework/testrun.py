@@ -12,6 +12,7 @@ import sys
 import json
 import signal
 import time
+from device import Device
 import logger
 
 # Locate parent directory
@@ -23,11 +24,18 @@ net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
 sys.path.append(net_orc_dir)
 
 import network_orchestrator as net_orc # pylint: disable=wrong-import-position
+from listener import NetworkEvent # pylint: disable=wrong-import-position
 
 LOGGER = logger.get_logger('test_run')
 CONFIG_FILE = "conf/system.json"
 EXAMPLE_CONFIG_FILE = "conf/system.json.example"
 RUNTIME = 300
+
+DEVICES_DIR = 'local/devices'
+DEVICE_CONFIG = 'device_config.json'
+DEVICE_MAKE = 'make'
+DEVICE_MODEL = 'model'
+DEVICE_MAC_ADDR = 'mac_addr'
 
 class TestRun: # pylint: disable=too-few-public-methods
     """Test Run controller.
@@ -39,10 +47,20 @@ class TestRun: # pylint: disable=too-few-public-methods
     def __init__(self):
         LOGGER.info("Starting Test Run")
 
+        self._devices = []
+
+    def start(self):
+
         # Catch any exit signals
         self._register_exits()
 
+        self._load_devices()
+
         self._start_network()
+
+        # Register callbacks
+        self._net_orc.listener.register_callback(self._device_discovered, 
+                                                 [NetworkEvent.DEVICE_DISCOVERED])
 
         # Keep application running
         time.sleep(RUNTIME)
@@ -96,3 +114,32 @@ class TestRun: # pylint: disable=too-few-public-methods
         self._net_orc.stop_networking_services(kill=True)
         self._net_orc.restore_net()
         sys.exit(0)
+
+    def _load_devices(self):
+        LOGGER.debug('Loading devices from ' + DEVICES_DIR)
+
+        for device_folder in os.listdir(DEVICES_DIR):
+            with open(os.path.join(DEVICES_DIR, device_folder, DEVICE_CONFIG),
+                      encoding='utf-8') as device_config_file:
+                device_config_json = json.load(device_config_file)
+
+                device_make = device_config_json[DEVICE_MAKE]
+                device_model = device_config_json[DEVICE_MODEL]
+                mac_addr = device_config_json[DEVICE_MAC_ADDR]
+
+                device = Device(device_make, device_model, mac_addr = mac_addr)
+                self._devices.append(device)
+
+        LOGGER.info("Loaded " + str(len(self._devices)) + " devices")
+
+    def get_device(self, mac_addr):
+        for device in self._devices:
+            if device.mac_addr == mac_addr:
+                return device
+
+    def _device_discovered(self, mac_addr):
+        device = self.get_device(mac_addr)
+        if device is not None:
+            LOGGER.info("Discovered " + device.make + " " + device.model + " on the network")
+        else:
+            LOGGER.info("A new device has been discovered with mac address " + mac_addr)

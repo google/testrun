@@ -3,3 +3,4 @@
 from testrun import TestRun
 
 testrun = TestRun()
+testrun.start()
