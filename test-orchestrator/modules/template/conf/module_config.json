@@ -1,0 +1,26 @@
+{
+  "config": {
+    "meta": {
+      "name": "template",
+      "display_name": "Template",
+      "description": "Template for building network service modules"
+    },
+    "network": {
+      "interface": "eth0",
+      "enable_wan": false,
+      "ip_index": 9
+    },
+    "grpc": {
+      "port": 50001
+    },
+    "docker": {
+      "enable_container": true,
+      "mounts": [
+        {
+          "source": "runtime/network",
+          "target": "/runtime/network"
+        }
+      ]
+    }
+  }
+}

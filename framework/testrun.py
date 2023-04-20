@@ -22,7 +22,12 @@ parent_dir = os.path.dirname(current_dir)
 net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
 sys.path.append(net_orc_dir)
 
+#Add test_orc to Python path
+test_orc_dir = os.path.join(parent_dir, 'test-orchestrator', 'python', 'src')
+sys.path.append(test_orc_dir)
+
 import network_orchestrator as net_orc # pylint: disable=wrong-import-position
+import test_orchestrator as test_orc
 
 LOGGER = logger.get_logger('test_run')
 CONFIG_FILE = "conf/system.json"
@@ -71,10 +76,14 @@ class TestRun: # pylint: disable=too-few-public-methods
         with open(CONFIG_FILE, 'r', encoding='UTF-8') as config_file_open:
             config_json = json.load(config_file_open)
             self._net_orc.import_config(config_json)
+            self._test_orc.import_config(config_json)
 
     def _start_network(self):
         # Create an instance of the network orchestrator
         self._net_orc = net_orc.NetworkOrchestrator()
+
+        # Create an instance of the test orchestrator
+        self._test_orc=test_orc.TestOrchestrator()
 
         # Load config file and pass to other components
         self._load_config()
@@ -82,6 +91,9 @@ class TestRun: # pylint: disable=too-few-public-methods
         # Load and build any unbuilt network containers
         self._net_orc.load_network_modules()
         self._net_orc.build_network_modules()
+
+        # Load and build any unbuilt test module containers
+        self._test_orc.build_modules()
 
         # Create baseline network
         self._net_orc.create_net()
@@ -91,8 +103,11 @@ class TestRun: # pylint: disable=too-few-public-methods
 
         LOGGER.info("Network is ready.")
 
+        self._test_orc.start_modules()
+
     def _stop_network(self):
         LOGGER.info("Stopping Test Run")
         self._net_orc.stop_networking_services(kill=True)
+        self._test_orc.stop_modules(kill=True)
         self._net_orc.restore_net()
         sys.exit(0)

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Default interface should be veth0 for all containers
+DEFAULT_IFACE=veth0
+
+# Allow a user to define an interface by passing it into this script
+DEFINED_IFACE=$1
+
+# Select which interace to use
+if [[ -z $DEFINED_IFACE ]]
+then
+	INTF=$DEFAULT_IFACE
+else
+	INTF=$DEFINED_IFACE
+fi
+
+
+# Wait for local interface to be ready
+while ! ip link show $INTF; do
+    echo $INTF is not yet ready. Waiting 3 seconds
+    sleep 3
+done
