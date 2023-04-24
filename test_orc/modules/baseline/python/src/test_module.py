@@ -2,19 +2,21 @@
 
 import time
 import logger
+import json
 
 LOG_NAME = "test_baseline"
+RESULTS_DIR = "/runtime/output/"
 LOGGER = logger.get_logger(LOG_NAME)
-
 
 
 class TestModule:
 
-    def __init__(self,module):
+    def __init__(self, module):
 
         self.module_test1 = None
         self.module_test2 = None
         self.module_test3 = None
+        self.module=module
         self.add_logger(module)
 
     def add_logger(self, module):
@@ -34,13 +36,29 @@ class TestModule:
         time.sleep(10)
 
     def generate_results(self):
-        self.print_test_result("Test 1", self.module_test1)
-        self.print_test_result("Test 2", self.module_test2)
-        self.print_test_result("Test 3", self.module_test3)
+        results = []
+        results.append(self.generate_result("Test 1",self.module_test1));
+        results.append(self.generate_result("Test 2",self.module_test2));
+        results.append(self.generate_result("Test 3",self.module_test3));
+        jsonResults = json.dumps({"results":results},indent=2)
+        self.write_results(jsonResults)
 
-    def print_test_result(self, test_name, result):
-        if result is not None:
-            LOGGER.info(
-                test_name + ": Pass" if result else test_name + ": Fail")
+    def write_results(self,results):
+        RESULTS_FILE=RESULTS_DIR+self.module+"-result.json"
+        LOGGER.info("Writing results to " + RESULTS_FILE)
+        f = open(RESULTS_FILE, "w", encoding="utf-8")
+        f.write(results)
+        f.close()
+        
+    def generate_result(self, test_name, test_result):
+        if test_result is not None:
+            result = "compliant" if test_result else "non-compliant"
         else:
-            LOGGER.info(test_name + " Skipped")
+            result = "skipped"
+        LOGGER.info(test_name + ": " + result)
+        resDict = {
+            "name": test_name,
+            "result": result,
+            "description": "The device is " + result
+        }
+        return resDict
