@@ -2,16 +2,19 @@
 
 import logger
 from testrun import TestRun
+import argparse
+import sys
 
 LOGGER = logger.get_logger('runner')
 
+
 class TestRunner:
 
-    def __init__(self):
+    def __init__(self,local_net=True):
 
         LOGGER.info('Starting Test Run')
-        
-        testrun = TestRun()
+
+        testrun = TestRun(local_net)
 
         testrun.load_config()
 
@@ -21,4 +24,20 @@ class TestRunner:
 
         testrun.stop_network()
 
-runner = TestRunner()
+
+def run(argv):
+    parser = argparse.ArgumentParser(description="Test Run",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-r", "--remote-net", action="store_false",
+                        help='''Use the network orchestrator from the parent directory instead 
+                        		of the one downloaded locally from the install script.''')
+
+    args, unknown = parser.parse_known_args()
+
+    print("local-net: " + str(args.remote_net))
+
+    runner = TestRunner(args.remote_net)
+
+
+if __name__ == "__main__":
+    run(sys.argv)

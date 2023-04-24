@@ -17,15 +17,10 @@ import logger
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
 
-# Add net_orc to Python path
-net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
-sys.path.append(net_orc_dir)
-
 #Add test_orc to Python path
 test_orc_dir = os.path.join(parent_dir, 'test_orc', 'python', 'src')
 sys.path.append(test_orc_dir)
 
-import network_orchestrator as net_orc # pylint: disable=wrong-import-position
 import test_orchestrator as test_orc # pylint: disable=wrong-import-position
 
 LOGGER = logger.get_logger('test_run')
@@ -40,13 +35,31 @@ class TestRun: # pylint: disable=too-few-public-methods
     orchestrator and user interface.
     """
 
-    def __init__(self):
+    def __init__(self,local_net=True):
+
+        # Catch any exit signals
+        self._register_exits()
+
+        # Import the correct net orchestrator
+        self.import_orchestrators(local_net)
 
         self._net_orc = net_orc.NetworkOrchestrator()
         self._test_orc = test_orc.TestOrchestrator()
 
-        # Catch any exit signals
-        self._register_exits()
+    def import_orchestrators(self,local_net=True):         
+        if local_net:
+            # Add local net_orc to Python path
+            net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
+        else:
+            # Resolve the path to the test-run parent folder
+            root_dir = os.path.abspath(os.path.join(parent_dir, os.pardir))
+            # Add manually cloned network orchestrator from parent folder
+            net_orc_dir = os.path.join(root_dir, 'network-orchestrator', 'python', 'src')
+        # Add net_orc to Python path
+        sys.path.append(net_orc_dir)
+        #Import the network orchestrator
+        global net_orc
+        import network_orchestrator as net_orc # pylint: disable=wrong-import-position
 
     def _register_exits(self):
         signal.signal(signal.SIGINT, self._exit_handler)
