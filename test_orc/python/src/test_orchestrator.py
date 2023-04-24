@@ -83,15 +83,17 @@ class TestOrchestrator:
         # Determine the module timeout time
         test_module_timeout = time.time() + module.timeout
         status = self._get_module_status(module)
-
-        while time.time() < test_module_timeout or status == 'exited':
+        while time.time() < test_module_timeout and status == 'running':
             time.sleep(1)
             status = self._get_module_status(module)
 
         LOGGER.info("Test module " + module.display_name + " has finished")
 
-    def _get_module_status(self, module):
-        return self._get_module_container(module.container.name).status
+    def _get_module_status(self,module):
+        container = self._get_module_container(module)
+        if container is not None:
+            return container.status
+        return None
 
     def _get_module_container(self, module):
         container = None
@@ -189,11 +191,6 @@ class TestOrchestrator:
         except Exception as error:
             LOGGER.error("Container stop error")
             LOGGER.error(error)
-
-    def _get_module_status(self, module):
-        if module.container is not None:
-            return module.container.status
-        return None
 
 class TestModule: # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """Represents a test module."""

@@ -10,11 +10,16 @@ LOGGER = logger.get_logger(LOG_NAME)
 
 class TestModule:
 
-    def __init__(self):
+    def __init__(self,module):
 
         self.module_test1 = None
         self.module_test2 = None
         self.module_test3 = None
+        self.add_logger(module)
+
+    def add_logger(self, module):
+        global LOGGER
+        LOGGER = logger.get_logger(LOG_NAME, module)
 
     # Make up some fake test results
     def run_tests(self):
