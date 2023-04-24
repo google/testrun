@@ -4,14 +4,14 @@ GRPC_DIR="/testrun/python/src/grpc"
 GRPC_PROTO_DIR="proto"
 GRPC_PROTO_FILE="grpc.proto"
 
-#Move into the grpc directory
+# Move into the grpc directory
 pushd $GRPC_DIR >/dev/null 2>&1
 
-#Build the grpc proto file every time before starting server
+# Build the grpc proto file every time before starting server
 python3 -m grpc_tools.protoc --proto_path=. ./$GRPC_PROTO_DIR/$GRPC_PROTO_FILE --python_out=. --grpc_python_out=.
 
 popd >/dev/null 2>&1
 
-#Start the grpc server
+# Start the grpc server
 python3 -u $GRPC_DIR/start_server.py $@
 

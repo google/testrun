@@ -2,10 +2,10 @@
 FROM test-run/base-test:latest
 
 # Copy over all configuration files
-COPY modules/template/conf /testrun/conf
+COPY modules/baseline/conf /testrun/conf
 
 # Load device binary files
-COPY modules/template/bin /testrun/bin
+COPY modules/baseline/bin /testrun/bin
 
 # Copy over all python files
-COPY modules/template/python /testrun/python
+COPY modules/baseline/python /testrun/python

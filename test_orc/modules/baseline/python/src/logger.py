@@ -3,7 +3,6 @@
 import json
 import logging
 import os
-import sys
 
 LOGGERS = {}
 _LOG_FORMAT = "%(asctime)s %(name)-8s %(levelname)-7s %(message)s"
@@ -11,7 +10,7 @@ _DATE_FORMAT = '%b %02d %H:%M:%S'
 _DEFAULT_LEVEL = logging.INFO
 _CONF_DIR = "conf"
 _CONF_FILE_NAME = "system.json"
-_LOG_DIR = "/runtime/testing/"
+_LOG_DIR = "/runtime/output/"
 
 # Set log level
 try:
@@ -24,7 +23,6 @@ except:
     log_level = _DEFAULT_LEVEL
 
 log_format = logging.Formatter(fmt=_LOG_FORMAT, datefmt=_DATE_FORMAT)
-
 
 def add_file_handler(log, logFile):
     handler = logging.FileHandler(_LOG_DIR+logFile+".log")

@@ -2,13 +2,10 @@
 
 # An example startup script that does the bare minimum to start
 # a test module via a pyhon script. Each test module should include a 
-# start_network_service file that overwrites this one to boot all of its 
-#specific requirements to run.
+# start_test_module file that overwrites this one to boot all of its 
+# specific requirements to run.
 
-echo "Starting Network Service..."
-echo " This is not a real network service, just a test"
-
-#Define where all the python source files are located
+# Define where the python source files are located
 PYTHON_SRC_DIR=/testrun/python/src
 
 # Fetch module name
@@ -23,14 +20,14 @@ DEFINED_IFACE=$2
 # Select which interace to use
 if [[ -z $DEFINED_IFACE || "$DEFINED_IFACE" == "null" ]]
 then
-	echo "No Interface Defined, defaulting to veth0"
+	echo "No interface defined, defaulting to veth0"
 	INTF=$DEFAULT_IFACE
 else
 	INTF=$DEFINED_IFACE
 fi
 
 #Create and set permissions on the log files
-LOG_FILE=/runtime/network/$MODULE_NAME.log
+LOG_FILE=/runtime/output/$MODULE_NAME.log
 touch $LOG_FILE
 chown $HOST_USER:$HOST_USER $LOG_FILE
 

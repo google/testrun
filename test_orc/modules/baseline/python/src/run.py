@@ -3,7 +3,6 @@
 import argparse
 import signal
 import sys
-import time
 import logger
 
 from test_module import TestModule

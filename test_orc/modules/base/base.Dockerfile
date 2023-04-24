@@ -19,5 +19,5 @@ RUN dos2unix /testrun/bin/*
 # Make sure all the bin files are executable
 RUN chmod u+x /testrun/bin/*
 
-#Start the network module
+# Start the test module
 ENTRYPOINT [ "/testrun/bin/start_module" ]
