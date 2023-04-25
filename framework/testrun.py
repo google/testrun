@@ -44,7 +44,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         self._register_exits()
 
         # Import the correct net orchestrator
-        self.import_orchestrators(local_net)
+        self.import_dependencies(local_net)
 
         self._net_orc = net_orc.NetworkOrchestrator()
         self._test_orc = test_orc.TestOrchestrator()
@@ -59,7 +59,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         self._net_orc.listener.register_callback(self._device_discovered,
                                                  [NetworkEvent.DEVICE_DISCOVERED])
 
-    def import_orchestrators(self, local_net=True):
+    def import_dependencies(self, local_net=True):
         if local_net:
             # Add local net_orc to Python path
             net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
