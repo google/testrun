@@ -6,21 +6,25 @@ import os
 LOGGERS = {}
 _LOG_FORMAT = "%(asctime)s %(name)-8s %(levelname)-7s %(message)s"
 _DATE_FORMAT = '%b %02d %H:%M:%S'
+_DEFAULT_LOG_LEVEL = logging.INFO
 _LOG_LEVEL = logging.INFO
 _CONF_DIR = "conf"
 _CONF_FILE_NAME = "system.json"
 _LOG_DIR = "runtime/testing/"
 
 # Set log level
+with open(os.path.join(_CONF_DIR, _CONF_FILE_NAME), encoding='utf-8') as system_conf_file:
+    system_conf_json = json.load(system_conf_file)
+log_level_str = system_conf_json['log_level']
+
+temp_log = logging.getLogger('temp')
 try:
-    with open(os.path.join(_CONF_DIR, _CONF_FILE_NAME), encoding='utf-8') as system_conf_file:
-        system_conf_json = json.load(system_conf_file)
-    log_level_str = system_conf_json['log_level']
+    temp_log.setLevel(logging.getLevelName(log_level_str))
     _LOG_LEVEL = logging.getLevelName(log_level_str)
-except Exception as error:
-    print(error)
-    # Do nothing as fallback log level will be used
-    pass
+except ValueError:
+    print('Invalid log level set in ' + _CONF_DIR + '/' + _CONF_FILE_NAME +
+          '. Using INFO as log level')
+    _LOG_LEVEL = _DEFAULT_LOG_LEVEL
 
 log_format = logging.Formatter(fmt=_LOG_FORMAT, datefmt=_DATE_FORMAT)
 
