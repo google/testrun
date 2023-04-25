@@ -26,7 +26,7 @@ else
 	INTF=$DEFINED_IFACE
 fi
 
-#Create and set permissions on the log files
+# Create and set permissions on the log files
 LOG_FILE=/runtime/output/$MODULE_NAME.log
 RESULT_FILE=/runtime/output/$MODULE_NAME-result.json
 touch $LOG_FILE

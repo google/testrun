@@ -1,4 +1,4 @@
-# Image name: test-run/dhcp-primary
+# Image name: test-run/baseline-test
 FROM test-run/base-test:latest
 
 # Copy over all configuration files

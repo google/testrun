@@ -1,3 +1,4 @@
+"""Provides high level management of the test orchestrator."""
 import os
 import json
 import time
@@ -77,12 +78,14 @@ class TestOrchestrator:
                 environment={"HOST_USER": os.getlogin()}
             )
         except (docker.errors.APIError, docker.errors.ContainerError) as container_error:
-            LOGGER.error("Container run error")
-            LOGGER.error(container_error)
+            LOGGER.error("Test module " + module.display_name + " has failed to start")
+            LOGGER.debug(container_error)
+            return
 
         # Determine the module timeout time
         test_module_timeout = time.time() + module.timeout
         status = self._get_module_status(module)
+
         while time.time() < test_module_timeout and status == 'running':
             time.sleep(1)
             status = self._get_module_status(module)
@@ -122,13 +125,18 @@ class TestOrchestrator:
 
             # Load basic module information
             module = TestModule()
-            module_json = json.load(open(os.path.join(
-                self._path, modules_dir, module_dir, MODULE_CONFIG), encoding='UTF-8'))
+            with open(os.path.join(
+                self._path,
+                modules_dir,
+                module_dir,
+                MODULE_CONFIG),
+                encoding='UTF-8') as module_config_file:
+                module_json = json.load(module_config_file)
+
             module.name = module_json['config']['meta']['name']
             module.display_name = module_json['config']['meta']['display_name']
             module.description = module_json['config']['meta']['description']
-            module.dir = os.path.join(
-                self._path, modules_dir, module_dir)
+            module.dir = os.path.join(self._path, modules_dir, module_dir)
             module.dir_name = module_dir
             module.build_file = module_dir + ".Dockerfile"
             module.container_name = "tr-ct-" + module.dir_name + "-test"

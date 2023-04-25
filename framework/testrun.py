@@ -17,12 +17,6 @@ import logger
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
 
-#Add test_orc to Python path
-test_orc_dir = os.path.join(parent_dir, 'test_orc', 'python', 'src')
-sys.path.append(test_orc_dir)
-
-import test_orchestrator as test_orc # pylint: disable=wrong-import-position
-
 LOGGER = logger.get_logger('test_run')
 CONFIG_FILE = "conf/system.json"
 EXAMPLE_CONFIG_FILE = "conf/system.json.example"
@@ -60,6 +54,12 @@ class TestRun: # pylint: disable=too-few-public-methods
         # Import the network orchestrator
         global net_orc
         import network_orchestrator as net_orc # pylint: disable=wrong-import-position,import-outside-toplevel
+
+        # Add test_orc to Python path
+        test_orc_dir = os.path.join(parent_dir, 'test_orc', 'python', 'src')
+        sys.path.append(test_orc_dir)
+        global test_orc
+        import test_orchestrator as test_orc # pylint: disable=wrong-import-position,import-outside-toplevel
 
     def _register_exits(self):
         signal.signal(signal.SIGINT, self._exit_handler)
@@ -107,7 +107,6 @@ class TestRun: # pylint: disable=too-few-public-methods
         """Iterate through and start all test modules."""
 
         self._test_orc.load_test_modules()
-
         self._test_orc.build_test_modules()
 
         # Begin testing

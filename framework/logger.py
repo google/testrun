@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-
+"""Manages stream and file loggers."""
 import json
 import logging
 import os
