@@ -1,0 +1,10 @@
+#!/bin/bash -e
+
+# Directory where all binaries will be loaded
+BIN_DIR=$1
+
+# Remove incorrect line endings
+dos2unix $BIN_DIR/*
+
+# Make sure all the bin files are executable
+chmod u+x $BIN_DIR/*

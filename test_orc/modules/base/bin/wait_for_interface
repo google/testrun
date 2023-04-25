@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Allow a user to define an interface by passing it into this script
+INTF=$1
+
+# Wait for local interface to be ready
+while ! ip link show $INTF; do
+    echo $INTF is not yet ready. Waiting 3 seconds
+    sleep 3
+done
