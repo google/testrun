@@ -1,0 +1,12 @@
+{
+  "config": {
+    "meta": {
+      "name": "base",
+      "display_name": "Base",
+      "description": "Base image"
+    },
+    "docker": {
+      "enable_container": false
+    }
+  }
+}

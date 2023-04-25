@@ -1,0 +1,21 @@
+{
+  "config": {
+    "meta": {
+      "name": "baseline",
+      "display_name": "Baseline",
+      "description": "Baseline test"
+    },
+    "network": {
+      "interface": "eth0",
+      "enable_wan": false,
+      "ip_index": 9
+    },
+    "grpc": {
+      "port": 50001
+    },
+    "docker": {
+      "enable_container": true,
+      "timeout": 30
+    }
+  }
+}
