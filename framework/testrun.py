@@ -46,7 +46,7 @@ class TestRun: # pylint: disable=too-few-public-methods
         self._net_orc = net_orc.NetworkOrchestrator()
         self._test_orc = test_orc.TestOrchestrator()
 
-    def import_orchestrators(self,local_net=True):         
+    def import_orchestrators(self,local_net=True):
         if local_net:
             # Add local net_orc to Python path
             net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
@@ -57,9 +57,9 @@ class TestRun: # pylint: disable=too-few-public-methods
             net_orc_dir = os.path.join(root_dir, 'network-orchestrator', 'python', 'src')
         # Add net_orc to Python path
         sys.path.append(net_orc_dir)
-        #Import the network orchestrator
+        # Import the network orchestrator
         global net_orc
-        import network_orchestrator as net_orc # pylint: disable=wrong-import-position
+        import network_orchestrator as net_orc # pylint: disable=wrong-import-position,import-outside-toplevel
 
     def _register_exits(self):
         signal.signal(signal.SIGINT, self._exit_handler)

@@ -10,7 +10,7 @@ LOGGER = logger.get_logger('runner')
 
 class TestRunner:
 
-    def __init__(self,local_net=True):
+    def __init__(self, local_net=True):
 
         LOGGER.info('Starting Test Run')
 
@@ -33,8 +33,6 @@ def run(argv):
                         		of the one downloaded locally from the install script.''')
 
     args, unknown = parser.parse_known_args()
-
-    print("local-net: " + str(args.remote_net))
 
     runner = TestRunner(args.remote_net)
 
