@@ -6,7 +6,7 @@ import os
 LOGGERS = {}
 _LOG_FORMAT = "%(asctime)s %(name)-8s %(levelname)-7s %(message)s"
 _DATE_FORMAT = '%b %02d %H:%M:%S'
-_DEFAULT_LEVEL = logging.INFO
+_LOG_LEVEL = logging.INFO
 _CONF_DIR = "conf"
 _CONF_FILE_NAME = "system.json"
 _LOG_DIR = "runtime/testing/"
@@ -15,11 +15,12 @@ _LOG_DIR = "runtime/testing/"
 try:
     with open(os.path.join(_CONF_DIR, _CONF_FILE_NAME), encoding='utf-8') as system_conf_file:
         system_conf_json = json.load(system_conf_file)
-        log_level_str = system_conf_json['log_level']
-        log_level = logging.getLevelName(log_level_str)
-except:
-    # TODO: Print out warning that log level is incorrect or missing
-    log_level = _DEFAULT_LEVEL
+    log_level_str = system_conf_json['log_level']
+    _LOG_LEVEL = logging.getLevelName(log_level_str)
+except Exception as error:
+    print(error)
+    # Do nothing as fallback log level will be used
+    pass
 
 log_format = logging.Formatter(fmt=_LOG_FORMAT, datefmt=_DATE_FORMAT)
 
@@ -36,7 +37,7 @@ def add_stream_handler(log):
 def get_logger(name, log_file=None):
     if name not in LOGGERS:
         LOGGERS[name] = logging.getLogger(name)
-        LOGGERS[name].setLevel(log_level)
+        LOGGERS[name].setLevel(_LOG_LEVEL)
         add_stream_handler(LOGGERS[name])
     if log_file is not None:
         add_file_handler(LOGGERS[name], log_file)

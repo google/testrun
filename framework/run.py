@@ -1,12 +1,11 @@
 """Starts Test Run."""
 
-import logger
-from testrun import TestRun
 import argparse
 import sys
+from testrun import TestRun
+import logger
 
 LOGGER = logger.get_logger('runner')
-
 
 class TestRunner:
 
@@ -29,12 +28,12 @@ def run(argv):
     parser = argparse.ArgumentParser(description="Test Run",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-r", "--remote-net", action="store_false",
-                        help='''Use the network orchestrator from the parent directory instead 
+                        help='''Use the network orchestrator from the parent directory instead
                         		of the one downloaded locally from the install script.''')
 
     args, unknown = parser.parse_known_args()
 
-    runner = TestRunner(args.remote_net)
+    TestRunner(args.remote_net)
 
 
 if __name__ == "__main__":
