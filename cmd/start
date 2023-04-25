@@ -5,6 +5,12 @@ if [[ "$EUID" -ne 0 ]]; then
     exit 1
 fi
 
+# Ensure that /var/run/netns folder exists
+mkdir -p /var/run/netns
+
+# Clear up existing runtime files
+rm -rf runtime
+
 # Check if python modules exist. Install if not
 [ ! -d "venv" ] && cmd/install
 
@@ -12,6 +18,6 @@ fi
 source venv/bin/activate
 
 # TODO: Execute python code
-python -u framework/run.py
+python -u framework/run.py $@
 
 deactivate

@@ -1,6 +1,40 @@
 """Starts Test Run."""
 
+import argparse
+import sys
 from testrun import TestRun
+import logger
 
-testrun = TestRun()
-testrun.start()
+LOGGER = logger.get_logger('runner')
+
+class TestRunner:
+
+    def __init__(self, local_net=True):
+
+        LOGGER.info('Starting Test Run')
+
+        testrun = TestRun(local_net)
+
+        testrun.load_config()
+
+        testrun.start()
+
+        testrun.run_tests()
+
+        testrun.stop_network()
+
+
+def run(argv):
+    parser = argparse.ArgumentParser(description="Test Run",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-r", "--remote-net", action="store_false",
+                        help='''Use the network orchestrator from the parent directory instead
+                        		of the one downloaded locally from the install script.''')
+
+    args, unknown = parser.parse_known_args()
+
+    TestRunner(args.remote_net)
+
+
+if __name__ == "__main__":
+    run(sys.argv)
