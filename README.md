@@ -37,6 +37,9 @@ Test Run cannot automate everything, and so additional manual testing may be req
 ## Roadmap :chart_with_upwards_trend:
 Test Run will constantly evolve to further support end-users by automating device network behaviour against industry standards.
 
+## Issue reporting :triangular_flag_on_post:
+If the application has come across a problem at any point during setup or use, please raise an issue under the [issues tab](https://github.com/auto-iot/test-run/issues). Issue templates exist for both bug reports and feature requests. If neither of these are appropriate for your issue, raise a blank issue instead.
+
 ## Contributing :keyboard:
 The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md). In short, checkout the [Google CLA](https://cla.developers.google.com/) site to get started.
 
