@@ -9,15 +9,15 @@ LOGGER = logger.get_logger('runner')
 
 class TestRunner:
 
-    def __init__(self, local_net=True,config_file=None, argv=None):
+    def __init__(self, local_net=True):
 
         LOGGER.info('Starting Test Run')
 
-        testrun = TestRun(local_net=local_net,argsv=argv)
+        testrun = TestRun(local_net)
 
-        testrun.load_config(config_file=config_file)
+        testrun.load_config()
 
-        testrun.start_network()
+        testrun.start()
 
         testrun.run_tests()
 
@@ -36,7 +36,6 @@ def run(argv):
     args, unknown = parser.parse_known_args()
 
     TestRunner(local_net=args.remote_net,config_file=args.config_file, argv=argv)
-
 
 if __name__ == "__main__":
     run(sys.argv)
