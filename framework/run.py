@@ -9,11 +9,11 @@ LOGGER = logger.get_logger('runner')
 
 class TestRunner:
 
-    def __init__(self, local_net=True):
+    def __init__(self, local_net=True,config_file=None, argv=None):
 
         LOGGER.info('Starting Test Run')
 
-        testrun = TestRun(local_net)
+        testrun = TestRun(local_net=local_net,argsv=argv)
 
         testrun.load_config()
 

@@ -38,6 +38,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     """
 
     def __init__(self, local_net=True, argsv=None):
+        self._devices = []
 
         # Catch any exit signals
         self._register_exits()
@@ -56,9 +57,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
         self.start_network()
 
         # Register callbacks
-        self._net_orc.listener.register_callback(
-            self._device_discovered,
-            [NetworkEvent.DEVICE_DISCOVERED])
+        # Disable for now as this is causing boot failures when no devices are discovered
+        # self._net_orc.listener.register_callback(
+        #     self._device_discovered,
+        #     [NetworkEvent.DEVICE_DISCOVERED])
 
     def import_dependencies(self, local_net=True):
         if local_net:
@@ -84,6 +86,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
         global net_run
         import network_runner as net_run  # pylint: disable=wrong-import-position,import-outside-toplevel
+
+        global NetworkEvent
+        from listener import NetworkEvent  # pylint: disable=wrong-import-position,import-outside-toplevel
 
     def _register_exits(self):
         signal.signal(signal.SIGINT, self._exit_handler)
@@ -120,7 +125,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
             self._test_orc.import_config(config_json)
 
     def start_network(self):
-        self._net_run.run()
+        self._net_run.start(async_monitor=True)
 
     def run_tests(self):
         """Iterate through and start all test modules."""
@@ -167,3 +172,4 @@ class TestRun:  # pylint: disable=too-few-public-methods
         else:
             LOGGER.info(
                 f'A new device has been discovered with mac address {device.mac_addr}')
+        return device
