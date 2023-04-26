@@ -17,7 +17,7 @@ class TestRunner:
 
         testrun.load_config()
 
-        testrun.start_network()
+        testrun.start()
 
         testrun.run_tests()
 
