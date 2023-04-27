@@ -29,26 +29,23 @@ class TestOrchestrator:
         shutil.rmtree(os.path.join(self._root_path, RUNTIME_DIR), ignore_errors=True)
         os.makedirs(os.path.join(self._root_path, RUNTIME_DIR), exist_ok=True)
 
-    def import_config(self, json_config):
-        """Load settings from JSON object into memory."""
+    def start(self):
+        LOGGER.info("Starting Test Orchestrator")
+        self._load_test_modules()
+        self._run_test_modules()
 
-        # No relevant config options in system.json as of yet
+    def stop(self):
+        """Stop any running tests"""
+        self._stop_modules()
 
-    def get_test_module(self, name):
-        """Returns a test module by the module name."""
-        for module in self._test_modules:
-            if name == module.name:
-                return module
-        return None
-
-    def run_test_modules(self):
+    def _run_test_modules(self):
         """Iterates through each test module and starts the container."""
         LOGGER.info("Running test modules...")
         for module in self._test_modules:
-            self.run_test_module(module)
+            self._run_test_module(module)
         LOGGER.info("All tests complete")
 
-    def run_test_module(self, module):
+    def _run_test_module(self, module):
         """Start the test container and extract the results."""
 
         if module is None or not module.enable_container:
@@ -111,7 +108,7 @@ class TestOrchestrator:
             LOGGER.error(error)
         return container
 
-    def load_test_modules(self):
+    def _load_test_modules(self):
         """Import module configuration from module_config.json."""
 
         modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
@@ -175,12 +172,13 @@ class TestOrchestrator:
             LOGGER.error(error)
 
     def _stop_modules(self, kill=False):
-        LOGGER.debug("Stopping test modules")
+        LOGGER.info("Stopping test modules")
         for module in self._test_modules:
             # Test modules may just be Docker images, so we do not want to stop them
             if not module.enable_container:
                 continue
             self._stop_module(module, kill)
+        LOGGER.info("Test Modules Stopped")
 
     def _stop_module(self, module, kill=False):
         LOGGER.debug("Stopping test module " + module.container_name)

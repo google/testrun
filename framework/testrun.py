@@ -47,20 +47,22 @@ class TestRun:  # pylint: disable=too-few-public-methods
         # Import the correct net orchestrator
         self.import_dependencies(local_net)
 
-        #self._net_orc = net_orc.NetworkOrchestrator()
+        # Expand the config file to absolute pathing
+        config_file_abs=self._get_config_abs(config_file=config_file)
+        
+        self._net_orc = net_orc.NetworkOrchestrator(config_file=config_file_abs,validate=validate,async_monitor=not self._net_only)
         self._test_orc = test_orc.TestOrchestrator()
-        self._net_run = net_run.NetworkRunner(config_file=config_file,validate=validate,async_monitor=not self._net_only)
-
+ 
     def start(self):
 
         self._load_devices()
 
         if self._net_only:
-            LOGGER.info("Network only configured, no tests will be run")
+            LOGGER.info("Network only option configured, no tests will be run")
             self._start_network()
         else:
             self._start_network()
-            self._run_tests()
+            self._start_tests()
 
         self.stop()
 
@@ -70,8 +72,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
         #     self._device_discovered,
         #     [NetworkEvent.DEVICE_DISCOVERED])
 
-    def stop(self):
-        self._stop_network()
+    def stop(self,kill=False):
+        self._stop_tests()
+        self._stop_network(kill=kill)
 
     def import_dependencies(self, local_net=True):
         if local_net:
@@ -95,9 +98,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
         global test_orc
         import test_orchestrator as test_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
 
-        global net_run
-        import network_runner as net_run  # pylint: disable=wrong-import-position,import-outside-toplevel
-
         global NetworkEvent
         from listener import NetworkEvent  # pylint: disable=wrong-import-position,import-outside-toplevel
 
@@ -111,44 +111,30 @@ class TestRun:  # pylint: disable=too-few-public-methods
         LOGGER.debug("Exit signal received: " + str(signum))
         if signum in (2, signal.SIGTERM):
             LOGGER.info("Exit signal received.")
-            self.stop_network()
-
-    def load_config(self, config_file=None):
-        if config_file is None:
-            # If not defined, use relative pathing to local file
-            self._config_file = os.path.join(parent_dir, CONFIG_FILE)
-        else:
-            # If defined, use as provided
-            self._config_file = config_file
-
-        """Loads all settings from the config file into memory."""
-        if not os.path.isfile(self._config_file):
-            LOGGER.error(
-                "Configuration file is not present at " + self._config_file)
-            LOGGER.info("An example is present in " + EXAMPLE_CONFIG_FILE)
+            self.stop(kill=True)
             sys.exit(1)
 
-        LOGGER.info("Loading Config File: " +
-                    os.path.abspath(self._config_file))
+    def _get_config_abs(self,config_file=None):
+        if config_file is None:
+            # If not defined, use relative pathing to local file
+            config_file = os.path.join(parent_dir, CONFIG_FILE)
 
-        with open(self._config_file, encoding='UTF-8') as config_json_file:
-            config_json = json.load(config_json_file)
-            self._test_orc.import_config(config_json)
+        # Expand the config file to absolute pathing 
+        return os.path.abspath(config_file)
 
     def _start_network(self):
-        self._net_run.start()
+        self._net_orc.start()
 
-    def _run_tests(self):
+    def _start_tests(self):
         """Iterate through and start all test modules."""
 
-        self._test_orc.load_test_modules()
-        self._test_orc.build_test_modules()
+        self._test_orc.start()
 
-        # Begin testing
-        self._test_orc.run_test_modules()
+    def _stop_network(self,kill=False):
+        self._net_orc.stop(kill=kill)
 
-    def _stop_network(self):
-        self._net_run.stop()
+    def _stop_tests(self):
+        self._test_orc.stop()
 
     def _load_devices(self):
         LOGGER.debug('Loading devices from ' + DEVICES_DIR)
