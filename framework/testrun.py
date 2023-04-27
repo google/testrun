@@ -37,8 +37,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
     orchestrator and user interface.
     """
 
-    def __init__(self, local_net=True, argsv=None):
+    def __init__(self, local_net=True, config_file=CONFIG_FILE,validate=True, net_only=False):
         self._devices = []
+        self._net_only = net_only
 
         # Catch any exit signals
         self._register_exits()
@@ -46,21 +47,31 @@ class TestRun:  # pylint: disable=too-few-public-methods
         # Import the correct net orchestrator
         self.import_dependencies(local_net)
 
-        self._net_orc = net_orc.NetworkOrchestrator()
+        #self._net_orc = net_orc.NetworkOrchestrator()
         self._test_orc = test_orc.TestOrchestrator()
-        self._net_run = net_run.NetworkRunner(argsv)
+        self._net_run = net_run.NetworkRunner(config_file=config_file,validate=validate,async_monitor=not self._net_only)
 
     def start(self):
 
         self._load_devices()
 
-        self.start_network()
+        if self._net_only:
+            LOGGER.info("Network only configured, no tests will be run")
+            self._start_network()
+        else:
+            self._start_network()
+            self._run_tests()
+
+        self.stop()
 
         # Register callbacks
         # Disable for now as this is causing boot failures when no devices are discovered
         # self._net_orc.listener.register_callback(
         #     self._device_discovered,
         #     [NetworkEvent.DEVICE_DISCOVERED])
+
+    def stop(self):
+        self._stop_network()
 
     def import_dependencies(self, local_net=True):
         if local_net:
@@ -124,10 +135,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
             config_json = json.load(config_json_file)
             self._test_orc.import_config(config_json)
 
-    def start_network(self):
-        self._net_run.start(async_monitor=True)
+    def _start_network(self):
+        self._net_run.start()
 
-    def run_tests(self):
+    def _run_tests(self):
         """Iterate through and start all test modules."""
 
         self._test_orc.load_test_modules()
@@ -136,8 +147,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
         # Begin testing
         self._test_orc.run_test_modules()
 
-    def stop_network(self):
-        self._net_run._stop()
+    def _stop_network(self):
+        self._net_run.stop()
 
     def _load_devices(self):
         LOGGER.debug('Loading devices from ' + DEVICES_DIR)
