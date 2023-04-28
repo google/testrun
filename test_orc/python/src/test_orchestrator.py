@@ -29,32 +29,29 @@ class TestOrchestrator:
         shutil.rmtree(os.path.join(self._root_path, RUNTIME_DIR), ignore_errors=True)
         os.makedirs(os.path.join(self._root_path, RUNTIME_DIR), exist_ok=True)
 
-    def import_config(self, json_config):
-        """Load settings from JSON object into memory."""
+    def start(self):
+        LOGGER.info("Starting Test Orchestrator")
+        self._load_test_modules()
+        self._run_test_modules()
 
-        # No relevant config options in system.json as of yet
+    def stop(self):
+        """Stop any running tests"""
+        self._stop_modules()
 
-    def get_test_module(self, name):
-        """Returns a test module by the module name."""
-        for module in self._test_modules:
-            if name == module.name:
-                return module
-        return None
-
-    def run_test_modules(self):
+    def _run_test_modules(self):
         """Iterates through each test module and starts the container."""
         LOGGER.info("Running test modules...")
         for module in self._test_modules:
-            self.run_test_module(module)
+            self._run_test_module(module)
         LOGGER.info("All tests complete")
 
-    def run_test_module(self, module):
+    def _run_test_module(self, module):
         """Start the test container and extract the results."""
 
         if module is None or not module.enable_container:
             return
 
-        LOGGER.info("Running test module " + module.display_name)
+        LOGGER.info("Running test module " + module.name)
         try:
 
             container_runtime_dir = os.path.join(self._root_path, "runtime/test/" + module.name)
@@ -78,7 +75,7 @@ class TestOrchestrator:
                 environment={"HOST_USER": os.getlogin()}
             )
         except (docker.errors.APIError, docker.errors.ContainerError) as container_error:
-            LOGGER.error("Test module " + module.display_name + " has failed to start")
+            LOGGER.error("Test module " + module.name + " has failed to start")
             LOGGER.debug(container_error)
             return
 
@@ -90,7 +87,7 @@ class TestOrchestrator:
             time.sleep(1)
             status = self._get_module_status(module)
 
-        LOGGER.info("Test module " + module.display_name + " has finished")
+        LOGGER.info("Test module " + module.name + " has finished")
 
     def _get_module_status(self,module):
         container = self._get_module_container(module)
@@ -111,7 +108,7 @@ class TestOrchestrator:
             LOGGER.error(error)
         return container
 
-    def load_test_modules(self):
+    def _load_test_modules(self):
         """Import module configuration from module_config.json."""
 
         modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
@@ -151,7 +148,8 @@ class TestOrchestrator:
 
             self._test_modules.append(module)
 
-            loaded_modules += module.dir_name + " "
+            if module.enable_container:
+              loaded_modules += module.dir_name + " "
 
         LOGGER.info(loaded_modules)
 
@@ -175,12 +173,13 @@ class TestOrchestrator:
             LOGGER.error(error)
 
     def _stop_modules(self, kill=False):
-        LOGGER.debug("Stopping test modules")
+        LOGGER.info("Stopping test modules")
         for module in self._test_modules:
             # Test modules may just be Docker images, so we do not want to stop them
             if not module.enable_container:
                 continue
             self._stop_module(module, kill)
+        LOGGER.info("All test modules have been stopped")
 
     def _stop_module(self, module, kill=False):
         LOGGER.debug("Stopping test module " + module.container_name)
@@ -196,9 +195,8 @@ class TestOrchestrator:
                                  module.container_name)
                     container.stop()
                 LOGGER.debug("Container stopped:" + module.container_name)
-        except Exception as error:
-            LOGGER.error("Container stop error")
-            LOGGER.error(error)
+        except docker.errors.NotFound:
+            pass
 
 class TestModule: # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """Represents a test module."""

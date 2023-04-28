@@ -18,6 +18,6 @@ rm -rf runtime
 source venv/bin/activate
 
 # TODO: Execute python code
-python -u framework/run.py $@
+python -u framework/test_runner.py $@
 
 deactivate
