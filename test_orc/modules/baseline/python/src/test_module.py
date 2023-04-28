@@ -32,8 +32,6 @@ class TestModule:
         self.module_test2 = False
         LOGGER.info("Test 2 complete.")
 
-        time.sleep(10)
-
     def generate_results(self):
         results = []
         results.append(self.generate_result("Test 1", self.module_test1))
