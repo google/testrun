@@ -1,6 +1,6 @@
 """Represemts a test module."""
 from dataclasses import dataclass
-from docker.client.Container import Container
+from docker.models.containers import Container
 
 @dataclass
 class TestModule: # pylint: disable=too-few-public-methods,too-many-instance-attributes

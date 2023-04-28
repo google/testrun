@@ -38,3 +38,5 @@ chown $HOST_USER:$HOST_USER $RESULT_FILE
 # -u flag allows python print statements
 # to be logged by docker by running unbuffered
 python3 -u $PYTHON_SRC_DIR/run.py "-m $MODULE_NAME"
+
+echo Module has finished

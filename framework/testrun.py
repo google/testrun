@@ -11,6 +11,7 @@ import os
 import sys
 import json
 import signal
+import time
 import logger
 from device import Device
 
@@ -57,20 +58,21 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
         self._load_devices()
 
+        self._start_network()
+
         if self._net_only:
             LOGGER.info("Network only option configured, no tests will be run")
-            self._start_network()
+            time.sleep(RUNTIME)
         else:
-            self._start_network()
-            self._start_tests()
+            self._net_orc.listener.register_callback(
+             self._device_discovered,
+             [NetworkEvent.DEVICE_DISCOVERED])
+        
+            LOGGER.info("Waiting for devices on the network...")
 
+        # Check timeout and whether testing is currently in progress before stopping
+        time.sleep(RUNTIME)
         self.stop()
-
-        # Register callbacks
-        # Disable for now as this is causing boot failures when no devices are discovered
-        # self._net_orc.listener.register_callback(
-        #     self._device_discovered,
-        #     [NetworkEvent.DEVICE_DISCOVERED])
 
     def stop(self,kill=False):
         self._stop_tests()
@@ -125,9 +127,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
     def _start_network(self):
         self._net_orc.start()
 
-    def _start_tests(self):
+    def _run_tests(self):
         """Iterate through and start all test modules."""
-
         self._test_orc.start()
 
     def _stop_network(self,kill=False):
@@ -167,6 +168,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
             LOGGER.info(
                 f'Discovered {device.make} {device.model} on the network')
         else:
+            device = Device(make=None, model=None, mac_addr=mac_addr)
             LOGGER.info(
-                f'A new device has been discovered with mac address {device.mac_addr}')
-        return device
+                f'A new device has been discovered with mac address {mac_addr}')
+        
+        # TODO: Pass device information to test orchestrator/runner
+        self._run_tests()
