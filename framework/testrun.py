@@ -58,20 +58,20 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
         self._load_devices()
 
-        self._start_network()
-
         if self._net_only:
             LOGGER.info("Network only option configured, no tests will be run")
-            time.sleep(RUNTIME)
+            self._start_network()
         else:
+            self._start_network()
             self._net_orc.listener.register_callback(
              self._device_discovered,
              [NetworkEvent.DEVICE_DISCOVERED])
         
             LOGGER.info("Waiting for devices on the network...")
-
-        # Check timeout and whether testing is currently in progress before stopping
-        time.sleep(RUNTIME)
+            
+            # Check timeout and whether testing is currently in progress before stopping
+            time.sleep(RUNTIME)
+            
         self.stop()
 
     def stop(self,kill=False):
