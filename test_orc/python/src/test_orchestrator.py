@@ -6,9 +6,10 @@ import shutil
 import docker
 from docker.types import Mount
 import logger
+from module import TestModule
 
 LOG_NAME = "test_orc"
-LOGGER = logger.get_logger('test_orc')
+LOGGER = logger.get_logger("test_orc")
 RUNTIME_DIR = "runtime"
 TEST_MODULES_DIR = "modules"
 MODULE_CONFIG = "conf/module_config.json"
@@ -197,23 +198,3 @@ class TestOrchestrator:
                 LOGGER.debug("Container stopped:" + module.container_name)
         except docker.errors.NotFound:
             pass
-
-class TestModule: # pylint: disable=too-few-public-methods,too-many-instance-attributes
-    """Represents a test module."""
-
-    def __init__(self):
-        self.name = None
-        self.display_name = None
-        self.description = None
-
-        self.build_file = None
-        self.container = None
-        self.container_name = None
-        self.image_name = None
-        self.enable_container = True
-
-        self.timeout = 60
-
-        # Absolute path
-        self.dir = None
-        self.dir_name = None
