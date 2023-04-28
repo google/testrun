@@ -51,7 +51,7 @@ class TestOrchestrator:
         if module is None or not module.enable_container:
             return
 
-        LOGGER.info("Running test module " + module.display_name)
+        LOGGER.info("Running test module " + module.name)
         try:
 
             container_runtime_dir = os.path.join(self._root_path, "runtime/test/" + module.name)
@@ -75,7 +75,7 @@ class TestOrchestrator:
                 environment={"HOST_USER": os.getlogin()}
             )
         except (docker.errors.APIError, docker.errors.ContainerError) as container_error:
-            LOGGER.error("Test module " + module.display_name + " has failed to start")
+            LOGGER.error("Test module " + module.name + " has failed to start")
             LOGGER.debug(container_error)
             return
 
@@ -87,7 +87,7 @@ class TestOrchestrator:
             time.sleep(1)
             status = self._get_module_status(module)
 
-        LOGGER.info("Test module " + module.display_name + " has finished")
+        LOGGER.info("Test module " + module.name + " has finished")
 
     def _get_module_status(self,module):
         container = self._get_module_container(module)
@@ -148,7 +148,8 @@ class TestOrchestrator:
 
             self._test_modules.append(module)
 
-            loaded_modules += module.dir_name + " "
+            if module.enable_container:
+              loaded_modules += module.dir_name + " "
 
         LOGGER.info(loaded_modules)
 
@@ -178,7 +179,7 @@ class TestOrchestrator:
             if not module.enable_container:
                 continue
             self._stop_module(module, kill)
-        LOGGER.info("Test Modules Stopped")
+        LOGGER.info("All test modules have been stopped")
 
     def _stop_module(self, module, kill=False):
         LOGGER.debug("Stopping test module " + module.container_name)
@@ -194,9 +195,8 @@ class TestOrchestrator:
                                  module.container_name)
                     container.stop()
                 LOGGER.debug("Container stopped:" + module.container_name)
-        except Exception as error:
-            LOGGER.error("Container stop error")
-            LOGGER.error(error)
+        except docker.errors.NotFound:
+            pass
 
 class TestModule: # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """Represents a test module."""

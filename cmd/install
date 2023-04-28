@@ -2,7 +2,7 @@
 
 GIT_URL=https://github.com/auto-iot
 NET_ORC_DIR=net_orc
-NET_ORC_VERSION="test_run_sync"
+NET_ORC_VERSION="main"
 
 python3 -m venv venv
 

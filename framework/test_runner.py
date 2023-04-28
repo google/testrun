@@ -45,7 +45,7 @@ class TestRunner:
 
     def start(self):
         self.test_run.start()
-        LOGGER.info("TestRunner Done")
+        LOGGER.info("Test Run has finished")
 
 
 def parse_args(argv):
