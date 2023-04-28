@@ -1,0 +1,11 @@
+{
+  "config": {
+    "meta": {
+      "name": "faux-dev",
+      "description": "Faux device to test network modules are functioning properly"
+    },
+    "docker": {
+      "timeout": 60
+    }
+  }
+}

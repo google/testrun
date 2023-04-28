@@ -1,0 +1,22 @@
+{
+  "config": {
+    "meta": {
+      "name": "gateway",
+      "display_name": "Gateway",
+      "description": "Enable internet connectivity on device bridge"
+    },
+    "network": {
+      "interface": "veth0",
+      "enable_wan": true,
+      "ip_index": 1
+    },
+    "docker": {
+      "mounts": [
+        {
+          "source": "runtime/network",
+          "target": "/runtime/network"
+        }
+      ]
+    }
+  }
+}
