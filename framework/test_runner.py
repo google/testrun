@@ -19,9 +19,9 @@ LOGGER = logger.get_logger('runner')
 
 class TestRunner:
 
-    def __init__(self, local_net=True, config_file=None, validate=True, net_only=False):
+    def __init__(self, config_file=None, validate=True, net_only=False):
         self._register_exits()
-        self.test_run = TestRun(local_net=local_net, config_file=config_file,
+        self.test_run = TestRun(config_file=config_file,
                                 validate=validate, net_only=net_only)
 
     def _register_exits(self):
@@ -51,9 +51,6 @@ class TestRunner:
 def parse_args(argv):
     parser = argparse.ArgumentParser(description="Test Run",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-r", "--remote-net", action="store_false",
-                        help='''Use the network orchestrator from the parent directory instead
-                                of the one downloaded locally from the install script.''')
     parser.add_argument("-f", "--config-file", default=None,
                         help="Define the configuration file for Test Run and Network Orchestrator")
     parser.add_argument("--no-validate", action="store_true",
@@ -66,8 +63,7 @@ def parse_args(argv):
 
 if __name__ == "__main__":
     args = parse_args(sys.argv)
-    runner = TestRunner(local_net=args.remote_net,
-                        config_file=args.config_file,
+    runner = TestRunner(config_file=args.config_file,
                         validate=not args.no_validate,
                         net_only=args.net_only)
     runner.start()
