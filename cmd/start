@@ -20,4 +20,25 @@ source venv/bin/activate
 # TODO: Execute python code
 python -u framework/test_runner.py $@
 
+# TODO: Work in progress code for containerization of OVS module
+# asyncRun() {
+#     "$@" &
+#     pid="$!"
+#     echo "PID Running: " $pid
+#     trap "echo 'Stopping PID $pid'; kill -SIGTERM $pid" SIGINT SIGTERM
+
+#     sleep 10
+
+#     # A signal emitted while waiting will make the wait command return code > 128
+#     # Let's wrap it in a loop that doesn't end before the process is indeed stopped
+#     while kill -0 $pid > /dev/null 2>&1; do
+#     #while $(kill -0 $pid 2>/dev/null); do
+#         wait
+#     done
+# }
+
+# # -u flag allows python print statements
+# # to be logged by docker by running unbuffered
+# asyncRun python3 -u python/src/run.py $@
+
 deactivate
