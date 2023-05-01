@@ -17,8 +17,8 @@ class DNSModule:
     def __init__(self, module):
         self._dns_server = "10.10.10.4"
         self._device_mac = os.environ['DEVICE_MAC']
-        self._dns_resolution_test = False
-        self._dns_dhcp_server_test = False
+        self._dns_network_from_device = None
+        self._dns_network_from_dhcp = None
         self.module = module
         self.add_logger(module)
 
@@ -29,16 +29,22 @@ class DNSModule:
     # Run all the DNS Tests
     def run_tests(self):
         LOGGER.info("Checking for DNS traffic from DHCP provided server")
-        self._check_dns_traffic_from_device()
-        self._check_dns_traffic_to_server()
+        self._test_dns_network_from_device()
+        self._test_dns_network_from_dhcp()
 
     def generate_results(self):
         LOGGER.info("Generating test results")
         results = []
         results.append(self.generate_result(
-            "DNS resolution test", self._dns_resolution_test))
+            test_name="dns.network.from_device", 
+            test_result=self._dns_network_from_device,
+            description="Verify the device sends DNS requests", 
+            expected_behavior="The device sends DNS requests."))
         results.append(self.generate_result(
-            "DNS DHCP server test", self._dns_dhcp_server_test))
+            test_name="dns.network.from_dhcp", 
+            test_result=self._dns_network_from_dhcp,
+            description="Verify the device allows for a DNS server to be entered automatically", 
+            expected_behavior="The device sends DNS requests to the DNS server provided by the DHCP server"))
         json_results = json.dumps({"results": results}, indent=2)
         self.write_results(json_results)
 
@@ -49,7 +55,7 @@ class DNSModule:
         f.write(results)
         f.close()
 
-    def generate_result(self, test_name, test_result):
+    def generate_result(self, test_name, test_result, description, expected_behavior):
         if test_result is not None:
             result = "compliant" if test_result else "non-compliant"
         else:
@@ -58,7 +64,8 @@ class DNSModule:
         res_dict = {
             "name": test_name,
             "result": result,
-            "description": "The device is " + result
+            "description": description,
+            "expected_behavior":expected_behavior
         }
         return res_dict
 
@@ -70,7 +77,7 @@ class DNSModule:
         LOGGER.info("DNS traffic detected: " + str(dns_traffic_detected))
         return dns_traffic_detected
 
-    def _check_dns_traffic_to_server(self):
+    def _test_dns_network_from_dhcp(self):
         LOGGER.info(
             "Checking DNS traffic for configured DHCP DNS server: " + self._dns_server)
 
@@ -78,23 +85,23 @@ class DNSModule:
         tcpdump_filter = 'dst port 53 and dst host {} and ether src {}'.format(
             self._dns_server, self._device_mac)
 
-        self._dns_dhcp_server_test = self._check_dns_traffic(
+        self._dns_network_from_dhcp = self._check_dns_traffic(
             tcpdump_filter=tcpdump_filter)
 
-        if self._dns_dhcp_server_test:
+        if self._dns_network_from_dhcp:
             LOGGER.info("DNS traffic detected to configured DHCP DNS server")
 
-    def _check_dns_traffic_from_device(self):
+    def _test_dns_network_from_device(self):
         LOGGER.info("Checking DNS traffic from device: " + self._device_mac)
 
         # Check if the device DNS traffic is to appropriate server
         tcpdump_filter = 'dst port 53 and ether src {}'.format(
             self._device_mac)
 
-        self._dns_resolution_test = self._check_dns_traffic(
+        self._dns_network_from_device = self._check_dns_traffic(
             tcpdump_filter=tcpdump_filter)
 
-        if self._dns_resolution_test:
+        if self._dns_network_from_device:
             LOGGER.info("DNS traffic detected from device")
 
     def _exec_tcpdump(self, tcpdump_filter):
