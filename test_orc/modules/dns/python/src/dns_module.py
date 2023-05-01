@@ -4,6 +4,7 @@ import json
 import time
 import logger
 import subprocess
+import os
 
 LOG_NAME = "test_dns"
 RESULTS_DIR = "/runtime/output/"
@@ -14,6 +15,7 @@ class DNSModule:
 
     def __init__(self, module):
         self._dns_server = "10.10.10.4"
+        self._device_mac = os.environ['DEVICE_MAC']
         self._dns_resolution_test = False
         self._dns_dhcp_server_test = False
         self.module = module
@@ -60,10 +62,12 @@ class DNSModule:
 
     def _check_dns_traffic(self):
         LOGGER.info("Checking DNS traffic for DNS server: " + self._dns_server)
+        LOGGER.info("Inspecting DNS traffic from device: " + self._device_mac)
 
         # Check if the device has sent any DNS requests
-        filter_to_dns = 'dst port 53 and dst host {}'.format(
-            self._dns_server)
+        filter_to_dns = 'dst port 53 and dst host {} and ether src {}'.format(
+            self._dns_server, self._device_mac)
+        LOGGER.info("Packet Capture Filter: " + filter_to_dns)
         to_dns = self._exec_tcpdump(filter_to_dns)
         num_query_dns = len(to_dns)
         LOGGER.info("DNS queries found: " + str(num_query_dns))

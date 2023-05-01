@@ -26,7 +26,7 @@ class DNSModuleRunner:
         self._test_module.run_tests()
         self._test_module.generate_results()
 
-        time.sleep(60)
+        LOGGER.info("DNS Test Module Finished")
 
     def _handler(self, signum, *other):
         LOGGER.debug("SigtermEnum: " + str(signal.SIGTERM))

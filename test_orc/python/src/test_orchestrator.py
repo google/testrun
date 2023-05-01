@@ -14,6 +14,7 @@ RUNTIME_DIR = "runtime"
 TEST_MODULES_DIR = "modules"
 MODULE_CONFIG = "conf/module_config.json"
 
+
 class TestOrchestrator:
     """Manages and controls the test modules."""
 
@@ -27,7 +28,8 @@ class TestOrchestrator:
         # Resolve the path to the test-run folder
         self._root_path = os.path.abspath(os.path.join(self._path, os.pardir))
 
-        shutil.rmtree(os.path.join(self._root_path, RUNTIME_DIR), ignore_errors=True)
+        shutil.rmtree(os.path.join(self._root_path,
+                                   RUNTIME_DIR), ignore_errors=True)
         os.makedirs(os.path.join(self._root_path, RUNTIME_DIR), exist_ok=True)
 
     def start(self):
@@ -39,14 +41,14 @@ class TestOrchestrator:
         """Stop any running tests"""
         self._stop_modules()
 
-    def _run_test_modules(self,device):
+    def _run_test_modules(self, device):
         """Iterates through each test module and starts the container."""
         LOGGER.info("Running test modules...")
         for module in self._test_modules:
-            self._run_test_module(module,device)
+            self._run_test_module(module, device)
         LOGGER.info("All tests complete")
 
-    def _run_test_module(self, module,device):
+    def _run_test_module(self, module, device):
         """Start the test container and extract the results."""
 
         if module is None or not module.enable_container:
@@ -55,8 +57,10 @@ class TestOrchestrator:
         LOGGER.info("Running test module " + module.name)
         try:
 
-            container_runtime_dir = os.path.join(self._root_path, "runtime/test/" + module.name)
-            network_runtime_dir = os.path.join(self._root_path, "runtime/network")
+            container_runtime_dir = os.path.join(
+                self._root_path, "runtime/test/" + device.mac_addr.replace(":","") + "/" + module.name)
+            network_runtime_dir = os.path.join(
+                self._root_path, "runtime/network")
             os.makedirs(container_runtime_dir)
 
             client = docker.from_env()
@@ -69,20 +73,21 @@ class TestOrchestrator:
                 hostname=module.container_name,
                 privileged=True,
                 detach=True,
-                mounts= [
+                mounts=[
                     Mount(
                         target="/runtime/output",
                         source=container_runtime_dir,
                         type='bind'
-                        ),
+                    ),
                     Mount(
                         target="/runtime/network",
                         source=network_runtime_dir,
                         type='bind',
                         read_only=True
-                        ),
-                    ],
-                environment={"HOST_USER": os.getlogin()}
+                    ),
+                ],
+                environment={"HOST_USER": os.getlogin(
+                ), "DEVICE_MAC": device.mac_addr}
             )
         except (docker.errors.APIError, docker.errors.ContainerError) as container_error:
             LOGGER.error("Test module " + module.name + " has failed to start")
@@ -99,7 +104,7 @@ class TestOrchestrator:
 
         LOGGER.info("Test module " + module.name + " has finished")
 
-    def _get_module_status(self,module):
+    def _get_module_status(self, module):
         container = self._get_module_container(module)
         if container is not None:
             return container.status
@@ -133,11 +138,11 @@ class TestOrchestrator:
             # Load basic module information
             module = TestModule()
             with open(os.path.join(
-                self._path,
-                modules_dir,
-                module_dir,
-                MODULE_CONFIG),
-                encoding='UTF-8') as module_config_file:
+                    self._path,
+                    modules_dir,
+                    module_dir,
+                    MODULE_CONFIG),
+                    encoding='UTF-8') as module_config_file:
                 module_json = json.load(module_config_file)
 
             module.name = module_json['config']['meta']['name']
@@ -159,7 +164,7 @@ class TestOrchestrator:
             self._test_modules.append(module)
 
             if module.enable_container:
-              loaded_modules += module.dir_name + " "
+                loaded_modules += module.dir_name + " "
 
         LOGGER.info(loaded_modules)
 
@@ -176,7 +181,7 @@ class TestOrchestrator:
             client.images.build(
                 dockerfile=os.path.join(module.dir, module.build_file),
                 path=self._path,
-                forcerm=True, # Cleans up intermediate containers during build
+                forcerm=True,  # Cleans up intermediate containers during build
                 tag=module.image_name
             )
         except docker.errors.BuildError as error:

@@ -122,7 +122,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     def _run_tests(self,device):
         """Iterate through and start all test modules."""
+        
+        # To Do: Make this configurable
         time.sleep(60) #  Let device bootup
+        
         self._test_orc._run_test_modules(device)
 
     def _stop_network(self,kill=False):
