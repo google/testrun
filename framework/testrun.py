@@ -63,6 +63,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
             self._start_network()
         else:
             self._start_network()
+            self._test_orc.start()
             self._net_orc.listener.register_callback(
              self._device_discovered,
              [NetworkEvent.DEVICE_DISCOVERED])
@@ -119,9 +120,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
     def _start_network(self):
         self._net_orc.start()
 
-    def _run_tests(self):
+    def _run_tests(self,device):
         """Iterate through and start all test modules."""
-        self._test_orc.start()
+        time.sleep(60) #  Let device bootup
+        self._test_orc._run_test_modules(device)
 
     def _stop_network(self,kill=False):
         self._net_orc.stop(kill=kill)
@@ -165,4 +167,4 @@ class TestRun:  # pylint: disable=too-few-public-methods
                 f'A new device has been discovered with mac address {mac_addr}')
         
         # TODO: Pass device information to test orchestrator/runner
-        self._run_tests()
+        self._run_tests(device)

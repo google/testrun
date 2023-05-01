@@ -33,20 +33,20 @@ class TestOrchestrator:
     def start(self):
         LOGGER.info("Starting Test Orchestrator")
         self._load_test_modules()
-        self._run_test_modules()
+        self.build_test_modules()
 
     def stop(self):
         """Stop any running tests"""
         self._stop_modules()
 
-    def _run_test_modules(self):
+    def _run_test_modules(self,device):
         """Iterates through each test module and starts the container."""
         LOGGER.info("Running test modules...")
         for module in self._test_modules:
-            self._run_test_module(module)
+            self._run_test_module(module,device)
         LOGGER.info("All tests complete")
 
-    def _run_test_module(self, module):
+    def _run_test_module(self, module,device):
         """Start the test container and extract the results."""
 
         if module is None or not module.enable_container:
@@ -56,6 +56,7 @@ class TestOrchestrator:
         try:
 
             container_runtime_dir = os.path.join(self._root_path, "runtime/test/" + module.name)
+            network_runtime_dir = os.path.join(self._root_path, "runtime/network")
             os.makedirs(container_runtime_dir)
 
             client = docker.from_env()
@@ -68,11 +69,19 @@ class TestOrchestrator:
                 hostname=module.container_name,
                 privileged=True,
                 detach=True,
-                mounts=[Mount(
-                            target="/runtime/output",
-                            source=container_runtime_dir,
-                            type='bind'
-                        )],
+                mounts= [
+                    Mount(
+                        target="/runtime/output",
+                        source=container_runtime_dir,
+                        type='bind'
+                        ),
+                    Mount(
+                        target="/runtime/network",
+                        source=network_runtime_dir,
+                        type='bind',
+                        read_only=True
+                        ),
+                    ],
                 environment={"HOST_USER": os.getlogin()}
             )
         except (docker.errors.APIError, docker.errors.ContainerError) as container_error:

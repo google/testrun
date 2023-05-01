@@ -1,0 +1,18 @@
+{
+  "config": {
+    "meta": {
+      "name": "dns",
+      "display_name": "DNS",
+      "description": "DNS test"
+    },
+    "network": {
+      "interface": "eth0",
+      "enable_wan": false,
+      "ip_index": 9
+    },
+    "docker": {
+      "enable_container": true,
+      "timeout": 30
+    }
+  }
+}
