@@ -8,7 +8,8 @@ import time
 
 from dns_module import DNSModule
 
-LOGGER = logger.get_logger('dns_module')
+LOG_NAME = "dns_module"
+LOGGER = logger.get_logger(LOG_NAME)
 RUNTIME = 300
 
 class DNSModuleRunner:
@@ -19,6 +20,7 @@ class DNSModuleRunner:
         signal.signal(signal.SIGTERM, self._handler)
         signal.signal(signal.SIGABRT, self._handler)
         signal.signal(signal.SIGQUIT, self._handler)
+        self.add_logger(module)
 
         LOGGER.info("Starting DNS Test Module")
 
@@ -27,6 +29,10 @@ class DNSModuleRunner:
         self._test_module.generate_results()
 
         LOGGER.info("DNS Test Module Finished")
+
+    def add_logger(self, module):
+        global LOGGER
+        LOGGER = logger.get_logger(LOG_NAME, module)
 
     def _handler(self, signum, *other):
         LOGGER.debug("SigtermEnum: " + str(signal.SIGTERM))
