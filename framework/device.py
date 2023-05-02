@@ -8,3 +8,4 @@ class Device:
     make: str
     model: str
     mac_addr: str
+    test_modules: str

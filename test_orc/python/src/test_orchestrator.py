@@ -86,8 +86,11 @@ class TestOrchestrator:
                         read_only=True
                     ),
                 ],
-                environment={"HOST_USER": os.getlogin(
-                ), "DEVICE_MAC": device.mac_addr}
+                environment={
+                    "HOST_USER": os.getlogin(), 
+                    "DEVICE_MAC": device.mac_addr,
+                    "DEVICE_TEST_MODULES": device.test_modules
+                }
             )
         except (docker.errors.APIError, docker.errors.ContainerError) as container_error:
             LOGGER.error("Test module " + module.name + " has failed to start")

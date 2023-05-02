@@ -29,6 +29,7 @@ DEVICE_CONFIG = 'device_config.json'
 DEVICE_MAKE = 'make'
 DEVICE_MODEL = 'model'
 DEVICE_MAC_ADDR = 'mac_addr'
+DEVICE_TEST_MODULES = 'test_modules'
 
 
 class TestRun:  # pylint: disable=too-few-public-methods
@@ -145,9 +146,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
                 device_make = device_config_json.get(DEVICE_MAKE)
                 device_model = device_config_json.get(DEVICE_MODEL)
                 mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
+                test_modules = device_config_json.get(DEVICE_TEST_MODULES)
 
-                device = Device(device_make, device_model,
-                                mac_addr=mac_addr)
+                device = Device(make=device_make, model=device_model,
+                                mac_addr=mac_addr,test_modules=json.dumps(test_modules))
                 self._devices.append(device)
 
         LOGGER.info('Loaded ' + str(len(self._devices)) + ' devices')
