@@ -5,12 +5,12 @@ import signal
 import sys
 import logger
 
-from test_module import TestModule
+from baseline_module import BaselineModule
 
 LOGGER = logger.get_logger('test_module')
 RUNTIME = 300
 
-class TestModuleRunner:
+class BaselineModuleRunner:
 
     def __init__(self,module):
 
@@ -19,11 +19,10 @@ class TestModuleRunner:
         signal.signal(signal.SIGABRT, self._handler)
         signal.signal(signal.SIGQUIT, self._handler)
 
-        LOGGER.info("Starting Test Module Template")
+        LOGGER.info("Starting Baseline Module")
 
-        self._test_module = TestModule(module)
+        self._test_module = BaselineModule(module)
         self._test_module.run_tests()
-        self._test_module.generate_results()
 
     def _handler(self, signum, *other):
         LOGGER.debug("SigtermEnum: " + str(signal.SIGTERM))
@@ -34,7 +33,7 @@ class TestModuleRunner:
             sys.exit(1)
 
 def run(argv):
-    parser = argparse.ArgumentParser(description="Test Module Template",
+    parser = argparse.ArgumentParser(description="Baseline Module Help",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument(
@@ -44,7 +43,7 @@ def run(argv):
 
     # For some reason passing in the args from bash adds an extra
     # space before the argument so we'll just strip out extra space 
-    TestModuleRunner(args.module.strip())
+    BaselineModuleRunner(args.module.strip())
 
 if __name__ == "__main__":
     run(sys.argv)

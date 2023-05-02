@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 
-import json
 import subprocess
-import os
-
 from test_module import TestModule
 
 LOG_NAME = "test_dns"
-RESULTS_DIR = "/runtime/output/"
 CAPTURE_FILE = "/runtime/network/dns.pcap"
 LOGGER = None
 
