@@ -13,6 +13,18 @@
     "docker": {
       "enable_container": true,
       "timeout": 30
-    }
+    },
+    "tests":[
+      {
+        "name": "dns.network.from_device",
+        "description": "Verify the device sends DNS requests",
+        "expected_behavior": "The device sends DNS requests."
+      },
+      {
+        "name": "dns.network.from_dhcp",
+        "description": "Verify the device allows for a DNS server to be entered automatically", 
+        "expected_behavior": "The device sends DNS requests to the DNS server provided by the DHCP server"
+      }
+    ]
   }
 }
