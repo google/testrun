@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Place holder function for testing and validation
+# Each network module should include a start_networkig_service
+# file that overwrites this one to boot all of the its specific
+# requirements to run.
+
+echo "Starting network service..."
+echo "This is not a real network service, just a test"
+echo "Network service started"

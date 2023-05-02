@@ -1,7 +1,6 @@
 # Runtime folder
 runtime/
 venv/
-net_orc/
 .vscode/
 
 # Byte-compiled / optimized / DLL files

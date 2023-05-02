@@ -1,0 +1,25 @@
+{
+  "config": {
+    "meta": {
+      "name": "dhcp-2",
+      "display_name": "DHCP Secondary",
+      "description": "Secondary DHCP server with IPv6 SLAAC"
+    },
+    "network": {
+      "interface": "veth0",
+      "enable_wan": false,
+      "ip_index": 3
+    },
+    "grpc":{
+      "port": 5001
+    },
+    "docker": {
+      "mounts": [
+        {
+          "source": "runtime/network",
+          "target": "/runtime/network"
+        }
+      ]
+    }
+  }
+}

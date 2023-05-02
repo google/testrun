@@ -1,0 +1,22 @@
+{
+  "config": {
+    "meta": {
+      "name": "radius",
+      "display_name": "Radius",
+      "description": "Enable port based authentication"
+    },
+    "network": {
+      "interface": "veth0",
+      "enable_wan": false,
+      "ip_index": 7
+    },
+    "docker": {
+      "mounts": [
+        {
+          "source": "runtime/network",
+          "target": "/runtime/network"
+        }
+      ]
+    }
+  }
+}

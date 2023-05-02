@@ -38,7 +38,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     orchestrator and user interface.
     """
 
-    def __init__(self, local_net=True, config_file=CONFIG_FILE,validate=True, net_only=False):
+    def __init__(self, config_file=CONFIG_FILE,validate=True, net_only=False):
         self._devices = []
         self._net_only = net_only
 
@@ -46,7 +46,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         self._register_exits()
 
         # Import the correct net orchestrator
-        self.import_dependencies(local_net)
+        self.import_dependencies()
 
         # Expand the config file to absolute pathing
         config_file_abs=self._get_config_abs(config_file=config_file)
@@ -78,17 +78,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
         self._stop_tests()
         self._stop_network(kill=kill)
 
-    def import_dependencies(self, local_net=True):
-        if local_net:
-            # Add local net_orc to Python path
-            net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
-        else:
-            # Resolve the path to the test-run parent folder
-            root_dir = os.path.abspath(os.path.join(parent_dir, os.pardir))
-            # Add manually cloned network orchestrator from parent folder
-            net_orc_dir = os.path.join(
-                root_dir, 'network-orchestrator', 'python', 'src')
+    def import_dependencies(self):
         # Add net_orc to Python path
+        net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
         sys.path.append(net_orc_dir)
         # Import the network orchestrator
         global net_orc
