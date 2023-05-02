@@ -1,0 +1,23 @@
+{
+  "config": {
+    "meta": {
+      "name": "ovs",
+      "display_name": "OVS",
+      "description": "Setup and configure Open vSwitch"
+    },
+    "network": {
+      "interface": "veth0",
+      "enable_wan": false,
+      "ip_index": 6,
+      "host": true
+    },
+    "docker": {
+      "mounts": [
+        {
+          "source": "runtime/network",
+          "target": "/runtime/network"
+        }
+      ]
+    }
+  }
+}

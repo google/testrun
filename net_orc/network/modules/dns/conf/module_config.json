@@ -1,0 +1,22 @@
+{
+  "config": {
+    "meta": {
+      "name": "dns",
+      "display_name": "DNS",
+      "description": "A DNS server"
+    },
+    "network": {
+      "interface": "veth0",
+      "enable_wan": false,
+      "ip_index": 4
+    },
+    "docker": {
+      "mounts": [
+        {
+          "source": "runtime/network",
+          "target": "/runtime/network"
+        }
+      ]
+    }
+  }
+}

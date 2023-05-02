@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-"""Wrapper for the TestRun that simplifies
-virtual testing procedure by allowing direct calling
+"""Wrapper for the NetworkOrchestrator that simplifies
+virtual network start process by allowing direct calling
 from the command line.
 
 Run using the provided command scripts in the cmd folder.
@@ -9,20 +9,21 @@ E.g sudo cmd/start
 """
 
 import argparse
-import sys
-from testrun import TestRun
-import logger
 import signal
+import sys
+import time
 
-LOGGER = logger.get_logger('runner')
+import logger
 
+from network_orchestrator import NetworkOrchestrator
 
-class TestRunner:
+LOGGER = logger.get_logger('net_runner')
 
-    def __init__(self, config_file=None, validate=True, net_only=False):
+class NetworkRunner:
+    def __init__(self, config_file=None, validate=True, async_monitor=False):
+        self._monitor_thread = None
         self._register_exits()
-        self.test_run = TestRun(config_file=config_file,
-                                validate=validate, net_only=net_only)
+        self.net_orc = NetworkOrchestrator(config_file=config_file,validate=validate,async_monitor=async_monitor)
 
     def _register_exits(self):
         signal.signal(signal.SIGINT, self._exit_handler)
@@ -37,33 +38,31 @@ class TestRunner:
             # Kill all container services quickly
             # If we're here, we want everything to stop immediately
             # and don't care about a gracefully shutdown
-            self._stop(True)
+            self.stop(True)
             sys.exit(1)
 
     def stop(self, kill=False):
-        self.test_run.stop(kill)
+        self.net_orc.stop(kill)
 
     def start(self):
-        self.test_run.start()
-        LOGGER.info("Test Run has finished")
-
+        self.net_orc.start()
 
 def parse_args(argv):
-    parser = argparse.ArgumentParser(description="Test Run",
+    parser = argparse.ArgumentParser(description="Test Run Help",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-f", "--config-file", default=None,
-                        help="Define the configuration file for Test Run and Network Orchestrator")
     parser.add_argument("--no-validate", action="store_true",
                         help="Turn off the validation of the network after network boot")
-    parser.add_argument("-net", "--net-only", action="store_true",
-                        help="Run the network only, do not run tests")
+    parser.add_argument("-f", "--config-file", default=None,
+                        help="Define the configuration file for the Network Orchestrator")
+    parser.add_argument("-d", "--daemon", action="store_true",
+                        help="Run the network monitor process in the background as a daemon thread")
+
     args, unknown = parser.parse_known_args()
     return args
 
-
 if __name__ == "__main__":
-    args = parse_args(sys.argv)
-    runner = TestRunner(config_file=args.config_file,
-                        validate=not args.no_validate,
-                        net_only=args.net_only)
+    args=parse_args(sys.argv)
+    runner = NetworkRunner(config_file=args.config_file,
+               validate=not args.no_validate,
+               async_monitor=args.daemon)
     runner.start()
