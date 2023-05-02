@@ -4,7 +4,7 @@ import os
 
 LOGGER = None
 RESULTS_DIR = "/runtime/output/"
-CONF_DIR = "/testrun/conf"
+CONF_FILE = "/testrun/conf/module_config.json"
 
 class TestModule:
 
@@ -12,6 +12,8 @@ class TestModule:
         self._module_name=module_name
         self._device_mac = os.environ['DEVICE_MAC']
         self._add_logger(log_name=log_name,module_name=module_name)
+        self._config = self._read_config()
+        LOGGER.info("Config:\n" + str(self._config))
 
     def _add_logger(self, log_name, module_name):
         global LOGGER
@@ -21,11 +23,7 @@ class TestModule:
         return LOGGER
 
     def run_tests(self):
-        tests = []
-        tests.append({"name": "dns.network.from_device",
-                      "description": "", "expected_behavior": ""})
-        tests.append({"name": "dns.network.from_dhcp",
-                      "description": "", "expected_behavior": ""})
+        tests = self._config["config"]["tests"]
         for test in tests:
             test_method_name = "_" + test["name"].replace(".", "_")
             LOGGER.info("Attempting to run test: " + test_method_name)
@@ -45,6 +43,12 @@ class TestModule:
             LOGGER.info(test["name"] + ": " + str(result))
         json_results = json.dumps({"results": tests}, indent=2)
         self._write_results(json_results)
+
+    def _read_config(self):
+        f = open(CONF_FILE, encoding="utf-8")
+        config = json.load(f)
+        f.close()
+        return config
 
     def _write_results(self, results):
         results_file = RESULTS_DIR + self._module_name + "-result.json"
