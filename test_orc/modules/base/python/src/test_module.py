@@ -13,7 +13,6 @@ class TestModule:
         self._device_mac = os.environ['DEVICE_MAC']
         self._add_logger(log_name=log_name,module_name=module_name)
         self._config = self._read_config()
-        LOGGER.info("Config:\n" + str(self._config))
 
     def _add_logger(self, log_name, module_name):
         global LOGGER
