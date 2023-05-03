@@ -1,7 +1,7 @@
 import json
 import logger
 import os
-import subprocess
+import util
 
 LOGGER = None
 RESULTS_DIR = "/runtime/output/"
@@ -15,7 +15,8 @@ class TestModule:
         self._device_mac = os.environ['DEVICE_MAC']
         self._add_logger(log_name=log_name, module_name=module_name)
         self._config = self._read_config()
-        self._device_ip = None
+        self._device_ipv4_addr = None
+        self._device_ipv6_addr = None
 
     def _add_logger(self, log_name, module_name):
         global LOGGER
@@ -48,8 +49,8 @@ class TestModule:
 
     def run_tests(self):
         if self._config["config"]["network"]:
-            self._device_ip = self._get_device_ip()
-            LOGGER.info("Device IP Resolved for testing: " + str(self._device_ip))
+            self._device_ipv4_addr = self._get_device_ipv4()
+            LOGGER.info("Device IP Resolved: " + str(self._device_ipv4_addr))
         tests = self._get_tests()
         device_modules = os.environ['DEVICE_TEST_MODULES']
         for test in tests:
@@ -88,22 +89,10 @@ class TestModule:
         f.write(results)
         f.close()
 
-    def _get_device_ip(self):
-        command = '/testrun/bin/get_ip_from_mac {} {}'.format(
+    def _get_device_ipv4(self):
+        command = '/testrun/bin/get_ipv4_addr {} {}'.format(
             "10.10.10.0/24", self._device_mac.upper())
-
-        LOGGER.info("exec command: " + command)
-
-        process = subprocess.Popen(command,
-                                   universal_newlines=True,
-                                   shell=True,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        text = str(process.stdout.read()).rstrip()
-
-        LOGGER.debug("nmap response: " + text)
-
+        text, err = util.run_command(command)
         if text:
             return text.split("\n")[0]
-
         return None
