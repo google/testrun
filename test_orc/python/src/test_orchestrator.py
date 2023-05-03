@@ -18,9 +18,10 @@ MODULE_CONFIG = "conf/module_config.json"
 class TestOrchestrator:
     """Manages and controls the test modules."""
 
-    def __init__(self):
+    def __init__(self,net_orc):
         self._test_modules = []
         self._module_config = None
+        self._net_orc = net_orc
 
         self._path = os.path.dirname(os.path.dirname(
             os.path.dirname(os.path.realpath(__file__))))
@@ -97,6 +98,11 @@ class TestOrchestrator:
             LOGGER.debug(container_error)
             return
 
+        # Mount the test container to the virtual network if requried
+        if module.network:
+            LOGGER.info("Mounting test module to the network")
+            self._net_orc._attach_test_module_to_network(module)
+
         # Determine the module timeout time
         test_module_timeout = time.time() + module.timeout
         status = self._get_module_status(module)
@@ -151,6 +157,7 @@ class TestOrchestrator:
             module.name = module_json['config']['meta']['name']
             module.display_name = module_json['config']['meta']['display_name']
             module.description = module_json['config']['meta']['description']
+            module.network = module_json['config']['network']
             module.dir = os.path.join(self._path, modules_dir, module_dir)
             module.dir_name = module_dir
             module.build_file = module_dir + ".Dockerfile"

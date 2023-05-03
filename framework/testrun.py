@@ -54,7 +54,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         config_file_abs=self._get_config_abs(config_file=config_file)
         
         self._net_orc = net_orc.NetworkOrchestrator(config_file=config_file_abs,validate=validate,async_monitor=not self._net_only)
-        self._test_orc = test_orc.TestOrchestrator()
+        self._test_orc = test_orc.TestOrchestrator(self._net_orc)
  
     def start(self):
 

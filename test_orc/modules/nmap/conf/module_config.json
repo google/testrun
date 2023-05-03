@@ -1,0 +1,21 @@
+{
+  "config": {
+    "meta": {
+      "name": "nmap",
+      "display_name": "nmap",
+      "description": "Scan for open ports using nmap"
+    },
+    "network": true,
+    "docker": {
+      "enable_container": true,
+      "timeout": 30
+    },
+    "tests":[
+      {
+        "name": "nmap.scan",
+        "description": "Simple scan of open ports",
+        "expected_behavior": "Report all open ports"
+      }
+    ]
+  }
+}

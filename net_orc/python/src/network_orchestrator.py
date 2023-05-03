@@ -398,6 +398,66 @@ class NetworkOrchestrator:
         LOGGER.info("All network services are running")
         self._check_network_services()
 
+    def _attach_test_module_to_network(self, test_module):
+        LOGGER.debug("Attaching test module  " +
+                     test_module.display_name + " to device bridge")
+
+        # Device bridge interface example: tr-di-baseline-test (Test Run Device Interface for baseline test container)
+        bridge_intf = DEVICE_BRIDGE + "i-" + test_module.dir_name + "-test"
+
+        # Container interface example: tr-cti-baseline-test (Test Run Container Interface for baseline test container)
+        container_intf = "tr-test-" + test_module.dir_name
+
+        # Container network namespace name
+        container_net_ns = "tr-test-" + test_module.dir_name
+
+        # Create interface pair
+        util.run_command("ip link add " + bridge_intf +
+                         " type veth peer name " + container_intf)
+
+        # Add bridge interface to device bridge
+        util.run_command("ovs-vsctl add-port " +
+                         DEVICE_BRIDGE + " " + bridge_intf)
+
+        # Get PID for running container
+        # TODO: Some error checking around missing PIDs might be required
+        container_pid = util.run_command(
+            "docker inspect -f {{.State.Pid}} " + test_module.container_name)[0]
+
+        # Create symlink for container network namespace
+        util.run_command("ln -sf /proc/" + container_pid +
+                         "/ns/net /var/run/netns/" + container_net_ns)
+
+        # Attach container interface to container network namespace
+        util.run_command("ip link set " + container_intf +
+                         " netns " + container_net_ns)
+
+        # Rename container interface name to veth0
+        util.run_command("ip netns exec " + container_net_ns +
+                         " ip link set dev " + container_intf + " name veth0")
+
+        # Set MAC address of container interface
+        util.run_command("ip netns exec " + container_net_ns + " ip link set dev veth0 address 9a:02:57:1e:8f:" + str(test_module.ip_index))
+
+        # Set IP address of container interface
+        ipv4_address = self.network_config.ipv4_network[test_module.ip_index]
+        ipv6_address = self.network_config.ipv6_network[test_module.ip_index]
+
+        ipv4_address_with_prefix=str(ipv4_address) + "/" + str(self.network_config.ipv4_network.prefixlen)
+        ipv6_address_with_prefix=str(ipv6_address) + "/" + str(self.network_config.ipv6_network.prefixlen)
+
+        util.run_command("ip netns exec " + container_net_ns + " ip addr add " +
+                         ipv4_address_with_prefix + " dev veth0")
+
+        util.run_command("ip netns exec " + container_net_ns + " ip addr add " +
+                         ipv6_address_with_prefix + " dev veth0")
+
+
+        # Set interfaces up
+        util.run_command("ip link set dev " + bridge_intf + " up")
+        util.run_command("ip netns exec " + container_net_ns +
+                         " ip link set dev veth0 up")
+
     # TODO: Let's move this into a separate script? It does not look great
     def _attach_service_to_network(self, net_module):
         LOGGER.debug("Attaching net service " +
