@@ -34,26 +34,24 @@ class TestModule:
             return []
         else:
             for test in module_tests:
-                for dev_test in device_test_module["tests"]:
-                    if test["name"] == dev_test["name"]:
-                        test["enabled"] = dev_test["enabled"]
+                if test["name"] in device_test_module["tests"]:
+                    test["enabled"] = device_test_module["tests"][test["name"]]["enabled"]
             return module_tests
 
     def _get_device_test_module(self):
-        device_modules = json.loads(os.environ['DEVICE_TEST_MODULES'])
-        for module in device_modules:
-            if self._module_name == module["name"]:
-                return module
+        test_modules = json.loads(os.environ['DEVICE_TEST_MODULES'])
+        if self._module_name in test_modules:
+            return test_modules[self._module_name]
         return None
 
     def run_tests(self):
         tests = self._get_tests()
         device_modules = os.environ['DEVICE_TEST_MODULES']
         for test in tests:
-            test_method_name = "_" + test["name"].replace(".", "_") 
+            test_method_name = "_" + test["name"].replace(".", "_")
             result = None
             if ("enabled" in test and test["enabled"]) or "enabled" not in test:
-                LOGGER.info("Attempting to run test: " + test["name"])  
+                LOGGER.info("Attempting to run test: " + test["name"])
 
                 # Resolve the correct python method by test name and run test
                 if hasattr(self, test_method_name):
@@ -64,12 +62,11 @@ class TestModule:
                     result = None
             else:
                 LOGGER.info("Test " + test["name"] +
-                                " disabled. Skipping")
+                            " disabled. Skipping")
             if result is not None:
                 test["result"] = "compliant" if result else "non-compliant"
             else:
                 test["result"] = "skipped"
-            LOGGER.info(test["name"] + ": " + str(result))
         json_results = json.dumps({"results": tests}, indent=2)
         self._write_results(json_results)
 
