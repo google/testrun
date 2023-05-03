@@ -13,6 +13,8 @@ class TestModule:
     def __init__(self, module_name, log_name):
         self._module_name = module_name
         self._device_mac = os.environ['DEVICE_MAC']
+        self._ipv4_subnet = os.environ['IPV4_SUBNET']
+        self._ipv6_subnet = os.environ['IPV6_SUBNET']
         self._add_logger(log_name=log_name, module_name=module_name)
         self._config = self._read_config()
         self._device_ipv4_addr = None
@@ -91,7 +93,7 @@ class TestModule:
 
     def _get_device_ipv4(self):
         command = '/testrun/bin/get_ipv4_addr {} {}'.format(
-            "10.10.10.0/24", self._device_mac.upper())
+            self._ipv4_subnet, self._device_mac.upper())
         text, err = util.run_command(command)
         if text:
             return text.split("\n")[0]

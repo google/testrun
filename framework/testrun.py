@@ -126,7 +126,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         """Iterate through and start all test modules."""
         
         # To Do: Make this configurable
-        time.sleep(60) #  Let device bootup
+        time.sleep(5) #  Let device bootup
         
         self._test_orc._run_test_modules(device)
 

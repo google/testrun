@@ -90,7 +90,9 @@ class TestOrchestrator:
                 environment={
                     "HOST_USER": os.getlogin(), 
                     "DEVICE_MAC": device.mac_addr,
-                    "DEVICE_TEST_MODULES": device.test_modules
+                    "DEVICE_TEST_MODULES": device.test_modules,
+                    "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
+                    "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
                 }
             )
         except (docker.errors.APIError, docker.errors.ContainerError) as container_error:
