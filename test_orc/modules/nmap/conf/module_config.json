@@ -12,7 +12,7 @@
     },
     "tests":[
       {
-        "name": "nmap.scan",
+        "name": "security.services.ftp",
         "description": "Simple scan of open ports",
         "expected_behavior": "Report all open ports"
       }
