@@ -5,11 +5,7 @@
       "display_name": "DNS",
       "description": "DNS test"
     },
-    "network": {
-      "interface": "eth0",
-      "enable_wan": false,
-      "ip_index": 9
-    },
+    "network": false,
     "docker": {
       "enable_container": true,
       "timeout": 30

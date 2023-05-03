@@ -4,7 +4,7 @@
 BIN_DIR="/testrun/bin"
 
 # Default interface should be veth0 for all containers
-DEFAULT_IFACE=veth0
+IFACE=veth0
 
 # Create a local user that matches the same as the host
 # to be used for correct file ownership for various logs
@@ -27,7 +27,7 @@ fi
 
 # Extract the necessary config parameters
 MODULE_NAME=$(echo "$CONF" | jq -r '.config.meta.name')
-DEFINED_IFACE=$(echo "$CONF" | jq -r '.config.network.interface')
+NETWORK_REQUIRED=$(echo "$CONF" | jq -r '.config.network')
 GRPC=$(echo "$CONF" | jq -r '.config.grpc')
 
 # Validate the module name is present
@@ -37,24 +37,19 @@ then
 	exit 1
 fi
 
-# Select which interace to use
-if [[ -z $DEFINED_IFACE || "$DEFINED_IFACE" == "null" ]]
-then
-	echo "No Interface Defined, defaulting to veth0"
-	INTF=$DEFAULT_IFACE
-else
-	INTF=$DEFINED_IFACE
-fi
-
 echo "Starting module $MODULE_NAME..."
 
 $BIN_DIR/setup_binaries $BIN_DIR
 
-# Wait for interface to become ready
-$BIN_DIR/wait_for_interface $INTF
+# Only start network services if the test container needs
+# a network connection to run its tests
+if [ $NETWORK_REQUIRED == "true" ];then
+	# Wait for interface to become ready
+	$BIN_DIR/wait_for_interface $IFACE
 
-# Start network capture
-$BIN_DIR/capture $MODULE_NAME $INTF
+	# Start network capture
+	$BIN_DIR/capture $MODULE_NAME $IFACE
+fi
 
 # Start the grpc server
 if [[ ! -z $GRPC && ! $GRPC == "null" ]]
@@ -73,4 +68,4 @@ fi
 sleep 3
 
 # Start the networking service
-$BIN_DIR/start_test_module $MODULE_NAME $INTF
+$BIN_DIR/start_test_module $MODULE_NAME $IFACE
