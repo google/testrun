@@ -24,7 +24,8 @@ CONFIG_FILE = "conf/system.json"
 EXAMPLE_CONFIG_FILE = "conf/system.json.example"
 RUNTIME = 300
 
-DEVICES_DIR = 'local/devices'
+LOCAL_DEVICES_DIR = 'local/devices'
+RESOURCE_DEVICES_DIR = 'resources/devices'
 DEVICE_CONFIG = 'device_config.json'
 DEVICE_MAKE = 'make'
 DEVICE_MODEL = 'model'
@@ -57,7 +58,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
  
     def start(self):
 
-        self._load_devices()
+        self._load_all_devices()
 
         if self._net_only:
             LOGGER.info("Network only option configured, no tests will be run")
@@ -135,11 +136,15 @@ class TestRun:  # pylint: disable=too-few-public-methods
     def _stop_tests(self):
         self._test_orc.stop()
 
-    def _load_devices(self):
-        LOGGER.debug('Loading devices from ' + DEVICES_DIR)
+    def _load_all_devices(self):
+        self._load_devices(device_dir=LOCAL_DEVICES_DIR)
+        self._load_devices(device_dir=RESOURCE_DEVICES_DIR)
 
-        for device_folder in os.listdir(DEVICES_DIR):
-            with open(os.path.join(DEVICES_DIR, device_folder, DEVICE_CONFIG),
+    def _load_devices(self,device_dir):
+        LOGGER.debug('Loading devices from ' + device_dir)
+
+        for device_folder in os.listdir(device_dir):
+            with open(os.path.join(device_dir, device_folder, DEVICE_CONFIG),
                       encoding='utf-8') as device_config_file:
                 device_config_json = json.load(device_config_file)
 
