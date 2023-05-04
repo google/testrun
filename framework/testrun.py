@@ -172,9 +172,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
             LOGGER.info(
                 f'Discovered {device.make} {device.model} on the network')
         else:
-            device = Device(make=None, model=None, mac_addr=mac_addr)
             LOGGER.info(
                 f'A new device has been discovered with mac address {mac_addr}')
+            device = Device(make=None, model=None, mac_addr=mac_addr,test_modules=json.dumps("{}"))
         
         # TODO: Pass device information to test orchestrator/runner
         self._run_tests(device)

@@ -10,11 +10,57 @@
       "enable_container": true,
       "timeout": 30
     },
-    "tests":[
+    "tests": [
       {
-        "name": "security.services.ftp",
-        "description": "Simple scan of open ports",
-        "expected_behavior": "Report all open ports"
+        "name": "security.nmap.ports",
+        "description": "Run an nmap scan of open ports",
+        "expected_behavior": "Report all open ports",
+        "config": {
+          "security.services.ftp": {
+            "tcp_ports": {
+              "20": {
+                "allowed": false,
+                "description": "File Transfer Protocol (FTP) Server Data Transfer"
+              },
+              "21": {
+                "allowed": false,
+                "description": "File Transfer Protocol (FTP) Server Data Transfer"
+              }
+            },
+            "description": "Check FTP port 20/21 is disabled and FTP is not running on any port",
+            "expected_behavior": "There is no FTP service running on any port"
+          },
+          "security.services.ssh": {
+            "tcp_ports": {
+              "22": {
+                "allowed": true,
+                "description": "Secure Shell (SSH) server"
+              }
+            },
+            "description": "Check TELNET port 23 is disabled and TELNET is not running on any port",
+            "expected_behavior": "There is no FTP service running on any port"
+          },
+          "security.services.telnet": {
+            "tcp_ports": {
+              "23": {
+                "allowed": false,
+                "description": "Telnet Serverr"
+              }
+            },
+            "description": "Check TELNET port 23 is disabled and TELNET is not running on any port",
+            "expected_behavior": "There is no FTP service running on any port"
+          },
+          "security.services.wsdapi": {
+            "tcp_ports": {
+              "5357": {
+                "allowed": false,
+                "description": "Some sort of open api"
+              }
+            },
+            "description": "Check TELNET port 23 is disabled and TELNET is not running on any port",
+            "expected_behavior": "There is no FTP service running on any port"
+          }
+        }
       }
     ]
   }

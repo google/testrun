@@ -33,6 +33,7 @@ class TestModule:
 
     def _get_device_tests(self, device_test_module):
         module_tests = self._config["config"]["tests"]
+        LOGGER.info("Device Config: " + str(device_test_module))
         if device_test_module is None:
             return module_tests
         elif not device_test_module["enabled"]:
@@ -63,7 +64,10 @@ class TestModule:
 
                 # Resolve the correct python method by test name and run test
                 if hasattr(self, test_method_name):
-                    result = getattr(self, test_method_name)()
+                    if "config" in test:
+                        result = getattr(self,test_method_name)(config=test["config"])
+                    else:
+                        result = getattr(self, test_method_name)()
                 else:
                     LOGGER.info("Test " + test["name"] +
                                 " not resolved. Skipping")
