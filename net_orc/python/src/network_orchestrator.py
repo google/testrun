@@ -232,8 +232,6 @@ class NetworkOrchestrator:
 
     def _load_network_module(self, module_dir):
         
-        LOGGER.info("Loading module " + module_dir)
-        
         net_modules_dir = os.path.join(self._path, NETWORK_MODULES_DIR)
 
         net_module = NetworkModule()
