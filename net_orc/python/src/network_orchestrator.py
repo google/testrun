@@ -3,7 +3,6 @@
 import ipaddress
 import json
 import os
-import shutil
 import sys
 import time
 import threading
@@ -48,8 +47,6 @@ class NetworkOrchestrator:
             os.path.dirname(os.path.realpath(__file__))))
 
         self.validator = NetworkValidator()
-
-        shutil.rmtree(os.path.join(os.getcwd(), RUNTIME_DIR), ignore_errors=True)
 
         self.network_config = NetworkConfig()
 
@@ -278,7 +275,7 @@ class NetworkOrchestrator:
 
                 loaded_modules += net_module.dir_name + " "
 
-            self._net_modules.append(net_module)            
+                self._net_modules.append(net_module)
 
         LOGGER.info(loaded_modules)
 
