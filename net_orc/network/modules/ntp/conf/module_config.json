@@ -11,6 +11,7 @@
       "ip_index": 5
     },
     "docker": {
+      "depends_on": "base",
       "mounts": [
         {
           "source": "runtime/network",

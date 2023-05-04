@@ -15,6 +15,7 @@
     },
     "docker": {
       "enable_container": false,
+      "depends_on": "base",
       "mounts": [
         {
           "source": "runtime/network",

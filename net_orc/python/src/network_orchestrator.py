@@ -224,60 +224,74 @@ class NetworkOrchestrator:
 
         for module_dir in os.listdir(net_modules_dir):
 
-            net_module = NetworkModule()
-
-            # Load basic module information
-
-            net_module_json = json.load(open(os.path.join(
-                self._path, net_modules_dir, module_dir, NETWORK_MODULE_METADATA), encoding='UTF-8'))
-
-            net_module.name = net_module_json['config']['meta']['name']
-            net_module.display_name = net_module_json['config']['meta']['display_name']
-            net_module.description = net_module_json['config']['meta']['description']
-            net_module.dir = os.path.join(
-                self._path, net_modules_dir, module_dir)
-            net_module.dir_name = module_dir
-            net_module.build_file = module_dir + ".Dockerfile"
-            net_module.container_name = "tr-ct-" + net_module.dir_name
-            net_module.image_name = "test-run/" + net_module.dir_name
-
-            # Attach folder mounts to network module
-            if "docker" in net_module_json['config']:
-                if "mounts" in net_module_json['config']['docker']:
-                    for mount_point in net_module_json['config']['docker']['mounts']:
-                        net_module.mounts.append(Mount(
-                            target=mount_point['target'],
-                            source=os.path.join(
-                                os.getcwd(), mount_point['source']),
-                            type='bind'
-                        ))
-
-            # Determine if this is a container or just an image/template
-            if "enable_container" in net_module_json['config']['docker']:
-                net_module.enable_container = net_module_json['config']['docker']['enable_container']
-
-            # Load network service networking configuration
-            if net_module.enable_container:
-
-                net_module.net_config.enable_wan = net_module_json['config']['network']['enable_wan']
-                net_module.net_config.ip_index = net_module_json['config']['network']['ip_index']
-
-                net_module.net_config.host = False if not "host" in net_module_json[
-                    'config']['network'] else net_module_json['config']['network']['host']
-
-                net_module.net_config.ipv4_address = self.network_config.ipv4_network[
-                    net_module.net_config.ip_index]
-                net_module.net_config.ipv4_network = self.network_config.ipv4_network
-
-                net_module.net_config.ipv6_address = self.network_config.ipv6_network[
-                    net_module.net_config.ip_index]
-                net_module.net_config.ipv6_network = self.network_config.ipv6_network
-
-                loaded_modules += net_module.dir_name + " "
-
-                self._net_modules.append(net_module)
+            if self._get_network_module(module_dir) is None:
+              loaded_module = self._load_network_module(module_dir)
+              loaded_modules += loaded_module.dir_name + " "
 
         LOGGER.info(loaded_modules)
+
+    def _load_network_module(self, module_dir):
+        
+        LOGGER.info("Loading module " + module_dir)
+        
+        net_modules_dir = os.path.join(self._path, NETWORK_MODULES_DIR)
+
+        net_module = NetworkModule()
+
+        # Load basic module information
+        net_module_json = json.load(open(os.path.join(
+            self._path, net_modules_dir, module_dir, NETWORK_MODULE_METADATA), encoding='UTF-8'))
+
+        net_module.name = net_module_json['config']['meta']['name']
+        net_module.display_name = net_module_json['config']['meta']['display_name']
+        net_module.description = net_module_json['config']['meta']['description']
+        net_module.dir = os.path.join(
+            self._path, net_modules_dir, module_dir)
+        net_module.dir_name = module_dir
+        net_module.build_file = module_dir + ".Dockerfile"
+        net_module.container_name = "tr-ct-" + net_module.dir_name
+        net_module.image_name = "test-run/" + net_module.dir_name
+
+        # Attach folder mounts to network module
+        if "docker" in net_module_json['config']:
+            
+            if "mounts" in net_module_json['config']['docker']:
+                for mount_point in net_module_json['config']['docker']['mounts']:
+                    net_module.mounts.append(Mount(
+                        target=mount_point['target'],
+                        source=os.path.join(
+                            os.getcwd(), mount_point['source']),
+                        type='bind'
+                    ))
+
+            if "depends_on" in net_module_json['config']['docker']:
+                depends_on_module = net_module_json['config']['docker']['depends_on']
+                if self._get_network_module(depends_on_module) is None:
+                    self._load_network_module(depends_on_module)
+
+        # Determine if this is a container or just an image/template
+        if "enable_container" in net_module_json['config']['docker']:
+            net_module.enable_container = net_module_json['config']['docker']['enable_container']
+
+        # Load network service networking configuration
+        if net_module.enable_container:
+
+            net_module.net_config.enable_wan = net_module_json['config']['network']['enable_wan']
+            net_module.net_config.ip_index = net_module_json['config']['network']['ip_index']
+
+            net_module.net_config.host = False if not "host" in net_module_json[
+                'config']['network'] else net_module_json['config']['network']['host']
+
+            net_module.net_config.ipv4_address = self.network_config.ipv4_network[
+                net_module.net_config.ip_index]
+            net_module.net_config.ipv4_network = self.network_config.ipv4_network
+
+            net_module.net_config.ipv6_address = self.network_config.ipv6_network[
+                net_module.net_config.ip_index]
+            net_module.net_config.ipv6_network = self.network_config.ipv6_network
+            
+        self._net_modules.append(net_module)
+        return net_module
 
     def build_network_modules(self):
         LOGGER.info("Building network modules...")
@@ -296,7 +310,7 @@ class NetworkOrchestrator:
 
     def _get_network_module(self, name):
         for net_module in self._net_modules:
-            if name == net_module.display_name:
+            if name == net_module.display_name or name == net_module.name or name == net_module.dir_name:
                 return net_module
         return None
 
@@ -515,7 +529,6 @@ class NetworkOrchestrator:
 
         LOGGER.info("Network is restored")
 
-
 class NetworkModule:
 
     def __init__(self):
@@ -538,7 +551,6 @@ class NetworkModule:
         self.net_config = NetworkModuleNetConfig()
 
 # The networking configuration for a network module
-
 
 class NetworkModuleNetConfig:
 
