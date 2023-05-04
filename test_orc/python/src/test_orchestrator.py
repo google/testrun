@@ -41,7 +41,7 @@ class TestOrchestrator:
         """Stop any running tests"""
         self._stop_modules()
 
-    def _run_test_modules(self, device):
+    def run_test_modules(self, device):
         """Iterates through each test module and starts the container."""
         LOGGER.info("Running test modules...")
         for module in self._test_modules:
