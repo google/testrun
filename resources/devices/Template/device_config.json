@@ -1,0 +1,32 @@
+{
+  "make": "Manufacturer X",
+  "model": "Device X",
+  "mac_addr": "aa:bb:cc:dd:ee:ff",
+  "test_modules": {
+    "dns": {
+      "enabled": true,
+      "tests": {
+        "dns.network.from_device": {
+          "enabled": true
+        },
+        "dns.network.from_dhcp": {
+          "enabled": true
+        }
+      }
+    },
+    "baseline": {
+      "enabled": true,
+      "tests": {
+        "baseline.passe": {
+          "enabled": true
+        },
+        "baseline.pass": {
+          "enabled": true
+        },
+        "baseline.skip": {
+          "enabled": true
+        }
+      }
+    }
+  }
+}

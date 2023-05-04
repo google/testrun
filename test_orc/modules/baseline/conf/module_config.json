@@ -5,17 +5,27 @@
       "display_name": "Baseline",
       "description": "Baseline test"
     },
-    "network": {
-      "interface": "eth0",
-      "enable_wan": false,
-      "ip_index": 9
-    },
-    "grpc": {
-      "port": 50001
-    },
+    "network": false,
     "docker": {
       "enable_container": true,
       "timeout": 30
-    }
+    },
+    "tests":[
+      {
+        "name": "baseline.pass",
+        "description": "Simulate a compliant test",
+        "expected_behavior": "A compliant test result is generated"
+      },
+      {
+        "name": "baseline.fail",
+        "description": "Simulate a non-compliant test",
+        "expected_behavior": "A non-compliant test result is generated"
+      },
+      {
+        "name": "baseline.skip",
+        "description": "Simulate a skipped test",
+        "expected_behavior": "A skipped test result is generated"
+      }
+    ]
   }
 }

@@ -4,13 +4,15 @@ import argparse
 import signal
 import sys
 import logger
+import time
 
-from baseline_module import BaselineModule
+from dns_module import DNSModule
 
-LOGGER = logger.get_logger('test_module')
+LOG_NAME = "dns_module"
+LOGGER = logger.get_logger(LOG_NAME)
 RUNTIME = 300
 
-class BaselineModuleRunner:
+class DNSModuleRunner:
 
     def __init__(self,module):
 
@@ -18,11 +20,18 @@ class BaselineModuleRunner:
         signal.signal(signal.SIGTERM, self._handler)
         signal.signal(signal.SIGABRT, self._handler)
         signal.signal(signal.SIGQUIT, self._handler)
+        self.add_logger(module)
 
-        LOGGER.info("Starting Baseline Module")
+        LOGGER.info("Starting DNS Test Module")
 
-        self._test_module = BaselineModule(module)
+        self._test_module = DNSModule(module)
         self._test_module.run_tests()
+
+        LOGGER.info("DNS Test Module Finished")
+
+    def add_logger(self, module):
+        global LOGGER
+        LOGGER = logger.get_logger(LOG_NAME, module)
 
     def _handler(self, signum, *other):
         LOGGER.debug("SigtermEnum: " + str(signal.SIGTERM))
@@ -33,7 +42,7 @@ class BaselineModuleRunner:
             sys.exit(1)
 
 def run(argv):
-    parser = argparse.ArgumentParser(description="Baseline Module Help",
+    parser = argparse.ArgumentParser(description="Test Module DNS",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument(
@@ -43,7 +52,7 @@ def run(argv):
 
     # For some reason passing in the args from bash adds an extra
     # space before the argument so we'll just strip out extra space 
-    BaselineModuleRunner(args.module.strip())
+    DNSModuleRunner(args.module.strip())
 
 if __name__ == "__main__":
     run(sys.argv)

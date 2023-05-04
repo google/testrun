@@ -1,0 +1,7 @@
+{
+    "network": {
+        "device_intf": "enx207bd2620617",
+        "internet_intf": "enx207bd26205e9"
+    },
+    "log_level": "INFO"
+}

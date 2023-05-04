@@ -10,12 +10,12 @@ _DATE_FORMAT = '%b %02d %H:%M:%S'
 _DEFAULT_LEVEL = logging.INFO
 _CONF_DIR = "conf"
 _CONF_FILE_NAME = "system.json"
-_LOG_DIR = "/runtime/network/"
+_LOG_DIR = "/runtime/output/"
 
 # Set log level
 try:
     system_conf_json = json.load(
-        open(os.path.join(_CONF_DIR, _CONF_FILE_NAME), encoding='utf-8'))
+        open(os.path.join(_CONF_DIR, _CONF_FILE_NAME)))
     log_level_str = system_conf_json['log_level']
     log_level = logging.getLevelName(log_level_str)
 except:
@@ -24,22 +24,23 @@ except:
 
 log_format = logging.Formatter(fmt=_LOG_FORMAT, datefmt=_DATE_FORMAT)
 
-
-def add_file_handler(log, log_file):
-    handler = logging.FileHandler(_LOG_DIR+log_file+".log")
+def add_file_handler(log, logFile):
+    handler = logging.FileHandler(_LOG_DIR+logFile+".log")
     handler.setFormatter(log_format)
     log.addHandler(handler)
+
 
 def add_stream_handler(log):
     handler = logging.StreamHandler()
     handler.setFormatter(log_format)
     log.addHandler(handler)
 
-def get_logger(name, log_file=None):
+
+def get_logger(name, logFile=None):
     if name not in LOGGERS:
         LOGGERS[name] = logging.getLogger(name)
         LOGGERS[name].setLevel(log_level)
         add_stream_handler(LOGGERS[name])
-    if log_file is not None:
-        add_file_handler(LOGGERS[name], log_file)
+    if logFile is not None:
+        add_file_handler(LOGGERS[name], logFile)
     return LOGGERS[name]

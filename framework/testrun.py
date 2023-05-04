@@ -6,7 +6,6 @@ Test Run components, such as net_orc, test_orc and test_ui.
 Run using the provided command scripts in the cmd folder.
 E.g sudo cmd/start
 """
-
 import os
 import sys
 import json
@@ -19,150 +18,156 @@ from device import Device
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
 
+# Add net_orc to Python path
+net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
+sys.path.append(net_orc_dir)
+
+# Add test_orc to Python path
+test_orc_dir = os.path.join(parent_dir, 'test_orc', 'python', 'src')
+sys.path.append(test_orc_dir)
+
+from listener import NetworkEvent  # pylint: disable=wrong-import-position,import-outside-toplevel
+import test_orchestrator as test_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
+import network_orchestrator as net_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
+
 LOGGER = logger.get_logger('test_run')
-CONFIG_FILE = "conf/system.json"
-EXAMPLE_CONFIG_FILE = "conf/system.json.example"
+CONFIG_FILE = 'conf/system.json'
+EXAMPLE_CONFIG_FILE = 'conf/system.json.example'
 RUNTIME = 300
 
-DEVICES_DIR = 'local/devices'
+LOCAL_DEVICES_DIR = 'local/devices'
+RESOURCE_DEVICES_DIR = 'resources/devices'
 DEVICE_CONFIG = 'device_config.json'
 DEVICE_MAKE = 'make'
 DEVICE_MODEL = 'model'
 DEVICE_MAC_ADDR = 'mac_addr'
+DEVICE_TEST_MODULES = 'test_modules'
 
 
 class TestRun:  # pylint: disable=too-few-public-methods
-    """Test Run controller.
+        """Test Run controller.
 
-    Creates an instance of the network orchestrator, test
-    orchestrator and user interface.
-    """
+        Creates an instance of the network orchestrator, test
+        orchestrator and user interface.
+        """
 
-    def __init__(self, config_file=CONFIG_FILE,validate=True, net_only=False):
-        self._devices = []
-        self._net_only = net_only
+        def __init__(self, config_file=CONFIG_FILE, validate=True, net_only=False):
+            self._devices = []
+            self._net_only = net_only
 
-        # Catch any exit signals
-        self._register_exits()
+            # Catch any exit signals
+            self._register_exits()
 
-        # Import the correct net orchestrator
-        self.import_dependencies()
+            # Expand the config file to absolute pathing
+            config_file_abs = self._get_config_abs(config_file=config_file)
 
-        # Expand the config file to absolute pathing
-        config_file_abs=self._get_config_abs(config_file=config_file)
-        
-        self._net_orc = net_orc.NetworkOrchestrator(config_file=config_file_abs,validate=validate,async_monitor=not self._net_only)
-        self._test_orc = test_orc.TestOrchestrator()
- 
-    def start(self):
+            self._net_orc = net_orc.NetworkOrchestrator(
+                config_file=config_file_abs, validate=validate, async_monitor=not self._net_only)
+            self._test_orc = test_orc.TestOrchestrator()
 
-        self._load_devices()
+        def start(self):
 
-        if self._net_only:
-            LOGGER.info("Network only option configured, no tests will be run")
-            self._start_network()
-        else:
-            self._start_network()
-            self._net_orc.listener.register_callback(
-             self._device_discovered,
-             [NetworkEvent.DEVICE_DISCOVERED])
-        
-            LOGGER.info("Waiting for devices on the network...")
-            
-            # Check timeout and whether testing is currently in progress before stopping
-            time.sleep(RUNTIME)
-            
-        self.stop()
+            self._load_all_devices()
 
-    def stop(self,kill=False):
-        self._stop_tests()
-        self._stop_network(kill=kill)
+            if self._net_only:
+                LOGGER.info(
+                    "Network only option configured, no tests will be run")
+                self._start_network()
+            else:
+                self._start_network()
+                self._test_orc.start()
+                self._net_orc.listener.register_callback(
+                    self._device_discovered,
+                    [NetworkEvent.DEVICE_DISCOVERED])
 
-    def import_dependencies(self):
-        # Add net_orc to Python path
-        net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
-        sys.path.append(net_orc_dir)
-        # Import the network orchestrator
-        global net_orc
-        import network_orchestrator as net_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
+                LOGGER.info("Waiting for devices on the network...")
 
-        # Add test_orc to Python path
-        test_orc_dir = os.path.join(parent_dir, 'test_orc', 'python', 'src')
-        sys.path.append(test_orc_dir)
-        global test_orc
-        import test_orchestrator as test_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
+                # Check timeout and whether testing is currently in progress before stopping
+                time.sleep(RUNTIME)
 
-        global NetworkEvent
-        from listener import NetworkEvent  # pylint: disable=wrong-import-position,import-outside-toplevel
+            self.stop()
 
-    def _register_exits(self):
-        signal.signal(signal.SIGINT, self._exit_handler)
-        signal.signal(signal.SIGTERM, self._exit_handler)
-        signal.signal(signal.SIGABRT, self._exit_handler)
-        signal.signal(signal.SIGQUIT, self._exit_handler)
+        def stop(self, kill=False):
+            self._stop_tests()
+            self._stop_network(kill=kill)
 
-    def _exit_handler(self, signum, arg):  # pylint: disable=unused-argument
-        LOGGER.debug("Exit signal received: " + str(signum))
-        if signum in (2, signal.SIGTERM):
-            LOGGER.info("Exit signal received.")
-            self.stop(kill=True)
-            sys.exit(1)
+        def _register_exits(self):
+            signal.signal(signal.SIGINT, self._exit_handler)
+            signal.signal(signal.SIGTERM, self._exit_handler)
+            signal.signal(signal.SIGABRT, self._exit_handler)
+            signal.signal(signal.SIGQUIT, self._exit_handler)
 
-    def _get_config_abs(self,config_file=None):
-        if config_file is None:
-            # If not defined, use relative pathing to local file
-            config_file = os.path.join(parent_dir, CONFIG_FILE)
+        def _exit_handler(self, signum, arg):  # pylint: disable=unused-argument
+            LOGGER.debug("Exit signal received: " + str(signum))
+            if signum in (2, signal.SIGTERM):
+                LOGGER.info("Exit signal received.")
+                self.stop(kill=True)
+                sys.exit(1)
 
-        # Expand the config file to absolute pathing 
-        return os.path.abspath(config_file)
+        def _get_config_abs(self, config_file=None):
+            if config_file is None:
+                # If not defined, use relative pathing to local file
+                config_file = os.path.join(parent_dir, CONFIG_FILE)
 
-    def _start_network(self):
-        self._net_orc.start()
+            # Expand the config file to absolute pathing
+            return os.path.abspath(config_file)
 
-    def _run_tests(self):
-        """Iterate through and start all test modules."""
-        self._test_orc.start()
+        def _start_network(self):
+            self._net_orc.start()
 
-    def _stop_network(self,kill=False):
-        self._net_orc.stop(kill=kill)
+        def _run_tests(self, device):
+            """Iterate through and start all test modules."""
 
-    def _stop_tests(self):
-        self._test_orc.stop()
+            # TODO: Make this configurable
+            time.sleep(60) # Let device bootup
 
-    def _load_devices(self):
-        LOGGER.debug('Loading devices from ' + DEVICES_DIR)
+            self._test_orc.run_test_modules(device)
 
-        for device_folder in os.listdir(DEVICES_DIR):
-            with open(os.path.join(DEVICES_DIR, device_folder, DEVICE_CONFIG),
-                      encoding='utf-8') as device_config_file:
-                device_config_json = json.load(device_config_file)
+        def _stop_network(self, kill=False):
+            self._net_orc.stop(kill=kill)
 
-                device_make = device_config_json.get(DEVICE_MAKE)
-                device_model = device_config_json.get(DEVICE_MODEL)
-                mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
+        def _stop_tests(self):
+            self._test_orc.stop()
 
-                device = Device(device_make, device_model,
-                                mac_addr=mac_addr)
-                self._devices.append(device)
+        def _load_all_devices(self):
+            self._load_devices(device_dir=LOCAL_DEVICES_DIR)
+            LOGGER.info('Loaded ' + str(len(self._devices)) + ' devices')
 
-        LOGGER.info('Loaded ' + str(len(self._devices)) + ' devices')
+        def _load_devices(self, device_dir):
+            LOGGER.debug('Loading devices from ' + device_dir)
 
-    def get_device(self, mac_addr):
-        """Returns a loaded device object from the device mac address."""
-        for device in self._devices:
-            if device.mac_addr == mac_addr:
-                return device
-        return None
+            os.makedirs(device_dir, exist_ok=True)
 
-    def _device_discovered(self, mac_addr):
-        device = self.get_device(mac_addr)
-        if device is not None:
-            LOGGER.info(
-                f'Discovered {device.make} {device.model} on the network')
-        else:
-            device = Device(make=None, model=None, mac_addr=mac_addr)
-            LOGGER.info(
-                f'A new device has been discovered with mac address {mac_addr}')
-        
-        # TODO: Pass device information to test orchestrator/runner
-        self._run_tests()
+            for device_folder in os.listdir(device_dir):
+                with open(os.path.join(device_dir, device_folder, DEVICE_CONFIG),
+                          encoding='utf-8') as device_config_file:
+                    device_config_json = json.load(device_config_file)
+
+                    device_make = device_config_json.get(DEVICE_MAKE)
+                    device_model = device_config_json.get(DEVICE_MODEL)
+                    mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
+                    test_modules = device_config_json.get(DEVICE_TEST_MODULES)
+
+                    device = Device(make=device_make, model=device_model,
+                                    mac_addr=mac_addr, test_modules=json.dumps(test_modules))
+                    self._devices.append(device)
+
+        def get_device(self, mac_addr):
+            """Returns a loaded device object from the device mac address."""
+            for device in self._devices:
+                if device.mac_addr == mac_addr:
+                    return device
+            return None
+
+        def _device_discovered(self, mac_addr):
+            device = self.get_device(mac_addr)
+            if device is not None:
+                LOGGER.info(
+                    f'Discovered {device.make} {device.model} on the network')
+            else:
+                device = Device(make=None, model=None, mac_addr=mac_addr)
+                LOGGER.info(
+                    f'A new device has been discovered with mac address {mac_addr}')
+
+            # TODO: Pass device information to test orchestrator/runner
+            self._run_tests(device)
