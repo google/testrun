@@ -68,8 +68,6 @@ class NmapModule(TestModule):
                 else:
                     tcp_port_config[port]["result"] = "skipped"
 
-        LOGGER.info("Results:\n" + json.dumps(tcp_port_config))
-
     def _scan_for_tcp_ports(self):
         results = {}
         text, err = util.run_command("nmap " + self._device_ipv4_addr)

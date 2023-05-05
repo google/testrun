@@ -44,11 +44,97 @@
             "tcp_ports": {
               "23": {
                 "allowed": false,
-                "description": "Telnet Serverr"
+                "description": "Telnet Server"
               }
             },
             "description": "Check TELNET port 23 is disabled and TELNET is not running on any port",
             "expected_behavior": "There is no FTP service running on any port"
+          },
+          "security.services.smtp": {
+            "tcp_ports": {
+              "25": {
+                "allowed": false,
+                "description": "Simple Mail Transfer Protocol (SMTP) Server"
+              },
+              "465": {
+                "allowed": false,
+                "description": "Simple Mail Transfer Protocol over SSL (SMTPS) Server"
+              },
+              "587": {
+                "allowed": false,
+                "description": "Simple Mail Transfer Protocol via TLS (SMTPS) Server"
+              }
+            },
+            "description": "Check SMTP port 25 is disabled and ports 465 or 587 with SSL encryption are (not?) enabled and SMTP is not running on any port.",
+            "expected_behavior": "There is no smtp service running on any port"
+          },
+          "security.services.http": {
+            "tcp_ports": {
+              "80": {
+                "allowed": false,
+                "description": "Administrative Insecure Web-Server"
+              }
+            },
+            "description": "Check that there is no HTTP server running on any port",
+            "expected_behavior": "Device is unreachable on port 80 (or any other port) and only responds to HTTPS requests on port 443 (or any other port if HTTP is used at all)"
+          },
+          "security.services.pop": {
+            "tcp_ports": {
+              "110": {
+                "allowed": false,
+                "description": "Post Office Protocol v3 (POP3) Server"
+              }
+            },
+            "description": "Check POP port 110 is disalbed and POP is not running on any port",
+            "expected_behavior": "There is no pop service running on any port"
+          },
+          "security.services.imap": {
+            "tcp_ports": {
+              "143": {
+                "allowed": false,
+                "description": "Internet Message Access Protocol (IMAP) Server"
+              }
+            },
+            "description": "Check IMAP port 143 is disabled and IMAP is not running on any port",
+            "expected_behavior": "There is no imap service running on any port"
+          },
+          "security.services.snmpv3": {
+            "tcp_ports": {
+              "161": {
+                "allowed": false,
+                "description": "Simple Network Management Protocol (SNMP)"
+              },
+              "162": {
+                "allowed": false,
+                "description": "Simple Network Management Protocol (SNMP) Trap"
+              }
+            },
+            "description": "Check SNMP port 161/162 is disabled.  If SNMP is an essential service, check it supports version 3",
+            "expected_behavior": "Device is unreachable on port 161 (or any other port) and device is unreachable on port 162 (or any other port) unless SNMP is essential in which case it is SNMPv3 is used."
+          },
+          "security.services.https": {
+            "tcp_ports": {
+              "80": {
+                "allowed": false,
+                "description": "Administrative Secure Web-Server"
+              }
+            },
+            "description": "Check that if there is a web server running it is running on a secure port.",
+            "expected_behavior": "Device only responds to HTTPS requests on port 443 (or any other port if HTTP is used at all)"
+          },
+          "security.services.vnc": {
+            "tcp_ports": {
+              "5800": {
+                "allowed": false,
+                "description": "Virtual Network Computing (VNC) Remote Frame Buffer Protocol Over HTTP"
+              },
+              "5500": {
+                "allowed": false,
+                "description": "Virtual Network Computing (VNC) Remote Frame Buffer Protocol"
+              }
+            },
+            "description": "Check VNC is disabled on any port",
+            "expected_behavior": "Device cannot be accessed /connected to via VNc on any port"
           },
           "security.services.wsdapi": {
             "tcp_ports": {
