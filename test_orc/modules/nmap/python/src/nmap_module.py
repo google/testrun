@@ -18,9 +18,8 @@ class NmapModule(TestModule):
         LOGGER = self._get_logger()
 
     def _security_nmap_ports(self, config):
-        
         LOGGER.info(
-            "Running nmap scan test")
+            "Running security.nmap.ports test")
         if self._device_ipv4_addr is not None:
             self._scan_tcp_results = self._scan_tcp_ports()
             self._scan_udp_results = self._scan_udp_ports(config)
@@ -46,14 +45,11 @@ class NmapModule(TestModule):
             port_config.update(test_config["tcp_ports"])
         elif "udp_ports" in test_config:
             port_config.update(test_config["udp_ports"])
-
-        LOGGER.info("Ports Config: " + str(port_config))
         scan_results = {}
         if self._scan_tcp_results is not None:
             scan_results.update(self._scan_tcp_results)
         if self._scan_udp_results is not None:
             scan_results.update(self._scan_udp_results)
-        LOGGER.info("Scan Results: " + str(scan_results))
         if port_config is not None:
             for port in port_config:
                 result = None
