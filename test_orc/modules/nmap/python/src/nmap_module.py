@@ -13,10 +13,12 @@ class NmapModule(TestModule):
 
     def __init__(self, module):
         super().__init__(module_name=module, log_name=LOG_NAME)
+        self._unallowed_ports = []
         global LOGGER
         LOGGER = self._get_logger()
 
     def _security_nmap_ports(self, config):
+        
         LOGGER.info(
             "Running nmap scan test")
         if self._device_ipv4_addr is not None:
@@ -25,7 +27,8 @@ class NmapModule(TestModule):
             LOGGER.info("nmap scan test finished")
             self._process_port_results(
                 tests=config)
-            return True, config
+            LOGGER.info("Unallowed Ports: " + str(self._unallowed_ports))
+            return len(self._unallowed_ports)==0
         else:
             LOGGER.info("Device ip address not resolved, skipping")
             return None
@@ -49,6 +52,7 @@ class NmapModule(TestModule):
                         if not tcp_port_config[port]["allowed"]:
                             LOGGER.info("Unallowed port open")
                             result = False
+                            self._unallowed_ports.append(str(port))
                         else:
                             LOGGER.info("Allowed port open")
                             result = True
