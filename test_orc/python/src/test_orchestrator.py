@@ -43,7 +43,7 @@ class TestOrchestrator:
 
     def run_test_modules(self, device):
         """Iterates through each test module and starts the container."""
-        LOGGER.info("Running test modules...")
+        LOGGER.info(f"Running test modules on device with mac addr {device.mac_addr}")
         for module in self._test_modules:
             self._run_test_module(module, device)
         LOGGER.info("All tests complete")

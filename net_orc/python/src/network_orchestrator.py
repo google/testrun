@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+import binascii
 import ipaddress
 import json
 import os
+from scapy.all import BOOTP
 import sys
 import time
 import threading
@@ -13,6 +15,8 @@ from docker.types import Mount
 import logger
 import util
 from listener import Listener
+from network_device import NetworkDevice
+from network_event import NetworkEvent
 from network_validator import NetworkValidator
 
 LOGGER = logger.get_logger("net_orc")
@@ -25,29 +29,30 @@ DEVICE_BRIDGE = "tr-d"
 INTERNET_BRIDGE = "tr-c"
 PRIVATE_DOCKER_NET = "tr-private-net"
 CONTAINER_NAME = "network_orchestrator"
-RUNTIME = 300
 
+RUNTIME_KEY = "runtime"
+MONITOR_PERIOD_KEY = "monitor_period"
+STARTUP_TIMEOUT_KEY = "startup_timeout"
 
 class NetworkOrchestrator:
     """Manage and controls a virtual testing network."""
 
     def __init__(self, config_file=CONFIG_FILE, validate=True, async_monitor=False):
+        
         self._int_intf = None
         self._dev_intf = None
-
         self.listener = None
 
         self._net_modules = []
+        self._devices = []
 
         self.validate = validate
-
         self.async_monitor = async_monitor
 
         self._path = os.path.dirname(os.path.dirname(
             os.path.dirname(os.path.realpath(__file__))))
 
         self.validator = NetworkValidator()
-
         self.network_config = NetworkConfig()
 
         self.load_config(config_file)
@@ -88,6 +93,10 @@ class NetworkOrchestrator:
         # Get network ready (via Network orchestrator)
         LOGGER.info("Network is ready.")
 
+        # Start the listener
+        self.listener = Listener(self._dev_intf)
+        self.listener.start_listener()
+
     def stop(self, kill=False):
         """Stop the network orchestrator."""
         self.stop_validator(kill=kill)
@@ -105,10 +114,53 @@ class NetworkOrchestrator:
         self.restore_net()
 
     def monitor_network(self):
+        
+        self.listener.register_callback(self._device_discovered, [NetworkEvent.DEVICE_DISCOVERED])
+        self.listener.register_callback(self._dhcp_lease_ack, [NetworkEvent.DHCP_LEASE_ACK])
         # TODO: This time should be configurable (How long to hold before exiting, this could be infinite too)
-        time.sleep(RUNTIME)
+        time.sleep(self._runtime)
 
         self.stop()
+
+    def _device_discovered(self, mac_addr):
+
+      LOGGER.debug(f'Discovered device {mac_addr}. Waiting for device to obtain IP')
+      device = self._get_device(mac_addr=mac_addr)
+
+      timeout = time.time() + self._startup_timeout
+
+      while time.time() < timeout:
+          if device.ip_addr is None:
+            time.sleep(3)
+          else:
+            break
+
+      if device.ip_addr is None:
+        LOGGER.info(f"Timed out whilst waiting for {mac_addr} to obtain an IP address")
+        return
+      
+      LOGGER.info(f"Device with mac addr {device.mac_addr} has obtained IP address {device.ip_addr}")
+      
+      self._start_device_monitor(device)
+        
+      self.listener.call_callback(NetworkEvent.DEVICE_STABLE, mac_addr)
+
+    def _dhcp_lease_ack(self, packet):
+        mac_addr = packet[BOOTP].chaddr.hex(":")[0:17]
+        device = self._get_device(mac_addr=mac_addr)
+        device.ip_addr = packet[BOOTP].yiaddr
+
+    def _start_device_monitor(self, device):
+        LOGGER.info(f"Monitoring device with mac addr {device.mac_addr} for {str(self._monitor_period)} seconds")
+        time.sleep(10)
+
+    def _get_device(self, mac_addr):
+        for device in self._devices:
+            if device.mac_addr == mac_addr:
+                return device
+        device = NetworkDevice(mac_addr=mac_addr)
+        self._devices.append(device)
+        return device
 
     def load_config(self,config_file=None):
         if config_file is None:
@@ -131,6 +183,9 @@ class NetworkOrchestrator:
     def import_config(self, json_config):
         self._int_intf = json_config['network']['internet_intf']
         self._dev_intf = json_config['network']['device_intf']
+        self._runtime = json_config[RUNTIME_KEY]
+        self._startup_timeout = json_config[STARTUP_TIMEOUT_KEY]
+        self._monitor_period = json_config[MONITOR_PERIOD_KEY]
 
     def _check_network_services(self):
         LOGGER.debug("Checking network modules...")
@@ -211,9 +266,6 @@ class NetworkOrchestrator:
         util.run_command("ip link set dev " + INTERNET_BRIDGE + " up")
 
         self._create_private_net()
-
-        self.listener = Listener(self._dev_intf)
-        self.listener.start_listener()
 
     def load_network_modules(self):
         """Load network modules from module_config.json."""
@@ -300,10 +352,6 @@ class NetworkOrchestrator:
                 return net_module
         return None
 
-    # Start the OVS network module
-    # This should always be called before loading all
-    # other modules to allow for a properly setup base
-    # network
     def _start_ovs_module(self):
         self._start_network_service(self._get_network_module("OVS"))
 
@@ -515,8 +563,8 @@ class NetworkOrchestrator:
 
         LOGGER.info("Network is restored")
 
-
 class NetworkModule:
+    """Represents each network module discovered from network/modules."""
 
     def __init__(self):
         self.name = None
@@ -537,10 +585,8 @@ class NetworkModule:
 
         self.net_config = NetworkModuleNetConfig()
 
-# The networking configuration for a network module
-
-
 class NetworkModuleNetConfig:
+    """The networking configuration for a network module."""
 
     def __init__(self):
 
@@ -560,9 +606,8 @@ class NetworkModuleNetConfig:
     def get_ipv6_addr_with_prefix(self):
         return format(self.ipv6_address) + "/" + str(self.ipv6_network.prefixlen)
 
-# Represents the current configuration of the network for the device bridge
-
 class NetworkConfig:
+    """Represents the current configuration of the network for the device bridge."""
 
     # TODO: Let's get this from a configuration file
     def __init__(self):
