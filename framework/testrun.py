@@ -6,7 +6,9 @@ Test Run components, such as net_orc, test_orc and test_ui.
 Run using the provided command scripts in the cmd folder.
 E.g sudo cmd/start
 """
-
+import network_orchestrator as net_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
+import test_orchestrator as test_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
+from listener import NetworkEvent  # pylint: disable=wrong-import-position,import-outside-toplevel
 import os
 import sys
 import json
@@ -19,9 +21,18 @@ from device import Device
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
 
+# Add net_orc to Python path
+net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
+sys.path.append(net_orc_dir)
+
+# Add test_orc to Python path
+test_orc_dir = os.path.join(parent_dir, 'test_orc', 'python', 'src')
+sys.path.append(test_orc_dir)
+
+
 LOGGER = logger.get_logger('test_run')
-CONFIG_FILE = "conf/system.json"
-EXAMPLE_CONFIG_FILE = "conf/system.json.example"
+CONFIG_FILE = 'conf/system.json'
+EXAMPLE_CONFIG_FILE = 'conf/system.json.example'
 RUNTIME = 300
 
 LOCAL_DEVICES_DIR = 'local/devices'
@@ -40,7 +51,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     orchestrator and user interface.
     """
 
-    def __init__(self, config_file=CONFIG_FILE,validate=True, net_only=False):
+    def __init__(self, config_file=CONFIG_FILE, validate=True, net_only=False):
         self._devices = []
         self._net_only = net_only
 
@@ -51,11 +62,12 @@ class TestRun:  # pylint: disable=too-few-public-methods
         self.import_dependencies()
 
         # Expand the config file to absolute pathing
-        config_file_abs=self._get_config_abs(config_file=config_file)
-        
-        self._net_orc = net_orc.NetworkOrchestrator(config_file=config_file_abs,validate=validate,async_monitor=not self._net_only)
+        config_file_abs = self._get_config_abs(config_file=config_file)
+
+        self._net_orc = net_orc.NetworkOrchestrator(
+            config_file=config_file_abs, validate=validate, async_monitor=not self._net_only)
         self._test_orc = test_orc.TestOrchestrator(self._net_orc)
- 
+
     def start(self):
 
         self._load_all_devices()
@@ -67,17 +79,17 @@ class TestRun:  # pylint: disable=too-few-public-methods
             self._start_network()
             self._test_orc.start()
             self._net_orc.listener.register_callback(
-             self._device_discovered,
-             [NetworkEvent.DEVICE_DISCOVERED])
-        
+                self._device_discovered,
+                [NetworkEvent.DEVICE_DISCOVERED])
+
             LOGGER.info("Waiting for devices on the network...")
-            
+
             # Check timeout and whether testing is currently in progress before stopping
             time.sleep(RUNTIME)
-            
+
         self.stop()
 
-    def stop(self,kill=False):
+    def stop(self, kill=False):
         self._stop_tests()
         self._stop_network(kill=kill)
 
@@ -111,26 +123,26 @@ class TestRun:  # pylint: disable=too-few-public-methods
             self.stop(kill=True)
             sys.exit(1)
 
-    def _get_config_abs(self,config_file=None):
+    def _get_config_abs(self, config_file=None):
         if config_file is None:
             # If not defined, use relative pathing to local file
             config_file = os.path.join(parent_dir, CONFIG_FILE)
 
-        # Expand the config file to absolute pathing 
+        # Expand the config file to absolute pathing
         return os.path.abspath(config_file)
 
     def _start_network(self):
         self._net_orc.start()
 
-    def _run_tests(self,device):
+    def _run_tests(self, device):
         """Iterate through and start all test modules."""
-        
+
         # To Do: Make this configurable
-        time.sleep(5) #  Let device bootup
-        
+        time.sleep(5)  # Let device bootup
+
         self._test_orc._run_test_modules(device)
 
-    def _stop_network(self,kill=False):
+    def _stop_network(self, kill=False):
         self._net_orc.stop(kill=kill)
 
     def _stop_tests(self):
@@ -140,7 +152,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         self._load_devices(device_dir=LOCAL_DEVICES_DIR)
         self._load_devices(device_dir=RESOURCE_DEVICES_DIR)
 
-    def _load_devices(self,device_dir):
+    def _load_devices(self, device_dir):
         LOGGER.debug('Loading devices from ' + device_dir)
 
         for device_folder in os.listdir(device_dir):
@@ -154,7 +166,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
                 test_modules = device_config_json.get(DEVICE_TEST_MODULES)
 
                 device = Device(make=device_make, model=device_model,
-                                mac_addr=mac_addr,test_modules=json.dumps(test_modules))
+                                mac_addr=mac_addr, test_modules=json.dumps(test_modules))
                 self._devices.append(device)
 
         LOGGER.info('Loaded ' + str(len(self._devices)) + ' devices')
@@ -174,7 +186,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
         else:
             LOGGER.info(
                 f'A new device has been discovered with mac address {mac_addr}')
-            device = Device(make=None, model=None, mac_addr=mac_addr,test_modules=json.dumps("{}"))
-        
+            device = Device(make=None, model=None,
+                            mac_addr=mac_addr, test_modules=json.dumps("{}"))
+
         # TODO: Pass device information to test orchestrator/runner
         self._run_tests(device)
