@@ -6,9 +6,6 @@ Test Run components, such as net_orc, test_orc and test_ui.
 Run using the provided command scripts in the cmd folder.
 E.g sudo cmd/start
 """
-import network_orchestrator as net_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
-import test_orchestrator as test_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
-from listener import NetworkEvent  # pylint: disable=wrong-import-position,import-outside-toplevel
 import os
 import sys
 import json
