@@ -33,15 +33,17 @@ class TestModule:
 
     def _get_device_tests(self, device_test_module):
         module_tests = self._config["config"]["tests"]
-        LOGGER.info("Device Config: " + str(device_test_module))
         if device_test_module is None:
             return module_tests
         elif not device_test_module["enabled"]:
             return []
         else:
             for test in module_tests:
+                # Resolve device specific configurations for the test if it exists
+                # and update module test config with device config options
                 if test["name"] in device_test_module["tests"]:
-                    test["enabled"] = device_test_module["tests"][test["name"]]["enabled"]
+                    dev_test_config = device_test_module["tests"][test["name"]]
+                    test["config"].update(dev_test_config)
             return module_tests
 
     def _get_device_test_module(self):
@@ -55,7 +57,6 @@ class TestModule:
             self._device_ipv4_addr = self._get_device_ipv4()
             LOGGER.info("Device IP Resolved: " + str(self._device_ipv4_addr))
         tests = self._get_tests()
-        device_modules = os.environ['DEVICE_TEST_MODULES']
         for test in tests:
             test_method_name = "_" + test["name"].replace(".", "_")
             result = None
@@ -65,7 +66,8 @@ class TestModule:
                 # Resolve the correct python method by test name and run test
                 if hasattr(self, test_method_name):
                     if "config" in test:
-                        result = getattr(self,test_method_name)(config=test["config"])
+                        result = getattr(self, test_method_name)(
+                            config=test["config"])
                     else:
                         result = getattr(self, test_method_name)()
                 else:

@@ -165,16 +165,6 @@
             },
             "description": "Check NTP port 123 is disabled and the device is not operating as an NTP server",
             "expected_behavior": "The device dos not respond to NTP requests when it's IP is set as the NTP server on another device"
-          },
-          "security.services.wsdapi": {
-            "tcp_ports": {
-              "5357": {
-                "allowed": false,
-                "description": "Some sort of open api"
-              }
-            },
-            "description": "Check TELNET port 23 is disabled and TELNET is not running on any port",
-            "expected_behavior": "There is no FTP service running on any port"
           }
         }
       }

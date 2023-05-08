@@ -20,6 +20,12 @@ class NmapModule(TestModule):
     def _security_nmap_ports(self, config):
         LOGGER.info(
             "Running security.nmap.ports test")
+
+        # Delete the enabled key from the config if it exists
+        # to prevent it being treated as a test key
+        if "enabled" in config:
+            del config["enabled"]
+
         if self._device_ipv4_addr is not None:
             self._scan_tcp_results = self._scan_tcp_ports(config)
             self._scan_udp_results = self._scan_udp_ports(config)
