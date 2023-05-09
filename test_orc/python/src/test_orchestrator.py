@@ -113,6 +113,12 @@ class TestOrchestrator:
             return container.status
         return None
 
+    def _get_test_module(self, name):
+        for test_module in self._test_modules:
+            if name == test_module.display_name or name == test_module.name or name == test_module.dir_name:
+                return test_module
+        return None
+
     def _get_module_container(self, module):
         container = None
         try:
@@ -127,49 +133,58 @@ class TestOrchestrator:
         return container
 
     def _load_test_modules(self):
+        """Load network modules from module_config.json."""
+        LOGGER.debug("Loading test modules from /" + TEST_MODULES_DIR)
+        
+        loaded_modules = "Loaded the following test modules: "
+        test_modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
+        
+        for module_dir in os.listdir(test_modules_dir):
+
+            if self._get_test_module(module_dir) is None:
+              loaded_module = self._load_test_module(module_dir)
+              loaded_modules += loaded_module.dir_name + " "
+
+        LOGGER.info(loaded_modules)
+
+    def _load_test_module(self,module_dir):
         """Import module configuration from module_config.json."""
 
         modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
 
-        LOGGER.debug("Loading test modules from /" + modules_dir)
-        loaded_modules = "Loaded the following test modules: "
+        # Load basic module information
+        module = TestModule()
+        with open(os.path.join(
+                self._path,
+                modules_dir,
+                module_dir,
+                MODULE_CONFIG),
+                encoding='UTF-8') as module_config_file:
+            module_json = json.load(module_config_file)
 
-        for module_dir in os.listdir(modules_dir):
+        module.name = module_json['config']['meta']['name']
+        module.display_name = module_json['config']['meta']['display_name']
+        module.description = module_json['config']['meta']['description']
+        module.dir = os.path.join(self._path, modules_dir, module_dir)
+        module.dir_name = module_dir
+        module.build_file = module_dir + ".Dockerfile"
+        module.container_name = "tr-ct-" + module.dir_name + "-test"
+        module.image_name = "test-run/" + module.dir_name + "-test"
 
-            LOGGER.debug("Loading module from: " + module_dir)
+        if 'timeout' in module_json['config']['docker']:
+            module.timeout = module_json['config']['docker']['timeout']
 
-            # Load basic module information
-            module = TestModule()
-            with open(os.path.join(
-                    self._path,
-                    modules_dir,
-                    module_dir,
-                    MODULE_CONFIG),
-                    encoding='UTF-8') as module_config_file:
-                module_json = json.load(module_config_file)
+        # Determine if this is a container or just an image/template
+        if "enable_container" in module_json['config']['docker']:
+            module.enable_container = module_json['config']['docker']['enable_container']
 
-            module.name = module_json['config']['meta']['name']
-            module.display_name = module_json['config']['meta']['display_name']
-            module.description = module_json['config']['meta']['description']
-            module.dir = os.path.join(self._path, modules_dir, module_dir)
-            module.dir_name = module_dir
-            module.build_file = module_dir + ".Dockerfile"
-            module.container_name = "tr-ct-" + module.dir_name + "-test"
-            module.image_name = "test-run/" + module.dir_name + "-test"
+        if "depends_on" in module_json['config']['docker']:
+            depends_on_module = module_json['config']['docker']['depends_on']
+            if self._get_test_module(depends_on_module) is None:
+                self._load_test_module(depends_on_module)
 
-            if 'timeout' in module_json['config']['docker']:
-                module.timeout = module_json['config']['docker']['timeout']
-
-            # Determine if this is a container or just an image/template
-            if "enable_container" in module_json['config']['docker']:
-                module.enable_container = module_json['config']['docker']['enable_container']
-
-            self._test_modules.append(module)
-
-            if module.enable_container:
-                loaded_modules += module.dir_name + " "
-
-        LOGGER.info(loaded_modules)
+        self._test_modules.append(module)
+        return module
 
     def build_test_modules(self):
         """Build all test modules."""
