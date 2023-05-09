@@ -33,12 +33,20 @@ CONTAINER_NAME = "network_orchestrator"
 RUNTIME_KEY = "runtime"
 MONITOR_PERIOD_KEY = "monitor_period"
 STARTUP_TIMEOUT_KEY = "startup_timeout"
+DEFAULT_STARTUP_TIMEOUT = 60
+DEFAULT_RUNTIME = 1200
+DEFAULT_MONITOR_PERIOD = 300
+
 
 class NetworkOrchestrator:
     """Manage and controls a virtual testing network."""
 
     def __init__(self, config_file=CONFIG_FILE, validate=True, async_monitor=False):
-        
+
+        self._runtime = DEFAULT_RUNTIME
+        self._startup_timeout = DEFAULT_STARTUP_TIMEOUT
+        self._monitor_period = DEFAULT_MONITOR_PERIOD
+
         self._int_intf = None
         self._dev_intf = None
         self.listener = None
@@ -114,9 +122,11 @@ class NetworkOrchestrator:
         self.restore_net()
 
     def monitor_network(self):
-        
-        self.listener.register_callback(self._device_discovered, [NetworkEvent.DEVICE_DISCOVERED])
-        self.listener.register_callback(self._dhcp_lease_ack, [NetworkEvent.DHCP_LEASE_ACK])
+
+        self.listener.register_callback(self._device_discovered, [
+                                        NetworkEvent.DEVICE_DISCOVERED])
+        self.listener.register_callback(
+            self._dhcp_lease_ack, [NetworkEvent.DHCP_LEASE_ACK])
         # TODO: This time should be configurable (How long to hold before exiting, this could be infinite too)
         time.sleep(self._runtime)
 
@@ -124,26 +134,26 @@ class NetworkOrchestrator:
 
     def _device_discovered(self, mac_addr):
 
-      LOGGER.debug(f'Discovered device {mac_addr}. Waiting for device to obtain IP')
-      device = self._get_device(mac_addr=mac_addr)
+        LOGGER.debug(f'Discovered device {mac_addr}. Waiting for device to obtain IP')
+        device = self._get_device(mac_addr=mac_addr)
 
-      timeout = time.time() + self._startup_timeout
+        timeout = time.time() + self._startup_timeout
 
-      while time.time() < timeout:
-          if device.ip_addr is None:
-            time.sleep(3)
-          else:
-            break
+        while time.time() < timeout:
+            if device.ip_addr is None:
+                time.sleep(3)
+            else:
+                break
 
-      if device.ip_addr is None:
-        LOGGER.info(f"Timed out whilst waiting for {mac_addr} to obtain an IP address")
-        return
-      
-      LOGGER.info(f"Device with mac addr {device.mac_addr} has obtained IP address {device.ip_addr}")
-      
-      self._start_device_monitor(device)
-        
-      self.listener.call_callback(NetworkEvent.DEVICE_STABLE, mac_addr)
+        if device.ip_addr is None:
+            LOGGER.info(f"Timed out whilst waiting for {mac_addr} to obtain an IP address")
+            return
+
+        LOGGER.info(f"Device with mac addr {device.mac_addr} has obtained IP address {device.ip_addr}")
+
+        self._start_device_monitor(device)
+
+        self.listener.call_callback(NetworkEvent.DEVICE_STABLE, mac_addr)
 
     def _dhcp_lease_ack(self, packet):
         mac_addr = packet[BOOTP].chaddr.hex(":")[0:17]
@@ -152,7 +162,7 @@ class NetworkOrchestrator:
 
     def _start_device_monitor(self, device):
         LOGGER.info(f"Monitoring device with mac addr {device.mac_addr} for {str(self._monitor_period)} seconds")
-        time.sleep(10)
+        time.sleep(self._monitor_period)
 
     def _get_device(self, mac_addr):
         for device in self._devices:
@@ -162,20 +172,21 @@ class NetworkOrchestrator:
         self._devices.append(device)
         return device
 
-    def load_config(self,config_file=None):
+    def load_config(self, config_file=None):
         if config_file is None:
             # If not defined, use relative pathing to local file
-            self._config_file=os.path.join(self._path, CONFIG_FILE)
+            self._config_file = os.path.join(self._path, CONFIG_FILE)
         else:
             # If defined, use as provided
-            self._config_file=config_file
+            self._config_file = config_file
 
         if not os.path.isfile(self._config_file):
             LOGGER.error("Configuration file is not present at " + config_file)
             LOGGER.info("An example is present in " + EXAMPLE_CONFIG_FILE)
             sys.exit(1)
 
-        LOGGER.info("Loading config file: " + os.path.abspath(self._config_file))    
+        LOGGER.info("Loading config file: " +
+                    os.path.abspath(self._config_file))
         with open(self._config_file, encoding='UTF-8') as config_json_file:
             config_json = json.load(config_json_file)
             self.import_config(config_json)
@@ -183,23 +194,26 @@ class NetworkOrchestrator:
     def import_config(self, json_config):
         self._int_intf = json_config['network']['internet_intf']
         self._dev_intf = json_config['network']['device_intf']
-        self._runtime = json_config[RUNTIME_KEY]
-        self._startup_timeout = json_config[STARTUP_TIMEOUT_KEY]
-        self._monitor_period = json_config[MONITOR_PERIOD_KEY]
+        if RUNTIME_KEY in json_config:
+            self._runtime = json_config[RUNTIME_KEY]
+        if STARTUP_TIMEOUT_KEY in json_config:
+            self._startup_timeout = json_config[STARTUP_TIMEOUT_KEY]
+        if MONITOR_PERIOD_KEY in json_config:
+            self._monitor_period = json_config[MONITOR_PERIOD_KEY]
 
     def _check_network_services(self):
         LOGGER.debug("Checking network modules...")
         for net_module in self._net_modules:
             if net_module.enable_container:
                 LOGGER.debug("Checking network module: " +
-                            net_module.display_name)
+                             net_module.display_name)
                 success = self._ping(net_module)
                 if success:
                     LOGGER.debug(net_module.display_name +
-                                " responded succesfully: " + str(success))
+                                 " responded succesfully: " + str(success))
                 else:
                     LOGGER.error(net_module.display_name +
-                                    " failed to respond to ping")
+                                 " failed to respond to ping")
 
     def _ping(self, net_module):
         host = net_module.net_config.ipv4_address
@@ -483,7 +497,8 @@ class NetworkOrchestrator:
                          " ip link set dev " + container_intf + " name veth0")
 
         # Set MAC address of container interface
-        util.run_command("ip netns exec " + container_net_ns + " ip link set dev veth0 address 9a:02:57:1e:8f:" + str(net_module.net_config.ip_index))
+        util.run_command("ip netns exec " + container_net_ns +
+                         " ip link set dev veth0 address 9a:02:57:1e:8f:" + str(net_module.net_config.ip_index))
 
         # Set IP address of container interface
         util.run_command("ip netns exec " + container_net_ns + " ip addr add " +
@@ -563,6 +578,7 @@ class NetworkOrchestrator:
 
         LOGGER.info("Network is restored")
 
+
 class NetworkModule:
     """Represents each network module discovered from network/modules."""
 
@@ -585,6 +601,7 @@ class NetworkModule:
 
         self.net_config = NetworkModuleNetConfig()
 
+
 class NetworkModuleNetConfig:
     """The networking configuration for a network module."""
 
@@ -605,6 +622,7 @@ class NetworkModuleNetConfig:
 
     def get_ipv6_addr_with_prefix(self):
         return format(self.ipv6_address) + "/" + str(self.ipv6_network.prefixlen)
+
 
 class NetworkConfig:
     """Represents the current configuration of the network for the device bridge."""
