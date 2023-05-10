@@ -8,6 +8,7 @@ from scapy.all import BOOTP
 import sys
 import time
 import threading
+from threading import Timer
 
 import docker
 from docker.types import Mount
@@ -153,16 +154,19 @@ class NetworkOrchestrator:
 
         self._start_device_monitor(device)
 
-        self.listener.call_callback(NetworkEvent.DEVICE_STABLE, mac_addr)
-
     def _dhcp_lease_ack(self, packet):
         mac_addr = packet[BOOTP].chaddr.hex(":")[0:17]
         device = self._get_device(mac_addr=mac_addr)
         device.ip_addr = packet[BOOTP].yiaddr
 
     def _start_device_monitor(self, device):
+        """Start a timer until the steady state has been reached and
+        callback the steady state method for this device."""
         LOGGER.info(f"Monitoring device with mac addr {device.mac_addr} for {str(self._monitor_period)} seconds")
-        time.sleep(self._monitor_period)
+        timer = Timer(self._monitor_period,
+                      self.listener.call_callback,
+                      args=(NetworkEvent.DEVICE_STABLE, device.mac_addr,))
+        timer.start()
 
     def _get_device(self, mac_addr):
         for device in self._devices:

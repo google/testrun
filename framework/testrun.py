@@ -79,9 +79,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
                 self._test_orc.start()
 
                 self._net_orc.listener.register_callback(
-                    self._device_discovered,
-                    [NetworkEvent.DEVICE_DISCOVERED])
-                self._net_orc.listener.register_callback(
                     self._device_stable,
                     [NetworkEvent.DEVICE_STABLE]
                 )
