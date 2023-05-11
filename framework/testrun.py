@@ -116,6 +116,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
             return os.path.abspath(config_file)
 
         def _start_network(self):
+            # Load in local device configs to the network orchestrator
+            self._net_orc._devices = self._devices
+
+            # Start the network orchestrator
             self._net_orc.start()
 
         def _run_tests(self, device):
