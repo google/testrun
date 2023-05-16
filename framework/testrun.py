@@ -12,7 +12,6 @@ import json
 import signal
 import time
 import logger
-from device import Device
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -27,10 +26,12 @@ test_orc_dir = os.path.join(parent_dir, 'test_orc', 'python', 'src')
 sys.path.append(test_orc_dir)
 
 
+from device import Device # pylint: disable=wrong-import-position,import-outside-toplevel
+
 LOGGER = logger.get_logger('test_run')
 CONFIG_FILE = 'conf/system.json'
 EXAMPLE_CONFIG_FILE = 'conf/system.json.example'
-RUNTIME = 600
+RUNTIME = 1500
 
 LOCAL_DEVICES_DIR = 'local/devices'
 RESOURCE_DEVICES_DIR = 'resources/devices'
@@ -48,9 +49,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
     orchestrator and user interface.
     """
 
-    def __init__(self, config_file=CONFIG_FILE, validate=True, net_only=False):
+    def __init__(self, config_file=CONFIG_FILE, validate=True, net_only=False, single_intf=False):
         self._devices = []
         self._net_only = net_only
+        self._single_intf = single_intf
 
         # Catch any exit signals
         self._register_exits()
@@ -62,12 +64,16 @@ class TestRun:  # pylint: disable=too-few-public-methods
         config_file_abs = self._get_config_abs(config_file=config_file)
 
         self._net_orc = net_orc.NetworkOrchestrator(
-            config_file=config_file_abs, validate=validate, async_monitor=not self._net_only)
-        self._test_orc = test_orc.TestOrchestrator(self._net_orc)
+            config_file=config_file_abs, 
+            validate=validate, 
+            async_monitor=not self._net_only,
+            single_intf = self._single_intf)
+        self._test_orc = test_orc.TestOrchestrator()
 
     def start(self):
 
         self._load_all_devices()
+
 
         if self._net_only:
             LOGGER.info("Network only option configured, no tests will be run")
@@ -129,13 +135,17 @@ class TestRun:  # pylint: disable=too-few-public-methods
         return os.path.abspath(config_file)
 
     def _start_network(self):
+        # Load in local device configs to the network orchestrator
+        self._net_orc._devices = self._devices
+
+        # Start the network orchestrator
         self._net_orc.start()
 
     def _run_tests(self, device):
         """Iterate through and start all test modules."""
 
         # To Do: Make this configurable
-        time.sleep(5)  # Let device bootup
+        time.sleep(60)  # Let device bootup
 
         self._test_orc._run_test_modules(device)
 
@@ -152,6 +162,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
     def _load_devices(self, device_dir):
         LOGGER.debug('Loading devices from ' + device_dir)
 
+        os.makedirs(device_dir, exist_ok=True)
+
         for device_folder in os.listdir(device_dir):
             with open(os.path.join(device_dir, device_folder, DEVICE_CONFIG),
                       encoding='utf-8') as device_config_file:
@@ -166,8 +178,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
                                 mac_addr=mac_addr, test_modules=json.dumps(test_modules))
                 self._devices.append(device)
 
-        LOGGER.info('Loaded ' + str(len(self._devices)) + ' devices')
-
     def get_device(self, mac_addr):
         """Returns a loaded device object from the device mac address."""
         for device in self._devices:
@@ -181,10 +191,12 @@ class TestRun:  # pylint: disable=too-few-public-methods
             LOGGER.info(
                 f'Discovered {device.make} {device.model} on the network')
         else:
+            device = Device(mac_addr=mac_addr)
+            self._devices.append(device)
             LOGGER.info(
                 f'A new device has been discovered with mac address {mac_addr}')
-            device = Device(make=None, model=None,
-                            mac_addr=mac_addr, test_modules=json.dumps("{}"))
 
-        # TODO: Pass device information to test orchestrator/runner
-        self._run_tests(device)
+    def _device_stable(self, mac_addr):
+        device = self.get_device(mac_addr)
+        LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
+        self._test_orc.run_test_modules(device)
