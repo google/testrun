@@ -1,5 +1,6 @@
 """Intercepts network traffic between network services and the device
 under test."""
+import threading
 from scapy.all import AsyncSniffer, DHCP, get_if_hwaddr
 import logger
 from network_event import NetworkEvent
@@ -11,7 +12,6 @@ DHCP_OFFER = 2
 DHCP_REQUEST = 3
 DHCP_ACK = 5
 CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f'
-
 
 class Listener:
   """Methods to start and stop the network listener."""
@@ -47,22 +47,25 @@ class Listener:
       }
     )
 
+  def call_callback(self, net_event, *args):
+    for callback in self._callbacks:
+      if net_event in callback['events']:
+        callback_thread = threading.Thread(target=callback['callback'], name="Callback thread", args=args)
+        callback_thread.start()
+
   def _packet_callback(self, packet):
 
-    # Ignore packets originating from our containers
-    if packet.src.startswith(CONTAINER_MAC_PREFIX) or packet.src == self._device_intf_mac:
-      return
+    # DHCP ACK callback
+    if DHCP in packet and self._get_dhcp_type(packet) == DHCP_ACK:
+      self.call_callback(NetworkEvent.DHCP_LEASE_ACK, packet)
 
+    # New device discovered callback
     if not packet.src is None and packet.src not in self._discovered_devices:
-      self._device_discovered(packet.src)
+      # Ignore packets originating from our containers
+      if packet.src.startswith(CONTAINER_MAC_PREFIX) or packet.src == self._device_intf_mac:
+        return
+      self._discovered_devices.append(packet.src)
+      self.call_callback(NetworkEvent.DEVICE_DISCOVERED, packet.src)
 
   def _get_dhcp_type(self, packet):
     return packet[DHCP].options[0][1]
-
-  def _device_discovered(self, mac_addr):
-    LOGGER.debug(f'Discovered device with address {mac_addr}')
-    self._discovered_devices.append(mac_addr)
-
-    for callback in self._callbacks:
-      if NetworkEvent.DEVICE_DISCOVERED in callback['events']:
-        callback['callback'](mac_addr)
