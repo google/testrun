@@ -14,6 +14,7 @@
       "port": 5001
     },
     "docker": {
+      "depends_on": "base",
       "mounts": [
         {
           "source": "runtime/network",

@@ -7,6 +7,7 @@
     },
     "network": false,
     "docker": {
+      "depends_on": "base",
       "enable_container": true,
       "timeout": 30
     },

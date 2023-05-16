@@ -12,6 +12,7 @@
       "host": true
     },
     "docker": {
+      "depends_on": "base",
       "mounts": [
         {
           "source": "runtime/network",
