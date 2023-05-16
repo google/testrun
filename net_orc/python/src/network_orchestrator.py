@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 
-import binascii
 import getpass
 import ipaddress
 import json
 import os
-from scapy.all import BOOTP
 import subprocess
 import sys
 import time
 import threading
-from threading import Timer
 
 import docker
 from docker.types import Mount
@@ -18,8 +15,6 @@ from docker.types import Mount
 import logger
 import util
 from listener import Listener
-from network_device import NetworkDevice
-from network_event import NetworkEvent
 from network_validator import NetworkValidator
 
 LOGGER = logger.get_logger("net_orc")
@@ -32,30 +27,16 @@ DEVICE_BRIDGE = "tr-d"
 INTERNET_BRIDGE = "tr-c"
 PRIVATE_DOCKER_NET = "tr-private-net"
 CONTAINER_NAME = "network_orchestrator"
-
-RUNTIME_KEY = "runtime"
-MONITOR_PERIOD_KEY = "monitor_period"
-STARTUP_TIMEOUT_KEY = "startup_timeout"
-DEFAULT_STARTUP_TIMEOUT = 60
-DEFAULT_RUNTIME = 1200
-DEFAULT_MONITOR_PERIOD = 300
-
-RUNTIME = 1500
+RUNTIME = 300
 
 
 class NetworkOrchestrator:
     """Manage and controls a virtual testing network."""
 
     def __init__(self, config_file=CONFIG_FILE, validate=True, async_monitor=False, single_intf = False):
-        
-        self._runtime = DEFAULT_RUNTIME
-        self._startup_timeout = DEFAULT_STARTUP_TIMEOUT
-        self._monitor_period = DEFAULT_MONITOR_PERIOD
-
         self._int_intf = None
         self._dev_intf = None
         self._single_intf = single_intf
-
         self.listener = None
 
         self._net_modules = []
@@ -109,10 +90,6 @@ class NetworkOrchestrator:
         # Get network ready (via Network orchestrator)
         LOGGER.info("Network is ready.")
 
-        # Start the listener
-        self.listener = Listener(self._dev_intf)
-        self.listener.start_listener()
-
     def stop(self, kill=False):
         """Stop the network orchestrator."""
         self.stop_validator(kill=kill)
@@ -130,73 +107,25 @@ class NetworkOrchestrator:
         self.restore_net()
 
     def monitor_network(self):
-        self.listener.register_callback(self._device_discovered, [
-                                        NetworkEvent.DEVICE_DISCOVERED])
-        self.listener.register_callback(
-            self._dhcp_lease_ack, [NetworkEvent.DHCP_LEASE_ACK])
         # TODO: This time should be configurable (How long to hold before exiting, this could be infinite too)
-        time.sleep(self._runtime)
+        time.sleep(RUNTIME)
 
         self.stop()
 
-    def _device_discovered(self, mac_addr):
-
-        LOGGER.debug(f'Discovered device {mac_addr}. Waiting for device to obtain IP')
-        device = self._get_device(mac_addr=mac_addr)
-
-        timeout = time.time() + self._startup_timeout
-
-        while time.time() < timeout:
-            if device.ip_addr is None:
-                time.sleep(3)
-            else:
-                break
-
-        if device.ip_addr is None:
-            LOGGER.info(f"Timed out whilst waiting for {mac_addr} to obtain an IP address")
-            return
-
-        LOGGER.info(f"Device with mac addr {device.mac_addr} has obtained IP address {device.ip_addr}")
-
-        self._start_device_monitor(device)
-
-    def _dhcp_lease_ack(self, packet):
-        mac_addr = packet[BOOTP].chaddr.hex(":")[0:17]
-        device = self._get_device(mac_addr=mac_addr)
-        device.ip_addr = packet[BOOTP].yiaddr
-
-    def _start_device_monitor(self, device):
-        """Start a timer until the steady state has been reached and
-        callback the steady state method for this device."""
-        LOGGER.info(f"Monitoring device with mac addr {device.mac_addr} for {str(self._monitor_period)} seconds")
-        timer = Timer(self._monitor_period,
-                      self.listener.call_callback,
-                      args=(NetworkEvent.DEVICE_STABLE, device.mac_addr,))
-        timer.start()
-
-    def _get_device(self, mac_addr):
-        for device in self._devices:
-            if device.mac_addr == mac_addr:
-                return device
-        device = NetworkDevice(mac_addr=mac_addr)
-        self._devices.append(device)
-        return device
-
-    def load_config(self, config_file=None):
+    def load_config(self,config_file=None):
         if config_file is None:
             # If not defined, use relative pathing to local file
-            self._config_file = os.path.join(self._path, CONFIG_FILE)
+            self._config_file=os.path.join(self._path, CONFIG_FILE)
         else:
             # If defined, use as provided
-            self._config_file = config_file
+            self._config_file=config_file
 
         if not os.path.isfile(self._config_file):
             LOGGER.error("Configuration file is not present at " + config_file)
             LOGGER.info("An example is present in " + EXAMPLE_CONFIG_FILE)
             sys.exit(1)
 
-        LOGGER.info("Loading config file: " +
-                    os.path.abspath(self._config_file))
+        LOGGER.info("Loading config file: " + os.path.abspath(self._config_file))    
         with open(self._config_file, encoding='UTF-8') as config_json_file:
             config_json = json.load(config_json_file)
             self.import_config(config_json)
@@ -204,12 +133,6 @@ class NetworkOrchestrator:
     def import_config(self, json_config):
         self._int_intf = json_config['network']['internet_intf']
         self._dev_intf = json_config['network']['device_intf']
-        if RUNTIME_KEY in json_config:
-            self._runtime = json_config[RUNTIME_KEY]
-        if STARTUP_TIMEOUT_KEY in json_config:
-            self._startup_timeout = json_config[STARTUP_TIMEOUT_KEY]
-        if MONITOR_PERIOD_KEY in json_config:
-            self._monitor_period = json_config[MONITOR_PERIOD_KEY]
 
     def _check_network_services(self):
         LOGGER.debug("Checking network modules...")
@@ -231,38 +154,6 @@ class NetworkOrchestrator:
         cmd = "ip netns exec " + namespace + " ping -c 1 " + str(host)
         success = util.run_command(cmd, output=False)
         return success
-
-    def _ci_pre_network_create(self):
-        """ Stores network properties to restore network after 
-        network creation and flushes internet interface
-        """
-
-        self._ethmac = subprocess.check_output(
-            f"cat /sys/class/net/{self._int_intf}/address", shell=True).decode("utf-8").strip()
-        self._gateway = subprocess.check_output(
-            "ip route | head -n 1 | awk '{print $3}'", shell=True).decode("utf-8").strip()
-        self._ipv4 = subprocess.check_output(
-            f"ip a show {self._int_intf} | grep \"inet \" | awk '{{print $2}}'", shell=True).decode("utf-8").strip()
-        self._ipv6 = subprocess.check_output(
-            f"ip a show {self._int_intf} | grep inet6 | awk '{{print $2}}'", shell=True).decode("utf-8").strip()
-        self._brd = subprocess.check_output(
-            f"ip a show {self._int_intf} | grep \"inet \" | awk '{{print $4}}'", shell=True).decode("utf-8").strip()
-
-    def _ci_post_network_create(self):
-        """ Restore network connection in CI environment """
-        LOGGER.info("post cr")
-        util.run_command(f"ip address del {self._ipv4} dev {self._int_intf}")
-        util.run_command(f"ip -6 address del {self._ipv6} dev {self._int_intf}")
-        util.run_command(f"ip link set dev {self._int_intf} address 00:B0:D0:63:C2:26")
-        util.run_command(f"ip addr flush dev {self._int_intf}")
-        util.run_command(f"ip addr add dev {self._int_intf} 0.0.0.0")
-        util.run_command(f"ip addr add dev {INTERNET_BRIDGE} {self._ipv4} broadcast {self._brd}")
-        util.run_command(f"ip -6 addr add {self._ipv6} dev {INTERNET_BRIDGE} ")
-        util.run_command(f"systemd-resolve --interface {INTERNET_BRIDGE} --set-dns 8.8.8.8")
-        util.run_command(f"ip link set dev {INTERNET_BRIDGE} up")
-        util.run_command(f"dhclient {INTERNET_BRIDGE}")
-        util.run_command(f"ip route del default via 10.1.0.1")
-        util.run_command(f"ip route add default via {self._gateway} src {self._ipv4[:-3]} metric 100 dev {INTERNET_BRIDGE}")
 
     def _create_private_net(self):
         client = docker.from_env()
@@ -289,6 +180,38 @@ class NetworkOrchestrator:
             check_duplicate=True,
             driver="macvlan"
         )
+        
+    def _ci_pre_network_create(self):
+        """ Stores network properties to restore network after 
+        network creation and flushes internet interface
+        """
+
+        self._ethmac = subprocess.check_output(
+            f"cat /sys/class/net/{self._int_intf}/address", shell=True).decode("utf-8").strip()
+        self._gateway = subprocess.check_output(
+            "ip route | head -n 1 | awk '{print $3}'", shell=True).decode("utf-8").strip()
+        self._ipv4 = subprocess.check_output(
+            f"ip a show {self._int_intf} | grep \"inet \" | awk '{{print $2}}'", shell=True).decode("utf-8").strip()
+        self._ipv6 = subprocess.check_output(
+            f"ip a show {self._int_intf} | grep inet6 | awk '{{print $2}}'", shell=True).decode("utf-8").strip()
+        self._brd = subprocess.check_output(
+            f"ip a show {self._int_intf} | grep \"inet \" | awk '{{print $4}}'", shell=True).decode("utf-8").strip()
+    
+    def _ci_post_network_create(self):
+        """ Restore network connection in CI environment """
+        LOGGER.info("post cr")
+        util.run_command(f"ip address del {self._ipv4} dev {self._int_intf}")
+        util.run_command(f"ip -6 address del {self._ipv6} dev {self._int_intf}")
+        util.run_command(f"ip link set dev {self._int_intf} address 00:B0:D0:63:C2:26")
+        util.run_command(f"ip addr flush dev {self._int_intf}")
+        util.run_command(f"ip addr add dev {self._int_intf} 0.0.0.0")
+        util.run_command(f"ip addr add dev {INTERNET_BRIDGE} {self._ipv4} broadcast {self._brd}")
+        util.run_command(f"ip -6 addr add {self._ipv6} dev {INTERNET_BRIDGE} ")
+        util.run_command(f"systemd-resolve --interface {INTERNET_BRIDGE} --set-dns 8.8.8.8")
+        util.run_command(f"ip link set dev {INTERNET_BRIDGE} up")
+        util.run_command(f"dhclient {INTERNET_BRIDGE}")
+        util.run_command(f"ip route del default via 10.1.0.1")
+        util.run_command(f"ip route add default via {self._gateway} src {self._ipv4[:-3]} metric 100 dev {INTERNET_BRIDGE}")
 
     def create_net(self):
         LOGGER.info("Creating baseline network")
@@ -297,7 +220,7 @@ class NetworkOrchestrator:
             LOGGER.error("Configured interfaces are not ready for use. " +
                          "Ensure both interfaces are connected.")
             sys.exit(1)
-        
+            
         if self._single_intf:
             self._ci_pre_network_create()
 
@@ -323,10 +246,10 @@ class NetworkOrchestrator:
         # Set ports up
         util.run_command("ip link set dev " + DEVICE_BRIDGE + " up")
         util.run_command("ip link set dev " + INTERNET_BRIDGE + " up")
-
+        
         if self._single_intf:
             self._ci_post_network_create()
-        
+
         self._create_private_net()
 
         self.listener = Listener(self._dev_intf)
@@ -341,60 +264,72 @@ class NetworkOrchestrator:
 
         for module_dir in os.listdir(net_modules_dir):
 
-            net_module = NetworkModule()
-
-            # Load basic module information
-
-            net_module_json = json.load(open(os.path.join(
-                self._path, net_modules_dir, module_dir, NETWORK_MODULE_METADATA), encoding='UTF-8'))
-
-            net_module.name = net_module_json['config']['meta']['name']
-            net_module.display_name = net_module_json['config']['meta']['display_name']
-            net_module.description = net_module_json['config']['meta']['description']
-            net_module.dir = os.path.join(
-                self._path, net_modules_dir, module_dir)
-            net_module.dir_name = module_dir
-            net_module.build_file = module_dir + ".Dockerfile"
-            net_module.container_name = "tr-ct-" + net_module.dir_name
-            net_module.image_name = "test-run/" + net_module.dir_name
-
-            # Attach folder mounts to network module
-            if "docker" in net_module_json['config']:
-                if "mounts" in net_module_json['config']['docker']:
-                    for mount_point in net_module_json['config']['docker']['mounts']:
-                        net_module.mounts.append(Mount(
-                            target=mount_point['target'],
-                            source=os.path.join(
-                                os.getcwd(), mount_point['source']),
-                            type='bind'
-                        ))
-
-            # Determine if this is a container or just an image/template
-            if "enable_container" in net_module_json['config']['docker']:
-                net_module.enable_container = net_module_json['config']['docker']['enable_container']
-
-            # Load network service networking configuration
-            if net_module.enable_container:
-
-                net_module.net_config.enable_wan = net_module_json['config']['network']['enable_wan']
-                net_module.net_config.ip_index = net_module_json['config']['network']['ip_index']
-
-                net_module.net_config.host = False if not "host" in net_module_json[
-                    'config']['network'] else net_module_json['config']['network']['host']
-
-                net_module.net_config.ipv4_address = self.network_config.ipv4_network[
-                    net_module.net_config.ip_index]
-                net_module.net_config.ipv4_network = self.network_config.ipv4_network
-
-                net_module.net_config.ipv6_address = self.network_config.ipv6_network[
-                    net_module.net_config.ip_index]
-                net_module.net_config.ipv6_network = self.network_config.ipv6_network
-
-                loaded_modules += net_module.dir_name + " "
-
-                self._net_modules.append(net_module)
+            if self._get_network_module(module_dir) is None:
+              loaded_module = self._load_network_module(module_dir)
+              loaded_modules += loaded_module.dir_name + " "
 
         LOGGER.info(loaded_modules)
+
+    def _load_network_module(self, module_dir):
+        
+        net_modules_dir = os.path.join(self._path, NETWORK_MODULES_DIR)
+
+        net_module = NetworkModule()
+
+        # Load basic module information
+        net_module_json = json.load(open(os.path.join(
+            self._path, net_modules_dir, module_dir, NETWORK_MODULE_METADATA), encoding='UTF-8'))
+
+        net_module.name = net_module_json['config']['meta']['name']
+        net_module.display_name = net_module_json['config']['meta']['display_name']
+        net_module.description = net_module_json['config']['meta']['description']
+        net_module.dir = os.path.join(
+            self._path, net_modules_dir, module_dir)
+        net_module.dir_name = module_dir
+        net_module.build_file = module_dir + ".Dockerfile"
+        net_module.container_name = "tr-ct-" + net_module.dir_name
+        net_module.image_name = "test-run/" + net_module.dir_name
+
+        # Attach folder mounts to network module
+        if "docker" in net_module_json['config']:
+            
+            if "mounts" in net_module_json['config']['docker']:
+                for mount_point in net_module_json['config']['docker']['mounts']:
+                    net_module.mounts.append(Mount(
+                        target=mount_point['target'],
+                        source=os.path.join(
+                            os.getcwd(), mount_point['source']),
+                        type='bind'
+                    ))
+
+            if "depends_on" in net_module_json['config']['docker']:
+                depends_on_module = net_module_json['config']['docker']['depends_on']
+                if self._get_network_module(depends_on_module) is None:
+                    self._load_network_module(depends_on_module)
+
+        # Determine if this is a container or just an image/template
+        if "enable_container" in net_module_json['config']['docker']:
+            net_module.enable_container = net_module_json['config']['docker']['enable_container']
+
+        # Load network service networking configuration
+        if net_module.enable_container:
+
+            net_module.net_config.enable_wan = net_module_json['config']['network']['enable_wan']
+            net_module.net_config.ip_index = net_module_json['config']['network']['ip_index']
+
+            net_module.net_config.host = False if not "host" in net_module_json[
+                'config']['network'] else net_module_json['config']['network']['host']
+
+            net_module.net_config.ipv4_address = self.network_config.ipv4_network[
+                net_module.net_config.ip_index]
+            net_module.net_config.ipv4_network = self.network_config.ipv4_network
+
+            net_module.net_config.ipv6_address = self.network_config.ipv6_network[
+                net_module.net_config.ip_index]
+            net_module.net_config.ipv6_network = self.network_config.ipv6_network
+            
+        self._net_modules.append(net_module)
+        return net_module
 
     def build_network_modules(self):
         LOGGER.info("Building network modules...")
@@ -413,7 +348,7 @@ class NetworkOrchestrator:
 
     def _get_network_module(self, name):
         for net_module in self._net_modules:
-            if name == net_module.display_name:
+            if name == net_module.display_name or name == net_module.name or name == net_module.dir_name:
                 return net_module
         return None
 
@@ -632,7 +567,6 @@ class NetworkOrchestrator:
 
         LOGGER.info("Network is restored")
 
-
 class NetworkModule:
 
     def __init__(self):
@@ -655,7 +589,6 @@ class NetworkModule:
         self.net_config = NetworkModuleNetConfig()
 
 # The networking configuration for a network module
-
 
 class NetworkModuleNetConfig:
 
