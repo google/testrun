@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import getpass
 import ipaddress
 import json
 import os
@@ -31,10 +32,10 @@ RUNTIME = 300
 class NetworkOrchestrator:
     """Manage and controls a virtual testing network."""
 
-    def __init__(self, config_file=CONFIG_FILE, validate=True, async_monitor=False):
+    def __init__(self, config_file=CONFIG_FILE, validate=True, async_monitor=False, single_intf = False):
         self._int_intf = None
         self._dev_intf = None
-
+        self._single_intf = single_intf
         self.listener = None
 
         self._net_modules = []
@@ -178,6 +179,38 @@ class NetworkOrchestrator:
             check_duplicate=True,
             driver="macvlan"
         )
+        
+    def _ci_pre_network_create(self):
+        """ Stores network properties to restore network after 
+        network creation and flushes internet interface
+        """
+
+        self._ethmac = subprocess.check_output(
+            f"cat /sys/class/net/{self._int_intf}/address", shell=True).decode("utf-8").strip()
+        self._gateway = subprocess.check_output(
+            "ip route | head -n 1 | awk '{print $3}'", shell=True).decode("utf-8").strip()
+        self._ipv4 = subprocess.check_output(
+            f"ip a show {self._int_intf} | grep \"inet \" | awk '{{print $2}}'", shell=True).decode("utf-8").strip()
+        self._ipv6 = subprocess.check_output(
+            f"ip a show {self._int_intf} | grep inet6 | awk '{{print $2}}'", shell=True).decode("utf-8").strip()
+        self._brd = subprocess.check_output(
+            f"ip a show {self._int_intf} | grep \"inet \" | awk '{{print $4}}'", shell=True).decode("utf-8").strip()
+    
+    def _ci_post_network_create(self):
+        """ Restore network connection in CI environment """
+        LOGGER.info("post cr")
+        util.run_command(f"ip address del {self._ipv4} dev {self._int_intf}")
+        util.run_command(f"ip -6 address del {self._ipv6} dev {self._int_intf}")
+        util.run_command(f"ip link set dev {self._int_intf} address 00:B0:D0:63:C2:26")
+        util.run_command(f"ip addr flush dev {self._int_intf}")
+        util.run_command(f"ip addr add dev {self._int_intf} 0.0.0.0")
+        util.run_command(f"ip addr add dev {INTERNET_BRIDGE} {self._ipv4} broadcast {self._brd}")
+        util.run_command(f"ip -6 addr add {self._ipv6} dev {INTERNET_BRIDGE} ")
+        util.run_command(f"systemd-resolve --interface {INTERNET_BRIDGE} --set-dns 8.8.8.8")
+        util.run_command(f"ip link set dev {INTERNET_BRIDGE} up")
+        util.run_command(f"dhclient {INTERNET_BRIDGE}")
+        util.run_command(f"ip route del default via 10.1.0.1")
+        util.run_command(f"ip route add default via {self._gateway} src {self._ipv4[:-3]} metric 100 dev {INTERNET_BRIDGE}")
 
     def create_net(self):
         LOGGER.info("Creating baseline network")
@@ -186,6 +219,9 @@ class NetworkOrchestrator:
             LOGGER.error("Configured interfaces are not ready for use. " +
                          "Ensure both interfaces are connected.")
             sys.exit(1)
+            
+        if self._single_intf:
+            self._ci_pre_network_create()
 
         # Create data plane
         util.run_command("ovs-vsctl add-br " + DEVICE_BRIDGE)
@@ -209,6 +245,9 @@ class NetworkOrchestrator:
         # Set ports up
         util.run_command("ip link set dev " + DEVICE_BRIDGE + " up")
         util.run_command("ip link set dev " + INTERNET_BRIDGE + " up")
+        
+        if self._single_intf:
+            self._ci_post_network_create()
 
         self._create_private_net()
 
@@ -337,7 +376,7 @@ class NetworkOrchestrator:
                 privileged=True,
                 detach=True,
                 mounts=net_module.mounts,
-                environment={"HOST_USER": os.getlogin()}
+                environment={"HOST_USER": getpass.getuser()}
             )
         except docker.errors.ContainerError as error:
             LOGGER.error("Container run error")
