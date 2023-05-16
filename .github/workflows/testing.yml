@@ -1,0 +1,30 @@
+name: Testrun test suite
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 13 * * *'
+
+jobs:
+  testrun:
+    name:  Baseline
+    runs-on: ubuntu-20.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2.3.4
+      - name: Run tests
+        shell: bash {0}
+        run: testing/test_baseline
+
+  pylint:
+    name:  Pylint
+    runs-on: ubuntu-20.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2.3.4
+      - name: Run tests
+        shell: bash {0}
+        run: testing/test_pylint

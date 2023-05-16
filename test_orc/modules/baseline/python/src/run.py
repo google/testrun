@@ -8,7 +8,7 @@ import logger
 from baseline_module import BaselineModule
 
 LOGGER = logger.get_logger('test_module')
-RUNTIME = 300
+RUNTIME = 1500
 
 class BaselineModuleRunner:
 

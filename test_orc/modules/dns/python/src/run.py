@@ -10,7 +10,7 @@ from dns_module import DNSModule
 
 LOG_NAME = "dns_module"
 LOGGER = logger.get_logger(LOG_NAME)
-RUNTIME = 300
+RUNTIME = 1500
 
 class DNSModuleRunner:
 
