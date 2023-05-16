@@ -8,7 +8,7 @@
     "network": true,
     "docker": {
       "enable_container": true,
-      "timeout": 300
+      "timeout": 600
     },
     "tests": [
       {
@@ -71,6 +71,9 @@
           "security.services.http": {
             "tcp_ports": {
               "80": {
+                "service_scan": {
+                  "script": "http-methods"
+                },
                 "allowed": false,
                 "description": "Administrative Insecure Web-Server"
               }

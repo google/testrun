@@ -30,7 +30,7 @@ sys.path.append(test_orc_dir)
 LOGGER = logger.get_logger('test_run')
 CONFIG_FILE = 'conf/system.json'
 EXAMPLE_CONFIG_FILE = 'conf/system.json.example'
-RUNTIME = 300
+RUNTIME = 600
 
 LOCAL_DEVICES_DIR = 'local/devices'
 RESOURCE_DEVICES_DIR = 'resources/devices'

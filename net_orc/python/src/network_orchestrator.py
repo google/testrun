@@ -26,7 +26,7 @@ DEVICE_BRIDGE = "tr-d"
 INTERNET_BRIDGE = "tr-c"
 PRIVATE_DOCKER_NET = "tr-private-net"
 CONTAINER_NAME = "network_orchestrator"
-RUNTIME = 300
+RUNTIME = 600
 
 
 class NetworkOrchestrator:
