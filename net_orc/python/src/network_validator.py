@@ -5,6 +5,7 @@ import shutil
 import time
 import docker
 from docker.types import Mount
+import getpass
 import logger
 import util
 
@@ -144,7 +145,7 @@ class NetworkValidator:
                 privileged=True,
                 detach=True,
                 mounts=device.mounts,
-                environment={"HOST_USER": os.getlogin()}
+                environment={"HOST_USER": getpass.getuser()}
             )
         except docker.errors.ContainerError as error:
             LOGGER.error("Container run error")

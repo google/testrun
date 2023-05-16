@@ -1,0 +1,26 @@
+#!/bin/bash
+
+ERROR_LIMIT=2534
+
+sudo cmd/install
+
+source venv/bin/activate
+sudo pip3 install pylint
+
+files=$(find . -path ./venv -prune -o -name '*.py' -print)
+
+OUT=pylint.out
+
+rm -f $OUT && touch $OUT
+pylint $files -ry --extension-pkg-allow-list=docker  2>/dev/null | tee -a $OUT
+
+new_errors=$(cat $OUT | grep "statements analysed." | awk '{print $1}')
+
+echo "$new_errors > $ERROR_LIMIT?"
+if (( $new_errors > $ERROR_LIMIT)); then
+    echo new errors $new_errors > error limit $ERROR_LIMIT 
+    echo failing ..
+    exit 1
+fi
+
+exit 0

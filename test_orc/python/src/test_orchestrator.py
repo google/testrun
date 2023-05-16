@@ -1,4 +1,5 @@
 """Provides high level management of the test orchestrator."""
+import getpass
 import os
 import json
 import time
@@ -43,7 +44,7 @@ class TestOrchestrator:
 
     def run_test_modules(self, device):
         """Iterates through each test module and starts the container."""
-        LOGGER.info("Running test modules...")
+        LOGGER.info(f"Running test modules on device with mac addr {device.mac_addr}")
         for module in self._test_modules:
             self._run_test_module(module, device)
         LOGGER.info("All tests complete")
@@ -87,7 +88,7 @@ class TestOrchestrator:
                     ),
                 ],
                 environment={
-                    "HOST_USER": os.getlogin(), 
+                    "HOST_USER": getpass.getuser(), 
                     "DEVICE_MAC": device.mac_addr,
                     "DEVICE_TEST_MODULES": device.test_modules
                 }

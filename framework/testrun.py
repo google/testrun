@@ -12,7 +12,6 @@ import json
 import signal
 import time
 import logger
-from device import Device
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -30,10 +29,12 @@ from listener import NetworkEvent  # pylint: disable=wrong-import-position,impor
 import test_orchestrator as test_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
 import network_orchestrator as net_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
 
+from device import Device # pylint: disable=wrong-import-position,import-outside-toplevel
+
 LOGGER = logger.get_logger('test_run')
 CONFIG_FILE = 'conf/system.json'
 EXAMPLE_CONFIG_FILE = 'conf/system.json.example'
-RUNTIME = 300
+RUNTIME = 1500
 
 LOCAL_DEVICES_DIR = 'local/devices'
 RESOURCE_DEVICES_DIR = 'resources/devices'
@@ -51,9 +52,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
         orchestrator and user interface.
         """
 
-        def __init__(self, config_file=CONFIG_FILE, validate=True, net_only=False):
+        def __init__(self, config_file=CONFIG_FILE, validate=True, net_only=False, single_intf=False):
             self._devices = []
             self._net_only = net_only
+            self._single_intf = single_intf
 
             # Catch any exit signals
             self._register_exits()
@@ -62,7 +64,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
             config_file_abs = self._get_config_abs(config_file=config_file)
 
             self._net_orc = net_orc.NetworkOrchestrator(
-                config_file=config_file_abs, validate=validate, async_monitor=not self._net_only)
+                config_file=config_file_abs, 
+                validate=validate, 
+                async_monitor=not self._net_only,
+                single_intf = self._single_intf)
             self._test_orc = test_orc.TestOrchestrator()
 
         def start(self):
@@ -76,9 +81,11 @@ class TestRun:  # pylint: disable=too-few-public-methods
             else:
                 self._start_network()
                 self._test_orc.start()
+
                 self._net_orc.listener.register_callback(
-                    self._device_discovered,
-                    [NetworkEvent.DEVICE_DISCOVERED])
+                    self._device_stable,
+                    [NetworkEvent.DEVICE_STABLE]
+                )
 
                 LOGGER.info("Waiting for devices on the network...")
 
@@ -113,6 +120,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
             return os.path.abspath(config_file)
 
         def _start_network(self):
+            # Load in local device configs to the network orchestrator
+            self._net_orc._devices = self._devices
+
+            # Start the network orchestrator
             self._net_orc.start()
 
         def _run_tests(self, device):
@@ -165,9 +176,12 @@ class TestRun:  # pylint: disable=too-few-public-methods
                 LOGGER.info(
                     f'Discovered {device.make} {device.model} on the network')
             else:
-                device = Device(make=None, model=None, mac_addr=mac_addr)
+                device = Device(mac_addr=mac_addr)
+                self._devices.append(device)
                 LOGGER.info(
                     f'A new device has been discovered with mac address {mac_addr}')
 
-            # TODO: Pass device information to test orchestrator/runner
-            self._run_tests(device)
+        def _device_stable(self, mac_addr):
+            device = self.get_device(mac_addr)
+            LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
+            self._test_orc.run_test_modules(device)

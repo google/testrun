@@ -3,5 +3,8 @@
     "device_intf": "enx123456789123",
     "internet_intf": "enx123456789124"
   },
-  "log_level": "INFO"
+  "log_level": "INFO",
+  "startup_timeout": 60,
+  "monitor_period": 300,
+  "runtime": 1200
 }

@@ -1,12 +1,12 @@
 """Track device object information."""
 from dataclasses import dataclass
+from network_device import NetworkDevice
 
 
 @dataclass
-class Device:
+class Device(NetworkDevice):
   """Represents a physical device and it's configuration."""
 
-  make: str
-  model: str
-  mac_addr: str
+  make: str = None
+  model: str = None
   test_modules: str = None
