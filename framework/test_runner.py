@@ -19,10 +19,12 @@ LOGGER = logger.get_logger('runner')
 
 class TestRunner:
 
-    def __init__(self, config_file=None, validate=True, net_only=False):
+    def __init__(self, config_file=None, validate=True, net_only=False, single_intf=False):
         self._register_exits()
         self.test_run = TestRun(config_file=config_file,
-                                validate=validate, net_only=net_only)
+                                validate=validate,
+                                net_only=net_only,
+                                single_intf=single_intf)
 
     def _register_exits(self):
         signal.signal(signal.SIGINT, self._exit_handler)
@@ -57,6 +59,8 @@ def parse_args(argv):
                         help="Turn off the validation of the network after network boot")
     parser.add_argument("-net", "--net-only", action="store_true",
                         help="Run the network only, do not run tests")
+    parser.add_argument("--single-intf", action="store_true",
+                    help="Single interface mode (experimental)")
     args, unknown = parser.parse_known_args()
     return args
 
@@ -65,5 +69,6 @@ if __name__ == "__main__":
     args = parse_args(sys.argv)
     runner = TestRunner(config_file=args.config_file,
                         validate=not args.no_validate,
-                        net_only=args.net_only)
+                        net_only=args.net_only,
+                        single_intf=args.single_intf)
     runner.start()
