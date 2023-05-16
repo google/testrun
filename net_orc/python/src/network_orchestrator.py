@@ -111,10 +111,6 @@ class NetworkOrchestrator:
         # Get network ready (via Network orchestrator)
         LOGGER.info("Network is ready.")
 
-        # Start the listener
-        self.listener = Listener(self._dev_intf)
-        self.listener.start_listener()
-
     def stop(self, kill=False):
         """Stop the network orchestrator."""
         self.stop_validator(kill=kill)
@@ -137,22 +133,26 @@ class NetworkOrchestrator:
 
         self.stop()
 
-    def load_config(self,config_file=None):
+    def load_config(self, config_file=None):
+
         if config_file is None:
             # If not defined, use relative pathing to local file
-            self._config_file=os.path.join(self._path, CONFIG_FILE)
+            self._config_file = os.path.join(self._path, CONFIG_FILE)
         else:
             # If defined, use as provided
-            self._config_file=config_file
+            self._config_file = config_file
 
-        self.listener.register_callback(self._device_discovered, [
-                                        NetworkEvent.DEVICE_DISCOVERED])
-        self.listener.register_callback(
-            self._dhcp_lease_ack, [NetworkEvent.DHCP_LEASE_ACK])
-        # TODO: This time should be configurable (How long to hold before exiting, this could be infinite too)
-        time.sleep(self._runtime)
+        if not os.path.isfile(self._config_file):
+            LOGGER.error("Configuration file is not present at " + config_file)
+            LOGGER.info("An example is present in " + EXAMPLE_CONFIG_FILE)
+            sys.exit(1)
 
-        self.stop()
+        LOGGER.info("Loading config file: " +
+                    os.path.abspath(self._config_file))
+        with open(self._config_file, encoding='UTF-8') as config_json_file:
+            config_json = json.load(config_json_file)
+            self.import_config(config_json)
+
 
     def _device_discovered(self, mac_addr):
 
@@ -196,26 +196,6 @@ class NetworkOrchestrator:
         device = NetworkDevice(mac_addr=mac_addr)
         self._devices.append(device)
         return device
-
-    def load_config(self, config_file=None):
-        if config_file is None:
-            # If not defined, use relative pathing to local file
-            self._config_file = os.path.join(self._path, CONFIG_FILE)
-        else:
-            # If defined, use as provided
-            self._config_file = config_file
-
-        if not os.path.isfile(self._config_file):
-            LOGGER.error("Configuration file is not present at " + config_file)
-            LOGGER.info("An example is present in " + EXAMPLE_CONFIG_FILE)
-            sys.exit(1)
-
-        LOGGER.info("Loading config file: " +
-                    os.path.abspath(self._config_file))
-
-        with open(self._config_file, encoding='UTF-8') as config_json_file:
-            config_json = json.load(config_json_file)
-            self.import_config(config_json)
 
     def import_config(self, json_config):
         self._int_intf = json_config['network']['internet_intf']
@@ -347,6 +327,10 @@ class NetworkOrchestrator:
         self._create_private_net()
 
         self.listener = Listener(self._dev_intf)
+        self.listener.register_callback(self._device_discovered, [
+                                        NetworkEvent.DEVICE_DISCOVERED])
+        self.listener.register_callback(
+            self._dhcp_lease_ack, [NetworkEvent.DHCP_LEASE_ACK])
         self.listener.start_listener()
 
     def load_network_modules(self):

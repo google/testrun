@@ -8,7 +8,6 @@ import logger
 from nmap_module import NmapModule
 
 LOGGER = logger.get_logger('test_module')
-RUNTIME = 300
 
 class NmapModuleRunner:
 

@@ -25,6 +25,9 @@ sys.path.append(net_orc_dir)
 test_orc_dir = os.path.join(parent_dir, 'test_orc', 'python', 'src')
 sys.path.append(test_orc_dir)
 
+from listener import NetworkEvent  # pylint: disable=wrong-import-position,import-outside-toplevel
+import test_orchestrator as test_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
+import network_orchestrator as net_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
 
 from device import Device # pylint: disable=wrong-import-position,import-outside-toplevel
 
@@ -57,9 +60,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
         # Catch any exit signals
         self._register_exits()
 
-        # Import the correct net orchestrator
-        self.import_dependencies()
-
         # Expand the config file to absolute pathing
         config_file_abs = self._get_config_abs(config_file=config_file)
 
@@ -68,7 +68,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
             validate=validate, 
             async_monitor=not self._net_only,
             single_intf = self._single_intf)
-        self._test_orc = test_orc.TestOrchestrator()
+        self._test_orc = test_orc.TestOrchestrator(self._net_orc)
 
     def start(self):
 
@@ -81,9 +81,11 @@ class TestRun:  # pylint: disable=too-few-public-methods
         else:
             self._start_network()
             self._test_orc.start()
+            
             self._net_orc.listener.register_callback(
-                self._device_discovered,
-                [NetworkEvent.DEVICE_DISCOVERED])
+                    self._device_stable,
+                    [NetworkEvent.DEVICE_STABLE]
+                )
 
             LOGGER.info("Waiting for devices on the network...")
 
@@ -95,23 +97,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
     def stop(self, kill=False):
         self._stop_tests()
         self._stop_network(kill=kill)
-
-    def import_dependencies(self):
-        # Add net_orc to Python path
-        net_orc_dir = os.path.join(parent_dir, 'net_orc', 'python', 'src')
-        sys.path.append(net_orc_dir)
-        # Import the network orchestrator
-        global net_orc
-        import network_orchestrator as net_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
-
-        # Add test_orc to Python path
-        test_orc_dir = os.path.join(parent_dir, 'test_orc', 'python', 'src')
-        sys.path.append(test_orc_dir)
-        global test_orc
-        import test_orchestrator as test_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
-
-        global NetworkEvent
-        from listener import NetworkEvent  # pylint: disable=wrong-import-position,import-outside-toplevel
 
     def _register_exits(self):
         signal.signal(signal.SIGINT, self._exit_handler)

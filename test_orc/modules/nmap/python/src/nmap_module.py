@@ -178,7 +178,7 @@ class NmapModule(TestModule):
         LOGGER.info("Running nmap TCP port scan")
         LOGGER.info("TCP ports: " + str(ports_to_scan))
         nmap_results, err = util.run_command(
-            "nmap -sT -sV -Pn -v -p " + ports_to_scan + " --allports --version-intensity 7 -T4 " + self._device_ipv4_addr)
+            "nmap -sT -sV -Pn -v -p " + ports_to_scan + " --version-intensity 7 -T4 " + self._device_ipv4_addr)
         LOGGER.info("TCP port scan complete")
         self._scan_tcp_results = self._process_nmap_results(
             nmap_results=nmap_results)

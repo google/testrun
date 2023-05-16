@@ -43,7 +43,7 @@ class TestOrchestrator:
         """Stop any running tests"""
         self._stop_modules()
 
-    def _run_test_modules(self, device):
+    def run_test_modules(self, device):
         """Iterates through each test module and starts the container."""
         LOGGER.info(f"Running test modules on device with mac addr {device.mac_addr}")
         for module in self._test_modules:
