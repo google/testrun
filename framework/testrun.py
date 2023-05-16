@@ -34,7 +34,7 @@ from device import Device # pylint: disable=wrong-import-position,import-outside
 LOGGER = logger.get_logger('test_run')
 CONFIG_FILE = 'conf/system.json'
 EXAMPLE_CONFIG_FILE = 'conf/system.json.example'
-RUNTIME = 300
+RUNTIME = 1500
 
 LOCAL_DEVICES_DIR = 'local/devices'
 RESOURCE_DEVICES_DIR = 'resources/devices'
@@ -52,9 +52,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
         orchestrator and user interface.
         """
 
-        def __init__(self, config_file=CONFIG_FILE, validate=True, net_only=False):
+        def __init__(self, config_file=CONFIG_FILE, validate=True, net_only=False, single_intf=False):
             self._devices = []
             self._net_only = net_only
+            self._single_intf = single_intf
 
             # Catch any exit signals
             self._register_exits()
@@ -63,7 +64,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
             config_file_abs = self._get_config_abs(config_file=config_file)
 
             self._net_orc = net_orc.NetworkOrchestrator(
-                config_file=config_file_abs, validate=validate, async_monitor=not self._net_only)
+                config_file=config_file_abs, 
+                validate=validate, 
+                async_monitor=not self._net_only,
+                single_intf = self._single_intf)
             self._test_orc = test_orc.TestOrchestrator()
 
         def start(self):

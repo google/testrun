@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import binascii
+import getpass
 import ipaddress
 import json
 import os
 from scapy.all import BOOTP
+import subprocess
 import sys
 import time
 import threading
@@ -38,30 +40,35 @@ DEFAULT_STARTUP_TIMEOUT = 60
 DEFAULT_RUNTIME = 1200
 DEFAULT_MONITOR_PERIOD = 300
 
+RUNTIME = 1500
+
 
 class NetworkOrchestrator:
     """Manage and controls a virtual testing network."""
 
-    def __init__(self, config_file=CONFIG_FILE, validate=True, async_monitor=False):
-
+    def __init__(self, config_file=CONFIG_FILE, validate=True, async_monitor=False, single_intf = False):
+        
         self._runtime = DEFAULT_RUNTIME
         self._startup_timeout = DEFAULT_STARTUP_TIMEOUT
         self._monitor_period = DEFAULT_MONITOR_PERIOD
 
         self._int_intf = None
         self._dev_intf = None
+        self._single_intf = single_intf
+
         self.listener = None
 
         self._net_modules = []
-        self._devices = []
 
         self.validate = validate
+
         self.async_monitor = async_monitor
 
         self._path = os.path.dirname(os.path.dirname(
             os.path.dirname(os.path.realpath(__file__))))
 
         self.validator = NetworkValidator()
+
         self.network_config = NetworkConfig()
 
         self.load_config(config_file)
@@ -123,7 +130,6 @@ class NetworkOrchestrator:
         self.restore_net()
 
     def monitor_network(self):
-
         self.listener.register_callback(self._device_discovered, [
                                         NetworkEvent.DEVICE_DISCOVERED])
         self.listener.register_callback(
@@ -210,14 +216,14 @@ class NetworkOrchestrator:
         for net_module in self._net_modules:
             if net_module.enable_container:
                 LOGGER.debug("Checking network module: " +
-                             net_module.display_name)
+                            net_module.display_name)
                 success = self._ping(net_module)
                 if success:
                     LOGGER.debug(net_module.display_name +
-                                 " responded succesfully: " + str(success))
+                                " responded succesfully: " + str(success))
                 else:
                     LOGGER.error(net_module.display_name +
-                                 " failed to respond to ping")
+                                    " failed to respond to ping")
 
     def _ping(self, net_module):
         host = net_module.net_config.ipv4_address
@@ -225,6 +231,38 @@ class NetworkOrchestrator:
         cmd = "ip netns exec " + namespace + " ping -c 1 " + str(host)
         success = util.run_command(cmd, output=False)
         return success
+
+    def _ci_pre_network_create(self):
+        """ Stores network properties to restore network after 
+        network creation and flushes internet interface
+        """
+
+        self._ethmac = subprocess.check_output(
+            f"cat /sys/class/net/{self._int_intf}/address", shell=True).decode("utf-8").strip()
+        self._gateway = subprocess.check_output(
+            "ip route | head -n 1 | awk '{print $3}'", shell=True).decode("utf-8").strip()
+        self._ipv4 = subprocess.check_output(
+            f"ip a show {self._int_intf} | grep \"inet \" | awk '{{print $2}}'", shell=True).decode("utf-8").strip()
+        self._ipv6 = subprocess.check_output(
+            f"ip a show {self._int_intf} | grep inet6 | awk '{{print $2}}'", shell=True).decode("utf-8").strip()
+        self._brd = subprocess.check_output(
+            f"ip a show {self._int_intf} | grep \"inet \" | awk '{{print $4}}'", shell=True).decode("utf-8").strip()
+
+    def _ci_post_network_create(self):
+        """ Restore network connection in CI environment """
+        LOGGER.info("post cr")
+        util.run_command(f"ip address del {self._ipv4} dev {self._int_intf}")
+        util.run_command(f"ip -6 address del {self._ipv6} dev {self._int_intf}")
+        util.run_command(f"ip link set dev {self._int_intf} address 00:B0:D0:63:C2:26")
+        util.run_command(f"ip addr flush dev {self._int_intf}")
+        util.run_command(f"ip addr add dev {self._int_intf} 0.0.0.0")
+        util.run_command(f"ip addr add dev {INTERNET_BRIDGE} {self._ipv4} broadcast {self._brd}")
+        util.run_command(f"ip -6 addr add {self._ipv6} dev {INTERNET_BRIDGE} ")
+        util.run_command(f"systemd-resolve --interface {INTERNET_BRIDGE} --set-dns 8.8.8.8")
+        util.run_command(f"ip link set dev {INTERNET_BRIDGE} up")
+        util.run_command(f"dhclient {INTERNET_BRIDGE}")
+        util.run_command(f"ip route del default via 10.1.0.1")
+        util.run_command(f"ip route add default via {self._gateway} src {self._ipv4[:-3]} metric 100 dev {INTERNET_BRIDGE}")
 
     def _create_private_net(self):
         client = docker.from_env()
@@ -259,6 +297,9 @@ class NetworkOrchestrator:
             LOGGER.error("Configured interfaces are not ready for use. " +
                          "Ensure both interfaces are connected.")
             sys.exit(1)
+        
+        if self._single_intf:
+            self._ci_pre_network_create()
 
         # Create data plane
         util.run_command("ovs-vsctl add-br " + DEVICE_BRIDGE)
@@ -283,7 +324,13 @@ class NetworkOrchestrator:
         util.run_command("ip link set dev " + DEVICE_BRIDGE + " up")
         util.run_command("ip link set dev " + INTERNET_BRIDGE + " up")
 
+        if self._single_intf:
+            self._ci_post_network_create()
+        
         self._create_private_net()
+
+        self.listener = Listener(self._dev_intf)
+        self.listener.start_listener()
 
     def load_network_modules(self):
         """Load network modules from module_config.json."""
@@ -370,6 +417,10 @@ class NetworkOrchestrator:
                 return net_module
         return None
 
+    # Start the OVS network module
+    # This should always be called before loading all
+    # other modules to allow for a properly setup base
+    # network
     def _start_ovs_module(self):
         self._start_network_service(self._get_network_module("OVS"))
 
@@ -391,7 +442,7 @@ class NetworkOrchestrator:
                 privileged=True,
                 detach=True,
                 mounts=net_module.mounts,
-                environment={"HOST_USER": os.getlogin()}
+                environment={"HOST_USER": getpass.getuser()}
             )
         except docker.errors.ContainerError as error:
             LOGGER.error("Container run error")
@@ -501,8 +552,7 @@ class NetworkOrchestrator:
                          " ip link set dev " + container_intf + " name veth0")
 
         # Set MAC address of container interface
-        util.run_command("ip netns exec " + container_net_ns +
-                         " ip link set dev veth0 address 9a:02:57:1e:8f:" + str(net_module.net_config.ip_index))
+        util.run_command("ip netns exec " + container_net_ns + " ip link set dev veth0 address 9a:02:57:1e:8f:" + str(net_module.net_config.ip_index))
 
         # Set IP address of container interface
         util.run_command("ip netns exec " + container_net_ns + " ip addr add " +
@@ -584,7 +634,6 @@ class NetworkOrchestrator:
 
 
 class NetworkModule:
-    """Represents each network module discovered from network/modules."""
 
     def __init__(self):
         self.name = None
@@ -605,9 +654,10 @@ class NetworkModule:
 
         self.net_config = NetworkModuleNetConfig()
 
+# The networking configuration for a network module
+
 
 class NetworkModuleNetConfig:
-    """The networking configuration for a network module."""
 
     def __init__(self):
 
@@ -627,9 +677,9 @@ class NetworkModuleNetConfig:
     def get_ipv6_addr_with_prefix(self):
         return format(self.ipv6_address) + "/" + str(self.ipv6_network.prefixlen)
 
+# Represents the current configuration of the network for the device bridge
 
 class NetworkConfig:
-    """Represents the current configuration of the network for the device bridge."""
 
     # TODO: Let's get this from a configuration file
     def __init__(self):

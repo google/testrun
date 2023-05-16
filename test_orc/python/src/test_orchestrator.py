@@ -1,4 +1,5 @@
 """Provides high level management of the test orchestrator."""
+import getpass
 import os
 import json
 import time
@@ -87,7 +88,7 @@ class TestOrchestrator:
                     ),
                 ],
                 environment={
-                    "HOST_USER": os.getlogin(), 
+                    "HOST_USER": getpass.getuser(), 
                     "DEVICE_MAC": device.mac_addr,
                     "DEVICE_TEST_MODULES": device.test_modules
                 }
