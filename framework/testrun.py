@@ -12,7 +12,6 @@ import json
 import signal
 import time
 import logger
-from device import Device
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -29,6 +28,8 @@ sys.path.append(test_orc_dir)
 from listener import NetworkEvent  # pylint: disable=wrong-import-position,import-outside-toplevel
 import test_orchestrator as test_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
 import network_orchestrator as net_orc  # pylint: disable=wrong-import-position,import-outside-toplevel
+
+from device import Device # pylint: disable=wrong-import-position,import-outside-toplevel
 
 LOGGER = logger.get_logger('test_run')
 CONFIG_FILE = 'conf/system.json'
@@ -80,9 +81,11 @@ class TestRun:  # pylint: disable=too-few-public-methods
             else:
                 self._start_network()
                 self._test_orc.start()
+
                 self._net_orc.listener.register_callback(
-                    self._device_discovered,
-                    [NetworkEvent.DEVICE_DISCOVERED])
+                    self._device_stable,
+                    [NetworkEvent.DEVICE_STABLE]
+                )
 
                 LOGGER.info("Waiting for devices on the network...")
 
@@ -117,6 +120,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
             return os.path.abspath(config_file)
 
         def _start_network(self):
+            # Load in local device configs to the network orchestrator
+            self._net_orc._devices = self._devices
+
+            # Start the network orchestrator
             self._net_orc.start()
 
         def _run_tests(self, device):
@@ -169,9 +176,12 @@ class TestRun:  # pylint: disable=too-few-public-methods
                 LOGGER.info(
                     f'Discovered {device.make} {device.model} on the network')
             else:
-                device = Device(make=None, model=None, mac_addr=mac_addr)
+                device = Device(mac_addr=mac_addr)
+                self._devices.append(device)
                 LOGGER.info(
                     f'A new device has been discovered with mac address {mac_addr}')
 
-            # TODO: Pass device information to test orchestrator/runner
-            self._run_tests(device)
+        def _device_stable(self, mac_addr):
+            device = self.get_device(mac_addr)
+            LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
+            self._test_orc.run_test_modules(device)
