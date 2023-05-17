@@ -47,7 +47,7 @@ class Listener:
     for callback in self._callbacks:
       if net_event in callback['events']:
         callback_thread = threading.Thread(target=callback['callback'],
-                                           name="Callback thread",
+                                           name='Callback thread',
                                            args=args)
         callback_thread.start()
 
