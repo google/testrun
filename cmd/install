@@ -4,8 +4,6 @@ python3 -m venv venv
 
 source venv/bin/activate
 
-pip3 install --upgrade requests
-
 pip3 install -r framework/requirements.txt
 
 pip3 install -r net_orc/python/requirements.txt
