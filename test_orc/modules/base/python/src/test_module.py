@@ -47,9 +47,11 @@ class TestModule:
             return module_tests
 
     def _get_device_test_module(self):
-        test_modules = json.loads(os.environ['DEVICE_TEST_MODULES'])
-        if self._module_name in test_modules:
-            return test_modules[self._module_name]
+        # TODO: Make DEVICE_TEST_MODULES a static string
+        if 'DEVICE_TEST_MODULES' in os.environ:
+          test_modules = json.loads(os.environ['DEVICE_TEST_MODULES'])
+          if self._module_name in test_modules:
+              return test_modules[self._module_name]
         return None
 
     def run_tests(self):
