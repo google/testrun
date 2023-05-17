@@ -10,5 +10,4 @@ class Device(NetworkDevice):
 
   make: str = None
   model: str = None
-  mac_addr: str
   test_modules: str = None
