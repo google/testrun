@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-import binascii
 import getpass
 import ipaddress
 import json
 import os
-from scapy.all import BOOTP
+from scapy.all import sniff, wrpcap, BOOTP
 import shutil
 import subprocess
 import sys
@@ -24,7 +23,10 @@ from network_validator import NetworkValidator
 LOGGER = logger.get_logger("net_orc")
 CONFIG_FILE = "conf/system.json"
 EXAMPLE_CONFIG_FILE = "conf/system.json.example"
-RUNTIME_DIR = "runtime/network"
+RUNTIME_DIR = "runtime"
+DEVICES_DIR = "devices"
+MONITOR_PCAP = "monitor.pcap"
+NET_DIR = "runtime/network"
 NETWORK_MODULES_DIR = "network/modules"
 NETWORK_MODULE_METADATA = "conf/module_config.json"
 DEVICE_BRIDGE = "tr-d"
@@ -41,7 +43,6 @@ DEFAULT_MONITOR_PERIOD = 300
 
 RUNTIME = 1500
 
-
 class NetworkOrchestrator:
     """Manage and controls a virtual testing network."""
 
@@ -56,22 +57,17 @@ class NetworkOrchestrator:
         self._single_intf = single_intf
 
         self.listener = None
-
         self._net_modules = []
-
+        self._devices = []
         self.validate = validate
-
         self.async_monitor = async_monitor
 
         self._path = os.path.dirname(os.path.dirname(
             os.path.dirname(os.path.realpath(__file__))))
 
         self.validator = NetworkValidator()
-
-        shutil.rmtree(os.path.join(os.getcwd(), RUNTIME_DIR), ignore_errors=True)
-
+        shutil.rmtree(os.path.join(os.getcwd(), NET_DIR), ignore_errors=True)
         self.network_config = NetworkConfig()
-
         self.load_config(config_file)
 
     def start(self):
@@ -154,6 +150,7 @@ class NetworkOrchestrator:
 
         LOGGER.debug(f'Discovered device {mac_addr}. Waiting for device to obtain IP')
         device = self._get_device(mac_addr=mac_addr)
+        os.makedirs(os.path.join(RUNTIME_DIR, DEVICES_DIR, device.mac_addr.replace(':', '')))
 
         timeout = time.time() + self._startup_timeout
 
@@ -180,15 +177,15 @@ class NetworkOrchestrator:
         """Start a timer until the steady state has been reached and
         callback the steady state method for this device."""
         LOGGER.info(f"Monitoring device with mac addr {device.mac_addr} for {str(self._monitor_period)} seconds")
-        timer = Timer(self._monitor_period,
-                      self.listener.call_callback,
-                      args=(NetworkEvent.DEVICE_STABLE, device.mac_addr,))
-        timer.start()
+        packet_capture = sniff(iface=self._dev_intf, timeout=self._monitor_period)
+        wrpcap(os.path.join(RUNTIME_DIR, DEVICES_DIR, device.mac_addr.replace(":",""), 'monitor.pcap'), packet_capture)
+        self.listener.call_callback(NetworkEvent.DEVICE_STABLE, device.mac_addr)
 
     def _get_device(self, mac_addr):
         for device in self._devices:
             if device.mac_addr == mac_addr:
                 return device
+            
         device = NetworkDevice(mac_addr=mac_addr)
         self._devices.append(device)
         return device
@@ -504,7 +501,7 @@ class NetworkOrchestrator:
     def start_network_services(self):
         LOGGER.info("Starting network services")
 
-        os.makedirs(os.path.join(os.getcwd(), RUNTIME_DIR), exist_ok=True)
+        os.makedirs(os.path.join(os.getcwd(), NET_DIR), exist_ok=True)
 
         for net_module in self._net_modules:
 
@@ -525,11 +522,11 @@ class NetworkOrchestrator:
         LOGGER.debug("Attaching test module  " +
                      test_module.display_name + " to device bridge")
 
-        # Device bridge interface example: tr-di-baseline-test (Test Run Device Interface for baseline test container)
-        bridge_intf = DEVICE_BRIDGE + "i-" + test_module.dir_name + "-test"
+        # Device bridge interface example: tr-d-t-baseline (Test Run Device Interface for Test container)
+        bridge_intf = DEVICE_BRIDGE + "-t-" + test_module.dir_name
 
-        # Container interface example: tr-cti-baseline-test (Test Run Container Interface for baseline test container)
-        container_intf = "tr-test-" + test_module.dir_name
+        # Container interface example: tr-cti-baseline-test (Test Run Test Container Interface for test container)
+        container_intf = "tr-tci-" + test_module.dir_name
 
         # Container network namespace name
         container_net_ns = "tr-test-" + test_module.dir_name

@@ -57,8 +57,8 @@ class TestOrchestrator:
             return
 
         LOGGER.info("Running test module " + module.name)
-        try:
 
+        try:
             container_runtime_dir = os.path.join(
                 self._root_path, "runtime/test/" + device.mac_addr.replace(":","") + "/" + module.name)
             network_runtime_dir = os.path.join(
@@ -103,7 +103,7 @@ class TestOrchestrator:
 
         # Mount the test container to the virtual network if requried
         if module.network:
-            LOGGER.info("Mounting test module to the network")
+            LOGGER.debug("Attaching test module to the network")
             self._net_orc._attach_test_module_to_network(module)
 
         # Determine the module timeout time
