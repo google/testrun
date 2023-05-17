@@ -19,9 +19,10 @@ MODULE_CONFIG = "conf/module_config.json"
 class TestOrchestrator:
     """Manages and controls the test modules."""
 
-    def __init__(self):
+    def __init__(self,net_orc):
         self._test_modules = []
         self._module_config = None
+        self._net_orc = net_orc
 
         self._path = os.path.dirname(os.path.dirname(
             os.path.dirname(os.path.realpath(__file__))))
@@ -90,13 +91,20 @@ class TestOrchestrator:
                 environment={
                     "HOST_USER": getpass.getuser(), 
                     "DEVICE_MAC": device.mac_addr,
-                    "DEVICE_TEST_MODULES": device.test_modules
+                    "DEVICE_TEST_MODULES": device.test_modules,
+                    "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
+                    "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
                 }
             )
         except (docker.errors.APIError, docker.errors.ContainerError) as container_error:
             LOGGER.error("Test module " + module.name + " has failed to start")
             LOGGER.debug(container_error)
             return
+
+        # Mount the test container to the virtual network if requried
+        if module.network:
+            LOGGER.info("Mounting test module to the network")
+            self._net_orc._attach_test_module_to_network(module)
 
         # Determine the module timeout time
         test_module_timeout = time.time() + module.timeout
