@@ -4,7 +4,7 @@ import shlex
 import logger
 import netifaces
 
-LOGGER = logger.get_logger("util")
+LOGGER = logger.get_logger('util')
 
 
 def run_command(cmd, output=True):
@@ -20,14 +20,15 @@ def run_command(cmd, output=True):
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
   stdout, stderr = process.communicate()
+
   if process.returncode != 0 and output:
-    err_msg = "%s. Code: %s" % (stderr.strip(), process.returncode)
-    LOGGER.error("Command Failed: " + cmd)
-    LOGGER.error("Error: " + err_msg)
+    err_msg = f'{stderr.strip()}. Code: {process.returncode}'
+    LOGGER.error('Command Failed: ' + cmd)
+    LOGGER.error('Error: ' + err_msg)
   else:
     success = True
   if output:
-    return stdout.strip().decode("utf-8"), stderr
+    return stdout.strip().decode('utf-8'), stderr
   else:
     return success
 
@@ -37,4 +38,4 @@ def interface_exists(interface):
 
 
 def prettify(mac_string):
-  return ':'.join('%02x' % ord(b) for b in mac_string)
+  return ':'.join([f'{ord(b):02x}' for b in mac_string])
