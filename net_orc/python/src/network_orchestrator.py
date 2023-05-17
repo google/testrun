@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
 
+import binascii
 import getpass
 import ipaddress
 import json
 import os
+from scapy.all import BOOTP
+import shutil
 import subprocess
 import sys
 import time
 import threading
-
+from threading import Timer
 import docker
 from docker.types import Mount
-
 import logger
 import util
 from listener import Listener
+from network_device import NetworkDevice
+from network_event import NetworkEvent
 from network_validator import NetworkValidator
 
 LOGGER = logger.get_logger("net_orc")
@@ -27,16 +31,30 @@ DEVICE_BRIDGE = "tr-d"
 INTERNET_BRIDGE = "tr-c"
 PRIVATE_DOCKER_NET = "tr-private-net"
 CONTAINER_NAME = "network_orchestrator"
-RUNTIME = 300
+
+RUNTIME_KEY = "runtime"
+MONITOR_PERIOD_KEY = "monitor_period"
+STARTUP_TIMEOUT_KEY = "startup_timeout"
+DEFAULT_STARTUP_TIMEOUT = 60
+DEFAULT_RUNTIME = 1200
+DEFAULT_MONITOR_PERIOD = 300
+
+RUNTIME = 1500
 
 
 class NetworkOrchestrator:
     """Manage and controls a virtual testing network."""
 
     def __init__(self, config_file=CONFIG_FILE, validate=True, async_monitor=False, single_intf = False):
+        
+        self._runtime = DEFAULT_RUNTIME
+        self._startup_timeout = DEFAULT_STARTUP_TIMEOUT
+        self._monitor_period = DEFAULT_MONITOR_PERIOD
+
         self._int_intf = None
         self._dev_intf = None
         self._single_intf = single_intf
+
         self.listener = None
 
         self._net_modules = []
@@ -49,6 +67,8 @@ class NetworkOrchestrator:
             os.path.dirname(os.path.realpath(__file__))))
 
         self.validator = NetworkValidator()
+
+        shutil.rmtree(os.path.join(os.getcwd(), RUNTIME_DIR), ignore_errors=True)
 
         self.network_config = NetworkConfig()
 
@@ -130,9 +150,59 @@ class NetworkOrchestrator:
             config_json = json.load(config_json_file)
             self.import_config(config_json)
 
+    def _device_discovered(self, mac_addr):
+
+        LOGGER.debug(f'Discovered device {mac_addr}. Waiting for device to obtain IP')
+        device = self._get_device(mac_addr=mac_addr)
+
+        timeout = time.time() + self._startup_timeout
+
+        while time.time() < timeout:
+            if device.ip_addr is None:
+                time.sleep(3)
+            else:
+                break
+
+        if device.ip_addr is None:
+            LOGGER.info(f"Timed out whilst waiting for {mac_addr} to obtain an IP address")
+            return
+
+        LOGGER.info(f"Device with mac addr {device.mac_addr} has obtained IP address {device.ip_addr}")
+
+        self._start_device_monitor(device)
+
+    def _dhcp_lease_ack(self, packet):
+        mac_addr = packet[BOOTP].chaddr.hex(":")[0:17]
+        device = self._get_device(mac_addr=mac_addr)
+        device.ip_addr = packet[BOOTP].yiaddr
+
+    def _start_device_monitor(self, device):
+        """Start a timer until the steady state has been reached and
+        callback the steady state method for this device."""
+        LOGGER.info(f"Monitoring device with mac addr {device.mac_addr} for {str(self._monitor_period)} seconds")
+        timer = Timer(self._monitor_period,
+                      self.listener.call_callback,
+                      args=(NetworkEvent.DEVICE_STABLE, device.mac_addr,))
+        timer.start()
+
+    def _get_device(self, mac_addr):
+        for device in self._devices:
+            if device.mac_addr == mac_addr:
+                return device
+        device = NetworkDevice(mac_addr=mac_addr)
+        self._devices.append(device)
+        return device
+
     def import_config(self, json_config):
         self._int_intf = json_config['network']['internet_intf']
         self._dev_intf = json_config['network']['device_intf']
+
+        if RUNTIME_KEY in json_config:
+            self._runtime = json_config[RUNTIME_KEY]
+        if STARTUP_TIMEOUT_KEY in json_config:
+            self._startup_timeout = json_config[STARTUP_TIMEOUT_KEY]
+        if MONITOR_PERIOD_KEY in json_config:
+            self._monitor_period = json_config[MONITOR_PERIOD_KEY]
 
     def _check_network_services(self):
         LOGGER.debug("Checking network modules...")
@@ -253,6 +323,10 @@ class NetworkOrchestrator:
         self._create_private_net()
 
         self.listener = Listener(self._dev_intf)
+        self.listener.register_callback(self._device_discovered, [
+                                        NetworkEvent.DEVICE_DISCOVERED])
+        self.listener.register_callback(
+            self._dhcp_lease_ack, [NetworkEvent.DHCP_LEASE_ACK])
         self.listener.start_listener()
 
     def load_network_modules(self):
@@ -328,7 +402,7 @@ class NetworkOrchestrator:
                 net_module.net_config.ip_index]
             net_module.net_config.ipv6_network = self.network_config.ipv6_network
             
-        self._net_modules.append(net_module)
+            self._net_modules.append(net_module)
         return net_module
 
     def build_network_modules(self):
@@ -446,6 +520,66 @@ class NetworkOrchestrator:
 
         LOGGER.info("All network services are running")
         self._check_network_services()
+
+    def _attach_test_module_to_network(self, test_module):
+        LOGGER.debug("Attaching test module  " +
+                     test_module.display_name + " to device bridge")
+
+        # Device bridge interface example: tr-di-baseline-test (Test Run Device Interface for baseline test container)
+        bridge_intf = DEVICE_BRIDGE + "i-" + test_module.dir_name + "-test"
+
+        # Container interface example: tr-cti-baseline-test (Test Run Container Interface for baseline test container)
+        container_intf = "tr-test-" + test_module.dir_name
+
+        # Container network namespace name
+        container_net_ns = "tr-test-" + test_module.dir_name
+
+        # Create interface pair
+        util.run_command("ip link add " + bridge_intf +
+                         " type veth peer name " + container_intf)
+
+        # Add bridge interface to device bridge
+        util.run_command("ovs-vsctl add-port " +
+                         DEVICE_BRIDGE + " " + bridge_intf)
+
+        # Get PID for running container
+        # TODO: Some error checking around missing PIDs might be required
+        container_pid = util.run_command(
+            "docker inspect -f {{.State.Pid}} " + test_module.container_name)[0]
+
+        # Create symlink for container network namespace
+        util.run_command("ln -sf /proc/" + container_pid +
+                         "/ns/net /var/run/netns/" + container_net_ns)
+
+        # Attach container interface to container network namespace
+        util.run_command("ip link set " + container_intf +
+                         " netns " + container_net_ns)
+
+        # Rename container interface name to veth0
+        util.run_command("ip netns exec " + container_net_ns +
+                         " ip link set dev " + container_intf + " name veth0")
+
+        # Set MAC address of container interface
+        util.run_command("ip netns exec " + container_net_ns + " ip link set dev veth0 address 9a:02:57:1e:8f:" + str(test_module.ip_index))
+
+        # Set IP address of container interface
+        ipv4_address = self.network_config.ipv4_network[test_module.ip_index]
+        ipv6_address = self.network_config.ipv6_network[test_module.ip_index]
+
+        ipv4_address_with_prefix=str(ipv4_address) + "/" + str(self.network_config.ipv4_network.prefixlen)
+        ipv6_address_with_prefix=str(ipv6_address) + "/" + str(self.network_config.ipv6_network.prefixlen)
+
+        util.run_command("ip netns exec " + container_net_ns + " ip addr add " +
+                         ipv4_address_with_prefix + " dev veth0")
+
+        util.run_command("ip netns exec " + container_net_ns + " ip addr add " +
+                         ipv6_address_with_prefix + " dev veth0")
+
+
+        # Set interfaces up
+        util.run_command("ip link set dev " + bridge_intf + " up")
+        util.run_command("ip netns exec " + container_net_ns +
+                         " ip link set dev veth0 up")
 
     # TODO: Let's move this into a separate script? It does not look great
     def _attach_service_to_network(self, net_module):

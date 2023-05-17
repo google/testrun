@@ -2,7 +2,7 @@
 FROM ubuntu:jammy
 
 # Install common software
-RUN apt-get update && apt-get install -y net-tools iputils-ping tcpdump iproute2 jq python3 python3-pip dos2unix
+RUN apt-get update && apt-get install -y net-tools iputils-ping tcpdump iproute2 jq python3 python3-pip dos2unix nmap --fix-missing
 
 # Setup the base python requirements
 COPY modules/base/python /testrun/python

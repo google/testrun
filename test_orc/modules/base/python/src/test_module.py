@@ -1,6 +1,7 @@
 import json
 import logger
 import os
+import util
 
 LOGGER = None
 RESULTS_DIR = "/runtime/output/"
@@ -12,8 +13,12 @@ class TestModule:
     def __init__(self, module_name, log_name):
         self._module_name = module_name
         self._device_mac = os.environ['DEVICE_MAC']
+        self._ipv4_subnet = os.environ['IPV4_SUBNET']
+        self._ipv6_subnet = os.environ['IPV6_SUBNET']
         self._add_logger(log_name=log_name, module_name=module_name)
         self._config = self._read_config()
+        self._device_ipv4_addr = None
+        self._device_ipv6_addr = None
 
     def _add_logger(self, log_name, module_name):
         global LOGGER
@@ -34,8 +39,11 @@ class TestModule:
             return []
         else:
             for test in module_tests:
+                # Resolve device specific configurations for the test if it exists
+                # and update module test config with device config options
                 if test["name"] in device_test_module["tests"]:
-                    test["enabled"] = device_test_module["tests"][test["name"]]["enabled"]
+                    dev_test_config = device_test_module["tests"][test["name"]]
+                    test["config"].update(dev_test_config)
             return module_tests
 
     def _get_device_test_module(self):
@@ -45,8 +53,10 @@ class TestModule:
         return None
 
     def run_tests(self):
+        if self._config["config"]["network"]:
+            self._device_ipv4_addr = self._get_device_ipv4()
+            LOGGER.info("Device IP Resolved: " + str(self._device_ipv4_addr))
         tests = self._get_tests()
-        device_modules = os.environ['DEVICE_TEST_MODULES']
         for test in tests:
             test_method_name = "_" + test["name"].replace(".", "_")
             result = None
@@ -55,7 +65,11 @@ class TestModule:
 
                 # Resolve the correct python method by test name and run test
                 if hasattr(self, test_method_name):
-                    result = getattr(self, test_method_name)()
+                    if "config" in test:
+                        result = getattr(self, test_method_name)(
+                            config=test["config"])
+                    else:
+                        result = getattr(self, test_method_name)()
                 else:
                     LOGGER.info("Test " + test["name"] +
                                 " not resolved. Skipping")
@@ -82,3 +96,11 @@ class TestModule:
         f = open(results_file, "w", encoding="utf-8")
         f.write(results)
         f.close()
+
+    def _get_device_ipv4(self):
+        command = '/testrun/bin/get_ipv4_addr {} {}'.format(
+            self._ipv4_subnet, self._device_mac.upper())
+        text, err = util.run_command(command)
+        if text:
+            return text.split("\n")[0]
+        return None
