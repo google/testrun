@@ -26,13 +26,13 @@ class NetworkService(pb2_grpc.NetworkModule):
       the first range from the first subnet in the configuration
     """
 
-    print("Setting DHCPRange")
-    print("Start: " + request.start)
-    print("End: " + request.end)
+    print('Setting DHCPRange')
+    print('Start: ' + request.start)
+    print('End: ' + request.end)
     self._dhcp_config.resolve_config()
     self._dhcp_config.set_range(request.start, request.end, 0, 0)
     self._dhcp_config.write_config()
-    return pb2.Response(code=200, message="DHCP Range Set")
+    return pb2.Response(code=200, message='DHCP Range Set')
 
   def GetStatus(self, request, context): # pylint: disable=W0613
     """
@@ -40,5 +40,5 @@ class NetworkService(pb2_grpc.NetworkModule):
     """
     # ToDo: Figure out how to resolve the current DHCP status
     dhcp_status = True
-    message = str({"dhcpStatus": dhcp_status})
+    message = str({'dhcpStatus': dhcp_status})
     return pb2.Response(code=200, message=message)
