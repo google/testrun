@@ -43,7 +43,8 @@ class TestModule:
                 # and update module test config with device config options
                 if test["name"] in device_test_module["tests"]:
                     dev_test_config = device_test_module["tests"][test["name"]]
-                    test["config"].update(dev_test_config)
+                    if "config" in test:
+                        test["config"].update(dev_test_config)
             return module_tests
 
     def _get_device_test_module(self):
