@@ -1,3 +1,4 @@
+"""Provides basic utilities for the faux-device."""
 import subprocess
 import shlex
 
@@ -10,19 +11,20 @@ import shlex
 
 
 def run_command(cmd, logger, output=True):
-    success = False
-    process = subprocess.Popen(shlex.split(
-        cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate()
+  success = False
+  process = subprocess.Popen(shlex.split(cmd),
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+  stdout, stderr = process.communicate()
 
-    if process.returncode != 0:
-        err_msg = "%s. Code: %s" % (stderr.strip(), process.returncode)
-        logger.error("Command Failed: " + cmd)
-        logger.error("Error: " + err_msg)
-    else:
-        success = True
+  if process.returncode != 0:
+    err_msg = f'{stderr.strip()}. Code: {process.returncode}'
+    logger.error('Command Failed: ' + cmd)
+    logger.error('Error: ' + err_msg)
+  else:
+    success = True
 
-    if output:
-        return success, stdout.strip().decode('utf-8'), stderr
-    else:
-        return success, None, stderr
+  if output:
+    return success, stdout.strip().decode('utf-8')
+  else:
+    return success, None
