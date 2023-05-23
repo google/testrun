@@ -2,6 +2,7 @@ import json
 import logger
 import os
 import util
+from datetime import datetime
 
 LOGGER = None
 RESULTS_DIR = "/runtime/output/"
@@ -43,7 +44,8 @@ class TestModule:
                 # and update module test config with device config options
                 if test["name"] in device_test_module["tests"]:
                     dev_test_config = device_test_module["tests"][test["name"]]
-                    test["config"].update(dev_test_config)
+                    if "config" in test:
+                        test["config"].update(dev_test_config)
             return module_tests
 
     def _get_device_test_module(self):
@@ -83,6 +85,7 @@ class TestModule:
                 test["result"] = "compliant" if result else "non-compliant"
             else:
                 test["result"] = "skipped"
+            test["timestamp"] = datetime.now().isoformat()
         json_results = json.dumps({"results": tests}, indent=2)
         self._write_results(json_results)
 
