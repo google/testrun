@@ -2,6 +2,7 @@ import json
 import logger
 import os
 import util
+from datetime import datetime
 
 LOGGER = None
 RESULTS_DIR = "/runtime/output/"
@@ -84,6 +85,7 @@ class TestModule:
                 test["result"] = "compliant" if result else "non-compliant"
             else:
                 test["result"] = "skipped"
+            test["timestamp"] = datetime.now().isoformat()
         json_results = json.dumps({"results": tests}, indent=2)
         self._write_results(json_results)
 
