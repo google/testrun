@@ -63,17 +63,18 @@ class TestOrchestrator:
       results["device"]["model"] = device.model
     results["device"]["mac_addr"] = device.mac_addr
     for module in self._test_modules:
-      container_runtime_dir = os.path.join(
-          self._root_path, 'runtime/test/' + device.mac_addr.replace(':', '') +
-          '/' + module.name)
-      results_file = container_runtime_dir + '/' + module.name + '-result.json'
-      try:
-        with open(results_file, 'r', encoding='UTF-8') as f:
-          module_results = json.load(f)
-          results[module.name] = module_results
-      except (FileNotFoundError, PermissionError, json.JSONDecodeError) as results_error:
-        LOGGER.error("Module Results Errror " + module.name)
-        LOGGER.debug(results_error)
+      if module.enable_container:
+        container_runtime_dir = os.path.join(
+            self._root_path, 'runtime/test/' + device.mac_addr.replace(':', '') +
+            '/' + module.name)
+        results_file = container_runtime_dir + '/' + module.name + '-result.json'
+        try:
+          with open(results_file, 'r', encoding='UTF-8') as f:
+            module_results = json.load(f)
+            results[module.name] = module_results
+        except (FileNotFoundError, PermissionError, json.JSONDecodeError) as results_error:
+          LOGGER.error("Module Results Errror " + module.name)
+          LOGGER.debug(results_error)
 
     out_file = os.path.join(
           self._root_path, 'runtime/test/' + device.mac_addr.replace(':', '') + '/results.json')
