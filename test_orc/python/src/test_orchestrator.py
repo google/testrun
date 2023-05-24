@@ -91,7 +91,6 @@ class TestOrchestrator:
           enabled = test_modules[module.name]["enabled"]
     return enabled
 
-
   def _run_test_module(self, module, device):
     """Start the test container and extract the results."""
 
