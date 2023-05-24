@@ -56,6 +56,12 @@ class TestOrchestrator:
 
   def _generate_results(self, device):
     results = {}
+    results["device"] = {}
+    if device.make is not None:
+      results["device"]["make"] = device.make
+    if device.make is not None:
+      results["device"]["model"] = device.model
+    results["device"]["mac_addr"] = device.mac_addr
     for module in self._test_modules:
       container_runtime_dir = os.path.join(
           self._root_path, 'runtime/test/' + device.mac_addr.replace(':', '') +
