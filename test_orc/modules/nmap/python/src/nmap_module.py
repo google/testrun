@@ -101,13 +101,13 @@ class NmapModule(TestModule):
             LOGGER.info("Port is closed")
             result = True
         else:
-            LOGGER.info("Port not detected, closed")
-            result = True
+          LOGGER.info("Port not detected, closed")
+          result = True
 
         if result is not None:
-            port_config[port]["result"] = "compliant" if result else "non-compliant"
+          port_config[port]["result"] = "compliant" if result else "non-compliant"
         else:
-            port_config[port]["result"] = "skipped"
+          port_config[port]["result"] = "skipped"
 
   def _scan_scripts(self, tests):
     scan_results = {}
@@ -142,8 +142,8 @@ class NmapModule(TestModule):
       port_options += " -p" + ports + " "
     results_file = f"/runtime/output/{self._module_name}-script_name.log"
     nmap_options = scan_options + port_options + " -oG " + results_file
-    nmap_results, err = util.run_command(
-      "nmap " + nmap_options + " " + self._device_ipv4_addr)
+    nmap_results = util.run_command(
+      "nmap " + nmap_options + " " + self._device_ipv4_addr)[0]
     LOGGER.info("Nmap TCP script scan complete")
     LOGGER.info("nmap script results\n" + str(nmap_results))
     return self._process_nmap_results(nmap_results=nmap_results)
