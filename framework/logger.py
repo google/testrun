@@ -13,7 +13,7 @@ _CONF_FILE_NAME = 'system.json'
 _LOG_DIR = 'runtime/testing/'
 
 # Set log level
-with open(os.path.join(_CONF_DIR, _CONF_FILE_NAME), 
+with open(os.path.join(_CONF_DIR, _CONF_FILE_NAME),
           encoding='utf-8') as system_conf_file:
   system_conf_json = json.load(system_conf_file)
 log_level_str = system_conf_json['log_level']
