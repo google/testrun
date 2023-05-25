@@ -52,7 +52,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
   orchestrator and user interface.
   """
 
-  def __init__(self, 
+  def __init__(self,
                config_file=CONFIG_FILE,
                validate=True,
                net_only=False,
@@ -97,7 +97,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
       LOGGER.info('Waiting for devices on the network...')
 
-      # Check timeout and whether testing is currently 
+      # Check timeout and whether testing is currently
       # in progress before stopping
       time.sleep(RUNTIME)
 
@@ -138,7 +138,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     # To Do: Make this configurable
     time.sleep(60)  # Let device bootup
 
-    self._test_orc._run_test_modules(device)
+    self._test_orc.run_test_modules(device)
 
   def _stop_network(self, kill=False):
     self._net_orc.stop(kill=kill)
@@ -165,9 +165,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
         mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
         test_modules = device_config_json.get(DEVICE_TEST_MODULES)
 
-        device = Device(make=device_make, 
+        device = Device(make=device_make,
                         model=device_model,
-                        mac_addr=mac_addr, 
+                        mac_addr=mac_addr,
                         test_modules=json.dumps(test_modules))
         self._devices.append(device)
 

@@ -50,9 +50,9 @@ class TestOrchestrator:
     for module in self._test_modules:
       self._run_test_module(module, device)
     LOGGER.info("All tests complete")
-    LOGGER.info(
-        f"Completed running test modules on device with mac addr {device.mac_addr}")
-    results = self._generate_results(device)
+    LOGGER.info(f"""Completed running test modules on device
+          with mac addr {device.mac_addr}""")
+    self._generate_results(device)
 
   def _generate_results(self, device):
     results = {}
@@ -63,31 +63,33 @@ class TestOrchestrator:
       results["device"]["model"] = device.model
     results["device"]["mac_addr"] = device.mac_addr
     for module in self._test_modules:
-      if module.enable_container and self._is_module_enabled(module,device):
+      if module.enable_container and self._is_module_enabled(module, device):
         container_runtime_dir = os.path.join(
-            self._root_path, 'runtime/test/' + device.mac_addr.replace(':', '') +
-            '/' + module.name)
-        results_file = container_runtime_dir + '/' + module.name + '-result.json'
+            self._root_path, "runtime/test/" +
+            device.mac_addr.replace(":", "") + "/" + module.name)
+        results_file = container_runtime_dir + "/" + module.name + "-result.json"
         try:
-          with open(results_file, 'r', encoding='UTF-8') as f:
+          with open(results_file, "r", encoding="UTF-8") as f:
             module_results = json.load(f)
             results[module.name] = module_results
-        except (FileNotFoundError, PermissionError, json.JSONDecodeError) as results_error:
+        except (FileNotFoundError, PermissionError,
+                json.JSONDecodeError) as results_error:
           LOGGER.error("Module Results Errror " + module.name)
           LOGGER.debug(results_error)
 
     out_file = os.path.join(
-          self._root_path, 'runtime/test/' + device.mac_addr.replace(':', '') + '/results.json')
-    with open(out_file, 'w') as f:
-        json.dump(results,f,indent=2)
+        self._root_path,
+        "runtime/test/" + device.mac_addr.replace(":", "") + "/results.json")
+    with open(out_file, "w", encoding="utf-8") as f:
+      json.dump(results, f, indent=2)
     return results
 
-  def _is_module_enabled(self,module,device):
+  def _is_module_enabled(self, module, device):
     enabled = True
     if device.test_modules is not None:
       test_modules = json.loads(device.test_modules)
       if module.name in test_modules:
-        if 'enabled' in test_modules[module.name]:
+        if "enabled" in test_modules[module.name]:
           enabled = test_modules[module.name]["enabled"]
     return enabled
 
@@ -97,7 +99,7 @@ class TestOrchestrator:
     if module is None or not module.enable_container:
       return
 
-    if not self._is_module_enabled(module,device):
+    if not self._is_module_enabled(module, device):
       return
 
     LOGGER.info("Running test module " + module.name)
@@ -122,10 +124,10 @@ class TestOrchestrator:
           mounts=[
               Mount(target="/runtime/output",
                     source=container_runtime_dir,
-                    type='bind'),
+                    type="bind"),
               Mount(target="/runtime/network",
                     source=network_runtime_dir,
-                    type='bind',
+                    type="bind",
                     read_only=True),
           ],
           environment={
@@ -144,13 +146,13 @@ class TestOrchestrator:
     # Mount the test container to the virtual network if requried
     if module.network:
       LOGGER.debug("Attaching test module to the network")
-      self._net_orc._attach_test_module_to_network(module)
+      self._net_orc.attach_test_module_to_network(module)
 
     # Determine the module timeout time
     test_module_timeout = time.time() + module.timeout
     status = self._get_module_status(module)
 
-    while time.time() < test_module_timeout and status == 'running':
+    while time.time() < test_module_timeout and status == "running":
       time.sleep(1)
       status = self._get_module_status(module)
 
@@ -164,7 +166,9 @@ class TestOrchestrator:
 
   def _get_test_module(self, name):
     for test_module in self._test_modules:
-      if name == test_module.display_name or name == test_module.name or name == test_module.dir_name:
+      if name in [
+          test_module.display_name, test_module.name, test_module.dir_name
+      ]:
         return test_module
     return None
 
@@ -203,28 +207,28 @@ class TestOrchestrator:
     # Load basic module information
     module = TestModule()
     with open(os.path.join(self._path, modules_dir, module_dir, MODULE_CONFIG),
-              encoding='UTF-8') as module_config_file:
+              encoding="UTF-8") as module_config_file:
       module_json = json.load(module_config_file)
 
-    module.name = module_json['config']['meta']['name']
-    module.display_name = module_json['config']['meta']['display_name']
-    module.description = module_json['config']['meta']['description']
+    module.name = module_json["config"]["meta"]["name"]
+    module.display_name = module_json["config"]["meta"]["display_name"]
+    module.description = module_json["config"]["meta"]["description"]
     module.dir = os.path.join(self._path, modules_dir, module_dir)
     module.dir_name = module_dir
     module.build_file = module_dir + ".Dockerfile"
     module.container_name = "tr-ct-" + module.dir_name + "-test"
     module.image_name = "test-run/" + module.dir_name + "-test"
 
-    if 'timeout' in module_json['config']['docker']:
-      module.timeout = module_json['config']['docker']['timeout']
+    if "timeout" in module_json["config"]["docker"]:
+      module.timeout = module_json["config"]["docker"]["timeout"]
 
     # Determine if this is a container or just an image/template
-    if "enable_container" in module_json['config']['docker']:
-      module.enable_container = module_json['config']['docker'][
-          'enable_container']
+    if "enable_container" in module_json["config"]["docker"]:
+      module.enable_container = module_json["config"]["docker"][
+          "enable_container"]
 
-    if "depends_on" in module_json['config']['docker']:
-      depends_on_module = module_json['config']['docker']['depends_on']
+    if "depends_on" in module_json["config"]["docker"]:
+      depends_on_module = module_json["config"]["docker"]["depends_on"]
       if self._get_test_module(depends_on_module) is None:
         self._load_test_module(depends_on_module)
 

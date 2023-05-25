@@ -4,6 +4,7 @@ import logger
 
 LOGGER = logger.get_logger('runner')
 
+
 class Runner:
   """Holds the state of the testing for one device."""
 
