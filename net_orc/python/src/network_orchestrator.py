@@ -535,7 +535,7 @@ class NetworkOrchestrator:
     LOGGER.info('All network services are running')
     self._check_network_services()
 
-  def _attach_test_module_to_network(self, test_module):
+  def attach_test_module_to_network(self, test_module):
     LOGGER.debug('Attaching test module  ' + test_module.display_name +
                  ' to device bridge')
 
