@@ -56,18 +56,25 @@ class TestOrchestrator:
 
   def _generate_results(self, device):
     results = {}
+    results["device"] = {}
+    if device.make is not None:
+      results["device"]["make"] = device.make
+    if device.make is not None:
+      results["device"]["model"] = device.model
+    results["device"]["mac_addr"] = device.mac_addr
     for module in self._test_modules:
-      container_runtime_dir = os.path.join(
-          self._root_path, 'runtime/test/' + device.mac_addr.replace(':', '') +
-          '/' + module.name)
-      results_file = container_runtime_dir + '/' + module.name + '-result.json'
-      try:
-        with open(results_file, 'r', encoding='UTF-8') as f:
-          module_results = json.load(f)
-          results[module.name] = module_results
-      except (FileNotFoundError, PermissionError, json.JSONDecodeError) as results_error:
-        LOGGER.error("Module Results Errror " + module.name)
-        LOGGER.debug(results_error)
+      if module.enable_container and self._is_module_enabled(module,device):
+        container_runtime_dir = os.path.join(
+            self._root_path, 'runtime/test/' + device.mac_addr.replace(':', '') +
+            '/' + module.name)
+        results_file = container_runtime_dir + '/' + module.name + '-result.json'
+        try:
+          with open(results_file, 'r', encoding='UTF-8') as f:
+            module_results = json.load(f)
+            results[module.name] = module_results
+        except (FileNotFoundError, PermissionError, json.JSONDecodeError) as results_error:
+          LOGGER.error("Module Results Errror " + module.name)
+          LOGGER.debug(results_error)
 
     out_file = os.path.join(
           self._root_path, 'runtime/test/' + device.mac_addr.replace(':', '') + '/results.json')
@@ -75,10 +82,22 @@ class TestOrchestrator:
         json.dump(results,f,indent=2)
     return results
 
+  def _is_module_enabled(self,module,device):
+    enabled = True
+    if device.test_modules is not None:
+      test_modules = json.loads(device.test_modules)
+      if module.name in test_modules:
+        if 'enabled' in test_modules[module.name]:
+          enabled = test_modules[module.name]["enabled"]
+    return enabled
+
   def _run_test_module(self, module, device):
     """Start the test container and extract the results."""
 
     if module is None or not module.enable_container:
+      return
+
+    if not self._is_module_enabled(module,device):
       return
 
     LOGGER.info("Running test module " + module.name)
