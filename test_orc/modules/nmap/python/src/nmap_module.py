@@ -22,8 +22,7 @@ class NmapModule(TestModule):
     LOGGER = self._get_logger()
 
   def _security_nmap_ports(self, config):
-    LOGGER.info(
-        "Running security.nmap.ports test")
+    LOGGER.info("Running security.nmap.ports test")
 
     # Delete the enabled key from the config if it exists
     # to prevent it being treated as a test key
@@ -32,12 +31,12 @@ class NmapModule(TestModule):
 
     if self._device_ipv4_addr is not None:
       # Run the monitor method asynchronously to keep this method non-blocking
-      self._tcp_scan_thread = threading.Thread(
-          target=self._scan_tcp_ports, args=(config,))
-      self._udp_scan_thread = threading.Thread(
-          target=self._scan_udp_ports, args=(config,))
-      self._script_scan_thread = threading.Thread(
-          target=self._scan_scripts, args=(config,))
+      self._tcp_scan_thread = threading.Thread(target=self._scan_tcp_ports,
+                                               args=(config, ))
+      self._udp_scan_thread = threading.Thread(target=self._scan_udp_ports,
+                                               args=(config, ))
+      self._script_scan_thread = threading.Thread(target=self._scan_scripts,
+                                                  args=(config, ))
 
       self._tcp_scan_thread.daemon = True
       self._udp_scan_thread.daemon = True
@@ -47,15 +46,14 @@ class NmapModule(TestModule):
       self._udp_scan_thread.start()
       self._script_scan_thread.start()
 
-      while self._tcp_scan_thread.is_alive() or self._udp_scan_thread.is_alive() or self._script_scan_thread.is_alive():
+      while self._tcp_scan_thread.is_alive() or self._udp_scan_thread.is_alive(
+      ) or self._script_scan_thread.is_alive():
         time.sleep(1)
 
       LOGGER.debug("TCP scan results: " + str(self._scan_tcp_results))
       LOGGER.debug("UDP scan results: " + str(self._scan_udp_results))
-      LOGGER.debug("Service scan results: " +
-                    str(self._script_scan_results))
-      self._process_port_results(
-          tests=config)
+      LOGGER.debug("Service scan results: " + str(self._script_scan_results))
+      self._process_port_results(tests=config)
       LOGGER.info("Unallowed Ports: " + str(self._unallowed_ports))
       LOGGER.info("Script scan results:\n" +
                   json.dumps(self._script_scan_results))
@@ -105,7 +103,8 @@ class NmapModule(TestModule):
           result = True
 
         if result is not None:
-          port_config[port]["result"] = "compliant" if result else "non-compliant"
+          port_config[port][
+              "result"] = "compliant" if result else "non-compliant"
         else:
           port_config[port]["result"] = "skipped"
 
@@ -120,16 +119,14 @@ class NmapModule(TestModule):
           if "service_scan" in port_config:
             LOGGER.info("Service Scan Detected for: " + str(port))
             svc = port_config["service_scan"]
-            scan_results.update(
-              self._scan_tcp_with_script(svc["script"]))
+            scan_results.update(self._scan_tcp_with_script(svc["script"]))
       if "udp_ports" in test_config:
         for port in test_config["udp_ports"]:
           if "service_scan" in port:
             LOGGER.info("Service Scan Detected for: " + str(port))
             svc = port["service_scan"]
             self._scan_udp_with_script(svc["script"], port)
-            scan_results.update(
-              self._scan_tcp_with_script(svc["script"]))
+            scan_results.update(self._scan_tcp_with_script(svc["script"]))
     self._script_scan_results = scan_results
 
   def _scan_tcp_with_script(self, script_name, ports=None):
@@ -142,8 +139,8 @@ class NmapModule(TestModule):
       port_options += " -p" + ports + " "
     results_file = f"/runtime/output/{self._module_name}-script_name.log"
     nmap_options = scan_options + port_options + " -oG " + results_file
-    nmap_results = util.run_command(
-      "nmap " + nmap_options + " " + self._device_ipv4_addr)[0]
+    nmap_results = util.run_command("nmap " + nmap_options + " " +
+                                    self._device_ipv4_addr)[0]
     LOGGER.info("Nmap TCP script scan complete")
     LOGGER.info("nmap script results\n" + str(nmap_results))
     return self._process_nmap_results(nmap_results=nmap_results)
@@ -157,8 +154,8 @@ class NmapModule(TestModule):
     else:
       port_options += " -p" + ports + " "
     nmap_options = scan_options + port_options
-    nmap_results = util.run_command(
-      "nmap " + nmap_options + self._device_ipv4_addr)[0]
+    nmap_results = util.run_command("nmap " + nmap_options +
+                                    self._device_ipv4_addr)[0]
     LOGGER.info("Nmap UDP script scan complete")
     LOGGER.info("nmap script results\n" + str(nmap_results))
     return self._process_nmap_results(nmap_results=nmap_results)
@@ -177,12 +174,11 @@ class NmapModule(TestModule):
       ports_to_scan += "," + ",".join(ports)
     LOGGER.info("Running nmap TCP port scan")
     LOGGER.info("TCP ports: " + str(ports_to_scan))
-    nmap_results = util.run_command(
-      f"""nmap -sT -sV -Pn -v -p {ports_to_scan} 
+    nmap_results = util.run_command(f"""nmap -sT -sV -Pn -v -p {ports_to_scan} 
       --version-intensity 7 -T4 {self._device_ipv4_addr}""")[0]
     LOGGER.info("TCP port scan complete")
     self._scan_tcp_results = self._process_nmap_results(
-      nmap_results=nmap_results)
+        nmap_results=nmap_results)
 
   def _scan_udp_ports(self, tests):
     ports = []
@@ -196,7 +192,7 @@ class NmapModule(TestModule):
       LOGGER.info("Running nmap UDP port scan")
       LOGGER.info("UDP ports: " + str(port_list))
       nmap_results = util.run_command(
-        f"nmap -sU -sV -p {port_list} {self._device_ipv4_addr}")[0]
+          f"nmap -sU -sV -p {port_list} {self._device_ipv4_addr}")[0]
       LOGGER.info("UDP port scan complete")
       self._scan_udp_results = self._process_nmap_results(
           nmap_results=nmap_results)
@@ -206,11 +202,10 @@ class NmapModule(TestModule):
     LOGGER.info("nmap results\n" + str(nmap_results))
     if nmap_results:
       if "Service Info" in nmap_results:
-        rows = nmap_results.split("PORT")[1].split(
-          "Service Info")[0].split("\n")
+        rows = nmap_results.split("PORT")[1].split("Service Info")[0].split(
+            "\n")
       elif "PORT" in nmap_results:
-        rows = nmap_results.split("PORT")[1].split(
-          "MAC Address")[0].split("\n")
+        rows = nmap_results.split("PORT")[1].split("MAC Address")[0].split("\n")
       if rows:
         for result in rows[1:-1]:  # Iterate skipping the header and tail rows
           cols = result.split()
@@ -223,9 +218,12 @@ class NmapModule(TestModule):
             if len(cols) > 3:
               # recombine full version information that may contain spaces
               version = " ".join(cols[3:])
-            port_result = {cols[0].split(
-              "/")[0]: {"state": cols[1], 
-                        "service": cols[2], 
-                        "version": version}}
+            port_result = {
+                cols[0].split("/")[0]: {
+                    "state": cols[1],
+                    "service": cols[2],
+                    "version": version
+                }
+            }
             results.update(port_result)
     return results

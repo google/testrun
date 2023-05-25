@@ -50,8 +50,7 @@ class TestOrchestrator:
     for module in self._test_modules:
       self._run_test_module(module, device)
     LOGGER.info("All tests complete")
-    LOGGER.info(
-        f"""Completed running test modules on device
+    LOGGER.info(f"""Completed running test modules on device
           with mac addr {device.mac_addr}""")
     self._generate_results(device)
 
@@ -64,31 +63,28 @@ class TestOrchestrator:
       results["device"]["model"] = device.model
     results["device"]["mac_addr"] = device.mac_addr
     for module in self._test_modules:
-      if module.enable_container and self._is_module_enabled(module,device):
+      if module.enable_container and self._is_module_enabled(module, device):
         container_runtime_dir = os.path.join(
-            self._root_path,
-            "runtime/test/" + device.mac_addr.replace(":", "") +
-            "/" + module.name)
-        results_file = container_runtime_dir+"/"+module.name+"-result.json"
+            self._root_path, "runtime/test/" +
+            device.mac_addr.replace(":", "") + "/" + module.name)
+        results_file = container_runtime_dir + "/" + module.name + "-result.json"
         try:
           with open(results_file, "r", encoding="UTF-8") as f:
             module_results = json.load(f)
             results[module.name] = module_results
-        except (FileNotFoundError,
-                PermissionError,
+        except (FileNotFoundError, PermissionError,
                 json.JSONDecodeError) as results_error:
           LOGGER.error("Module Results Errror " + module.name)
           LOGGER.debug(results_error)
 
     out_file = os.path.join(
-        self._root_path, "runtime/test/" +
-        device.mac_addr.replace(":", "") +
-        "/results.json")
+        self._root_path,
+        "runtime/test/" + device.mac_addr.replace(":", "") + "/results.json")
     with open(out_file, "w", encoding="utf-8") as f:
-      json.dump(results,f,indent=2)
+      json.dump(results, f, indent=2)
     return results
 
-  def _is_module_enabled(self,module,device):
+  def _is_module_enabled(self, module, device):
     enabled = True
     if device.test_modules is not None:
       test_modules = json.loads(device.test_modules)
@@ -103,7 +99,7 @@ class TestOrchestrator:
     if module is None or not module.enable_container:
       return
 
-    if not self._is_module_enabled(module,device):
+    if not self._is_module_enabled(module, device):
       return
 
     LOGGER.info("Running test module " + module.name)
@@ -170,9 +166,9 @@ class TestOrchestrator:
 
   def _get_test_module(self, name):
     for test_module in self._test_modules:
-      if name in [test_module.display_name,
-                  test_module.name,
-                  test_module.dir_name]:
+      if name in [
+          test_module.display_name, test_module.name, test_module.dir_name
+      ]:
         return test_module
     return None
 

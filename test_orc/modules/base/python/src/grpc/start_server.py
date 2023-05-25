@@ -8,6 +8,7 @@ import argparse
 
 DEFAULT_PORT = "5001"
 
+
 def serve(PORT):
   server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
   pb2_grpc.add_NetworkModuleServicer_to_server(NetworkService(), server)
@@ -15,10 +16,14 @@ def serve(PORT):
   server.start()
   server.wait_for_termination()
 
+
 def run(argv):
-  parser = argparse.ArgumentParser(description="GRPC Server for Network Module",
-                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument("-p", "--port", default=DEFAULT_PORT,
+  parser = argparse.ArgumentParser(
+      description="GRPC Server for Network Module",
+      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument("-p",
+                      "--port",
+                      default=DEFAULT_PORT,
                       help="Define the default port to run the server on.")
 
   args = parser.parse_args()
@@ -27,6 +32,7 @@ def run(argv):
 
   print("gRPC server starting on port " + PORT)
   serve(PORT)
+
 
 if __name__ == "__main__":
   run(sys.argv)

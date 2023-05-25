@@ -2,8 +2,9 @@
 from dataclasses import dataclass
 from docker.models.containers import Container
 
+
 @dataclass
-class TestModule: # pylint: disable=too-few-public-methods,too-many-instance-attributes
+class TestModule:  # pylint: disable=too-few-public-methods,too-many-instance-attributes
   """Represents a test module."""
 
   name: str = None
@@ -13,7 +14,7 @@ class TestModule: # pylint: disable=too-few-public-methods,too-many-instance-att
   build_file: str = None
   container: Container = None
   container_name: str = None
-  image_name :str  = None
+  image_name: str = None
   enable_container: bool = True
   network: bool = True
 

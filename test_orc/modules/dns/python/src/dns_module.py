@@ -7,6 +7,7 @@ LOG_NAME = "test_dns"
 CAPTURE_FILE = "/runtime/network/dns.pcap"
 LOGGER = None
 
+
 class DNSModule(TestModule):
 
   def __init__(self, module):
@@ -24,8 +25,8 @@ class DNSModule(TestModule):
     return dns_traffic_detected
 
   def _dns_network_from_dhcp(self):
-    LOGGER.info(
-      "Checking DNS traffic for configured DHCP DNS server: " + self._dns_server)
+    LOGGER.info("Checking DNS traffic for configured DHCP DNS server: " +
+                self._dns_server)
 
     # Check if the device DNS traffic is to appropriate server
     tcpdump_filter = "dst port 53 and dst host {} and ether src {}".format(
@@ -33,16 +34,15 @@ class DNSModule(TestModule):
 
     result = self._check_dns_traffic(tcpdump_filter=tcpdump_filter)
 
-    LOGGER.info(
-        "DNS traffic detected to configured DHCP DNS server: " + str(result))
+    LOGGER.info("DNS traffic detected to configured DHCP DNS server: " +
+                str(result))
     return result
 
   def _dns_network_from_device(self):
     LOGGER.info("Checking DNS traffic from device: " + self._device_mac)
 
     # Check if the device DNS traffic is to appropriate server
-    tcpdump_filter = "dst port 53 and ether src {}".format(
-        self._device_mac)
+    tcpdump_filter = "dst port 53 and ether src {}".format(self._device_mac)
 
     result = self._check_dns_traffic(tcpdump_filter=tcpdump_filter)
 
@@ -57,16 +57,15 @@ class DNSModule(TestModule):
     Returns
         List of packets matching the filter
     """
-    command = "tcpdump -tttt -n -r {} {}".format(
-        CAPTURE_FILE, tcpdump_filter)
+    command = "tcpdump -tttt -n -r {} {}".format(CAPTURE_FILE, tcpdump_filter)
 
     LOGGER.debug("tcpdump command: " + command)
 
     process = subprocess.Popen(command,
-                                universal_newlines=True,
-                                shell=True,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+                               universal_newlines=True,
+                               shell=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
     text = str(process.stdout.read()).rstrip()
 
     LOGGER.debug("tcpdump response: " + text)

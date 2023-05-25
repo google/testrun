@@ -71,23 +71,21 @@ class TestModule:
         # Resolve the correct python method by test name and run test
         if hasattr(self, test_method_name):
           if 'config' in test:
-            result = getattr(self, test_method_name)(
-              config=test['config'])
+            result = getattr(self, test_method_name)(config=test['config'])
           else:
             result = getattr(self, test_method_name)()
         else:
-          LOGGER.info('Test ' + test['name'] +
-                      ' not resolved. Skipping')
+          LOGGER.info('Test ' + test['name'] + ' not resolved. Skipping')
           result = None
       else:
-        LOGGER.info('Test ' + test['name'] +
-                    ' disabled. Skipping')
+        LOGGER.info('Test ' + test['name'] + ' disabled. Skipping')
       if result is not None:
         test['result'] = 'compliant' if result else 'non-compliant'
       else:
         test['result'] = 'skipped'
       test['end'] = datetime.now().isoformat()
-      duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(test['start'])
+      duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(
+          test['start'])
       test['duration'] = str(duration)
     json_results = json.dumps({'results': tests}, indent=2)
     self._write_results(json_results)

@@ -10,10 +10,11 @@ from baseline_module import BaselineModule
 LOGGER = logger.get_logger('test_module')
 RUNTIME = 1500
 
+
 class BaselineModuleRunner:
   """An example runner class for test modules."""
 
-  def __init__(self,module):
+  def __init__(self, module):
 
     signal.signal(signal.SIGINT, self._handler)
     signal.signal(signal.SIGTERM, self._handler)
@@ -33,9 +34,11 @@ class BaselineModuleRunner:
       LOGGER.info("Test module stopped")
       sys.exit(1)
 
+
 def run(argv):
-  parser = argparse.ArgumentParser(description="Baseline Module Help",
-              formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser = argparse.ArgumentParser(
+      description="Baseline Module Help",
+      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
   parser.add_argument(
       "-m",
@@ -47,6 +50,7 @@ def run(argv):
   # For some reason passing in the args from bash adds an extra
   # space before the argument so we'll just strip out extra space
   BaselineModuleRunner(args.module.strip())
+
 
 if __name__ == "__main__":
   run(sys.argv)
