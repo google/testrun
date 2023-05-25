@@ -13,7 +13,7 @@ import threading
 import docker
 from docker.types import Mount
 import logger
-import util
+from . import util
 from listener import Listener
 from network_device import NetworkDevice
 from network_event import NetworkEvent
