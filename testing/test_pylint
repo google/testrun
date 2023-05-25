@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ERROR_LIMIT=2534
+ERROR_LIMIT=1100
 
 sudo cmd/install
 
@@ -12,9 +12,10 @@ files=$(find . -path ./venv -prune -o -name '*.py' -print)
 OUT=pylint.out
 
 rm -f $OUT && touch $OUT
-pylint $files -ry --extension-pkg-allow-list=docker  2>/dev/null | tee -a $OUT
 
-new_errors=$(cat $OUT | grep "statements analysed." | awk '{print $1}')
+pylint $files -ry --extension-pkg-allow-list=docker --evaluation="error + warning + refactor + convention" 2>/dev/null | tee -a $OUT
+
+new_errors=$(cat $OUT | grep -oP  "(?!=^Your code has been rated at)([0-9]+)(?=\.00/10[ \(]?)" )
 
 echo "$new_errors > $ERROR_LIMIT?"
 if (( $new_errors > $ERROR_LIMIT)); then
