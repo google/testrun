@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-
+"""Run NMAP module"""
 import argparse
 import signal
 import sys
@@ -20,29 +19,29 @@ class NmapModuleRunner:
     signal.signal(signal.SIGABRT, self._handler)
     signal.signal(signal.SIGQUIT, self._handler)
 
-    LOGGER.info("Starting nmap Module")
+    LOGGER.info('Starting nmap Module')
 
     self._test_module = NmapModule(module)
     self._test_module.run_tests()
 
-  def _handler(self, signum, *other):
-    LOGGER.debug("SigtermEnum: " + str(signal.SIGTERM))
-    LOGGER.debug("Exit signal received: " + str(signum))
+  def _handler(self, signum):
+    LOGGER.debug('SigtermEnum: ' + str(signal.SIGTERM))
+    LOGGER.debug('Exit signal received: ' + str(signum))
     if signum in (2, signal.SIGTERM):
-      LOGGER.info("Exit signal received. Stopping test module...")
-      LOGGER.info("Test module stopped")
+      LOGGER.info('Exit signal received. Stopping test module...')
+      LOGGER.info('Test module stopped')
       sys.exit(1)
 
 
-def run(argv):
+def run():
   parser = argparse.ArgumentParser(
-      description="Nmap Module Help",
+      description='Nmap Module Help',
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
   parser.add_argument(
-      "-m",
-      "--module",
-      help="Define the module name to be used to create the log file")
+      '-m',
+      '--module',
+      help='Define the module name to be used to create the log file')
 
   args = parser.parse_args()
 
@@ -51,5 +50,5 @@ def run(argv):
   NmapModuleRunner(args.module.strip())
 
 
-if __name__ == "__main__":
-  run(sys.argv)
+if __name__ == '__main__':
+  run()
