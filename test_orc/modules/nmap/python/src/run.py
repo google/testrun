@@ -1,4 +1,4 @@
-"""Run NMAP module"""
+"""Run NMAP test module"""
 import argparse
 import signal
 import sys
