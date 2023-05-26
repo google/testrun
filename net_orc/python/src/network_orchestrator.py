@@ -18,6 +18,7 @@ from listener import Listener
 from network_device import NetworkDevice
 from network_event import NetworkEvent
 from network_validator import NetworkValidator
+from ovs_control import OVSControl
 
 LOGGER = logger.get_logger('net_orc')
 CONFIG_FILE = 'conf/system.json'
@@ -73,6 +74,7 @@ class NetworkOrchestrator:
     shutil.rmtree(os.path.join(os.getcwd(), NET_DIR), ignore_errors=True)
     self.network_config = NetworkConfig()
     self.load_config(config_file)
+    self._ovs = OVSControl()
 
   def start(self):
     """Start the network orchestrator."""
@@ -309,28 +311,11 @@ class NetworkOrchestrator:
     if self._single_intf:
       self._ci_pre_network_create()
 
-    # Create data plane
-    util.run_command('ovs-vsctl add-br ' + DEVICE_BRIDGE)
-
-    # Create control plane
-    util.run_command('ovs-vsctl add-br ' + INTERNET_BRIDGE)
-
-    # Add external interfaces to data and control plane
-    util.run_command('ovs-vsctl add-port ' + DEVICE_BRIDGE + ' ' +
-                     self._dev_intf)
-    util.run_command('ovs-vsctl add-port ' + INTERNET_BRIDGE + ' ' +
-                     self._int_intf)
-
-    # Enable forwarding of eapol packets
-    util.run_command('ovs-ofctl add-flow ' + DEVICE_BRIDGE +
-                     ' \'table=0, dl_dst=01:80:c2:00:00:03, actions=flood\'')
-
     # Remove IP from internet adapter
     util.run_command('ifconfig ' + self._int_intf + ' 0.0.0.0')
 
-    # Set ports up
-    util.run_command('ip link set dev ' + DEVICE_BRIDGE + ' up')
-    util.run_command('ip link set dev ' + INTERNET_BRIDGE + ' up')
+    # Setup the virtual network
+    self._ovs.create_net()
 
     if self._single_intf:
       self._ci_post_network_create()
@@ -714,11 +699,14 @@ class NetworkOrchestrator:
       except Exception:  # pylint: disable=W0703
         continue
 
-    # Delete data plane
-    util.run_command('ovs-vsctl --if-exists del-br tr-d')
+    # Clear the virtual network
+    self._ovs.restore_net()
 
-    # Delete control plane
-    util.run_command('ovs-vsctl --if-exists del-br tr-c')
+    # # Delete data plane
+    # util.run_command('ovs-vsctl --if-exists del-br tr-d')
+
+    # # Delete control plane
+    # util.run_command('ovs-vsctl --if-exists del-br tr-c')
 
     # Restart internet interface
     if util.interface_exists(self._int_intf):
