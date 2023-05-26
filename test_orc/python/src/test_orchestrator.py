@@ -67,7 +67,7 @@ class TestOrchestrator:
         container_runtime_dir = os.path.join(
             self._root_path, "runtime/test/" +
             device.mac_addr.replace(":", "") + "/" + module.name)
-        results_file = f"{container_runtime_dir} / {module.name} -results.json"
+        results_file = f"{container_runtime_dir}/{module.name}-result.json"
         try:
           with open(results_file, "r", encoding="UTF-8") as f:
             module_results = json.load(f)
