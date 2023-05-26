@@ -2,7 +2,7 @@
 import json
 import logger
 import os
-from . import util
+import util
 from datetime import datetime
 
 LOGGER = None

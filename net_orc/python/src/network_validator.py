@@ -7,7 +7,7 @@ import docker
 from docker.types import Mount
 import getpass
 import logger
-from . import util
+import util
 
 LOGGER = logger.get_logger('validator')
 OUTPUT_DIR = 'runtime/validation'
