@@ -43,6 +43,48 @@ class OVSControl:
                              add-port {bridge_name} {port}""")
     return success
 
+  def get_bridge_ports(self,bridge_name):
+    # Get a list of all the ports on a bridge
+    response = util.run_command(f'ovs-vsctl list-ports {bridge_name}',output=True)
+    return response[0].splitlines()
+
+  def bridge_exists(self,bridge_name):
+    # Check if a bridge exists by the name provided
+    LOGGER.debug(f'Checking if {bridge_name} exists')
+    success = util.run_command(f'ovs-vsctl br-exists {bridge_name}')
+    return success
+
+  def port_exists(self,bridge_ports, port):
+    # Check if a bridge exists by the name provided
+    LOGGER.debug(f'Checking if {bridge_name} exists')
+    success = util.run_command(f'ovs-vsctl br-exists {bridge_name}')
+    return success
+
+  def verify_net(self):
+    # Verify the OVS setup of the virtual network
+
+    # Verify the device bridge
+    dev_bridge = self.verify_bridge(DEVICE_BRIDGE,[self._dev_intf])
+    LOGGER.info("Device Bridge Verified: " + str(dev_bridge))
+
+     # Verify the internet bridge
+    int_bridge = self.verify_bridge(INTERNET_BRIDGE,[self._int_intf])  
+    LOGGER.info("Internet Bridge Verified: " + str(int_bridge))
+
+  def verify_bridge(self,bridge_name, ports):
+    verified = True
+    if self.bridge_exists(bridge_name):
+        bridge_ports = self.get_bridge_ports(bridge_name)
+        LOGGER.info("bridge ports: " + str(bridge_ports))
+        for port in ports:
+            if port not in bridge_ports:
+                verified = False
+                break
+    else:
+        verified = False
+    return verified
+
+
   def create_net(self):
     LOGGER.debug('Creating baseline network')
 
@@ -69,6 +111,10 @@ class OVSControl:
     # Set ports up
     self.set_bridge_up(DEVICE_BRIDGE)
     self.set_bridge_up(INTERNET_BRIDGE)
+
+    self.show_config()
+
+    self.verify_net()
 
   def delete_bridge(self, bridge_name):
     LOGGER.debug('Deleting OVS Bridge: ' + bridge_name)
@@ -103,7 +149,8 @@ class OVSControl:
 
   def show_config(self):
     LOGGER.debug('Show current config of OVS')
-    success = util.run_command('ovs-vsctl show')
+    success = util.run_command('ovs-vsctl show',output=True)
+    LOGGER.info(f'OVS Config\n{success[0]}')
     return success
 
   def set_bridge_up(self, bridge_name):
