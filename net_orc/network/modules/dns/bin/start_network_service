@@ -1,0 +1,48 @@
+#!/bin/bash
+
+CONFIG_FILE=/etc/dnsmasq.conf
+PID_FILE=/var/run/dnsmasq.pid
+LOG_FILE=/runtime/network/dns.log
+
+echo Starting dns
+
+cp /testrun/conf/dnsmasq.conf /etc/dnsmasq.conf
+
+# Route internet traffic through gateway
+ip route add default via 10.10.10.1 dev veth0
+
+# Restart dnsmasq when config changes
+while true; do
+
+    new_checksum=$(md5sum $CONFIG_FILE)
+
+    if [ "$checksum" == "$new_checksum" ]; then
+        sleep 2
+        continue
+    fi
+
+    echo Config changed. Restarting dnsmasq at $(date)..
+
+    if [ -f $PID_FILE ]; then
+        kill -9 $(cat $PID_FILE) || true
+        rm -f $PID_FILE
+    fi
+
+    checksum=$new_checksum
+
+    echo Starting dnsmasq at $(date)
+
+    dnsmasq --log-facility=$LOG_FILE -u $HOST_USER &
+
+    while [ ! -f $PID_FILE ]; do
+        echo Waiting for $PID_FILE...
+        sleep 2
+    done
+
+    # Group flag doesn't work for some reason on dnsmasq
+    # so we'll manually change the group to the log file
+    chgrp $HOST_USER $LOG_FILE
+
+    echo $PID_FILE now available
+
+done

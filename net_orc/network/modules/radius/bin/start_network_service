@@ -1,0 +1,20 @@
+#!/bin/bash
+
+PYTHON_SRC_DIR=/testrun/python/src
+CONF_DIR="/testrun/conf"
+LOG_FILE="/runtime/network/radius.log"
+
+echo Starting authenticator.py
+
+cp $CONF_DIR/eap /etc/freeradius/3.0/mods-available/eap
+
+# Do we want to mount resources/network/{module} to the network module to avoid file copying during build?
+cp $CONF_DIR/ca.crt /etc/ssl/certs/ca-certificates.crt
+
+python3 -u $PYTHON_SRC_DIR/authenticator.py &
+
+#Create and set permissions on the log file
+touch $LOG_FILE
+chown $HOST_USER:$HOST_USER $LOG_FILE
+
+freeradius -f -X &> $LOG_FILE

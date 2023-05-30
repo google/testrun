@@ -1,0 +1,27 @@
+{
+  "config": {
+    "meta": {
+      "name": "template",
+      "display_name": "Template",
+      "description": "Template for building network service modules"
+    },
+    "network": {
+      "interface": "veth0",
+      "enable_wan": false,
+      "ip_index": 9
+    },
+    "grpc": {
+      "port": 50001
+    },
+    "docker": {
+      "enable_container": false,
+      "depends_on": "base",
+      "mounts": [
+        {
+          "source": "runtime/network",
+          "target": "/runtime/network"
+        }
+      ]
+    }
+  }
+}

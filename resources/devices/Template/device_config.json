@@ -1,0 +1,147 @@
+{
+  "make": "Manufacturer X",
+  "model": "Device X",
+  "mac_addr": "aa:bb:cc:dd:ee:ff",
+  "test_modules": {
+    "dns": {
+      "enabled": true,
+      "tests": {
+        "dns.network.from_device": {
+          "enabled": true
+        },
+        "dns.network.from_dhcp": {
+          "enabled": true
+        }
+      }
+    },
+    "baseline": {
+      "enabled": true,
+      "tests": {
+        "baseline.passe": {
+          "enabled": true
+        },
+        "baseline.pass": {
+          "enabled": true
+        },
+        "baseline.skip": {
+          "enabled": true
+        }
+      }
+    },
+    "nmap": {
+      "enabled": true,
+      "tests": {
+        "security.nmap.ports": {
+          "enabled": true,
+          "security.services.ftp": {
+            "tcp_ports": {
+              "20": {
+                "allowed": false
+              },
+              "21": {
+                "allowed": false
+              }
+            }
+          },
+          "security.services.ssh": {
+            "tcp_ports": {
+              "22": {
+                "allowed": true
+              }
+            }
+          },
+          "security.services.telnet": {
+            "tcp_ports": {
+              "23": {
+                "allowed": false
+              }
+            }
+          },
+          "security.services.smtp": {
+            "tcp_ports": {
+              "25": {
+                "allowed": false
+              },
+              "465": {
+                "allowed": false
+              },
+              "587": {
+                "allowed": false
+              }
+            }
+          },
+          "security.services.http": {
+            "tcp_ports": {
+              "80": {
+                "allowed": false
+              }
+            }
+          },
+          "security.services.pop": {
+            "tcp_ports": {
+              "110": {
+                "allowed": false
+              }
+            }
+          },
+          "security.services.imap": {
+            "tcp_ports": {
+              "143": {
+                "allowed": false
+              }
+            }
+          },
+          "security.services.snmpv3": {
+            "tcp_ports": {
+              "161": {
+                "allowed": false
+              },
+              "162": {
+                "allowed": false
+              }
+            },
+            "udp_ports": {
+              "161": {
+                "allowed": false
+              },
+              "162": {
+                "allowed": false
+              }
+            }
+          },
+          "security.services.https": {
+            "tcp_ports": {
+              "80": {
+                "allowed": false
+              }
+            }
+          },
+          "security.services.vnc": {
+            "tcp_ports": {
+              "5500": {
+                "allowed": false
+              },
+              "5800": {
+                "allowed": false
+              }
+            }
+          },
+          "security.services.tftp": {
+            "udp_ports": {
+              "69": {
+                "allowed": false
+              }
+            }
+          },
+          "security.services.ntp": {
+            "udp_ports": {
+              "123": {
+                "allowed": false
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
