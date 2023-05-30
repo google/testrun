@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-
+"""NMAP test module"""
 import time
 import util
 import json
@@ -11,7 +10,7 @@ LOGGER = None
 
 
 class NmapModule(TestModule):
-
+  """NMAP Test module"""
   def __init__(self, module):
     super().__init__(module_name=module, log_name=LOG_NAME)
     self._unallowed_ports = []
@@ -82,13 +81,13 @@ class NmapModule(TestModule):
     if self._script_scan_results is not None:
       scan_results.update(self._script_scan_results)
     if port_config is not None:
-      for port in port_config:
+      for port, config in port_config.items():
         result = None
         LOGGER.info("Checking port: " + str(port))
-        LOGGER.debug("Port config: " + str(port_config[port]))
+        LOGGER.debug("Port config: " + str(config))
         if port in scan_results:
           if scan_results[port]["state"] == "open":
-            if not port_config[port]["allowed"]:
+            if not config["allowed"]:
               LOGGER.info("Unallowed port open")
               self._unallowed_ports.append(str(port))
               result = False
@@ -103,10 +102,9 @@ class NmapModule(TestModule):
           result = True
 
         if result is not None:
-          port_config[port][
-              "result"] = "compliant" if result else "non-compliant"
+          config["result"] = "compliant" if result else "non-compliant"
         else:
-          port_config[port]["result"] = "skipped"
+          config["result"] = "skipped"
 
   def _scan_scripts(self, tests):
     scan_results = {}
@@ -174,7 +172,7 @@ class NmapModule(TestModule):
       ports_to_scan += "," + ",".join(ports)
     LOGGER.info("Running nmap TCP port scan")
     LOGGER.info("TCP ports: " + str(ports_to_scan))
-    nmap_results = util.run_command(f"""nmap -sT -sV -Pn -v -p {ports_to_scan} 
+    nmap_results = util.run_command(f"""nmap -sT -sV -Pn -v -p {ports_to_scan}
       --version-intensity 7 -T4 {self._device_ipv4_addr}""")[0]
     LOGGER.info("TCP port scan complete")
     self._scan_tcp_results = self._process_nmap_results(

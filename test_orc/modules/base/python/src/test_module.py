@@ -1,3 +1,4 @@
+"""Base class for all core test module functions"""
 import json
 import logger
 import os
@@ -91,20 +92,18 @@ class TestModule:
     self._write_results(json_results)
 
   def _read_config(self):
-    f = open(CONF_FILE, encoding='utf-8')
-    config = json.load(f)
-    f.close()
+    with open(CONF_FILE, encoding='utf-8') as f:
+      config = json.load(f)
     return config
 
   def _write_results(self, results):
     results_file = RESULTS_DIR + self._module_name + '-result.json'
     LOGGER.info('Writing results to ' + results_file)
-    f = open(results_file, 'w', encoding='utf-8')
-    f.write(results)
-    f.close()
+    with open(results_file, 'w', encoding='utf-8') as f:
+      f.write(results)
 
   def _get_device_ipv4(self):
-    command = f"""/testrun/bin/get_ipv4_addr {self._ipv4_subnet} 
+    command = f"""/testrun/bin/get_ipv4_addr {self._ipv4_subnet}
     {self._device_mac.upper()}"""
     text = util.run_command(command)[0]
     if text:

@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-
+"""Baseline test module"""
 from test_module import TestModule
 
 LOG_NAME = "test_baseline"
@@ -27,4 +26,3 @@ class BaselineModule(TestModule):
   def _baseline_skip(self):
     LOGGER.info("Running baseline pass test")
     LOGGER.info("Baseline pass test finished")
-    return None
