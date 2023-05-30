@@ -144,7 +144,7 @@ class NetworkOrchestrator:
 
     if not os.path.isfile(self._config_file):
       LOGGER.error('Configuration file is not present at ' + config_file)
-      LOGGER.info('An example is present in '+ EXAMPLE_CONFIG_FILE)
+      LOGGER.info('An example is present in ' + EXAMPLE_CONFIG_FILE)
       sys.exit(1)
 
     LOGGER.info('Loading config file: ' + os.path.abspath(self._config_file))
@@ -155,7 +155,7 @@ class NetworkOrchestrator:
   def _device_discovered(self, mac_addr):
 
     LOGGER.debug(
-      f'Discovered device {mac_addr}. Waiting for device to obtain IP')
+        f'Discovered device {mac_addr}. Waiting for device to obtain IP')
     device = self._get_device(mac_addr=mac_addr)
     os.makedirs(
         os.path.join(RUNTIME_DIR, DEVICES_DIR, device.mac_addr.replace(':',
@@ -171,12 +171,12 @@ class NetworkOrchestrator:
 
     if device.ip_addr is None:
       LOGGER.info(
-         f'Timed out whilst waiting for {mac_addr} to obtain an IP address')
+          f'Timed out whilst waiting for {mac_addr} to obtain an IP address')
       return
 
     LOGGER.info(
-      f'Device with mac addr {device.mac_addr} has obtained IP address '
-      f'{device.ip_addr}')
+        f'Device with mac addr {device.mac_addr} has obtained IP address '
+        f'{device.ip_addr}')
 
     self._start_device_monitor(device)
 
@@ -188,9 +188,8 @@ class NetworkOrchestrator:
   def _start_device_monitor(self, device):
     """Start a timer until the steady state has been reached and
         callback the steady state method for this device."""
-    LOGGER.info(
-      f'Monitoring device with mac addr {device.mac_addr} '
-      f'for {str(self._monitor_period)} seconds')
+    LOGGER.info(f'Monitoring device with mac addr {device.mac_addr} '
+                f'for {str(self._monitor_period)} seconds')
 
     packet_capture = sniff(iface=self._dev_intf, timeout=self._monitor_period)
     wrpcap(
@@ -295,9 +294,8 @@ class NetworkOrchestrator:
     util.run_command(f'ip link set dev {INTERNET_BRIDGE} up')
     util.run_command(f'dhclient {INTERNET_BRIDGE}')
     util.run_command('ip route del default via 10.1.0.1')
-    util.run_command(
-        f'ip route add default via {self._gateway} '
-        f'src {self._ipv4[:-3]} metric 100 dev {INTERNET_BRIDGE}')
+    util.run_command(f'ip route add default via {self._gateway} '
+                     f'src {self._ipv4[:-3]} metric 100 dev {INTERNET_BRIDGE}')
 
   def create_net(self):
     LOGGER.info('Creating baseline network')
@@ -315,7 +313,10 @@ class NetworkOrchestrator:
     util.run_command('ifconfig ' + self._int_intf + ' 0.0.0.0')
 
     # Setup the virtual network
-    self._ovs.create_net()
+    if not self._ovs.create_baseline_net(verify=True):
+      LOGGER.error('Baseline network validation failed.')
+      self.stop()
+      sys.exit(1)
 
     if self._single_intf:
       self._ci_post_network_create()
@@ -352,8 +353,9 @@ class NetworkOrchestrator:
 
     # Load module information
     with open(os.path.join(self._path, net_modules_dir, module_dir,
-                          NETWORK_MODULE_METADATA), 'r',
-                          encoding='UTF-8') as module_file_open:
+                           NETWORK_MODULE_METADATA),
+              'r',
+              encoding='UTF-8') as module_file_open:
       net_module_json = json.load(module_file_open)
 
     net_module.name = net_module_json['config']['meta']['name']
@@ -540,7 +542,7 @@ class NetworkOrchestrator:
                      container_intf)
 
     # Add bridge interface to device bridge
-    util.run_command('ovs-vsctl add-port ' + DEVICE_BRIDGE + ' ' + bridge_intf)
+    self._ovs.add_port(port=bridge_intf, bridge_name=DEVICE_BRIDGE)
 
     # Get PID for running container
     # TODO: Some error checking around missing PIDs might be required
@@ -605,7 +607,11 @@ class NetworkOrchestrator:
                      container_intf)
 
     # Add bridge interface to device bridge
-    util.run_command('ovs-vsctl add-port ' + DEVICE_BRIDGE + ' ' + bridge_intf)
+    if self._ovs.add_port(port=bridge_intf, bridge_name=DEVICE_BRIDGE):
+      if not self._ovs.port_exists(bridge_name=DEVICE_BRIDGE, port=bridge_intf):
+        LOGGER.error('Failed to add ' + net_module.name + ' to device bridge ' +
+                     DEVICE_BRIDGE + '. Exiting.')
+        sys.exit(1)
 
     # Get PID for running container
     # TODO: Some error checking around missing PIDs might be required
@@ -660,8 +666,12 @@ class NetworkOrchestrator:
                        container_intf)
 
       # Attach bridge interface to internet bridge
-      util.run_command('ovs-vsctl add-port ' + INTERNET_BRIDGE + ' ' +
-                       bridge_intf)
+      if self._ovs.add_port(port=bridge_intf, bridge_name=INTERNET_BRIDGE):
+        if not self._ovs.port_exists(bridge_name=INTERNET_BRIDGE,
+                                     port=bridge_intf):
+          LOGGER.error('Failed to add ' + net_module.name +
+                       ' to internet bridge ' + DEVICE_BRIDGE + '. Exiting.')
+          sys.exit(1)
 
       # Attach container interface to container network namespace
       util.run_command('ip link set ' + container_intf + ' netns ' +
@@ -701,12 +711,6 @@ class NetworkOrchestrator:
 
     # Clear the virtual network
     self._ovs.restore_net()
-
-    # # Delete data plane
-    # util.run_command('ovs-vsctl --if-exists del-br tr-d')
-
-    # # Delete control plane
-    # util.run_command('ovs-vsctl --if-exists del-br tr-c')
 
     # Restart internet interface
     if util.interface_exists(self._int_intf):
