@@ -1,3 +1,7 @@
+runtime/
 venv/
-net_orc/
 .vscode/
+error
+pylint.out
+local/
+__pycache__/

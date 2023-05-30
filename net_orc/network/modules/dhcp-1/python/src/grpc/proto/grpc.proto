@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+service NetworkModule {
+
+    rpc GetDHCPRange(GetDHCPRangeRequest) returns (DHCPRange) {};
+
+    rpc SetDHCPRange(DHCPRange) returns (Response) {};
+
+    rpc GetStatus(GetStatusRequest) returns (Response) {};
+
+    rpc GetIPAddress(GetIPAddressRequest) returns (Response) {};
+
+    rpc SetLeaseAddress(SetLeaseAddressRequest) returns (Response) {};
+
+}
+
+message Response {
+    int32 code = 1;
+    string message = 2;
+}
+
+message DHCPRange {
+	int32 code = 1;
+    string start = 2;
+    string end = 3;
+}
+
+message GetDHCPRangeRequest {}
+
+message GetIPAddressRequest {}
+
+message GetStatusRequest {}
+
+message SetLeaseAddressRequest {
+    string ipAddress = 1;
+}

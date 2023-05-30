@@ -1,0 +1,16 @@
+#!/bin/bash -e
+
+# Fetch the interface
+INTF=$1
+
+PID_FILE=/var/run/dhclient.pid
+
+echo "Starting DHCP Client on interface $INTF"
+
+#Kill any existing running dhclient process
+if [ -f $PID_FILE ]; then
+    kill -9 $(cat $PID_FILE) || true
+    rm -f $PID_FILE
+fi
+
+dhclient $INTF

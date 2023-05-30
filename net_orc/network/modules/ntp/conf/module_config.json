@@ -1,0 +1,23 @@
+{
+  "config": {
+    "meta": {
+      "name": "ntp",
+      "display_name": "NTP",
+      "description": "An NTP server"
+    },
+    "network": {
+      "interface": "veth0",
+      "enable_wan": false,
+      "ip_index": 5
+    },
+    "docker": {
+      "depends_on": "base",
+      "mounts": [
+        {
+          "source": "runtime/network",
+          "target": "/runtime/network"
+        }
+      ]
+    }
+  }
+}

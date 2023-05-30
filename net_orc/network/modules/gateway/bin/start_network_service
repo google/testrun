@@ -1,0 +1,30 @@
+#!/bin/bash
+
+LOCAL_INTF=veth0
+EXT_INTF=eth1
+
+echo Starting gateway
+
+/testrun/bin/wait_for_interface $EXT_INT
+
+# Enable IPv6 forwarding
+sysctl net.ipv6.conf.eth1.accept_ra=1 
+sysctl net.ipv6.conf.default.forwarding=1 
+sysctl -p
+
+# Start dhclient if external interface does not have IP
+if ! ip addr show $EXT_INTF | fgrep 'inet '; then
+    echo No inet address for $EXT_INTF, initiating dhcp client...
+    dhclient $EXT_INTF
+fi
+
+# Enable NAT to the outside world
+echo 1 > /proc/sys/net/ipv4/ip_forward
+iptables -t nat -A POSTROUTING -o $EXT_INTF -j MASQUERADE
+iptables -A FORWARD -i $EXT_INTF -o $LOCAL_INTF -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i $LOCAL_INTF -o $EXT_INTF -j ACCEPT
+
+# Keep gateway running until killed by framework
+while true; do
+    sleep 10
+done
