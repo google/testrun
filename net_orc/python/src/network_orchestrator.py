@@ -430,13 +430,6 @@ class NetworkOrchestrator:
         return net_module
     return None
 
-  # Start the OVS network module
-  # This should always be called before loading all
-  # other modules to allow for a properly setup base
-  # network
-  def _start_ovs_module(self):
-    self._start_network_service(self._get_network_module('OVS'))
-
   def _start_network_service(self, net_module):
 
     LOGGER.debug('Starting net service ' + net_module.display_name)
@@ -508,16 +501,12 @@ class NetworkOrchestrator:
 
     for net_module in self._net_modules:
 
-      # TODO: There should be a better way of doing this
-      # Do not try starting OVS module again, as it should already be running
-      if 'OVS' != net_module.display_name:
+      # Network modules may just be Docker images,
+      # so we do not want to start them as containers
+      if not net_module.enable_container:
+        continue
 
-        # Network modules may just be Docker images,
-        # so we do not want to start them as containers
-        if not net_module.enable_container:
-          continue
-
-        self._start_network_service(net_module)
+      self._start_network_service(net_module)
 
     LOGGER.info('All network services are running')
     self._check_network_services()
