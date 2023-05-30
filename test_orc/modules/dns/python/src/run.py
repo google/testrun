@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-
+"""Run DNS test module"""
 import argparse
 import signal
 import sys
@@ -13,7 +12,7 @@ RUNTIME = 1500
 
 
 class DNSModuleRunner:
-
+  """Run the DNS module tests."""
   def __init__(self, module):
 
     signal.signal(signal.SIGINT, self._handler)
@@ -33,7 +32,7 @@ class DNSModuleRunner:
     global LOGGER
     LOGGER = logger.get_logger(LOG_NAME, module)
 
-  def _handler(self, signum, *other):
+  def _handler(self, signum):
     LOGGER.debug("SigtermEnum: " + str(signal.SIGTERM))
     LOGGER.debug("Exit signal received: " + str(signum))
     if signum in (2, signal.SIGTERM):
@@ -42,7 +41,7 @@ class DNSModuleRunner:
       sys.exit(1)
 
 
-def run(argv):
+def run():
   parser = argparse.ArgumentParser(
       description="Test Module DNS",
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -60,4 +59,4 @@ def run(argv):
 
 
 if __name__ == "__main__":
-  run(sys.argv)
+  run()

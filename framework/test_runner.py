@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """Wrapper for the TestRun that simplifies
 virtual testing procedure by allowing direct calling
 from the command line.
@@ -16,11 +15,15 @@ import signal
 
 LOGGER = logger.get_logger("runner")
 
+
 class TestRunner:
   """Controls and starts the Test Run application."""
 
-  def __init__(self, config_file=None, validate=True, 
-               net_only=False, single_intf=False):
+  def __init__(self,
+               config_file=None,
+               validate=True,
+               net_only=False,
+               single_intf=False):
     self._register_exits()
     self.test_run = TestRun(config_file=config_file,
                             validate=validate,
@@ -50,22 +53,34 @@ class TestRunner:
     self.test_run.start()
     LOGGER.info("Test Run has finished")
 
-def parse_args(argv):
-  parser = argparse.ArgumentParser(description="Test Run",
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument("-f", "--config-file", default=None,
-            help="Define the configuration file for Test Run and Network Orchestrator")
-  parser.add_argument("--no-validate", action="store_true",
-            help="Turn off the validation of the network after network boot")
-  parser.add_argument("-net", "--net-only", action="store_true",
-            help="Run the network only, do not run tests")
-  parser.add_argument("--single-intf", action="store_true",
-            help="Single interface mode (experimental)")
+
+def parse_args():
+  parser = argparse.ArgumentParser(
+      description="Test Run",
+      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument(
+      "-f",
+      "--config-file",
+      default=None,
+      help="Define the configuration file for Test Run and Network Orchestrator"
+  )
+  parser.add_argument(
+      "--no-validate",
+      action="store_true",
+      help="Turn off the validation of the network after network boot")
+  parser.add_argument("-net",
+                      "--net-only",
+                      action="store_true",
+                      help="Run the network only, do not run tests")
+  parser.add_argument("--single-intf",
+                      action="store_true",
+                      help="Single interface mode (experimental)")
   parsed_args = parser.parse_known_args()[0]
   return parsed_args
 
+
 if __name__ == "__main__":
-  args = parse_args(sys.argv)
+  args = parse_args()
   runner = TestRunner(config_file=args.config_file,
                       validate=not args.no_validate,
                       net_only=args.net_only,
