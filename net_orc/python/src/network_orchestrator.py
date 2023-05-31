@@ -187,11 +187,9 @@ class NetworkOrchestrator:
       LOGGER.info(
           f'Timed out whilst waiting for {mac_addr} to obtain an IP address')
       return
-
     LOGGER.info(
         f'Device with mac addr {device.mac_addr} has obtained IP address '
         f'{device.ip_addr}')
-
     self._start_device_monitor(device)
 
   def _dhcp_lease_ack(self, packet):
