@@ -34,7 +34,8 @@
             "tcp_ports": {
               "22": {
                 "allowed": true,
-                "description": "Secure Shell (SSH) server"
+                "description": "Secure Shell (SSH) server",
+                "version": "2.0"
               }
             },
             "description": "Check TELNET port 23 is disabled and TELNET is not running on any port",

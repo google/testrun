@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """NMAP test module"""
 import time
 import util
@@ -25,6 +24,7 @@ LOGGER = None
 
 class NmapModule(TestModule):
   """NMAP Test module"""
+
   def __init__(self, module):
     super().__init__(module_name=module, log_name=LOG_NAME)
     self._unallowed_ports = []
@@ -68,8 +68,6 @@ class NmapModule(TestModule):
       LOGGER.debug("Service scan results: " + str(self._script_scan_results))
       self._process_port_results(tests=config)
       LOGGER.info("Unallowed Ports: " + str(self._unallowed_ports))
-      LOGGER.info("Script scan results:\n" +
-                  json.dumps(self._script_scan_results))
       return len(self._unallowed_ports) == 0
     else:
       LOGGER.info("Device ip address not resolved, skipping")
@@ -107,7 +105,15 @@ class NmapModule(TestModule):
               result = False
             else:
               LOGGER.info("Allowed port open")
-              result = True
+              if "version" in config and "version" in scan_results[port]:
+                version_check = self._check_version(scan_results[port]["service"],
+                  scan_results[port]["version"],config["version"])
+                if version_check is not None:
+                  result = version_check
+                else:
+                  result = True
+              else:
+                result = True
           else:
             LOGGER.info("Port is closed")
             result = True
@@ -119,6 +125,26 @@ class NmapModule(TestModule):
           config["result"] = "compliant" if result else "non-compliant"
         else:
           config["result"] = "skipped"
+
+  def _check_version(self,service,version_detected,version_expected):
+    """Check if the version specified for the service matches what was
+       detected by nmap.  Since there is no consistency in how nmap service
+       results are returned, each service that needs a checked must be 
+       implemented individually.  If a service version is requested
+       that is not implemented, this test will provide a skip (None)
+       result.
+    """
+    LOGGER.info("Checking version for service: " + service)
+    LOGGER.info("NMAP Version Detected: " + version_detected)            
+    LOGGER.info("Version Expected: " + version_expected)   
+    version_check = None
+    match service:
+      case "ssh":
+        version_check = f"protocol {version_expected}" in version_detected
+      case _:
+        LOGGER.info("No version check implemented for service: " + service + ". Skipping")
+    LOGGER.info("Version check result: " + str(version_check))
+    return version_check
 
   def _scan_scripts(self, tests):
     scan_results = {}
@@ -169,25 +195,15 @@ class NmapModule(TestModule):
     nmap_results = util.run_command("nmap " + nmap_options +
                                     self._device_ipv4_addr)[0]
     LOGGER.info("Nmap UDP script scan complete")
-    LOGGER.info("nmap script results\n" + str(nmap_results))
     return self._process_nmap_results(nmap_results=nmap_results)
 
   def _scan_tcp_ports(self, tests):
     max_port = 1000
-    ports = []
-    for test in tests:
-      test_config = tests[test]
-      if "tcp_ports" in test_config:
-        for port in test_config["tcp_ports"]:
-          if int(port) > max_port:
-            ports.append(port)
-    ports_to_scan = "1-" + str(max_port)
-    if len(ports) > 0:
-      ports_to_scan += "," + ",".join(ports)
     LOGGER.info("Running nmap TCP port scan")
-    LOGGER.info("TCP ports: " + str(ports_to_scan))
-    nmap_results = util.run_command(f"""nmap -sT -sV -Pn -v -p {ports_to_scan}
+    nmap_results = util.run_command(
+        f"""nmap --open -sT -sV -Pn -v -p 1-{max_port}
       --version-intensity 7 -T4 {self._device_ipv4_addr}""")[0]
+
     LOGGER.info("TCP port scan complete")
     self._scan_tcp_results = self._process_nmap_results(
         nmap_results=nmap_results)
@@ -213,7 +229,7 @@ class NmapModule(TestModule):
     results = {}
     LOGGER.info("nmap results\n" + str(nmap_results))
     if nmap_results:
-      if "Service Info" in nmap_results:
+      if "Service Info" in nmap_results and "MAC Address" not in nmap_results:
         rows = nmap_results.split("PORT")[1].split("Service Info")[0].split(
             "\n")
       elif "PORT" in nmap_results:
