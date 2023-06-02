@@ -109,6 +109,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         [NetworkEvent.DEVICE_DISCOVERED]
       )
 
+      self._net_orc.start_listener()
       LOGGER.info('Waiting for devices on the network...')
 
       # Check timeout and whether testing is currently

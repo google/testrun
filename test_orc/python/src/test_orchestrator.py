@@ -49,7 +49,7 @@ class TestOrchestrator:
     os.makedirs(os.path.join(self._root_path, RUNTIME_DIR), exist_ok=True)
 
   def start(self):
-    LOGGER.info("Starting Test Orchestrator")
+    LOGGER.debug("Starting test orchestrator")
     self._load_test_modules()
     self.build_test_modules()
 
@@ -64,8 +64,10 @@ class TestOrchestrator:
     for module in self._test_modules:
       self._run_test_module(module, device)
     LOGGER.info("All tests complete")
-    LOGGER.info(f"""Completed running test modules on device
-          with mac addr {device.mac_addr}""")
+    LOGGER.info(
+      f"""Completed running test 
+      modules on device with mac 
+      addr {device.mac_addr}""")
     self._generate_results(device)
 
   def _generate_results(self, device):

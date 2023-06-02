@@ -77,15 +77,15 @@ class OVSControl:
 
   def validate_baseline_network(self):
     # Verify the OVS setup of the virtual network
-    LOGGER.info('Validating baseline network')
+    LOGGER.debug('Validating baseline network')
 
     # Verify the device bridge
     dev_bridge = self.verify_bridge(DEVICE_BRIDGE, [self._dev_intf])
-    LOGGER.info('Device bridge verified: ' + str(dev_bridge))
+    LOGGER.debug('Device bridge verified: ' + str(dev_bridge))
 
     # Verify the internet bridge
     int_bridge = self.verify_bridge(INTERNET_BRIDGE, [self._int_intf])
-    LOGGER.info('Internet bridge verified: ' + str(int_bridge))
+    LOGGER.debug('Internet bridge verified: ' + str(int_bridge))
 
     return dev_bridge and int_bridge
 
