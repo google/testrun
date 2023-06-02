@@ -67,6 +67,8 @@ class NmapModule(TestModule):
       LOGGER.debug("UDP scan results: " + str(self._scan_udp_results))
       LOGGER.debug("Service scan results: " + str(self._script_scan_results))
       self._process_port_results(tests=config)
+      LOGGER.info("Unallowed Ports Detected: " + str(self._unallowed_ports))
+      self._check_unallowed_port(self._unallowed_ports,config)
       LOGGER.info("Unallowed Ports: " + str(self._unallowed_ports))
       return len(self._unallowed_ports) == 0
     else:
@@ -74,17 +76,6 @@ class NmapModule(TestModule):
       return None
 
   def _process_port_results(self, tests):
-    for test in tests:
-      LOGGER.info("Checking results for test: " + str(test))
-      self._check_scan_results(test_config=tests[test])
-
-  def _check_scan_results(self, test_config):
-    port_config = {}
-    if "tcp_ports" in test_config:
-      port_config.update(test_config["tcp_ports"])
-    elif "udp_ports" in test_config:
-      port_config.update(test_config["udp_ports"])
-
     scan_results = {}
     if self._scan_tcp_results is not None:
       scan_results.update(self._scan_tcp_results)
@@ -92,6 +83,71 @@ class NmapModule(TestModule):
       scan_results.update(self._scan_udp_results)
     if self._script_scan_results is not None:
       scan_results.update(self._script_scan_results)
+
+    self._check_unknown_ports(tests=tests,scan_results=scan_results)
+
+    for test in tests:
+      LOGGER.info("Checking results for test: " + str(test))
+      self._check_scan_results(test_config=tests[test],scan_results=scan_results)
+
+  def _check_unknown_ports(self,tests,scan_results):
+    """ Check if any of the open ports detected are not defined
+        in the test configurations.  If an open port is detected
+        without a configuration associated with it, the default behavior 
+        is to mark it as an unallowed port.
+    """
+    known_ports = []
+    for test in tests:
+      if "tcp_ports" in tests[test]:
+        for port in tests[test]['tcp_ports']:
+         known_ports.append(port)
+      if "udp_ports" in tests[test]:
+        for port in tests[test]['udp_ports']:
+         known_ports.append(port)
+
+    for port_result in scan_results:
+      if not port_result in known_ports:
+        LOGGER.info("Unknown port detected: " + port_result)
+        unallowed_port = {'port':port_result,
+                          'service':scan_results[port_result]['service'],
+                          'tcp_udp':scan_results[port_result]['tcp_udp']}
+        #self._unallowed_ports.append(unallowed_port)
+        self._add_unknown_ports(tests,unallowed_port)
+
+  def _add_unknown_ports(self,tests,unallowed_port):
+    known_service = False
+    result = {'description':"Undefined port",'allowed':False}
+    if unallowed_port['tcp_udp'] == 'tcp':
+      port_style = 'tcp_ports'
+    elif unallowed_port['tcp_udp'] == 'udp':
+      port_style = 'udp_ports'
+    for test in tests:
+      if unallowed_port['service'] in test:
+        known_service=True
+        for test_port in tests[test][port_style]:
+          if "version" in tests[test][port_style][test_port]:
+            result['version'] = tests[test][port_style][test_port]['version']
+          if "description" in tests[test][port_style][test_port]:
+            result['description'] = tests[test][port_style][test_port]['description']
+          result['inherited_from'] = test_port
+          if tests[test][port_style][test_port]['allowed']:
+            result['allowed'] = True
+            break
+
+        tests[test][port_style][unallowed_port['port']]=result
+
+    if not known_service:
+      service_name = "security.services.unknown." + str(unallowed_port['port'])
+      unknown_service = {port_style:{unallowed_port['port']:result}}
+      tests[service_name]=unknown_service
+
+  def _check_scan_results(self, test_config,scan_results):
+    port_config = {}
+    if "tcp_ports" in test_config:
+      port_config.update(test_config["tcp_ports"])
+    elif "udp_ports" in test_config:
+      port_config.update(test_config["udp_ports"])
+
     if port_config is not None:
       for port, config in port_config.items():
         result = None
@@ -101,7 +157,11 @@ class NmapModule(TestModule):
           if scan_results[port]["state"] == "open":
             if not config["allowed"]:
               LOGGER.info("Unallowed port open")
-              self._unallowed_ports.append(str(port))
+              self._unallowed_ports.append(
+                {"port":str(port),
+                "service":str(scan_results[port]["service"]),
+                'tcp_udp':scan_results[port]['tcp_udp']}
+                )
               result = False
             else:
               LOGGER.info("Allowed port open")
@@ -125,6 +185,44 @@ class NmapModule(TestModule):
           config["result"] = "compliant" if result else "non-compliant"
         else:
           config["result"] = "skipped"
+
+  def _check_unallowed_port(self,unallowed_ports,tests):
+    service_allowed=False
+    allowed = False
+    version = None
+    service = None
+    for port in unallowed_ports:
+      LOGGER.info('Checking unallowed port: ' + port['port'])
+      LOGGER.info('Looking for service: ' + port['service'])
+      LOGGER.info('Unallowed Port Config: ' + str(port))
+      if port['tcp_udp'] == 'tcp':
+        port_style = 'tcp_ports'
+      elif port['tcp_udp'] == 'udp':
+        port_style = 'udp_ports'
+      for test in tests:
+        LOGGER.info('Checking test: ' + str(test))
+        if port['service'] in test:
+          service_config = tests[test]
+          service = port['service']
+          for service_port in service_config[port_style]:
+            port_config = service_config[port_style][service_port]
+            service_allowed |= port_config['allowed']
+            version = port_config['version'] if 'version' in port_config else None
+            if service_allowed:
+              LOGGER.info("Unallowed port detected for allowed service: " + service)
+              if version is not None:
+                allowed = self._check_version(service=service,
+                  version_detected=self._scan_tcp_results[port['port']]['version'],
+                  version_expected=version)
+              else:
+                allowed = True
+              if allowed:
+                LOGGER.info("Unallowed port exception for approved service: " + port['port'])
+                for u_port in self._unallowed_ports:
+                  if port['port'] in u_port['port']:
+                    self._unallowed_ports.remove(u_port)
+              break    
+          break
 
   def _check_version(self,service,version_detected,version_expected):
     """Check if the version specified for the service matches what was
@@ -248,6 +346,7 @@ class NmapModule(TestModule):
               version = " ".join(cols[3:])
             port_result = {
                 cols[0].split("/")[0]: {
+                    "tcp_udp":cols[0].split("/")[1],
                     "state": cols[1],
                     "service": cols[2],
                     "version": version
