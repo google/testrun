@@ -38,7 +38,7 @@ LOGGER = logger.get_logger('net_orc')
 CONFIG_FILE = 'conf/system.json'
 EXAMPLE_CONFIG_FILE = 'conf/system.json.example'
 RUNTIME_DIR = 'runtime'
-DEVICES_DIR = 'devices'
+TEST_DIR = 'test'
 MONITOR_PCAP = 'monitor.pcap'
 NET_DIR = 'runtime/network'
 NETWORK_MODULES_DIR = 'network/modules'
@@ -93,7 +93,7 @@ class NetworkOrchestrator:
   def start(self):
     """Start the network orchestrator."""
 
-    LOGGER.info('Starting Network Orchestrator')
+    LOGGER.debug('Starting network orchestrator')
     # Get all components ready
     self.load_network_modules()
 
@@ -124,6 +124,9 @@ class NetworkOrchestrator:
 
     # Get network ready (via Network orchestrator)
     LOGGER.info('Network is ready.')
+
+  def start_listener(self):
+    self.listener.start_listener()
 
   def stop(self, kill=False):
     """Stop the network orchestrator."""
@@ -172,16 +175,16 @@ class NetworkOrchestrator:
         f'Discovered device {mac_addr}. Waiting for device to obtain IP')
     device = self._get_device(mac_addr=mac_addr)
     os.makedirs(
-        os.path.join(RUNTIME_DIR, DEVICES_DIR, device.mac_addr.replace(':',
-                                                                       '')))
+        os.path.join(RUNTIME_DIR,
+        TEST_DIR,
+        device.mac_addr.replace(':', '')))
 
-    timeout = time.time() + self._startup_timeout
-
-    while time.time() < timeout:
-      if device.ip_addr is None:
-        time.sleep(3)
-      else:
-        break
+    packet_capture = sniff(iface=self._dev_intf,
+                           timeout=self._startup_timeout,
+                           stop_filter=self._device_has_ip)
+    wrpcap(
+        os.path.join(RUNTIME_DIR, TEST_DIR, device.mac_addr.replace(':', ''),
+                     'startup.pcap'), packet_capture)
 
     if device.ip_addr is None:
       LOGGER.info(
@@ -192,6 +195,12 @@ class NetworkOrchestrator:
         f'{device.ip_addr}')
     
     self._start_device_monitor(device)
+
+  def _device_has_ip(self, packet):
+    device = self._get_device(mac_addr=packet.src)
+    if device is None or device.ip_addr is None:
+      return False
+    return True
 
   def _dhcp_lease_ack(self, packet):
     mac_addr = packet[BOOTP].chaddr.hex(':')[0:17]
@@ -206,7 +215,7 @@ class NetworkOrchestrator:
 
     packet_capture = sniff(iface=self._dev_intf, timeout=self._monitor_period)
     wrpcap(
-        os.path.join(RUNTIME_DIR, DEVICES_DIR, device.mac_addr.replace(':', ''),
+        os.path.join(RUNTIME_DIR, TEST_DIR, device.mac_addr.replace(':', ''),
                      'monitor.pcap'), packet_capture)
     self.listener.call_callback(NetworkEvent.DEVICE_STABLE, device.mac_addr)
 
@@ -341,7 +350,6 @@ class NetworkOrchestrator:
                                     [NetworkEvent.DEVICE_DISCOVERED])
     self.listener.register_callback(self._dhcp_lease_ack,
                                     [NetworkEvent.DHCP_LEASE_ACK])
-    self.listener.start_listener()
 
   def load_network_modules(self):
     """Load network modules from module_config.json."""
