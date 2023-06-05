@@ -37,6 +37,7 @@ class TestOrchestrator:
     self._test_modules = []
     self._module_config = None
     self._net_orc = net_orc
+    self._test_in_progress = False
 
     self._path = os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -49,7 +50,7 @@ class TestOrchestrator:
     os.makedirs(os.path.join(self._root_path, RUNTIME_DIR), exist_ok=True)
 
   def start(self):
-    LOGGER.info("Starting Test Orchestrator")
+    LOGGER.debug("Starting test orchestrator")
     self._load_test_modules()
     self.build_test_modules()
 
@@ -59,14 +60,18 @@ class TestOrchestrator:
 
   def run_test_modules(self, device):
     """Iterates through each test module and starts the container."""
+    self._test_in_progress = True
     LOGGER.info(
         f"Running test modules on device with mac addr {device.mac_addr}")
     for module in self._test_modules:
       self._run_test_module(module, device)
     LOGGER.info("All tests complete")
-    LOGGER.info(f"""Completed running test modules on device
-          with mac addr {device.mac_addr}""")
+    LOGGER.info(
+      f"""Completed running test \
+modules on device with mac \
+addr {device.mac_addr}""")
     self._generate_results(device)
+    self._test_in_progress = False
 
   def _generate_results(self, device):
     results = {}
@@ -88,7 +93,7 @@ class TestOrchestrator:
             results[module.name] = module_results
         except (FileNotFoundError, PermissionError,
                 json.JSONDecodeError) as results_error:
-          LOGGER.error("Module Results Errror " + module.name)
+          LOGGER.error("Error occured whilst running module " + module.name)
           LOGGER.debug(results_error)
 
     out_file = os.path.join(
@@ -97,6 +102,9 @@ class TestOrchestrator:
     with open(out_file, "w", encoding="utf-8") as f:
       json.dump(results, f, indent=2)
     return results
+
+  def test_in_progress(self):
+    return self._test_in_progress
 
   def _is_module_enabled(self, module, device):
     enabled = True

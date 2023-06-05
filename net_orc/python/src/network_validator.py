@@ -47,16 +47,16 @@ class NetworkValidator:
 
   def start(self):
     """Start the network validator."""
-    LOGGER.info('Starting validator')
+    LOGGER.debug('Starting validator')
     self._load_devices()
     self._build_network_devices()
     self._start_network_devices()
 
   def stop(self, kill=False):
     """Stop the network validator."""
-    LOGGER.info('Stopping validator')
+    LOGGER.debug('Stopping validator')
     self._stop_network_devices(kill)
-    LOGGER.info('Validator stopped')
+    LOGGER.debug('Validator stopped')
 
   def _build_network_devices(self):
     LOGGER.debug('Building network validators...')
