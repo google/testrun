@@ -65,10 +65,11 @@ class TestOrchestrator:
       self._run_test_module(module, device)
     LOGGER.info("All tests complete")
     LOGGER.info(
-      f"""Completed running test 
-      modules on device with mac 
-      addr {device.mac_addr}""")
+      f"""Completed running test \
+        modules on device with mac \
+          addr {device.mac_addr}""")
     self._generate_results(device)
+    # TODO: Stop test run
 
   def _generate_results(self, device):
     results = {}

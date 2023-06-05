@@ -48,7 +48,7 @@ from device import Device # pylint: disable=wrong-import-position,import-outside
 LOGGER = logger.get_logger('test_run')
 CONFIG_FILE = 'conf/system.json'
 EXAMPLE_CONFIG_FILE = 'conf/system.json.example'
-RUNTIME = 1500
+RUNTIME = 120
 
 LOCAL_DEVICES_DIR = 'local/devices'
 RESOURCE_DEVICES_DIR = 'resources/devices'
@@ -146,14 +146,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
   def _start_network(self):
     # Start the network orchestrator
     self._net_orc.start()
-
-  def _run_tests(self, device):
-    """Iterate through and start all test modules."""
-
-    # To Do: Make this configurable
-    time.sleep(60)  # Let device bootup
-
-    self._test_orc.run_test_modules(device)
 
   def _stop_network(self, kill=False):
     self._net_orc.stop(kill=kill)
