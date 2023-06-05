@@ -190,6 +190,7 @@ class NetworkOrchestrator:
     LOGGER.info(
         f'Device with mac addr {device.mac_addr} has obtained IP address '
         f'{device.ip_addr}')
+    
     self._start_device_monitor(device)
 
   def _dhcp_lease_ack(self, packet):
