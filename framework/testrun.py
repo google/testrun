@@ -112,9 +112,13 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self._net_orc.start_listener()
       LOGGER.info('Waiting for devices on the network...')
 
-      # Check timeout and whether testing is currently
-      # in progress before stopping
       time.sleep(RUNTIME)
+
+      if not self._test_orc.test_in_progress():
+        LOGGER.info('Timed out whilst waiting for device')
+      else:
+        while self._test_orc.test_in_progress():
+          time.sleep(5)
 
     self.stop()
 
