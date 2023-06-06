@@ -150,7 +150,7 @@ class NetworkValidator:
           privileged=True,
           detach=True,
           mounts=device.mounts,
-          environment={'HOST_USER': getpass.getuser()})
+          environment={'HOST_USER': self._get_host_user()})
     except docker.errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)
@@ -166,6 +166,28 @@ class NetworkValidator:
       status = self._get_device_status(device)
 
     LOGGER.info('Validation device ' + device.name + ' has finished')
+
+  def _get_host_user(self):
+    user = self._get_os_user()
+    
+    # If primary method failed, try secondary
+    if user is None:
+      user = self._get_user()
+
+    LOGGER.debug("Network validator host user: " + user)
+    return user
+
+  def _get_os_user(self):
+    user = None
+    try:
+      user = os.getlogin()
+    except OSError as e:
+      # Handle the OSError exception
+      LOGGER.error("An OS error occurred while retrieving the login name.")
+    except Exception as e:
+      # Catch any other unexpected exceptions
+       LOGGER.error("An exception occurred:", e)
+    return user
 
   def _get_device_status(self, module):
     container = self._get_device_container(module)
