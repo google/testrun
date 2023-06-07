@@ -1,0 +1,22 @@
+{
+  "config": {
+    "meta": {
+      "name": "connection",
+      "display_name": "Connection",
+      "description": "Connection tests"
+    },
+    "network": true,
+    "docker": {
+      "depends_on": "base",
+      "enable_container": true,
+      "timeout": 30
+    },
+    "tests":[
+      {
+        "name": "connection.target_ping",
+        "description": "The device under test responds to an ICMP echo (ping) request.",
+        "expected_behavior": "The device under test responds to an ICMP echo (ping) request."
+      }
+    ]
+  }
+}

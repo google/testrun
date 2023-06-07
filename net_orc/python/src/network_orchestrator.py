@@ -469,13 +469,53 @@ class NetworkOrchestrator:
           privileged=True,
           detach=True,
           mounts=net_module.mounts,
-          environment={'HOST_USER': getpass.getuser()})
+          environment={'HOST_USER': self._get_host_user()})
     except docker.errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)
 
     if network != 'host':
       self._attach_service_to_network(net_module)
+
+  def _get_host_user(self):
+    user = self._get_os_user()
+    
+    # If primary method failed, try secondary
+    if user is None:
+      user = self._get_user()
+
+    LOGGER.debug("Network orchestrator host user: " + user)
+    return user
+
+  def _get_os_user(self):
+    user = None
+    try:
+      user = os.getlogin()
+    except OSError as e:
+      # Handle the OSError exception
+      LOGGER.error("An OS error occurred while retrieving the login name.")
+    except Exception as e:
+      # Catch any other unexpected exceptions
+       LOGGER.error("An exception occurred:", e)
+    return user
+
+  def _get_user(self):
+    user = None
+    try:
+      user = getpass.getuser()
+    except (KeyError, ImportError, ModuleNotFoundError, OSError) as e:
+      # Handle specific exceptions individually
+      if isinstance(e, KeyError):
+          LOGGER.error("USER environment variable not set or unavailable.")
+      elif isinstance(e, ImportError):
+          LOGGER.error("Unable to import the getpass module.")
+      elif isinstance(e, ModuleNotFoundError):
+          LOGGER.error("The getpass module was not found.")
+      elif isinstance(e, OSError):
+          LOGGER.error("An OS error occurred while retrieving the username.")
+      else:
+          LOGGER.error("An exception occurred:", e)
+    return user
 
   def _stop_service_module(self, net_module, kill=False):
     LOGGER.debug('Stopping Service container ' + net_module.container_name)

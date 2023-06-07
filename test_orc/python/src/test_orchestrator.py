@@ -153,7 +153,7 @@ addr {device.mac_addr}""")
                     read_only=True),
           ],
           environment={
-              "HOST_USER": getpass.getuser(),
+              "HOST_USER": self._get_host_user(),
               "DEVICE_MAC": device.mac_addr,
               "DEVICE_TEST_MODULES": device.test_modules,
               "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
@@ -205,6 +205,47 @@ addr {device.mac_addr}""")
       LOGGER.error("Failed to resolve container")
       LOGGER.error(error)
     return container
+
+  def _get_host_user(self):
+    user = self._get_os_user()
+    
+    # If primary method failed, try secondary
+    if user is None:
+      user = self._get_user()
+
+    LOGGER.debug("Test orchestrator host user: " + user)
+    return user
+
+  def _get_os_user(self):
+    user = None
+    try:
+      user = os.getlogin()
+    except OSError as e:
+      # Handle the OSError exception
+      LOGGER.error("An OS error occurred while retrieving the login name.")
+    except Exception as e:
+      # Catch any other unexpected exceptions
+       LOGGER.error("An exception occurred:", e)
+    return user
+
+  def _get_user(self):
+    user = None
+    try:
+      user = getpass.getuser()
+    except (KeyError, ImportError, ModuleNotFoundError, OSError) as e:
+      # Handle specific exceptions individually
+      if isinstance(e, KeyError):
+          LOGGER.error("USER environment variable not set or unavailable.")
+      elif isinstance(e, ImportError):
+          LOGGER.error("Unable to import the getpass module.")
+      elif isinstance(e, ModuleNotFoundError):
+          LOGGER.error("The getpass module was not found.")
+      elif isinstance(e, OSError):
+          LOGGER.error("An OS error occurred while retrieving the username.")
+      else:
+          LOGGER.error("An exception occurred:", e)
+    return user
+
 
   def _load_test_modules(self):
     """Load network modules from module_config.json."""
