@@ -53,7 +53,6 @@ class ConnectionModule(TestModule):
       LOGGER.info("No OUI Manufacturer found for: " + self._device_mac)
       return False, "No OUI Manufacturer found for: " + self._device_mac
 
-
   def _get_oui_manufacturer(self,mac_address):
     # Do some quick fixes on the format of the mac_address
     # to match the oui file pattern
@@ -63,7 +62,6 @@ class ConnectionModule(TestModule):
                 if mac_address.startswith(line[:8]):
                     start = line.index("(hex)") + len("(hex)")
                     return line[start:].strip()  # Extract the company name
-
     return None
 
   def _ping(self, host):

@@ -1,7 +1,7 @@
 # Image name: test-run/conn-test
 FROM test-run/base-test:latest
 
-#install all necessary packages
+# Install all necessary packages
 RUN apt-get install -y wget
 
 #Update the oui.txt file from ieee
@@ -15,4 +15,3 @@ COPY modules/conn/bin /testrun/bin
 
 # Copy over all python files
 COPY modules/conn/python /testrun/python
-
