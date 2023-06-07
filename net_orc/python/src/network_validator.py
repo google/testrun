@@ -189,6 +189,24 @@ class NetworkValidator:
        LOGGER.error("An exception occurred:", e)
     return user
 
+  def _get_user(self):
+    user = None
+    try:
+      user = getpass.getuser()
+    except (KeyError, ImportError, ModuleNotFoundError, OSError) as e:
+      # Handle specific exceptions individually
+      if isinstance(e, KeyError):
+          LOGGER.error("USER environment variable not set or unavailable.")
+      elif isinstance(e, ImportError):
+          LOGGER.error("Unable to import the getpass module.")
+      elif isinstance(e, ModuleNotFoundError):
+          LOGGER.error("The getpass module was not found.")
+      elif isinstance(e, OSError):
+          LOGGER.error("An OS error occurred while retrieving the username.")
+      else:
+          LOGGER.error("An exception occurred:", e)
+    return user
+
   def _get_device_status(self, module):
     container = self._get_device_container(module)
     if container is not None:
