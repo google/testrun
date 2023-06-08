@@ -77,3 +77,4 @@ class ConnectionModule(TestModule):
     cmd = 'ping -c 1 ' + str(host)
     success = util.run_command(cmd, output=False)
     return success
+  
