@@ -16,6 +16,11 @@
         "name": "connection.target_ping",
         "description": "The device under test responds to an ICMP echo (ping) request.",
         "expected_behavior": "The device under test responds to an ICMP echo (ping) request."
+      },
+      {
+        "name": "connection.mac_oui",
+        "description": "The device under test hs a MAC address prefix that is registered against a known manufacturer.",
+        "expected_behavior": "The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database."
       }
     ]
   }

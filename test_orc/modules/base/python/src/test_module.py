@@ -95,7 +95,12 @@ class TestModule:
       else:
         LOGGER.info('Test ' + test['name'] + ' disabled. Skipping')
       if result is not None:
-        test['result'] = 'compliant' if result else 'non-compliant'
+        success = None
+        if isinstance(result,bool):
+          test['result'] = 'compliant' if result else 'non-compliant'     
+        else:
+          test['result'] = 'compliant' if result[0] else 'non-compliant'
+          test['result_details'] = result[1]
       else:
         test['result'] = 'skipped'
       test['end'] = datetime.now().isoformat()
