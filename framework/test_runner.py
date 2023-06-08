@@ -66,29 +66,34 @@ class TestRunner:
     self.test_run.start()
     LOGGER.info("Test Run has finished")
 
-
 def parse_args():
   parser = argparse.ArgumentParser(
       description="Test Run",
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
   parser.add_argument(
       "-f",
       "--config-file",
       default=None,
       help="Define the configuration file for Test Run and Network Orchestrator"
   )
+
   parser.add_argument(
       "--no-validate",
       action="store_true",
       help="Turn off the validation of the network after network boot")
+
   parser.add_argument("-net",
                       "--net-only",
                       action="store_true",
                       help="Run the network only, do not run tests")
+
   parser.add_argument("--single-intf",
                       action="store_true",
                       help="Single interface mode (experimental)")
+
   parsed_args = parser.parse_known_args()[0]
+
   return parsed_args
 
 
