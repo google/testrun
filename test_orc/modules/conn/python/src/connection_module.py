@@ -19,6 +19,7 @@ from test_module import TestModule
 
 LOG_NAME = "test_connection"
 LOGGER = None
+OUI_FILE="/usr/local/etc/oui.txt"
 
 
 class ConnectionModule(TestModule):
@@ -42,6 +43,26 @@ class ConnectionModule(TestModule):
     else:
       return self._ping(self._device_ipv4_addr)
 
+  def _connection_mac_oui(self):
+    LOGGER.info("Running connection.mac_oui")
+    manufacturer = self._get_oui_manufacturer(self._device_mac)
+    if manufacturer is not None:
+      LOGGER.info("OUI Manufacturer found: " + manufacturer)
+      return True, "OUI Manufacturer found: " + manufacturer
+    else:
+      LOGGER.info("No OUI Manufacturer found for: " + self._device_mac)
+      return False, "No OUI Manufacturer found for: " + self._device_mac
+
+  def _get_oui_manufacturer(self,mac_address):
+    # Do some quick fixes on the format of the mac_address
+    # to match the oui file pattern
+    mac_address = mac_address.replace(":","-").upper()
+    with open(OUI_FILE, "r") as file:
+            for line in file:
+                if mac_address.startswith(line[:8]):
+                    start = line.index("(hex)") + len("(hex)")
+                    return line[start:].strip()  # Extract the company name
+    return None
 
   def _ping(self, host):
     cmd = 'ping -c 1 ' + str(host)
