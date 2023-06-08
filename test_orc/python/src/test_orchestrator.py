@@ -142,11 +142,12 @@ addr {device.mac_addr}""")
       device_startup_capture = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
           "/startup.pcap")
+      util.run_command(f'chown -R {self._host_user}:{self._host_user} {device_startup_capture}')
 
       device_monitor_capture = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
           "/monitor.pcap")
-
+      util.run_command(f'chown -R {self._host_user}:{self._host_user} {device_monitor_capture}')
 
       client = docker.from_env()
 
