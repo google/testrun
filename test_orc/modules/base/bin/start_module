@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Define the local mount point to store local files to
+OUTPUT_DIR="/runtime/output"
+
 # Directory where all binaries will be loaded
 BIN_DIR="/testrun/bin"
 
@@ -10,6 +13,9 @@ IFACE=veth0
 # to be used for correct file ownership for various logs
 # HOST_USER mapped in via docker container environemnt variables
 useradd $HOST_USER
+
+# Set permissions on the output files
+chown -R $HOST_USER:$HOST_USER $OUTPUT_DIR
 
 # Enable IPv6 for all containers
 sysctl net.ipv6.conf.all.disable_ipv6=0

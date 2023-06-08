@@ -48,9 +48,9 @@ class NetworkValidator:
   def start(self):
     """Start the network validator."""
     LOGGER.debug('Starting validator')
-
-    host_user = self._get_host_user()
+    
     # Setup the output directory
+    host_user = self._get_host_user()
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     util.run_command(f'chown -R {host_user}:{host_user} {OUTPUT_DIR}')
 
