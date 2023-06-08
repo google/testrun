@@ -11,7 +11,17 @@
       "enable_container": true,
       "timeout": 30
     },
-    "tests":[
+    "tests": [
+      {
+        "name": "connection.mac_address",
+        "description": "Check and note device physical address.",
+        "expected_behavior": "N/A"
+      },
+      {
+        "name": "connection.mac_oui",
+        "description": "The device under test hs a MAC address prefix that is registered against a known manufacturer.",
+        "expected_behavior": "The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database."
+      },
       {
         "name": "connection.target_ping",
         "description": "The device under test responds to an ICMP echo (ping) request.",
