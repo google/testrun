@@ -133,6 +133,15 @@ addr {device.mac_addr}""")
       network_runtime_dir = os.path.join(self._root_path, "runtime/network")
       os.makedirs(container_runtime_dir)
 
+      device_startup_capture = os.path.join(
+          self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
+          "/startup.pcap")
+
+      device_monitor_capture = os.path.join(
+          self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
+          "/monitor.pcap")
+
+
       client = docker.from_env()
 
       module.container = client.containers.run(
@@ -149,6 +158,14 @@ addr {device.mac_addr}""")
                     type="bind"),
               Mount(target="/runtime/network",
                     source=network_runtime_dir,
+                    type="bind",
+                    read_only=True),
+              Mount(target="/runtime/device/startup.pcap",
+                    source=device_startup_capture,
+                    type="bind",
+                    read_only=True),
+              Mount(target="/runtime/device/monitor.pcap",
+                    source=device_monitor_capture,
                     type="bind",
                     read_only=True),
           ],
