@@ -63,6 +63,18 @@ class DNSModule(TestModule):
     LOGGER.info('DNS traffic detected from device: ' + str(result))
     return result
 
+  def _dns_mdns(self):
+    LOGGER.info("Running dns.mdns")
+
+    # Check if the device sends any MDNS traffic
+    tcpdump_filter = f'udp port 5353 and ether src {self._device_mac}'
+    
+    result = self._check_dns_traffic(tcpdump_filter=tcpdump_filter)
+
+    LOGGER.info('MDNS traffic detected from device: ' + str(result))
+    return not result
+
+
   def _exec_tcpdump(self, tcpdump_filter):
     """
     Args
