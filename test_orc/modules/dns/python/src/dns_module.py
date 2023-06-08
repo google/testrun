@@ -39,6 +39,7 @@ class DNSModule(TestModule):
     return dns_traffic_detected
 
   def _dns_network_from_dhcp(self):
+    LOGGER.info("Running dns.network.from_dhcp")
     LOGGER.info('Checking DNS traffic for configured DHCP DNS server: ' +
                 self._dns_server)
 
@@ -53,6 +54,7 @@ class DNSModule(TestModule):
     return result
 
   def _dns_network_from_device(self):
+    LOGGER.info("Running dns.network.from_device")
     LOGGER.info('Checking DNS traffic from device: ' + self._device_mac)
 
     # Check if the device DNS traffic is to appropriate server
