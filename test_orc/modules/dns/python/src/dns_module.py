@@ -17,7 +17,9 @@ import subprocess
 from test_module import TestModule
 
 LOG_NAME = 'test_dns'
-CAPTURE_FILE = '/runtime/network/dns.pcap'
+DNS_SERVER_CAPTURE_FILE = '/runtime/network/dns.pcap'
+STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
+MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 LOGGER = None
 
 
@@ -31,14 +33,24 @@ class DNSModule(TestModule):
     LOGGER = self._get_logger()
 
   def _check_dns_traffic(self, tcpdump_filter):
-    to_dns = self._exec_tcpdump(tcpdump_filter)
-    num_query_dns = len(to_dns)
+    dns_server_queries = self._exec_tcpdump(tcpdump_filter,DNS_SERVER_CAPTURE_FILE)
+    LOGGER.info('DNS Server queries found: ' + str(len(dns_server_queries)))
+
+    dns_startup_queries = self._exec_tcpdump(tcpdump_filter,STARTUP_CAPTURE_FILE)
+    LOGGER.info('Startup DNS queries found: ' + str(len(dns_startup_queries)))
+
+    dns_monitor_queries = self._exec_tcpdump(tcpdump_filter,MONITOR_CAPTURE_FILE)
+    LOGGER.info('Monitor DNS queries found: ' + str(len(dns_monitor_queries)))
+
+    num_query_dns = len(dns_server_queries) + len(dns_startup_queries) + len(dns_monitor_queries)
+
     LOGGER.info('DNS queries found: ' + str(num_query_dns))
-    dns_traffic_detected = len(to_dns) > 0
+    dns_traffic_detected = num_query_dns > 0
     LOGGER.info('DNS traffic detected: ' + str(dns_traffic_detected))
     return dns_traffic_detected
 
   def _dns_network_from_dhcp(self):
+    LOGGER.info("Running dns.network.from_dhcp")
     LOGGER.info('Checking DNS traffic for configured DHCP DNS server: ' +
                 self._dns_server)
 
@@ -53,6 +65,7 @@ class DNSModule(TestModule):
     return result
 
   def _dns_network_from_device(self):
+    LOGGER.info("Running dns.network.from_device")
     LOGGER.info('Checking DNS traffic from device: ' + self._device_mac)
 
     # Check if the device DNS traffic is to appropriate server
@@ -63,7 +76,19 @@ class DNSModule(TestModule):
     LOGGER.info('DNS traffic detected from device: ' + str(result))
     return result
 
-  def _exec_tcpdump(self, tcpdump_filter):
+  def _dns_mdns(self):
+    LOGGER.info("Running dns.mdns")
+
+    # Check if the device sends any MDNS traffic
+    tcpdump_filter = f'udp port 5353 and ether src {self._device_mac}'
+    
+    result = self._check_dns_traffic(tcpdump_filter=tcpdump_filter)
+
+    LOGGER.info('MDNS traffic detected from device: ' + str(result))
+    return not result
+
+
+  def _exec_tcpdump(self, tcpdump_filter, capture_file):
     """
     Args
         tcpdump_filter: Filter to pass onto tcpdump file
@@ -71,7 +96,7 @@ class DNSModule(TestModule):
     Returns
         List of packets matching the filter
     """
-    command = f'tcpdump -tttt -n -r {CAPTURE_FILE} {tcpdump_filter}'
+    command = f'tcpdump -tttt -n -r {capture_file} {tcpdump_filter}'
 
     LOGGER.debug('tcpdump command: ' + command)
 

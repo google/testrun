@@ -21,6 +21,10 @@
         "name": "dns.network.from_dhcp",
         "description": "Verify the device allows for a DNS server to be entered automatically", 
         "expected_behavior": "The device sends DNS requests to the DNS server provided by the DHCP server"
+      },
+      {
+        "name": "dns.mdns",
+        "description": "If the device has MDNS (or any kind of IP multicast), can it be disabled"
       }
     ]
   }
