@@ -43,6 +43,15 @@ class ConnectionModule(TestModule):
     else:
       return self._ping(self._device_ipv4_addr)
 
+  def _connection_mac_address(self):
+    LOGGER.info("Running connection.mac_address")
+    if self._device_mac is not None:
+      LOGGER.info("MAC address found: " + self._device_mac)
+      return True, "MAC address found: " + self._device_mac
+    else:
+      LOGGER.info("No MAC address found: " + self._device_mac)
+      return False, "No MAC address found."
+
   def _connection_mac_oui(self):
     LOGGER.info("Running connection.mac_oui")
     manufacturer = self._get_oui_manufacturer(self._device_mac)
@@ -68,3 +77,4 @@ class ConnectionModule(TestModule):
     cmd = 'ping -c 1 ' + str(host)
     success = util.run_command(cmd, output=False)
     return success
+  
