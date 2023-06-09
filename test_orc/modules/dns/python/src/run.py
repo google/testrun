@@ -20,7 +20,7 @@ import logger
 
 from dns_module import DNSModule
 
-LOG_NAME = "dns_module"
+LOG_NAME = "dns_runner"
 LOGGER = logger.get_logger(LOG_NAME)
 RUNTIME = 1500
 
@@ -35,12 +35,12 @@ class DNSModuleRunner:
     signal.signal(signal.SIGQUIT, self._handler)
     self.add_logger(module)
 
-    LOGGER.info("Starting DNS Test Module")
+    LOGGER.info("Starting DNS test module")
 
     self._test_module = DNSModule(module)
     self._test_module.run_tests()
 
-    LOGGER.info("DNS Test Module Finished")
+    LOGGER.info("DNS test module finished")
 
   def add_logger(self, module):
     global LOGGER
@@ -57,7 +57,7 @@ class DNSModuleRunner:
 
 def run():
   parser = argparse.ArgumentParser(
-      description="Test Module DNS",
+      description="DNS Module Help",
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
   parser.add_argument(

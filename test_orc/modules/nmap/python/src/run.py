@@ -20,8 +20,8 @@ import logger
 
 from nmap_module import NmapModule
 
-LOGGER = logger.get_logger('test_module')
-
+LOG_NAME = "nmap_runner"
+LOGGER = logger.get_logger(LOG_NAME)
 
 class NmapModuleRunner:
   """Run the NMAP module tests."""
@@ -32,11 +32,18 @@ class NmapModuleRunner:
     signal.signal(signal.SIGTERM, self._handler)
     signal.signal(signal.SIGABRT, self._handler)
     signal.signal(signal.SIGQUIT, self._handler)
+    self.add_logger(module)
 
-    LOGGER.info('Starting nmap Module')
+    LOGGER.info('Starting nmap module')
 
     self._test_module = NmapModule(module)
     self._test_module.run_tests()
+
+    LOGGER.info("nmap test module finished")
+
+  def add_logger(self, module):
+    global LOGGER
+    LOGGER = logger.get_logger(LOG_NAME, module)
 
   def _handler(self, signum):
     LOGGER.debug('SigtermEnum: ' + str(signal.SIGTERM))

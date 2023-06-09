@@ -22,10 +22,11 @@ import docker
 from docker.types import Mount
 import logger
 from module import TestModule
+import util
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
-RUNTIME_DIR = "runtime"
+RUNTIME_DIR = "runtime/test"
 TEST_MODULES_DIR = "modules"
 MODULE_CONFIG = "conf/module_config.json"
 
@@ -47,10 +48,15 @@ class TestOrchestrator:
 
     shutil.rmtree(os.path.join(self._root_path, RUNTIME_DIR),
                   ignore_errors=True)
-    os.makedirs(os.path.join(self._root_path, RUNTIME_DIR), exist_ok=True)
 
   def start(self):
     LOGGER.debug("Starting test orchestrator")
+    
+    # Setup the output directory
+    self._host_user = self._get_host_user()
+    os.makedirs(RUNTIME_DIR, exist_ok=True)
+    util.run_command(f'chown -R {self._host_user}:{self._host_user} {RUNTIME_DIR}')
+
     self._load_test_modules()
     self.build_test_modules()
 
@@ -101,6 +107,7 @@ addr {device.mac_addr}""")
         "runtime/test/" + device.mac_addr.replace(":", "") + "/results.json")
     with open(out_file, "w", encoding="utf-8") as f:
       json.dump(results, f, indent=2)
+    util.run_command(f'chown -R {self._host_user}:{self._host_user} {out_file}')  
     return results
 
   def test_in_progress(self):
@@ -136,11 +143,12 @@ addr {device.mac_addr}""")
       device_startup_capture = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
           "/startup.pcap")
+      util.run_command(f'chown -R {self._host_user}:{self._host_user} {device_startup_capture}')
 
       device_monitor_capture = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
           "/monitor.pcap")
-
+      util.run_command(f'chown -R {self._host_user}:{self._host_user} {device_monitor_capture}')
 
       client = docker.from_env()
 
@@ -170,7 +178,7 @@ addr {device.mac_addr}""")
                     read_only=True),
           ],
           environment={
-              "HOST_USER": self._get_host_user(),
+              "HOST_USER": self._host_user,
               "DEVICE_MAC": device.mac_addr,
               "DEVICE_TEST_MODULES": device.test_modules,
               "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
