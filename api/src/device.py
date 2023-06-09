@@ -12,19 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/api
+"""Track device object information."""
+from dataclasses import dataclass
 
-FROM python:alpine3.18
 
-COPY src /var/www/src
+@dataclass
+class Device():
+  """Represents a physical device and it's configuration."""
 
-COPY requirements.txt /var/www/requirements.txt
-
-RUN pip install -r /var/www/requirements.txt
-
-WORKDIR /var/www/src
-
-EXPOSE 5000
-
-# Run the web server
-ENTRYPOINT [ "python3", "app.py"]
+  mac_addr: str = None
+  make: str = None
+  model: str = None
+  test_modules: str = None

@@ -1,3 +1,4 @@
 #!/bin/bash -e
 
+cd api
 docker build -f api.Dockerfile -t test-run/api:latest .
