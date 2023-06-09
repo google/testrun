@@ -1,6 +1,12 @@
 # Image name: test-run/baseline-test
 FROM test-run/base-test:latest
 
+#Load the requirements file
+COPY modules/nmap/python/requirements.txt /testrun/python
+
+#Install all python requirements for the module
+RUN pip3 install -r /testrun/python/requirements.txt
+
 # Copy over all configuration files
 COPY modules/nmap/conf /testrun/conf
 

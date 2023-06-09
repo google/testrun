@@ -17,6 +17,7 @@ import time
 import util
 import json
 import threading
+import xmltodict
 from test_module import TestModule
 
 LOG_NAME = "test_nmap"
@@ -34,6 +35,7 @@ class NmapModule(TestModule):
     self._script_scan_results = None
     global LOGGER
     LOGGER = self._get_logger()
+
 
   def _security_nmap_ports(self, config):
     LOGGER.info("Running security.nmap.ports test")
@@ -247,7 +249,7 @@ class NmapModule(TestModule):
 
   def _scan_scripts(self, tests):
     scan_results = {}
-    LOGGER.info("Checing for scan scripts")
+    LOGGER.info("Checking for scan scripts")
     for test in tests:
       test_config = tests[test]
       if "tcp_ports" in test_config:
@@ -256,14 +258,15 @@ class NmapModule(TestModule):
           if "service_scan" in port_config:
             LOGGER.info("Service Scan Detected for: " + str(port))
             svc = port_config["service_scan"]
-            scan_results.update(self._scan_tcp_with_script(svc["script"]))
+            result = self._scan_tcp_with_script(svc["script"])
+            scan_results.update(result)
       if "udp_ports" in test_config:
         for port in test_config["udp_ports"]:
           if "service_scan" in port:
             LOGGER.info("Service Scan Detected for: " + str(port))
             svc = port["service_scan"]
-            self._scan_udp_with_script(svc["script"], port)
-            scan_results.update(self._scan_tcp_with_script(svc["script"]))
+            result = self._scan_udp_with_script(svc["script"], port)
+            scan_results.update(result)
     self._script_scan_results = scan_results
 
   def _scan_tcp_with_script(self, script_name, ports=None):
@@ -275,12 +278,12 @@ class NmapModule(TestModule):
     else:
       port_options += " -p" + ports + " "
     results_file = f"/runtime/output/{self._module_name}-script_name.log"
-    nmap_options = scan_options + port_options + " -oG " + results_file
+    nmap_options = scan_options + port_options + " " + results_file + " -oX -"
     nmap_results = util.run_command("nmap " + nmap_options + " " +
                                     self._device_ipv4_addr)[0]
     LOGGER.info("Nmap TCP script scan complete")
-    LOGGER.info("nmap script results\n" + str(nmap_results))
-    return self._process_nmap_results(nmap_results=nmap_results)
+    nmap_results_json = self._nmap_results_to_json(nmap_results)
+    return self._process_nmap_json_results(nmap_results_json=nmap_results_json)
 
   def _scan_udp_with_script(self, script_name, ports=None):
     LOGGER.info("Running UDP nmap scan with script " + script_name)
@@ -290,22 +293,24 @@ class NmapModule(TestModule):
       port_options += " -p- "
     else:
       port_options += " -p" + ports + " "
-    nmap_options = scan_options + port_options
+    nmap_options = scan_options + port_options + " -oX - "
     nmap_results = util.run_command("nmap " + nmap_options +
                                     self._device_ipv4_addr)[0]
     LOGGER.info("Nmap UDP script scan complete")
-    return self._process_nmap_results(nmap_results=nmap_results)
+    nmap_results_json = self._nmap_results_to_json(nmap_results)
+    return self._process_nmap_json_results(nmap_results_json=nmap_results_json)
 
   def _scan_tcp_ports(self, tests):
     max_port = 1000
     LOGGER.info("Running nmap TCP port scan")
     nmap_results = util.run_command(
         f"""nmap --open -sT -sV -Pn -v -p 1-{max_port}
-      --version-intensity 7 -T4 {self._device_ipv4_addr}""")[0]
+      --version-intensity 7 -T4 -oX - {self._device_ipv4_addr}""")[0]
 
     LOGGER.info("TCP port scan complete")
-    self._scan_tcp_results = self._process_nmap_results(
-        nmap_results=nmap_results)
+    nmap_results_json = self._nmap_results_to_json(nmap_results)
+    self._scan_tcp_results = self._process_nmap_json_results(
+        nmap_results_json=nmap_results_json)
 
   def _scan_udp_ports(self, tests):
     ports = []
@@ -319,39 +324,45 @@ class NmapModule(TestModule):
       LOGGER.info("Running nmap UDP port scan")
       LOGGER.info("UDP ports: " + str(port_list))
       nmap_results = util.run_command(
-          f"nmap -sU -sV -p {port_list} {self._device_ipv4_addr}")[0]
+          f"nmap -sU -sV -p {port_list} -oX - {self._device_ipv4_addr}")[0]
       LOGGER.info("UDP port scan complete")
-      self._scan_udp_results = self._process_nmap_results(
-          nmap_results=nmap_results)
+      nmap_results_json = self._nmap_results_to_json(nmap_results)
+      self._scan_udp_results = self._process_nmap_json_results(
+          nmap_results_json=nmap_results_json)
 
-  def _process_nmap_results(self, nmap_results):
+  def _nmap_results_to_json(self,nmap_results):
+    try:
+        xml_data = xmltodict.parse(nmap_results)
+        json_data = json.dumps(xml_data, indent=4)
+        return json.loads(json_data)
+
+    except Exception as e:
+        LOGGER.error(f"Error parsing Nmap output: {e}")
+
+  def _process_nmap_json_results(self,nmap_results_json):
+    LOGGER.debug("nmap results\n" + json.dumps(nmap_results_json,indent=2))
     results = {}
-    LOGGER.info("nmap results\n" + str(nmap_results))
-    if nmap_results:
-      if "Service Info" in nmap_results and "MAC Address" not in nmap_results:
-        rows = nmap_results.split("PORT")[1].split("Service Info")[0].split(
-            "\n")
-      elif "PORT" in nmap_results:
-        rows = nmap_results.split("PORT")[1].split("MAC Address")[0].split("\n")
-      if rows:
-        for result in rows[1:-1]:  # Iterate skipping the header and tail rows
-          cols = result.split()
-          port = cols[0].split("/")[0]
-          # If results do not start with a a port number,
-          # it is likely a bleed over from previous result so
-          # we need to ignore it
-          if port.isdigit():
-            version = ""
-            if len(cols) > 3:
-              # recombine full version information that may contain spaces
-              version = " ".join(cols[3:])
-            port_result = {
-                cols[0].split("/")[0]: {
-                    "tcp_udp":cols[0].split("/")[1],
-                    "state": cols[1],
-                    "service": cols[2],
-                    "version": version
-                }
-            }
-            results.update(port_result)
+    if "ports" in nmap_results_json["nmaprun"]["host"]:
+      ports = nmap_results_json["nmaprun"]["host"]["ports"] 
+      # Checking if an object is a JSON object
+      if isinstance(ports["port"], dict):
+          results.update(self._json_port_to_dict(ports["port"]))
+      elif isinstance(ports["port"], list):
+          for port in ports["port"]:
+            results.update(self._json_port_to_dict(port))
     return results
+
+  def _json_port_to_dict(self,port_json):
+    port_result = {}
+    port = {}
+    port["tcp_udp"] = port_json["@protocol"]
+    port["state"] = port_json["state"]["@state"]
+    port["service"] = port_json["service"]["@name"]
+    port["version"] = ""
+    if "@version" in port_json["service"]:
+      port["version"] += port_json["service"]["@version"]
+      if "@extrainfo" in port_json["service"]:
+        port["version"] += " " + port_json["service"]["@extrainfo"]
+    port_result = {port_json["@portid"]:port}
+    LOGGER.info("Port Result: " + str(port_result))
+    return port_result
