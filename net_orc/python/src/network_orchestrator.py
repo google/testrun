@@ -94,6 +94,9 @@ class NetworkOrchestrator:
     """Start the network orchestrator."""
 
     LOGGER.debug('Starting network orchestrator')
+
+    self._host_user = self._get_host_user()
+
     # Get all components ready
     self.load_network_modules()
 
@@ -174,10 +177,12 @@ class NetworkOrchestrator:
     LOGGER.debug(
         f'Discovered device {mac_addr}. Waiting for device to obtain IP')
     device = self._get_device(mac_addr=mac_addr)
-    os.makedirs(
-        os.path.join(RUNTIME_DIR,
+
+    device_runtime_dir = os.path.join(RUNTIME_DIR,
         TEST_DIR,
-        device.mac_addr.replace(':', '')))
+        device.mac_addr.replace(':', ''))
+    os.makedirs(device_runtime_dir)
+    util.run_command(f'chown -R {self._host_user}:{self._host_user} {device_runtime_dir}')
 
     packet_capture = sniff(iface=self._dev_intf,
                            timeout=self._startup_timeout,
@@ -469,7 +474,7 @@ class NetworkOrchestrator:
           privileged=True,
           detach=True,
           mounts=net_module.mounts,
-          environment={'HOST_USER': self._get_host_user()})
+          environment={'HOST_USER': self._host_user})
     except docker.errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)
