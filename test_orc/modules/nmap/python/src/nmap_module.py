@@ -315,7 +315,7 @@ class NmapModule(TestModule):
     return self._process_nmap_json_results(nmap_results_json=nmap_results_json)
 
   def _scan_tcp_ports(self, tests):
-    max_port = 1000
+    max_port = 65535
     LOGGER.info("Running nmap TCP port scan")
     nmap_results = util.run_command(
         f"""nmap --open -sT -sV -Pn -v -p 1-{max_port}
