@@ -13,7 +13,6 @@
 # limitations under the License.
 
 # Image name: test-run/api
-
 FROM python:alpine3.18
 
 COPY src /var/www/src

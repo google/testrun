@@ -20,7 +20,7 @@ from dataclasses import dataclass
 class Device():
   """Represents a physical device and it's configuration."""
 
-  mac_addr: str = None
-  make: str = None
+  mac_addr: str
+  manufacturer: str = None
   model: str = None
   test_modules: str = None

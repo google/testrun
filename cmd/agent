@@ -12,19 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Serve API routes for user interface component."""
-from flask import Flask
-from api import Api
-app = Flask("Test Run")
+#!/bin/bash -e
 
-@app.route("/devices")
-def get_devices():
-  return {"devices": api.get_devices()}
+if [[ "$EUID" -ne 0 ]]; then
+    echo "Must run as root. Use sudo cmd/start"
+    exit 1
+fi
 
-if __name__ == "__main__":
+# Ensure that /var/run/netns folder exists
+mkdir -p /var/run/netns
 
-  print("Starting API service")
+# Clear up existing runtime files
+rm -rf runtime
 
-  api = Api()
+# Check if python modules exist. Install if not
+[ ! -d "venv" ] && cmd/install
 
-  app.run(host="0.0.0.0")
+# Activate Python virtual environment
+source venv/bin/activate
+
+# Start web API
+api/start
+
+deactivate
