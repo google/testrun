@@ -83,4 +83,7 @@ more $TESTRUN_OUT
 
 pytest testing/
 
-exit $?
+docker ps -a
+sudo more runtime/network/*.log | cat
+PYTEST=$?
+exit $PYTEST
