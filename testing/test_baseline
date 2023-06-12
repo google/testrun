@@ -82,8 +82,11 @@ echo "Done baseline test"
 more $TESTRUN_OUT
 
 pytest testing/
-
-docker ps -a
-sudo more runtime/network/*.log | cat
 PYTEST=$?
+
+sudo docker ps -a
+sudo ls 
+sudo ls runtime
+sudo more runtime/network/*.log | cat
+
 exit $PYTEST
