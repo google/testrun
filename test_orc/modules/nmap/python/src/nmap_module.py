@@ -18,6 +18,7 @@ import util
 import json
 import threading
 import xmltodict
+import re
 from test_module import TestModule
 
 LOG_NAME = "test_nmap"
@@ -90,7 +91,7 @@ class NmapModule(TestModule):
     self._check_unknown_ports(tests=tests,scan_results=scan_results)
 
     for test in tests:
-      LOGGER.info("Checking results for test: " + str(test))
+      LOGGER.info("Checking scan results for test: " + str(test))
       self._check_scan_results(test_config=tests[test],scan_results=scan_results)
 
   def _check_unknown_ports(self,tests,scan_results):
@@ -124,8 +125,16 @@ class NmapModule(TestModule):
       port_style = 'tcp_ports'
     elif unallowed_port['tcp_udp'] == 'udp':
       port_style = 'udp_ports'
+
+    LOGGER.info("Unknown Port Service: " + unallowed_port['service'])
     for test in tests:
-      if unallowed_port['service'] in test:
+      LOGGER.debug("Checking for known service: " + test)
+      # Create a regular expression pattern to match the variable at the 
+      # end of the string
+      port_service = r"\b" + re.escape(unallowed_port['service']) + r"\b$"
+      service_match = re.search(port_service, test)
+      if service_match:
+        LOGGER.info("Service Matched: " + test)
         known_service=True
         for test_port in tests[test][port_style]:
           if "version" in tests[test][port_style][test_port]:
@@ -136,8 +145,8 @@ class NmapModule(TestModule):
           if tests[test][port_style][test_port]['allowed']:
             result['allowed'] = True
             break
-
         tests[test][port_style][unallowed_port['port']]=result
+        break
 
     if not known_service:
       service_name = "security.services.unknown." + str(unallowed_port['port'])
@@ -197,14 +206,19 @@ class NmapModule(TestModule):
     for port in unallowed_ports:
       LOGGER.info('Checking unallowed port: ' + port['port'])
       LOGGER.info('Looking for service: ' + port['service'])
-      LOGGER.info('Unallowed Port Config: ' + str(port))
+      LOGGER.debug('Unallowed Port Config: ' + str(port))
       if port['tcp_udp'] == 'tcp':
         port_style = 'tcp_ports'
       elif port['tcp_udp'] == 'udp':
         port_style = 'udp_ports'
       for test in tests:
-        LOGGER.info('Checking test: ' + str(test))
-        if port['service'] in test:
+        LOGGER.debug('Checking test: ' + str(test))
+        # Create a regular expression pattern to match the variable at the 
+        # end of the string
+        port_service = r"\b" + re.escape(port['service']) + r"\b$"
+        service_match = re.search(port_service, test)
+        if service_match:
+          LOGGER.info("Service Matched: " + test)
           service_config = tests[test]
           service = port['service']
           for service_port in service_config[port_style]:
@@ -364,5 +378,4 @@ class NmapModule(TestModule):
       if "@extrainfo" in port_json["service"]:
         port["version"] += " " + port_json["service"]["@extrainfo"]
     port_result = {port_json["@portid"]:port}
-    LOGGER.info("Port Result: " + str(port_result))
     return port_result
