@@ -15,11 +15,15 @@
 """Connection test module"""
 import util
 import sys
+from scapy.all import *
 from test_module import TestModule
 
 LOG_NAME = "test_connection"
 LOGGER = None
 OUI_FILE="/usr/local/etc/oui.txt"
+DHCP_SERVER_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
+STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
+MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 
 
 class ConnectionModule(TestModule):
@@ -29,19 +33,6 @@ class ConnectionModule(TestModule):
     super().__init__(module_name=module, log_name=LOG_NAME)
     global LOGGER
     LOGGER = self._get_logger()
-
-  def _connection_target_ping(self):
-    LOGGER.info("Running connection.target_ping")
-
-    # If the ipv4 address wasn't resolved yet, try again
-    if self._device_ipv4_addr is None:
-       self._device_ipv4_addr = self._get_device_ipv4(self)
-
-    if self._device_ipv4_addr is None:
-      LOGGER.error("No device IP could be resolved")
-      sys.exit(1)
-    else:
-      return self._ping(self._device_ipv4_addr)
 
   def _connection_mac_address(self):
     LOGGER.info("Running connection.mac_address")
@@ -61,6 +52,52 @@ class ConnectionModule(TestModule):
     else:
       LOGGER.info("No OUI Manufacturer found for: " + self._device_mac)
       return False, "No OUI Manufacturer found for: " + self._device_mac
+
+  def _connection_single_ip(self):
+    LOGGER.info("Running connection.single_ip")
+
+    result = None
+    if self._device_mac is None:
+      LOGGER.info("No MAC address found: ")
+      return result, "No MAC address found."
+      
+    # Read all the pcap files containing DHCP packet information
+    packets = rdpcap(DHCP_SERVER_CAPTURE_FILE)
+    packets.append(rdpcap(STARTUP_CAPTURE_FILE))
+    packets.append(rdpcap(MONITOR_CAPTURE_FILE))
+
+    # Extract MAC addresses from DHCP packets
+    mac_addresses = set()
+    LOGGER.info("Inspecting: " + str(len(packets)) + " packets")
+    for packet in packets:
+      # Option[1] = message-type, option 3 = DHCPREQUEST
+        if DHCP in packet and packet[DHCP].options[0][1] == 3: 
+            mac_address = packet[Ether].src
+            mac_addresses.add(mac_address.upper())
+
+    # Check if the device mac address is in the list of DHCPREQUESTs
+    result = self._device_mac.upper() in mac_addresses
+    LOGGER.info("DHCPREQUEST detected from device: " + str(result))
+
+    # Check the unique MAC addresses to see if they match the device
+    for mac_address in mac_addresses:
+        LOGGER.info("DHCPREQUEST from MAC address: " + mac_address)
+        result &= self._device_mac.upper() == mac_address
+    return result
+
+
+  def _connection_target_ping(self):
+    LOGGER.info("Running connection.target_ping")
+
+    # If the ipv4 address wasn't resolved yet, try again
+    if self._device_ipv4_addr is None:
+       self._device_ipv4_addr = self._get_device_ipv4(self)
+
+    if self._device_ipv4_addr is None:
+      LOGGER.error("No device IP could be resolved")
+      sys.exit(1)
+    else:
+      return self._ping(self._device_ipv4_addr)
 
   def _get_oui_manufacturer(self,mac_address):
     # Do some quick fixes on the format of the mac_address
