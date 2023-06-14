@@ -18,9 +18,6 @@ sudo docker network create -d macvlan -o parent=endev0b endev0
 # Start OVS
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
-# Fix due to ordering 
-sudo docker build ./modules/network -t test-run/base -f modules/network/base/base.Dockerfile
-
 # Build Test Container
 sudo docker build ./testing/docker/ci_baseline -t ci1 -f  ./testing/docker/ci_baseline/Dockerfile
 
