@@ -1,0 +1,32 @@
+#1 [internal] load build definition from ntp.Dockerfile
+#1 transferring dockerfile: 384B done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/test-run/base:latest
+#3 DONE 0.0s
+
+#4 [1/4] FROM docker.io/test-run/base:latest
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 10.82kB done
+#5 DONE 0.0s
+
+#6 [3/4] COPY modules/network/ntp/bin /testrun/bin
+#6 CACHED
+
+#7 [2/4] COPY modules/network/ntp/conf /testrun/conf
+#7 CACHED
+
+#8 [4/4] COPY modules/network/ntp/python /testrun/python
+#8 CACHED
+
+#9 exporting to image
+#9 exporting layers done
+#9 writing image sha256:00491819cf4eaab65cb2ae3951646dc391fee0df7cc36dc5a6b2afdc4772a6ac done
+#9 naming to docker.io/test-run/ntp done
+#9 DONE 0.0s

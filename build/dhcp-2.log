@@ -1,0 +1,35 @@
+#1 [internal] load build definition from dhcp-2.Dockerfile
+#1 transferring dockerfile: 452B done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/test-run/base:latest
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/test-run/base:latest
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 17.78kB done
+#5 DONE 0.0s
+
+#6 [4/5] COPY modules/network/dhcp-2/bin /testrun/bin
+#6 CACHED
+
+#7 [2/5] RUN apt-get install -y isc-dhcp-server radvd
+#7 CACHED
+
+#8 [3/5] COPY modules/network/dhcp-2/conf /testrun/conf
+#8 CACHED
+
+#9 [5/5] COPY modules/network/dhcp-2/python /testrun/python
+#9 CACHED
+
+#10 exporting to image
+#10 exporting layers done
+#10 writing image sha256:c1177cf17d218724f7bd6e608e80e0525e856cba71ee96b742a6f88685a446ca done
+#10 naming to docker.io/test-run/dhcp-2 done
+#10 DONE 0.0s

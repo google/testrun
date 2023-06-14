@@ -1,0 +1,134 @@
+#1 [internal] load build definition from faux-dev.Dockerfile
+#1 transferring dockerfile: 712B done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/test-run/base:latest
+#3 DONE 0.0s
+
+#4 [1/6] FROM docker.io/test-run/base:latest
+#4 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 23.71kB done
+#5 DONE 0.0s
+
+#6 [2/6] RUN apt-get update --fix-missing
+#6 0.438 Get:1 http://security.ubuntu.com/ubuntu jammy-security InRelease [110 kB]
+#6 0.588 Hit:2 http://archive.ubuntu.com/ubuntu jammy InRelease
+#6 0.669 Get:3 http://archive.ubuntu.com/ubuntu jammy-updates InRelease [119 kB]
+#6 1.063 Get:4 http://archive.ubuntu.com/ubuntu jammy-backports InRelease [108 kB]
+#6 1.344 Get:5 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [1179 kB]
+#6 1.773 Get:6 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [862 kB]
+#6 1.893 Fetched 2378 kB in 1s (1597 kB/s)
+#6 1.893 Reading package lists...
+#6 DONE 2.3s
+
+#7 [3/6] RUN apt-get install -y isc-dhcp-client ntp ntpdate
+#7 0.461 Reading package lists...
+#7 0.877 Building dependency tree...
+#7 0.970 Reading state information...
+#7 1.051 The following additional packages will be installed:
+#7 1.051   isc-dhcp-common libdns-export1110 libedit2 libevent-core-2.1-7
+#7 1.052   libevent-pthreads-2.1-7 libisc-export1105 libopts25 sntp tzdata
+#7 1.052 Suggested packages:
+#7 1.052   resolvconf avahi-autoipd isc-dhcp-client-ddns ntp-doc
+#7 1.088 The following NEW packages will be installed:
+#7 1.088   isc-dhcp-client isc-dhcp-common libdns-export1110 libedit2
+#7 1.089   libevent-core-2.1-7 libevent-pthreads-2.1-7 libisc-export1105 libopts25 ntp
+#7 1.089   ntpdate sntp tzdata
+#7 1.184 0 upgraded, 12 newly installed, 0 to remove and 11 not upgraded.
+#7 1.184 Need to get 2745 kB of archives.
+#7 1.184 After this operation, 10.9 MB of additional disk space will be used.
+#7 1.184 Get:1 http://archive.ubuntu.com/ubuntu jammy/main amd64 libisc-export1105 amd64 1:9.11.19+dfsg-2.1ubuntu3 [192 kB]
+#7 1.237 Get:2 http://archive.ubuntu.com/ubuntu jammy/main amd64 libdns-export1110 amd64 1:9.11.19+dfsg-2.1ubuntu3 [827 kB]
+#7 1.269 Get:3 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 isc-dhcp-client amd64 4.4.1-2.3ubuntu2.4 [235 kB]
+#7 1.272 Get:4 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 isc-dhcp-common amd64 4.4.1-2.3ubuntu2.4 [45.0 kB]
+#7 1.276 Get:5 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 tzdata all 2023c-0ubuntu0.22.04.2 [349 kB]
+#7 1.287 Get:6 http://archive.ubuntu.com/ubuntu jammy/main amd64 libedit2 amd64 3.1-20210910-1build1 [96.8 kB]
+#7 1.288 Get:7 http://archive.ubuntu.com/ubuntu jammy/main amd64 libevent-core-2.1-7 amd64 2.1.12-stable-1build3 [93.9 kB]
+#7 1.290 Get:8 http://archive.ubuntu.com/ubuntu jammy/main amd64 libevent-pthreads-2.1-7 amd64 2.1.12-stable-1build3 [7642 B]
+#7 1.290 Get:9 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libopts25 amd64 1:5.18.16-4 [59.5 kB]
+#7 1.291 Get:10 http://archive.ubuntu.com/ubuntu jammy/universe amd64 ntp amd64 1:4.2.8p15+dfsg-1ubuntu2 [721 kB]
+#7 1.303 Get:11 http://archive.ubuntu.com/ubuntu jammy/universe amd64 ntpdate amd64 1:4.2.8p15+dfsg-1ubuntu2 [51.5 kB]
+#7 1.320 Get:12 http://archive.ubuntu.com/ubuntu jammy/universe amd64 sntp amd64 1:4.2.8p15+dfsg-1ubuntu2 [67.1 kB]
+#7 1.428 debconf: delaying package configuration, since apt-utils is not installed
+#7 1.445 Fetched 2745 kB in 0s (11.1 MB/s)
+#7 1.457 Selecting previously unselected package libisc-export1105:amd64.
+#7 1.457 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 16650 files and directories currently installed.)
+#7 1.465 Preparing to unpack .../00-libisc-export1105_1%3a9.11.19+dfsg-2.1ubuntu3_amd64.deb ...
+#7 1.467 Unpacking libisc-export1105:amd64 (1:9.11.19+dfsg-2.1ubuntu3) ...
+#7 1.481 Selecting previously unselected package libdns-export1110.
+#7 1.482 Preparing to unpack .../01-libdns-export1110_1%3a9.11.19+dfsg-2.1ubuntu3_amd64.deb ...
+#7 1.483 Unpacking libdns-export1110 (1:9.11.19+dfsg-2.1ubuntu3) ...
+#7 1.501 Selecting previously unselected package isc-dhcp-client.
+#7 1.502 Preparing to unpack .../02-isc-dhcp-client_4.4.1-2.3ubuntu2.4_amd64.deb ...
+#7 1.503 Unpacking isc-dhcp-client (4.4.1-2.3ubuntu2.4) ...
+#7 1.517 Selecting previously unselected package isc-dhcp-common.
+#7 1.518 Preparing to unpack .../03-isc-dhcp-common_4.4.1-2.3ubuntu2.4_amd64.deb ...
+#7 1.519 Unpacking isc-dhcp-common (4.4.1-2.3ubuntu2.4) ...
+#7 1.532 Selecting previously unselected package tzdata.
+#7 1.533 Preparing to unpack .../04-tzdata_2023c-0ubuntu0.22.04.2_all.deb ...
+#7 1.534 Unpacking tzdata (2023c-0ubuntu0.22.04.2) ...
+#7 1.660 Selecting previously unselected package libedit2:amd64.
+#7 1.661 Preparing to unpack .../05-libedit2_3.1-20210910-1build1_amd64.deb ...
+#7 1.663 Unpacking libedit2:amd64 (3.1-20210910-1build1) ...
+#7 1.677 Selecting previously unselected package libevent-core-2.1-7:amd64.
+#7 1.678 Preparing to unpack .../06-libevent-core-2.1-7_2.1.12-stable-1build3_amd64.deb ...
+#7 1.679 Unpacking libevent-core-2.1-7:amd64 (2.1.12-stable-1build3) ...
+#7 1.692 Selecting previously unselected package libevent-pthreads-2.1-7:amd64.
+#7 1.693 Preparing to unpack .../07-libevent-pthreads-2.1-7_2.1.12-stable-1build3_amd64.deb ...
+#7 1.694 Unpacking libevent-pthreads-2.1-7:amd64 (2.1.12-stable-1build3) ...
+#7 1.706 Selecting previously unselected package libopts25:amd64.
+#7 1.707 Preparing to unpack .../08-libopts25_1%3a5.18.16-4_amd64.deb ...
+#7 1.708 Unpacking libopts25:amd64 (1:5.18.16-4) ...
+#7 1.725 Selecting previously unselected package ntp.
+#7 1.726 Preparing to unpack .../09-ntp_1%3a4.2.8p15+dfsg-1ubuntu2_amd64.deb ...
+#7 1.728 Unpacking ntp (1:4.2.8p15+dfsg-1ubuntu2) ...
+#7 1.753 Selecting previously unselected package ntpdate.
+#7 1.754 Preparing to unpack .../10-ntpdate_1%3a4.2.8p15+dfsg-1ubuntu2_amd64.deb ...
+#7 1.758 Unpacking ntpdate (1:4.2.8p15+dfsg-1ubuntu2) ...
+#7 1.771 Selecting previously unselected package sntp.
+#7 1.772 Preparing to unpack .../11-sntp_1%3a4.2.8p15+dfsg-1ubuntu2_amd64.deb ...
+#7 1.773 Unpacking sntp (1:4.2.8p15+dfsg-1ubuntu2) ...
+#7 1.790 Setting up libedit2:amd64 (3.1-20210910-1build1) ...
+#7 1.793 Setting up libopts25:amd64 (1:5.18.16-4) ...
+#7 1.796 Setting up ntpdate (1:4.2.8p15+dfsg-1ubuntu2) ...
+#7 1.806 Setting up tzdata (2023c-0ubuntu0.22.04.2) ...
+#7 1.859 
+#7 1.859 Current default time zone: 'Etc/UTC'
+#7 1.861 Local time is now:      Wed Jun 14 13:38:52 UTC 2023.
+#7 1.861 Universal Time is now:  Wed Jun 14 13:38:52 UTC 2023.
+#7 1.861 Run 'dpkg-reconfigure tzdata' if you wish to change it.
+#7 1.861 
+#7 1.869 Setting up libisc-export1105:amd64 (1:9.11.19+dfsg-2.1ubuntu3) ...
+#7 1.872 Setting up ntp (1:4.2.8p15+dfsg-1ubuntu2) ...
+#7 2.092 invoke-rc.d: could not determine current runlevel
+#7 2.094 invoke-rc.d: policy-rc.d denied execution of start.
+#7 2.095 Setting up libevent-core-2.1-7:amd64 (2.1.12-stable-1build3) ...
+#7 2.099 Setting up isc-dhcp-common (4.4.1-2.3ubuntu2.4) ...
+#7 2.102 Setting up libevent-pthreads-2.1-7:amd64 (2.1.12-stable-1build3) ...
+#7 2.105 Setting up sntp (1:4.2.8p15+dfsg-1ubuntu2) ...
+#7 2.110 Setting up libdns-export1110 (1:9.11.19+dfsg-2.1ubuntu3) ...
+#7 2.113 Setting up isc-dhcp-client (4.4.1-2.3ubuntu2.4) ...
+#7 2.126 Processing triggers for libc-bin (2.35-0ubuntu3.1) ...
+#7 DONE 2.2s
+
+#8 [4/6] COPY modules/devices/faux-dev/conf /testrun/conf
+#8 DONE 0.0s
+
+#9 [5/6] COPY modules/devices/faux-dev/bin /testrun/bin
+#9 DONE 0.0s
+
+#10 [6/6] COPY modules/devices/faux-dev/python /testrun/python
+#10 DONE 0.0s
+
+#11 exporting to image
+#11 exporting layers
+#11 exporting layers 0.1s done
+#11 writing image sha256:cbc362a323757c49cc4853438f8a9fec4c75acbc5b9f1bf8cb4c06c126322aaa done
+#11 naming to docker.io/test-run/faux-dev done
+#11 DONE 0.1s

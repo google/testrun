@@ -1,0 +1,41 @@
+#1 [internal] load .dockerignore
+#1 transferring context: 2B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from base.Dockerfile
+#2 transferring dockerfile: 790B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/ubuntu:jammy
+#3 DONE 0.0s
+
+#4 [1/7] FROM docker.io/library/ubuntu:jammy
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.57kB done
+#5 DONE 0.0s
+
+#6 [5/7] COPY modules/test/base/bin /testrun/bin
+#6 CACHED
+
+#7 [3/7] COPY modules/test/base/python /testrun/python
+#7 CACHED
+
+#8 [2/7] RUN apt-get update && apt-get install -y net-tools iputils-ping tcpdump iproute2 jq python3 python3-pip dos2unix nmap --fix-missing
+#8 CACHED
+
+#9 [6/7] RUN dos2unix /testrun/bin/*
+#9 CACHED
+
+#10 [4/7] RUN pip3 install -r /testrun/python/requirements.txt
+#10 CACHED
+
+#11 [7/7] RUN chmod u+x /testrun/bin/*
+#11 CACHED
+
+#12 exporting to image
+#12 exporting layers done
+#12 writing image sha256:b8d1e3b92f47529712192ad769331b06daabcf1f6bfe39f54fd1d48820f2cb9f done
+#12 naming to docker.io/test-run/base-test done
+#12 DONE 0.0s

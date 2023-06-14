@@ -1,0 +1,35 @@
+#1 [internal] load .dockerignore
+#1 transferring context: 2B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from dns.Dockerfile
+#2 transferring dockerfile: 458B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/test-run/base:latest
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/test-run/base:latest
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 1.86kB done
+#5 DONE 0.0s
+
+#6 [4/5] COPY modules/network/dns/conf /testrun/conf
+#6 CACHED
+
+#7 [2/5] RUN apt-get update --fix-missing
+#7 CACHED
+
+#8 [3/5] RUN apt-get install -y dnsmasq
+#8 CACHED
+
+#9 [5/5] COPY modules/network/dns/bin /testrun/bin
+#9 CACHED
+
+#10 exporting to image
+#10 exporting layers done
+#10 writing image sha256:c6aa585abe7794a1ee2ec67bf29ddd17a734d810b4b355e0b896a70a5e1c38c6 done
+#10 naming to docker.io/test-run/dns done
+#10 DONE 0.0s

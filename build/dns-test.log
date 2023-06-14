@@ -1,0 +1,32 @@
+#1 [internal] load build definition from dns.Dockerfile
+#1 transferring dockerfile: 388B done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/test-run/base-test:latest
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 9.12kB done
+#4 DONE 0.0s
+
+#5 [1/4] FROM docker.io/test-run/base-test:latest
+#5 CACHED
+
+#6 [2/4] COPY modules/test/dns/conf /testrun/conf
+#6 DONE 0.0s
+
+#7 [3/4] COPY modules/test/dns/bin /testrun/bin
+#7 DONE 0.0s
+
+#8 [4/4] COPY modules/test/dns/python /testrun/python
+#8 DONE 0.0s
+
+#9 exporting to image
+#9 exporting layers 0.0s done
+#9 writing image sha256:47bd055feb9f2181665b6bed5201184f6540a6e5e4bf964b11b1b3e584f578c1 done
+#9 naming to docker.io/test-run/dns-test done
+#9 DONE 0.0s
