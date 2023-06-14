@@ -1,11 +1,14 @@
 # Image name: test-run/template
 FROM test-run/base:latest
 
-# Copy over all configuration files
-COPY network/modules/template/conf /testrun/conf
+ARG MODULE_NAME=template
+ARG MODULE_DIR=modules/network/$MODULE_NAME
 
-# Load device binary files
-COPY network/modules/template/bin /testrun/bin
+# Copy over all configuration files
+COPY $MODULE_DIR/conf /testrun/conf
+
+# Copy over all binary files
+COPY $MODULE_DIR/bin /testrun/bin
 
 # Copy over all python files
-COPY network/modules/template/python /testrun/python
+COPY $MODULE_DIR/python /testrun/python

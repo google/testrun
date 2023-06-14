@@ -26,6 +26,7 @@ import time
 import threading
 import docker
 from docker.types import Mount
+from collections import OrderedDict
 from common import logger
 from common import util
 from net_orc.listener import Listener
@@ -415,6 +416,11 @@ class NetworkOrchestrator:
       net_module.enable_container = net_module_json['config']['docker'][
           'enable_container']
 
+    # Determine if this is a template
+    if 'template' in net_module_json['config']['docker']:
+      net_module.template = net_module_json['config']['docker'][
+          'template']
+
     # Load network service networking configuration
     if net_module.enable_container:
 
@@ -434,13 +440,14 @@ class NetworkOrchestrator:
           net_module.net_config.ip_index]
       net_module.net_config.ipv6_network = self.network_config.ipv6_network
 
-      self._net_modules.append(net_module)
+    self._net_modules.append(net_module)
     return net_module
 
   def build_network_modules(self):
     LOGGER.info('Building network modules...')
     for net_module in self._net_modules:
-      self._build_module(net_module)
+      if not net_module.template:
+        self._build_module(net_module)
 
   def _build_module(self, net_module):
     LOGGER.debug('Building network module ' + net_module.dir_name)
@@ -788,6 +795,7 @@ class NetworkModule:
     self.container = None
     self.container_name = None
     self.image_name = None
+    self.template = False
 
     # Absolute path
     self.dir = None

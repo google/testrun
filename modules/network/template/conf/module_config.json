@@ -15,6 +15,7 @@
     },
     "docker": {
       "enable_container": false,
+      "template":true,
       "depends_on": "base",
       "mounts": [
         {
