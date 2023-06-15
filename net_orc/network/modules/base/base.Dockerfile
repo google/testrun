@@ -4,7 +4,7 @@ FROM ubuntu:jammy
 # Install common software
 RUN apt-get update && apt-get install -y net-tools iputils-ping tcpdump iproute2 jq python3 python3-pip dos2unix
 
-#Setup the base python requirements
+# Setup the base python requirements
 COPY network/modules/base/python /testrun/python
 
 # Install all python requirements for the module

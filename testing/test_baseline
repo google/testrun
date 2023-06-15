@@ -5,7 +5,7 @@ TESTRUN_OUT=/tmp/testrun.log
 
 # Setup requirements
 sudo apt-get update
-sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils
+sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils resolvconf
 
 pip3 install pytest
 
@@ -21,6 +21,9 @@ echo "nameserver 8.8.4.4" > /etc/resolvconf/resolv.conf.d/head
 
 # Start OVS
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
+
+# Build Base container (fix ordering)
+sudo docker build -f net_orc/network/modules/base/base.Dockerfile -t test-run/base ./net_orc
 
 # Build Test Container
 sudo docker build ./testing/docker/ci_baseline -t ci1 -f  ./testing/docker/ci_baseline/Dockerfile
