@@ -15,11 +15,12 @@ sudo ip link set dev endev0a up
 sudo ip link set dev endev0b up
 sudo docker network create -d macvlan -o parent=endev0b endev0
 
+# Set DNS servers
+echo "nameserver 8.8.8.8" > /etc/resolvconf/resolv.conf.d/head
+echo "nameserver 8.8.4.4" > /etc/resolvconf/resolv.conf.d/head
+
 # Start OVS
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
-
-# Fix due to ordering 
-sudo docker build ./net_orc/ -t test-run/base -f net_orc/network/modules/base/base.Dockerfile
 
 # Build Test Container
 sudo docker build ./testing/docker/ci_baseline -t ci1 -f  ./testing/docker/ci_baseline/Dockerfile
@@ -36,7 +37,7 @@ EOF
 
 sudo cmd/install
 
-sudo cmd/start --single-intf > $TESTRUN_OUT 2>&1 & 
+sudo cmd/start > $TESTRUN_OUT 2>&1 & 
 TPID=$!
 
 # Time to wait for testrun to be ready

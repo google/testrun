@@ -336,9 +336,6 @@ class NetworkOrchestrator:
     if self._single_intf:
       self._ci_pre_network_create()
 
-    # Remove IP from internet adapter
-    util.run_command('ifconfig ' + self._int_intf + ' 0.0.0.0')
-
     # Setup the virtual network
     if not self._ovs.create_baseline_net(verify=True):
       LOGGER.error('Baseline network validation failed.')
@@ -766,11 +763,6 @@ class NetworkOrchestrator:
 
     # Clear the virtual network
     self._ovs.restore_net()
-
-    # Restart internet interface
-    if util.interface_exists(self._int_intf):
-      util.run_command('ip link set ' + self._int_intf + ' down')
-      util.run_command('ip link set ' + self._int_intf + ' up')
 
     LOGGER.info('Network is restored')
 

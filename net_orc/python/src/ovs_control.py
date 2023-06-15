@@ -106,6 +106,16 @@ class OVSControl:
   def create_baseline_net(self, verify=True):
     LOGGER.debug('Creating baseline network')
 
+    internet_ip = None
+    internet_gw = None
+
+    try:
+      # Get IP address from internet adapter
+      internet_ip = util.run_command(f'ip addr show {self._int_intf}')[0].split("inet ")[1].split("/")[0]
+      internet_gw = util.run_command(f'ip route show dev {self._int_intf}')[0].split('default via ')[1].split(" ")[0]
+    except Exception:
+      LOGGER.error('Error occured whilst obtaining internet IP')
+
     # Remove IP from internet adapter
     self.set_interface_ip(interface=self._int_intf, ip_addr='0.0.0.0')
 
@@ -115,9 +125,6 @@ class OVSControl:
     # Create control plane
     self.add_bridge(INTERNET_BRIDGE)
 
-    # Remove IP from internet adapter
-    self.set_interface_ip(self._int_intf, '0.0.0.0')
-
     # Add external interfaces to data and control plane
     self.add_port(self._dev_intf, DEVICE_BRIDGE)
     self.add_port(self._int_intf, INTERNET_BRIDGE)
@@ -125,6 +132,14 @@ class OVSControl:
     # Enable forwarding of eapol packets
     self.add_flow(bridge_name=DEVICE_BRIDGE,
                   flow='table=0, dl_dst=01:80:c2:00:00:03, actions=flood')
+
+    if (internet_ip is not None and internet_gw is not None):
+      # Add internet IP to internet bridge
+      self.set_interface_ip(interface=INTERNET_BRIDGE, ip_addr=internet_ip)
+
+      # Route internet through internet bridge
+      util.run_command(f'ip route append default via {internet_gw} dev {INTERNET_BRIDGE}')
+      util.run_command('echo "nameserver 8.8.8.8" > /etc/resolv.conf')
 
     # Set ports up
     self.set_bridge_up(DEVICE_BRIDGE)
