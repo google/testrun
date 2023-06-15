@@ -21,8 +21,8 @@ mkdir /var/run/radvd
 #Create and set permissions on the log files
 touch $DHCP_LOG_FILE
 touch $RA_LOG_FILE
-chown $HOST_USER:$HOST_USER $DHCP_LOG_FILE
-chown $HOST_USER:$HOST_USER $RA_LOG_FILE
+chown $HOST_USER $DHCP_LOG_FILE
+chown $HOST_USER $RA_LOG_FILE
 
 
 #Move the config files to the correct location

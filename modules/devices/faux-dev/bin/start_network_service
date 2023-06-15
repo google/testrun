@@ -27,7 +27,7 @@ LOG_FILE=$OUTPUT_DIR/$MODULE_NAME.log
 RESULT_FILE=$OUTPUT_DIR/result.json
 touch $LOG_FILE
 touch $RESULT_FILE
-chown -R $HOST_USER:$HOST_USER $OUTPUT_DIR
+chown -R $HOST_USER $OUTPUT_DIR
 
 # Start dhclient
 $BIN_DIR/start_dhcp_client $INTF

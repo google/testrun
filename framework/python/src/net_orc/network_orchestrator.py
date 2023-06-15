@@ -185,7 +185,7 @@ class NetworkOrchestrator:
         TEST_DIR,
         device.mac_addr.replace(':', ''))
     os.makedirs(device_runtime_dir)
-    util.run_command(f'chown -R {self._host_user}:{self._host_user} {device_runtime_dir}')
+    util.run_command(f'chown -R {self._host_user} {device_runtime_dir}')
 
     packet_capture = sniff(iface=self._dev_intf,
                            timeout=self._startup_timeout,

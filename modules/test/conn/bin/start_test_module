@@ -28,8 +28,8 @@ LOG_FILE=/runtime/output/$MODULE_NAME.log
 RESULT_FILE=/runtime/output/$MODULE_NAME-result.json
 touch $LOG_FILE
 touch $RESULT_FILE
-chown $HOST_USER:$HOST_USER $LOG_FILE
-chown $HOST_USER:$HOST_USER $RESULT_FILE
+chown $HOST_USER $LOG_FILE
+chown $HOST_USER $RESULT_FILE
 
 # Run the python scrip that will execute the tests for this module
 # -u flag allows python print statements

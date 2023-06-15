@@ -3,6 +3,8 @@
 
 TESTRUN_OUT=/tmp/testrun.log
 
+ifconfig
+
 # Setup requirements
 sudo apt-get update
 sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils

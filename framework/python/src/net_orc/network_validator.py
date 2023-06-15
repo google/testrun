@@ -49,11 +49,11 @@ class NetworkValidator:
   def start(self):
     """Start the network validator."""
     LOGGER.debug('Starting validator')
-    
+
     # Setup the output directory
     host_user = self._get_host_user()
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    util.run_command(f'chown -R {host_user}:{host_user} {OUTPUT_DIR}')
+    util.run_command(f'chown -R {host_user} {OUTPUT_DIR}')
 
     self._load_devices()
     self._build_network_devices()
@@ -92,7 +92,6 @@ class NetworkValidator:
 
     for module_dir in os.listdir(self._device_dir):
 
-      LOGGER.info("Module Dir: " + module_dir)
       device = FauxDevice()
 
       # Load basic module information
@@ -177,24 +176,24 @@ class NetworkValidator:
 
   def _get_host_user(self):
     user = self._get_os_user()
-    
+
     # If primary method failed, try secondary
     if user is None:
       user = self._get_user()
 
-    LOGGER.debug("Network validator host user: " + user)
+    LOGGER.debug(f'Network validator host user: {user}')
     return user
 
   def _get_os_user(self):
     user = None
     try:
       user = os.getlogin()
-    except OSError as e:
+    except OSError:
       # Handle the OSError exception
-      LOGGER.error("An OS error occurred while retrieving the login name.")
-    except Exception as e:
+      LOGGER.error('An OS error occurred while retrieving the login name.')
+    except Exception as error:
       # Catch any other unexpected exceptions
-       LOGGER.error("An exception occurred:", e)
+       LOGGER.error('An exception occurred:', error)
     return user
 
   def _get_user(self):
