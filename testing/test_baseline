@@ -17,7 +17,6 @@ sudo docker network create -d macvlan -o parent=endev0b endev0
 
 # Set DNS servers
 echo "nameserver 8.8.8.8" > /etc/resolvconf/resolv.conf.d/head
-echo "nameserver 8.8.4.4" > /etc/resolvconf/resolv.conf.d/head
 
 # Start OVS
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
@@ -67,6 +66,9 @@ fi
 
 # Load Test Container
 sudo docker run --network=endev0 --cap-add=NET_ADMIN -v /tmp:/out --privileged ci1 
+
+# Restart system networking
+sudo systemctl restart networking
 
 echo "Done baseline test"
 
