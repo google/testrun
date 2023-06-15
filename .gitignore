@@ -5,3 +5,4 @@ error
 pylint.out
 local/
 __pycache__/
+build/
