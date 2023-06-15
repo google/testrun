@@ -30,6 +30,8 @@ class OVSControl:
   def __init__(self):
     self._int_intf = None
     self._dev_intf = None
+    self._int_ip = None
+    self._int_gw = None
     self._load_config()
 
   def add_bridge(self, bridge_name):
@@ -106,13 +108,10 @@ class OVSControl:
   def create_baseline_net(self, verify=True):
     LOGGER.debug('Creating baseline network')
 
-    internet_ip = None
-    internet_gw = None
-
     try:
       # Get IP address from internet adapter
-      internet_ip = util.run_command(f'ip addr show {self._int_intf}')[0].split("inet ")[1].split("/")[0]
-      internet_gw = util.run_command(f'ip route show dev {self._int_intf}')[0].split('default via ')[1].split(" ")[0]
+      self._int_ip = util.run_command(f'ip addr show {self._int_intf}')[0].split("inet ")[1].split("/")[0]
+      self._int_gw = util.run_command(f'ip route show dev {self._int_intf}')[0].split('default via ')[1].split(" ")[0]
     except Exception:
       LOGGER.error('Error occured whilst obtaining internet IP')
 
@@ -133,12 +132,12 @@ class OVSControl:
     self.add_flow(bridge_name=DEVICE_BRIDGE,
                   flow='table=0, dl_dst=01:80:c2:00:00:03, actions=flood')
 
-    if (internet_ip is not None and internet_gw is not None):
+    if (self._int_ip is not None and self._int_gw is not None):
       # Add internet IP to internet bridge
-      self.set_interface_ip(interface=INTERNET_BRIDGE, ip_addr=internet_ip)
+      self.set_interface_ip(interface=INTERNET_BRIDGE, ip_addr=self._int_ip)
 
       # Route internet through internet bridge
-      util.run_command(f'ip route append default via {internet_gw} dev {INTERNET_BRIDGE}')
+      util.run_command(f'ip route append default via {self._int_gw} dev {INTERNET_BRIDGE}')
       util.run_command('echo "nameserver 8.8.8.8" > /etc/resolv.conf')
 
     # Set ports up
@@ -181,6 +180,13 @@ class OVSControl:
 
     # Delete control plane
     self.delete_bridge(INTERNET_BRIDGE)
+
+    if (self._int_ip is not None and self._int_gw is not None):
+      # Add internet IP to internet bridge
+      self.set_interface_ip(interface=self._int_intf, ip_addr=self._int_ip)
+
+      # Route internet through internet bridge
+      util.run_command(f'ip route append default via {self._int_gw} dev {self._int_intf}')
 
     LOGGER.debug('Network is restored')
 

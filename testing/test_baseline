@@ -67,9 +67,6 @@ fi
 # Load Test Container
 sudo docker run --network=endev0 --cap-add=NET_ADMIN -v /tmp:/out --privileged ci1 
 
-# Restart system networking
-sudo systemctl restart networking
-
 echo "Done baseline test"
 
 more $TESTRUN_OUT
