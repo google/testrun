@@ -6,8 +6,4 @@ source venv/bin/activate
 
 pip3 install -r framework/requirements.txt
 
-pip3 install -r net_orc/python/requirements.txt
-
-pip3 install -r test_orc/python/requirements.txt
-
 deactivate

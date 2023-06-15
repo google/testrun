@@ -18,7 +18,9 @@ rm -rf runtime
 source venv/bin/activate
 
 # TODO: Execute python code
-python -u framework/test_runner.py $@
+# Set the PYTHONPATH to include the "src" directory
+export PYTHONPATH="$PWD/framework/python/src"
+python -u framework/python/src/core/test_runner.py $@
 
 # TODO: Work in progress code for containerization of OVS module
 # asyncRun() {
