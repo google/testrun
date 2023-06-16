@@ -34,6 +34,7 @@ from net_orc.network_device import NetworkDevice
 from net_orc.network_event import NetworkEvent
 from net_orc.network_validator import NetworkValidator
 from net_orc.ovs_control import OVSControl
+from net_orc.ip_control import IPControl
 
 LOGGER = logger.get_logger('net_orc')
 CONFIG_FILE = 'conf/system.json'
@@ -92,6 +93,7 @@ class NetworkOrchestrator:
     self.network_config = NetworkConfig()
     self.load_config(config_file)
     self._ovs = OVSControl()
+    self._ip_ctrl = IPControl()
 
   def start(self):
     """Start the network orchestrator."""
@@ -686,32 +688,44 @@ class NetworkOrchestrator:
     util.run_command('ln -sf /proc/' + container_pid +
                      '/ns/net /var/run/netns/' + container_net_ns)
 
-    # Attach container interface to container network namespace
-    util.run_command('ip link set ' + container_intf + ' netns ' +
-                     container_net_ns)
+    mac_addr = '9a:02:57:1e:8f:' + str(net_module.net_config.ip_index)
+    ipv4_addr = net_module.net_config.get_ipv4_addr_with_prefix()
+    ipv6_addr = net_module.net_config.get_ipv6_addr_with_prefix()
+    self._ip_ctrl.configure_container_interface(
+      bridge_intf,
+      container_intf,
+      container_net_ns,
+      "veth0",
+      mac_addr,
+      ipv4_addr,
+      ipv6_addr)
 
-    # Rename container interface name to veth0
-    util.run_command('ip netns exec ' + container_net_ns + ' ip link set dev ' +
-                     container_intf + ' name veth0')
+    # # Attach container interface to container network namespace
+    # util.run_command('ip link set ' + container_intf + ' netns ' +
+    #                  container_net_ns)
 
-    # Set MAC address of container interface
-    util.run_command('ip netns exec ' + container_net_ns +
-                     ' ip link set dev veth0 address 9a:02:57:1e:8f:' +
-                     str(net_module.net_config.ip_index))
+    # # Rename container interface name to veth0
+    # util.run_command('ip netns exec ' + container_net_ns + ' ip link set dev ' +
+    #                  container_intf + ' name veth0')
 
-    # Set IP address of container interface
-    util.run_command('ip netns exec ' + container_net_ns + ' ip addr add ' +
-                     net_module.net_config.get_ipv4_addr_with_prefix() +
-                     ' dev veth0')
+    # # Set MAC address of container interface
+    # util.run_command('ip netns exec ' + container_net_ns +
+    #                  ' ip link set dev veth0 address 9a:02:57:1e:8f:' +
+    #                  str(net_module.net_config.ip_index))
 
-    util.run_command('ip netns exec ' + container_net_ns + ' ip addr add ' +
-                     net_module.net_config.get_ipv6_addr_with_prefix() +
-                     ' dev veth0')
+    # # Set IP address of container interface
+    # util.run_command('ip netns exec ' + container_net_ns + ' ip addr add ' +
+    #                  net_module.net_config.get_ipv4_addr_with_prefix() +
+    #                  ' dev veth0')
 
-    # Set interfaces up
-    util.run_command('ip link set dev ' + bridge_intf + ' up')
-    util.run_command('ip netns exec ' + container_net_ns +
-                     ' ip link set dev veth0 up')
+    # util.run_command('ip netns exec ' + container_net_ns + ' ip addr add ' +
+    #                  net_module.net_config.get_ipv6_addr_with_prefix() +
+    #                  ' dev veth0')
+
+    # #Set interfaces up
+    # util.run_command('ip link set dev ' + bridge_intf + ' up')
+    # util.run_command('ip netns exec ' + container_net_ns +
+    #                  ' ip link set dev veth0 up')
 
     if net_module.net_config.enable_wan:
       LOGGER.debug('Attaching net service ' + net_module.display_name +
