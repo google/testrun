@@ -31,12 +31,13 @@ from common import logger
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 # Locate the test-run root directory, 4 levels, src->python->framework->test-run
-root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_dir))))
+root_dir = os.path.dirname(os.path.dirname(
+  os.path.dirname(os.path.dirname(current_dir))))
 
-from net_orc.listener import NetworkEvent
-from test_orc import test_orchestrator as test_orc
-from net_orc import network_orchestrator as net_orc
-from device import Device
+from net_orc.listener import NetworkEvent #  pylint: disable=wrong-import-position
+from net_orc import network_orchestrator as net_orc #  pylint: disable=wrong-import-position
+from test_orc import test_orchestrator as test_orc #  pylint: disable=wrong-import-position
+from device import Device #  pylint: disable=wrong-import-position
 
 LOGGER = logger.get_logger('test_run')
 CONFIG_FILE = 'conf/system.json'
@@ -76,7 +77,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._net_orc = net_orc.NetworkOrchestrator(
       config_file=config_file_abs,
       validate=validate,
-      async_monitor=not self._net_only,
       single_intf = self._single_intf)
 
     self._test_orc = test_orc.TestOrchestrator(self._net_orc)
@@ -88,17 +88,31 @@ class TestRun:  # pylint: disable=too-few-public-methods
     if self._net_only:
       LOGGER.info('Network only option configured, no tests will be run')
       self._start_network()
+
+      self._net_orc.listener.register_callback(
+        self._device_discovered,
+        [NetworkEvent.DEVICE_DISCOVERED]
+      )
+
+      LOGGER.info('Waiting for devices on the network...')
+      self._net_orc.start_listener()
+
+      # Net only mode should run endlessly until Ctrl+C is pressed
+      while True:
+        time.sleep(5)
+
     else:
       self._start_network()
       self._test_orc.start()
 
       self._net_orc.listener.register_callback(
-          self._device_stable,
-          [NetworkEvent.DEVICE_STABLE]
-      )
-      self._net_orc.listener.register_callback(
         self._device_discovered,
         [NetworkEvent.DEVICE_DISCOVERED]
+      )
+
+      self._net_orc.listener.register_callback(
+        self._device_stable,
+        [NetworkEvent.DEVICE_STABLE]
       )
 
       self._net_orc.start_listener()
@@ -112,7 +126,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         while self._test_orc.test_in_progress():
           time.sleep(5)
 
-    self.stop()
+      self.stop()
 
   def stop(self, kill=False):
     self._stop_tests()

@@ -66,7 +66,6 @@ class NetworkOrchestrator:
   def __init__(self,
                config_file=CONFIG_FILE,
                validate=True,
-               async_monitor=False,
                single_intf=False):
 
     self._runtime = DEFAULT_RUNTIME
@@ -81,7 +80,6 @@ class NetworkOrchestrator:
     self._net_modules = []
     self._devices = []
     self.validate = validate
-    self.async_monitor = async_monitor
 
     self._path = os.path.dirname(os.path.dirname(
           os.path.dirname(
@@ -107,14 +105,6 @@ class NetworkOrchestrator:
     self.stop(kill=True)
 
     self.start_network()
-
-    if self.async_monitor:
-      # Run the monitor method asynchronously to keep this method non-blocking
-      self._monitor_thread = threading.Thread(target=self.monitor_network)
-      self._monitor_thread.daemon = True
-      self._monitor_thread.start()
-    else:
-      self.monitor_network()
 
   def start_network(self):
     """Start the virtual testing network."""
@@ -201,7 +191,7 @@ class NetworkOrchestrator:
     LOGGER.info(
         f'Device with mac addr {device.mac_addr} has obtained IP address '
         f'{device.ip_addr}')
-    
+
     self._start_device_monitor(device)
 
   def _device_has_ip(self, packet):
@@ -225,6 +215,7 @@ class NetworkOrchestrator:
     wrpcap(
         os.path.join(RUNTIME_DIR, TEST_DIR, device.mac_addr.replace(':', ''),
                      'monitor.pcap'), packet_capture)
+    LOGGER.info('Finished monitoring device')
     self.listener.call_callback(NetworkEvent.DEVICE_STABLE, device.mac_addr)
 
   def _get_device(self, mac_addr):
