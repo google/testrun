@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Network orchestrator is responsible for managing
 all of the virtual network services"""
 import getpass
@@ -84,9 +83,10 @@ class NetworkOrchestrator:
     self.validate = validate
     self.async_monitor = async_monitor
 
-    self._path = os.path.dirname(os.path.dirname(
-          os.path.dirname(
-            os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
+    self._path = os.path.dirname(
+        os.path.dirname(
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
     self.validator = NetworkValidator()
     shutil.rmtree(os.path.join(os.getcwd(), NET_DIR), ignore_errors=True)
@@ -183,9 +183,8 @@ class NetworkOrchestrator:
         f'Discovered device {mac_addr}. Waiting for device to obtain IP')
     device = self._get_device(mac_addr=mac_addr)
 
-    device_runtime_dir = os.path.join(RUNTIME_DIR,
-        TEST_DIR,
-        device.mac_addr.replace(':', ''))
+    device_runtime_dir = os.path.join(RUNTIME_DIR, TEST_DIR,
+                                      device.mac_addr.replace(':', ''))
     os.makedirs(device_runtime_dir)
     util.run_command(f'chown -R {self._host_user} {device_runtime_dir}')
 
@@ -203,7 +202,7 @@ class NetworkOrchestrator:
     LOGGER.info(
         f'Device with mac addr {device.mac_addr} has obtained IP address '
         f'{device.ip_addr}')
-    
+
     self._start_device_monitor(device)
 
   def _device_has_ip(self, packet):
@@ -420,8 +419,7 @@ class NetworkOrchestrator:
 
     # Determine if this is a template
     if 'template' in net_module_json['config']['docker']:
-      net_module.template = net_module_json['config']['docker'][
-          'template']
+      net_module.template = net_module_json['config']['docker']['template']
 
     # Load network service networking configuration
     if net_module.enable_container:
@@ -495,7 +493,7 @@ class NetworkOrchestrator:
 
   def _get_host_user(self):
     user = self._get_os_user()
-    
+
     # If primary method failed, try secondary
     if user is None:
       user = self._get_user()
@@ -512,7 +510,7 @@ class NetworkOrchestrator:
       LOGGER.error("An OS error occurred while retrieving the login name.")
     except Exception as e:
       # Catch any other unexpected exceptions
-       LOGGER.error("An exception occurred:", e)
+      LOGGER.error("An exception occurred:", e)
     return user
 
   def _get_user(self):
@@ -522,15 +520,15 @@ class NetworkOrchestrator:
     except (KeyError, ImportError, ModuleNotFoundError, OSError) as e:
       # Handle specific exceptions individually
       if isinstance(e, KeyError):
-          LOGGER.error("USER environment variable not set or unavailable.")
+        LOGGER.error("USER environment variable not set or unavailable.")
       elif isinstance(e, ImportError):
-          LOGGER.error("Unable to import the getpass module.")
+        LOGGER.error("Unable to import the getpass module.")
       elif isinstance(e, ModuleNotFoundError):
-          LOGGER.error("The getpass module was not found.")
+        LOGGER.error("The getpass module was not found.")
       elif isinstance(e, OSError):
-          LOGGER.error("An OS error occurred while retrieving the username.")
+        LOGGER.error("An OS error occurred while retrieving the username.")
       else:
-          LOGGER.error("An exception occurred:", e)
+        LOGGER.error("An exception occurred:", e)
     return user
 
   def _stop_service_module(self, net_module, kill=False):
@@ -668,9 +666,16 @@ class NetworkOrchestrator:
     # Container network namespace name
     container_net_ns = 'tr-ctns-' + net_module.dir_name
 
+    # Resolve the interface information
+    mac_addr = '9a:02:57:1e:8f:' + str(net_module.net_config.ip_index)
+    ipv4_addr = net_module.net_config.get_ipv4_addr_with_prefix()
+    ipv6_addr = net_module.net_config.get_ipv6_addr_with_prefix()
+
+    # Cleanup old interface and namespaces
+    self._ip_ctrl.cleanup(bridge_intf, container_net_ns)
+
     # Create interface pair
-    util.run_command('ip link add ' + bridge_intf + ' type veth peer name ' +
-                     container_intf)
+    self._ip_ctrl.add_link(bridge_intf, container_intf)
 
     # Add bridge interface to device bridge
     if self._ovs.add_port(port=bridge_intf, bridge_name=DEVICE_BRIDGE):
@@ -688,44 +693,9 @@ class NetworkOrchestrator:
     util.run_command('ln -sf /proc/' + container_pid +
                      '/ns/net /var/run/netns/' + container_net_ns)
 
-    mac_addr = '9a:02:57:1e:8f:' + str(net_module.net_config.ip_index)
-    ipv4_addr = net_module.net_config.get_ipv4_addr_with_prefix()
-    ipv6_addr = net_module.net_config.get_ipv6_addr_with_prefix()
-    self._ip_ctrl.configure_container_interface(
-      bridge_intf,
-      container_intf,
-      container_net_ns,
-      "veth0",
-      mac_addr,
-      ipv4_addr,
-      ipv6_addr)
-
-    # # Attach container interface to container network namespace
-    # util.run_command('ip link set ' + container_intf + ' netns ' +
-    #                  container_net_ns)
-
-    # # Rename container interface name to veth0
-    # util.run_command('ip netns exec ' + container_net_ns + ' ip link set dev ' +
-    #                  container_intf + ' name veth0')
-
-    # # Set MAC address of container interface
-    # util.run_command('ip netns exec ' + container_net_ns +
-    #                  ' ip link set dev veth0 address 9a:02:57:1e:8f:' +
-    #                  str(net_module.net_config.ip_index))
-
-    # # Set IP address of container interface
-    # util.run_command('ip netns exec ' + container_net_ns + ' ip addr add ' +
-    #                  net_module.net_config.get_ipv4_addr_with_prefix() +
-    #                  ' dev veth0')
-
-    # util.run_command('ip netns exec ' + container_net_ns + ' ip addr add ' +
-    #                  net_module.net_config.get_ipv6_addr_with_prefix() +
-    #                  ' dev veth0')
-
-    # #Set interfaces up
-    # util.run_command('ip link set dev ' + bridge_intf + ' up')
-    # util.run_command('ip netns exec ' + container_net_ns +
-    #                  ' ip link set dev veth0 up')
+    self._ip_ctrl.configure_container_interface(bridge_intf, container_intf,
+                                                "veth0", container_net_ns,
+                                                mac_addr, ipv4_addr, ipv6_addr)
 
     if net_module.net_config.enable_wan:
       LOGGER.debug('Attaching net service ' + net_module.display_name +
@@ -739,9 +709,11 @@ class NetworkOrchestrator:
       # tr-cti-dhcp (Test Run Container Interface for DHCP container)
       container_intf = 'tr-cti-' + net_module.dir_name
 
+      # Cleanup old interface
+      self._ip_ctrl.cleanup(bridge_intf)
+
       # Create interface pair
-      util.run_command('ip link add ' + bridge_intf + ' type veth peer name ' +
-                       container_intf)
+      self._ip_ctrl.add_link(bridge_intf, container_intf)
 
       # Attach bridge interface to internet bridge
       if self._ovs.add_port(port=bridge_intf, bridge_name=INTERNET_BRIDGE):
@@ -751,23 +723,9 @@ class NetworkOrchestrator:
                        ' to internet bridge ' + DEVICE_BRIDGE + '. Exiting.')
           sys.exit(1)
 
-      # Attach container interface to container network namespace
-      util.run_command('ip link set ' + container_intf + ' netns ' +
-                       container_net_ns)
-
-      # Rename container interface name to eth1
-      util.run_command('ip netns exec ' + container_net_ns +
-                       ' ip link set dev ' + container_intf + ' name eth1')
-
-      # Set MAC address of container interface
-      util.run_command('ip netns exec ' + container_net_ns +
-                       ' ip link set dev eth1 address 9a:02:57:1e:8f:0' +
-                       str(net_module.net_config.ip_index))
-
-      # Set interfaces up
-      util.run_command('ip link set dev ' + bridge_intf + ' up')
-      util.run_command('ip netns exec ' + container_net_ns +
-                       ' ip link set dev eth1 up')
+      self._ip_ctrl.configure_container_interface(bridge_intf, container_intf,
+                                                "eth1", container_net_ns,
+                                                mac_addr)
 
   def restore_net(self):
 

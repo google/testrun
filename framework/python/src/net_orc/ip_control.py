@@ -34,11 +34,28 @@ class IPControl:
   def add_namespace(self, namespace):
     """Add a network namespace"""
     exists = self.namespace_exists(namespace)
+    LOGGER.info("Namespace exists: " + str(exists))
     if exists:
       return True
     else:
       success = util.run_command('ip netns add ' + namespace)
       return success
+
+  def delete_link(self, interface_name):
+    """Delete an ip link"""
+    success = util.run_command('ip link delete ' + interface_name)
+    return success
+
+  def delete_namespace(self, interface_name):
+    """Delete an ip namespace"""
+    success = util.run_command('ip netns delete ' + interface_name)
+    return success  
+
+  def link_exists(self,interface_name):
+    stdout,stderr = util.run_command('ip link show ' + interface_name)
+    if "does not exist" in str(stderr):
+      return False
+    return True
 
   def namespace_exists(self,namespace):
     """Check if a namespace already exists"""
@@ -89,29 +106,54 @@ class IPControl:
                                  ' ip link set dev ' + interface_name + ' up')
     return success
 
+  def cleanup(self,interface=None,namespace=None):
+    """Cleanup existing link and namespace if they still exist"""
+    
+    link_clean = True
+    if interface is not None:
+      if self.link_exists(interface):
+        link_clean = self.delete_link(interface)
+
+    ns_clean = True
+    if namespace is not None:
+      if self.namespace_exists(namespace):
+        ns_clean = self.delete_namespace
+    return link_clean and ns_clean
+
+
   def configure_container_interface(self,bridge_intf, container_intf,
                                     namespace_intf, namespace, mac_addr,
-                                    ipv4_addr, ipv6_addr):
-
-    # Create the interface pair
-    #self.add_link(bridge_intf,container_inf)
-
-    # Add the network namespace
-    self.add_namespace(namespace)
-
+                                    ipv4_addr=None, ipv6_addr=None):
     # Attach container interface to container network namespace
-    self.set_namespace(container_intf, namespace)
+    if not self.set_namespace(container_intf, namespace):
+      LOGGER.error(f'Failed to set namespace {namespace} for {container_intf}')
+      return False
 
     # Rename container interface name
-    self.rename_interface(container_intf,namespace, namespace_intf)
+    if not self.rename_interface(container_intf,namespace, namespace_intf):
+      LOGGER.error(f'Failed to rename container interface {container_intf} to {namespace_intf}')
+      return False
 
     # Set MAC address of container interface
-    self.set_interface_mac(namespace_intf, namespace, mac_addr)
+    if not self.set_interface_mac(namespace_intf, namespace, mac_addr):
+      LOGGER.error(f'Failed to set MAC address for {namespace_intf} to {mac_addr}')
+      return False
 
     # Set IP address of container interface
-    self.set_interface_ip(namespace_intf, namespace, ipv4_addr)
-    self.set_interface_ip(namespace_intf, namespace, ipv6_addr)
+    if ipv4_addr is not None:
+      if not self.set_interface_ip(namespace_intf, namespace, ipv4_addr):
+        LOGGER.error(f'Failed to set IPv4 address for {namespace_intf} to {ipv4_addr}')
+        return False
+    if ipv6_addr is not None:
+      if not self.set_interface_ip(namespace_intf, namespace, ipv6_addr):
+        LOGGER.error(f'Failed to set IPv6 address for {namespace_intf} to {ipv6_addr}')
+        return False
 
     # Set interfaces up
-    self.set_interface_up(bridge_intf)
-    self.set_interface_up(namespace_intf, namespace)
+    if not self.set_interface_up(bridge_intf):
+      LOGGER.error(f'Failed to set interface up {bridge_intf}')
+      return False
+    if not self.set_interface_up(namespace_intf, namespace):
+      LOGGER.error(f'Failed to set interface up {namespace_intf}')
+      return False
+    return True
