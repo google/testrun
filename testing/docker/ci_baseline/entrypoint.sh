@@ -36,6 +36,8 @@ wout .network.ipv4 $(ip a show $main_intf | grep "inet " | awk '{print $2}')
 wout .network.ipv6 $(ip a show $main_intf | grep inet6 | awk '{print $2}')
 wout .network.ethmac $(cat /sys/class/net/$main_intf/address)
 
+dig @$DNS_SERVER www.google.com 
+dig www.google.com 
 wout .dns_response $(dig @$DNS_SERVER +short www.google.com | tail -1)
 wout .ntp_offset $(ntpdate -q $NTP_SERVER | tail -1 | sed -E 's/.*offset ([-=0-9\.]*) sec/\1/')
 
