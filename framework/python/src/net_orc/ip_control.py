@@ -135,7 +135,30 @@ class IPControl:
 
   def configure_container_interface(self,bridge_intf, container_intf,
                                     namespace_intf, namespace, mac_addr,
-                                    ipv4_addr=None, ipv6_addr=None):
+                                    container_name=None,ipv4_addr=None, 
+                                    ipv6_addr=None):
+
+    # Cleanup old interface and namespaces
+    self.cleanup(bridge_intf, namespace)
+
+    # Create interface pair
+    self.add_link(bridge_intf, container_intf)
+
+    if container_name is not None:
+      # Get PID for running container
+      # TODO: Some error checking around missing PIDs might be required
+      container_pid = util.run_command('docker inspect -f {{.State.Pid}} ' +
+                                       container_name)[0]
+      if not container_pid.isdigit():
+        LOGGER.error(f'Failed to resolve pid for {container_name}')
+        return False
+
+      # Create symlink for container network namespace
+      if not util.run_command('ln -sf /proc/' + container_pid +
+                       '/ns/net /var/run/netns/' + namespace,output=False):
+        LOGGER.error(f'Failed to link {container_name} to namespace {namespace_intf}')
+        return False
+
     # Attach container interface to container network namespace
     if not self.set_namespace(container_intf, namespace):
       LOGGER.error(f'Failed to set namespace {namespace} for {container_intf}')

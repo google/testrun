@@ -671,11 +671,13 @@ class NetworkOrchestrator:
     ipv4_addr = net_module.net_config.get_ipv4_addr_with_prefix()
     ipv6_addr = net_module.net_config.get_ipv6_addr_with_prefix()
 
-    # Cleanup old interface and namespaces
-    self._ip_ctrl.cleanup(bridge_intf, container_net_ns)
-
-    # Create interface pair
-    self._ip_ctrl.add_link(bridge_intf, container_intf)
+    # Add and configure the interface container
+    if not self._ip_ctrl.configure_container_interface(bridge_intf, container_intf,
+                                                "veth0", container_net_ns,
+                                                mac_addr,net_module.container_name,
+                                                ipv4_addr, ipv6_addr):
+      LOGGER.error('Failed to configure local networking for ' + net_module.name + '. Exiting.')
+      sys.exit(1)
 
     # Add bridge interface to device bridge
     if self._ovs.add_port(port=bridge_intf, bridge_name=DEVICE_BRIDGE):
@@ -683,19 +685,6 @@ class NetworkOrchestrator:
         LOGGER.error('Failed to add ' + net_module.name + ' to device bridge ' +
                      DEVICE_BRIDGE + '. Exiting.')
         sys.exit(1)
-
-    # Get PID for running container
-    # TODO: Some error checking around missing PIDs might be required
-    container_pid = util.run_command('docker inspect -f {{.State.Pid}} ' +
-                                     net_module.container_name)[0]
-
-    # Create symlink for container network namespace
-    util.run_command('ln -sf /proc/' + container_pid +
-                     '/ns/net /var/run/netns/' + container_net_ns)
-
-    self._ip_ctrl.configure_container_interface(bridge_intf, container_intf,
-                                                "veth0", container_net_ns,
-                                                mac_addr, ipv4_addr, ipv6_addr)
 
     if net_module.net_config.enable_wan:
       LOGGER.debug('Attaching net service ' + net_module.display_name +
@@ -709,11 +698,11 @@ class NetworkOrchestrator:
       # tr-cti-dhcp (Test Run Container Interface for DHCP container)
       container_intf = 'tr-cti-' + net_module.dir_name
 
-      # Cleanup old interface
-      self._ip_ctrl.cleanup(bridge_intf)
-
-      # Create interface pair
-      self._ip_ctrl.add_link(bridge_intf, container_intf)
+      if not self._ip_ctrl.configure_container_interface(bridge_intf, container_intf,
+                                                "eth1", container_net_ns,
+                                                mac_addr):
+        LOGGER.error('Failed to configure internet networking for ' + net_module.name + '. Exiting.')
+        sys.exit(1)
 
       # Attach bridge interface to internet bridge
       if self._ovs.add_port(port=bridge_intf, bridge_name=INTERNET_BRIDGE):
@@ -722,10 +711,6 @@ class NetworkOrchestrator:
           LOGGER.error('Failed to add ' + net_module.name +
                        ' to internet bridge ' + DEVICE_BRIDGE + '. Exiting.')
           sys.exit(1)
-
-      self._ip_ctrl.configure_container_interface(bridge_intf, container_intf,
-                                                "eth1", container_net_ns,
-                                                mac_addr)
 
   def restore_net(self):
 
