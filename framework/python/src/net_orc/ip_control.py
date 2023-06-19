@@ -49,13 +49,13 @@ class IPControl:
   def delete_namespace(self, interface_name):
     """Delete an ip namespace"""
     success = util.run_command('ip netns delete ' + interface_name)
-    return success  
+    return success
 
-  def link_exists(self,link_name):
+  def link_exists(self, link_name):
     links = self.get_links()
     return link_name in links
 
-  def namespace_exists(self,namespace):
+  def namespace_exists(self, namespace):
     """Check if a namespace already exists"""
     namespaces = self.get_namespaces()
     if namespace in namespaces:
@@ -64,21 +64,21 @@ class IPControl:
       return False
 
   def get_links(self):
-    stdout,stderr = util.run_command('ip link list')
+    stdout, stderr = util.run_command('ip link list')
     links = stdout.strip().split('\n')
     netns_links = []
     for link in links:
-        match = re.search(r'\d+:\s+(\S+)', link)
-        if match:
-            interface_name = match.group(1)
-            name_match = re.search(r'(.*)@', interface_name)
-            if name_match:
-                interface_name = name_match.group(1)
-            netns_links.append(interface_name.strip())
+      match = re.search(r'\d+:\s+(\S+)', link)
+      if match:
+        interface_name = match.group(1)
+        name_match = re.search(r'(.*)@', interface_name)
+        if name_match:
+          interface_name = name_match.group(1)
+        netns_links.append(interface_name.strip())
     return netns_links
 
   def get_namespaces(self):
-    stdout,stderr = util.run_command('ip netns list')
+    stdout, stderr = util.run_command('ip netns list')
     #Strip ID's from the namespace results
     namespaces = re.findall(r'(\S+)(?:\s+\(id: \d+\))?', stdout)
     return namespaces
@@ -120,7 +120,7 @@ class IPControl:
 
   def clean_all(self):
     """Cleanup all existing test run interfaces and namespaces"""
-    
+
     # Delete all namesapces that start with tr
     namespaces = self.get_namespaces()
     for ns in namespaces:
@@ -133,11 +133,9 @@ class IPControl:
       if 'tr' in link:
         self.delete_link(link)
 
-
-
-  def cleanup(self,interface=None,namespace=None):
+  def cleanup(self, interface=None, namespace=None):
     """Cleanup existing link and namespace if they still exist"""
-    
+
     link_clean = True
     if interface is not None:
       if self.link_exists(interface):
@@ -149,9 +147,14 @@ class IPControl:
         ns_clean = self.delete_namespace
     return link_clean and ns_clean
 
-  def configure_container_interface(self,bridge_intf, container_intf,
-                                    namespace_intf, namespace, mac_addr,
-                                    container_name=None,ipv4_addr=None, 
+  def configure_container_interface(self,
+                                    bridge_intf,
+                                    container_intf,
+                                    namespace_intf,
+                                    namespace,
+                                    mac_addr,
+                                    container_name=None,
+                                    ipv4_addr=None,
                                     ipv6_addr=None):
 
     # Cleanup old interface and namespaces
@@ -171,8 +174,10 @@ class IPControl:
 
       # Create symlink for container network namespace
       if not util.run_command('ln -sf /proc/' + container_pid +
-                       '/ns/net /var/run/netns/' + namespace,output=False):
-        LOGGER.error(f'Failed to link {container_name} to namespace {namespace_intf}')
+                              '/ns/net /var/run/netns/' + namespace,
+                              output=False):
+        LOGGER.error(
+            f'Failed to link {container_name} to namespace {namespace_intf}')
         return False
 
     # Attach container interface to container network namespace
@@ -181,23 +186,28 @@ class IPControl:
       return False
 
     # Rename container interface name
-    if not self.rename_interface(container_intf,namespace, namespace_intf):
-      LOGGER.error(f'Failed to rename container interface {container_intf} to {namespace_intf}')
+    if not self.rename_interface(container_intf, namespace, namespace_intf):
+      LOGGER.error(
+          f'Failed to rename container interface {container_intf} to {namespace_intf}'
+      )
       return False
 
     # Set MAC address of container interface
     if not self.set_interface_mac(namespace_intf, namespace, mac_addr):
-      LOGGER.error(f'Failed to set MAC address for {namespace_intf} to {mac_addr}')
+      LOGGER.error(
+          f'Failed to set MAC address for {namespace_intf} to {mac_addr}')
       return False
 
     # Set IP address of container interface
     if ipv4_addr is not None:
       if not self.set_interface_ip(namespace_intf, namespace, ipv4_addr):
-        LOGGER.error(f'Failed to set IPv4 address for {namespace_intf} to {ipv4_addr}')
+        LOGGER.error(
+            f'Failed to set IPv4 address for {namespace_intf} to {ipv4_addr}')
         return False
     if ipv6_addr is not None:
       if not self.set_interface_ip(namespace_intf, namespace, ipv6_addr):
-        LOGGER.error(f'Failed to set IPv6 address for {namespace_intf} to {ipv6_addr}')
+        LOGGER.error(
+            f'Failed to set IPv6 address for {namespace_intf} to {ipv6_addr}')
         return False
 
     # Set interfaces up

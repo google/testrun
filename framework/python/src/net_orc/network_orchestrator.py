@@ -672,11 +672,11 @@ class NetworkOrchestrator:
     ipv6_addr = net_module.net_config.get_ipv6_addr_with_prefix()
 
     # Add and configure the interface container
-    if not self._ip_ctrl.configure_container_interface(bridge_intf, container_intf,
-                                                "veth0", container_net_ns,
-                                                mac_addr,net_module.container_name,
-                                                ipv4_addr, ipv6_addr):
-      LOGGER.error('Failed to configure local networking for ' + net_module.name + '. Exiting.')
+    if not self._ip_ctrl.configure_container_interface(
+        bridge_intf, container_intf, "veth0", container_net_ns, mac_addr,
+        net_module.container_name, ipv4_addr, ipv6_addr):
+      LOGGER.error('Failed to configure local networking for ' +
+                   net_module.name + '. Exiting.')
       sys.exit(1)
 
     # Add bridge interface to device bridge
@@ -698,10 +698,10 @@ class NetworkOrchestrator:
       # tr-cti-dhcp (Test Run Container Interface for DHCP container)
       container_intf = 'tr-cti-' + net_module.dir_name
 
-      if not self._ip_ctrl.configure_container_interface(bridge_intf, container_intf,
-                                                "eth1", container_net_ns,
-                                                mac_addr):
-        LOGGER.error('Failed to configure internet networking for ' + net_module.name + '. Exiting.')
+      if not self._ip_ctrl.configure_container_interface(
+          bridge_intf, container_intf, "eth1", container_net_ns, mac_addr):
+        LOGGER.error('Failed to configure internet networking for ' +
+                     net_module.name + '. Exiting.')
         sys.exit(1)
 
       # Attach bridge interface to internet bridge
