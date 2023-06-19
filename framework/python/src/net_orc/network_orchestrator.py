@@ -733,6 +733,9 @@ class NetworkOrchestrator:
     # Clear the virtual network
     self._ovs.restore_net()
 
+    # Clean up any existing network artifacts
+    self._ip_ctrl.clean_all()
+
     # Restart internet interface
     if util.interface_exists(self._int_intf):
       util.run_command('ip link set ' + self._int_intf + ' down')

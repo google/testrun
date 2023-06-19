@@ -118,6 +118,23 @@ class IPControl:
                                  ' ip link set dev ' + interface_name + ' up')
     return success
 
+  def clean_all(self):
+    """Cleanup all existing test run interfaces and namespaces"""
+    
+    # Delete all namesapces that start with tr
+    namespaces = self.get_namespaces()
+    for ns in namespaces:
+      if 'tr' in ns:
+        self.delete_namespace(ns)
+
+    # Delete all namespaces that start with tr
+    links = self.get_links()
+    for link in links:
+      if 'tr' in link:
+        self.delete_link(link)
+
+
+
   def cleanup(self,interface=None,namespace=None):
     """Cleanup existing link and namespace if they still exist"""
     
@@ -131,7 +148,6 @@ class IPControl:
       if self.namespace_exists(namespace):
         ns_clean = self.delete_namespace
     return link_clean and ns_clean
-
 
   def configure_container_interface(self,bridge_intf, container_intf,
                                     namespace_intf, namespace, mac_addr,
