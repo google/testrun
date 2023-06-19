@@ -51,11 +51,9 @@ class IPControl:
     success = util.run_command('ip netns delete ' + interface_name)
     return success  
 
-  def link_exists(self,interface_name):
-    stdout,stderr = util.run_command('ip link show ' + interface_name)
-    if "does not exist" in str(stderr):
-      return False
-    return True
+  def link_exists(self,link_name):
+    links = self.get_links()
+    return link_name in links
 
   def namespace_exists(self,namespace):
     """Check if a namespace already exists"""
@@ -64,6 +62,20 @@ class IPControl:
       return True
     else:
       return False
+
+  def get_links(self):
+    stdout,stderr = util.run_command('ip link list')
+    links = stdout.strip().split('\n')
+    netns_links = []
+    for link in links:
+        match = re.search(r'\d+:\s+(\S+)', link)
+        if match:
+            interface_name = match.group(1)
+            name_match = re.search(r'(.*)@', interface_name)
+            if name_match:
+                interface_name = name_match.group(1)
+            netns_links.append(interface_name.strip())
+    return netns_links
 
   def get_namespaces(self):
     stdout,stderr = util.run_command('ip netns list')
