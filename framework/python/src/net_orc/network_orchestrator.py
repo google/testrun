@@ -25,7 +25,6 @@ import time
 import threading
 import docker
 from docker.types import Mount
-from collections import OrderedDict
 from common import logger
 from common import util
 from net_orc.listener import Listener
@@ -36,8 +35,8 @@ from net_orc.ovs_control import OVSControl
 from net_orc.ip_control import IPControl
 
 LOGGER = logger.get_logger('net_orc')
-CONFIG_FILE = 'conf/system.json'
-EXAMPLE_CONFIG_FILE = 'conf/system.json.example'
+CONFIG_FILE = 'local/system.json'
+EXAMPLE_CONFIG_FILE = 'local/system.json.example'
 RUNTIME_DIR = 'runtime'
 TEST_DIR = 'test'
 MONITOR_PCAP = 'monitor.pcap'
