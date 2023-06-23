@@ -23,7 +23,7 @@ sudo /usr/share/openvswitch/scripts/ovs-ctl start
 # Build Test Container
 sudo docker build ./testing/docker/ci_baseline -t ci1 -f  ./testing/docker/ci_baseline/Dockerfile
 
-cat <<EOF >conf/system.json
+cat <<EOF >local/system.json
 {
   "network": {
     "device_intf": "endev0a",

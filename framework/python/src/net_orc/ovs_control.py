@@ -18,7 +18,7 @@ import os
 from common import logger
 from common import util
 
-CONFIG_FILE = 'conf/system.json'
+CONFIG_FILE = 'local/system.json'
 DEVICE_BRIDGE = 'tr-d'
 INTERNET_BRIDGE = 'tr-c'
 LOGGER = logger.get_logger('ovs_ctrl')

@@ -39,8 +39,8 @@ from net_orc import network_orchestrator as net_orc
 from device import Device
 
 LOGGER = logger.get_logger('test_run')
-CONFIG_FILE = 'conf/system.json'
-EXAMPLE_CONFIG_FILE = 'conf/system.json.example'
+CONFIG_FILE = 'local/system.json'
+EXAMPLE_CONFIG_FILE = 'local/system.json.example'
 RUNTIME = 120
 
 LOCAL_DEVICES_DIR = 'local/devices'
