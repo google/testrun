@@ -11,44 +11,92 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """gRPC Network Service for the DHCP Server network module"""
 import proto.grpc_pb2_grpc as pb2_grpc
 import proto.grpc_pb2 as pb2
 
 from dhcp_config import DHCPConfig
+from dhcp_leases import DHCPLeases
 
 
 class NetworkService(pb2_grpc.NetworkModule):
   """gRPC endpoints for the DHCP Server"""
 
   def __init__(self):
-    self._dhcp_config = DHCPConfig()
+    self._dhcp_config = None
+    self.dhcp_leases = DHCPLeases()
 
-  def GetDHCPRange(self, request, context): # pylint: disable=W0613
+  def _get_dhcp_config(self):
+    if self._dhcp_config is None:
+      self._dhcp_config = DHCPConfig()
+      self._dhcp_config.resolve_config()
+    return self._dhcp_config
+
+  def AddReservedLease(self, request, context):  # pylint: disable=W0613
+    print("Add Reserved Lease Called")
+    try:
+      self.dhcp_leases.add_reserved_host(request.hostname,request.hw_addr,request.ip_addr)
+      print("Reserve Leased Finished")
+    except Exception as e:
+      print("Failed: " + str(e))
+    return pb2.Response(code=200, message='{}')
+
+  def DisableFailover(self, request, contest): # pylint: disable=W0613
+    print("Disabling Failover")
+    try:
+      dhcp_config = self._get_dhcp_config()
+      dhcp_config.disable_failover()
+      dhcp_config.write_config()
+      print("Failover Disabled")
+    except Exception as e:
+      print("Failed: " + str(e))
+    return pb2.Response(code=200, message='{}')
+
+  def EnableFailover(self, request, contest): # pylint: disable=W0613
+    print("Enable Failover")
+    try:
+      dhcp_config.enable_failover()
+      dhcp_config.write_config()
+      print("Failover Enabled")
+    except Exception as e:
+      print("Failed: " + str(e))
+    return pb2.Response(code=200, message='{}')
+
+  def GetIPAddress(self, request, context):  # pylint: disable=W0613
+    """
+      Resolve the current DHCP leased address for the
+      provided MAC address
+    """
+    lease = self.dhcp_leases.get_lease(request.hw_addr)
+    if lease is not None:
+      return pb2.Response(code=200, message=str(lease))
+    else:
+      return pb2.Response(code=200, message='{}')
+
+  def GetDHCPRange(self, request, context):  # pylint: disable=W0613
     """
       Resolve the current DHCP configuration and return
       the first range from the first subnet in the file
     """
-    self._dhcp_config.resolve_config()
-    pool = self._dhcp_config.subnets[0].pools[0]
+    pool = self.get_dhcp_config().subnets[0].pools[0]
     return pb2.DHCPRange(code=200, start=pool.range_start, end=pool.range_end)
 
-  def SetDHCPRange(self, request, context): # pylint: disable=W0613
+  def SetDHCPRange(self, request, context):  # pylint: disable=W0613
     """
       Change DHCP configuration and set the 
       the first range from the first subnet in the configuration
     """
 
-    print('Setting DHCPRange')
-    print('Start: ' + request.start)
-    print('End: ' + request.end)
-    self._dhcp_config.resolve_config()
-    self._dhcp_config.set_range(request.start, request.end, 0, 0)
-    self._dhcp_config.write_config()
-    return pb2.Response(code=200, message='DHCP Range Set')
+    try:
+      dhcp_config = self._get_dhcp_config()
+      dhcp_config.set_range(request.start, request.end, 0, 0)
+      dhcp_config.write_config()
+      return pb2.Response(code=200, message='DHCP Range Set')
+    except Exception as e:
+      print("Failed: " + str(e))
+      return pb2.Response(code=200, message='{}')
 
-  def GetStatus(self, request, context): # pylint: disable=W0613
+  def GetStatus(self, request, context):  # pylint: disable=W0613
     """
       Return the current status of the network module
     """

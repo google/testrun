@@ -35,7 +35,7 @@ try:
   log_level = logging.getLevelName(log_level_str)
 except OSError:
   # TODO: Print out warning that log level is incorrect or missing
-  LOG_LEVEL = _DEFAULT_LEVEL
+  log_level = _DEFAULT_LEVEL
 
 log_format = logging.Formatter(fmt=_LOG_FORMAT, datefmt=_DATE_FORMAT)
 

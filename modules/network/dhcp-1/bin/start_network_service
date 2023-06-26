@@ -6,7 +6,7 @@ DHCP_LOG_FILE=/runtime/network/dhcp1-dhcpd.log
 RA_PID_FILE=/var/run/radvd/radvd.pid
 RA_LOG_FILE=/runtime/network/dhcp1-radvd.log
 
-echo "Starrting Network Service..."
+echo "Starting Network Service..."
 
 #Enable IPv6 Forwarding
 sysctl net.ipv6.conf.all.forwarding=1
@@ -14,6 +14,9 @@ sysctl -p
 
 # Create leases file if needed
 touch /var/lib/dhcp/dhcpd.leases
+
+# Create log file if needed
+touch /var/log/dhcp/dhcpd.log
 
 #Create directory for radvd
 mkdir /var/run/radvd

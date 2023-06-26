@@ -27,43 +27,51 @@ class DHCPConfig:
 
   def __init__(self):
     self._default_lease_time = 300
-    self.subnets = []
+    self._subnets = []
     self._peer = None
+
+  def disable_failover(self):
+    self._peer.disable()
+    for subnet in self._subnets:
+      subnet.disable_peer()
+
+  def enable_failover(self):
+    self._peer.enable()
+    for subnet in self._subnets:
+      subnet.enable_peer()
 
   def write_config(self):
     conf = str(self)
-    print('Writing config: \n' + conf)
     with open(CONFIG_FILE, 'w', encoding='UTF-8') as conf_file:
       conf_file.write(conf)
 
-  def resolve_config(self):
-    with open(CONFIG_FILE, 'r', encoding='UTF-8') as f:
-      conf = f.read()
-    self.resolve_subnets(conf)
-    self._peer = DHCPFailoverPeer(conf)
+  def resolve_config(self,config_file=CONFIG_FILE):
+    try:
+      with open(config_file, 'r', encoding='UTF-8') as f:
+        conf = f.read()
+      self._subnets = self.resolve_subnets(conf)
+      self._peer = DHCPFailoverPeer(conf)
+    except Exception as e:
+      print("Failed to resolve config: " + str(e))
 
   def resolve_subnets(self, conf):
-    self.subnets = []
+    subnets = []
     regex = r'(subnet.*)'
-    subnets = re.findall(regex, conf, re.MULTILINE | re.DOTALL)
-    for subnet in subnets:
+    subnets_conf = re.findall(regex, conf, re.MULTILINE | re.DOTALL)
+    for subnet in subnets_conf:
       dhcp_subnet = DHCPSubnet(subnet)
-      self.subnets.append(dhcp_subnet)
+      subnets.append(dhcp_subnet)
+    return subnets
 
   def set_range(self, start, end, subnet=0, pool=0):
-    print('Setting Range for pool ')
-    print(self.subnets[subnet].pools[pool])
-    self.subnets[subnet].pools[pool].range_start = start
-    self.subnets[subnet].pools[pool].range_end = end
+    # Calculate the subnet from the range
+    octets = start.split('.')
+    octets[-1] = '0'
+    dhcp_subnet = '.'.join(octets)
 
-  # def resolve_settings(self, conf):
-  #   lines = conf.split('\n')
-  #   for line in lines:
-  #     if DEFAULT_LEASE_TIME_KEY in line:
-  #       self._default_lease_time = line.strip().split(
-  #           DEFAULT_LEASE_TIME_KEY)[1].strip().split(';')[0]
-
-  #   self.peer = peer
+    #Update the subnet and range
+    self._subnets[subnet].set_subnet(dhcp_subnet)
+    self._subnets[subnet].pools[pool].set_range(start,end)
 
   def __str__(self):
 
@@ -73,7 +81,7 @@ class DHCPConfig:
                            DEFAULT_LEASE_TIME_KEY=DEFAULT_LEASE_TIME_KEY,
                            DEFAULT_LEASE_TIME=self._default_lease_time)
 
-    config += '\n\n' + str(self.peer)
+    config += '\n\n' + str(self._peer)
     for subnet in self._subnets:
       config += '\n\n' + str(subnet)
     return str(config)
@@ -108,6 +116,7 @@ class DHCPFailoverPeer:
     self.split = None
     self.load_balance_max_seconds = None
     self.peer = None
+    self.enabled = True
 
     self.resolve_peer(config)
 
@@ -123,9 +132,9 @@ class DHCPFailoverPeer:
         {MCLT_KEY} {MCLT};
         {SPLIT_KEY} {SPLIT};
         {LOAD_BALANCE_MAX_SECONDS_KEY} {LOAD_BALANCE_MAX_SECONDS};
-        \r}}"""
+        \r\n}}"""
 
-    return config.format(
+    config = config.format(
         length='multi-line',
         FAILOVER_PEER_KEY=FAILOVER_PEER_KEY,
         FAILOVER_PEER=self.name,
@@ -147,6 +156,20 @@ class DHCPFailoverPeer:
         SPLIT=self.split,
         LOAD_BALANCE_MAX_SECONDS_KEY=LOAD_BALANCE_MAX_SECONDS_KEY,
         LOAD_BALANCE_MAX_SECONDS=self.load_balance_max_seconds)
+
+    if not self.enabled:
+      lines = config.strip().split('\n')
+      for i in range(len(lines)):
+        lines[i] = '#' + lines[i]
+      config = '\n'.join(lines)
+
+    return config
+
+  def disable(self):
+    self.enabled=False
+
+  def enable(self):
+    self.enabled=True  
 
   def resolve_peer(self, conf):
     peer = ''
@@ -187,37 +210,45 @@ class DHCPFailoverPeer:
         break
     self.peer = peer
 
-
+SUBNET_KEY = 'subnet'
 NTP_OPTION_KEY = 'option ntp-servers'
 SUBNET_MASK_OPTION_KEY = 'option subnet-mask'
 BROADCAST_OPTION_KEY = 'option broadcast-address'
 ROUTER_OPTION_KEY = 'option routers'
 DNS_OPTION_KEY = 'option domain-name-servers'
+INTERFACE_KEY = 'interface'
+AUTHORITATIVE_KEY = 'authoritative'
 
 
 class DHCPSubnet:
   """Represents the DHCP Servers subnet configuration"""
 
   def __init__(self, subnet):
+    self._authoritative = False
+    self._subnet = None
     self._ntp_servers = None
     self._subnet_mask = None
     self._broadcast = None
     self._routers = None
     self._dns_servers = None
+    self._interface = None
     self.pools = []
 
     self.resolve_subnet(subnet)
     self.resolve_pools(subnet)
 
   def __str__(self):
-    config = """subnet 10.10.10.0 netmask {SUBNET_MASK_OPTION} {{
+    config = """subnet {SUBNET_OPTION} netmask {SUBNET_MASK_OPTION} {{
             \r\t{NTP_OPTION_KEY} {NTP_OPTION};
             \r\t{SUBNET_MASK_OPTION_KEY} {SUBNET_MASK_OPTION};
             \r\t{BROADCAST_OPTION_KEY} {BROADCAST_OPTION};
             \r\t{ROUTER_OPTION_KEY} {ROUTER_OPTION};
-            \r\t{DNS_OPTION_KEY} {DNS_OPTION};"""
+            \r\t{DNS_OPTION_KEY} {DNS_OPTION};
+            \r\t{INTERFACE_KEY} {INTERFACE_OPTION};
+            \r\tauthoritative;"""
 
     config = config.format(length='multi-line',
+                           SUBNET_OPTION =self._subnet,
                            NTP_OPTION_KEY=NTP_OPTION_KEY,
                            NTP_OPTION=self._ntp_servers,
                            SUBNET_MASK_OPTION_KEY=SUBNET_MASK_OPTION_KEY,
@@ -227,17 +258,46 @@ class DHCPSubnet:
                            ROUTER_OPTION_KEY=ROUTER_OPTION_KEY,
                            ROUTER_OPTION=self._routers,
                            DNS_OPTION_KEY=DNS_OPTION_KEY,
-                           DNS_OPTION=self._dns_servers)
+                           DNS_OPTION=self._dns_servers,
+                           INTERFACE_KEY=INTERFACE_KEY,
+                           INTERFACE_OPTION=self._interface)
+
+    if not self._authoritative:
+      config = config.replace(AUTHORITATIVE_KEY,'#'+AUTHORITATIVE_KEY)
+
     for pool in self.pools:
       config += '\n\t' + str(pool)
 
     config += '\n\r}'
     return config
 
+  def disable_peer(self):
+    for pool in self.pools:
+      pool.disable_peer()
+
+  def enable_peer(self):
+    for pool in self.pools:
+      pool.enable_peer()
+
+  def set_subnet(self,subnet,netmask=None):
+    if netmask is None:
+      netmask = '255.255.255.0'
+    self._subnet = subnet
+    self._subnet_mask = netmask
+
+    # Calculate the broadcast from the subnet
+    octets = subnet.split('.')
+    octets[-1] = '255'
+    dhcp_broadcast = '.'.join(octets)
+
+    self._broadcast = dhcp_broadcast
+
   def resolve_subnet(self, subnet):
     subnet_parts = subnet.split('\n')
     for part in subnet_parts:
-      if NTP_OPTION_KEY in part:
+      if part.strip().startswith(SUBNET_KEY):
+        self._subnet = part.strip().split()[1]
+      elif NTP_OPTION_KEY in part:
         self._ntp_servers = part.strip().split(NTP_OPTION_KEY)[1].strip().split(
             ';')[0]
       elif SUBNET_MASK_OPTION_KEY in part:
@@ -252,6 +312,11 @@ class DHCPSubnet:
       elif DNS_OPTION_KEY in part:
         self._dns_servers = part.strip().split(DNS_OPTION_KEY)[1].strip().split(
             ';')[0]
+      elif INTERFACE_KEY in part:
+        self._interface = part.strip().split(INTERFACE_KEY)[1].strip().split(
+            ';')[0]
+      elif AUTHORITATIVE_KEY in part:
+        self._authoritative = True
 
   def resolve_pools(self, subnet):
     regex = r'(pool.*)\}'
@@ -273,6 +338,7 @@ class DHCPPool:
     self.range_start = None
     self.range_end = None
     self.resolve_pool(pool)
+    self._peer_enabled = True
 
   def __str__(self):
 
@@ -281,7 +347,7 @@ class DHCPPool:
         \r\t\t{RANGE_KEY} {RANGE_START} {RANGE_END};
         \r\t}}"""
 
-    return config.format(
+    config = config.format(
         length='multi-line',
         FAILOVER_KEY=FAILOVER_KEY,
         FAILOVER=self.failover_peer,
@@ -289,6 +355,20 @@ class DHCPPool:
         RANGE_START=self.range_start,
         RANGE_END=self.range_end,
     )
+
+    if not self._peer_enabled:
+      config = config.replace(FAILOVER_KEY,'#'+FAILOVER_KEY)
+    return config
+
+  def disable_peer(self):
+    self._peer_enabled = False
+
+  def enable_peer(self):
+    self._peer_enabled = True
+
+  def set_range(self,start,end):
+    self.range_start=start
+    self.range_end=end
 
   def resolve_pool(self, pool):
     pool_parts = pool.split('\n')

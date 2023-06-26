@@ -12,6 +12,12 @@ service NetworkModule {
 
     rpc SetLeaseAddress(SetLeaseAddressRequest) returns (Response) {};
 
+    rpc AddReservedLease(AddReservedLeaseRequest) returns (Response) {};
+
+    rpc DisableFailover(DisableFailoverRequest) returns (Response) {};
+
+    rpc EnableFailover(EnableFailoverRequest) returns (Response) {};
+
 }
 
 message Response {
@@ -25,11 +31,23 @@ message DHCPRange {
     string end = 3;
 }
 
+message AddReservedLeaseRequest {
+    string hostname = 1;
+    string hw_addr = 2;
+    string ip_addr = 3;   
+}
+
 message GetDHCPRangeRequest {}
 
-message GetIPAddressRequest {}
+message GetIPAddressRequest {
+    string hw_addr = 1;   
+}
 
 message GetStatusRequest {}
+
+message DisableFailoverRequest {}
+
+message EnableFailoverRequest {}
 
 message SetLeaseAddressRequest {
     string ipAddress = 1;

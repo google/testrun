@@ -6,7 +6,7 @@ DHCP_LOG_FILE=/runtime/network/dhcp2-dhcpd.log
 RA_PID_FILE=/var/run/radvd/radvd.pid
 RA_LOG_FILE=/runtime/network/dhcp2-radvd.log
 
-echo "Starrting Network Service..."
+echo "Starting Network Service..."
 
 #Enable IPv6 Forwarding
 sysctl net.ipv6.conf.all.forwarding=1
