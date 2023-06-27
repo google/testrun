@@ -99,14 +99,14 @@ class TestOrchestrator:
             self._root_path, "runtime/test/" +
             device.mac_addr.replace(":", "") + "/" + module.name)
         results_file = f"{container_runtime_dir}/{module.name}-result.json"
-        #try:
-        with open(results_file, "r", encoding="utf-8-sig") as f:
-          module_results = json.load(f)
-          results[module.name] = module_results
-        #except (FileNotFoundError, PermissionError,
-                #json.JSONDecodeError) as results_error:
-          #LOGGER.error("Error occured whilst obbtaining results for module " + module.name)
-          #LOGGER.debug(results_error)
+        try:
+          with open(results_file, "r", encoding="utf-8-sig") as f:
+            module_results = json.load(f)
+            results[module.name] = module_results
+        except (FileNotFoundError, PermissionError,
+                json.JSONDecodeError) as results_error:
+          LOGGER.error("Error occured whilst obbtaining results for module " + module.name)
+          LOGGER.debug(results_error)
 
     out_file = os.path.join(
         self._root_path,
