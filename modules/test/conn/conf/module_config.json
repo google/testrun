@@ -1,0 +1,37 @@
+{
+  "config": {
+    "meta": {
+      "name": "connection",
+      "display_name": "Connection",
+      "description": "Connection tests"
+    },
+    "network": true,
+    "docker": {
+      "depends_on": "base",
+      "enable_container": true,
+      "timeout": 30
+    },
+    "tests": [
+      {
+        "name": "connection.mac_address",
+        "description": "Check and note device physical address.",
+        "expected_behavior": "N/A"
+      },
+      {
+        "name": "connection.mac_oui",
+        "description": "The device under test hs a MAC address prefix that is registered against a known manufacturer.",
+        "expected_behavior": "The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database."
+      },
+      {
+        "name": "connection.single_ip",
+        "description": "The network switch port connected to the device reports only one IP address for the device under test.",
+        "expected_behavior": "The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible."
+      },
+      {
+        "name": "connection.target_ping",
+        "description": "The device under test responds to an ICMP echo (ping) request.",
+        "expected_behavior": "The device under test responds to an ICMP echo (ping) request."
+      }
+    ]
+  }
+}
