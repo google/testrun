@@ -255,6 +255,8 @@ class TestOrchestrator:
   def _load_test_module(self, module_dir):
     """Import module configuration from module_config.json."""
 
+    LOGGER.debug("Loading test module " + module_dir)
+
     modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
 
     # Load basic module information
@@ -296,6 +298,7 @@ class TestOrchestrator:
 
   def _build_test_module(self, module):
     LOGGER.debug("Building docker image for module " + module.dir_name)
+
     client = docker.from_env()
     try:
       client.images.build(

@@ -39,7 +39,7 @@ def run_command(cmd, output=True):
 
   if process.returncode != 0 and output:
     err_msg = f'{stderr.strip()}. Code: {process.returncode}'
-    LOGGER.error('Command Failed: ' + cmd)
+    LOGGER.error('Command failed: ' + cmd)
     LOGGER.error('Error: ' + err_msg)
   else:
     success = True
@@ -56,25 +56,25 @@ def prettify(mac_string):
   return ':'.join([f'{ord(b):02x}' for b in mac_string])
 
 def get_host_user():
-    user = get_os_user()
+  user = get_os_user()
 
-    # If primary method failed, try secondary
-    if user is None:
-      user = get_user()
+  # If primary method failed, try secondary
+  if user is None:
+    user = get_user()
 
-    return user
+  return user
 
 def get_os_user():
-    user = None
-    try:
-      user = os.getlogin()
-    except OSError as e:
-      # Handle the OSError exception
-      LOGGER.error(e)
-    except Exception as e:
-      # Catch any other unexpected exceptions
-      LOGGER.error(e)
-    return user
+  user = None
+  try:
+    user = os.getlogin()
+  except OSError as e:
+    # Handle the OSError exception
+    LOGGER.error('An OSError exception occured:', e)
+  except Exception as e:
+    # Catch any other unexpected exceptions
+    LOGGER.error('An exception occured:', e)
+  return user
 
 def get_user():
   user = None
