@@ -61,7 +61,6 @@ def test_dns_server_resolves(container_data):
   assert re.match(r'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}',
     container_data['dns_response'])
 
-@pytest.mark.skip(reason='requires internet')
 def test_validator_results_compliant(validator_results):
   results = [True if x['result'] == 'compliant' else False
     for x in validator_results['results']]
