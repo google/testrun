@@ -68,12 +68,12 @@ def get_os_user():
   user = None
   try:
     user = os.getlogin()
-  except OSError as e:
+  except OSError:
     # Handle the OSError exception
-    LOGGER.error('An OSError exception occured:', e)
-  except Exception as e:
+    LOGGER.error('An OS error occured whilst calling os.getlogin()')
+  except Exception:
     # Catch any other unexpected exceptions
-    LOGGER.error('An exception occured:', e)
+    LOGGER.error('An unknown exception occured whilst calling os.getlogin()')
   return user
 
 def get_user():
