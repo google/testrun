@@ -25,6 +25,8 @@ DHCP_SERVER_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 
+TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
+
 
 class ConnectionModule(TestModule):
   """Connection Test module"""
@@ -73,7 +75,8 @@ class ConnectionModule(TestModule):
       # Option[1] = message-type, option 3 = DHCPREQUEST
         if DHCP in packet and packet[DHCP].options[0][1] == 3: 
             mac_address = packet[Ether].src
-            mac_addresses.add(mac_address.upper())
+            if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
+              mac_addresses.add(mac_address.upper())
 
     # Check if the device mac address is in the list of DHCPREQUESTs
     result = self._device_mac.upper() in mac_addresses
