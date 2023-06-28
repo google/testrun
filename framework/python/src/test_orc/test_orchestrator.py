@@ -79,9 +79,6 @@ class TestOrchestrator:
       self._run_test_module(module, device)
     LOGGER.info("All tests complete")
 
-    # Wait for all containers to stop (this should actually check in future)
-    time.sleep(5)
-
     self._generate_results(device)
     self._test_in_progress = False
 
@@ -90,7 +87,7 @@ class TestOrchestrator:
     results["device"] = {}
     if device.manufacturer is not None:
       results["device"]["manufacturer"] = device.manufacturer
-    if device.manufacturer is not None:
+    if device.model is not None:
       results["device"]["model"] = device.model
     results["device"]["mac_addr"] = device.mac_addr
     for module in self._test_modules:
