@@ -18,6 +18,8 @@ import proto.grpc_pb2 as pb2
 from dhcp_config import DHCPConfig
 from dhcp_leases import DHCPLeases
 
+import traceback
+
 
 class NetworkService(pb2_grpc.NetworkModule):
   """gRPC endpoints for the DHCP Server"""
@@ -35,10 +37,25 @@ class NetworkService(pb2_grpc.NetworkModule):
   def AddReservedLease(self, request, context):  # pylint: disable=W0613
     print("Add Reserved Lease Called")
     try:
-      self.dhcp_leases.add_reserved_host(request.hostname,request.hw_addr,request.ip_addr)
-      print("Reserve Leased Finished")
+      dhcp_config = self._get_dhcp_config()
+      dhcp_config.add_reserved_host(request.hostname,request.hw_addr,request.ip_addr)
+      dhcp_config.write_config()
+      print("Reserve Leased Added")
     except Exception as e:
       print("Failed: " + str(e))
+      traceback.print_exc()
+    return pb2.Response(code=200, message='{}')
+
+    def DeleteReservedLease(self, request, context):  # pylint: disable=W0613
+    print("Delete Reserved Lease Called")
+    try:
+      dhcp_config = self._get_dhcp_config()
+      dhcp_config.delete_reserved_host(request.hw_addr)
+      dhcp_config.write_config()
+      print("Reserve Leased Deleted")
+    except Exception as e:
+      print("Failed: " + str(e))
+      traceback.print_exc()
     return pb2.Response(code=200, message='{}')
 
   def DisableFailover(self, request, contest): # pylint: disable=W0613
@@ -55,6 +72,7 @@ class NetworkService(pb2_grpc.NetworkModule):
   def EnableFailover(self, request, contest): # pylint: disable=W0613
     print("Enable Failover")
     try:
+      dhcp_config = self._get_dhcp_config()
       dhcp_config.enable_failover()
       dhcp_config.write_config()
       print("Failover Enabled")

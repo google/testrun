@@ -15,11 +15,29 @@
 """Contains all the necessary classes to maintain the 
 DHCP server's configuration"""
 import re
+import os
+import sys
+
+# Add the parent directory to sys.path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+
+import common.logger as logger
+
+LOG_NAME = "dhcp_config"
+LOGGER = None
 
 CONFIG_FILE = '/etc/dhcp/dhcpd.conf'
 CONFIG_FILE_TEST = 'network/modules/dhcp-1/conf/dhcpd.conf'
 
 DEFAULT_LEASE_TIME_KEY = 'default-lease-time'
+
+RESERVED_HOST_TEMPLATE = """
+host {HOSTNAME}{{
+  hardware ethernet {HW_ADDR};
+  fixed-address {RESERVED_IP};
+}}"""
 
 
 class DHCPConfig:
@@ -29,6 +47,18 @@ class DHCPConfig:
     self._default_lease_time = 300
     self._subnets = []
     self._peer = None
+    self._reserved_hosts = []
+    global LOGGER
+    LOGGER = logger.get_logger(LOG_NAME, 'dhcp-1')
+
+  def add_reserved_host(self, hostname, hw_addr, ip_addr):
+    host = DHCPReservedHost(host=hostname,hw_addr=hw_addr,fixed_addr=ip_addr)
+    self._reserved_hosts.append(host)
+
+  def delete_reserved_host(self, hw_addr):
+    for host in self._reserved_hosts:
+      if hw_addr == host._hw_addr:
+        self._reserved_hosts.remove(host)
 
   def disable_failover(self):
     self._peer.disable()
@@ -40,17 +70,40 @@ class DHCPConfig:
     for subnet in self._subnets:
       subnet.enable_peer()
 
-  def write_config(self):
-    conf = str(self)
-    with open(CONFIG_FILE, 'w', encoding='UTF-8') as conf_file:
-      conf_file.write(conf)
+  def get_reserved_host(self,hw_addr):
+    for host in self._reserved_hosts:
+      if hw_addr == host._hw_addr:
+        return host
 
-  def resolve_config(self,config_file=CONFIG_FILE):
+  def write_config(self,config=None):
+    if config is None:
+      conf = str(self)
+      with open(CONFIG_FILE, 'w', encoding='UTF-8') as conf_file:
+        conf_file.write(conf)
+    else:
+      with open(CONFIG_FILE, 'w', encoding='UTF-8') as conf_file:
+        conf_file.write(config)
+
+  def _get_config(self, config_file=CONFIG_FILE):
+    content = None
+    with open(config_file, "r") as f:
+      content = f.read()
+    return content
+
+  def make(self,conf):
     try:
-      with open(config_file, 'r', encoding='UTF-8') as f:
-        conf = f.read()
       self._subnets = self.resolve_subnets(conf)
       self._peer = DHCPFailoverPeer(conf)
+      self._reserved_hosts = self.resolve_reserved_hosts(conf)
+    except Exception as e:
+      print("Failed to make DHCPConfig: " + str(e))
+
+  def resolve_config(self, config_file=CONFIG_FILE):
+    try:
+      conf = self._get_config(config_file)
+      self._subnets = self.resolve_subnets(conf)
+      self._peer = DHCPFailoverPeer(conf)
+      self._reserved_hosts = self.resolve_reserved_hosts(conf)
     except Exception as e:
       print("Failed to resolve config: " + str(e))
 
@@ -63,6 +116,20 @@ class DHCPConfig:
       subnets.append(dhcp_subnet)
     return subnets
 
+  def resolve_reserved_hosts(self,conf):
+    hosts = []
+    host_start = 0
+    while True:
+      host_start = conf.find('host',host_start)
+      if host_start < 0:
+        break
+      else:
+        host_end = conf.find('}',host_start)
+      host = DHCPReservedHost(config=conf[host_start:host_end+1])
+      hosts.append(host)
+      host_start = host_end+1
+    return hosts
+
   def set_range(self, start, end, subnet=0, pool=0):
     # Calculate the subnet from the range
     octets = start.split('.')
@@ -71,19 +138,27 @@ class DHCPConfig:
 
     #Update the subnet and range
     self._subnets[subnet].set_subnet(dhcp_subnet)
-    self._subnets[subnet].pools[pool].set_range(start,end)
+    self._subnets[subnet].pools[pool].set_range(start, end)
 
   def __str__(self):
 
-    config = """\r{DEFAULT_LEASE_TIME_KEY} {DEFAULT_LEASE_TIME};"""
-
+    # Encode the top level config options
+    config = """{DEFAULT_LEASE_TIME_KEY} {DEFAULT_LEASE_TIME};"""
     config = config.format(length='multi-line',
                            DEFAULT_LEASE_TIME_KEY=DEFAULT_LEASE_TIME_KEY,
                            DEFAULT_LEASE_TIME=self._default_lease_time)
 
+    # Encode the failover peer
     config += '\n\n' + str(self._peer)
+
+    # Encode the subnets
     for subnet in self._subnets:
       config += '\n\n' + str(subnet)
+
+    # Encode the reserved hosts
+    for host in self._reserved_hosts:
+      config += '\n' + str(host)
+
     return str(config)
 
 
@@ -132,7 +207,7 @@ class DHCPFailoverPeer:
         {MCLT_KEY} {MCLT};
         {SPLIT_KEY} {SPLIT};
         {LOAD_BALANCE_MAX_SECONDS_KEY} {LOAD_BALANCE_MAX_SECONDS};
-        \r\n}}"""
+        \r}}"""
 
     config = config.format(
         length='multi-line',
@@ -166,10 +241,10 @@ class DHCPFailoverPeer:
     return config
 
   def disable(self):
-    self.enabled=False
+    self.enabled = False
 
   def enable(self):
-    self.enabled=True  
+    self.enabled = True
 
   def resolve_peer(self, conf):
     peer = ''
@@ -210,6 +285,7 @@ class DHCPFailoverPeer:
         break
     self.peer = peer
 
+
 SUBNET_KEY = 'subnet'
 NTP_OPTION_KEY = 'option ntp-servers'
 SUBNET_MASK_OPTION_KEY = 'option subnet-mask'
@@ -248,7 +324,7 @@ class DHCPSubnet:
             \r\tauthoritative;"""
 
     config = config.format(length='multi-line',
-                           SUBNET_OPTION =self._subnet,
+                           SUBNET_OPTION=self._subnet,
                            NTP_OPTION_KEY=NTP_OPTION_KEY,
                            NTP_OPTION=self._ntp_servers,
                            SUBNET_MASK_OPTION_KEY=SUBNET_MASK_OPTION_KEY,
@@ -263,12 +339,12 @@ class DHCPSubnet:
                            INTERFACE_OPTION=self._interface)
 
     if not self._authoritative:
-      config = config.replace(AUTHORITATIVE_KEY,'#'+AUTHORITATIVE_KEY)
+      config = config.replace(AUTHORITATIVE_KEY, '#' + AUTHORITATIVE_KEY)
 
     for pool in self.pools:
       config += '\n\t' + str(pool)
 
-    config += '\n\r}'
+    config += '\n}'
     return config
 
   def disable_peer(self):
@@ -279,7 +355,7 @@ class DHCPSubnet:
     for pool in self.pools:
       pool.enable_peer()
 
-  def set_subnet(self,subnet,netmask=None):
+  def set_subnet(self, subnet, netmask=None):
     if netmask is None:
       netmask = '255.255.255.0'
     self._subnet = subnet
@@ -357,7 +433,8 @@ class DHCPPool:
     )
 
     if not self._peer_enabled:
-      config = config.replace(FAILOVER_KEY,'#'+FAILOVER_KEY)
+      config = config.replace(FAILOVER_KEY, '#' + FAILOVER_KEY)
+      
     return config
 
   def disable_peer(self):
@@ -366,13 +443,12 @@ class DHCPPool:
   def enable_peer(self):
     self._peer_enabled = True
 
-  def set_range(self,start,end):
-    self.range_start=start
-    self.range_end=end
+  def set_range(self, start, end):
+    self.range_start = start
+    self.range_end = end
 
   def resolve_pool(self, pool):
     pool_parts = pool.split('\n')
-    # pool_parts = pool.split("\n")
     for part in pool_parts:
       if FAILOVER_KEY in part:
         self.failover_peer = part.strip().split(FAILOVER_KEY)[1].strip().split(
@@ -381,3 +457,50 @@ class DHCPPool:
         pool_range = part.strip().split(RANGE_KEY)[1].strip().split(';')[0]
         self.range_start = pool_range.split(' ')[0].strip()
         self.range_end = pool_range.split(' ')[1].strip()
+
+
+HOST_KEY = 'host'
+HARDWARE_KEY = 'hardware ethernet'
+FIXED_ADDRESS_KEY = 'fixed-address'
+
+class DHCPReservedHost:
+  """Represents a DHCP Servers subnet pool configuration"""
+
+  def __init__(self, host=None,hw_addr=None,fixed_addr=None,config=None):
+    if config is None:
+      self._host = host
+      self._hw_addr = hw_addr
+      self._fixed_addr = fixed_addr
+    else:
+      self.resolve_host(config)
+
+  def __str__(self):
+
+    config = """{HOST_KEY} {HOSTNAME} {{
+    \r\t{HARDWARE_KEY} {HW_ADDR};
+    \r\t{FIXED_ADDRESS_KEY} {RESERVED_IP};
+    \r}}"""
+
+    config = config.format(
+        length='multi-line',
+        HOST_KEY=HOST_KEY,
+        HOSTNAME=self._host,
+        HARDWARE_KEY=HARDWARE_KEY,
+        HW_ADDR=self._hw_addr,
+        FIXED_ADDRESS_KEY=FIXED_ADDRESS_KEY,
+        RESERVED_IP=self._fixed_addr,
+    )
+    return config
+
+  def resolve_host(self, reserved_host):
+    host_parts = reserved_host.split('\n')
+    for part in host_parts:
+      if HOST_KEY in part:
+        self._host = part.strip().split(HOST_KEY)[1].strip().split(
+            '{')[0]
+      elif HARDWARE_KEY in part:
+        self._hw_addr = part.strip().split(HARDWARE_KEY)[1].strip().split(
+          ';')[0]
+      elif FIXED_ADDRESS_KEY in part:
+        self._fixed_addr = part.strip().split(FIXED_ADDRESS_KEY)[1].strip().split(
+          ';')[0]
