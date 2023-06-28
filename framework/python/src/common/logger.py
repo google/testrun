@@ -21,7 +21,7 @@ LOGGERS = {}
 _LOG_FORMAT = '%(asctime)s %(name)-8s %(levelname)-7s %(message)s'
 _DATE_FORMAT = '%b %02d %H:%M:%S'
 _DEFAULT_LEVEL = logging.INFO
-_CONF_DIR = 'conf'
+_CONF_DIR = 'local'
 _CONF_FILE_NAME = 'system.json'
 
 # Set log level

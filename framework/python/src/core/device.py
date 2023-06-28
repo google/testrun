@@ -22,6 +22,6 @@ from dataclasses import dataclass
 class Device(NetworkDevice):
   """Represents a physical device and it's configuration."""
 
-  make: str = None
+  manufacturer: str = None
   model: str = None
   test_modules: str = None

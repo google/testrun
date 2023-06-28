@@ -21,8 +21,6 @@ from scapy.all import sniff, wrpcap, BOOTP
 import shutil
 import subprocess
 import sys
-import time
-import threading
 import docker
 from docker.types import Mount
 from common import logger
@@ -41,7 +39,6 @@ RUNTIME_DIR = 'runtime'
 TEST_DIR = 'test'
 MONITOR_PCAP = 'monitor.pcap'
 NET_DIR = 'runtime/network'
-#NETWORK_MODULES_DIR = 'network/modules'
 NETWORK_MODULES_DIR = 'modules/network'
 NETWORK_MODULE_METADATA = 'conf/module_config.json'
 DEVICE_BRIDGE = 'tr-d'
@@ -56,21 +53,18 @@ DEFAULT_STARTUP_TIMEOUT = 60
 DEFAULT_RUNTIME = 1200
 DEFAULT_MONITOR_PERIOD = 300
 
-RUNTIME = 1500
-
-
 class NetworkOrchestrator:
   """Manage and controls a virtual testing network."""
 
   def __init__(self,
                config_file=CONFIG_FILE,
                validate=True,
-               async_monitor=False,
                single_intf=False):
 
     self._runtime = DEFAULT_RUNTIME
     self._startup_timeout = DEFAULT_STARTUP_TIMEOUT
     self._monitor_period = DEFAULT_MONITOR_PERIOD
+    self._monitor_in_progress = False
 
     self._int_intf = None
     self._dev_intf = None
@@ -80,7 +74,6 @@ class NetworkOrchestrator:
     self._net_modules = []
     self._devices = []
     self.validate = validate
-    self.async_monitor = async_monitor
 
     self._path = os.path.dirname(
         os.path.dirname(
@@ -99,7 +92,7 @@ class NetworkOrchestrator:
 
     LOGGER.debug('Starting network orchestrator')
 
-    self._host_user = self._get_host_user()
+    self._host_user = util.get_host_user()
 
     # Get all components ready
     self.load_network_modules()
@@ -108,14 +101,6 @@ class NetworkOrchestrator:
     self.stop(kill=True)
 
     self.start_network()
-
-    if self.async_monitor:
-      # Run the monitor method asynchronously to keep this method non-blocking
-      self._monitor_thread = threading.Thread(target=self.monitor_network)
-      self._monitor_thread.daemon = True
-      self._monitor_thread.start()
-    else:
-      self.monitor_network()
 
   def start_network(self):
     """Start the virtual testing network."""
@@ -130,7 +115,7 @@ class NetworkOrchestrator:
       self.validator.start()
 
     # Get network ready (via Network orchestrator)
-    LOGGER.info('Network is ready.')
+    LOGGER.debug('Network is ready')
 
   def start_listener(self):
     self.listener.start_listener()
@@ -150,13 +135,6 @@ class NetworkOrchestrator:
     # Shutdown network
     self.stop_networking_services(kill=kill)
     self.restore_net()
-
-  def monitor_network(self):
-    # TODO: This time should be configurable (How long to hold before exiting,
-    # this could be infinite too)
-    time.sleep(RUNTIME)
-
-    self.stop()
 
   def load_config(self, config_file=None):
     if config_file is None:
@@ -178,8 +156,11 @@ class NetworkOrchestrator:
 
   def _device_discovered(self, mac_addr):
 
+    self._monitor_in_progress = True
+
     LOGGER.debug(
         f'Discovered device {mac_addr}. Waiting for device to obtain IP')
+
     device = self._get_device(mac_addr=mac_addr)
 
     device_runtime_dir = os.path.join(RUNTIME_DIR, TEST_DIR,
@@ -204,6 +185,9 @@ class NetworkOrchestrator:
 
     self._start_device_monitor(device)
 
+  def monitor_in_progress(self):
+    return self._monitor_in_progress
+
   def _device_has_ip(self, packet):
     device = self._get_device(mac_addr=packet.src)
     if device is None or device.ip_addr is None:
@@ -225,6 +209,8 @@ class NetworkOrchestrator:
     wrpcap(
         os.path.join(RUNTIME_DIR, TEST_DIR, device.mac_addr.replace(':', ''),
                      'monitor.pcap'), packet_capture)
+
+    self._monitor_in_progress = False
     self.listener.call_callback(NetworkEvent.DEVICE_STABLE, device.mac_addr)
 
   def _get_device(self, mac_addr):
@@ -489,46 +475,6 @@ class NetworkOrchestrator:
 
     if network != 'host':
       self._attach_service_to_network(net_module)
-
-  def _get_host_user(self):
-    user = self._get_os_user()
-
-    # If primary method failed, try secondary
-    if user is None:
-      user = self._get_user()
-
-    LOGGER.debug("Network orchestrator host user: " + user)
-    return user
-
-  def _get_os_user(self):
-    user = None
-    try:
-      user = os.getlogin()
-    except OSError as e:
-      # Handle the OSError exception
-      LOGGER.error("An OS error occurred while retrieving the login name.")
-    except Exception as e:
-      # Catch any other unexpected exceptions
-      LOGGER.error("An exception occurred:", e)
-    return user
-
-  def _get_user(self):
-    user = None
-    try:
-      user = getpass.getuser()
-    except (KeyError, ImportError, ModuleNotFoundError, OSError) as e:
-      # Handle specific exceptions individually
-      if isinstance(e, KeyError):
-        LOGGER.error("USER environment variable not set or unavailable.")
-      elif isinstance(e, ImportError):
-        LOGGER.error("Unable to import the getpass module.")
-      elif isinstance(e, ModuleNotFoundError):
-        LOGGER.error("The getpass module was not found.")
-      elif isinstance(e, OSError):
-        LOGGER.error("An OS error occurred while retrieving the username.")
-      else:
-        LOGGER.error("An exception occurred:", e)
-    return user
 
   def _stop_service_module(self, net_module, kill=False):
     LOGGER.debug('Stopping Service container ' + net_module.container_name)
