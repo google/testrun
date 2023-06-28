@@ -153,13 +153,17 @@ class NmapModule(TestModule):
       unknown_service = {port_style:{unallowed_port['port']:result}}
       tests[service_name]=unknown_service
 
-  def _check_scan_results(self, test_config,scan_results):
-    port_config = {}
-    if "tcp_ports" in test_config:
-      port_config.update(test_config["tcp_ports"])
-    elif "udp_ports" in test_config:
-      port_config.update(test_config["udp_ports"])
 
+  def _check_scan_results(self,test_config,scan_results):
+    if "tcp_ports" in test_config:
+      port_config = test_config["tcp_ports"]
+      self._check_scan_result(port_config=port_config,scan_results=scan_results)
+    if "udp_ports" in test_config:
+      port_config = test_config["udp_ports"]
+      self._check_scan_result(port_config=port_config,scan_results=scan_results)
+      
+
+  def _check_scan_result(self,port_config,scan_results):
     if port_config is not None:
       for port, config in port_config.items():
         result = None
