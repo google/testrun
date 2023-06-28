@@ -59,7 +59,7 @@ class TestOrchestrator:
     LOGGER.debug("Starting test orchestrator")
 
     # Setup the output directory
-    self._host_user = self._get_host_user()
+    self._host_user = util.get_host_user()
     os.makedirs(RUNTIME_DIR, exist_ok=True)
     util.run_command(f'chown -R {self._host_user} {RUNTIME_DIR}')
 
@@ -78,19 +78,16 @@ class TestOrchestrator:
     for module in self._test_modules:
       self._run_test_module(module, device)
     LOGGER.info("All tests complete")
-    LOGGER.info(
-      f"""Completed running test \
-modules on device with mac \
-addr {device.mac_addr}""")
+
     self._generate_results(device)
     self._test_in_progress = False
 
   def _generate_results(self, device):
     results = {}
     results["device"] = {}
-    if device.make is not None:
-      results["device"]["make"] = device.make
-    if device.make is not None:
+    if device.manufacturer is not None:
+      results["device"]["manufacturer"] = device.manufacturer
+    if device.model is not None:
       results["device"]["model"] = device.model
     results["device"]["mac_addr"] = device.mac_addr
     for module in self._test_modules:
@@ -100,12 +97,12 @@ addr {device.mac_addr}""")
             device.mac_addr.replace(":", "") + "/" + module.name)
         results_file = f"{container_runtime_dir}/{module.name}-result.json"
         try:
-          with open(results_file, "r", encoding="UTF-8") as f:
+          with open(results_file, "r", encoding="utf-8-sig") as f:
             module_results = json.load(f)
             results[module.name] = module_results
         except (FileNotFoundError, PermissionError,
                 json.JSONDecodeError) as results_error:
-          LOGGER.error("Error occured whilst running module " + module.name)
+          LOGGER.error("Error occured whilst obbtaining results for module " + module.name)
           LOGGER.debug(results_error)
 
     out_file = os.path.join(
@@ -237,47 +234,6 @@ addr {device.mac_addr}""")
       LOGGER.error(error)
     return container
 
-  def _get_host_user(self):
-    user = self._get_os_user()
-    
-    # If primary method failed, try secondary
-    if user is None:
-      user = self._get_user()
-
-    LOGGER.debug("Test orchestrator host user: " + user)
-    return user
-
-  def _get_os_user(self):
-    user = None
-    try:
-      user = os.getlogin()
-    except OSError as e:
-      # Handle the OSError exception
-      LOGGER.error("An OS error occurred while retrieving the login name.")
-    except Exception as e:
-      # Catch any other unexpected exceptions
-       LOGGER.error("An exception occurred:", e)
-    return user
-
-  def _get_user(self):
-    user = None
-    try:
-      user = getpass.getuser()
-    except (KeyError, ImportError, ModuleNotFoundError, OSError) as e:
-      # Handle specific exceptions individually
-      if isinstance(e, KeyError):
-          LOGGER.error("USER environment variable not set or unavailable.")
-      elif isinstance(e, ImportError):
-          LOGGER.error("Unable to import the getpass module.")
-      elif isinstance(e, ModuleNotFoundError):
-          LOGGER.error("The getpass module was not found.")
-      elif isinstance(e, OSError):
-          LOGGER.error("An OS error occurred while retrieving the username.")
-      else:
-          LOGGER.error("An exception occurred:", e)
-    return user
-
-
   def _load_test_modules(self):
     """Load network modules from module_config.json."""
     LOGGER.debug("Loading test modules from /" + TEST_MODULES_DIR)
@@ -295,6 +251,8 @@ addr {device.mac_addr}""")
 
   def _load_test_module(self, module_dir):
     """Import module configuration from module_config.json."""
+
+    LOGGER.debug("Loading test module " + module_dir)
 
     modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
 
@@ -337,6 +295,7 @@ addr {device.mac_addr}""")
 
   def _build_test_module(self, module):
     LOGGER.debug("Building docker image for module " + module.dir_name)
+
     client = docker.from_env()
     try:
       client.images.build(

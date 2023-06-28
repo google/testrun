@@ -65,7 +65,6 @@ class TestModule:
       return module_tests
 
   def _get_device_test_module(self):
-    # TODO: Make DEVICE_TEST_MODULES a static string
     if 'DEVICE_TEST_MODULES' in os.environ:
       test_modules = json.loads(os.environ['DEVICE_TEST_MODULES'])
       if self._module_name in test_modules:
