@@ -1,5 +1,5 @@
 {
-  "make": "Manufacturer X",
+  "manufacturer": "Manufacturer X",
   "model": "Device X",
   "mac_addr": "aa:bb:cc:dd:ee:ff",
   "test_modules": {
@@ -15,9 +15,9 @@
       }
     },
     "baseline": {
-      "enabled": true,
+      "enabled": false,
       "tests": {
-        "baseline.passe": {
+        "baseline.non-compliant": {
           "enabled": true
         },
         "baseline.pass": {
@@ -74,6 +74,9 @@
             "tcp_ports": {
               "80": {
                 "allowed": false
+              },
+              "443": {
+                "allowed": true
               }
             }
           },

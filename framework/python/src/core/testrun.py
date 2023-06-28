@@ -25,7 +25,7 @@ import sys
 import json
 import signal
 import time
-from common import logger
+from common import logger, util
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -46,7 +46,7 @@ RUNTIME = 120
 LOCAL_DEVICES_DIR = 'local/devices'
 RESOURCE_DEVICES_DIR = 'resources/devices'
 DEVICE_CONFIG = 'device_config.json'
-DEVICE_MAKE = 'make'
+DEVICE_MANUFACTURER = 'manufacturer'
 DEVICE_MODEL = 'model'
 DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
@@ -76,7 +76,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._net_orc = net_orc.NetworkOrchestrator(
       config_file=config_file_abs,
       validate=validate,
-      async_monitor=not self._net_only,
       single_intf = self._single_intf)
 
     self._test_orc = test_orc.TestOrchestrator(self._net_orc)
@@ -85,17 +84,30 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     self._load_all_devices()
 
+    self._start_network()
+
     if self._net_only:
       LOGGER.info('Network only option configured, no tests will be run')
-      self._start_network()
+
+      self._net_orc.listener.register_callback(
+        self._device_discovered,
+        [NetworkEvent.DEVICE_DISCOVERED]
+      )
+
+      self._net_orc.start_listener()
+      LOGGER.info('Waiting for devices on the network...')
+
+      while True:
+        time.sleep(RUNTIME)
+
     else:
-      self._start_network()
       self._test_orc.start()
 
       self._net_orc.listener.register_callback(
           self._device_stable,
           [NetworkEvent.DEVICE_STABLE]
       )
+
       self._net_orc.listener.register_callback(
         self._device_discovered,
         [NetworkEvent.DEVICE_DISCOVERED]
@@ -106,13 +118,13 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
       time.sleep(RUNTIME)
 
-      if not self._test_orc.test_in_progress():
-        LOGGER.info('Timed out whilst waiting for device')
+      if not (self._test_orc.test_in_progress() or self._net_orc.monitor_in_progress()):
+        LOGGER.info('Timed out whilst waiting for device or stopping due to test completion')
       else:
-        while self._test_orc.test_in_progress():
+        while self._test_orc.test_in_progress() or self._net_orc.monitor_in_progress():
           time.sleep(5)
 
-    self.stop()
+      self.stop()
 
   def stop(self, kill=False):
     self._stop_tests()
@@ -157,18 +169,19 @@ class TestRun:  # pylint: disable=too-few-public-methods
     LOGGER.debug('Loading devices from ' + device_dir)
 
     os.makedirs(device_dir, exist_ok=True)
+    util.run_command(f'chown -R {util.get_host_user()} {device_dir}')
 
     for device_folder in os.listdir(device_dir):
       with open(os.path.join(device_dir, device_folder, DEVICE_CONFIG),
                 encoding='utf-8') as device_config_file:
         device_config_json = json.load(device_config_file)
 
-        device_make = device_config_json.get(DEVICE_MAKE)
+        device_manufacturer = device_config_json.get(DEVICE_MANUFACTURER)
         device_model = device_config_json.get(DEVICE_MODEL)
         mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
         test_modules = device_config_json.get(DEVICE_TEST_MODULES)
 
-        device = Device(make=device_make,
+        device = Device(manufacturer=device_manufacturer,
                         model=device_model,
                         mac_addr=mac_addr,
                         test_modules=json.dumps(test_modules))
@@ -184,7 +197,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     device = self.get_device(mac_addr)
     if device is not None:
       LOGGER.info(
-        f'Discovered {device.make} {device.model} on the network')
+        f'Discovered {device.manufacturer} {device.model} on the network')
     else:
       device = Device(mac_addr=mac_addr)
       self._devices.append(device)

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """Provides basic utilities for the network orchestrator."""
+import getpass
+import os
 import subprocess
 import shlex
 from common import logger
@@ -37,7 +39,7 @@ def run_command(cmd, output=True):
 
   if process.returncode != 0 and output:
     err_msg = f'{stderr.strip()}. Code: {process.returncode}'
-    LOGGER.error('Command Failed: ' + cmd)
+    LOGGER.error('Command failed: ' + cmd)
     LOGGER.error('Error: ' + err_msg)
   else:
     success = True
@@ -50,6 +52,44 @@ def run_command(cmd, output=True):
 def interface_exists(interface):
   return interface in netifaces.interfaces()
 
-
 def prettify(mac_string):
   return ':'.join([f'{ord(b):02x}' for b in mac_string])
+
+def get_host_user():
+  user = get_os_user()
+
+  # If primary method failed, try secondary
+  if user is None:
+    user = get_user()
+
+  return user
+
+def get_os_user():
+  user = None
+  try:
+    user = os.getlogin()
+  except OSError:
+    # Handle the OSError exception
+    LOGGER.error('An OS error occured whilst calling os.getlogin()')
+  except Exception:
+    # Catch any other unexpected exceptions
+    LOGGER.error('An unknown exception occured whilst calling os.getlogin()')
+  return user
+
+def get_user():
+  user = None
+  try:
+    user = getpass.getuser()
+  except (KeyError, ImportError, ModuleNotFoundError, OSError) as e:
+    # Handle specific exceptions individually
+    if isinstance(e, KeyError):
+      LOGGER.error('USER environment variable not set or unavailable.')
+    elif isinstance(e, ImportError):
+      LOGGER.error('Unable to import the getpass module.')
+    elif isinstance(e, ModuleNotFoundError):
+      LOGGER.error('The getpass module was not found.')
+    elif isinstance(e, OSError):
+      LOGGER.error('An OS error occurred while retrieving the username.')
+    else:
+      LOGGER.error('An exception occurred:', e)
+  return user
