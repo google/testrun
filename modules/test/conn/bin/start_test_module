@@ -40,8 +40,11 @@ ls -al /testrun/python/src/grpc
 echo "Proto SRC"
 ls -al /testrun/python/src/grpc/proto
 
-echo "DHCP Src"
-ls -al /testrun/python/src/grpc/proto/dhcp
+echo "DHCP1 Src"
+ls -al /testrun/python/src/grpc/proto/dhcp1
+
+echo "DHCP2 Src"
+ls -al /testrun/python/src/grpc/proto/dhcp2
 
 echo "PYTHON_PATH: $PYTHONPATH"
 
