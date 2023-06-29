@@ -46,7 +46,7 @@ class NetworkService(pb2_grpc.NetworkModule):
       traceback.print_exc()
     return pb2.Response(code=200, message='{}')
 
-    def DeleteReservedLease(self, request, context):  # pylint: disable=W0613
+  def DeleteReservedLease(self, request, context):  # pylint: disable=W0613
     print("Delete Reserved Lease Called")
     try:
       dhcp_config = self._get_dhcp_config()
@@ -80,7 +80,15 @@ class NetworkService(pb2_grpc.NetworkModule):
       print("Failed: " + str(e))
     return pb2.Response(code=200, message='{}')
 
-  def GetIPAddress(self, request, context):  # pylint: disable=W0613
+  def GetDHCPRange(self, request, context):  # pylint: disable=W0613
+    """
+      Resolve the current DHCP configuration and return
+      the first range from the first subnet in the file
+    """
+    pool = self._get_dhcp_config()._subnets[0].pools[0]
+    return pb2.DHCPRange(code=200, start=pool.range_start, end=pool.range_end)
+
+  def GetLease(self, request, context):  # pylint: disable=W0613
     """
       Resolve the current DHCP leased address for the
       provided MAC address
@@ -91,13 +99,6 @@ class NetworkService(pb2_grpc.NetworkModule):
     else:
       return pb2.Response(code=200, message='{}')
 
-  def GetDHCPRange(self, request, context):  # pylint: disable=W0613
-    """
-      Resolve the current DHCP configuration and return
-      the first range from the first subnet in the file
-    """
-    pool = self.get_dhcp_config().subnets[0].pools[0]
-    return pb2.DHCPRange(code=200, start=pool.range_start, end=pool.range_end)
 
   def SetDHCPRange(self, request, context):  # pylint: disable=W0613
     """

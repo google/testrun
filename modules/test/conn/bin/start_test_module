@@ -31,6 +31,21 @@ touch $RESULT_FILE
 chown $HOST_USER $LOG_FILE
 chown $HOST_USER $RESULT_FILE
 
+echo "Python SRC"
+ls -al /testrun/python/src
+
+echo "gRPC SRC"
+ls -al /testrun/python/src/grpc
+
+echo "Proto SRC"
+ls -al /testrun/python/src/grpc/proto
+
+echo "DHCP Src"
+ls -al /testrun/python/src/grpc/proto/dhcp
+
+echo "PYTHON_PATH: $PYTHONPATH"
+
+
 # Run the python scrip that will execute the tests for this module
 # -u flag allows python print statements
 # to be logged by docker by running unbuffered

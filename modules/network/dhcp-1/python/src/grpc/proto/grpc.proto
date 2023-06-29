@@ -2,22 +2,49 @@ syntax = "proto3";
 
 service NetworkModule {
 
-    rpc GetDHCPRange(GetDHCPRangeRequest) returns (DHCPRange) {};
-
-    rpc SetDHCPRange(DHCPRange) returns (Response) {};
-
-    rpc GetStatus(GetStatusRequest) returns (Response) {};
-
-    rpc GetIPAddress(GetIPAddressRequest) returns (Response) {};
-
-    rpc SetLeaseAddress(SetLeaseAddressRequest) returns (Response) {};
-
     rpc AddReservedLease(AddReservedLeaseRequest) returns (Response) {};
+
+    rpc DeleteReservedLease(DeleteReservedLeaseRequest) returns (Response) {};
 
     rpc DisableFailover(DisableFailoverRequest) returns (Response) {};
 
     rpc EnableFailover(EnableFailoverRequest) returns (Response) {};
 
+    rpc GetDHCPRange(GetDHCPRangeRequest) returns (DHCPRange) {};
+
+    rpc GetLease(GetLeaseRequest) returns (Response) {};
+
+    rpc GetStatus(GetStatusRequest) returns (Response) {};
+
+    rpc SetDHCPRange(SetDHCPRangeRequest) returns (Response) {};
+}
+
+message AddReservedLeaseRequest {
+    string hostname = 1;
+    string hw_addr = 2;
+    string ip_addr = 3;   
+}
+
+message DeleteReservedLeaseRequest {
+    string hw_addr = 1;
+}
+
+message DisableFailoverRequest {}
+
+message EnableFailoverRequest {}
+
+message GetDHCPRangeRequest {}
+
+message GetLeaseRequest {
+    string hw_addr = 1;   
+}
+
+message GetStatusRequest {}
+
+message SetDHCPRangeRequest {
+    int32 code = 1;
+    string start = 2;
+    string end = 3;
 }
 
 message Response {
@@ -31,24 +58,13 @@ message DHCPRange {
     string end = 3;
 }
 
-message AddReservedLeaseRequest {
-    string hostname = 1;
-    string hw_addr = 2;
-    string ip_addr = 3;   
-}
 
-message GetDHCPRangeRequest {}
 
-message GetIPAddressRequest {
-    string hw_addr = 1;   
-}
 
-message GetStatusRequest {}
 
-message DisableFailoverRequest {}
 
-message EnableFailoverRequest {}
 
-message SetLeaseAddressRequest {
-    string ipAddress = 1;
-}
+
+
+
+
