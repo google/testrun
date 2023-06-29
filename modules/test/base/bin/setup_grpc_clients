@@ -1,0 +1,34 @@
+#!/bin/bash -e
+
+GRPC_DIR="/testrun/python/src/grpc"
+GRPC_PROTO_DIR="proto"
+GRPC_PROTO_FILE="grpc.proto"
+
+# Build the grpc proto file
+build_grpc_client(){
+	MODULE=$1
+	echo "Building gRPC proto: $MODULE"
+	python3 -m grpc_tools.protoc --proto_path=. ./$GRPC_PROTO_DIR/$MODULE/$GRPC_PROTO_FILE --python_out=. --grpc_python_out=.
+}
+
+# Build the grpc proto files for every module that has a proto defined
+build_grpc_clients(){
+
+	for dir in "$GRPC_DIR/$GRPC_PROTO_DIR"/*/;do
+		if [ -f $dir/$GRPC_PROTO_FILE ];then
+			# Extract the last folder name
+			last_folder="${dir%%/}"
+			last_folder="${last_folder##*/}"
+			build_grpc_client "$last_folder"
+		fi
+	done
+}
+
+# Move into the grpc directory.
+# This is necessary to build the proto files
+# with the correct import paths
+pushd $GRPC_DIR >/dev/null 2>&1
+
+build_grpc_clients
+
+popd >/dev/null 2>&1
