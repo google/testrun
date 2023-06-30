@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ERROR_LIMIT=1100
+ERROR_LIMIT=100
 
 sudo cmd/install
 

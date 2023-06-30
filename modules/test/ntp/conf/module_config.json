@@ -16,6 +16,11 @@
         "name": "ntp.network.ntp_support",
         "description": "Verify the device requests network time sync as per RFC 5905: NTPv4",
         "expected_behavior": "The device sends NTPv4 request to the configured server"
+      },
+      {
+        "name": "ntp.network.ntp_dhcp",
+        "description": "Verify the device accepts an NTP server address over DHCP",
+        "expected_behavior": "The device can accept an NTP server address provided by the DHCP server"
       }
     ]
   }

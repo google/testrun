@@ -73,5 +73,7 @@ class NTPModule(TestModule):
 
     if not device_sends_ntp:
       LOGGER.info('Device has not sent any NTP requests')
+    else:
+      LOGGER.info('Device has not sent NTP requests to DHCP provided NTP server')
 
     return False
