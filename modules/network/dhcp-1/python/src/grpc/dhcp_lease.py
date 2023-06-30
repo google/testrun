@@ -11,14 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+"""Contains all the necessary methods to create and monitor DHCP
+leases on the server"""
 from datetime import datetime
 import time
 
-timeFormat = "%Y-%m-%d %H:%M:%S"
+time_format = '%Y-%m-%d %H:%M:%S'
 
 
 class DHCPLease(object):
+  """Represents a DHCP Server lease"""
   hw_addr = None
   ip = None
   hostname = None
@@ -29,30 +31,29 @@ class DHCPLease(object):
 
   def _make_lease(self, lease):
     if lease is not None:
-      sectionsRaw = lease.split(" ")
+      sections_raw = lease.split(' ')
       sections = []
-      for section in sectionsRaw:
-        if not (not section.strip()):
+      for section in sections_raw:
+        if section.strip():
           sections.append(section)
       self.hw_addr = sections[0]
       self.ip = sections[1]
       self.hostname = sections[2]
-      self.expires = sections[3] + " " + sections[4]
-      self.manufacturer = " ".join(sections[5:])
-
+      self.expires = sections[3] + '' '' + sections[4]
+      self.manufacturer = ' '.join(sections[5:])
 
   def get_millis(self, timestamp):
-    dt_obj = datetime.strptime(timestamp, timeFormat)
+    dt_obj = datetime.strptime(timestamp, time_format)
     millis = dt_obj.timestamp() * 1000
     return millis
 
   def get_expires_millis(self):
     return self.get_millis(self.expires)
 
-  def isExpired(self):
-    expiresMilis = self.get_expires_millis()
-    curTime = int(round(time.time()) * 1000)
-    return curTime >= expiresMilis
+  def is_expired(self):
+    expires_millis = self.get_expires_millis()
+    cur_time = int(round(time.time()) * 1000)
+    return cur_time >= expires_millis
 
   def __str__(self):
     lease = {}

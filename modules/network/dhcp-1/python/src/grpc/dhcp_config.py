@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Contains all the necessary classes to maintain the 
 DHCP server's configuration"""
 import re
 import os
 import sys
+
+
 
 # Add the parent directory to sys.path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -25,20 +26,13 @@ sys.path.insert(0, parent_dir)
 
 import common.logger as logger
 
-LOG_NAME = "dhcp_config"
+LOG_NAME = 'dhcp_config'
 LOGGER = None
 
 CONFIG_FILE = '/etc/dhcp/dhcpd.conf'
 CONFIG_FILE_TEST = 'network/modules/dhcp-1/conf/dhcpd.conf'
 
 DEFAULT_LEASE_TIME_KEY = 'default-lease-time'
-
-RESERVED_HOST_TEMPLATE = """
-host {HOSTNAME}{{
-  hardware ethernet {HW_ADDR};
-  fixed-address {RESERVED_IP};
-}}"""
-
 
 class DHCPConfig:
   """Represents the DHCP Servers configuration and gives access to modify it"""
@@ -52,12 +46,14 @@ class DHCPConfig:
     LOGGER = logger.get_logger(LOG_NAME, 'dhcp-1')
 
   def add_reserved_host(self, hostname, hw_addr, ip_addr):
-    host = DHCPReservedHost(host=hostname,hw_addr=hw_addr,fixed_addr=ip_addr)
+    host = DHCPReservedHost(hostname=hostname,
+                            hw_addr=hw_addr,
+                            fixed_addr=ip_addr)
     self._reserved_hosts.append(host)
 
   def delete_reserved_host(self, hw_addr):
     for host in self._reserved_hosts:
-      if hw_addr == host._hw_addr:
+      if hw_addr == host.hw_addr:
         self._reserved_hosts.remove(host)
 
   def disable_failover(self):
@@ -70,12 +66,12 @@ class DHCPConfig:
     for subnet in self._subnets:
       subnet.enable_peer()
 
-  def get_reserved_host(self,hw_addr):
+  def get_reserved_host(self, hw_addr):
     for host in self._reserved_hosts:
-      if hw_addr == host._hw_addr:
+      if hw_addr == host.hw_addr:
         return host
 
-  def write_config(self,config=None):
+  def write_config(self, config=None):
     if config is None:
       conf = str(self)
       with open(CONFIG_FILE, 'w', encoding='UTF-8') as conf_file:
@@ -86,17 +82,17 @@ class DHCPConfig:
 
   def _get_config(self, config_file=CONFIG_FILE):
     content = None
-    with open(config_file, "r") as f:
+    with open(config_file, 'r', encoding='UTF-8') as f:
       content = f.read()
     return content
 
-  def make(self,conf):
+  def make(self, conf):
     try:
       self._subnets = self.resolve_subnets(conf)
       self._peer = DHCPFailoverPeer(conf)
       self._reserved_hosts = self.resolve_reserved_hosts(conf)
-    except Exception as e:
-      print("Failed to make DHCPConfig: " + str(e))
+    except Exception as e: # pylint: disable=W0718
+      print('Failed to make DHCPConfig: ' + str(e))
 
   def resolve_config(self, config_file=CONFIG_FILE):
     try:
@@ -104,8 +100,8 @@ class DHCPConfig:
       self._subnets = self.resolve_subnets(conf)
       self._peer = DHCPFailoverPeer(conf)
       self._reserved_hosts = self.resolve_reserved_hosts(conf)
-    except Exception as e:
-      print("Failed to resolve config: " + str(e))
+    except Exception as e: # pylint: disable=W0718
+      print('Failed to resolve config: ' + str(e))
 
   def resolve_subnets(self, conf):
     subnets = []
@@ -116,18 +112,18 @@ class DHCPConfig:
       subnets.append(dhcp_subnet)
     return subnets
 
-  def resolve_reserved_hosts(self,conf):
+  def resolve_reserved_hosts(self, conf):
     hosts = []
     host_start = 0
     while True:
-      host_start = conf.find('host',host_start)
+      host_start = conf.find('host', host_start)
       if host_start < 0:
         break
       else:
-        host_end = conf.find('}',host_start)
-      host = DHCPReservedHost(config=conf[host_start:host_end+1])
+        host_end = conf.find('}', host_start)
+      host = DHCPReservedHost(config=conf[host_start:host_end + 1])
       hosts.append(host)
-      host_start = host_end+1
+      host_start = host_end + 1
     return hosts
 
   def set_range(self, start, end, subnet=0, pool=0):
@@ -434,7 +430,7 @@ class DHCPPool:
 
     if not self._peer_enabled:
       config = config.replace(FAILOVER_KEY, '#' + FAILOVER_KEY)
-      
+
     return config
 
   def disable_peer(self):
@@ -463,14 +459,15 @@ HOST_KEY = 'host'
 HARDWARE_KEY = 'hardware ethernet'
 FIXED_ADDRESS_KEY = 'fixed-address'
 
+
 class DHCPReservedHost:
   """Represents a DHCP Servers subnet pool configuration"""
 
-  def __init__(self, host=None,hw_addr=None,fixed_addr=None,config=None):
+  def __init__(self, hostname=None, hw_addr=None, fixed_addr=None, config=None):
     if config is None:
-      self._host = host
-      self._hw_addr = hw_addr
-      self._fixed_addr = fixed_addr
+      self.host = hostname
+      self.hw_addr = hw_addr
+      self.fixed_addr = fixed_addr
     else:
       self.resolve_host(config)
 
@@ -484,11 +481,11 @@ class DHCPReservedHost:
     config = config.format(
         length='multi-line',
         HOST_KEY=HOST_KEY,
-        HOSTNAME=self._host,
+        HOSTNAME=self.host,
         HARDWARE_KEY=HARDWARE_KEY,
-        HW_ADDR=self._hw_addr,
+        HW_ADDR=self.hw_addr,
         FIXED_ADDRESS_KEY=FIXED_ADDRESS_KEY,
-        RESERVED_IP=self._fixed_addr,
+        RESERVED_IP=self.fixed_addr,
     )
     return config
 
@@ -496,11 +493,9 @@ class DHCPReservedHost:
     host_parts = reserved_host.split('\n')
     for part in host_parts:
       if HOST_KEY in part:
-        self._host = part.strip().split(HOST_KEY)[1].strip().split(
-            '{')[0]
+        self.host = part.strip().split(HOST_KEY)[1].strip().split('{')[0]
       elif HARDWARE_KEY in part:
-        self._hw_addr = part.strip().split(HARDWARE_KEY)[1].strip().split(
-          ';')[0]
+        self.hw_addr = part.strip().split(HARDWARE_KEY)[1].strip().split(';')[0]
       elif FIXED_ADDRESS_KEY in part:
-        self._fixed_addr = part.strip().split(FIXED_ADDRESS_KEY)[1].strip().split(
-          ';')[0]
+        self.fixed_addr = part.strip().split(
+            FIXED_ADDRESS_KEY)[1].strip().split(';')[0]

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Used to resolve the DHCP servers lease information"""
-
 import os
 import sys
 from dhcp_lease import DHCPLease
@@ -25,14 +24,15 @@ sys.path.insert(0, parent_dir)
 import logger
 from common import util
 
-LOG_NAME = "dhcp_lease"
+LOG_NAME = 'dhcp_lease'
 LOGGER = None
 
 DHCP_LEASE_FILES = [
-    "/var/lib/dhcp/dhcpd.leases", "/var/lib/dhcp/dhcpd.leases~",
-    "/var/lib/dhcp/dhcpd6.leases", "/var/lib/dhcp/dhcpd6.leases~"
+    '/var/lib/dhcp/dhcpd.leases', '/var/lib/dhcp/dhcpd.leases~',
+    '/var/lib/dhcp/dhcpd6.leases', '/var/lib/dhcp/dhcpd6.leases~'
 ]
 DHCP_CONFIG_FILE = '/etc/dhcp/dhcpd.conf'
+
 
 class DHCPLeases:
   """Leases for the DHCP server"""
@@ -42,21 +42,21 @@ class DHCPLeases:
     LOGGER = logger.get_logger(LOG_NAME, 'dhcp-1')
 
   def delete_all_hosts(self):
-    LOGGER.info("Deleting hosts")
+    LOGGER.info('Deleting hosts')
     for lease in DHCP_LEASE_FILES:
-      LOGGER.info("Checking file: " + lease)
+      LOGGER.info('Checking file: ' + lease)
       if os.path.exists(lease):
-        LOGGER.info("File Exists: " + lease)
+        LOGGER.info('File Exists: ' + lease)
         try:
           # Delete existing lease file
           os.remove(lease)
         except OSError as e:
-          LOGGER.info(f"Error occurred while deleting the file: {e}")
+          LOGGER.info(f'Error occurred while deleting the file: {e}')
         # Create an empty lease file
-        with open(lease,'w'):
+        with open(lease, 'w', encoding='UTF-8'):
           pass
 
-  def get_lease(self,hw_addr):
+  def get_lease(self, hw_addr):
     for lease in self.get_leases():
       if lease.hw_addr == hw_addr:
         return lease
@@ -64,7 +64,7 @@ class DHCPLeases:
   def get_leases(self):
     leases = []
     lease_list_raw = self._get_lease_list()
-    LOGGER.info('Raw Leases:\n' + str(lease_list_raw) + "\n")
+    LOGGER.info('Raw Leases:\n' + str(lease_list_raw) + '\n')
     lines = lease_list_raw.split(
         '==============================================================================================='
     )[1].split('\n')
@@ -72,42 +72,42 @@ class DHCPLeases:
       try:
         lease = DHCPLease(line)
         leases.append(lease)
-      except Exception as e:
+      except Exception as e:  # pylint: disable=W0718
         # Let non lease lines file without extra checks
-        LOGGER.error("Making Lease Error: " + str(e))
-        LOGGER.error("Not a valid lease line: " + line)
+        LOGGER.error('Making Lease Error: ' + str(e))
+        LOGGER.error('Not a valid lease line: ' + line)
     return leases
 
-  def delete_lease(self,ip_addr):
-    LOGGER.info("Deleting lease")
+  def delete_lease(self, ip_addr):
+    LOGGER.info('Deleting lease')
     for lease in DHCP_LEASE_FILES:
-      LOGGER.info("Checking file: " + lease)
+      LOGGER.info('Checking file: ' + lease)
       if os.path.exists(lease):
-        LOGGER.info("File Exists: " + lease)
+        LOGGER.info('File Exists: ' + lease)
         try:
           # Delete existing lease file
-          with (open(lease,'r')) as f:
+          with (open(lease, 'r', encoding='UTF-8')) as f:
             contents = f.read()
 
           while ip_addr in contents:
-            ixIp = contents.find(ip_addr)
-            leaseStart = contents.rindex("lease",0,ixIp)
-            leaseEnd = contents.find("}",leaseStart)
-            LOGGER.info("Lease Location: " + str(leaseStart)+":"+str(leaseEnd))
-            contents = contents[0:leaseStart] + contents[leaseEnd+1:]
+            ix_ip = contents.find(ip_addr)
+            lease_start = contents.rindex('lease', 0, ix_ip)
+            lease_end = contents.find('}', lease_start)
+            LOGGER.info('Lease Location: ' + str(lease_start) + ':' +
+                        str(lease_end))
+            contents = contents[0:lease_start] + contents[lease_end + 1:]
 
         except OSError as e:
-          LOGGER.info(f"Error occurred while deleting the lease: {e}")
-
+          LOGGER.info(f'Error occurred while deleting the lease: {e}')
 
   def _get_lease_list(self):
     LOGGER.info('Running lease list command')
     try:
-      stdout, stderr = util.run_command('dhcp-lease-list')
-      return stdout
-    except Exception as e:
-      LOGGER.error("Error lease list: " + str(e))
+      result = util.run_command('dhcp-lease-list')
+      return result[0]
+    except Exception as e: # pylint: disable=W0718
+      LOGGER.error('Error lease list: ' + str(e))
 
-  def _write_config(self,config):
-    with open(DHCP_CONFIG_FILE,"w") as f:
+  def _write_config(self, config):
+    with open(DHCP_CONFIG_FILE, 'w', encoding='UTF-8') as f:
       f.write(config)
