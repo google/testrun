@@ -1,0 +1,22 @@
+{
+  "config": {
+    "meta": {
+      "name": "ntp",
+      "display_name": "NTP",
+      "description": "NTP test"
+    },
+    "network": false,
+    "docker": {
+      "depends_on": "base",
+      "enable_container": true,
+      "timeout": 30
+    },
+    "tests":[
+      {
+        "name": "ntp.network.ntp_support",
+        "description": "Verify the device requests network time sync as per RFC 5905: NTPv4",
+        "expected_behavior": "The device sends NTPv4 request to the configured server"
+      }
+    ]
+  }
+}

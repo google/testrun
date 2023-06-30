@@ -13,16 +13,14 @@
 # limitations under the License.
 
 """Provides high level management of the test orchestrator."""
-import getpass
 import os
 import json
 import time
 import shutil
 import docker
 from docker.types import Mount
-from common import logger
+from common import logger, util
 from test_orc.module import TestModule
-from common import util
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
@@ -102,7 +100,7 @@ class TestOrchestrator:
             results[module.name] = module_results
         except (FileNotFoundError, PermissionError,
                 json.JSONDecodeError) as results_error:
-          LOGGER.error("Error occured whilst obbtaining results for module " + module.name)
+          LOGGER.error(f"Error occured whilst obbtaining results for module {module.name}")
           LOGGER.debug(results_error)
 
     out_file = os.path.join(
@@ -140,8 +138,9 @@ class TestOrchestrator:
       container_runtime_dir = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
           "/" + module.name)
-      network_runtime_dir = os.path.join(self._root_path, "runtime/network")
       os.makedirs(container_runtime_dir)
+
+      network_runtime_dir = os.path.join(self._root_path, "runtime/network")
 
       device_startup_capture = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
@@ -149,8 +148,8 @@ class TestOrchestrator:
       util.run_command(f'chown -R {self._host_user} {device_startup_capture}')
 
       device_monitor_capture = os.path.join(
-          self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
-          "/monitor.pcap")
+          self._root_path, 'runtime/test/' + device.mac_addr.replace(":", "") +
+          '/monitor.pcap')
       util.run_command(f'chown -R {self._host_user} {device_monitor_capture}')
 
       client = docker.from_env()

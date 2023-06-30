@@ -1,7 +1,7 @@
-# Image name: test-run/nmap-test
+# Image name: test-run/ntp-test
 FROM test-run/base-test:latest
 
-ARG MODULE_NAME=nmap
+ARG MODULE_NAME=ntp
 ARG MODULE_DIR=modules/test/$MODULE_NAME
 
 # Load the requirements file
