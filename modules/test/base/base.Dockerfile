@@ -30,14 +30,5 @@ ARG CONTAINER_PROTO_DIR=testrun/python/src/grpc/proto
 COPY $NET_MODULE_DIR/dhcp-1/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/dhcp1/
 COPY $NET_MODULE_DIR/dhcp-2/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/dhcp2/
 
-# Set the PYTHONPATH to include all the directories
-ARG ROOT_SRC_DIR="/testrun/python/src"
-ARG GRPC_SRC_DIR="/testrun/python/src/grpc"
-ARG PROTO_GRPC_SRC_DIR="/testrun/python/src/grpc/proto"
-ARG DHCP1_GRPC_SRC_DIR="/testrun/python/src/grpc/proto/dhcp1"
-ARG DHCP2_GRPC_SRC_DIR="/testrun/python/src/grpc/proto/dhcp2"
-
-ENV PYTHONPATH=$ROOT_SRC_DIR:$GRPC_SRC_DIR:$PROTO_GRPC_SRC_DIR:$DHCP1_GRPC_SRC_DIR:$DHCP2_GRPC_SRC_DIR
-
 # Start the test module
 ENTRYPOINT [ "/testrun/bin/start_module" ]
