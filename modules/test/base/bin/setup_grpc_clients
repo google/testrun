@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-GRPC_DIR="/testrun/python/src/grpc"
+GRPC_DIR="/testrun/python/src/grpc_server"
 GRPC_PROTO_DIR="proto"
 GRPC_PROTO_FILE="grpc.proto"
 

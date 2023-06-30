@@ -45,8 +45,8 @@ fi
 
 echo "Setting up PYTHONPATH..."
 # Setup the PYTHONPATH so all imports work as expected
-export PYTHONPATH=$($BIN_DIR/setup_python_path)
 echo "PYTHONPATH: $PYTHONPATH"
+export PYTHONPATH=$($BIN_DIR/setup_python_path)
 
 # Build all gRPC files from the proto for use in
 # gRPC clients for communications to network modules
@@ -75,9 +75,9 @@ then
 	if [[ ! -z $GRPC_PORT && ! $GRPC_PORT == "null" ]]
 	then
 		echo "gRPC port resolved from config: $GRPC_PORT"
-		$BIN_DIR/start_grpc "-p $GRPC_PORT" &
+		$BIN_DIR/start_grpc "-p $GRPC_PORT"
 	else
-		$BIN_DIR/start_grpc &
+		$BIN_DIR/start_grpc
 	fi
 fi
 

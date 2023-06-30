@@ -14,25 +14,15 @@
 """Contains all the necessary classes to maintain the 
 DHCP server's configuration"""
 import re
-import os
-import sys
-
-
-
-# Add the parent directory to sys.path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
-
-import common.logger as logger
+from common import logger
 
 LOG_NAME = 'dhcp_config'
 LOGGER = None
 
 CONFIG_FILE = '/etc/dhcp/dhcpd.conf'
-CONFIG_FILE_TEST = 'network/modules/dhcp-1/conf/dhcpd.conf'
 
 DEFAULT_LEASE_TIME_KEY = 'default-lease-time'
+
 
 class DHCPConfig:
   """Represents the DHCP Servers configuration and gives access to modify it"""
@@ -91,7 +81,7 @@ class DHCPConfig:
       self._subnets = self.resolve_subnets(conf)
       self._peer = DHCPFailoverPeer(conf)
       self._reserved_hosts = self.resolve_reserved_hosts(conf)
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       print('Failed to make DHCPConfig: ' + str(e))
 
   def resolve_config(self, config_file=CONFIG_FILE):
@@ -100,7 +90,7 @@ class DHCPConfig:
       self._subnets = self.resolve_subnets(conf)
       self._peer = DHCPFailoverPeer(conf)
       self._reserved_hosts = self.resolve_reserved_hosts(conf)
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       print('Failed to resolve config: ' + str(e))
 
   def resolve_subnets(self, conf):

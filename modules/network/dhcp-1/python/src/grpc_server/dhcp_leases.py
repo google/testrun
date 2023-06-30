@@ -13,14 +13,7 @@
 # limitations under the License.
 """Used to resolve the DHCP servers lease information"""
 import os
-import sys
 from dhcp_lease import DHCPLease
-
-# Add the parent directory to sys.path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
-
 import logger
 from common import util
 
@@ -105,7 +98,7 @@ class DHCPLeases:
     try:
       result = util.run_command('dhcp-lease-list')
       return result[0]
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       LOGGER.error('Error lease list: ' + str(e))
 
   def _write_config(self, config):

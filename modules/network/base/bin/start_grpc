@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-GRPC_DIR="/testrun/python/src/grpc"
+GRPC_DIR="/testrun/python/src/grpc_server"
 GRPC_PROTO_DIR="proto"
 GRPC_PROTO_FILE="grpc.proto"
 
@@ -8,10 +8,10 @@ GRPC_PROTO_FILE="grpc.proto"
 pushd $GRPC_DIR >/dev/null 2>&1
 
 #Build the grpc proto file every time before starting server
-python3 -m grpc_tools.protoc --proto_path=. ./$GRPC_PROTO_DIR/$GRPC_PROTO_FILE --python_out=. --grpc_python_out=.
+python3 -u -m grpc_tools.protoc --proto_path=. ./$GRPC_PROTO_DIR/$GRPC_PROTO_FILE --python_out=. --grpc_python_out=.
 
 popd >/dev/null 2>&1
 
 #Start the grpc server
-python3 -u $GRPC_DIR/start_server.py $@
+python3 -u $GRPC_DIR/start_server.py $@ &
 
