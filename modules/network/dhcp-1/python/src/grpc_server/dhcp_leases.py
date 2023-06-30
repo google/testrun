@@ -58,9 +58,10 @@ class DHCPLeases:
     leases = []
     lease_list_raw = self._get_lease_list()
     LOGGER.info('Raw Leases:\n' + str(lease_list_raw) + '\n')
-    lines = lease_list_raw.split(
-        '==============================================================================================='
-    )[1].split('\n')
+    lease_list_start = lease_list_raw.find('=========',0)
+    lease_list_start = lease_list_raw.find('\n',lease_list_start)
+    lease_list = lease_list_raw[lease_list_start+1:]
+    lines = lease_list.split('\n')
     for line in lines:
       try:
         lease = DHCPLease(line)
