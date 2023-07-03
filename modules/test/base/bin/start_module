@@ -57,10 +57,10 @@ then
 	exit 1
 fi
 
-echo "Setting up PYTHONPATH..."
 # Setup the PYTHONPATH so all imports work as expected
-echo "PYTHONPATH: $PYTHONPATH"
+echo "Setting up PYTHONPATH..."
 export PYTHONPATH=$($BIN_DIR/setup_python_path)
+echo "PYTHONPATH: $PYTHONPATH"
 
 # Build all gRPC files from the proto for use in
 # gRPC clients for communications to network modules
