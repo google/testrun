@@ -15,9 +15,6 @@ sysctl -p
 # Create leases file if needed
 touch /var/lib/dhcp/dhcpd.leases
 
-# Create log file if needed
-touch /var/log/dhcp/dhcpd.log
-
 #Create directory for radvd
 mkdir /var/run/radvd
 
