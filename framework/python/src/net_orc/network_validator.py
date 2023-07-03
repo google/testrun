@@ -28,7 +28,7 @@ OUTPUT_DIR = 'runtime/validation'
 DEVICES_DIR = 'modules/devices'
 DEVICE_METADATA = 'conf/module_config.json'
 DEVICE_BRIDGE = 'tr-d'
-CONF_DIR = 'conf'
+CONF_DIR = 'local'
 CONF_FILE = 'system.json'
 
 
