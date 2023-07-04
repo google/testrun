@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Network orchestrator is responsible for managing
 all of the virtual network services"""
 import getpass
@@ -23,8 +24,7 @@ import subprocess
 import sys
 import docker
 from docker.types import Mount
-from common import logger
-from common import util
+from common import logger, util
 from net_orc.listener import Listener
 from net_orc.network_device import NetworkDevice
 from net_orc.network_event import NetworkEvent
@@ -100,14 +100,15 @@ class NetworkOrchestrator:
     # Restore the network first if required
     self.stop(kill=True)
 
-    self.start_network()
+    return self.start_network()
 
   def start_network(self):
     """Start the virtual testing network."""
     LOGGER.info('Starting network')
 
     self.build_network_modules()
-    self.create_net()
+    if not self.create_net():
+      return False
     self.start_network_services()
 
     if self.validate:
@@ -116,6 +117,8 @@ class NetworkOrchestrator:
 
     # Get network ready (via Network orchestrator)
     LOGGER.debug('Network is ready')
+
+    return True
 
   def start_listener(self):
     self.listener.start_listener()
@@ -320,7 +323,7 @@ class NetworkOrchestrator:
         self._dev_intf):
       LOGGER.error('Configured interfaces are not ready for use. ' +
                    'Ensure both interfaces are connected.')
-      sys.exit(1)
+      return False
 
     if self._single_intf:
       self._ci_pre_network_create()
@@ -344,6 +347,8 @@ class NetworkOrchestrator:
                                     [NetworkEvent.DEVICE_DISCOVERED])
     self.listener.register_callback(self._dhcp_lease_ack,
                                     [NetworkEvent.DHCP_LEASE_ACK])
+
+    return True
 
   def load_network_modules(self):
     """Load network modules from module_config.json."""

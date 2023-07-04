@@ -6,3 +6,9 @@ docker
 ipaddress
 netifaces
 scapy
+
+# Requirements for the API
+fastapi
+psutil
+uvicorn
+pydantic
