@@ -1,0 +1,41 @@
+#!/bin/bash
+
+RA_PID_FILE=/var/run/radvd/radvd.pid
+RA_LOG_FILE=/runtime/network/dhcp1-radvd.log
+
+stop_radvd() {
+  # Directly kill by PID file reference
+  kill -9 $(cat $RA_PID_FILE) || true
+  rm -f $RA_PID_FILE
+  # Generic kill by process name just in case PID didn't work
+  pkill radvd
+}
+
+start_radvd(){
+  /usr/sbin/radvd -m logfile -l $RA_LOG_FILE -p $RA_PID_FILE
+}
+
+case "$1" in
+  start)
+    start_radvd
+    ;;
+  stop)
+    stop_radvd
+    ;;
+  restart)
+    stop_radvd
+    sleep 1
+    start_radvd
+    ;;
+  status)
+    if pgrep radvd > /dev/null; then
+      echo "radvd service is running."
+    else
+      echo "radvd service is not running."
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
