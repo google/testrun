@@ -65,7 +65,7 @@ message Response {
 }
 
 message DHCPRange {
-	int32 code = 1;
+    int32 code = 1;
     string start = 2;
     string end = 3;
 }
