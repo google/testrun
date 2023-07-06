@@ -15,6 +15,7 @@
 import proto.grpc_pb2_grpc as pb2_grpc
 import proto.grpc_pb2 as pb2
 
+from dhcp_server import DHCPServer
 from dhcp_config import DHCPConfig
 from dhcp_leases import DHCPLeases
 
@@ -28,6 +29,7 @@ class NetworkService(pb2_grpc.NetworkModule):
   """gRPC endpoints for the DHCP Server"""
 
   def __init__(self):
+    self._dhcp_server = DHCPServer()
     self._dhcp_config = None
     self.dhcp_leases = DHCPLeases()
     global LOGGER
@@ -39,6 +41,42 @@ class NetworkService(pb2_grpc.NetworkModule):
       self._dhcp_config.resolve_config()
     return self._dhcp_config
 
+  def RestartDHCPServer(self, request, context):  # pylint: disable=W0613
+    LOGGER.info('Restarting DHCP server')
+    try:
+      started = self._dhcp_server.restart()
+      LOGGER.info('DHCP server restarted: ' + (str(started)))
+      return pb2.Response(code=200, message='{}')
+    except Exception as e: # pylint: disable=W0718
+      fail_message = 'Failed to restart DHCP server: ' + str(e)
+      LOGGER.error(fail_message)
+      LOGGER.error(traceback.format_exc())
+      return pb2.Response(code=500, message=fail_message)
+
+  def StartDHCPServer(self, request, context):  # pylint: disable=W0613
+    LOGGER.info('Starting DHCP server')
+    try:
+      started = self._dhcp_server.start()
+      LOGGER.info('DHCP server started: ' + (str(started)))
+      return pb2.Response(code=200, message='{}')
+    except Exception as e: # pylint: disable=W0718
+      fail_message = 'Failed to start DHCP server: ' + str(e)
+      LOGGER.error(fail_message)
+      LOGGER.error(traceback.format_exc())
+      return pb2.Response(code=500, message=fail_message)
+
+  def StopDHCPServer(self, request, context):  # pylint: disable=W0613
+    LOGGER.info('Stopping DHCP server')
+    try:
+      stopped = self._dhcp_server.stop()
+      LOGGER.info('DHCP server stopped: ' + (str(stopped)))
+      return pb2.Response(code=200, message='{}')
+    except Exception as e: # pylint: disable=W0718
+      fail_message = 'Failed to stop DHCP server: ' + str(e)
+      LOGGER.error(fail_message)
+      LOGGER.error(traceback.format_exc())
+      return pb2.Response(code=500, message=fail_message)
+  
   def AddReservedLease(self, request, context):  # pylint: disable=W0613
     LOGGER.info('Add reserved lease called')
     try:
@@ -151,7 +189,6 @@ class NetworkService(pb2_grpc.NetworkModule):
     """
       Return the current status of the network module
     """
-    # ToDo: Figure out how to resolve the current DHCP status
-    dhcp_status = True
+    dhcp_status = self._dhcp_server.is_running()
     message = str({'dhcpStatus': dhcp_status})
     return pb2.Response(code=200, message=message)
