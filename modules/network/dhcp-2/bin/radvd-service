@@ -1,7 +1,7 @@
 #!/bin/bash
 
 RA_PID_FILE=/var/run/radvd/radvd.pid
-RA_LOG_FILE=/runtime/network/dhcp1-radvd.log
+RA_LOG_FILE=/runtime/network/dhcp2-radvd.log
 
 stop_radvd(){
   # Directly kill by PID file reference
