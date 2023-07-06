@@ -36,26 +36,36 @@ class DHCPServer:
 
   def restart(self):
     LOGGER.info("Restarting DHCP Server")
-    response = util.run_command("service isc-dhcp-server restart", False)
-    LOGGER.info("DHCP Restarted: " + str(response))
-    return response
+    isc_started = util.run_command("service isc-dhcp-server restart", False)
+    radvd_started = self.radvd.restart()
+    started = isc_started and radvd_started
+    LOGGER.info("DHCP Restarted: " + str(started))
+    return started
 
   def start(self):
     LOGGER.info("Starting DHCP Server")
-    response = util.run_command("service isc-dhcp-server start", False)
-    LOGGER.info("DHCP Started: " + str(response))
-    return response
+    isc_started = util.run_command("service isc-dhcp-server start", False)
+    radvd_started = self.radvd.start()
+    started = isc_started and radvd_started
+    LOGGER.info("DHCP Started: " + str(started))
+    return started
 
   def stop(self):
     LOGGER.info("Stopping DHCP Server")
-    response = util.run_command("service isc-dhcp-server stop", False)
-    LOGGER.info("DHCP Stopped: " + str(response))
+    isc_stopped = util.run_command("service isc-dhcp-server stop", False)
+    radvd_stopped = self.radvd.stop()
+    stopped = isc_stopped and radvd_stopped
+    LOGGER.info("DHCP Stopped: " + str(stopped))
+    return stopped
 
   def is_running(self):
     LOGGER.info("Checking DHCP Status")
     response = util.run_command("service isc-dhcp-server status")
-    LOGGER.info("DHCP Status: " + str(response))
-    return response[0] == 'Status of ISC DHCPv4 server: dhcpd is running.'
+    isc_running = response[0] == 'Status of ISC DHCPv4 server: dhcpd is running.'
+    radvd_running = self.radvd.is_running()
+    running = isc_running and radvd_running
+    LOGGER.info("DHCP Status: " + str(running))
+    return running
 
   def boot(self):
     LOGGER.info("Booting DHCP Server")
@@ -73,13 +83,27 @@ class DHCPServer:
 
     LOGGER.info("Starting isc-dhcp-server")
     if self.start():
-      isc_booted = self.is_running()
+      isc_booted = False
+      # Scan for 5 seconds if not yet ready
+      for i in range(5):
+        time.sleep(1)
+        isc_booted = self.is_running()
+        if isc_booted:
+          break;
       LOGGER.info("isc-dhcp-server started: " + str(isc_booted))
 
     LOGGER.info("Starting RADVD")
     if self.radvd.start():
-      radvd_booted = self.radvd.is_running()
+      radvd_booted = False
+      # Scan for 5 seconds if not yet ready
+      for i in range(5):
+        time.sleep(1)
+        radvd_booted = self.radvd.is_running()
+        if radvd_booted:
+          break;
       LOGGER.info("RADVD started: " + str(radvd_booted))
+
+
 
     return isc_booted and radvd_booted
 
