@@ -2,6 +2,12 @@ syntax = "proto3";
 
 service NetworkModule {
 
+    rpc RestartDHCPServer(RestartDHCPServerRequest) returns (Response) {};
+
+    rpc StartDHCPServer(StartDHCPServerRequest) returns (Response) {};
+
+    rpc StopDHCPServer(StopDHCPServerRequest) returns (Response) {};
+
     rpc AddReservedLease(AddReservedLeaseRequest) returns (Response) {};
 
     rpc DeleteReservedLease(DeleteReservedLeaseRequest) returns (Response) {};
@@ -29,6 +35,12 @@ message DeleteReservedLeaseRequest {
     string hw_addr = 1;
 }
 
+message RestartDHCPServerRequest {}
+
+message StartDHCPServerRequest {}
+
+message StopDHCPServerRequest {}
+
 message DisableFailoverRequest {}
 
 message EnableFailoverRequest {}
@@ -53,7 +65,7 @@ message Response {
 }
 
 message DHCPRange {
-	int32 code = 1;
+    int32 code = 1;
     string start = 2;
     string end = 3;
 }

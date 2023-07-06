@@ -33,7 +33,7 @@ class DHCPConfig:
     self._peer = None
     self._reserved_hosts = []
     global LOGGER
-    LOGGER = logger.get_logger(LOG_NAME, 'dhcp-1')
+    LOGGER = logger.get_logger(LOG_NAME, 'dhcp-2')
 
   def add_reserved_host(self, hostname, hw_addr, ip_addr):
     host = DHCPReservedHost(hostname=hostname,
