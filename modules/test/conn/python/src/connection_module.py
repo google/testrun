@@ -62,6 +62,25 @@ class ConnectionModule(TestModule):
     # response = self.dhcp1_client.set_dhcp_range('10.10.10.20','10.10.10.30')
     # print("Set Range: " + str(response))
 
+  def _connection_dhcp_address(self):
+    LOGGER.info("Running connection.dhcp_address")
+    response = self.dhcp1_client.get_lease(self._device_mac)
+    LOGGER.info("DHCP Lease resolved:\n" + str(response))
+    if response.code == 200:
+      lease = eval(response.message)
+      if 'ip' in lease:
+        ip_addr = lease['ip']
+        LOGGER.info("IP Resolved: " + ip_addr)
+        LOGGER.info("Attempting to ping device...");
+        ping_success = self._ping(self._device_ipv4_addr)
+        LOGGER.info("Ping Success: " + str(ping_success))
+        if ping_success:
+          return True, "Device responded to leased ip address"
+        else:
+          return False, "Device did not respond to leased ip address"
+    else:
+      LOGGER.info("No DHCP lease found for: " + self._device_mac)
+      return False, "No DHCP lease found for: " + self._device_mac
 
   def _connection_mac_address(self):
     LOGGER.info("Running connection.mac_address")
