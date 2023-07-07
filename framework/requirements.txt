@@ -8,7 +8,7 @@ netifaces
 scapy
 
 # Requirements for the API
-fastapi
+fastapi==0.99.1
 psutil
 uvicorn
-pydantic
+pydantic==1.10.11
