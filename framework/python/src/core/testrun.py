@@ -81,6 +81,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._devices = self._api.load_all_devices()
     self._api.start()
 
+    time.sleep(100)
+
   def start(self):
 
     self._start_network()

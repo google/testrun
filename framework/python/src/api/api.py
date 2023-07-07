@@ -14,13 +14,12 @@
 
 from fastapi import FastAPI, APIRouter
 import json
-import logging
 import os
 import psutil
 import threading
 import uvicorn
 
-from api.system_interfaces import SystemInterfaces
+from api.system_config import SystemConfig
 from common import logger, util
 from common.device import Device
 
@@ -45,9 +44,10 @@ class Api:
     self._devices = []
     self._config_file_url = self._test_run.get_config_file()
 
-    self._router.add_api_route("/system/interfaces", self.sys_interfaces)
-    self._router.add_api_route("/system/interfaces", self.post_sys_interfaces,
+    self._router.add_api_route("/system/interfaces", self.get_sys_interfaces)
+    self._router.add_api_route("/system/config", self.post_sys_config,
                               methods=["POST"])
+    self._router.add_api_route("/system/config", self.get_sys_config)
     self._router.add_api_route("/devices", self.get_devices)
 
     self._app = FastAPI()
@@ -94,26 +94,32 @@ class Api:
                         test_modules=test_modules)
         self._devices.append(device)
 
-  async def sys_interfaces(self):
+  async def get_sys_interfaces(self):
     addrs = psutil.net_if_addrs()
     ifaces = []
     for iface in addrs:
       ifaces.append(iface)
     return ifaces
 
-  async def post_sys_interfaces(self, sys_intfs: SystemInterfaces):
+  async def post_sys_config(self, sys_config: SystemConfig):
 
     config_file = open(self._config_file_url, "r", encoding="utf-8")
     json_contents = json.load(config_file)
     config_file.close()
 
-    json_contents["network"]["device_intf"] = sys_intfs.device_intf
-    json_contents["network"]["internet_intf"] = sys_intfs.internet_intf
+    json_contents["network"]["device_intf"] = sys_config.network.device_intf
+    json_contents["network"]["internet_intf"] = sys_config.network.internet_intf
 
     with open(self._config_file_url, "w", encoding="utf-8") as config_file:
       json.dump(json_contents, config_file, indent=2)
 
-    return sys_intfs
+    return sys_config
+  
+  async def get_sys_config(self):
+    config_file = open(self._config_file_url, "r", encoding="utf-8")
+    json_contents = json.load(config_file)
+    config_file.close()
+    return json_contents
 
   async def get_devices(self):
     return self._devices
