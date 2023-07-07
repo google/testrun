@@ -51,10 +51,13 @@ class TestRun:  # pylint: disable=too-few-public-methods
   """
 
   def __init__(self,
-               config_file=DEFAULT_CONFIG_FILE,
+               config_file,
                validate=True,
                net_only=False,
                single_intf=False):
+
+    if config_file is None:
+      config_file = DEFAULT_CONFIG_FILE
 
     self._devices = []
     self._net_only = net_only

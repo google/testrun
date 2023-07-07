@@ -46,7 +46,7 @@ class Api:
     self._config_file_url = self._test_run.get_config_file()
 
     self._router.add_api_route("/system/interfaces", self.sys_interfaces)
-    self._router.add_api_route("/system/interfaces", self.post_sys_interfaces, 
+    self._router.add_api_route("/system/interfaces", self.post_sys_interfaces,
                               methods=["POST"])
     self._router.add_api_route("/devices", self.get_devices)
 
@@ -62,13 +62,7 @@ class Api:
     self._api_thread.start()
 
   def _start(self):
-
-    uvicorn_error = logging.getLogger("uvicorn.error")
-    uvicorn_error.propagate = False
-    uvicorn_access = logging.getLogger("uvicorn.access")
-    uvicorn_access.propagate = False
-
-    uvicorn.run(self._app)
+    uvicorn.run(self._app, log_config=None)
 
   def stop(self):
     LOGGER.info("Stopping API")
@@ -97,7 +91,7 @@ class Api:
         device = Device(manufacturer=device_manufacturer,
                         model=device_model,
                         mac_addr=mac_addr,
-                        test_modules=json.dumps(test_modules))
+                        test_modules=test_modules)
         self._devices.append(device)
 
   async def sys_interfaces(self):
@@ -109,8 +103,16 @@ class Api:
 
   async def post_sys_interfaces(self, sys_intfs: SystemInterfaces):
 
-    # TODO: Write config file
-    print(sys_intfs)
+    config_file = open(self._config_file_url, "r", encoding="utf-8")
+    json_contents = json.load(config_file)
+    config_file.close()
+
+    json_contents["network"]["device_intf"] = sys_intfs.device_intf
+    json_contents["network"]["internet_intf"] = sys_intfs.internet_intf
+
+    with open(self._config_file_url, "w", encoding="utf-8") as config_file:
+      json.dump(json_contents, config_file, indent=2)
+
     return sys_intfs
 
   async def get_devices(self):
