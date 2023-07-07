@@ -17,6 +17,7 @@ import util
 import sys
 from scapy.all import *
 from test_module import TestModule
+from dhcp1.client import Client as DHCPClient1
 
 LOG_NAME = "test_connection"
 LOGGER = None
@@ -34,6 +35,53 @@ class ConnectionModule(TestModule):
     super().__init__(module_name=module, log_name=LOG_NAME)
     global LOGGER
     LOGGER = self._get_logger()
+    self.dhcp1_client = DHCPClient1()
+    
+    # ToDo: Move this into some level of testing, leave for 
+    # reference until tests are implemented with these calls
+    # response = self.dhcp1_client.add_reserved_lease('test','00:11:22:33:44:55','10.10.10.21')
+    # print("AddLeaseResp: " + str(response))
+
+    # response = self.dhcp1_client.delete_reserved_lease('00:11:22:33:44:55')
+    # print("DelLeaseResp: " + str(response))
+
+    # response = self.dhcp1_client.disable_failover()
+    # print("FailoverDisabled: " + str(response))
+
+    # response = self.dhcp1_client.enable_failover()
+    # print("FailoverEnabled: " + str(response))
+
+    # response = self.dhcp1_client.get_dhcp_range()
+    # print("DHCP Range: " + str(response))
+
+    # response = self.dhcp1_client.get_lease(self._device_mac)
+    # print("Lease: " + str(response))
+
+    # response = self.dhcp1_client.get_status()
+    # print("Status: " + str(response))
+
+    # response = self.dhcp1_client.set_dhcp_range('10.10.10.20','10.10.10.30')
+    # print("Set Range: " + str(response))
+
+  def _connection_dhcp_address(self):
+    LOGGER.info("Running connection.dhcp_address")
+    response = self.dhcp1_client.get_lease(self._device_mac)
+    LOGGER.info("DHCP Lease resolved:\n" + str(response))
+    if response.code == 200:
+      lease = eval(response.message)
+      if 'ip' in lease:
+        ip_addr = lease['ip']
+        LOGGER.info("IP Resolved: " + ip_addr)
+        LOGGER.info("Attempting to ping device...");
+        ping_success = self._ping(self._device_ipv4_addr)
+        LOGGER.info("Ping Success: " + str(ping_success))
+        if ping_success:
+          return True, "Device responded to leased ip address"
+        else:
+          return False, "Device did not respond to leased ip address"
+    else:
+      LOGGER.info("No DHCP lease found for: " + self._device_mac)
+      return False, "No DHCP lease found for: " + self._device_mac
 
     self._ipv6_addr = None
 

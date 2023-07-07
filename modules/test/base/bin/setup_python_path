@@ -1,0 +1,25 @@
+#!/bin/bash
+
+ROOT_DIRECTORY="/testrun/python/src"
+
+# Function to recursively add subdirectories to PYTHONPATH
+add_subdirectories_to_pythonpath() {
+    local directory=$1
+    local subdirectories=( "$directory"/* )
+    local subdirectory
+
+    for subdirectory in "${subdirectories[@]}"; do
+        if [ -d "$subdirectory" ]; then
+            export PYTHONPATH="$PYTHONPATH:$subdirectory"
+            add_subdirectories_to_pythonpath "$subdirectory"
+        fi
+    done
+}
+
+# Set PYTHONPATH initially to an empty string
+export PYTHONPATH=""
+
+# Add all subdirectories to PYTHONPATH
+add_subdirectories_to_pythonpath "$ROOT_DIRECTORY"
+
+echo "$PYTHONPATH"

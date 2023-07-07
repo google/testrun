@@ -1,6 +1,20 @@
 #!/bin/bash -e
 
-GRPC_DIR="/testrun/python/src/grpc"
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+GRPC_DIR="/testrun/python/src/grpc_server"
 GRPC_PROTO_DIR="proto"
 GRPC_PROTO_FILE="grpc.proto"
 
@@ -8,10 +22,10 @@ GRPC_PROTO_FILE="grpc.proto"
 pushd $GRPC_DIR >/dev/null 2>&1
 
 #Build the grpc proto file every time before starting server
-python3 -m grpc_tools.protoc --proto_path=. ./$GRPC_PROTO_DIR/$GRPC_PROTO_FILE --python_out=. --grpc_python_out=.
+python3 -u -m grpc_tools.protoc --proto_path=. ./$GRPC_PROTO_DIR/$GRPC_PROTO_FILE --python_out=. --grpc_python_out=.
 
 popd >/dev/null 2>&1
 
 #Start the grpc server
-python3 -u $GRPC_DIR/start_server.py $@
+python3 -u $GRPC_DIR/start_server.py $@ &
 
