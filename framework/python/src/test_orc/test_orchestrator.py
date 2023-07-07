@@ -102,7 +102,7 @@ class TestOrchestrator:
             results[module.name] = module_results
         except (FileNotFoundError, PermissionError,
                 json.JSONDecodeError) as results_error:
-          LOGGER.error("Error occured whilst obbtaining results for module " + module.name)
+          LOGGER.error(f"Error occured whilst obbtaining results for module {module.name}")
           LOGGER.debug(results_error)
 
     out_file = os.path.join(
@@ -110,7 +110,7 @@ class TestOrchestrator:
         "runtime/test/" + device.mac_addr.replace(":", "") + "/results.json")
     with open(out_file, "w", encoding="utf-8") as f:
       json.dump(results, f, indent=2)
-    util.run_command(f'chown -R {self._host_user} {out_file}')
+    util.run_command(f"chown -R {self._host_user} {out_file}")
     return results
 
   def test_in_progress(self):

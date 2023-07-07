@@ -15,7 +15,7 @@ useradd $HOST_USER
 sysctl net.ipv6.conf.all.disable_ipv6=0
 sysctl -p
 
-#Read in the config file
+# Read in the config file
 CONF_FILE="/testrun/conf/module_config.json"
 CONF=`cat $CONF_FILE`
 
@@ -72,8 +72,8 @@ then
 	fi
 fi
 
-#Small pause to let all core services stabalize
+# Small pause to let all core services stabalize
 sleep 3
 
-#Start the networking service
+# Start the networking service
 $BIN_DIR/start_network_service $MODULE_NAME $INTF

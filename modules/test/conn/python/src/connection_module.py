@@ -63,7 +63,7 @@ class ConnectionModule(TestModule):
     if self._device_mac is None:
       LOGGER.info("No MAC address found: ")
       return result, "No MAC address found."
-      
+
     # Read all the pcap files containing DHCP packet information
     packets = rdpcap(DHCP_SERVER_CAPTURE_FILE)
     packets.append(rdpcap(STARTUP_CAPTURE_FILE))
@@ -122,11 +122,12 @@ class ConnectionModule(TestModule):
     for packet in packet_capture:
       if IPv6 in packet and packet.src == self._device_mac:
         sends_ipv6 = True
-        ipv6_addr = packet[IPv6].src
-        if ipv6_addr.starts_with(SLAAC_PREFIX):
-          self._ipv6_addr = packet[IPv6].src
-          LOGGER.info(f"Device has formed SLAAC address {packet[IPv6].src}")
-          return True
+        if ICMPv6ND_NS in packet:
+          ipv6_addr = str(packet[ICMPv6ND_NS].tgt)
+          if ipv6_addr.startswith(SLAAC_PREFIX):
+            self._ipv6_addr = ipv6_addr
+            LOGGER.info(f"Device has formed SLAAC address {ipv6_addr}")
+            return True
 
     if sends_ipv6:
       LOGGER.info("Device does not support IPv6 SLAAC")
