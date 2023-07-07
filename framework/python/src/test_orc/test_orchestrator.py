@@ -59,7 +59,7 @@ class TestOrchestrator:
     # Setup the output directory
     self._host_user = util.get_host_user()
     os.makedirs(RUNTIME_DIR, exist_ok=True)
-    util.run_command(f'chown -R {self._host_user} {RUNTIME_DIR}')
+    util.run_command(f"chown -R {self._host_user} {RUNTIME_DIR}")
 
     self._load_test_modules()
     self.build_test_modules()
@@ -108,7 +108,7 @@ class TestOrchestrator:
         "runtime/test/" + device.mac_addr.replace(":", "") + "/results.json")
     with open(out_file, "w", encoding="utf-8") as f:
       json.dump(results, f, indent=2)
-    util.run_command(f'chown -R {self._host_user} {out_file}')
+    util.run_command(f"chown -R {self._host_user} {out_file}")
     return results
 
   def test_in_progress(self):
@@ -145,12 +145,12 @@ class TestOrchestrator:
       device_startup_capture = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
           "/startup.pcap")
-      util.run_command(f'chown -R {self._host_user} {device_startup_capture}')
+      util.run_command(f"chown -R {self._host_user} {device_startup_capture}")
 
       device_monitor_capture = os.path.join(
-          self._root_path, 'runtime/test/' + device.mac_addr.replace(":", "") +
-          '/monitor.pcap')
-      util.run_command(f'chown -R {self._host_user} {device_monitor_capture}')
+          self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
+          "/monitor.pcap")
+      util.run_command(f"chown -R {self._host_user} {device_monitor_capture}")
 
       client = docker.from_env()
 
