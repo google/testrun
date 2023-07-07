@@ -25,6 +25,7 @@ from common import logger
 LOG_NAME = 'network_service'
 LOGGER = None
 
+
 class NetworkService(pb2_grpc.NetworkModule):
   """gRPC endpoints for the DHCP Server"""
 
@@ -47,7 +48,7 @@ class NetworkService(pb2_grpc.NetworkModule):
       started = self._dhcp_server.restart()
       LOGGER.info('DHCP server restarted: ' + (str(started)))
       return pb2.Response(code=200, message='{}')
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to restart DHCP server: ' + str(e)
       LOGGER.error(fail_message)
       LOGGER.error(traceback.format_exc())
@@ -59,7 +60,7 @@ class NetworkService(pb2_grpc.NetworkModule):
       started = self._dhcp_server.start()
       LOGGER.info('DHCP server started: ' + (str(started)))
       return pb2.Response(code=200, message='{}')
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to start DHCP server: ' + str(e)
       LOGGER.error(fail_message)
       LOGGER.error(traceback.format_exc())
@@ -71,12 +72,12 @@ class NetworkService(pb2_grpc.NetworkModule):
       stopped = self._dhcp_server.stop()
       LOGGER.info('DHCP server stopped: ' + (str(stopped)))
       return pb2.Response(code=200, message='{}')
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to stop DHCP server: ' + str(e)
       LOGGER.error(fail_message)
       LOGGER.error(traceback.format_exc())
       return pb2.Response(code=500, message=fail_message)
-  
+
   def AddReservedLease(self, request, context):  # pylint: disable=W0613
     LOGGER.info('Add reserved lease called')
     try:
@@ -86,7 +87,7 @@ class NetworkService(pb2_grpc.NetworkModule):
       dhcp_config.write_config()
       LOGGER.info('Reserved lease added')
       return pb2.Response(code=200, message='{}')
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to add reserved lease: ' + str(e)
       LOGGER.error(fail_message)
       LOGGER.error(traceback.format_exc())
@@ -100,7 +101,7 @@ class NetworkService(pb2_grpc.NetworkModule):
       dhcp_config.write_config()
       LOGGER.info('Reserved lease deleted')
       return pb2.Response(code=200, message='{}')
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to delete reserved lease: ' + str(e)
       LOGGER.error(fail_message)
       LOGGER.error(traceback.format_exc())
@@ -114,7 +115,7 @@ class NetworkService(pb2_grpc.NetworkModule):
       dhcp_config.write_config()
       LOGGER.info('Failover disabled')
       return pb2.Response(code=200, message='{}')
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to disable failover: ' + str(e)
       LOGGER.error(fail_message)
       LOGGER.error(traceback.format_exc())
@@ -128,7 +129,7 @@ class NetworkService(pb2_grpc.NetworkModule):
       dhcp_config.write_config()
       LOGGER.info('Failover enabled')
       return pb2.Response(code=200, message='{}')
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to enable failover: ' + str(e)
       LOGGER.error(fail_message)
       LOGGER.error(traceback.format_exc())
@@ -143,7 +144,7 @@ class NetworkService(pb2_grpc.NetworkModule):
     try:
       pool = self._get_dhcp_config()._subnets[0].pools[0]
       return pb2.DHCPRange(code=200, start=pool.range_start, end=pool.range_end)
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to get DHCP range: ' + str(e)
       LOGGER.error(fail_message)
       LOGGER.error(traceback.format_exc())
@@ -161,7 +162,7 @@ class NetworkService(pb2_grpc.NetworkModule):
         return pb2.Response(code=200, message=str(lease))
       else:
         return pb2.Response(code=200, message='{}')
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to get lease: ' + str(e)
       LOGGER.error(fail_message)
       LOGGER.error(traceback.format_exc())
@@ -179,7 +180,7 @@ class NetworkService(pb2_grpc.NetworkModule):
       dhcp_config.write_config()
       LOGGER.info('DHCP range set')
       return pb2.Response(code=200, message='DHCP Range Set')
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to set DHCP range: ' + str(e)
       LOGGER.error(fail_message)
       LOGGER.error(traceback.format_exc())
