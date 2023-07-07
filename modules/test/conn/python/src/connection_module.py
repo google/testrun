@@ -68,8 +68,7 @@ class ConnectionModule(TestModule):
     response = self.dhcp1_client.get_lease(self._device_mac)
     LOGGER.info('DHCP Lease resolved:\n' + str(response))
     if response.code == 200:
-      #lease = eval(response.message)
-      lease = json.loads(response.message)
+      lease = eval(response.message) # pylint: disable=E0203
       if 'ip' in lease:
         ip_addr = lease['ip']
         LOGGER.info('IP Resolved: ' + ip_addr)
@@ -141,6 +140,7 @@ class ConnectionModule(TestModule):
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is None:
       self._device_ipv4_addr = self._get_device_ipv4(self)
+
     if self._device_ipv4_addr is None:
       LOGGER.error('No device IP could be resolved')
       sys.exit(1)
