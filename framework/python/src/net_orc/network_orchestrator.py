@@ -294,24 +294,13 @@ class NetworkOrchestrator:
         shell=True).decode('utf-8').strip()
 
   def _ci_post_network_create(self):
-    """ Restore network connection in CI environment """
-    LOGGER.info('post cr')
-    util.run_command(f'ip address del {self._ipv4} dev {self._int_intf}')
-    util.run_command(f'ip -6 address del {self._ipv6} dev {self._int_intf}')
-    util.run_command(
-        f'ip link set dev {self._int_intf} address 00:B0:D0:63:C2:26')
+    """ Restore network connection after creating bridge """
     util.run_command(f'ip addr flush dev {self._int_intf}')
-    util.run_command(f'ip addr add dev {self._int_intf} 0.0.0.0')
-    util.run_command(
-        f'ip addr add dev {INTERNET_BRIDGE} {self._ipv4} broadcast {self._brd}')
-    util.run_command(f'ip -6 addr add {self._ipv6} dev {INTERNET_BRIDGE} ')
-    util.run_command(
-        f'systemd-resolve --interface {INTERNET_BRIDGE} --set-dns 8.8.8.8')
-    util.run_command(f'ip link set dev {INTERNET_BRIDGE} up')
-    util.run_command(f'dhclient {INTERNET_BRIDGE}')
-    util.run_command('ip route del default via 10.1.0.1')
-    util.run_command(f'ip route add default via {self._gateway} '
-                     f'src {self._ipv4[:-3]} metric 100 dev {INTERNET_BRIDGE}')
+    util.run_command(f'ip addr add {self.ipv4} dev {INTERNET_BRIDGE}')
+    util.run_command(f'ip route append default via {self._gateway} dev {INTERNET_BRIDGE}')
+    util.run_command(f'echo "nameserver 8.8.8.8" > /etc/resolv.conf')
+    util.run_command(f'ip link set {INTERNET_BRIDGE} up')
+    util.run_command(f'dhclient -v -i {INTERNET_BRIDGE}')
 
   def create_net(self):
     LOGGER.info('Creating baseline network')

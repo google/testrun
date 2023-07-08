@@ -1,27 +1,49 @@
-#!/bin/bash -e
+#!/bin/bash
 
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o xtrace
+ip a
 TEST_DIR=/tmp/results
+MATRIX=testing/test_tests.json
 
-MATRIX=testing/test_matrix.json
+mkdir -p $TEST_DIR
+
+# Setup requirements
+sudo apt-get update
+sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils isc-dhcp-client
+
+pip3 install pytest
 
 # Start OVS
 # Setup device network
 sudo ip link add dev endev0a type veth peer name endev0b
 sudo ip link set dev endev0a up
 sudo ip link set dev endev0b up
-sudo docker network rm endev1
 sudo docker network create -d macvlan -o parent=endev0b endev1
 
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 # Build Test Container
-sudo docker build ./testing/docker/ci_test -t ci_test1 -f  ./testing/docker/ci_test/Dockerfile
+sudo docker build ./testing/docker/ci_test_device1 -t ci_test_device1 -f  ./testing/docker/ci_test_device1/Dockerfile
 
-cat <<EOF >conf/system.json
+cat <<EOF >local/system.json
 {
   "network": {
-    "device_intf": "endev0a", 
-    "internet_intf": "ens5"
+    "device_intf": "endev0a",
+    "internet_intf": "eth0"
   },
   "log_level": "DEBUG"
 }
@@ -38,7 +60,8 @@ for tester in $TESTERS; do
   ethmac=$(jq -r .$tester.ethmac $MATRIX)
   args=$(jq -r .$tester.args $MATRIX)
 
-  sudo cmd/start --single-intf > $testrun_log 2>&1 
+  touch $testrun_log
+  sudo cmd/start --single-intf > $testrun_log 2>&1 &
   TPID=$!
 
   # Time to wait for testrun to be ready
@@ -66,7 +89,7 @@ for tester in $TESTERS; do
 
   # Load Test Container
   sudo docker run --network=endev1 --mac-address=$ethmac \
-    --cap-add=NET_ADMIN -v /tmp:/out --privileged $args 2>&1 > $device_log
+    --cap-add=NET_ADMIN -v /tmp:/out --privileged ci_test_device1 $args 2>&1 > $device_log
   # Following line indicates that tests are completed but wait till it exits
   # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
   #Change this line! - LOGGER.info(f"""Completed running test modules on device
@@ -80,6 +103,6 @@ for tester in $TESTERS; do
 
 done
 
-pytest testing/
+pytest testing/test_tests.py
 
 exit $?
