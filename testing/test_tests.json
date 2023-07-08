@@ -1,0 +1,23 @@
+{
+    "tester1": {
+        "image": "test-run/ci_test1",
+        "args": "a b c",
+        "ethmac": "02:42:aa:00:00:01",
+        "expected_results": {
+            "dns.network.from_device": "non-compliant",
+            "dns.network.from_dhcp": "non-compliant",
+            "security.nmap.ports": "non-compliant"
+        }
+    },
+    "tester2": {
+        "image": "test-run/ci_test1",
+        "args": "",
+        "ethmac": "02:42:aa:00:00:02",
+        "expected_results": {
+            "dns.network.from_device": "non-compliant",
+            "dns.network.from_dhcp": "non-compliant",
+            "security.nmap.ports": "non-compliant"
+        }
+    }
+    
+}

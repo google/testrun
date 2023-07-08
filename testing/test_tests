@@ -1,0 +1,85 @@
+#!/bin/bash -e
+
+TEST_DIR=/tmp/results
+
+MATRIX=testing/test_matrix.json
+
+# Start OVS
+# Setup device network
+sudo ip link add dev endev0a type veth peer name endev0b
+sudo ip link set dev endev0a up
+sudo ip link set dev endev0b up
+sudo docker network rm endev1
+sudo docker network create -d macvlan -o parent=endev0b endev1
+
+sudo /usr/share/openvswitch/scripts/ovs-ctl start
+
+# Build Test Container
+sudo docker build ./testing/docker/ci_test -t ci_test1 -f  ./testing/docker/ci_test/Dockerfile
+
+cat <<EOF >conf/system.json
+{
+  "network": {
+    "device_intf": "endev0a", 
+    "internet_intf": "ens5"
+  },
+  "log_level": "DEBUG"
+}
+EOF
+
+sudo cmd/install
+
+TESTERS=$(jq -r 'keys[]' $MATRIX)
+for tester in $TESTERS; do
+  testrun_log=$TEST_DIR/${tester}_testrun.log
+  device_log=$TEST_DIR/${tester}_device.log
+
+  image=$(jq -r .$tester.image $MATRIX)
+  ethmac=$(jq -r .$tester.ethmac $MATRIX)
+  args=$(jq -r .$tester.args $MATRIX)
+
+  sudo cmd/start --single-intf > $testrun_log 2>&1 
+  TPID=$!
+
+  # Time to wait for testrun to be ready
+  WAITING=600
+  for i in `seq 1 $WAITING`; do
+    tail -1 $testrun_log
+      if [[ -n $(fgrep "Waiting for devices on the network" $testrun_log) ]]; then
+          break
+      fi
+
+      if [[ ! -d /proc/$TPID ]]; then
+          cat $testrun_log
+          echo "error encountered starting test run"
+          exit 1
+      fi
+    
+      sleep 1
+  done
+
+  if [[ $i -eq $WAITING ]]; then
+      cat $testrun_log
+      echo "failed after waiting $WAITING seconds for test-run start"
+      exit 1
+  fi
+
+  # Load Test Container
+  sudo docker run --network=endev1 --mac-address=$ethmac \
+    --cap-add=NET_ADMIN -v /tmp:/out --privileged $args 2>&1 > $device_log
+  # Following line indicates that tests are completed but wait till it exits
+  # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
+  #Change this line! - LOGGER.info(f"""Completed running test modules on device
+  #          with mac addr {device.mac_addr}""")
+  wait $TPID
+
+  cp runtime/tests/${ethmac//:/}/results.json $TEST_DIR/$tester.json
+  more $TEST_DIR/$tester.json
+  more $testrun_log
+  more $device_log
+
+done
+
+pytest testing/
+
+exit $?
