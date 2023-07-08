@@ -11,16 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Connection test module"""
 import util
 import sys
-from scapy.all import *
+import json
+from scapy.all import rdpcap, DHCP, Ether
 from test_module import TestModule
+from dhcp1.client import Client as DHCPClient1
 
 LOG_NAME = 'test_connection'
 LOGGER = None
-OUI_FILE='/usr/local/etc/oui.txt'
+OUI_FILE = '/usr/local/etc/oui.txt'
 DHCP_SERVER_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
@@ -30,9 +31,57 @@ class ConnectionModule(TestModule):
   """Connection Test module"""
 
   def __init__(self, module):
-    super(module_name=module, log_name=LOG_NAME)
+    super().__init__(module_name=module, log_name=LOG_NAME)
     global LOGGER
     LOGGER = self._get_logger()
+    self.dhcp1_client = DHCPClient1()
+
+    # ToDo: Move this into some level of testing, leave for
+    # reference until tests are implemented with these calls
+    # response = self.dhcp1_client.add_reserved_lease(
+    # 'test','00:11:22:33:44:55','10.10.10.21')
+    # print("AddLeaseResp: " + str(response))
+
+    # response = self.dhcp1_client.delete_reserved_lease('00:11:22:33:44:55')
+    # print("DelLeaseResp: " + str(response))
+
+    # response = self.dhcp1_client.disable_failover()
+    # print("FailoverDisabled: " + str(response))
+
+    # response = self.dhcp1_client.enable_failover()
+    # print("FailoverEnabled: " + str(response))
+
+    # response = self.dhcp1_client.get_dhcp_range()
+    # print("DHCP Range: " + str(response))
+
+    # response = self.dhcp1_client.get_lease(self._device_mac)
+    # print("Lease: " + str(response))
+
+    # response = self.dhcp1_client.get_status()
+    # print("Status: " + str(response))
+
+    # response = self.dhcp1_client.set_dhcp_range('10.10.10.20','10.10.10.30')
+    # print("Set Range: " + str(response))
+
+  def _connection_dhcp_address(self):
+    LOGGER.info('Running connection.dhcp_address')
+    response = self.dhcp1_client.get_lease(self._device_mac)
+    LOGGER.info('DHCP Lease resolved:\n' + str(response))
+    if response.code == 200:
+      lease = eval(response.message) # pylint: disable=E0203
+      if 'ip' in lease:
+        ip_addr = lease['ip']
+        LOGGER.info('IP Resolved: ' + ip_addr)
+        LOGGER.info('Attempting to ping device...')
+        ping_success = self._ping(self._device_ipv4_addr)
+        LOGGER.info('Ping Success: ' + str(ping_success))
+        if ping_success:
+          return True, 'Device responded to leased ip address'
+        else:
+          return False, 'Device did not respond to leased ip address'
+    else:
+      LOGGER.info('No DHCP lease found for: ' + self._device_mac)
+      return False, 'No DHCP lease found for: ' + self._device_mac
 
   def _connection_mac_address(self):
     LOGGER.info('Running connection.mac_address')
@@ -71,7 +120,7 @@ class ConnectionModule(TestModule):
     LOGGER.info('Inspecting: ' + str(len(packets)) + ' packets')
     for packet in packets:
       # Option[1] = message-type, option 3 = DHCPREQUEST
-      if DHCP in packet and packet[DHCP].options[0][1] == 3: 
+      if DHCP in packet and packet[DHCP].options[0][1] == 3:
         mac_address = packet[Ether].src
         mac_addresses.add(mac_address.upper())
 
@@ -84,7 +133,6 @@ class ConnectionModule(TestModule):
       LOGGER.info('DHCPREQUEST from MAC address: ' + mac_address)
       result &= self._device_mac.upper() == mac_address
     return result
-
 
   def _connection_target_ping(self):
     LOGGER.info('Running connection.target_ping')
@@ -99,11 +147,11 @@ class ConnectionModule(TestModule):
     else:
       return self._ping(self._device_ipv4_addr)
 
-  def _get_oui_manufacturer(self,mac_address):
+  def _get_oui_manufacturer(self, mac_address):
     # Do some quick fixes on the format of the mac_address
     # to match the oui file pattern
-    mac_address = mac_address.replace(':','-').upper()
-    with open(OUI_FILE, 'r', encoding='utf-8') as file:
+    mac_address = mac_address.replace(':', '-').upper()
+    with open(OUI_FILE, 'r', encoding='UTF-8') as file:
       for line in file:
         if mac_address.startswith(line[:8]):
           start = line.index('(hex)') + len('(hex)')
@@ -114,4 +162,3 @@ class ConnectionModule(TestModule):
     cmd = 'ping -c 1 ' + str(host)
     success = util.run_command(cmd, output=False)
     return success
-  
