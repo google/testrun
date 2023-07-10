@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ip a
+
 declare -A options
 for option in $*; do
     if [[ $option == *"="* ]]; then

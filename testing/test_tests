@@ -46,7 +46,7 @@ cat <<EOF >local/system.json
     "internet_intf": "eth0"
   },
   "log_level": "DEBUG",
-  "monitor_period": 30,
+  "monitor_period": 30
 }
 EOF
 
@@ -96,34 +96,25 @@ for tester in $TESTERS; do
     -v /tmp:/out \
     --privileged \
     --name=$tester \
-    ci_test_device1 $args 2>&1 > $device_log &
+    ci_test_device1 $args &
   # Following line indicates that tests are completed but wait till it exits
   # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
   #Change this line! - LOGGER.info(f"""Completed running test modules on device
   #          with mac addr {device.mac_addr}""")
-  
-  WAITING=600
-  for i in `seq 1 $WAITING`; do
-    tail -1 $testrun_log
+  wait $TPID
 
-      if [[ ! -d /proc/$TPID ]]; then
-          cat $testrun_log
-          break
-      fi
-    
-      sleep 1
-  done
-  # wait $TPID
-
+  ls runtime
+  more runtime/network/*.log
   sudo docker kill $tester
+  sudo docker logs $tester | cat 
   
-  cp runtime/tests/${ethmac//:/}/results.json $TEST_DIR/$tester.json
+  cp runtime/test/${ethmac//:/}/results.json $TEST_DIR/$tester.json
   more $TEST_DIR/$tester.json
   more $testrun_log
   more $device_log
 
 done
 
-pytest testing/test_tests.py
+python3 testing/test_tests.py
 
 exit $?

@@ -16,7 +16,14 @@
 
 import json
 
-def collect_result_from_device(results_file):
+TEST_MATRIX = 'testing/test_tests.json'
+with open(TEST_MATRIX) as f:
+    test_matrix = json.load(f)
+
+print(test_matrix)
+print(test_matrix.keys())
+
+def collect_result_from_file(results_file):
     # "module"."results".[list]."result"
     with open(results_file) as f:
         results = json.load(f)
@@ -26,11 +33,6 @@ def collect_result_from_device(results_file):
             for test in child["results"]:
                 yield test['name'], test['result']
 
-
-for test_name, test_result in collect_results(results):
-    print(test_name, test_result)
-
-
-def test_dhcp_ntp_option():
-  """ Check DHCP gives NTP server as option """
-  assert container_data['dhcp']['ntp-servers'] == NTP_SERVER
+for tester in test_matrix.keys():
+    for test_name, test_result in collect_result_from_file(f'/tmp/results/{tester}.json'):
+        print(test_name, test_result)
