@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Response, status
 import json
 import os
 import psutil
@@ -48,6 +48,12 @@ class Api:
     self._router.add_api_route("/system/config", self.post_sys_config,
                               methods=["POST"])
     self._router.add_api_route("/system/config", self.get_sys_config)
+    self._router.add_api_route("/system/start", self.start_test_run,
+                               methods=["POST"])
+    self._router.add_api_route("/system/stop", self.stop_test_run,
+                               methods=["POST"])
+    self._router.add_api_route("/system/status", self.get_status)
+
     self._router.add_api_route("/devices", self.get_devices)
 
     self._app = FastAPI()
@@ -60,6 +66,7 @@ class Api:
   def start(self):
     LOGGER.info("Starting API")
     self._api_thread.start()
+    LOGGER.info("API waiting for requests")
 
   def _start(self):
     uvicorn.run(self._app, log_config=None)
@@ -114,7 +121,7 @@ class Api:
       json.dump(json_contents, config_file, indent=2)
 
     return sys_config
-  
+
   async def get_sys_config(self):
     config_file = open(self._config_file_url, "r", encoding="utf-8")
     json_contents = json.load(config_file)
@@ -123,3 +130,26 @@ class Api:
 
   async def get_devices(self):
     return self._devices
+
+  async def start_test_run(self, response: Response):
+    LOGGER.debug("Received start command")
+    if self._test_run.get_session().status != "Idle":
+      LOGGER.debug("Test Run is already running. Cannot start another instance.")
+      response.status_code = status.HTTP_409_CONFLICT
+      return json.loads('{"error": "Test Run is already running"}')
+    thread = threading.Thread(target=self._start_test_run,
+                                        name="Test Run")
+    thread.start()
+    return json.loads('{"status": "Starting Test Run"}')
+
+  def _start_test_run(self):
+    self._test_run.start()
+
+  async def stop_test_run(self):
+    LOGGER.info("Received stop command. Stopping Test Run")
+
+  async def get_status(self):
+    return self._test_run.get_session()
+
+  async def get_history(self):
+    LOGGER.info("Returning previous Test Runs to UI")

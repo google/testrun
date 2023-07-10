@@ -26,17 +26,19 @@ import signal
 import time
 from common import logger
 from common.device import Device
+from common.session import TestRunSession
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 # Locate the test-run root directory, 4 levels, src->python->framework->test-run
-root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_dir))))
+root_dir = os.path.dirname(os.path.dirname(
+  os.path.dirname(os.path.dirname(current_dir))))
 
-from api.api import Api
-from net_orc.listener import NetworkEvent
-from test_orc import test_orchestrator as test_orc
-from net_orc import network_orchestrator as net_orc
+from api.api import Api # pylint: disable=wrong-import-position
+from net_orc.listener import NetworkEvent # pylint: disable=wrong-import-position
+from test_orc import test_orchestrator as test_orc # pylint: disable=wrong-import-position
+from net_orc import network_orchestrator as net_orc # pylint: disable=wrong-import-position
 
 LOGGER = logger.get_logger('test_run')
 DEFAULT_CONFIG_FILE = 'local/system.json'
@@ -54,7 +56,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
                config_file,
                validate=True,
                net_only=False,
-               single_intf=False):
+               single_intf=False,
+               no_ui=False):
 
     if config_file is None:
       config_file = DEFAULT_CONFIG_FILE
@@ -63,6 +66,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._net_only = net_only
     self._single_intf = single_intf
     self._config_file = config_file
+    self._no_ui = no_ui
+
+    self._session = TestRunSession()
 
     # Catch any exit signals
     self._register_exits()
@@ -81,9 +87,13 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._devices = self._api.load_all_devices()
     self._api.start()
 
-    time.sleep(100)
+    # Hold until API ends
+    while True:
+      time.sleep(1)
 
   def start(self):
+
+    self._set_status('Starting')
 
     self._start_network()
 
@@ -115,22 +125,27 @@ class TestRun:  # pylint: disable=too-few-public-methods
       )
 
       self._net_orc.start_listener()
+      self._set_status('Waiting for device')
       LOGGER.info('Waiting for devices on the network...')
 
       time.sleep(RUNTIME)
 
-      if not (self._test_orc.test_in_progress() or self._net_orc.monitor_in_progress()):
-        LOGGER.info('Timed out whilst waiting for device or stopping due to test completion')
+      if not (self._test_orc.test_in_progress() or
+              self._net_orc.monitor_in_progress()):
+        LOGGER.info('''Timed out whilst waiting for
+          device or stopping due to test completion''')
       else:
-        while self._test_orc.test_in_progress() or self._net_orc.monitor_in_progress():
+        while (self._test_orc.test_in_progress() or
+          self._net_orc.monitor_in_progress()):
           time.sleep(5)
 
       self.stop()
 
   def stop(self, kill=False):
+    self._set_status('Stopping')
     self._stop_tests()
     self._stop_network(kill=kill)
-    self._api.stop()
+    self._set_status('Idle')
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
@@ -175,6 +190,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         return device
 
   def _device_discovered(self, mac_addr):
+    self._set_status('Identifying device')
     device = self.get_device(mac_addr)
     if device is not None:
       LOGGER.info(
@@ -188,4 +204,12 @@ class TestRun:  # pylint: disable=too-few-public-methods
   def _device_stable(self, mac_addr):
     device = self.get_device(mac_addr)
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
+    self._set_status('In progress')
     self._test_orc.run_test_modules(device)
+    self._set_status('Complete')
+
+  def _set_status(self, status):
+    self._session.status = status
+
+  def get_session(self):
+    return self._session

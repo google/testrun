@@ -1,5 +1,3 @@
-#!/bin/bash -e
-
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,26 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if [[ "$EUID" -ne 0 ]]; then
-    echo "Must run as root. Use sudo cmd/start"
-    exit 1
-fi
+"""Track testing status."""
 
-# Ensure that /var/run/netns folder exists
-mkdir -p /var/run/netns
+from dataclasses import dataclass, field
+from common.device import Device
 
-# Clear up existing runtime files
-rm -rf runtime
+@dataclass
+class TestRunSession():
+  """Represents the current session of Test Run."""
 
-# Check if python modules exist. Install if not
-[ ! -d "venv" ] && cmd/install
-
-# Activate Python virtual environment
-source venv/bin/activate
-
-# TODO: Execute python code
-# Set the PYTHONPATH to include the "src" directory
-export PYTHONPATH="$PWD/framework/python/src"
-python -u framework/python/src/core/test_runner.py $@
-
-deactivate
+  status: str = 'Idle'
+  device: Device = None
+  started: str = None
+  finished: str = None
+  tests: list = field(default_factory=list)

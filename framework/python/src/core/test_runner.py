@@ -36,12 +36,14 @@ class TestRunner:
                config_file=None,
                validate=True,
                net_only=False,
-               single_intf=False):
+               single_intf=False,
+               no_ui=False):
     self._register_exits()
     self.test_run = TestRun(config_file=config_file,
                             validate=validate,
                             net_only=net_only,
-                            single_intf=single_intf)
+                            single_intf=single_intf,
+                            no_ui=no_ui)
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
@@ -61,10 +63,6 @@ class TestRunner:
 
   def stop(self, kill=False):
     self.test_run.stop(kill)
-
-  def start(self):
-    self.test_run.start()
-    LOGGER.info("Test Run has finished")
 
 
 def parse_args():
@@ -88,6 +86,10 @@ def parse_args():
   parser.add_argument("--single-intf",
                       action="store_true",
                       help="Single interface mode (experimental)")
+  parser.add_argument("--no-ui",
+                      default=False,
+                      action="store_true",
+                      help="Do not launch the user interface")
   parsed_args = parser.parse_known_args()[0]
   return parsed_args
 
@@ -97,5 +99,5 @@ if __name__ == "__main__":
   runner = TestRunner(config_file=args.config_file,
                       validate=not args.no_validate,
                       net_only=args.net_only,
-                      single_intf=args.single_intf)
-  runner.start()
+                      single_intf=args.single_intf,
+                      no_ui=args.no_ui)

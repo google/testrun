@@ -110,7 +110,7 @@ class TestOrchestrator:
         "runtime/test/" + device.mac_addr.replace(":", "") + "/results.json")
     with open(out_file, "w", encoding="utf-8") as f:
       json.dump(results, f, indent=2)
-    util.run_command(f'chown -R {self._host_user} {out_file}')
+    util.run_command(f"chown -R {self._host_user} {out_file}")
     return results
 
   def test_in_progress(self):
