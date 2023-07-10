@@ -83,9 +83,12 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     self._test_orc = test_orc.TestOrchestrator(self._net_orc)
 
-    self._api = Api(self)
-    self._devices = self._api.load_all_devices()
-    self._api.start()
+    if self._no_ui:
+      self.start()
+    else:
+      self._api = Api(self)
+      self._devices = self._api.load_all_devices()
+      self._api.start()
 
     # Hold until API ends
     while True:
