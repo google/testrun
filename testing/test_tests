@@ -45,7 +45,8 @@ cat <<EOF >local/system.json
     "device_intf": "endev0a",
     "internet_intf": "eth0"
   },
-  "log_level": "DEBUG"
+  "log_level": "DEBUG",
+  "monitor_period": 30,
 }
 EOF
 
@@ -88,14 +89,34 @@ for tester in $TESTERS; do
   fi
 
   # Load Test Container
-  sudo docker run --network=endev1 --mac-address=$ethmac \
-    --cap-add=NET_ADMIN -v /tmp:/out --privileged ci_test_device1 $args 2>&1 > $device_log
+  sudo docker run \
+    --network=endev1 \
+    --mac-address=$ethmac \
+    --cap-add=NET_ADMIN \
+    -v /tmp:/out \
+    --privileged \
+    --name=$tester \
+    ci_test_device1 $args 2>&1 > $device_log &
   # Following line indicates that tests are completed but wait till it exits
   # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
   #Change this line! - LOGGER.info(f"""Completed running test modules on device
   #          with mac addr {device.mac_addr}""")
-  wait $TPID
+  
+  WAITING=600
+  for i in `seq 1 $WAITING`; do
+    tail -1 $testrun_log
 
+      if [[ ! -d /proc/$TPID ]]; then
+          cat $testrun_log
+          break
+      fi
+    
+      sleep 1
+  done
+  # wait $TPID
+
+  sudo docker kill $tester
+  
   cp runtime/tests/${ethmac//:/}/results.json $TEST_DIR/$tester.json
   more $TEST_DIR/$tester.json
   more $testrun_log
