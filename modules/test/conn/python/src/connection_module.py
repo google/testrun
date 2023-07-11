@@ -99,12 +99,38 @@ class ConnectionModule(TestModule):
 
     LOGGER.info("Private subnets configured for testing: " + str(config))
 
+    results = []
     for subnet in config:
-      lease = self._get_cur_lease()
-      if lease is not None:
-        self._test_subnet(subnet,lease)
+      result = {}
+      try:
+        lease = self._get_cur_lease()
+        if lease is not None:
+          result = self._test_subnet(subnet,lease)
+          if result:
+            result = {'result':True,'details':'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' passed'}
+          else:
+            result = {'result':False,'details':'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' failed'}
+      except Exception as e:
+        result = {'result':False,'details':'Subnet test failed: ' + str(e)}
+      results.append(result)
 
-    return False, 'Test not yet implemented'
+    final_result = None
+    final_result_details = ''
+    for result in results:
+      if final_result is None:
+        final_result = result['result']
+      else:
+        final_result &= result['result']
+      final_result_details += result['details'] + '\n'
+
+    return final_result, final_result_details
+
+  def is_ip_in_range(self,ip, start_ip, end_ip):
+    ip_int = int(''.join(format(int(octet), '08b') for octet in ip.split('.')), 2)
+    start_int = int(''.join(format(int(octet), '08b') for octet in start_ip.split('.')), 2)
+    end_int = int(''.join(format(int(octet), '08b') for octet in end_ip.split('.')), 2)
+
+    return start_int <= ip_int <= end_int
 
   def _test_subnet(self,subnet,lease):
     if self._change_subnet(subnet):
@@ -121,7 +147,9 @@ class ConnectionModule(TestModule):
           if lease is not None:
             LOGGER.info("New Lease found: " + str(lease))
             LOGGER.info("Validating subnet for new lease...")
-            break
+            in_range = self.is_ip_in_range(lease['ip'],subnet['start'],subnet['end'])
+            LOGGER.info("Lease within subnet: " + str(in_range))
+            return in_range
           else:
             LOGGER.info("New lease not found. Waiting to check again")
           time.sleep(5)
