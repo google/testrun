@@ -105,9 +105,29 @@ class ConnectionModule(TestModule):
       final_result_details += result['details'] + '\n'
 
     try:
+      # Restore failover configuration of DHCP servers
       self.restore_failover_dhcp_server(cur_range)
+
+      # Wait for the current lease to expire
+      self._wait_for_lease_expire(self._get_cur_lease())
+
+      # Wait for a new lease to be provided before exiting test
+      # to prevent other test modules from failing
+      for _ in range(5):
+          LOGGER.info('Checking for new lease')
+          lease = self._get_cur_lease()
+          if lease is not None:
+            LOGGER.info('New Lease found: ' + str(lease))
+            LOGGER.info('Validating subnet for new lease...')
+            in_range = self.is_ip_in_range(lease['ip'],cur_range['start'],cur_range['end'])
+            LOGGER.info('Lease within subnet: ' + str(in_range))
+            break
+          else:
+            LOGGER.info('New lease not found. Waiting to check again')
+          time.sleep(5)
+
     except Exception as e:
-      LOGGER.error('Failed to restore DHCP server configuration')
+      LOGGER.error('Failed to restore DHCP server configuration: ' + str(e))
 
     return final_result, final_result_details
 
@@ -295,6 +315,15 @@ class ConnectionModule(TestModule):
           else:
             LOGGER.info('New lease not found. Waiting to check again')
           time.sleep(5)
+
+  def _wait_for_lease_expire(self,lease):
+    expiration = datetime.strptime(lease['expires'], '%Y-%m-%d %H:%M:%S')
+    time_to_expire = expiration - datetime.now()
+    LOGGER.info('Time until lease expiration: ' + str(time_to_expire))
+    LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
+    if time_to_expire.total_seconds() > 0:
+      time.sleep(time_to_expire.total_seconds() + 5) # Wait until the expiration time and padd 5 seconds
+      LOGGER.info('Current lease expired.')
 
   def _change_subnet(self,subnet):
     LOGGER.info('Changing subnet to: ' + str(subnet))
