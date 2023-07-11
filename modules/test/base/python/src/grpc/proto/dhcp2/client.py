@@ -3,7 +3,7 @@ import grpc_pb2_grpc as pb2_grpc
 import grpc_pb2 as pb2
 
 DEFAULT_PORT = '5001'
-DEFAULT_HOST = '10.10.10.2'  # Default DHCP1 server
+DEFAULT_HOST = '10.10.10.3'  # Default DHCP2 server
 
 
 class Client():

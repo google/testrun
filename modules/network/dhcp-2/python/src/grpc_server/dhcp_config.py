@@ -28,7 +28,7 @@ class DHCPConfig:
   """Represents the DHCP Servers configuration and gives access to modify it"""
 
   def __init__(self):
-    self._default_lease_time = 300
+    self._default_lease_time = 30
     self._subnets = []
     self._peer = None
     self._reserved_hosts = []

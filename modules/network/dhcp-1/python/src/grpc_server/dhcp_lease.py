@@ -39,7 +39,7 @@ class DHCPLease(object):
       self.hw_addr = sections[0]
       self.ip = sections[1]
       self.hostname = sections[2]
-      self.expires = sections[3] + '' '' + sections[4]
+      self.expires = sections[3] + ' ' + sections[4]
       self.manufacturer = ' '.join(sections[5:])
 
   def get_millis(self, timestamp):
