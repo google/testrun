@@ -14,7 +14,6 @@
 """Connection test module"""
 import util
 import sys
-import json
 import time
 from datetime import datetime
 from scapy.all import rdpcap, DHCP, Ether
@@ -39,8 +38,8 @@ class ConnectionModule(TestModule):
     LOGGER = self._get_logger()
     self.dhcp1_client = DHCPClient1()
     self.dhcp2_client = DHCPClient2()
-    
-    # ToDo: Move this into some level of testing, leave for 
+
+    # ToDo: Move this into some level of testing, leave for
     # reference until tests are implemented with these calls
     # response = self.dhcp1_client.add_reserved_lease(
     # 'test','00:11:22:33:44:55','10.10.10.21')
@@ -67,7 +66,7 @@ class ConnectionModule(TestModule):
     # response = self.dhcp1_client.set_dhcp_range('10.10.10.20','10.10.10.30')
     # print("Set Range: " + str(response))
 
-  def _connection_private_address(self,config):
+  def _connection_private_address(self, config):
     # Shutdown the secondary DHCP Server
     LOGGER.info('Running connection.private_address')
     response = self.dhcp1_client.get_dhcp_range()
@@ -77,8 +76,10 @@ class ConnectionModule(TestModule):
       cur_range['end'] = response.end
       LOGGER.info('Current DHCP subnet range: ' + str(cur_range))
     else:
-      LOGGER.error('Failed to resolve current subnet range required for restoring network')
-      return None, 'Failed to resolve current subnet range required for restoring network'
+      LOGGER.error('Failed to resolve current subnet range required '
+              'for restoring network')
+      return None, ('Failed to resolve current subnet range required '
+              'for restoring network')
 
     results = []
     dhcp_setup = self.setup_single_dhcp_server()
@@ -89,7 +90,7 @@ class ConnectionModule(TestModule):
         if self._is_lease_active(lease):
           results = self.test_subnets(config)
       else:
-        return None, "Failed to confirm a valid active lease for the device"
+        return None, 'Failed to confirm a valid active lease for the device'
     else:
       LOGGER.error(dhcp_setup[1])
       return None, 'Failed to setup DHCP server for test'
@@ -114,19 +115,20 @@ class ConnectionModule(TestModule):
       # Wait for a new lease to be provided before exiting test
       # to prevent other test modules from failing
       for _ in range(5):
-          LOGGER.info('Checking for new lease')
-          lease = self._get_cur_lease()
-          if lease is not None:
-            LOGGER.info('New Lease found: ' + str(lease))
-            LOGGER.info('Validating subnet for new lease...')
-            in_range = self.is_ip_in_range(lease['ip'],cur_range['start'],cur_range['end'])
-            LOGGER.info('Lease within subnet: ' + str(in_range))
-            break
-          else:
-            LOGGER.info('New lease not found. Waiting to check again')
-          time.sleep(5)
+        LOGGER.info('Checking for new lease')
+        lease = self._get_cur_lease()
+        if lease is not None:
+          LOGGER.info('New Lease found: ' + str(lease))
+          LOGGER.info('Validating subnet for new lease...')
+          in_range = self.is_ip_in_range(lease['ip'], cur_range['start'],
+                                         cur_range['end'])
+          LOGGER.info('Lease within subnet: ' + str(in_range))
+          break
+        else:
+          LOGGER.info('New lease not found. Waiting to check again')
+        time.sleep(5)
 
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0718
       LOGGER.error('Failed to restore DHCP server configuration: ' + str(e))
 
     return final_result, final_result_details
@@ -136,7 +138,7 @@ class ConnectionModule(TestModule):
     response = self.dhcp1_client.get_lease(self._device_mac)
     LOGGER.info('DHCP Lease resolved:\n' + str(response))
     if response.code == 200:
-      lease = eval(response.message) # pylint: disable=E0203
+      lease = eval(response.message)  # pylint: disable=W0123
       if 'ip' in lease:
         ip_addr = lease['ip']
         LOGGER.info('IP Resolved: ' + ip_addr)
@@ -231,23 +233,23 @@ class ConnectionModule(TestModule):
     success = util.run_command(cmd, output=False)
     return success
 
-  def restore_failover_dhcp_server(self,subnet):
+  def restore_failover_dhcp_server(self, subnet):
     # Configure the subnet range
     if self._change_subnet(subnet):
       if self.enable_failover():
         response = self.dhcp2_client.start_dhcp_server()
         if response.code == 200:
-          LOGGER.info("DHCP server configuration restored")
+          LOGGER.info('DHCP server configuration restored')
           return True
         else:
           LOGGER.error('Failed to start secondary DHCP server')
           return False
       else:
-        LOGGER.error("Failed to enabled failover in primary DHCP server")
+        LOGGER.error('Failed to enabled failover in primary DHCP server')
         return False
     else:
       LOGGER.error('Failed to restore original subnet')
-      False
+      return False
 
   def setup_single_dhcp_server(self):
     # Shutdown the secondary DHCP Server
@@ -255,7 +257,7 @@ class ConnectionModule(TestModule):
     response = self.dhcp2_client.stop_dhcp_server()
     if response.code == 200:
       LOGGER.info('Secondary DHCP server stop command success')
-      time.sleep(3) # Give some time for the server to stop
+      time.sleep(3)  # Give some time for the server to stop
       LOGGER.info('Checking secondary DHCP server status')
       response = self.dhcp2_client.get_status()
       if response.code == 200:
@@ -274,8 +276,6 @@ class ConnectionModule(TestModule):
     else:
       return False, 'Failed to disable primary DHCP server failover'
 
-    LOGGER.info('Private subnets configured for testing: ' + str(config))
-
   def enable_failover(self):
     # Move primary DHCP server to primary failover
     LOGGER.info('Configuring primary failover DHCP server')
@@ -287,21 +287,25 @@ class ConnectionModule(TestModule):
       LOGGER.error('Failed to disable primary DHCP server failover')
       return False
 
-  def is_ip_in_range(self,ip, start_ip, end_ip):
-    ip_int = int(''.join(format(int(octet), '08b') for octet in ip.split('.')), 2)
-    start_int = int(''.join(format(int(octet), '08b') for octet in start_ip.split('.')), 2)
-    end_int = int(''.join(format(int(octet), '08b') for octet in end_ip.split('.')), 2)
+  def is_ip_in_range(self, ip, start_ip, end_ip):
+    ip_int = int(''.join(format(int(octet), '08b') for octet in ip.split('.')),
+                 2)
+    start_int = int(
+        ''.join(format(int(octet), '08b') for octet in start_ip.split('.')), 2)
+    end_int = int(
+        ''.join(format(int(octet), '08b') for octet in end_ip.split('.')), 2)
 
     return start_int <= ip_int <= end_int
 
-  def _test_subnet(self,subnet,lease):
+  def _test_subnet(self, subnet, lease):
     if self._change_subnet(subnet):
       expiration = datetime.strptime(lease['expires'], '%Y-%m-%d %H:%M:%S')
       time_to_expire = expiration - datetime.now()
       LOGGER.info('Time until lease expiration: ' + str(time_to_expire))
       LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
       if time_to_expire.total_seconds() > 0:
-        time.sleep(time_to_expire.total_seconds() + 5) # Wait until the expiration time and padd 5 seconds
+        time.sleep(time_to_expire.total_seconds() +
+                   5)  # Wait until the expiration time and padd 5 seconds
         LOGGER.info('Current lease expired. Checking for new lease')
         for _ in range(5):
           LOGGER.info('Checking for new lease')
@@ -309,25 +313,27 @@ class ConnectionModule(TestModule):
           if lease is not None:
             LOGGER.info('New Lease found: ' + str(lease))
             LOGGER.info('Validating subnet for new lease...')
-            in_range = self.is_ip_in_range(lease['ip'],subnet['start'],subnet['end'])
+            in_range = self.is_ip_in_range(lease['ip'], subnet['start'],
+                                           subnet['end'])
             LOGGER.info('Lease within subnet: ' + str(in_range))
             return in_range
           else:
             LOGGER.info('New lease not found. Waiting to check again')
           time.sleep(5)
 
-  def _wait_for_lease_expire(self,lease):
+  def _wait_for_lease_expire(self, lease):
     expiration = datetime.strptime(lease['expires'], '%Y-%m-%d %H:%M:%S')
     time_to_expire = expiration - datetime.now()
     LOGGER.info('Time until lease expiration: ' + str(time_to_expire))
     LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
     if time_to_expire.total_seconds() > 0:
-      time.sleep(time_to_expire.total_seconds() + 5) # Wait until the expiration time and padd 5 seconds
+      time.sleep(time_to_expire.total_seconds() +
+                 5)  # Wait until the expiration time and padd 5 seconds
       LOGGER.info('Current lease expired.')
 
-  def _change_subnet(self,subnet):
+  def _change_subnet(self, subnet):
     LOGGER.info('Changing subnet to: ' + str(subnet))
-    response = self.dhcp1_client.set_dhcp_range(subnet['start'],subnet['end'])
+    response = self.dhcp1_client.set_dhcp_range(subnet['start'], subnet['end'])
     if response.code == 200:
       LOGGER.info('Subnet change request accepted. Confirming change...')
       response = self.dhcp1_client.get_dhcp_range()
@@ -344,8 +350,8 @@ class ConnectionModule(TestModule):
     LOGGER.info('Checking current device lease')
     response = self.dhcp1_client.get_lease(self._device_mac)
     if response.code == 200:
-      lease = eval(response.message)
-      if lease: # Check if non-empty lease
+      lease = eval(response.message) # pylint: disable=W0123
+      if lease:  # Check if non-empty lease
         return lease
     else:
       return None
@@ -360,19 +366,29 @@ class ConnectionModule(TestModule):
       LOGGER.info('Current lease confirmed active in device')
       return ping_success
 
-  def test_subnets(self,subnets):
+  def test_subnets(self, subnets):
     results = []
     for subnet in subnets:
       result = {}
       try:
         lease = self._get_cur_lease()
         if lease is not None:
-          result = self._test_subnet(subnet,lease)
+          result = self._test_subnet(subnet, lease)
           if result:
-            result = {'result':True,'details':'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' passed'}
+            result = {
+                'result':
+                True,
+                'details':
+                'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' passed'
+            }
           else:
-            result = {'result':False,'details':'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' failed'}
-      except Exception as e:
-        result = {'result':False,'details':'Subnet test failed: ' + str(e)}
+            result = {
+                'result':
+                False,
+                'details':
+                'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' failed'
+            }
+      except Exception as e: # pylint: disable=W0718
+        result = {'result': False, 'details': 'Subnet test failed: ' + str(e)}
       results.append(result)
     return results
