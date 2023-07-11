@@ -22,6 +22,7 @@ LOGGER = None
 CONFIG_FILE = '/etc/dhcp/dhcpd.conf'
 
 DEFAULT_LEASE_TIME_KEY = 'default-lease-time'
+MAX_LEASE_TIME_KEY = 'max-lease-time'
 
 
 class DHCPConfig:
@@ -29,6 +30,7 @@ class DHCPConfig:
 
   def __init__(self):
     self._default_lease_time = 30
+    self._max_lease_time = 30
     self._subnets = []
     self._peer = None
     self._reserved_hosts = []
@@ -153,11 +155,18 @@ class DHCPConfig:
 
   def __str__(self):
 
+    config = ('{DEFAULT_LEASE_TIME_KEY} {DEFAULT_LEASE_TIME};'
+               if self._default_lease_time is not None else '')
+    config += ('\n\r{MAX_LEASE_TIME_KEY} {MAX_LEASE_TIME};'
+               if self._max_lease_time is not None else '')
+
     # Encode the top level config options
-    config = """{DEFAULT_LEASE_TIME_KEY} {DEFAULT_LEASE_TIME};"""
+    #config = """{DEFAULT_LEASE_TIME_KEY} {DEFAULT_LEASE_TIME};"""
     config = config.format(length='multi-line',
                            DEFAULT_LEASE_TIME_KEY=DEFAULT_LEASE_TIME_KEY,
-                           DEFAULT_LEASE_TIME=self._default_lease_time)
+                           DEFAULT_LEASE_TIME=self._default_lease_time,
+                           MAX_LEASE_TIME_KEY=MAX_LEASE_TIME_KEY,
+                           MAX_LEASE_TIME=self._max_lease_time)
 
     # Encode the failover peer
     config += '\n\n' + str(self._peer)

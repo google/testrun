@@ -15,6 +15,8 @@
 import util
 import sys
 import json
+import time
+from datetime import datetime
 from scapy.all import rdpcap, DHCP, Ether
 from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
