@@ -70,6 +70,16 @@ class ConnectionModule(TestModule):
   def _connection_private_address(self,config):
     # Shutdown the secondary DHCP Server
     LOGGER.info('Running connection.private_address')
+    response = self.dhcp1_client.get_dhcp_range()
+    cur_range = {}
+    if response.code == 200:
+      cur_range['start'] = response.start
+      cur_range['end'] = response.end
+      LOGGER.info('Current DHCP subnet range: ' + str(cur_range))
+    else:
+      LOGGER.error('Failed to resolve current subnet range required for restoring network')
+      return None, 'Failed to resolve current subnet range required for restoring network'
+
     results = []
     dhcp_setup = self.setup_single_dhcp_server()
     if dhcp_setup[0]:
@@ -93,6 +103,11 @@ class ConnectionModule(TestModule):
       else:
         final_result &= result['result']
       final_result_details += result['details'] + '\n'
+
+    try:
+      self.restore_failover_dhcp_server(cur_range)
+    except Exception as e:
+      LOGGER.error('Failed to restore DHCP server configuration')
 
     return final_result, final_result_details
 
@@ -196,6 +211,24 @@ class ConnectionModule(TestModule):
     success = util.run_command(cmd, output=False)
     return success
 
+  def restore_failover_dhcp_server(self,subnet):
+    # Configure the subnet range
+    if self._change_subnet(subnet):
+      if self.enable_failover():
+        response = self.dhcp2_client.start_dhcp_server()
+        if response.code == 200:
+          LOGGER.info("DHCP server configuration restored")
+          return True
+        else:
+          LOGGER.error('Failed to start secondary DHCP server')
+          return False
+      else:
+        LOGGER.error("Failed to enabled failover in primary DHCP server")
+        return False
+    else:
+      LOGGER.error('Failed to restore original subnet')
+      False
+
   def setup_single_dhcp_server(self):
     # Shutdown the secondary DHCP Server
     LOGGER.info('Stopping secondary DHCP server')
@@ -217,11 +250,22 @@ class ConnectionModule(TestModule):
     LOGGER.info('Configuring primary DHCP server')
     response = self.dhcp1_client.disable_failover()
     if response.code == 200:
-      LOGGER.info('Checking current device lease')
+      LOGGER.info('Primary DHCP server failover disabled')
     else:
       return False, 'Failed to disable primary DHCP server failover'
 
     LOGGER.info('Private subnets configured for testing: ' + str(config))
+
+  def enable_failover(self):
+    # Move primary DHCP server to primary failover
+    LOGGER.info('Configuring primary failover DHCP server')
+    response = self.dhcp1_client.enable_failover()
+    if response.code == 200:
+      LOGGER.info('Primary DHCP server enabled')
+      return True
+    else:
+      LOGGER.error('Failed to disable primary DHCP server failover')
+      return False
 
   def is_ip_in_range(self,ip, start_ip, end_ip):
     ip_int = int(''.join(format(int(octet), '08b') for octet in ip.split('.')), 2)

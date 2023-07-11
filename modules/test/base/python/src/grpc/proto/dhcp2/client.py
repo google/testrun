@@ -109,6 +109,14 @@ class Client():
 
     return response
 
+  def start_dhcp_server(self):
+    # Create a request message
+    request = pb2.StartDHCPServerRequest()
+
+    # Make the RPC call
+    response = self._stub.StartDHCPServer(request)
+
+    return response
 
   def set_dhcp_range(self,start,end):
     # Create a request message
