@@ -69,35 +69,35 @@ class ConnectionModule(TestModule):
 
   def _connection_private_address(self,config):
     # Shutdown the secondary DHCP Server
-    LOGGER.info("Running connection.private_address")
-    LOGGER.info("Stopping secondary DHCP server")
+    LOGGER.info('Running connection.private_address')
+    LOGGER.info('Stopping secondary DHCP server')
     response = self.dhcp2_client.stop_dhcp_server()
     if response.code == 200:
-      LOGGER.info("Secondary DHCP server stop command success")
+      LOGGER.info('Secondary DHCP server stop command success')
       time.sleep(3) # Give some time for the server to stop
-      LOGGER.info("Checking secondary DHCP server status")
+      LOGGER.info('Checking secondary DHCP server status')
       response = self.dhcp2_client.get_status()
       if response.code == 200:
-        LOGGER.info("Secondary DHCP server stopped")
+        LOGGER.info('Secondary DHCP server stoppe')
 
     # Move primary DHCP server from failover into a single DHCP server config
-    LOGGER.info("Configuring primary DHCP server")
+    LOGGER.info('Configuring primary DHCP server')
     response = self.dhcp1_client.disable_failover()
     if response.code == 200:
-      LOGGER.info("Checking current device lease")
+      LOGGER.info('Checking current device lease')
       response = self.dhcp1_client.get_lease(self._device_mac)
       if response.code == 200:
         lease = eval(response.message)
-        LOGGER.info("Current lease found")
+        LOGGER.info('Current lease found')
         if 'ip' in lease:
           ip_addr = lease['ip']
-          LOGGER.info("IP Resolved: " + ip_addr)
-          LOGGER.info("Attempting to ping device...");
+          LOGGER.info('IP Resolved: ' + ip_addr)
+          LOGGER.info('Attempting to ping device...')
           ping_success = self._ping(self._device_ipv4_addr)
-          LOGGER.info("Ping Success: " + str(ping_success))
-          LOGGER.info("Current lease confirmed active in device")
+          LOGGER.info('Ping Success: ' + str(ping_success))
+          LOGGER.info('Current lease confirmed active in device')
 
-    LOGGER.info("Private subnets configured for testing: " + str(config))
+    LOGGER.info('Private subnets configured for testing: ' + str(config))
 
     results = []
     for subnet in config:
@@ -136,46 +136,46 @@ class ConnectionModule(TestModule):
     if self._change_subnet(subnet):
       expiration = datetime.strptime(lease['expires'], '%Y-%m-%d %H:%M:%S')
       time_to_expire = expiration - datetime.now()
-      LOGGER.info("Time until lease expiration: " + str(time_to_expire))
-      LOGGER.info("Waiting for current lease to expire: " + str(expiration))
+      LOGGER.info('Time until lease expiration: ' + str(time_to_expire))
+      LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
       if time_to_expire.total_seconds() > 0:
         time.sleep(time_to_expire.total_seconds() + 5) # Wait until the expiration time and padd 5 seconds
-        LOGGER.info("Current lease expired. Checking for new lease")
+        LOGGER.info('Current lease expired. Checking for new lease')
         for _ in range(5):
-          LOGGER.info("Checking for new lease")
+          LOGGER.info('Checking for new lease')
           lease = self._get_cur_lease()
           if lease is not None:
-            LOGGER.info("New Lease found: " + str(lease))
-            LOGGER.info("Validating subnet for new lease...")
+            LOGGER.info('New Lease found: ' + str(lease))
+            LOGGER.info('Validating subnet for new lease...')
             in_range = self.is_ip_in_range(lease['ip'],subnet['start'],subnet['end'])
-            LOGGER.info("Lease within subnet: " + str(in_range))
+            LOGGER.info('Lease within subnet: ' + str(in_range))
             return in_range
           else:
-            LOGGER.info("New lease not found. Waiting to check again")
+            LOGGER.info('New lease not found. Waiting to check again')
           time.sleep(5)
 
   def _change_subnet(self,subnet):
-    LOGGER.info("Changing subnet to: " + str(subnet))
+    LOGGER.info('Changing subnet to: ' + str(subnet))
     response = self.dhcp1_client.set_dhcp_range(subnet['start'],subnet['end'])
     if response.code == 200:
-      LOGGER.info("Subnet change request accepted. Confirming change...")
+      LOGGER.info('Subnet change request accepted. Confirming change...')
       response = self.dhcp1_client.get_dhcp_range()
       if response.code == 200:
         if response.start == subnet['start'] and response.end == subnet['end']:
-          LOGGER.info("Subnet change confirmed")
+          LOGGER.info('Subnet change confirmed')
           return True
-      LOGGER.error("Failed to confirm subnet change")
+      LOGGER.error('Failed to confirm subnet change')
     else:
-      LOGGER.error("Subnet change request failed.")
+      LOGGER.error('Subnet change request failed.')
     return False
 
   def _get_cur_lease(self):
-    LOGGER.info("Checking current device lease")
+    LOGGER.info('Checking current device lease')
     response = self.dhcp1_client.get_lease(self._device_mac)
     if response.code == 200:
       lease = eval(response.message)
       if lease: # Check if non-empty lease
-        LOGGER.info("Current lease found")
+        LOGGER.info('Current lease found')
         return lease
     else:
       return None

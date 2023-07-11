@@ -125,18 +125,19 @@ class DHCPConfig:
     dhcp_subnet = '.'.join(octets)
 
     # Calcualte the netmask from the range
-    prefix = self.calculate_prefix_length(start,end)
+    prefix = self.calculate_prefix_length(start, end)
     netmask = self.calculate_netmask(prefix)
 
     #Update the subnet, range and netmask
-    self._subnets[subnet].set_subnet(dhcp_subnet,netmask)
+    self._subnets[subnet].set_subnet(dhcp_subnet, netmask)
     self._subnets[subnet].pools[pool].set_range(start, end)
 
-  def calculate_prefix_length(self,start_ip, end_ip):
+  def calculate_prefix_length(self, start_ip, end_ip):
     start_octets = start_ip.split('.')
     end_octets = end_ip.split('.')
 
-    start_int = int(''.join(format(int(octet), '08b') for octet in start_octets), 2)
+    start_int = int(
+        ''.join(format(int(octet), '08b') for octet in start_octets), 2)
     end_int = int(''.join(format(int(octet), '08b') for octet in end_octets), 2)
 
     xor_result = start_int ^ end_int
@@ -144,11 +145,11 @@ class DHCPConfig:
 
     return prefix_length
 
-  def calculate_netmask(self,prefix_length):
+  def calculate_netmask(self, prefix_length):
     num_network_bits = prefix_length
     num_host_bits = 32 - num_network_bits
 
-    netmask_int = (2 ** num_network_bits - 1) << num_host_bits
+    netmask_int = (2**num_network_bits - 1) << num_host_bits
     netmask_octets = [(netmask_int >> (i * 8)) & 0xff for i in range(3, -1, -1)]
 
     return '.'.join(str(octet) for octet in netmask_octets)
@@ -156,7 +157,7 @@ class DHCPConfig:
   def __str__(self):
 
     config = ('{DEFAULT_LEASE_TIME_KEY} {DEFAULT_LEASE_TIME};'
-               if self._default_lease_time is not None else '')
+              if self._default_lease_time is not None else '')
     config += ('\n\r{MAX_LEASE_TIME_KEY} {MAX_LEASE_TIME};'
                if self._max_lease_time is not None else '')
 
@@ -395,18 +396,21 @@ class DHCPSubnet:
     self._subnet_mask = netmask
 
     # Calculate the broadcast from the subnet and netmask
-    broadcast = self.calculate_broadcast_address(subnet,netmask)
+    broadcast = self.calculate_broadcast_address(subnet, netmask)
     self._broadcast = broadcast
 
-  def calculate_broadcast_address(self,subnet_address, netmask):
+  def calculate_broadcast_address(self, subnet_address, netmask):
     subnet_octets = subnet_address.split('.')
     netmask_octets = netmask.split('.')
 
-    subnet_int = int(''.join(format(int(octet), '08b') for octet in subnet_octets), 2)
-    netmask_int = int(''.join(format(int(octet), '08b') for octet in netmask_octets), 2)
+    subnet_int = int(
+        ''.join(format(int(octet), '08b') for octet in subnet_octets), 2)
+    netmask_int = int(
+        ''.join(format(int(octet), '08b') for octet in netmask_octets), 2)
 
     broadcast_int = subnet_int | (~netmask_int & 0xffffffff)
-    broadcast_octets = [(broadcast_int >> (i * 8)) & 0xff for i in range(3, -1, -1)]
+    broadcast_octets = [(broadcast_int >> (i * 8)) & 0xff
+                        for i in range(3, -1, -1)]
 
     return '.'.join(str(octet) for octet in broadcast_octets)
 

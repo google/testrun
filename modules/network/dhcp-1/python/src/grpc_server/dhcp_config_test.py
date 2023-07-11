@@ -99,8 +99,10 @@ class DHCPConfigTest(unittest.TestCase):
     DHCP_CONFIG.set_range(range_start, range_end)
     subnets = DHCP_CONFIG.resolve_subnets(str(DHCP_CONFIG))
     pool = subnets[0].pools[0]
-    self.assertTrue(pool.range_start == range_start and pool.range_end == range_end)
-    print("SetSubnetRange:\n" + str(DHCP_CONFIG))
+    self.assertTrue(pool.range_start == range_start
+                    and pool.range_end == range_end)
+    print('SetSubnetRange:\n' + str(DHCP_CONFIG))
+
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
