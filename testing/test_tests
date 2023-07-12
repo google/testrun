@@ -115,8 +115,6 @@ for tester in $TESTERS; do
 
 done
 
-deactivate
-
-pip3 -s testing/test_tests.py
+pytest -s testing/test_tests.py
 
 exit $?
