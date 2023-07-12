@@ -298,8 +298,7 @@ class NetworkOrchestrator:
 
 
   def _ci_post_network_create(self):
-    """ Restore network connection in CI environment """
-    LOGGER.info('post cr')
+    """ Restore network connection in single interface environment """
     util.run_command(f'ip addr flush dev {self._int_intf}')
     util.run_command(f'ip addr add {self._ipv4} dev {INTERNET_BRIDGE}')
     util.run_command(f'ip route append default via {self._gateway} dev {INTERNET_BRIDGE}')

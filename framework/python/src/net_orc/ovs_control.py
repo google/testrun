@@ -125,6 +125,10 @@ class OVSControl:
 
     self.show_config()
 
+    if verify:
+      return self.validate_baseline_network()
+    else:
+      return None
 
   def delete_bridge(self, bridge_name):
     LOGGER.debug('Deleting OVS Bridge: ' + bridge_name)
