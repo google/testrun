@@ -107,7 +107,6 @@ class DHCPServer:
 
     return isc_booted and radvd_booted
 
-
 def run():
   dhcp_server = DHCPServer()
   booted = dhcp_server.boot()
@@ -126,7 +125,6 @@ def run():
       dhcp_server.restart()
       dhcp_server.radvd.restart()
       time.sleep(1)
-
 
 if __name__ == '__main__':
   run()

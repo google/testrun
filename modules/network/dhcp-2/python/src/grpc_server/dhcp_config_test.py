@@ -17,9 +17,7 @@ from dhcp_config import DHCPConfig
 import os
 
 CONFIG_FILE = 'conf/dhcpd.conf'
-
 DHCP_CONFIG = None
-
 
 def get_config_file_path():
   current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -28,12 +26,10 @@ def get_config_file_path():
   conf_file = os.path.join(module_dir, CONFIG_FILE)
   return conf_file
 
-
 def get_config():
   dhcp_config = DHCPConfig()
   dhcp_config.resolve_config(get_config_file_path())
   return dhcp_config
-
 
 class DHCPConfigTest(unittest.TestCase):
 
@@ -92,7 +88,6 @@ class DHCPConfigTest(unittest.TestCase):
     host = config_with_hosts.get_reserved_host('00:11:22:33:44:55')
     self.assertIsNotNone(host)
     print('ResolveConfigWithHosts:\n' + str(config_with_hosts))
-
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()

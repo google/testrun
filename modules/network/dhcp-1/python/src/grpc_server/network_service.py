@@ -25,7 +25,6 @@ from common import logger
 LOG_NAME = 'network_service'
 LOGGER = None
 
-
 class NetworkService(pb2_grpc.NetworkModule):
   """gRPC endpoints for the DHCP Server"""
 

@@ -17,9 +17,7 @@ from dhcp_config import DHCPConfig
 import os
 
 CONFIG_FILE = 'conf/dhcpd.conf'
-
 DHCP_CONFIG = None
-
 
 def get_config_file_path():
   current_dir = os.path.dirname(os.path.abspath(__file__))

@@ -18,9 +18,7 @@ from common import logger
 
 LOG_NAME = 'dhcp_config'
 LOGGER = None
-
 CONFIG_FILE = '/etc/dhcp/dhcpd.conf'
-
 DEFAULT_LEASE_TIME_KEY = 'default-lease-time'
 
 
