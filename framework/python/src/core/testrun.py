@@ -20,11 +20,12 @@ Test Run components, such as net_orc, test_orc and test_ui.
 Run using the provided command scripts in the cmd folder.
 E.g sudo cmd/start
 """
+import json
 import os
 import sys
 import signal
 import time
-from common import logger
+from common import logger, util
 from common.device import Device
 from common.session import TestRunSession
 
@@ -44,6 +45,13 @@ LOGGER = logger.get_logger('test_run')
 DEFAULT_CONFIG_FILE = 'local/system.json'
 EXAMPLE_CONFIG_FILE = 'local/system.json.example'
 RUNTIME = 120
+LOCAL_DEVICES_DIR = 'local/devices'
+RESOURCE_DEVICES_DIR = 'resources/devices'
+DEVICE_CONFIG = 'device_config.json'
+DEVICE_MANUFACTURER = 'manufacturer'
+DEVICE_MODEL = 'model'
+DEVICE_MAC_ADDR = 'mac_addr'
+DEVICE_TEST_MODULES = 'test_modules'
 
 class TestRun:  # pylint: disable=too-few-public-methods
   """Test Run controller.
@@ -76,6 +84,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
     # Expand the config file to absolute pathing
     config_file_abs = self._get_config_abs(config_file=self._config_file)
 
+    self._load_all_devices()
+
     self._net_orc = net_orc.NetworkOrchestrator(
       config_file=config_file_abs,
       validate=validate,
@@ -87,12 +97,38 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self.start()
     else:
       self._api = Api(self)
-      self._devices = self._api.load_all_devices()
       self._api.start()
 
     # Hold until API ends
     while True:
       time.sleep(1)
+
+  def _load_all_devices(self):
+    self._load_devices(device_dir=LOCAL_DEVICES_DIR)
+    self._load_devices(device_dir=RESOURCE_DEVICES_DIR)
+    return self._devices
+
+  def _load_devices(self, device_dir):
+    LOGGER.debug('Loading devices from ' + device_dir)
+
+    os.makedirs(device_dir, exist_ok=True)
+    util.run_command(f'chown -R {util.get_host_user()} {device_dir}')
+
+    for device_folder in os.listdir(device_dir):
+      with open(os.path.join(device_dir, device_folder, DEVICE_CONFIG),
+                encoding='utf-8') as device_config_file:
+        device_config_json = json.load(device_config_file)
+
+        device_manufacturer = device_config_json.get(DEVICE_MANUFACTURER)
+        device_model = device_config_json.get(DEVICE_MODEL)
+        mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
+        test_modules = device_config_json.get(DEVICE_TEST_MODULES)
+
+        device = Device(manufacturer=device_manufacturer,
+                        model=device_model,
+                        mac_addr=mac_addr,
+                        test_modules=test_modules)
+        self._devices.append(device)
 
   def start(self):
 
@@ -173,6 +209,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def get_config_file(self):
     return self._get_config_abs()
+
+  def get_devices(self):
+    return self._devices
 
   def _start_network(self):
     # Start the network orchestrator
