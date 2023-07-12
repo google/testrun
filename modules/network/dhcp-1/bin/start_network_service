@@ -20,7 +20,7 @@ DHCP_LOG_FILE=/runtime/network/dhcp1-dhcpd.log
 RA_PID_FILE=/var/run/radvd/radvd.pid
 RA_LOG_FILE=/runtime/network/dhcp1-radvd.log
 
-echo "Starrting Network Service..."
+echo "Starting Network Service..."
 
 #Enable IPv6 Forwarding
 sysctl net.ipv6.conf.all.forwarding=1
@@ -29,63 +29,22 @@ sysctl -p
 # Create leases file if needed
 touch /var/lib/dhcp/dhcpd.leases
 
-#Create directory for radvd
+# Create directory for radvd
 mkdir /var/run/radvd
 
-#Create and set permissions on the log files
+# Create and set permissions on the log files
 touch $DHCP_LOG_FILE
 touch $RA_LOG_FILE
 chown $HOST_USER $DHCP_LOG_FILE
 chown $HOST_USER $RA_LOG_FILE
 
-
-#Move the config files to the correct location
+# Move the config files to the correct location
+cp /testrun/conf/isc-dhcp-server /etc/default/
 cp /testrun/conf/dhcpd.conf /etc/dhcp/dhcpd.conf
 cp /testrun/conf/radvd.conf /etc/radvd.conf
 
-# Restart dhcp server when config changes
-while true; do
+# Move the radvd-sevice file to the correct location
+cp /testrun/bin/radvd-service /usr/local/bin/
 
-    new_checksum=$(md5sum $CONFIG_FILE)
-
-    if [ "$checksum" == "$new_checksum" ]; then
-        sleep 2
-        continue
-    fi
-
-    echo Config changed. Restarting dhcp server at $(date)..
-
-    if [ -f $DHCP_PID_FILE ]; then
-        kill -9 $(cat $DHCP_PID_FILE) || true
-        rm -f $DHCP_PID_FILE
-    fi
-
-    if [ -f $RA_PID_FILE ]; then
-        kill -9 $(cat $RA_PID_FILE) || true
-        rm -f $RA_PID_FILE
-    fi
-
-    checksum=$new_checksum
-
-    echo Starting isc-dhcp-server at $(date)
-
-    radvd -m logfile -l $RA_LOG_FILE -p $RA_PID_FILE
-    dhcpd -d &> $DHCP_LOG_FILE &
-
-    while [ ! -f $DHCP_PID_FILE ]; do
-        echo Waiting for $DHCP_PID_FILE...
-        sleep 2
-    done
-
-    echo $DHCP_PID_FILE now available
-
-    while [ ! -f $RA_PID_FILE ]; do
-        echo Waiting for $RA_PID_FILE...
-        sleep 2
-    done
-
-    echo $RA_PID_FILE now available
-
-    echo Server now stable
-
-done
+# Start the DHCP Server
+python3 -u /testrun/python/src/grpc_server/dhcp_server.py

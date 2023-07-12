@@ -57,9 +57,20 @@ then
 	exit 1
 fi
 
-echo "Starting module $MODULE_NAME..."
+# Setup the PYTHONPATH so all imports work as expected
+echo "Setting up PYTHONPATH..."
+export PYTHONPATH=$($BIN_DIR/setup_python_path)
+echo "PYTHONPATH: $PYTHONPATH"
 
+# Build all gRPC files from the proto for use in
+# gRPC clients for communications to network modules
+echo "Building gRPC files from available proto files..."
+$BIN_DIR/setup_grpc_clients
+
+echo "Configuring binary files..."
 $BIN_DIR/setup_binaries $BIN_DIR
+
+echo "Starting module $MODULE_NAME..."
 
 # Only start network services if the test container needs
 # a network connection to run its tests
@@ -78,9 +89,9 @@ then
 	if [[ ! -z $GRPC_PORT && ! $GRPC_PORT == "null" ]]
 	then
 		echo "gRPC port resolved from config: $GRPC_PORT"
-		$BIN_DIR/start_grpc "-p $GRPC_PORT" &
+		$BIN_DIR/start_grpc "-p $GRPC_PORT"
 	else
-		$BIN_DIR/start_grpc &
+		$BIN_DIR/start_grpc
 	fi
 fi
 
