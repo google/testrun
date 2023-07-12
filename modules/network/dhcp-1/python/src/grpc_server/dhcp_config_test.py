@@ -17,7 +17,6 @@ from dhcp_config import DHCPConfig
 import os
 
 CONFIG_FILE = 'conf/dhcpd.conf'
-
 DHCP_CONFIG = None
 
 
@@ -102,7 +101,6 @@ class DHCPConfigTest(unittest.TestCase):
     self.assertTrue(pool.range_start == range_start
                     and pool.range_end == range_end)
     print('SetSubnetRange:\n' + str(DHCP_CONFIG))
-
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()

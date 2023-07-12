@@ -27,6 +27,7 @@ OUI_FILE = '/usr/local/etc/oui.txt'
 DHCP_SERVER_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
+SLAAC_PREFIX = "fd10:77be:4186"
 
 
 class ConnectionModule(TestModule):
@@ -152,6 +153,7 @@ class ConnectionModule(TestModule):
     else:
       LOGGER.info('No DHCP lease found for: ' + self._device_mac)
       return False, 'No DHCP lease found for: ' + self._device_mac
+    self._ipv6_addr = None
 
   def _connection_mac_address(self):
     LOGGER.info('Running connection.mac_address')
@@ -228,8 +230,44 @@ class ConnectionModule(TestModule):
           return line[start:].strip()  # Extract the company name
     return None
 
+  def _connection_ipv6_slaac(self):
+    LOGGER.info("Running connection.ipv6_slaac")
+    packet_capture = rdpcap(MONITOR_CAPTURE_FILE)
+
+    sends_ipv6 = False
+
+    for packet in packet_capture:
+      if IPv6 in packet and packet.src == self._device_mac:
+        sends_ipv6 = True
+        if ICMPv6ND_NS in packet:
+          ipv6_addr = str(packet[ICMPv6ND_NS].tgt)
+          if ipv6_addr.startswith(SLAAC_PREFIX):
+            self._ipv6_addr = ipv6_addr
+            LOGGER.info(f"Device has formed SLAAC address {ipv6_addr}")
+            return True
+
+    if sends_ipv6:
+      LOGGER.info("Device does not support IPv6 SLAAC")
+    else:
+      LOGGER.info("Device does not support IPv6")
+    return False
+
+  def _connection_ipv6_ping(self):
+    LOGGER.info("Running connection.ipv6_ping")
+
+    if self._ipv6_addr is None:
+      LOGGER.info("No IPv6 SLAAC address found. Cannot ping")
+      return
+
+    if self._ping(self._ipv6_addr):
+      LOGGER.info(f"Device responds to IPv6 ping on {self._ipv6_addr}")
+      return True
+    else:
+      LOGGER.info("Device does not respond to IPv6 ping")
+      return False
+
   def _ping(self, host):
-    cmd = 'ping -c 1 ' + str(host)
+    cmd = "ping -c 1 " + str(host)
     success = util.run_command(cmd, output=False)
     return success
 
