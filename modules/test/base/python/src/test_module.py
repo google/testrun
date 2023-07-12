@@ -89,14 +89,13 @@ class TestModule:
           else:
             result = getattr(self, test_method_name)()
         else:
-          LOGGER.info('Test ' + test['name'] + ' not resolved. Skipping')
+          LOGGER.info(f'Test {test["name"]} not resolved. Skipping')
           result = None
       else:
-        LOGGER.info('Test ' + test['name'] + ' disabled. Skipping')
+        LOGGER.info(f'Test {test["name"]} disabled. Skipping')
       if result is not None:
-        success = None
-        if isinstance(result,bool):
-          test['result'] = 'compliant' if result else 'non-compliant'     
+        if isinstance(result, bool):
+          test['result'] = 'compliant' if result else 'non-compliant'
         else:
           test['result'] = 'compliant' if result[0] else 'non-compliant'
           test['result_details'] = result[1]

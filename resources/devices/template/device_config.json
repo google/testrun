@@ -14,6 +14,35 @@
         }
       }
     },
+    "connection": {
+      "enabled": true,
+      "tests": {
+        "connection.mac_address": {
+          "enabled": true
+        },
+        "connection.mac_oui": {
+          "enabled": true
+        },
+        "connection.target_ping": {
+          "enabled": true
+        }
+        ,
+        "connection.single_ip": {
+          "enabled": true
+        }
+      }
+    },
+    "ntp": {
+      "enabled": true,
+      "tests": {
+        "ntp.network.ntp_support": {
+          "enabled": true
+        },
+        "ntp.network.ntp_dhcp": {
+          "enabled": true
+        }
+      }
+    },
     "baseline": {
       "enabled": false,
       "tests": {
