@@ -305,13 +305,15 @@ class NetworkOrchestrator:
     util.run_command(
         f'ip addr add dev {INTERNET_BRIDGE} {self._ipv4} broadcast {self._brd}')
     util.run_command(f'ip -6 addr add {self._ipv6} dev {INTERNET_BRIDGE} ')
+    
+    util.run_command('echo "nameserver 8.8.8.8" > /etc/resolv.conf')
     util.run_command(
         f'systemd-resolve --interface {INTERNET_BRIDGE} --set-dns 8.8.8.8')
     util.run_command(f'ip link set dev {INTERNET_BRIDGE} up')
-    util.run_command(f'dhclient {INTERNET_BRIDGE}')
     util.run_command('ip route del default via 10.1.0.1')
     util.run_command(f'ip route add default via {self._gateway} '
                      f'src {self._ipv4[:-3]} metric 100 dev {INTERNET_BRIDGE}')
+    util.run_command(f'dhclient -v -i {INTERNET_BRIDGE}')
 
   def create_net(self):
     LOGGER.info('Creating baseline network')
@@ -324,9 +326,6 @@ class NetworkOrchestrator:
 
     if self._single_intf:
       self._ci_pre_network_create()
-
-    # Remove IP from internet adapter
-    util.run_command('ifconfig ' + self._int_intf + ' 0.0.0.0')
 
     # Setup the virtual network
     if not self._ovs.create_baseline_net(verify=True):
