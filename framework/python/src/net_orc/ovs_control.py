@@ -122,14 +122,9 @@ class OVSControl:
 
     # Set ports up
     self.set_bridge_up(DEVICE_BRIDGE)
-    self.set_bridge_up(INTERNET_BRIDGE)
 
     self.show_config()
 
-    if verify:
-      return self.validate_baseline_network()
-    else:
-      return None
 
   def delete_bridge(self, bridge_name):
     LOGGER.debug('Deleting OVS Bridge: ' + bridge_name)

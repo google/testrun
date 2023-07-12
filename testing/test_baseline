@@ -48,7 +48,7 @@ EOF
 
 sudo cmd/install
 
-sudo cmd/start --single-intf > $TESTRUN_OUT 2>&1 & 
+sudo cmd/start --single-intf
 TPID=$!
 
 # Time to wait for testrun to be ready
