@@ -15,24 +15,61 @@
 # limitations under the License.
 
 import json
+import pytest
+import os
+import glob
 
-TEST_MATRIX = 'testing/test_tests.json'
-with open(TEST_MATRIX) as f:
-    test_matrix = json.load(f)
+from pathlib import Path
+from dataclasses import dataclass
 
-print(test_matrix)
-print(test_matrix.keys())
+TEST_MATRIX = 'test_tests.json'
+RESULTS_PATH = '/tmp/results/*.json'
 
-def collect_result_from_file(results_file):
-    # "module"."results".[list]."result"
-    with open(results_file) as f:
-        results = json.load(f)
+@dataclass(frozen=True)
+class TestResult:
+	name: str
+	result: str
+	__test__ = False
 
-    for maybe_module, child in results.items():
-        if "results" in child and maybe_module != "baseline":
-            for test in child["results"]:
-                yield test['name'], test['result']
 
-for tester in test_matrix.keys():
-    for test_name, test_result in collect_result_from_file(f'/tmp/results/{tester}.json'):
-        print(test_name, test_result)
+def collect_expected_results(expected_results):
+	""" Yields results from expected_results property of the test matrix"""
+	for name, result in expected_results.items():
+		yield TestResult(name, result)
+
+
+def collect_actual_results(results_dict):
+	""" Yields results from an already loaded testrun results file """
+	# "module"."results".[list]."result"
+	for maybe_module, child in results_dict.items():
+		if "results" in child and maybe_module != "baseline":
+			for test in child["results"]:
+				yield TestResult(test['name'], test['result'])
+
+
+@pytest.fixture
+def test_matrix():
+  dir = os.path.dirname(os.path.abspath(__file__))
+  with open(os.path.join(dir, TEST_MATRIX), encoding='utf-8') as f:
+    return json.load(f)
+
+
+@pytest.fixture
+def results():
+  results = {}
+  for file in [Path(x) for x in glob.glob(RESULTS_PATH)]:
+	  with open(file, encoding='utf-8') as f:
+		  results[file.stem] = json.load(f)
+  return results
+
+
+def test_tests(results, test_matrix):
+	""" Check if each testers expect results were obtained """
+	print(results)
+	print(test_matrix)
+	
+	for tester, props in test_matrix.items():
+		expected = set(collect_expected_results(props['expected_results']))
+		actual = set(collect_actual_results(results[tester]))
+
+		assert expected.issubset(actual), f'{tester} expected results not obtained'

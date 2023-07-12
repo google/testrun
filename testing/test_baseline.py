@@ -24,7 +24,6 @@ CI_BASELINE_OUT = '/tmp/testrun_ci.json'
 
 @pytest.fixture
 def container_data():
-  dir = os.path.dirname(os.path.abspath(__file__))
   with open(CI_BASELINE_OUT, encoding='utf-8') as f:
     return json.load(f)
 

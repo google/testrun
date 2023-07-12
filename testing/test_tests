@@ -115,6 +115,6 @@ for tester in $TESTERS; do
 
 done
 
-python3 testing/test_tests.py
+python3 -s testing/test_tests.py
 
 exit $?
