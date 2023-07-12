@@ -16,7 +16,7 @@ import util
 import sys
 import time
 from datetime import datetime
-from scapy.all import rdpcap, DHCP, Ether
+from scapy.all import rdpcap, DHCP, Ether, IPv6
 from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
 from dhcp2.client import Client as DHCPClient2
@@ -153,7 +153,6 @@ class ConnectionModule(TestModule):
     else:
       LOGGER.info('No DHCP lease found for: ' + self._device_mac)
       return False, 'No DHCP lease found for: ' + self._device_mac
-    self._ipv6_addr = None
 
   def _connection_mac_address(self):
     LOGGER.info('Running connection.mac_address')
@@ -242,7 +241,7 @@ class ConnectionModule(TestModule):
         if ICMPv6ND_NS in packet:
           ipv6_addr = str(packet[ICMPv6ND_NS].tgt)
           if ipv6_addr.startswith(SLAAC_PREFIX):
-            self._ipv6_addr = ipv6_addr
+            self._device_ipv6_addr = ipv6_addr
             LOGGER.info(f"Device has formed SLAAC address {ipv6_addr}")
             return True
 
@@ -255,12 +254,12 @@ class ConnectionModule(TestModule):
   def _connection_ipv6_ping(self):
     LOGGER.info("Running connection.ipv6_ping")
 
-    if self._ipv6_addr is None:
+    if self._device_ipv6_addr is None:
       LOGGER.info("No IPv6 SLAAC address found. Cannot ping")
       return
 
-    if self._ping(self._ipv6_addr):
-      LOGGER.info(f"Device responds to IPv6 ping on {self._ipv6_addr}")
+    if self._ping(self._device_ipv6_addr):
+      LOGGER.info(f"Device responds to IPv6 ping on {self._device_ipv6_addr}")
       return True
     else:
       LOGGER.info("Device does not respond to IPv6 ping")
