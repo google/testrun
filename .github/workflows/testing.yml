@@ -9,7 +9,7 @@ on:
 jobs:
   testrun_baseline:
     name:  Baseline
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     timeout-minutes: 20
     steps:
       - name: Checkout source
@@ -20,7 +20,7 @@ jobs:
     
   testrun_tests:
     name:  Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     timeout-minutes: 40
     steps:
       - name: Checkout source
