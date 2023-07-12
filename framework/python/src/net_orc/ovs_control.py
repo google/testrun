@@ -105,18 +105,12 @@ class OVSControl:
 
   def create_baseline_net(self, verify=True):
     LOGGER.debug('Creating baseline network')
-
-    # Remove IP from internet adapter
-    self.set_interface_ip(interface=self._int_intf, ip_addr='0.0.0.0')
-
+    
     # Create data plane
     self.add_bridge(DEVICE_BRIDGE)
 
     # Create control plane
     self.add_bridge(INTERNET_BRIDGE)
-
-    # Remove IP from internet adapter
-    self.set_interface_ip(self._int_intf, '0.0.0.0')
 
     # Add external interfaces to data and control plane
     self.add_port(self._dev_intf, DEVICE_BRIDGE)

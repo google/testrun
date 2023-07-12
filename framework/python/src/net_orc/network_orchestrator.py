@@ -21,6 +21,7 @@ from scapy.all import sniff, wrpcap, BOOTP
 import shutil
 import subprocess
 import sys
+import time
 import docker
 from docker.types import Mount
 from common import logger
@@ -292,6 +293,9 @@ class NetworkOrchestrator:
     self._brd = subprocess.check_output(
         f'ip a show {self._int_intf} | grep \"inet \" | awk \'{{print $4}}\'',
         shell=True).decode('utf-8').strip()
+    print(self._ipv4)
+    time.sleep(15)
+
 
   def _ci_post_network_create(self):
     """ Restore network connection in CI environment """
