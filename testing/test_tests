@@ -89,14 +89,14 @@ for tester in $TESTERS; do
   fi
 
   # Load Test Container
-  sudo docker run \
+  sudo docker run -d \
     --network=endev1 \
     --mac-address=$ethmac \
     --cap-add=NET_ADMIN \
     -v /tmp:/out \
     --privileged \
     --name=$tester \
-    ci_test_device1 $args &
+    ci_test_device1 $args
   # Following line indicates that tests are completed but wait till it exits
   # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
   #Change this line! - LOGGER.info(f"""Completed running test modules on device
