@@ -18,9 +18,7 @@ from common import logger
 
 LOG_NAME = 'dhcp_config'
 LOGGER = None
-
 CONFIG_FILE = '/etc/dhcp/dhcpd.conf'
-
 DEFAULT_LEASE_TIME_KEY = 'default-lease-time'
 
 
@@ -186,13 +184,18 @@ class DHCPFailoverPeer:
     config += '\tprimary;' if self.primary else 'secondary;'
     config += '\n\t{ADDRESS_KEY} {ADDRESS};' if self.address is not None else ''
     config += '\n\t{PORT_KEY} {PORT};' if self.port is not None else ''
-    config += '\n\t{PEER_ADDRESS_KEY} {PEER_ADDRESS};' if self.peer_address is not None else ''
-    config += '\n\t{PEER_PORT_KEY} {PEER_PORT};' if self.peer_port is not None else ''
-    config += '\n\t{MAX_RESPONSE_DELAY_KEY} {MAX_RESPONSE_DELAY};' if self.max_response_delay is not None else ''
-    config += '\n\t{MAX_UNACKED_UPDATES_KEY} {MAX_UNACKED_UPDATES};' if self.max_unacked_updates is not None else ''
+    config += ('\n\t{PEER_ADDRESS_KEY} {PEER_ADDRESS};'
+               if self.peer_address is not None else '')
+    config += ('\n\t{PEER_PORT_KEY} {PEER_PORT};'
+               if self.peer_port is not None else '')
+    config += ('\n\t{MAX_RESPONSE_DELAY_KEY} {MAX_RESPONSE_DELAY};'
+               if self.max_response_delay is not None else '')
+    config += ('\n\t{MAX_UNACKED_UPDATES_KEY} {MAX_UNACKED_UPDATES};'
+               if self.max_unacked_updates is not None else '')
     config += '\n\t{MCLT_KEY} {MCLT};' if self.mclt is not None else ''
     config += '\n\t{SPLIT_KEY} {SPLIT};' if self.split is not None else ''
-    config += '\n\t{LOAD_BALANCE_MAX_SECONDS_KEY} {LOAD_BALANCE_MAX_SECONDS};' if self.load_balance_max_seconds is not None else ''
+    config += ('\n\t{LOAD_BALANCE_MAX_SECONDS_KEY} {LOAD_BALANCE_MAX_SECONDS};'
+               if self.load_balance_max_seconds is not None else '')
     config += '\n\r}}'
 
     config = config.format(
@@ -220,9 +223,9 @@ class DHCPFailoverPeer:
 
     if not self.enabled:
       lines = config.strip().split('\n')
-      for i in range(len(lines)-1):
+      for i in range(len(lines) - 1):
         lines[i] = '#' + lines[i]
-      lines[-1] = '#' + lines[-1].strip() # Handle the last line separately
+      lines[-1] = '#' + lines[-1].strip()  # Handle the last line separately
       config = '\n'.join(lines)
 
     return config
@@ -302,14 +305,19 @@ class DHCPSubnet:
 
   def __str__(self):
     config = 'subnet {SUBNET_OPTION} netmask {SUBNET_MASK_OPTION} {{'
-    config += '\n\t{NTP_OPTION_KEY} {NTP_OPTION};' if self._ntp_servers is not None else ''
-    config += '\n\t{SUBNET_MASK_OPTION_KEY} {SUBNET_MASK_OPTION};' if self._subnet_mask is not None else ''
-    config += '\n\t{BROADCAST_OPTION_KEY} {BROADCAST_OPTION};' if self._broadcast is not None else ''
-    config += '\n\t{ROUTER_OPTION_KEY} {ROUTER_OPTION};' if self._routers is not None else ''
-    config += '\n\t{DNS_OPTION_KEY} {DNS_OPTION};' if self._dns_servers is not None else ''
-    config += '\n\t{INTERFACE_KEY} {INTERFACE_OPTION};' if self._interface is not None else ''
+    config += ('\n\t{NTP_OPTION_KEY} {NTP_OPTION};'
+               if self._ntp_servers is not None else '')
+    config += ('\n\t{SUBNET_MASK_OPTION_KEY} {SUBNET_MASK_OPTION};'
+               if self._subnet_mask is not None else '')
+    config += ('\n\t{BROADCAST_OPTION_KEY} {BROADCAST_OPTION};'
+               if self._broadcast is not None else '')
+    config += ('\n\t{ROUTER_OPTION_KEY} {ROUTER_OPTION};'
+               if self._routers is not None else '')
+    config += ('\n\t{DNS_OPTION_KEY} {DNS_OPTION};'
+               if self._dns_servers is not None else '')
+    config += ('\n\t{INTERFACE_KEY} {INTERFACE_OPTION};'
+               if self._interface is not None else '')
     config += '\n\t{AUTHORITATIVE_KEY};' if self._authoritative else ''
-
 
     config = config.format(length='multi-line',
                            SUBNET_OPTION=self._subnet,
@@ -407,8 +415,11 @@ class DHCPPool:
 
   def __str__(self):
     config = 'pool {{'
-    config += '\n\t\t{FAILOVER_KEY} "{FAILOVER}";' if self.failover_peer is not None else ''
-    config += '\n\t\t{RANGE_KEY} {RANGE_START} {RANGE_END};' if self.range_start is not None and self.range_end is not None else ''
+    config += ('\n\t\t{FAILOVER_KEY} "{FAILOVER}";'
+               if self.failover_peer is not None else '')
+    config += ('\n\t\t{RANGE_KEY} {RANGE_START} {RANGE_END};'
+               if self.range_start is not None and self.range_end is not None
+               else '')
     config += '\n\t}}'
 
     config = config.format(
