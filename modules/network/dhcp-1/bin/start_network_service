@@ -38,7 +38,6 @@ touch $RA_LOG_FILE
 chown $HOST_USER $DHCP_LOG_FILE
 chown $HOST_USER $RA_LOG_FILE
 
-
 # Move the config files to the correct location
 cp /testrun/conf/isc-dhcp-server /etc/default/
 cp /testrun/conf/dhcpd.conf /etc/dhcp/dhcpd.conf

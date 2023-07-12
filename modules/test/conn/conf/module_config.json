@@ -36,6 +36,16 @@
         "name": "connection.target_ping",
         "description": "The device under test responds to an ICMP echo (ping) request.",
         "expected_behavior": "The device under test responds to an ICMP echo (ping) request."
+      },
+      {
+        "name": "connection.ipv6_slaac",
+        "description": "The device forms a valid IPv6 address as a combination of the IPv6 router prefix and the device interface identifier",
+        "expected_behavior": "The device under test complies with RFC4862 and forms a valid IPv6 SLAAC address"
+      },
+      {
+        "name": "connection.ipv6_ping",
+        "description": "The device responds to an IPv6 ping (ICMPv6 Echo) request to the SLAAC address",
+        "expected_behavior": "The device responds to the ping as per RFC4443"
       }
     ]
   }
