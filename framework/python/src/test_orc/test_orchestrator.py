@@ -13,16 +13,14 @@
 # limitations under the License.
 
 """Provides high level management of the test orchestrator."""
-import getpass
 import os
 import json
 import time
 import shutil
 import docker
 from docker.types import Mount
-from common import logger
+from common import logger, util
 from test_orc.module import TestModule
-from common import util
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
@@ -61,7 +59,7 @@ class TestOrchestrator:
     # Setup the output directory
     self._host_user = util.get_host_user()
     os.makedirs(RUNTIME_DIR, exist_ok=True)
-    util.run_command(f'chown -R {self._host_user} {RUNTIME_DIR}')
+    util.run_command(f"chown -R {self._host_user} {RUNTIME_DIR}")
 
     self._load_test_modules()
     self.build_test_modules()
@@ -140,18 +138,19 @@ class TestOrchestrator:
       container_runtime_dir = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
           "/" + module.name)
-      network_runtime_dir = os.path.join(self._root_path, "runtime/network")
       os.makedirs(container_runtime_dir)
+
+      network_runtime_dir = os.path.join(self._root_path, "runtime/network")
 
       device_startup_capture = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
           "/startup.pcap")
-      util.run_command(f'chown -R {self._host_user} {device_startup_capture}')
+      util.run_command(f"chown -R {self._host_user} {device_startup_capture}")
 
       device_monitor_capture = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
           "/monitor.pcap")
-      util.run_command(f'chown -R {self._host_user} {device_monitor_capture}')
+      util.run_command(f"chown -R {self._host_user} {device_monitor_capture}")
 
       client = docker.from_env()
 
