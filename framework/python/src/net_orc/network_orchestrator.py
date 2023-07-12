@@ -320,10 +320,7 @@ class NetworkOrchestrator:
       self._ci_pre_network_create()
 
     # Setup the virtual network
-    if not self._ovs.create_baseline_net(verify=True):
-      LOGGER.error('Baseline network validation failed.')
-      self.stop()
-      sys.exit(1)
+      self._ovs.create_baseline_net()
 
     if self._single_intf:
       self._ci_post_network_create()
