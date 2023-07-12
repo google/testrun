@@ -97,23 +97,8 @@ for tester in $TESTERS; do
     --privileged \
     --name=$tester \
     ci_test_device1 $args
-
-  WAITING=600
-  for i in `seq 1 $WAITING`; do
-    tail -1 $testrun_log
-      if [[ -n $(fgrep "Completed running test modules on device" $testrun_log) ]]; then
-          break
-      fi
-
-      if [[ ! -d /proc/$TPID ]]; then
-          cat $testrun_log
-          echo "error encountered starting test run"
-          break
-      fi
-    
-      sleep 1
-  done
-
+  
+  wait $TPID
   # Following line indicates that tests are completed but wait till it exits
   # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
   #Change this line! - LOGGER.info(f"""Completed running test modules on device
@@ -127,7 +112,6 @@ for tester in $TESTERS; do
   cp runtime/test/${ethmac//:/}/results.json $TEST_DIR/$tester.json
   more $TEST_DIR/$tester.json
   more $testrun_log
-  more $device_log
 
 done
 
