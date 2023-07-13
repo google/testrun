@@ -43,7 +43,9 @@ cp /testrun/conf/isc-dhcp-server /etc/default/
 cp /testrun/conf/dhcpd.conf /etc/dhcp/dhcpd.conf
 cp /testrun/conf/radvd.conf /etc/radvd.conf
 
-# Move the radvd-sevice file to the correct location
+
+# Move the service files to the correct location
+cp /testrun/bin/isc-dhcp-service /usr/local/bin/
 cp /testrun/bin/radvd-service /usr/local/bin/
 
 # Start the DHCP Server
