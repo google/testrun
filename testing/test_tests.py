@@ -93,10 +93,10 @@ def test_list_tests(capsys, results, test_matrix):
     print('============')
     print('============')
     print('tests seen:')
-    print('\n\t'.join([x.name for x in all_tests]))
+    print('\n'.join([x.name for x in all_tests]))
     print('\ntesting for pass:')
-    print('\n\t'.join(ci_pass))
+    print('\n'.join(ci_pass))
     print('\ntesting for pass:')
-    print('\n\t'.join(ci_pass))
+    print('\n'.join(ci_pass))
 
   assert True
