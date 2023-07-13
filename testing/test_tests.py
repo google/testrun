@@ -27,7 +27,7 @@ from pathlib import Path
 from dataclasses import dataclass
 
 TEST_MATRIX = 'test_tests.json'
-RESULTS_PATH = 'example/*.json'
+RESULTS_PATH = '/tmp/results/*.json'
 
 @dataclass(frozen=True)
 class TestResult:
