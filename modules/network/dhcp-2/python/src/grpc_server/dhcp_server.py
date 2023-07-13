@@ -37,7 +37,7 @@ class DHCPServer:
 
   def restart(self):
     LOGGER.info('Restarting DHCP Server')
-    isc_started = util.run_command('service isc-dhcp-server restart', False)
+    isc_started = util.run_command('isc-dhcp-service restart', False)
     radvd_started = self.radvd.restart()
     started = isc_started and radvd_started
     LOGGER.info('DHCP Restarted: ' + str(started))
@@ -45,7 +45,7 @@ class DHCPServer:
 
   def start(self):
     LOGGER.info('Starting DHCP Server')
-    isc_started = util.run_command('service isc-dhcp-server start', False)
+    isc_started = util.run_command('isc-dhcp-service start', False)
     radvd_started = self.radvd.start()
     started = isc_started and radvd_started
     LOGGER.info('DHCP Started: ' + str(started))
@@ -53,7 +53,7 @@ class DHCPServer:
 
   def stop(self):
     LOGGER.info('Stopping DHCP Server')
-    isc_stopped = util.run_command('service isc-dhcp-server stop', False)
+    isc_stopped = util.run_command('isc-dhcp-service stop', False)
     radvd_stopped = self.radvd.stop()
     stopped = isc_stopped and radvd_stopped
     LOGGER.info('DHCP Stopped: ' + str(stopped))
@@ -61,9 +61,8 @@ class DHCPServer:
 
   def is_running(self):
     LOGGER.info('Checking DHCP Status')
-    response = util.run_command('service isc-dhcp-server status')
-    isc_running = response[
-        0] == 'Status of ISC DHCPv4 server: dhcpd is running.'
+    response = util.run_command('isc-dhcp-service status')
+    isc_running = response[0] == 'isc-dhcp service is running.'
     radvd_running = self.radvd.is_running()
     running = isc_running and radvd_running
     LOGGER.info('DHCP Status: ' + str(running))
@@ -106,6 +105,7 @@ class DHCPServer:
       LOGGER.info('RADVD started: ' + str(radvd_booted))
 
     return isc_booted and radvd_booted
+
 
 def run():
   dhcp_server = DHCPServer()

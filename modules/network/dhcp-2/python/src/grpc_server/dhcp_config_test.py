@@ -19,6 +19,7 @@ import os
 CONFIG_FILE = 'conf/dhcpd.conf'
 DHCP_CONFIG = None
 
+
 def get_config_file_path():
   current_dir = os.path.dirname(os.path.abspath(__file__))
   module_dir = os.path.dirname(
@@ -26,10 +27,12 @@ def get_config_file_path():
   conf_file = os.path.join(module_dir, CONFIG_FILE)
   return conf_file
 
+
 def get_config():
   dhcp_config = DHCPConfig()
   dhcp_config.resolve_config(get_config_file_path())
   return dhcp_config
+
 
 class DHCPConfigTest(unittest.TestCase):
 
@@ -89,6 +92,16 @@ class DHCPConfigTest(unittest.TestCase):
     self.assertIsNotNone(host)
     print('ResolveConfigWithHosts:\n' + str(config_with_hosts))
 
+  def test_set_subnet_range(self):
+    range_start = '10.0.0.100'
+    range_end = '10.0.0.200'
+    DHCP_CONFIG.set_range(range_start, range_end)
+    subnets = DHCP_CONFIG.resolve_subnets(str(DHCP_CONFIG))
+    pool = subnets[0].pools[0]
+    self.assertTrue(pool.range_start == range_start
+                    and pool.range_end == range_end)
+    print('SetSubnetRange:\n' + str(DHCP_CONFIG))
+
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   suite.addTest(DHCPConfigTest('test_resolve_config'))
@@ -97,6 +110,6 @@ if __name__ == '__main__':
   suite.addTest(DHCPConfigTest('test_add_reserved_host'))
   suite.addTest(DHCPConfigTest('test_delete_reserved_host'))
   suite.addTest(DHCPConfigTest('test_resolve_config_with_hosts'))
-
+  suite.addTest(DHCPConfigTest('test_set_subnet_range'))
   runner = unittest.TextTestRunner()
   runner.run(suite)
