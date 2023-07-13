@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Test assertions for CI testing of tests """
+# Temporarily disabled because using Pytest fixtures
+# TODO refactor fixtures to not trigger error
+# pylint: disable=redefined-outer-name
+
 import json
 import pytest
 import os
@@ -27,30 +30,30 @@ RESULTS_PATH = '/tmp/results/*.json'
 
 @dataclass(frozen=True)
 class TestResult:
-	name: str
-	result: str
-	__test__ = False
+  name: str
+  result: str
+  __test__ = False
 
 
 def collect_expected_results(expected_results):
-	""" Yields results from expected_results property of the test matrix"""
-	for name, result in expected_results.items():
-		yield TestResult(name, result)
+  """ Yields results from expected_results property of the test matrix"""
+  for name, result in expected_results.items():
+    yield TestResult(name, result)
 
 
 def collect_actual_results(results_dict):
-	""" Yields results from an already loaded testrun results file """
-	# "module"."results".[list]."result"
-	for maybe_module, child in results_dict.items():
-		if "results" in child and maybe_module != "baseline":
-			for test in child["results"]:
-				yield TestResult(test['name'], test['result'])
+  """ Yields results from an already loaded testrun results file """
+  # "module"."results".[list]."result"
+  for maybe_module, child in results_dict.items():
+    if 'results' in child and maybe_module != 'baseline':
+      for test in child['results']:
+        yield TestResult(test['name'], test['result'])
 
 
 @pytest.fixture
 def test_matrix():
-  dir = os.path.dirname(os.path.abspath(__file__))
-  with open(os.path.join(dir, TEST_MATRIX), encoding='utf-8') as f:
+  basedir = os.path.basedirname(os.path.abspath(__file__))
+  with open(os.path.join(basedir, TEST_MATRIX), encoding='utf-8') as f:
     return json.load(f)
 
 
@@ -58,18 +61,15 @@ def test_matrix():
 def results():
   results = {}
   for file in [Path(x) for x in glob.glob(RESULTS_PATH)]:
-	  with open(file, encoding='utf-8') as f:
-		  results[file.stem] = json.load(f)
+    with open(file, encoding='utf-8') as f:
+      results[file.stem] = json.load(f)
   return results
 
 
 def test_tests(results, test_matrix):
-	""" Check if each testers expect results were obtained """
-	print(results)
-	print(test_matrix)
-	
-	for tester, props in test_matrix.items():
-		expected = set(collect_expected_results(props['expected_results']))
-		actual = set(collect_actual_results(results[tester]))
+  """ Check if each testers expect results were obtained """
+  for tester, props in test_matrix.items():
+    expected = set(collect_expected_results(props['expected_results']))
+    actual = set(collect_actual_results(results[tester]))
 
-		assert expected.issubset(actual), f'{tester} expected results not obtained'
+    assert expected.issubset(actual), f'{tester} expected results not obtained'

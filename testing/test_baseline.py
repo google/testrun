@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Test assertions for CI network baseline test """
+# Temporarily disabled because using Pytest fixtures
+# TODO refactor fixtures to not trigger error
+# pylint: disable=redefined-outer-name
+
 import json
 import pytest
 import re
@@ -29,8 +34,8 @@ def container_data():
 
 @pytest.fixture
 def validator_results():
-  dir = os.path.dirname(os.path.abspath(__file__))
-  with open(os.path.join(dir,
+  basedir = os.path.basedirname(os.path.abspath(__file__))
+  with open(os.path.join(basedir,
                          '../',
                          'runtime/validation/faux-dev/result.json'),
                          encoding='utf-8') as f:
@@ -62,6 +67,5 @@ def test_dns_server_resolves(container_data):
 
 @pytest.mark.skip(reason='requires internet')
 def test_validator_results_compliant(validator_results):
-  results = [True if x['result'] == 'compliant' else False
-    for x in validator_results['results']]
+  results = [x['result'] == 'compliant' for x in validator_results['results']]
   assert all(results)
