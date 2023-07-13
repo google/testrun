@@ -21,12 +21,13 @@ import json
 import pytest
 import os
 import glob
+import itertools
 
 from pathlib import Path
 from dataclasses import dataclass
 
 TEST_MATRIX = 'test_tests.json'
-RESULTS_PATH = '/tmp/results/*.json'
+RESULTS_PATH = 'example/*.json'
 
 @dataclass(frozen=True)
 class TestResult:
@@ -52,7 +53,7 @@ def collect_actual_results(results_dict):
 
 @pytest.fixture
 def test_matrix():
-  basedir = os.path.basedirname(os.path.abspath(__file__))
+  basedir = os.path.dirname(os.path.abspath(__file__))
   with open(os.path.join(basedir, TEST_MATRIX), encoding='utf-8') as f:
     return json.load(f)
 
@@ -73,3 +74,29 @@ def test_tests(results, test_matrix):
     actual = set(collect_actual_results(results[tester]))
 
     assert expected.issubset(actual), f'{tester} expected results not obtained'
+
+def test_list_tests(capsys, results, test_matrix):
+  all_tests = set(itertools.chain.from_iterable(
+      [collect_actual_results(results[x]) for x in results.keys()]))
+
+  ci_pass = set([test 
+    for testers in test_matrix.values() 
+    for test, result in testers['expected_results'].items() 
+    if result == 'compliant'])
+
+  ci_fail = set([test 
+    for testers in test_matrix.values() 
+    for test, result in testers['expected_results'].items() 
+    if result == 'non-compliant'])
+
+  with capsys.disabled():
+    print('============')
+    print('============')
+    print('tests seen:')
+    print('\n\t'.join([x.name for x in all_tests]))
+    print('\ntesting for pass:')
+    print('\n\t'.join(ci_pass))
+    print('\ntesting for pass:')
+    print('\n\t'.join(ci_pass))
+
+  assert True

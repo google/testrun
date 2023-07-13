@@ -34,7 +34,7 @@ def container_data():
 
 @pytest.fixture
 def validator_results():
-  basedir = os.path.basedirname(os.path.abspath(__file__))
+  basedir = os.path.dirname(os.path.abspath(__file__))
   with open(os.path.join(basedir,
                          '../',
                          'runtime/validation/faux-dev/result.json'),
