@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Contains all the necessary classes to maintain the 
-DHCP server"""
+RADVD server booted from the radvd-service file"""
 from common import logger
 from common import util
 
-CONFIG_FILE = '/etc/dhcp/dhcpd.conf'
 LOG_NAME = 'radvd'
 LOGGER = None
-
 
 class RADVDServer:
   """Represents the RADVD Server"""
@@ -29,25 +27,26 @@ class RADVDServer:
     LOGGER = logger.get_logger(LOG_NAME, 'dhcp-1')
 
   def restart(self):
-    LOGGER.info('Restarting RADVD Server')
+    LOGGER.info('Restarting RADVD server')
     response = util.run_command('radvd-service restart', False)
-    LOGGER.info('RADVD Restarted: ' + str(response))
+    LOGGER.info('RADVD restarted: ' + str(response))
     return response
 
   def start(self):
-    LOGGER.info('Starting RADVD Server')
+    LOGGER.info('Starting RADVD server')
     response = util.run_command('radvd-service start', False)
-    LOGGER.info('RADVD Started: ' + str(response))
+    LOGGER.info('RADVD started: ' + str(response))
     return response
 
   def stop(self):
-    LOGGER.info('Stopping RADVD Server')
+    LOGGER.info('Stopping RADVD server')
     response = util.run_command('radvd-service stop', False)
-    LOGGER.info('RADVD Stopped: ' + str(response))
+    LOGGER.info('RADVD stopped: ' + str(response))
     return response
 
   def is_running(self):
-    LOGGER.info('Checking RADVD Status')
+    LOGGER.info('Checking RADVD status')
     response = util.run_command('radvd-service status')
-    LOGGER.info('RADVD Status: ' + str(response))
-    return response[0] == 'radvd service is running.'
+    running = response[0] == 'radvd service is running.'
+    LOGGER.info('RADVD status: ' + str(running))
+    return running

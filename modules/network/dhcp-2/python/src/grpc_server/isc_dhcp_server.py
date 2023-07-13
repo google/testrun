@@ -12,41 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Contains all the necessary classes to maintain the 
-RADVD server booted from the radvd-service file"""
+isc-dhcp server booted from the isc-dhcp service file"""
 from common import logger
 from common import util
 
-LOG_NAME = 'radvd'
+LOG_NAME = 'isc-dhcp'
 LOGGER = None
 
-class RADVDServer:
-  """Represents the RADVD Server"""
+class ISCDHCPServer:
+  """Represents the isc-dhcp server"""
 
   def __init__(self):
     global LOGGER
     LOGGER = logger.get_logger(LOG_NAME, 'dhcp-2')
 
   def restart(self):
-    LOGGER.info('Restarting RADVD server')
-    response = util.run_command('radvd-service restart', False)
-    LOGGER.info('RADVD restarted: ' + str(response))
+    LOGGER.info('Restarting isc-dhcp server')
+    response = util.run_command('isc-dhcp-service restart', False)
+    LOGGER.info('isc-dhcp server restarted: ' + str(response))
     return response
 
   def start(self):
-    LOGGER.info('Starting RADVD server')
-    response = util.run_command('radvd-service start', False)
-    LOGGER.info('RADVD started: ' + str(response))
+    LOGGER.info('Starting isc-dhcp server')
+    response = util.run_command('isc-dhcp-service start', False)
+    LOGGER.info('isc-dhcp server started: ' + str(response))
     return response
 
   def stop(self):
-    LOGGER.info('Stopping RADVD server')
-    response = util.run_command('radvd-service stop', False)
-    LOGGER.info('RADVD stopped: ' + str(response))
+    LOGGER.info('Stopping isc-dhcp server')
+    response = util.run_command('isc-dhcp-service stop', False)
+    LOGGER.info('isc-dhcp server stopped: ' + str(response))
     return response
 
   def is_running(self):
-    LOGGER.info('Checking RADVD status')
-    response = util.run_command('radvd-service status')
-    running = response[0] == 'radvd service is running.'
-    LOGGER.info('RADVD status: ' + str(running))
+    LOGGER.info('Checking isc-dhcp server')
+    response = util.run_command('isc-dhcp-service status')
+    running = response[0] == 'isc-dhcp service is running.'
+    LOGGER.info('isc-dhcp server status: ' + str(running))
     return running

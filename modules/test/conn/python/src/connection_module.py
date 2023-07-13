@@ -27,7 +27,7 @@ OUI_FILE = '/usr/local/etc/oui.txt'
 DHCP_SERVER_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
-SLAAC_PREFIX = "fd10:77be:4186"
+SLAAC_PREFIX = 'fd10:77be:4186'
 
 
 class ConnectionModule(TestModule):
@@ -230,7 +230,7 @@ class ConnectionModule(TestModule):
     return None
 
   def _connection_ipv6_slaac(self):
-    LOGGER.info("Running connection.ipv6_slaac")
+    LOGGER.info('Running connection.ipv6_slaac')
     packet_capture = rdpcap(MONITOR_CAPTURE_FILE)
 
     sends_ipv6 = False
@@ -242,31 +242,31 @@ class ConnectionModule(TestModule):
           ipv6_addr = str(packet[ICMPv6ND_NS].tgt)
           if ipv6_addr.startswith(SLAAC_PREFIX):
             self._device_ipv6_addr = ipv6_addr
-            LOGGER.info(f"Device has formed SLAAC address {ipv6_addr}")
+            LOGGER.info(f'Device has formed SLAAC address {ipv6_addr}')
             return True
 
     if sends_ipv6:
-      LOGGER.info("Device does not support IPv6 SLAAC")
+      LOGGER.info('Device does not support IPv6 SLAAC')
     else:
-      LOGGER.info("Device does not support IPv6")
+      LOGGER.info('Device does not support IPv6')
     return False
 
   def _connection_ipv6_ping(self):
-    LOGGER.info("Running connection.ipv6_ping")
+    LOGGER.info('Running connection.ipv6_ping')
 
     if self._device_ipv6_addr is None:
-      LOGGER.info("No IPv6 SLAAC address found. Cannot ping")
+      LOGGER.info('No IPv6 SLAAC address found. Cannot ping')
       return
 
     if self._ping(self._device_ipv6_addr):
-      LOGGER.info(f"Device responds to IPv6 ping on {self._device_ipv6_addr}")
+      LOGGER.info(f'Device responds to IPv6 ping on {self._device_ipv6_addr}')
       return True
     else:
-      LOGGER.info("Device does not respond to IPv6 ping")
+      LOGGER.info('Device does not respond to IPv6 ping')
       return False
 
   def _ping(self, host):
-    cmd = "ping -c 1 " + str(host)
+    cmd = 'ping -c 1 ' + str(host)
     success = util.run_command(cmd, output=False)
     return success
 
