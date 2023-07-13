@@ -16,14 +16,12 @@ DHCP server"""
 import sys
 import time
 from common import logger
-from common import util
 from dhcp_config import DHCPConfig
 from radvd_server import RADVDServer
+from isc_dhcp_server import ISCDHCPServer
 
-CONFIG_FILE = '/etc/dhcp/dhcpd.conf'
 LOG_NAME = 'dhcp_server'
 LOGGER = None
-
 
 class DHCPServer:
   """Represents the DHCP Server"""
@@ -33,78 +31,57 @@ class DHCPServer:
     LOGGER = logger.get_logger(LOG_NAME, 'dhcp-2')
     self.dhcp_config = DHCPConfig()
     self.radvd = RADVDServer()
+    self.isc_dhcp = ISCDHCPServer()
     self.dhcp_config.resolve_config()
 
   def restart(self):
-    LOGGER.info('Restarting DHCP Server')
-    isc_started = util.run_command('isc-dhcp-service restart', False)
+    LOGGER.info('Restarting DHCP server')
+    isc_started = self.isc_dhcp.restart()
     radvd_started = self.radvd.restart()
     started = isc_started and radvd_started
-    LOGGER.info('DHCP Restarted: ' + str(started))
+    LOGGER.info('DHCP server restarted: ' + str(started))
     return started
 
   def start(self):
-    LOGGER.info('Starting DHCP Server')
-    isc_started = util.run_command('isc-dhcp-service start', False)
+    LOGGER.info('Starting DHCP server')
+    isc_started = self.isc_dhcp.start()
     radvd_started = self.radvd.start()
     started = isc_started and radvd_started
-    LOGGER.info('DHCP Started: ' + str(started))
+    LOGGER.info('DHCP server started: ' + str(started))
     return started
 
   def stop(self):
-    LOGGER.info('Stopping DHCP Server')
-    isc_stopped = util.run_command('isc-dhcp-service stop', False)
+    LOGGER.info('Stopping DHCP server')
+    isc_stopped = self.isc_dhcp.stop()
     radvd_stopped = self.radvd.stop()
     stopped = isc_stopped and radvd_stopped
-    LOGGER.info('DHCP Stopped: ' + str(stopped))
+    LOGGER.info('DHCP server stopped: ' + str(stopped))
     return stopped
 
   def is_running(self):
-    LOGGER.info('Checking DHCP Status')
-    response = util.run_command('isc-dhcp-service status')
-    isc_running = response[0] == 'isc-dhcp service is running.'
+    LOGGER.info('Checking DHCP server status')
+    isc_running = self.isc_dhcp.is_running()
     radvd_running = self.radvd.is_running()
     running = isc_running and radvd_running
-    LOGGER.info('DHCP Status: ' + str(running))
+    LOGGER.info('DHCP server status: ' + str(running))
     return running
 
   def boot(self):
-    LOGGER.info('Booting DHCP Server')
-    isc_booted = False
-    radvd_booted = False
+    LOGGER.info('Booting DHCP server')
+    booted = False
     if self.is_running():
-      LOGGER.info('Stopping isc-dhcp-server')
+      LOGGER.info('Stopping DHCP server')
       stopped = self.stop()
-      LOGGER.info('isc-dhcp-server stopped: ' + str(stopped))
-
-    if self.radvd.is_running():
-      LOGGER.info('Stopping RADVD')
-      stopped = self.radvd.stop()
-      LOGGER.info('radvd stopped: ' + str(stopped))
-
-    LOGGER.info('Starting isc-dhcp-server')
+      LOGGER.info('DHCP server stopped: ' + str(stopped))
     if self.start():
-      isc_booted = False
       # Scan for 5 seconds if not yet ready
       for _ in range(5):
         time.sleep(1)
-        isc_booted = self.is_running()
-        if isc_booted:
+        booted = self.is_running()
+        if booted:
           break
-      LOGGER.info('isc-dhcp-server started: ' + str(isc_booted))
-
-    LOGGER.info('Starting RADVD')
-    if self.radvd.start():
-      radvd_booted = False
-      # Scan for 5 seconds if not yet ready
-      for _ in range(5):
-        time.sleep(1)
-        radvd_booted = self.radvd.is_running()
-        if radvd_booted:
-          break
-      LOGGER.info('RADVD started: ' + str(radvd_booted))
-
-    return isc_booted and radvd_booted
+      LOGGER.info('DHCP server booted: ' + str(booted))
+    return booted
 
 
 def run():
@@ -112,7 +89,7 @@ def run():
   booted = dhcp_server.boot()
 
   if not booted:
-    LOGGER.error('DHCP Server Failed to boot. Exiting')
+    LOGGER.error('DHCP server failed to boot. Exiting')
     sys.exit(1)
 
   config = str(dhcp_server.dhcp_config)
@@ -120,11 +97,12 @@ def run():
     dhcp_server.dhcp_config.resolve_config()
     new_config = str(dhcp_server.dhcp_config)
     if config != new_config:
-      LOGGER.info('DHCP Config Changed')
+      LOGGER.info('DHCP server config changed')
       config = new_config
       dhcp_server.restart()
       dhcp_server.radvd.restart()
       time.sleep(1)
+
 
 if __name__ == '__main__':
   run()
