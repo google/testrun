@@ -16,7 +16,7 @@ import util
 import sys
 import time
 from datetime import datetime
-from scapy.all import rdpcap, DHCP, Ether, IPv6
+from scapy.all import rdpcap, DHCP, Ether, IPv6, ICMPv6ND_NS
 from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
 from dhcp2.client import Client as DHCPClient2
