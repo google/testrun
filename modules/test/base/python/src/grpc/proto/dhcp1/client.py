@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 """gRPC client module for the primary DHCP Server"""
+
 import grpc
 import grpc_pb2_grpc as pb2_grpc
 import grpc_pb2 as pb2
-
 
 DEFAULT_PORT = '5001'
 DEFAULT_HOST = '10.10.10.2'  # Default DHCP1 server
