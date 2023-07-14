@@ -96,7 +96,12 @@ def test_list_tests(capsys, results, test_matrix):
     print('\n'.join([x.name for x in all_tests]))
     print('\ntesting for pass:')
     print('\n'.join(ci_pass))
-    print('\ntesting for pass:')
-    print('\n'.join(ci_pass))
+    print('\ntesting for fail:')
+    print('\n'.join(ci_fail))
+    print('\ntester results')
+    for tester in test_matrix.keys():
+      print(f'\n{tester}:')
+      for test in collect_actual_results(results[tester]):
+        print(f'{test.name}: {test.result}')
 
   assert True
