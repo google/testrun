@@ -115,6 +115,6 @@ for tester in $TESTERS; do
 
 done
 
-pytest -s testing/test_tests.py
+pytest -v testing/test_tests.py
 
 exit $?
