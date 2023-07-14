@@ -1,0 +1,102 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+""" Test assertions for CI testing of tests """
+# Temporarily disabled because using Pytest fixtures
+# TODO refactor fixtures to not trigger error
+# pylint: disable=redefined-outer-name
+
+import json
+import pytest
+import os
+import glob
+import itertools
+
+from pathlib import Path
+from dataclasses import dataclass
+
+TEST_MATRIX = 'test_tests.json'
+RESULTS_PATH = '/tmp/results/*.json'
+
+@dataclass(frozen=True)
+class TestResult:
+  name: str
+  result: str
+  __test__ = False
+
+
+def collect_expected_results(expected_results):
+  """ Yields results from expected_results property of the test matrix"""
+  for name, result in expected_results.items():
+    yield TestResult(name, result)
+
+
+def collect_actual_results(results_dict):
+  """ Yields results from an already loaded testrun results file """
+  # "module"."results".[list]."result"
+  for maybe_module, child in results_dict.items():
+    if 'results' in child and maybe_module != 'baseline':
+      for test in child['results']:
+        yield TestResult(test['name'], test['result'])
+
+
+@pytest.fixture
+def test_matrix():
+  basedir = os.path.dirname(os.path.abspath(__file__))
+  with open(os.path.join(basedir, TEST_MATRIX), encoding='utf-8') as f:
+    return json.load(f)
+
+
+@pytest.fixture
+def results():
+  results = {}
+  for file in [Path(x) for x in glob.glob(RESULTS_PATH)]:
+    with open(file, encoding='utf-8') as f:
+      results[file.stem] = json.load(f)
+  return results
+
+
+def test_tests(results, test_matrix):
+  """ Check if each testers expect results were obtained """
+  for tester, props in test_matrix.items():
+    expected = set(collect_expected_results(props['expected_results']))
+    actual = set(collect_actual_results(results[tester]))
+
+    assert expected.issubset(actual), f'{tester} expected results not obtained'
+
+def test_list_tests(capsys, results, test_matrix):
+  all_tests = set(itertools.chain.from_iterable(
+      [collect_actual_results(results[x]) for x in results.keys()]))
+
+  ci_pass = set([test 
+    for testers in test_matrix.values() 
+    for test, result in testers['expected_results'].items() 
+    if result == 'compliant'])
+
+  ci_fail = set([test 
+    for testers in test_matrix.values() 
+    for test, result in testers['expected_results'].items() 
+    if result == 'non-compliant'])
+
+  with capsys.disabled():
+    print('============')
+    print('============')
+    print('tests seen:')
+    print('\n'.join([x.name for x in all_tests]))
+    print('\ntesting for pass:')
+    print('\n'.join(ci_pass))
+    print('\ntesting for pass:')
+    print('\n'.join(ci_pass))
+
+  assert True
