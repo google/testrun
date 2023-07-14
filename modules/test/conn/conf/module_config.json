@@ -49,6 +49,19 @@
         }
       },
       {
+        "name": "connection.shared_address",
+        "description": "Ensure the device supports RFC 6598 IANA-Reserved IPv4 Prefix for Shared Address Space",
+        "expected_behavior": "The device under test accepts IP addresses within the ranges specified in RFC 6598 and communicates using these addresses",
+        "config": {
+          "ranges": [
+            {
+              "start": "100.64.0.1",
+              "end": "100.64.255.254"
+            }
+          ]
+        }
+      },
+      {
         "name": "connection.single_ip",
         "description": "The network switch port connected to the device reports only one IP address for the device under test.",
         "expected_behavior": "The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible."
