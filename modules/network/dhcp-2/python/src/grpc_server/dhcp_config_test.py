@@ -19,7 +19,6 @@ import os
 CONFIG_FILE = 'conf/dhcpd.conf'
 DHCP_CONFIG = None
 
-
 def get_config_file_path():
   current_dir = os.path.dirname(os.path.abspath(__file__))
   module_dir = os.path.dirname(
@@ -27,12 +26,10 @@ def get_config_file_path():
   conf_file = os.path.join(module_dir, CONFIG_FILE)
   return conf_file
 
-
 def get_config():
   dhcp_config = DHCPConfig()
   dhcp_config.resolve_config(get_config_file_path())
   return dhcp_config
-
 
 class DHCPConfigTest(unittest.TestCase):
 
