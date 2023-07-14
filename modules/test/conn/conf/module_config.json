@@ -9,7 +9,7 @@
     "docker": {
       "depends_on": "base",
       "enable_container": true,
-      "timeout": 30
+      "timeout": 600
     },
     "tests": [
       {
@@ -26,6 +26,27 @@
         "name": "connection.mac_oui",
         "description": "The device under test hs a MAC address prefix that is registered against a known manufacturer.",
         "expected_behavior": "The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database."
+      },
+      {
+        "name": "connection.private_address",
+        "description": "The device under test accepts an IP address that is compliant with RFC 1918 Address Allocation for Private Internets.",
+        "expected_behavior": "The device under test accepts IP addresses within all ranges specified in RFC 1918 and communicates using these addresses.  The Internet Assigned Numbers Authority (IANA) has reserved the following three blocks of the IP address space for private internets.  10.0.0.0 - 10.255.255.255.255 (10/8 prefix). 172.16.0.0 - 172.31.255.255 (172.16/12 prefix).  192.168.0.0 - 192.168.255.255 (192.168/16 prefix)",
+        "config": {
+          "ranges": [
+            {
+              "start": "10.0.0.100",
+              "end": "10.0.0.200"
+            },
+            {
+              "start": "172.16.0.0",
+              "end": "172.16.255.255"
+            },
+            {
+              "start": "192.168.0.0",
+              "end": "192.168.255.255"
+            }
+          ]
+        }
       },
       {
         "name": "connection.single_ip",

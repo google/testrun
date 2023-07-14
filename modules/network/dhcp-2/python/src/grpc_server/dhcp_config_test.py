@@ -89,6 +89,16 @@ class DHCPConfigTest(unittest.TestCase):
     self.assertIsNotNone(host)
     print('ResolveConfigWithHosts:\n' + str(config_with_hosts))
 
+  def test_set_subnet_range(self):
+    range_start = '10.0.0.100'
+    range_end = '10.0.0.200'
+    DHCP_CONFIG.set_range(range_start, range_end)
+    subnets = DHCP_CONFIG.resolve_subnets(str(DHCP_CONFIG))
+    pool = subnets[0].pools[0]
+    self.assertTrue(pool.range_start == range_start
+                    and pool.range_end == range_end)
+    print('SetSubnetRange:\n' + str(DHCP_CONFIG))
+
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   suite.addTest(DHCPConfigTest('test_resolve_config'))
@@ -97,6 +107,6 @@ if __name__ == '__main__':
   suite.addTest(DHCPConfigTest('test_add_reserved_host'))
   suite.addTest(DHCPConfigTest('test_delete_reserved_host'))
   suite.addTest(DHCPConfigTest('test_resolve_config_with_hosts'))
-
+  suite.addTest(DHCPConfigTest('test_set_subnet_range'))
   runner = unittest.TextTestRunner()
   runner.run(suite)

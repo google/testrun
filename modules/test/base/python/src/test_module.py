@@ -58,10 +58,13 @@ class TestModule:
       for test in module_tests:
         # Resolve device specific configurations for the test if it exists
         # and update module test config with device config options
-        if test['name'] in device_test_module['tests']:
-          dev_test_config = device_test_module['tests'][test['name']]
-          if 'config' in test:
-            test['config'].update(dev_test_config)
+        if 'tests' in device_test_module:
+          if test['name'] in device_test_module['tests']:
+            dev_test_config = device_test_module['tests'][test['name']]
+            if 'enabled' in dev_test_config:
+              test['enabled'] = dev_test_config['enabled']
+            if 'config' in test and 'config' in dev_test_config:
+              test['config'].update(dev_test_config['config'])
       return module_tests
 
   def _get_device_test_module(self):
@@ -79,9 +82,9 @@ class TestModule:
     for test in tests:
       test_method_name = '_' + test['name'].replace('.', '_')
       result = None
+      test['start'] = datetime.now().isoformat()
       if ('enabled' in test and test['enabled']) or 'enabled' not in test:
         LOGGER.info('Attempting to run test: ' + test['name'])
-        test['start'] = datetime.now().isoformat()
         # Resolve the correct python method by test name and run test
         if hasattr(self, test_method_name):
           if 'config' in test:
