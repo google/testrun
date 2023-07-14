@@ -22,7 +22,6 @@ from dhcp1.client import Client as DHCPClient1
 LOG_NAME = 'test_connection'
 LOGGER = None
 OUI_FILE = '/usr/local/etc/oui.txt'
-DHCP_SERVER_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 SLAAC_PREFIX = "fd10:77be:4186"
@@ -116,8 +115,7 @@ class ConnectionModule(TestModule):
       return result, 'No MAC address found.'
 
     # Read all the pcap files containing DHCP packet information
-    packets = rdpcap(DHCP_SERVER_CAPTURE_FILE)
-    packets.append(rdpcap(STARTUP_CAPTURE_FILE))
+    packets = rdpcap(STARTUP_CAPTURE_FILE)
     packets.append(rdpcap(MONITOR_CAPTURE_FILE))
 
     # Extract MAC addresses from DHCP packets
