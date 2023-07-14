@@ -266,7 +266,7 @@ class ConnectionModule(TestModule):
       return False
 
   def _ping(self, host):
-    cmd = 'ping -c 1 ' + str(host)
+    cmd = "ping -c 1 " + str(host)
     success = util.run_command(cmd, output=False)
     return success
 

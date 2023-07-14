@@ -111,5 +111,6 @@ if __name__ == '__main__':
   suite.addTest(DHCPConfigTest('test_delete_reserved_host'))
   suite.addTest(DHCPConfigTest('test_resolve_config_with_hosts'))
   suite.addTest(DHCPConfigTest('test_set_subnet_range'))
+
   runner = unittest.TextTestRunner()
   runner.run(suite)
