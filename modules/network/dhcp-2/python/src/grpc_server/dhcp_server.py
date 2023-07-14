@@ -83,7 +83,6 @@ class DHCPServer:
       LOGGER.info('DHCP server booted: ' + str(booted))
     return booted
 
-
 def run():
   dhcp_server = DHCPServer()
   booted = dhcp_server.boot()
@@ -102,7 +101,6 @@ def run():
       dhcp_server.restart()
       dhcp_server.radvd.restart()
       time.sleep(1)
-
 
 if __name__ == '__main__':
   run()
