@@ -70,6 +70,15 @@ class ConnectionModule(TestModule):
   def _connection_private_address(self, config):
     # Shutdown the secondary DHCP Server
     LOGGER.info('Running connection.private_address')
+
+    # Resolve the configured dhcp subnet ranges
+    ranges = None
+    if 'ranges' in config:
+      ranges = config['ranges']
+    else:
+      LOGGER.error('No subnet ranges configured for test. Skipping')
+      return None, 'No subnet ranges configured for test. Skipping'
+
     response = self.dhcp1_client.get_dhcp_range()
     cur_range = {}
     if response.code == 200:
@@ -89,7 +98,7 @@ class ConnectionModule(TestModule):
       lease = self._get_cur_lease()
       if lease is not None:
         if self._is_lease_active(lease):
-          results = self.test_subnets(config)
+          results = self.test_subnets(ranges)
       else:
         return None, 'Failed to confirm a valid active lease for the device'
     else:
