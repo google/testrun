@@ -1,7 +1,7 @@
 {
     "tester1": {
         "image": "test-run/ci_test1",
-        "args": "oddservices",
+        "args": "oddservices ntpv3_time_google_com",
         "ethmac": "02:42:aa:00:00:01",
         "expected_results": {
             "security.nmap.ports": "non-compliant"

@@ -101,4 +101,11 @@ if [ -n "${options[ntpv4_dhcp]}"]; then
      done) &
 fi
 
+if [ -n "${options[ntpv3_time_google_com]}"]; then
+    (while true; do
+        ntpdate -q -p 1 -o 3 time.google.com
+        sleep 5
+     done) &
+fi
+
 tail -f /dev/null
