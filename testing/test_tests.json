@@ -4,7 +4,7 @@
         "args": "oddservices ntpv3_time_google_com",
         "ethmac": "02:42:aa:00:00:01",
         "expected_results": {
-            "security.nmap.ports": "non-compliant"
+            "security.nmap.ports": "non-compliant",
         }
     },
     "tester2": {
@@ -12,7 +12,9 @@
         "args": "ntpv4_dhcp",
         "ethmac": "02:42:aa:00:00:02",
         "expected_results": {
-            "security.nmap.ports": "compliant"
+            "security.nmap.ports": "compliant",
+            "ntp.network.ntp_support": "compliant",
+            "ntp.network.ntp_dhcp": "compliant"
         }
     }
     

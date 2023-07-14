@@ -29,6 +29,7 @@ from dataclasses import dataclass
 TEST_MATRIX = 'test_tests.json'
 RESULTS_PATH = '/tmp/results/*.json'
 
+#TODO add reason 
 @dataclass(frozen=True)
 class TestResult:
   name: str
@@ -90,6 +91,7 @@ def test_list_tests(capsys, results, test_matrix):
     if result == 'non-compliant'])
 
   with capsys.disabled():
+    #TODO print matching the JSON schema for easy copy/paste
     print('============')
     print('============')
     print('tests seen:')
