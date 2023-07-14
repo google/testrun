@@ -17,6 +17,8 @@ FROM test-run/base-test:latest
 
 ARG MODULE_NAME=conn
 ARG MODULE_DIR=modules/test/$MODULE_NAME
+ARG GRPC_PROTO_DIR=/testrun/python/src/grpc/proto/dhcp
+ARG GRPC_PROTO_FILE="grpc.proto"
 
 # Install all necessary packages
 RUN apt-get install -y wget

@@ -1,0 +1,27 @@
+{
+  "config": {
+    "meta": {
+      "name": "ntp",
+      "display_name": "NTP",
+      "description": "NTP test"
+    },
+    "network": false,
+    "docker": {
+      "depends_on": "base",
+      "enable_container": true,
+      "timeout": 30
+    },
+    "tests":[
+      {
+        "name": "ntp.network.ntp_support",
+        "description": "Does the device request network time sync as client as per RFC 5905 - Network Time Protocol Version 4: Protocol and Algorithms Specification",
+        "expected_behavior": "The device sends an NTPv4 request to the configured NTP server."
+      },
+      {
+        "name": "ntp.network.ntp_dhcp",
+        "description": "Accept NTP address over DHCP",
+        "expected_behavior": "Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)"
+      }
+    ]
+  }
+}

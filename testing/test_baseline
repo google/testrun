@@ -20,7 +20,7 @@ ifconfig
 
 # Setup requirements
 sudo apt-get update
-sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils
+sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils isc-dhcp-client
 
 pip3 install pytest
 
@@ -80,6 +80,6 @@ echo "Done baseline test"
 
 more $TESTRUN_OUT
 
-pytest testing/
+pytest testing/test_baseline.py
 
 exit $?

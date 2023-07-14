@@ -36,5 +36,13 @@ RUN dos2unix /testrun/bin/*
 # Make sure all the bin files are executable
 RUN chmod u+x /testrun/bin/*
 
+# Copy over all network module gRPC proto files
+ARG NET_MODULE_DIR=modules/network
+ARG NET_MODULE_PROTO_DIR=python/src/grpc_server/proto/grpc.proto
+ARG CONTAINER_PROTO_DIR=testrun/python/src/grpc_server/proto
+
+COPY $NET_MODULE_DIR/dhcp-1/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/dhcp1/
+COPY $NET_MODULE_DIR/dhcp-2/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/dhcp2/
+
 # Start the test module
 ENTRYPOINT [ "/testrun/bin/start_module" ]

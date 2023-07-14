@@ -58,10 +58,11 @@ class TestModule:
       for test in module_tests:
         # Resolve device specific configurations for the test if it exists
         # and update module test config with device config options
-        if test['name'] in device_test_module['tests']:
-          dev_test_config = device_test_module['tests'][test['name']]
-          if 'config' in test:
-            test['config'].update(dev_test_config)
+        if 'tests' in device_test_module:
+          if test['name'] in device_test_module['tests']:
+            dev_test_config = device_test_module['tests'][test['name']]
+            if 'config' in test:
+              test['config'].update(dev_test_config)
       return module_tests
 
   def _get_device_test_module(self):
@@ -89,14 +90,13 @@ class TestModule:
           else:
             result = getattr(self, test_method_name)()
         else:
-          LOGGER.info('Test ' + test['name'] + ' not resolved. Skipping')
+          LOGGER.info(f'Test {test["name"]} not resolved. Skipping')
           result = None
       else:
-        LOGGER.info('Test ' + test['name'] + ' disabled. Skipping')
+        LOGGER.info(f'Test {test["name"]} disabled. Skipping')
       if result is not None:
-        success = None
-        if isinstance(result,bool):
-          test['result'] = 'compliant' if result else 'non-compliant'     
+        if isinstance(result, bool):
+          test['result'] = 'compliant' if result else 'non-compliant'
         else:
           test['result'] = 'compliant' if result[0] else 'non-compliant'
           test['result_details'] = result[1]
