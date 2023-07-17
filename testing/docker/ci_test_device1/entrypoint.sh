@@ -89,7 +89,7 @@ elif [ -n "${options[sshv1]}" ]; then
 fi
 
 # still testing - using fixed 
-if [ -n "${options[ntpv4_dhcp]}"]; then
+if [ -n "${options[ntpv4_dhcp]}" ]; then
     (while true; do
         dhcp_ntp=$(fgrep NTPSERVERS= /run/ntpdate.dhcp)
         if [ -n "${dhcp_ntp}" ]; then
@@ -101,7 +101,7 @@ if [ -n "${options[ntpv4_dhcp]}"]; then
      done) &
 fi
 
-if [ -n "${options[ntpv3_time_google_com]}"]; then
+if [ -n "${options[ntpv3_time_google_com]}" ]; then
     (while true; do
         ntpdate -q -p 1 -o 3 time.google.com
         sleep 5
