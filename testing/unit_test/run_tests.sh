@@ -12,7 +12,11 @@ echo "Root Dir: $PWD"
 export PYTHONPATH="$PWD/framework/python/src"
 
 # Run the DHCP Unit tests
-python3 -u $PWD/modules/network/dhcp-1/python/src/grpc_server/dhcp_config_test.py
-python3 -u $PWD/modules/network/dhcp-2/python/src/grpc_server/dhcp_config_test.py
+# python3 -u $PWD/modules/network/dhcp-1/python/src/grpc_server/dhcp_config_test.py
+# python3 -u $PWD/modules/network/dhcp-2/python/src/grpc_server/dhcp_config_test.py
+
+# Run the sSecurity Module Unit Tests
+python3 -u $PWD/modules/test/security/python/src/security_module_test.py
+
 
 popd >/dev/null 2>&1

@@ -1,0 +1,27 @@
+{
+  "config": {
+    "meta": {
+      "name": "security",
+      "display_name": "Security",
+      "description": "Security tests"
+    },
+    "network": true,
+    "docker": {
+      "depends_on": "base",
+      "enable_container": true,
+      "timeout": 60
+    },
+    "tests":[
+      {
+        "name": "security.tls.v1_2_server",
+        "description": "Check the device web server TLS 1.2 & certificate is valid",
+        "expected_behavior": "TLS 1.2 certificate is issued to the web browser client when accessed"
+      },
+      {
+        "name": "security.tls.v1_2_client",
+        "description": "Device uses TLS with connection to an external service on port 443 (or any other port which could be running the webserver-HTTPS)",
+        "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers"
+      }
+    ]
+  }
+}
