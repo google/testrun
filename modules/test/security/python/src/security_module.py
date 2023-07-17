@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Baseline test module"""
 from test_module import TestModule
 # import ssl
@@ -23,6 +22,7 @@ from tls_util import TLSUtil
 
 LOG_NAME = 'test_security'
 LOGGER = None
+
 
 class SecurityModule(TestModule):
   """An example testing module."""
@@ -38,7 +38,8 @@ class SecurityModule(TestModule):
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      return self._tls_util.validate_tls_server(self._device_ipv4_addr,tls_version='1.2')
+      return self._tls_util.validate_tls_server(self._device_ipv4_addr,
+                                                tls_version='1.2')
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
 
@@ -47,14 +48,14 @@ class SecurityModule(TestModule):
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      return self._tls_util.validate_tls_server(self._device_ipv4_addr,tls_version='1.3')
+      return self._tls_util.validate_tls_server(self._device_ipv4_addr,
+                                                tls_version='1.3')
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
 
   def _security_tls_v1_2_client(self):
     LOGGER.info('Running security.tls.v1_2_client')
     return None, 'Test not yet implemented'
-
 
   def _resolve_device_ip(self):
     # If the ipv4 address wasn't resolved yet, try again
