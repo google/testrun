@@ -164,8 +164,12 @@ class NetworkOrchestrator:
     device = self._get_device(mac_addr=mac_addr)
 
     device_runtime_dir = os.path.join(RUNTIME_DIR, TEST_DIR,
-                                      device.mac_addr.replace(':', ''))
-    os.makedirs(device_runtime_dir)
+                                      device.mac_addr.replace(':', '') + '/current_test')
+    
+    # Cleanup any old current test files
+    shutil.rmtree(device_runtime_dir, ignore_errors=True)
+    os.makedirs(device_runtime_dir, exist_ok=True)
+
     util.run_command(f'chown -R {self._host_user} {device_runtime_dir}')
 
     packet_capture = sniff(iface=self._dev_intf,
@@ -173,7 +177,7 @@ class NetworkOrchestrator:
                            stop_filter=self._device_has_ip)
     wrpcap(
         os.path.join(RUNTIME_DIR, TEST_DIR, device.mac_addr.replace(':', ''),
-                     'startup.pcap'), packet_capture)
+                     'current_test/startup.pcap'), packet_capture)
 
     if device.ip_addr is None:
       LOGGER.info(
@@ -208,7 +212,7 @@ class NetworkOrchestrator:
     packet_capture = sniff(iface=self._dev_intf, timeout=self._monitor_period)
     wrpcap(
         os.path.join(RUNTIME_DIR, TEST_DIR, device.mac_addr.replace(':', ''),
-                     'monitor.pcap'), packet_capture)
+                     'current_test/monitor.pcap'), packet_capture)
 
     self._monitor_in_progress = False
     self.listener.call_callback(NetworkEvent.DEVICE_STABLE, device.mac_addr)

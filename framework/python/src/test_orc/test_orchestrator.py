@@ -18,6 +18,7 @@ import json
 import time
 import shutil
 import docker
+from datetime import datetime
 from docker.types import Mount
 from common import logger, util
 from test_orc.module import TestModule
@@ -37,21 +38,15 @@ class TestOrchestrator:
     self._module_config = None
     self._net_orc = net_orc
     self._test_in_progress = False
+    self._max_device_tests = 5
 
     self._path = os.path.dirname(os.path.dirname(
           os.path.dirname(
             os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
-    # Resolve the path to the test-run folder
-    #self._root_path = os.path.abspath(os.path.join(self._path, os.pardir))
-
-
     self._root_path = os.path.dirname(os.path.dirname(
           os.path.dirname(
             os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
-
-    shutil.rmtree(os.path.join(self._root_path, RUNTIME_DIR),
-                  ignore_errors=True)
 
   def start(self):
     LOGGER.debug("Starting test orchestrator")
@@ -78,7 +73,63 @@ class TestOrchestrator:
     LOGGER.info("All tests complete")
 
     self._generate_results(device)
+    self._timestamp_results(device)
+    LOGGER.info("Cleaning up old test results...")
+    self._cleanup_old_test_results(device)
+    LOGGER.info("Old tests cleaned up")
     self._test_in_progress = False
+
+  def _cleanup_old_test_results(self, device):
+    if device.max_device_tests is not None:
+      max_tests = device.max_device_tests
+    else:
+      max_tests = self._max_device_tests
+    completed_results_dir = cur_results_dir = os.path.join(
+            self._root_path, "runtime/test/" +
+            device.mac_addr.replace(":", "") + "/completed_tests/")
+    completed_tests = os.listdir(completed_results_dir)
+    cur_test_count = len(completed_tests)
+    if cur_test_count > max_tests:
+      LOGGER.debug("Current device has more than max tests results allowed: " + str(cur_test_count) + ">" + str(max_tests))
+      # Find and delete the oldest test
+      oldest_test = self._find_oldest_test(completed_results_dir)
+      if oldest_test is not None:
+        LOGGER.debug("Oldest test found, removing: " + str(oldest_test))
+        shutil.rmtree(oldest_test,ignore_errors=True)
+        # Confirm the delete was succesful
+        new_test_count = len(os.listdir(completed_results_dir))
+        if new_test_count != cur_test_count and new_test_count > max_tests:
+          # Continue cleaning up until we're under the max
+          self._cleanup_old_test_results(device)
+    
+  def _find_oldest_test(self,completed_tests_dir):
+    oldest_timestamp = None
+    oldest_directory = None
+    for completed_test in os.listdir(completed_tests_dir):
+        timestamp = datetime.strptime(str(completed_test), '%Y-%m-%dT%H:%M:%S')
+        if oldest_timestamp is None or timestamp < oldest_timestamp:
+            oldest_timestamp = timestamp
+            oldest_directory = completed_test
+    if oldest_directory:
+        return os.path.join(completed_tests_dir, oldest_directory)
+    else:
+        return None
+
+
+  def _timestamp_results(self, device):
+    # Define the current device results directory
+    cur_results_dir = os.path.join(
+            self._root_path, "runtime/test/" +
+            device.mac_addr.replace(":", "") + "/current_test")
+    # Define the destination results directory with timestamp
+    cur_time = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+    completed_results_dir = cur_results_dir = os.path.join(
+            self._root_path, "runtime/test/" +
+            device.mac_addr.replace(":", "") + "/completed_tests/" + cur_time)
+    # Move the results to the timestamp directory
+    os.makedirs(completed_results_dir, exist_ok=True)
+    shutil.move(cur_results_dir,completed_results_dir)
+
 
   def _generate_results(self, device):
     results = {}
@@ -92,7 +143,7 @@ class TestOrchestrator:
       if module.enable_container and self._is_module_enabled(module, device):
         container_runtime_dir = os.path.join(
             self._root_path, "runtime/test/" +
-            device.mac_addr.replace(":", "") + "/" + module.name)
+            device.mac_addr.replace(":", "") + "/current_test/" + module.name)
         results_file = f"{container_runtime_dir}/{module.name}-result.json"
         try:
           with open(results_file, "r", encoding="utf-8-sig") as f:
@@ -105,7 +156,7 @@ class TestOrchestrator:
 
     out_file = os.path.join(
         self._root_path,
-        "runtime/test/" + device.mac_addr.replace(":", "") + "/results.json")
+        "runtime/test/" + device.mac_addr.replace(":", "") + "/current_test/results.json")
     with open(out_file, "w", encoding="utf-8") as f:
       json.dump(results, f, indent=2)
     util.run_command(f"chown -R {self._host_user} {out_file}")
@@ -137,19 +188,19 @@ class TestOrchestrator:
     try:
       container_runtime_dir = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
-          "/" + module.name)
-      os.makedirs(container_runtime_dir)
+          "/current_test/" + module.name)
+      os.makedirs(container_runtime_dir, exist_ok=True)
 
       network_runtime_dir = os.path.join(self._root_path, "runtime/network")
 
       device_startup_capture = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
-          "/startup.pcap")
+          "/current_test/startup.pcap")
       util.run_command(f"chown -R {self._host_user} {device_startup_capture}")
 
       device_monitor_capture = os.path.join(
           self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
-          "/monitor.pcap")
+          "/current_test/monitor.pcap")
       util.run_command(f"chown -R {self._host_user} {device_monitor_capture}")
 
       client = docker.from_env()

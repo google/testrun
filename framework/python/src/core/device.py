@@ -25,3 +25,4 @@ class Device(NetworkDevice):
   manufacturer: str = None
   model: str = None
   test_modules: str = None
+  max_device_tests: int = None
