@@ -74,9 +74,9 @@ class TestOrchestrator:
 
     self._generate_results(device)
     self._timestamp_results(device)
-    LOGGER.info("Cleaning up old test results...")
+    LOGGER.info("Cleaning old test results...")
     self._cleanup_old_test_results(device)
-    LOGGER.info("Old tests cleaned up")
+    LOGGER.info("Old test results cleaned")
     self._test_in_progress = False
 
   def _cleanup_old_test_results(self, device):
