@@ -24,10 +24,11 @@ from dhcp2.client import Client as DHCPClient2
 LOG_NAME = 'test_connection'
 LOGGER = None
 OUI_FILE = '/usr/local/etc/oui.txt'
-DHCP_SERVER_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 SLAAC_PREFIX = 'fd10:77be:4186'
+
+TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
 
 
 class ConnectionModule(TestModule):
@@ -123,8 +124,7 @@ class ConnectionModule(TestModule):
       return result, 'No MAC address found.'
 
     # Read all the pcap files containing DHCP packet information
-    packets = rdpcap(DHCP_SERVER_CAPTURE_FILE)
-    packets.append(rdpcap(STARTUP_CAPTURE_FILE))
+    packets = rdpcap(STARTUP_CAPTURE_FILE)
     packets.append(rdpcap(MONITOR_CAPTURE_FILE))
 
     # Extract MAC addresses from DHCP packets
@@ -132,9 +132,10 @@ class ConnectionModule(TestModule):
     LOGGER.info('Inspecting: ' + str(len(packets)) + ' packets')
     for packet in packets:
       # Option[1] = message-type, option 3 = DHCPREQUEST
-      if DHCP in packet and packet[DHCP].options[0][1] == 3:
-        mac_address = packet[Ether].src
-        mac_addresses.add(mac_address.upper())
+        if DHCP in packet and packet[DHCP].options[0][1] == 3: 
+            mac_address = packet[Ether].src
+            if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
+              mac_addresses.add(mac_address.upper())
 
     # Check if the device mac address is in the list of DHCPREQUESTs
     result = self._device_mac.upper() in mac_addresses

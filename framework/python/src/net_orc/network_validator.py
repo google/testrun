@@ -30,7 +30,7 @@ DEVICE_METADATA = 'conf/module_config.json'
 DEVICE_BRIDGE = 'tr-d'
 CONF_DIR = 'local'
 CONF_FILE = 'system.json'
-
+TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
 
 class NetworkValidator:
   """Perform validation of network services."""
@@ -238,6 +238,10 @@ class NetworkValidator:
     util.run_command('ip link add ' + bridge_intf + ' type veth peer name ' +
                      container_intf)
 
+    mac_addr = TR_CONTAINER_MAC_PREFIX + '10'
+
+    util.run_command('ip link set dev ' + container_intf + ' address ' + mac_addr)
+
     # Add bridge interface to device bridge
     util.run_command('ovs-vsctl add-port ' + DEVICE_BRIDGE + ' ' + bridge_intf)
 
@@ -257,6 +261,7 @@ class NetworkValidator:
     # Rename container interface name to veth0
     util.run_command('ip netns exec ' + container_net_ns + ' ip link set dev ' +
                      container_intf + ' name veth0')
+
 
     # Set interfaces up
     util.run_command('ip link set dev ' + bridge_intf + ' up')
