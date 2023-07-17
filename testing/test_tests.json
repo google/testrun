@@ -9,10 +9,12 @@
     },
     "tester2": {
         "image": "test-run/ci_test1",
-        "args": "",
+        "args": "ntpv4_dhcp",
         "ethmac": "02:42:aa:00:00:02",
         "expected_results": {
-            "security.nmap.ports": "compliant"
+            "security.nmap.ports": "compliant",
+            "ntp.network.ntp_support": "compliant",
+            "ntp.network.ntp_dhcp": "compliant"
         }
     }
     
