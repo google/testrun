@@ -123,11 +123,10 @@ class TestOrchestrator:
             device.mac_addr.replace(":", "") + "/current_test")
     # Define the destination results directory with timestamp
     cur_time = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-    completed_results_dir = cur_results_dir = os.path.join(
+    completed_results_dir = os.path.join(
             self._root_path, "runtime/test/" +
             device.mac_addr.replace(":", "") + "/completed_tests/" + cur_time)
     # Move the results to the timestamp directory
-    os.makedirs(completed_results_dir, exist_ok=True)
     shutil.move(cur_results_dir,completed_results_dir)
 
 
