@@ -1,6 +1,6 @@
 
 FROM ubuntu:jammy
-
+ENV DEBIAN_FRONTEND=noninteractive 
 #Update and get all additional requirements not contained in the base image 
 RUN apt-get update && apt-get -y upgrade
 

@@ -88,4 +88,24 @@ elif [ -n "${options[sshv1]}" ]; then
     /usr/local/sbin/sshd
 fi
 
+# still testing - using fixed 
+if [ -n "${options[ntpv4_dhcp]}" ]; then
+    (while true; do
+        dhcp_ntp=$(fgrep NTPSERVERS= /run/ntpdate.dhcp)
+        if [ -n "${dhcp_ntp}" ]; then
+            ntp_server=`echo $dhcp_ntp | cut -d "'" -f 2`
+            echo NTP server from DHCP $ntp_server
+        fi
+        ntpdate -q -p 1 $ntp_server
+        sleep 5
+     done) &
+fi
+
+if [ -n "${options[ntpv3_time_google_com]}" ]; then
+    (while true; do
+        ntpdate -q -p 1 -o 3 time.google.com
+        sleep 5
+     done) &
+fi
+
 tail -f /dev/null
