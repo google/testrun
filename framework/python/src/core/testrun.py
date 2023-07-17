@@ -50,6 +50,7 @@ DEVICE_MANUFACTURER = 'manufacturer'
 DEVICE_MODEL = 'model'
 DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
+DEVICE_MAX_TESTS = 'max_device_tests'
 
 class TestRun:  # pylint: disable=too-few-public-methods
   """Test Run controller.
@@ -180,11 +181,15 @@ class TestRun:  # pylint: disable=too-few-public-methods
         device_model = device_config_json.get(DEVICE_MODEL)
         mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
         test_modules = device_config_json.get(DEVICE_TEST_MODULES)
+        max_device_tests = None
+        if 'max_device_tests' in device_config_json:
+          max_device_tests = device_config_json.get(DEVICE_MAX_TESTS)
 
         device = Device(manufacturer=device_manufacturer,
                         model=device_model,
                         mac_addr=mac_addr,
-                        test_modules=json.dumps(test_modules))
+                        test_modules=json.dumps(test_modules),
+                        max_device_tests=max_device_tests)
         self._devices.append(device)
 
   def get_device(self, mac_addr):
