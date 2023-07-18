@@ -32,9 +32,10 @@ MODULE_CONFIG = "conf/module_config.json"
 class TestOrchestrator:
   """Manages and controls the test modules."""
 
-  def __init__(self, net_orc):
+  def __init__(self, session, net_orc):
     self._test_modules = []
     self._module_config = None
+    self._session = session
     self._net_orc = net_orc
     self._test_in_progress = False
 
@@ -44,7 +45,6 @@ class TestOrchestrator:
 
     # Resolve the path to the test-run folder
     #self._root_path = os.path.abspath(os.path.join(self._path, os.pardir))
-
 
     self._root_path = os.path.dirname(os.path.dirname(
           os.path.dirname(

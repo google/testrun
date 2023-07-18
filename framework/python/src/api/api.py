@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import FastAPI, APIRouter, Response, status
+from fastapi import FastAPI, APIRouter, Response, Request, status
 import json
+from json import JSONDecodeError
 import psutil
 import threading
 import uvicorn
 
-from api.system_config import SystemConfig
 from common import logger
 
 LOGGER = logger.get_logger("api")
@@ -32,8 +32,7 @@ class Api:
     self._name = "TestRun API"
     self._router = APIRouter()
 
-    self._devices = self._test_run.get_devices()
-    self._config_file_url = self._test_run.get_config_file()
+    self._session = self._test_run.get_session()
 
     self._router.add_api_route("/system/interfaces", self.get_sys_interfaces)
     self._router.add_api_route("/system/config", self.post_sys_config,
@@ -72,48 +71,72 @@ class Api:
       ifaces.append(iface)
     return ifaces
 
-  async def post_sys_config(self, sys_config: SystemConfig):
-
-    config_file = open(self._config_file_url, "r", encoding="utf-8")
-    json_contents = json.load(config_file)
-    config_file.close()
-
-    json_contents["network"]["device_intf"] = sys_config.network.device_intf
-    json_contents["network"]["internet_intf"] = sys_config.network.internet_intf
-
-    with open(self._config_file_url, "w", encoding="utf-8") as config_file:
-      json.dump(json_contents, config_file, indent=2)
-
-    return sys_config
+  async def post_sys_config(self, request: Request):
+    config = (await request.body()).decode("UTF-8")
+    config_json = json.loads(config)
+    self._session.set_config(config_json)
+    return self._session.get_config()
 
   async def get_sys_config(self):
-    config_file = open(self._config_file_url, "r", encoding="utf-8")
-    json_contents = json.load(config_file)
-    config_file.close()
-    return json_contents
+    return self._session.get_config()
 
   async def get_devices(self):
-    return self._devices
+    return self._session.get_device_repository()
 
-  async def start_test_run(self, response: Response):
+  async def start_test_run(self, request: Request, response: Response):
+
     LOGGER.debug("Received start command")
-    if self._test_run.get_session().status != "Idle":
-      LOGGER.debug("Test Run is already running. Cannot start another instance.")
+
+    # Check request is valid
+    body = (await request.body()).decode("UTF-8")
+    body_json = None
+
+    try:
+      body_json = json.loads(body)
+    except JSONDecodeError:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return json.loads('{"error": "Invalid JSON received"}')
+
+    if "device" not in body_json or "mac_addr" not in body_json["device"]:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return json.loads('{"error": "Valid device MAC address has not been specified"}')
+
+    device = self._session.get_device(body_json["device"]["mac_addr"])
+
+    # Check Test Run is not already running
+    if self._test_run.get_session().get_status() != "Idle":
+      LOGGER.debug("Test Run is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
       return json.loads('{"error": "Test Run is already running"}')
+
+    # Check if requested device is known in the device repository
+    if device is None:
+      response.status_code = status.HTTP_404_NOT_FOUND
+      return json.loads('{"error": "A device with that MAC address could not be found"}')
+
+    # Check Test Run is able to start
+    if self._test_run.get_net_orc().check_config() is False:
+      response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+      return json.loads('{"error": "Configured interfaces are not ready for use. Ensure both interfaces are connected."}')
+
+    self._test_run.get_session().set_target_device(device)
+    LOGGER.info(f"Starting Test Run with device target {device.manufacturer} {device.model} with MAC address {device.mac_addr}")
+
     thread = threading.Thread(target=self._start_test_run,
                                         name="Test Run")
     thread.start()
-    return json.loads('{"status": "Starting Test Run"}')
+    return self._test_run.get_session().to_json()
 
   def _start_test_run(self):
     self._test_run.start()
 
   async def stop_test_run(self):
     LOGGER.info("Received stop command. Stopping Test Run")
+    self._test_run.stop()
+    return json.loads('{"success": "Test Run stopped"}')
 
   async def get_status(self):
-    return self._test_run.get_session()
+    return self._test_run.get_session().to_json()
 
   async def get_history(self):
     LOGGER.info("Returning previous Test Runs to UI")

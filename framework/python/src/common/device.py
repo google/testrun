@@ -14,14 +14,14 @@
 
 """Track device object information."""
 
-from net_orc.network_device import NetworkDevice
 from dataclasses import dataclass
 
-
 @dataclass
-class Device(NetworkDevice):
+class Device():
   """Represents a physical device and it's configuration."""
 
+  mac_addr: str = None
   manufacturer: str = None
   model: str = None
   test_modules: str = None
+  ip_addr: str = None

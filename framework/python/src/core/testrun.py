@@ -42,11 +42,13 @@ from test_orc import test_orchestrator as test_orc # pylint: disable=wrong-impor
 from net_orc import network_orchestrator as net_orc # pylint: disable=wrong-import-position
 
 LOGGER = logger.get_logger('test_run')
+
 DEFAULT_CONFIG_FILE = 'local/system.json'
 EXAMPLE_CONFIG_FILE = 'local/system.json.example'
-RUNTIME = 120
+
 LOCAL_DEVICES_DIR = 'local/devices'
 RESOURCE_DEVICES_DIR = 'resources/devices'
+
 DEVICE_CONFIG = 'device_config.json'
 DEVICE_MANUFACTURER = 'manufacturer'
 DEVICE_MODEL = 'model'
@@ -68,30 +70,28 @@ class TestRun:  # pylint: disable=too-few-public-methods
                no_ui=False):
 
     if config_file is None:
-      config_file = DEFAULT_CONFIG_FILE
+      self._config_file = self._get_config_abs(DEFAULT_CONFIG_FILE)
+    else:
+      self._config_file = self._get_config_abs(config_file)
 
     self._devices = []
     self._net_only = net_only
     self._single_intf = single_intf
-    self._config_file = config_file
     self._no_ui = no_ui
-
-    self._session = TestRunSession()
 
     # Catch any exit signals
     self._register_exits()
 
-    # Expand the config file to absolute pathing
-    config_file_abs = self._get_config_abs(config_file=self._config_file)
-
+    self._session = TestRunSession(config_file=self._config_file)
     self._load_all_devices()
 
     self._net_orc = net_orc.NetworkOrchestrator(
-      config_file=config_file_abs,
+      session=self._session,
       validate=validate,
       single_intf = self._single_intf)
-
-    self._test_orc = test_orc.TestOrchestrator(self._net_orc)
+    self._test_orc = test_orc.TestOrchestrator(
+      self._session,
+      self._net_orc)
 
     if self._no_ui:
       self.start()
@@ -128,63 +128,69 @@ class TestRun:  # pylint: disable=too-few-public-methods
                         model=device_model,
                         mac_addr=mac_addr,
                         test_modules=test_modules)
-        self._devices.append(device)
+        self.get_session().add_device(device)
 
   def start(self):
 
-    self._set_status('Starting')
+    self._session.start()
 
     self._start_network()
 
     if self._net_only:
       LOGGER.info('Network only option configured, no tests will be run')
 
-      self._net_orc.listener.register_callback(
+      self.get_net_orc().listener.register_callback(
         self._device_discovered,
         [NetworkEvent.DEVICE_DISCOVERED]
       )
 
-      self._net_orc.start_listener()
+      self.get_net_orc().start_listener()
       LOGGER.info('Waiting for devices on the network...')
 
       while True:
-        time.sleep(RUNTIME)
+        time.sleep(self._session.get_runtime())
 
     else:
       self._test_orc.start()
 
-      self._net_orc.listener.register_callback(
+      self.get_net_orc().get_listener().register_callback(
           self._device_stable,
           [NetworkEvent.DEVICE_STABLE]
       )
 
-      self._net_orc.listener.register_callback(
+      self.get_net_orc().get_listener().register_callback(
         self._device_discovered,
         [NetworkEvent.DEVICE_DISCOVERED]
       )
 
-      self._net_orc.start_listener()
+      self.get_net_orc().start_listener()
       self._set_status('Waiting for device')
       LOGGER.info('Waiting for devices on the network...')
 
-      time.sleep(RUNTIME)
+      time.sleep(self._session.get_runtime())
 
       if not (self._test_orc.test_in_progress() or
-              self._net_orc.monitor_in_progress()):
+              self.get_net_orc().monitor_in_progress()):
         LOGGER.info('''Timed out whilst waiting for
           device or stopping due to test completion''')
       else:
         while (self._test_orc.test_in_progress() or
-          self._net_orc.monitor_in_progress()):
+          self.get_net_orc().monitor_in_progress()):
           time.sleep(5)
 
       self.stop()
 
   def stop(self, kill=False):
     self._set_status('Stopping')
+
+    # Prevent discovering new devices whilst stopping
+    if self.get_net_orc().get_listener() is not None:
+      self.get_net_orc().get_listener().stop_listener()
+
     self._stop_tests()
     self._stop_network(kill=kill)
-    self._set_status('Idle')
+
+    self.get_session().reset()
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
@@ -210,17 +216,17 @@ class TestRun:  # pylint: disable=too-few-public-methods
   def get_config_file(self):
     return self._get_config_abs()
 
-  def get_devices(self):
-    return self._devices
+  def get_net_orc(self):
+    return self._net_orc
 
   def _start_network(self):
     # Start the network orchestrator
-    if not self._net_orc.start():
+    if not self.get_net_orc().start():
       self.stop(kill=True)
       sys.exit(1)
 
   def _stop_network(self, kill=False):
-    self._net_orc.stop(kill=kill)
+    self.get_net_orc().stop(kill=kill)
 
   def _stop_tests(self):
     self._test_orc.stop()
@@ -232,6 +238,12 @@ class TestRun:  # pylint: disable=too-few-public-methods
         return device
 
   def _device_discovered(self, mac_addr):
+
+    if self.get_session().get_target_device() is not None:
+      if mac_addr != self.get_session().get_target_device().mac_addr:
+        # Ignore discovered device
+        return
+
     self._set_status('Identifying device')
     device = self.get_device(mac_addr)
     if device is not None:
@@ -251,7 +263,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._set_status('Complete')
 
   def _set_status(self, status):
-    self._session.status = status
+    self._session.set_status(status)
 
   def get_session(self):
     return self._session

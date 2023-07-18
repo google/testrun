@@ -20,8 +20,8 @@ if [[ "$EUID" -ne 0 ]]; then
 fi
 
 # TODO: Obtain TESTRUNPATH from user environment variables
-#TESTRUNPATH="/home/boddey/Desktop/test-run"
-#cd $TESTRUNPATH
+TESTRUNPATH="/home/boddey/Desktop/test-run"
+cd $TESTRUNPATH
 
 # Ensure that /var/run/netns folder exists
 sudo mkdir -p /var/run/netns
