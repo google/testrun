@@ -90,10 +90,8 @@ class NetworkOrchestrator:
 
   def check_config(self):
 
-    self._import_config()
-
-    if not util.interface_exists(self._int_intf) or not util.interface_exists(
-        self._dev_intf):
+    if not util.interface_exists(self._session.get_internet_interface()) or not util.interface_exists(
+        self._session.get_device_interface()):
       LOGGER.error('Configured interfaces are not ready for use. ' +
                    'Ensure both interfaces are connected.')
       return False
