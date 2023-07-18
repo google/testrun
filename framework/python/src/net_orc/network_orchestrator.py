@@ -255,30 +255,30 @@ class NetworkOrchestrator:
         """
 
     self._ethmac = subprocess.check_output(
-        f'cat /sys/class/net/{self._int_intf}/address',
+        f'cat /sys/class/net/{self._session.get_internet_interface()}/address',
         shell=True).decode('utf-8').strip()
     self._gateway = subprocess.check_output(
         'ip route | head -n 1 | awk \'{print $3}\'',
         shell=True).decode('utf-8').strip()
     self._ipv4 = subprocess.check_output(
-        f'ip a show {self._int_intf} | grep \"inet \" | awk \'{{print $2}}\'',
+        f'ip a show {self._session.get_internet_interface()} | grep \"inet \" | awk \'{{print $2}}\'',
         shell=True).decode('utf-8').strip()
     self._ipv6 = subprocess.check_output(
-        f'ip a show {self._int_intf} | grep inet6 | awk \'{{print $2}}\'',
+        f'ip a show {self._session.get_internet_interface()} | grep inet6 | awk \'{{print $2}}\'',
         shell=True).decode('utf-8').strip()
     self._brd = subprocess.check_output(
-        f'ip a show {self._int_intf} | grep \"inet \" | awk \'{{print $4}}\'',
+        f'ip a show {self._session.get_internet_interface()} | grep \"inet \" | awk \'{{print $4}}\'',
         shell=True).decode('utf-8').strip()
 
   def _ci_post_network_create(self):
     """ Restore network connection in CI environment """
     LOGGER.info('post cr')
-    util.run_command(f'ip address del {self._ipv4} dev {self._int_intf}')
-    util.run_command(f'ip -6 address del {self._ipv6} dev {self._int_intf}')
+    util.run_command(f'ip address del {self._ipv4} dev {self._session.get_internet_interface()}')
+    util.run_command(f'ip -6 address del {self._ipv6} dev {self._session.get_internet_interface()}')
     util.run_command(
-        f'ip link set dev {self._int_intf} address 00:B0:D0:63:C2:26')
-    util.run_command(f'ip addr flush dev {self._int_intf}')
-    util.run_command(f'ip addr add dev {self._int_intf} 0.0.0.0')
+        f'ip link set dev {self._session.get_internet_interface()} address 00:B0:D0:63:C2:26')
+    util.run_command(f'ip addr flush dev {self._session.get_internet_interface()}')
+    util.run_command(f'ip addr add dev {self._session.get_internet_interface()} 0.0.0.0')
     util.run_command(
         f'ip addr add dev {INTERNET_BRIDGE} {self._ipv4} broadcast {self._brd}')
     util.run_command(f'ip -6 addr add {self._ipv6} dev {INTERNET_BRIDGE} ')
