@@ -24,10 +24,10 @@ from dhcp2.client import Client as DHCPClient2
 LOG_NAME = 'test_connection'
 LOGGER = None
 OUI_FILE = '/usr/local/etc/oui.txt'
-DHCP_SERVER_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 SLAAC_PREFIX = 'fd10:77be:4186'
+TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
 
 
 class ConnectionModule(TestModule):
@@ -68,71 +68,12 @@ class ConnectionModule(TestModule):
     # print("Set Range: " + str(response))
 
   def _connection_private_address(self, config):
-    # Shutdown the secondary DHCP Server
     LOGGER.info('Running connection.private_address')
-    response = self.dhcp1_client.get_dhcp_range()
-    cur_range = {}
-    if response.code == 200:
-      cur_range['start'] = response.start
-      cur_range['end'] = response.end
-      LOGGER.info('Current DHCP subnet range: ' + str(cur_range))
-    else:
-      LOGGER.error('Failed to resolve current subnet range required '
-              'for restoring network')
-      return None, ('Failed to resolve current subnet range required '
-              'for restoring network')
+    return self._run_subnet_test(config)
 
-    results = []
-    dhcp_setup = self.setup_single_dhcp_server()
-    if dhcp_setup[0]:
-      LOGGER.info(dhcp_setup[1])
-      lease = self._get_cur_lease()
-      if lease is not None:
-        if self._is_lease_active(lease):
-          results = self.test_subnets(config)
-      else:
-        return None, 'Failed to confirm a valid active lease for the device'
-    else:
-      LOGGER.error(dhcp_setup[1])
-      return None, 'Failed to setup DHCP server for test'
-
-    # Process and return final results
-    final_result = None
-    final_result_details = ''
-    for result in results:
-      if final_result is None:
-        final_result = result['result']
-      else:
-        final_result &= result['result']
-      final_result_details += result['details'] + '\n'
-
-    try:
-      # Restore failover configuration of DHCP servers
-      self.restore_failover_dhcp_server(cur_range)
-
-      # Wait for the current lease to expire
-      self._wait_for_lease_expire(self._get_cur_lease())
-
-      # Wait for a new lease to be provided before exiting test
-      # to prevent other test modules from failing
-      for _ in range(5):
-        LOGGER.info('Checking for new lease')
-        lease = self._get_cur_lease()
-        if lease is not None:
-          LOGGER.info('New Lease found: ' + str(lease))
-          LOGGER.info('Validating subnet for new lease...')
-          in_range = self.is_ip_in_range(lease['ip'], cur_range['start'],
-                                         cur_range['end'])
-          LOGGER.info('Lease within subnet: ' + str(in_range))
-          break
-        else:
-          LOGGER.info('New lease not found. Waiting to check again')
-        time.sleep(5)
-
-    except Exception as e: # pylint: disable=W0718
-      LOGGER.error('Failed to restore DHCP server configuration: ' + str(e))
-
-    return final_result, final_result_details
+  def _connection_shared_address(self, config):
+    LOGGER.info('Running connection.shared_address')
+    return self._run_subnet_test(config)
 
   def _connection_dhcp_address(self):
     LOGGER.info('Running connection.dhcp_address')
@@ -182,8 +123,7 @@ class ConnectionModule(TestModule):
       return result, 'No MAC address found.'
 
     # Read all the pcap files containing DHCP packet information
-    packets = rdpcap(DHCP_SERVER_CAPTURE_FILE)
-    packets.append(rdpcap(STARTUP_CAPTURE_FILE))
+    packets = rdpcap(STARTUP_CAPTURE_FILE)
     packets.append(rdpcap(MONITOR_CAPTURE_FILE))
 
     # Extract MAC addresses from DHCP packets
@@ -191,9 +131,10 @@ class ConnectionModule(TestModule):
     LOGGER.info('Inspecting: ' + str(len(packets)) + ' packets')
     for packet in packets:
       # Option[1] = message-type, option 3 = DHCPREQUEST
-      if DHCP in packet and packet[DHCP].options[0][1] == 3:
-        mac_address = packet[Ether].src
-        mac_addresses.add(mac_address.upper())
+        if DHCP in packet and packet[DHCP].options[0][1] == 3: 
+            mac_address = packet[Ether].src
+            if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
+              mac_addresses.add(mac_address.upper())
 
     # Check if the device mac address is in the list of DHCPREQUESTs
     result = self._device_mac.upper() in mac_addresses
@@ -333,6 +274,79 @@ class ConnectionModule(TestModule):
         ''.join(format(int(octet), '08b') for octet in end_ip.split('.')), 2)
 
     return start_int <= ip_int <= end_int
+
+  def _run_subnet_test(self,config):
+    # Resolve the configured dhcp subnet ranges
+    ranges = None
+    if 'ranges' in config:
+      ranges = config['ranges']
+    else:
+      LOGGER.error('No subnet ranges configured for test. Skipping')
+      return None, 'No subnet ranges configured for test. Skipping'
+
+    response = self.dhcp1_client.get_dhcp_range()
+    cur_range = {}
+    if response.code == 200:
+      cur_range['start'] = response.start
+      cur_range['end'] = response.end
+      LOGGER.info('Current DHCP subnet range: ' + str(cur_range))
+    else:
+      LOGGER.error('Failed to resolve current subnet range required '
+              'for restoring network')
+      return None, ('Failed to resolve current subnet range required '
+              'for restoring network')
+
+    results = []
+    dhcp_setup = self.setup_single_dhcp_server()
+    if dhcp_setup[0]:
+      LOGGER.info(dhcp_setup[1])
+      lease = self._get_cur_lease()
+      if lease is not None:
+        if self._is_lease_active(lease):
+          results = self.test_subnets(ranges)
+      else:
+        return None, 'Failed to confirm a valid active lease for the device'
+    else:
+      LOGGER.error(dhcp_setup[1])
+      return None, 'Failed to setup DHCP server for test'
+
+    # Process and return final results
+    final_result = None
+    final_result_details = ''
+    for result in results:
+      if final_result is None:
+        final_result = result['result']
+      else:
+        final_result &= result['result']
+      final_result_details += result['details'] + '\n'
+
+    try:
+      # Restore failover configuration of DHCP servers
+      self.restore_failover_dhcp_server(cur_range)
+
+      # Wait for the current lease to expire
+      self._wait_for_lease_expire(self._get_cur_lease())
+
+      # Wait for a new lease to be provided before exiting test
+      # to prevent other test modules from failing
+      for _ in range(5):
+        LOGGER.info('Checking for new lease')
+        lease = self._get_cur_lease()
+        if lease is not None:
+          LOGGER.info('New Lease found: ' + str(lease))
+          LOGGER.info('Validating subnet for new lease...')
+          in_range = self.is_ip_in_range(lease['ip'], cur_range['start'],
+                                         cur_range['end'])
+          LOGGER.info('Lease within subnet: ' + str(in_range))
+          break
+        else:
+          LOGGER.info('New lease not found. Waiting to check again')
+        time.sleep(5)
+
+    except Exception as e: # pylint: disable=W0718
+      LOGGER.error('Failed to restore DHCP server configuration: ' + str(e))
+
+    return final_result, final_result_details
 
   def _test_subnet(self, subnet, lease):
     if self._change_subnet(subnet):
