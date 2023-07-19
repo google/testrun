@@ -1,7 +1,7 @@
 {
   "manufacturer": "Google",
-  "model": "Tester 1",
-  "mac_addr": "02:42:ac:12:00:02",
+  "model": "Tester 2",
+  "mac_addr": "02:42:aa:00:00:02",
   "test_modules": {
     "dns": {
       "enabled": false
