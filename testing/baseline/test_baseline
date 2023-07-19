@@ -80,6 +80,6 @@ echo "Done baseline test"
 
 more $TESTRUN_OUT
 
-pytest testing/test_baseline.py
+pytest testing/baseline/test_baseline.py
 
 exit $?

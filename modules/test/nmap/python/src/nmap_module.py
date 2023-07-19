@@ -92,7 +92,8 @@ class NmapModule(TestModule):
 
     for test in tests:
       LOGGER.info("Checking scan results for test: " + str(test))
-      self._check_scan_results(test_config=tests[test],scan_results=scan_results)
+      self._check_scan_results(test_config=tests[test],
+                               scan_results=scan_results)
 
   def _check_unknown_ports(self,tests,scan_results):
     """ Check if any of the open ports detected are not defined
@@ -103,54 +104,54 @@ class NmapModule(TestModule):
     known_ports = []
     for test in tests:
       if "tcp_ports" in tests[test]:
-        for port in tests[test]['tcp_ports']:
+        for port in tests[test]["tcp_ports"]:
          known_ports.append(port)
       if "udp_ports" in tests[test]:
-        for port in tests[test]['udp_ports']:
+        for port in tests[test]["udp_ports"]:
          known_ports.append(port)
 
     for port_result in scan_results:
       if not port_result in known_ports:
         LOGGER.info("Unknown port detected: " + port_result)
-        unallowed_port = {'port':port_result,
-                          'service':scan_results[port_result]['service'],
-                          'tcp_udp':scan_results[port_result]['tcp_udp']}
+        unallowed_port = {"port":port_result,
+                          "service":scan_results[port_result]["service"],
+                          "tcp_udp":scan_results[port_result]["tcp_udp"]}
         #self._unallowed_ports.append(unallowed_port)
         self._add_unknown_ports(tests,unallowed_port)
 
   def _add_unknown_ports(self,tests,unallowed_port):
     known_service = False
-    result = {'description':"Undefined port",'allowed':False}
-    if unallowed_port['tcp_udp'] == 'tcp':
-      port_style = 'tcp_ports'
-    elif unallowed_port['tcp_udp'] == 'udp':
-      port_style = 'udp_ports'
+    result = {"description":"Undefined port","allowed":False}
+    if unallowed_port["tcp_udp"] == "tcp":
+      port_style = "tcp_ports"
+    elif unallowed_port["tcp_udp"] == "udp":
+      port_style = "udp_ports"
 
-    LOGGER.info("Unknown Port Service: " + unallowed_port['service'])
+    LOGGER.info("Unknown Port Service: " + unallowed_port["service"])
     for test in tests:
       LOGGER.debug("Checking for known service: " + test)
       # Create a regular expression pattern to match the variable at the 
       # end of the string
-      port_service = r"\b" + re.escape(unallowed_port['service']) + r"\b$"
+      port_service = r"\b" + re.escape(unallowed_port["service"]) + r"\b$"
       service_match = re.search(port_service, test)
       if service_match:
         LOGGER.info("Service Matched: " + test)
         known_service=True
         for test_port in tests[test][port_style]:
           if "version" in tests[test][port_style][test_port]:
-            result['version'] = tests[test][port_style][test_port]['version']
+            result["version"] = tests[test][port_style][test_port]["version"]
           if "description" in tests[test][port_style][test_port]:
-            result['description'] = tests[test][port_style][test_port]['description']
-          result['inherited_from'] = test_port
-          if tests[test][port_style][test_port]['allowed']:
-            result['allowed'] = True
+            result["description"] = tests[test][port_style][test_port]["description"]
+          result["inherited_from"] = test_port
+          if tests[test][port_style][test_port]["allowed"]:
+            result["allowed"] = True
             break
-        tests[test][port_style][unallowed_port['port']]=result
+        tests[test][port_style][unallowed_port["port"]]=result
         break
 
     if not known_service:
-      service_name = "security.services.unknown." + str(unallowed_port['port'])
-      unknown_service = {port_style:{unallowed_port['port']:result}}
+      service_name = "security.services.unknown." + str(unallowed_port["port"])
+      unknown_service = {port_style:{unallowed_port["port"]:result}}
       tests[service_name]=unknown_service
 
 
@@ -176,7 +177,7 @@ class NmapModule(TestModule):
               self._unallowed_ports.append(
                 {"port":str(port),
                 "service":str(scan_results[port]["service"]),
-                'tcp_udp':scan_results[port]['tcp_udp']}
+                "tcp_udp":scan_results[port]["tcp_udp"]}
                 )
               result = False
             else:
@@ -208,39 +209,39 @@ class NmapModule(TestModule):
     version = None
     service = None
     for port in unallowed_ports:
-      LOGGER.info('Checking unallowed port: ' + port['port'])
-      LOGGER.info('Looking for service: ' + port['service'])
-      LOGGER.debug('Unallowed Port Config: ' + str(port))
-      if port['tcp_udp'] == 'tcp':
-        port_style = 'tcp_ports'
-      elif port['tcp_udp'] == 'udp':
-        port_style = 'udp_ports'
+      LOGGER.info("Checking unallowed port: " + port["port"])
+      LOGGER.info("Looking for service: " + port["service"])
+      LOGGER.debug("Unallowed Port Config: " + str(port))
+      if port["tcp_udp"] == "tcp":
+        port_style = "tcp_ports"
+      elif port["tcp_udp"] == "udp":
+        port_style = "udp_ports"
       for test in tests:
-        LOGGER.debug('Checking test: ' + str(test))
+        LOGGER.debug("Checking test: " + str(test))
         # Create a regular expression pattern to match the variable at the 
         # end of the string
-        port_service = r"\b" + re.escape(port['service']) + r"\b$"
+        port_service = r"\b" + re.escape(port["service"]) + r"\b$"
         service_match = re.search(port_service, test)
         if service_match:
           LOGGER.info("Service Matched: " + test)
           service_config = tests[test]
-          service = port['service']
+          service = port["service"]
           for service_port in service_config[port_style]:
             port_config = service_config[port_style][service_port]
-            service_allowed |= port_config['allowed']
-            version = port_config['version'] if 'version' in port_config else None
+            service_allowed |= port_config["allowed"]
+            version = port_config["version"] if "version" in port_config else None
             if service_allowed:
               LOGGER.info("Unallowed port detected for allowed service: " + service)
               if version is not None:
                 allowed = self._check_version(service=service,
-                  version_detected=self._scan_tcp_results[port['port']]['version'],
+                  version_detected=self._scan_tcp_results[port["port"]]["version"],
                   version_expected=version)
               else:
                 allowed = True
               if allowed:
-                LOGGER.info("Unallowed port exception for approved service: " + port['port'])
+                LOGGER.info("Unallowed port exception for approved service: " + port["port"])
                 for u_port in self._unallowed_ports:
-                  if port['port'] in u_port['port']:
+                  if port["port"] in u_port["port"]:
                     self._unallowed_ports.remove(u_port)
               break    
           break
@@ -318,7 +319,7 @@ class NmapModule(TestModule):
     nmap_results_json = self._nmap_results_to_json(nmap_results)
     return self._process_nmap_json_results(nmap_results_json=nmap_results_json)
 
-  def _scan_tcp_ports(self, tests):
+  def _scan_tcp_ports(self):
     max_port = 65535
     LOGGER.info("Running nmap TCP port scan")
     nmap_results = util.run_command(

@@ -17,7 +17,7 @@
 set -o xtrace
 ip a
 TEST_DIR=/tmp/results
-MATRIX=testing/test_tests.json
+MATRIX=testing/tests/test_tests.json
 
 mkdir -p $TEST_DIR
 
@@ -50,7 +50,7 @@ cat <<EOF >local/system.json
 }
 EOF
 
-cp -r testing/device_configs local
+cp -r testing/device_configs/* local
 
 sudo cmd/install
 
@@ -117,6 +117,6 @@ for tester in $TESTERS; do
 
 done
 
-pytest -v testing/test_tests.py
+pytest -v testing/tests/test_tests.py
 
 exit $?
