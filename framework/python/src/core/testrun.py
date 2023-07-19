@@ -74,7 +74,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
     else:
       self._config_file = self._get_config_abs(config_file)
 
-    self._devices = []
     self._net_only = net_only
     self._single_intf = single_intf
     self._no_ui = no_ui
@@ -129,6 +128,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
                         mac_addr=mac_addr,
                         test_modules=test_modules)
         self.get_session().add_device(device)
+        LOGGER.debug(f'Loaded device {device.manufacturer} {device.model} with MAC address {device.mac_addr}')
 
   def start(self):
 
