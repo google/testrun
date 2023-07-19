@@ -61,6 +61,14 @@ for tester in $TESTERS; do
   ethmac=$(jq -r .$tester.ethmac $MATRIX)
   args=$(jq -r .$tester.args $MATRIX)
 
+  cat <<EOF >local/devices/$tester/device_config.json
+  {
+    "manufacturer": "Google",
+    "model": "$args",
+    "mac_addr": "$ethmac"
+  }
+  EOF
+
   touch $testrun_log
   sudo timeout 900 bin/testrun --single-intf --no-ui > $testrun_log 2>&1 &
   TPID=$!
