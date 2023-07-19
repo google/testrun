@@ -105,7 +105,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
   def _load_all_devices(self):
     self._load_devices(device_dir=LOCAL_DEVICES_DIR)
     self._load_devices(device_dir=RESOURCE_DEVICES_DIR)
-    return self._devices
+    return self.get_session().get_device_repository()
 
   def _load_devices(self, device_dir):
     LOGGER.debug('Loading devices from ' + device_dir)
@@ -233,9 +233,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def get_device(self, mac_addr):
     """Returns a loaded device object from the device mac address."""
-    for device in self._devices:
+    for device in self._session.get_device_repository():
       if device.mac_addr == mac_addr:
         return device
+    return None
 
   def _device_discovered(self, mac_addr):
 
