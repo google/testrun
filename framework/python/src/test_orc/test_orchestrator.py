@@ -182,7 +182,7 @@ class TestOrchestrator:
           environment={
               "HOST_USER": self._host_user,
               "DEVICE_MAC": device.mac_addr,
-              "DEVICE_TEST_MODULES": device.test_modules,
+              "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
               "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
               "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
           })
@@ -201,8 +201,12 @@ class TestOrchestrator:
     test_module_timeout = time.time() + module.timeout
     status = self._get_module_status(module)
 
-    while time.time() < test_module_timeout and status == "running":
-      time.sleep(1)
+    log_stream = module.container.logs(stream=True, stdout=True, stderr=True)
+    while (time.time() < test_module_timeout and
+           status == "running" and
+           self._session.get_status() == "In progress"):
+      line = next(log_stream).decode("utf-8").strip()
+      print(line)
       status = self._get_module_status(module)
 
     LOGGER.info("Test module " + module.name + " has finished")

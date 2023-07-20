@@ -18,7 +18,7 @@
 BIN_DIR=$1
 
 # Remove incorrect line endings
-dos2unix $BIN_DIR/*
+dos2unix $BIN_DIR/* >/dev/null 2>&1
 
 # Make sure all the bin files are executable
 chmod u+x $BIN_DIR/*
