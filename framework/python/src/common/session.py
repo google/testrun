@@ -77,38 +77,45 @@ class TestRunSession():
       config_file_json = json.load(f)
 
       # Network interfaces
-      self._config[NETWORK_KEY][DEVICE_INTF_KEY] = config_file_json.get(NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
-      self._config[NETWORK_KEY][INTERNET_INTF_KEY] = config_file_json.get(NETWORK_KEY, {}).get(INTERNET_INTF_KEY)
+      if (NETWORK_KEY in self._config_file_json 
+          and DEVICE_INTF_KEY in config_file_json.get(NETWORK_KEY)
+          and INTERNET_INTF_KEY in config_file_json(NETWORK_KEY)):
+        self._config[NETWORK_KEY][DEVICE_INTF_KEY] = config_file_json.get(NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
+        self._config[NETWORK_KEY][INTERNET_INTF_KEY] = config_file_json.get(NETWORK_KEY, {}).get(INTERNET_INTF_KEY)
 
-      self._config[RUNTIME_KEY] = config_file_json.get(RUNTIME_KEY)
+      if RUNTIME_KEY in config_file_json:
+        self._config[RUNTIME_KEY] = config_file_json.get(RUNTIME_KEY)
 
-      self._config[STARTUP_TIMEOUT_KEY] = config_file_json.get(STARTUP_TIMEOUT_KEY)
+      if STARTUP_TIMEOUT_KEY in config_file_json:
+        self._config[STARTUP_TIMEOUT_KEY] = config_file_json.get(STARTUP_TIMEOUT_KEY)
 
-      self._config[MONITOR_PERIOD_KEY] = config_file_json.get(MONITOR_PERIOD_KEY)
+      if MONITOR_PERIOD_KEY in config_file_json:
+        self._config[MONITOR_PERIOD_KEY] = config_file_json.get(MONITOR_PERIOD_KEY)
 
-      self._config[LOG_LEVEL_KEY] = config_file_json.get(LOG_LEVEL_KEY)
+      if LOG_LEVEL_KEY in config_file_json:
+        self._config[LOG_LEVEL_KEY] = config_file_json.get(LOG_LEVEL_KEY)
 
   def _save_config(self):
     with open(self._config_file, 'w', encoding='utf-8') as f:
       f.write(json.dumps(self._config, indent=2))
 
   def get_runtime(self):
-    return self._config[RUNTIME_KEY]
+    return self._config.get(RUNTIME_KEY)
 
   def get_log_level(self):
-    return self._config[LOG_LEVEL_KEY]
+    return self._config.get(LOG_LEVEL_KEY)
 
   def get_device_interface(self):
-    return self._config[NETWORK_KEY][DEVICE_INTF_KEY]
+    return self._config.get(NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
 
   def get_internet_interface(self):
-    return self._config[NETWORK_KEY][INTERNET_INTF_KEY]
+    return self._config.get(NETWORK_KEY, {}).get(INTERNET_INTF_KEY)
 
   def get_monitor_period(self):
-    return self._config[MONITOR_PERIOD_KEY]
+    return self._config.get(MONITOR_PERIOD_KEY)
 
   def get_startup_timeout(self):
-    return self._config[STARTUP_TIMEOUT_KEY]
+    return self._config.get(STARTUP_TIMEOUT_KEY)
 
   def set_config(self, config_json):
     self._config = config_json
