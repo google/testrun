@@ -117,7 +117,7 @@ class TestOrchestrator:
   def _is_module_enabled(self, module, device):
     enabled = True
     if device.test_modules is not None:
-      test_modules = json.loads(device.test_modules)
+      test_modules = json.dumps(device.test_modules)
       if module.name in test_modules:
         if "enabled" in test_modules[module.name]:
           enabled = test_modules[module.name]["enabled"]
