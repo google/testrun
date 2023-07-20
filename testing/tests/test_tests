@@ -50,6 +50,7 @@ cat <<EOF >local/system.json
 }
 EOF
 
+mkdir -p local/devices
 cp -r testing/device_configs/* local/devices
 
 sudo cmd/install

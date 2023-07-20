@@ -26,6 +26,9 @@ fi
 # Ensure that /var/run/netns folder exists
 sudo mkdir -p /var/run/netns
 
+# Create device folder if it doesn't exist
+mkdir -p local/devices
+
 # Check if Python modules exist. Install if not
 [ ! -d "venv" ] && sudo cmd/install
 

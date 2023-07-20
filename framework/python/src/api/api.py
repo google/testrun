@@ -71,10 +71,15 @@ class Api:
       ifaces.append(iface)
     return ifaces
 
-  async def post_sys_config(self, request: Request):
-    config = (await request.body()).decode("UTF-8")
-    config_json = json.loads(config)
-    self._session.set_config(config_json)
+  async def post_sys_config(self, request: Request, response: Response):
+    try:
+      config = (await request.body()).decode("UTF-8")
+      config_json = json.loads(config)
+      self._session.set_config(config_json)
+    # Catch JSON Decode error etc
+    except JSONDecodeError:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False, "Invalid JSON received")
     return self._session.get_config()
 
   async def get_sys_config(self):
@@ -95,11 +100,11 @@ class Api:
       body_json = json.loads(body)
     except JSONDecodeError:
       response.status_code = status.HTTP_400_BAD_REQUEST
-      return json.loads('{"error": "Invalid JSON received"}')
+      return self._generate_msg(False, "Invalid JSON received")
 
     if "device" not in body_json or "mac_addr" not in body_json["device"]:
       response.status_code = status.HTTP_400_BAD_REQUEST
-      return json.loads('{"error": "Valid device MAC address has not been specified"}')
+      return self._generate_msg(False, "Invalid request received")
 
     device = self._session.get_device(body_json["device"]["mac_addr"])
 
@@ -107,17 +112,17 @@ class Api:
     if self._test_run.get_session().get_status() != "Idle":
       LOGGER.debug("Test Run is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
-      return json.loads('{"error": "Test Run is already running"}')
+      return self._generate_msg(False, "Test Run is already running")
 
     # Check if requested device is known in the device repository
     if device is None:
       response.status_code = status.HTTP_404_NOT_FOUND
-      return json.loads('{"error": "A device with that MAC address could not be found"}')
+      return self._generate_msg(False, "A device with that MAC address could not be found")
 
     # Check Test Run is able to start
     if self._test_run.get_net_orc().check_config() is False:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-      return json.loads('{"error": "Configured interfaces are not ready for use. Ensure both interfaces are connected."}')
+      return self._generate_msg(False, "Configured interfaces are not ready for use. Ensure both interfaces are connected.")
 
     self._test_run.get_session().set_target_device(device)
     LOGGER.info(f"Starting Test Run with device target {device.manufacturer} {device.model} with MAC address {device.mac_addr}")
@@ -127,13 +132,19 @@ class Api:
     thread.start()
     return self._test_run.get_session().to_json()
 
+  def _generate_msg(self, success, message):
+    msg_type = "success"
+    if not success:
+      msg_type = "error"
+    return json.loads('{"' + msg_type + '": "' + message + '"}')
+
   def _start_test_run(self):
     self._test_run.start()
 
   async def stop_test_run(self):
     LOGGER.info("Received stop command. Stopping Test Run")
     self._test_run.stop()
-    return json.loads('{"success": "Test Run stopped"}')
+    return self._generate_msg(True, "Test Run stopped")
 
   async def get_status(self):
     return self._test_run.get_session().to_json()

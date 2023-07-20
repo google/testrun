@@ -77,23 +77,16 @@ class TestRunSession():
       config_file_json = json.load(f)
 
       # Network interfaces
-      if NETWORK_KEY in config_file_json:
-        if DEVICE_INTF_KEY in config_file_json[NETWORK_KEY]:
-          self._config[NETWORK_KEY][DEVICE_INTF_KEY] = config_file_json[NETWORK_KEY][DEVICE_INTF_KEY]
-        if INTERNET_INTF_KEY in config_file_json[NETWORK_KEY]:
-          self._config[NETWORK_KEY][INTERNET_INTF_KEY] = config_file_json[NETWORK_KEY][INTERNET_INTF_KEY]
+      self._config[NETWORK_KEY][DEVICE_INTF_KEY] = config_file_json.get(NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
+      self._config[NETWORK_KEY][INTERNET_INTF_KEY] = config_file_json.get(NETWORK_KEY, {}).get(INTERNET_INTF_KEY)
 
-      if RUNTIME_KEY in config_file_json:
-        self._config[RUNTIME_KEY] = config_file_json[RUNTIME_KEY]
+      self._config[RUNTIME_KEY] = config_file_json.get(RUNTIME_KEY)
 
-      if STARTUP_TIMEOUT_KEY in config_file_json:
-        self._config[STARTUP_TIMEOUT_KEY] = config_file_json[STARTUP_TIMEOUT_KEY]
+      self._config[STARTUP_TIMEOUT_KEY] = config_file_json.get(STARTUP_TIMEOUT_KEY)
 
-      if MONITOR_PERIOD_KEY in config_file_json:
-        self._config[MONITOR_PERIOD_KEY] = config_file_json[MONITOR_PERIOD_KEY]
+      self._config[MONITOR_PERIOD_KEY] = config_file_json.get(MONITOR_PERIOD_KEY)
 
-      if LOG_LEVEL_KEY in config_file_json:
-        self._config[LOG_LEVEL_KEY] = config_file_json[LOG_LEVEL_KEY]
+      self._config[LOG_LEVEL_KEY] = config_file_json.get(LOG_LEVEL_KEY)
 
   def _save_config(self):
     with open(self._config_file, 'w', encoding='utf-8') as f:
@@ -113,7 +106,7 @@ class TestRunSession():
 
   def get_monitor_period(self):
     return self._config[MONITOR_PERIOD_KEY]
-  
+
   def get_startup_timeout(self):
     return self._config[STARTUP_TIMEOUT_KEY]
 

@@ -28,6 +28,10 @@ import time
 from common import logger, util
 from common.device import Device
 from common.session import TestRunSession
+from api.api import Api
+from net_orc.listener import NetworkEvent
+from net_orc import network_orchestrator as net_orc
+from test_orc import test_orchestrator as test_orc
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -35,11 +39,6 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 # Locate the test-run root directory, 4 levels, src->python->framework->test-run
 root_dir = os.path.dirname(os.path.dirname(
   os.path.dirname(os.path.dirname(current_dir))))
-
-from api.api import Api # pylint: disable=wrong-import-position
-from net_orc.listener import NetworkEvent # pylint: disable=wrong-import-position
-from test_orc import test_orchestrator as test_orc # pylint: disable=wrong-import-position
-from net_orc import network_orchestrator as net_orc # pylint: disable=wrong-import-position
 
 LOGGER = logger.get_logger('test_run')
 
@@ -110,7 +109,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
   def _load_devices(self, device_dir):
     LOGGER.debug('Loading devices from ' + device_dir)
 
-    os.makedirs(device_dir, exist_ok=True)
     util.run_command(f'chown -R {util.get_host_user()} {device_dir}')
 
     for device_folder in os.listdir(device_dir):
