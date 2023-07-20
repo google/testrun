@@ -1,20 +1,24 @@
 import ssl
 import socket
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
 from datetime import datetime
 from OpenSSL import crypto
+from scapy.all import rdpcap, IP, TCP
+import json
 
 LOG_NAME = 'tls_util'
 LOGGER = None
+DEFAULT_BIN_DIR = '/testrun/bin'
+
+import common.util as util
 
 
 class TLSUtil():
   """Helper class for various tests concerning TLS communications"""
 
-  def __init__(self, logger):
+  def __init__(self, logger, bin_dir=DEFAULT_BIN_DIR):
     global LOGGER
     LOGGER = logger
+    self._bin_dir = bin_dir
 
   def get_public_certificate(self, host, port=443, tls_version='1.2'):
     try:
@@ -44,7 +48,7 @@ class TLSUtil():
       LOGGER.info(f'Connection to {host}:{port} was refused.')
       return None
     except socket.gaierror:
-      LOGGER.info(f'Failed to resolve the hostname '{host}'.')
+      LOGGER.info(f'Failed to resolve the hostname {host}.')
       return None
     except ssl.SSLError as e:
       LOGGER.info(f'SSL error occurred: {e}')
@@ -139,3 +143,85 @@ class TLSUtil():
       return cert_valid, test_details
     else:
       LOGGER.info('Failed to resolve public certificate')
+
+  def get_ciphers(self, capture_file, dst_ip, dst_port):
+    bin_file = self._bin_dir + "/get_ciphers.sh"
+    args = (f'{capture_file} {dst_ip} {dst_port}')
+    command = f'{bin_file} {args}'
+    response = util.run_command(command)
+    ciphers = response[0].split("\n")
+    return ciphers
+
+  def get_hello_packets(self, capture_file, src_ip, tls_version):
+    bin_file = self._bin_dir + "/get_client_hello_packets.sh"
+    args = (f'{capture_file} {src_ip} {tls_version}')
+    command = f'{bin_file} {args}'
+    response = util.run_command(command)
+    packets = response[0]
+    return self.parse_hello_packets(json.loads(packets), capture_file)
+
+  def get_handshake_complete(self, capture_file, src_ip, dst_ip, tls_version):
+    bin_file = self._bin_dir + "/get_handshake_complete.sh"
+    args = (f'{capture_file} {src_ip} {dst_ip} {tls_version}')
+    command = f'{bin_file} {args}'
+    response = util.run_command(command)
+    return response
+
+  def parse_hello_packets(self, packets, capture_file):
+    hello_packets = []
+    for packet in packets:
+      # Extract all the basic IP information about the packet
+      dst_ip = packet['_source']['layers']['ip.dst'][0]
+      src_ip = packet['_source']['layers']['ip.src'][0]
+      dst_port = packet['_source']['layers']['tcp.dstport'][0]
+
+      # Resolve the ciphers used in this packet and validate expected ones exist
+      ciphers = self.get_ciphers(capture_file, dst_ip, dst_port)
+      cipher_support = self.is_ecdh_and_ecdsa(ciphers)
+
+      # Put result together
+      hello_packet = {}
+      hello_packet['dst_ip'] = packet['_source']['layers']['ip.dst'][0]
+      hello_packet['src_ip'] = packet['_source']['layers']['ip.src'][0]
+      hello_packet['dst_port'] = packet['_source']['layers']['tcp.dstport'][0]
+      hello_packet['cipher_support'] = cipher_support
+
+      hello_packets.append(hello_packet)
+    return hello_packets
+
+  def validate_tls_client(self, client_ip, tls_version, capture_file):
+    hello_packets = self.get_hello_packets(capture_file, client_ip, tls_version)
+    # Validate the ciphers only for tls 1.2
+    if tls_version == '1.2':
+      for packet in hello_packets:
+        LOGGER.info("Hello Packet: " + str(packet))
+      if not packet['cipher_support']['ecdh'] or not packet['cipher_support'][
+          'ecdsa']:
+        hello_packets.remove(packet)
+
+    handshakes = {"complete":[],"incomplete":[]}
+    for packet in hello_packets:
+      # Filter out already tested IP's since only 1 handshake success is needed
+      if not packet['dst_ip'] in handshakes['complete'] and not packet['dst_ip'] in handshakes['incomplete']:
+        handshake_complete = self.get_handshake_complete(
+            capture_file, packet['src_ip'], packet['dst_ip'], tls_version)
+
+        # One of the responses will be a complaint about running as root so
+        # we have to have at least 2 entries to consider a completed handshake
+        if len(handshake_complete) > 1:
+          LOGGER.info("Handshake completed from: " + packet['dst_ip'])
+          handshakes['complete'].append(packet['dst_ip'])
+        else:
+          handshakes['incomplete'].append(packet['dst_ip'])
+
+    for handshake in handshakes['complete']:
+      LOGGER.info("Valid Client: " + str(handshake))
+    return len(handshakes['complete']) > 0, 'Test not yet implemented'
+
+  def is_ecdh_and_ecdsa(self, ciphers):
+    ecdh = False
+    ecdsa = False
+    for cipher in ciphers:
+      ecdh |= 'ECDH' in cipher
+      ecdsa |= 'ECDSA' in cipher
+    return {'ecdh': ecdh, 'ecdsa': ecdsa}

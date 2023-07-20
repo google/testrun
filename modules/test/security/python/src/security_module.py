@@ -13,11 +13,6 @@
 # limitations under the License.
 """Baseline test module"""
 from test_module import TestModule
-# import ssl
-# import socket
-# from cryptography import x509
-# from cryptography.hazmat.backends import default_backend
-# from datetime import datetime
 from tls_util import TLSUtil
 
 LOG_NAME = 'test_security'
