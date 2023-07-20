@@ -79,7 +79,7 @@ class TestRunSession():
       # Network interfaces
       if (NETWORK_KEY in config_file_json 
           and DEVICE_INTF_KEY in config_file_json.get(NETWORK_KEY)
-          and INTERNET_INTF_KEY in config_file_json(NETWORK_KEY)):
+          and INTERNET_INTF_KEY in config_file_json.get(NETWORK_KEY)):
         self._config[NETWORK_KEY][DEVICE_INTF_KEY] = config_file_json.get(NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
         self._config[NETWORK_KEY][INTERNET_INTF_KEY] = config_file_json.get(NETWORK_KEY, {}).get(INTERNET_INTF_KEY)
 
