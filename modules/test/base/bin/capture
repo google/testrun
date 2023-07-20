@@ -27,7 +27,7 @@ INTERFACE=$2
 # Create the output directory and start the capture
 mkdir -p $PCAP_DIR
 chown $HOST_USER $PCAP_DIR
-tcpdump -i $INTERFACE -w $PCAP_DIR/$PCAP_FILE -Z $HOST_USER & > /dev/null 2>&1
+tcpdump -i $INTERFACE -w $PCAP_DIR/$PCAP_FILE -Z $HOST_USER & 2>&1 /dev/null
 
 # Small pause to let the capture to start
 sleep 1
