@@ -35,7 +35,7 @@ class TLSModuleRunner:
 
     LOGGER.info('Starting TLS Module')
 
-    self._test_module = SecurityModule(module)
+    self._test_module = TLSModule(module)
     self._test_module.run_tests()
 
   def _handler(self, signum):

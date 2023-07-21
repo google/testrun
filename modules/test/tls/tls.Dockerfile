@@ -21,7 +21,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install required software
 RUN apt-get update && apt-get install -y tshark
 
-ARG MODULE_NAME=security
+ARG MODULE_NAME=tls
 ARG MODULE_DIR=modules/test/$MODULE_NAME
 
 # Copy over all configuration files
