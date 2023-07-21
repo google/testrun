@@ -21,7 +21,7 @@ class TLSModuleTest(unittest.TestCase):
   def setUpClass(cls):
     log = logger.get_logger(MODULE_NAME)
     global TLS_UTIL
-    TLS_UTIL = TLSUtil(log, bin_dir="modules/test/security/bin")
+    TLS_UTIL = TLSUtil(log, bin_dir="modules/test/tls/bin")
 
   def security_tls_v1_2_server_test(self):
     test_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.2')
@@ -162,11 +162,11 @@ class TLSModuleTest(unittest.TestCase):
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
-  suite.addTest(SecurityModuleTest('security_tls_v1_2_server_test'))
-  suite.addTest(SecurityModuleTest('security_tls_v1_3_server_test'))
-  suite.addTest(SecurityModuleTest('security_tls_v1_2_client_test'))
-  suite.addTest(SecurityModuleTest('security_tls_v1_3_client_test'))
-  suite.addTest(SecurityModuleTest('security_tls_client_skip_test'))
-  suite.addTest(SecurityModuleTest('security_tls_v1_2_client_cipher_fail_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_3_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_client_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_3_client_test'))
+  suite.addTest(TLSModuleTest('security_tls_client_skip_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_client_cipher_fail_test'))
   runner = unittest.TextTestRunner()
   runner.run(suite)
