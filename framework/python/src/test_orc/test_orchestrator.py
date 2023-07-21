@@ -205,8 +205,11 @@ class TestOrchestrator:
     while (time.time() < test_module_timeout and
            status == "running" and
            self._session.get_status() == "In progress"):
-      line = next(log_stream).decode("utf-8").strip()
-      print(line)
+      try:
+        line = next(log_stream).decode("utf-8").strip()
+        print(line)
+      except Exception:
+        time.sleep(1)
       status = self._get_module_status(module)
 
     LOGGER.info("Test module " + module.name + " has finished")

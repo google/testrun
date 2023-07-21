@@ -139,6 +139,10 @@ class TestRunSession():
         return device
     return None
 
+  def save_device(self, device):
+    # TODO: We need to save the folder path of the device config
+    return
+
   def get_status(self):
     return self._status
 

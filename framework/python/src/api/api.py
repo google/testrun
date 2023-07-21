@@ -20,8 +20,13 @@ import threading
 import uvicorn
 
 from common import logger
+from common.device import Device
 
 LOGGER = logger.get_logger("api")
+
+DEVICE_MAC_ADDR_KEY = "mac_addr"
+DEVICE_MANUFACTURER_KEY = "manufacturer"
+DEVICE_MODEL_KEY = "model"
 
 class Api:
   """Provide REST endpoints to manage Test Run"""
@@ -45,6 +50,7 @@ class Api:
     self._router.add_api_route("/system/status", self.get_status)
 
     self._router.add_api_route("/devices", self.get_devices)
+    self._router.add_api_route("/device", self.save_device, methods=["POST"])
 
     self._app = FastAPI()
     self._app.include_router(self._router)
@@ -142,7 +148,7 @@ class Api:
     self._test_run.start()
 
   async def stop_test_run(self):
-    LOGGER.info("Received stop command. Stopping Test Run")
+    LOGGER.debug("Received stop command. Stopping Test Run")
     self._test_run.stop()
     return self._generate_msg(True, "Test Run stopped")
 
@@ -151,3 +157,41 @@ class Api:
 
   async def get_history(self):
     LOGGER.info("Returning previous Test Runs to UI")
+
+  async def save_device(self, request: Request, response: Response):
+    LOGGER.debug("Received device post request")
+
+    try:
+      device_raw = (await request.body()).decode("UTF-8")
+      device_json = json.loads(device_raw)
+
+      if not self._validate_device_json(device_json):
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(False, "Invalid request received")
+
+      device = self._session.get_device(device_json.get(DEVICE_MAC_ADDR_KEY))
+      if device is None:
+        # Create new device
+        device = Device()
+        device.mac_addr = device_json.get(DEVICE_MAC_ADDR_KEY)
+        response.status_code = status.HTTP_201_CREATED
+
+      device.manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
+      device.model = device_json.get(DEVICE_MODEL_KEY)
+
+      self._session.save_device(device)
+
+      return device
+
+    # Catch JSON Decode error etc
+    except JSONDecodeError:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False, "Invalid JSON received")
+
+  def _validate_device_json(self, json_obj):
+    if not (DEVICE_MAC_ADDR_KEY in json_obj and
+            DEVICE_MANUFACTURER_KEY in json_obj and
+            DEVICE_MODEL_KEY in json_obj
+    ):
+      return False
+    return True
