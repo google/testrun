@@ -2,7 +2,6 @@ import ssl
 import socket
 from datetime import datetime
 from OpenSSL import crypto
-from scapy.all import rdpcap, IP, TCP
 import json
 
 LOG_NAME = 'tls_util'
@@ -10,7 +9,6 @@ LOGGER = None
 DEFAULT_BIN_DIR = '/testrun/bin'
 
 import common.util as util
-
 
 class TLSUtil():
   """Helper class for various tests concerning TLS communications"""
@@ -157,7 +155,7 @@ class TLSUtil():
     args = (f'{capture_file} {src_ip} {tls_version}')
     command = f'{bin_file} {args}'
     response = util.run_command(command)
-    packets = response[0]
+    packets = response[0].strip()
     return self.parse_hello_packets(json.loads(packets), capture_file)
 
   def get_handshake_complete(self, capture_file, src_ip, dst_ip, tls_version):
@@ -190,33 +188,80 @@ class TLSUtil():
     return hello_packets
 
   def validate_tls_client(self, client_ip, tls_version, capture_file):
+    LOGGER.info("Validating client for TLS: " + tls_version)
     hello_packets = self.get_hello_packets(capture_file, client_ip, tls_version)
+
     # Validate the ciphers only for tls 1.2
+    client_hello_results = {"valid": [], "invalid": []}
     if tls_version == '1.2':
       for packet in hello_packets:
-        LOGGER.info("Hello Packet: " + str(packet))
-      if not packet['cipher_support']['ecdh'] or not packet['cipher_support'][
-          'ecdsa']:
-        hello_packets.remove(packet)
+        if packet['dst_ip'] not in str(client_hello_results['valid']):
+          LOGGER.info('Checking client ciphers: ' + str(packet))
+          if packet['cipher_support']['ecdh'] and packet['cipher_support'][
+              'ecdsa']:
+            LOGGER.info('Valid ciphers detected')
+            client_hello_results['valid'].append(packet)
+            # If a previous hello packet to the same destination failed,
+            # we can now remove it as it has passed on a different attempt
+            if packet['dst_ip'] in str(client_hello_results['invalid']):
+              client_hello_results['invalid'].remove(packet)
+          else:
+          	LOGGER.info("Invalid ciphers detected")
+          	if packet['dst_ip'] not in str(client_hello_results['invalid']):
+          	  client_hello_results['invalid'].append(packet)
+    else:
+      # No cipher check for TLS 1.3
+      client_hello_results['valid'] = hello_packets
 
-    handshakes = {"complete":[],"incomplete":[]}
-    for packet in hello_packets:
+    handshakes = {'complete': [], 'incomplete': []}
+    for packet in client_hello_results['valid']:
       # Filter out already tested IP's since only 1 handshake success is needed
-      if not packet['dst_ip'] in handshakes['complete'] and not packet['dst_ip'] in handshakes['incomplete']:
+      if not packet['dst_ip'] in handshakes['complete'] and not packet[
+          'dst_ip'] in handshakes['incomplete']:
         handshake_complete = self.get_handshake_complete(
             capture_file, packet['src_ip'], packet['dst_ip'], tls_version)
 
         # One of the responses will be a complaint about running as root so
         # we have to have at least 2 entries to consider a completed handshake
         if len(handshake_complete) > 1:
-          LOGGER.info("Handshake completed from: " + packet['dst_ip'])
+          LOGGER.info('TLS handshake completed from: ' + packet['dst_ip'])
           handshakes['complete'].append(packet['dst_ip'])
         else:
+          LOGGER.warning('No TLS handshakes completed from: ' +
+                         packet['dst_ip'])
           handshakes['incomplete'].append(packet['dst_ip'])
 
     for handshake in handshakes['complete']:
-      LOGGER.info("Valid Client: " + str(handshake))
-    return len(handshakes['complete']) > 0, 'Test not yet implemented'
+      LOGGER.info('Valid TLS client connection to server: ' + str(handshake))
+
+    # Process and return the results
+    tls_client_details = ''
+    tls_client_valid = None
+    if len(hello_packets) > 0:
+      if len(client_hello_results['invalid']) > 0:
+        tls_client_valid = False
+        for result in client_hello_results['invalid']:
+          tls_client_details += 'Client hello packet to ' + result[
+              'dst_ip'] + ' did not have expected ciphers:'
+          if not result['cipher_support']['ecdh']:
+            tls_client_details += ' ecdh '
+          if not result['cipher_support']['ecdsa']:
+            tls_client_details += 'ecdsa'
+          tls_client_details += '\n'
+      if len(handshakes['incomplete']) > 0:
+        for result in handshakes['incomplete']:
+          tls_client_details += 'Incomplete handshake detected from server: ' + result + '\n'
+      if len(handshakes['complete']) > 0:
+        # If we haven't already failed the test from previous checks
+        # allow a passing result
+        if not tls_client_valid:
+          tls_client_valid = True
+        for result in handshakes['complete']:
+          tls_client_details += 'Completed handshake detected from server: ' + result + '\n'
+    else:
+      LOGGER.info('No client hello packets detected. Skipping')
+      tls_client_details = 'No client hello packets detected. Skipping'
+    return tls_client_valid, tls_client_details
 
   def is_ecdh_and_ecdsa(self, ciphers):
     ecdh = False

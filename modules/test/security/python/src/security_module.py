@@ -17,6 +17,8 @@ from tls_util import TLSUtil
 
 LOG_NAME = 'test_security'
 LOGGER = None
+STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
+MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 
 
 class SecurityModule(TestModule):
@@ -37,6 +39,7 @@ class SecurityModule(TestModule):
                                                 tls_version='1.2')
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
+      return None, 'Could not resolve device IP address. Skipping'
 
   def _security_tls_v1_3_server(self):
     LOGGER.info('Running security.tls.v1_3_server')
@@ -47,10 +50,45 @@ class SecurityModule(TestModule):
                                                 tls_version='1.3')
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
+      return None, 'Could not resolve device IP address. Skipping'
 
   def _security_tls_v1_2_client(self):
     LOGGER.info('Running security.tls.v1_2_client')
-    return None, 'Test not yet implemented'
+    self._resolve_device_ip()
+    # If the ipv4 address wasn't resolved yet, try again
+    if self._device_ipv4_addr is not None:
+      return self._validate_tls_client(self._device_ipv4_addr, '1.2')
+    else:
+      LOGGER.error('Could not resolve device IP address. Skipping')
+      return None, 'Could not resolve device IP address. Skipping'
+
+  def _security_tls_v1_3_client(self):
+    LOGGER.info('Running security.tls.v1_3_client')
+    self._resolve_device_ip()
+    # If the ipv4 address wasn't resolved yet, try again
+    if self._device_ipv4_addr is not None:
+      return self._validate_tls_client(self._device_ipv4_addr, '1.3')
+    else:
+      LOGGER.error('Could not resolve device IP address. Skipping')
+      return None, 'Could not resolve device IP address. Skipping'
+
+  def _validate_tls_client(self, client_ip, tls_version):
+    monitor_result = self._tls_util.validate_tls_client(client_ip=client_ip,
+                                                        tls_version=tls_version,
+                                                        capture_file=MONITOR_CAPTURE_FILE)
+    startup_result = self._tls_util.validate_tls_client(client_ip=client_ip,
+                                                        tls_version=tls_version,
+                                                        capture_file=STARTUP_CAPTURE_FILE)
+    if not monitor_result[0] or not startup_result[0]:
+      result = False, startup_result[1] + monitor_result[1]
+    elif monitor_result[0] and startup_result[0]:
+      result = True, startup_result[1] + monitor_result[1]
+    elif monitor_result[0]:
+      result = True, monitor_result[1]
+    elif startup_result[0]:
+      result = True, monitor_result[1]
+    else:
+      result = True, startup_result[1] + monitor_result[1]
 
   def _resolve_device_ip(self):
     # If the ipv4 address wasn't resolved yet, try again

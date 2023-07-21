@@ -22,7 +22,7 @@ class SecurityModuleTest(unittest.TestCase):
   def setUpClass(cls):
     log = logger.get_logger(MODULE_NAME)
     global TLS_UTIL
-    TLS_UTIL = TLSUtil(log,bin_dir="modules/test/security/bin")
+    TLS_UTIL = TLSUtil(log, bin_dir="modules/test/security/bin")
 
   def security_tls_v1_2_server_test(self):
     test_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.2')
@@ -34,13 +34,30 @@ class SecurityModuleTest(unittest.TestCase):
 
   def security_tls_v1_2_client_test(self):
     test_results = self.test_client_tls('1.2')
+    print(str(test_results))
     self.assertTrue(test_results[0])
+
+  def security_tls_v1_2_client_cipher_fail_test(self):
+    test_results = self.test_client_tls('1.2', disable_valid_ciphers=True)
+    print(str(test_results))
+    self.assertFalse(test_results[0])
+
+  def security_tls_client_skip_test(self):
+    # 1.1 will fail to connect and so no hello client will exist
+    # which should result in a skip result
+    test_results = self.test_client_tls('1.2', tls_generate='1.1')
+    print(str(test_results))
+    self.assertIsNone(test_results[0])
 
   def security_tls_v1_3_client_test(self):
     test_results = self.test_client_tls('1.3')
+    print(str(test_results))
     self.assertTrue(test_results[0])
 
-  def test_client_tls(self,tls_version):
+  def test_client_tls(self,
+                      tls_version,
+                      tls_generate=None,
+                      disable_valid_ciphers=False):
     # Make the capture file
     os.makedirs(CAPTURE_DIR, exist_ok=True)
     capture_file = CAPTURE_DIR + '/client_tls.pcap'
@@ -49,67 +66,100 @@ class SecurityModuleTest(unittest.TestCase):
     client_ip = self.get_interface_ip('eth0')
 
     # Genrate TLS outbound traffic
-    self.generate_tls_traffic(capture_file, tls_version)
+    if tls_generate is None:
+      tls_generate = tls_version
+    self.generate_tls_traffic(capture_file, tls_generate, disable_valid_ciphers)
 
     # Run the client test
-    return TLS_UTIL.validate_tls_client(client_ip=client_ip,tls_version=tls_version,capture_file=capture_file)
-    
+    return TLS_UTIL.validate_tls_client(client_ip=client_ip,
+                                        tls_version=tls_version,
+                                        capture_file=capture_file)
 
-  def generate_tls_traffic(self, capture_file, tls_version):
-    capture_thread = self.start_capture_thread(capture_file,10)
+  def generate_tls_traffic(self,
+                           capture_file,
+                           tls_version,
+                           disable_valid_ciphers=False):
+    capture_thread = self.start_capture_thread(capture_file, 10)
     print('Capture Started')
 
     # Generate some TLS 1.2 outbound traffic
-    while(capture_thread.is_alive()):
-      self.make_tls_connection("www.google.com",443,tls_version)
+    while (capture_thread.is_alive()):
+      self.make_tls_connection("www.google.com", 443, tls_version,
+                               disable_valid_ciphers)
       time.sleep(1)
 
     # Save the captured packets to the file.
     wrpcap(capture_file, PACKET_CAPTURE)
 
-  def make_tls_connection(self, hostname, port, tls_version):
+  def make_tls_connection(self,
+                          hostname,
+                          port,
+                          tls_version,
+                          disable_valid_ciphers=False):
     # Create the SSL context with the desired TLS version and options
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     context.check_hostname = False
     context.verify_mode = ssl.CERT_NONE
     context.options |= ssl.PROTOCOL_TLS
-    context.options |= ssl.OP_NO_TLSv1  # Disable TLS 1.0
-    context.options |= ssl.OP_NO_TLSv1_1  # Disable TLS 1.1
+
+    if disable_valid_ciphers:
+      # Create a list of ciphers that do not use ECDH or ECDSA
+      ciphers_str = [
+          "TLS_AES_256_GCM_SHA384", "TLS_CHACHA20_POLY1305_SHA256",
+          "TLS_AES_128_GCM_SHA256", "AES256-GCM-SHA384",
+          "PSK-AES256-GCM-SHA384", "PSK-CHACHA20-POLY1305",
+          "RSA-PSK-AES128-GCM-SHA256", "DHE-PSK-AES128-GCM-SHA256",
+          "AES128-GCM-SHA256", "PSK-AES128-GCM-SHA256", "AES256-SHA256",
+          "AES128-SHA"
+      ]
+      context.set_ciphers(':'.join(ciphers_str))
+
+    if tls_version != '1.1':
+      context.options |= ssl.OP_NO_TLSv1  # Disable TLS 1.0
+      context.options |= ssl.OP_NO_TLSv1_1  # Disable TLS 1.1
+    else:
+      context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
+      context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
 
     if tls_version == '1.3':
-        context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
+      context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
     elif tls_version == '1.2':
-        context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
+      context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
 
     # Create the HTTPS connection with the SSL context
     connection = http.client.HTTPSConnection(hostname, port, context=context)
 
     # Perform the TLS handshake manually
-    connection.connect()
+    try:
+      connection.connect()
+    except ssl.SSLError as e:
+      print('Failed to make connection: ' + str(e))
 
     # At this point, the TLS handshake is complete.
     # You can do any further processing or just close the connection.
     connection.close()
 
-  def start_capture(self,timeout):
+  def start_capture(self, timeout):
     global PACKET_CAPTURE
     PACKET_CAPTURE = sniff(iface='eth0', timeout=timeout)
 
-  def start_capture_thread(self, capture_file,timeout):
+  def start_capture_thread(self, capture_file, timeout):
     # Start the packet capture in a separate thread to avoid blocking.
-    capture_thread = threading.Thread(target=self.start_capture, args=(timeout,))
+    capture_thread = threading.Thread(target=self.start_capture,
+                                      args=(timeout, ))
     capture_thread.start()
 
     return capture_thread
 
-  def get_interface_ip(self,interface_name):
+  def get_interface_ip(self, interface_name):
     try:
-        addresses = netifaces.ifaddresses(interface_name)
-        ipv4 = addresses[netifaces.AF_INET][0]['addr']
-        return ipv4
+      addresses = netifaces.ifaddresses(interface_name)
+      ipv4 = addresses[netifaces.AF_INET][0]['addr']
+      return ipv4
     except (ValueError, KeyError) as e:
-        print(f"Error: {e}")
-        return None
+      print(f"Error: {e}")
+      return None
+
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
@@ -117,5 +167,7 @@ if __name__ == '__main__':
   suite.addTest(SecurityModuleTest('security_tls_v1_3_server_test'))
   suite.addTest(SecurityModuleTest('security_tls_v1_2_client_test'))
   suite.addTest(SecurityModuleTest('security_tls_v1_3_client_test'))
+  suite.addTest(SecurityModuleTest('security_tls_client_skip_test'))
+  suite.addTest(SecurityModuleTest('security_tls_v1_2_client_cipher_fail_test'))
   runner = unittest.TextTestRunner()
   runner.run(suite)

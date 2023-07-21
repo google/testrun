@@ -15,6 +15,12 @@
 # Image name: test-run/security-test
 FROM test-run/base-test:latest
 
+# Set DEBIAN_FRONTEND to noninteractive mode
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install required software
+RUN apt-get update && apt-get install -y tshark
+
 ARG MODULE_NAME=security
 ARG MODULE_DIR=modules/test/$MODULE_NAME
 
