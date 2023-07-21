@@ -15,13 +15,13 @@
 from test_module import TestModule
 from tls_util import TLSUtil
 
-LOG_NAME = 'test_security'
+LOG_NAME = 'test_tls'
 LOGGER = None
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 
 
-class SecurityModule(TestModule):
+class TLSModule(TestModule):
   """An example testing module."""
 
   def __init__(self, module):

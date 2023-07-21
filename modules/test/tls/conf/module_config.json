@@ -1,9 +1,9 @@
 {
   "config": {
     "meta": {
-      "name": "security",
-      "display_name": "Security",
-      "description": "Security tests"
+      "name": "tls",
+      "display_name": "TLS",
+      "description": "TLS tests"
     },
     "network": true,
     "docker": {

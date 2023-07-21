@@ -17,13 +17,13 @@ import signal
 import sys
 import logger
 
-from security_module import SecurityModule
+from tls_module import TLSModule
 
 LOGGER = logger.get_logger('test_module')
 RUNTIME = 1500
 
 
-class SecurityModuleRunner:
+class TLSModuleRunner:
   """An example runner class for test modules."""
 
   def __init__(self, module):
@@ -33,7 +33,7 @@ class SecurityModuleRunner:
     signal.signal(signal.SIGABRT, self._handler)
     signal.signal(signal.SIGQUIT, self._handler)
 
-    LOGGER.info('Starting Baseline Module')
+    LOGGER.info('Starting TLS Module')
 
     self._test_module = SecurityModule(module)
     self._test_module.run_tests()
@@ -61,7 +61,7 @@ def run():
 
   # For some reason passing in the args from bash adds an extra
   # space before the argument so we'll just strip out extra space
-  SecurityModuleRunner(args.module.strip())
+  TLSModuleRunner(args.module.strip())
 
 
 if __name__ == '__main__':

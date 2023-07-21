@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/security-test
+# Image name: test-run/tls-test
 FROM test-run/base-test:latest
 
 # Set DEBIAN_FRONTEND to noninteractive mode

@@ -11,12 +11,11 @@ import ssl
 import http.client
 
 CAPTURE_DIR = 'testing/unit_test/temp'
-MODULE_NAME = 'security_module_test'
+MODULE_NAME = 'tls_module_test'
 TLS_UTIL = None
 PACKET_CAPTURE = None
 
-
-class SecurityModuleTest(unittest.TestCase):
+class TLSModuleTest(unittest.TestCase):
 
   @classmethod
   def setUpClass(cls):
