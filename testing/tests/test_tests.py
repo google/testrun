@@ -29,7 +29,7 @@ from dataclasses import dataclass
 TEST_MATRIX = 'test_tests.json'
 RESULTS_PATH = '/tmp/results/*.json'
 
-#TODO add reason 
+#TODO add reason
 @dataclass(frozen=True)
 class TestResult:
   name: str
@@ -80,14 +80,14 @@ def test_list_tests(capsys, results, test_matrix):
   all_tests = set(itertools.chain.from_iterable(
       [collect_actual_results(results[x]) for x in results.keys()]))
 
-  ci_pass = set([test 
-    for testers in test_matrix.values() 
-    for test, result in testers['expected_results'].items() 
+  ci_pass = set([test
+    for testers in test_matrix.values()
+    for test, result in testers['expected_results'].items()
     if result == 'compliant'])
 
-  ci_fail = set([test 
-    for testers in test_matrix.values() 
-    for test, result in testers['expected_results'].items() 
+  ci_fail = set([test
+    for testers in test_matrix.values()
+    for test, result in testers['expected_results'].items()
     if result == 'non-compliant'])
 
   with capsys.disabled():

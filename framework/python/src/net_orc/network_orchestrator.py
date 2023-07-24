@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Network orchestrator is responsible for managing
 all of the virtual network services"""
-import getpass
 import ipaddress
 import json
 import os
@@ -23,57 +23,42 @@ import subprocess
 import sys
 import docker
 from docker.types import Mount
-from common import logger
-from common import util
+from common import logger, util
 from net_orc.listener import Listener
-from net_orc.network_device import NetworkDevice
 from net_orc.network_event import NetworkEvent
 from net_orc.network_validator import NetworkValidator
 from net_orc.ovs_control import OVSControl
 from net_orc.ip_control import IPControl
 
 LOGGER = logger.get_logger('net_orc')
-CONFIG_FILE = 'local/system.json'
-EXAMPLE_CONFIG_FILE = 'local/system.json.example'
 RUNTIME_DIR = 'runtime'
 TEST_DIR = 'test'
-MONITOR_PCAP = 'monitor.pcap'
 NET_DIR = 'runtime/network'
 NETWORK_MODULES_DIR = 'modules/network'
+
+MONITOR_PCAP = 'monitor.pcap'
 NETWORK_MODULE_METADATA = 'conf/module_config.json'
+
 DEVICE_BRIDGE = 'tr-d'
 INTERNET_BRIDGE = 'tr-c'
 PRIVATE_DOCKER_NET = 'tr-private-net'
 CONTAINER_NAME = 'network_orchestrator'
 
-RUNTIME_KEY = 'runtime'
-MONITOR_PERIOD_KEY = 'monitor_period'
-STARTUP_TIMEOUT_KEY = 'startup_timeout'
-DEFAULT_STARTUP_TIMEOUT = 60
-DEFAULT_RUNTIME = 1200
-DEFAULT_MONITOR_PERIOD = 300
-
 class NetworkOrchestrator:
   """Manage and controls a virtual testing network."""
 
   def __init__(self,
-               config_file=CONFIG_FILE,
+               session,
                validate=True,
                single_intf=False):
 
-    self._runtime = DEFAULT_RUNTIME
-    self._startup_timeout = DEFAULT_STARTUP_TIMEOUT
-    self._monitor_period = DEFAULT_MONITOR_PERIOD
+    self._session = session
     self._monitor_in_progress = False
-
-    self._int_intf = None
-    self._dev_intf = None
+    self._validate = validate
     self._single_intf = single_intf
 
-    self.listener = None
+    self._listener = None
     self._net_modules = []
-    self._devices = []
-    self.validate = validate
 
     self._path = os.path.dirname(
         os.path.dirname(
@@ -83,8 +68,7 @@ class NetworkOrchestrator:
     self.validator = NetworkValidator()
     shutil.rmtree(os.path.join(os.getcwd(), NET_DIR), ignore_errors=True)
     self.network_config = NetworkConfig()
-    self.load_config(config_file)
-    self._ovs = OVSControl()
+    self._ovs = OVSControl(self._session)
     self._ip_ctrl = IPControl()
 
   def start(self):
@@ -102,23 +86,38 @@ class NetworkOrchestrator:
 
     self.start_network()
 
+    return True
+
+  def check_config(self):
+
+    if not util.interface_exists(self._session.get_internet_interface()) or not util.interface_exists(
+        self._session.get_device_interface()):
+      LOGGER.error('Configured interfaces are not ready for use. ' +
+                   'Ensure both interfaces are connected.')
+      return False
+    return True
+
   def start_network(self):
     """Start the virtual testing network."""
     LOGGER.info('Starting network')
 
     self.build_network_modules()
+
     self.create_net()
     self.start_network_services()
 
-    if self.validate:
+    if self._validate:
       # Start the validator after network is ready
       self.validator.start()
 
     # Get network ready (via Network orchestrator)
     LOGGER.debug('Network is ready')
 
+  def get_listener(self):
+    return self._listener
+
   def start_listener(self):
-    self.listener.start_listener()
+    self.get_listener().start_listener()
 
   def stop(self, kill=False):
     """Stop the network orchestrator."""
@@ -136,43 +135,35 @@ class NetworkOrchestrator:
     self.stop_networking_services(kill=kill)
     self.restore_net()
 
-  def load_config(self, config_file=None):
-    if config_file is None:
-      # If not defined, use relative pathing to local file
-      self._config_file = os.path.join(self._path, CONFIG_FILE)
-    else:
-      # If defined, use as provided
-      self._config_file = config_file
-
-    if not os.path.isfile(self._config_file):
-      LOGGER.error('Configuration file is not present at ' + config_file)
-      LOGGER.info('An example is present in ' + EXAMPLE_CONFIG_FILE)
-      sys.exit(1)
-
-    LOGGER.info('Loading config file: ' + os.path.abspath(self._config_file))
-    with open(self._config_file, encoding='UTF-8') as config_json_file:
-      config_json = json.load(config_json_file)
-      self.import_config(config_json)
-
   def _device_discovered(self, mac_addr):
+
+    device = self._session.get_device(mac_addr)
+
+    if self._session.get_target_device() is not None:
+      if mac_addr != self._session.get_target_device().mac_addr:
+        # Ignore discovered device
+        return
 
     self._monitor_in_progress = True
 
     LOGGER.debug(
         f'Discovered device {mac_addr}. Waiting for device to obtain IP')
 
-    device = self._get_device(mac_addr=mac_addr)
+    if device is None:
+      LOGGER.debug(f'Device with MAC address {mac_addr} does not exist in device repository')
+      # Ignore device if not registered
+      return
 
     device_runtime_dir = os.path.join(RUNTIME_DIR, TEST_DIR,
-                                      device.mac_addr.replace(':', ''))
+                                      mac_addr.replace(':', ''))
     os.makedirs(device_runtime_dir)
     util.run_command(f'chown -R {self._host_user} {device_runtime_dir}')
 
-    packet_capture = sniff(iface=self._dev_intf,
-                           timeout=self._startup_timeout,
+    packet_capture = sniff(iface=self._session.get_device_interface(),
+                           timeout=self._session.get_startup_timeout(),
                            stop_filter=self._device_has_ip)
     wrpcap(
-        os.path.join(RUNTIME_DIR, TEST_DIR, device.mac_addr.replace(':', ''),
+        os.path.join(RUNTIME_DIR, TEST_DIR, mac_addr.replace(':', ''),
                      'startup.pcap'), packet_capture)
 
     if device.ip_addr is None:
@@ -189,49 +180,35 @@ class NetworkOrchestrator:
     return self._monitor_in_progress
 
   def _device_has_ip(self, packet):
-    device = self._get_device(mac_addr=packet.src)
+    device = self._session.get_device(mac_addr=packet.src)
     if device is None or device.ip_addr is None:
       return False
     return True
 
   def _dhcp_lease_ack(self, packet):
     mac_addr = packet[BOOTP].chaddr.hex(':')[0:17]
-    device = self._get_device(mac_addr=mac_addr)
+    device = self._session.get_device(mac_addr=mac_addr)
+
+    # Ignore devices that are not registered
+    if device is None:
+      return
+
+    # TODO: Check if device is None
     device.ip_addr = packet[BOOTP].yiaddr
 
   def _start_device_monitor(self, device):
     """Start a timer until the steady state has been reached and
         callback the steady state method for this device."""
     LOGGER.info(f'Monitoring device with mac addr {device.mac_addr} '
-                f'for {str(self._monitor_period)} seconds')
+                f'for {str(self._session.get_monitor_period())} seconds')
 
-    packet_capture = sniff(iface=self._dev_intf, timeout=self._monitor_period)
+    packet_capture = sniff(iface=self._session.get_device_interface(), timeout=self._session.get_monitor_period())
     wrpcap(
         os.path.join(RUNTIME_DIR, TEST_DIR, device.mac_addr.replace(':', ''),
                      'monitor.pcap'), packet_capture)
 
     self._monitor_in_progress = False
-    self.listener.call_callback(NetworkEvent.DEVICE_STABLE, device.mac_addr)
-
-  def _get_device(self, mac_addr):
-    for device in self._devices:
-      if device.mac_addr == mac_addr:
-        return device
-
-    device = NetworkDevice(mac_addr=mac_addr)
-    self._devices.append(device)
-    return device
-
-  def import_config(self, json_config):
-    self._int_intf = json_config['network']['internet_intf']
-    self._dev_intf = json_config['network']['device_intf']
-
-    if RUNTIME_KEY in json_config:
-      self._runtime = json_config[RUNTIME_KEY]
-    if STARTUP_TIMEOUT_KEY in json_config:
-      self._startup_timeout = json_config[STARTUP_TIMEOUT_KEY]
-    if MONITOR_PERIOD_KEY in json_config:
-      self._monitor_period = json_config[MONITOR_PERIOD_KEY]
+    self.get_listener().call_callback(NetworkEvent.DEVICE_STABLE, device.mac_addr)
 
   def _check_network_services(self):
     LOGGER.debug('Checking network modules...')
@@ -278,30 +255,30 @@ class NetworkOrchestrator:
         """
 
     self._ethmac = subprocess.check_output(
-        f'cat /sys/class/net/{self._int_intf}/address',
+        f'cat /sys/class/net/{self._session.get_internet_interface()}/address',
         shell=True).decode('utf-8').strip()
     self._gateway = subprocess.check_output(
         'ip route | head -n 1 | awk \'{print $3}\'',
         shell=True).decode('utf-8').strip()
     self._ipv4 = subprocess.check_output(
-        f'ip a show {self._int_intf} | grep \"inet \" | awk \'{{print $2}}\'',
+        f'ip a show {self._session.get_internet_interface()} | grep \"inet \" | awk \'{{print $2}}\'',
         shell=True).decode('utf-8').strip()
     self._ipv6 = subprocess.check_output(
-        f'ip a show {self._int_intf} | grep inet6 | awk \'{{print $2}}\'',
+        f'ip a show {self._session.get_internet_interface()} | grep inet6 | awk \'{{print $2}}\'',
         shell=True).decode('utf-8').strip()
     self._brd = subprocess.check_output(
-        f'ip a show {self._int_intf} | grep \"inet \" | awk \'{{print $4}}\'',
+        f'ip a show {self._session.get_internet_interface()} | grep \"inet \" | awk \'{{print $4}}\'',
         shell=True).decode('utf-8').strip()
 
   def _ci_post_network_create(self):
     """ Restore network connection in CI environment """
     LOGGER.info('post cr')
-    util.run_command(f'ip address del {self._ipv4} dev {self._int_intf}')
-    util.run_command(f'ip -6 address del {self._ipv6} dev {self._int_intf}')
+    util.run_command(f'ip address del {self._ipv4} dev {self._session.get_internet_interface()}')
+    util.run_command(f'ip -6 address del {self._ipv6} dev {self._session.get_internet_interface()}')
     util.run_command(
-        f'ip link set dev {self._int_intf} address 00:B0:D0:63:C2:26')
-    util.run_command(f'ip addr flush dev {self._int_intf}')
-    util.run_command(f'ip addr add dev {self._int_intf} 0.0.0.0')
+        f'ip link set dev {self._session.get_internet_interface()} address 00:B0:D0:63:C2:26')
+    util.run_command(f'ip addr flush dev {self._session.get_internet_interface()}')
+    util.run_command(f'ip addr add dev {self._session.get_internet_interface()} 0.0.0.0')
     util.run_command(
         f'ip addr add dev {INTERNET_BRIDGE} {self._ipv4} broadcast {self._brd}')
     util.run_command(f'ip -6 addr add {self._ipv6} dev {INTERNET_BRIDGE} ')
@@ -316,17 +293,11 @@ class NetworkOrchestrator:
   def create_net(self):
     LOGGER.info('Creating baseline network')
 
-    if not util.interface_exists(self._int_intf) or not util.interface_exists(
-        self._dev_intf):
-      LOGGER.error('Configured interfaces are not ready for use. ' +
-                   'Ensure both interfaces are connected.')
-      sys.exit(1)
-
     if self._single_intf:
       self._ci_pre_network_create()
 
     # Remove IP from internet adapter
-    util.run_command('ifconfig ' + self._int_intf + ' 0.0.0.0')
+    util.run_command('ifconfig ' + self._session.get_internet_interface() + ' 0.0.0.0')
 
     # Setup the virtual network
     if not self._ovs.create_baseline_net(verify=True):
@@ -339,10 +310,10 @@ class NetworkOrchestrator:
 
     self._create_private_net()
 
-    self.listener = Listener(self._dev_intf)
-    self.listener.register_callback(self._device_discovered,
+    self._listener = Listener(self._session)
+    self.get_listener().register_callback(self._device_discovered,
                                     [NetworkEvent.DEVICE_DISCOVERED])
-    self.listener.register_callback(self._dhcp_lease_ack,
+    self.get_listener().register_callback(self._dhcp_lease_ack,
                                     [NetworkEvent.DHCP_LEASE_ACK])
 
   def load_network_modules(self):
@@ -661,9 +632,8 @@ class NetworkOrchestrator:
 
     LOGGER.info('Clearing baseline network')
 
-    if hasattr(self, 'listener'
-               ) and self.listener is not None and self.listener.is_running():
-      self.listener.stop_listener()
+    if hasattr(self, 'listener') and self.get_listener() is not None and self.get_listener().is_running():
+      self.get_listener().stop_listener()
 
     client = docker.from_env()
 
@@ -681,10 +651,12 @@ class NetworkOrchestrator:
     # Clean up any existing network artifacts
     self._ip_ctrl.clean_all()
 
+    internet_intf = self._session.get_internet_interface()
+
     # Restart internet interface
-    if util.interface_exists(self._int_intf):
-      util.run_command('ip link set ' + self._int_intf + ' down')
-      util.run_command('ip link set ' + self._int_intf + ' up')
+    if util.interface_exists(internet_intf):
+      util.run_command('ip link set ' + internet_intf + ' down')
+      util.run_command('ip link set ' + internet_intf + ' up')
 
     LOGGER.info('Network is restored')
 
@@ -712,10 +684,6 @@ class NetworkModule:
 
     self.net_config = NetworkModuleNetConfig()
 
-
-# The networking configuration for a network module
-
-
 class NetworkModuleNetConfig:
   """Define all the properties of the network config
   for a network module"""
@@ -737,10 +705,6 @@ class NetworkModuleNetConfig:
 
   def get_ipv6_addr_with_prefix(self):
     return format(self.ipv6_address) + '/' + str(self.ipv6_network.prefixlen)
-
-
-# Represents the current configuration of the network for the device bridge
-
 
 class NetworkConfig:
   """Define all the properties of the network configuration"""
