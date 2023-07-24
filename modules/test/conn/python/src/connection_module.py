@@ -27,7 +27,6 @@ OUI_FILE = '/usr/local/etc/oui.txt'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 SLAAC_PREFIX = 'fd10:77be:4186'
-
 TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
 
 
@@ -132,10 +131,10 @@ class ConnectionModule(TestModule):
     LOGGER.info('Inspecting: ' + str(len(packets)) + ' packets')
     for packet in packets:
       # Option[1] = message-type, option 3 = DHCPREQUEST
-        if DHCP in packet and packet[DHCP].options[0][1] == 3: 
-            mac_address = packet[Ether].src
-            if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
-              mac_addresses.add(mac_address.upper())
+      if DHCP in packet and packet[DHCP].options[0][1] == 3: 
+        mac_address = packet[Ether].src
+        if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
+          mac_addresses.add(mac_address.upper())
 
     # Check if the device mac address is in the list of DHCPREQUESTs
     result = self._device_mac.upper() in mac_addresses
@@ -348,7 +347,6 @@ class ConnectionModule(TestModule):
       LOGGER.error('Failed to restore DHCP server configuration: ' + str(e))
 
     return final_result, final_result_details
-
 
   def _test_subnet(self, subnet, lease):
     if self._change_subnet(subnet):

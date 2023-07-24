@@ -31,8 +31,9 @@ CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f'
 class Listener:
   """Methods to start and stop the network listener."""
 
-  def __init__(self, device_intf):
-    self._device_intf = device_intf
+  def __init__(self, session):
+    self._session = session
+    self._device_intf = self._session.get_device_interface()
     self._device_intf_mac = get_if_hwaddr(self._device_intf)
 
     self._sniffer = AsyncSniffer(iface=self._device_intf,
@@ -47,7 +48,8 @@ class Listener:
 
   def stop_listener(self):
     """Stop sniffing packets on the device interface."""
-    self._sniffer.stop()
+    if self._sniffer.running:
+      self._sniffer.stop()
 
   def is_running(self):
     """Determine whether the sniffer is running."""
