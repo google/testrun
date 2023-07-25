@@ -3,27 +3,36 @@ import socket
 from datetime import datetime
 from OpenSSL import crypto
 import json
+import os
+import common.util as util
 
 LOG_NAME = 'tls_util'
 LOGGER = None
 DEFAULT_BIN_DIR = '/testrun/bin'
-
-import common.util as util
+DEFAULT_CERTS_OUT_DIR = '/runtime/output/certs'
+DEFAULT_ROOT_CERTS_DIR = '/testrun/root_certs'
 
 class TLSUtil():
   """Helper class for various tests concerning TLS communications"""
 
-  def __init__(self, logger, bin_dir=DEFAULT_BIN_DIR):
+  def __init__(self, logger, bin_dir=DEFAULT_BIN_DIR, cert_out_dir=DEFAULT_CERTS_OUT_DIR, root_certs_dir=DEFAULT_ROOT_CERTS_DIR):
     global LOGGER
     LOGGER = logger
     self._bin_dir = bin_dir
+    self._dev_cert_file = cert_out_dir + '/device_cert.crt'
+    self._root_certs_dir = root_certs_dir
 
-  def get_public_certificate(self, host, port=443, tls_version='1.2'):
+  def get_public_certificate(self, host, port=443,validate_cert=False, tls_version='1.2'):
     try:
-      # Disable certificate verification
       context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
       context.check_hostname = False
-      context.verify_mode = ssl.CERT_NONE
+      if not validate_cert:
+        # Disable certificate verification
+        context.verify_mode = ssl.CERT_NONE
+      else:
+        # Use host CA certs for validation
+        context.load_default_certs()
+        context.verify_mode = ssl.CERT_REQUIRED
 
       # Set the correct TLS version
       context.options |= ssl.PROTOCOL_TLS
@@ -40,8 +49,6 @@ class TLSUtil():
           # Get the server's certificate in PEM format
           cert_pem = ssl.DER_cert_to_PEM_cert(secure_sock.getpeercert(True))
 
-      if cert_pem:
-        cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_pem)
     except ConnectionRefusedError:
       LOGGER.info(f'Connection to {host}:{port} was refused.')
       return None
@@ -52,7 +59,7 @@ class TLSUtil():
       LOGGER.info(f'SSL error occurred: {e}')
       return None
 
-    return cert
+    return cert_pem
 
   def get_public_key(self, public_cert):
     # Extract and return the public key from the certificate
@@ -114,16 +121,52 @@ class TLSUtil():
     else:
       return False, "Key is not RSA or EC type"
 
-  def validate_signature(self, public_cert):
-    print('Validating signature: TODO')
+  def validate_signature(self,host):
+    # Reconnect to the device but with validate signature option
+    # set to true which will check for proper cert chains
+    # within the valid CA root certs stored on the server
+    LOGGER.info('Checking for valid signature from authorized Certificate Authorities')
+    public_cert = self.get_public_certificate(host,validate_cert=True, tls_version='1.2')
+    if public_cert:
+      LOGGER.info('Authorized Certificate Authority signature confirmed')
+      return True, 'Authorized Certificate Authority signature confirmed'
+    else:
+      LOGGER.info('Authorized Certificate Authority signature not present')
+      LOGGER.info('Resolving configured root certificates')
+      bin_file = self._bin_dir + "/check_cert_signature.sh"
+      # Get a list of all root certificates
+      root_certs = os.listdir(self._root_certs_dir)
+      for root_cert in root_certs:
+        try:
+          # Create the file path
+          root_cert_path = os.path.join(self._root_certs_dir, root_cert)
+          
+          args = (f'{root_cert_path} {self._dev_cert_file}')
+          command = f'{bin_file} {args}'
+          response = util.run_command(command)
+          if 'device_cert.crt: OK' in str(response):
+            LOGGER.info('Device signed by cert:' + root_cert)
+            return True, 'Device signed by cert:' + root_cert
+          else:
+            LOGGER.info('Device not signed by cert: ' + root_cert)
+        except Exception as e:
+          LOGGER.error('Failed to check cert:' + root_cert)
+          LOGGER.error(str(e))
+    return False, 'Device certificate has not been signed'
 
   def validate_tls_server(self, host, tls_version, port=443):
-    public_cert = self.get_public_certificate(host, tls_version='1.2')
-    if public_cert:
+    cert_pem = self.get_public_certificate(host,validate_cert=False, tls_version='1.2')
+    if cert_pem:
+
+      # Write pem encoding to a file
+      self.write_cert_to_file(cert_pem)
+
+      # Load pem encoding into a certifiate so we can process the contents
+      public_cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_pem)
+
       # Print the certificate information
       cert_text = crypto.dump_certificate(crypto.FILETYPE_TEXT,
                                           public_cert).decode()
-      LOGGER.info(cert_text)
 
       # Validate the certificates time range
       tr_valid = self.verify_certificate_timerange(public_cert)
@@ -133,14 +176,20 @@ class TLSUtil():
       if public_key:
         key_valid = self.verify_public_key(public_key)
 
+      sig_valid = self.validate_signature(host)
+
       # Check results
-      cert_valid = tr_valid[0] and key_valid[0]
-      test_details = tr_valid[1] + '\n' + key_valid[1]
+      cert_valid = tr_valid[0] and key_valid[0] and sig_valid[0]
+      test_details = tr_valid[1] + '\n' + key_valid[1] + '\n' + sig_valid[1]
       LOGGER.info('Certificate validated: ' + str(cert_valid))
       LOGGER.info('Test Details:\n' + test_details)
       return cert_valid, test_details
     else:
       LOGGER.info('Failed to resolve public certificate')
+
+  def write_cert_to_file(self,pem_cert):
+    with open(self._dev_cert_file, 'w',encoding='UTF-8') as f:
+      f.write(pem_cert)
 
   def get_ciphers(self, capture_file, dst_ip, dst_port):
     bin_file = self._bin_dir + "/get_ciphers.sh"

@@ -21,7 +21,8 @@ class TLSModuleTest(unittest.TestCase):
   def setUpClass(cls):
     log = logger.get_logger(MODULE_NAME)
     global TLS_UTIL
-    TLS_UTIL = TLSUtil(log, bin_dir="modules/test/tls/bin")
+    TLS_UTIL = TLSUtil(log, bin_dir="modules/test/tls/bin",
+      cert_out_dir='testing/unit_test/temp', root_certs_dir='local/root_certs')
 
   def security_tls_v1_2_server_test(self):
     test_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.2')

@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y tshark
 
 ARG MODULE_NAME=tls
 ARG MODULE_DIR=modules/test/$MODULE_NAME
+ARG CERTS_DIR=local/root_certs
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf
@@ -35,3 +36,7 @@ COPY $MODULE_DIR/python /testrun/python
 
 #Install all python requirements for the module
 RUN pip3 install -r /testrun/python/requirements.txt
+
+# Copy over all the local certificates for device signature
+# checks if the folder exists
+COPY $CERTS_DIR/ /testrun/root_certs || true
