@@ -9,7 +9,7 @@ import common.util as util
 LOG_NAME = 'tls_util'
 LOGGER = None
 DEFAULT_BIN_DIR = '/testrun/bin'
-DEFAULT_CERTS_OUT_DIR = '/runtime/output/certs'
+DEFAULT_CERTS_OUT_DIR = '/runtime/output'
 DEFAULT_ROOT_CERTS_DIR = '/testrun/root_certs'
 
 class TLSUtil():
@@ -24,7 +24,8 @@ class TLSUtil():
 
   def get_public_certificate(self, host, port=443,validate_cert=False, tls_version='1.2'):
     try:
-      context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+      #context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+      context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
       context.check_hostname = False
       if not validate_cert:
         # Disable certificate verification
@@ -136,11 +137,12 @@ class TLSUtil():
       bin_file = self._bin_dir + "/check_cert_signature.sh"
       # Get a list of all root certificates
       root_certs = os.listdir(self._root_certs_dir)
+      LOGGER.info("Root Certs Found: " + str(len(root_certs)))
       for root_cert in root_certs:
         try:
           # Create the file path
           root_cert_path = os.path.join(self._root_certs_dir, root_cert)
-          
+          LOGGER.info("Checking root cert: " + str(root_cert_path))
           args = (f'{root_cert_path} {self._dev_cert_file}')
           command = f'{bin_file} {args}'
           response = util.run_command(command)

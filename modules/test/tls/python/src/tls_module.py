@@ -79,16 +79,21 @@ class TLSModule(TestModule):
     startup_result = self._tls_util.validate_tls_client(client_ip=client_ip,
                                                         tls_version=tls_version,
                                                         capture_file=STARTUP_CAPTURE_FILE)
-    if not monitor_result[0] or not startup_result[0]:
+
+    LOGGER.info("Montor: " + str(monitor_result))
+    LOGGER.info("Startup: " + str(startup_result))
+
+    if (not monitor_result[0]  and monitor_result[0] is not None) or (not startup_result[0] and startup_result[0] is not None):
       result = False, startup_result[1] + monitor_result[1]
     elif monitor_result[0] and startup_result[0]:
       result = True, startup_result[1] + monitor_result[1]
-    elif monitor_result[0]:
+    elif monitor_result[0] and startup_result[0] is None:
       result = True, monitor_result[1]
-    elif startup_result[0]:
+    elif startup_result[0] and monitor_result[0] is None:
       result = True, monitor_result[1]
     else:
-      result = True, startup_result[1] + monitor_result[1]
+      result = None, startup_result[1] + monitor_result[1]
+    return result
 
   def _resolve_device_ip(self):
     # If the ipv4 address wasn't resolved yet, try again
