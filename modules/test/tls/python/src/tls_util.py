@@ -300,10 +300,7 @@ class TLSUtil():
       hello_packets.append(hello_packet)
     return hello_packets
 
-  def validate_tls_client(self, client_ip, tls_version, capture_file):
-    LOGGER.info('Validating client for TLS: ' + tls_version)
-    hello_packets = self.get_hello_packets(capture_file, client_ip, tls_version)
-
+  def process_hello_packets(self,hello_packets, tls_version = '1.2'):
     # Validate the ciphers only for tls 1.2
     client_hello_results = {'valid': [], 'invalid': []}
     if tls_version == '1.2':
@@ -317,7 +314,10 @@ class TLSUtil():
             # If a previous hello packet to the same destination failed,
             # we can now remove it as it has passed on a different attempt
             if packet['dst_ip'] in str(client_hello_results['invalid']):
-              client_hello_results['invalid'].remove(packet)
+              LOGGER.info(str(client_hello_results['invalid']))
+              for invalid_packet in client_hello_results['invalid']:
+                if packet['dst_ip'] in str(invalid_packet):
+                  client_hello_results['invalid'].remove(invalid_packet)
           else:
             LOGGER.info('Invalid ciphers detected')
             if packet['dst_ip'] not in str(client_hello_results['invalid']):
@@ -325,6 +325,12 @@ class TLSUtil():
     else:
       # No cipher check for TLS 1.3
       client_hello_results['valid'] = hello_packets
+    return client_hello_results
+
+  def validate_tls_client(self, client_ip, tls_version, capture_file):
+    LOGGER.info('Validating client for TLS: ' + tls_version)
+    hello_packets = self.get_hello_packets(capture_file, client_ip, tls_version)
+    client_hello_results = self.process_hello_packets(hello_packets,tls_version)
 
     handshakes = {'complete': [], 'incomplete': []}
     for packet in client_hello_results['valid']:
@@ -368,7 +374,7 @@ class TLSUtil():
       if len(handshakes['complete']) > 0:
         # If we haven't already failed the test from previous checks
         # allow a passing result
-        if not tls_client_valid:
+        if tls_client_valid is None:
           tls_client_valid = True
         for result in handshakes['complete']:
           tls_client_details += 'Completed handshake detected from server: '

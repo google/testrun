@@ -128,6 +128,15 @@ class TLSModuleTest(unittest.TestCase):
     print(str(test_results))
     self.assertTrue(test_results[0])
 
+  def client_hello_packets_test(self):
+    packet_fail = {'dst_ip': '10.10.10.1', 'src_ip': '10.10.10.14', 'dst_port': '443', 'cipher_support': {'ecdh': False, 'ecdsa': True}}
+    packet_success = {'dst_ip': '10.10.10.1', 'src_ip': '10.10.10.14', 'dst_port': '443', 'cipher_support': {'ecdh': True, 'ecdsa': True}}
+    hello_packets = [packet_fail,packet_success]
+    hello_results = TLS_UTIL.process_hello_packets(hello_packets,'1.2')
+    print("Hello packets test results: " + str(hello_results))
+    expected = {'valid':[packet_success],'invalid':[]}
+    self.assertEqual(hello_results,expected)
+
   def test_client_tls(self,
                       tls_version,
                       tls_generate=None,
@@ -237,6 +246,7 @@ class TLSModuleTest(unittest.TestCase):
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
+  suite.addTest(TLSModuleTest('client_hello_packets_test'))
   # TLS 1.2 server tests
   suite.addTest(TLSModuleTest('security_tls_v1_2_server_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_3_server_test'))
