@@ -131,7 +131,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
                         mac_addr=mac_addr,
                         test_modules=test_modules,
                         max_device_reports=max_device_reports)
-        self._devices.append(device)
+        self.get_session().add_device(device)
 
         self.get_session().add_device(device)
         LOGGER.debug(f'Loaded device {device.manufacturer} {device.model} with MAC address {device.mac_addr}')
