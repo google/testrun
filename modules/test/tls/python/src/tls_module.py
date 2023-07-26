@@ -35,11 +35,12 @@ class TLSModule(TestModule):
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      tls_1_2_results = self._tls_util.validate_tls_server(self._device_ipv4_addr,
-                                                tls_version='1.2')
-      tls_1_3_results = self._tls_util.validate_tls_server(self._device_ipv4_addr,
-                                                tls_version='1.3')
-      return self._tls_util.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+      tls_1_2_results = self._tls_util.validate_tls_server(
+          self._device_ipv4_addr, tls_version='1.2')
+      tls_1_3_results = self._tls_util.validate_tls_server(
+          self._device_ipv4_addr, tls_version='1.3')
+      return self._tls_util.process_tls_server_results(tls_1_2_results,
+                                                       tls_1_3_results)
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return None, 'Could not resolve device IP address. Skipping'
@@ -76,17 +77,20 @@ class TLSModule(TestModule):
       return None, 'Could not resolve device IP address. Skipping'
 
   def _validate_tls_client(self, client_ip, tls_version):
-    monitor_result = self._tls_util.validate_tls_client(client_ip=client_ip,
-                                                        tls_version=tls_version,
-                                                        capture_file=MONITOR_CAPTURE_FILE)
-    startup_result = self._tls_util.validate_tls_client(client_ip=client_ip,
-                                                        tls_version=tls_version,
-                                                        capture_file=STARTUP_CAPTURE_FILE)
+    monitor_result = self._tls_util.validate_tls_client(
+        client_ip=client_ip,
+        tls_version=tls_version,
+        capture_file=MONITOR_CAPTURE_FILE)
+    startup_result = self._tls_util.validate_tls_client(
+        client_ip=client_ip,
+        tls_version=tls_version,
+        capture_file=STARTUP_CAPTURE_FILE)
 
-    LOGGER.info("Montor: " + str(monitor_result))
-    LOGGER.info("Startup: " + str(startup_result))
+    LOGGER.info('Montor: ' + str(monitor_result))
+    LOGGER.info('Startup: ' + str(startup_result))
 
-    if (not monitor_result[0]  and monitor_result[0] is not None) or (not startup_result[0] and startup_result[0] is not None):
+    if (not monitor_result[0] and monitor_result[0] is not None) or (
+        not startup_result[0] and startup_result[0] is not None):
       result = False, startup_result[1] + monitor_result[1]
     elif monitor_result[0] and startup_result[0]:
       result = True, startup_result[1] + monitor_result[1]
@@ -101,4 +105,4 @@ class TLSModule(TestModule):
   def _resolve_device_ip(self):
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is None:
-      self._device_ipv4_addr = self._get_device_ipv4(self)
+      self._device_ipv4_addr = self._get_device_ipv4()

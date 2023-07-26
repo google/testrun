@@ -1,11 +1,24 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Module run all the TLS related unit tests"""
 from tls_util import TLSUtil
 import unittest
-import common.logger as logger
+from common import logger
 from scapy.all import sniff, wrpcap
 import os
 import threading
 import time
-import requests
 import netifaces
 import ssl
 import http.client
@@ -15,62 +28,78 @@ MODULE_NAME = 'tls_module_test'
 TLS_UTIL = None
 PACKET_CAPTURE = None
 
-class TLSModuleTest(unittest.TestCase):
 
+class TLSModuleTest(unittest.TestCase):
+  """Contains and runs all the unit tests concerning TLS behaviors"""
   @classmethod
   def setUpClass(cls):
     log = logger.get_logger(MODULE_NAME)
     global TLS_UTIL
-    TLS_UTIL = TLSUtil(log, bin_dir="modules/test/tls/bin",
-      cert_out_dir='testing/unit_test/temp', root_certs_dir='local/root_certs')
+    TLS_UTIL = TLSUtil(log,
+                       bin_dir='modules/test/tls/bin',
+                       cert_out_dir='testing/unit_test/temp',
+                       root_certs_dir='local/root_certs')
 
   # Test 1.2 server when only 1.2 connection is established
   def security_tls_v1_2_server_test(self):
-    tls_1_2_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.2')
+    tls_1_2_results = TLS_UTIL.validate_tls_server('google.com',
+                                                   tls_version='1.2')
     tls_1_3_results = None, 'No TLS 1.3'
-    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                       tls_1_3_results)
     self.assertTrue(test_results[0])
 
   # Test 1.2 server when 1.3 connection is established
   def security_tls_v1_2_for_1_3_server_test(self):
     tls_1_2_results = None, 'No TLS 1.2'
-    tls_1_3_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.3')
-    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    tls_1_3_results = TLS_UTIL.validate_tls_server('google.com',
+                                                   tls_version='1.3')
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                       tls_1_3_results)
     self.assertTrue(test_results[0])
 
   # Test 1.2 server when 1.2 and 1.3 connection is established
   def security_tls_v1_2_for_1_2_and_1_3_server_test(self):
-    tls_1_2_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.2')
-    tls_1_3_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.3')
-    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    tls_1_2_results = TLS_UTIL.validate_tls_server('google.com',
+                                                   tls_version='1.2')
+    tls_1_3_results = TLS_UTIL.validate_tls_server('google.com',
+                                                   tls_version='1.3')
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                       tls_1_3_results)
     self.assertTrue(test_results[0])
 
   # Test 1.2 server when 1.2 and failed 1.3 connection is established
   def security_tls_v1_2_for_1_2_and_1_3_fail_server_test(self):
-    tls_1_2_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.2')
+    tls_1_2_results = TLS_UTIL.validate_tls_server('google.com',
+                                                   tls_version='1.2')
     tls_1_3_results = False, 'Signature faild'
-    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                       tls_1_3_results)
     self.assertTrue(test_results[0])
 
   # Test 1.2 server when 1.3 and failed 1.2 connection is established
   def security_tls_v1_2_for_1_3_and_1_2_fail_server_test(self):
-    tls_1_3_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.3')
+    tls_1_3_results = TLS_UTIL.validate_tls_server('google.com',
+                                                   tls_version='1.3')
     tls_1_2_results = False, 'Signature faild'
-    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                       tls_1_3_results)
     self.assertTrue(test_results[0])
 
   # Test 1.2 server when 1.3 and 1.2 failed connection is established
   def security_tls_v1_2_fail_server_test(self):
     tls_1_2_results = False, 'Signature faild'
     tls_1_3_results = False, 'Signature faild'
-    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                       tls_1_3_results)
     self.assertFalse(test_results[0])
 
     # Test 1.2 server when 1.3 and 1.2 failed connection is established
   def security_tls_v1_2_none_server_test(self):
     tls_1_2_results = None, 'No cert'
     tls_1_3_results = None, 'No cert'
-    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                       tls_1_3_results)
     self.assertIsNone(test_results[0])
 
   def security_tls_v1_3_server_test(self):
@@ -124,12 +153,12 @@ class TLSModuleTest(unittest.TestCase):
                            capture_file,
                            tls_version,
                            disable_valid_ciphers=False):
-    capture_thread = self.start_capture_thread(capture_file, 10)
+    capture_thread = self.start_capture_thread(10)
     print('Capture Started')
 
     # Generate some TLS 1.2 outbound traffic
-    while (capture_thread.is_alive()):
-      self.make_tls_connection("www.google.com", 443, tls_version,
+    while capture_thread.is_alive():
+      self.make_tls_connection('www.google.com', 443, tls_version,
                                disable_valid_ciphers)
       time.sleep(1)
 
@@ -150,12 +179,12 @@ class TLSModuleTest(unittest.TestCase):
     if disable_valid_ciphers:
       # Create a list of ciphers that do not use ECDH or ECDSA
       ciphers_str = [
-          "TLS_AES_256_GCM_SHA384", "TLS_CHACHA20_POLY1305_SHA256",
-          "TLS_AES_128_GCM_SHA256", "AES256-GCM-SHA384",
-          "PSK-AES256-GCM-SHA384", "PSK-CHACHA20-POLY1305",
-          "RSA-PSK-AES128-GCM-SHA256", "DHE-PSK-AES128-GCM-SHA256",
-          "AES128-GCM-SHA256", "PSK-AES128-GCM-SHA256", "AES256-SHA256",
-          "AES128-SHA"
+          'TLS_AES_256_GCM_SHA384', 'TLS_CHACHA20_POLY1305_SHA256',
+          'TLS_AES_128_GCM_SHA256', 'AES256-GCM-SHA384',
+          'PSK-AES256-GCM-SHA384', 'PSK-CHACHA20-POLY1305',
+          'RSA-PSK-AES128-GCM-SHA256', 'DHE-PSK-AES128-GCM-SHA256',
+          'AES128-GCM-SHA256', 'PSK-AES128-GCM-SHA256', 'AES256-SHA256',
+          'AES128-SHA'
       ]
       context.set_ciphers(':'.join(ciphers_str))
 
@@ -188,7 +217,7 @@ class TLSModuleTest(unittest.TestCase):
     global PACKET_CAPTURE
     PACKET_CAPTURE = sniff(iface='eth0', timeout=timeout)
 
-  def start_capture_thread(self, capture_file, timeout):
+  def start_capture_thread(self, timeout):
     # Start the packet capture in a separate thread to avoid blocking.
     capture_thread = threading.Thread(target=self.start_capture,
                                       args=(timeout, ))
@@ -202,7 +231,7 @@ class TLSModuleTest(unittest.TestCase):
       ipv4 = addresses[netifaces.AF_INET][0]['addr']
       return ipv4
     except (ValueError, KeyError) as e:
-      print(f"Error: {e}")
+      print(f'Error: {e}')
       return None
 
 
@@ -212,8 +241,10 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('security_tls_v1_2_server_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_3_server_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_2_and_1_3_server_test'))
-  suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_2_and_1_3_fail_server_test'))
-  suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_3_and_1_2_fail_server_test'))
+  suite.addTest(
+      TLSModuleTest('security_tls_v1_2_for_1_2_and_1_3_fail_server_test'))
+  suite.addTest(
+      TLSModuleTest('security_tls_v1_2_for_1_3_and_1_2_fail_server_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_2_fail_server_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_2_none_server_test'))
   # # TLS 1.3 server tests

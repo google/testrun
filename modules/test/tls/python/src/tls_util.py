@@ -1,10 +1,24 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Module that contains various metehods for validating TLS communications"""
 import ssl
 import socket
 from datetime import datetime
 from OpenSSL import crypto
 import json
 import os
-import common.util as util
+from common import util
 
 LOG_NAME = 'tls_util'
 LOGGER = None
@@ -12,17 +26,26 @@ DEFAULT_BIN_DIR = '/testrun/bin'
 DEFAULT_CERTS_OUT_DIR = '/runtime/output'
 DEFAULT_ROOT_CERTS_DIR = '/testrun/root_certs'
 
+
 class TLSUtil():
   """Helper class for various tests concerning TLS communications"""
 
-  def __init__(self, logger, bin_dir=DEFAULT_BIN_DIR, cert_out_dir=DEFAULT_CERTS_OUT_DIR, root_certs_dir=DEFAULT_ROOT_CERTS_DIR):
+  def __init__(self,
+               logger,
+               bin_dir=DEFAULT_BIN_DIR,
+               cert_out_dir=DEFAULT_CERTS_OUT_DIR,
+               root_certs_dir=DEFAULT_ROOT_CERTS_DIR):
     global LOGGER
     LOGGER = logger
     self._bin_dir = bin_dir
     self._dev_cert_file = cert_out_dir + '/device_cert.crt'
     self._root_certs_dir = root_certs_dir
 
-  def get_public_certificate(self, host, port=443,validate_cert=False, tls_version='1.2'):
+  def get_public_certificate(self,
+                             host,
+                             port=443,
+                             validate_cert=False,
+                             tls_version='1.2'):
     try:
       #context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
       context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -120,30 +143,33 @@ class TLSUtil():
       else:
         return False, 'EC key length too short: ' + str(key_length) + ' < 224'
     else:
-      return False, "Key is not RSA or EC type"
+      return False, 'Key is not RSA or EC type'
 
-  def validate_signature(self,host):
+  def validate_signature(self, host):
     # Reconnect to the device but with validate signature option
     # set to true which will check for proper cert chains
     # within the valid CA root certs stored on the server
-    LOGGER.info('Checking for valid signature from authorized Certificate Authorities')
-    public_cert = self.get_public_certificate(host,validate_cert=True, tls_version='1.2')
+    LOGGER.info(
+        'Checking for valid signature from authorized Certificate Authorities')
+    public_cert = self.get_public_certificate(host,
+                                              validate_cert=True,
+                                              tls_version='1.2')
     if public_cert:
       LOGGER.info('Authorized Certificate Authority signature confirmed')
       return True, 'Authorized Certificate Authority signature confirmed'
     else:
       LOGGER.info('Authorized Certificate Authority signature not present')
       LOGGER.info('Resolving configured root certificates')
-      bin_file = self._bin_dir + "/check_cert_signature.sh"
+      bin_file = self._bin_dir + '/check_cert_signature.sh'
       # Get a list of all root certificates
       root_certs = os.listdir(self._root_certs_dir)
-      LOGGER.info("Root Certs Found: " + str(len(root_certs)))
+      LOGGER.info('Root Certs Found: ' + str(len(root_certs)))
       for root_cert in root_certs:
         try:
           # Create the file path
           root_cert_path = os.path.join(self._root_certs_dir, root_cert)
-          LOGGER.info("Checking root cert: " + str(root_cert_path))
-          args = (f'{root_cert_path} {self._dev_cert_file}')
+          LOGGER.info('Checking root cert: ' + str(root_cert_path))
+          args = f'{root_cert_path} {self._dev_cert_file}'
           command = f'{bin_file} {args}'
           response = util.run_command(command)
           if 'device_cert.crt: OK' in str(response):
@@ -151,12 +177,12 @@ class TLSUtil():
             return True, 'Device signed by cert:' + root_cert
           else:
             LOGGER.info('Device not signed by cert: ' + root_cert)
-        except Exception as e:
+        except Exception as e: # pylint: disable=W0718
           LOGGER.error('Failed to check cert:' + root_cert)
           LOGGER.error(str(e))
     return False, 'Device certificate has not been signed'
 
-  def process_tls_server_results(self,tls_1_2_results, tls_1_3_results):
+  def process_tls_server_results(self, tls_1_2_results, tls_1_3_results):
     results = ''
     if tls_1_2_results[0] is None and tls_1_3_results[0]:
       results = True, 'TLS 1.3 validated:\n' + tls_1_3_results[1]
@@ -174,7 +200,8 @@ class TLSUtil():
       description = 'TLS 1.2 not validated:\n' + tls_1_2_results[1]
       description += '\nTLS 1.3 validated:\n' + tls_1_3_results[1]
       results = True, description
-    elif not tls_1_3_results[0] and not tls_1_2_results[0] and tls_1_2_results[0] is not None and tls_1_3_results is not None:
+    elif not tls_1_3_results[0] and not tls_1_2_results[0] and tls_1_2_results[
+        0] is not None and tls_1_3_results is not None:
       description = 'TLS 1.2 not validated:\n' + tls_1_2_results[1]
       description += '\nTLS 1.3 not validated:\n' + tls_1_3_results[1]
       results = False, description
@@ -182,11 +209,13 @@ class TLSUtil():
       description = 'TLS 1.2 not validated:\n' + tls_1_2_results[1]
       description += '\nTLS 1.3 not validated:\n' + tls_1_3_results[1]
       results = None, description
-    LOGGER.info("TLS 1.2 server test results: " + str(results))
+    LOGGER.info('TLS 1.2 server test results: ' + str(results))
     return results
 
-  def validate_tls_server(self, host, tls_version, port=443):
-    cert_pem = self.get_public_certificate(host,validate_cert=False, tls_version='1.2')
+  def validate_tls_server(self, host, tls_version):
+    cert_pem = self.get_public_certificate(host,
+                                           validate_cert=False,
+                                           tls_version=tls_version)
     if cert_pem:
 
       # Write pem encoding to a file
@@ -198,6 +227,7 @@ class TLSUtil():
       # Print the certificate information
       cert_text = crypto.dump_certificate(crypto.FILETYPE_TEXT,
                                           public_cert).decode()
+      LOGGER.info('Device Certificate:\n' + cert_text)
 
       # Validate the certificates time range
       tr_valid = self.verify_certificate_timerange(public_cert)
@@ -219,29 +249,29 @@ class TLSUtil():
       LOGGER.info('Failed to resolve public certificate')
       return None, 'Failed to resolve public certificate'
 
-  def write_cert_to_file(self,pem_cert):
-    with open(self._dev_cert_file, 'w',encoding='UTF-8') as f:
+  def write_cert_to_file(self, pem_cert):
+    with open(self._dev_cert_file, 'w', encoding='UTF-8') as f:
       f.write(pem_cert)
 
   def get_ciphers(self, capture_file, dst_ip, dst_port):
-    bin_file = self._bin_dir + "/get_ciphers.sh"
-    args = (f'{capture_file} {dst_ip} {dst_port}')
+    bin_file = self._bin_dir + '/get_ciphers.sh'
+    args = f'{capture_file} {dst_ip} {dst_port}'
     command = f'{bin_file} {args}'
     response = util.run_command(command)
-    ciphers = response[0].split("\n")
+    ciphers = response[0].split('\n')
     return ciphers
 
   def get_hello_packets(self, capture_file, src_ip, tls_version):
-    bin_file = self._bin_dir + "/get_client_hello_packets.sh"
-    args = (f'{capture_file} {src_ip} {tls_version}')
+    bin_file = self._bin_dir + '/get_client_hello_packets.sh'
+    args = f'{capture_file} {src_ip} {tls_version}'
     command = f'{bin_file} {args}'
     response = util.run_command(command)
     packets = response[0].strip()
     return self.parse_hello_packets(json.loads(packets), capture_file)
 
   def get_handshake_complete(self, capture_file, src_ip, dst_ip, tls_version):
-    bin_file = self._bin_dir + "/get_handshake_complete.sh"
-    args = (f'{capture_file} {src_ip} {dst_ip} {tls_version}')
+    bin_file = self._bin_dir + '/get_handshake_complete.sh'
+    args = f'{capture_file} {src_ip} {dst_ip} {tls_version}'
     command = f'{bin_file} {args}'
     response = util.run_command(command)
     return response
@@ -253,7 +283,8 @@ class TLSUtil():
       packet_layers = packet['_source']['layers']
       dst_ip = packet_layers['ip.dst'][0] if 'ip.dst' in packet_layers else ''
       src_ip = packet_layers['ip.src'][0] if 'ip.src' in packet_layers else ''
-      dst_port = packet_layers['tcp.dstport'][0] if 'tcp.dstport' in packet_layers else ''
+      dst_port = packet_layers['tcp.dstport'][
+          0] if 'tcp.dstport' in packet_layers else ''
 
       # Resolve the ciphers used in this packet and validate expected ones exist
       ciphers = self.get_ciphers(capture_file, dst_ip, dst_port)
@@ -270,11 +301,11 @@ class TLSUtil():
     return hello_packets
 
   def validate_tls_client(self, client_ip, tls_version, capture_file):
-    LOGGER.info("Validating client for TLS: " + tls_version)
+    LOGGER.info('Validating client for TLS: ' + tls_version)
     hello_packets = self.get_hello_packets(capture_file, client_ip, tls_version)
 
     # Validate the ciphers only for tls 1.2
-    client_hello_results = {"valid": [], "invalid": []}
+    client_hello_results = {'valid': [], 'invalid': []}
     if tls_version == '1.2':
       for packet in hello_packets:
         if packet['dst_ip'] not in str(client_hello_results['valid']):
@@ -288,9 +319,9 @@ class TLSUtil():
             if packet['dst_ip'] in str(client_hello_results['invalid']):
               client_hello_results['invalid'].remove(packet)
           else:
-          	LOGGER.info("Invalid ciphers detected")
-          	if packet['dst_ip'] not in str(client_hello_results['invalid']):
-          	  client_hello_results['invalid'].append(packet)
+            LOGGER.info('Invalid ciphers detected')
+            if packet['dst_ip'] not in str(client_hello_results['invalid']):
+              client_hello_results['invalid'].append(packet)
     else:
       # No cipher check for TLS 1.3
       client_hello_results['valid'] = hello_packets
@@ -332,14 +363,16 @@ class TLSUtil():
           tls_client_details += '\n'
       if len(handshakes['incomplete']) > 0:
         for result in handshakes['incomplete']:
-          tls_client_details += 'Incomplete handshake detected from server: ' + result + '\n'
+          tls_client_details += 'Incomplete handshake detected from server: '
+          tls_client_details += result + '\n'
       if len(handshakes['complete']) > 0:
         # If we haven't already failed the test from previous checks
         # allow a passing result
         if not tls_client_valid:
           tls_client_valid = True
         for result in handshakes['complete']:
-          tls_client_details += 'Completed handshake detected from server: ' + result + '\n'
+          tls_client_details += 'Completed handshake detected from server: '
+          tls_client_details += result + '\n'
     else:
       LOGGER.info('No client hello packets detected. Skipping')
       tls_client_details = 'No client hello packets detected. Skipping'
