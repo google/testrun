@@ -96,7 +96,10 @@ class TestModule:
         if isinstance(result, bool):
           test['result'] = 'compliant' if result else 'non-compliant'
         else:
-          test['result'] = 'compliant' if result[0] else 'non-compliant'
+          if result[0] is None:
+            test['result'] = 'skipped'
+          else:
+            test['result'] = 'compliant' if result[0] else 'non-compliant'
           test['result_details'] = result[1]
       else:
         test['result'] = 'skipped'
