@@ -33,9 +33,10 @@ DEVICE_ROOT_CERTS = "local/root_certs"
 class TestOrchestrator:
   """Manages and controls the test modules."""
 
-  def __init__(self, net_orc):
+  def __init__(self, session, net_orc):
     self._test_modules = []
     self._module_config = None
+    self._session = session
     self._net_orc = net_orc
     self._test_in_progress = False
 
@@ -45,7 +46,6 @@ class TestOrchestrator:
 
     # Resolve the path to the test-run folder
     #self._root_path = os.path.abspath(os.path.join(self._path, os.pardir))
-
 
     self._root_path = os.path.dirname(os.path.dirname(
           os.path.dirname(
@@ -121,7 +121,7 @@ class TestOrchestrator:
   def _is_module_enabled(self, module, device):
     enabled = True
     if device.test_modules is not None:
-      test_modules = json.loads(device.test_modules)
+      test_modules = device.test_modules
       if module.name in test_modules:
         if "enabled" in test_modules[module.name]:
           enabled = test_modules[module.name]["enabled"]
@@ -186,7 +186,7 @@ class TestOrchestrator:
           environment={
               "HOST_USER": self._host_user,
               "DEVICE_MAC": device.mac_addr,
-              "DEVICE_TEST_MODULES": device.test_modules,
+              "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
               "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
               "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
           })
@@ -205,8 +205,15 @@ class TestOrchestrator:
     test_module_timeout = time.time() + module.timeout
     status = self._get_module_status(module)
 
-    while time.time() < test_module_timeout and status == "running":
-      time.sleep(1)
+    log_stream = module.container.logs(stream=True, stdout=True, stderr=True)
+    while (time.time() < test_module_timeout and
+           status == "running" and
+           self._session.get_status() == "In progress"):
+      try:
+        line = next(log_stream).decode("utf-8").strip()
+        print(line)
+      except Exception:
+        time.sleep(1)
       status = self._get_module_status(module)
 
     LOGGER.info("Test module " + module.name + " has finished")

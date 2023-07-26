@@ -49,4 +49,4 @@ COPY $NET_MODULE_DIR/dhcp-1/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/dhcp1/
 COPY $NET_MODULE_DIR/dhcp-2/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/dhcp2/
 
 # Start the test module
-ENTRYPOINT [ "/testrun/bin/start_module" ]
+ENTRYPOINT [ "/testrun/bin/start" ]

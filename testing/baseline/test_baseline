@@ -48,7 +48,7 @@ EOF
 
 sudo cmd/install
 
-sudo cmd/start --single-intf > $TESTRUN_OUT 2>&1 & 
+sudo bin/testrun --single-intf --no-ui > $TESTRUN_OUT 2>&1 & 
 TPID=$!
 
 # Time to wait for testrun to be ready
@@ -80,6 +80,6 @@ echo "Done baseline test"
 
 more $TESTRUN_OUT
 
-pytest testing/test_baseline.py
+pytest testing/baseline/test_baseline.py
 
 exit $?

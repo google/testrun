@@ -55,8 +55,7 @@ class DNSModule(TestModule):
                 self._dns_server)
 
     # Check if the device DNS traffic is to appropriate server
-    tcpdump_filter = (f'dst port 53 and dst host {self._dns_server}',
-                      f' and ether src {self._device_mac}')
+    tcpdump_filter = f'dst port 53 and dst host {self._dns_server} and ether src {self._device_mac}'
 
     result = self._check_dns_traffic(tcpdump_filter=tcpdump_filter)
 
