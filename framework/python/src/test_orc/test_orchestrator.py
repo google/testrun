@@ -118,7 +118,6 @@ class TestOrchestrator:
     else:
         return None
 
-
   def _timestamp_results(self, device):
     # Define the current device results directory
     cur_results_dir = os.path.join(
@@ -129,9 +128,10 @@ class TestOrchestrator:
     completed_results_dir = os.path.join(
             self._root_path, "runtime/test/" +
             device.mac_addr.replace(":", "") + "/completed_tests/" + cur_time)
-    # Move the results to the timestamp directory
-    shutil.move(cur_results_dir,completed_results_dir)
-
+    # Copy the results to the timestamp directory
+    # leave current copy in place for quick reference to
+    # most recent test
+    shutil.copytree(cur_results_dir,completed_results_dir)
 
   def _generate_results(self, device):
     results = {}
