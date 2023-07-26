@@ -13,12 +13,16 @@
 # limitations under the License.
 
 """Track device object information."""
+
 from dataclasses import dataclass
 
-
 @dataclass
-class NetworkDevice:
+class Device():
   """Represents a physical device and it's configuration."""
 
-  mac_addr: str
+  mac_addr: str = None
+  manufacturer: str = None
+  model: str = None
+  test_modules: str = None
   ip_addr: str = None
+  max_device_reports: int = None
