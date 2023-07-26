@@ -50,7 +50,7 @@ DEVICE_MANUFACTURER = 'manufacturer'
 DEVICE_MODEL = 'model'
 DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
-DEVICE_MAX_TESTS = 'max_device_tests'
+MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
 class TestRun:  # pylint: disable=too-few-public-methods
   """Test Run controller.
@@ -79,7 +79,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
       validate=validate,
       single_intf = self._single_intf)
 
-    self._test_orc = test_orc.TestOrchestrator(self._net_orc)
+    self._test_orc = test_orc.TestOrchestrator(self._net_orc, config_file=config_file)
 
   def start(self):
 
@@ -181,15 +181,15 @@ class TestRun:  # pylint: disable=too-few-public-methods
         device_model = device_config_json.get(DEVICE_MODEL)
         mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
         test_modules = device_config_json.get(DEVICE_TEST_MODULES)
-        max_device_tests = None
-        if 'max_device_tests' in device_config_json:
-          max_device_tests = device_config_json.get(DEVICE_MAX_TESTS)
+        max_device_reports = None
+        if 'max_device_reports' in device_config_json:
+          max_device_reports = device_config_json.get(MAX_DEVICE_REPORTS_KEY)
 
         device = Device(manufacturer=device_manufacturer,
                         model=device_model,
                         mac_addr=mac_addr,
                         test_modules=json.dumps(test_modules),
-                        max_device_tests=max_device_tests)
+                        max_device_reports=max_device_reports)
         self._devices.append(device)
 
   def get_device(self, mac_addr):

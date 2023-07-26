@@ -28,18 +28,19 @@ LOGGER = logger.get_logger("test_orc")
 RUNTIME_DIR = "runtime/test"
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
-
-
+CONFIG_FILE = 'local/system.json'
+MAX_DEVICE_REPORTS_KEY = "max_device_reports"
+DEFAULT_MAX_DEVICE_REPORTS = 5
+ 
 class TestOrchestrator:
   """Manages and controls the test modules."""
 
-  def __init__(self, net_orc):
+  def __init__(self, net_orc, config_file=CONFIG_FILE):
     self._test_modules = []
     self._module_config = None
     self._net_orc = net_orc
     self._test_in_progress = False
-    self._max_device_tests = 5
-
+    self._max_device_reports = DEFAULT_MAX_DEVICE_REPORTS
     self._path = os.path.dirname(os.path.dirname(
           os.path.dirname(
             os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
@@ -48,6 +49,7 @@ class TestOrchestrator:
           os.path.dirname(
             os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
+    self.load_config(config_file)
   def start(self):
     LOGGER.debug("Starting test orchestrator")
 
@@ -55,6 +57,7 @@ class TestOrchestrator:
     self._host_user = util.get_host_user()
     os.makedirs(RUNTIME_DIR, exist_ok=True)
     util.run_command(f"chown -R {self._host_user} {RUNTIME_DIR}")
+
 
     self._load_test_modules()
     self.build_test_modules()
@@ -80,16 +83,16 @@ class TestOrchestrator:
     self._test_in_progress = False
 
   def _cleanup_old_test_results(self, device):
-    if device.max_device_tests is not None:
-      max_tests = device.max_device_tests
+    if device.max_device_reports is not None:
+      max_device_reports = device.max_device_reports
     else:
-      max_tests = self._max_device_tests
+      max_device_reports = self._max_device_reports
     completed_results_dir = cur_results_dir = os.path.join(
             self._root_path, "runtime/test/" +
             device.mac_addr.replace(":", "") + "/completed_tests/")
     completed_tests = os.listdir(completed_results_dir)
     cur_test_count = len(completed_tests)
-    if cur_test_count > max_tests:
+    if cur_test_count > max_device_reports:
       LOGGER.debug("Current device has more than max tests results allowed: " + str(cur_test_count) + ">" + str(max_tests))
       # Find and delete the oldest test
       oldest_test = self._find_oldest_test(completed_results_dir)
@@ -98,7 +101,7 @@ class TestOrchestrator:
         shutil.rmtree(oldest_test,ignore_errors=True)
         # Confirm the delete was succesful
         new_test_count = len(os.listdir(completed_results_dir))
-        if new_test_count != cur_test_count and new_test_count > max_tests:
+        if new_test_count != cur_test_count and new_test_count > max_device_reports:
           # Continue cleaning up until we're under the max
           self._cleanup_old_test_results(device)
     
@@ -282,6 +285,28 @@ class TestOrchestrator:
       LOGGER.error("Failed to resolve container")
       LOGGER.error(error)
     return container
+
+  def import_config(self, json_config):
+    if MAX_DEVICE_REPORTS_KEY in json_config:
+      self._max_device_reports = json_config[MAX_DEVICE_REPORTS_KEY]
+
+  def load_config(self, config_file=None):
+    if config_file is None:
+      # If not defined, use relative pathing to local file
+      self._config_file = os.path.join(self._path, CONFIG_FILE)
+    else:
+      # If defined, use as provided
+      self._config_file = config_file
+
+    if not os.path.isfile(self._config_file):
+      LOGGER.error('Configuration file is not present at ' + config_file)
+      LOGGER.info('An example is present in ' + EXAMPLE_CONFIG_FILE)
+      sys.exit(1)
+
+    LOGGER.info('Loading config file: ' + os.path.abspath(self._config_file))
+    with open(self._config_file, encoding='UTF-8') as config_json_file:
+      config_json = json.load(config_json_file)
+      self.import_config(config_json)
 
   def _load_test_modules(self):
     """Load network modules from module_config.json."""
