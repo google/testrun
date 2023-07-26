@@ -24,9 +24,54 @@ class TLSModuleTest(unittest.TestCase):
     TLS_UTIL = TLSUtil(log, bin_dir="modules/test/tls/bin",
       cert_out_dir='testing/unit_test/temp', root_certs_dir='local/root_certs')
 
+  # Test 1.2 server when only 1.2 connection is established
   def security_tls_v1_2_server_test(self):
-    test_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.2')
+    tls_1_2_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.2')
+    tls_1_3_results = None, 'No TLS 1.3'
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
     self.assertTrue(test_results[0])
+
+  # Test 1.2 server when 1.3 connection is established
+  def security_tls_v1_2_for_1_3_server_test(self):
+    tls_1_2_results = None, 'No TLS 1.2'
+    tls_1_3_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.3')
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    self.assertTrue(test_results[0])
+
+  # Test 1.2 server when 1.2 and 1.3 connection is established
+  def security_tls_v1_2_for_1_2_and_1_3_server_test(self):
+    tls_1_2_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.2')
+    tls_1_3_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.3')
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    self.assertTrue(test_results[0])
+
+  # Test 1.2 server when 1.2 and failed 1.3 connection is established
+  def security_tls_v1_2_for_1_2_and_1_3_fail_server_test(self):
+    tls_1_2_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.2')
+    tls_1_3_results = False, 'Signature faild'
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    self.assertTrue(test_results[0])
+
+  # Test 1.2 server when 1.3 and failed 1.2 connection is established
+  def security_tls_v1_2_for_1_3_and_1_2_fail_server_test(self):
+    tls_1_3_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.3')
+    tls_1_2_results = False, 'Signature faild'
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    self.assertTrue(test_results[0])
+
+  # Test 1.2 server when 1.3 and 1.2 failed connection is established
+  def security_tls_v1_2_fail_server_test(self):
+    tls_1_2_results = False, 'Signature faild'
+    tls_1_3_results = False, 'Signature faild'
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    self.assertFalse(test_results[0])
+
+    # Test 1.2 server when 1.3 and 1.2 failed connection is established
+  def security_tls_v1_2_none_server_test(self):
+    tls_1_2_results = None, 'No cert'
+    tls_1_3_results = None, 'No cert'
+    test_results = TLS_UTIL.process_tls_server_results(tls_1_2_results,tls_1_3_results)
+    self.assertIsNone(test_results[0])
 
   def security_tls_v1_3_server_test(self):
     test_results = TLS_UTIL.validate_tls_server('google.com', tls_version='1.3')
@@ -163,8 +208,17 @@ class TLSModuleTest(unittest.TestCase):
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
+  # TLS 1.2 server tests
   suite.addTest(TLSModuleTest('security_tls_v1_2_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_3_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_2_and_1_3_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_2_and_1_3_fail_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_3_and_1_2_fail_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_fail_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_none_server_test'))
+  # # TLS 1.3 server tests
   suite.addTest(TLSModuleTest('security_tls_v1_3_server_test'))
+  # TLS client tests
   suite.addTest(TLSModuleTest('security_tls_v1_2_client_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_3_client_test'))
   suite.addTest(TLSModuleTest('security_tls_client_skip_test'))

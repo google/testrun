@@ -156,6 +156,35 @@ class TLSUtil():
           LOGGER.error(str(e))
     return False, 'Device certificate has not been signed'
 
+  def process_tls_server_results(self,tls_1_2_results, tls_1_3_results):
+    results = ''
+    if tls_1_2_results[0] is None and tls_1_3_results[0]:
+      results = True, 'TLS 1.3 validated:\n' + tls_1_3_results[1]
+    elif tls_1_3_results[0] is None and tls_1_2_results[0]:
+      results = True, 'TLS 1.2 validated:\n' + tls_1_2_results[1]
+    elif tls_1_2_results[0] and tls_1_3_results[0]:
+      description = 'TLS 1.2 validated:\n' + tls_1_2_results[1]
+      description += '\nTLS 1.3 validated:\n' + tls_1_3_results[1]
+      results = True, description
+    elif tls_1_2_results[0] and not tls_1_3_results[0]:
+      description = 'TLS 1.2 validated:\n' + tls_1_2_results[1]
+      description += '\nTLS 1.3 not validated:\n' + tls_1_3_results[1]
+      results = True, description
+    elif tls_1_3_results[0] and not tls_1_2_results[0]:
+      description = 'TLS 1.2 not validated:\n' + tls_1_2_results[1]
+      description += '\nTLS 1.3 validated:\n' + tls_1_3_results[1]
+      results = True, description
+    elif not tls_1_3_results[0] and not tls_1_2_results[0] and tls_1_2_results[0] is not None and tls_1_3_results is not None:
+      description = 'TLS 1.2 not validated:\n' + tls_1_2_results[1]
+      description += '\nTLS 1.3 not validated:\n' + tls_1_3_results[1]
+      results = False, description
+    else:
+      description = 'TLS 1.2 not validated:\n' + tls_1_2_results[1]
+      description += '\nTLS 1.3 not validated:\n' + tls_1_3_results[1]
+      results = None, description
+    LOGGER.info("TLS 1.2 server test results: " + str(results))
+    return results
+
   def validate_tls_server(self, host, tls_version, port=443):
     cert_pem = self.get_public_certificate(host,validate_cert=False, tls_version='1.2')
     if cert_pem:
@@ -188,6 +217,7 @@ class TLSUtil():
       return cert_valid, test_details
     else:
       LOGGER.info('Failed to resolve public certificate')
+      return None, 'Failed to resolve public certificate'
 
   def write_cert_to_file(self,pem_cert):
     with open(self._dev_cert_file, 'w',encoding='UTF-8') as f:
@@ -220,9 +250,10 @@ class TLSUtil():
     hello_packets = []
     for packet in packets:
       # Extract all the basic IP information about the packet
-      dst_ip = packet['_source']['layers']['ip.dst'][0]
-      src_ip = packet['_source']['layers']['ip.src'][0]
-      dst_port = packet['_source']['layers']['tcp.dstport'][0]
+      packet_layers = packet['_source']['layers']
+      dst_ip = packet_layers['ip.dst'][0] if 'ip.dst' in packet_layers else ''
+      src_ip = packet_layers['ip.src'][0] if 'ip.src' in packet_layers else ''
+      dst_port = packet_layers['tcp.dstport'][0] if 'tcp.dstport' in packet_layers else ''
 
       # Resolve the ciphers used in this packet and validate expected ones exist
       ciphers = self.get_ciphers(capture_file, dst_ip, dst_port)
@@ -230,9 +261,9 @@ class TLSUtil():
 
       # Put result together
       hello_packet = {}
-      hello_packet['dst_ip'] = packet['_source']['layers']['ip.dst'][0]
-      hello_packet['src_ip'] = packet['_source']['layers']['ip.src'][0]
-      hello_packet['dst_port'] = packet['_source']['layers']['tcp.dstport'][0]
+      hello_packet['dst_ip'] = dst_ip
+      hello_packet['src_ip'] = src_ip
+      hello_packet['dst_port'] = dst_port
       hello_packet['cipher_support'] = cipher_support
 
       hello_packets.append(hello_packet)
