@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from fastapi import FastAPI, APIRouter, Response, Request, status
+from fastapi.middleware.cors import CORSMiddleware
 import json
 from json import JSONDecodeError
 import psutil
@@ -52,8 +53,18 @@ class Api:
     self._router.add_api_route("/devices", self.get_devices)
     self._router.add_api_route("/device", self.save_device, methods=["POST"])
 
+    # TODO: Make this configurable in system.json
+    origins = ["http://localhost:4200"]
+
     self._app = FastAPI()
     self._app.include_router(self._router)
+    self._app.add_middleware(
+      CORSMiddleware,
+      allow_origins=origins,
+      allow_credentials=True,
+      allow_methods=["*"],
+      allow_headers=["*"],
+    )
 
     self._api_thread = threading.Thread(target=self._start,
                                         name="Test Run API",
@@ -65,7 +76,7 @@ class Api:
     LOGGER.info("API waiting for requests")
 
   def _start(self):
-    uvicorn.run(self._app, log_config=None)
+    uvicorn.run(self._app, log_config=None, port=3000)
 
   def stop(self):
     LOGGER.info("Stopping API")

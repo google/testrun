@@ -121,7 +121,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
         mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
         test_modules = device_config_json.get(DEVICE_TEST_MODULES)
 
-        device = Device(manufacturer=device_manufacturer,
+        device = Device(folder_url=os.path.join(device_dir, device_folder),
+                        manufacturer=device_manufacturer,
                         model=device_model,
                         mac_addr=mac_addr,
                         test_modules=test_modules)
