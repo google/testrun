@@ -251,7 +251,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         f'Discovered {device.manufacturer} {device.model} on the network')
     else:
       device = Device(mac_addr=mac_addr)
-      self._devices.append(device)
+      self.get_session().add_device(device)
       LOGGER.info(
         f'A new device has been discovered with mac address {mac_addr}')
 
