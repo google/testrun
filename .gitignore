@@ -5,3 +5,5 @@ error
 pylint.out
 __pycache__/
 build/
+local/
+testing/unit_test/temp
