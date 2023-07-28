@@ -16,6 +16,7 @@ device behaviors"""
 
 import time
 from datetime import datetime
+import util
 
 LOG_NAME = 'dhcp_util'
 LOGGER = None
@@ -86,6 +87,17 @@ class DHCPUtil():
       return False
 
   # Resolve the requested dhcp client
+  def start_dhcp_server(self, dhcp_server_primary=True):
+    LOGGER.info('Starting DHCP server')
+    response = self.get_dhcp_client(dhcp_server_primary).start_dhcp_server()
+    if response.code == 200:
+      LOGGER.info('DHCP server start command success')
+      return True
+    else:
+      LOGGER.error('DHCP server start command failed')
+      return False
+
+  # Resolve the requested dhcp client
   def stop_dhcp_server(self, dhcp_server_primary=True):
     LOGGER.info('Stopping DHCP server')
     response = self.get_dhcp_client(dhcp_server_primary).stop_dhcp_server()
@@ -101,7 +113,8 @@ class DHCPUtil():
     response = self.get_dhcp_client(dhcp_server_primary).get_status()
     if response.code == 200:
       LOGGER.info('DHCP server status: ' + str(response.message))
-      return True
+      status = eval(response.message)  # pylint: disable=W0123
+      return status['dhcpStatus']
     else:
       return False
 
@@ -114,6 +127,36 @@ class DHCPUtil():
         return lease
     else:
       return None
+
+  def get_new_lease(self, mac_address, dhcp_server_primary=True):
+    lease = None
+    for _ in range(5):
+      LOGGER.info('Checking for new lease')
+      if lease is None:
+        lease = self.get_cur_lease(mac_address,dhcp_server_primary)
+        LOGGER.info('New Lease found: ' + str(lease))
+        break
+      else:
+        LOGGER.info('New lease not found. Waiting to check again')
+        time.sleep(5)
+    return lease
+
+  def is_lease_active(self, lease):
+    if 'ip' in lease:
+      ip_addr = lease['ip']
+      LOGGER.info('Lease IP Resolved: ' + ip_addr)
+      LOGGER.info('Attempting to ping device...')
+      ping_success = self.ping(ip_addr)
+      LOGGER.info('Ping Success: ' + str(ping_success))
+      LOGGER.info('Current lease confirmed active in device')
+    else:
+      LOGGER.error('Failed to confirm a valid active lease for the device')
+    return ping_success
+
+  def ping(self, host):
+    cmd = 'ping -c 1 ' + str(host)
+    success = util.run_command(cmd, output=False)
+    return success
 
   def add_reserved_lease(self,
                          hostname,
@@ -145,7 +188,7 @@ class DHCPUtil():
     if self.stop_dhcp_server(False):
       LOGGER.info('Secondary DHCP server stop command success')
       time.sleep(3)  # Give some time for the server to stop
-      if self.get_dhcp_server_status(False):
+      if not self.get_dhcp_server_status(False):
         LOGGER.info('Secondary DHCP server stopped')
         if self.disable_failover(True):
           LOGGER.info('Primary DHCP server failover disabled')

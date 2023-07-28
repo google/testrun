@@ -171,8 +171,7 @@ class ConnectionModule(TestModule):
         # Figure out how to calculate a valid IP address
         ip_address = '10.10.10.30'
         if self._dhcp_util.add_reserved_lease(lease['hostname'],
-                                                    lease['hw_addr'],
-                                                    ip_address):
+                                              lease['hw_addr'], ip_address):
           self._dhcp_util.wait_for_lease_expire(lease)
           LOGGER.info('Checking device accepted new ip')
           for _ in range(5):
@@ -192,13 +191,54 @@ class ConnectionModule(TestModule):
           result = None, 'Failed to create reserved lease for device'
       else:
         result = None, 'Device has no current DHCP lease'
+      # Restore the network
       self._dhcp_util.restore_failover_dhcp_server()
+      LOGGER.info("Waiting 30 seconds for reserved lease to expire")
+      time.sleep(30)
+      self._dhcp_util.get_new_lease(self._device_mac)
     else:
       result = None, 'Failed to configure network for test'
     return result
 
   def _connection_ipaddr_dhcp_failover(self):
-    return None, 'Device not yet implemented'
+    result = None
+    # Confirm that both servers are online
+    primary_status = self._dhcp_util.get_dhcp_server_status(
+        dhcp_server_primary=True)
+    secondary_status = self._dhcp_util.get_dhcp_server_status(
+        dhcp_server_primary=False)
+    if primary_status and secondary_status:
+      lease = self._dhcp_util.get_cur_lease(self._device_mac)
+      if lease is not None:
+        LOGGER.info('Current device lease resolved: ' + str(lease))
+        if self._dhcp_util.is_lease_active(lease):
+          # Shutdown the primary server
+          if self._dhcp_util.stop_dhcp_server(dhcp_server_primary=True):
+            # Wait until the current lease is expired
+            self._dhcp_util.wait_for_lease_expire(lease)
+            # Make sure the device has received a new lease from the
+            # secondary server
+            if self._dhcp_util.get_new_lease(self._device_mac,
+                                             dhcp_server_primary=False):
+              if self._dhcp_util.is_lease_active(lease):
+                result = True, ('Secondary DHCP server lease confirmed active '
+                 'in device')
+              else:
+                result = False, 'Could not validate lease is active in device'
+            else:
+              result = False, ('Device did not recieve a new lease from '
+                'secondary DHCP server')
+            self._dhcp_util.start_dhcp_server(dhcp_server_primary=True)
+          else:
+            result = None, 'Failed to shutdown primary DHCP server'
+        else:
+          result = False, 'Device did not respond to ping'
+      else:
+        result = None, 'Device has no current DHCP lease'
+    else:
+      LOGGER.error('Network is not ready for this test. Skipping')
+      result = None, 'Network is not ready for this test'
+    return result
 
   def _get_oui_manufacturer(self, mac_address):
     # Do some quick fixes on the format of the mac_address
