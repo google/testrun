@@ -99,7 +99,7 @@ class TLSModule(TestModule):
     elif startup_result[0] and monitor_result[0] is None:
       result = True, monitor_result[1]
     else:
-      result = None, startup_result[1] + monitor_result[1]
+      result = None, startup_result[1]
     return result
 
   def _resolve_device_ip(self):
