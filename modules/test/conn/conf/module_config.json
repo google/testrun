@@ -72,6 +72,16 @@
         "expected_behavior": "The device under test responds to an ICMP echo (ping) request."
       },
       {
+        "name": "connection.ipaddr.ip_change",
+        "description": "The device responds to a ping (ICMP echo request) to the new IP address it has received after the initial dHCP lease has expired.",
+        "expected_behavior": "If the lease expires before the client receiveds a DHCPACK, the client moves to INIT state, MUST immediately stop any other network processing and requires network initialization parameters as if the client were uninitialized.  If the client then receives a DHCPACK allocating the client its previous network addres, the client SHOULD continue network processing.  If the client is given a new network address, it MUST NOT continue using the previous network address and SHOULD notify the local users of the problem."
+      },
+      {
+        "name": "connection.ipaddr.dhcp_failover",
+        "description": "The device has requested a DHCPREQUEST/REBIND to the DHCP failover server after the primary DHCP server has been brought down.",
+        "expected_behavior": ""
+      },
+      {
         "name": "connection.ipv6_slaac",
         "description": "The device forms a valid IPv6 address as a combination of the IPv6 router prefix and the device interface identifier",
         "expected_behavior": "The device under test complies with RFC4862 and forms a valid IPv6 SLAAC address"
