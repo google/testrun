@@ -27,6 +27,7 @@ LOGGER = logger.get_logger("test_orc")
 RUNTIME_DIR = "runtime/test"
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
+DEVICE_ROOT_CERTS = "local/root_certs"
 
 
 class TestOrchestrator:
@@ -60,6 +61,9 @@ class TestOrchestrator:
     self._host_user = util.get_host_user()
     os.makedirs(RUNTIME_DIR, exist_ok=True)
     util.run_command(f"chown -R {self._host_user} {RUNTIME_DIR}")
+
+    # Setup the root_certs folder
+    os.makedirs(DEVICE_ROOT_CERTS, exist_ok=True)
 
     self._load_test_modules()
     self.build_test_modules()
