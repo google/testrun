@@ -25,3 +25,5 @@ class Device():
   model: str = None
   test_modules: str = None
   ip_addr: str = None
+  device_folder: str = None
+  max_device_reports: int = None
