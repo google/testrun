@@ -15,6 +15,7 @@
 """Provides high level management of the test orchestrator."""
 import os
 import json
+import re
 import time
 import shutil
 import docker
@@ -27,6 +28,7 @@ LOGGER = logger.get_logger("test_orc")
 RUNTIME_DIR = "runtime/test"
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
+LOG_REGEX = r'^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_'
 
 
 class TestOrchestrator:
@@ -68,48 +70,41 @@ class TestOrchestrator:
     """Stop any running tests"""
     self._stop_modules()
 
-  def run_test_modules(self, device):
+  def run_test_modules(self):
     """Iterates through each test module and starts the container."""
+
+    device = self._session.get_target_device()
     self._test_in_progress = True
     LOGGER.info(
         f"Running test modules on device with mac addr {device.mac_addr}")
     for module in self._test_modules:
-      self._run_test_module(module, device)
+      self._run_test_module(module)
     LOGGER.info("All tests complete")
 
-    self._generate_results(device)
+    self._session.stop()
+    self._generate_report()
     self._test_in_progress = False
 
-  def _generate_results(self, device):
-    results = {}
-    results["device"] = {}
-    if device.manufacturer is not None:
-      results["device"]["manufacturer"] = device.manufacturer
-    if device.model is not None:
-      results["device"]["model"] = device.model
-    results["device"]["mac_addr"] = device.mac_addr
-    for module in self._test_modules:
-      if module.enable_container and self._is_module_enabled(module, device):
-        container_runtime_dir = os.path.join(
-            self._root_path, "runtime/test/" +
-            device.mac_addr.replace(":", "") + "/" + module.name)
-        results_file = f"{container_runtime_dir}/{module.name}-result.json"
-        try:
-          with open(results_file, "r", encoding="utf-8-sig") as f:
-            module_results = json.load(f)
-            results[module.name] = module_results
-        except (FileNotFoundError, PermissionError,
-                json.JSONDecodeError) as results_error:
-          LOGGER.error(f"Error occured whilst obbtaining results for module {module.name}")
-          LOGGER.debug(results_error)
+  def _generate_report(self):
 
+    # TODO: Calculate the status result
+    # We need to know the required result of each test
+
+    report = {}
+    report["device"] = self._session.get_target_device().to_json()
+    report["started"] = self._session.get_started().strftime("%Y-%m-%d %H:%M:%S")
+    report["finished"] = self._session.get_finished().strftime("%Y-%m-%d %H:%M:%S")
+    report["status"] = self._session.get_status()
+    report["results"] = self._session.get_test_results()
     out_file = os.path.join(
         self._root_path,
-        "runtime/test/" + device.mac_addr.replace(":", "") + "/results.json")
+        "runtime/test/" +
+        self._session.get_target_device().mac_addr.replace(":", "") +
+        "/report.json")
     with open(out_file, "w", encoding="utf-8") as f:
-      json.dump(results, f, indent=2)
+      json.dump(report, f, indent=2)
     util.run_command(f"chown -R {self._host_user} {out_file}")
-    return results
+    return report
 
   def test_in_progress(self):
     return self._test_in_progress
@@ -123,8 +118,10 @@ class TestOrchestrator:
           enabled = test_modules[module.name]["enabled"]
     return enabled
 
-  def _run_test_module(self, module, device):
+  def _run_test_module(self, module):
     """Start the test container and extract the results."""
+
+    device = self._session.get_target_device()
 
     if module is None or not module.enable_container:
       return
@@ -207,10 +204,27 @@ class TestOrchestrator:
            self._session.get_status() == "In progress"):
       try:
         line = next(log_stream).decode("utf-8").strip()
-        print(line)
+        if re.search(LOG_REGEX, line):
+          print(line)
       except Exception:
         time.sleep(1)
       status = self._get_module_status(module)
+
+    # Get test results from module
+    container_runtime_dir = os.path.join(
+            self._root_path, "runtime/test/" +
+            device.mac_addr.replace(":", "") + "/" + module.name)
+    results_file = f"{container_runtime_dir}/{module.name}-result.json"
+    try:
+      with open(results_file, "r", encoding="utf-8-sig") as f:
+        module_results_json = json.load(f)
+        module_results = module_results_json['results']
+        for test_result in module_results:
+          self._session.add_test_result(test_result)
+    except (FileNotFoundError, PermissionError,
+            json.JSONDecodeError) as results_error:
+      LOGGER.error(f"Error occured whilst obbtaining results for module {module.name}")
+      LOGGER.debug(results_error)
 
     LOGGER.info("Test module " + module.name + " has finished")
 

@@ -34,7 +34,8 @@ class TestRunSession():
     self._device = None
     self._started = None
     self._finished = None
-    self._tests = []
+    self._results = []
+    self._runtime_params = []
 
     self._config_file = config_file
 
@@ -52,6 +53,9 @@ class TestRunSession():
 
   def get_finished(self):
     return self._finished
+
+  def stop(self):
+    self._finished = datetime.datetime.now()
 
   def _get_default_config(self):
     return {
@@ -105,6 +109,12 @@ class TestRunSession():
   def get_log_level(self):
     return self._config.get(LOG_LEVEL_KEY)
 
+  def get_runtime_params(self):
+    return self._runtime_params
+
+  def add_runtime_param(self, param):
+    self._runtime_params.append(param)
+
   def get_device_interface(self):
     return self._config.get(NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
 
@@ -149,13 +159,16 @@ class TestRunSession():
   def set_status(self, status):
     self._status = status
 
-  def get_tests(self):
-    return self._tests
+  def get_test_results(self):
+    return self._results
+
+  def add_test_result(self, test_result):
+    self._results.append(test_result)
 
   def reset(self):
     self.set_status('Idle')
     self.set_target_device(None)
-    self._tests = []
+    self._results = []
     self._started = None
     self._finished = None
 
@@ -165,5 +178,5 @@ class TestRunSession():
       'device': self.get_target_device(),
       'started': self.get_started(),
       'finished': self.get_finished(),
-      'tests': self.get_tests()
+      'results': self.get_test_results()
     }

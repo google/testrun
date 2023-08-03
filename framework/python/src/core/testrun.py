@@ -80,7 +80,14 @@ class TestRun:  # pylint: disable=too-few-public-methods
     # Catch any exit signals
     self._register_exits()
 
+    # Create session
     self._session = TestRunSession(config_file=self._config_file)
+
+    if single_intf:
+      self._session.add_runtime_param('single_intf')
+    if net_only:
+      self._session.add_runtime_param('net_only')
+
     self._load_all_devices()
 
     self._net_orc = net_orc.NetworkOrchestrator(
@@ -92,6 +99,12 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self._net_orc)
 
     if self._no_ui:
+      # Check Test Run is able to start
+      if self.get_net_orc().check_config() is False:
+        return
+
+      # Any additional checks that need to be performed go here
+
       self.start()
     else:
       self._api = Api(self)
@@ -176,7 +189,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
           self.get_net_orc().monitor_in_progress()):
           time.sleep(5)
 
-      self.stop()
+    self.stop()
 
   def stop(self, kill=False):
     self._set_status('Stopping')
@@ -238,27 +251,26 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def _device_discovered(self, mac_addr):
 
-    if self.get_session().get_target_device() is not None:
-      if mac_addr != self.get_session().get_target_device().mac_addr:
-        # Ignore discovered device
+    device = self.get_session().get_target_device()
+
+    if device is not None:
+      if mac_addr != device.mac_addr:
+        # Ignore discovered device because it is not the target device
+        return
+    else:
+      device = self.get_device(mac_addr)
+      if device is None:
         return
 
-    self._set_status('Identifying device')
-    device = self.get_device(mac_addr)
-    if device is not None:
-      LOGGER.info(
+      self.get_session().set_target_device(device)
+
+    LOGGER.info(
         f'Discovered {device.manufacturer} {device.model} on the network')
-    else:
-      device = Device(mac_addr=mac_addr)
-      self._devices.append(device)
-      LOGGER.info(
-        f'A new device has been discovered with mac address {mac_addr}')
 
   def _device_stable(self, mac_addr):
-    device = self.get_device(mac_addr)
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
     self._set_status('In progress')
-    self._test_orc.run_test_modules(device)
+    self._test_orc.run_test_modules()
     self._set_status('Complete')
 
   def _set_status(self, status):

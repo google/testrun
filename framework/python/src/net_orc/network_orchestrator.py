@@ -90,10 +90,20 @@ class NetworkOrchestrator:
 
   def check_config(self):
 
-    if not util.interface_exists(self._session.get_internet_interface()) or not util.interface_exists(
-        self._session.get_device_interface()):
+    interfaces_ready = True
+    if 'single_intf' in self._session.get_runtime_params():
+      # Check for device interface only
+      interfaces_ready = util.interface_exists(
+        self._session.get_device_interface())
+    else:
+      # Check for both
+      interfaces_ready = util.interface_exists(
+        self._session.get_device_interface()) and util.interface_exists(
+        self._session.get_internet_interface())
+
+    if not interfaces_ready:
       LOGGER.error('Configured interfaces are not ready for use. ' +
-                   'Ensure both interfaces are connected.')
+                   'Ensure required interfaces are connected.')
       return False
     return True
 
@@ -293,11 +303,9 @@ class NetworkOrchestrator:
   def create_net(self):
     LOGGER.info('Creating baseline network')
 
-    if self._single_intf:
-      self._ci_pre_network_create()
-
-    # Remove IP from internet adapter
-    util.run_command('ifconfig ' + self._session.get_internet_interface() + ' 0.0.0.0')
+    # TODO: This is not just for CI
+    #if self._single_intf:
+      #self._ci_pre_network_create()
 
     # Setup the virtual network
     if not self._ovs.create_baseline_net(verify=True):
@@ -305,8 +313,9 @@ class NetworkOrchestrator:
       self.stop()
       sys.exit(1)
 
-    if self._single_intf:
-      self._ci_post_network_create()
+    # TODO: This is not just for CI
+    #if self._single_intf:
+      #self._ci_post_network_create()
 
     self._create_private_net()
 
