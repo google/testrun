@@ -76,13 +76,17 @@ class OVSControl:
     # Verify the OVS setup of the virtual network
     LOGGER.debug('Validating baseline network')
 
+    dev_bridge = True
+    int_bridge = True
+
     # Verify the device bridge
     dev_bridge = self.verify_bridge(DEVICE_BRIDGE, [self._session.get_device_interface()])
     LOGGER.debug('Device bridge verified: ' + str(dev_bridge))
 
     # Verify the internet bridge
-    int_bridge = self.verify_bridge(INTERNET_BRIDGE, [self._session.get_internet_interface()])
-    LOGGER.debug('Internet bridge verified: ' + str(int_bridge))
+    if 'single_intf' not in self._session.get_runtime_params():
+      int_bridge = self.verify_bridge(INTERNET_BRIDGE, [self._session.get_internet_interface()])
+      LOGGER.debug('Internet bridge verified: ' + str(int_bridge))
 
     return dev_bridge and int_bridge
 
@@ -103,21 +107,19 @@ class OVSControl:
   def create_baseline_net(self, verify=True):
     LOGGER.debug('Creating baseline network')
 
-    # Remove IP from internet adapter
-    self.set_interface_ip(interface=self._session.get_internet_interface(), ip_addr='0.0.0.0')
-
     # Create data plane
     self.add_bridge(DEVICE_BRIDGE)
 
     # Create control plane
     self.add_bridge(INTERNET_BRIDGE)
 
-    # Remove IP from internet adapter
-    self.set_interface_ip(self._session.get_internet_interface(), '0.0.0.0')
-
     # Add external interfaces to data and control plane
     self.add_port(self._session.get_device_interface(), DEVICE_BRIDGE)
-    self.add_port(self._session.get_internet_interface(), INTERNET_BRIDGE)
+
+    # Remove IP from internet adapter
+    if not 'single_intf' in self._session.get_runtime_params():
+      self.set_interface_ip(interface=self._session.get_internet_interface(), ip_addr='0.0.0.0')
+      self.add_port(self._session.get_internet_interface(), INTERNET_BRIDGE)
 
     # Enable forwarding of eapol packets
     self.add_flow(bridge_name=DEVICE_BRIDGE,
