@@ -108,11 +108,14 @@ class Api:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid JSON received")
 
-    if "device" not in body_json or "mac_addr" not in body_json["device"]:
+    if "device" not in body_json or not (
+      "mac_addr" in body_json["device"] and
+      "firmware" in body_json["device"]):
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid request received")
 
     device = self._session.get_device(body_json["device"]["mac_addr"])
+    device.firmware = body_json["device"]["firmware"]
 
     # Check Test Run is not already running
     if self._test_run.get_session().get_status() != "Idle":
@@ -123,12 +126,13 @@ class Api:
     # Check if requested device is known in the device repository
     if device is None:
       response.status_code = status.HTTP_404_NOT_FOUND
-      return self._generate_msg(False, "A device with that MAC address could not be found")
+      return self._generate_msg(False,
+                                "A device with that MAC address could not be found")
 
     # Check Test Run is able to start
     if self._test_run.get_net_orc().check_config() is False:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-      return self._generate_msg(False, "Configured interfaces are not ready for use. Ensure both interfaces are connected.")
+      return self._generate_msg(False,"Configured interfaces are not ready for use. Ensure required interfaces are connected.")
 
     self._test_run.get_session().set_target_device(device)
     LOGGER.info(f"Starting Test Run with device target {device.manufacturer} {device.model} with MAC address {device.mac_addr}")

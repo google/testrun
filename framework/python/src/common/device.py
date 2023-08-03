@@ -25,5 +25,15 @@ class Device():
   model: str = None
   test_modules: str = None
   ip_addr: str = None
+  firmware: str = None
   device_folder: str = None
   max_device_reports: int = None
+
+  def to_json(self):
+    device_json = {}
+    device_json['mac_addr'] = self.mac_addr
+    device_json['manufacturer'] = self.manufacturer
+    device_json['model'] = self.model
+    if self.firmware is not None:
+      device_json['firmware'] = self.firmware
+    return device_json
