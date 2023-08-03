@@ -90,11 +90,30 @@ class NetworkOrchestrator:
 
   def check_config(self):
 
-    if not util.interface_exists(self._session.get_internet_interface()) or not util.interface_exists(
-        self._session.get_device_interface()):
-      LOGGER.error('Configured interfaces are not ready for use. ' +
-                   'Ensure both interfaces are connected.')
-      return False
+    device_interface_ready = util.interface_exists(
+        self._session.get_device_interface())
+    internet_interface_ready = util.interface_exists(
+        self._session.get_internet_interface())
+
+    if 'single_intf' in self._session.get_runtime_params():
+      # Check for device interface only
+      if not device_interface_ready:
+        LOGGER.error('Device interface is not ready for use. ' +
+                     'Ensure device interface is connected.')
+        return False
+    else:
+      if not device_interface_ready and not internet_interface_ready:
+        LOGGER.error('Both device and internet interfaces are not ready for use. ' +
+                     'Ensure both interfaces are connected.')
+        return False
+      elif not device_interface_ready:
+        LOGGER.error('Device interface is not ready for use. ' +
+                     'Ensure device interface is connected.')
+        return False
+      elif not internet_interface_ready:
+        LOGGER.error('Internet interface is not ready for use. ' +
+                     'Ensure internet interface is connected.')
+        return False
     return True
 
   def start_network(self):
@@ -310,11 +329,9 @@ class NetworkOrchestrator:
   def create_net(self):
     LOGGER.info('Creating baseline network')
 
-    if self._single_intf:
-      self._ci_pre_network_create()
-
-    # Remove IP from internet adapter
-    util.run_command('ifconfig ' + self._session.get_internet_interface() + ' 0.0.0.0')
+    # TODO: This is not just for CI
+    #if self._single_intf:
+      #self._ci_pre_network_create()
 
     # Setup the virtual network
     if not self._ovs.create_baseline_net(verify=True):
@@ -322,8 +339,9 @@ class NetworkOrchestrator:
       self.stop()
       sys.exit(1)
 
-    if self._single_intf:
-      self._ci_post_network_create()
+    # TODO: This is not just for CI
+    #if self._single_intf:
+      #self._ci_post_network_create()
 
     self._create_private_net()
 
