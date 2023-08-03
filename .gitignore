@@ -5,4 +5,4 @@ error
 pylint.out
 __pycache__/
 build/
-testing/unit_test/temp
+testing/unit_test/temp/
