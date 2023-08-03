@@ -90,21 +90,30 @@ class NetworkOrchestrator:
 
   def check_config(self):
 
-    interfaces_ready = True
-    if 'single_intf' in self._session.get_runtime_params():
-      # Check for device interface only
-      interfaces_ready = util.interface_exists(
+    device_interface_ready = util.interface_exists(
         self._session.get_device_interface())
-    else:
-      # Check for both
-      interfaces_ready = util.interface_exists(
-        self._session.get_device_interface()) and util.interface_exists(
+    internet_interface_ready = util.interface_exists(
         self._session.get_internet_interface())
 
-    if not interfaces_ready:
-      LOGGER.error('Configured interfaces are not ready for use. ' +
-                   'Ensure required interfaces are connected.')
-      return False
+    if 'single_intf' in self._session.get_runtime_params():
+      # Check for device interface only
+      if not device_interface_ready:
+        LOGGER.error('Device interface is not ready for use. ' +
+                     'Ensure device interface is connected.')
+        return False
+    else:
+      if not device_interface_ready and not internet_interface_ready:
+        LOGGER.error('Both device and internet interfaces are not ready for use. ' +
+                     'Ensure both interfaces are connected.')
+        return False
+      elif not device_interface_ready:
+        LOGGER.error('Device interface is not ready for use. ' +
+                     'Ensure device interface is connected.')
+        return False
+      elif not internet_interface_ready:
+        LOGGER.error('Internet interface is not ready for use. ' +
+                     'Ensure internet interface is connected.')
+        return False
     return True
 
   def start_network(self):
