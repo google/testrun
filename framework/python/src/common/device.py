@@ -26,6 +26,8 @@ class Device():
   test_modules: str = None
   ip_addr: str = None
   firmware: str = None
+  device_folder: str = None
+  max_device_reports: int = None
 
   def to_json(self):
     device_json = {}

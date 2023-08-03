@@ -25,6 +25,7 @@ RUNTIME_KEY = 'runtime'
 MONITOR_PERIOD_KEY = 'monitor_period'
 STARTUP_TIMEOUT_KEY = 'startup_timeout'
 LOG_LEVEL_KEY = 'log_level'
+MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
 class TestRunSession():
   """Represents the current session of Test Run."""
@@ -66,7 +67,8 @@ class TestRunSession():
       'log_level': 'INFO',
       'startup_timeout': 60,
       'monitor_period': 30,
-      'runtime': 120
+      'runtime': 120,
+      'max_device_reports': 5
     }
 
   def get_config(self):
@@ -99,6 +101,9 @@ class TestRunSession():
       if LOG_LEVEL_KEY in config_file_json:
         self._config[LOG_LEVEL_KEY] = config_file_json.get(LOG_LEVEL_KEY)
 
+      if MAX_DEVICE_REPORTS_KEY in config_file_json:
+        self._config[MAX_DEVICE_REPORTS_KEY] = config_file_json.get(MAX_DEVICE_REPORTS_KEY)
+
   def _save_config(self):
     with open(self._config_file, 'w', encoding='utf-8') as f:
       f.write(json.dumps(self._config, indent=2))
@@ -126,6 +131,9 @@ class TestRunSession():
 
   def get_startup_timeout(self):
     return self._config.get(STARTUP_TIMEOUT_KEY)
+  
+  def get_max_device_reports(self):
+    return self._config.get(MAX_DEVICE_REPORTS_KEY)
 
   def set_config(self, config_json):
     self._config = config_json
