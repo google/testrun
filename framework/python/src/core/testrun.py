@@ -90,8 +90,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
       single_intf = self._single_intf)
     self._test_orc = test_orc.TestOrchestrator(
       self._session,
-      self._net_orc,
-      config_file=config_file)
+      self._net_orc)
 
     if self._no_ui:
       self.start()
@@ -114,7 +113,15 @@ class TestRun:  # pylint: disable=too-few-public-methods
     util.run_command(f'chown -R {util.get_host_user()} {device_dir}')
 
     for device_folder in os.listdir(device_dir):
-      with open(os.path.join(device_dir, device_folder, DEVICE_CONFIG),
+
+      device_config_file_path = os.path.join(device_dir,
+                                             device_folder,
+                                             DEVICE_CONFIG)
+      if not os.path.exists(device_config_file_path):
+        LOGGER.error(f'Device configuration file missing from device {device_folder}')
+        continue
+
+      with open(device_config_file_path,
                 encoding='utf-8') as device_config_file:
         device_config_json = json.load(device_config_file)
 
@@ -130,7 +137,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
                         model=device_model,
                         mac_addr=mac_addr,
                         test_modules=test_modules,
-                        max_device_reports=max_device_reports)
+                        max_device_reports=max_device_reports,
+                        device_folder=device_folder)
         self.get_session().add_device(device)
 
         self.get_session().add_device(device)

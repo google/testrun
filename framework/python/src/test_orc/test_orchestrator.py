@@ -17,7 +17,6 @@ import json
 import time
 import shutil
 import docker
-import sys
 from datetime import datetime
 from docker.types import Mount
 from common import logger, util
@@ -28,22 +27,17 @@ LOGGER = logger.get_logger("test_orc")
 RUNTIME_DIR = "runtime/test"
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
-CONFIG_FILE = "local/system.json"
-EXAMPLE_CONFIG_FILE = "local/system.json.example"
-MAX_DEVICE_REPORTS_KEY = "max_device_reports"
-DEFAULT_MAX_DEVICE_REPORTS = 5
+SAVED_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 
 
 class TestOrchestrator:
   """Manages and controls the test modules."""
 
-  def __init__(self, session, net_orc, config_file=CONFIG_FILE):
+  def __init__(self, session, net_orc):
     self._test_modules = []
-    self._module_config = None
     self._session = session
     self._net_orc = net_orc
     self._test_in_progress = False
-    self._max_device_reports = DEFAULT_MAX_DEVICE_REPORTS
     self._path = os.path.dirname(
         os.path.dirname(
             os.path.dirname(
@@ -53,8 +47,6 @@ class TestOrchestrator:
         os.path.dirname(
             os.path.dirname(
                 os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
-
-    self.load_config(config_file)
 
   def start(self):
     LOGGER.debug("Starting test orchestrator")
@@ -82,24 +74,30 @@ class TestOrchestrator:
 
     self._generate_results(device)
     self._timestamp_results(device)
-    LOGGER.info("Cleaning old test results...")
+    LOGGER.debug("Cleaning old test results...")
     self._cleanup_old_test_results(device)
-    LOGGER.info("Old test results cleaned")
+    LOGGER.debug("Old test results cleaned")
     self._test_in_progress = False
 
   def _cleanup_old_test_results(self, device):
+
     if device.max_device_reports is not None:
       max_device_reports = device.max_device_reports
     else:
-      max_device_reports = self._max_device_reports
+      max_device_reports = self._session.get_max_device_reports()
+
     completed_results_dir = os.path.join(
-        self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
-        "/completed_tests/")
+      self._root_path,
+      SAVED_DEVICE_REPORTS.replace("{device_folder}",
+                                   device.device_folder)
+                                  )
+
     completed_tests = os.listdir(completed_results_dir)
     cur_test_count = len(completed_tests)
     if cur_test_count > max_device_reports:
       LOGGER.debug("Current device has more than max tests results allowed: " +
                    str(cur_test_count) + ">" + str(max_device_reports))
+
       # Find and delete the oldest test
       oldest_test = self._find_oldest_test(completed_results_dir)
       if oldest_test is not None:
@@ -126,38 +124,56 @@ class TestOrchestrator:
       return None
 
   def _timestamp_results(self, device):
+
     # Define the current device results directory
     cur_results_dir = os.path.join(
         self._root_path,
-        "runtime/test/" + device.mac_addr.replace(":", "") + "/current_test")
+        RUNTIME_DIR,
+        device.mac_addr.replace(":", "")
+    )
+
     # Define the destination results directory with timestamp
     cur_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     completed_results_dir = os.path.join(
-        self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
-        "/completed_tests/" + cur_time)
+      SAVED_DEVICE_REPORTS.replace("{device_folder}",
+                                   device.device_folder),
+      cur_time)
+
     # Copy the results to the timestamp directory
     # leave current copy in place for quick reference to
     # most recent test
     shutil.copytree(cur_results_dir, completed_results_dir)
+    util.run_command(f"chown -R {self._host_user} '{completed_results_dir}'")
 
   def _generate_results(self, device):
-    results = {}
-    results["device"] = {}
+
+    report = {}
+
+    report["device"] = {}
     if device.manufacturer is not None:
-      results["device"]["manufacturer"] = device.manufacturer
+      report["device"]["manufacturer"] = device.manufacturer
     if device.model is not None:
-      results["device"]["model"] = device.model
-    results["device"]["mac_addr"] = device.mac_addr
+      report["device"]["model"] = device.model
+    report["device"]["mac_addr"] = device.mac_addr
+
+    results = []
+
     for module in self._test_modules:
       if module.enable_container and self._is_module_enabled(module, device):
+
         container_runtime_dir = os.path.join(
-            self._root_path, "runtime/test/" +
-            device.mac_addr.replace(":", "") + "/current_test/" + module.name)
+          self._root_path,
+          RUNTIME_DIR,
+          device.mac_addr.replace(":", ""),
+          module.name
+        )
+
         results_file = f"{container_runtime_dir}/{module.name}-result.json"
         try:
           with open(results_file, "r", encoding="utf-8-sig") as f:
             module_results = json.load(f)
-            results[module.name] = module_results
+            for result in module_results["results"]:
+              results.append(result)
         except (FileNotFoundError, PermissionError,
                 json.JSONDecodeError) as results_error:
           LOGGER.error(
@@ -166,13 +182,19 @@ class TestOrchestrator:
           )
           LOGGER.debug(results_error)
 
+    report["results"] = results
+
     out_file = os.path.join(
-        self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
-        "/current_test/results.json")
+      self._root_path,
+      RUNTIME_DIR,
+      device.mac_addr.replace(":", ""),
+      "report.json"
+    )
+
     with open(out_file, "w", encoding="utf-8") as f:
-      json.dump(results, f, indent=2)
+      json.dump(report, f, indent=2)
     util.run_command(f"chown -R {self._host_user} {out_file}")
-    return results
+    return report
 
   def test_in_progress(self):
     return self._test_in_progress
@@ -198,21 +220,31 @@ class TestOrchestrator:
     LOGGER.info("Running test module " + module.name)
 
     try:
+
+      device_test_dir = os.path.join(
+        self._root_path,
+        RUNTIME_DIR,
+        device.mac_addr.replace(":", "")
+      )
+
       container_runtime_dir = os.path.join(
-          self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
-          "/current_test/" + module.name)
+        device_test_dir,
+        module.name
+      )
       os.makedirs(container_runtime_dir, exist_ok=True)
 
       network_runtime_dir = os.path.join(self._root_path, "runtime/network")
 
       device_startup_capture = os.path.join(
-          self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
-          "/current_test/startup.pcap")
+        device_test_dir,
+        "startup.pcap"
+      )
       util.run_command(f"chown -R {self._host_user} {device_startup_capture}")
 
       device_monitor_capture = os.path.join(
-          self._root_path, "runtime/test/" + device.mac_addr.replace(":", "") +
-          "/current_test/monitor.pcap")
+        device_test_dir,
+        "monitor.pcap"
+      )
       util.run_command(f"chown -R {self._host_user} {device_monitor_capture}")
 
       client = docker.from_env()
@@ -301,28 +333,6 @@ class TestOrchestrator:
       LOGGER.error("Failed to resolve container")
       LOGGER.error(error)
     return container
-
-  def import_config(self, json_config):
-    if MAX_DEVICE_REPORTS_KEY in json_config:
-      self._max_device_reports = json_config[MAX_DEVICE_REPORTS_KEY]
-
-  def load_config(self, config_file=None):
-    if config_file is None:
-      # If not defined, use relative pathing to local file
-      self._config_file = os.path.join(self._path, CONFIG_FILE)
-    else:
-      # If defined, use as provided
-      self._config_file = config_file
-
-    if not os.path.isfile(self._config_file):
-      LOGGER.error("Configuration file is not present at " + config_file)
-      LOGGER.info("An example is present in " + EXAMPLE_CONFIG_FILE)
-      sys.exit(1)
-
-    LOGGER.info("Loading config file: " + os.path.abspath(self._config_file))
-    with open(self._config_file, encoding="UTF-8") as config_json_file:
-      config_json = json.load(config_json_file)
-      self.import_config(config_json)
 
   def _load_test_modules(self):
     """Load network modules from module_config.json."""

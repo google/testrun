@@ -154,21 +154,25 @@ class NetworkOrchestrator:
       # Ignore device if not registered
       return
 
-    device_runtime_dir = os.path.join(RUNTIME_DIR, TEST_DIR,
-                                      mac_addr.replace(':', '') + '/current_test')
-    
+    device_runtime_dir = os.path.join(RUNTIME_DIR,
+                                      TEST_DIR,
+                                      mac_addr.replace(':', '')
+                                    )
+
     # Cleanup any old current test files
     shutil.rmtree(device_runtime_dir, ignore_errors=True)
     os.makedirs(device_runtime_dir, exist_ok=True)
 
     util.run_command(f'chown -R {self._host_user} {device_runtime_dir}')
-    
+
     packet_capture = sniff(iface=self._session.get_device_interface(),
                            timeout=self._session.get_startup_timeout(),
                            stop_filter=self._device_has_ip)
     wrpcap(
-        os.path.join(RUNTIME_DIR, TEST_DIR, device.mac_addr.replace(':', ''),
-                     'current_test/startup.pcap'), packet_capture)
+        os.path.join(device_runtime_dir,
+                     'startup.pcap'
+                    ),
+                    packet_capture)
 
     if device.ip_addr is None:
       LOGGER.info(
@@ -205,14 +209,23 @@ class NetworkOrchestrator:
         callback the steady state method for this device."""
     LOGGER.info(f'Monitoring device with mac addr {device.mac_addr} '
                 f'for {str(self._session.get_monitor_period())} seconds')
+    
+    device_runtime_dir = os.path.join(RUNTIME_DIR,
+                                      TEST_DIR,
+                                      device.mac_addr.replace(':', '')
+                                    )
 
     packet_capture = sniff(iface=self._session.get_device_interface(), timeout=self._session.get_monitor_period())
     wrpcap(
-        os.path.join(RUNTIME_DIR, TEST_DIR, device.mac_addr.replace(':', ''),
-                     'current_test/monitor.pcap'), packet_capture)
+        os.path.join(device_runtime_dir,
+                     'monitor.pcap'
+                    ),
+                    packet_capture)
 
     self._monitor_in_progress = False
-    self.get_listener().call_callback(NetworkEvent.DEVICE_STABLE, device.mac_addr)
+    self.get_listener().call_callback(
+      NetworkEvent.DEVICE_STABLE,
+      device.mac_addr)
 
   def _check_network_services(self):
     LOGGER.debug('Checking network modules...')
