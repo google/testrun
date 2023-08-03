@@ -102,7 +102,7 @@ class TestOrchestrator:
     report["results"] = self._session.get_test_results()
     out_file = os.path.join(
         self._root_path,
-        RUNTIME_DIR +
+        RUNTIME_DIR,
         self._session.get_target_device().mac_addr.replace(":", ""),
         "report.json")
     
