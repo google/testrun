@@ -28,7 +28,7 @@ LOGGER = logger.get_logger("test_orc")
 RUNTIME_DIR = "runtime/test"
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
-LOG_REGEX = r'^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_'
+LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
 SAVED_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
 
@@ -79,7 +79,7 @@ class TestOrchestrator:
     for module in self._test_modules:
       self._run_test_module(module)
     LOGGER.info("All tests complete")
-    
+
     self._session.stop()
     self._generate_report()
     self._test_in_progress = False
@@ -105,7 +105,7 @@ class TestOrchestrator:
         RUNTIME_DIR,
         self._session.get_target_device().mac_addr.replace(":", ""),
         "report.json")
-    
+
     with open(out_file, "w", encoding="utf-8") as f:
       json.dump(report, f, indent=2)
     util.run_command(f"chown -R {self._host_user} {out_file}")
