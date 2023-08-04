@@ -6,6 +6,7 @@
       "description": "Connection tests"
     },
     "network": true,
+    "interface_control": true,
     "docker": {
       "depends_on": "base",
       "enable_container": true,
