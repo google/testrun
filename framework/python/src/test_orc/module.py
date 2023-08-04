@@ -31,6 +31,7 @@ class TestModule:  # pylint: disable=too-few-public-methods,too-many-instance-at
   image_name: str = None
   enable_container: bool = True
   network: bool = True
+  interface_control: bool = False
 
   timeout: int = 60
 

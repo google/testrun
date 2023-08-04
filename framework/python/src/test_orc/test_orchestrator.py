@@ -230,17 +230,7 @@ class TestOrchestrator:
       )
       util.run_command(f"chown -R {self._host_user} {device_monitor_capture}")
 
-      client = docker.from_env()
-
-      module.container = client.containers.run(
-          module.image_name,
-          auto_remove=True,
-          cap_add=["NET_ADMIN"],
-          name=module.container_name,
-          hostname=module.container_name,
-          privileged=True,
-          detach=True,
-          mounts=[
+      mounts=[
               Mount(target="/runtime/output",
                     source=container_runtime_dir,
                     type="bind"),
@@ -256,14 +246,48 @@ class TestOrchestrator:
                     source=device_monitor_capture,
                     type="bind",
                     read_only=True),
-          ],
-          environment={
+          ]
+
+      env_vars ={
               "HOST_USER": self._host_user,
               "DEVICE_MAC": device.mac_addr,
               "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
               "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
               "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
-          })
+          }
+
+      # If a container needs interface control, get extra mount
+      # points and make the file system writable to allow
+      # for interface control functions
+      if module.interface_control:
+        dev_mount = Mount(target="/sys/bus/usb/devices",
+                    source="/sys/bus/usb/devices",
+                    type="bind",
+                    read_only=False)
+        mounts.append(dev_mount)
+        # Resolve and set extra env vars that contain the
+        # device ids for the usb interfaces
+        iface_dev_ids = self._net_orc.get_usb_interface_device_ids()
+        for iface in iface_dev_ids:
+          if iface["name"] == self._session.get_device_interface():
+            var_key = "DEV_IFACE_ID"
+          else:
+            var_key = "INT_IFACE_ID"
+          var_value = iface['id']
+          env_vars.update({var_key:var_value})
+
+      client = docker.from_env()
+
+      module.container = client.containers.run(
+          module.image_name,
+          auto_remove=True,
+          cap_add=["NET_ADMIN"],
+          name=module.container_name,
+          hostname=module.container_name,
+          privileged=True,
+          detach=True,
+          mounts=mounts,
+          environment=env_vars)
     except (docker.errors.APIError,
             docker.errors.ContainerError) as container_error:
       LOGGER.error("Test module " + module.name + " has failed to start")
@@ -378,6 +402,10 @@ class TestOrchestrator:
     if "enable_container" in module_json["config"]["docker"]:
       module.enable_container = module_json["config"]["docker"][
           "enable_container"]
+
+    # Determine if this container needs access to modifying the interfaces
+    if "interface_control" in module_json["config"]:
+      module.interface_control = module_json["config"]["interface_control"]
 
     if "depends_on" in module_json["config"]["docker"]:
       depends_on_module = module_json["config"]["docker"]["depends_on"]

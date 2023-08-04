@@ -21,6 +21,7 @@ from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
 from dhcp2.client import Client as DHCPClient2
 from dhcp_util import DHCPUtil
+from interface_control import InterfaceControl
 
 LOG_NAME = 'test_connection'
 LOGGER = None
@@ -41,7 +42,8 @@ class ConnectionModule(TestModule):
     self.dhcp1_client = DHCPClient1()
     self.dhcp2_client = DHCPClient2()
     self._dhcp_util = DHCPUtil(self.dhcp1_client, self.dhcp2_client, LOGGER)
-
+    self._iface_control = InterfaceControl()
+    
     # ToDo: Move this into some level of testing, leave for
     # reference until tests are implemented with these calls
     # response = self.dhcp1_client.add_reserved_lease(
@@ -68,6 +70,36 @@ class ConnectionModule(TestModule):
 
     # response = self.dhcp1_client.set_dhcp_range('10.10.10.20','10.10.10.30')
     # print("Set Range: " + str(response))
+
+  def _connection_dhcp_disconnect(self):
+    LOGGER.info('Running connection.dhcp_disconnect')
+    result = []
+    lease = self._dhcp_util.get_cur_lease(self._device_mac)
+    if lease is not None:
+      LOGGER.info('Current device lease resolved: ' + str(lease))
+      if self._dhcp_util.is_lease_active(lease):
+        if self._iface_control.power_off_interface('dev'):
+          LOGGER.info('Interface powered off')
+          self._dhcp_util.wait_for_lease_expire(lease)
+          if self._iface_control.power_off_interface('dev'):
+            LOGGER.info('Interface powered on')
+            if self._dhcp_util.get_new_lease(self._device_mac,
+                                             dhcp_server_primary=True):
+              if self._dhcp_util.is_lease_active(lease):
+                result = True, ('New server lease confirmed active in device')
+              else:
+                result = False, 'Could not validate lease is active in device'
+            else:
+              result = False, ('Device did not recieve a new lease after disconnect and reconnect')
+        else:
+          LOGGER.info("Interface could not be powered off. Skipping")
+          result = None, 'Interface could not be powered off. Skipping'
+      else:
+        result = False, 'Device did not respond to ping'
+    else:
+        result = None, 'Device has no current DHCP lease'
+
+    return result
 
   def _connection_private_address(self, config):
     LOGGER.info('Running connection.private_address')

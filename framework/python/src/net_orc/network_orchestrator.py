@@ -456,6 +456,30 @@ class NetworkOrchestrator:
         return net_module
     return None
 
+  def get_usb_interface_device_ids(self):
+    ifaces = []
+    dev_iface = self._session.get_device_interface()
+    int_iface = self._session.get_internet_interface()
+    dev_iface_id = self._get_usb_interface_device_id(dev_iface)
+    int_iface_id = self._get_usb_interface_device_id(int_iface)
+    if dev_iface_id is not None:
+      ifaces.append({"name":dev_iface,"id":dev_iface_id})
+    if int_iface_id is not None:
+      ifaces.append({"name":int_iface,"id":int_iface_id})
+    return ifaces
+
+  # Resolve the interface device id if it is a usb adapter or
+  # return None if it is not found or not a usb device
+  def _get_usb_interface_device_id(self, interface_name):
+    result = util.run_command('ls -l /sys/class/net/'+interface_name+'/device')
+    device_id = result[0].split('/')[-1].strip()
+    if device_id:
+      device_file = "/sys/bus/usb/devices/" + device_id
+      if os.path.exists(device_file):
+        return device_id
+    else:
+      return None
+
   def _start_network_service(self, net_module):
 
     LOGGER.debug('Starting net service ' + net_module.display_name)

@@ -13,6 +13,11 @@
     },
     "tests": [
       {
+        "name": "connection.dhcp.disconnect",
+        "description": "The device under test has received an IP address from the DHCP server and responds to an ICMP echo (ping) request",
+        "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request."
+      },
+      {
         "name": "connection.dhcp_address",
         "description": "The device under test has received an IP address from the DHCP server and responds to an ICMP echo (ping) request",
         "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request."
