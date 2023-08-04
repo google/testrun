@@ -103,7 +103,7 @@ class NetworkOrchestrator:
         return False
     else:
       if not device_interface_ready and not internet_interface_ready:
-        LOGGER.error('Both device and internet interfaces are not ready for use. ' +
+        LOGGER.error('Both device and internet interfaces are not ready for use. '
                      'Ensure both interfaces are connected.')
         return False
       elif not device_interface_ready:
@@ -228,7 +228,7 @@ class NetworkOrchestrator:
         callback the steady state method for this device."""
     LOGGER.info(f'Monitoring device with mac addr {device.mac_addr} '
                 f'for {str(self._session.get_monitor_period())} seconds')
-    
+   
     device_runtime_dir = os.path.join(RUNTIME_DIR,
                                       TEST_DIR,
                                       device.mac_addr.replace(':', '')
@@ -463,9 +463,9 @@ class NetworkOrchestrator:
     dev_iface_id = self._get_usb_interface_device_id(dev_iface)
     int_iface_id = self._get_usb_interface_device_id(int_iface)
     if dev_iface_id is not None:
-      ifaces.append({"name":dev_iface,"id":dev_iface_id})
+      ifaces.append({'name':dev_iface,'id':dev_iface_id})
     if int_iface_id is not None:
-      ifaces.append({"name":int_iface,"id":int_iface_id})
+      ifaces.append({'name':int_iface,'id':int_iface_id})
     return ifaces
 
   # Resolve the interface device id if it is a usb adapter or
@@ -474,7 +474,7 @@ class NetworkOrchestrator:
     result = util.run_command('ls -l /sys/class/net/'+interface_name+'/device')
     device_id = result[0].split('/')[-1].strip()
     if device_id:
-      device_file = "/sys/bus/usb/devices/" + device_id
+      device_file = '/sys/bus/usb/devices/' + device_id
       if os.path.exists(device_file):
         return device_id
     else:

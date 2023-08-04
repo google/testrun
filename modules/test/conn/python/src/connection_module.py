@@ -43,7 +43,7 @@ class ConnectionModule(TestModule):
     self.dhcp2_client = DHCPClient2()
     self._dhcp_util = DHCPUtil(self.dhcp1_client, self.dhcp2_client, LOGGER)
     self._iface_control = InterfaceControl()
-    
+
     # ToDo: Move this into some level of testing, leave for
     # reference until tests are implemented with these calls
     # response = self.dhcp1_client.add_reserved_lease(
@@ -90,10 +90,11 @@ class ConnectionModule(TestModule):
               else:
                 result = False, 'Could not validate lease is active in device'
             else:
-              result = False, ('Device did not recieve a new lease after disconnect and reconnect')
+              result = False, ('Device did not recieve a new lease after'
+              ' disconnect and reconnect')
         else:
-          LOGGER.info("Interface could not be powered off. Skipping")
-          result = None, 'Interface could not be powered off. Skipping'
+          LOGGER.info('Interface could not be powered off.')
+          result = None, 'Interface could not be powered off.'
       else:
         result = False, 'Device did not respond to ping'
     else:
@@ -225,7 +226,7 @@ class ConnectionModule(TestModule):
         result = None, 'Device has no current DHCP lease'
       # Restore the network
       self._dhcp_util.restore_failover_dhcp_server()
-      LOGGER.info("Waiting 30 seconds for reserved lease to expire")
+      LOGGER.info('Waiting 30 seconds for reserved lease to expire')
       time.sleep(30)
       self._dhcp_util.get_new_lease(self._device_mac)
     else:

@@ -79,7 +79,7 @@ class TestOrchestrator:
     for module in self._test_modules:
       self._run_test_module(module)
     LOGGER.info("All tests complete")
-    
+
     self._session.stop()
     self._generate_report()
     self._test_in_progress = False
@@ -105,7 +105,7 @@ class TestOrchestrator:
         RUNTIME_DIR,
         self._session.get_target_device().mac_addr.replace(":", ""),
         "report.json")
-    
+
     with open(out_file, "w", encoding="utf-8") as f:
       json.dump(report, f, indent=2)
     util.run_command(f"chown -R {self._host_user} {out_file}")
@@ -273,7 +273,7 @@ class TestOrchestrator:
             var_key = "DEV_IFACE_ID"
           else:
             var_key = "INT_IFACE_ID"
-          var_value = iface['id']
+          var_value = iface["id"]
           env_vars.update({var_key:var_value})
 
       client = docker.from_env()
