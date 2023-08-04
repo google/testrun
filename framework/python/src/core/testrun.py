@@ -84,10 +84,13 @@ class TestRun:  # pylint: disable=too-few-public-methods
     # Create session
     self._session = TestRunSession(config_file=self._config_file)
 
+    # Register runtime parameters
     if single_intf:
       self._session.add_runtime_param('single_intf')
     if net_only:
       self._session.add_runtime_param('net_only')
+    if not validate:
+      self._session.add_runtime_param('no-validate')
 
     self._load_all_devices()
 

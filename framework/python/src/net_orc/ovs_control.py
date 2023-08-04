@@ -13,8 +13,6 @@
 # limitations under the License.
 
 """OVS Control Module"""
-import json
-import os
 from common import logger
 from common import util
 
@@ -80,12 +78,14 @@ class OVSControl:
     int_bridge = True
 
     # Verify the device bridge
-    dev_bridge = self.verify_bridge(DEVICE_BRIDGE, [self._session.get_device_interface()])
+    dev_bridge = self.verify_bridge(DEVICE_BRIDGE,
+                                    [self._session.get_device_interface()])
     LOGGER.debug('Device bridge verified: ' + str(dev_bridge))
 
     # Verify the internet bridge
     if 'single_intf' not in self._session.get_runtime_params():
-      int_bridge = self.verify_bridge(INTERNET_BRIDGE, [self._session.get_internet_interface()])
+      int_bridge = self.verify_bridge(INTERNET_BRIDGE,
+                                      [self._session.get_internet_interface()])
       LOGGER.debug('Internet bridge verified: ' + str(int_bridge))
 
     return dev_bridge and int_bridge
@@ -118,7 +118,8 @@ class OVSControl:
 
     # Remove IP from internet adapter
     if not 'single_intf' in self._session.get_runtime_params():
-      self.set_interface_ip(interface=self._session.get_internet_interface(), ip_addr='0.0.0.0')
+      self.set_interface_ip(interface=self._session.get_internet_interface(),
+                            ip_addr='0.0.0.0')
       self.add_port(self._session.get_internet_interface(), INTERNET_BRIDGE)
 
     # Enable forwarding of eapol packets
