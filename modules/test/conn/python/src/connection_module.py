@@ -70,8 +70,7 @@ class ConnectionModule(TestModule):
 
     # response = self.dhcp1_client.set_dhcp_range('10.10.10.20','10.10.10.30')
     # print("Set Range: " + str(response))
-
-  def _connection_dhcp_disconnect(self):
+  def _connection_dhcp_disconnect(self):  
     LOGGER.info('Running connection.dhcp_disconnect')
     result = []
     lease = self._dhcp_util.get_cur_lease(self._device_mac)
@@ -79,27 +78,72 @@ class ConnectionModule(TestModule):
       LOGGER.info('Current device lease resolved: ' + str(lease))
       if self._dhcp_util.is_lease_active(lease):
         if self._iface_control.power_off_device_interface():
-          LOGGER.info('Interface powered off')
-          self._dhcp_util.wait_for_lease_expire(lease)
+          # Small pause before toggling power back on
+          LOGGER.info('Pausing for 5 seconds before power adapter on')
+          time.sleep(5)
           if self._iface_control.power_on_device_interface():
-            LOGGER.info('Interface powered on')
-            if self._dhcp_util.get_new_lease(self._device_mac,
-                                             dhcp_server_primary=True):
-              if self._dhcp_util.is_lease_active(lease):
-                result = True, ('New server lease confirmed active in device')
-              else:
-                result = False, 'Could not validate lease is active in device'
-            else:
-              result = False, ('Device did not recieve a new lease after'
-              ' disconnect and reconnect')
+             LOGGER.info('Interface powered on')
+             self._dhcp_util.wait_for_lease_expire(lease)
+             if self._dhcp_util.get_new_lease(self._device_mac) is not None:
+               result = True, 'Device has accepted a new lease after disconnect and reconnect'
+             else:
+               result = False, 'Device has not accepted a new lease after disconnect and reconnect'
+          else:
+            LOGGER.info('Interface could not be powered on.')
+            result = None, 'Interface could not be powered on.'
         else:
           LOGGER.info('Interface could not be powered off.')
           result = None, 'Interface could not be powered off.'
       else:
         result = False, 'Device did not respond to ping'
     else:
-        result = None, 'Device has no current DHCP lease'
+      result = None, 'Device has no current DHCP lease'
+    return result
 
+  def _connection_dhcp_disconnect_ip_change(self):
+    LOGGER.info('Running connection.dhcp_disconnect_ip_change')
+    result = []
+    lease = self._dhcp_util.get_cur_lease(self._device_mac)
+    if lease is not None:
+      LOGGER.info('Current device lease resolved: ' + str(lease))
+      if self._dhcp_util.is_lease_active(lease):
+        if self._iface_control.power_off_device_interface():
+          LOGGER.info('Interface powered off')
+          # Figure out how to calculate a valid IP address
+          ip_address = '10.10.10.30'
+          if self._dhcp_util.add_reserved_lease(lease['hostname'],
+                                                lease['hw_addr'], ip_address):
+            self._dhcp_util.wait_for_lease_expire(lease)
+            if self._iface_control.power_on_device_interface():
+              LOGGER.info('Interface powered on')
+              for _ in range(5):
+                LOGGER.info('Pinging device at IP: ' + ip_address)
+                if self._ping(ip_address):
+                  LOGGER.info('Ping Success')
+                  LOGGER.info('Reserved lease confirmed active in device')
+                  result = True, 'Device has accepted an IP address change after disconnec and reconnect'
+                  break
+                else:
+                  LOGGER.info('Device did not respond to ping')
+                  result = False, 'Device did not accept IP address change after disconnec and reconnect'
+                  time.sleep(5)  # Wait 5 seconds before trying again
+            else:
+              LOGGER.info('Interface could not be powered on.')
+              result = None, 'Interface could not be powered on.'
+            # Restore normal network state
+            self._dhcp_util.delete_reserved_lease(lease['hw_addr'])
+            LOGGER.info('Waiting 30 seconds for reserved lease to expire')
+            time.sleep(30)
+            self._dhcp_util.get_new_lease(self._device_mac)
+          else:
+            result = None, 'Failed to create reserved lease for device'
+        else:
+          LOGGER.info('Interface could not be powered off.')
+          result = None, 'Interface could not be powered off.'
+      else:
+        result = False, 'Device did not respond to ping'
+    else:
+      result = None, 'Device has no current DHCP lease'
     return result
 
   def _connection_private_address(self, config):
@@ -255,12 +299,12 @@ class ConnectionModule(TestModule):
                                              dhcp_server_primary=False):
               if self._dhcp_util.is_lease_active(lease):
                 result = True, ('Secondary DHCP server lease confirmed active '
-                 'in device')
+                                'in device')
               else:
                 result = False, 'Could not validate lease is active in device'
             else:
               result = False, ('Device did not recieve a new lease from '
-                'secondary DHCP server')
+                               'secondary DHCP server')
             self._dhcp_util.start_dhcp_server(dhcp_server_primary=True)
           else:
             result = None, 'Failed to shutdown primary DHCP server'

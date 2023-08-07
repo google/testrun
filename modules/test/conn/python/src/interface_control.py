@@ -25,23 +25,23 @@ class InterfaceControl:
   def power_off_device_interface(self):
     device_id = self.get_dev_interface_id('DEV_IFACE_ID')
     LOGGER.info('Powering off device interface')
-    return self._set_interface_power_option('off',device_id)
+    return self._set_interface_power_option('off', device_id)
 
   def power_on_device_interface(self):
     device_id = self.get_dev_interface_id('DEV_IFACE_ID')
     LOGGER.info('Powering on device interface')
-    return self._set_interface_power_option('on',device_id)
+    return self._set_interface_power_option('on', device_id)
 
   # Power off an ip interface by type
-  def _set_interface_power_option(self,option, device_id):
+  def _set_interface_power_option(self, option, device_id):
     success = False
     if device_id is not None:
       LOGGER.info('Device ID resolved: ' + device_id)
       pwr_cntrl_file = '/sys/bus/usb/devices/' + device_id + '/power/control'
       if os.path.exists(pwr_cntrl_file):
         LOGGER.info('Power control for USB device detected')
-        success = util.run_command('echo "' + option + '" > '
-          + pwr_cntrl_file, False)
+        success = util.run_command('echo "' + option + '" > ' + pwr_cntrl_file,
+                                   False)
         if success:
           with open(pwr_cntrl_file, 'r', encoding='UTF-8') as f:
             power_status = f.read()
