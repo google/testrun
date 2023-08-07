@@ -459,13 +459,9 @@ class NetworkOrchestrator:
   def get_usb_interface_device_ids(self):
     ifaces = []
     dev_iface = self._session.get_device_interface()
-    int_iface = self._session.get_internet_interface()
     dev_iface_id = self._get_usb_interface_device_id(dev_iface)
-    int_iface_id = self._get_usb_interface_device_id(int_iface)
     if dev_iface_id is not None:
       ifaces.append({'name':dev_iface,'id':dev_iface_id})
-    if int_iface_id is not None:
-      ifaces.append({'name':int_iface,'id':int_iface_id})
     return ifaces
 
   # Resolve the interface device id if it is a usb adapter or

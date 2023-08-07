@@ -271,8 +271,6 @@ class TestOrchestrator:
         for iface in iface_dev_ids:
           if iface["name"] == self._session.get_device_interface():
             var_key = "DEV_IFACE_ID"
-          else:
-            var_key = "INT_IFACE_ID"
           var_value = iface["id"]
           env_vars.update({var_key:var_value})
 

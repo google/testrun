@@ -78,10 +78,10 @@ class ConnectionModule(TestModule):
     if lease is not None:
       LOGGER.info('Current device lease resolved: ' + str(lease))
       if self._dhcp_util.is_lease_active(lease):
-        if self._iface_control.power_off_interface('dev'):
+        if self._iface_control.power_off_device_interface():
           LOGGER.info('Interface powered off')
           self._dhcp_util.wait_for_lease_expire(lease)
-          if self._iface_control.power_off_interface('dev'):
+          if self._iface_control.power_on_device_interface():
             LOGGER.info('Interface powered on')
             if self._dhcp_util.get_new_lease(self._device_mac,
                                              dhcp_server_primary=True):

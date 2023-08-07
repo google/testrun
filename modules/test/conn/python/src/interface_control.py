@@ -22,21 +22,19 @@ LOGGER = logger.get_logger('interface_ctrl')
 class InterfaceControl:
   """Interface Control"""
 
-  def power_off_interface(self,interface_type='dev'):
-    LOGGER.info('Powering off interface: ' + interface_type)
-    return self._set_interface_power_option('off',interface_type)
+  def power_off_device_interface(self):
+    device_id = self.get_dev_interface_id('DEV_IFACE_ID')
+    LOGGER.info('Powering off device interface')
+    return self._set_interface_power_option('off',device_id)
 
-  def power_on_interface(self,interface_type='dev'):
-    LOGGER.info('Powering on interface: ' + interface_type)
-    return self._set_interface_power_option('on',interface_type)
+  def power_on_device_interface(self):
+    device_id = self.get_dev_interface_id('DEV_IFACE_ID')
+    LOGGER.info('Powering on device interface')
+    return self._set_interface_power_option('on',device_id)
 
   # Power off an ip interface by type
-  def _set_interface_power_option(self,option, interface_type='dev'):
+  def _set_interface_power_option(self,option, device_id):
     success = False
-    if interface_type == 'dev':
-      device_id = self.get_dev_interface_id('DEV_IFACE_ID')
-    else:
-      device_id = self.get_dev_interface_id('INT_IFACE_ID')
     if device_id is not None:
       LOGGER.info('Device ID resolved: ' + device_id)
       pwr_cntrl_file = '/sys/bus/usb/devices/' + device_id + '/power/control'
