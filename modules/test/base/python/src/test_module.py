@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Base class for all core test module functions"""
 import json
 import logger
@@ -107,6 +106,19 @@ class TestModule:
           test['result_details'] = result[1]
       else:
         test['result'] = 'skipped'
+
+      # Generate the short result description based on result value
+      if test['result'] == 'compliant':
+        test['result_description'] = test[
+            'short_description'] if 'short_description' in test else test[
+                'name'] + ' passed - see result details for more info'
+      elif test['result'] == 'non-compliant':
+        test['result_description'] = test[
+            'name'] + ' failed - see result details for more info'
+      else:
+        test['result_description'] = test[
+            'name'] + ' skipped - see result details for more info'
+
       test['end'] = datetime.now().isoformat()
       duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(
           test['start'])
