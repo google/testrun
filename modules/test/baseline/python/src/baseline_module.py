@@ -30,14 +30,14 @@ class BaselineModule(TestModule):
   def _baseline_pass(self):
     LOGGER.info('Running baseline pass test')
     LOGGER.info('Baseline pass test finished')
-    return True, 'Baseline pass test ran succesfully'
+    return True, 'Baseline pass test ran successfully'
 
   def _baseline_fail(self):
     LOGGER.info('Running baseline fail test')
     LOGGER.info('Baseline fail test finished')
-    return False, 'Baseline fail test ran succesfully'
+    return False, 'Baseline fail test ran successfully'
 
   def _baseline_skip(self):
     LOGGER.info('Running baseline skip test')
     LOGGER.info('Baseline skip test finished')
-    return None, 'Baseline skip test ran succesfully'
+    return None, 'Baseline skip test ran successfully'
