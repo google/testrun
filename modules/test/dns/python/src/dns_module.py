@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """DNS test module"""
 import subprocess
 from test_module import TestModule
@@ -33,32 +32,39 @@ class DNSModule(TestModule):
     LOGGER = self._get_logger()
 
   def _has_dns_traffic(self, tcpdump_filter):
-    dns_server_queries = self._exec_tcpdump(tcpdump_filter,DNS_SERVER_CAPTURE_FILE)
+    dns_server_queries = self._exec_tcpdump(tcpdump_filter,
+                                            DNS_SERVER_CAPTURE_FILE)
     LOGGER.info('DNS Server queries found: ' + str(len(dns_server_queries)))
 
-    dns_startup_queries = self._exec_tcpdump(tcpdump_filter,STARTUP_CAPTURE_FILE)
+    dns_startup_queries = self._exec_tcpdump(tcpdump_filter,
+                                             STARTUP_CAPTURE_FILE)
     LOGGER.info('Startup DNS queries found: ' + str(len(dns_startup_queries)))
 
-    dns_monitor_queries = self._exec_tcpdump(tcpdump_filter,MONITOR_CAPTURE_FILE)
+    dns_monitor_queries = self._exec_tcpdump(tcpdump_filter,
+                                             MONITOR_CAPTURE_FILE)
     LOGGER.info('Monitor DNS queries found: ' + str(len(dns_monitor_queries)))
 
-    num_query_dns = len(dns_server_queries) + len(dns_startup_queries) + len(dns_monitor_queries)
+    num_query_dns = len(dns_server_queries) + len(dns_startup_queries) + len(
+        dns_monitor_queries)
     LOGGER.info('DNS queries found: ' + str(num_query_dns))
 
     return num_query_dns > 0
 
   def _dns_network_from_dhcp(self):
-    LOGGER.info("Running dns.network.from_dhcp")
+    LOGGER.info('Running dns.network.from_dhcp')
     result = None
     LOGGER.info('Checking DNS traffic for configured DHCP DNS server: ' +
                 self._dns_server)
 
-    # Check if the device DNS traffic is to appropriate local DHCP provided server
-    tcpdump_filter = f'dst port 53 and dst host {self._dns_server} and ether src {self._device_mac}'
+    # Check if the device DNS traffic is to appropriate local
+    # DHCP provided server
+    tcpdump_filter = (f'dst port 53 and dst host {self._dns_server} ' +
+                       'and ether src {self._device_mac}')
     dns_packets_local = self._has_dns_traffic(tcpdump_filter=tcpdump_filter)
 
     # Check if the device sends any DNS traffic to non-DHCP provided server
-    tcpdump_filter = f'dst port 53 and dst not host {self._dns_server} ether src {self._device_mac}'
+    tcpdump_filter = (f'dst port 53 and dst not host {self._dns_server} ' +
+                       'ether src {self._device_mac}')
     dns_packets_not_local = self._has_dns_traffic(tcpdump_filter=tcpdump_filter)
 
     if dns_packets_local or dns_packets_not_local:
@@ -73,7 +79,7 @@ class DNSModule(TestModule):
     return result
 
   def _dns_network_from_device(self):
-    LOGGER.info("Running dns.network.from_device")
+    LOGGER.info('Running dns.network.from_device')
     result = None
     LOGGER.info('Checking DNS traffic from device: ' + self._device_mac)
 
@@ -90,7 +96,7 @@ class DNSModule(TestModule):
     return result
 
   def _dns_mdns(self):
-    LOGGER.info("Running dns.mdns")
+    LOGGER.info('Running dns.mdns')
     result = None
     # Check if the device sends any MDNS traffic
     tcpdump_filter = f'udp port 5353 and ether src {self._device_mac}'
@@ -103,7 +109,6 @@ class DNSModule(TestModule):
       LOGGER.info('No MDNS traffic detected from the device')
       result = None, 'No MDNS traffic detected from the device'
     return result
-
 
   def _exec_tcpdump(self, tcpdump_filter, capture_file):
     """
