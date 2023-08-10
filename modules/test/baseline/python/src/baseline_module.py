@@ -38,6 +38,6 @@ class BaselineModule(TestModule):
     return False, 'Baseline fail test ran succesfully'
 
   def _baseline_skip(self):
-    LOGGER.info("Running baseline skip test")
-    LOGGER.info("Baseline skip test finished")
+    LOGGER.info('Running baseline skip test')
+    LOGGER.info('Baseline skip test finished')
     return None, 'Baseline skip test ran succesfully'

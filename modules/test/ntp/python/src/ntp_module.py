@@ -54,9 +54,11 @@ class NTPModule(TestModule):
     if not (device_sends_ntp3 or device_sends_ntp4):
       result = False, 'Device has not sent any NTP requests'
     elif device_sends_ntp3 and device_sends_ntp4:
-      result = False, 'Device sent NTPv3 and NTPv4 packets. NTPv3 is not allowed.'
+      result = False, ('Device sent NTPv3 and NTPv4 packets. ' +
+                       'NTPv3 is not allowed.')
     elif device_sends_ntp3:
-      result = False, 'Device sent NTPv3 packets. NTPv3 is not allowed.'
+      result = False, ('Device sent NTPv3 packets. '
+                       'NTPv3 is not allowed.')
     elif device_sends_ntp4:
       result = True, 'Device sent NTPv4 packets.'
     LOGGER.info(result[1])
@@ -83,7 +85,8 @@ class NTPModule(TestModule):
 
     if device_sends_ntp:
       if ntp_to_local and ntp_to_remote:
-        result = False, 'Device sent NTP request to DHCP provided server and non-DHCP provided server'
+        result = False, ('Device sent NTP request to DHCP provided ' +
+                         'server and non-DHCP provided server')
       elif ntp_to_remote:
         result = False, 'Device sent NTP request to non-DHCP provided server'
       elif ntp_to_local:
