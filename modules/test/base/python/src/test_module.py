@@ -101,6 +101,8 @@ class TestModule:
         else:
           if result[0] is None:
             test['result'] = 'skipped'
+            if len(result)>1:
+              test['result_details'] = result[1]
           else:
             test['result'] = 'compliant' if result[0] else 'non-compliant'
           test['result_details'] = result[1]
