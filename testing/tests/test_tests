@@ -112,7 +112,7 @@ for tester in $TESTERS; do
   sudo docker kill $tester
   sudo docker logs $tester | cat 
   
-  cp runtime/test/${ethmac//:/}/results.json $TEST_DIR/$tester.json
+  cp runtime/test/${ethmac//:/}/report.json $TEST_DIR/$tester.json
   more $TEST_DIR/$tester.json
   more $testrun_log
 
