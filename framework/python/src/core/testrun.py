@@ -95,9 +95,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._load_all_devices()
 
     self._net_orc = net_orc.NetworkOrchestrator(
-      session=self._session,
-      validate=validate,
-      single_intf = self._single_intf)
+      session=self._session)
     self._test_orc = test_orc.TestOrchestrator(
       self._session,
       self._net_orc)
