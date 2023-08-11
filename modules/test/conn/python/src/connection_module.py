@@ -253,6 +253,7 @@ class ConnectionModule(TestModule):
 
   def _connection_ipv6_slaac(self):
     LOGGER.info('Running connection.ipv6_slaac')
+    result = None
     packet_capture = rdpcap(MONITOR_CAPTURE_FILE)
 
     sends_ipv6 = False
@@ -265,27 +266,31 @@ class ConnectionModule(TestModule):
           if ipv6_addr.startswith(SLAAC_PREFIX):
             self._device_ipv6_addr = ipv6_addr
             LOGGER.info(f'Device has formed SLAAC address {ipv6_addr}')
-            return True
-
-    if sends_ipv6:
-      LOGGER.info('Device does not support IPv6 SLAAC')
-    else:
-      LOGGER.info('Device does not support IPv6')
-    return False
+            result = True, f'Device has formed SLAAC address {ipv6_addr}'
+    if result is None:
+      if sends_ipv6:
+        LOGGER.info('Device does not support IPv6 SLAAC')
+        result = False, 'Device does not support IPv6 SLAAC'
+      else:
+        LOGGER.info('Device does not support IPv6')
+        result = False, 'Device does not support IPv6'
+    return result
 
   def _connection_ipv6_ping(self):
     LOGGER.info('Running connection.ipv6_ping')
-
+    result = None
+    
     if self._device_ipv6_addr is None:
       LOGGER.info('No IPv6 SLAAC address found. Cannot ping')
-      return
-
-    if self._ping(self._device_ipv6_addr):
-      LOGGER.info(f'Device responds to IPv6 ping on {self._device_ipv6_addr}')
-      return True
+      result = None, 'No IPv6 SLAAc address found. Cannot ping'
     else:
-      LOGGER.info('Device does not respond to IPv6 ping')
-      return False
+      if self._ping(self._device_ipv6_addr):
+        LOGGER.info(f'Device responds to IPv6 ping on {self._device_ipv6_addr}')
+        result = True, f'Device responds to IPv6 ping on {self._device_ipv6_addr}'
+      else:
+        LOGGER.info('Device does not respond to IPv6 ping')
+        result = False, 'Device does not respond to IPv6 ping'
+    return result
 
   def _ping(self, host):
     cmd = 'ping -c 1 ' + str(host)

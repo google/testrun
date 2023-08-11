@@ -20,7 +20,7 @@ import logger
 
 from nmap_module import NmapModule
 
-LOG_NAME = "nmap_runner"
+LOG_NAME = 'nmap_runner'
 LOGGER = logger.get_logger(LOG_NAME)
 
 class NmapModuleRunner:
@@ -39,7 +39,7 @@ class NmapModuleRunner:
     self._test_module = NmapModule(module)
     self._test_module.run_tests()
 
-    LOGGER.info("nmap test module finished")
+    LOGGER.info('nmap test module finished')
 
   def add_logger(self, module):
     global LOGGER
