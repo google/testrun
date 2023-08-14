@@ -53,6 +53,7 @@ DEVICE_MANUFACTURER = 'manufacturer'
 DEVICE_MODEL = 'model'
 DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
+MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
 class TestRun:  # pylint: disable=too-few-public-methods
   """Test Run controller.
@@ -80,7 +81,14 @@ class TestRun:  # pylint: disable=too-few-public-methods
     # Catch any exit signals
     self._register_exits()
 
+    # Create session
     self._session = TestRunSession(config_file=self._config_file)
+
+    if single_intf:
+      self._session.add_runtime_param('single_intf')
+    if net_only:
+      self._session.add_runtime_param('net_only')
+
     self._load_all_devices()
 
     self._net_orc = net_orc.NetworkOrchestrator(
@@ -92,6 +100,12 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self._net_orc)
 
     if self._no_ui:
+      # Check Test Run is able to start
+      if self.get_net_orc().check_config() is False:
+        return
+
+      # Any additional checks that need to be performed go here
+
       self.start()
     else:
       self._api = Api(self)
@@ -112,7 +126,15 @@ class TestRun:  # pylint: disable=too-few-public-methods
     util.run_command(f'chown -R {util.get_host_user()} {device_dir}')
 
     for device_folder in os.listdir(device_dir):
-      with open(os.path.join(device_dir, device_folder, DEVICE_CONFIG),
+
+      device_config_file_path = os.path.join(device_dir,
+                                             device_folder,
+                                             DEVICE_CONFIG)
+      if not os.path.exists(device_config_file_path):
+        LOGGER.error(f'Device configuration file missing from device {device_folder}')
+        continue
+
+      with open(device_config_file_path,
                 encoding='utf-8') as device_config_file:
         device_config_json = json.load(device_config_file)
 
@@ -120,12 +142,19 @@ class TestRun:  # pylint: disable=too-few-public-methods
         device_model = device_config_json.get(DEVICE_MODEL)
         mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
         test_modules = device_config_json.get(DEVICE_TEST_MODULES)
+        max_device_reports = None
+        if 'max_device_reports' in device_config_json:
+          max_device_reports = device_config_json.get(MAX_DEVICE_REPORTS_KEY)
 
         device = Device(folder_url=os.path.join(device_dir, device_folder),
                         manufacturer=device_manufacturer,
                         model=device_model,
                         mac_addr=mac_addr,
-                        test_modules=test_modules)
+                        test_modules=test_modules,
+                        max_device_reports=max_device_reports,
+                        device_folder=device_folder)
+        self.get_session().add_device(device)
+
         self.get_session().add_device(device)
         LOGGER.debug(f'Loaded device {device.manufacturer} {device.model} with MAC address {device.mac_addr}')
 
@@ -177,7 +206,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
           self.get_net_orc().monitor_in_progress()):
           time.sleep(5)
 
-      self.stop()
+    self.stop()
 
   def stop(self, kill=False):
     self._set_status('Stopping')
@@ -239,27 +268,26 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def _device_discovered(self, mac_addr):
 
-    if self.get_session().get_target_device() is not None:
-      if mac_addr != self.get_session().get_target_device().mac_addr:
-        # Ignore discovered device
+    device = self.get_session().get_target_device()
+
+    if device is not None:
+      if mac_addr != device.mac_addr:
+        # Ignore discovered device because it is not the target device
+        return
+    else:
+      device = self.get_device(mac_addr)
+      if device is None:
         return
 
-    self._set_status('Identifying device')
-    device = self.get_device(mac_addr)
-    if device is not None:
-      LOGGER.info(
+      self.get_session().set_target_device(device)
+
+    LOGGER.info(
         f'Discovered {device.manufacturer} {device.model} on the network')
-    else:
-      device = Device(mac_addr=mac_addr)
-      self.get_session().add_device(device)
-      LOGGER.info(
-        f'A new device has been discovered with mac address {mac_addr}')
 
   def _device_stable(self, mac_addr):
-    device = self.get_device(mac_addr)
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
     self._set_status('In progress')
-    self._test_orc.run_test_modules(device)
+    self._test_orc.run_test_modules()
     self._set_status('Complete')
 
   def _set_status(self, status):

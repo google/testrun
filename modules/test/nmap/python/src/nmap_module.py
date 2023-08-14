@@ -40,6 +40,7 @@ class NmapModule(TestModule):
 
   def _security_nmap_ports(self, config):
     LOGGER.info("Running security.nmap.ports test")
+    result = None
 
     # Delete the enabled key from the config if it exists
     # to prevent it being treated as a test key
@@ -74,10 +75,14 @@ class NmapModule(TestModule):
       LOGGER.info("Unallowed Ports Detected: " + str(self._unallowed_ports))
       self._check_unallowed_port(self._unallowed_ports,config)
       LOGGER.info("Unallowed Ports: " + str(self._unallowed_ports))
-      return len(self._unallowed_ports) == 0
+      if len(self._unallowed_ports) > 0:
+        result = False, 'Some allowed ports detected: ' + str(self._unallowed_ports)
+      else:
+        result = True, 'No unallowed ports detected'
     else:
       LOGGER.info("Device ip address not resolved, skipping")
-      return None
+      result = None, "Device ip address not resolved"
+    return result
 
   def _process_port_results(self, tests):
     scan_results = {}

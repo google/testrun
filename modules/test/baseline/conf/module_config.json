@@ -15,17 +15,20 @@
       {
         "name": "baseline.pass",
         "description": "Simulate a compliant test",
-        "expected_behavior": "A compliant test result is generated"
+        "expected_behavior": "A compliant test result is generated",
+        "short_description": "A compliant test result is generated"
       },
       {
         "name": "baseline.fail",
         "description": "Simulate a non-compliant test",
-        "expected_behavior": "A non-compliant test result is generated"
+        "expected_behavior": "A non-compliant test result is generated",
+        "short_description": "A non-compliant test result is generated"
       },
       {
         "name": "baseline.skip",
         "description": "Simulate a skipped test",
-        "expected_behavior": "A skipped test result is generated"
+        "expected_behavior": "A skipped test result is generated",
+        "short_description": "A skipped test result is generated"
       }
     ]
   }

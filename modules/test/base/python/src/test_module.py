@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Base class for all core test module functions"""
 import json
 import logger
@@ -61,6 +60,8 @@ class TestModule:
         if 'tests' in device_test_module:
           if test['name'] in device_test_module['tests']:
             dev_test_config = device_test_module['tests'][test['name']]
+            if 'enabled' in dev_test_config:
+              test['enabled'] = dev_test_config['enabled']
             if 'config' in test and 'config' in dev_test_config:
               test['config'].update(dev_test_config['config'])
       return module_tests
@@ -81,25 +82,45 @@ class TestModule:
       test_method_name = '_' + test['name'].replace('.', '_')
       result = None
       test['start'] = datetime.now().isoformat()
-      LOGGER.info('Attempting to run test: ' + test['name'])
-      # Resolve the correct python method by test name and run test
-      if hasattr(self, test_method_name):
-        if 'config' in test:
-          result = getattr(self, test_method_name)(config=test['config'])
+      if ('enabled' in test and test['enabled']) or 'enabled' not in test:
+        LOGGER.info('Attempting to run test: ' + test['name'])
+        # Resolve the correct python method by test name and run test
+        if hasattr(self, test_method_name):
+          if 'config' in test:
+            result = getattr(self, test_method_name)(config=test['config'])
+          else:
+            result = getattr(self, test_method_name)()
         else:
-          result = getattr(self, test_method_name)()
+          LOGGER.info(f'Test {test["name"]} not resolved. Skipping')
+          result = None
       else:
-        LOGGER.info(f'Test {test["name"]} not resolved. Skipping')
-        result = None
-
+        LOGGER.info(f'Test {test["name"]} disabled. Skipping')
       if result is not None:
         if isinstance(result, bool):
           test['result'] = 'compliant' if result else 'non-compliant'
         else:
-          test['result'] = 'compliant' if result[0] else 'non-compliant'
+          if result[0] is None:
+            test['result'] = 'skipped'
+            if len(result)>1:
+              test['result_details'] = result[1]
+          else:
+            test['result'] = 'compliant' if result[0] else 'non-compliant'
           test['result_details'] = result[1]
       else:
         test['result'] = 'skipped'
+
+      # Generate the short result description based on result value
+      if test['result'] == 'compliant':
+        test['result_description'] = test[
+            'short_description'] if 'short_description' in test else test[
+                'name'] + ' passed - see result details for more info'
+      elif test['result'] == 'non-compliant':
+        test['result_description'] = test[
+            'name'] + ' failed - see result details for more info'
+      else:
+        test['result_description'] = test[
+            'name'] + ' skipped - see result details for more info'
+
       test['end'] = datetime.now().isoformat()
       duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(
           test['start'])

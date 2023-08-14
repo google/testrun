@@ -11,20 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Run NMAP test module"""
+"""Run Baseline module"""
 import argparse
 import signal
 import sys
 import logger
 
-from nmap_module import NmapModule
+from tls_module import TLSModule
 
-LOG_NAME = 'nmap_runner'
-LOGGER = logger.get_logger(LOG_NAME)
+LOGGER = logger.get_logger('test_module')
+RUNTIME = 1500
 
-class NmapModuleRunner:
-  """Run the NMAP module tests."""
+
+class TLSModuleRunner:
+  """An example runner class for test modules."""
 
   def __init__(self, module):
 
@@ -32,18 +32,11 @@ class NmapModuleRunner:
     signal.signal(signal.SIGTERM, self._handler)
     signal.signal(signal.SIGABRT, self._handler)
     signal.signal(signal.SIGQUIT, self._handler)
-    self.add_logger(module)
 
-    LOGGER.info('Starting nmap module')
+    LOGGER.info('Starting TLS Module')
 
-    self._test_module = NmapModule(module)
+    self._test_module = TLSModule(module)
     self._test_module.run_tests()
-
-    LOGGER.info('nmap test module finished')
-
-  def add_logger(self, module):
-    global LOGGER
-    LOGGER = logger.get_logger(LOG_NAME, module)
 
   def _handler(self, signum):
     LOGGER.debug('SigtermEnum: ' + str(signal.SIGTERM))
@@ -56,7 +49,7 @@ class NmapModuleRunner:
 
 def run():
   parser = argparse.ArgumentParser(
-      description='Nmap Module Help',
+      description='Security Module Help',
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
   parser.add_argument(
@@ -68,7 +61,7 @@ def run():
 
   # For some reason passing in the args from bash adds an extra
   # space before the argument so we'll just strip out extra space
-  NmapModuleRunner(args.module.strip())
+  TLSModuleRunner(args.module.strip())
 
 
 if __name__ == '__main__':

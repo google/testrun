@@ -34,7 +34,7 @@ class IPControl:
   def add_namespace(self, namespace):
     """Add a network namespace"""
     exists = self.namespace_exists(namespace)
-    LOGGER.info("Namespace exists: " + str(exists))
+    LOGGER.info('Namespace exists: ' + str(exists))
     if exists:
       return True
     else:
@@ -58,14 +58,11 @@ class IPControl:
   def namespace_exists(self, namespace):
     """Check if a namespace already exists"""
     namespaces = self.get_namespaces()
-    if namespace in namespaces:
-      return True
-    else:
-      return False
+    return namespace in namespaces
 
   def get_links(self):
-    stdout, stderr = util.run_command('ip link list')
-    links = stdout.strip().split('\n')
+    result = util.run_command('ip link list')
+    links = result[0].strip().split('\n')
     netns_links = []
     for link in links:
       match = re.search(r'\d+:\s+(\S+)', link)
@@ -78,9 +75,9 @@ class IPControl:
     return netns_links
 
   def get_namespaces(self):
-    stdout, stderr = util.run_command('ip netns list')
+    result = util.run_command('ip netns list')
     #Strip ID's from the namespace results
-    namespaces = re.findall(r'(\S+)(?:\s+\(id: \d+\))?', stdout)
+    namespaces = re.findall(r'(\S+)(?:\s+\(id: \d+\))?', result[0])
     return namespaces
 
   def set_namespace(self, interface_name, namespace):
@@ -187,9 +184,8 @@ class IPControl:
 
     # Rename container interface name
     if not self.rename_interface(container_intf, namespace, namespace_intf):
-      LOGGER.error(
-          f'Failed to rename container interface {container_intf} to {namespace_intf}'
-      )
+      LOGGER.error((f'Failed to rename container interface {container_intf} ' +
+                    'to {namespace_intf}'))
       return False
 
     # Set MAC address of container interface
