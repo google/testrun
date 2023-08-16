@@ -131,7 +131,7 @@ class TestRunSession():
 
   def get_startup_timeout(self):
     return self._config.get(STARTUP_TIMEOUT_KEY)
-  
+
   def get_max_device_reports(self):
     return self._config.get(MAX_DEVICE_REPORTS_KEY)
 

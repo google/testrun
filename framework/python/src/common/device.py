@@ -29,7 +29,7 @@ class Device():
   device_folder: str = None
   max_device_reports: int = None
 
-  def to_json(self):
+  def to_dict(self):
     device_json = {}
     device_json['mac_addr'] = self.mac_addr
     device_json['manufacturer'] = self.manufacturer
