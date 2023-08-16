@@ -127,7 +127,7 @@ class Api:
       response.status_code = status.HTTP_404_NOT_FOUND
       return self._generate_msg(False,
                                 "A device with that MAC address could not be found")
-    
+
     device.firmware = body_json["device"]["firmware"]
 
     # Check Test Run is able to start
@@ -135,6 +135,7 @@ class Api:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
       return self._generate_msg(False,"Configured interfaces are not ready for use. Ensure required interfaces are connected.")
 
+    self._test_run.get_session().reset()
     self._test_run.get_session().set_target_device(device)
     LOGGER.info(f"Starting Test Run with device target {device.manufacturer} {device.model} with MAC address {device.mac_addr}")
 

@@ -90,7 +90,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     if net_only:
       self._session.add_runtime_param('net_only')
 
-    self._load_all_devices()
+    self.load_all_devices()
 
     self._net_orc = net_orc.NetworkOrchestrator(
       session=self._session,
@@ -101,6 +101,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self._net_orc)
 
     if self._no_ui:
+
       # Check Test Run is able to start
       if self.get_net_orc().check_config() is False:
         return
@@ -108,6 +109,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
       # Any additional checks that need to be performed go here
 
       self.start()
+
     else:
 
       # Build UI image
@@ -115,11 +117,12 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self._api.start()
       # Start UI container
 
-    # Hold until API ends
-    while True:
-      time.sleep(1)
+      # Hold until API ends
+      while True:
+        time.sleep(1)
 
-  def _load_all_devices(self):
+  def load_all_devices(self):
+    self._session.clear_device_repository()
     self._load_devices(device_dir=LOCAL_DEVICES_DIR)
 
     # Temporarily removing loading of template device 
@@ -368,7 +371,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self.get_session().set_target_device(device)
 
     LOGGER.info(
-        f'Discovered {device.manufacturer} {device.model} on the network')
+        f'Discovered {device.manufacturer} {device.model} on the network. Waiting for device to obtain IP')
 
   def _device_stable(self, mac_addr):
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')

@@ -51,7 +51,7 @@ class Device():
     return device_json
 
   def to_config_json(self):
-    """Returns the device as a python disctionary. Fields relevant to the device
+    """Returns the device as a python dictionary. Fields relevant to the device
     config json file are exported."""
     device_json = {}
     device_json['mac_addr'] = self.mac_addr

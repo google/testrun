@@ -21,6 +21,7 @@ import docker
 from datetime import datetime
 from docker.types import Mount
 from common import logger, util
+from common.testreport import TestReport
 from test_orc.module import TestModule
 
 LOG_NAME = "test_orc"
@@ -81,18 +82,19 @@ class TestOrchestrator:
     LOGGER.info("All tests complete")
 
     self._session.stop()
-    self._generate_report()
+    report = TestReport().from_json(self._generate_report())
+    device.add_report(report)
+
     self._test_in_progress = False
     self._timestamp_results(device)
+
     LOGGER.debug("Cleaning old test results...")
     self._cleanup_old_test_results(device)
+
     LOGGER.debug("Old test results cleaned")
     self._test_in_progress = False
 
   def _generate_report(self):
-
-    # TODO: Calculate the status result
-    # We need to know the required result of each test
 
     report = {}
     report["device"] = self._session.get_target_device().to_json()

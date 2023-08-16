@@ -44,7 +44,6 @@ class TestRunSession():
     self._load_config()
 
   def start(self):
-    self.reset()
     self._status = 'Waiting for device'
     self._started = datetime.datetime.now()
 
@@ -150,6 +149,9 @@ class TestRunSession():
   def add_device(self, device):
     self._device_repository.append(device)
 
+  def clear_device_repository(self):
+    self._device_repository = []
+
   def get_device(self, mac_addr):
     for device in self._device_repository:
       if device.mac_addr == mac_addr:
@@ -164,7 +166,7 @@ class TestRunSession():
 
   def get_test_results(self):
     return self._results
-  
+
   def get_report_tests(self):
     return {
       'total': self.get_total_tests(),
@@ -184,7 +186,7 @@ class TestRunSession():
         reports.append(device_report.to_json())
 
     return reports
-  
+
   def add_total_tests(self, no_tests):
     self._total_tests += no_tests
 
