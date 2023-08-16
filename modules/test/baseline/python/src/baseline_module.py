@@ -15,7 +15,7 @@
 """Baseline test module"""
 from test_module import TestModule
 
-LOG_NAME = "test_baseline"
+LOG_NAME = 'test_baseline'
 LOGGER = None
 
 
@@ -28,15 +28,16 @@ class BaselineModule(TestModule):
     LOGGER = self._get_logger()
 
   def _baseline_pass(self):
-    LOGGER.info("Running baseline pass test")
-    LOGGER.info("Baseline pass test finished")
-    return True
+    LOGGER.info('Running baseline pass test')
+    LOGGER.info('Baseline pass test finished')
+    return True, 'Baseline pass test ran successfully'
 
   def _baseline_fail(self):
-    LOGGER.info("Running baseline pass test")
-    LOGGER.info("Baseline pass test finished")
-    return False
+    LOGGER.info('Running baseline fail test')
+    LOGGER.info('Baseline fail test finished')
+    return False, 'Baseline fail test ran successfully'
 
   def _baseline_skip(self):
-    LOGGER.info("Running baseline pass test")
-    LOGGER.info("Baseline pass test finished")
+    LOGGER.info('Running baseline skip test')
+    LOGGER.info('Baseline skip test finished')
+    return None, 'Baseline skip test ran successfully'

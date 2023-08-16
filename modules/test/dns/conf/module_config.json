@@ -15,16 +15,19 @@
       {
         "name": "dns.network.from_device",
         "description": "Verify the device sends DNS requests",
-        "expected_behavior": "The device sends DNS requests."
+        "expected_behavior": "The device sends DNS requests.",
+        "short_description": "The device sends DNS requests."
       },
       {
         "name": "dns.network.from_dhcp",
         "description": "Verify the device allows for a DNS server to be entered automatically", 
-        "expected_behavior": "The device sends DNS requests to the DNS server provided by the DHCP server"
+        "expected_behavior": "The device sends DNS requests to the DNS server provided by the DHCP server",
+         "short_description": "The device sends DNS requests to local DNS server."
       },
       {
         "name": "dns.mdns",
-        "description": "If the device has MDNS (or any kind of IP multicast), can it be disabled"
+        "description": "If the device has MDNS (or any kind of IP multicast), can it be disabled",
+        "short_description": "MDNS traffic detected from device"
       }
     ]
   }
