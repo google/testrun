@@ -14,7 +14,8 @@
 
 """Track device object information."""
 
-from dataclasses import dataclass
+from typing import Dict
+from dataclasses import dataclass, field
 
 @dataclass
 class Device():
@@ -24,17 +25,38 @@ class Device():
   mac_addr: str = None
   manufacturer: str = None
   model: str = None
-  test_modules: str = None
+  test_modules: Dict = field(default_factory=dict)
   ip_addr: str = None
   firmware: str = None
   device_folder: str = None
+  reports = []
   max_device_reports: int = None
 
+  def add_report(self, report):
+    self.reports.append(report)
+
+  def get_reports(self):
+    return self.reports
+
+  # TODO: Add ability to remove reports once test reports have been cleaned up
+
   def to_json(self):
+    """Returns the device as a python dictionary. This is used for the
+    # system status API endpoint and in the report."""
     device_json = {}
     device_json['mac_addr'] = self.mac_addr
     device_json['manufacturer'] = self.manufacturer
     device_json['model'] = self.model
     if self.firmware is not None:
       device_json['firmware'] = self.firmware
+    return device_json
+
+  def to_config_json(self):
+    """Returns the device as a python dictionary. Fields relevant to the device
+    config json file are exported."""
+    device_json = {}
+    device_json['mac_addr'] = self.mac_addr
+    device_json['manufacturer'] = self.manufacturer
+    device_json['model'] = self.model
+    device_json['test_modules'] = self.test_modules
     return device_json

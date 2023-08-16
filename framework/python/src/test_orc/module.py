@@ -31,12 +31,12 @@ class TestModule:  # pylint: disable=too-few-public-methods,too-many-instance-at
   image_name: str = None
   enable_container: bool = True
   network: bool = True
-
+  total_tests: int = 0
   timeout: int = 60
 
   # Absolute path
   dir: str = None
   dir_name: str = None
 
-  #Set IP Index for all test modules
+  # Set IP Index for all test modules
   ip_index: str = 9

@@ -49,7 +49,7 @@ class Api:
     self._router.add_api_route("/system/stop", self.stop_test_run,
                                methods=["POST"])
     self._router.add_api_route("/system/status", self.get_status)
-
+    self._router.add_api_route("/history", self.get_history)
     self._router.add_api_route("/devices", self.get_devices)
     self._router.add_api_route("/device", self.save_device, methods=["POST"])
 
@@ -126,7 +126,6 @@ class Api:
       return self._generate_msg(False, "Invalid request received")
 
     device = self._session.get_device(body_json["device"]["mac_addr"])
-    device.firmware = body_json["device"]["firmware"]
 
     # Check Test Run is not already running
     if self._test_run.get_session().get_status() != "Idle":
@@ -140,11 +139,14 @@ class Api:
       return self._generate_msg(False,
                                 "A device with that MAC address could not be found")
 
+    device.firmware = body_json["device"]["firmware"]
+
     # Check Test Run is able to start
     if self._test_run.get_net_orc().check_config() is False:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
       return self._generate_msg(False,"Configured interfaces are not ready for use. Ensure required interfaces are connected.")
 
+    self._test_run.get_session().reset()
     self._test_run.get_session().set_target_device(device)
     LOGGER.info(f"Starting Test Run with device target {device.manufacturer} {device.model} with MAC address {device.mac_addr}")
 
@@ -171,7 +173,8 @@ class Api:
     return self._test_run.get_session().to_json()
 
   async def get_history(self):
-    LOGGER.info("Returning previous Test Runs to UI")
+    LOGGER.debug("Received history list request")
+    return self._session.get_all_reports()
 
   async def save_device(self, request: Request, response: Response):
     LOGGER.debug("Received device post request")
@@ -185,18 +188,25 @@ class Api:
         return self._generate_msg(False, "Invalid request received")
 
       device = self._session.get_device(device_json.get(DEVICE_MAC_ADDR_KEY))
+
       if device is None:
+
         # Create new device
         device = Device()
         device.mac_addr = device_json.get(DEVICE_MAC_ADDR_KEY)
+        device.manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
+        device.model = device_json.get(DEVICE_MODEL_KEY)
+        device.device_folder = device.manufacturer + " " + device.model
+
+        self._test_run.create_device(device)
         response.status_code = status.HTTP_201_CREATED
 
-      device.manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
-      device.model = device_json.get(DEVICE_MODEL_KEY)
+      else:
 
-      self._session.save_device(device)
+        self._test_run.save_device(device, device_json)
+        response.status_code = status.HTTP_200_OK
 
-      return device
+      return device.to_config_json()
 
     # Catch JSON Decode error etc
     except JSONDecodeError:
