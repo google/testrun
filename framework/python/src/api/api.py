@@ -115,7 +115,6 @@ class Api:
       return self._generate_msg(False, "Invalid request received")
 
     device = self._session.get_device(body_json["device"]["mac_addr"])
-    device.firmware = body_json["device"]["firmware"]
 
     # Check Test Run is not already running
     if self._test_run.get_session().get_status() != "Idle":
@@ -128,6 +127,8 @@ class Api:
       response.status_code = status.HTTP_404_NOT_FOUND
       return self._generate_msg(False,
                                 "A device with that MAC address could not be found")
+    
+    device.firmware = body_json["device"]["firmware"]
 
     # Check Test Run is able to start
     if self._test_run.get_net_orc().check_config() is False:

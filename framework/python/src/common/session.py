@@ -38,7 +38,7 @@ class TestRunSession():
     self._results = []
     self._runtime_params = []
     self._device_repository = []
-
+    self._total_tests = 0
     self._config_file = config_file
     self._config = self._get_default_config()
     self._load_config()
@@ -164,6 +164,12 @@ class TestRunSession():
 
   def get_test_results(self):
     return self._results
+  
+  def get_report_tests(self):
+    return {
+      'total': self.get_total_tests(),
+      'results': self.get_test_results()
+    }
 
   def add_test_result(self, test_result):
     self._results.append(test_result)
@@ -178,11 +184,20 @@ class TestRunSession():
         reports.append(device_report.to_json())
 
     return reports
+  
+  def add_total_tests(self, no_tests):
+    self._total_tests += no_tests
+
+  def get_total_tests(self):
+    return self._total_tests
 
   def reset(self):
     self.set_status('Idle')
     self.set_target_device(None)
-    self._results = []
+    self._tests = {
+      'total': 0,
+      'results': []
+    }
     self._started = None
     self._finished = None
 
@@ -190,12 +205,17 @@ class TestRunSession():
 
     # TODO: Add report URL
 
+    results = {
+      'total': self.get_total_tests(),
+      'results': self.get_test_results()
+    }
+
     session_json = {
       'status': self.get_status(),
       'device': self.get_target_device(),
       'started': self.get_started(),
       'finished': self.get_finished(),
-      'results': self.get_test_results()
+      'tests': results
     }
 
     return session_json

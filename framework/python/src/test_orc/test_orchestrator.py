@@ -99,7 +99,7 @@ class TestOrchestrator:
     report["started"] = self._session.get_started().strftime("%Y-%m-%d %H:%M:%S")
     report["finished"] = self._session.get_finished().strftime("%Y-%m-%d %H:%M:%S")
     report["status"] = self._session.get_status()
-    report["results"] = self._session.get_test_results()
+    report["tests"] = self._session.get_report_tests()
     out_file = os.path.join(
         self._root_path,
         RUNTIME_DIR,
@@ -306,6 +306,8 @@ class TestOrchestrator:
       LOGGER.error(f"Error occured whilst obbtaining results for module {module.name}")
       LOGGER.debug(results_error)
 
+    self._session.add_total_tests(module.total_tests)
+
     LOGGER.info("Test module " + module.name + " has finished")
 
   def _get_module_status(self, module):
@@ -370,6 +372,9 @@ class TestOrchestrator:
     module.build_file = module_dir + ".Dockerfile"
     module.container_name = "tr-ct-" + module.dir_name + "-test"
     module.image_name = "test-run/" + module.dir_name + "-test"
+
+    if "tests" in module_json["config"]:
+      module.total_tests = len(module_json["config"]["tests"])
 
     if "timeout" in module_json["config"]["docker"]:
       module.timeout = module_json["config"]["docker"]["timeout"]
