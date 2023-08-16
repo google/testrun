@@ -21,6 +21,7 @@ jobs:
   testrun_tests:
     name:  Tests
     runs-on: ubuntu-20.04
+    needs: testrun_baseline
     timeout-minutes: 40
     steps:
       - name: Checkout source
@@ -28,6 +29,7 @@ jobs:
       - name: Run tests
         shell: bash {0}
         run: testing/tests/test_tests
+
   pylint:
     name:  Pylint
     runs-on: ubuntu-22.04

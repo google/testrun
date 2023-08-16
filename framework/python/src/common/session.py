@@ -25,6 +25,7 @@ RUNTIME_KEY = 'runtime'
 MONITOR_PERIOD_KEY = 'monitor_period'
 STARTUP_TIMEOUT_KEY = 'startup_timeout'
 LOG_LEVEL_KEY = 'log_level'
+API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
 class TestRunSession():
@@ -37,16 +38,14 @@ class TestRunSession():
     self._finished = None
     self._results = []
     self._runtime_params = []
-
+    self._device_repository = []
+    self._total_tests = 0
     self._config_file = config_file
-
     self._config = self._get_default_config()
     self._load_config()
 
-    self._device_repository = []
-
   def start(self):
-    self._status = 'Starting'
+    self._status = 'Waiting for device'
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -68,7 +67,8 @@ class TestRunSession():
       'startup_timeout': 60,
       'monitor_period': 30,
       'runtime': 120,
-      'max_device_reports': 5
+      'max_device_reports': 5,
+      'api_port': 8000
     }
 
   def get_config(self):
@@ -101,6 +101,9 @@ class TestRunSession():
       if LOG_LEVEL_KEY in config_file_json:
         self._config[LOG_LEVEL_KEY] = config_file_json.get(LOG_LEVEL_KEY)
 
+      if API_PORT_KEY in config_file_json:
+        self._config[API_PORT_KEY] = config_file_json.get(API_PORT_KEY)
+
       if MAX_DEVICE_REPORTS_KEY in config_file_json:
         self._config[MAX_DEVICE_REPORTS_KEY] = config_file_json.get(MAX_DEVICE_REPORTS_KEY)
 
@@ -132,6 +135,9 @@ class TestRunSession():
   def get_startup_timeout(self):
     return self._config.get(STARTUP_TIMEOUT_KEY)
 
+  def get_api_port(self):
+    return self._config.get(API_PORT_KEY)
+
   def get_max_device_reports(self):
     return self._config.get(MAX_DEVICE_REPORTS_KEY)
 
@@ -151,15 +157,14 @@ class TestRunSession():
   def add_device(self, device):
     self._device_repository.append(device)
 
+  def clear_device_repository(self):
+    self._device_repository = []
+
   def get_device(self, mac_addr):
     for device in self._device_repository:
       if device.mac_addr == mac_addr:
         return device
     return None
-
-  def save_device(self, device):
-    # TODO: We need to save the folder path of the device config
-    return
 
   def get_status(self):
     return self._status
@@ -170,21 +175,57 @@ class TestRunSession():
   def get_test_results(self):
     return self._results
 
+  def get_report_tests(self):
+    return {
+      'total': self.get_total_tests(),
+      'results': self.get_test_results()
+    }
+
   def add_test_result(self, test_result):
     self._results.append(test_result)
+
+  def get_all_reports(self):
+
+    reports = []
+
+    for device in self.get_device_repository():
+      device_reports = device.get_reports()
+      for device_report in device_reports:
+        reports.append(device_report.to_json())
+
+    return reports
+
+  def add_total_tests(self, no_tests):
+    self._total_tests += no_tests
+
+  def get_total_tests(self):
+    return self._total_tests
 
   def reset(self):
     self.set_status('Idle')
     self.set_target_device(None)
-    self._results = []
+    self._tests = {
+      'total': 0,
+      'results': []
+    }
     self._started = None
     self._finished = None
 
   def to_json(self):
-    return {
+
+    # TODO: Add report URL
+
+    results = {
+      'total': self.get_total_tests(),
+      'results': self.get_test_results()
+    }
+
+    session_json = {
       'status': self.get_status(),
       'device': self.get_target_device(),
       'started': self.get_started(),
       'finished': self.get_finished(),
-      'results': self.get_test_results()
+      'tests': results
     }
+
+    return session_json

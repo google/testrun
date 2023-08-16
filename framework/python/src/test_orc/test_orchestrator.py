@@ -21,6 +21,7 @@ import docker
 from datetime import datetime
 from docker.types import Mount
 from common import logger, util
+from common.testreport import TestReport
 from test_orc.module import TestModule
 from test_orc.test_case import TestCase
 
@@ -82,18 +83,19 @@ class TestOrchestrator:
     LOGGER.info("All tests complete")
 
     self._session.stop()
-    self._generate_report()
+    report = TestReport().from_json(self._generate_report())
+    device.add_report(report)
+
     self._test_in_progress = False
     self._timestamp_results(device)
+
     LOGGER.debug("Cleaning old test results...")
     self._cleanup_old_test_results(device)
+
     LOGGER.debug("Old test results cleaned")
     self._test_in_progress = False
 
   def _generate_report(self):
-
-    # TODO: Calculate the status result
-    # We need to know the required result of each test
 
     report = {}
     report["device"] = self._session.get_target_device().to_dict()
@@ -102,7 +104,7 @@ class TestOrchestrator:
     report["finished"] = self._session.get_finished().strftime(
         "%Y-%m-%d %H:%M:%S")
     report["status"] = self._calculate_result()
-    report["results"] = self._session.get_test_results()
+    report["tests"] = self._session.get_report_tests()
     out_file = os.path.join(
         self._root_path, RUNTIME_DIR,
         self._session.get_target_device().mac_addr.replace(":", ""),
@@ -300,6 +302,8 @@ class TestOrchestrator:
           f"Error occured whilst obbtaining results for module {module.name}")
       LOGGER.debug(results_error)
 
+    self._session.add_total_tests(module.total_tests)
+
     LOGGER.info("Test module " + module.name + " has finished")
 
   def _get_module_status(self, module):
@@ -367,6 +371,7 @@ class TestOrchestrator:
 
     # Load test cases
     if "tests" in module_json["config"]:
+      module.total_tests = len(module_json["config"]["tests"])
       for test_case_json in module_json["config"]["tests"]:
         try:
           test_case = TestCase(
