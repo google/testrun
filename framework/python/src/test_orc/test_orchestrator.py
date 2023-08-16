@@ -98,13 +98,14 @@ class TestOrchestrator:
 
     report = {}
     report["device"] = self._session.get_target_device().to_json()
-    report["started"] = self._session.get_started().strftime("%Y-%m-%d %H:%M:%S")
-    report["finished"] = self._session.get_finished().strftime("%Y-%m-%d %H:%M:%S")
+    report["started"] = self._session.get_started().strftime(
+        "%Y-%m-%d %H:%M:%S")
+    report["finished"] = self._session.get_finished().strftime(
+        "%Y-%m-%d %H:%M:%S")
     report["status"] = self._session.get_status()
     report["tests"] = self._session.get_report_tests()
     out_file = os.path.join(
-        self._root_path,
-        RUNTIME_DIR,
+        self._root_path, RUNTIME_DIR,
         self._session.get_target_device().mac_addr.replace(":", ""),
         "report.json")
 
@@ -121,10 +122,8 @@ class TestOrchestrator:
       max_device_reports = self._session.get_max_device_reports()
 
     completed_results_dir = os.path.join(
-      self._root_path,
-      SAVED_DEVICE_REPORTS.replace("{device_folder}",
-                                   device.device_folder)
-                                  )
+        self._root_path,
+        SAVED_DEVICE_REPORTS.replace("{device_folder}", device.device_folder))
 
     completed_tests = os.listdir(completed_results_dir)
     cur_test_count = len(completed_tests)
@@ -140,7 +139,7 @@ class TestOrchestrator:
         # Confirm the delete was succesful
         new_test_count = len(os.listdir(completed_results_dir))
         if (new_test_count != cur_test_count
-          and new_test_count > max_device_reports):
+            and new_test_count > max_device_reports):
           # Continue cleaning up until we're under the max
           self._cleanup_old_test_results(device)
 
@@ -160,18 +159,14 @@ class TestOrchestrator:
   def _timestamp_results(self, device):
 
     # Define the current device results directory
-    cur_results_dir = os.path.join(
-        self._root_path,
-        RUNTIME_DIR,
-        device.mac_addr.replace(":", "")
-    )
+    cur_results_dir = os.path.join(self._root_path, RUNTIME_DIR,
+                                   device.mac_addr.replace(":", ""))
 
     # Define the destination results directory with timestamp
     cur_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     completed_results_dir = os.path.join(
-      SAVED_DEVICE_REPORTS.replace("{device_folder}",
-                                   device.device_folder),
-      cur_time)
+        SAVED_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
+        cur_time)
 
     # Copy the results to the timestamp directory
     # leave current copy in place for quick reference to
@@ -206,30 +201,18 @@ class TestOrchestrator:
 
     try:
 
-      device_test_dir = os.path.join(
-        self._root_path,
-        RUNTIME_DIR,
-        device.mac_addr.replace(":", "")
-      )
+      device_test_dir = os.path.join(self._root_path, RUNTIME_DIR,
+                                     device.mac_addr.replace(":", ""))
 
-      container_runtime_dir = os.path.join(
-        device_test_dir,
-        module.name
-      )
+      container_runtime_dir = os.path.join(device_test_dir, module.name)
       os.makedirs(container_runtime_dir, exist_ok=True)
 
       network_runtime_dir = os.path.join(self._root_path, "runtime/network")
 
-      device_startup_capture = os.path.join(
-        device_test_dir,
-        "startup.pcap"
-      )
+      device_startup_capture = os.path.join(device_test_dir, "startup.pcap")
       util.run_command(f"chown -R {self._host_user} {device_startup_capture}")
 
-      device_monitor_capture = os.path.join(
-        device_test_dir,
-        "monitor.pcap"
-      )
+      device_monitor_capture = os.path.join(device_test_dir, "monitor.pcap")
       util.run_command(f"chown -R {self._host_user} {device_monitor_capture}")
 
       client = docker.from_env()
@@ -288,24 +271,25 @@ class TestOrchestrator:
         line = next(log_stream).decode("utf-8").strip()
         if re.search(LOG_REGEX, line):
           print(line)
-      except Exception: # pylint: disable=W0718
+      except Exception:  # pylint: disable=W0718
         time.sleep(1)
       status = self._get_module_status(module)
 
     # Get test results from module
     container_runtime_dir = os.path.join(
-            self._root_path, "runtime/test/" +
-            device.mac_addr.replace(":", "") + "/" + module.name)
+        self._root_path,
+        "runtime/test/" + device.mac_addr.replace(":", "") + "/" + module.name)
     results_file = f"{container_runtime_dir}/{module.name}-result.json"
     try:
       with open(results_file, "r", encoding="utf-8-sig") as f:
         module_results_json = json.load(f)
-        module_results = module_results_json['results']
+        module_results = module_results_json["results"]
         for test_result in module_results:
           self._session.add_test_result(test_result)
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
-      LOGGER.error(f"Error occured whilst obbtaining results for module {module.name}")
+      LOGGER.error(
+          f"Error occured whilst obbtaining results for module {module.name}")
       LOGGER.debug(results_error)
 
     self._session.add_total_tests(module.total_tests)
@@ -385,6 +369,10 @@ class TestOrchestrator:
     if "enable_container" in module_json["config"]["docker"]:
       module.enable_container = module_json["config"]["docker"][
           "enable_container"]
+
+    # Determine if this module needs network access
+    if "network" in module_json["config"]:
+      module.network = module_json["config"]["network"]
 
     if "depends_on" in module_json["config"]["docker"]:
       depends_on_module = module_json["config"]["docker"]["depends_on"]

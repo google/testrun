@@ -16,6 +16,7 @@
         "name": "security.nmap.ports",
         "description": "Run an nmap scan of open ports",
         "expected_behavior": "Report all open ports",
+        "short_description": "NMAP scan reports no unallowed ports open",
         "config": {
           "security.services.ftp": {
             "tcp_ports": {
