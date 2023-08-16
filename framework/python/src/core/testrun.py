@@ -85,17 +85,18 @@ class TestRun:  # pylint: disable=too-few-public-methods
     # Create session
     self._session = TestRunSession(config_file=self._config_file)
 
+    # Register runtime parameters
     if single_intf:
       self._session.add_runtime_param('single_intf')
     if net_only:
       self._session.add_runtime_param('net_only')
+    if not validate:
+      self._session.add_runtime_param('no-validate')
 
     self.load_all_devices()
 
     self._net_orc = net_orc.NetworkOrchestrator(
-      session=self._session,
-      validate=validate,
-      single_intf = self._single_intf)
+      session=self._session)
     self._test_orc = test_orc.TestOrchestrator(
       self._session,
       self._net_orc)

@@ -47,13 +47,11 @@ CONTAINER_NAME = 'network_orchestrator'
 class NetworkOrchestrator:
   """Manage and controls a virtual testing network."""
 
-  def __init__(self, session, validate=True, single_intf=False):
+  def __init__(self,
+               session):
 
     self._session = session
     self._monitor_in_progress = False
-    self._validate = validate
-    self._single_intf = single_intf
-
     self._listener = None
     self._net_modules = []
 
@@ -72,8 +70,6 @@ class NetworkOrchestrator:
     """Start the network orchestrator."""
 
     LOGGER.debug('Starting network orchestrator')
-
-    self._host_user = util.get_host_user()
 
     # Get all components ready
     self.load_network_modules()
@@ -123,7 +119,7 @@ class NetworkOrchestrator:
     self.create_net()
     self.start_network_services()
 
-    if self._validate:
+    if 'no-validate' not in self._session.get_runtime_params():
       # Start the validator after network is ready
       self.validator.start()
 
@@ -179,7 +175,7 @@ class NetworkOrchestrator:
     shutil.rmtree(device_runtime_dir, ignore_errors=True)
     os.makedirs(device_runtime_dir, exist_ok=True)
 
-    util.run_command(f'chown -R {self._host_user} {device_runtime_dir}')
+    util.run_command(f'chown -R {util.get_host_user()} {device_runtime_dir}')
 
     packet_capture = sniff(iface=self._session.get_device_interface(),
                            timeout=self._session.get_startup_timeout(),
@@ -324,9 +320,8 @@ class NetworkOrchestrator:
   def create_net(self):
     LOGGER.info('Creating baseline network')
 
-    # TODO: This is not just for CI
-    #if self._single_intf:
-    #self._ci_pre_network_create()
+    if os.getenv('GITHUB_ACTIONS'):
+      self._ci_pre_network_create()
 
     # Setup the virtual network
     if not self._ovs.create_baseline_net(verify=True):
@@ -334,9 +329,8 @@ class NetworkOrchestrator:
       self.stop()
       sys.exit(1)
 
-    # TODO: This is not just for CI
-    #if self._single_intf:
-    #self._ci_post_network_create()
+    if os.getenv("GITHUB_ACTIONS"):
+      self._ci_post_network_create()
 
     self._create_private_net()
 
@@ -469,7 +463,7 @@ class NetworkOrchestrator:
           privileged=True,
           detach=True,
           mounts=net_module.mounts,
-          environment={'HOST_USER': self._host_user})
+          environment={'HOST_USER': util.get_host_user()})
     except docker.errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)
