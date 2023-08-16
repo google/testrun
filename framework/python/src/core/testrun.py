@@ -28,6 +28,7 @@ import time
 from common import logger, util
 from common.device import Device
 from common.session import TestRunSession
+from common.testreport import TestReport
 from api.api import Api
 from net_orc.listener import NetworkEvent
 from net_orc import network_orchestrator as net_orc
@@ -89,7 +90,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     if net_only:
       self._session.add_runtime_param('net_only')
 
-    self._load_all_devices()
+    self.load_all_devices()
 
     self._net_orc = net_orc.NetworkOrchestrator(
       session=self._session,
@@ -100,6 +101,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self._net_orc)
 
     if self._no_ui:
+
       # Check Test Run is able to start
       if self.get_net_orc().check_config() is False:
         return
@@ -107,17 +109,25 @@ class TestRun:  # pylint: disable=too-few-public-methods
       # Any additional checks that need to be performed go here
 
       self.start()
+
     else:
+
+      # Build UI image
       self._api = Api(self)
       self._api.start()
+      # Start UI container
 
-    # Hold until API ends
-    while True:
-      time.sleep(1)
+      # Hold until API ends
+      while True:
+        time.sleep(1)
 
-  def _load_all_devices(self):
+  def load_all_devices(self):
+    self._session.clear_device_repository()
     self._load_devices(device_dir=LOCAL_DEVICES_DIR)
-    self._load_devices(device_dir=RESOURCE_DEVICES_DIR)
+
+    # Temporarily removing loading of template device 
+    # configs (feature not required yet)
+    # self._load_devices(device_dir=RESOURCE_DEVICES_DIR)
     return self.get_session().get_device_repository()
 
   def _load_devices(self, device_dir):
@@ -130,10 +140,13 @@ class TestRun:  # pylint: disable=too-few-public-methods
       device_config_file_path = os.path.join(device_dir,
                                              device_folder,
                                              DEVICE_CONFIG)
+
+      # Check if device config file exists before loading
       if not os.path.exists(device_config_file_path):
         LOGGER.error(f'Device configuration file missing from device {device_folder}')
         continue
 
+      # Open device config file
       with open(device_config_file_path,
                 encoding='utf-8') as device_config_file:
         device_config_json = json.load(device_config_file)
@@ -153,10 +166,90 @@ class TestRun:  # pylint: disable=too-few-public-methods
                         test_modules=test_modules,
                         max_device_reports=max_device_reports,
                         device_folder=device_folder)
-        self.get_session().add_device(device)
 
+        # Load reports for this device
+        self._load_test_reports(device)
+
+        # Add device to device repository
         self.get_session().add_device(device)
-        LOGGER.debug(f'Loaded device {device.manufacturer} {device.model} with MAC address {device.mac_addr}')
+        LOGGER.debug(f'Loaded device {device.manufacturer} ' +
+                     f'{device.model} with MAC address {device.mac_addr}')
+
+  def _load_test_reports(self, device: Device):
+
+    LOGGER.debug(f'Loading test reports for device {device.model}')
+
+    # Locate reports folder
+    reports_folder = os.path.join(root_dir,
+                                  LOCAL_DEVICES_DIR,
+                                  device.device_folder, 'reports')
+
+    # Check if reports folder exists (device may have no reports)
+    if not os.path.exists(reports_folder):
+      return
+
+    for report_folder in os.listdir(reports_folder):
+      report_json_file_path = os.path.join(
+        reports_folder,
+        report_folder,
+        'report.json')
+
+      # Check if the report.json file exists
+      if not os.path.isfile(report_json_file_path):
+        # Some error may have occured during this test run
+        continue
+
+      with open(report_json_file_path, encoding='utf-8') as report_json_file:
+        report_json = json.load(report_json_file)
+        test_report = TestReport().from_json(report_json)
+        device.add_report(test_report)
+
+  def create_device(self, device: Device):
+
+    # Define the device folder location
+    device_folder_path = os.path.join(root_dir,
+                                      LOCAL_DEVICES_DIR,
+                                      device.device_folder)
+
+    # Create the directory
+    os.makedirs(device_folder_path)
+
+    config_file_path = os.path.join(device_folder_path,
+                                    DEVICE_CONFIG)
+
+    with open(config_file_path, 'w', encoding='utf-8') as config_file:
+      config_file.writelines(json.dumps(device.to_config_json(), indent=4))
+
+    # Ensure new folder has correct permissions
+    util.run_command(f"chown -R {util.get_host_user()} '{device_folder_path}'")
+
+    # Add new device to the device repository
+    self._session.add_device(device)
+
+    return device.to_config_json()
+
+  def save_device(self, device: Device, device_json):
+    """Edit and save an existing device config."""
+
+    # Update device properties
+    device.manufacturer = device_json['manufacturer']
+    device.model = device_json['model']
+
+    if 'test_modules' in device_json:
+      device.test_modules = device_json['test_modules']
+    else:
+      device.test_modules = {}
+
+    # Obtain the config file path
+    config_file_path = os.path.join(root_dir,
+                                      LOCAL_DEVICES_DIR,
+                                      device.device_folder,
+                                      DEVICE_CONFIG)
+
+    with open(config_file_path, 'w+', encoding='utf-8') as config_file:
+      config_file.writelines(json.dumps(device.to_config_json(), indent=4))
+
+    return device.to_config_json()
 
   def start(self):
 
@@ -209,7 +302,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self.stop()
 
   def stop(self, kill=False):
-    self._set_status('Stopping')
 
     # Prevent discovering new devices whilst stopping
     if self.get_net_orc().get_listener() is not None:
@@ -217,8 +309,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     self._stop_tests()
     self._stop_network(kill=kill)
-
-    self.get_session().reset()
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
@@ -282,7 +372,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self.get_session().set_target_device(device)
 
     LOGGER.info(
-        f'Discovered {device.manufacturer} {device.model} on the network')
+        f'Discovered {device.manufacturer} {device.model} on the network. Waiting for device to obtain IP')
 
   def _device_stable(self, mac_addr):
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
