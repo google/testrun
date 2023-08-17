@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,4 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-/testrun/bin/start_module
+"""Represents an individual test case."""
+from dataclasses import dataclass
+
+
+@dataclass
+class TestCase:  # pylint: disable=too-few-public-methods,too-many-instance-attributes
+  """Represents a test case."""
+
+  name: str = "test.undefined"
+  description: str = ""
+  expected_behavior: str = ""
+  required_result: str = "Recommended"

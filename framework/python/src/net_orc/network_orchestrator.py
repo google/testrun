@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Network orchestrator is responsible for managing
 all of the virtual network services"""
 import ipaddress
@@ -44,19 +43,15 @@ INTERNET_BRIDGE = 'tr-c'
 PRIVATE_DOCKER_NET = 'tr-private-net'
 CONTAINER_NAME = 'network_orchestrator'
 
+
 class NetworkOrchestrator:
   """Manage and controls a virtual testing network."""
 
   def __init__(self,
-               session,
-               validate=True,
-               single_intf=False):
+               session):
 
     self._session = session
     self._monitor_in_progress = False
-    self._validate = validate
-    self._single_intf = single_intf
-
     self._listener = None
     self._net_modules = []
 
@@ -76,8 +71,6 @@ class NetworkOrchestrator:
 
     LOGGER.debug('Starting network orchestrator')
 
-    self._host_user = util.get_host_user()
-
     # Get all components ready
     self.load_network_modules()
 
@@ -90,11 +83,31 @@ class NetworkOrchestrator:
 
   def check_config(self):
 
-    if not util.interface_exists(self._session.get_internet_interface()) or not util.interface_exists(
-        self._session.get_device_interface()):
-      LOGGER.error('Configured interfaces are not ready for use. ' +
-                   'Ensure both interfaces are connected.')
-      return False
+    device_interface_ready = util.interface_exists(
+        self._session.get_device_interface())
+    internet_interface_ready = util.interface_exists(
+        self._session.get_internet_interface())
+
+    if 'single_intf' in self._session.get_runtime_params():
+      # Check for device interface only
+      if not device_interface_ready:
+        LOGGER.error('Device interface is not ready for use. ' +
+                     'Ensure device interface is connected.')
+        return False
+    else:
+      if not device_interface_ready and not internet_interface_ready:
+        LOGGER.error(
+            'Both device and internet interfaces are not ready for use. ' +
+            'Ensure both interfaces are connected.')
+        return False
+      elif not device_interface_ready:
+        LOGGER.error('Device interface is not ready for use. ' +
+                     'Ensure device interface is connected.')
+        return False
+      elif not internet_interface_ready:
+        LOGGER.error('Internet interface is not ready for use. ' +
+                     'Ensure internet interface is connected.')
+        return False
     return True
 
   def start_network(self):
@@ -106,7 +119,7 @@ class NetworkOrchestrator:
     self.create_net()
     self.start_network_services()
 
-    if self._validate:
+    if 'no-validate' not in self._session.get_runtime_params():
       # Start the validator after network is ready
       self.validator.start()
 
@@ -150,21 +163,24 @@ class NetworkOrchestrator:
         f'Discovered device {mac_addr}. Waiting for device to obtain IP')
 
     if device is None:
-      LOGGER.debug(f'Device with MAC address {mac_addr} does not exist in device repository')
+      LOGGER.debug(f'Device with MAC address {mac_addr} does not exist' +
+                   ' in device repository')
       # Ignore device if not registered
       return
 
     device_runtime_dir = os.path.join(RUNTIME_DIR, TEST_DIR,
                                       mac_addr.replace(':', ''))
-    os.makedirs(device_runtime_dir)
-    util.run_command(f'chown -R {self._host_user} {device_runtime_dir}')
+
+    # Cleanup any old current test files
+    shutil.rmtree(device_runtime_dir, ignore_errors=True)
+    os.makedirs(device_runtime_dir, exist_ok=True)
+
+    util.run_command(f'chown -R {util.get_host_user()} {device_runtime_dir}')
 
     packet_capture = sniff(iface=self._session.get_device_interface(),
                            timeout=self._session.get_startup_timeout(),
                            stop_filter=self._device_has_ip)
-    wrpcap(
-        os.path.join(RUNTIME_DIR, TEST_DIR, mac_addr.replace(':', ''),
-                     'startup.pcap'), packet_capture)
+    wrpcap(os.path.join(device_runtime_dir, 'startup.pcap'), packet_capture)
 
     if device.ip_addr is None:
       LOGGER.info(
@@ -202,13 +218,16 @@ class NetworkOrchestrator:
     LOGGER.info(f'Monitoring device with mac addr {device.mac_addr} '
                 f'for {str(self._session.get_monitor_period())} seconds')
 
-    packet_capture = sniff(iface=self._session.get_device_interface(), timeout=self._session.get_monitor_period())
-    wrpcap(
-        os.path.join(RUNTIME_DIR, TEST_DIR, device.mac_addr.replace(':', ''),
-                     'monitor.pcap'), packet_capture)
+    device_runtime_dir = os.path.join(RUNTIME_DIR, TEST_DIR,
+                                      device.mac_addr.replace(':', ''))
+
+    packet_capture = sniff(iface=self._session.get_device_interface(),
+                           timeout=self._session.get_monitor_period())
+    wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'), packet_capture)
 
     self._monitor_in_progress = False
-    self.get_listener().call_callback(NetworkEvent.DEVICE_STABLE, device.mac_addr)
+    self.get_listener().call_callback(NetworkEvent.DEVICE_STABLE,
+                                      device.mac_addr)
 
   def _check_network_services(self):
     LOGGER.debug('Checking network modules...')
@@ -261,24 +280,32 @@ class NetworkOrchestrator:
         'ip route | head -n 1 | awk \'{print $3}\'',
         shell=True).decode('utf-8').strip()
     self._ipv4 = subprocess.check_output(
-        f'ip a show {self._session.get_internet_interface()} | grep \"inet \" | awk \'{{print $2}}\'',
+        (f'ip a show {self._session.get_internet_interface()} | ' +
+         'grep \"inet \" | awk \'{{print $2}}\''),
         shell=True).decode('utf-8').strip()
     self._ipv6 = subprocess.check_output(
-        f'ip a show {self._session.get_internet_interface()} | grep inet6 | awk \'{{print $2}}\'',
+        (f'ip a show {self._session.get_internet_interface()} | grep inet6 | ' +
+         'awk \'{{print $2}}\''),
         shell=True).decode('utf-8').strip()
     self._brd = subprocess.check_output(
-        f'ip a show {self._session.get_internet_interface()} | grep \"inet \" | awk \'{{print $4}}\'',
+        (f'ip a show {self._session.get_internet_interface()} | grep \"inet \" '
+         + '| awk \'{{print $4}}\''),
         shell=True).decode('utf-8').strip()
 
   def _ci_post_network_create(self):
     """ Restore network connection in CI environment """
     LOGGER.info('post cr')
-    util.run_command(f'ip address del {self._ipv4} dev {self._session.get_internet_interface()}')
-    util.run_command(f'ip -6 address del {self._ipv6} dev {self._session.get_internet_interface()}')
+    util.run_command(((f'ip address del {self._ipv4} ' +
+                       'dev {self._session.get_internet_interface()}')))
+    util.run_command((f'ip -6 address del {self._ipv6} ' +
+                      'dev {self._session.get_internet_interface()}'))
     util.run_command(
-        f'ip link set dev {self._session.get_internet_interface()} address 00:B0:D0:63:C2:26')
-    util.run_command(f'ip addr flush dev {self._session.get_internet_interface()}')
-    util.run_command(f'ip addr add dev {self._session.get_internet_interface()} 0.0.0.0')
+        (f'ip link set dev {self._session.get_internet_interface()} ' +
+         'address 00:B0:D0:63:C2:26'))
+    util.run_command(
+        f'ip addr flush dev {self._session.get_internet_interface()}')
+    util.run_command(
+        f'ip addr add dev {self._session.get_internet_interface()} 0.0.0.0')
     util.run_command(
         f'ip addr add dev {INTERNET_BRIDGE} {self._ipv4} broadcast {self._brd}')
     util.run_command(f'ip -6 addr add {self._ipv6} dev {INTERNET_BRIDGE} ')
@@ -293,11 +320,8 @@ class NetworkOrchestrator:
   def create_net(self):
     LOGGER.info('Creating baseline network')
 
-    if self._single_intf:
+    if os.getenv('GITHUB_ACTIONS'):
       self._ci_pre_network_create()
-
-    # Remove IP from internet adapter
-    util.run_command('ifconfig ' + self._session.get_internet_interface() + ' 0.0.0.0')
 
     # Setup the virtual network
     if not self._ovs.create_baseline_net(verify=True):
@@ -305,16 +329,16 @@ class NetworkOrchestrator:
       self.stop()
       sys.exit(1)
 
-    if self._single_intf:
+    if os.getenv("GITHUB_ACTIONS"):
       self._ci_post_network_create()
 
     self._create_private_net()
 
     self._listener = Listener(self._session)
     self.get_listener().register_callback(self._device_discovered,
-                                    [NetworkEvent.DEVICE_DISCOVERED])
+                                          [NetworkEvent.DEVICE_DISCOVERED])
     self.get_listener().register_callback(self._dhcp_lease_ack,
-                                    [NetworkEvent.DHCP_LEASE_ACK])
+                                          [NetworkEvent.DHCP_LEASE_ACK])
 
   def load_network_modules(self):
     """Load network modules from module_config.json."""
@@ -439,7 +463,7 @@ class NetworkOrchestrator:
           privileged=True,
           detach=True,
           mounts=net_module.mounts,
-          environment={'HOST_USER': self._host_user})
+          environment={'HOST_USER': util.get_host_user()})
     except docker.errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)
@@ -589,7 +613,7 @@ class NetworkOrchestrator:
 
     # Add and configure the interface container
     if not self._ip_ctrl.configure_container_interface(
-        bridge_intf, container_intf, "veth0", container_net_ns, mac_addr,
+        bridge_intf, container_intf, 'veth0', container_net_ns, mac_addr,
         net_module.container_name, ipv4_addr, ipv6_addr):
       LOGGER.error('Failed to configure local networking for ' +
                    net_module.name + '. Exiting.')
@@ -615,7 +639,7 @@ class NetworkOrchestrator:
       container_intf = 'tr-cti-' + net_module.dir_name
 
       if not self._ip_ctrl.configure_container_interface(
-          bridge_intf, container_intf, "eth1", container_net_ns, mac_addr):
+          bridge_intf, container_intf, 'eth1', container_net_ns, mac_addr):
         LOGGER.error('Failed to configure internet networking for ' +
                      net_module.name + '. Exiting.')
         sys.exit(1)
@@ -632,7 +656,8 @@ class NetworkOrchestrator:
 
     LOGGER.info('Clearing baseline network')
 
-    if hasattr(self, 'listener') and self.get_listener() is not None and self.get_listener().is_running():
+    if hasattr(self, 'listener') and self.get_listener(
+    ) is not None and self.get_listener().is_running():
       self.get_listener().stop_listener()
 
     client = docker.from_env()
@@ -684,6 +709,7 @@ class NetworkModule:
 
     self.net_config = NetworkModuleNetConfig()
 
+
 class NetworkModuleNetConfig:
   """Define all the properties of the network config
   for a network module"""
@@ -705,6 +731,7 @@ class NetworkModuleNetConfig:
 
   def get_ipv6_addr_with_prefix(self):
     return format(self.ipv6_address) + '/' + str(self.ipv6_network.prefixlen)
+
 
 class NetworkConfig:
   """Define all the properties of the network configuration"""
