@@ -46,7 +46,7 @@ def collect_expected_results(expected_results):
 def collect_actual_results(results_dict):
   """ Yields results from an already loaded testrun results file """
   # "module"."results".[list]."result"
-  for test in results_dict.get('results', []):
+  for test in results_dict.get('tests', {}).get('results', []):
     yield TestResult(test['name'], test['result'])
 
 
