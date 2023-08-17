@@ -15,7 +15,7 @@
 # limitations under the License.
 
 if [[ "$EUID" -ne 0 ]]; then
-    echo "Must run as root. Use sudo testrun"
+    echo "Must run as root. Use sudo $0"
     exit 1
 fi
 
