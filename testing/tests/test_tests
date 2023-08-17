@@ -19,6 +19,7 @@ ip a
 TEST_DIR=/tmp/results
 MATRIX=testing/tests/test_tests.json
 
+rm -rf $TEST_DIR/
 mkdir -p $TEST_DIR
 
 # Setup requirements
@@ -32,7 +33,8 @@ pip3 install pytest
 sudo ip link add dev endev0a type veth peer name endev0b
 sudo ip link set dev endev0a up
 sudo ip link set dev endev0b up
-sudo docker network create -d macvlan -o parent=endev0b endev1
+sudo docker network remove endev0
+sudo docker network create -d macvlan -o parent=endev0b endev0
 
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
@@ -91,9 +93,12 @@ for tester in $TESTERS; do
       exit 1
   fi
 
+  # helps unclean exits when running locally
+  sudo docker stop $tester && sudo docker rm $tester
+  
   # Load Test Container
   sudo docker run -d \
-    --network=endev1 \
+    --network=endev0 \
     --mac-address=$ethmac \
     --cap-add=NET_ADMIN \
     -v /tmp:/out \
@@ -101,20 +106,35 @@ for tester in $TESTERS; do
     --name=$tester \
     ci_test_device1 $args
   
-  wait $TPID
+wait $TPID
+#WAITING=600
+#for i in `seq 1 $WAITING`; do
+#  tail -1 $testrun_log
+#    if [[ -n $(fgrep "All tests complete" $testrun_log) ]]; then
+#        sleep 10
+#        kill -9 $TPID
+#    fi
+#
+#      if [[ ! -d /proc/$TPID ]]; then
+#          break
+#      fi
+#    
+#      sleep 1
+#  done
+
+
   # Following line indicates that tests are completed but wait till it exits
   # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
   #Change this line! - LOGGER.info(f"""Completed running test modules on device
   #          with mac addr {device.mac_addr}""")
 
-  ls runtime
-  more runtime/network/*.log
-  sudo docker kill $tester
+  #more runtime/network/*.log | cat 
   sudo docker logs $tester | cat 
-  
+  sudo docker kill $tester && sudo docker rm $tester
+
   cp runtime/test/${ethmac//:/}/report.json $TEST_DIR/$tester.json
-  more $TEST_DIR/$tester.json
-  more $testrun_log
+  more $TEST_DIR/$tester.json | cat 
+  more $testrun_log | cat 
 
 done
 

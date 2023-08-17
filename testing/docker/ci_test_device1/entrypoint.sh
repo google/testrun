@@ -17,6 +17,7 @@ OUT=/out/testrun_ci.json
 
 NTP_SERVER=10.10.10.5
 DNS_SERVER=10.10.10.4
+INTF=eth0
 
 function wout(){
     temp=${1//./\".\"}
@@ -30,13 +31,13 @@ function wout(){
 dig @8.8.8.8 +short www.google.com
 
 # DHCP
-ip addr flush dev eth0
+ip addr flush dev $INTF
 PID_FILE=/var/run/dhclient.pid
 if [ -f $PID_FILE ]; then
     kill -9 $(cat $PID_FILE) || true
     rm -f $PID_FILE
 fi
-dhclient -v eth0
+dhclient -v $INTF
 
 
 if [ -n "${options[oddservices]}" ]; then
@@ -107,5 +108,7 @@ if [ -n "${options[ntpv3_time_google_com]}" ]; then
         sleep 5
      done) &
 fi
+
+(while true; do arping 10.10.10.1; sleep 1; done) &
 
 tail -f /dev/null
