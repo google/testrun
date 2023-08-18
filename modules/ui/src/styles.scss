@@ -1,0 +1,38 @@
+@import './theming/theme';
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.app-sidebar-button-active .mat-icon path {
+  fill: $white;
+}
+
+.app-sidebar-button.mat-mdc-icon-button .mat-mdc-button-persistent-ripple,
+.app-toolbar-button.mat-mdc-icon-button .mat-mdc-button-persistent-ripple {
+  border-radius: inherit;
+}
+
+.device-form-dialog {
+  max-height: 100vh;
+}
+
+.device-form-dialog .mat-mdc-dialog-container .mdc-dialog__surface {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.device-form-dialog .mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: 12px;
+  border-radius: 12px;
+}
+
+mat-hint {
+  color: #5F6368;
+}

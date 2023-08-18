@@ -1,0 +1,60 @@
+<div class="setting-container-content">
+  <div class="settings-drawer-header">
+    <h4 class="settings-drawer-header-title">Settings</h4>
+    <button
+      mat-button
+      class="settings-drawer-header-button"
+      aria-label="close"
+      (click)="closeSetting()"
+      [disabled]="!isFormValues || !hasSetting">
+      <mat-icon
+        svgIcon="close"
+        class="close-button-icon"
+      ></mat-icon>
+    </button>
+  </div>
+  <div class="setting-drawer-content">
+    <form [formGroup]="settingForm" *ngIf="systemInterfaces$ | async as interfaces">
+      <label id="internet-radio-group-label" class="setting-form-label"> Internet settings </label>
+      <mat-radio-group
+        formControlName="internet_intf"
+        aria-labelledby="internet-radio-group-label"
+        class="setting-radio-group">
+        <mat-radio-button *ngFor="let interface of interfaces" [value]="interface"
+                          class="setting-radio-button">
+          {{ interface }}
+        </mat-radio-button>
+      </mat-radio-group>
+      <label id="device-radio-group-label" class="setting-form-label device-label"> Device
+        settings</label>
+      <mat-radio-group
+        formControlName="device_intf"
+        aria-labelledby="device-radio-group-label"
+        class="setting-radio-group">
+        <mat-radio-button *ngFor="let interface of interfaces" [value]="interface"
+                          class="setting-radio-button">
+          {{ interface }}
+        </mat-radio-button>
+      </mat-radio-group>
+      <mat-error *ngIf="isSubmitting && isFormError" class="error-message-container">
+        <span>
+          Both interfaces must have different values
+        </span>
+      </mat-error>
+    </form>
+  </div>
+</div>
+<div class="setting-drawer-footer">
+  <button mat-flat-button (click)="closeSetting()" [disabled]="!isFormValues || !hasSetting" class="close-button">
+    Cancel
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="saveSetting()"
+    [disabled]="!isFormValues"
+    class="save-button">
+    Save
+  </button>
+</div>
+

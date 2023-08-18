@@ -83,7 +83,7 @@ class TestModule:
       result = None
       test['start'] = datetime.now().isoformat()
       if ('enabled' in test and test['enabled']) or 'enabled' not in test:
-        LOGGER.info('Attempting to run test: ' + test['name'])
+        LOGGER.debug('Attempting to run test: ' + test['name'])
         # Resolve the correct python method by test name and run test
         if hasattr(self, test_method_name):
           if 'config' in test:
@@ -91,10 +91,10 @@ class TestModule:
           else:
             result = getattr(self, test_method_name)()
         else:
-          LOGGER.info(f'Test {test["name"]} not resolved. Skipping')
+          LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
           result = None
       else:
-        LOGGER.info(f'Test {test["name"]} disabled. Skipping')
+        LOGGER.debug(f'Test {test["name"]} is disabled. Skipping')
       if result is not None:
         if isinstance(result, bool):
           test['result'] = 'compliant' if result else 'non-compliant'

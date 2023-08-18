@@ -121,7 +121,7 @@ class TestOrchestrator:
       test_case = self.get_test_case(test_result["name"])
       if (test_case.required_result.lower() == "required"
           and test_result["result"].lower() == "non-compliant"):
-        result = "non-compliant"
+        result = "Non-Compliant"
     return result
 
   def _cleanup_old_test_results(self, device):

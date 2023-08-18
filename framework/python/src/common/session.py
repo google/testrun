@@ -17,6 +17,7 @@
 import datetime
 import json
 import os
+from common import util
 
 NETWORK_KEY = 'network'
 DEVICE_INTF_KEY = 'device_intf'
@@ -83,7 +84,7 @@ class TestRunSession():
       config_file_json = json.load(f)
 
       # Network interfaces
-      if (NETWORK_KEY in config_file_json 
+      if (NETWORK_KEY in config_file_json
           and DEVICE_INTF_KEY in config_file_json.get(NETWORK_KEY)
           and INTERNET_INTF_KEY in config_file_json.get(NETWORK_KEY)):
         self._config[NETWORK_KEY][DEVICE_INTF_KEY] = config_file_json.get(NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
@@ -110,6 +111,7 @@ class TestRunSession():
   def _save_config(self):
     with open(self._config_file, 'w', encoding='utf-8') as f:
       f.write(json.dumps(self._config, indent=2))
+    util.set_file_owner(owner=util.get_host_user(), path=self._config_file)
 
   def get_runtime(self):
     return self._config.get(RUNTIME_KEY)

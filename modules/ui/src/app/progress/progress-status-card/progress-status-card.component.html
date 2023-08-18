@@ -1,0 +1,29 @@
+<ng-container *ngIf="systemStatus$ | async as data">
+  <div class="progress-card" [ngClass]="getClass(data.status)">
+    <div>
+      <p class="progress-card-status-title">
+        Test status
+      </p>
+      <p class="progress-card-status-text">
+        <span>{{data.finished ? 'Complete' : data.status}}</span>
+        <span>{{getTestsResult(data)}}</span>
+      </p>
+    </div>
+    <div>
+      <mat-progress-bar
+        *ngIf="data.status === StatusOfTestrun.InProgress"
+        class="progress-bar"
+        mode="determinate"
+        [value]="getProgressValue(data)">
+      </mat-progress-bar>
+      <div *ngIf="data.finished">
+        <p class="progress-card-result-title">
+          Test result
+        </p>
+        <p class="progress-card-result-text">
+          <span>{{data.status}}</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</ng-container>
