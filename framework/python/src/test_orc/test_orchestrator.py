@@ -23,6 +23,7 @@ from docker.types import Mount
 from common import logger, util
 from common.testreport import TestReport
 from test_orc.module import TestModule
+from test_orc.test_case import TestCase
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
@@ -97,12 +98,12 @@ class TestOrchestrator:
   def _generate_report(self):
 
     report = {}
-    report["device"] = self._session.get_target_device().to_json()
+    report["device"] = self._session.get_target_device().to_dict()
     report["started"] = self._session.get_started().strftime(
         "%Y-%m-%d %H:%M:%S")
     report["finished"] = self._session.get_finished().strftime(
         "%Y-%m-%d %H:%M:%S")
-    report["status"] = self._session.get_status()
+    report["status"] = self._calculate_result()
     report["tests"] = self._session.get_report_tests()
     out_file = os.path.join(
         self._root_path, RUNTIME_DIR,
@@ -113,6 +114,15 @@ class TestOrchestrator:
       json.dump(report, f, indent=2)
     util.run_command(f"chown -R {self._host_user} {out_file}")
     return report
+
+  def _calculate_result(self):
+    result = "Compliant"
+    for test_result in self._session.get_test_results():
+      test_case = self.get_test_case(test_result["name"])
+      if (test_case.required_result.lower() == "required"
+          and test_result["result"].lower() == "non-compliant"):
+        result = "non-compliant"
+    return result
 
   def _cleanup_old_test_results(self, device):
 
@@ -362,7 +372,7 @@ class TestOrchestrator:
   def _load_test_module(self, module_dir):
     """Import module configuration from module_config.json."""
 
-    LOGGER.debug("Loading test module " + module_dir)
+    LOGGER.debug(f"Loading test module {module_dir}")
 
     modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
 
@@ -381,8 +391,21 @@ class TestOrchestrator:
     module.container_name = "tr-ct-" + module.dir_name + "-test"
     module.image_name = "test-run/" + module.dir_name + "-test"
 
+    # Load test cases
     if "tests" in module_json["config"]:
       module.total_tests = len(module_json["config"]["tests"])
+      for test_case_json in module_json["config"]["tests"]:
+        try:
+          test_case = TestCase(
+            name=test_case_json["name"],
+            description=test_case_json["description"],
+            expected_behavior=test_case_json["expected_behavior"],
+            required_result=test_case_json["required_result"]
+          )
+          module.tests.append(test_case)
+        except Exception as error:
+          LOGGER.debug("Failed to load test case. See error for details")
+          LOGGER.error(error)
 
     if "timeout" in module_json["config"]["docker"]:
       module.timeout = module_json["config"]["docker"]["timeout"]
@@ -400,6 +423,7 @@ class TestOrchestrator:
     if "network" in module_json["config"]:
       module.network = module_json["config"]["network"]
 
+    # Ensure container is built after any dependencies
     if "depends_on" in module_json["config"]["docker"]:
       depends_on_module = module_json["config"]["docker"]["depends_on"]
       if self._get_test_module(depends_on_module) is None:
@@ -450,3 +474,25 @@ class TestOrchestrator:
         LOGGER.debug("Container stopped:" + module.container_name)
     except docker.errors.NotFound:
       pass
+
+  def get_test_modules(self):
+    return self._test_modules
+  
+  def get_test_module(self, name):
+    for test_module in self.get_test_modules():
+      if test_module.name == name:
+        return test_module
+    return None
+
+  def get_test_cases(self):
+    test_cases = []
+    for test_module in self.get_test_modules():
+      for test_case in test_module.tests:
+        test_cases.append(test_case)
+    return test_cases
+
+  def get_test_case(self, name):
+    for test_case in self.get_test_cases():
+      if test_case.name == name:
+        return test_case
+    return None

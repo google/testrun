@@ -40,9 +40,9 @@ class Device():
 
   # TODO: Add ability to remove reports once test reports have been cleaned up
 
-  def to_json(self):
+  def to_dict(self):
     """Returns the device as a python dictionary. This is used for the
-    # system status API endpoint and in the report."""
+    system status API endpoint and in the report."""
     device_json = {}
     device_json['mac_addr'] = self.mac_addr
     device_json['manufacturer'] = self.manufacturer
