@@ -17,7 +17,7 @@
 set -o xtrace
 ip a
 TEST_DIR=/tmp/results
-MATRIX=testing/test_tests.json
+MATRIX=testing/tests/test_tests.json
 
 mkdir -p $TEST_DIR
 
@@ -50,6 +50,9 @@ cat <<EOF >local/system.json
 }
 EOF
 
+mkdir -p local/devices
+cp -r testing/device_configs/* local/devices
+
 sudo cmd/install
 
 TESTERS=$(jq -r 'keys[]' $MATRIX)
@@ -62,7 +65,7 @@ for tester in $TESTERS; do
   args=$(jq -r .$tester.args $MATRIX)
 
   touch $testrun_log
-  sudo timeout 900 cmd/start --single-intf > $testrun_log 2>&1 &
+  sudo timeout 900 bin/testrun --single-intf --no-ui --no-validate > $testrun_log 2>&1 &
   TPID=$!
 
   # Time to wait for testrun to be ready
@@ -109,12 +112,12 @@ for tester in $TESTERS; do
   sudo docker kill $tester
   sudo docker logs $tester | cat 
   
-  cp runtime/test/${ethmac//:/}/results.json $TEST_DIR/$tester.json
+  cp runtime/test/${ethmac//:/}/report.json $TEST_DIR/$tester.json
   more $TEST_DIR/$tester.json
   more $testrun_log
 
 done
 
-pytest -s testing/test_tests.py
+pytest -v testing/tests/test_tests.py
 
 exit $?

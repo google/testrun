@@ -15,12 +15,14 @@
       {
         "name": "ntp.network.ntp_support",
         "description": "Does the device request network time sync as client as per RFC 5905 - Network Time Protocol Version 4: Protocol and Algorithms Specification",
-        "expected_behavior": "The device sends an NTPv4 request to the configured NTP server."
+        "expected_behavior": "The device sends an NTPv4 request to the configured NTP server.",
+        "required_result": "Required"
       },
       {
         "name": "ntp.network.ntp_dhcp",
         "description": "Accept NTP address over DHCP",
-        "expected_behavior": "Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)"
+        "expected_behavior": "Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)",
+        "required_result": "Roadmap"
       }
     ]
   }

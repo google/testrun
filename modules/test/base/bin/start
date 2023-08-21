@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 # Copyright 2023 Google LLC
 #
@@ -14,26 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if [[ "$EUID" -ne 0 ]]; then
-    echo "Must run as root. Use sudo cmd/start"
-    exit 1
-fi
-
-# Ensure that /var/run/netns folder exists
-mkdir -p /var/run/netns
-
-# Clear up existing runtime files
-rm -rf runtime
-
-# Check if python modules exist. Install if not
-[ ! -d "venv" ] && cmd/install
-
-# Activate Python virtual environment
-source venv/bin/activate
-
-# TODO: Execute python code
-# Set the PYTHONPATH to include the "src" directory
-export PYTHONPATH="$PWD/framework/python/src"
-python -u framework/python/src/core/test_runner.py $@
-
-deactivate
+/testrun/bin/start_module
