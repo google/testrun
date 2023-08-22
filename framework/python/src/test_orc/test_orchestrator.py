@@ -255,6 +255,7 @@ class TestOrchestrator:
           environment={
               "HOST_USER": self._host_user,
               "DEVICE_MAC": device.mac_addr,
+              "IPV4_ADDR": device.ip_addr,
               "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
               "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
               "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
@@ -376,7 +377,7 @@ class TestOrchestrator:
         try:
           test_case = TestCase(
             name=test_case_json["name"],
-            description=test_case_json["description"],
+            description=test_case_json["test_description"],
             expected_behavior=test_case_json["expected_behavior"],
             required_result=test_case_json["required_result"]
           )

@@ -29,6 +29,7 @@ class TestModule:
   def __init__(self, module_name, log_name):
     self._module_name = module_name
     self._device_mac = os.environ['DEVICE_MAC']
+    self._ipv4_addr = os.environ['IPV4_ADDR']
     self._ipv4_subnet = os.environ['IPV4_SUBNET']
     self._ipv6_subnet = os.environ['IPV6_SUBNET']
     self._add_logger(log_name=log_name, module_name=module_name)
@@ -74,16 +75,21 @@ class TestModule:
     return None
 
   def run_tests(self):
+
     if self._config['config']['network']:
       self._device_ipv4_addr = self._get_device_ipv4()
       LOGGER.info('Device IP Resolved: ' + str(self._device_ipv4_addr))
+
     tests = self._get_tests()
     for test in tests:
       test_method_name = '_' + test['name'].replace('.', '_')
       result = None
+
       test['start'] = datetime.now().isoformat()
+
       if ('enabled' in test and test['enabled']) or 'enabled' not in test:
-        LOGGER.info('Attempting to run test: ' + test['name'])
+
+        LOGGER.debug('Attempting to run test: ' + test['name'])
         # Resolve the correct python method by test name and run test
         if hasattr(self, test_method_name):
           if 'config' in test:
@@ -95,36 +101,26 @@ class TestModule:
           result = None
       else:
         LOGGER.info(f'Test {test["name"]} disabled. Skipping')
+
       if result is not None:
         if isinstance(result, bool):
-          test['result'] = 'compliant' if result else 'non-compliant'
+          test['result'] = 'Compliant' if result else 'Non-Compliant'
         else:
           if result[0] is None:
-            test['result'] = 'skipped'
-            if len(result)>1:
-              test['result_details'] = result[1]
+            test['result'] = 'Skipped'
+            if len(result) > 1:
+              test['description'] = result[1]
           else:
-            test['result'] = 'compliant' if result[0] else 'non-compliant'
-          test['result_details'] = result[1]
+            test['result'] = 'Compliant' if result[0] else 'Non-Compliant'
+          test['description'] = result[1]
       else:
-        test['result'] = 'skipped'
-
-      # Generate the short result description based on result value
-      if test['result'] == 'compliant':
-        test['result_description'] = test[
-            'short_description'] if 'short_description' in test else test[
-                'name'] + ' passed - see result details for more info'
-      elif test['result'] == 'non-compliant':
-        test['result_description'] = test[
-            'name'] + ' failed - see result details for more info'
-      else:
-        test['result_description'] = test[
-            'name'] + ' skipped - see result details for more info'
+        test['result'] = 'Skipped'
 
       test['end'] = datetime.now().isoformat()
       duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(
           test['start'])
       test['duration'] = str(duration)
+      
     json_results = json.dumps({'results': tests}, indent=2)
     self._write_results(json_results)
 
