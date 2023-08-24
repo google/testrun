@@ -525,6 +525,13 @@ class ConnectionModule(TestModule):
                 'details':
                 'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' failed'
             }
+        else:
+          result = {
+                'result':
+                None,
+                'details':
+                'Could not confirm active lease in device. Subnet ' + subnet['start'] + '-' + subnet['end'] + ' not tested'
+            }
       except Exception as e:  # pylint: disable=W0718
         result = {'result': False, 'details': 'Subnet test failed: ' + str(e)}
       results.append(result)
