@@ -29,7 +29,10 @@ STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 SLAAC_PREFIX = 'fd10:77be:4186'
 TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
-NEW_LEASE_WAIT_TIME_DEFAULT = 30
+
+# Should be at least twice as much as the max lease time
+# set in the DHCP server
+NEW_LEASE_WAIT_TIME_DEFAULT = 60
 
 
 class ConnectionModule(TestModule):
@@ -73,10 +76,16 @@ class ConnectionModule(TestModule):
 
   def _connection_private_address(self, config):
     LOGGER.info('Running connection.private_address')
+    # Resolve the configured lease wait time
+    if 'lease_wait_time_sec' in config:
+      self._wait_time_sec = config['lease_wait_time_sec']
     return self._run_subnet_test(config)
 
   def _connection_shared_address(self, config):
     LOGGER.info('Running connection.shared_address')
+    # Resolve the configured lease wait time
+    if 'lease_wait_time_sec' in config:
+      self._wait_time_sec = config['lease_wait_time_sec']
     return self._run_subnet_test(config)
 
   def _connection_dhcp_address(self):
@@ -163,9 +172,13 @@ class ConnectionModule(TestModule):
     else:
       return self._ping(self._device_ipv4_addr)
 
-  def _connection_ipaddr_ip_change(self):
+  def _connection_ipaddr_ip_change(self, config):
     result = None
     LOGGER.info('Running connection.ipaddr.ip_change')
+    # Resolve the configured lease wait time
+    if 'lease_wait_time_sec' in config:
+      self._wait_time_sec = config['lease_wait_time_sec']
+
     if self._dhcp_util.setup_single_dhcp_server():
       lease = self._dhcp_util.get_cur_lease(self._device_mac)
       if lease is not None:
@@ -202,8 +215,13 @@ class ConnectionModule(TestModule):
       result = None, 'Failed to configure network for test'
     return result
 
-  def _connection_ipaddr_dhcp_failover(self):
+  def _connection_ipaddr_dhcp_failover(self, config):
     result = None
+    LOGGER.info('Running connection.ipaddr.dhcp_failover')
+    # Resolve the configured lease wait time
+    if 'lease_wait_time_sec' in config:
+      self._wait_time_sec = config['lease_wait_time_sec']
+
     # Confirm that both servers are online
     primary_status = self._dhcp_util.get_dhcp_server_status(
         dhcp_server_primary=True)

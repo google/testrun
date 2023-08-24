@@ -130,6 +130,7 @@ class DHCPUtil():
 
   def get_new_lease(self, mac_address, dhcp_server_primary=True, wait_time_sec=30):
     lease = None
+    LOGGER.info("Attempting to get new lease. Max wait time in seconds: " + str(wait_time_sec))
     iterations = int((wait_time_sec / 5)) + (wait_time_sec % 5)
     for _ in range(iterations):
       LOGGER.info('Checking for new lease')

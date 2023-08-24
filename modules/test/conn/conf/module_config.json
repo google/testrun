@@ -49,6 +49,7 @@
         "expected_behavior": "The device under test accepts IP addresses within all ranges specified in RFC 1918 and communicates using these addresses.  The Internet Assigned Numbers Authority (IANA) has reserved the following three blocks of the IP address space for private internets.  10.0.0.0 - 10.255.255.255.255 (10/8 prefix). 172.16.0.0 - 172.31.255.255 (172.16/12 prefix).  192.168.0.0 - 192.168.255.255 (192.168/16 prefix)",
         "required_result": "Required",
         "config": {
+          "lease_wait_time_sec": 60,
           "ranges": [
             {
               "start": "10.0.0.100",
@@ -71,6 +72,7 @@
         "expected_behavior": "The device under test accepts IP addresses within the ranges specified in RFC 6598 and communicates using these addresses",
         "required_result": "Required",
         "config": {
+          "lease_wait_time_sec": 60,
           "ranges": [
             {
               "start": "100.64.0.1",
@@ -78,26 +80,6 @@
             }
           ]
         }
-      },
-      {
-        "name": "connection.private_address",
-        "description": "The device under test accepts an IP address that is compliant with RFC 1918 Address Allocation for Private Internets.",
-        "expected_behavior": "The device under test accepts IP addresses within all ranges specified in RFC 1918 and communicates using these addresses.  The Internet Assigned Numbers Authority (IANA) has reserved the following three blocks of the IP address space for private internets.  10.0.0.0 - 10.255.255.255.255 (10/8 prefix). 172.16.0.0 - 172.31.255.255 (172.16/12 prefix).  192.168.0.0 - 192.168.255.255 (192.168/16 prefix)",
-        "required_result": "Required",
-        "config": [
-          {
-            "start": "10.0.0.100",
-            "end": "10.0.0.200"
-          },
-          {
-            "start":"172.16.0.0",
-            "end":"172.16.255.255"
-          },
-          {
-            "start":"192.168.0.0",
-            "end":"192.168.255.255"
-          }
-        ]
       },
       {
         "name": "connection.single_ip",
@@ -115,13 +97,19 @@
         "name": "connection.ipaddr.ip_change",
         "description": "The device responds to a ping (ICMP echo request) to the new IP address it has received after the initial DHCP lease has expired.",
         "expected_behavior": "If the lease expires before the client receiveds a DHCPACK, the client moves to INIT state, MUST immediately stop any other network processing and requires network initialization parameters as if the client were uninitialized.  If the client then receives a DHCPACK allocating the client its previous network addres, the client SHOULD continue network processing.  If the client is given a new network address, it MUST NOT continue using the previous network address and SHOULD notify the local users of the problem.",
-        "required_result": "Required"
+        "required_result": "Required",
+        "config":{
+          "lease_wait_time_sec": 60
+        }
       },
       {
         "name": "connection.ipaddr.dhcp_failover",
         "description": "The device has requested a DHCPREQUEST/REBIND to the DHCP failover server after the primary DHCP server has been brought down.",
         "expected_behavior": "",
-        "required_result": "Required"
+        "required_result": "Required",
+        "config":{
+          "lease_wait_time_sec": 60
+        }
       },
       {
         "name": "connection.ipv6_slaac",
