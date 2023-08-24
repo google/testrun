@@ -29,6 +29,7 @@ STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 SLAAC_PREFIX = 'fd10:77be:4186'
 TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
+NEW_LEASE_WAIT_TIME_DEFAULT = 30
 
 
 class ConnectionModule(TestModule):
@@ -41,6 +42,7 @@ class ConnectionModule(TestModule):
     self.dhcp1_client = DHCPClient1()
     self.dhcp2_client = DHCPClient2()
     self._dhcp_util = DHCPUtil(self.dhcp1_client, self.dhcp2_client, LOGGER)
+    self._wait_time_sec = NEW_LEASE_WAIT_TIME_DEFAULT
 
     # ToDo: Move this into some level of testing, leave for
     # reference until tests are implemented with these calls
@@ -195,7 +197,7 @@ class ConnectionModule(TestModule):
       self._dhcp_util.restore_failover_dhcp_server()
       LOGGER.info("Waiting 30 seconds for reserved lease to expire")
       time.sleep(30)
-      self._dhcp_util.get_new_lease(self._device_mac)
+      self._dhcp_util.get_new_lease(self._device_mac,wait_time_sec=self._wait_time_sec)
     else:
       result = None, 'Failed to configure network for test'
     return result
@@ -219,7 +221,7 @@ class ConnectionModule(TestModule):
             # Make sure the device has received a new lease from the
             # secondary server
             if self._dhcp_util.get_new_lease(self._device_mac,
-                                             dhcp_server_primary=False):
+                                             dhcp_server_primary=False,wait_time_sec=self._wait_time_sec):
               if self._dhcp_util.is_lease_active(lease):
                 result = True, ('Secondary DHCP server lease confirmed active '
                  'in device')
@@ -403,7 +405,8 @@ class ConnectionModule(TestModule):
       if final_result is None:
         final_result = result['result']
       else:
-        final_result &= result['result']
+        if result['result'] is not None:
+          final_result &= result['result']
       final_result_details += result['details'] + '\n'
 
     try:
@@ -413,25 +416,13 @@ class ConnectionModule(TestModule):
       # Wait for the current lease to expire
       self._wait_for_lease_expire(self._get_cur_lease())
 
-      # Wait for a new lease to be provided before exiting test
-      # to prevent other test modules from failing
-      for _ in range(5):
-        LOGGER.info('Checking for new lease')
-        lease = self._get_cur_lease()
-        if lease is not None:
-          LOGGER.info('New Lease found: ' + str(lease))
-          LOGGER.info('Validating subnet for new lease...')
-          in_range = self.is_ip_in_range(lease['ip'], cur_range['start'],
-                                         cur_range['end'])
-          LOGGER.info('Lease within subnet: ' + str(in_range))
-          break
-        else:
-          LOGGER.info('New lease not found. Waiting to check again')
-        time.sleep(5)
-
     except Exception as e:  # pylint: disable=W0718
       LOGGER.error('Failed to restore DHCP server configuration: ' + str(e))
-
+    
+    # Wait for a new lease to be provided before exiting test
+    # to prevent other test modules from failing
+    self._dhcp_util.get_new_lease(self._device_mac,wait_time_sec=self._wait_time_sec)
+      
     return final_result, final_result_details
 
   def _test_subnet(self, subnet, lease):
@@ -444,19 +435,12 @@ class ConnectionModule(TestModule):
         time.sleep(time_to_expire.total_seconds() +
                    5)  # Wait until the expiration time and padd 5 seconds
         LOGGER.info('Current lease expired. Checking for new lease')
-        for _ in range(5):
-          LOGGER.info('Checking for new lease')
-          lease = self._get_cur_lease()
-          if lease is not None:
-            LOGGER.info('New Lease found: ' + str(lease))
-            LOGGER.info('Validating subnet for new lease...')
-            in_range = self.is_ip_in_range(lease['ip'], subnet['start'],
+        lease = self._dhcp_util.get_new_lease(self._device_mac,wait_time_sec=self._wait_time_sec)
+        if lease is not None:
+          LOGGER.info('Validating subnet for new lease...')
+          in_range = self.is_ip_in_range(lease['ip'], subnet['start'],
                                            subnet['end'])
-            LOGGER.info('Lease within subnet: ' + str(in_range))
-            return in_range
-          else:
-            LOGGER.info('New lease not found. Waiting to check again')
-          time.sleep(5)
+          LOGGER.info('Lease within subnet: ' + str(in_range))
 
   def _wait_for_lease_expire(self, lease):
     expiration = datetime.strptime(lease['expires'], '%Y-%m-%d %H:%M:%S')

@@ -128,12 +128,13 @@ class DHCPUtil():
     else:
       return None
 
-  def get_new_lease(self, mac_address, dhcp_server_primary=True):
+  def get_new_lease(self, mac_address, dhcp_server_primary=True, wait_time_sec=30):
     lease = None
-    for _ in range(5):
+    iterations = int((wait_time_sec / 5)) + (wait_time_sec % 5)
+    for _ in range(iterations):
       LOGGER.info('Checking for new lease')
-      if lease is None:
-        lease = self.get_cur_lease(mac_address,dhcp_server_primary)
+      lease = self.get_cur_lease(mac_address,dhcp_server_primary)
+      if lease is not None:
         LOGGER.info('New Lease found: ' + str(lease))
         break
       else:
