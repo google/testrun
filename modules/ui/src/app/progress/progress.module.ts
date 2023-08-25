@@ -11,13 +11,17 @@ import {ProgressComponent} from './progress.component';
 import {ProgressBreadcrumbsComponent} from './progress-breadcrumbs/progress-breadcrumbs.component';
 import {ProgressStatusCardComponent} from './progress-status-card/progress-status-card.component';
 import {ProgressTableComponent} from './progress-table/progress-table.component';
+import {ProgressInitiateFormComponent} from './progress-initiate-form/progress-initiate-form.component';
+import {MatDialogModule} from '@angular/material/dialog';
+import {DeviceItemComponent} from '../components/device-item/device-item.component';
 
 @NgModule({
   declarations: [
     ProgressComponent,
     ProgressBreadcrumbsComponent,
     ProgressStatusCardComponent,
-    ProgressTableComponent
+    ProgressTableComponent,
+    ProgressInitiateFormComponent
   ],
   imports: [
     CommonModule,
@@ -26,7 +30,9 @@ import {ProgressTableComponent} from './progress-table/progress-table.component'
     MatIconModule,
     MatToolbarModule,
     MatProgressBarModule,
-    MatTableModule
+    MatTableModule,
+    MatDialogModule,
+    DeviceItemComponent,
   ]
 })
 export class ProgressModule {

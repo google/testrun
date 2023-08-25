@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Observable} from 'rxjs/internal/Observable';
-import {IResult, StatusOfTestResult} from '../../model/testrun-status';
+import {IResult, StatusResultClassName} from '../../model/testrun-status';
+import {TestRunService} from '../../test-run.service';
 
 @Component({
   selector: 'app-progress-table',
@@ -13,11 +14,9 @@ export class ProgressTableComponent {
 
   displayedColumns: string[] = ['name', 'description', 'result'];
 
-  public getResultClass(result: string): { green: boolean, read: boolean, grey: boolean } {
-    return {
-      'green': result === StatusOfTestResult.Compliant || result === StatusOfTestResult.SmartReady,
-      'read': result === StatusOfTestResult.NonCompliant,
-      'grey': result === StatusOfTestResult.Skipped || result === StatusOfTestResult.NotStarted
-    }
+  constructor(private readonly testRunService: TestRunService) {}
+
+  public getResultClass(result: string): StatusResultClassName {
+    return this.testRunService.getResultClass(result);
   }
 }

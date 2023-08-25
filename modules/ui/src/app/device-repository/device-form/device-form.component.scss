@@ -1,15 +1,20 @@
 @import "../../../theming/colors";
 
+$device-form-max-width: 549px;
+$device-form-min-width: 285px;
+
 :host {
   display: grid;
   grid-template-rows: 1fr;
-  overflow: hidden;
+  overflow: auto;
+  grid-template-columns: minmax(285px, $device-form-max-width);
 }
 
 .device-form {
   display: grid;
   padding: 24px;
-  width: 549px;
+  max-width: $device-form-max-width;
+  min-width: $device-form-min-width;
   gap: 10px;
   overflow: auto;
 }

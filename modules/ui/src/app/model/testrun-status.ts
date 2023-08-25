@@ -45,6 +45,12 @@ export enum StatusOfTestResult {
   NotStarted = 'Not Started'
 }
 
+export interface StatusResultClassName {
+  green: boolean,
+  red: boolean,
+  grey: boolean
+}
+
 export type TestrunStatusKey = keyof typeof StatusOfTestrun;
 export type TestrunStatusValue = typeof StatusOfTestrun[TestrunStatusKey];
 export type TestResultKey = keyof typeof StatusOfTestResult;

@@ -10,15 +10,14 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {DeviceFormComponent} from './device-form/device-form.component';
-import {DeviceItemComponent} from './device-item/device-item.component';
 
 import {DeviceRepositoryRoutingModule} from './device-repository-routing.module';
 import {DeviceRepositoryComponent} from './device-repository.component';
+import {DeviceItemComponent} from '../components/device-item/device-item.component';
 
 @NgModule({
   declarations: [
     DeviceRepositoryComponent,
-    DeviceItemComponent,
     DeviceFormComponent,
   ],
   imports: [
@@ -33,6 +32,7 @@ import {DeviceRepositoryComponent} from './device-repository.component';
     ReactiveFormsModule,
     MatCheckboxModule,
     MatInputModule,
+    DeviceItemComponent,
   ],
 })
 export class DeviceRepositoryModule {

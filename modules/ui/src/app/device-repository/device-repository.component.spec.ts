@@ -8,6 +8,7 @@ import {DeviceRepositoryModule} from './device-repository.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DeviceFormComponent} from './device-form/device-form.component';
 import {MatDialogRef} from '@angular/material/dialog';
+import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
 import SpyObj = jasmine.SpyObj;
 
 const device = {
@@ -30,7 +31,7 @@ describe('DeviceRepositoryComponent', () => {
 
   beforeEach(() => {
     mockService = jasmine.createSpyObj(['getDevices', 'fetchDevices', 'setDevices', 'getTestModules', 'addDevice', 'updateDevice']);
-    mockService.getDevices.and.returnValue(of([]));
+    mockService.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>([]));
     mockService.getTestModules.and.returnValue([
       {
         displayName: "Connection",
@@ -76,7 +77,7 @@ describe('DeviceRepositoryComponent', () => {
 
   describe('with devices', () => {
     beforeEach(() => {
-      mockService.getDevices.and.returnValue(of([device, device, device]));
+      mockService.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>([device, device, device]));
       component.ngOnInit();
     });
 

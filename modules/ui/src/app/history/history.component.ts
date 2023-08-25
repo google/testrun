@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {TestRunService} from '../test-run.service';
 import {Observable} from 'rxjs/internal/Observable';
-import {TestrunStatus} from '../model/testrun-status';
+import {StatusResultClassName, TestrunStatus} from '../model/testrun-status';
 import {DatePipe} from '@angular/common';
 
 @Component({
@@ -31,5 +31,9 @@ export class HistoryComponent implements OnInit {
 
   getFormattedDateString(date: string | null) {
     return date ? this.datePipe.transform(date, 'd MMM y H:mm') : '';
+  }
+
+  public getResultClass(status: string): StatusResultClassName {
+    return this.testRunService.getResultClass(status);
   }
 }

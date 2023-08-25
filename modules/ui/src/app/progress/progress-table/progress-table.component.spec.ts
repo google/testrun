@@ -5,15 +5,20 @@ import {IResult, StatusOfTestResult} from '../../model/testrun-status';
 import {MatTableModule} from '@angular/material/table';
 import {of} from 'rxjs';
 import {TEST_DATA} from '../../mocks/progress.mock';
+import {TestRunService} from '../../test-run.service';
 
 describe('ProgressTableComponent', () => {
   let component: ProgressTableComponent;
   let fixture: ComponentFixture<ProgressTableComponent>;
+  let testRunServiceMock: jasmine.SpyObj<TestRunService>;
+
+  testRunServiceMock = jasmine.createSpyObj(['getResultClass']);
 
   describe('Class tests', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
-        declarations: [ProgressTableComponent]
+        declarations: [ProgressTableComponent],
+        providers: [{provide: TestRunService, useValue: testRunServiceMock}],
       });
       fixture = TestBed.createComponent(ProgressTableComponent);
       component = fixture.componentInstance;
@@ -24,40 +29,17 @@ describe('ProgressTableComponent', () => {
       expect(component).toBeTruthy();
     });
 
-    describe('#getResultClass', () => {
-      it('should have class "green" if test result is "Compliant" or "Smart Ready"', () => {
-        const expectedResult = {
-          green: true, read: false, grey: false
-        };
+    it('#getResultClass should call the service method getResultClass"', () => {
+      const expectedResult = {
+        green: false, red: true, grey: false
+      };
 
-        const result1 = component.getResultClass(StatusOfTestResult.Compliant);
-        const result2 = component.getResultClass(StatusOfTestResult.SmartReady);
+      testRunServiceMock.getResultClass.and.returnValue(expectedResult);
 
-        expect(result1).toEqual(expectedResult);
-        expect(result2).toEqual(expectedResult);
-      });
+      const result = component.getResultClass(StatusOfTestResult.NonCompliant);
 
-      it('should have class "read" if test result is "Non Compliant"', () => {
-        const expectedResult = {
-          green: false, read: true, grey: false
-        };
-
-        const result = component.getResultClass(StatusOfTestResult.NonCompliant);
-
-        expect(result).toEqual(expectedResult);
-      });
-
-      it('should have class "grey" if test result is "Skipped" or "Not Started"', () => {
-        const expectedResult = {
-          green: false, read: false, grey: true
-        };
-
-        const result1 = component.getResultClass(StatusOfTestResult.Skipped);
-        const result2 = component.getResultClass(StatusOfTestResult.NotStarted);
-
-        expect(result1).toEqual(expectedResult);
-        expect(result2).toEqual(expectedResult);
-      });
+      expect(testRunServiceMock.getResultClass).toHaveBeenCalledWith(StatusOfTestResult.NonCompliant);
+      expect(result).toEqual(expectedResult);
     });
   });
 
@@ -67,6 +49,7 @@ describe('ProgressTableComponent', () => {
     beforeEach(async () => {
       await TestBed.configureTestingModule({
         declarations: [ProgressTableComponent],
+        providers: [{provide: TestRunService, useValue: testRunServiceMock}],
         imports: [MatTableModule]
       }).compileComponents();
 

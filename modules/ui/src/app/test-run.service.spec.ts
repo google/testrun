@@ -5,7 +5,7 @@ import {Device, TestModule} from './model/device';
 import {TestRunService} from './test-run.service';
 import {SystemConfig} from './model/setting';
 import {MOCK_PROGRESS_DATA_IN_PROGRESS} from './mocks/progress.mock';
-import {TestrunStatus} from './model/testrun-status';
+import {StatusOfTestResult, TestrunStatus} from './model/testrun-status';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -83,7 +83,7 @@ describe('TestRunService', () => {
   });
 
   it('getDevices should return devices', () => {
-    let result = [] as Device[];
+    let result: Device[] | null = null;
     const deviceArray = [{
       "manufacturer": "Delta",
       "model": "O3-DIN-CPU",
@@ -250,5 +250,67 @@ describe('TestRunService', () => {
     expect(req.request.method).toBe('GET');
 
     req.flush(history);
+  });
+
+  describe('#getResultClass', () => {
+    it('should return class "green" if test result is "Compliant" or "Smart Ready"', () => {
+      const expectedResult = {
+        green: true, red: false, grey: false
+      };
+
+      const result1 = service.getResultClass(StatusOfTestResult.Compliant);
+      const result2 = service.getResultClass(StatusOfTestResult.SmartReady);
+
+      expect(result1).toEqual(expectedResult);
+      expect(result2).toEqual(expectedResult);
+    });
+
+    it('should return class "read" if test result is "Non Compliant"', () => {
+      const expectedResult = {
+        green: false, red: true, grey: false
+      };
+
+      const result = service.getResultClass(StatusOfTestResult.NonCompliant);
+
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should return class "grey" if test result is "Skipped" or "Not Started"', () => {
+      const expectedResult = {
+        green: false, red: false, grey: true
+      };
+
+      const result1 = service.getResultClass(StatusOfTestResult.Skipped);
+      const result2 = service.getResultClass(StatusOfTestResult.NotStarted);
+
+      expect(result1).toEqual(expectedResult);
+      expect(result2).toEqual(expectedResult);
+    });
+  });
+
+  describe('#addDevice', () => {
+    it('should create array with new value if previous value is null', function () {
+      const device = {
+        "manufacturer": "Delta",
+        "model": "O3-DIN-CPU",
+        "mac_addr": "00:1e:42:35:73:c4",
+      } as Device;
+      service.addDevice(device);
+
+      expect(service.getDevices().value).toEqual([device]);
+    });
+
+    it('should add new value if previous value is array', function () {
+      const device = {
+        "manufacturer": "Delta",
+        "model": "O3-DIN-CPU",
+        "mac_addr": "00:1e:42:35:73:c4",
+      } as Device;
+      service.setDevices([device, device]);
+      service.addDevice(device);
+
+      expect(service.getDevices().value).toEqual([device, device, device]);
+    });
+
   });
 });

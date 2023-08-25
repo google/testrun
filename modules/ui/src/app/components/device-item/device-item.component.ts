@@ -5,6 +5,7 @@ import {Device} from '../../model/device';
   selector: 'app-device-item',
   templateUrl: './device-item.component.html',
   styleUrls: ['./device-item.component.scss'],
+  standalone: true
 })
 export class DeviceItemComponent {
   @Input() device!: Device;

@@ -5,7 +5,7 @@ import {Observable} from 'rxjs/internal/Observable';
 import {Device, TestModule} from './model/device';
 import {map, ReplaySubject, retry} from 'rxjs';
 import {SystemConfig} from './model/setting';
-import {TestrunStatus} from './model/testrun-status';
+import {StatusOfTestResult, StatusResultClassName, TestrunStatus} from './model/testrun-status';
 
 const API_URL = 'http://localhost:8000'
 
@@ -56,7 +56,7 @@ export class TestRunService {
     },
   ];
 
-  private devices = new BehaviorSubject<Device[]>([]);
+  private devices = new BehaviorSubject<Device[] | null>(null);
   private _systemConfig = new BehaviorSubject<SystemConfig>({network: {}});
   public systemConfig$ = this._systemConfig.asObservable();
   private systemStatusSubject = new ReplaySubject<TestrunStatus>(1);
@@ -66,7 +66,7 @@ export class TestRunService {
   constructor(private http: HttpClient) {
   }
 
-  getDevices(): Observable<Device[]> {
+  getDevices(): BehaviorSubject<Device[] | null> {
     return this.devices;
   }
 
@@ -131,15 +131,15 @@ export class TestRunService {
   }
 
   hasDevice(macAddress: string): boolean {
-    return this.devices.value.some(device => device.mac_addr === macAddress.trim());
+    return this.devices.value?.some(device => device.mac_addr === macAddress.trim()) || false;
   }
 
   addDevice(device: Device): void {
-    this.devices.next(this.devices.value.concat([device]));
+    this.devices.next(this.devices.value ? this.devices.value.concat([device]) : [device]);
   }
 
   updateDevice(deviceToUpdate: Device, update: Device): void {
-    const device = this.devices.value.find(device => update.mac_addr === device.mac_addr)!;
+    const device = this.devices.value?.find(device => update.mac_addr === device.mac_addr)!;
     device.model = update.model
     device.manufacturer = update.manufacturer
     device.test_modules = update.test_modules;
@@ -158,5 +158,13 @@ export class TestRunService {
 
   getHistory(): Observable<TestrunStatus[]> {
     return this.history;
+  }
+
+  public getResultClass(result: string): StatusResultClassName {
+    return {
+      'green': result === StatusOfTestResult.Compliant || result === StatusOfTestResult.SmartReady,
+      'red': result === StatusOfTestResult.NonCompliant,
+      'grey': result === StatusOfTestResult.Skipped || result === StatusOfTestResult.NotStarted
+    }
   }
 }

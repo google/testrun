@@ -3,6 +3,8 @@ import {Observable} from 'rxjs/internal/Observable';
 import {TestRunService} from '../test-run.service';
 import {IDevice, IResult, StatusOfTestrun, TestrunStatus, TestsData} from '../model/testrun-status';
 import {interval, map, shareReplay, Subject, takeUntil, tap} from 'rxjs';
+import {MatDialog} from '@angular/material/dialog';
+import {ProgressInitiateFormComponent} from './progress-initiate-form/progress-initiate-form.component';
 
 @Component({
   selector: 'app-progress',
@@ -19,7 +21,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
   private destroy$: Subject<boolean> = new Subject<boolean>();
   private startInterval = false;
 
-  constructor(private readonly testRunService: TestRunService) {
+  constructor(private readonly testRunService: TestRunService, public dialog: MatDialog) {
     this.testRunService.getSystemStatus();
   }
 
@@ -64,5 +66,20 @@ export class ProgressComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
+  }
+
+  openTestRunModal(): void {
+    const dialogRef = this.dialog.open(ProgressInitiateFormComponent, {
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: 'initiate-test-run-dialog'
+    });
+
+    dialogRef?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((result: any) => {
+        console.log(result);
+      });
   }
 }

@@ -28,7 +28,7 @@ describe('HistoryComponent', () => {
   let mockService: SpyObj<TestRunService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['fetchHistory', 'getHistory']);
+    mockService = jasmine.createSpyObj(['fetchHistory', 'getHistory', 'getResultClass']);
     TestBed.configureTestingModule({
       imports: [HistoryModule, BrowserAnimationsModule],
       providers: [{provide: TestRunService, useValue: mockService}],
@@ -74,6 +74,7 @@ describe('HistoryComponent', () => {
     describe('with devices', () => {
       beforeEach(() => {
         mockService.getHistory.and.returnValue(of(history));
+        mockService.getResultClass.and.returnValue({green: false, red: true, grey: false});
         component.ngOnInit();
         fixture.detectChanges();
       })
@@ -82,6 +83,12 @@ describe('HistoryComponent', () => {
         const table = compiled.querySelector('table');
 
         expect(table).toBeTruthy();
+      });
+
+      it('should have addition valid class on table cell "Status"', () => {
+        const statusResultEl = compiled.querySelector('.table-cell-result-text');
+
+        expect(statusResultEl?.classList).toContain('red');
       });
 
       it('should have report link', () => {

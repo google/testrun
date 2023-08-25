@@ -40,28 +40,4 @@ table, tr {
   .table-cell-result {
     min-width: 140px;
   }
-
-  .table-cell-result-text {
-    margin: 0;
-    padding: 4px;
-    border-radius: 2px;
-    font-size: 12px;
-    line-height: 16px;
-    letter-spacing: 0.3px;
-
-    &.green {
-      background: $green-50;
-      color: $green-800;
-    }
-
-    &.read {
-      background: $read-50;
-      color: $read-700;
-    }
-
-    &.grey {
-      background: $color-background-grey;
-      color: $grey-800;
-    }
-  }
 }

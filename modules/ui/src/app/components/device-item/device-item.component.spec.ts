@@ -1,8 +1,8 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {Device} from '../../model/device';
-import {DeviceRepositoryModule} from '../device-repository.module';
 
 import {DeviceItemComponent} from './device-item.component';
+import {DeviceRepositoryModule} from '../../device-repository/device-repository.module';
 
 describe('DeviceItemComponent', () => {
   let component: DeviceItemComponent;
@@ -11,8 +11,7 @@ describe('DeviceItemComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [DeviceRepositoryModule],
-      declarations: [DeviceItemComponent]
+      imports: [DeviceRepositoryModule, DeviceItemComponent]
     });
     fixture = TestBed.createComponent(DeviceItemComponent);
     component = fixture.componentInstance;

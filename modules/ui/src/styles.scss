@@ -18,7 +18,7 @@ body {
   border-radius: inherit;
 }
 
-.device-form-dialog {
+.device-form-dialog, .initiate-test-run-dialog {
   max-height: 100vh;
 }
 
@@ -26,6 +26,7 @@ body {
   overflow: hidden;
   display: grid;
   grid-template-rows: 1fr;
+  min-width: 300px;
 }
 
 .device-form-dialog .mat-mdc-dialog-container {
@@ -35,4 +36,28 @@ body {
 
 mat-hint {
   color: #5F6368;
+}
+
+.table-cell-result-text {
+  margin: 0;
+  padding: 4px;
+  border-radius: 2px;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.3px;
+
+  &.green {
+    background: $green-50;
+    color: $green-800;
+  }
+
+  &.red {
+    background: $red-50;
+    color: $red-700;
+  }
+
+  &.grey {
+    background: $color-background-grey;
+    color: $grey-800;
+  }
 }

@@ -12,7 +12,7 @@ import {Subject, takeUntil} from 'rxjs';
   styleUrls: ['./device-repository.component.scss'],
 })
 export class DeviceRepositoryComponent implements OnInit {
-  devices$!: Observable<Device[]>;
+  devices$!: Observable<Device[] | null>;
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(private testRunService: TestRunService, public dialog: MatDialog) {

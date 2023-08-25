@@ -26,7 +26,7 @@
             Stop
           </button>
           <button
-            *ngIf="data.finished"
+            *ngIf="data.finished && data.status !== StatusOfTestrun.Cancelled"
             class="report-button"
             aria-label="Download testrun report"
             mat-flat-button>
@@ -55,6 +55,7 @@
           aria-label="Start new testrun"
           color="primary"
           [disabled]="(systemStatus$ | async)?.status === StatusOfTestrun.InProgress"
+          (click)="openTestRunModal()"
           mat-flat-button>
     Start New Testrun
   </button>

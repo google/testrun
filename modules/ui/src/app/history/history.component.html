@@ -40,7 +40,11 @@
       <!-- Status Column -->
       <ng-container matColumnDef="status">
         <th *matHeaderCellDef mat-header-cell>Status</th>
-        <td *matCellDef="let data" mat-cell> {{data.status}} </td>
+        <td *matCellDef="let data" mat-cell>
+          <span class="table-cell-result-text" [ngClass]="getResultClass(data.status)">
+            {{data.status}}
+          </span>
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="report">

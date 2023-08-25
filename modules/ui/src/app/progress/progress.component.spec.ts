@@ -10,6 +10,10 @@ import {MatToolbarModule} from '@angular/material/toolbar';
 import {Component, Input} from '@angular/core';
 import {Observable} from 'rxjs/internal/Observable';
 import {IResult, TestrunStatus} from '../model/testrun-status';
+import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
+import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
+import {Device} from '../model/device';
+import {ProgressInitiateFormComponent} from './progress-initiate-form/progress-initiate-form.component';
 
 describe('ProgressComponent', () => {
   let component: ProgressComponent;
@@ -17,7 +21,8 @@ describe('ProgressComponent', () => {
   let compiled: HTMLElement;
   let testRunServiceMock: jasmine.SpyObj<TestRunService>;
 
-  testRunServiceMock = jasmine.createSpyObj(['getSystemStatus', 'setSystemStatus', 'systemStatus$', 'stopTestrun']);
+  testRunServiceMock = jasmine.createSpyObj(['getSystemStatus', 'setSystemStatus', 'systemStatus$', 'stopTestrun', 'getDevices']);
+  testRunServiceMock.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>([]));
 
   describe('Class tests', () => {
     beforeEach(() => {
@@ -26,8 +31,13 @@ describe('ProgressComponent', () => {
 
       TestBed.configureTestingModule({
         declarations: [ProgressComponent],
-        providers: [{provide: TestRunService, useValue: testRunServiceMock}],
-        imports: [MatButtonModule, MatIconModule, MatToolbarModule]
+        providers: [
+          {provide: TestRunService, useValue: testRunServiceMock},
+          {
+            provide: MatDialogRef,
+            useValue: {}
+          },],
+        imports: [MatButtonModule, MatIconModule, MatToolbarModule, MatDialogModule]
       });
       fixture = TestBed.createComponent(ProgressComponent);
       component = fixture.componentInstance;
@@ -92,12 +102,17 @@ describe('ProgressComponent', () => {
           FakeProgressBreadcrumbsComponent,
           FakeProgressStatusCardComponent,
           FakeProgressTableComponent],
-        providers: [{provide: TestRunService, useValue: testRunServiceMock}],
-        imports: [MatButtonModule, MatIconModule, MatToolbarModule]
+        providers: [
+          {provide: TestRunService, useValue: testRunServiceMock}, {
+            provide: MatDialogRef,
+            useValue: {}
+          },],
+        imports: [MatButtonModule, MatIconModule, MatToolbarModule, MatDialogModule]
       }).compileComponents();
 
       fixture = TestBed.createComponent(ProgressComponent);
       compiled = fixture.nativeElement as HTMLElement;
+      component = fixture.componentInstance;
     });
 
     afterEach(() => {
@@ -118,10 +133,29 @@ describe('ProgressComponent', () => {
         expect(toolbarEl).toBeNull();
       });
 
-      it('should have anabled "Start" button', () => {
+      it('should have enabled "Start" button', () => {
         const startBtn = compiled.querySelector('.start-button') as HTMLButtonElement;
 
         expect(startBtn.disabled).toBeFalse();
+      });
+
+      it('should open initiate test run modal when start button clicked', () => {
+        const openSpy = spyOn(component.dialog, 'open').and
+          .returnValue({
+            afterClosed: () => of(true)
+          } as MatDialogRef<typeof ProgressInitiateFormComponent>);
+        const startBtn = compiled.querySelector('.start-button') as HTMLButtonElement;
+        startBtn.click();
+
+        expect(openSpy).toHaveBeenCalled();
+        expect(openSpy).toHaveBeenCalledWith(ProgressInitiateFormComponent, {
+          autoFocus: true,
+          hasBackdrop: true,
+          disableClose: true,
+          panelClass: 'initiate-test-run-dialog'
+        });
+
+        openSpy.calls.reset();
       });
     });
 
