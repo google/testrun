@@ -4,25 +4,25 @@
   </mat-toolbar>
 
   <div class="history-content">
-    <table [dataSource]="history$" mat-table>
+    <table [dataSource]="history$" mat-table tabindex="0">
 
       <!-- # Column -->
       <ng-container matColumnDef="#">
         <th *matHeaderCellDef mat-header-cell>Test Run #</th>
         <td *matCellDef="let data" mat-cell>
-          {{data.device.manufacturer}} {{data.device.model}} {{data.device.firmware}} {{data.started | date: 'd MMM y h:mm'}}</td>
+          {{getTestRunId(data)}}</td>
       </ng-container>
 
       <!-- Started Column -->
       <ng-container matColumnDef="started">
         <th *matHeaderCellDef mat-header-cell>Started</th>
-        <td *matCellDef="let data" mat-cell> {{ data.started | date:'d MMM y h:mm' }}</td>
+        <td *matCellDef="let data" mat-cell>{{getFormattedDateString(data.started)}}</td>
       </ng-container>
 
       <!-- Ended Column -->
       <ng-container matColumnDef="finished">
         <th *matHeaderCellDef mat-header-cell>Finished</th>
-        <td *matCellDef="let data" mat-cell> {{data.finished | date:'d MMM y h:mm' }} </td>
+        <td *matCellDef="let data" mat-cell>{{getFormattedDateString(data.finished)}}</td>
       </ng-container>
 
       <!-- Manufacturer Column -->
@@ -39,16 +39,23 @@
 
       <!-- Status Column -->
       <ng-container matColumnDef="status">
-        <th *matHeaderCellDef mat-header-cell>Result</th>
+        <th *matHeaderCellDef mat-header-cell>Status</th>
         <td *matCellDef="let data" mat-cell> {{data.status}} </td>
       </ng-container>
 
       <ng-container matColumnDef="report">
         <th *matHeaderCellDef mat-header-cell></th>
-        <td *matCellDef="let data" mat-cell><a>
-          <mat-icon class="download-report-icon" fontSet="material-icons-outlined">file_download
-          </mat-icon>
-        </a></td>
+        <td *matCellDef="let data" mat-cell>
+          <a
+            class="download-report-link"
+            download="{{getTitle(data)}}"
+            href="{{data.report}}"
+            target="_blank"
+            title="Download report for Test Run # {{getTestRunId(data)}}"
+          >
+            <mat-icon class="download-report-icon" fontSet="material-icons-outlined">file_download
+            </mat-icon>
+          </a></td>
       </ng-container>
 
       <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
@@ -61,7 +68,7 @@
   <div class="results-content-empty">
     <div class="results-content-empty-message">
       <span class="results-content-empty-message-header">Sorry, there are no reports yet!</span>
-      <span class="results-content-empty-message-main">Reports will automatically generate following a tetsrun completion.</span>
+      <span class="results-content-empty-message-main">Reports will automatically generate following a testrun completion.</span>
     </div>
   </div>
 </ng-template>

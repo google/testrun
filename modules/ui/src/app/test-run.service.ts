@@ -114,6 +114,12 @@ export class TestRunService {
       });
   }
 
+  stopTestrun(): Observable<boolean> {
+    return this.http
+      .post<any>(`${API_URL}/system/stop`, {})
+      .pipe(retry(1), map(() => true));
+  }
+
   getTestModules(): TestModule[] {
     return this.testModules;
   }

@@ -36,4 +36,6 @@ const PROGRESS_DATA_RESPONSE = ((status: string, finished: string | null, tests:
 export const MOCK_PROGRESS_DATA_IN_PROGRESS: TestrunStatus = PROGRESS_DATA_RESPONSE(StatusOfTestrun.InProgress, null, TEST_DATA);
 export const MOCK_PROGRESS_DATA_COMPLIANT: TestrunStatus = PROGRESS_DATA_RESPONSE(StatusOfTestrun.Compliant, '2023-06-22T09:20:00.123Z', TEST_DATA_RESULT);
 
+export const MOCK_PROGRESS_DATA_CANCELLED: TestrunStatus = PROGRESS_DATA_RESPONSE(StatusOfTestrun.Cancelled, null, TEST_DATA);
+
 export const MOCK_PROGRESS_DATA_NOT_STARTED: TestrunStatus = {...MOCK_PROGRESS_DATA_IN_PROGRESS, status: StatusOfTestrun.Idle, started: null};

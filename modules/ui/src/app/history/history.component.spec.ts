@@ -80,7 +80,16 @@ describe('HistoryComponent', () => {
 
       it('should have data table', () => {
         const table = compiled.querySelector('table');
+
         expect(table).toBeTruthy();
+      });
+
+      it('should have report link', () => {
+        const link = compiled.querySelector('.download-report-link') as HTMLAnchorElement;
+
+        expect(link.href).toEqual('https://api.testrun.io/report.pdf');
+        expect(link.download).toEqual('delta_03-din-src_1.2.2_completed_23_jun_2023_10:11');
+        expect(link.title).toEqual('Download report for Test Run # Delta 03-DIN-SRC 1.2.2 23 Jun 2023 10:11');
       });
     });
   });

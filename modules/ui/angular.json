@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist",
+            "outputPath": "dist/test-run-ui",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": [
@@ -39,8 +39,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "1000kb",
+                  "maximumError": "2000kb"
                 },
                 {
                   "type": "anyComponentStyle",

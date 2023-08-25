@@ -1,5 +1,5 @@
 import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {CommonModule, DatePipe} from '@angular/common';
 import {HistoryComponent} from './history.component';
 import {HistoryRoutingModule} from './history-routing.module';
 import {MatTableModule} from '@angular/material/table';
@@ -16,7 +16,8 @@ import {MatToolbarModule} from '@angular/material/toolbar';
     MatTableModule,
     MatIconModule,
     MatToolbarModule
-  ]
+  ],
+  providers: [DatePipe]
 })
 export class HistoryModule {
 }

@@ -95,6 +95,8 @@ class TestOrchestrator:
     LOGGER.debug("Old test results cleaned")
     self._test_in_progress = False
 
+    return report.get_status()
+
   def _generate_report(self):
 
     report = {}
@@ -276,7 +278,7 @@ class TestOrchestrator:
 
     log_stream = module.container.logs(stream=True, stdout=True, stderr=True)
     while (time.time() < test_module_timeout and status == "running"
-           and self._session.get_status() == "In progress"):
+           and self._session.get_status() == "In Progress"):
       try:
         line = next(log_stream).decode("utf-8").strip()
         if re.search(LOG_REGEX, line):

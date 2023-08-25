@@ -23,21 +23,31 @@ export class ProgressStatusCardComponent {
   }
 
   public getTestsResult(data: TestrunStatus): string {
-    if (data.status === StatusOfTestrun.InProgress || data.finished) {
+    if (data.status === StatusOfTestrun.InProgress || data.status === StatusOfTestrun.Cancelled || data.finished) {
       if ((data.tests as TestsData)?.results?.length && (data.tests as TestsData)?.total) {
         return `${(data.tests as TestsData)?.results?.length}/${(data.tests as TestsData)?.total}`
-      } else if((data.tests as IResult[])?.length) {
+      } else if ((data.tests as IResult[])?.length) {
         return `${(data.tests as IResult[])?.length}/${(data.tests as IResult[])?.length}`
       }
     }
     return '';
   }
 
+  public getTestStatus(data: TestrunStatus): string {
+    if (data.finished) {
+      return 'Complete';
+    } else if (data.status === StatusOfTestrun.Cancelled) {
+      return 'Incomplete';
+    } else {
+      return data.status;
+    }
+  }
+
   public getProgressValue(data: TestrunStatus): number {
     const testData = data.tests as TestsData;
 
     if (testData && testData.total && testData.results?.length) {
-      return testData.results.length / testData.total * 100;
+      return Math.round(testData.results.length / testData.total * 100);
     }
     return 0;
   }

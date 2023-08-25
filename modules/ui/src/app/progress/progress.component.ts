@@ -55,6 +55,12 @@ export class ProgressComponent implements OnInit, OnDestroy {
     ).subscribe();
   }
 
+  public stopTestrun(): void {
+    this.testRunService.stopTestrun()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
+  }
+
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.unsubscribe();

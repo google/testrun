@@ -12,11 +12,13 @@
           </app-progress-breadcrumbs>
         </div>
         <div class="toolbar-row bottom">
+
           <p class="progress-title">
-            {{data.device.manufacturer}} {{data.device.model}} {{data.device.firmware}} {{data.started | date: 'd MMM y h:mm'}}
+            {{data.device.manufacturer}} {{data.device.model}} {{data.device.firmware}} {{data.started | date: 'd MMM y H:mm'}}
           </p>
           <button
             *ngIf="data.status === StatusOfTestrun.InProgress"
+            (click)="stopTestrun()"
             class="stop-button"
             aria-label="Stop testrun"
             color="warn"

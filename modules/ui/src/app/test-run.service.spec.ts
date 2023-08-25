@@ -210,6 +210,19 @@ describe('TestRunService', () => {
     req.flush(result);
   });
 
+  it('stopTestrun should have necessary request data', () => {
+    const apiUrl = 'http://localhost:8000/system/stop'
+
+    service.stopTestrun().subscribe((res) => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(apiUrl);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush({});
+  });
+
   it('getHistory should return history', () => {
     let result: TestrunStatus[] = [];
 

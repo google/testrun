@@ -97,29 +97,29 @@ class TestModule:
         LOGGER.debug(f'Test {test["name"]} is disabled. Skipping')
       if result is not None:
         if isinstance(result, bool):
-          test['result'] = 'compliant' if result else 'non-compliant'
+          test['result'] = 'Compliant' if result else 'Non-Compliant'
         else:
           if result[0] is None:
-            test['result'] = 'skipped'
+            test['result'] = 'Skipped'
             if len(result)>1:
               test['result_details'] = result[1]
           else:
-            test['result'] = 'compliant' if result[0] else 'non-compliant'
+            test['result'] = 'Compliant' if result[0] else 'Non-Compliant'
           test['result_details'] = result[1]
       else:
-        test['result'] = 'skipped'
+        test['result'] = 'Skipped'
 
       # Generate the short result description based on result value
-      if test['result'] == 'compliant':
+      if test['result'] == 'Compliant':
         test['result_description'] = test[
             'short_description'] if 'short_description' in test else test[
                 'name'] + ' passed - see result details for more info'
-      elif test['result'] == 'non-compliant':
+      elif test['result'] == 'Non-Compliant':
         test['result_description'] = test[
             'name'] + ' failed - see result details for more info'
       else:
         test['result_description'] = test[
-            'name'] + ' skipped - see result details for more info'
+            'name'] + ' Skipped - see result details for more info'
 
       test['end'] = datetime.now().isoformat()
       duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(

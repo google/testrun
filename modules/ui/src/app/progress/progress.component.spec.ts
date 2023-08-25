@@ -3,7 +3,7 @@ import {ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick} from '
 import {ProgressComponent} from './progress.component';
 import {TestRunService} from '../test-run.service';
 import {of} from 'rxjs';
-import {MOCK_PROGRESS_DATA_COMPLIANT, MOCK_PROGRESS_DATA_IN_PROGRESS, MOCK_PROGRESS_DATA_NOT_STARTED, TEST_DATA} from '../mocks/progress.mock';
+import {MOCK_PROGRESS_DATA_CANCELLED, MOCK_PROGRESS_DATA_COMPLIANT, MOCK_PROGRESS_DATA_IN_PROGRESS, MOCK_PROGRESS_DATA_NOT_STARTED, TEST_DATA} from '../mocks/progress.mock';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatToolbarModule} from '@angular/material/toolbar';
@@ -17,11 +17,12 @@ describe('ProgressComponent', () => {
   let compiled: HTMLElement;
   let testRunServiceMock: jasmine.SpyObj<TestRunService>;
 
-  testRunServiceMock = jasmine.createSpyObj(['getSystemStatus', 'setSystemStatus', 'systemStatus$']);
+  testRunServiceMock = jasmine.createSpyObj(['getSystemStatus', 'setSystemStatus', 'systemStatus$', 'stopTestrun']);
 
   describe('Class tests', () => {
     beforeEach(() => {
       testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+      testRunServiceMock.stopTestrun.and.returnValue(of(true));
 
       TestBed.configureTestingModule({
         declarations: [ProgressComponent],
@@ -39,6 +40,12 @@ describe('ProgressComponent', () => {
     it('should create', () => {
       expect(component).toBeTruthy();
     });
+
+    it('#stopTestrun should call service method stopTestrun', () => {
+      component.stopTestrun();
+
+      expect(testRunServiceMock.stopTestrun).toHaveBeenCalled();
+    })
 
     describe('#ngOnInit', () => {
       it('should set systemStatus$ value', () => {
@@ -77,6 +84,8 @@ describe('ProgressComponent', () => {
 
   describe('DOM tests', () => {
     beforeEach(async () => {
+      testRunServiceMock.stopTestrun.and.returnValue(of(true));
+
       await TestBed.configureTestingModule({
         declarations: [
           ProgressComponent,
@@ -136,6 +145,14 @@ describe('ProgressComponent', () => {
         expect(stopBtn).not.toBeNull();
       });
 
+      it('should call stopTestrun on click "Stop" button', () => {
+        const stopBtn = compiled.querySelector('.stop-button') as HTMLButtonElement;
+
+        stopBtn.click();
+
+        expect(testRunServiceMock.stopTestrun).toHaveBeenCalled();
+      })
+
       it('should have disabled "Start" button', () => {
         const startBtn = compiled.querySelector('.start-button') as HTMLButtonElement;
 
@@ -182,6 +199,25 @@ describe('ProgressComponent', () => {
         const reportBtn = compiled.querySelector('.report-button');
 
         expect(reportBtn).not.toBeNull();
+      });
+    });
+
+    describe('with available systemStatus$ data, as Cancelled', () => {
+      beforeEach(() => {
+        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_CANCELLED);
+        fixture.detectChanges();
+      });
+
+      it('should have anable "Start" button', () => {
+        const startBtn = compiled.querySelector('.start-button') as HTMLButtonElement;
+
+        expect(startBtn.disabled).toBeFalse();
+      });
+
+      it('should not have "Download Report" button', () => {
+        const reportBtn = compiled.querySelector('.report-button');
+
+        expect(reportBtn).toBeNull();
       });
     });
 

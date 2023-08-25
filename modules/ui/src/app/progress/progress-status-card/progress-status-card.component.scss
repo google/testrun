@@ -27,7 +27,7 @@
   }
 
   &.canceled {
-    background-color: mat.get-color-from-palette($color-secondary, 700);
+    background-color: $secondary;
   }
 
   p {

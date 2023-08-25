@@ -46,7 +46,7 @@ class TestRunSession():
     self._load_config()
 
   def start(self):
-    self._status = 'Waiting for device'
+    self._status = 'Waiting for Device'
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -195,7 +195,7 @@ class TestRunSession():
       for device_report in device_reports:
         reports.append(device_report.to_json())
 
-    return reports
+    return sorted(reports, key=lambda report: report['started'], reverse=True)
 
   def add_total_tests(self, no_tests):
     self._total_tests += no_tests

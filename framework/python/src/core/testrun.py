@@ -102,9 +102,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self._session,
       self._net_orc)
 
-    LOGGER.debug(f'''Using configuration:
-                 {self.get_session().get_config()}''')
-
     if self._no_ui:
 
       # Check Test Run is able to start
@@ -292,7 +289,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
       )
 
       self.get_net_orc().start_listener()
-      self._set_status('Waiting for device')
+      self._set_status('Waiting for Device')
       LOGGER.info('Waiting for devices on the network...')
 
       time.sleep(self.get_session().get_runtime())
@@ -384,9 +381,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def _device_stable(self, mac_addr):
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
-    self._set_status('In progress')
-    self._test_orc.run_test_modules()
-    self._set_status('Complete')
+    self._set_status('In Progress')
+    result = self._test_orc.run_test_modules()
+    self._set_status(result)
 
   def _set_status(self, status):
     self.get_session().set_status(status)
