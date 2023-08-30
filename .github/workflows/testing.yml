@@ -28,6 +28,7 @@ jobs:
         shell: bash {0}
         run: testing/tests/test_tests
       - name: Archive runtime results
+        if: ${{ always() }}
         run: tar --exclude-vcs -czf runtime.tgz runtime/ .
       - name: Upload runtime results
         uses: actions/upload-artifact@v3
