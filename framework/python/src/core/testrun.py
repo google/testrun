@@ -126,7 +126,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._session.clear_device_repository()
     self._load_devices(device_dir=LOCAL_DEVICES_DIR)
 
-    # Temporarily removing loading of template device 
+    # Temporarily removing loading of template device
     # configs (feature not required yet)
     # self._load_devices(device_dir=RESOURCE_DEVICES_DIR)
     return self.get_session().get_device_repository()

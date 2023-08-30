@@ -19,7 +19,7 @@ jobs:
         run: cmd/package
       - name: Install Testrun
         shell: bash {0}
-        run: dpkg -i testrun*.deb
+        run: sudo dpkg -i testrun*.deb
       - name: Run tests
         shell: bash {0}
         run: testing/baseline/test_baseline

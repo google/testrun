@@ -193,7 +193,7 @@ class ConnectionModule(TestModule):
         result = None, 'Device has no current DHCP lease'
       # Restore the network
       self._dhcp_util.restore_failover_dhcp_server()
-      LOGGER.info("Waiting 30 seconds for reserved lease to expire")
+      LOGGER.info('Waiting 30 seconds for reserved lease to expire')
       time.sleep(30)
       self._dhcp_util.get_new_lease(self._device_mac)
     else:
@@ -279,7 +279,7 @@ class ConnectionModule(TestModule):
   def _connection_ipv6_ping(self):
     LOGGER.info('Running connection.ipv6_ping')
     result = None
-    
+
     if self._device_ipv6_addr is None:
       LOGGER.info('No IPv6 SLAAC address found. Cannot ping')
       result = None, 'No IPv6 SLAAc address found. Cannot ping'

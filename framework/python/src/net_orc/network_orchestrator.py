@@ -329,7 +329,7 @@ class NetworkOrchestrator:
       self.stop()
       sys.exit(1)
 
-    if os.getenv("GITHUB_ACTIONS"):
+    if os.getenv('GITHUB_ACTIONS'):
       self._ci_post_network_create()
 
     self._create_private_net()
