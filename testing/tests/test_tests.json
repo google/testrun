@@ -8,7 +8,7 @@
         }
     },
     "tester2": {
-        "description": "uses DHCP",
+        "description": "expected to pass most things",
         "image": "test-run/ci_test1",
         "args": "ntpv4_dhcp dns_dhcp",
         "ethmac": "02:42:aa:00:00:02",
@@ -21,20 +21,17 @@
             "connection.dhcp_address": "compliant",
             "connection.mac_address": "compliant",
             "connection.target_ping": "compliant",
+            "connection.single_ip": "compliant",
+            "connection.dhcp_failover": "compliant",
+            "connection.ip_change": "compliant"
         }
     },
     "tester3": {
         "description": "",
         "image": "test-run/ci_test1",
-        "args": "ntpv4_dhcp dns_dhcp",
-        "ethmac": "02:42:aa:00:00:02",
-        "expected_results": {
-            "security.nmap.ports": "compliant",
-            "ntp.network.ntp_support": "compliant",
-            "ntp.network.ntp_dhcp": "compliant",
-            "connection.private_address": "compliant",
-            "connection.shared_address": "compliant"
-        }
+        "args": "kill_dhcp",
+        "ethmac": "02:42:aa:00:00:03",
+        "expected_results": {}
     }
     
 }

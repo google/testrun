@@ -1,7 +1,6 @@
 name: Testrun test suite
 
 on:
-  push:
   pull_request:
   schedule:
     - cron: '0 13 * * *'
@@ -29,6 +28,15 @@ jobs:
       - name: Run tests
         shell: bash {0}
         run: testing/tests/test_tests
+      - name: Archive runtime results
+        run: tar --exclude-vcs -czf runtime.tgz runtime/ .
+      - name: Upload runtime results
+        uses: actions/upload-artifact@v3
+        if: ${{ always() }}
+        with:
+          if-no-files-found: error
+          name: runtime_${{ github.action }}_${{ github.run_id }}
+          path: runtime.tgz
 
   pylint:
     name:  Pylint

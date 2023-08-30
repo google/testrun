@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 ip a
 
@@ -38,6 +38,8 @@ if [ -f $PID_FILE ]; then
     rm -f $PID_FILE
 fi
 dhclient -v $INTF
+DHCP_TPID=$!
+echo $DHCP_TPID
 
 
 if [ -n "${options[oddservices]}" ]; then
@@ -110,16 +112,24 @@ if [ -n "${options[ntpv3_time_google_com]}" ]; then
 fi
 
 if [ -n "${options[dns_google]}" ]; then
-    echo starting mock none snmpv3 on port UDP 161
+    echo starting dns requests to 8.8.8.8
     (while true; do dig @8.8.8.8 +short www.google.com; sleep 3; done) &
 fi
 
 if [ -n "${options[dns_dhcp]}" ]; then
-    echo starting mock none snmpv3 on port UDP 161
+    echo starting dns requests to $DNS_SERVER
     (while true; do dig @$DNS_SERVER +short www.google.com; sleep 3; done) &
 fi
 
+if [ -n "${options[kill_dhcp]}" ]; then
+    echo killing DHCP
+    ipv4=$(ip a show $INTF | grep "inet " | awk '{print $2}')
+    pkill -f dhclient
+    ip addr change $ipv4 dev $INTF valid_lft forever preferred_lft forever
 
-(while true; do arping 10.10.10.1; sleep 1; done) &
+fi
 
+
+(while true; do arping 10.10.10.1; sleep 10; done) &
+(while true; do ip a | cat; sleep 10; done) &
 tail -f /dev/null
