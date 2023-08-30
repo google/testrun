@@ -109,6 +109,17 @@ if [ -n "${options[ntpv3_time_google_com]}" ]; then
      done) &
 fi
 
+if [ -n "${options[dns_google]}" ]; then
+    echo starting mock none snmpv3 on port UDP 161
+    (while true; do dig @8.8.8.8 +short www.google.com; sleep 3; done) &
+fi
+
+if [ -n "${options[dns_dhcp]}" ]; then
+    echo starting mock none snmpv3 on port UDP 161
+    (while true; do dig @$DNS_SERVER +short www.google.com; sleep 3; done) &
+fi
+
+
 (while true; do arping 10.10.10.1; sleep 1; done) &
 
 tail -f /dev/null
