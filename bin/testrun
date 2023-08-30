@@ -32,6 +32,9 @@ mkdir -p local/devices
 # Check if Python modules exist. Install if not
 [ ! -d "venv" ] && sudo cmd/install
 
+# Remove existing runtime data
+rm -rf runtime/*
+
 # Activate Python virtual environment
 source venv/bin/activate
 
