@@ -26,17 +26,17 @@ fi
 # Ensure that /var/run/netns folder exists
 sudo mkdir -p /var/run/netns
 
+export TESTRUNPATH=/usr/local/testrun
+cd $TESTRUNPATH
+
 # Create device folder if it doesn't exist
 mkdir -p local/devices
-
-# Check if Python modules exist. Install if not
-[ ! -d "venv" ] && sudo cmd/install
 
 # Activate Python virtual environment
 source venv/bin/activate
 
 # Set the PYTHONPATH to include the "src" directory
-export PYTHONPATH="$PWD/framework/python/src"
+export PYTHONPATH="$TESTRUNPATH/framework/python/src"
 python -u framework/python/src/core/test_runner.py $@
 
 deactivate

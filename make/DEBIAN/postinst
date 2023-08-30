@@ -27,3 +27,5 @@ deactivate
 
 # Copy the default configuration
 cp -u local/system.json.example local/system.json
+
+echo Successfully installed Testrun

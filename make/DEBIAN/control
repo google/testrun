@@ -1,0 +1,5 @@
+Package: Testrun
+Version: 1.0
+Architecture: amd64
+Maintainer: Google <boddey@google.com>
+Description: Automatically verify IoT device network behavior
