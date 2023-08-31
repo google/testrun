@@ -78,8 +78,8 @@ class DNSModule(TestModule):
       result = None, 'No DNS traffic detected from the device'
     return result
 
-  def _dns_network_from_device(self):
-    LOGGER.info('Running dns.network.from_device')
+  def _dns_network_hostname_resolution(self):
+    LOGGER.info('Running dns.network.hostname_resolution')
     result = None
     LOGGER.info('Checking DNS traffic from device: ' + self._device_mac)
 
