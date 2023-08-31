@@ -11,7 +11,7 @@ import {DatePipe} from '@angular/common';
 })
 export class HistoryComponent implements OnInit {
   history$!: Observable<TestrunStatus[]>;
-  displayedColumns: string[] = ['#', 'started', 'finished', 'manufacturer', 'model', 'status', 'report']
+  displayedColumns: string[] = ['#', 'started', 'finished', 'manufacturer', 'model', 'result', 'report']
 
   constructor(private testRunService: TestRunService, private datePipe: DatePipe) {
     this.testRunService.fetchHistory();
@@ -23,10 +23,6 @@ export class HistoryComponent implements OnInit {
 
   getTestRunId(data: TestrunStatus) {
     return `${data.device.manufacturer} ${data.device.model} ${data.device.firmware} ${this.getFormattedDateString(data.started)}`;
-  }
-
-  getTitle(data: TestrunStatus) {
-    return `${data.device.manufacturer} ${data.device.model} ${data.device.firmware} ${data.status} ${this.getFormattedDateString(data.started)}`.replace(/ /g, "_").toLowerCase();
   }
 
   getFormattedDateString(date: string | null) {

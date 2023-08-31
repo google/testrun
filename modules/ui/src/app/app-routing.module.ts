@@ -1,9 +1,11 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
+import {allowToRunTestGuard} from './guards/allow-to-run-test.guard';
 
 const routes: Routes = [
   {
     path: 'runtime',
+    canActivate: [allowToRunTestGuard],
     loadChildren: () => import('./progress/progress.module').then(m => m.ProgressModule)
   },
   {
@@ -12,6 +14,7 @@ const routes: Routes = [
   },
   {
     path: 'results',
+    canActivate: [allowToRunTestGuard],
     loadChildren: () => import('./history/history.module').then(m => m.HistoryModule)
   },
   {

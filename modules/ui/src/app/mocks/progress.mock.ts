@@ -18,7 +18,7 @@ export const TEST_DATA: TestsData = {
   results: TEST_DATA_RESULT
 }
 
-const PROGRESS_DATA_RESPONSE = ((status: string, finished: string | null, tests: TestsData | IResult[]) => {
+const PROGRESS_DATA_RESPONSE = ((status: string, finished: string | null, tests: TestsData | IResult[], report?: string) => {
   return {
     status,
     device: {
@@ -29,12 +29,15 @@ const PROGRESS_DATA_RESPONSE = ((status: string, finished: string | null, tests:
     },
     started: '2023-06-22T09:20:00.123Z',
     finished,
-    tests
+    tests,
+    report
   }
 });
 
 export const MOCK_PROGRESS_DATA_IN_PROGRESS: TestrunStatus = PROGRESS_DATA_RESPONSE(StatusOfTestrun.InProgress, null, TEST_DATA);
-export const MOCK_PROGRESS_DATA_COMPLIANT: TestrunStatus = PROGRESS_DATA_RESPONSE(StatusOfTestrun.Compliant, '2023-06-22T09:20:00.123Z', TEST_DATA_RESULT);
+export const MOCK_PROGRESS_DATA_COMPLIANT: TestrunStatus = PROGRESS_DATA_RESPONSE(
+  StatusOfTestrun.Compliant,'2023-06-22T09:20:00.123Z', TEST_DATA_RESULT, 'https://api.testrun.io/report.pdf'
+);
 
 export const MOCK_PROGRESS_DATA_CANCELLED: TestrunStatus = PROGRESS_DATA_RESPONSE(StatusOfTestrun.Cancelled, null, TEST_DATA);
 

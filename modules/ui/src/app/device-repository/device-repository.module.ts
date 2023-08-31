@@ -14,6 +14,7 @@ import {DeviceFormComponent} from './device-form/device-form.component';
 import {DeviceRepositoryRoutingModule} from './device-repository-routing.module';
 import {DeviceRepositoryComponent} from './device-repository.component';
 import {DeviceItemComponent} from '../components/device-item/device-item.component';
+import {DeviceTestsComponent} from '../components/device-tests/device-tests.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import {DeviceItemComponent} from '../components/device-item/device-item.compone
     MatCheckboxModule,
     MatInputModule,
     DeviceItemComponent,
+    DeviceTestsComponent,
   ],
 })
 export class DeviceRepositoryModule {

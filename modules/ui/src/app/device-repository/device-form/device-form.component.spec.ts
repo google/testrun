@@ -3,13 +3,14 @@ import {ComponentFixture, fakeAsync, flush, TestBed} from '@angular/core/testing
 import {DeviceFormComponent} from './device-form.component';
 import {TestRunService} from '../../test-run.service';
 import {MatButtonModule} from '@angular/material/button';
-import {ReactiveFormsModule} from '@angular/forms';
+import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatInputModule} from '@angular/material/input';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {Device} from '../../model/device';
 import {of, throwError} from 'rxjs';
+import {DeviceTestsComponent} from '../../components/device-tests/device-tests.component';
 
 describe('DeviceFormComponent', () => {
   let component: DeviceFormComponent;
@@ -46,7 +47,7 @@ describe('DeviceFormComponent', () => {
           }
         },
         {provide: MAT_DIALOG_DATA, useValue: {}},],
-      imports: [MatButtonModule, ReactiveFormsModule, MatCheckboxModule, MatInputModule, MatDialogModule, BrowserAnimationsModule]
+      imports: [MatButtonModule, ReactiveFormsModule, MatCheckboxModule, MatInputModule, MatDialogModule, BrowserAnimationsModule, DeviceTestsComponent]
     });
     fixture = TestBed.createComponent(DeviceFormComponent);
     component = fixture.componentInstance;
@@ -207,6 +208,12 @@ describe('DeviceFormComponent', () => {
 
       expect(test.length).toEqual(2);
     });
+
+    it('should be enabled', () => {
+      const testsForm = compiled.querySelector('app-device-tests form');
+
+      expect(testsForm?.classList.contains('disabled')).toEqual(false);
+    });
   });
 
   describe('device model', () => {
@@ -320,10 +327,7 @@ describe('DeviceFormComponent', () => {
       const model: HTMLInputElement = compiled.querySelector('.device-form-model')!;
       const manufacturer: HTMLInputElement = compiled.querySelector('.device-form-manufacturer')!;
       const macAddress: HTMLInputElement = compiled.querySelector('.device-form-mac-address')!;
-      const tests = compiled.querySelectorAll('mat-checkbox input')!;
 
-      expect((tests[0] as HTMLInputElement).checked).toBeFalse()
-      expect((tests[1] as HTMLInputElement).checked).toBeTrue()
       expect(model.value).toEqual('O3-DIN-CPU');
       expect(manufacturer.value).toEqual('Delta');
       expect(macAddress.value).toEqual('00:1e:42:35:73:c4');
@@ -333,7 +337,9 @@ describe('DeviceFormComponent', () => {
       const closeSpy = spyOn(component.dialogRef, 'close');
       testRunServiceMock.saveDevice.and.returnValue(of(true));
       testRunServiceMock.hasDevice.and.returnValue(true);
-
+      // fill the test controls
+      component.test_modules.push(new FormControl(false));
+      component.test_modules.push(new FormControl(true));
       component.saveDevice();
       fixture.detectChanges();
 

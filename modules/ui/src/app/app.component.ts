@@ -1,8 +1,8 @@
 import {Component, ViewChild} from '@angular/core';
-import {MatButton} from '@angular/material/button';
 import {MatIconRegistry} from '@angular/material/icon';
 import {DomSanitizer} from '@angular/platform-browser';
 import {MatDrawer, MatDrawerToggleResult} from '@angular/material/sidenav';
+import {TestRunService} from './test-run.service';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -20,8 +20,10 @@ export class AppComponent {
 
   constructor(
     private matIconRegistry: MatIconRegistry,
-    private domSanitizer: DomSanitizer
+    private domSanitizer: DomSanitizer,
+    private testRunService: TestRunService
   ) {
+    testRunService.fetchDevices();
     this.matIconRegistry.addSvgIcon(
       'devices',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_LOGO_URL)
@@ -42,14 +44,6 @@ export class AppComponent {
       'close',
       this.domSanitizer.bypassSecurityTrustResourceUrl(CLOSE_URL)
     );
-  }
-
-  /**
-   * Dummy call to show how button toggle state
-   * @param el
-   */
-  buttonClicked(el: MatButton) {
-    el._elementRef.nativeElement.classList.toggle('app-sidebar-button-active');
   }
 
   async closeSetting(): Promise<MatDrawerToggleResult> {

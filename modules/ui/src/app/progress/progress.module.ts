@@ -14,6 +14,10 @@ import {ProgressTableComponent} from './progress-table/progress-table.component'
 import {ProgressInitiateFormComponent} from './progress-initiate-form/progress-initiate-form.component';
 import {MatDialogModule} from '@angular/material/dialog';
 import {DeviceItemComponent} from '../components/device-item/device-item.component';
+import {MatInputModule} from '@angular/material/input';
+import {ReactiveFormsModule} from '@angular/forms';
+import {DeviceTestsComponent} from '../components/device-tests/device-tests.component';
+import {DownloadReportComponent} from '../components/download-report/download-report.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +37,10 @@ import {DeviceItemComponent} from '../components/device-item/device-item.compone
     MatTableModule,
     MatDialogModule,
     DeviceItemComponent,
+    MatInputModule,
+    ReactiveFormsModule,
+    DeviceTestsComponent,
+    DownloadReportComponent
   ]
 })
 export class ProgressModule {

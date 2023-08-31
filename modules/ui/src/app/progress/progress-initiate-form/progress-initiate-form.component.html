@@ -1,20 +1,64 @@
-<div class="progress-initiate-form">
+<form [formGroup]="initiateForm" class="progress-initiate-form">
   <span class="progress-initiate-form-title">Create new Testrun</span>
 
-  <ng-container *ngIf="devices$| async as devices">
-    <section class="progress-initiate-form-content" formArrayName="test_modules">
-      <div class="progress-initiate-form-content-devices">
-        <ng-container *ngFor="let device of devices">
-          <app-device-item (itemClicked)="deviceSelected(device)"
-                           [device]="device"></app-device-item>
-        </ng-container>
-      </div>
-    </section>
-  </ng-container>
+  <section *ngIf="devices$| async as devices" class="progress-initiate-form-content">
+    <ng-container *ngIf="selectedDevice===null">
+      <ng-container *ngFor="let device of devices">
+        <app-device-item (itemClicked)="deviceSelected(device)"
+                         [device]="device"></app-device-item>
+      </ng-container>
+    </ng-container>
+    <app-device-item *ngIf="selectedDevice!=null" [device]="selectedDevice"></app-device-item>
+    <mat-form-field [class.hidden]="selectedDevice===null" appearance="outline">
+      <mat-label>Firmware</mat-label>
+      <input formControlName="firmware" matInput>
+      <mat-hint>Please enter device firmware</mat-hint>
+      <mat-error *ngIf="firmware.errors?.['required']">
+        <span>Firmware is <strong>required</strong></span>
+      </mat-error>
+    </mat-form-field>
+    <ng-container *ngIf="selectedDevice!==null">
+      <app-device-tests
+        [deviceForm]="initiateForm"
+        [deviceTestModules]="selectedDevice.test_modules"
+        [disabled]="true"
+        [testModules]="testModules">
+      </app-device-tests>
+    </ng-container>
+  </section>
 
   <mat-dialog-actions class="progress-initiate-form-actions">
-    <button (click)="cancel()" color="primary" mat-button>Cancel</button>
-    <button color="primary" disabled mat-button>Change Device</button>
-    <button class="save-button" color="primary" disabled mat-flat-button>Start Testrun</button>
+    <button (click)="cancel()" color="primary" mat-button type="button">Cancel</button>
+    <button
+      (click)="changeDevice()"
+      [disabled]="selectedDevice===null"
+      class="progress-initiate-form-actions-change-device"
+      color="primary"
+      mat-button
+      type="button">
+      Change Device
+    </button>
+    <button
+      (click)="startTestRun()"
+      [disabled]="selectedDevice===null"
+      class="progress-initiate-form-actions-start"
+      color="primary"
+      mat-flat-button
+      type="button">Start Testrun
+    </button>
   </mat-dialog-actions>
-</div>
+</form>
+
+<ng-template #selectFirmware>
+  <ng-container *ngIf="selectedDevice!==null">
+    <app-device-item [device]="selectedDevice"></app-device-item>
+    <mat-form-field appearance="outline">
+      <mat-label>Firmware</mat-label>
+      <input class="device-form-manufacturer" formControlName="firmware" matInput>
+      <mat-hint>Please enter device firmware</mat-hint>
+      <mat-error *ngIf="firmware.errors?.['required']">
+        <span>Firmware is <strong>required</strong></span>
+      </mat-error>
+    </mat-form-field>
+  </ng-container>
+</ng-template>

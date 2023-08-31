@@ -10,17 +10,7 @@ import {DeviceFormComponent} from './device-form/device-form.component';
 import {MatDialogRef} from '@angular/material/dialog';
 import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
 import SpyObj = jasmine.SpyObj;
-
-const device = {
-  "manufacturer": "Delta",
-  "model": "O3-DIN-CPU",
-  "mac_addr": "00:1e:42:35:73:c4",
-  "test_modules": {
-    "dns": {
-      "enabled": true,
-    }
-  }
-} as Device;
+import {device} from '../mocks/device.mock';
 
 describe('DeviceRepositoryComponent', () => {
   let service: TestRunService;

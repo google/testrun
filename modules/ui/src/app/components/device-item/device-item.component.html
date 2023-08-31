@@ -1,5 +1,5 @@
 <button (click)="itemClick()" [attr.aria-label]="'Edit device {{device.model}}'"
-        class="device-item">
+        class="device-item" type="button">
   <div [attr.aria-label]="device.model" class="item-name">{{device.model}}</div>
   <div [attr.aria-label]="device.manufacturer"
        class="item-manufacturer">{{device.manufacturer}}</div>

@@ -5,6 +5,7 @@ import {HistoryRoutingModule} from './history-routing.module';
 import {MatTableModule} from '@angular/material/table';
 import {MatIconModule} from '@angular/material/icon';
 import {MatToolbarModule} from '@angular/material/toolbar';
+import {DownloadReportComponent} from '../components/download-report/download-report.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import {MatToolbarModule} from '@angular/material/toolbar';
     HistoryRoutingModule,
     MatTableModule,
     MatIconModule,
-    MatToolbarModule
+    MatToolbarModule,
+    DownloadReportComponent
   ],
   providers: [DatePipe]
 })

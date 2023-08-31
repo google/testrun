@@ -28,14 +28,11 @@
       <span>Please, check. A MAC address consists of 12 hexadecimal digits (0 to 9, a to f, or A to F).</span>
     </mat-error>
   </mat-form-field>
-
-  <section class="device-form-test-modules" formArrayName="test_modules">
-    <p *ngFor="let test of test_modules.controls; let i = index">
-      <mat-checkbox [formControlName]="i">
-        {{testModules[i].displayName}}
-      </mat-checkbox>
-    </p>
-  </section>
+  <app-device-tests
+    [deviceForm]="deviceForm"
+    [deviceTestModules]="data.device?.test_modules"
+    [testModules]="testModules">
+  </app-device-tests>
 
   <mat-error *ngIf="error$| async">
     <span>{{error$| async}}</span>

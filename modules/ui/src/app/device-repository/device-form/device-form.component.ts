@@ -1,7 +1,7 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {AbstractControl, FormArray, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {Device, TestModule, TestModules} from '../../model/device';
+import {Device, TestModule} from '../../model/device';
 import {TestRunService} from '../../test-run.service';
 import {DeviceStringFormatValidator} from './device-string-format.validator';
 import {catchError, of, retry, Subject, takeUntil} from 'rxjs';
@@ -57,9 +57,6 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
       this.model.setValue(this.data.device.model);
       this.manufacturer.setValue(this.data.device.manufacturer);
       this.mac_addr.setValue(this.data.device.mac_addr);
-      this.fillTestModulesFormControls(this.data.device.test_modules);
-    } else {
-      this.fillTestModulesFormControls();
     }
   }
 
@@ -115,7 +112,7 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
   private createDeviceFromForm(): Device {
     const testModules: { [key: string]: { enabled: boolean } } = {};
     this.deviceForm.value.test_modules.forEach((enabled: boolean, i: number) => {
-      testModules[this.testModules[i].name] = {
+      testModules[this.testModules[i]?.name] = {
         enabled: enabled
       }
     });
@@ -150,17 +147,5 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
       mac_addr: ['', [Validators.pattern(MAC_ADDRESS_PATTERN)]],
       test_modules: new FormArray([])
     });
-  }
-
-  private fillTestModulesFormControls(testModules?: TestModules) {
-    if (testModules) {
-      this.testModules.forEach(test => {
-        this.test_modules.push(new FormControl(testModules[test.name]?.enabled || false));
-      });
-    } else {
-      this.testModules.forEach(test => {
-        this.test_modules.push(new FormControl(test.enabled));
-      });
-    }
   }
 }

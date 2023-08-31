@@ -1,16 +1,17 @@
 @import "../../../theming/colors";
+@import "../../../theming/variables";
 
 :host {
   display: grid;
   grid-template-rows: 1fr;
   overflow: hidden;
-  max-height: 715px;
-  width: 433px;
+  width: 450px;
 }
 
 .progress-initiate-form {
   display: grid;
   overflow: auto;
+  max-height: 100vh;
 }
 
 .progress-initiate-form-title {
@@ -24,6 +25,17 @@
 .progress-initiate-form-content {
   overflow: auto;
   min-height: 78px;
+  padding: 32px 0;
+  display: grid;
+  gap: 32px;
+  justify-content: center;
+  justify-items: center;
+  grid-template-columns: 1fr;
+
+  & > * {
+    width: $device-item-width;
+    box-sizing: border-box;
+  }
 }
 
 .progress-initiate-form-actions {
@@ -33,10 +45,6 @@
   border-top: 1px solid $lighter-grey;
 }
 
-.progress-initiate-form-content-devices {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-  align-items: center;
-  padding: 32px 0;
+.hidden {
+  display: none;
 }

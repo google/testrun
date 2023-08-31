@@ -38,8 +38,8 @@
       </ng-container>
 
       <!-- Status Column -->
-      <ng-container matColumnDef="status">
-        <th *matHeaderCellDef mat-header-cell>Status</th>
+      <ng-container matColumnDef="result">
+        <th *matHeaderCellDef mat-header-cell>Result</th>
         <td *matCellDef="let data" mat-cell>
           <span class="table-cell-result-text" [ngClass]="getResultClass(data.status)">
             {{data.status}}
@@ -50,16 +50,12 @@
       <ng-container matColumnDef="report">
         <th *matHeaderCellDef mat-header-cell></th>
         <td *matCellDef="let data" mat-cell>
-          <a
-            class="download-report-link"
-            download="{{getTitle(data)}}"
-            href="{{data.report}}"
-            target="_blank"
-            title="Download report for Test Run # {{getTestRunId(data)}}"
-          >
-            <mat-icon class="download-report-icon" fontSet="material-icons-outlined">file_download
+          <app-download-report [data]="data">
+            <mat-icon class="download-report-icon" fontSet="material-icons-outlined">
+              file_download
             </mat-icon>
-          </a></td>
+          </app-download-report>
+        </td>
       </ng-container>
 
       <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>

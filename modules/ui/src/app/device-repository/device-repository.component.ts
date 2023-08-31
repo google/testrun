@@ -16,7 +16,6 @@ export class DeviceRepositoryComponent implements OnInit {
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(private testRunService: TestRunService, public dialog: MatDialog) {
-    this.testRunService.fetchDevices();
   }
 
   ngOnInit(): void {

@@ -2,7 +2,7 @@
   <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
     <div class="app-sidebar">
       <ng-container
-        *ngTemplateOutlet="navButton;context:{route: '/menu', icon: 'menu', label: 'Menu', name: 'menu'}">
+        *ngTemplateOutlet="navButton;context:{icon: 'menu', label: 'Menu', name: 'menu'}">
       </ng-container>
       <ng-container
         *ngTemplateOutlet="navButtonRoute;context:{route: '/runtime', svgIcon: 'testrun_logo_small', label: 'Runtime', name: 'runtime'}">
@@ -47,16 +47,11 @@
   </mat-drawer>
 </mat-drawer-container>
 
-<ng-template let-route="route" let-svgIcon="svgIcon" let-icon="icon" let-label="label"
-             let-name="name" #navButton>
+<ng-template #navButton let-svgIcon="svgIcon" let-icon="icon" let-label="label" let-name="name" >
   <button
-    #button
     mat-button
-    routerLinkActive="app-sidebar-button-active"
     class="app-sidebar-button app-sidebar-button-{{name}}"
-    [attr.aria-label]="label"
-    routerLink="{{route}}"
-    (click)="buttonClicked(button)">
+    [attr.aria-label]="label">
     <mat-icon *ngIf="svgIcon" svgIcon="{{svgIcon}}"></mat-icon>
     <mat-icon *ngIf="icon">{{icon}}</mat-icon>
   </button>
@@ -64,7 +59,6 @@
 <ng-template #navButtonRoute let-icon="icon" let-label="label" let-name="name"
              let-route="route" let-svgIcon="svgIcon">
   <button
-    #button
     [attr.aria-label]="label"
     class="app-sidebar-button app-sidebar-button-{{name}}"
     mat-button

@@ -14,6 +14,7 @@ import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
 import {Device} from '../model/device';
 import {ProgressInitiateFormComponent} from './progress-initiate-form/progress-initiate-form.component';
+import {DownloadReportComponent} from '../components/download-report/download-report.component';
 
 describe('ProgressComponent', () => {
   let component: ProgressComponent;
@@ -107,7 +108,7 @@ describe('ProgressComponent', () => {
             provide: MatDialogRef,
             useValue: {}
           },],
-        imports: [MatButtonModule, MatIconModule, MatToolbarModule, MatDialogModule]
+        imports: [MatButtonModule, MatIconModule, MatToolbarModule, MatDialogModule, DownloadReportComponent]
       }).compileComponents();
 
       fixture = TestBed.createComponent(ProgressComponent);
@@ -233,6 +234,14 @@ describe('ProgressComponent', () => {
         const reportBtn = compiled.querySelector('.report-button');
 
         expect(reportBtn).not.toBeNull();
+      });
+
+      it('should have report link', () => {
+        const link = compiled.querySelector('.download-report-link') as HTMLAnchorElement;
+
+        expect(link.href).toEqual('https://api.testrun.io/report.pdf');
+        expect(link.download).toEqual('delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20');
+        expect(link.title).toEqual('Download report for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20');
       });
     });
 

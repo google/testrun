@@ -3,6 +3,8 @@
 
 :host {
   overflow: hidden;
+  flex-direction: column;
+  display: flex;
 }
 
 .device-repository-content-empty {
