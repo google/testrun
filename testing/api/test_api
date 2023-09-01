@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TESTRUN_OUT=/tmp/testrun.log
-
 ifconfig
 
 # Setup requirements
@@ -25,6 +23,7 @@ sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils 
 #pip3 install pytest
 
 # Setup device network
+sudo ip link add dev dummynet type dummy
 sudo ip link add dev endev0a type veth peer name endev0b
 sudo ip link set dev endev0a up
 sudo ip link set dev endev0b up
@@ -36,7 +35,9 @@ sudo ip link add dev dummynet type dummy
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 # Build Test Container
-sudo docker build ./testing/docker/ci_baseline -t ci1 -f  ./testing/docker/ci_baseline/Dockerfile
+sudo docker build ./testing/docker/ci_test_device1 -t ci_test_device1 -f  ./testing/docker/ci_test_device1/Dockerfile
+
+sudo chown -R $USER local
 
 cat <<EOF >local/system.json
 {
@@ -50,31 +51,6 @@ EOF
 
 sudo cmd/install
 
-sudo bin/testrun > $TESTRUN_OUT 2>&1 & 
-TPID=$!
-
-# Time to wait for testrun to be ready
-WAITING=60
-for i in `seq 1 $WAITING`; do
-    if [[ -n $(fgrep "API waiting for requests" $TESTRUN_OUT) ]]; then
-        break
-    fi
-
-    if [[ ! -d /proc/$TPID ]]; then
-        cat $TESTRUN_OUT
-        echo "error encountered starting test run"
-        exit 1
-    fi
-   
-    sleep 1
-done
-
-if [[ $i -eq $WAITING ]]; then
-    cat $TESTRUN_OUT
-    echo "failed after waiting $WAITING seconds for test-run start"
-    exit 1
-fi
-
-pytest testing/api/test_api.py
+sudo pytest testing/api/test_api.py
 
 exit $?

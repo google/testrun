@@ -29,14 +29,25 @@ jobs:
         run: testing/tests/test_tests
       - name: Archive runtime results
         if: ${{ always() }}
-        run: tar --exclude-vcs -czf runtime.tgz runtime/
+        run: sudo tar --exclude-vcs -czf runtime.tgz runtime/
       - name: Upload runtime results
         uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
           if-no-files-found: error
-          name: runtime_${{ github.action }}_${{ github.run_id }}
+          name: runtime_${{ github.workflow }}_${{ github.run_id }}
           path: runtime.tgz
+
+   testrun_api:
+    name:  API
+    runs-on: ubuntu-20.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2.3.4
+      - name: Run tests
+        shell: bash {0}
+        run: testing/api/test_api
 
   pylint:
     name:  Pylint

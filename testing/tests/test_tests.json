@@ -16,7 +16,6 @@
             "security.nmap.ports": "compliant",
             "ntp.network.ntp_support": "compliant",
             "ntp.network.ntp_dhcp": "compliant",
-            "connection.private_address": "compliant",
             "connection.shared_address": "compliant",
             "connection.dhcp_address": "compliant",
             "connection.mac_address": "compliant",
