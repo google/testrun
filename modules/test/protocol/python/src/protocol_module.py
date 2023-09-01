@@ -15,6 +15,7 @@
 from test_module import TestModule
 import netifaces
 from protocol_bacnet import BACnet
+from protocol_modbus import Modbus
 
 LOG_NAME = 'test_protocol'
 LOGGER = None
@@ -37,23 +38,26 @@ class ProtocolModule(TestModule):
     # Resolve the appropriate IP for BACnet comms
     local_address = self.get_local_ip(interface_name)
     if local_address:
-      result = self._bacnet.validate_device(local_address, self._device_ipv4_addr)
+      result = self._bacnet.validate_device(local_address,
+                                            self._device_ipv4_addr)
     else:
       result = None, 'Could not resolve test container IP for BACnet discovery'
     return result
-    
-  def _protocol_valid_modbus(self):
+
+  def _protocol_valid_modbus(self, config):
     LOGGER.info('Running protocol.valid_modbus')
-    return None, 'Test not yet implemented'
+    # Extract basic device connection information
+    modbus = Modbus(log=LOGGER, device_ip=self._device_ipv4_addr, config=config)
+    return modbus.validate_device()
 
   def get_local_ip(self, interface_name):
     try:
       addresses = netifaces.ifaddresses(interface_name)
       local_address = addresses[netifaces.AF_INET][0]['addr']
       if local_address:
-        LOGGER.info(f"IP address of {interface_name}: {local_address}")
+        LOGGER.info(f'IP address of {interface_name}: {local_address}')
       else:
-        LOGGER.info(f"Unable to retrieve IP address for {interface_name}")
+        LOGGER.info(f'Unable to retrieve IP address for {interface_name}')
       return local_address
     except (KeyError, IndexError):
       return None
