@@ -86,6 +86,8 @@ class TestOrchestrator:
     report = TestReport().from_json(self._generate_report())
     device.add_report(report)
 
+    self._write_reports(report)
+
     self._test_in_progress = False
     self._timestamp_results(device)
 
@@ -94,6 +96,25 @@ class TestOrchestrator:
 
     LOGGER.debug("Old test results cleaned")
     self._test_in_progress = False
+
+  def _write_reports(self, test_report):
+    out_dir = os.path.join(
+        self._root_path, RUNTIME_DIR,
+        self._session.get_target_device().mac_addr.replace(":", ""))
+
+    # Write the json report
+    with open(os.path.join(out_dir,"report.json"),"w", encoding="utf-8") as f:
+      json.dump(test_report.to_json(), f, indent=2)
+
+    # Write the html report
+    with open(os.path.join(out_dir,"report.html"),"w", encoding="utf-8") as f:
+      f.write(test_report.to_html())
+
+    # Write the pdf report
+    with open(os.path.join(out_dir,"report.pdf"),"wb") as f:
+      f.write(test_report.to_pdf().getvalue())
+
+    util.run_command(f"chown -R {self._host_user} {out_dir}")
 
   def _generate_report(self):
 
@@ -105,14 +126,6 @@ class TestOrchestrator:
         "%Y-%m-%d %H:%M:%S")
     report["status"] = self._calculate_result()
     report["tests"] = self._session.get_report_tests()
-    out_file = os.path.join(
-        self._root_path, RUNTIME_DIR,
-        self._session.get_target_device().mac_addr.replace(":", ""),
-        "report.json")
-
-    with open(out_file, "w", encoding="utf-8") as f:
-      json.dump(report, f, indent=2)
-    util.run_command(f"chown -R {self._host_user} {out_file}")
     return report
 
   def _calculate_result(self):
