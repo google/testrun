@@ -36,7 +36,7 @@ sudo /usr/share/openvswitch/scripts/ovs-ctl start
 # Build Test Container
 sudo docker build ./testing/docker/ci_baseline -t ci1 -f  ./testing/docker/ci_baseline/Dockerfile
 
-sudo cat <<EOF >/usr/local/testrun/local/system.json
+cat <<EOF >system.json
 {
   "network": {
     "device_intf": "endev0a",
@@ -45,6 +45,9 @@ sudo cat <<EOF >/usr/local/testrun/local/system.json
   "log_level": "DEBUG"
 }
 EOF
+
+# Copy configuration to testrun
+sudo mv system.json /usr/local/testrun/local/system.json
 
 sudo testrun --single-intf --no-ui > $TESTRUN_OUT 2>&1 & 
 TPID=$!
