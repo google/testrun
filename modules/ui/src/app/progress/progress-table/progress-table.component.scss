@@ -1,0 +1,43 @@
+@import "../../../theming/colors";
+@import "../../../theming/variables";
+
+:host {
+  overflow-y: auto;
+  padding: 10px 0 12px;
+}
+
+table, tr {
+  border: 1px solid $lighter-grey;
+  border-collapse: collapse;
+}
+
+.progress-table {
+  .table-header-row {
+    height: 57px;
+  }
+
+  .table-row {
+    height: 73px;
+  }
+
+  .table-cell,
+  .table-header-cell {
+    font-family: $font-secondary;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .table-header-cell {
+    font-weight: 500;
+    letter-spacing: 0.25px;
+  }
+
+  .table-cell {
+    padding: 16px;
+    letter-spacing: 0.2px;
+  }
+
+  .table-cell-result {
+    min-width: 140px;
+  }
+}

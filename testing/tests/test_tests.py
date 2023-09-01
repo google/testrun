@@ -81,12 +81,12 @@ def test_list_tests(capsys, results, test_matrix):
   ci_pass = set([test
     for testers in test_matrix.values()
     for test, result in testers['expected_results'].items()
-    if result == 'compliant'])
+    if result == 'Compliant'])
 
   ci_fail = set([test
     for testers in test_matrix.values()
     for test, result in testers['expected_results'].items()
-    if result == 'non-compliant'])
+    if result == 'Non-Compliant'])
 
   with capsys.disabled():
     #TODO print matching the JSON schema for easy copy/paste
