@@ -7,6 +7,9 @@ ipaddress
 netifaces
 scapy
 
+# Requirments for the test_orc module
+weasyprint
+
 # Requirements for the API
 fastapi==0.99.1
 psutil
