@@ -51,6 +51,6 @@ EOF
 
 sudo cmd/install
 
-sudo pytest testing/api/test_api.py
+pytest testing/api/test_api.py
 
 exit $?
