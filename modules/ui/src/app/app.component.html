@@ -1,0 +1,70 @@
+<mat-drawer-container hasBackdrop="false" class="app-container">
+  <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
+    <div class="app-sidebar">
+      <ng-container
+        *ngTemplateOutlet="navButton;context:{icon: 'menu', label: 'Menu', name: 'menu'}">
+      </ng-container>
+      <ng-container
+        *ngTemplateOutlet="navButtonRoute;context:{route: '/runtime', svgIcon: 'testrun_logo_small', label: 'Runtime', name: 'runtime'}">
+      </ng-container>
+      <ng-container
+        *ngTemplateOutlet="navButtonRoute;context:{route: '/device-repository',svgIcon: 'devices', label: 'Device repository', name: 'device-repository'}">
+      </ng-container>
+      <ng-container
+        *ngTemplateOutlet="navButtonRoute;context:{route: '/results',svgIcon: 'reports', label: 'Results', name: 'results'}">
+      </ng-container>
+    </div>
+  </mat-drawer>
+
+  <mat-drawer-content class="app-content" role="region">
+    <mat-toolbar class="app-toolbar">
+      <a class="logo-link" routerLink="/runtime" aria-label="Test run ui logo">
+        <mat-icon svgIcon="testrun_logo_color"></mat-icon>
+        <span>Testrun</span>
+      </a>
+      <span class="spacer"></span>
+      <button
+        class="app-toolbar-button app-toolbar-button-general-settings"
+        mat-icon-button
+        aria-label="General settings"
+        (click)="settingsDrawer.toggle()">
+        <mat-icon>tune</mat-icon>
+      </button>
+    </mat-toolbar>
+    <div class="app-content-main">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-drawer-content>
+  <mat-drawer
+    #settingsDrawer
+    mode="over"
+    position="end"
+    class="settings-drawer">
+    <app-general-settings
+      (closeSettingEvent)="closeSetting()"
+      (openSettingEvent)="openSetting()">
+    </app-general-settings>
+  </mat-drawer>
+</mat-drawer-container>
+
+<ng-template #navButton let-svgIcon="svgIcon" let-icon="icon" let-label="label" let-name="name" >
+  <button
+    mat-button
+    class="app-sidebar-button app-sidebar-button-{{name}}"
+    [attr.aria-label]="label">
+    <mat-icon *ngIf="svgIcon" svgIcon="{{svgIcon}}"></mat-icon>
+    <mat-icon *ngIf="icon">{{icon}}</mat-icon>
+  </button>
+</ng-template>
+<ng-template #navButtonRoute let-icon="icon" let-label="label" let-name="name"
+             let-route="route" let-svgIcon="svgIcon">
+  <button
+    [attr.aria-label]="label"
+    class="app-sidebar-button app-sidebar-button-{{name}}"
+    mat-button
+    routerLink="{{route}}"
+    routerLinkActive="app-sidebar-button-active">
+    <mat-icon *ngIf="svgIcon" svgIcon="{{svgIcon}}"></mat-icon>
+    <mat-icon *ngIf="icon">{{icon}}</mat-icon>
+  </button>
+</ng-template>

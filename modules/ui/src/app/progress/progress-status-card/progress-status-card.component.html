@@ -1,0 +1,30 @@
+<ng-container *ngIf="systemStatus$ | async as data">
+  <div class="progress-card" [ngClass]="getClass(data.status)">
+    <div>
+      <p class="progress-card-status-title">
+        Test status
+      </p>
+      <p class="progress-card-status-text">
+        <span>{{getTestStatus(data)}}</span>
+        <span>{{getTestsResult(data)}}</span>
+      </p>
+    </div>
+    <div>
+      <mat-progress-bar
+        *ngIf="data.status === StatusOfTestrun.InProgress"
+        class="progress-bar"
+        mode="determinate"
+        [value]="getProgressValue(data)"
+        [attr.aria-label]="data.status + ' ' + getProgressValue(data) + '%'">
+      </mat-progress-bar>
+      <div *ngIf="data.finished || data.status === StatusOfTestrun.Cancelled">
+        <p class="progress-card-result-title">
+          Test result
+        </p>
+        <p class="progress-card-result-text">
+          <span>{{data.status}}</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</ng-container>

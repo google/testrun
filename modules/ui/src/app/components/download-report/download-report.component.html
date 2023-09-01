@@ -1,0 +1,11 @@
+<ng-container *ngIf="data">
+  <a
+    class="download-report-link"
+    download="{{getReportTitle(data)}}"
+    href="{{data.report}}"
+    target="_blank"
+    title="Download report for Test Run # {{getTestRunId(data)}}"
+  >
+    <ng-content></ng-content>
+  </a>
+</ng-container>

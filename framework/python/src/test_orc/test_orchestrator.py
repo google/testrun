@@ -97,6 +97,8 @@ class TestOrchestrator:
     LOGGER.debug("Old test results cleaned")
     self._test_in_progress = False
 
+    return report.get_status()
+
   def _write_reports(self, test_report):
     out_dir = os.path.join(
         self._root_path, RUNTIME_DIR,
@@ -134,7 +136,7 @@ class TestOrchestrator:
       test_case = self.get_test_case(test_result["name"])
       if (test_case.required_result.lower() == "required"
           and test_result["result"].lower() == "non-compliant"):
-        result = "non-compliant"
+        result = "Non-Compliant"
     return result
 
   def _cleanup_old_test_results(self, device):
@@ -289,7 +291,7 @@ class TestOrchestrator:
 
     log_stream = module.container.logs(stream=True, stdout=True, stderr=True)
     while (time.time() < test_module_timeout and status == "running"
-           and self._session.get_status() == "In progress"):
+           and self._session.get_status() == "In Progress"):
       try:
         line = next(log_stream).decode("utf-8").strip()
         if re.search(LOG_REGEX, line):

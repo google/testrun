@@ -1,0 +1,40 @@
+@use '@angular/material' as mat;
+@import "../../../theming/colors";
+
+ul {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0 8px;
+
+  .breadcrumb-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-right: 16px;
+
+    &.first {
+      margin-right: 6px;
+    }
+  }
+
+  .icon-home {
+    color: $dark-grey;
+  }
+
+  .icon {
+    color: $secondary;
+  }
+
+  .breadcrumb-text {
+    color: mat.get-color-from-palette($color-primary, 600);
+    text-align: center;
+    /* font-family: SF Pro Text; */
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.3px;
+  }
+}

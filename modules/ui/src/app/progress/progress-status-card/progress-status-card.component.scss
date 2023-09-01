@@ -1,0 +1,57 @@
+@use '@angular/material' as mat;
+@import "../../../theming/colors";
+
+:host {
+  height: 152px;
+}
+
+.progress-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 295px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 16px 32px;
+
+  &.progress {
+    background-color: mat.get-color-from-palette($color-primary, 700);
+  }
+
+  &.completed-success {
+    background-color: mat.get-color-from-palette($color-accent, 700);
+  }
+
+  &.completed-failed {
+    background-color: $red-800;
+  }
+
+  &.canceled {
+    background-color: $secondary;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .progress-card-status-title,
+  .progress-card-result-title {
+    color: $white;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .progress-card-status-text,
+  .progress-card-result-text {
+    display: flex;
+    justify-content: space-between;
+    color: $white;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 32px;
+  }
+
+  .progress-bar {
+    padding-bottom: 28px;
+  }
+}
