@@ -24,14 +24,19 @@ _DEFAULT_LEVEL = logging.INFO
 _CONF_DIR = 'local'
 _CONF_FILE_NAME = 'system.json'
 
+
+
 # Set log level
+log_level = _DEFAULT_LEVEL
+
 try:
   with open(os.path.join(_CONF_DIR, _CONF_FILE_NAME),
             encoding='UTF-8') as config_json_file:
     system_conf_json = json.load(config_json_file)
 
-  log_level_str = system_conf_json['log_level']
-  log_level = logging.getLevelName(log_level_str)
+  if 'log_level' in system_conf_json:
+    log_level_str = system_conf_json['log_level']
+    log_level = logging.getLevelName(log_level_str)
 except OSError:
   # TODO: Print out warning that log level is incorrect or missing
   log_level = _DEFAULT_LEVEL

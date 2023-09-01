@@ -1,0 +1,46 @@
+@import "../../../theming/colors";
+
+$device-form-max-width: 549px;
+$device-form-min-width: 285px;
+
+:host {
+  display: grid;
+  grid-template-rows: 1fr;
+  overflow: auto;
+  grid-template-columns: minmax(285px, $device-form-max-width);
+}
+
+.device-form {
+  display: grid;
+  padding: 24px;
+  max-width: $device-form-max-width;
+  min-width: $device-form-min-width;
+  gap: 10px;
+  overflow: auto;
+}
+
+.device-form-title {
+  color: $grey-800;
+  font-size: 22px;
+  line-height: 28px;
+  padding-bottom: 14px;
+}
+
+.device-form-test-modules {
+  overflow: auto;
+  min-height: 78px;
+}
+
+.device-form-actions {
+  padding: 0;
+  min-height: 30px;
+}
+
+.close-button {
+  color: #5F6368;
+}
+
+.device-form-mac-address-error {
+  white-space: nowrap;
+  margin-left: -22px;
+}

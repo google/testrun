@@ -1,0 +1,74 @@
+<ng-container *ngIf="(history$| async)?.length;  else empty">
+  <mat-toolbar class="history-toolbar">
+    <span>Results</span>
+  </mat-toolbar>
+
+  <div class="history-content">
+    <table [dataSource]="history$" mat-table tabindex="0">
+
+      <!-- # Column -->
+      <ng-container matColumnDef="#">
+        <th *matHeaderCellDef mat-header-cell>Test Run #</th>
+        <td *matCellDef="let data" mat-cell>
+          {{getTestRunId(data)}}</td>
+      </ng-container>
+
+      <!-- Started Column -->
+      <ng-container matColumnDef="started">
+        <th *matHeaderCellDef mat-header-cell>Started</th>
+        <td *matCellDef="let data" mat-cell>{{getFormattedDateString(data.started)}}</td>
+      </ng-container>
+
+      <!-- Ended Column -->
+      <ng-container matColumnDef="finished">
+        <th *matHeaderCellDef mat-header-cell>Finished</th>
+        <td *matCellDef="let data" mat-cell>{{getFormattedDateString(data.finished)}}</td>
+      </ng-container>
+
+      <!-- Manufacturer Column -->
+      <ng-container matColumnDef="manufacturer">
+        <th *matHeaderCellDef mat-header-cell>Manufacturer</th>
+        <td *matCellDef="let data" mat-cell> {{data.device.manufacturer}} </td>
+      </ng-container>
+
+      <!-- Model Column -->
+      <ng-container matColumnDef="model">
+        <th *matHeaderCellDef mat-header-cell>Model</th>
+        <td *matCellDef="let data" mat-cell> {{data.device.model}} </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="result">
+        <th *matHeaderCellDef mat-header-cell>Result</th>
+        <td *matCellDef="let data" mat-cell>
+          <span class="table-cell-result-text" [ngClass]="getResultClass(data.status)">
+            {{data.status}}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="report">
+        <th *matHeaderCellDef mat-header-cell></th>
+        <td *matCellDef="let data" mat-cell>
+          <app-download-report [data]="data">
+            <mat-icon class="download-report-icon" fontSet="material-icons-outlined">
+              file_download
+            </mat-icon>
+          </app-download-report>
+        </td>
+      </ng-container>
+
+      <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
+      <tr *matRowDef="let row; columns: displayedColumns;" mat-row></tr>
+    </table>
+  </div>
+</ng-container>
+
+<ng-template #empty>
+  <div class="results-content-empty">
+    <div class="results-content-empty-message">
+      <span class="results-content-empty-message-header">Sorry, there are no reports yet!</span>
+      <span class="results-content-empty-message-main">Reports will automatically generate following a testrun completion.</span>
+    </div>
+  </div>
+</ng-template>

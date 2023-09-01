@@ -1,0 +1,15 @@
+<ul class="progress-breadcrumbs">
+  <li class="breadcrumb-item first">
+    <mat-icon fontSet="material-icons-outlined" class="icon-home">home</mat-icon>
+  </li>
+  <li *ngFor="let breadcrumb of (breadcrumbs$ | async)" class="breadcrumb-item">
+    <mat-icon class="icon">
+      keyboard_arrow_right
+    </mat-icon>
+    <mat-icon fontSet="material-icons-outlined" class="icon">
+      local_taxi
+    </mat-icon>
+    <span class="breadcrumb-text">{{breadcrumb}}</span>
+  </li>
+</ul>
+
