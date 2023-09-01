@@ -21,11 +21,17 @@ python3 -m venv venv
 
 source venv/bin/activate
 
-pip3 install -r framework/requirements.txt
+echo Installing python dependencies
+pip3 install -r framework/requirements.txt >> /dev/null
 
 deactivate
 
 # Copy the default configuration
+echo Copying default configuration
 cp -u local/system.json.example local/system.json
+
+# Set owner of local dir to sudo user
+echo Correcting file ownership
+chown -R $SUDO_USER /usr/local/testrun/local
 
 echo Successfully installed Testrun
