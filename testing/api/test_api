@@ -20,7 +20,7 @@ ifconfig
 sudo apt-get update
 sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils isc-dhcp-client
 
-#pip3 install pytest
+pip3 install pytest
 
 # Setup device network
 sudo ip link add dev dummynet type dummy
