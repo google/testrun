@@ -22,7 +22,7 @@ ifconfig
 sudo apt-get update
 sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils isc-dhcp-client
 
-pip3 install pytest
+#pip3 install pytest
 
 # Setup device network
 sudo ip link add dev endev0a type veth peer name endev0b
@@ -36,18 +36,8 @@ sudo /usr/share/openvswitch/scripts/ovs-ctl start
 # Build Test Container
 sudo docker build ./testing/docker/ci_baseline -t ci1 -f  ./testing/docker/ci_baseline/Dockerfile
 
-cat <<EOF >system.json
-{
-  "network": {
-    "device_intf": "endev0a",
-    "internet_intf": "eth0"
-  },
-  "log_level": "DEBUG"
-}
-EOF
-
 # Copy configuration to testrun
-sudo mv system.json /usr/local/testrun/local/system.json
+sudo cp testing/baseline/system.json /usr/local/testrun/local/system.json
 
 sudo testrun --single-intf --no-ui > $TESTRUN_OUT 2>&1 & 
 TPID=$!

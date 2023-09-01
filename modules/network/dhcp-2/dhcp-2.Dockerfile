@@ -19,7 +19,7 @@ ARG MODULE_NAME=dhcp-2
 ARG MODULE_DIR=modules/network/$MODULE_NAME
 
 # Install all necessary packages
-RUN apt-get install -y wget
+RUN apt-get update && apt-get install -y wget apt-transport-https
 
 #Update the oui.txt file from ieee
 RUN wget http://standards-oui.ieee.org/oui.txt -P /usr/local/etc/
