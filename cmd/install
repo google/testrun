@@ -24,4 +24,7 @@ pip3 install -r framework/requirements.txt
 # required by python package weasyprint
 sudo apt-get install libpangocairo-1.0-0
 
+#TODO move into docker build process
+(cd modules/ui && npm install && npm run build)
+
 deactivate

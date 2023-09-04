@@ -49,6 +49,20 @@ jobs:
         shell: bash {0}
         run: testing/api/test_api
 
+  ui_test_build:
+    name:  ui
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2.3.4
+      - name: install
+        shell: bash {0}
+        run: |
+          sudo cmd/install
+          sudo bin/testrun
+
+
   pylint:
     name:  Pylint
     runs-on: ubuntu-22.04
