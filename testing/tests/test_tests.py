@@ -71,8 +71,7 @@ def test_tests(results, test_matrix):
   for tester, props in test_matrix.items():
     expected = set(collect_expected_results(props['expected_results']))
     actual = set(collect_actual_results(results[tester]))
-
-    assert expected.issubset(actual), f'{tester} expected results not obtained'
+    assert expected & actual == expected
 
 def test_list_tests(capsys, results, test_matrix):
   all_tests = set(itertools.chain.from_iterable(
