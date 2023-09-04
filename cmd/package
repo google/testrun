@@ -33,6 +33,9 @@ cp local/system.json.example $MAKE_SRC_DIR/usr/local/testrun/local/system.json.e
 # Copy framework and modules into testrun folder
 cp -r {framework,modules} $MAKE_SRC_DIR/usr/local/testrun
 
+# Create device repository
+mkdir $MAKE_SRC_DIR/usr/local/testrun/local/devices
+
 # Build .deb file
 dpkg-deb --build --root-owner-group make
 

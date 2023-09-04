@@ -28,10 +28,6 @@ deactivate
 
 # Copy the default configuration
 echo Copying default configuration
-cp -u local/system.json.example local/system.json
-
-# Set owner of local dir to sudo user
-echo Correcting file ownership
-chown -R $SUDO_USER /usr/local/testrun/local
+cp -u $TESTRUN_DIR/local/system.json.example $TESTRUN_DIR/local/system.json
 
 echo Successfully installed Testrun
