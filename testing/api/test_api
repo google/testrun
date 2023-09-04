@@ -52,6 +52,6 @@ EOF
 sudo cmd/install
 
 # Needs to be sudo because this invokes bin/testrun 
-sudo venv/bin/python -m pytest testing/api/test_api.py
+sudo venv/bin/python -m pytest -v testing/api/test_api.py
 
 exit $?
