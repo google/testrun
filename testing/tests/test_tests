@@ -60,7 +60,7 @@ for tester in $TESTERS; do
   TPID=$!
 
   # Time to wait for testrun to be ready
-  WAITING=600
+  WAITING=700
   for i in `seq 1 $WAITING`; do
     tail -1 $testrun_log
       if [[ -n $(fgrep "Waiting for devices on the network" $testrun_log) ]]; then
