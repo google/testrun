@@ -541,3 +541,69 @@ def test_multiple_runs(testing_devices, testrun):
   )
 
   stop_test_device("x123")
+
+def test_create_invalid_chars(empty_devices_dir, testrun):
+  # local_delete_devices(ALL_DEVICES)
+  # We must start test run with no devices in local/devices for this test to function as expected!
+  assert len(local_get_devices()) == 0
+
+  # Test adding device
+  device_1 = {
+      "manufacturer": ";echo lookatme > /tmp/lookatme.txt;pkill -f testrun",
+      "model": "First",
+      "mac_addr": BASELINE_MAC_ADDR,
+      "test_modules": {
+          "dns": {"enabled": False},
+          "connection": {"enabled": True},
+          "ntp": {"enabled": True},
+          "baseline": {"enabled": True},
+          "nmap": {"enabled": True},
+      },
+  }
+
+  r = requests.post(f"{API}/device", data=json.dumps(device_1))
+  print(r.text)
+  print(r.status_code)
+  device1_response = r.text
+  #assert r.status_code == 201
+  #assert len(local_get_devices()) == 1
+
+
+  # Test that returned devices API endpoint matches expected structure
+  r = requests.get(f"{API}/devices")
+  all_devices = json.loads(r.text)
+  pretty_print(all_devices)
+
+  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload))
+  print(r.text)
+  assert r.status_code == 200
+
+  until_true(
+      lambda: query_system_status().lower() == "waiting for device",
+      "system status is `waiting for device`",
+      30,
+  )
+
+  start_test_device("x123", BASELINE_MAC_ADDR)
+
+  until_true(
+      lambda: query_system_status().lower() == "compliant",
+      "system status is `complete`",
+      900,
+  )
+
+
+  assert False
+
+
+
+def test_get_system_config(testrun):
+  r = requests.get(f"{API}/system/config")
+
+  with open(os.path.join(os.path.dirname(__file__), SYSTEM_CONFIG_PATH)) as f:
+    local_config = json.load(f)
+
+  api_config = json.loads(r.text)
+
+  # 

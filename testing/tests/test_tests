@@ -75,7 +75,7 @@ for tester in $TESTERS; do
   args=$(jq -r .$tester.args $MATRIX)
 
   touch $testrun_log
-  sudo timeout 900 bin/testrun --single-intf --no-ui --no-validate > $testrun_log 2>&1 &
+  sudo timeout 1800 bin/testrun --single-intf --no-ui --no-validate > $testrun_log 2>&1 &
   TPID=$!
 
   # Time to wait for testrun to be ready

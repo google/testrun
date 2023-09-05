@@ -25,7 +25,7 @@
         "required_result": "Recommended"
       },
       {
-        "name": "baseline.skip",
+        "name": "baseline.informational",
         "description": "Simulate a skipped test",
         "expected_behavior": "A skipped test result is generated",
         "required_result": "Roadmap"
