@@ -418,7 +418,7 @@ def test_trigger_run(testing_devices, testrun):
   )
 
   # Validate a result
-  assert results["baseline.pass"]["result"] == "Compliant"
+  assert results["baseline.complaint"]["result"] == "Compliant"
 
 
 @pytest.mark.skip()
