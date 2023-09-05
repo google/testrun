@@ -15,5 +15,8 @@
 # Image name: test-run/ui
 FROM nginx:1.25.1
 
-COPY modules/ui/conf/nginx.conf /etc/nginx/nginx.conf
-COPY ui /usr/share/nginx/html
+COPY modules/ui/dist/ /usr/share/nginx/html
+
+EXPOSE 8080
+
+CMD ["nginx", "-g", "daemon off;"]

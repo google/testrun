@@ -1,0 +1,9 @@
+<form [class.disabled]="disabled" [formGroup]="deviceForm">
+  <section class="device-form-test-modules" formArrayName="test_modules">
+    <p *ngFor="let test of test_modules.controls; let i = index">
+      <mat-checkbox [formControlName]="i">
+        {{testModules[i].displayName}}
+      </mat-checkbox>
+    </p>
+  </section>
+</form>

@@ -13,22 +13,22 @@
     },
     "tests":[
       {
-        "name": "baseline.pass",
+        "name": "baseline.compliant",
         "description": "Simulate a compliant test",
         "expected_behavior": "A compliant test result is generated",
         "required_result": "Required"
       },
       {
-        "name": "baseline.fail",
+        "name": "baseline.non-compliant",
         "description": "Simulate a non-compliant test",
         "expected_behavior": "A non-compliant test result is generated",
-        "required_result": "Recommended"
+        "required_result": "Required"
       },
       {
-        "name": "baseline.skip",
-        "description": "Simulate a skipped test",
-        "expected_behavior": "A skipped test result is generated",
-        "required_result": "Roadmap"
+        "name": "baseline.informational",
+        "description": "Simulate an informational test",
+        "expected_behavior": "An informational test result is generated",
+        "required_result": "Informational"
       }
     ]
   }

@@ -1,0 +1,100 @@
+@use '@angular/material' as mat;
+@import "../theming/colors";
+
+.app-container {
+  height: 100%;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.mat-drawer-content {
+  background: $white;
+}
+
+.mat-drawer-side {
+  border-right: none;
+}
+
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  background-color: $color-background-grey;
+  height: 100%;
+  gap: 8px;
+  width: 80px;
+  align-items: center;
+}
+
+.app-sidebar-button, .app-toolbar-button {
+  border-radius: 20px;
+  border: 1px solid transparent;
+  min-width: 48px;
+  padding: 0;
+  box-sizing: border-box;
+  height: 34px;
+  margin: 6px 0;
+  line-height: 50%;
+}
+
+.app-sidebar-button > .mat-icon, .app-toolbar-button > .mat-icon {
+  margin-right: 0;
+  width: 24px;
+  font-size: 24px;
+  color: $dark-grey;
+}
+
+.app-sidebar-button > .mat-icon {
+  line-height: 18px;
+}
+
+.app-sidebar-button-active {
+  border: 1px solid mat.get-color-from-palette($color-primary, 500);
+  background-color: mat.get-color-from-palette($color-primary, 500);
+}
+
+.app-sidebar-button-active > .mat-icon {
+  color: $white;
+}
+
+.logo-link {
+  color: $grey-800;
+  text-decoration: none;
+  font-size: 18px;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.logo-link .mat-icon {
+  width: 36px;
+  height: 23px;
+}
+
+.app-toolbar {
+  height: 56px;
+  padding: 0 6px 0 16px;
+  background-color: $white;
+  border-bottom: 1px solid $light-grey;
+  color: $grey-800;
+}
+
+.app-content {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.app-content-main {
+  display: grid;
+  grid-template-rows: 0 auto;
+  overflow: hidden;
+}
+
+.settings-drawer {
+  width: 320px;
+  box-shadow: none;
+  border-left: 1px solid $light-grey;
+}

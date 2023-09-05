@@ -1,0 +1,49 @@
+@use '@angular/material' as mat;
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+@import "colors";
+
+@include mat.core();
+@include mat.strong-focus-indicators((
+  outline-style: solid,
+  outline-width: 2px,
+  outline-color: $black,
+));
+
+$app-primary: mat.define-palette($color-primary);
+$app-accent: mat.define-palette($color-accent);
+$app-warn: mat.define-palette($color-warn);
+$app-secondary: mat.define-palette($color-secondary);
+$app-blue-light-palette: mat.define-palette($color-blue-light);
+
+$app-typography: mat.define-typography-config(
+  $font-family: 'Open Sans'
+);
+
+$brand-light-theme: mat.define-light-theme((
+  color: (
+    primary: $app-primary,
+    accent: $app-accent,
+    warn: $app-warn,
+  ),
+  typography: $app-typography,
+  density: 0,
+));
+
+$brand-light-theme-secondary: mat.define-light-theme((
+  color: (
+    primary: $app-primary,
+    accent: $app-secondary,
+    warn: $app-warn,
+  ),
+  typography: $app-typography,
+  density: 0,
+));
+
+@include mat.all-component-themes($brand-light-theme);
+@include mat.radio-color($brand-light-theme-secondary);
+@include mat.checkbox-color($brand-light-theme-secondary);
+@include mat.progress-bar-color((color: (
+  primary: $app-blue-light-palette,
+  accent: $app-secondary,
+  warn: $app-warn,
+)));

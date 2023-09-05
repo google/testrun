@@ -83,7 +83,7 @@ class TestModule:
       result = None
       test['start'] = datetime.now().isoformat()
       if ('enabled' in test and test['enabled']) or 'enabled' not in test:
-        LOGGER.info('Attempting to run test: ' + test['name'])
+        LOGGER.debug('Attempting to run test: ' + test['name'])
         # Resolve the correct python method by test name and run test
         if hasattr(self, test_method_name):
           if 'config' in test:
@@ -91,30 +91,30 @@ class TestModule:
           else:
             result = getattr(self, test_method_name)()
         else:
-          LOGGER.info(f'Test {test["name"]} not resolved. Skipping')
+          LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
           result = None
       else:
-        LOGGER.info(f'Test {test["name"]} disabled. Skipping')
+        LOGGER.debug(f'Test {test["name"]} is disabled. Skipping')
       if result is not None:
         if isinstance(result, bool):
-          test['result'] = 'compliant' if result else 'non-compliant'
+          test['result'] = 'Compliant' if result else 'Non-Compliant'
         else:
           if result[0] is None:
-            test['result'] = 'skipped'
+            test['result'] = 'Skipped'
             if len(result)>1:
               test['result_details'] = result[1]
           else:
-            test['result'] = 'compliant' if result[0] else 'non-compliant'
+            test['result'] = 'Compliant' if result[0] else 'Non-Compliant'
           test['result_details'] = result[1]
       else:
-        test['result'] = 'skipped'
+        test['result'] = 'Skipped'
 
       # Generate the short result description based on result value
-      if test['result'] == 'compliant':
+      if test['result'] == 'Compliant':
         test['result_description'] = test[
             'short_description'] if 'short_description' in test else test[
                 'name'] + ' passed - see result details for more info'
-      elif test['result'] == 'non-compliant':
+      elif test['result'] == 'Non-Compliant':
         test['result_description'] = test[
             'name'] + ' failed - see result details for more info'
       else:

@@ -32,6 +32,9 @@ cd $TESTRUNPATH
 # Create device folder if it doesn't exist
 mkdir -p local/devices
 
+# Remove existing runtime data
+rm -rf runtime/*
+
 # Activate Python virtual environment
 source venv/bin/activate
 

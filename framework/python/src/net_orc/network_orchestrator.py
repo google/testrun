@@ -656,8 +656,7 @@ class NetworkOrchestrator:
 
     LOGGER.info('Clearing baseline network')
 
-    if hasattr(self, 'listener') and self.get_listener(
-    ) is not None and self.get_listener().is_running():
+    if self.get_listener() is not None and self.get_listener().is_running():
       self.get_listener().stop_listener()
 
     client = docker.from_env()

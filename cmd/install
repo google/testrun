@@ -23,7 +23,11 @@ source venv/bin/activate
 
 pip3 install -r framework/requirements.txt
 
-deactivate
-
 # Copy the default configuration
 cp -u local/system.json.example local/system.json
+
+# Dependency for printing reports to pdf
+# required by python package weasyprint
+sudo apt-get install libpangocairo-1.0-0
+
+deactivate

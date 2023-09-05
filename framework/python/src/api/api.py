@@ -54,7 +54,7 @@ class Api:
     self._router.add_api_route("/device", self.save_device, methods=["POST"])
 
     # TODO: Make this configurable in system.json
-    origins = ["http://localhost:4200"]
+    origins = ["http://localhost:8080", "http://localhost:4200"]
 
     self._app = FastAPI()
     self._app.include_router(self._router)
