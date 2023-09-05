@@ -53,14 +53,14 @@ def query_system_status() -> str:
   """Query system status from API and returns this"""
   r = requests.get(f"{API}/system/status")
   response = json.loads(r.text)
-  print(response)
+  #print(response)
   return response["status"]
 
 def query_test_count() -> str:
   """Query system status from API and returns this"""
   r = requests.get(f"{API}/system/status")
   response = json.loads(r.text)
-  print(response)
+  #print(response)
   return len(response["tests"]["results"])
 
 
@@ -418,7 +418,7 @@ def test_trigger_run(testing_devices, testrun):
   )
 
   # Validate a result
-  assert results["baseline.complaint"]["result"] == "Compliant"
+  assert results["baseline.compliant"]["result"] == "Compliant"
 
 
 @pytest.mark.skip()

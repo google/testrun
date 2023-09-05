@@ -20,8 +20,8 @@
             "connection.dhcp_address": "Compliant",
             "connection.mac_address": "Compliant",
             "connection.target_ping": "Compliant",
-            "connection.single_ip": "Compliant",
-            "connection.dhcp_failover": "Compliant",
+            "connection.ipaddr.single_ip": "Compliant",
+            "connection.ipaddr.dhcp_failover": "Compliant",
             "connection.ip_change": "Compliant"
         }
     },
