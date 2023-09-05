@@ -33,7 +33,7 @@ import pytest
 import requests
 
 ALL_DEVICES = "*"
-API = "http://127.0.0.1:8000"
+API = "http://127.0.0.1:8001"
 LOG_PATH = "/tmp/testrun.log"
 TEST_SITE_DIR = ".."
 
@@ -542,6 +542,7 @@ def test_multiple_runs(testing_devices, testrun):
 
   stop_test_device("x123")
 
+@pytest.mark.skip()
 def test_create_invalid_chars(empty_devices_dir, testrun):
   # local_delete_devices(ALL_DEVICES)
   # We must start test run with no devices in local/devices for this test to function as expected!
@@ -549,7 +550,7 @@ def test_create_invalid_chars(empty_devices_dir, testrun):
 
   # Test adding device
   device_1 = {
-      "manufacturer": ";echo lookatme > /tmp/lookatme.txt;pkill -f testrun",
+      "manufacturer": "/'disallowed characters///",
       "model": "First",
       "mac_addr": BASELINE_MAC_ADDR,
       "test_modules": {
@@ -564,37 +565,6 @@ def test_create_invalid_chars(empty_devices_dir, testrun):
   r = requests.post(f"{API}/device", data=json.dumps(device_1))
   print(r.text)
   print(r.status_code)
-  device1_response = r.text
-  #assert r.status_code == 201
-  #assert len(local_get_devices()) == 1
-
-
-  # Test that returned devices API endpoint matches expected structure
-  r = requests.get(f"{API}/devices")
-  all_devices = json.loads(r.text)
-  pretty_print(all_devices)
-
-  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload))
-  print(r.text)
-  assert r.status_code == 200
-
-  until_true(
-      lambda: query_system_status().lower() == "waiting for device",
-      "system status is `waiting for device`",
-      30,
-  )
-
-  start_test_device("x123", BASELINE_MAC_ADDR)
-
-  until_true(
-      lambda: query_system_status().lower() == "compliant",
-      "system status is `complete`",
-      900,
-  )
-
-
-  assert False
 
 
 

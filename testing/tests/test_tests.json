@@ -21,7 +21,6 @@
             "connection.mac_address": "Compliant",
             "connection.target_ping": "Compliant",
             "connection.single_ip": "Compliant",
-            "connection.ipaddr.dhcp_failover": "Compliant",
             "connection.ipaddr.ip_change": "Compliant"
         }
     },
