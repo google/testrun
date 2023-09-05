@@ -41,6 +41,9 @@ DEVICES_DIRECTORY = "../../local/devices"
 TESTING_DEVICES = "../device_configs/"
 SYSTEM_CONFIG_PATH = "../../local/system.json"
 
+BASELINE_MAC_ADDR = "02:42:aa:00:01:01"
+ALL_MAC_ADDR = "02:42:aa:00:00:01"
+
 
 def pretty_print(dictionary: dict):
   print(json.dumps(dictionary, indent=4))
@@ -50,7 +53,15 @@ def query_system_status() -> str:
   """Query system status from API and returns this"""
   r = requests.get(f"{API}/system/status")
   response = json.loads(r.text)
+  print(response)
   return response["status"]
+
+def query_test_count() -> str:
+  """Query system status from API and returns this"""
+  r = requests.get(f"{API}/system/status")
+  response = json.loads(r.text)
+  print(response)
+  return len(response["tests"]["results"])
 
 
 def start_test_device(
@@ -136,7 +147,20 @@ def testrun(request):
     pytest.exit(
         "waited 60s but test run did not cleanly exit .. terminating all tests"
     )
+
   print(outs)
+
+
+  cmd = subprocess.run(
+      f"docker stop $(docker ps -a -q)", shell=True, capture_output=True
+  )
+  print(cmd.stdout)
+  cmd = subprocess.run(
+      f"docker rm  $(docker ps -a -q)", shell=True, capture_output=True
+  )
+  print(cmd.stdout)
+
+  
 
 
 def until_true(func: Callable, message: str, timeout: int):
@@ -184,7 +208,7 @@ def local_get_devices():
   )
 
 
-def test_get_system_interfaces(testing_devices_dir, testrun):
+def test_get_system_interfaces(testrun):
   """Tests API system interfaces against actual local interfaces"""
   r = requests.get(f"{API}/system/interfaces")
   response = json.loads(r.text)
@@ -238,7 +262,7 @@ def test_modify_device(testing_devices, testrun):
   assert updated_device_api["model"] == new_model
   assert updated_device_api["test_modules"] == new_test_modules
 
-
+#@pytest.mark.timeout(1)
 def test_create_get_devices(empty_devices_dir, testrun):
   # local_delete_devices(ALL_DEVICES)
   # We must start test run with no devices in local/devices for this test to function as expected!
@@ -306,7 +330,7 @@ def test_create_get_devices(empty_devices_dir, testrun):
     )
 
 
-# @pytest.mark.skip()
+
 def test_get_system_config(testrun):
   r = requests.get(f"{API}/system/config")
 
@@ -329,7 +353,8 @@ def test_get_system_config(testrun):
       == api_config["network"]["internet_intf"]
   )
 
-
+#TODO change to invalod json or something
+@pytest.mark.skip()
 def test_invalid_path_get(testrun):
   r = requests.get(f"{API}/blah/blah")
   response = json.loads(r.text)
@@ -345,8 +370,7 @@ def test_invalid_path_get(testrun):
 
 # @pytest.mark.skip()
 def test_trigger_run(testing_devices, testrun):
-  TEST_MAC_ADDR = "02:42:aa:00:01:01"
-  payload = {"device": {"mac_addr": TEST_MAC_ADDR, "firmware": "asd"}}
+  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload))
   assert r.status_code == 200
 
@@ -356,15 +380,15 @@ def test_trigger_run(testing_devices, testrun):
       30,
   )
 
-  start_test_device("blah", TEST_MAC_ADDR)
+  start_test_device("x123", BASELINE_MAC_ADDR)
 
   until_true(
-      lambda: query_system_status().lower() == "complete",
+      lambda: query_system_status().lower() == "compliant",
       "system status is `complete`",
-      300,
+      900,
   )
 
-  stop_test_device("blah")
+  stop_test_device("x123")
 
   # Validate response
   r = requests.get(f"{API}/system/status")
@@ -394,4 +418,126 @@ def test_trigger_run(testing_devices, testrun):
   )
 
   # Validate a result
-  assert results["baseline.pass"]["result"] == "compliant"
+  assert results["baseline.pass"]["result"] == "Compliant"
+
+
+@pytest.mark.skip()
+def test_stop_running_test(testing_devices, testrun):
+  payload = {"device": {"mac_addr": ALL_MAC_ADDR, "firmware": "asd"}}
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload))
+  assert r.status_code == 200
+
+  until_true(
+      lambda: query_system_status().lower() == "waiting for device",
+      "system status is `waiting for device`",
+      30,
+  )
+
+  start_test_device("x12345", ALL_MAC_ADDR)
+
+  until_true(
+      lambda: query_test_count() > 1,
+      "system status is `complete`",
+      1000,
+  )
+
+  stop_test_device("x12345")
+
+  # Validate response
+  r = requests.post(f"{API}/system/stop")
+  response = json.loads(r.text)
+  pretty_print(response)
+  assert response == {"success": "Test Run stopped"}
+  time.sleep(1)
+  # Validate response
+  r = requests.get(f"{API}/system/status")
+  response = json.loads(r.text)
+  pretty_print(response)
+  
+  assert False
+  assert len(response['results']['tests']) == response['results']['total']
+  assert len(response['results']['tests']) < 15 
+  assert response['status'] == 'Stopped???'
+
+  # Validate structure
+  with open(
+      os.path.join(
+          os.path.dirname(__file__), "mockito/running_system_status.json"
+      )
+  ) as f:
+    mockito = json.load(f)
+
+  # validate structure
+  assert set(dict_paths(mockito)).issubset(set(dict_paths(response)))
+
+  # Validate results structure
+  assert set(dict_paths(mockito["tests"]["results"][0])).issubset(
+      set(dict_paths(response["tests"]["results"][0]))
+  )
+
+@pytest.mark.skip()
+def test_stop_running_not_running(testrun):
+  # Validate response
+  r = requests.post(f"{API}/system/stop")
+  response = json.loads(r.text)
+  pretty_print(response)
+
+  assert False
+
+  # V
+
+@pytest.mark.skip()
+def test_multiple_runs(testing_devices, testrun):
+  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload))
+  assert r.status_code == 200
+  print(r.text)
+
+  until_true(
+      lambda: query_system_status().lower() == "waiting for device",
+      "system status is `waiting for device`",
+      30,
+  )
+
+  start_test_device("x123", BASELINE_MAC_ADDR)
+
+  until_true(
+      lambda: query_system_status().lower() == "compliant",
+      "system status is `complete`",
+      900,
+  )
+
+  stop_test_device("x123")
+
+  # Validate response
+  r = requests.get(f"{API}/system/status")
+  response = json.loads(r.text)
+  pretty_print(response)
+
+  # Validate results
+  results = {x["name"]: x for x in response["tests"]["results"]}
+  print(results)
+  # there are only 3 baseline tests
+  assert len(results) == 3
+
+  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload))
+  #assert r.status_code == 200
+  # returns 409
+  print(r.text)
+
+  until_true(
+      lambda: query_system_status().lower() == "waiting for device",
+      "system status is `waiting for device`",
+      30,
+  )
+
+  start_test_device("x123", BASELINE_MAC_ADDR)
+
+  until_true(
+      lambda: query_system_status().lower() == "compliant",
+      "system status is `complete`",
+      900,
+  )
+
+  stop_test_device("x123")

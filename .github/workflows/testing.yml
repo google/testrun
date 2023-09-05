@@ -6,6 +6,38 @@ on:
     - cron: '0 13 * * *'
 
 jobs:
+  testrun_baseline:
+    name:  Baseline
+    runs-on: ubuntu-20.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2.3.4
+      - name: Run tests
+        shell: bash {0}
+        run: testing/baseline/test_baseline
+    
+  testrun_tests:
+    name:  Tests
+    runs-on: ubuntu-20.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2.3.4
+      - name: Run tests
+        shell: bash {0}
+        run: testing/tests/test_tests
+      - name: Archive runtime results
+        if: ${{ always() }}
+        run: sudo tar --exclude-vcs -czf runtime.tgz runtime/
+      - name: Upload runtime results
+        uses: actions/upload-artifact@v3
+        if: ${{ always() }}
+        with:
+          if-no-files-found: error
+          name: runtime_${{ github.workflow }}_${{ github.run_id }}
+          path: runtime.tgz
+
   testrun_api:
     name:  API
     runs-on: ubuntu-20.04
@@ -17,3 +49,13 @@ jobs:
         shell: bash {0}
         run: testing/api/test_api
 
+  pylint:
+    name:  Pylint
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2.3.4
+      - name: Run tests
+        shell: bash {0}
+        run: testing/pylint/test_pylint
