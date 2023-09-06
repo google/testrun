@@ -22,13 +22,13 @@
         "name": "baseline.non-compliant",
         "description": "Simulate a non-compliant test",
         "expected_behavior": "A non-compliant test result is generated",
-        "required_result": "Recommended"
+        "required_result": "Required"
       },
       {
         "name": "baseline.informational",
-        "description": "Simulate a skipped test",
-        "expected_behavior": "A skipped test result is generated",
-        "required_result": "Roadmap"
+        "description": "Simulate an informational test",
+        "expected_behavior": "An informational test result is generated",
+        "required_result": "Informational"
       }
     ]
   }

@@ -38,4 +38,4 @@ This ensures that you have a copy of the default configuration file, which you c
 
 > Note: Ensure that the device configuration file is properly formatted, and the changes made align with the intended test behavior. Incorrect settings or syntax may lead to unexpected results during testing.
 
-If you encounter any issues or need assistance with the device configuration, refer to the Test Run documentation or ask a question on the Issues page.
+If you encounter any issues or need assistance with the device configuration, refer to the Testrun documentation or ask a question on the Issues page.
