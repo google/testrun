@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+echo Installing application dependencies
+
 TESTRUN_DIR=/usr/local/testrun
 cd $TESTRUN_DIR
 
@@ -26,8 +28,6 @@ pip3 install -r framework/requirements.txt
 # Copy the default configuration
 cp -u local/system.json.example local/system.json
 
-# Dependency for printing reports to pdf
-# required by python package weasyprint
-sudo apt-get install libpangocairo-1.0-0
-
 deactivate
+
+echo Finished installing Testrun

@@ -3,3 +3,4 @@ Version: 1.0
 Architecture: amd64
 Maintainer: Google <boddey@google.com>
 Description: Automatically verify IoT device network behavior
+Depends: libpangocairo-1.0-0, openvswitch-common, openvswitch-switch, python3
