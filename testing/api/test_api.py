@@ -33,7 +33,7 @@ import pytest
 import requests
 
 ALL_DEVICES = "*"
-API = "http://127.0.0.1:8001"
+API = "http://127.0.0.1:8000"
 LOG_PATH = "/tmp/testrun.log"
 TEST_SITE_DIR = ".."
 
