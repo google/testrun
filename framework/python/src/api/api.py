@@ -214,9 +214,26 @@ class Api:
       return self._generate_msg(False, "Invalid JSON received")
 
   def _validate_device_json(self, json_obj):
+
+    # Check all required properties are present
     if not (DEVICE_MAC_ADDR_KEY in json_obj and
             DEVICE_MANUFACTURER_KEY in json_obj and
             DEVICE_MODEL_KEY in json_obj
     ):
       return False
+
+    # Check length of strings
+    if len(json_obj.get(DEVICE_MANUFACTURER_KEY)) > 64 or len(
+      json_obj.get(DEVICE_MODEL_KEY)) > 64:
+      return False
+
+    disallowed_chars = ["/", "\\", "\'", "\"", ";"]
+    for char in json_obj.get(DEVICE_MANUFACTURER_KEY):
+      if char in disallowed_chars:
+        return False
+
+    for char in json_obj.get(DEVICE_MODEL_KEY):
+      if char in disallowed_chars:
+        return False
+
     return True
