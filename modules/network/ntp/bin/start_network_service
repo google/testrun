@@ -19,9 +19,15 @@ LOG_FILE="/runtime/network/ntp.log"
 
 echo Starting ntp
 
+# Route internet traffic through gateway
+ip route add default via 10.10.10.1 dev veth0
+
 #Create and set permissions on the log file
 touch $LOG_FILE
 chown $HOST_USER $LOG_FILE
+
+# Move the config files to the correct location
+cp /testrun/conf/chrony.conf /etc/chrony/
 
 #Start the NTP server
 python3 -u $PYTHON_SRC_DIR/ntp_server.py > $LOG_FILE
