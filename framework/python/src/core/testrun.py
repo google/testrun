@@ -389,14 +389,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
   def _set_status(self, status):
     self.get_session().set_status(status)
 
-  def get_session(self):
-    return self._session
-
   def start_ui(self):
 
     LOGGER.info('Starting UI')
-
-    self._build_ui()
 
     client = docker.from_env()
 
@@ -413,22 +408,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     # TODO: Make port configurable
     LOGGER.info('User interface is ready on http://localhost:8080')
-
-  def _build_ui(self):
-
-    # TODO: Improve this process
-    build_file = os.path.join(root_dir,
-                              'modules',
-                              'ui',
-                              'ui.Dockerfile')
-    client = docker.from_env()
-
-    LOGGER.debug('Building user interface')
-
-    client.images.build(dockerfile=build_file,
-                        path=root_dir,
-                        forcerm=True,
-                        tag='test-run/ui')
 
   def _stop_ui(self):
     client = docker.from_env()

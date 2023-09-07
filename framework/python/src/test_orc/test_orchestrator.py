@@ -65,7 +65,7 @@ class TestOrchestrator:
     os.makedirs(DEVICE_ROOT_CERTS, exist_ok=True)
 
     self._load_test_modules()
-    self.build_test_modules()
+    #self.build_test_modules()
 
   def stop(self):
     """Stop any running tests"""

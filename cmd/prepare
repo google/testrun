@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Optional script to prepare your system for use with Testrun.
+# Installs system dependencies
+
 echo Installing system dependencies
 
 sudo apt-get install openvswitch-common openvswitch-switch python3 libpangocairo-1.0-0

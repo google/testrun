@@ -114,7 +114,7 @@ class NetworkOrchestrator:
     """Start the virtual testing network."""
     LOGGER.info('Starting network')
 
-    self.build_network_modules()
+    #self.build_network_modules()
 
     self.create_net()
     self.start_network_services()

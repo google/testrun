@@ -30,4 +30,7 @@ cp -u local/system.json.example local/system.json
 
 deactivate
 
+# Build docker images
+sudo cmd/build
+
 echo Finished installing Testrun

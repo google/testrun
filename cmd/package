@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Creates a package for Testrun
+
 MAKE_SRC_DIR=make
 
 # Copy testrun script to /bin
@@ -26,15 +28,22 @@ mkdir -p $MAKE_SRC_DIR/usr/local/testrun
 # Create postinst script
 cp cmd/install $MAKE_SRC_DIR/DEBIAN/postinst
 
+# Copy other commands
+mkdir -p $MAKE_SRC_DIR/usr/local/testrun/cmd
+cp cmd/{prepare,build} $MAKE_SRC_DIR/usr/local/testrun/cmd
+
 # Create local folder
 mkdir -p $MAKE_SRC_DIR/usr/local/testrun/local
 cp local/system.json.example $MAKE_SRC_DIR/usr/local/testrun/local/system.json.example
 
-# Copy framework and modules into testrun folder
-cp -r {framework,modules} $MAKE_SRC_DIR/usr/local/testrun
-
 # Create device repository
 mkdir -p $MAKE_SRC_DIR/usr/local/testrun/local/devices
+
+# Copy root_certs folder
+cp -r local/root_certs $MAKE_SRC_DIR/usr/local/testrun/local/root_certs
+
+# Copy framework and modules into testrun folder
+cp -r {framework,modules} $MAKE_SRC_DIR/usr/local/testrun
 
 # Build .deb file
 dpkg-deb --build --root-owner-group make
