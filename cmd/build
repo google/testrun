@@ -37,7 +37,7 @@ mkdir -p build/devices
 for dir in modules/devices/* ; do
   module=$(basename $dir)
   echo Building validator module $module...
-  docker build -f modules/devices/$module/$module.Dockerfile -t test-run/$module-dev . > build/devices/$module.log 2>&1
+  docker build -f modules/devices/$module/$module.Dockerfile -t test-run/$module . > build/devices/$module.log 2>&1
 done
 
 # Build test modules
