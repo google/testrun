@@ -18,6 +18,9 @@ FROM test-run/base:latest
 ARG MODULE_NAME=dhcp-1
 ARG MODULE_DIR=modules/network/$MODULE_NAME
 
+#Update and get all additional requirements not contained in the base image
+RUN apt-get update --fix-missing
+
 # Install all necessary packages
 RUN apt-get install -y wget
 
