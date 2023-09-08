@@ -27,7 +27,7 @@
     "tester3": {
         "description": "",
         "image": "test-run/ci_test1",
-        "args": "kill_dhcp",
+        "args": "kill_dhcp request_fixed",
         "ethmac": "02:42:aa:00:00:03",
         "expected_results": {}
     }

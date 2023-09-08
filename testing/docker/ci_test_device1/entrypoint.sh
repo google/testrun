@@ -126,8 +126,20 @@ if [ -n "${options[kill_dhcp]}" ]; then
     ipv4=$(ip a show $INTF | grep "inet " | awk '{print $2}')
     pkill -f dhclient
     ip addr change $ipv4 dev $INTF valid_lft forever preferred_lft forever
+fi
+
+if [ -n "${options[request_fixed]}" ]; then
+    ipv4=$(ip a show $INTF | grep "inet " | awk '{print $2}')
+    
+    cat <<EOF >>/etc/dhcp/dhclient.conf
+interface "$INTF" {
+    send dhcp-requested-address ${ipv4%\/*}
+}
+EOF
+dhclient -v $INTF
 
 fi
+
 
 
 (while true; do arping 10.10.10.1; sleep 10; done) &

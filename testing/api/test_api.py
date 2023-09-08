@@ -46,6 +46,7 @@ ALL_MAC_ADDR = "02:42:aa:00:00:01"
 
 
 def pretty_print(dictionary: dict):
+  """ Pretty print dictionary """
   print(json.dumps(dictionary, indent=4))
 
 
@@ -56,7 +57,7 @@ def query_system_status() -> str:
   return response["status"]
 
 
-def query_test_count() -> str:
+def query_test_count() -> int:
   """Queries status and returns number of test results"""
   r = requests.get(f"{API}/system/status")
   response = json.loads(r.text)
@@ -66,6 +67,7 @@ def query_test_count() -> str:
 def start_test_device(
     device_name, mac_address, image_name="ci_test_device1", args=""
 ):
+  """ Start test device container with given name """
   cmd = subprocess.run(
       f"docker run -d --network=endev0 --mac-address={mac_address}"
       f" --cap-add=NET_ADMIN -v /tmp:/out --privileged --name={device_name}"
@@ -78,6 +80,7 @@ def start_test_device(
 
 
 def stop_test_device(device_name):
+  """ Stop docker container with given name """
   cmd = subprocess.run(
       f"docker stop {device_name}", shell=True, capture_output=True
   )
@@ -89,6 +92,7 @@ def stop_test_device(device_name):
 
 
 def docker_logs(device_name):
+  """ Print docker logs from given docker container name """
   cmd = subprocess.run(
       f"docker logs {device_name}", shell=True, capture_output=True
   )
@@ -97,11 +101,13 @@ def docker_logs(device_name):
 
 @pytest.fixture
 def empty_devices_dir():
+  """ Use e,pty devices directory """
   local_delete_devices(ALL_DEVICES)
 
 
 @pytest.fixture
 def testing_devices():
+  """ Use devices from the testing/device_configs directory """
   local_delete_devices(ALL_DEVICES)
   shutil.copytree(
       os.path.join(os.path.dirname(__file__), TESTING_DEVICES),
@@ -113,6 +119,7 @@ def testing_devices():
 
 @pytest.fixture
 def testrun(request):
+  """ Start intstance of testrun """
   test_name = request.node.originalname
   proc = subprocess.Popen(
       "bin/testrun",
@@ -160,6 +167,11 @@ def testrun(request):
 
 
 def until_true(func: Callable, message: str, timeout: int):
+  """ Blocks until given func returns True
+
+  Raises:
+    Exception if timeout has elapsed
+  """
   expiry_time = time.time() + timeout
   while time.time() < expiry_time:
     if func():
@@ -188,6 +200,8 @@ def get_network_interfaces():
 
 
 def local_delete_devices(path):
+  """ Deletes all local devices 
+  """
   devices_path = os.path.join(os.path.dirname(__file__), DEVICES_DIRECTORY)
   for thing in Path(devices_path).glob(path):
     if thing.is_file():
@@ -197,6 +211,7 @@ def local_delete_devices(path):
 
 
 def local_get_devices():
+  """ Returns path to device configs of devices in local/devices directory"""
   return sorted(
       Path(os.path.join(os.path.dirname(__file__), DEVICES_DIRECTORY)).glob(
           "*/device_config.json"
@@ -225,7 +240,7 @@ def test_modify_device(testing_devices, testrun):
 
   mac_addr = local_device["mac_addr"]
   new_model = "Alphabet"
-  # get all devices
+  
   r = requests.get(f"{API}/devices")
   all_devices = json.loads(r.text)
 
@@ -258,13 +273,8 @@ def test_modify_device(testing_devices, testrun):
   assert updated_device_api["test_modules"] == new_test_modules
 
 
-# @pytest.mark.timeout(1)
-def test_create_get_devices(empty_devices_dir, testrun):
-  # local_delete_devices(ALL_DEVICES)
-  # We must start test run with no devices in local/devices for this test to function as expected!
-  assert len(local_get_devices()) == 0
 
-  # Test adding device
+def test_create_get_devices(empty_devices_dir, testrun):
   device_1 = {
       "manufacturer": "Google",
       "model": "First",
@@ -349,7 +359,7 @@ def test_get_system_config(testrun):
   )
 
 
-# TODO change to invalod json or something
+# TODO change to invalid jsdon request
 @pytest.mark.skip()
 def test_invalid_path_get(testrun):
   r = requests.get(f"{API}/blah/blah")
@@ -364,7 +374,6 @@ def test_invalid_path_get(testrun):
   assert set(dict_paths(mockito)) == set(dict_paths(response))
 
 
-# @pytest.mark.skip()
 def test_trigger_run(testing_devices, testrun):
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload))
@@ -417,7 +426,6 @@ def test_trigger_run(testing_devices, testrun):
   assert results["baseline.compliant"]["result"] == "Compliant"
 
 
-@pytest.mark.skip()
 def test_stop_running_test(testing_devices, testrun):
   payload = {"device": {"mac_addr": ALL_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload))
@@ -450,26 +458,9 @@ def test_stop_running_test(testing_devices, testrun):
   response = json.loads(r.text)
   pretty_print(response)
 
-  assert False
   assert len(response["results"]["tests"]) == response["results"]["total"]
   assert len(response["results"]["tests"]) < 15
-  assert response["status"] == "Stopped???"
-
-  # Validate structure
-  with open(
-      os.path.join(
-          os.path.dirname(__file__), "mockito/running_system_status.json"
-      )
-  ) as f:
-    mockito = json.load(f)
-
-  # validate structure
-  assert set(dict_paths(mockito)).issubset(set(dict_paths(response)))
-
-  # Validate results structure
-  assert set(dict_paths(mockito["tests"]["results"][0])).issubset(
-      set(dict_paths(response["tests"]["results"][0]))
-  )
+  assert response["status"] == "Stopped"
 
 
 @pytest.mark.skip()
@@ -481,9 +472,7 @@ def test_stop_running_not_running(testrun):
 
   assert False
 
-  # V
-
-
+# TODO enable test because functionality is broken
 @pytest.mark.skip()
 def test_multiple_runs(testing_devices, testrun):
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
@@ -540,7 +529,7 @@ def test_multiple_runs(testing_devices, testrun):
 
   stop_test_device("x123")
 
-
+#TODO uncomment when functionality is implemented
 @pytest.mark.skip()
 def test_create_invalid_chars(empty_devices_dir, testrun):
   # local_delete_devices(ALL_DEVICES)
@@ -564,14 +553,4 @@ def test_create_invalid_chars(empty_devices_dir, testrun):
   r = requests.post(f"{API}/device", data=json.dumps(device_1))
   print(r.text)
   print(r.status_code)
-
-
-def test_get_system_config(testrun):
-  r = requests.get(f"{API}/system/config")
-
-  with open(os.path.join(os.path.dirname(__file__), SYSTEM_CONFIG_PATH)) as f:
-    local_config = json.load(f)
-
-  api_config = json.loads(r.text)
-
-  #
+  
