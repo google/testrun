@@ -272,7 +272,7 @@ class NetworkOrchestrator:
     """ Stores network properties to restore network after
         network creation and flushes internet interface
         """
-
+    LOGGER.info('Pre network create')
     self._ethmac = subprocess.check_output(
         f'cat /sys/class/net/{self._session.get_internet_interface()}/address',
         shell=True).decode('utf-8').strip()
@@ -294,7 +294,7 @@ class NetworkOrchestrator:
 
   def _ci_post_network_create(self):
     """ Restore network connection in CI environment """
-    LOGGER.info('post cr')
+    LOGGER.info('Post network create')
     util.run_command(((f'ip address del {self._ipv4} ' +
                        'dev {self._session.get_internet_interface()}')))
     util.run_command((f'ip -6 address del {self._ipv6} ' +
@@ -320,7 +320,7 @@ class NetworkOrchestrator:
   def create_net(self):
     LOGGER.info('Creating baseline network')
 
-    if os.getenv('GITHUB_ACTIONS'):
+    if 'CI' in os.environ:
       self._ci_pre_network_create()
 
     # Setup the virtual network
@@ -329,7 +329,7 @@ class NetworkOrchestrator:
       self.stop()
       sys.exit(1)
 
-    if os.getenv("GITHUB_ACTIONS"):
+    if 'CI' in os.environ:
       self._ci_post_network_create()
 
     self._create_private_net()
