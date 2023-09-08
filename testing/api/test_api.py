@@ -53,14 +53,13 @@ def query_system_status() -> str:
   """Query system status from API and returns this"""
   r = requests.get(f"{API}/system/status")
   response = json.loads(r.text)
-  #print(response)
   return response["status"]
 
+
 def query_test_count() -> str:
-  """Query system status from API and returns this"""
+  """Queries status and returns number of test results"""
   r = requests.get(f"{API}/system/status")
   response = json.loads(r.text)
-  #print(response)
   return len(response["tests"]["results"])
 
 
@@ -150,7 +149,6 @@ def testrun(request):
 
   print(outs)
 
-
   cmd = subprocess.run(
       f"docker stop $(docker ps -a -q)", shell=True, capture_output=True
   )
@@ -159,8 +157,6 @@ def testrun(request):
       f"docker rm  $(docker ps -a -q)", shell=True, capture_output=True
   )
   print(cmd.stdout)
-
-  
 
 
 def until_true(func: Callable, message: str, timeout: int):
@@ -219,7 +215,6 @@ def test_get_system_interfaces(testrun):
   assert all([isinstance(x, str) for x in response])
 
 
-
 def test_modify_device(testing_devices, testrun):
   with open(
       os.path.join(
@@ -227,7 +222,7 @@ def test_modify_device(testing_devices, testrun):
       )
   ) as f:
     local_device = json.load(f)
-  
+
   mac_addr = local_device["mac_addr"]
   new_model = "Alphabet"
   # get all devices
@@ -262,7 +257,8 @@ def test_modify_device(testing_devices, testrun):
   assert updated_device_api["model"] == new_model
   assert updated_device_api["test_modules"] == new_test_modules
 
-#@pytest.mark.timeout(1)
+
+# @pytest.mark.timeout(1)
 def test_create_get_devices(empty_devices_dir, testrun):
   # local_delete_devices(ALL_DEVICES)
   # We must start test run with no devices in local/devices for this test to function as expected!
@@ -330,7 +326,6 @@ def test_create_get_devices(empty_devices_dir, testrun):
     )
 
 
-
 def test_get_system_config(testrun):
   r = requests.get(f"{API}/system/config")
 
@@ -353,7 +348,8 @@ def test_get_system_config(testrun):
       == api_config["network"]["internet_intf"]
   )
 
-#TODO change to invalod json or something
+
+# TODO change to invalod json or something
 @pytest.mark.skip()
 def test_invalid_path_get(testrun):
   r = requests.get(f"{API}/blah/blah")
@@ -453,11 +449,11 @@ def test_stop_running_test(testing_devices, testrun):
   r = requests.get(f"{API}/system/status")
   response = json.loads(r.text)
   pretty_print(response)
-  
+
   assert False
-  assert len(response['results']['tests']) == response['results']['total']
-  assert len(response['results']['tests']) < 15 
-  assert response['status'] == 'Stopped???'
+  assert len(response["results"]["tests"]) == response["results"]["total"]
+  assert len(response["results"]["tests"]) < 15
+  assert response["status"] == "Stopped???"
 
   # Validate structure
   with open(
@@ -475,6 +471,7 @@ def test_stop_running_test(testing_devices, testrun):
       set(dict_paths(response["tests"]["results"][0]))
   )
 
+
 @pytest.mark.skip()
 def test_stop_running_not_running(testrun):
   # Validate response
@@ -485,6 +482,7 @@ def test_stop_running_not_running(testrun):
   assert False
 
   # V
+
 
 @pytest.mark.skip()
 def test_multiple_runs(testing_devices, testrun):
@@ -522,7 +520,7 @@ def test_multiple_runs(testing_devices, testrun):
 
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload))
-  #assert r.status_code == 200
+  # assert r.status_code == 200
   # returns 409
   print(r.text)
 
@@ -541,6 +539,7 @@ def test_multiple_runs(testing_devices, testrun):
   )
 
   stop_test_device("x123")
+
 
 @pytest.mark.skip()
 def test_create_invalid_chars(empty_devices_dir, testrun):
@@ -567,7 +566,6 @@ def test_create_invalid_chars(empty_devices_dir, testrun):
   print(r.status_code)
 
 
-
 def test_get_system_config(testrun):
   r = requests.get(f"{API}/system/config")
 
@@ -576,4 +574,4 @@ def test_get_system_config(testrun):
 
   api_config = json.loads(r.text)
 
-  # 
+  #
