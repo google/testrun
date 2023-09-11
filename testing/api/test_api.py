@@ -425,7 +425,6 @@ def test_trigger_run(testing_devices, testrun):
   # Validate a result
   assert results["baseline.compliant"]["result"] == "Compliant"
 
-
 def test_stop_running_test(testing_devices, testrun):
   payload = {"device": {"mac_addr": ALL_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload))
@@ -460,7 +459,7 @@ def test_stop_running_test(testing_devices, testrun):
 
   #TODO uncomment when bug is fixed
   #assert len(response["tests"]["results"]) == response["tests"]["total"]
-  assert len(response["tests"]["tests"]) < 15
+  assert len(response["tests"]["results"]) < 15
   #TODO uncomment when bug is fixed
   #assert response["status"] == "Stopped"
 
