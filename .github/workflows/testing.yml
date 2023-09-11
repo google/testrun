@@ -63,6 +63,15 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2.3.4
+      - name: Install dependencies
+        shell: bash {0}
+        run: cmd/prepare
+      - name: Package Testrun
+        shell: bash {0}
+        run: cmd/package
+      - name: Install Testrun
+        shell: bash {0}
+        run: sudo dpkg -i testrun*.deb
       - name: Run tests
         shell: bash {0}
         run: testing/api/test_api
