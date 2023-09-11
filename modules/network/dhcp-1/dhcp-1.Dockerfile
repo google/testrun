@@ -25,7 +25,7 @@ RUN apt-get install -y wget
 RUN wget http://standards-oui.ieee.org/oui.txt -P /usr/local/etc/
 
 # Install dhcp server
-RUN apt-get install -y isc-dhcp-server radvd systemd
+RUN apt-get update && apt-get install -y isc-dhcp-server radvd systemd
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf
