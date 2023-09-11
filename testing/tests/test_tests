@@ -19,6 +19,7 @@ ip a
 TEST_DIR=/tmp/results
 MATRIX=testing/tests/test_tests.json
 
+rm -rf $TEST_DIR/
 mkdir -p $TEST_DIR
 
 # Setup requirements
@@ -29,26 +30,32 @@ pip3 install pytest
 
 # Start OVS
 # Setup device network
+sudo ip link add dev xyz type dummy
 sudo ip link add dev endev0a type veth peer name endev0b
 sudo ip link set dev endev0a up
 sudo ip link set dev endev0b up
-sudo docker network create -d macvlan -o parent=endev0b endev1
+sudo docker network remove endev0
+sudo docker network create -d macvlan -o parent=endev0b endev0
 
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 # Build Test Container
 sudo docker build ./testing/docker/ci_test_device1 -t ci_test_device1 -f  ./testing/docker/ci_test_device1/Dockerfile
 
+sudo chown -R $USER local
+
 cat <<EOF >local/system.json
 {
   "network": {
     "device_intf": "endev0a",
-    "internet_intf": "eth0"
+    "internet_intf": "xyz"
   },
   "log_level": "DEBUG",
   "monitor_period": 30
 }
 EOF
+
+cat local/system.json 
 
 mkdir -p local/devices
 cp -r testing/device_configs/* local/devices
@@ -57,6 +64,9 @@ sudo cmd/install
 
 TESTERS=$(jq -r 'keys[]' $MATRIX)
 for tester in $TESTERS; do
+  if [ -n $1 ] && [ $1 != $tester ]; then
+    continue
+  fi
   testrun_log=$TEST_DIR/${tester}_testrun.log
   device_log=$TEST_DIR/${tester}_device.log
 
@@ -65,11 +75,11 @@ for tester in $TESTERS; do
   args=$(jq -r .$tester.args $MATRIX)
 
   touch $testrun_log
-  sudo timeout 900 bin/testrun --single-intf --no-ui --no-validate > $testrun_log 2>&1 &
+  sudo timeout 1800 bin/testrun --single-intf --no-ui --no-validate > $testrun_log 2>&1 &
   TPID=$!
 
   # Time to wait for testrun to be ready
-  WAITING=600
+  WAITING=800
   for i in `seq 1 $WAITING`; do
     tail -1 $testrun_log
       if [[ -n $(fgrep "Waiting for devices on the network" $testrun_log) ]]; then
@@ -91,9 +101,12 @@ for tester in $TESTERS; do
       exit 1
   fi
 
+  # helps unclean exits when running locally
+  sudo docker stop $tester && sudo docker rm $tester
+  
   # Load Test Container
   sudo docker run -d \
-    --network=endev1 \
+    --network=endev0 \
     --mac-address=$ethmac \
     --cap-add=NET_ADMIN \
     -v /tmp:/out \
@@ -101,20 +114,35 @@ for tester in $TESTERS; do
     --name=$tester \
     ci_test_device1 $args
   
-  wait $TPID
+wait $TPID
+#WAITING=600
+#for i in `seq 1 $WAITING`; do
+#  tail -1 $testrun_log
+#    if [[ -n $(fgrep "All tests complete" $testrun_log) ]]; then
+#        sleep 10
+#        kill -9 $TPID
+#    fi
+#
+#      if [[ ! -d /proc/$TPID ]]; then
+#          break
+#      fi
+#    
+#      sleep 1
+#  done
+
+
   # Following line indicates that tests are completed but wait till it exits
   # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
   #Change this line! - LOGGER.info(f"""Completed running test modules on device
   #          with mac addr {device.mac_addr}""")
 
-  ls runtime
-  more runtime/network/*.log
-  sudo docker kill $tester
+  #more runtime/network/*.log | cat 
   sudo docker logs $tester | cat 
-  
+  sudo docker kill $tester && sudo docker rm $tester
+
   cp runtime/test/${ethmac//:/}/report.json $TEST_DIR/$tester.json
-  more $TEST_DIR/$tester.json
-  more $testrun_log
+  more $TEST_DIR/$tester.json | cat 
+  more $testrun_log | cat 
 
 done
 

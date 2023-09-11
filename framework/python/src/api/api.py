@@ -28,6 +28,7 @@ LOGGER = logger.get_logger("api")
 DEVICE_MAC_ADDR_KEY = "mac_addr"
 DEVICE_MANUFACTURER_KEY = "manufacturer"
 DEVICE_MODEL_KEY = "model"
+DEVICE_TEST_MODULES_KEY = "test_modules"
 
 class Api:
   """Provide REST endpoints to manage Test Run"""
@@ -54,7 +55,7 @@ class Api:
     self._router.add_api_route("/device", self.save_device, methods=["POST"])
 
     # TODO: Make this configurable in system.json
-    origins = ["http://localhost:4200"]
+    origins = ["http://localhost:8080", "http://localhost:4200"]
 
     self._app = FastAPI()
     self._app.include_router(self._router)
@@ -197,6 +198,7 @@ class Api:
         device.manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
         device.model = device_json.get(DEVICE_MODEL_KEY)
         device.device_folder = device.manufacturer + " " + device.model
+        device.test_modules = device_json.get(DEVICE_TEST_MODULES_KEY)
 
         self._test_run.create_device(device)
         response.status_code = status.HTTP_201_CREATED

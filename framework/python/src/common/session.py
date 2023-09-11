@@ -17,6 +17,7 @@
 import datetime
 import json
 import os
+from common import util
 
 NETWORK_KEY = 'network'
 DEVICE_INTF_KEY = 'device_intf'
@@ -45,7 +46,7 @@ class TestRunSession():
     self._load_config()
 
   def start(self):
-    self._status = 'Waiting for device'
+    self._status = 'Waiting for Device'
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -83,20 +84,24 @@ class TestRunSession():
       config_file_json = json.load(f)
 
       # Network interfaces
-      if (NETWORK_KEY in config_file_json 
+      if (NETWORK_KEY in config_file_json
           and DEVICE_INTF_KEY in config_file_json.get(NETWORK_KEY)
           and INTERNET_INTF_KEY in config_file_json.get(NETWORK_KEY)):
-        self._config[NETWORK_KEY][DEVICE_INTF_KEY] = config_file_json.get(NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
-        self._config[NETWORK_KEY][INTERNET_INTF_KEY] = config_file_json.get(NETWORK_KEY, {}).get(INTERNET_INTF_KEY)
+        self._config[NETWORK_KEY][DEVICE_INTF_KEY] = config_file_json.get(
+          NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
+        self._config[NETWORK_KEY][INTERNET_INTF_KEY] = config_file_json.get(
+          NETWORK_KEY, {}).get(INTERNET_INTF_KEY)
 
       if RUNTIME_KEY in config_file_json:
         self._config[RUNTIME_KEY] = config_file_json.get(RUNTIME_KEY)
 
       if STARTUP_TIMEOUT_KEY in config_file_json:
-        self._config[STARTUP_TIMEOUT_KEY] = config_file_json.get(STARTUP_TIMEOUT_KEY)
+        self._config[STARTUP_TIMEOUT_KEY] = config_file_json.get(
+          STARTUP_TIMEOUT_KEY)
 
       if MONITOR_PERIOD_KEY in config_file_json:
-        self._config[MONITOR_PERIOD_KEY] = config_file_json.get(MONITOR_PERIOD_KEY)
+        self._config[MONITOR_PERIOD_KEY] = config_file_json.get(
+          MONITOR_PERIOD_KEY)
 
       if LOG_LEVEL_KEY in config_file_json:
         self._config[LOG_LEVEL_KEY] = config_file_json.get(LOG_LEVEL_KEY)
@@ -105,11 +110,13 @@ class TestRunSession():
         self._config[API_PORT_KEY] = config_file_json.get(API_PORT_KEY)
 
       if MAX_DEVICE_REPORTS_KEY in config_file_json:
-        self._config[MAX_DEVICE_REPORTS_KEY] = config_file_json.get(MAX_DEVICE_REPORTS_KEY)
+        self._config[MAX_DEVICE_REPORTS_KEY] = config_file_json.get(
+          MAX_DEVICE_REPORTS_KEY)
 
   def _save_config(self):
     with open(self._config_file, 'w', encoding='utf-8') as f:
       f.write(json.dumps(self._config, indent=2))
+    util.set_file_owner(owner=util.get_host_user(), path=self._config_file)
 
   def get_runtime(self):
     return self._config.get(RUNTIME_KEY)
@@ -193,7 +200,7 @@ class TestRunSession():
       for device_report in device_reports:
         reports.append(device_report.to_json())
 
-    return reports
+    return sorted(reports, key=lambda report: report['started'], reverse=True)
 
   def add_total_tests(self, no_tests):
     self._total_tests += no_tests

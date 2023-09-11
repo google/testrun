@@ -1,0 +1,45 @@
+<form [formGroup]="deviceForm" class="device-form">
+  <span class="device-form-title">{{data.title}}</span>
+  <mat-form-field appearance="outline">
+    <mat-label>Device Manufacturer</mat-label>
+    <input class="device-form-manufacturer" formControlName="manufacturer" matInput>
+    <mat-hint>Please enter device manufacturer name</mat-hint>
+    <mat-error *ngIf="manufacturer.errors?.['required']">
+      <span>Device Manufacturer is <strong>required</strong></span>
+    </mat-error>
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Device Model</mat-label>
+    <input class="device-form-model" formControlName="model" matInput>
+    <mat-hint>Please enter device name</mat-hint>
+    <mat-error *ngIf="model.errors?.['required']">
+      <span>Device Model is <strong>required</strong></span>
+    </mat-error>
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>MAC address</mat-label>
+    <input class="device-form-mac-address" formControlName="mac_addr" matInput
+           placeholder="xx:xx:xx:xx:xx:xx">
+    <mat-hint>Please enter MAC address</mat-hint>
+    <mat-error *ngIf="mac_addr.errors?.['required'] && !mac_addr.errors?.['pattern']">
+      <span>MAC address is <strong>required</strong></span>
+    </mat-error>
+    <mat-error *ngIf="mac_addr.errors?.['pattern']" class="device-form-mac-address-error">
+      <span>Please, check. A MAC address consists of 12 hexadecimal digits (0 to 9, a to f, or A to F).</span>
+    </mat-error>
+  </mat-form-field>
+  <app-device-tests
+    [deviceForm]="deviceForm"
+    [deviceTestModules]="data.device?.test_modules"
+    [testModules]="testModules">
+  </app-device-tests>
+
+  <mat-error *ngIf="error$| async">
+    <span>{{error$| async}}</span>
+  </mat-error>
+
+  <mat-dialog-actions align="end" class="device-form-actions">
+    <button (click)="cancel()" class="close-button" mat-flat-button>Cancel</button>
+    <button (click)="saveDevice()" class="save-button" color="primary" mat-flat-button>Save</button>
+  </mat-dialog-actions>
+</form>

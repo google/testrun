@@ -1,0 +1,25 @@
+{
+  "manufacturer": "Google",
+  "model": "Baseline",
+  "mac_addr": "02:42:aa:00:01:01",
+  "test_modules": {
+    "dns": {
+      "enabled": false
+    },
+    "connection": {
+      "enabled": false
+    },
+    "ntp": {
+      "enabled": false
+    },
+    "baseline": {
+      "enabled": true
+    },
+    "nmap": {
+      "enabled": false
+    },
+    "tls": {
+      "enabled": false
+    }
+  }
+}
