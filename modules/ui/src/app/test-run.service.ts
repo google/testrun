@@ -3,9 +3,11 @@ import {Injectable} from '@angular/core';
 import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
 import {Observable} from 'rxjs/internal/Observable';
 import {Device, TestModule} from './model/device';
-import {map, ReplaySubject, retry} from 'rxjs';
+import {map, ReplaySubject, retry, timeout} from 'rxjs';
 import {SystemConfig} from './model/setting';
 import {StatusOfTestResult, StatusResultClassName, TestrunStatus} from './model/testrun-status';
+import {catchError} from 'rxjs/internal/operators/catchError';
+import {throwError} from 'rxjs/internal/observable/throwError';
 
 const API_URL = 'http://localhost:8000'
 
@@ -48,11 +50,6 @@ export class TestRunService {
       displayName: "TLS",
       name: "tls",
       enabled: true
-    },
-    {
-      displayName: "Smart Ready",
-      name: "udmi",
-      enabled: false
     },
   ];
 
@@ -166,5 +163,15 @@ export class TestRunService {
       'red': result === StatusOfTestResult.NonCompliant,
       'grey': result === StatusOfTestResult.Skipped || result === StatusOfTestResult.NotStarted
     }
+  }
+
+  startTestrun(device: Device, timeoutMs = 120000): Observable<boolean> {
+    return this.http
+      .post<any>(`${API_URL}/system/start`, JSON.stringify(device))
+      .pipe(
+        timeout(timeoutMs),
+        map(() => true),
+        catchError(err => throwError(err.error?.error || err.message))
+      );
   }
 }

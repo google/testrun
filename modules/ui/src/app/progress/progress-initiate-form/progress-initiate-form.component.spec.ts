@@ -1,4 +1,4 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick} from '@angular/core/testing';
 
 import {ProgressInitiateFormComponent} from './progress-initiate-form.component';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
@@ -11,14 +11,20 @@ import {MatInputModule} from '@angular/material/input';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DeviceTestsComponent} from '../../components/device-tests/device-tests.component';
 import {device} from '../../mocks/device.mock';
+import {of} from 'rxjs';
+import {MOCK_PROGRESS_DATA_IN_PROGRESS, MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE} from '../../mocks/progress.mock';
+import {throwError} from 'rxjs/internal/observable/throwError';
+import {NotificationService} from '../../notification.service';
 
 describe('ProgressInitiateFormComponent', () => {
   let component: ProgressInitiateFormComponent;
   let fixture: ComponentFixture<ProgressInitiateFormComponent>;
   let compiled: HTMLElement;
   let testRunServiceMock: jasmine.SpyObj<TestRunService>;
+  let notificationServiceMock: jasmine.SpyObj<NotificationService>;
 
-  testRunServiceMock = jasmine.createSpyObj(['getDevices', 'fetchDevices', 'getTestModules']);
+  notificationServiceMock = jasmine.createSpyObj(['notify']);
+  testRunServiceMock = jasmine.createSpyObj(['getDevices', 'fetchDevices', 'getTestModules', 'startTestrun', 'systemStatus$', 'getSystemStatus']);
   testRunServiceMock.getTestModules.and.returnValue([
     {
       displayName: "Connection",
@@ -32,11 +38,15 @@ describe('ProgressInitiateFormComponent', () => {
     },
   ]);
   testRunServiceMock.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>([device, device]));
+  testRunServiceMock.startTestrun.and.returnValue(of(true));
+  testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE);
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [ProgressInitiateFormComponent],
       providers: [
         {provide: TestRunService, useValue: testRunServiceMock},
+        {provide: NotificationService, useValue: notificationServiceMock},
         {
           provide: MatDialogRef,
           useValue: {
@@ -55,11 +65,61 @@ describe('ProgressInitiateFormComponent', () => {
     });
     fixture = TestBed.createComponent(ProgressInitiateFormComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
     compiled = fixture.nativeElement as HTMLElement;
   });
 
+  afterEach(() => {
+    testRunServiceMock.getSystemStatus.calls.reset();
+    notificationServiceMock.notify.calls.reset();
+  });
+
+  describe('when test run started', () => {
+    beforeEach(() => {
+      component.testRunStarted = true;
+    });
+    describe('with status "Waiting for device"', () => {
+      beforeEach(async () => {
+        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE);
+      });
+
+      it('should call again getSystemStatus', fakeAsync(() => {
+        fixture.detectChanges();
+        tick(10000);
+
+        expect(testRunServiceMock.getSystemStatus).toHaveBeenCalledTimes(2);
+
+        discardPeriodicTasks();
+      }));
+
+      it('should notify about status', fakeAsync(() => {
+        fixture.detectChanges();
+
+        expect(notificationServiceMock.notify).toHaveBeenCalledWith('Waiting for Device');
+
+        discardPeriodicTasks();
+      }));
+
+    });
+
+    describe('with status not "Waiting for device"', () => {
+      beforeEach(async () => {
+        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+      });
+
+      it('should call again getSystemStatus', fakeAsync(() => {
+        spyOn(component.dialogRef, 'close');
+        fixture.detectChanges();
+
+        expect(component.dialogRef.close).toHaveBeenCalled();
+      }));
+    })
+  });
+
   describe('Class tests', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
     it('should create', () => {
       expect(component).toBeTruthy();
     });
@@ -79,7 +139,7 @@ describe('ProgressInitiateFormComponent', () => {
     });
 
     it('should update selectedDevice on deviceSelected', () => {
-      const newDevice = Object.assign(device, {manufacturer: 'Gamma'})
+      const newDevice = Object.assign({}, device, {manufacturer: 'Gamma'})
       component.deviceSelected(newDevice);
 
       expect(component.selectedDevice).toEqual(newDevice);
@@ -101,15 +161,49 @@ describe('ProgressInitiateFormComponent', () => {
         expect(component.firmware.errors ? component.firmware.errors['required'] : false).toEqual(true);
       });
 
-      //test will be updated
-      it('should close dialog if selectedDevice is present and firmware is filled', () => {
-        spyOn(component.dialogRef, 'close');
-        component.firmware.setValue('firmware');
-        component.selectedDevice = device;
-        component.startTestRun();
+      describe('when selectedDevice is present and firmware is filled', () => {
+        beforeEach(() => {
+          component.firmware.setValue('firmware');
+          component.selectedDevice = device;
+        });
 
-        expect(component.dialogRef.close).toHaveBeenCalled();
-      });
+        it('should call startTestRun with device', () => {
+          component.startTestRun();
+
+          expect(testRunServiceMock.startTestrun).toHaveBeenCalledWith({
+            "manufacturer": "Delta",
+            "model": "O3-DIN-CPU",
+            "mac_addr": "00:1e:42:35:73:c4",
+            "firmware": "firmware",
+            "test_modules": {
+              "dns": {
+                "enabled": true,
+              }
+            }
+          });
+        });
+
+        describe('when result is success', () => {
+          it('should call getSystemStatus', () => {
+            testRunServiceMock.startTestrun.and.returnValue(of(true));
+            component.startTestRun();
+
+            expect(testRunServiceMock.getSystemStatus).toHaveBeenCalled();
+          });
+        })
+
+        describe('when error happened', () => {
+          it('should notify about error', () => {
+            testRunServiceMock.startTestrun.and.returnValue(throwError('error'));
+
+            component.startTestRun();
+
+            expect(component.startInterval).toEqual(false);
+            expect(notificationServiceMock.notify).toHaveBeenCalledWith('error');
+          });
+        })
+
+      })
     });
   });
 

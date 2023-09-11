@@ -34,5 +34,3 @@ deactivate
 sudo cmd/build
 
 echo Finished installing Testrun
-
-deactivate

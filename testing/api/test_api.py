@@ -122,7 +122,7 @@ def testrun(request):
   """ Start intstance of testrun """
   test_name = request.node.originalname
   proc = subprocess.Popen(
-      "bin/testrun",
+      "testrun",
       stdout=subprocess.PIPE,
       stderr=subprocess.STDOUT,
       encoding="utf-8",

@@ -13,9 +13,9 @@
         </div>
         <div class="toolbar-row bottom">
 
-          <p class="progress-title">
+          <h2 class="title progress-title">
             {{data.device.manufacturer}} {{data.device.model}} {{data.device.firmware}} {{data.started | date: 'd MMM y H:mm'}}
-          </p>
+          </h2>
           <button
             *ngIf="data.status === StatusOfTestrun.InProgress"
             (click)="stopTestrun()"

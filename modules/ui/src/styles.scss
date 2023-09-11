@@ -38,6 +38,23 @@ mat-hint {
   color: #5F6368;
 }
 
+.mdc-button:focus-visible,
+.mdc-icon-button:focus-visible,
+.mdc-radio__native-control:focus-visible,
+.mdc-checkbox__native-control:focus-visible {
+  outline: $black solid 2px;
+}
+
+.mdc-button .mat-mdc-focus-indicator,
+.mdc-icon-button .mat-mdc-focus-indicator {
+  display: none;
+}
+
+.mdc-radio__native-control:focus:not(:focus-visible) ~ .mat-mdc-focus-indicator,
+.mdc-checkbox__native-control:focus:not(:focus-visible) ~ .mat-mdc-focus-indicator {
+  display: none;
+}
+
 .table-cell-result-text {
   margin: 0;
   padding: 4px;
@@ -60,4 +77,18 @@ mat-hint {
     background: $color-background-grey;
     color: $grey-800;
   }
+}
+
+h2.title {
+  margin: 0;
+  font-size: 32px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 40px;
+  letter-spacing: 0;
+}
+
+.mat-mdc-snack-bar-container {
+  --mat-snack-bar-button-color: #ffffff;
+  --mdc-snackbar-supporting-text-color: #ffffff;
 }
