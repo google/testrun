@@ -1,21 +1,35 @@
 {
     "tester1": {
         "image": "test-run/ci_test1",
-        "args": "oddservices",
+        "args": "oddservices dns_static",
         "ethmac": "02:42:aa:00:00:01",
         "expected_results": {
             "security.nmap.ports": "Non-Compliant"
         }
     },
     "tester2": {
+        "description": "expected to pass most things",
         "image": "test-run/ci_test1",
-        "args": "ntpv4_dhcp",
+        "args": "ntpv4_dhcp dns_dhcp",
         "ethmac": "02:42:aa:00:00:02",
         "expected_results": {
             "security.nmap.ports": "Compliant",
             "ntp.network.ntp_support": "Compliant",
-            "ntp.network.ntp_dhcp": "Compliant"
+            "ntp.network.ntp_dhcp": "Compliant",
+            "connection.shared_address": "Compliant",
+            "connection.dhcp_address": "Compliant",
+            "connection.mac_address": "Compliant",
+            "connection.target_ping": "Compliant",
+            "connection.single_ip": "Compliant",
+            "connection.ipaddr.ip_change": "Compliant"
         }
+    },
+    "tester3": {
+        "description": "",
+        "image": "test-run/ci_test1",
+        "args": "kill_dhcp",
+        "ethmac": "02:42:aa:00:00:03",
+        "expected_results": {}
     }
     
 }
