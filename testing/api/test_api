@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 # Copyright 2023 Google LLC
 #
@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TESTRUN_OUT=/tmp/testrun.log
-
 ifconfig
 
 # Setup requirements
@@ -25,22 +23,27 @@ sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils 
 pip3 install pytest
 
 # Setup device network
+sudo ip link add dev dummynet type dummy
 sudo ip link add dev endev0a type veth peer name endev0b
 sudo ip link set dev endev0a up
 sudo ip link set dev endev0b up
 sudo docker network create -d macvlan -o parent=endev0b endev0
 
+sudo ip link add dev dummynet type dummy
+
 # Start OVS
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 # Build Test Container
-sudo docker build ./testing/docker/ci_baseline -t ci1 -f  ./testing/docker/ci_baseline/Dockerfile
+sudo docker build ./testing/docker/ci_test_device1 -t ci_test_device1 -f  ./testing/docker/ci_test_device1/Dockerfile
+
+sudo chown -R $USER local
 
 cat <<EOF >local/system.json
 {
   "network": {
     "device_intf": "endev0a",
-    "internet_intf": "eth0"
+    "internet_intf": "dummynet"
   },
   "log_level": "DEBUG"
 }
@@ -48,38 +51,7 @@ EOF
 
 sudo cmd/install
 
-sudo bin/testrun --single-intf --no-ui > $TESTRUN_OUT 2>&1 & 
-TPID=$!
-
-# Time to wait for testrun to be ready
-WAITING=750
-for i in `seq 1 $WAITING`; do
-    if [[ -n $(fgrep "Waiting for devices on the network" $TESTRUN_OUT) ]]; then
-        break
-    fi
-
-    if [[ ! -d /proc/$TPID ]]; then
-        cat $TESTRUN_OUT
-        echo "error encountered starting test run"
-        exit 1
-    fi
-   
-    sleep 1
-done
-
-if [[ $i -eq $WAITING ]]; then
-    cat $TESTRUN_OUT
-    echo "failed after waiting $WAITING seconds for test-run start"
-    exit 1
-fi
-
-# Load Test Container
-sudo docker run --network=endev0 --cap-add=NET_ADMIN -v /tmp:/out --privileged ci1 
-
-echo "Done baseline test"
-
-more $TESTRUN_OUT
-
-pytest testing/baseline/test_baseline.py
+# Needs to be sudo because this invokes bin/testrun 
+sudo venv/bin/python -m pytest -v testing/api/test_api.py
 
 exit $?
