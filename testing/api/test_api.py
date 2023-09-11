@@ -37,9 +37,10 @@ API = "http://127.0.0.1:8000"
 LOG_PATH = "/tmp/testrun.log"
 TEST_SITE_DIR = ".."
 
-DEVICES_DIRECTORY = "../../local/devices"
-TESTING_DEVICES = "../device_configs/"
-SYSTEM_CONFIG_PATH = "../../local/system.json"
+TESTRUN_DIR = "/usr/local/testrun"
+DEVICES_DIRECTORY = "local/devices"
+TESTING_DEVICES = "../device_configs"
+SYSTEM_CONFIG_PATH = "local/system.json"
 
 BASELINE_MAC_ADDR = "02:42:aa:00:01:01"
 ALL_MAC_ADDR = "02:42:aa:00:00:01"
@@ -111,7 +112,7 @@ def testing_devices():
   local_delete_devices(ALL_DEVICES)
   shutil.copytree(
       os.path.join(os.path.dirname(__file__), TESTING_DEVICES),
-      os.path.join(os.path.dirname(__file__), DEVICES_DIRECTORY),
+      os.path.join(TESTRUN_DIR, DEVICES_DIRECTORY),
       dirs_exist_ok=True,
   )
   return local_get_devices()
@@ -202,7 +203,7 @@ def get_network_interfaces():
 def local_delete_devices(path):
   """ Deletes all local devices 
   """
-  devices_path = os.path.join(os.path.dirname(__file__), DEVICES_DIRECTORY)
+  devices_path = os.path.join(TESTRUN_DIR, DEVICES_DIRECTORY)
   for thing in Path(devices_path).glob(path):
     if thing.is_file():
       thing.unlink()
@@ -213,7 +214,7 @@ def local_delete_devices(path):
 def local_get_devices():
   """ Returns path to device configs of devices in local/devices directory"""
   return sorted(
-      Path(os.path.join(os.path.dirname(__file__), DEVICES_DIRECTORY)).glob(
+      Path(os.path.join(TESTRUN_DIR, DEVICES_DIRECTORY)).glob(
           "*/device_config.json"
       )
   )
@@ -233,14 +234,14 @@ def test_get_system_interfaces(testrun):
 def test_modify_device(testing_devices, testrun):
   with open(
       os.path.join(
-          os.path.dirname(__file__), DEVICES_DIRECTORY, testing_devices[1]
+          TESTRUN_DIR, DEVICES_DIRECTORY, testing_devices[1]
       )
   ) as f:
     local_device = json.load(f)
 
   mac_addr = local_device["mac_addr"]
   new_model = "Alphabet"
-  
+
   r = requests.get(f"{API}/devices")
   all_devices = json.loads(r.text)
 
@@ -271,7 +272,6 @@ def test_modify_device(testing_devices, testrun):
 
   assert updated_device_api["model"] == new_model
   assert updated_device_api["test_modules"] == new_test_modules
-
 
 
 def test_create_get_devices(empty_devices_dir, testrun):
@@ -339,7 +339,7 @@ def test_create_get_devices(empty_devices_dir, testrun):
 def test_get_system_config(testrun):
   r = requests.get(f"{API}/system/config")
 
-  with open(os.path.join(os.path.dirname(__file__), SYSTEM_CONFIG_PATH)) as f:
+  with open(os.path.join(TESTRUN_DIR, SYSTEM_CONFIG_PATH)) as f:
     local_config = json.load(f)
 
   api_config = json.loads(r.text)

@@ -42,9 +42,6 @@ sudo chown -R $USER local
 # Copy configuration to testrun
 sudo cp testing/baseline/system.json $TESTRUN_DIR/local/system.json
 
-# Copy device configs to testrun
-sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
-
 # Needs to be sudo because this invokes bin/testrun 
 sudo $TESTRUN_DIR/venv/bin/python3 -m pytest -v testing/api/test_api.py
 
