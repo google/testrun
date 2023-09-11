@@ -554,4 +554,3 @@ def test_create_invalid_chars(empty_devices_dir, testrun):
   r = requests.post(f"{API}/device", data=json.dumps(device_1))
   print(r.text)
   print(r.status_code)
-  
