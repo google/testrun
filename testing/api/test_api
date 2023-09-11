@@ -48,6 +48,6 @@ sudo cp testing/baseline/system.json $TESTRUN_DIR/local/system.json
 sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
 
 # Needs to be sudo because this invokes bin/testrun 
-sudo venv/bin/python -m pytest -v testing/api/test_api.py
+sudo python3 -m pytest -v testing/api/test_api.py
 
 exit $?
