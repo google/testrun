@@ -187,7 +187,7 @@ describe('TestRunService', () => {
 
       const req = httpTestingController.expectOne(apiUrl);
       expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(JSON.stringify(device));
+      expect(req.request.body).toEqual(JSON.stringify({device}));
       req.flush({});
     });
 

@@ -167,7 +167,7 @@ export class TestRunService {
 
   startTestrun(device: Device, timeoutMs = 120000): Observable<boolean> {
     return this.http
-      .post<any>(`${API_URL}/system/start`, JSON.stringify(device))
+      .post<any>(`${API_URL}/system/start`, JSON.stringify({device}))
       .pipe(
         timeout(timeoutMs),
         map(() => true),
