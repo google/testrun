@@ -17,7 +17,7 @@
 import datetime
 import json
 import os
-from common import util
+from common import util, logger
 
 NETWORK_KEY = 'network'
 DEVICE_INTF_KEY = 'device_intf'
@@ -28,6 +28,8 @@ STARTUP_TIMEOUT_KEY = 'startup_timeout'
 LOG_LEVEL_KEY = 'log_level'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
+
+LOGGER = logger.get_logger('session')
 
 class TestRunSession():
   """Represents the current session of Test Run."""
@@ -77,7 +79,10 @@ class TestRunSession():
 
   def _load_config(self):
 
+    LOGGER.debug(f'Loading configuration file at {self._config_file}')
     if not os.path.isfile(self._config_file):
+      LOGGER.error(f'No configuration file present at {self._config_file}. ' +
+                   'Default configuration will be used.')
       return
 
     with open(self._config_file, 'r', encoding='utf-8') as f:
@@ -112,6 +117,8 @@ class TestRunSession():
       if MAX_DEVICE_REPORTS_KEY in config_file_json:
         self._config[MAX_DEVICE_REPORTS_KEY] = config_file_json.get(
           MAX_DEVICE_REPORTS_KEY)
+
+      LOGGER.debug(self._config)
 
   def _save_config(self):
     with open(self._config_file, 'w', encoding='utf-8') as f:
@@ -149,7 +156,7 @@ class TestRunSession():
     return self._config.get(MAX_DEVICE_REPORTS_KEY)
 
   def set_config(self, config_json):
-    self._config = config_json
+    self._config.update(config_json)
     self._save_config()
 
   def set_target_device(self, device):
@@ -199,7 +206,6 @@ class TestRunSession():
       device_reports = device.get_reports()
       for device_report in device_reports:
         reports.append(device_report.to_json())
-
     return sorted(reports, key=lambda report: report['started'], reverse=True)
 
   def add_total_tests(self, no_tests):

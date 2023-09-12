@@ -4,10 +4,9 @@
 
 @include mat.core();
 @include mat.strong-focus-indicators((
-  outline-style: solid,
-  outline-width: 2px,
-  outline-color: $black,
+  border-width: 2px,
 ));
+
 
 $app-primary: mat.define-palette($color-primary);
 $app-accent: mat.define-palette($color-accent);
@@ -41,6 +40,11 @@ $brand-light-theme-secondary: mat.define-light-theme((
 
 @include mat.all-component-themes($brand-light-theme);
 @include mat.radio-color($brand-light-theme-secondary);
+@include mat.snack-bar-typography(
+    mat.define-typography-config(
+      $font-family: 'Roboto, sans-serif'
+    ));
+@include mat.snack-bar-color($brand-light-theme-secondary);
 @include mat.checkbox-color($brand-light-theme-secondary);
 @include mat.progress-bar-color((color: (
   primary: $app-blue-light-palette,

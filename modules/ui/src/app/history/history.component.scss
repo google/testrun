@@ -11,13 +11,7 @@
   padding-left: 32px;
   gap: 10px;
   background: $white;
-  height: 93px;
-
-  span {
-    font-size: 36px;
-    font-weight: 400;
-    line-height: 44px;
-  }
+  height: 89px;
 }
 
 .history-content {
@@ -47,6 +41,10 @@
     font-size: 14px;
     line-height: 20px;
     letter-spacing: 0.2px;
+  }
+
+  .table-cell-report {
+    padding-left: 36px;
   }
 }
 

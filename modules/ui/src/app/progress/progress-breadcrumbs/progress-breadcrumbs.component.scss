@@ -1,15 +1,21 @@
 @use '@angular/material' as mat;
 @import "../../../theming/colors";
 
+:host {
+  width: 100%;
+  overflow: hidden;
+}
+
 ul {
   display: flex;
-  flex-wrap: wrap;
   list-style: none;
   margin: 0;
   padding: 0 8px;
 
   .breadcrumb-item {
     display: flex;
+    flex: 0 1 auto;
+    max-width: 25%;
     align-items: center;
     justify-content: center;
     gap: 8px;
@@ -17,15 +23,18 @@ ul {
 
     &.first {
       margin-right: 6px;
+      flex-shrink: 0;
     }
   }
 
   .icon-home {
     color: $dark-grey;
+    flex-shrink: 0;
   }
 
   .icon {
     color: $secondary;
+    flex-shrink: 0;
   }
 
   .breadcrumb-text {
@@ -36,5 +45,8 @@ ul {
     font-weight: 700;
     line-height: 16px;
     letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }

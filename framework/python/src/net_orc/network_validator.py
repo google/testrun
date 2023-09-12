@@ -56,7 +56,7 @@ class NetworkValidator:
     util.run_command(f'chown -R {host_user} {OUTPUT_DIR}')
 
     self._load_devices()
-    self._build_network_devices()
+    #self._build_network_devices()
     self._start_network_devices()
 
   def stop(self, kill=False):

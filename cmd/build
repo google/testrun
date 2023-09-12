@@ -1,0 +1,52 @@
+#!/bin/bash -e
+
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Builds all docker images
+echo Building docker images
+
+# Build user interface
+echo Building user interface
+mkdir -p build/ui
+docker build -t test-run/ui -f modules/ui/ui.Dockerfile . > build/ui/ui.log 2>&1
+
+# Build network modules
+echo Building network modules
+mkdir -p build/network
+for dir in modules/network/* ; do
+  module=$(basename $dir)
+  echo Building network module $module...
+  docker build -f modules/network/$module/$module.Dockerfile -t test-run/$module . > build/network/$module.log 2>&1
+done
+
+# Build validators
+echo Building network validators
+mkdir -p build/devices
+for dir in modules/devices/* ; do
+  module=$(basename $dir)
+  echo Building validator module $module...
+  docker build -f modules/devices/$module/$module.Dockerfile -t test-run/$module . > build/devices/$module.log 2>&1
+done
+
+# Build test modules
+echo Building test modules
+mkdir -p build/test
+for dir in modules/test/* ; do
+  module=$(basename $dir)
+  echo Building test module $module...
+  docker build -f modules/test/$module/$module.Dockerfile -t test-run/$module-test . > build/test/$module.log 2>&1
+done
+
+echo Finished building modules

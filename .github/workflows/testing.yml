@@ -13,7 +13,16 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2.3.4
-      - name: Run tests
+      - name: Install dependencies
+        shell: bash {0}
+        run: cmd/prepare
+      - name: Package Testrun
+        shell: bash {0}
+        run: cmd/package
+      - name: Install Testrun
+        shell: bash {0}
+        run: sudo dpkg -i testrun*.deb
+      - name: Run baseline tests
         shell: bash {0}
         run: testing/baseline/test_baseline
     
@@ -24,12 +33,21 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2.3.4
+      - name: Install dependencies
+        shell: bash {0}
+        run: cmd/prepare
+      - name: Package Testrun  
+        shell: bash {0}
+        run: cmd/package
+      - name: Install Testrun
+        shell: bash {0}
+        run: sudo dpkg -i testrun*.deb
       - name: Run tests
         shell: bash {0}
         run: testing/tests/test_tests
       - name: Archive runtime results
         if: ${{ always() }}
-        run: sudo tar --exclude-vcs -czf runtime.tgz runtime/
+        run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/
       - name: Upload runtime results
         uses: actions/upload-artifact@v3
         if: ${{ always() }}
@@ -45,6 +63,15 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2.3.4
+      - name: Install dependencies
+        shell: bash {0}
+        run: cmd/prepare
+      - name: Package Testrun
+        shell: bash {0}
+        run: cmd/package
+      - name: Install Testrun
+        shell: bash {0}
+        run: sudo dpkg -i testrun*.deb
       - name: Run tests
         shell: bash {0}
         run: testing/api/test_api
@@ -56,6 +83,6 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2.3.4
-      - name: Run tests
+      - name: Run pylint
         shell: bash {0}
         run: testing/pylint/test_pylint

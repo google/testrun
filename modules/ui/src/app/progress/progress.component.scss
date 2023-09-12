@@ -17,14 +17,17 @@
 
 .progress-toolbar {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
   height: auto;
   padding: 0;
   background: $white;
 
   .toolbar-col-left {
-    padding: 0 10px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    padding: 0 32px 0 10px;
   }
 
   .toolbar-row {
@@ -34,10 +37,14 @@
     &.top {
       gap: 15px;
       padding: 10px 0;
+
+      button {
+        flex-shrink: 0;
+      }
     }
 
     &.bottom {
-      gap: 10px;
+      gap: 16px;
       padding: 24px 0 8px;
 
       p {
@@ -50,13 +57,14 @@
     width: 1px;
     height: 35px;
     background-color: $lighter-grey;
+    flex-shrink: 0;
   }
 }
 
 .progress-title {
-  font-size: 36px;
-  font-weight: 400;
-  line-height: 44px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .report-button,

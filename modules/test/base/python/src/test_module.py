@@ -119,7 +119,7 @@ class TestModule:
             'name'] + ' failed - see result details for more info'
       else:
         test['result_description'] = test[
-            'name'] + ' Skipped - see result details for more info'
+            'name'] + ' skipped - see result details for more info'
 
       test['end'] = datetime.now().isoformat()
       duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(
