@@ -17,7 +17,10 @@
 import datetime
 import json
 import os
+<<<<<<< HEAD
 from common import util, logger
+=======
+>>>>>>> main
 
 NETWORK_KEY = 'network'
 DEVICE_INTF_KEY = 'device_intf'

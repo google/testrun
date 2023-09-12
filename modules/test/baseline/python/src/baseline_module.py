@@ -33,9 +33,9 @@ class BaselineModule(TestModule):
     return True, 'Baseline pass test ran successfully'
 
   def _baseline_non_compliant(self):
-    LOGGER.info('Running baseline fail test')
-    LOGGER.info('Baseline fail test finished')
-    return False, 'Baseline fail test ran successfully'
+    LOGGER.info('Running baseline non-compliant test')
+    LOGGER.info('Baseline non-compliant test finished')
+    return False, 'Baseline non-compliant test ran successfully'
 
   def _baseline_informational(self):
     LOGGER.info('Running baseline skip test')

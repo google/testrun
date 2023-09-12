@@ -80,19 +80,31 @@ def test_list_tests(capsys, results, test_matrix):
   ci_pass = set([test
     for testers in test_matrix.values()
     for test, result in testers['expected_results'].items()
+<<<<<<< HEAD
     if result == 'Compliant'])
+=======
+    if result == 'compliant'])
+>>>>>>> main
 
   ci_fail = set([test
     for testers in test_matrix.values()
     for test, result in testers['expected_results'].items()
+<<<<<<< HEAD
     if result == 'Non-Compliant'])
+=======
+    if result == 'non-compliant'])
+>>>>>>> main
 
   with capsys.disabled():
     #TODO print matching the JSON schema for easy copy/paste
     print('============')
     print('============')
     print('tests seen:')
+<<<<<<< HEAD
     print('\n'.join(set([x.name for x in all_tests])))
+=======
+    print('\n'.join([x.name for x in all_tests]))
+>>>>>>> main
     print('\ntesting for pass:')
     print('\n'.join(ci_pass))
     print('\ntesting for fail:')
@@ -100,6 +112,7 @@ def test_list_tests(capsys, results, test_matrix):
     print('\ntester results')
     for tester in test_matrix.keys():
       print(f'\n{tester}:')
+<<<<<<< HEAD
       print('  expected results:')
       for test in collect_expected_results(test_matrix[tester]['expected_results']):
         print(f'    {test.name}: {test.result}')
@@ -109,5 +122,9 @@ def test_list_tests(capsys, results, test_matrix):
           print(f'    {test.name}: {test.result} (exp: {test_matrix[tester]["expected_results"][test.name]})')
         else:
           print(f'    {test.name}: {test.result}')
+=======
+      for test in collect_actual_results(results[tester]):
+        print(f'{test.name}: {test.result}')
+>>>>>>> main
 
   assert True
