@@ -51,7 +51,7 @@ sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
 
 TESTERS=$(jq -r 'keys[]' $MATRIX)
 for tester in $TESTERS; do
-  if [ -n $1 ] && [ $1 != $tester ]; then
+  if [ -n $1 ] && [ "$1" != "$tester" ]; then
     continue
   fi
   testrun_log=$TEST_DIR/${tester}_testrun.log
