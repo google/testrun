@@ -6,11 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Update and get all additional requirements not contained in the base image
 RUN apt-get update && apt-get -y upgrade
 
-<<<<<<< HEAD
 RUN apt-get update && apt-get install -y isc-dhcp-client ntpdate coreutils moreutils inetutils-ping curl jq dnsutils openssl netcat-openbsd arping
-=======
-RUN apt-get update && apt-get install -y isc-dhcp-client ntpdate coreutils moreutils inetutils-ping curl jq dnsutils openssl netcat-openbsd
->>>>>>> main
 
 COPY entrypoint.sh /entrypoint.sh
 

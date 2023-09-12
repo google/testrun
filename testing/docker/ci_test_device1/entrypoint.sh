@@ -111,7 +111,6 @@ if [ -n "${options[ntpv3_time_google_com]}" ]; then
      done) &
 fi
 
-<<<<<<< HEAD
 if [ -n "${options[dns_google]}" ]; then
     echo starting dns requests to 8.8.8.8
     (while true; do dig @8.8.8.8 +short www.google.com; sleep 3; done) &
@@ -145,6 +144,4 @@ fi
 
 (while true; do arping 10.10.10.1; sleep 10; done) &
 (while true; do ip a | cat; sleep 10; done) &
-=======
->>>>>>> main
 tail -f /dev/null
