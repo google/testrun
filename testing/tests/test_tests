@@ -51,7 +51,7 @@ sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
 
 TESTERS=$(jq -r 'keys[]' $MATRIX)
 for tester in $TESTERS; do
-  if [ -n $1 ] && [ $1 != "$tester" ]; then
+  if [ -n $1 ] && [ $1 != $tester ]; then
     continue
   fi
   testrun_log=$TEST_DIR/${tester}_testrun.log
@@ -128,7 +128,7 @@ wait $TPID
   sudo docker logs $tester | cat 
   sudo docker kill $tester && sudo docker rm $tester
 
-  cp runtime/test/${ethmac//:/}/report.json $TEST_DIR/$tester.json
+  cp $TESTRUN_DIR/runtime/test/${ethmac//:/}/report.json $TEST_DIR/$tester.json
   more $TEST_DIR/$tester.json | cat 
   more $testrun_log | cat 
 
