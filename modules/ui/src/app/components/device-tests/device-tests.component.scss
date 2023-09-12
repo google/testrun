@@ -1,3 +1,5 @@
+@import "../../../theming/colors";
+
 :host {
   overflow: auto;
 }
@@ -5,4 +7,11 @@
 .disabled {
   pointer-events: none;
   opacity: 0.6;
+}
+
+.device-tests-title {
+  margin-top: 20px;
+  font-size: 18px;
+  line-height: 24px;
+  color: $grey-800;
 }

@@ -69,17 +69,11 @@ export class ProgressComponent implements OnInit, OnDestroy {
   }
 
   openTestRunModal(): void {
-    const dialogRef = this.dialog.open(ProgressInitiateFormComponent, {
+    this.dialog.open(ProgressInitiateFormComponent, {
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'initiate-test-run-dialog'
     });
-
-    dialogRef?.afterClosed()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((result: any) => {
-        console.log(result);
-      });
   }
 }

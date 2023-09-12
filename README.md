@@ -1,20 +1,20 @@
-  <img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Test Run">
+  <img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
 
 ## Introduction :wave:
-Test Run is a tool to automate the validation of network-based functionality of IoT devices. Any device which is capable of receiving an IP address via DHCP is considered an IoT device by Test Run and can be tested.
+Testrun is a tool to automate the validation of network-based functionality of IoT devices. Any device which is capable of receiving an IP address via DHCP is considered an IoT device by Testrun and can be tested.
 
 ## Motivation :bulb:
-Without tools like Test Run, testing labs may be maintaining a large and complex network using equipment such as: A managed layer 3 switch, an enterprise-grade network router, virtualized or physical servers to provide DNS, NTP, 802.1x etc. With this amount of moving parts, all with dynamic configuration files and constant software updates, more time is likely to be spent on preparation and clean up of functinality or penetration testing - not forgetting the number of software tools required to perform the testing. The major issues which can and should be solved:
+Without tools like Testrun, testing labs may be maintaining a large and complex network using equipment such as: A managed layer 3 switch, an enterprise-grade network router, virtualized or physical servers to provide DNS, NTP, 802.1x etc. With this amount of moving parts, all with dynamic configuration files and constant software updates, more time is likely to be spent on preparation and clean up of functinality or penetration testing - not forgetting the number of software tools required to perform the testing. The major issues which can and should be solved:
  1) The complexity of managing a testing network
  2) The time required to perform testing of network functionality
  3) The accuracy and consistency of testing network functionality
 
 ## How it works :triangular_ruler:
-Test Run creates an isolated and controlled network environment to fully simulate enterprise network deployments in your device testing lab. 
+Testrun creates an isolated and controlled network environment to fully simulate enterprise network deployments in your device testing lab. 
 This removes the necessity for complex hardware, advanced knowledge and networking experience whilst enabling semi-technical engineers to validate device 
 behaviour against industry cyber standards. 
 
-Two runtime modes will be supported by Test Run:
+Two runtime modes will be supported by Testrun:
 
 1) <strong>Automated Testing</strong>
 
@@ -22,7 +22,7 @@ Once the device has become operational (steady state), automated testing of the 
 
 2) <strong>Lab network</strong>
 
-Test Run cannot automate everything, and so additional manual testing may be required (or configuration changes may be required on the device). Rather than having to maintain a separate but idential lab network, Test Run will provide the network and some tools to assist an engineer performing the additional testing. At the same time, packet captures of the device behaviour will be recorded, alongside logs for each network service, for further debugging.
+Testrun cannot automate everything, and so additional manual testing may be required (or configuration changes may be required on the device). Rather than having to maintain a separate but idential lab network, Testrun will provide the network and some tools to assist an engineer performing the additional testing. At the same time, packet captures of the device behaviour will be recorded, alongside logs for each network service, for further debugging.
 
 ## Minimum Requirements :computer:
 ### Hardware
@@ -34,8 +34,11 @@ Test Run cannot automate everything, and so additional manual testing may be req
  - Docker - [Install guide](https://docs.docker.com/engine/install/ubuntu/)
  - Open vSwitch ``sudo apt-get install openvswitch-common openvswitch-switch``
 
+## Get started ▶️
+Once you have met the hardware and software requirements, you can get started with Testrun by following the [Get started guide](docs/get_started.md).
+
 ## Roadmap :chart_with_upwards_trend:
-Test Run will constantly evolve to further support end-users by automating device network behaviour against industry standards.
+Testrun will constantly evolve to further support end-users by automating device network behaviour against industry standards.
 
 ## Issue reporting :triangular_flag_on_post:
 If the application has come across a problem at any point during setup or use, please raise an issue under the [issues tab](https://github.com/auto-iot/test-run/issues). Issue templates exist for both bug reports and feature requests. If neither of these are appropriate for your issue, raise a blank issue instead.
@@ -44,11 +47,11 @@ If the application has come across a problem at any point during setup or use, p
 The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md). In short, checkout the [Google CLA](https://cla.developers.google.com/) site to get started.
 
 ## FAQ :raising_hand:
-1) What device networking functionality is validated by Test Run?
+1) What device networking functionality is validated by Testrun?
 
   Best practices and requirements for IoT devices are constantly changing due to technological advances and discovery of vulnerabilities. 
   The current expectations for IoT devices on Google deployments can be found in the [Application Security Requirements for IoT Devices](https://partner-security.withgoogle.com/docs/iot_requirements).
-  Test Run aims to automate as much of the Application Security Requirements as possible.
+  Testrun aims to automate as much of the Application Security Requirements as possible.
 
 2) What services are provided on the virtual network?
 
@@ -58,11 +61,11 @@ The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md)
  - NTPv4
  - 802.1x Port Based Authentication
   
-3) Can I run Test Run on a virtual machine?
+3) Can I run Testrun on a virtual machine?
 
-  Probably. Provided that the required 2x USB ethernet adapters are passed to the virtual machine as USB devices rather than network adapters, Test Run should
-  still work. We will look to test and approve the use of virtualisation to run Test Run in the future.
+  Probably. Provided that the required 2x USB ethernet adapters are passed to the virtual machine as USB devices rather than network adapters, Testrun should
+  still work. We will look to test and approve the use of virtualisation to run Testrun in the future.
 
- 4) Can I connect multiple devices to Test Run?
+ 4) Can I connect multiple devices to Testrun?
 
   In short, Yes you can. The way in which multiple devices could be tested simultaneously is yet to be decided. However, if you simply want to add field/peer devices during runtime (even another laptop performing manual testing) then you may connect the USB ethernet adapter to an unmanaged switch.

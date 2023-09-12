@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+TESTRUN_DIR=/usr/local/testrun
+
 ifconfig
 
 # Setup requirements
 sudo apt-get update
 sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils isc-dhcp-client
-
-pip3 install pytest
 
 # Setup device network
 sudo ip link add dev dummynet type dummy
@@ -39,19 +39,10 @@ sudo docker build ./testing/docker/ci_test_device1 -t ci_test_device1 -f  ./test
 
 sudo chown -R $USER local
 
-cat <<EOF >local/system.json
-{
-  "network": {
-    "device_intf": "endev0a",
-    "internet_intf": "dummynet"
-  },
-  "log_level": "DEBUG"
-}
-EOF
-
-sudo cmd/install
+# Copy configuration to testrun
+sudo cp testing/baseline/system.json $TESTRUN_DIR/local/system.json
 
 # Needs to be sudo because this invokes bin/testrun 
-sudo venv/bin/python -m pytest -v testing/api/test_api.py
+sudo $TESTRUN_DIR/venv/bin/python3 -m pytest -v testing/api/test_api.py
 
 exit $?

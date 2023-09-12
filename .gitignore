@@ -6,3 +6,4 @@ pylint.out
 __pycache__/
 build/
 testing/unit_test/temp/
+*.deb

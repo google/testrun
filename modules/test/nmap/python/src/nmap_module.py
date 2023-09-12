@@ -109,10 +109,10 @@ class NmapModule(TestModule):
     for test in tests:
       if "tcp_ports" in tests[test]:
         for port in tests[test]['tcp_ports']:
-         known_ports.append(port)
+          known_ports.append(port)
       if "udp_ports" in tests[test]:
         for port in tests[test]['udp_ports']:
-         known_ports.append(port)
+          known_ports.append(port)
 
     for port_result in scan_results:
       if not port_result in known_ports:
@@ -134,7 +134,7 @@ class NmapModule(TestModule):
     LOGGER.info("Unknown Port Service: " + unallowed_port['service'])
     for test in tests:
       LOGGER.debug("Checking for known service: " + test)
-      # Create a regular expression pattern to match the variable at the 
+      # Create a regular expression pattern to match the variable at the
       # end of the string
       port_service = r"\b" + re.escape(unallowed_port['service']) + r"\b$"
       service_match = re.search(port_service, test)
@@ -166,7 +166,6 @@ class NmapModule(TestModule):
     if "udp_ports" in test_config:
       port_config = test_config["udp_ports"]
       self._check_scan_result(port_config=port_config,scan_results=scan_results)
-      
 
   def _check_scan_result(self,port_config,scan_results):
     if port_config is not None:
@@ -213,16 +212,16 @@ class NmapModule(TestModule):
     version = None
     service = None
     for port in unallowed_ports:
-      LOGGER.info('Checking unallowed port: ' + port['port'])
-      LOGGER.info('Looking for service: ' + port['service'])
-      LOGGER.debug('Unallowed Port Config: ' + str(port))
-      if port['tcp_udp'] == 'tcp':
-        port_style = 'tcp_ports'
-      elif port['tcp_udp'] == 'udp':
-        port_style = 'udp_ports'
+      LOGGER.info("Checking unallowed port: " + port["port"])
+      LOGGER.info("Looking for service: " + port["service"])
+      LOGGER.debug("Unallowed Port Config: " + str(port))
+      if port["tcp_udp"] == "tcp":
+        port_style = "tcp_ports"
+      elif port["tcp_udp"] == "udp":
+        port_style = "udp_ports"
       for test in tests:
-        LOGGER.debug('Checking test: ' + str(test))
-        # Create a regular expression pattern to match the variable at the 
+        LOGGER.debug("Checking test: " + str(test))
+        # Create a regular expression pattern to match the variable at the
         # end of the string
         port_service = r"\b" + re.escape(port['service']) + r"\b$"
         service_match = re.search(port_service, test)
@@ -247,7 +246,7 @@ class NmapModule(TestModule):
                 for u_port in self._unallowed_ports:
                   if port['port'] in u_port['port']:
                     self._unallowed_ports.remove(u_port)
-              break    
+              break
           break
 
   def _check_version(self,service,version_detected,version_expected):
@@ -259,8 +258,8 @@ class NmapModule(TestModule):
        result.
     """
     LOGGER.info("Checking version for service: " + service)
-    LOGGER.info("NMAP Version Detected: " + version_detected)            
-    LOGGER.info("Version Expected: " + version_expected)   
+    LOGGER.info("NMAP Version Detected: " + version_detected)
+    LOGGER.info("Version Expected: " + version_expected)
     version_check = None
     match service:
       case "ssh":
@@ -355,12 +354,12 @@ class NmapModule(TestModule):
 
   def _nmap_results_to_json(self,nmap_results):
     try:
-        xml_data = xmltodict.parse(nmap_results)
-        json_data = json.dumps(xml_data, indent=4)
-        return json.loads(json_data)
+      xml_data = xmltodict.parse(nmap_results)
+      json_data = json.dumps(xml_data, indent=4)
+      return json.loads(json_data)
 
     except Exception as e:
-        LOGGER.error(f"Error parsing Nmap output: {e}")
+      LOGGER.error(f"Error parsing Nmap output: {e}")
 
   def _process_nmap_json_results(self,nmap_results_json):
     LOGGER.debug("nmap results\n" + json.dumps(nmap_results_json,indent=2))
@@ -369,10 +368,10 @@ class NmapModule(TestModule):
       ports = nmap_results_json["nmaprun"]["host"]["ports"] 
       # Checking if an object is a JSON object
       if isinstance(ports["port"], dict):
-          results.update(self._json_port_to_dict(ports["port"]))
+        results.update(self._json_port_to_dict(ports["port"]))
       elif isinstance(ports["port"], list):
-          for port in ports["port"]:
-            results.update(self._json_port_to_dict(port))
+        for port in ports["port"]:
+          results.update(self._json_port_to_dict(port))
     return results
 
   def _json_port_to_dict(self,port_json):

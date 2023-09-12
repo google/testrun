@@ -6,6 +6,7 @@ import {TestRunService} from './test-run.service';
 import {SystemConfig} from './model/setting';
 import {MOCK_PROGRESS_DATA_IN_PROGRESS} from './mocks/progress.mock';
 import {StatusOfTestResult, TestrunStatus} from './model/testrun-status';
+import {device} from './mocks/device.mock';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -74,38 +75,12 @@ describe('TestRunService', () => {
         name: "tls",
         enabled: true
       },
-      {
-        displayName: "Smart Ready",
-        name: "udmi",
-        enabled: false
-      },
     ] as TestModule[]);
   });
 
   it('getDevices should return devices', () => {
     let result: Device[] | null = null;
-    const deviceArray = [{
-      "manufacturer": "Delta",
-      "model": "O3-DIN-CPU",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-        "dns": {
-          "enabled": false
-        },
-        "connection": {
-          "enabled": true
-        },
-        "ntp": {
-          "enabled": false
-        },
-        "baseline": {
-          "enabled": false
-        },
-        "nmap": {
-          "enabled": false
-        }
-      }
-    }] as Device[];
+    const deviceArray = [device] as Device[];
 
     service.getDevices().subscribe((res) => {
       expect(res).toEqual(result);
@@ -168,28 +143,7 @@ describe('TestRunService', () => {
   });
 
   it('hasDevice should return true if device with mac address already exist', fakeAsync(() => {
-    const deviceArray = [{
-      "manufacturer": "Delta",
-      "model": "O3-DIN-CPU",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-        "dns": {
-          "enabled": false
-        },
-        "connection": {
-          "enabled": true
-        },
-        "ntp": {
-          "enabled": false
-        },
-        "baseline": {
-          "enabled": false
-        },
-        "nmap": {
-          "enabled": false
-        }
-      }
-    }] as Device[];
+    const deviceArray = [device] as Device[];
     service.setDevices(deviceArray);
     tick();
 
@@ -223,17 +177,39 @@ describe('TestRunService', () => {
     req.flush({});
   });
 
+  describe('#startTestRun', () => {
+    it('should have necessary request data', () => {
+      const apiUrl = 'http://localhost:8000/system/start'
+
+      service.startTestrun(device).subscribe((res) => {
+        expect(res).toEqual(true);
+      });
+
+      const req = httpTestingController.expectOne(apiUrl);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(JSON.stringify({device}));
+      req.flush({});
+    });
+
+    it('should have error when timeout exceeded', fakeAsync(() => {
+      const apiUrl = 'http://localhost:8000/system/start'
+
+      service.startTestrun(device, 1000).subscribe(() => {
+      }, (error) => {
+        expect(error.toString()).toEqual('Timeout has occurred');
+      });
+
+      httpTestingController.expectOne(apiUrl);
+      tick(1001);
+    }));
+  });
+
   it('getHistory should return history', () => {
     let result: TestrunStatus[] = [];
 
     const history = [{
       "status": "Completed",
-      "device": {
-        "manufacturer": "Delta",
-        "model": "03-DIN-SRC",
-        "mac_addr": "01:02:03:04:05:06",
-        "firmware": "1.2.2"
-      },
+      "device": device,
       "report": "https://api.testrun.io/report.pdf",
       "started": "2023-06-22T10:11:00.123Z",
       "finished": "2023-06-22T10:17:00.123Z",
@@ -290,22 +266,12 @@ describe('TestRunService', () => {
 
   describe('#addDevice', () => {
     it('should create array with new value if previous value is null', function () {
-      const device = {
-        "manufacturer": "Delta",
-        "model": "O3-DIN-CPU",
-        "mac_addr": "00:1e:42:35:73:c4",
-      } as Device;
       service.addDevice(device);
 
       expect(service.getDevices().value).toEqual([device]);
     });
 
     it('should add new value if previous value is array', function () {
-      const device = {
-        "manufacturer": "Delta",
-        "model": "O3-DIN-CPU",
-        "mac_addr": "00:1e:42:35:73:c4",
-      } as Device;
       service.setDevices([device, device]);
       service.addDevice(device);
 

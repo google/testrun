@@ -65,7 +65,7 @@ class TestOrchestrator:
     os.makedirs(DEVICE_ROOT_CERTS, exist_ok=True)
 
     self._load_test_modules()
-    self.build_test_modules()
+    #self.build_test_modules()
 
   def stop(self):
     """Stop any running tests"""
@@ -85,9 +85,7 @@ class TestOrchestrator:
     self._session.stop()
     report = TestReport().from_json(self._generate_report())
     device.add_report(report)
-
     self._write_reports(report)
-
     self._test_in_progress = False
     self._timestamp_results(device)
 
@@ -128,6 +126,14 @@ class TestOrchestrator:
         "%Y-%m-%d %H:%M:%S")
     report["status"] = self._calculate_result()
     report["tests"] = self._session.get_report_tests()
+    out_file = os.path.join(
+        self._root_path, RUNTIME_DIR,
+        self._session.get_target_device().mac_addr.replace(":", ""),
+        "report.json")
+
+    with open(out_file, "w", encoding="utf-8") as f:
+      json.dump(report, f, indent=2)
+    util.run_command(f"chown -R {self._host_user} {out_file}")
     return report
 
   def _calculate_result(self):
@@ -466,7 +472,7 @@ class TestOrchestrator:
 
   def get_test_modules(self):
     return self._test_modules
-  
+
   def get_test_module(self, name):
     for test_module in self.get_test_modules():
       if test_module.name == name:
