@@ -116,7 +116,7 @@ class NmapModule(TestModule):
       LOGGER.error(f"Error parsing Nmap output: {e}")
 
   def _process_nmap_json_results(self, nmap_results_json):
-    LOGGER.debug("nmap results\n" + json.dumps(nmap_results_json, indent=2))
+    print("nmap results\n" + json.dumps(nmap_results_json, indent=2))
     results = {}
     if "ports" in nmap_results_json["nmaprun"]["host"]:
       ports = nmap_results_json["nmaprun"]["host"]["ports"]
@@ -137,8 +137,8 @@ class NmapModule(TestModule):
     port["version"] = ""
     if "@version" in port_json["service"]:
       port["version"] += port_json["service"]["@version"]
-      if "@extrainfo" in port_json["service"]:
-        port["version"] += " " + port_json["service"]["@extrainfo"]
+    if "@extrainfo" in port_json["service"]:
+      port["version"] += " " + port_json["service"]["@extrainfo"]
     port_result = {port_json["@portid"]:port}
     return port_result
 
