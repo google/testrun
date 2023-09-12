@@ -17,6 +17,7 @@ const CLOSE_URL = '/assets/icons/close.svg';
 })
 export class AppComponent {
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
+  @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
 
   constructor(
     private matIconRegistry: MatIconRegistry,
@@ -46,8 +47,8 @@ export class AppComponent {
     );
   }
 
-  async closeSetting(): Promise<MatDrawerToggleResult> {
-    return await this.settingsDrawer.close();
+  async closeSetting(): Promise<void> {
+    return await this.settingsDrawer.close().then(() => this.toggleSettingsBtn.focus());
   }
 
   async openSetting(): Promise<MatDrawerToggleResult> {

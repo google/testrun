@@ -94,7 +94,7 @@ class TestReport():
     pdf_bytes = BytesIO()
     HTML(string=report_html).write_pdf(pdf_bytes)
     return pdf_bytes
-   
+
   def to_html(self):
     json_data = self.to_json()
     return f'''
@@ -118,18 +118,19 @@ class TestReport():
     '''
 
   def generate_test_sections(self,json_data):
-    results = json_data["tests"]["results"]
-    sections = ""
+    results = json_data['tests']['results']
+    sections = ''
     for result in results:
-        sections += self.generate_test_section(result)
+      sections += self.generate_test_section(result)
     return sections
 
   def generate_test_section(self, result):
     section_content = '<section class="test-section">\n'
     for key, value in result.items():
-        if value is not None:  # Check if the value is not None
-            formatted_key = key.replace('_', ' ').title()  # Replace underscores and capitalize
-            section_content += f'<p><strong>{formatted_key}:</strong> {value}</p>\n'
+      if value is not None:  # Check if the value is not None
+        # Replace underscores and capitalize
+        formatted_key = key.replace('_', ' ').title()
+        section_content += f'<p><strong>{formatted_key}:</strong> {value}</p>\n'
     section_content += '</section>\n<div style="margin-bottom: 40px;"></div>\n'
     return section_content
 

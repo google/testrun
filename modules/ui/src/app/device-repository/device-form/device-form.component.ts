@@ -3,7 +3,7 @@ import {AbstractControl, FormArray, FormBuilder, FormGroup, Validators} from '@a
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {Device, TestModule} from '../../model/device';
 import {TestRunService} from '../../test-run.service';
-import {DeviceStringFormatValidator} from './device-string-format.validator';
+import {DeviceValidators} from './device.validators';
 import {catchError, of, retry, Subject, takeUntil} from 'rxjs';
 import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
 
@@ -30,7 +30,7 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private fb: FormBuilder,
     private testRunService: TestRunService,
-    private deviceStringFormatValidator: DeviceStringFormatValidator,
+    private deviceValidators: DeviceValidators,
   ) {
   }
 
@@ -78,11 +78,6 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
 
     if (this.isAllTestsDisabled()) {
       this.error$.next('At least one test has to be selected.');
-      return;
-    }
-
-    if (!this.data.device && this.testRunService.hasDevice(this.mac_addr.value)) {
-      this.error$.next('This MAC address is already used for another device in the repository.');
       return;
     }
 
@@ -142,9 +137,12 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
 
   private createDeviceForm() {
     this.deviceForm = this.fb.group({
-      model: ['', [this.deviceStringFormatValidator.deviceStringFormat()]],
-      manufacturer: ['', [this.deviceStringFormatValidator.deviceStringFormat()]],
-      mac_addr: ['', [Validators.pattern(MAC_ADDRESS_PATTERN)]],
+      model: ['', [this.deviceValidators.deviceStringFormat()]],
+      manufacturer: ['', [this.deviceValidators.deviceStringFormat()]],
+      mac_addr: ['', [
+        Validators.pattern(MAC_ADDRESS_PATTERN),
+        this.deviceValidators.differentMACAddress(this.data.device)
+      ]],
       test_modules: new FormArray([])
     });
   }

@@ -1,0 +1,26 @@
+{
+    "status": "In Progress",
+    "device": {
+      "manufacturer": "Delta",
+      "model": "03-DIN-CPU",
+      "mac_addr": "01:02:03:04:05:06",
+      "firmware": "1.2.2"
+    },
+    "started": "2023-06-22T09:20:00.123Z",
+    "finished": null,
+    "tests": {
+      "total": 26,
+      "results": [
+        {
+          "name": "dns.network.hostname_resolution",
+          "description": "The device should resolve hostnames",
+          "result": "Compliant"
+        },
+        {
+          "name": "dns.network.from_dhcp",
+          "description": "The device should use the DNS server provided by the DHCP server",
+          "result": "Non-Compliant"
+        } 
+      ]
+    }
+  }

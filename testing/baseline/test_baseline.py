@@ -26,6 +26,7 @@ NTP_SERVER = '10.10.10.5'
 DNS_SERVER = '10.10.10.4'
 
 CI_BASELINE_OUT = '/tmp/testrun_ci.json'
+TESTRUN_DIR = '/usr/local/testrun'
 
 @pytest.fixture
 def container_data():
@@ -34,9 +35,7 @@ def container_data():
 
 @pytest.fixture
 def validator_results():
-  basedir = os.path.dirname(os.path.abspath(__file__))
-  with open(os.path.join(basedir,
-                         '../',
+  with open(os.path.join(TESTRUN_DIR,
                          'runtime/validation/faux-dev/result.json'),
                          encoding='utf-8') as f:
     return json.load(f)

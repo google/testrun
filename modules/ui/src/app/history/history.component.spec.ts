@@ -18,7 +18,7 @@ const history = [{
   },
   "report": "https://api.testrun.io/report.pdf",
   "started": "2023-06-23T10:11:00.123Z",
-  "finished": "2023-06-23T10:17:00.123Z"
+  "finished": "2023-06-23T10:17:10.123Z"
 }] as TestrunStatus[];
 
 describe('HistoryComponent', () => {
@@ -55,6 +55,38 @@ describe('HistoryComponent', () => {
       component.history$.subscribe(res => {
         expect(res).toEqual(history)
       })
+    });
+
+    it('#getFormattedDateString should return string in the format "d MMM y H:mm"', () => {
+      const expectedResult = '23 Jun 2023 10:11';
+
+      const result = component.getFormattedDateString(history[0].started);
+
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('#getFormattedDateString should return empty string if no date', () => {
+      const expectedResult = '';
+
+      const result = component.getFormattedDateString(null);
+
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('#getDuration should return dates duration in minutes and seconds', () => {
+      const expectedResult = '06m 10s';
+
+      const result = component.getDuration(history[0].started, history[0].finished);
+
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('#getDuration should return empty string if any of dates are not provided', () => {
+      const expectedResult = '';
+
+      const result = component.getDuration(history[0].started, null);
+
+      expect(result).toEqual(expectedResult);
     });
   });
 

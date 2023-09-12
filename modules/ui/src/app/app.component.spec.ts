@@ -90,13 +90,17 @@ describe('AppComponent', () => {
     expect(router.url).toBe(`/device-repository`);
   }));
 
-  it('should call settingsDrawer close on closeSetting', fakeAsync(() => {
-    spyOn(component.settingsDrawer, 'close');
+  it('should call toggleSettingsBtn focus when settingsDrawer close on closeSetting', fakeAsync(() => {
+    spyOn(component.settingsDrawer, 'close').and.returnValue(Promise.resolve('close'));
+    spyOn(component.toggleSettingsBtn, 'focus');
 
     component.closeSetting();
     tick();
 
-    expect(component.settingsDrawer.close).toHaveBeenCalledTimes(1);
+    component.settingsDrawer.close().then(() => {
+        expect(component.toggleSettingsBtn.focus).toHaveBeenCalled();
+      }
+    )
   }));
 
   it('should call settingsDrawer open on openSetting', fakeAsync(() => {

@@ -13,9 +13,15 @@
 # limitations under the License.
 
 # Image name: test-run/ui
+FROM node:latest as build
+
+WORKDIR modules/ui
+COPY modules/ui/ . 
+RUN npm install && npm run build
+
 FROM nginx:1.25.1
 
-COPY modules/ui/dist/ /usr/share/nginx/html
+COPY --from=build modules/ui/dist/ /usr/share/nginx/html
 
 EXPOSE 8080
 

@@ -2,7 +2,8 @@ export interface Device {
   manufacturer: string;
   model: string;
   mac_addr: string;
-  test_modules?: TestModules
+  test_modules?: TestModules;
+  firmware?: string;
 }
 
 /**
