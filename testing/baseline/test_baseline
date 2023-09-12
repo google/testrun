@@ -15,6 +15,7 @@
 # limitations under the License.
 
 TESTRUN_OUT=/tmp/testrun.log
+TESTRUN_DIR=/usr/local/testrun
 
 ifconfig
 
@@ -36,19 +37,13 @@ sudo /usr/share/openvswitch/scripts/ovs-ctl start
 # Build Test Container
 sudo docker build ./testing/docker/ci_baseline -t ci1 -f  ./testing/docker/ci_baseline/Dockerfile
 
-cat <<EOF >local/system.json
-{
-  "network": {
-    "device_intf": "endev0a",
-    "internet_intf": "eth0"
-  },
-  "log_level": "DEBUG"
-}
-EOF
+# Copy configuration to testrun
+sudo cp testing/baseline/system.json $TESTRUN_DIR/local/system.json
 
-sudo cmd/install
+# Copy device configs to testrun
+sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
 
-sudo bin/testrun --single-intf --no-ui > $TESTRUN_OUT 2>&1 & 
+sudo testrun --single-intf --no-ui > $TESTRUN_OUT 2>&1 & 
 TPID=$!
 
 # Time to wait for testrun to be ready
@@ -60,7 +55,7 @@ for i in `seq 1 $WAITING`; do
 
     if [[ ! -d /proc/$TPID ]]; then
         cat $TESTRUN_OUT
-        echo "error encountered starting test run"
+        echo "Error encountered starting test run"
         exit 1
     fi
    
@@ -69,7 +64,7 @@ done
 
 if [[ $i -eq $WAITING ]]; then
     cat $TESTRUN_OUT
-    echo "failed after waiting $WAITING seconds for test-run start"
+    echo "Failed after waiting $WAITING seconds for testrun to start"
     exit 1
 fi
 

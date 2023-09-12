@@ -1,4 +1,4 @@
-import {ComponentFixture, fakeAsync, flush, TestBed} from '@angular/core/testing';
+import {ComponentFixture, fakeAsync, flush, TestBed, tick} from '@angular/core/testing';
 
 import {DeviceFormComponent} from './device-form.component';
 import {TestRunService} from '../../test-run.service';
@@ -123,27 +123,6 @@ describe('DeviceFormComponent', () => {
     fixture.whenStable().then(() => {
       const error = compiled.querySelector('mat-error')!;
       expect(error.innerHTML).toContain('At least one test has to be selected.');
-    });
-
-    expect(closeSpy).not.toHaveBeenCalled();
-
-    closeSpy.calls.reset();
-    flush();
-  }));
-
-  it('should not save data when device with mac address is already exist', fakeAsync(() => {
-    const closeSpy = spyOn(component.dialogRef, 'close');
-    component.model.setValue('model');
-    component.manufacturer.setValue('manufacturer');
-    component.mac_addr.setValue('07:07:07:07:07:07');
-    testRunServiceMock.hasDevice.and.returnValue(true);
-
-    component.saveDevice();
-    fixture.detectChanges();
-
-    fixture.whenStable().then(() => {
-      const error = compiled.querySelector('mat-error')!;
-      expect(error.innerHTML).toContain('This MAC address is already used for another device in the repository.');
     });
 
     expect(closeSpy).not.toHaveBeenCalled();
@@ -302,6 +281,25 @@ describe('DeviceFormComponent', () => {
 
         flush();
       })
+    }));
+
+    it('should have "has_same_mac_address" error when MAC address is already used', fakeAsync(() => {
+      testRunServiceMock.hasDevice.and.returnValue(true);
+      const macAddress: HTMLInputElement = compiled.querySelector('.device-form-mac-address')!;
+      macAddress.value = '07:07:07:07:07:07';
+      macAddress.dispatchEvent(new Event('input'));
+      component.mac_addr.markAsTouched();
+      fixture.detectChanges();
+
+      fixture.whenStable().then(() => {
+        const macAddressError = compiled.querySelector('mat-error')!.innerHTML;
+        const error = component.mac_addr.errors!['has_same_mac_address'];
+
+        expect(error).toBeTruthy();
+        expect(macAddressError).toContain('This MAC address is already used for another device in the repository.');
+      });
+
+      flush();
     }));
   });
 

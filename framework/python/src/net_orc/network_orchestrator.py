@@ -114,7 +114,7 @@ class NetworkOrchestrator:
     """Start the virtual testing network."""
     LOGGER.info('Starting network')
 
-    self.build_network_modules()
+    #self.build_network_modules()
 
     self.create_net()
     self.start_network_services()
@@ -130,6 +130,7 @@ class NetworkOrchestrator:
     return self._listener
 
   def start_listener(self):
+    LOGGER.debug("Starting network listener")
     self.get_listener().start_listener()
 
   def stop(self, kill=False):
@@ -329,7 +330,7 @@ class NetworkOrchestrator:
       self.stop()
       sys.exit(1)
 
-    if os.getenv("GITHUB_ACTIONS"):
+    if os.getenv('GITHUB_ACTIONS'):
       self._ci_post_network_create()
 
     self._create_private_net()

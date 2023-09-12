@@ -27,6 +27,9 @@
     <mat-error *ngIf="mac_addr.errors?.['pattern']" class="device-form-mac-address-error">
       <span>Please, check. A MAC address consists of 12 hexadecimal digits (0 to 9, a to f, or A to F).</span>
     </mat-error>
+    <mat-error *ngIf="mac_addr.errors?.['has_same_mac_address']">
+      <span>This MAC address is already used for another device in the repository.</span>
+    </mat-error>
   </mat-form-field>
   <app-device-tests
     [deviceForm]="deviceForm"

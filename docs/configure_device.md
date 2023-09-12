@@ -8,23 +8,11 @@ The device information section includes the manufacturer, model, and MAC address
 
 ## Test Modules
 
-Test modules are groups of tests that can be enabled or disabled as needed. You can choose which test modules to include for your device. The device configuration file contains the following test module:
-
-- DNS Test Module
+Test modules are groups of tests that can be enabled or disabled as needed. You can choose which test modules to run on your device.
 
 ### Enabling and Disabling Test Modules
 
 To enable or disable a test module, modify the `enabled` field within the respective module. Setting it to `true` enables the module, while setting it to `false` disables the module.
-
-## Individual Tests
-
-Within the DNS test module, there are individual tests that can be enabled or disabled. These tests focus on specific aspects of network behavior. You can customize the tests based on your device and testing requirements.
-
-### Enabling and Disabling Tests
-
-To enable or disable an individual test, modify the `enabled` field within the respective test. Setting it to `true` enables the test, while setting it to `false` disables the test.
-
-> Note: The example device configuration file (`resources/devices/template/device_config.json`) provides a complete usage example, including the structure and configuration options for the DNS test module and its tests. You can refer to this file to understand how to configure your device tests effectively.
 
 ## Customizing the Device Configuration
 

@@ -16,10 +16,6 @@ table, tr {
     height: 57px;
   }
 
-  .table-row {
-    height: 73px;
-  }
-
   .table-cell,
   .table-header-cell {
     font-family: $font-secondary;
@@ -35,6 +31,7 @@ table, tr {
   .table-cell {
     padding: 16px;
     letter-spacing: 0.2px;
+    vertical-align: top;
   }
 
   .table-cell-result {
