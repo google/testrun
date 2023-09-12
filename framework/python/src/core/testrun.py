@@ -20,7 +20,10 @@ Test Run components, such as net_orc, test_orc and test_ui.
 Run using the provided command scripts in the cmd folder.
 E.g sudo cmd/start
 """
+<<<<<<< HEAD
 import docker
+=======
+>>>>>>> main
 import json
 import os
 import sys
@@ -114,11 +117,18 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     else:
 
+<<<<<<< HEAD
       # Start UI container
       self.start_ui()
 
       self._api = Api(self)
       self._api.start()
+=======
+      # Build UI image
+      self._api = Api(self)
+      self._api.start()
+      # Start UI container
+>>>>>>> main
 
       # Hold until API ends
       while True:
@@ -256,14 +266,22 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def start(self):
 
+<<<<<<< HEAD
     self.get_session().start()
+=======
+    self._session.start()
+>>>>>>> main
 
     self._start_network()
 
     if self._net_only:
       LOGGER.info('Network only option configured, no tests will be run')
 
+<<<<<<< HEAD
       self.get_net_orc().get_listener().register_callback(
+=======
+      self.get_net_orc().listener.register_callback(
+>>>>>>> main
         self._device_discovered,
         [NetworkEvent.DEVICE_DISCOVERED]
       )
@@ -288,10 +306,19 @@ class TestRun:  # pylint: disable=too-few-public-methods
       )
 
       self.get_net_orc().start_listener()
+<<<<<<< HEAD
       self._set_status('Waiting for Device')
+=======
+      self._set_status('Waiting for device')
+>>>>>>> main
       LOGGER.info('Waiting for devices on the network...')
       time.sleep(self.get_session().get_runtime())
 
+<<<<<<< HEAD
+=======
+      time.sleep(self._session.get_runtime())
+
+>>>>>>> main
       if not (self._test_orc.test_in_progress() or
               self.get_net_orc().monitor_in_progress()):
         LOGGER.info('''Timed out whilst waiting for
@@ -354,7 +381,11 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def get_device(self, mac_addr):
     """Returns a loaded device object from the device mac address."""
+<<<<<<< HEAD
     for device in self.get_session().get_device_repository():
+=======
+    for device in self._session.get_device_repository():
+>>>>>>> main
       if device.mac_addr == mac_addr:
         return device
     return None
@@ -379,6 +410,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def _device_stable(self, mac_addr):
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
+<<<<<<< HEAD
     self._set_status('In Progress')
     result = self._test_orc.run_test_modules()
     self._set_status(result)
@@ -417,3 +449,14 @@ class TestRun:  # pylint: disable=too-few-public-methods
         container.kill()
     except docker.errors.NotFound:
       return
+=======
+    self._set_status('In progress')
+    self._test_orc.run_test_modules()
+    self._set_status('Complete')
+
+  def _set_status(self, status):
+    self._session.set_status(status)
+
+  def get_session(self):
+    return self._session
+>>>>>>> main

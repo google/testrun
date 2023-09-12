@@ -4,16 +4,27 @@
   "mac_addr": "02:42:aa:00:00:02",
   "test_modules": {
     "dns": {
+<<<<<<< HEAD
       "enabled": true
     },
     "connection": {
       "enabled": true
+=======
+      "enabled": false
+    },
+    "connection": {
+      "enabled": false
+>>>>>>> main
     },
     "ntp": {
       "enabled": true
     },
     "baseline": {
+<<<<<<< HEAD
       "enabled": true
+=======
+      "enabled": false
+>>>>>>> main
     },
     "nmap": {
       "enabled": true
