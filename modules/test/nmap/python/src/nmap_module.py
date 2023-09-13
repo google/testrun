@@ -18,7 +18,6 @@ import util
 import json
 import threading
 import xmltodict
-import re
 from test_module import TestModule
 
 LOG_NAME = "test_nmap"
@@ -126,9 +125,10 @@ class NmapModule(TestModule):
       elif isinstance(ports["port"], list):
         for port in ports["port"]:
           results.update(self._json_port_to_dict(port))
+    print(str(results))
     return results
 
-  def _json_port_to_dict(self,port_json):
+  def _json_port_to_dict(self, port_json):
     port_result = {}
     port = {}
     port["tcp_udp"] = port_json["@protocol"]
@@ -144,13 +144,15 @@ class NmapModule(TestModule):
 
   def _check_results(self, ports, services):
 
+    LOGGER.info("Checking results")
+
     match_ports = []
 
     for open_port, open_port_info in self._scan_results.items():
 
       for port in ports:
 
-        if (open_port == port["number"] and
+        if (int(open_port) == int(port["number"]) and
             open_port_info["tcp_udp"] == port["type"] and
             open_port_info["state"] == "open"):
           LOGGER.debug("Found open port: " + str(port["number"]) +
