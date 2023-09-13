@@ -115,7 +115,6 @@ class NmapModule(TestModule):
       LOGGER.error(f"Error parsing Nmap output: {e}")
 
   def _process_nmap_json_results(self, nmap_results_json):
-    print("nmap results\n" + json.dumps(nmap_results_json, indent=2))
     results = {}
     if "ports" in nmap_results_json["nmaprun"]["host"]:
       ports = nmap_results_json["nmaprun"]["host"]["ports"]
@@ -131,6 +130,7 @@ class NmapModule(TestModule):
   def _json_port_to_dict(self, port_json):
     port_result = {}
     port = {}
+    port["number"] = port_json["@portid"]
     port["tcp_udp"] = port_json["@protocol"]
     port["state"] = port_json["state"]["@state"]
     port["service"] = port_json["service"]["@name"]
@@ -139,7 +139,7 @@ class NmapModule(TestModule):
       port["version"] += port_json["service"]["@version"]
     if "@extrainfo" in port_json["service"]:
       port["version"] += " " + port_json["service"]["@extrainfo"]
-    port_result = {port_json["@portid"]:port}
+    port_result = {port_json["@portid"] + port["tcp_udp"]:port}
     return port_result
 
   def _check_results(self, ports, services):
@@ -152,13 +152,14 @@ class NmapModule(TestModule):
 
       for port in ports:
 
-        if (int(open_port) == int(port["number"]) and
+        if (int(open_port_info["number"]) == int(port["number"]) and
             open_port_info["tcp_udp"] == port["type"] and
             open_port_info["state"] == "open"):
           LOGGER.debug("Found open port: " + str(port["number"]) +
                        "/" + open_port_info["tcp_udp"] +
                        " = " + open_port_info["state"])
-          match_ports.append(open_port)
+          match_ports.append(open_port_info["number"] + "/" +
+                             open_port_info["tcp_udp"])
 
       if (open_port_info["service"] in services and
           open_port not in match_ports and
@@ -166,7 +167,8 @@ class NmapModule(TestModule):
         LOGGER.debug("Found service " + open_port_info["service"] +
                     " on port " + str(open_port) + "/" +
                     open_port_info["tcp_udp"])
-        match_ports.append(open_port)
+        match_ports.append(open_port_info["number"] + "/" +
+                            open_port_info["tcp_udp"])
 
     return match_ports
 

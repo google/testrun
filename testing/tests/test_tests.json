@@ -5,8 +5,11 @@
         "ethmac": "02:42:aa:00:00:01",
         "expected_results": {
             "dns.network.hostname_resolution": "Non-Compliant",
+            "security.services.ftp": "Non-Compliant",
             "security.services.tftp": "Non-Compliant",
             "security.services.smtp": "Non-Compliant",
+            "security.services.pop": "Non-Compliant",
+            "security.services.imap": "Non-Compliant",
             "ntp.network.ntp_support": "Non-Compliant",
             "ntp.network.ntp_dhcp": "Non-Compliant"
         }
