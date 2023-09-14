@@ -4,7 +4,14 @@
         "args": "oddservices dns_static",
         "ethmac": "02:42:aa:00:00:01",
         "expected_results": {
-            "security.nmap.ports": "Non-Compliant"
+            "dns.network.hostname_resolution": "Non-Compliant",
+            "security.services.ftp": "Non-Compliant",
+            "security.services.tftp": "Non-Compliant",
+            "security.services.smtp": "Non-Compliant",
+            "security.services.pop": "Non-Compliant",
+            "security.services.imap": "Non-Compliant",
+            "ntp.network.ntp_support": "Non-Compliant",
+            "ntp.network.ntp_dhcp": "Non-Compliant"
         }
     },
     "tester2": {
@@ -13,7 +20,17 @@
         "args": "ntpv4_dhcp dns_dhcp",
         "ethmac": "02:42:aa:00:00:02",
         "expected_results": {
-            "security.nmap.ports": "Compliant",
+            "security.services.ftp": "Compliant",
+            "security.ssh.version": "Compliant",
+            "security.services.telnet": "Compliant",
+            "security.services.smtp": "Compliant",
+            "security.services.http": "Compliant",
+            "security.services.pop": "Compliant",
+            "security.services.imap": "Compliant",
+            "security.services.snmpv3": "Compliant",
+            "security.services.vnc": "Compliant",
+            "security.services.tftp": "Compliant",
+            "ntp.network.ntp_server": "Compliant",
             "ntp.network.ntp_support": "Compliant",
             "ntp.network.ntp_dhcp": "Compliant",
             "connection.shared_address": "Compliant",
