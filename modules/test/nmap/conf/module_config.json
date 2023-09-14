@@ -13,166 +13,323 @@
     },
     "tests": [
       {
-        "name": "security.nmap.ports",
-        "description": "Run an nmap scan of open ports",
-        "expected_behavior": "Report all open ports",
+        "name": "security.services.ftp",
+        "test_description": "Check FTP port 20/21 is disabled and FTP is not running on any port",
+        "expected_behavior": "There is no FTP service running on any port",
+        "required_result": "Required",
         "config": {
-          "security.services.ftp": {
-            "tcp_ports": {
-              "20": {
-                "allowed": false,
-                "description": "File Transfer Protocol (FTP) Server Data Transfer"
-              },
-              "21": {
-                "allowed": false,
-                "description": "File Transfer Protocol (FTP) Server Data Transfer"
-              }
+          "services": [
+            "ftp",
+            "ftp-data"
+          ],
+          "ports": [
+            {
+              "number": 20,
+              "type": "tcp"
             },
-            "description": "Check FTP port 20/21 is disabled and FTP is not running on any port",
-            "expected_behavior": "There is no FTP service running on any port",
-            "required_result": "Required"
-          },
-          "security.ssh.version": {
-            "tcp_ports": {
-              "22": {
-                "allowed": true,
-                "description": "Secure Shell (SSH) server",
-                "version": "2.0"
-              }
+            {
+              "number": 20,
+              "type": "udp"
             },
-            "description": "If the device is running a SSH server ensure it is SSHv2",
-            "expected_behavior": "SSH server is not running or server is SSHv2",
-            "required_result": "Required"
-          },
-          "security.services.telnet": {
-            "tcp_ports": {
-              "23": {
-                "allowed": false,
-                "description": "Telnet Server"
-              }
+            {
+              "number": 21,
+              "type": "tcp"
             },
-            "description": "Check TELNET port 23 is disabled and TELNET is not running on any port",
-            "expected_behavior": "There is no FTP service running on any port",
-            "required_result": "Required"
-          },
-          "security.services.smtp": {
-            "tcp_ports": {
-              "25": {
-                "allowed": false,
-                "description": "Simple Mail Transfer Protocol (SMTP) Server"
-              },
-              "465": {
-                "allowed": false,
-                "description": "Simple Mail Transfer Protocol over SSL (SMTPS) Server"
-              },
-              "587": {
-                "allowed": false,
-                "description": "Simple Mail Transfer Protocol via TLS (SMTPS) Server"
-              }
+            {
+              "number": 21,
+              "type": "udp"
+            }
+          ]
+        }
+      },
+      {
+        "name": "security.ssh.version",
+        "test_description": "If the device is running a SSH server ensure it is SSHv2",
+        "expected_behavior": "SSH server is not running or server is SSHv2",
+        "required_result": "Required",
+        "config": {
+          "services": ["ssh"],
+          "ports": [
+            {
+              "number": 22,
+              "type": "tcp"
+            }
+          ],
+          "version": "protocol 2.0"
+        }
+      },
+      {
+        "name": "security.services.telnet",
+        "test_description": "Check TELNET port 23 is disabled and TELNET is not running on any port",
+        "expected_behavior": "There is no FTP service running on any port",
+        "required_result": "Required",
+        "config": {
+          "services": [
+            "telnet"
+          ],
+          "ports": [
+            {
+              "number": 23,
+              "type": "tcp"
             },
-            "description": "Check SMTP ports 25, 465 and 587 are not enabled and SMTP is not running on any port.",
-            "expected_behavior": "There is no smtp service running on any port",
-            "required_result": "Required"
-          },
-          "security.services.http": {
-            "tcp_ports": {
-              "80": {
-                "service_scan": {
-                  "script": "http-methods"
-                },
-                "allowed": false,
-                "description": "Administrative Insecure Web-Server"
-              }
+            {
+              "number": 23,
+              "type": "udp"
+            }
+          ]
+        }
+      },
+      {
+        "name": "security.services.smtp",
+        "test_description": "Check SMTP ports 25, 465 and 587 are not enabled and SMTP is not running on any port.",
+        "expected_behavior": "There is no smtp service running on any port",
+        "required_result": "Required",
+        "config": {
+          "services": [
+            "smtp"
+          ],
+          "ports": [
+            {
+              "number": 25,
+              "type": "tcp"
             },
-            "description": "Check that there is no HTTP server running on any port",
-            "expected_behavior": "Device is unreachable on port 80 (or any other port) and only responds to HTTPS requests on port 443 (or any other port if HTTP is used at all)",
-            "required_result": "Required"
-          },
-          "security.services.pop": {
-            "tcp_ports": {
-              "110": {
-                "allowed": false,
-                "description": "Post Office Protocol v3 (POP3) Server"
-              }
+            {
+              "number": 465,
+              "type": "tcp"
             },
-            "description": "Check POP port 110 is disalbed and POP is not running on any port",
-            "expected_behavior": "There is no pop service running on any port",
-            "required_result": "Required"
-          },
-          "security.services.imap": {
-            "tcp_ports": {
-              "143": {
-                "allowed": false,
-                "description": "Internet Message Access Protocol (IMAP) Server"
-              }
+            {
+              "number": 587,
+              "type": "tcp"
+            }
+          ]
+        }
+      },
+      {
+        "name": "security.services.http",
+        "test_description": "Check that there is no HTTP server running on any port",
+        "expected_behavior": "Device is unreachable on port 80 (or any other port) and only responds to HTTPS requests on port 443 (or any other port if HTTP is used at all)",
+        "required_result": "Required",
+        "config": {
+          "services": [
+            "http"
+          ],
+          "ports": [
+            {
+              "number": 80,
+              "type": "tcp"
             },
-            "description": "Check IMAP port 143 is disabled and IMAP is not running on any port",
-            "expected_behavior": "There is no imap service running on any port",
-            "required_result": "Required"
-          },
-          "security.services.snmpv3": {
-            "tcp_ports": {
-              "161": {
-                "allowed": false,
-                "description": "Simple Network Management Protocol (SNMP)"
-              },
-              "162": {
-                "allowed": false,
-                "description": "Simple Network Management Protocol (SNMP) Trap"
-              }
+            {
+              "number": 80,
+              "type": "udp"
+            }
+          ]
+        }
+      },
+      {
+        "name": "security.services.pop",
+        "test_description": "Check POP ports 109 and 110 are disabled and POP is not running on any port",
+        "expected_behavior": "There is no pop service running on any port",
+        "required_result": "Required",
+        "config": {
+          "services": [
+            "pop2",
+            "pop3",
+            "pop3s"
+          ],
+          "ports": [
+            {
+              "number": 109,
+              "type": "tcp"
             },
-            "udp_ports": {
-              "161": {
-                "allowed": false,
-                "description": "Simple Network Management Protocol (SNMP)"
-              },
-              "162": {
-                "allowed": false,
-                "description": "Simple Network Management Protocol (SNMP) Trap"
-              }
+            {
+              "number": 109,
+              "type": "udp"
             },
-            "description": "Check SNMP port 161/162 is disabled.  If SNMP is an essential service, check it supports version 3",
-            "expected_behavior": "Device is unreachable on port 161 (or any other port) and device is unreachable on port 162 (or any other port) unless SNMP is essential in which case it is SNMPv3 is used.",
-            "required_result": "Required"
-          },
-          "security.services.vnc": {
-            "tcp_ports": {
-              "5800": {
-                "allowed": false,
-                "description": "Virtual Network Computing (VNC) Remote Frame Buffer Protocol Over HTTP"
-              },
-              "5500": {
-                "allowed": false,
-                "description": "Virtual Network Computing (VNC) Remote Frame Buffer Protocol"
-              }
+            {
+              "number": 110,
+              "type": "tcp"
             },
-            "description": "Check VNC is disabled on any port",
-            "expected_behavior": "Device cannot be accessed /connected to via VNC on any port",
-            "required_result": "Required"
-          },
-          "security.services.tftp": {
-            "udp_ports": {
-              "69": {
-                "allowed": false,
-                "description": "Trivial File Transfer Protocol (TFTP) Server"
-              }
+            {
+              "number": 110,
+              "type": "udp"
             },
-            "description": "Check TFTP port 69 is disabled (UDP)",
-            "expected_behavior": "There is no tftp service running on any port",
-            "required_result": "Required"
-          },
-          "ntp.network.ntp_server": {
-            "udp_ports": {
-              "123": {
-                "allowed": false,
-                "description": "Network Time Protocol (NTP) Server"
-              }
+            {
+              "number": 995,
+              "type": "tcp"
             },
-            "description": "Check NTP port 123 is disabled and the device is not operating as an NTP server",
-            "expected_behavior": "The device dos not respond to NTP requests when it's IP is set as the NTP server on another device"
-          }
-        },
-        "required_result": "Required"
+            {
+              "number": 995,
+              "type": "udp"
+            }
+          ]
+        }
+      },
+      {
+        "name": "security.services.imap",
+        "test_description": "Check IMAP port 143 is disabled and IMAP is not running on any port",
+        "expected_behavior": "There is no imap service running on any port",
+        "required_result": "Required",
+        "config": {
+          "services": [
+            "imap",
+            "imap3",
+            "imap4-ssl"
+          ],
+          "ports": [
+            {
+              "number": 143,
+              "type": "tcp"
+            },
+            {
+              "number": 143,
+              "type": "udp"
+            },
+            {
+              "number": 220,
+              "type": "tcp"
+            },
+            {
+              "number": 220,
+              "type": "udp"
+            },
+            {
+              "number": 585,
+              "type": "tcp"
+            },
+            {
+              "number": 585,
+              "type": "udp"
+            },
+            {
+              "number": 993,
+              "type": "tcp"
+            },
+            {
+              "number": 993,
+              "type": "udp"
+            }
+          ]
+        }
+      },
+      {
+        "name": "security.services.snmpv3",
+        "test_description": "Check SNMP port 161/162 is disabled.  If SNMP is an essential service, check it supports version 3",
+        "expected_behavior": "Device is unreachable on port 161 (or any other port) and device is unreachable on port 162 (or any other port) unless SNMP is essential in which case it is SNMPv3 is used.",
+        "required_result": "Required",
+        "config": {
+          "services": [
+            "snmp"
+          ],
+          "ports": [
+            {
+              "number": 161,
+              "type": "tcp"
+            },
+            {
+              "number": 161,
+              "type": "udp"
+            }
+          ]
+        }
+      },
+      {
+        "name": "security.services.vnc",
+        "test_description": "Check VNC is disabled on any port",
+        "expected_behavior": "Device cannot be accessed /connected to via VNC on any port",
+        "required_result": "Required",
+        "config": {
+          "services": [
+            "vnc",
+            "vnc-1",
+            "vnc-2",
+            "vnc-3",
+            "vnc-http",
+            "vnc-http-1",
+            "vnc-http-2",
+            "vnc-http-3"
+          ],
+          "ports": [
+            {
+              "number": 5800,
+              "type": "tcp"
+            },
+            {
+              "number": 5801,
+              "type": "tcp"
+            },
+            {
+              "number": 5802,
+              "type": "tcp"
+            },
+            {
+              "number": 5803,
+              "type": "tcp"
+            },
+            {
+              "number": 5900,
+              "type": "tcp"
+            },
+            {
+              "number": 5901,
+              "type": "tcp"
+            },
+            {
+              "number": 5902,
+              "type": "tcp"
+            },
+            {
+              "number": 5903,
+              "type": "tcp"
+            }
+          ]
+        }
+      },
+      {
+        "name": "security.services.tftp",
+        "test_description": "Check TFTP port 69 is disabled (UDP)",
+        "expected_behavior": "There is no tftp service running on any port",
+        "required_result": "Required",
+        "config": {
+          "services": [
+            "tftp",
+            "tftps"
+          ],
+          "ports": [
+            {
+              "number": 69,
+              "type": "tcp"
+            },
+            {
+              "number": 69,
+              "type": "udp"
+            },
+            {
+              "number": 3713,
+              "type": "tcp"
+            },
+            {
+              "number": 3713,
+              "type": "udp"
+            }
+          ]
+        }
+      },
+      {
+        "name": "ntp.network.ntp_server",
+        "test_description": "Check NTP port 123 is disabled and the device is not operating as an NTP server",
+        "expected_behavior": "The device dos not respond to NTP requests when it's IP is set as the NTP server on another device",
+        "required_result": "Required",
+        "config": {
+          "services": [
+            "ntp"
+          ],
+          "ports": [
+            {
+              "number": 123,
+              "type": "udp"
+            }
+          ]
+        }
       }
     ]
   }
