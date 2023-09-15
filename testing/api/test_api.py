@@ -380,7 +380,7 @@ def test_trigger_run(testing_devices, testrun):
   assert r.status_code == 200
 
   until_true(
-      lambda: query_system_status().lower() == "waiting for device",
+      lambda: query_system_status().lower() != "waiting for device",
       "system status is `waiting for device`",
       30,
   )

@@ -129,8 +129,11 @@ class Api:
     device = self._session.get_device(body_json["device"]["mac_addr"])
 
     # Check Test Run is not already running
-    if self._test_run.get_session().get_status() != "Idle":
-      LOGGER.debug("Test Run is already running. Cannot start another instance")
+    if self._test_run.get_session().get_status() in [
+        "In Progress",
+        "Waiting for Device",
+      ]:
+      LOGGER.debug("Testrun is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
       return self._generate_msg(False, "Test Run is already running")
 
