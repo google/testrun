@@ -61,6 +61,7 @@
              let-route="route" let-svgIcon="svgIcon">
   <button
     [attr.aria-label]="label"
+    disabled="{{route !== '/device-repository' && !(devices$| async)?.length}}"
     class="app-sidebar-button app-sidebar-button-{{name}}"
     mat-button
     routerLink="{{route}}"

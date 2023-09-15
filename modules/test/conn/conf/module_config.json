@@ -14,18 +14,6 @@
     },
     "tests": [
       {
-        "name": "connection.dhcp.disconnect",
-        "test_description": "The device under test has received an IP address from the DHCP server and responds to an ICMP echo (ping) request",
-        "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.",
-        "required_result": "Required"
-      },
-      {
-        "name": "connection.dhcp.disconnect_ip_change",
-        "test_description": "Update device IP on the DHCP server and reconnect the device. Does the device receive the new IP address?",
-        "expected_behavior": "Device recieves a new IP address within the range that is specified on the DHCP server. Device should respond to aping on this new address.",
-        "required_result": "Required"
-      },
-      {
         "name": "connection.dhcp_address",
         "test_description": "The device under test has received an IP address from the DHCP server and responds to an ICMP echo (ping) request",
         "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.",

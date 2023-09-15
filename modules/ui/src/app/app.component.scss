@@ -38,6 +38,10 @@
   line-height: 50%;
 }
 
+.app-sidebar-button:disabled {
+  background: rgba(0, 0, 0, 0.12);
+}
+
 .app-sidebar-button > .mat-icon, .app-toolbar-button > .mat-icon {
   margin-right: 0;
   width: 24px;

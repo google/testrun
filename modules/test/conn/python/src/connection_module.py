@@ -283,7 +283,7 @@ class ConnectionModule(TestModule):
     result = None
     if self._device_ipv6_addr is None:
       LOGGER.info('No IPv6 SLAAC address found. Cannot ping')
-      result = None, 'No IPv6 SLAAC address found. Cannot ping'
+      result = False, 'No IPv6 SLAAC address found. Cannot ping'
     else:
       if self._ping(self._device_ipv6_addr):
         LOGGER.info(f'Device responds to IPv6 ping on {self._device_ipv6_addr}')
@@ -371,7 +371,7 @@ class ConnectionModule(TestModule):
       ranges = config['ranges']
     else:
       LOGGER.error('No subnet ranges configured for test. Skipping')
-      return None, 'No subnet ranges configured for test. Skipping'
+      return None, 'No subnet ranges configured for test'
 
     response = self.dhcp1_client.get_dhcp_range()
     cur_range = {}
@@ -407,7 +407,11 @@ class ConnectionModule(TestModule):
         final_result = result['result']
       else:
         final_result &= result['result']
-      final_result_details += result['details'] + '\n'
+        if result['result']:
+          final_result_details += result['details'] + '\n'
+
+    if final_result:
+      final_result_details = 'All subnets are supported'
 
     try:
       # Restore failover configuration of DHCP servers

@@ -139,10 +139,11 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
     this.deviceForm = this.fb.group({
       model: ['', [this.deviceValidators.deviceStringFormat()]],
       manufacturer: ['', [this.deviceValidators.deviceStringFormat()]],
-      mac_addr: ['', [
-        Validators.pattern(MAC_ADDRESS_PATTERN),
-        this.deviceValidators.differentMACAddress(this.data.device)
-      ]],
+      mac_addr: [
+        {value: '', disabled: this.data.device}, [
+          Validators.pattern(MAC_ADDRESS_PATTERN),
+          this.deviceValidators.differentMACAddress(this.data.device)
+        ]],
       test_modules: new FormArray([])
     });
   }
