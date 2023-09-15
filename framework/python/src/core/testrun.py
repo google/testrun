@@ -374,13 +374,14 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
       self.get_session().set_target_device(device)
 
+    self._set_status('In Progress')
+
     LOGGER.info(
         f'Discovered {device.manufacturer} {device.model} on the network. ' +
         'Waiting for device to obtain IP')
 
   def _device_stable(self, mac_addr):
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
-    self._set_status('In Progress')
     result = self._test_orc.run_test_modules()
     self._set_status(result)
 
