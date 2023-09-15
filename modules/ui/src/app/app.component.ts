@@ -1,8 +1,10 @@
-import {Component, ViewChild} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {MatIconRegistry} from '@angular/material/icon';
 import {DomSanitizer} from '@angular/platform-browser';
 import {MatDrawer, MatDrawerToggleResult} from '@angular/material/sidenav';
 import {TestRunService} from './test-run.service';
+import {Observable} from 'rxjs/internal/Observable';
+import {Device} from './model/device';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -15,7 +17,8 @@ const CLOSE_URL = '/assets/icons/close.svg';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+  devices$!: Observable<Device[] | null>;
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
 
@@ -45,6 +48,10 @@ export class AppComponent {
       'close',
       this.domSanitizer.bypassSecurityTrustResourceUrl(CLOSE_URL)
     );
+  }
+
+  ngOnInit(): void {
+    this.devices$ = this.testRunService.getDevices();
   }
 
   async closeSetting(): Promise<void> {

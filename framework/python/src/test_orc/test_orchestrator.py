@@ -65,7 +65,6 @@ class TestOrchestrator:
     os.makedirs(DEVICE_ROOT_CERTS, exist_ok=True)
 
     self._load_test_modules()
-    #self.build_test_modules()
 
   def stop(self):
     """Stop any running tests"""
@@ -140,6 +139,10 @@ class TestOrchestrator:
     result = "Compliant"
     for test_result in self._session.get_test_results():
       test_case = self.get_test_case(test_result["name"])
+      if test_case is None:
+        LOGGER.error("Error occured whilst loading information about " +
+                     f"test {test_result['name']}")
+        continue
       if (test_case.required_result.lower() == "required"
           and test_result["result"].lower() == "non-compliant"):
         result = "Non-Compliant"
@@ -404,7 +407,7 @@ class TestOrchestrator:
           )
           module.tests.append(test_case)
         except Exception as error:
-          LOGGER.debug("Failed to load test case. See error for details")
+          LOGGER.error("Failed to load test case. See error for details")
           LOGGER.error(error)
 
     if "timeout" in module_json["config"]["docker"]:

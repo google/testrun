@@ -185,29 +185,29 @@ class TLSUtil():
   def process_tls_server_results(self, tls_1_2_results, tls_1_3_results):
     results = ''
     if tls_1_2_results[0] is None and tls_1_3_results[0]:
-      results = True, 'TLS 1.3 validated:\n' + tls_1_3_results[1]
+      results = True, 'TLS 1.3 validated: ' + tls_1_3_results[1]
     elif tls_1_3_results[0] is None and tls_1_2_results[0]:
-      results = True, 'TLS 1.2 validated:\n' + tls_1_2_results[1]
+      results = True, 'TLS 1.2 validated: ' + tls_1_2_results[1]
     elif tls_1_2_results[0] and tls_1_3_results[0]:
-      description = 'TLS 1.2 validated:\n' + tls_1_2_results[1]
-      description += '\nTLS 1.3 validated:\n' + tls_1_3_results[1]
+      description = 'TLS 1.2 validated: ' + tls_1_2_results[1] + '. '
+      description += '\nTLS 1.3 validated: ' + tls_1_3_results[1] + '. '
       results = True, description
     elif tls_1_2_results[0] and not tls_1_3_results[0]:
-      description = 'TLS 1.2 validated:\n' + tls_1_2_results[1]
-      description += '\nTLS 1.3 not validated:\n' + tls_1_3_results[1]
+      description = 'TLS 1.2 validated: ' + tls_1_2_results[1] + '. '
+      description += '\nTLS 1.3 not validated: ' + tls_1_3_results[1] + '. '
       results = True, description
     elif tls_1_3_results[0] and not tls_1_2_results[0]:
-      description = 'TLS 1.2 not validated:\n' + tls_1_2_results[1]
-      description += '\nTLS 1.3 validated:\n' + tls_1_3_results[1]
+      description = 'TLS 1.2 not validated: ' + tls_1_2_results[1] + '. '
+      description += 'TLS 1.3 validated: ' + tls_1_3_results[1] + '. '
       results = True, description
     elif not tls_1_3_results[0] and not tls_1_2_results[0] and tls_1_2_results[
         0] is not None and tls_1_3_results is not None:
-      description = 'TLS 1.2 not validated:\n' + tls_1_2_results[1]
-      description += '\nTLS 1.3 not validated:\n' + tls_1_3_results[1]
+      description = 'TLS 1.2 not validated:' + tls_1_2_results[1] + '. '
+      description += 'TLS 1.3 not validated: ' + tls_1_3_results[1] + '. '
       results = False, description
     else:
-      description = 'TLS 1.2 not validated:\n' + tls_1_2_results[1]
-      description += '\nTLS 1.3 not validated:\n' + tls_1_3_results[1]
+      description = 'TLS 1.2 not validated: ' + tls_1_2_results[1] + '. '
+      description += 'TLS 1.3 not validated: ' + tls_1_3_results[1] + '. '
       results = None, description
     LOGGER.info('TLS 1.2 server test results: ' + str(results))
     return results
@@ -227,7 +227,7 @@ class TLSUtil():
       # Print the certificate information
       cert_text = crypto.dump_certificate(crypto.FILETYPE_TEXT,
                                           public_cert).decode()
-      LOGGER.info('Device Certificate:\n' + cert_text)
+      LOGGER.info('Device certificate:\n' + cert_text)
 
       # Validate the certificates time range
       tr_valid = self.verify_certificate_timerange(public_cert)
@@ -243,7 +243,7 @@ class TLSUtil():
       cert_valid = tr_valid[0] and key_valid[0] and sig_valid[0]
       test_details = tr_valid[1] + '\n' + key_valid[1] + '\n' + sig_valid[1]
       LOGGER.info('Certificate validated: ' + str(cert_valid))
-      LOGGER.info('Test Details:\n' + test_details)
+      LOGGER.info('Test details:\n' + test_details)
       return cert_valid, test_details
     else:
       LOGGER.info('Failed to resolve public certificate')

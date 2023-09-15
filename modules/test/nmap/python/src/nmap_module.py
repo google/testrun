@@ -162,7 +162,7 @@ class NmapModule(TestModule):
                              open_port_info["tcp_udp"])
 
       if (open_port_info["service"] in services and
-          open_port not in match_ports and
+          (open_port + "/" + open_port_info["tcp_udp"]) not in match_ports and
           open_port_info["state"] == "open"):
         LOGGER.debug("Found service " + open_port_info["service"] +
                     " on port " + str(open_port) + "/" +
