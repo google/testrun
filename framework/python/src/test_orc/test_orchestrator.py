@@ -243,7 +243,7 @@ class TestOrchestrator:
 
     device = self._session.get_target_device()
 
-    if module is None or not module.enable_container:
+    if module is None or not module.enable_container or not module.enabled:
       return
 
     if not self._is_module_enabled(module, device):
@@ -406,6 +406,10 @@ class TestOrchestrator:
     module.name = module_json["config"]["meta"]["name"]
     module.display_name = module_json["config"]["meta"]["display_name"]
     module.description = module_json["config"]["meta"]["description"]
+
+    if "enabled" in module_json["config"]:
+      module.enabled = module_json["config"]["enabled"]
+
     module.dir = os.path.join(self._path, modules_dir, module_dir)
     module.dir_name = module_dir
     module.build_file = module_dir + ".Dockerfile"

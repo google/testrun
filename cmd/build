@@ -20,7 +20,7 @@ echo Building docker images
 # Build user interface
 echo Building user interface
 mkdir -p build/ui
-docker build -t test-run/ui -f modules/ui/ui.Dockerfile . > build/ui/ui.log 2>&1
+docker build -t test-run/ui -f modules/ui/ui.Dockerfile . 2>&1 | tee build/ui/ui.log
 
 # Build network modules
 echo Building network modules
@@ -28,7 +28,7 @@ mkdir -p build/network
 for dir in modules/network/* ; do
   module=$(basename $dir)
   echo Building network module $module...
-  docker build -f modules/network/$module/$module.Dockerfile -t test-run/$module . > build/network/$module.log 2>&1
+  docker build -f modules/network/$module/$module.Dockerfile -t test-run/$module . 2>&1 | tee build/network/$module.log
 done
 
 # Build validators
@@ -37,7 +37,7 @@ mkdir -p build/devices
 for dir in modules/devices/* ; do
   module=$(basename $dir)
   echo Building validator module $module...
-  docker build -f modules/devices/$module/$module.Dockerfile -t test-run/$module . > build/devices/$module.log 2>&1
+  docker build -f modules/devices/$module/$module.Dockerfile -t test-run/$module . 2>&1 | tee build/devices/$module.log
 done
 
 # Build test modules
@@ -46,7 +46,7 @@ mkdir -p build/test
 for dir in modules/test/* ; do
   module=$(basename $dir)
   echo Building test module $module...
-  docker build -f modules/test/$module/$module.Dockerfile -t test-run/$module-test . > build/test/$module.log 2>&1
+  docker build -f modules/test/$module/$module.Dockerfile -t test-run/$module-test . 2>&1 | tee build/test/$module.log
 done
 
 echo Finished building modules
