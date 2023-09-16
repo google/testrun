@@ -390,7 +390,7 @@ def test_trigger_run(testing_devices, testrun):
   until_true(
       lambda: query_system_status().lower() == "compliant",
       "system status is `complete`",
-      900,
+      120,
   )
 
   stop_test_device("x123")
