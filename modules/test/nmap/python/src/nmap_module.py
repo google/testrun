@@ -116,6 +116,8 @@ class NmapModule(TestModule):
 
   def _process_nmap_json_results(self, nmap_results_json):
     results = {}
+    if "host" not in nmap_results_json["nmaprun"]:
+      return results
     if "ports" in nmap_results_json["nmaprun"]["host"]:
       ports = nmap_results_json["nmaprun"]["host"]["ports"]
       # Checking if an object is a JSON object
