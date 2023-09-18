@@ -448,7 +448,7 @@ class NetworkOrchestrator:
 
   def _start_network_service(self, net_module):
 
-    LOGGER.debug('Starting net service ' + net_module.display_name)
+    LOGGER.debug('Starting network service ' + net_module.display_name)
     network = 'host' if net_module.net_config.host else PRIVATE_DOCKER_NET
     LOGGER.debug(f"""Network: {network}, image name: {net_module.image_name},
                      container name: {net_module.container_name}""")
@@ -473,7 +473,7 @@ class NetworkOrchestrator:
       self._attach_service_to_network(net_module)
 
   def _stop_service_module(self, net_module, kill=False):
-    LOGGER.debug('Stopping Service container ' + net_module.container_name)
+    LOGGER.debug('Stopping network container ' + net_module.container_name)
     try:
       container = self._get_service_container(net_module)
       if container is not None:

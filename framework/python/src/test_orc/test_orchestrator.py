@@ -33,6 +33,7 @@ MODULE_CONFIG = "conf/module_config.json"
 LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
 SAVED_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
+TESTRUN_DIR = "/usr/local/testrun"
 
 
 class TestOrchestrator:
@@ -82,8 +83,10 @@ class TestOrchestrator:
     LOGGER.info("All tests complete")
 
     self._session.stop()
+
     report = TestReport().from_json(self._generate_report())
     device.add_report(report)
+
     self._write_reports(report)
     self._test_in_progress = False
     self._timestamp_results(device)
@@ -97,6 +100,7 @@ class TestOrchestrator:
     return report.get_status()
 
   def _write_reports(self, test_report):
+
     out_dir = os.path.join(
         self._root_path, RUNTIME_DIR,
         self._session.get_target_device().mac_addr.replace(":", ""))
@@ -118,21 +122,35 @@ class TestOrchestrator:
   def _generate_report(self):
 
     report = {}
-    report["device"] = self._session.get_target_device().to_dict()
-    report["started"] = self._session.get_started().strftime(
+    report["device"] = self.get_session().get_target_device().to_dict()
+    report["started"] = self.get_session().get_started().strftime(
         "%Y-%m-%d %H:%M:%S")
-    report["finished"] = self._session.get_finished().strftime(
+    report["finished"] = self.get_session().get_finished().strftime(
         "%Y-%m-%d %H:%M:%S")
     report["status"] = self._calculate_result()
-    report["tests"] = self._session.get_report_tests()
+    report["tests"] = self.get_session().get_report_tests()
+    report["report"] = "file://" + os.path.join(
+      TESTRUN_DIR,
+      SAVED_DEVICE_REPORTS.replace(
+        "{device_folder}",
+        self.get_session().get_target_device().device_folder),
+        self.get_session().get_finished().strftime(
+          "%Y-%m-%dT%H:%M:%S"),
+      "report.pdf"
+    )
+
     out_file = os.path.join(
         self._root_path, RUNTIME_DIR,
         self._session.get_target_device().mac_addr.replace(":", ""),
         "report.json")
 
+    LOGGER.debug(f"Saving report to {out_file}")
+
+    # Write report to runtime directory
     with open(out_file, "w", encoding="utf-8") as f:
       json.dump(report, f, indent=2)
     util.run_command(f"chown -R {self._host_user} {out_file}")
+
     return report
 
   def _calculate_result(self):
@@ -197,7 +215,7 @@ class TestOrchestrator:
                                    device.mac_addr.replace(":", ""))
 
     # Define the destination results directory with timestamp
-    cur_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    cur_time = self.get_session().get_finished().strftime("%Y-%m-%dT%H:%M:%S")
     completed_results_dir = os.path.join(
         SAVED_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
         cur_time)
@@ -225,7 +243,7 @@ class TestOrchestrator:
 
     device = self._session.get_target_device()
 
-    if module is None or not module.enable_container:
+    if module is None or not module.enable_container or not module.enabled:
       return
 
     if not self._is_module_enabled(module, device):
@@ -388,6 +406,10 @@ class TestOrchestrator:
     module.name = module_json["config"]["meta"]["name"]
     module.display_name = module_json["config"]["meta"]["display_name"]
     module.description = module_json["config"]["meta"]["description"]
+
+    if "enabled" in module_json["config"]:
+      module.enabled = module_json["config"]["enabled"]
+
     module.dir = os.path.join(self._path, modules_dir, module_dir)
     module.dir_name = module_dir
     module.build_file = module_dir + ".Dockerfile"
@@ -495,3 +517,6 @@ class TestOrchestrator:
       if test_case.name == name:
         return test_case
     return None
+
+  def get_session(self):
+    return self._session

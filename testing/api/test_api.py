@@ -390,7 +390,7 @@ def test_trigger_run(testing_devices, testrun):
   until_true(
       lambda: query_system_status().lower() == "compliant",
       "system status is `complete`",
-      900,
+      600,
   )
 
   stop_test_device("x123")
@@ -473,8 +473,6 @@ def test_stop_running_not_running(testrun):
 
   assert False
 
-# TODO enable test because functionality is broken
-@pytest.mark.skip()
 def test_multiple_runs(testing_devices, testrun):
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload))
@@ -534,7 +532,8 @@ def test_multiple_runs(testing_devices, testrun):
 @pytest.mark.skip()
 def test_create_invalid_chars(empty_devices_dir, testrun):
   # local_delete_devices(ALL_DEVICES)
-  # We must start test run with no devices in local/devices for this test to function as expected!
+  # We must start test run with no devices in local/devices for this test 
+  # to function as expected!
   assert len(local_get_devices()) == 0
 
   # Test adding device

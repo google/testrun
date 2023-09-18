@@ -40,6 +40,6 @@ source venv/bin/activate
 
 # Set the PYTHONPATH to include the "src" directory
 export PYTHONPATH="$TESTRUNPATH/framework/python/src"
-python -u framework/python/src/core/test_runner.py $@
+python -u framework/python/src/core/test_runner.py $@ 2>&1 | tee testrun.log
 
 deactivate
