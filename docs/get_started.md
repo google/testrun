@@ -15,8 +15,9 @@ Before starting with Testrun, ensure you have the following hardware:
 Ensure the following software is installed on your Ubuntu LTS PC:
 
 - Python 3 (already available on Ubuntu LTS)
-- Docker - Installation Guide: [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)
-- Open vSwitch ``sudo apt-get install openvswitch-common openvswitch-switch``
+- Python packages: ``pip install python3-dev python3-venv``
+- Docker - installation guide: [https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
+- Open vSwitch and Build Essential: ``sudo apt-get install openvswitch-common openvswitch-switch build-essential``
 
 ## Installation
 

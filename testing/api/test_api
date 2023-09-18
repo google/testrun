@@ -30,8 +30,6 @@ sudo ip link set dev endev0a up
 sudo ip link set dev endev0b up
 sudo docker network create -d macvlan -o parent=endev0b endev0
 
-sudo ip link add dev dummynet type dummy
-
 # Start OVS
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
@@ -45,5 +43,10 @@ sudo cp testing/api/system.json $TESTRUN_DIR/local/system.json
 
 # Needs to be sudo because this invokes bin/testrun 
 sudo $TESTRUN_DIR/venv/bin/python3 -m pytest -v testing/api/test_api.py
+
+# Clean up network interfaces after use
+sudo docker network rm endev0
+sudo ip link del dev endev0a
+sudo ip link del dev dummynet
 
 exit $?

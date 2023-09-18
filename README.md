@@ -30,9 +30,10 @@ Testrun cannot automate everything, and so additional manual testing may be requ
  - 2x USB ethernet adapter (One may be built in ethernet)
  - Internet connection
 ### Software
- - Python 3 (Already available on Ubuntu LTS)
- - Docker - [Install guide](https://docs.docker.com/engine/install/ubuntu/)
- - Open vSwitch ``sudo apt-get install openvswitch-common openvswitch-switch``
+- Python 3 (already available on Ubuntu LTS)
+- Python packages: ``pip install python3-dev python3-venv``
+- Docker - installation guide: [https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
+- Open vSwitch and Build Essential: ``sudo apt-get install openvswitch-common openvswitch-switch build-essential``
 
 ## Get started ▶️
 Once you have met the hardware and software requirements, you can get started with Testrun by following the [Get started guide](docs/get_started.md).
