@@ -16,7 +16,7 @@
 
 ERROR_LIMIT=175
 
-sudo cmd/install
+sudo cmd/prepare && cmd/install
 
 source venv/bin/activate
 sudo pip3 install pylint
