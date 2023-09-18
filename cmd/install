@@ -26,7 +26,7 @@ source venv/bin/activate
 pip3 install -r framework/requirements.txt
 
 # Copy the default configuration
-cp -u local/system.json.example local/system.json
+cp -n local/system.json.example local/system.json
 
 deactivate
 

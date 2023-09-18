@@ -22,7 +22,7 @@
         "name": "baseline.non_compliant",
         "test_description": "Simulate a non-compliant test",
         "expected_behavior": "A non-compliant test result is generated",
-        "required_result": "Required"
+        "required_result": "Recommended"
       },
       {
         "name": "baseline.informational",
