@@ -19,10 +19,6 @@ if [[ "$EUID" -ne 0 ]]; then
     exit 1
 fi
 
-# TODO: Obtain TESTRUNPATH from user environment variables
-# TESTRUNPATH="/home/boddey/Desktop/test-run"
-# cd $TESTRUNPATH
-
 # Ensure that /var/run/netns folder exists
 sudo mkdir -p /var/run/netns
 
@@ -40,6 +36,6 @@ source venv/bin/activate
 
 # Set the PYTHONPATH to include the "src" directory
 export PYTHONPATH="$(pwd)/framework/python/src"
-python -u framework/python/src/core/test_runner.py $@
+python -u framework/python/src/core/test_runner.py $@ 2>&1 | tee testrun.log
 
 deactivate

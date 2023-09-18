@@ -146,7 +146,11 @@ class ConnectionModule(TestModule):
     for mac_address in mac_addresses:
       LOGGER.debug('DHCPREQUEST from MAC address: ' + mac_address)
       result &= self._device_mac.upper() == mac_address
-    return result
+
+    if result:
+      return result, 'Device is using a single IP address'
+    else:
+      return result, 'Device is using multiple IP addresses'
 
   def _connection_target_ping(self):
     LOGGER.info('Running connection.target_ping')
@@ -157,9 +161,12 @@ class ConnectionModule(TestModule):
 
     if self._device_ipv4_addr is None:
       LOGGER.error('No device IP could be resolved')
-      sys.exit(1)
+      return False, 'Could not resolve device IP'
     else:
-      return self._ping(self._device_ipv4_addr)
+      if self._ping(self._device_ipv4_addr):
+        return True, 'Device responds to ping'
+      else:
+        return False, 'Device does not respond to ping'
 
   def _connection_ipaddr_ip_change(self):
     result = None

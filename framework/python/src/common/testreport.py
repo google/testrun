@@ -14,14 +14,16 @@
 
 """Store previous test run information."""
 
+import os
 from datetime import datetime
 from weasyprint import HTML
 from io import BytesIO
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+DEVICES_DIR = '/usr/local/testrun/local/devices'
 
 class TestReport():
-  """Represents a previous Test Run report."""
+  """Represents a previous Testrun report."""
 
   def __init__(self,
                status='Non-Compliant',
@@ -35,6 +37,7 @@ class TestReport():
     self._finished = finished
     self._total_tests = total_tests
     self._results = []
+    self._report = ''
 
   def get_status(self):
     return self._status
@@ -55,6 +58,9 @@ class TestReport():
   def add_test(self, test):
     self._results.append(test)
 
+  def get_report_url(self):
+    return self._report
+
   def to_json(self):
     report_json = {}
     report_json['device'] = self._device
@@ -63,6 +69,7 @@ class TestReport():
     report_json['finished'] = self._finished.strftime(DATE_TIME_FORMAT)
     report_json['tests'] = {'total': self._total_tests,
                             'results': self._results}
+    report_json['report'] = self._report
     return report_json
 
   def from_json(self, json_file):
@@ -71,13 +78,16 @@ class TestReport():
     self._device['manufacturer'] = json_file['device']['manufacturer']
     self._device['model'] = json_file['device']['model']
 
-    if 'firmware' in self._device:
+    if 'firmware' in json_file['device']:
       self._device['firmware'] = json_file['device']['firmware']
 
     self._status = json_file['status']
     self._started = datetime.strptime(json_file['started'], DATE_TIME_FORMAT)
     self._finished = datetime.strptime(json_file['finished'], DATE_TIME_FORMAT)
     self._total_tests = json_file['tests']['total']
+
+    if 'report' in json_file:
+      self._report = json_file['report']
 
     # Loop through test results
     for test_result in json_file['tests']['results']:
