@@ -1,6 +1,6 @@
 <ng-container *ngIf="(devices$| async)?.length;  else empty">
   <mat-toolbar class="device-repository-toolbar">
-    <span>Device Repository</span>
+    <h2 class="title">Device Repository</h2>
     <ng-container *ngTemplateOutlet="addDeviceButton"></ng-container>
   </mat-toolbar>
   <div class="device-repository-content">

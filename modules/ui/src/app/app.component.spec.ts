@@ -3,19 +3,37 @@ import {ComponentFixture, fakeAsync, TestBed, tick} from '@angular/core/testing'
 import {Router} from '@angular/router';
 import {RouterTestingModule} from '@angular/router/testing';
 import {AppComponent} from './app.component';
-import {AppModule} from './app.module';
+import {TestRunService} from './test-run.service';
+import SpyObj = jasmine.SpyObj;
+import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
+import {Device} from './model/device';
+import {device} from './mocks/device.mock';
+import {Component, EventEmitter, Output} from '@angular/core';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {AppRoutingModule} from './app-routing.module';
 
 describe('AppComponent', () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
   let compiled: HTMLElement;
   let router: Router;
+  let mockService: SpyObj<TestRunService>;
 
   beforeEach(() => {
+    mockService = jasmine.createSpyObj(['getDevices', 'fetchDevices', 'getSystemStatus', 'fetchHistory']);
+    mockService.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>([device]));
+
     TestBed.configureTestingModule({
-      imports: [RouterTestingModule, AppModule, HttpClientTestingModule],
-      declarations: [AppComponent]
+      imports: [RouterTestingModule, HttpClientTestingModule, AppRoutingModule, MatButtonModule,
+        BrowserAnimationsModule, MatIconModule, MatToolbarModule, MatSidenavModule],
+      providers: [{provide: TestRunService, useValue: mockService}],
+      declarations: [AppComponent, FakeGeneralSettingsComponent]
     });
+
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
     router = TestBed.get(Router);
@@ -48,7 +66,7 @@ describe('AppComponent', () => {
 
   it('should render device repository button', () => {
     const button = compiled.querySelector(
-        '.app-sidebar-button-device-repository'
+      '.app-sidebar-button-device-repository'
     );
 
     expect(button).toBeDefined();
@@ -74,29 +92,56 @@ describe('AppComponent', () => {
 
   it('should render general settings button', () => {
     const generalSettingsButton = compiled.querySelector(
-        '.app-toolbar-button-general-settings'
+      '.app-toolbar-button-general-settings'
     );
 
     expect(generalSettingsButton).toBeDefined();
   });
 
-  it('should navigate to device repository', fakeAsync(() => {
+  it('should navigate to the device repository when "device repository" button is clicked', fakeAsync(() => {
     const button = compiled.querySelector(
-        '.app-sidebar-button-device-repository'
+      '.app-sidebar-button-device-repository'
     ) as HTMLButtonElement;
+
     button?.click();
     tick();
 
     expect(router.url).toBe(`/device-repository`);
   }));
 
-  it('should call settingsDrawer close on closeSetting', fakeAsync(() => {
-    spyOn(component.settingsDrawer, 'close');
+  it('should navigate to the runtime when "runtime" button is clicked', fakeAsync(() => {
+    const button = compiled.querySelector(
+      '.app-sidebar-button-runtime'
+    ) as HTMLButtonElement;
+
+    button?.click();
+    tick();
+
+    expect(router.url).toBe(`/runtime`);
+  }));
+
+  it('should navigate to the results when "results" button is clicked', fakeAsync(() => {
+    const button = compiled.querySelector(
+      '.app-sidebar-button-results'
+    ) as HTMLButtonElement;
+
+    button?.click();
+    tick();
+
+    expect(router.url).toBe(`/results`);
+  }));
+
+  it('should call toggleSettingsBtn focus when settingsDrawer close on closeSetting', fakeAsync(() => {
+    spyOn(component.settingsDrawer, 'close').and.returnValue(Promise.resolve('close'));
+    spyOn(component.toggleSettingsBtn, 'focus');
 
     component.closeSetting();
     tick();
 
-    expect(component.settingsDrawer.close).toHaveBeenCalledTimes(1);
+    component.settingsDrawer.close().then(() => {
+        expect(component.toggleSettingsBtn.focus).toHaveBeenCalled();
+      }
+    )
   }));
 
   it('should call settingsDrawer open on openSetting', fakeAsync(() => {
@@ -119,4 +164,37 @@ describe('AppComponent', () => {
     expect(component.settingsDrawer.toggle).toHaveBeenCalledTimes(1);
   });
 
+  describe('with no devices setted', () => {
+    beforeEach(() => {
+      mockService.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>(null));
+      component.ngOnInit();
+      fixture.detectChanges();
+    });
+
+    it('should have "results" and "runtime" buttons disabled', fakeAsync(() => {
+      const resultBtn = compiled.querySelector('.app-sidebar-button-results') as HTMLButtonElement;
+      const runtimeBtn = compiled.querySelector('.app-sidebar-button-runtime') as HTMLButtonElement;
+
+      expect(resultBtn.disabled).toBe(true);
+      expect(runtimeBtn.disabled).toBe(true);
+    }));
+
+    it('should have "device repository" button disabled', fakeAsync(() => {
+      const deviceRepositorytBtn = compiled.querySelector(
+        '.app-sidebar-button-device-repository'
+      ) as HTMLButtonElement;
+
+      expect(deviceRepositorytBtn.disabled).toBe(false);
+    }));
+  });
+
 });
+
+@Component({
+  selector: 'app-general-settings',
+  template: '<div></div>'
+})
+class FakeGeneralSettingsComponent {
+  @Output() closeSettingEvent = new EventEmitter<void>();
+  @Output() openSettingEvent = new EventEmitter<void>();
+}

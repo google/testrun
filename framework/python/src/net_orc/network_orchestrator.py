@@ -114,7 +114,7 @@ class NetworkOrchestrator:
     """Start the virtual testing network."""
     LOGGER.info('Starting network')
 
-    self.build_network_modules()
+    #self.build_network_modules()
 
     self.create_net()
     self.start_network_services()
@@ -130,6 +130,7 @@ class NetworkOrchestrator:
     return self._listener
 
   def start_listener(self):
+    LOGGER.debug("Starting network listener")
     self.get_listener().start_listener()
 
   def stop(self, kill=False):
@@ -272,7 +273,7 @@ class NetworkOrchestrator:
     """ Stores network properties to restore network after
         network creation and flushes internet interface
         """
-
+    LOGGER.info('Pre network create')
     self._ethmac = subprocess.check_output(
         f'cat /sys/class/net/{self._session.get_internet_interface()}/address',
         shell=True).decode('utf-8').strip()
@@ -294,7 +295,7 @@ class NetworkOrchestrator:
 
   def _ci_post_network_create(self):
     """ Restore network connection in CI environment """
-    LOGGER.info('post cr')
+    LOGGER.info('Post network create')
     util.run_command(((f'ip address del {self._ipv4} ' +
                        'dev {self._session.get_internet_interface()}')))
     util.run_command((f'ip -6 address del {self._ipv6} ' +
@@ -320,7 +321,7 @@ class NetworkOrchestrator:
   def create_net(self):
     LOGGER.info('Creating baseline network')
 
-    if os.getenv('GITHUB_ACTIONS'):
+    if 'CI' in os.environ:
       self._ci_pre_network_create()
 
     # Setup the virtual network
@@ -329,7 +330,7 @@ class NetworkOrchestrator:
       self.stop()
       sys.exit(1)
 
-    if os.getenv("GITHUB_ACTIONS"):
+    if 'CI' in os.environ:
       self._ci_post_network_create()
 
     self._create_private_net()
@@ -447,7 +448,7 @@ class NetworkOrchestrator:
 
   def _start_network_service(self, net_module):
 
-    LOGGER.debug('Starting net service ' + net_module.display_name)
+    LOGGER.debug('Starting network service ' + net_module.display_name)
     network = 'host' if net_module.net_config.host else PRIVATE_DOCKER_NET
     LOGGER.debug(f"""Network: {network}, image name: {net_module.image_name},
                      container name: {net_module.container_name}""")
@@ -472,7 +473,7 @@ class NetworkOrchestrator:
       self._attach_service_to_network(net_module)
 
   def _stop_service_module(self, net_module, kill=False):
-    LOGGER.debug('Stopping Service container ' + net_module.container_name)
+    LOGGER.debug('Stopping network container ' + net_module.container_name)
     try:
       container = self._get_service_container(net_module)
       if container is not None:

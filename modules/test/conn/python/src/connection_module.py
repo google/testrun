@@ -146,7 +146,11 @@ class ConnectionModule(TestModule):
     for mac_address in mac_addresses:
       LOGGER.debug('DHCPREQUEST from MAC address: ' + mac_address)
       result &= self._device_mac.upper() == mac_address
-    return result
+
+    if result:
+      return result, 'Device is using a single IP address'
+    else:
+      return result, 'Device is using multiple IP addresses'
 
   def _connection_target_ping(self):
     LOGGER.info('Running connection.target_ping')
@@ -157,9 +161,12 @@ class ConnectionModule(TestModule):
 
     if self._device_ipv4_addr is None:
       LOGGER.error('No device IP could be resolved')
-      sys.exit(1)
+      return False, 'Could not resolve device IP'
     else:
-      return self._ping(self._device_ipv4_addr)
+      if self._ping(self._device_ipv4_addr):
+        return True, 'Device responds to ping'
+      else:
+        return False, 'Device does not respond to ping'
 
   def _connection_ipaddr_ip_change(self):
     result = None
@@ -194,7 +201,7 @@ class ConnectionModule(TestModule):
         result = None, 'Device has no current DHCP lease'
       # Restore the network
       self._dhcp_util.restore_failover_dhcp_server()
-      LOGGER.info("Waiting 30 seconds for reserved lease to expire")
+      LOGGER.info('Waiting 30 seconds for reserved lease to expire')
       time.sleep(30)
       self._dhcp_util.get_new_lease(self._device_mac)
     else:
@@ -281,10 +288,9 @@ class ConnectionModule(TestModule):
   def _connection_ipv6_ping(self):
     LOGGER.info('Running connection.ipv6_ping')
     result = None
-    
     if self._device_ipv6_addr is None:
       LOGGER.info('No IPv6 SLAAC address found. Cannot ping')
-      result = None, 'No IPv6 SLAAC address found. Cannot ping'
+      result = False, 'No IPv6 SLAAC address found. Cannot ping'
     else:
       if self._ping(self._device_ipv6_addr):
         LOGGER.info(f'Device responds to IPv6 ping on {self._device_ipv6_addr}')
@@ -372,7 +378,7 @@ class ConnectionModule(TestModule):
       ranges = config['ranges']
     else:
       LOGGER.error('No subnet ranges configured for test. Skipping')
-      return None, 'No subnet ranges configured for test. Skipping'
+      return None, 'No subnet ranges configured for test'
 
     response = self.dhcp1_client.get_dhcp_range()
     cur_range = {}
@@ -408,7 +414,11 @@ class ConnectionModule(TestModule):
         final_result = result['result']
       else:
         final_result &= result['result']
-      final_result_details += result['details'] + '\n'
+        if result['result']:
+          final_result_details += result['details'] + '\n'
+
+    if final_result:
+      final_result_details = 'All subnets are supported'
 
     try:
       # Restore failover configuration of DHCP servers

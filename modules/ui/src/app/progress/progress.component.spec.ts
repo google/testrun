@@ -31,7 +31,12 @@ describe('ProgressComponent', () => {
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
 
       TestBed.configureTestingModule({
-        declarations: [ProgressComponent],
+        declarations: [
+          ProgressComponent,
+          FakeProgressBreadcrumbsComponent,
+          FakeProgressStatusCardComponent,
+          FakeProgressTableComponent
+        ],
         providers: [
           {provide: TestRunService, useValue: testRunServiceMock},
           {

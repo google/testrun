@@ -46,10 +46,8 @@ def collect_expected_results(expected_results):
 def collect_actual_results(results_dict):
   """ Yields results from an already loaded testrun results file """
   # "module"."results".[list]."result"
-  for maybe_module, child in results_dict.items():
-    if 'results' in child and maybe_module != 'baseline':
-      for test in child['results']:
-        yield TestResult(test['name'], test['result'])
+  for test in results_dict.get('tests', {}).get('results', []):
+    yield TestResult(test['name'], test['result'])
 
 
 @pytest.fixture
@@ -73,8 +71,7 @@ def test_tests(results, test_matrix):
   for tester, props in test_matrix.items():
     expected = set(collect_expected_results(props['expected_results']))
     actual = set(collect_actual_results(results[tester]))
-
-    assert expected.issubset(actual), f'{tester} expected results not obtained'
+    assert expected & actual == expected
 
 def test_list_tests(capsys, results, test_matrix):
   all_tests = set(itertools.chain.from_iterable(
@@ -95,7 +92,7 @@ def test_list_tests(capsys, results, test_matrix):
     print('============')
     print('============')
     print('tests seen:')
-    print('\n'.join([x.name for x in all_tests]))
+    print('\n'.join(set([x.name for x in all_tests])))
     print('\ntesting for pass:')
     print('\n'.join(ci_pass))
     print('\ntesting for fail:')
@@ -103,7 +100,14 @@ def test_list_tests(capsys, results, test_matrix):
     print('\ntester results')
     for tester in test_matrix.keys():
       print(f'\n{tester}:')
+      print('  expected results:')
+      for test in collect_expected_results(test_matrix[tester]['expected_results']):
+        print(f'    {test.name}: {test.result}')
+      print('  actual results:')
       for test in collect_actual_results(results[tester]):
-        print(f'{test.name}: {test.result}')
+        if test.name in test_matrix[tester]['expected_results']:
+          print(f'    {test.name}: {test.result} (exp: {test_matrix[tester]["expected_results"][test.name]})')
+        else:
+          print(f'    {test.name}: {test.result}')
 
   assert True

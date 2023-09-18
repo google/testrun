@@ -11,7 +11,7 @@ import {DatePipe} from '@angular/common';
 })
 export class HistoryComponent implements OnInit {
   history$!: Observable<TestrunStatus[]>;
-  displayedColumns: string[] = ['#', 'started', 'finished', 'manufacturer', 'model', 'result', 'report']
+  displayedColumns: string[] = ['started', 'duration', 'device', 'firmware', 'result', 'report'];
 
   constructor(private testRunService: TestRunService, private datePipe: DatePipe) {
     this.testRunService.fetchHistory();
@@ -21,12 +21,26 @@ export class HistoryComponent implements OnInit {
     this.history$ = this.testRunService.getHistory();
   }
 
-  getTestRunId(data: TestrunStatus) {
-    return `${data.device.manufacturer} ${data.device.model} ${data.device.firmware} ${this.getFormattedDateString(data.started)}`;
-  }
-
   getFormattedDateString(date: string | null) {
     return date ? this.datePipe.transform(date, 'd MMM y H:mm') : '';
+  }
+
+  private transformDate(date: number, format: string) {
+    return this.datePipe.transform(date, format);
+  }
+
+  public getDuration(started: string | null, finished: string | null): string {
+    if (!started || !finished) {
+      return '';
+    }
+    const startedDate = new Date(started);
+    const finishedDate = new Date(finished);
+
+    const durationMillisecond = finishedDate.getTime() - startedDate.getTime();
+    const durationMinuts = this.transformDate(durationMillisecond, 'mm');
+    const durationSeconds = this.transformDate(durationMillisecond, 'ss');
+
+    return `${durationMinuts}m ${durationSeconds}s`
   }
 
   public getResultClass(status: string): StatusResultClassName {

@@ -27,17 +27,17 @@ class BaselineModule(TestModule):
     global LOGGER
     LOGGER = self._get_logger()
 
-  def _baseline_pass(self):
+  def _baseline_compliant(self):
     LOGGER.info('Running baseline pass test')
     LOGGER.info('Baseline pass test finished')
     return True, 'Baseline pass test ran successfully'
 
-  def _baseline_fail(self):
-    LOGGER.info('Running baseline fail test')
-    LOGGER.info('Baseline fail test finished')
-    return False, 'Baseline fail test ran successfully'
+  def _baseline_non_compliant(self):
+    LOGGER.info('Running baseline non-compliant test')
+    LOGGER.info('Baseline non-compliant test finished')
+    return False, 'Baseline non-compliant test ran successfully'
 
-  def _baseline_skip(self):
-    LOGGER.info('Running baseline skip test')
-    LOGGER.info('Baseline skip test finished')
-    return None, 'Baseline skip test ran successfully'
+  def _baseline_informational(self):
+    LOGGER.info('Running baseline informational test')
+    LOGGER.info('Baseline informational test finished')
+    return None, 'Baseline informational test ran successfully'

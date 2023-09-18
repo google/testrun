@@ -15,10 +15,10 @@
 }
 
 .device-repository-toolbar {
-  padding-left: 41px;
-  gap: 10px;
+  padding-left: 40px;
+  gap: 16px;
   background: $white;
-  height: 76px;
+  height: 72px;
 }
 
 .device-repository-content {
@@ -28,5 +28,4 @@
   grid-template-columns: repeat(auto-fit, $device-item-width);
   gap: 16px;
   overflow-y: auto;
-  height: 100%;
 }

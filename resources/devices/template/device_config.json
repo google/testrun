@@ -18,6 +18,12 @@
     },
     "nmap": {
       "enabled": true
+    },
+    "tls": {
+      "enabled": true
+    },
+    "protocol": {
+      "enabled": false
     }
   }
 }

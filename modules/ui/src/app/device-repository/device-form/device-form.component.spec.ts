@@ -131,27 +131,6 @@ describe('DeviceFormComponent', () => {
     flush();
   }));
 
-  it('should not save data when device with mac address is already exist', fakeAsync(() => {
-    const closeSpy = spyOn(component.dialogRef, 'close');
-    component.model.setValue('model');
-    component.manufacturer.setValue('manufacturer');
-    component.mac_addr.setValue('07:07:07:07:07:07');
-    testRunServiceMock.hasDevice.and.returnValue(true);
-
-    component.saveDevice();
-    fixture.detectChanges();
-
-    fixture.whenStable().then(() => {
-      const error = compiled.querySelector('mat-error')!;
-      expect(error.innerHTML).toContain('This MAC address is already used for another device in the repository.');
-    });
-
-    expect(closeSpy).not.toHaveBeenCalled();
-
-    closeSpy.calls.reset();
-    flush();
-  }));
-
   it('should not save data when server response with error', fakeAsync(() => {
     const closeSpy = spyOn(component.dialogRef, 'close');
     component.model.setValue('model');
@@ -262,6 +241,10 @@ describe('DeviceFormComponent', () => {
   });
 
   describe('mac address', () => {
+    it('should not be disabled', () => {
+      expect(component.mac_addr.disabled).toBeFalse();
+    });
+
     it('should not contain errors when input is correct', fakeAsync(() => {
       const macAddress: HTMLInputElement = compiled.querySelector('.device-form-mac-address')!;
       ['07:07:07:07:07:07', '     07:07:07:07:07:07     '].forEach(value => {
@@ -302,6 +285,25 @@ describe('DeviceFormComponent', () => {
 
         flush();
       })
+    }));
+
+    it('should have "has_same_mac_address" error when MAC address is already used', fakeAsync(() => {
+      testRunServiceMock.hasDevice.and.returnValue(true);
+      const macAddress: HTMLInputElement = compiled.querySelector('.device-form-mac-address')!;
+      macAddress.value = '07:07:07:07:07:07';
+      macAddress.dispatchEvent(new Event('input'));
+      component.mac_addr.markAsTouched();
+      fixture.detectChanges();
+
+      fixture.whenStable().then(() => {
+        const macAddressError = compiled.querySelector('mat-error')!.innerHTML;
+        const error = component.mac_addr.errors!['has_same_mac_address'];
+
+        expect(error).toBeTruthy();
+        expect(macAddressError).toContain('This MAC address is already used for another device in the repository.');
+      });
+
+      flush();
     }));
   });
 
@@ -365,5 +367,9 @@ describe('DeviceFormComponent', () => {
       closeSpy.calls.reset();
       flush();
     }));
+
+    it('should disable mac address', () => {
+      expect(component.mac_addr.disabled).toBeTrue();
+    });
   });
 });

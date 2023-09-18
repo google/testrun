@@ -24,6 +24,7 @@
       </a>
       <span class="spacer"></span>
       <button
+        #toggleSettingsBtn
         class="app-toolbar-button app-toolbar-button-general-settings"
         mat-icon-button
         aria-label="General settings"
@@ -60,6 +61,7 @@
              let-route="route" let-svgIcon="svgIcon">
   <button
     [attr.aria-label]="label"
+    disabled="{{route !== '/device-repository' && !(devices$| async)?.length}}"
     class="app-sidebar-button app-sidebar-button-{{name}}"
     mat-button
     routerLink="{{route}}"
