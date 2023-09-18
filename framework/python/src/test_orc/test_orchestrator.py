@@ -215,7 +215,7 @@ class TestOrchestrator:
                                    device.mac_addr.replace(":", ""))
 
     # Define the destination results directory with timestamp
-    cur_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    cur_time = self.get_session().get_finished().strftime("%Y-%m-%dT%H:%M:%S")
     completed_results_dir = os.path.join(
         SAVED_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
         cur_time)

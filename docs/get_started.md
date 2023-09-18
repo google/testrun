@@ -13,11 +13,9 @@ Before starting with Testrun, ensure you have the following hardware:
 ### Software
 
 Ensure the following software is installed on your Ubuntu LTS PC:
-
-- Python 3 (already available on Ubuntu LTS)
-- Python packages: ``pip install python3-dev python3-venv``
+- Python3 libraries: ``sudo apt-get install python3-dev python3-venv``
 - Docker - installation guide: [https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
-- Open vSwitch and Build Essential: ``sudo apt-get install openvswitch-common openvswitch-switch build-essential``
+- System dependencies: ``sudo apt-get install openvswitch-common openvswitch-switch build-essential net-tools``
 
 ## Installation
 
@@ -31,6 +29,8 @@ Ensure the following software is installed on your Ubuntu LTS PC:
 
    - Connect one USB Ethernet adapter to the internet source (e.g., router or switch) using an Ethernet cable.
    - Connect the other USB Ethernet adapter directly to the IoT device you want to test using an Ethernet cable.
+
+   **NOTE: Both adapters should be disabled in the host system. You can do this by going to Settings > Network** 
 
 2. Start Testrun.
 

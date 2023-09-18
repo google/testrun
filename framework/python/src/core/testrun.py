@@ -393,6 +393,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def start_ui(self):
 
+    self._stop_ui()
+
     LOGGER.info('Starting UI')
 
     client = docker.from_env()
