@@ -65,7 +65,6 @@ class TestOrchestrator:
     os.makedirs(DEVICE_ROOT_CERTS, exist_ok=True)
 
     self._load_test_modules()
-    #self.build_test_modules()
 
   def stop(self):
     """Stop any running tests"""
@@ -140,6 +139,10 @@ class TestOrchestrator:
     result = "Compliant"
     for test_result in self._session.get_test_results():
       test_case = self.get_test_case(test_result["name"])
+      if test_case is None:
+        LOGGER.error("Error occured whilst loading information about " +
+                     f"test {test_result['name']}")
+        continue
       if (test_case.required_result.lower() == "required"
           and test_result["result"].lower() == "non-compliant"):
         result = "Non-Compliant"
@@ -276,6 +279,7 @@ class TestOrchestrator:
           environment={
               "HOST_USER": self._host_user,
               "DEVICE_MAC": device.mac_addr,
+              "IPV4_ADDR": device.ip_addr,
               "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
               "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
               "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
@@ -397,13 +401,13 @@ class TestOrchestrator:
         try:
           test_case = TestCase(
             name=test_case_json["name"],
-            description=test_case_json["description"],
+            description=test_case_json["test_description"],
             expected_behavior=test_case_json["expected_behavior"],
             required_result=test_case_json["required_result"]
           )
           module.tests.append(test_case)
         except Exception as error:
-          LOGGER.debug("Failed to load test case. See error for details")
+          LOGGER.error("Failed to load test case. See error for details")
           LOGGER.error(error)
 
     if "timeout" in module_json["config"]["docker"]:

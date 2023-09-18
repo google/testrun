@@ -1,0 +1,55 @@
+{
+  "config": {
+    "meta": {
+      "name": "protocol",
+      "display_name": "Protocol",
+      "description": "Protocol tests"
+    },
+    "network": true,
+    "docker": {
+      "depends_on": "base",
+      "enable_container": true,
+      "timeout": 300
+    },
+    "tests":[
+      {
+        "name": "protocol.valid_bacnet",
+        "test_description": "Can valid BACnet traffic be seen",
+        "expected_behavior": "BACnet traffic can be seen on the network and packets are valid and not malformed",
+        "required_result": "Required"
+      },
+      {
+        "name": "protocol.valid_modbus",
+        "test_description": "Can valid Modbus traffic be seen",
+        "expected_behavior": "Any Modbus functionality works as expected and valid modbus traffic can be observed",
+        "required_result": "Required",
+        "config":{
+          "port": 502,
+          "device_id": 1,
+          "registers":{
+            "holding":{
+              "enabled": true,
+              "address_start": 0,
+              "count": 5
+            },
+            "input":{
+              "enabled": true,
+              "address_start": 0,
+              "count": 5
+            },
+            "coil":{
+              "enabled": true,
+              "address_start": 0,
+              "count": 1
+            },
+            "discrete":{
+              "enabled": true,
+              "address_start": 0,
+              "count": 1
+            }
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,4 +1,4 @@
-import {ComponentFixture, fakeAsync, flush, TestBed, tick} from '@angular/core/testing';
+import {ComponentFixture, fakeAsync, flush, TestBed} from '@angular/core/testing';
 
 import {DeviceFormComponent} from './device-form.component';
 import {TestRunService} from '../../test-run.service';
@@ -241,6 +241,10 @@ describe('DeviceFormComponent', () => {
   });
 
   describe('mac address', () => {
+    it('should not be disabled', () => {
+      expect(component.mac_addr.disabled).toBeFalse();
+    });
+
     it('should not contain errors when input is correct', fakeAsync(() => {
       const macAddress: HTMLInputElement = compiled.querySelector('.device-form-mac-address')!;
       ['07:07:07:07:07:07', '     07:07:07:07:07:07     '].forEach(value => {
@@ -363,5 +367,9 @@ describe('DeviceFormComponent', () => {
       closeSpy.calls.reset();
       flush();
     }));
+
+    it('should disable mac address', () => {
+      expect(component.mac_addr.disabled).toBeTrue();
+    });
   });
 });

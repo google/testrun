@@ -1,0 +1,7 @@
+# Required for BACnet protocol tests
+netifaces
+BAC0
+pytz
+
+# Required for Modbus protocol tests
+pymodbus
