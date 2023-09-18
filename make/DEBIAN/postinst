@@ -16,8 +16,8 @@
 
 echo Installing application dependencies
 
-TESTRUN_DIR=/usr/local/testrun
-cd $TESTRUN_DIR
+export TESTRUNPATH=/usr/local/testrun
+cd $TESTRUNPATH
 
 python3 -m venv venv
 

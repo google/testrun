@@ -42,7 +42,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.dirname(os.path.dirname(
   os.path.dirname(os.path.dirname(current_dir))))
 
-LOGGER = logger.get_logger('test_run')
+LOGGER = logger.get_logger('testrun')
 
 DEFAULT_CONFIG_FILE = 'local/system.json'
 EXAMPLE_CONFIG_FILE = 'local/system.json.example'

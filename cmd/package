@@ -18,15 +18,8 @@
 
 MAKE_SRC_DIR=make
 
-# Copy testrun script to /bin
-mkdir -p $MAKE_SRC_DIR/bin
-cp bin/testrun $MAKE_SRC_DIR/bin/testrun
-
 # Create testrun folder
 mkdir -p $MAKE_SRC_DIR/usr/local/testrun
-
-# Create postinst script
-cp cmd/install $MAKE_SRC_DIR/DEBIAN/postinst
 
 # Copy other commands
 mkdir -p $MAKE_SRC_DIR/usr/local/testrun/cmd

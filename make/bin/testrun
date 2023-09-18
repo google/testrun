@@ -26,7 +26,7 @@ fi
 # Ensure that /var/run/netns folder exists
 sudo mkdir -p /var/run/netns
 
-export TESTRUNPATH=$(dirname "$0")/../
+export TESTRUNPATH=/usr/local/testrun
 cd $TESTRUNPATH
 
 # Create device folder if it doesn't exist
