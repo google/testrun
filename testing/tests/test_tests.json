@@ -31,8 +31,6 @@
             "security.services.vnc": "Compliant",
             "security.services.tftp": "Compliant",
             "ntp.network.ntp_server": "Compliant",
-            "ntp.network.ntp_support": "Compliant",
-            "ntp.network.ntp_dhcp": "Compliant",
             "connection.shared_address": "Compliant",
             "connection.dhcp_address": "Compliant",
             "connection.mac_address": "Compliant",
