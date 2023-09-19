@@ -33,7 +33,6 @@ mkdir -p $MAKE_SRC_DIR/usr/local/testrun/cmd
 cp cmd/{prepare,build} $MAKE_SRC_DIR/usr/local/testrun/cmd
 
 # Copy resources
-#mkdir -p $MAKE_SRC_DIR/usr/local/testrun/resources
 cp -r resources $MAKE_SRC_DIR/usr/local/testrun/
 
 # Create local folder
