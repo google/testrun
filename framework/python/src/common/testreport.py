@@ -22,7 +22,7 @@ import base64
 import os
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
-RESOURCES_DIR = 'resources/resources/report'
+RESOURCES_DIR = 'resources/report'
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
