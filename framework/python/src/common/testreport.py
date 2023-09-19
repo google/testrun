@@ -19,8 +19,24 @@ from weasyprint import HTML
 from io import BytesIO
 import json 
 import base64
+import os
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+RESOURCES_DIR = 'resources/resources/report'
+
+# Locate parent directory
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
+# Locate the test-run root directory, 4 levels, src->python->framework->test-run
+root_dir = os.path.dirname(os.path.dirname(
+  os.path.dirname(os.path.dirname(current_dir))))
+
+# Obtain the report resources directory
+report_resource_dir = os.path.join(root_dir,
+                                    RESOURCES_DIR)
+
+font_file = os.path.join(report_resource_dir,'GoogleSans-Regular.ttf')
+test_run_img_file = os.path.join(report_resource_dir,'testrun.png')
 
 class TestReport():
   """Represents a previous Test Run report."""
@@ -218,7 +234,7 @@ class TestReport():
 
 
   def generate_header(self, json_data):
-    with open('resources/report/testrun.png', 'rb') as f:
+    with open(test_run_img_file, 'rb') as f:
       tr_img_b64 = base64.b64encode(f.read()).decode('utf-8')
     return f'''
     <div class="header">
@@ -301,7 +317,7 @@ class TestReport():
     '''
 
   def generate_css(self):
-    with open('resources/report/GoogleSans-Regular.ttf', 'rb') as f:
+    with open(font_file, 'rb') as f:
       google_sans_b64 = base64.b64encode(f.read())
 
     css = '''
