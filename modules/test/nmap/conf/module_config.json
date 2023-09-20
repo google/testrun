@@ -121,6 +121,16 @@
             {
               "number": 80,
               "type": "udp"
+            },
+            {
+              "number": 443,
+              "type": "tcp",
+              "allowed": true
+            },
+            {
+              "number": 443,
+              "type": "udp",
+              "allowed": true
             }
           ]
         }
