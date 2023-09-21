@@ -43,6 +43,3 @@ RUN mkdir -p /testrun/root_certs
 # Copy over all the local certificates for device signature
 # checks if the folder exists
 COPY $CERTS_DIR /testrun/root_certs
-
-
-
