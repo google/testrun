@@ -7,7 +7,7 @@
       "enabled": true
     },
     "connection": {
-      "enabled": true
+      "enabled": false
     },
     "ntp": {
       "enabled": true
