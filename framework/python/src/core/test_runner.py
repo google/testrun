@@ -34,7 +34,7 @@ class TestRunner:
 
   def __init__(self,
                config_file=None,
-               validate=True,
+               validate=False,
                net_only=False,
                single_intf=False,
                no_ui=False):
@@ -76,9 +76,10 @@ def parse_args():
       help="Define the configuration file for Test Run and Network Orchestrator"
   )
   parser.add_argument(
-      "--no-validate",
+      "--validate",
+      default=False,
       action="store_true",
-      help="Turn off the validation of the network after network boot")
+      help="Turn on the validation of the network after network boot")
   parser.add_argument("-net",
                       "--net-only",
                       action="store_true",
@@ -97,7 +98,7 @@ def parse_args():
 if __name__ == "__main__":
   args = parse_args()
   runner = TestRunner(config_file=args.config_file,
-                      validate=not args.no_validate,
+                      validate=args.validate,
                       net_only=args.net_only,
                       single_intf=args.single_intf,
                       no_ui=args.no_ui)

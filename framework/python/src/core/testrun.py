@@ -66,7 +66,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def __init__(self,
                config_file,
-               validate=True,
+               validate=False,
                net_only=False,
                single_intf=False,
                no_ui=False):
@@ -91,8 +91,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self._session.add_runtime_param('single_intf')
     if net_only:
       self._session.add_runtime_param('net_only')
-    if not validate:
-      self._session.add_runtime_param('no-validate')
+    if validate:
+      self._session.add_runtime_param('validate')
 
     self.load_all_devices()
 
@@ -290,6 +290,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self.get_net_orc().start_listener()
       self._set_status('Waiting for Device')
       LOGGER.info('Waiting for devices on the network...')
+
       time.sleep(self.get_session().get_runtime())
 
       if not (self._test_orc.test_in_progress() or
