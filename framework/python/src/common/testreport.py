@@ -147,9 +147,9 @@ class TestReport():
     # Calculate pages
     test_count = len(json_data['tests']['results'])
 
-    # 16 tests can fit on the first page
-    if test_count > 16:
-      test_count -= 16
+    # 10 tests can fit on the first page
+    if test_count > 10:
+      test_count -= 10
 
       full_page = (int)(test_count / reports_per_page)
       partial_page = 1 if test_count % reports_per_page > 0 else 0
@@ -207,7 +207,7 @@ class TestReport():
       start = 0
     else:
       start = 10 * (page_num - 1) + (page_num-2) * 25
-    results_on_page = 16 if page_num == 1 else 25
+    results_on_page = 10 if page_num == 1 else 25
     result_end = min(results_on_page,len(json_data['tests']['results']))
     for ix in range(result_end-start):
       result = json_data['tests']['results'][ix+start]
