@@ -100,7 +100,6 @@ class TestModule:
           result = None
       else:
         LOGGER.debug(f'Test {test["name"]} is disabled')
-        result = 'Error'
 
       if result is not None:
         if isinstance(result, bool):
