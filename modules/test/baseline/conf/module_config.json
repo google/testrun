@@ -25,10 +25,10 @@
         "required_result": "Recommended"
       },
       {
-        "name": "baseline.informational",
-        "test_description": "Simulate an informational test",
-        "expected_behavior": "An informational test result is generated",
-        "required_result": "Informational"
+        "name": "baseline.skipped",
+        "test_description": "Simulate a skipped test",
+        "expected_behavior": "A skipped test result is generated",
+        "required_result": "Skipped"
       }
     ]
   }

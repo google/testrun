@@ -17,5 +17,5 @@ Within the ```python/src``` directory, the below tests are executed.
 | ID | Description | Expected behavior | Required result
 |---|---|---|---|
 | baseline.compliant | Simulate a compliant test | A compliant test result is generated | Required |
-| baseline.informational | Simulate an informational test | An informational test result is generated | Informational |
+| baseline.skipped | Simulate an skipped test | An skipped test result is generated | Skipped |
 | baseline.non-compliant | Simulate a non-compliant test | A non-compliant test result is generated | Required |

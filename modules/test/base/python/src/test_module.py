@@ -99,7 +99,8 @@ class TestModule:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
           result = None
       else:
-        LOGGER.debug(f'Test {test["name"]} is disabled. Skipping')
+        LOGGER.debug(f'Test {test["name"]} is disabled')
+
       if result is not None:
         if isinstance(result, bool):
           test['result'] = 'Compliant' if result else 'Non-Compliant'
@@ -118,7 +119,7 @@ class TestModule:
       duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(
           test['start'])
       test['duration'] = str(duration)
-      
+
     json_results = json.dumps({'results': tests}, indent=2)
     self._write_results(json_results)
 
