@@ -30,7 +30,7 @@ jobs:
     name:  Tests
     runs-on: ubuntu-20.04
     needs: testrun_baseline
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - name: Checkout source
         uses: actions/checkout@v2.3.4
