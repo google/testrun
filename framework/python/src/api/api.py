@@ -31,7 +31,7 @@ DEVICE_MODEL_KEY = "model"
 DEVICE_TEST_MODULES_KEY = "test_modules"
 
 class Api:
-  """Provide REST endpoints to manage Test Run"""
+  """Provide REST endpoints to manage Testrun"""
 
   def __init__(self, test_run):
 
@@ -68,7 +68,7 @@ class Api:
     )
 
     self._api_thread = threading.Thread(target=self._start,
-                                        name="Test Run API",
+                                        name="Testrun API",
                                         daemon=True)
 
   def start(self):
@@ -128,14 +128,14 @@ class Api:
 
     device = self._session.get_device(body_json["device"]["mac_addr"])
 
-    # Check Test Run is not already running
+    # Check Testrun is not already running
     if self._test_run.get_session().get_status() in [
         "In Progress",
         "Waiting for Device",
       ]:
       LOGGER.debug("Testrun is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
-      return self._generate_msg(False, "Test Run is already running")
+      return self._generate_msg(False, "Testrun is already running")
 
     # Check if requested device is known in the device repository
     if device is None:
@@ -145,17 +145,17 @@ class Api:
 
     device.firmware = body_json["device"]["firmware"]
 
-    # Check Test Run is able to start
+    # Check Testrun is able to start
     if self._test_run.get_net_orc().check_config() is False:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
       return self._generate_msg(False,"Configured interfaces are not ready for use. Ensure required interfaces are connected.")
 
     self._test_run.get_session().reset()
     self._test_run.get_session().set_target_device(device)
-    LOGGER.info(f"Starting Test Run with device target {device.manufacturer} {device.model} with MAC address {device.mac_addr}")
+    LOGGER.info(f"Starting Testrun with device target {device.manufacturer} {device.model} with MAC address {device.mac_addr}")
 
     thread = threading.Thread(target=self._start_test_run,
-                                        name="Test Run")
+                                        name="Testrun")
     thread.start()
     return self._test_run.get_session().to_json()
 
@@ -169,9 +169,9 @@ class Api:
     self._test_run.start()
 
   async def stop_test_run(self):
-    LOGGER.debug("Received stop command. Stopping Test Run")
+    LOGGER.debug("Received stop command. Stopping Testrun")
     self._test_run.stop()
-    return self._generate_msg(True, "Test Run stopped")
+    return self._generate_msg(True, "Testrun stopped")
 
   async def get_status(self):
     return self._test_run.get_session().to_json()
@@ -197,7 +197,7 @@ class Api:
 
         # Create new device
         device = Device()
-        device.mac_addr = device_json.get(DEVICE_MAC_ADDR_KEY)
+        device.mac_addr = device_json.get(DEVICE_MAC_ADDR_KEY).lower()
         device.manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
         device.model = device_json.get(DEVICE_MODEL_KEY)
         device.device_folder = device.manufacturer + " " + device.model
