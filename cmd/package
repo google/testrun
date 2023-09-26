@@ -32,6 +32,9 @@ cp cmd/install $MAKE_SRC_DIR/DEBIAN/postinst
 mkdir -p $MAKE_SRC_DIR/usr/local/testrun/cmd
 cp cmd/{prepare,build} $MAKE_SRC_DIR/usr/local/testrun/cmd
 
+# Copy resources
+cp -r resources $MAKE_SRC_DIR/usr/local/testrun/
+
 # Create local folder
 mkdir -p $MAKE_SRC_DIR/usr/local/testrun/local
 cp local/system.json.example $MAKE_SRC_DIR/usr/local/testrun/local/system.json.example
