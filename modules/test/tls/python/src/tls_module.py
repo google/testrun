@@ -97,7 +97,7 @@ class TLSModule(TestModule):
     elif monitor_result[0] and startup_result[0] is None:
       result = True, monitor_result[1]
     elif startup_result[0] and monitor_result[0] is None:
-      result = True, monitor_result[1]
+      result = True, startup_result[1]
     else:
       result = None, startup_result[1]
     return result
