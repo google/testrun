@@ -1,3 +1,18 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {fakeAsync, getTestBed, TestBed, tick} from '@angular/core/testing';
 import {Device, TestModule} from './model/device';
@@ -231,29 +246,41 @@ describe('TestRunService', () => {
   describe('#getResultClass', () => {
     it('should return class "green" if test result is "Compliant" or "Smart Ready"', () => {
       const expectedResult = {
-        green: true, red: false, grey: false
+        green: true, red: false, blue: false, grey: false
       };
 
       const result1 = service.getResultClass(StatusOfTestResult.Compliant);
-      const result2 = service.getResultClass(StatusOfTestResult.SmartReady);
+
+      expect(result1).toEqual(expectedResult);
+    });
+
+    it('should return class "blue" if test result is "Smart Ready" or "Informational"', () => {
+      const expectedResult = {
+        green: false, red: false, blue: true, grey: false
+      };
+
+      const result1 = service.getResultClass(StatusOfTestResult.SmartReady);
+      const result2 = service.getResultClass(StatusOfTestResult.Info);
 
       expect(result1).toEqual(expectedResult);
       expect(result2).toEqual(expectedResult);
     });
 
-    it('should return class "read" if test result is "Non Compliant"', () => {
+    it('should return class "read" if test result is "Non Compliant" or "Error"', () => {
       const expectedResult = {
-        green: false, red: true, grey: false
+        green: false, red: true, blue: false, grey: false
       };
 
       const result = service.getResultClass(StatusOfTestResult.NonCompliant);
+      const result2 = service.getResultClass(StatusOfTestResult.Error);
 
       expect(result).toEqual(expectedResult);
+      expect(result2).toEqual(expectedResult);
     });
 
     it('should return class "grey" if test result is "Skipped" or "Not Started"', () => {
       const expectedResult = {
-        green: false, red: false, grey: true
+        green: false, red: false, blue: false, grey: true
       };
 
       const result1 = service.getResultClass(StatusOfTestResult.Skipped);
