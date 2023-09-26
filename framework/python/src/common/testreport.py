@@ -206,7 +206,7 @@ class TestReport():
     if page_num == 1:
       start = 0
     else:
-      start = 16 * (page_num - 1) + (page_num-2) * 25
+      start = 10 * (page_num - 1) + (page_num-2) * 25
     results_on_page = 16 if page_num == 1 else 25
     result_end = min(results_on_page,len(json_data['tests']['results']))
     for ix in range(result_end-start):
@@ -221,7 +221,7 @@ class TestReport():
     elif result['result'] == 'Compliant':
       result_class = 'result-test-result-compliant'
     else:
-      result_class = 'result-test-result-informational'
+      result_class = 'result-test-result-skipped'
 
     result_html = f'''
       <div class="result-line result-line-result">
@@ -247,7 +247,7 @@ class TestReport():
     # Generate the basic content section layout
     summary =  '''
      <div class="summary-content">
-      <img style="margin-bottom:10px;width:100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABFgAAAABCAYAAADqzRqJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA3SURBVHgB7cAxAQAQFEXRJ4MIMkjwS9hklMCoi1EBWljePWlHvQIAMy2mAMDNKV3ADysPAYCbB6fxBrzkZ2KOAAAAAElFTkSuQmCC" />
+      <img style="margin-bottom:30px;width:100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABFgAAAABCAYAAADqzRqJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA3SURBVHgB7cAxAQAQFEXRJ4MIMkjwS9hklMCoi1EBWljePWlHvQIAMy2mAMDNKV3ADysPAYCbB6fxBrzkZ2KOAAAAAElFTkSuQmCC" />
       <div class="summary-vertical-line"></div>
      '''
     # Add the device information
@@ -268,9 +268,12 @@ class TestReport():
     return summary
 
   def generate_result_summary(self,json_data):
-    result_summary = '''<div class ="summary-color-box">'''
+    if json_data['status'] == 'Compliant':
+      result_summary = '''<div class ="summary-color-box summary-box-compliant">'''
+    else:
+      result_summary = '''<div class ="summary-color-box summary-box-non-compliant">'''
     result_summary += self.generate_result_summary_item('Test status', 'Complete')
-    result_summary += self.generate_result_summary_item('Test result', json_data['status'], style="color: white; font-size:24px; font-weight: 700;")
+    result_summary += self.generate_result_summary_item('Test result', json_data['status'], style='color: white; font-size:24px; font-weight: 700;')
     result_summary += self.generate_result_summary_item('Started', json_data['started'])
 
     # Convert the timestamp strings to datetime objects
@@ -414,7 +417,6 @@ class TestReport():
 
     .summary-vertical-line {
       width: 1px;
-      /* Adjust the width as needed */
       height: var(--vertical-line-height);
       background-color: #80868B;
       position: absolute;
@@ -429,11 +431,15 @@ class TestReport():
       right: 0in;
       top: .3in;
       width: 2.6in;
-      /* Adjust the width as needed */
       height: 226px;
-      /* Adjust the height as needed */
+    }
+
+    .summary-box-compliant {
       background-color: rgb(24, 128, 56);
-      /* RGB color (red) */
+    }
+
+    .summary-box-non-compliant {
+      background-color: #b31412;
     }
 
     .summary-box-label {
@@ -524,10 +530,10 @@ class TestReport():
       left: 7.16in;
     }
 
-    .result-test-result-informational {
+    .result-test-result-skipped {
       background-color: #e3e3e3;
       color: #393939;
-      left: 7.08in;
+      left: 7.2in;
     }
 
     /* CSS for the footer */
