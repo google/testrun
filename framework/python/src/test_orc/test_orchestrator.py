@@ -78,8 +78,22 @@ class TestOrchestrator:
     self._test_in_progress = True
     LOGGER.info(
         f"Running test modules on device with mac addr {device.mac_addr}")
+
+    test_modules = []
     for module in self._test_modules:
+
+      if module is None or not module.enable_container or not module.enabled:
+        continue
+
+      if not self._is_module_enabled(module, device):
+        continue
+
+      test_modules.append(module)
+      self.get_session().add_total_tests(len(module.tests))
+
+    for module in test_modules:
       self._run_test_module(module)
+
     LOGGER.info("All tests complete")
 
     self._session.stop()
@@ -243,12 +257,6 @@ class TestOrchestrator:
 
     device = self._session.get_target_device()
 
-    if module is None or not module.enable_container or not module.enabled:
-      return
-
-    if not self._is_module_enabled(module, device):
-      return
-
     LOGGER.info("Running test module " + module.name)
 
     try:
@@ -353,7 +361,7 @@ class TestOrchestrator:
           f"Error occured whilst obbtaining results for module {module.name}")
       LOGGER.debug(results_error)
 
-    LOGGER.info("Test module " + module.name + " has finished")
+    LOGGER.info(f"Test module {module.name} has finished")
 
   def _get_module_status(self, module):
     container = self._get_module_container(module)
