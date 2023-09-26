@@ -14,9 +14,9 @@ Testrun creates an isolated and controlled network environment to fully simulate
 This removes the necessity for complex hardware, advanced knowledge and networking experience whilst enabling semi-technical engineers to validate device 
 behaviour against industry cyber standards. 
 
-Two runtime modes will be supported by Testrun:
+Two runtime modes are supported by Testrun:
 
-1) <strong>Automated Testing</strong>
+1) <strong>Automated testing</strong>
 
 Once the device has become operational (steady state), automated testing of the device under test will begin. Containerized test modules will then execute against the device (one module at a time). Once all test modules have completed execution, a final test report will be produced - presenting the results and further description of findings.
 
@@ -24,15 +24,13 @@ Once the device has become operational (steady state), automated testing of the 
 
 Testrun cannot automate everything, and so additional manual testing may be required (or configuration changes may be required on the device). Rather than having to maintain a separate but idential lab network, Testrun will provide the network and some tools to assist an engineer performing the additional testing. At the same time, packet captures of the device behaviour will be recorded, alongside logs for each network service, for further debugging.
 
-## Minimum Requirements :computer:
+## Minimum requirements :computer:
 ### Hardware
  - PC running Ubuntu LTS (laptop or desktop)
  - 2x USB ethernet adapter (One may be built in ethernet)
  - Internet connection
 ### Software
-- Python3 libraries: ``sudo apt-get install python3-dev python3-venv``
 - Docker - installation guide: [https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
-- System dependencies: ``sudo apt-get install openvswitch-common openvswitch-switch build-essential net-tools``
 
 ## Get started ▶️
 Once you have met the hardware and software requirements, you can get started with Testrun by following the [Get started guide](docs/get_started.md).
@@ -57,7 +55,8 @@ The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md)
 
   The following are network services that are containerized and accessible to the device under test though are likely to change over time:
  - DHCP in failover configuration with internet connectivity
- - DNS (and DNS over HTTPS)
+ - IPv6 SLAAC
+ - DNS
  - NTPv4
  - 802.1x Port Based Authentication
   

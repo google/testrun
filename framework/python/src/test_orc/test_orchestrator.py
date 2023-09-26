@@ -264,6 +264,9 @@ class TestOrchestrator:
       device_test_dir = os.path.join(self._root_path, RUNTIME_DIR,
                                      device.mac_addr.replace(":", ""))
 
+      root_certs_dir = os.path.join(self._root_path,DEVICE_ROOT_CERTS)
+
+
       container_runtime_dir = os.path.join(device_test_dir, module.name)
       os.makedirs(container_runtime_dir, exist_ok=True)
 
@@ -301,6 +304,10 @@ class TestOrchestrator:
                     source=device_monitor_capture,
                     type="bind",
                     read_only=True),
+              Mount(target="/testrun/root_certs",
+                    source=root_certs_dir,
+                    type="bind",
+                    read_only=True)
           ],
           environment={
               "HOST_USER": self._host_user,
@@ -347,6 +354,7 @@ class TestOrchestrator:
         module_results = module_results_json["results"]
         for test_result in module_results:
           self._session.add_test_result(test_result)
+          self._session.add_total_tests(1)
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
       LOGGER.error(
