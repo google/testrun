@@ -60,7 +60,7 @@ Start Testrun with the command `sudo testrun`
 
     ![](/docs/ui/settings_icon.png)
 
-3. Navigate to the  icon to add a new device for testing.
+3. Navigate to the device repository icon to add a new device for testing.
 
     ![](/docs/ui/device_icon.png)
 
