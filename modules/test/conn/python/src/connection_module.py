@@ -130,21 +130,23 @@ class ConnectionModule(TestModule):
 
     # Extract MAC addresses from DHCP packets
     mac_addresses = set()
-    LOGGER.debug('Inspecting: ' + str(len(packets)) + ' packets')
+    LOGGER.info('Inspecting: ' + str(len(packets)) + ' packets')
     for packet in packets:
-      # Option[1] = message-type, option 3 = DHCPREQUEST
-      if DHCP in packet and packet[DHCP].options[0][1] == 3:
-        mac_address = packet[Ether].src
-        if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
-          mac_addresses.add(mac_address.upper())
+      if DHCP in packet:
+        for option in packet[DHCP].options:
+          # message-type, option 3 = DHCPREQUEST
+          if 'message-type' in option and option[1] == 3: 
+            mac_address = packet[Ether].src
+            LOGGER.info('DHCPREQUEST detected MAC addres: ' + mac_address)
+            if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
+              mac_addresses.add(mac_address.upper())
 
     # Check if the device mac address is in the list of DHCPREQUESTs
     result = self._device_mac.upper() in mac_addresses
-    LOGGER.debug('DHCPREQUEST detected from device: ' + str(result))
+    LOGGER.info('DHCPREQUEST detected from device: ' + str(result))
 
     # Check the unique MAC addresses to see if they match the device
     for mac_address in mac_addresses:
-      LOGGER.debug('DHCPREQUEST from MAC address: ' + mac_address)
       result &= self._device_mac.upper() == mac_address
 
     if result:
