@@ -179,6 +179,9 @@ class TestRunSession():
       if device.mac_addr == mac_addr:
         return device
     return None
+  
+  def remove_device(self, device):
+    self._device_repository.remove(device)
 
   def get_status(self):
     return self._status

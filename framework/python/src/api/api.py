@@ -52,6 +52,7 @@ class Api:
     self._router.add_api_route("/system/status", self.get_status)
     self._router.add_api_route("/history", self.get_history)
     self._router.add_api_route("/devices", self.get_devices)
+    self._router.add_api_route("/device", self.delete_device, methods=["DELETE"])
     self._router.add_api_route("/device", self.save_device, methods=["POST"])
 
     # TODO: Make this configurable in system.json
@@ -179,6 +180,50 @@ class Api:
   async def get_history(self):
     LOGGER.debug("Received history list request")
     return self._session.get_all_reports()
+
+  async def delete_device(self, request: Request, response: Response):
+    LOGGER.debug("Received device delete request")
+
+    try:
+
+      # Extract MAC address from request body
+      device_raw = (await request.body()).decode("UTF-8")
+      device_json = json.loads(device_raw)
+
+      # Validate that mac_addr has been specified in the body
+      if "mac_addr" not in device_json:
+        response.status_code = 400
+        return self._generate_msg(False, "Invalid request received")
+
+      mac_addr = device_json.get("mac_addr").lower()
+
+      # Check that device exists
+      device = self._sesison.get_device(mac_addr)
+
+      if device is None:
+        response.status_code = 404
+        return self._generate_msg(False, "Device not found")
+
+      # Check that Testrun is not currently running against this device
+      if self._session.get_target_device() == device:
+        # TODO: Check if this is the correct status code
+        response.status_code = 403
+        return self._generate_msg(False, "Cannot delete this device whilst it " +
+                                  "is being tested")
+
+      # Delete device
+      self._test_run.delete_device(device)
+
+      # Return success response
+      response.status_code = 200
+      return self._generate_msg(True, "Successfully deleted the device")
+
+    # TODO: Find specific exception to catch
+    except Exception:
+      response.status_code = 500
+      return self._generate_msg(False, "An error occured whilst deleting " +
+                                "the device")
+
 
   async def save_device(self, request: Request, response: Response):
     LOGGER.debug("Received device post request")
