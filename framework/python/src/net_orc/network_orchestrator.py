@@ -119,7 +119,7 @@ class NetworkOrchestrator:
     self.create_net()
     self.start_network_services()
 
-    if 'no-validate' not in self._session.get_runtime_params():
+    if 'validate' in self._session.get_runtime_params():
       # Start the validator after network is ready
       self.validator.start()
 
