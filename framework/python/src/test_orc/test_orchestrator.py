@@ -33,6 +33,7 @@ MODULE_CONFIG = "conf/module_config.json"
 LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
 SAVED_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
+TESTRUN_DIR = "/usr/local/testrun"
 
 
 class TestOrchestrator:
@@ -65,7 +66,6 @@ class TestOrchestrator:
     os.makedirs(DEVICE_ROOT_CERTS, exist_ok=True)
 
     self._load_test_modules()
-    self.build_test_modules()
 
   def stop(self):
     """Stop any running tests"""
@@ -78,14 +78,30 @@ class TestOrchestrator:
     self._test_in_progress = True
     LOGGER.info(
         f"Running test modules on device with mac addr {device.mac_addr}")
+
+    test_modules = []
     for module in self._test_modules:
+
+      if module is None or not module.enable_container or not module.enabled:
+        continue
+
+      if not self._is_module_enabled(module, device):
+        continue
+
+      test_modules.append(module)
+      self.get_session().add_total_tests(len(module.tests))
+
+    for module in test_modules:
       self._run_test_module(module)
+
     LOGGER.info("All tests complete")
 
     self._session.stop()
+
     report = TestReport().from_json(self._generate_report())
     device.add_report(report)
 
+    self._write_reports(report)
     self._test_in_progress = False
     self._timestamp_results(device)
 
@@ -95,33 +111,73 @@ class TestOrchestrator:
     LOGGER.debug("Old test results cleaned")
     self._test_in_progress = False
 
+    return report.get_status()
+
+  def _write_reports(self, test_report):
+
+    out_dir = os.path.join(
+        self._root_path, RUNTIME_DIR,
+        self._session.get_target_device().mac_addr.replace(":", ""))
+
+    # Write the json report
+    with open(os.path.join(out_dir,"report.json"),"w", encoding="utf-8") as f:
+      json.dump(test_report.to_json(), f, indent=2)
+
+    # Write the html report
+    with open(os.path.join(out_dir,"report.html"),"w", encoding="utf-8") as f:
+      f.write(test_report.to_html())
+
+    # Write the pdf report
+    with open(os.path.join(out_dir,"report.pdf"),"wb") as f:
+      f.write(test_report.to_pdf().getvalue())
+
+    util.run_command(f"chown -R {self._host_user} {out_dir}")
+
   def _generate_report(self):
 
     report = {}
-    report["device"] = self._session.get_target_device().to_dict()
-    report["started"] = self._session.get_started().strftime(
+    report["device"] = self.get_session().get_target_device().to_dict()
+    report["started"] = self.get_session().get_started().strftime(
         "%Y-%m-%d %H:%M:%S")
-    report["finished"] = self._session.get_finished().strftime(
+    report["finished"] = self.get_session().get_finished().strftime(
         "%Y-%m-%d %H:%M:%S")
     report["status"] = self._calculate_result()
-    report["tests"] = self._session.get_report_tests()
+    report["tests"] = self.get_session().get_report_tests()
+    report["report"] = "file://" + os.path.join(
+      TESTRUN_DIR,
+      SAVED_DEVICE_REPORTS.replace(
+        "{device_folder}",
+        self.get_session().get_target_device().device_folder),
+        self.get_session().get_finished().strftime(
+          "%Y-%m-%dT%H:%M:%S"),
+      "report.pdf"
+    )
+
     out_file = os.path.join(
         self._root_path, RUNTIME_DIR,
         self._session.get_target_device().mac_addr.replace(":", ""),
         "report.json")
 
+    LOGGER.debug(f"Saving report to {out_file}")
+
+    # Write report to runtime directory
     with open(out_file, "w", encoding="utf-8") as f:
       json.dump(report, f, indent=2)
     util.run_command(f"chown -R {self._host_user} {out_file}")
+
     return report
 
   def _calculate_result(self):
     result = "Compliant"
     for test_result in self._session.get_test_results():
       test_case = self.get_test_case(test_result["name"])
+      if test_case is None:
+        LOGGER.error("Error occured whilst loading information about " +
+                     f"test {test_result['name']}")
+        continue
       if (test_case.required_result.lower() == "required"
           and test_result["result"].lower() == "non-compliant"):
-        result = "non-compliant"
+        result = "Non-Compliant"
     return result
 
   def _cleanup_old_test_results(self, device):
@@ -173,7 +229,7 @@ class TestOrchestrator:
                                    device.mac_addr.replace(":", ""))
 
     # Define the destination results directory with timestamp
-    cur_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    cur_time = self.get_session().get_finished().strftime("%Y-%m-%dT%H:%M:%S")
     completed_results_dir = os.path.join(
         SAVED_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
         cur_time)
@@ -201,18 +257,15 @@ class TestOrchestrator:
 
     device = self._session.get_target_device()
 
-    if module is None or not module.enable_container:
-      return
-
-    if not self._is_module_enabled(module, device):
-      return
-
     LOGGER.info("Running test module " + module.name)
 
     try:
 
       device_test_dir = os.path.join(self._root_path, RUNTIME_DIR,
                                      device.mac_addr.replace(":", ""))
+
+      root_certs_dir = os.path.join(self._root_path,DEVICE_ROOT_CERTS)
+
 
       container_runtime_dir = os.path.join(device_test_dir, module.name)
       os.makedirs(container_runtime_dir, exist_ok=True)
@@ -251,10 +304,15 @@ class TestOrchestrator:
                     source=device_monitor_capture,
                     type="bind",
                     read_only=True),
+              Mount(target="/testrun/root_certs",
+                    source=root_certs_dir,
+                    type="bind",
+                    read_only=True)
           ],
           environment={
               "HOST_USER": self._host_user,
               "DEVICE_MAC": device.mac_addr,
+              "IPV4_ADDR": device.ip_addr,
               "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
               "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
               "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
@@ -276,7 +334,7 @@ class TestOrchestrator:
 
     log_stream = module.container.logs(stream=True, stdout=True, stderr=True)
     while (time.time() < test_module_timeout and status == "running"
-           and self._session.get_status() == "In progress"):
+           and self._session.get_status() == "In Progress"):
       try:
         line = next(log_stream).decode("utf-8").strip()
         if re.search(LOG_REGEX, line):
@@ -296,15 +354,14 @@ class TestOrchestrator:
         module_results = module_results_json["results"]
         for test_result in module_results:
           self._session.add_test_result(test_result)
+          self._session.add_total_tests(1)
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
       LOGGER.error(
           f"Error occured whilst obbtaining results for module {module.name}")
       LOGGER.debug(results_error)
 
-    self._session.add_total_tests(module.total_tests)
-
-    LOGGER.info("Test module " + module.name + " has finished")
+    LOGGER.info(f"Test module {module.name} has finished")
 
   def _get_module_status(self, module):
     container = self._get_module_container(module)
@@ -363,6 +420,10 @@ class TestOrchestrator:
     module.name = module_json["config"]["meta"]["name"]
     module.display_name = module_json["config"]["meta"]["display_name"]
     module.description = module_json["config"]["meta"]["description"]
+
+    if "enabled" in module_json["config"]:
+      module.enabled = module_json["config"]["enabled"]
+
     module.dir = os.path.join(self._path, modules_dir, module_dir)
     module.dir_name = module_dir
     module.build_file = module_dir + ".Dockerfile"
@@ -376,13 +437,13 @@ class TestOrchestrator:
         try:
           test_case = TestCase(
             name=test_case_json["name"],
-            description=test_case_json["description"],
+            description=test_case_json["test_description"],
             expected_behavior=test_case_json["expected_behavior"],
             required_result=test_case_json["required_result"]
           )
           module.tests.append(test_case)
         except Exception as error:
-          LOGGER.debug("Failed to load test case. See error for details")
+          LOGGER.error("Failed to load test case. See error for details")
           LOGGER.error(error)
 
     if "timeout" in module_json["config"]["docker"]:
@@ -451,7 +512,7 @@ class TestOrchestrator:
 
   def get_test_modules(self):
     return self._test_modules
-  
+
   def get_test_module(self, name):
     for test_module in self.get_test_modules():
       if test_module.name == name:
@@ -470,3 +531,6 @@ class TestOrchestrator:
       if test_case.name == name:
         return test_case
     return None
+
+  def get_session(self):
+    return self._session

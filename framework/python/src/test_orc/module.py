@@ -24,6 +24,7 @@ class TestModule:  # pylint: disable=too-few-public-methods,too-many-instance-at
   name: str = None
   display_name: str = None
   description: str = None
+  enabled: bool = True
   tests: list = field(default_factory=lambda: [])
 
   # Docker settings

@@ -1,0 +1,56 @@
+#!/bin/bash -e
+
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Creates a package for Testrun
+
+MAKE_SRC_DIR=make
+
+# Copy testrun script to /bin
+mkdir -p $MAKE_SRC_DIR/bin
+cp bin/testrun $MAKE_SRC_DIR/bin/testrun
+
+# Create testrun folder
+mkdir -p $MAKE_SRC_DIR/usr/local/testrun
+
+# Create postinst script
+cp cmd/install $MAKE_SRC_DIR/DEBIAN/postinst
+
+# Copy other commands
+mkdir -p $MAKE_SRC_DIR/usr/local/testrun/cmd
+cp cmd/{prepare,build} $MAKE_SRC_DIR/usr/local/testrun/cmd
+
+# Copy resources
+cp -r resources $MAKE_SRC_DIR/usr/local/testrun/
+
+# Create local folder
+mkdir -p $MAKE_SRC_DIR/usr/local/testrun/local
+cp local/system.json.example $MAKE_SRC_DIR/usr/local/testrun/local/system.json.example
+
+# Create device repository
+mkdir -p $MAKE_SRC_DIR/usr/local/testrun/local/devices
+
+# Copy root_certs folder
+mkdir -p local/root_certs
+cp -r local/root_certs $MAKE_SRC_DIR/usr/local/testrun/local/root_certs
+
+# Copy framework and modules into testrun folder
+cp -r {framework,modules} $MAKE_SRC_DIR/usr/local/testrun
+
+# Build .deb file
+dpkg-deb --build --root-owner-group make
+
+# Rename the .deb file
+mv make.deb testrun_1-0_amd64.deb

@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+TESTRUN_DIR=/usr/local/testrun
+
+ifconfig
+
+# Setup requirements
+sudo apt-get update
+sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils isc-dhcp-client
+
+# Setup device network
+sudo ip link add dev dummynet type dummy
+sudo ip link add dev endev0a type veth peer name endev0b
+sudo ip link set dev dummynet up
+sudo ip link set dev endev0a up
+sudo ip link set dev endev0b up
+sudo docker network create -d macvlan -o parent=endev0b endev0
+
+# Start OVS
+sudo /usr/share/openvswitch/scripts/ovs-ctl start
+
+# Build Test Container
+sudo docker build ./testing/docker/ci_test_device1 -t ci_test_device1 -f  ./testing/docker/ci_test_device1/Dockerfile
+
+sudo chown -R $USER local
+
+# Copy configuration to testrun
+sudo cp testing/api/system.json $TESTRUN_DIR/local/system.json
+
+# Needs to be sudo because this invokes bin/testrun 
+sudo $TESTRUN_DIR/venv/bin/python3 -m pytest -v testing/api/test_api.py
+
+# Clean up network interfaces after use
+sudo docker network rm endev0
+sudo ip link del dev endev0a
+sudo ip link del dev dummynet
+
+exit $?

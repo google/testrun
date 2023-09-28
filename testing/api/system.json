@@ -1,0 +1,7 @@
+{
+  "network": {
+    "device_intf": "endev0a",
+    "internet_intf": "dummynet"
+  },
+  "log_level": "DEBUG"
+}
