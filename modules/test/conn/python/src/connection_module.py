@@ -132,11 +132,14 @@ class ConnectionModule(TestModule):
     mac_addresses = set()
     LOGGER.info('Inspecting: ' + str(len(packets)) + ' packets')
     for packet in packets:
-      # Option[1] = message-type, option 3 = DHCPREQUEST
-      if DHCP in packet and packet[DHCP].options[0][1] == 3:
-        mac_address = packet[Ether].src
-        if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
-          mac_addresses.add(mac_address.upper())
+      if DHCP in packet:
+        for option in packet[DHCP].options:
+          # message-type, option 3 = DHCPREQUEST
+          if 'message-type' in option and option[1] == 3: 
+            mac_address = packet[Ether].src
+            LOGGER.info('DHCPREQUEST detected MAC addres: ' + mac_address)
+            if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
+              mac_addresses.add(mac_address.upper())
 
     # Check if the device mac address is in the list of DHCPREQUESTs
     result = self._device_mac.upper() in mac_addresses
@@ -144,9 +147,12 @@ class ConnectionModule(TestModule):
 
     # Check the unique MAC addresses to see if they match the device
     for mac_address in mac_addresses:
-      LOGGER.info('DHCPREQUEST from MAC address: ' + mac_address)
       result &= self._device_mac.upper() == mac_address
-    return result
+
+    if result:
+      return result, 'Device is using a single IP address'
+    else:
+      return result, 'Device is using multiple IP addresses'
 
   def _connection_target_ping(self):
     LOGGER.info('Running connection.target_ping')
@@ -157,9 +163,12 @@ class ConnectionModule(TestModule):
 
     if self._device_ipv4_addr is None:
       LOGGER.error('No device IP could be resolved')
-      sys.exit(1)
+      return False, 'Could not resolve device IP'
     else:
-      return self._ping(self._device_ipv4_addr)
+      if self._ping(self._device_ipv4_addr):
+        return True, 'Device responds to ping'
+      else:
+        return False, 'Device does not respond to ping'
 
   def _connection_ipaddr_ip_change(self):
     result = None
@@ -167,7 +176,8 @@ class ConnectionModule(TestModule):
     if self._dhcp_util.setup_single_dhcp_server():
       lease = self._dhcp_util.get_cur_lease(self._device_mac)
       if lease is not None:
-        LOGGER.info('Current device lease resolved: ' + str(lease))
+        LOGGER.info('Current device lease resolved')
+        LOGGER.debug(str(lease))
         # Figure out how to calculate a valid IP address
         ip_address = '10.10.10.30'
         if self._dhcp_util.add_reserved_lease(lease['hostname'],
@@ -177,10 +187,10 @@ class ConnectionModule(TestModule):
           for _ in range(5):
             LOGGER.info('Pinging device at IP: ' + ip_address)
             if self._ping(ip_address):
-              LOGGER.info('Ping Success')
+              LOGGER.debug('Ping success')
               LOGGER.info('Reserved lease confirmed active in device')
               result = True, 'Device has accepted an IP address change'
-              LOGGER.info('Restoring DHCP failover configuration')
+              LOGGER.debug('Restoring DHCP failover configuration')
               break
             else:
               LOGGER.info('Device did not respond to ping')
@@ -193,7 +203,7 @@ class ConnectionModule(TestModule):
         result = None, 'Device has no current DHCP lease'
       # Restore the network
       self._dhcp_util.restore_failover_dhcp_server()
-      LOGGER.info("Waiting 30 seconds for reserved lease to expire")
+      LOGGER.info('Waiting 30 seconds for reserved lease to expire')
       time.sleep(30)
       self._dhcp_util.get_new_lease(self._device_mac)
     else:
@@ -210,7 +220,8 @@ class ConnectionModule(TestModule):
     if primary_status and secondary_status:
       lease = self._dhcp_util.get_cur_lease(self._device_mac)
       if lease is not None:
-        LOGGER.info('Current device lease resolved: ' + str(lease))
+        LOGGER.info('Current device lease resolved')
+        LOGGER.debug(str(lease))
         if self._dhcp_util.is_lease_active(lease):
           # Shutdown the primary server
           if self._dhcp_util.stop_dhcp_server(dhcp_server_primary=True):
@@ -279,10 +290,9 @@ class ConnectionModule(TestModule):
   def _connection_ipv6_ping(self):
     LOGGER.info('Running connection.ipv6_ping')
     result = None
-    
     if self._device_ipv6_addr is None:
       LOGGER.info('No IPv6 SLAAC address found. Cannot ping')
-      result = None, 'No IPv6 SLAAc address found. Cannot ping'
+      result = False, 'No IPv6 SLAAC address found. Cannot ping'
     else:
       if self._ping(self._device_ipv6_addr):
         LOGGER.info(f'Device responds to IPv6 ping on {self._device_ipv6_addr}')
@@ -332,6 +342,8 @@ class ConnectionModule(TestModule):
     else:
       return False, 'DHCP server stop command failed'
 
+
+    # TODO: This code is unreachable.
     # Move primary DHCP server from failover into a single DHCP server config
     LOGGER.info('Configuring primary DHCP server')
     response = self.dhcp1_client.disable_failover()
@@ -368,7 +380,7 @@ class ConnectionModule(TestModule):
       ranges = config['ranges']
     else:
       LOGGER.error('No subnet ranges configured for test. Skipping')
-      return None, 'No subnet ranges configured for test. Skipping'
+      return None, 'No subnet ranges configured for test'
 
     response = self.dhcp1_client.get_dhcp_range()
     cur_range = {}
@@ -404,7 +416,11 @@ class ConnectionModule(TestModule):
         final_result = result['result']
       else:
         final_result &= result['result']
-      final_result_details += result['details'] + '\n'
+        if result['result']:
+          final_result_details += result['details'] + '\n'
+
+    if final_result:
+      final_result_details = 'All subnets are supported'
 
     try:
       # Restore failover configuration of DHCP servers
@@ -419,11 +435,12 @@ class ConnectionModule(TestModule):
         LOGGER.info('Checking for new lease')
         lease = self._get_cur_lease()
         if lease is not None:
-          LOGGER.info('New Lease found: ' + str(lease))
+          LOGGER.info('New lease found')
+          LOGGER.debug(str(lease))
           LOGGER.info('Validating subnet for new lease...')
           in_range = self.is_ip_in_range(lease['ip'], cur_range['start'],
                                          cur_range['end'])
-          LOGGER.info('Lease within subnet: ' + str(in_range))
+          LOGGER.debug('Lease within subnet: ' + str(in_range))
           break
         else:
           LOGGER.info('New lease not found. Waiting to check again')
@@ -438,7 +455,7 @@ class ConnectionModule(TestModule):
     if self._change_subnet(subnet):
       expiration = datetime.strptime(lease['expires'], '%Y-%m-%d %H:%M:%S')
       time_to_expire = expiration - datetime.now()
-      LOGGER.info('Time until lease expiration: ' + str(time_to_expire))
+      LOGGER.debug('Time until lease expiration: ' + str(time_to_expire))
       LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
       if time_to_expire.total_seconds() > 0:
         time.sleep(time_to_expire.total_seconds() +
@@ -448,7 +465,7 @@ class ConnectionModule(TestModule):
           LOGGER.info('Checking for new lease')
           lease = self._get_cur_lease()
           if lease is not None:
-            LOGGER.info('New Lease found: ' + str(lease))
+            LOGGER.info('New lease found: ' + str(lease))
             LOGGER.info('Validating subnet for new lease...')
             in_range = self.is_ip_in_range(lease['ip'], subnet['start'],
                                            subnet['end'])
@@ -457,6 +474,8 @@ class ConnectionModule(TestModule):
           else:
             LOGGER.info('New lease not found. Waiting to check again')
           time.sleep(5)
+    else:
+      LOGGER.error('Failed to change subnet')
 
   def _wait_for_lease_expire(self, lease):
     expiration = datetime.strptime(lease['expires'], '%Y-%m-%d %H:%M:%S')
@@ -472,15 +491,15 @@ class ConnectionModule(TestModule):
     LOGGER.info('Changing subnet to: ' + str(subnet))
     response = self.dhcp1_client.set_dhcp_range(subnet['start'], subnet['end'])
     if response.code == 200:
-      LOGGER.info('Subnet change request accepted. Confirming change...')
+      LOGGER.debug('Subnet change request accepted. Confirming change...')
       response = self.dhcp1_client.get_dhcp_range()
       if response.code == 200:
         if response.start == subnet['start'] and response.end == subnet['end']:
-          LOGGER.info('Subnet change confirmed')
+          LOGGER.debug('Subnet change confirmed')
           return True
-      LOGGER.error('Failed to confirm subnet change')
+      LOGGER.debug('Failed to confirm subnet change')
     else:
-      LOGGER.error('Subnet change request failed.')
+      LOGGER.debug('Subnet change request failed.')
     return False
 
   def _get_cur_lease(self):

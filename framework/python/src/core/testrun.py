@@ -20,6 +20,7 @@ Test Run components, such as net_orc, test_orc and test_ui.
 Run using the provided command scripts in the cmd folder.
 E.g sudo cmd/start
 """
+import docker
 import json
 import os
 import sys
@@ -65,7 +66,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def __init__(self,
                config_file,
-               validate=True,
+               validate=False,
                net_only=False,
                single_intf=False,
                no_ui=False):
@@ -90,8 +91,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
       self._session.add_runtime_param('single_intf')
     if net_only:
       self._session.add_runtime_param('net_only')
-    if not validate:
-      self._session.add_runtime_param('no-validate')
+    if validate:
+      self._session.add_runtime_param('validate')
 
     self.load_all_devices()
 
@@ -113,10 +114,11 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     else:
 
-      # Build UI image
+      # Start UI container
+      self.start_ui()
+
       self._api = Api(self)
       self._api.start()
-      # Start UI container
 
       # Hold until API ends
       while True:
@@ -254,14 +256,14 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def start(self):
 
-    self._session.start()
+    self.get_session().start()
 
     self._start_network()
 
     if self._net_only:
       LOGGER.info('Network only option configured, no tests will be run')
 
-      self.get_net_orc().listener.register_callback(
+      self.get_net_orc().get_listener().register_callback(
         self._device_discovered,
         [NetworkEvent.DEVICE_DISCOVERED]
       )
@@ -286,10 +288,10 @@ class TestRun:  # pylint: disable=too-few-public-methods
       )
 
       self.get_net_orc().start_listener()
-      self._set_status('Waiting for device')
+      self._set_status('Waiting for Device')
       LOGGER.info('Waiting for devices on the network...')
 
-      time.sleep(self._session.get_runtime())
+      time.sleep(self.get_session().get_runtime())
 
       if not (self._test_orc.test_in_progress() or
               self.get_net_orc().monitor_in_progress()):
@@ -310,6 +312,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     self._stop_tests()
     self._stop_network(kill=kill)
+    self._stop_ui()
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
@@ -352,7 +355,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def get_device(self, mac_addr):
     """Returns a loaded device object from the device mac address."""
-    for device in self._session.get_device_repository():
+    for device in self.get_session().get_device_repository():
       if device.mac_addr == mac_addr:
         return device
     return None
@@ -372,17 +375,50 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
       self.get_session().set_target_device(device)
 
+    self._set_status('In Progress')
+
     LOGGER.info(
-        f'Discovered {device.manufacturer} {device.model} on the network. Waiting for device to obtain IP')
+        f'Discovered {device.manufacturer} {device.model} on the network. ' +
+        'Waiting for device to obtain IP')
 
   def _device_stable(self, mac_addr):
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
-    self._set_status('In progress')
-    self._test_orc.run_test_modules()
-    self._set_status('Complete')
-
-  def _set_status(self, status):
-    self._session.set_status(status)
+    result = self._test_orc.run_test_modules()
+    self._set_status(result)
 
   def get_session(self):
     return self._session
+
+  def _set_status(self, status):
+    self.get_session().set_status(status)
+
+  def start_ui(self):
+
+    self._stop_ui()
+
+    LOGGER.info('Starting UI')
+
+    client = docker.from_env()
+
+    client.containers.run(
+          image='test-run/ui',
+          auto_remove=True,
+          name='tr-ui',
+          hostname='testrun.io',
+          detach=True,
+          ports={
+            '80': 8080
+          }
+    )
+
+    # TODO: Make port configurable
+    LOGGER.info('User interface is ready on http://localhost:8080')
+
+  def _stop_ui(self):
+    client = docker.from_env()
+    try:
+      container = client.containers.get('tr-ui')
+      if container is not None:
+        container.kill()
+    except docker.errors.NotFound:
+      return

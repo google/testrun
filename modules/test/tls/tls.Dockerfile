@@ -40,9 +40,5 @@ RUN pip3 install -r /testrun/python/requirements.txt
 # Create a directory inside the container to store the root certificates
 RUN mkdir -p /testrun/root_certs
 
-# Copy over all the local certificates for device signature
-# checks if the folder exists
-COPY $CERTS_DIR /testrun/root_certs
-
 
 

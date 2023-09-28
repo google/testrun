@@ -43,7 +43,7 @@ class TLSModule(TestModule):
                                                        tls_1_3_results)
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
-      return None, 'Could not resolve device IP address. Skipping'
+      return None, 'Could not resolve device IP address'
 
   def _security_tls_v1_3_server(self):
     LOGGER.info('Running security.tls.v1_3_server')
@@ -54,7 +54,7 @@ class TLSModule(TestModule):
                                                 tls_version='1.3')
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
-      return None, 'Could not resolve device IP address. Skipping'
+      return None, 'Could not resolve device IP address'
 
   def _security_tls_v1_2_client(self):
     LOGGER.info('Running security.tls.v1_2_client')
@@ -64,7 +64,7 @@ class TLSModule(TestModule):
       return self._validate_tls_client(self._device_ipv4_addr, '1.2')
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
-      return None, 'Could not resolve device IP address. Skipping'
+      return None, 'Could not resolve device IP address'
 
   def _security_tls_v1_3_client(self):
     LOGGER.info('Running security.tls.v1_3_client')
@@ -74,7 +74,7 @@ class TLSModule(TestModule):
       return self._validate_tls_client(self._device_ipv4_addr, '1.3')
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
-      return None, 'Could not resolve device IP address. Skipping'
+      return None, 'Could not resolve device IP address'
 
   def _validate_tls_client(self, client_ip, tls_version):
     monitor_result = self._tls_util.validate_tls_client(
@@ -97,7 +97,7 @@ class TLSModule(TestModule):
     elif monitor_result[0] and startup_result[0] is None:
       result = True, monitor_result[1]
     elif startup_result[0] and monitor_result[0] is None:
-      result = True, monitor_result[1]
+      result = True, startup_result[1]
     else:
       result = None, startup_result[1]
     return result

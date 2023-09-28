@@ -93,3 +93,6 @@ def get_user():
     else:
       LOGGER.error('An exception occurred:', e)
   return user
+
+def set_file_owner(path, owner):
+  run_command(f'chown -R {owner} {path}')

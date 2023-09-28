@@ -59,7 +59,7 @@ class DNSModule(TestModule):
     # Check if the device DNS traffic is to appropriate local
     # DHCP provided server
     tcpdump_filter = (f'dst port 53 and dst host {self._dns_server} ' +
-                       'and ether src {self._device_mac}')
+                      f'and ether src {self._device_mac}')
     dns_packets_local = self._has_dns_traffic(tcpdump_filter=tcpdump_filter)
 
     # Check if the device sends any DNS traffic to non-DHCP provided server
@@ -78,8 +78,8 @@ class DNSModule(TestModule):
       result = None, 'No DNS traffic detected from the device'
     return result
 
-  def _dns_network_from_device(self):
-    LOGGER.info('Running dns.network.from_device')
+  def _dns_network_hostname_resolution(self):
+    LOGGER.info('Running dns.network.hostname_resolution')
     result = None
     LOGGER.info('Checking DNS traffic from device: ' + self._device_mac)
 
@@ -95,6 +95,7 @@ class DNSModule(TestModule):
       result = False, 'No DNS traffic detected from the device'
     return result
 
+  ## TODO: This test should always return 'Informational' result
   def _dns_mdns(self):
     LOGGER.info('Running dns.mdns')
     result = None
@@ -107,7 +108,7 @@ class DNSModule(TestModule):
       result = True, 'MDNS traffic detected from device'
     else:
       LOGGER.info('No MDNS traffic detected from the device')
-      result = None, 'No MDNS traffic detected from the device'
+      result = True, 'No MDNS traffic detected from the device'
     return result
 
   def _exec_tcpdump(self, tcpdump_filter, capture_file):

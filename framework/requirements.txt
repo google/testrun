@@ -7,8 +7,15 @@ ipaddress
 netifaces
 scapy
 
+# Requirments for the test_orc module
+weasyprint
+
 # Requirements for the API
 fastapi==0.99.1
 psutil
 uvicorn
 pydantic==1.10.11
+
+# Requirements for testing
+pytest
+pytest-timeout

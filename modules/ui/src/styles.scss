@@ -1,0 +1,115 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@use '@angular/material' as mat;
+@import './theming/theme';
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.app-sidebar-button-active .mat-icon path {
+  fill: $white;
+}
+
+.app-sidebar-button.mat-mdc-icon-button .mat-mdc-button-persistent-ripple,
+.app-toolbar-button.mat-mdc-icon-button .mat-mdc-button-persistent-ripple {
+  border-radius: inherit;
+}
+
+.device-form-dialog, .initiate-test-run-dialog {
+  max-height: 100vh;
+}
+
+.device-form-dialog .mat-mdc-dialog-container .mdc-dialog__surface {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 1fr;
+  min-width: 300px;
+}
+
+.device-form-dialog .mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: 12px;
+  border-radius: 12px;
+}
+
+mat-hint {
+  color: $grey-700;
+}
+
+.mdc-button:focus-visible,
+.mdc-icon-button:focus-visible,
+.mdc-radio__native-control:focus-visible,
+.mdc-checkbox__native-control:focus-visible {
+  outline: $black solid 2px;
+}
+
+.mdc-button .mat-mdc-focus-indicator,
+.mdc-icon-button .mat-mdc-focus-indicator {
+  display: none;
+}
+
+.mdc-radio__native-control:focus:not(:focus-visible) ~ .mat-mdc-focus-indicator,
+.mdc-checkbox__native-control:focus:not(:focus-visible) ~ .mat-mdc-focus-indicator {
+  display: none;
+}
+
+.table-cell-result-text {
+  margin: 0;
+  padding: 4px;
+  border-radius: 2px;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.3px;
+
+  &.green {
+    background: $green-50;
+    color: $green-800;
+  }
+
+  &.red {
+    background: $red-50;
+    color: $red-700;
+  }
+
+  &.blue {
+    background-color: mat.get-color-from-palette($color-primary, 50);
+    color: mat.get-color-from-palette($color-primary, 800);
+  }
+
+  &.grey {
+    background: $color-background-grey;
+    color: $grey-800;
+  }
+}
+
+h2.title {
+  margin: 0;
+  font-size: 32px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 40px;
+  letter-spacing: 0;
+}
+
+.mat-mdc-snack-bar-container {
+  --mat-snack-bar-button-color: #ffffff;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
