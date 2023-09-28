@@ -43,7 +43,7 @@ sudo cp testing/baseline/system.json $TESTRUN_DIR/local/system.json
 # Copy device configs to testrun
 sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
 
-sudo testrun --single-intf --no-ui > $TESTRUN_OUT 2>&1 & 
+sudo testrun --single-intf --no-ui --validate > $TESTRUN_OUT 2>&1 & 
 TPID=$!
 
 # Time to wait for testrun to be ready
