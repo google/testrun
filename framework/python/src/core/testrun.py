@@ -254,6 +254,21 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     return device.to_config_json()
 
+  def delete_device(self, device: Device):
+
+    # Obtain the config file path
+    device_folder = os.path.join(root_dir,
+                                  LOCAL_DEVICES_DIR,
+                                  device.device_folder)
+
+    # TODO: Remove associated testrun reports from session
+
+    # Delete the device directory
+    os.rmdir(device_folder)
+
+    # Remove the device from the current session device repository
+    self.get_session().remove_device(device)
+
   def start(self):
 
     self.get_session().start()
