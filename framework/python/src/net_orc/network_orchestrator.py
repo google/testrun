@@ -130,7 +130,7 @@ class NetworkOrchestrator:
     return self._listener
 
   def start_listener(self):
-    LOGGER.debug("Starting network listener")
+    LOGGER.debug('Starting network listener')
     self.get_listener().start_listener()
 
   def stop(self, kill=False):
@@ -186,6 +186,7 @@ class NetworkOrchestrator:
     if device.ip_addr is None:
       LOGGER.info(
           f'Timed out whilst waiting for {mac_addr} to obtain an IP address')
+      self._session.set_status('Cancelled')
       return
     LOGGER.info(
         f'Device with mac addr {device.mac_addr} has obtained IP address '

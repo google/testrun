@@ -313,6 +313,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._stop_tests()
     self._stop_network(kill=kill)
     self._stop_ui()
+    self.get_session().set_status('Cancelled')
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
