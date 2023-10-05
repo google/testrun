@@ -31,6 +31,8 @@ Testrun cannot automate everything, and so additional manual testing may be requ
  - Internet connection
 ### Software
 - Docker - installation guide: [https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
+### Device
+ - DHCP client - The device must be able to obtain an IP address via DHCP
 
 ## Get started ▶️
 Once you have met the hardware and software requirements, you can get started with Testrun by following the [Get started guide](docs/get_started.md).
