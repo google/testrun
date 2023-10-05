@@ -31,9 +31,10 @@ RUNTIME_DIR = "runtime/test"
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
 LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
-SAVED_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
+SAVED_DEVICE_REPORTS = "report/{device_folder}/"
 DEVICE_ROOT_CERTS = "local/root_certs"
 TESTRUN_DIR = "/usr/local/testrun"
+API_URL = "http://localhost:8000"
 
 
 class TestOrchestrator:
@@ -143,15 +144,10 @@ class TestOrchestrator:
         "%Y-%m-%d %H:%M:%S")
     report["status"] = self._calculate_result()
     report["tests"] = self.get_session().get_report_tests()
-    report["report"] = "file://" + os.path.join(
-      TESTRUN_DIR,
-      SAVED_DEVICE_REPORTS.replace(
-        "{device_folder}",
-        self.get_session().get_target_device().device_folder),
-        self.get_session().get_finished().strftime(
-          "%Y-%m-%dT%H:%M:%S"),
-      "report.pdf"
-    )
+    report["report"] = (API_URL + "/" +
+                        SAVED_DEVICE_REPORTS.replace("{device_folder}",
+                                                     self.get_session().get_target_device().device_folder) +
+                        self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S"))
 
     out_file = os.path.join(
         self._root_path, RUNTIME_DIR,
