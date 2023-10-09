@@ -129,18 +129,19 @@ class TestReport():
     '''
 
   def generate_test_sections(self,json_data):
-    results = json_data["tests"]["results"]
-    sections = ""
+    results = json_data['tests']['results']
+    sections = ''
     for result in results:
-        sections += self.generate_test_section(result)
+      sections += self.generate_test_section(result)
     return sections
 
   def generate_test_section(self, result):
     section_content = '<section class="test-section">\n'
     for key, value in result.items():
-        if value is not None:  # Check if the value is not None
-            formatted_key = key.replace('_', ' ').title()  # Replace underscores and capitalize
-            section_content += f'<p><strong>{formatted_key}:</strong> {value}</p>\n'
+      if value is not None:  # Check if the value is not None
+        # Replace underscores and capitalize
+        formatted_key = key.replace('_', ' ').title()
+        section_content += f'<p><strong>{formatted_key}:</strong> {value}</p>\n'
     section_content += '</section>\n<div style="margin-bottom: 40px;"></div>\n'
     return section_content
 
@@ -231,7 +232,7 @@ class TestReport():
     result_html = f'''
       <div class="result-line result-line-result">
           <div class="result-test-label" style="left: .1in;">{result['name']}</div>
-          <div class="result-test-label result-test-description" style="left: 2.8in;">{result['test_description']}</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">{result['description']}</div>
           <div class="result-test-label result-test-result {result_class}">{result['result']}</div>
       </div>
       '''
@@ -264,7 +265,10 @@ class TestReport():
     summary += self.generate_device_summary_label('Manufacturer',manufacturer)
     summary += self.generate_device_summary_label('Model',model)
     summary += self.generate_device_summary_label('Firmware',fw)
-    summary += self.generate_device_summary_label('MAC Address',mac,trailing_space=False)
+    summary += self.generate_device_summary_label(
+      'MAC Address',
+      mac,
+      trailing_space=False)
 
     # Add the result summary
     summary += self.generate_result_summary(json_data)
@@ -282,11 +286,13 @@ class TestReport():
     result_summary += self.generate_result_summary_item('Started', json_data['started'])
 
     # Convert the timestamp strings to datetime objects
-    start_time = datetime.strptime(json_data['started'], "%Y-%m-%d %H:%M:%S")
-    end_time = datetime.strptime(json_data['finished'], "%Y-%m-%d %H:%M:%S")
+    start_time = datetime.strptime(json_data['started'], '%Y-%m-%d %H:%M:%S')
+    end_time = datetime.strptime(json_data['finished'], '%Y-%m-%d %H:%M:%S')
     # Calculate the duration
     duration = end_time - start_time
-    result_summary += self.generate_result_summary_item('Duration',str(duration))
+    result_summary += self.generate_result_summary_item(
+      'Duration',
+      str(duration))
 
     result_summary += '\n</div>'
     return result_summary
@@ -305,7 +311,7 @@ class TestReport():
     <div class="summary-item-value">{value}</div>
     '''
     if trailing_space:
-     label += '''<div class="summary-item-space"></div>'''
+      label += '''<div class="summary-item-space"></div>'''
     return label
 
   def generate_head(self):

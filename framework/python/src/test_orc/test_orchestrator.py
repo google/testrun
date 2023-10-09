@@ -32,6 +32,7 @@ TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
 LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
 SAVED_DEVICE_REPORTS = "report/{device_folder}/"
+LOCAL_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
 TESTRUN_DIR = "/usr/local/testrun"
 API_URL = "http://localhost:8000"
@@ -110,7 +111,6 @@ class TestOrchestrator:
     self._cleanup_old_test_results(device)
 
     LOGGER.debug("Old test results cleaned")
-    self._test_in_progress = False
 
     return report.get_status()
 
@@ -119,6 +119,8 @@ class TestOrchestrator:
     out_dir = os.path.join(
         self._root_path, RUNTIME_DIR,
         self._session.get_target_device().mac_addr.replace(":", ""))
+
+    LOGGER.debug(f"Writing reports to {out_dir}")
 
     # Write the json report
     with open(os.path.join(out_dir,"report.json"),"w", encoding="utf-8") as f:
@@ -144,22 +146,12 @@ class TestOrchestrator:
         "%Y-%m-%d %H:%M:%S")
     report["status"] = self._calculate_result()
     report["tests"] = self.get_session().get_report_tests()
-    report["report"] = (API_URL + "/" +
-                        SAVED_DEVICE_REPORTS.replace("{device_folder}",
-                                                     self.get_session().get_target_device().device_folder) +
-                        self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S"))
-
-    out_file = os.path.join(
-        self._root_path, RUNTIME_DIR,
-        self._session.get_target_device().mac_addr.replace(":", ""),
-        "report.json")
-
-    LOGGER.debug(f"Saving report to {out_file}")
-
-    # Write report to runtime directory
-    with open(out_file, "w", encoding="utf-8") as f:
-      json.dump(report, f, indent=2)
-    util.run_command(f"chown -R {self._host_user} {out_file}")
+    report["report"] = (
+      API_URL + "/" +
+      SAVED_DEVICE_REPORTS.replace("{device_folder}",
+      self.get_session().get_target_device().device_folder) +
+      self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S")
+    )
 
     return report
 
@@ -185,7 +177,7 @@ class TestOrchestrator:
 
     completed_results_dir = os.path.join(
         self._root_path,
-        SAVED_DEVICE_REPORTS.replace("{device_folder}", device.device_folder))
+        LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder))
 
     completed_tests = os.listdir(completed_results_dir)
     cur_test_count = len(completed_tests)
@@ -196,8 +188,13 @@ class TestOrchestrator:
       # Find and delete the oldest test
       oldest_test = self._find_oldest_test(completed_results_dir)
       if oldest_test is not None:
-        LOGGER.debug("Oldest test found, removing: " + str(oldest_test))
-        shutil.rmtree(oldest_test, ignore_errors=True)
+        LOGGER.debug("Oldest test found, removing: " + str(oldest_test[1]))
+        shutil.rmtree(oldest_test[1], ignore_errors=True)
+
+        # Remove oldest test from session
+        oldest_timestamp = oldest_test[0]
+        self.get_session().get_target_device().remove_report(oldest_timestamp)
+
         # Confirm the delete was succesful
         new_test_count = len(os.listdir(completed_results_dir))
         if (new_test_count != cur_test_count
@@ -214,21 +211,24 @@ class TestOrchestrator:
         oldest_timestamp = timestamp
         oldest_directory = completed_test
     if oldest_directory:
-      return os.path.join(completed_tests_dir, oldest_directory)
+      return oldest_timestamp, os.path.join(completed_tests_dir, oldest_directory)
     else:
       return None
 
   def _timestamp_results(self, device):
 
     # Define the current device results directory
-    cur_results_dir = os.path.join(self._root_path, RUNTIME_DIR,
-                                   device.mac_addr.replace(":", ""))
+    cur_results_dir = os.path.join(
+      self._root_path,
+      RUNTIME_DIR,
+      device.mac_addr.replace(":", "")
+    )
 
-    # Define the destination results directory with timestamp
-    cur_time = self.get_session().get_finished().strftime("%Y-%m-%dT%H:%M:%S")
     completed_results_dir = os.path.join(
-        SAVED_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
-        cur_time)
+      self._root_path,
+      LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
+      self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S")
+    )
 
     # Copy the results to the timestamp directory
     # leave current copy in place for quick reference to
