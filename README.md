@@ -1,7 +1,7 @@
   <img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
 
 ## Introduction :wave:
-Testrun is a tool to automate the validation of network-based functionality of IoT devices. Any device which is capable of receiving an IP address via DHCP is considered an IoT device by Testrun and can be tested.
+Testrun automates specific test cases to verify network and security functionality in IoT devices. It is an open source tool which allows external manufacturers to test their devices for the purposes of Device Qualification within the BOS program.
 
 ## Motivation :bulb:
 Without tools like Testrun, testing labs may be maintaining a large and complex network using equipment such as: A managed layer 3 switch, an enterprise-grade network router, virtualized or physical servers to provide DNS, NTP, 802.1x etc. With this amount of moving parts, all with dynamic configuration files and constant software updates, more time is likely to be spent on preparation and clean up of functinality or penetration testing - not forgetting the number of software tools required to perform the testing. The major issues which can and should be solved:
