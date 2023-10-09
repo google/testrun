@@ -13,10 +13,16 @@
       "enabled": true
     },
     "baseline": {
-      "enabled": true
+      "enabled": false
     },
     "nmap": {
       "enabled": true
+    },
+    "protocol": {
+      "enabled": false
+    },
+    "tls": {
+      "enabled": false
     }
-  }
+  } 
 }
