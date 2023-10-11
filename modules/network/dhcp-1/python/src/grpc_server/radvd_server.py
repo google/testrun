@@ -24,7 +24,7 @@ class RADVDServer:
 
   def __init__(self, enabled=True):
     global LOGGER
-    LOGGER = logger.get_logger(LOG_NAME, 'dhcp-2')
+    LOGGER = logger.get_logger(LOG_NAME, 'dhcp-1')
     self.enabled = enabled
 
   def restart(self):
