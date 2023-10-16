@@ -22,6 +22,8 @@ import os
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
+TESTS_FIRST_PAGE = 12
+TESTS_PER_PAGE = 20
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -146,18 +148,18 @@ class TestReport():
     return section_content
 
   def generate_pages(self,json_data):
+
     max_page = 1
-    reports_per_page = 25 # figure out how many can fit on other pages
 
     # Calculate pages
     test_count = len(json_data['tests']['results'])
 
-    # 10 tests can fit on the first page
-    if test_count > 10:
-      test_count -= 10
+    # 12 tests can fit on the first page
+    if test_count > TESTS_FIRST_PAGE:
+      test_count -= TESTS_FIRST_PAGE
 
-      full_page = (int)(test_count / reports_per_page)
-      partial_page = 1 if test_count % reports_per_page > 0 else 0
+      full_page = (int)(test_count / TESTS_PER_PAGE)
+      partial_page = 1 if test_count % TESTS_PER_PAGE > 0 else 0
       if partial_page > 0:
         max_page += full_page + partial_page
 
@@ -166,9 +168,9 @@ class TestReport():
       pages += self.generate_page(json_data, i+1, max_page)
     return pages
 
-  def generate_page(self,json_data, page_num, max_page):
+  def generate_page(self, json_data, page_num, max_page):
     # Placeholder until available in json report
-    version = 'v1.0.1 (2023-10-02)'
+    version = 'v1.0.2 (2023-10-19)'
     page = '<div class="page">'
     page += self.generate_header(json_data)
     if page_num == 1:
@@ -178,17 +180,16 @@ class TestReport():
     page += '</div>'
     if page_num < max_page:
       page += '<div style="break-after:page"></div>'
-      #page += f'''<p style="page-break-before: always"></p>'''
     return page
 
-  def generate_body(self,json_data, page_num=1, max_page=1):
+  def generate_body(self, json_data, page_num=1, max_page=1):
     return f'''
     <body>
       {self.generate_pages(json_data)}
     </body>
     '''
 
-  def generate_footer(self,page_num, max_page, version):
+  def generate_footer(self, page_num, max_page, version):
     footer = f'''
     <div class="footer">
       <img style="margin-bottom:10px;width:100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABFgAAAABCAYAAADqzRqJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA3SURBVHgB7cAxAQAQFEXRJ4MIMkjwS9hklMCoi1EBWljePWlHvQIAMy2mAMDNKV3ADysPAYCbB6fxBrzkZ2KOAAAAAElFTkSuQmCC" />
@@ -198,7 +199,7 @@ class TestReport():
     '''
     return footer
 
-  def generate_results(self,json_data, page_num):
+  def generate_results(self, json_data, page_num):
 
     result_list = '''
       <img style="margin-bottom:10px;width:100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABFgAAAABCAYAAADqzRqJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA3SURBVHgB7cAxAQAQFEXRJ4MIMkjwS9hklMCoi1EBWljePWlHvQIAMy2mAMDNKV3ADysPAYCbB6fxBrzkZ2KOAAAAAElFTkSuQmCC" />
@@ -212,9 +213,9 @@ class TestReport():
     if page_num == 1:
       start = 0
     else:
-      start = 10 * (page_num - 1) + (page_num-2) * 25
-    results_on_page = 10 if page_num == 1 else 25
-    result_end = min(results_on_page,len(json_data['tests']['results']))
+      start = TESTS_FIRST_PAGE * (page_num - 1) + (page_num-2) * TESTS_PER_PAGE
+    results_on_page = TESTS_FIRST_PAGE if page_num == 1 else TESTS_PER_PAGE
+    result_end = min(results_on_page, len(json_data['tests']['results']))
     for ix in range(result_end-start):
       result = json_data['tests']['results'][ix+start]
       result_list += self.generate_result(result)
