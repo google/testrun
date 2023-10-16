@@ -24,7 +24,7 @@ RUN apt-get update --fix-missing
 # Install all necessary packages
 RUN apt-get install -y wget
 
-#Update the oui.txt file from ieee
+# Update the oui.txt file from ieee
 RUN wget http://standards-oui.ieee.org/oui.txt -P /usr/local/etc/
 
 # Install dhcp server
