@@ -48,7 +48,7 @@ jobs:
         run: testing/tests/test_tests
       - name: Archive runtime results
         if: ${{ always() }}
-        run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/
+        run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/ /usr/local/testrun/local/
       - name: Upload runtime results
         uses: actions/upload-artifact@v3
         if: ${{ always() }}
