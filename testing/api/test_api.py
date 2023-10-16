@@ -450,7 +450,7 @@ def test_stop_running_test(testing_devices, testrun):
   r = requests.post(f"{API}/system/stop")
   response = json.loads(r.text)
   pretty_print(response)
-  assert response == {"success": "Test Run stopped"}
+  assert response == {"success": "Testrun stopped"}
   time.sleep(1)
   # Validate response
   r = requests.get(f"{API}/system/status")

@@ -34,11 +34,10 @@ root_dir = os.path.dirname(os.path.dirname(
 report_resource_dir = os.path.join(root_dir,
                                     RESOURCES_DIR)
 
-font_file = os.path.join(report_resource_dir,'GoogleSans-Regular.ttf')
-test_run_img_file = os.path.join(report_resource_dir,'testrun.png')
+test_run_img_file = os.path.join(report_resource_dir, 'testrun.png')
 
 class TestReport():
-  """Represents a previous Test Run report."""
+  """Represents a previous Testrun report."""
 
   def __init__(self,
                status='Non-Compliant',
@@ -52,6 +51,7 @@ class TestReport():
     self._finished = finished
     self._total_tests = total_tests
     self._results = []
+    self._report_url = ''
 
   def get_status(self):
     return self._status
@@ -80,6 +80,7 @@ class TestReport():
     report_json['finished'] = self._finished.strftime(DATE_TIME_FORMAT)
     report_json['tests'] = {'total': self._total_tests,
                             'results': self._results}
+    report_json['report'] = self._report_url
     return report_json
 
   def from_json(self, json_file):
@@ -88,12 +89,15 @@ class TestReport():
     self._device['manufacturer'] = json_file['device']['manufacturer']
     self._device['model'] = json_file['device']['model']
 
-    if 'firmware' in self._device:
+    if 'firmware' in json_file['device']:
       self._device['firmware'] = json_file['device']['firmware']
 
     self._status = json_file['status']
     self._started = datetime.strptime(json_file['started'], DATE_TIME_FORMAT)
     self._finished = datetime.strptime(json_file['finished'], DATE_TIME_FORMAT)
+
+    if 'report' in json_file:
+      self._report_url = json_file['report']
     self._total_tests = json_file['tests']['total']
 
     # Loop through test results
@@ -162,7 +166,8 @@ class TestReport():
     return pages
 
   def generate_page(self,json_data, page_num, max_page):
-    version = 'v1.0 (2023-10-02)' # Place holder until available in json report
+    # Placeholder until available in json report
+    version = 'v1.0.1 (2023-10-02)'
     page = '<div class="page">'
     page += self.generate_header(json_data)
     if page_num == 1:
