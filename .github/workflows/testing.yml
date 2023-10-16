@@ -21,6 +21,7 @@ jobs:
         run: cmd/package
       - name: Install Testrun
         shell: bash {0}
+        timeout-minutes: 10
         run: sudo dpkg -i testrun*.deb
       - name: Run baseline tests
         shell: bash {0}
@@ -43,6 +44,7 @@ jobs:
       - name: Install Testrun
         shell: bash {0}
         run: sudo dpkg -i testrun*.deb
+        timeout-minutes: 10
       - name: Run tests
         shell: bash {0}
         run: testing/tests/test_tests
@@ -73,6 +75,7 @@ jobs:
       - name: Install Testrun
         shell: bash {0}
         run: sudo dpkg -i testrun*.deb
+        timeout-minutes: 10
       - name: Run tests
         shell: bash {0}
         run: testing/api/test_api
