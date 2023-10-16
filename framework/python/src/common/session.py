@@ -48,6 +48,7 @@ class TestRunSession():
     self._load_config()
 
   def start(self):
+    self.reset()
     self._status = 'Waiting for Device'
     self._started = datetime.datetime.now()
 
@@ -220,10 +221,8 @@ class TestRunSession():
   def reset(self):
     self.set_status('Idle')
     self.set_target_device(None)
-    self._tests = {
-      'total': 0,
-      'results': []
-    }
+    self._total_tests = 0
+    self._results = []
     self._started = None
     self._finished = None
 
