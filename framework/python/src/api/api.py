@@ -14,6 +14,7 @@
 
 from fastapi import FastAPI, APIRouter, Response, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime
 import json
 from json import JSONDecodeError
 import psutil
@@ -50,9 +51,19 @@ class Api:
     self._router.add_api_route("/system/stop", self.stop_test_run,
                                methods=["POST"])
     self._router.add_api_route("/system/status", self.get_status)
-    self._router.add_api_route("/history", self.get_history)
+
+    # Deprecated: /history will be removed in version 1.1
+    self._router.add_api_route("/history", self.get_reports)
+
+    self._router.add_api_route("/reports", self.get_reports)
+    self._router.add_api_route("/report",
+                               self.delete_report,
+                               methods=["DELETE"])
+
     self._router.add_api_route("/devices", self.get_devices)
-    self._router.add_api_route("/device", self.delete_device, methods=["DELETE"])
+    self._router.add_api_route("/device",
+                               self.delete_device,
+                               methods=["DELETE"])
     self._router.add_api_route("/device", self.save_device, methods=["POST"])
 
     # TODO: Make this configurable in system.json
@@ -142,18 +153,22 @@ class Api:
     if device is None:
       response.status_code = status.HTTP_404_NOT_FOUND
       return self._generate_msg(False,
-                                "A device with that MAC address could not be found")
+                                "A device with that MAC address " +
+                                "could not be found")
 
     device.firmware = body_json["device"]["firmware"]
 
     # Check Testrun is able to start
     if self._test_run.get_net_orc().check_config() is False:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-      return self._generate_msg(False,"Configured interfaces are not ready for use. Ensure required interfaces are connected.")
+      return self._generate_msg(False,"Configured interfaces are " +
+                                "not ready for use. Ensure required " +
+                                "interfaces are connected.")
 
     self._test_run.get_session().reset()
     self._test_run.get_session().set_target_device(device)
-    LOGGER.info(f"Starting Testrun with device target {device.manufacturer} {device.model} with MAC address {device.mac_addr}")
+    LOGGER.info(f"Starting Testrun with device target {device.manufacturer} " +
+                f"{device.model} with MAC address {device.mac_addr}")
 
     thread = threading.Thread(target=self._start_test_run,
                                         name="Testrun")
@@ -177,11 +192,43 @@ class Api:
   async def get_status(self):
     return self._test_run.get_session().to_json()
 
-  async def get_history(self):
-    LOGGER.debug("Received history list request")
+  async def get_reports(self):
+    LOGGER.debug("Received reports list request")
     return self._session.get_all_reports()
 
+  async def delete_report(self, request: Request, response: Response):
+
+    body_raw = (await request.body()).decode("UTF-8")
+
+    if len(body_raw) == 0:
+      response.status_code = 400
+      return self._generate_msg(False, "Invalid request received")
+
+    body_json = json.loads(body_raw)
+
+    if "mac_addr" not in body_json or "timestamp" not in body_json:
+      response.status_code = 400
+      return self._generate_msg(False, "Invalid request received")
+
+    mac_addr = body_json.get("mac_addr").lower()
+    timestamp = body_json.get("timestamp")
+    parsed_timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+    timestamp_formatted = parsed_timestamp.strftime("%Y-%m-%dT%H:%M:%S")
+
+    # Get device from MAC address
+    device = self._session.get_device(mac_addr)
+
+    if device is None:
+      response.status_code = 404
+      return self._generate_msg(False, "Could not find device")
+
+    if self._test_run.delete_report(device, timestamp_formatted):
+      return self._generate_msg(True, "Deleted report")
+
+    return self._generate_msg(False, "Error occured whilst deleting report")
+
   async def delete_device(self, request: Request, response: Response):
+
     LOGGER.debug("Received device delete request")
 
     try:
@@ -208,8 +255,8 @@ class Api:
       if self._session.get_target_device() == device:
         # TODO: Check if this is the correct status code
         response.status_code = 403
-        return self._generate_msg(False, "Cannot delete this device whilst it " +
-                                  "is being tested")
+        return self._generate_msg(False, "Cannot delete this device whilst " +
+                                  "it is being tested")
 
       # Delete device
       self._test_run.delete_device(device)
@@ -223,7 +270,6 @@ class Api:
       response.status_code = 500
       return self._generate_msg(False, "An error occured whilst deleting " +
                                 "the device")
-
 
   async def save_device(self, request: Request, response: Response):
     LOGGER.debug("Received device post request")

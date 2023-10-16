@@ -23,8 +23,9 @@ E.g sudo cmd/start
 import docker
 import json
 import os
-import sys
+import shutil
 import signal
+import sys
 import time
 from common import logger, util
 from common.device import Device
@@ -104,7 +105,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     if self._no_ui:
 
-      # Check Test Run is able to start
+      # Check Testrun is able to start
       if self.get_net_orc().check_config() is False:
         return
 
@@ -206,6 +207,29 @@ class TestRun:  # pylint: disable=too-few-public-methods
         report_json = json.load(report_json_file)
         test_report = TestReport().from_json(report_json)
         device.add_report(test_report)
+
+  def delete_report(self, device: Device, timestamp):
+    LOGGER.debug(f'Deleting test report for device {device.model} ' +
+                 f'at {timestamp}')
+
+    # Locate reports folder
+    reports_folder = os.path.join(root_dir,
+                                  LOCAL_DEVICES_DIR,
+                                  device.device_folder, 'reports')
+
+    # Check if reports folder exists (device may have no reports)
+    if not os.path.exists(reports_folder):
+      return False
+
+    for report_folder in os.listdir(reports_folder):
+      if report_folder == timestamp:
+        shutil.rmtree(os.path.join(reports_folder, report_folder))
+
+        # TODO: Remove report from device (available in 1.0.2)
+
+        return True
+
+    return False
 
   def create_device(self, device: Device):
 
