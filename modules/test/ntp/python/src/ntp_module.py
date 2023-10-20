@@ -13,7 +13,7 @@
 # limitations under the License.
 """NTP test module"""
 from test_module import TestModule
-from scapy.all import rdpcap, NTP, IP
+from scapy.all import rdpcap, NTP, IP, IPv6
 
 LOG_NAME = 'test_ntp'
 NTP_SERVER_CAPTURE_FILE = '/runtime/network/ntp.pcap'
@@ -44,12 +44,16 @@ class NTPModule(TestModule):
     for packet in packet_capture:
 
       if NTP in packet and packet.src == self._device_mac:
+        if IP in packet:
+          dest_ip = packet[IP].dst
+        elif IPv6 in packet:
+          dest_ip = packet[IPv6].dst
         if packet[NTP].version == 4:
           device_sends_ntp4 = True
-          LOGGER.info(f'Device sent NTPv4 request to {packet[IP].dst}')
+          LOGGER.info(f'Device sent NTPv4 request to {dest_ip}')
         elif packet[NTP].version == 3:
           device_sends_ntp3 = True
-          LOGGER.info(f'Device sent NTPv3 request to {packet[IP].dst}')
+          LOGGER.info(f'Device sent NTPv3 request to {dest_ip}')
 
     if not (device_sends_ntp3 or device_sends_ntp4):
       result = False, 'Device has not sent any NTP requests'
@@ -76,7 +80,11 @@ class NTPModule(TestModule):
     for packet in packet_capture:
       if NTP in packet and packet.src == self._device_mac:
         device_sends_ntp = True
-        if packet[IP].dst == self._ntp_server:
+        if IP in packet:
+          dest_ip = packet[IP].dst
+        elif IPv6 in packet:
+          dest_ip = packet[IPv6].dst
+        if dest_ip == self._ntp_server:
           LOGGER.info('Device sent NTP request to DHCP provided NTP server')
           ntp_to_local = True
         else:
