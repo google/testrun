@@ -456,16 +456,20 @@ class NetworkOrchestrator:
     try:
       client = docker.from_env()
       net_module.container = client.containers.run(
-          net_module.image_name,
-          auto_remove=True,
-          cap_add=['NET_ADMIN'],
-          name=net_module.container_name,
-          hostname=net_module.container_name,
-          network=PRIVATE_DOCKER_NET,
-          privileged=True,
-          detach=True,
-          mounts=net_module.mounts,
-          environment={'HOST_USER': util.get_host_user()})
+        net_module.image_name,
+        auto_remove=True,
+        cap_add=['NET_ADMIN'],
+        name=net_module.container_name,
+        hostname=net_module.container_name,
+        network=PRIVATE_DOCKER_NET,
+        privileged=True,
+        detach=True,
+        mounts=net_module.mounts,
+        environment={
+          'TZ': self.get_session().get_timezone(),
+          'HOST_USER': util.get_host_user()
+        }
+      )
     except docker.errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)
@@ -686,6 +690,8 @@ class NetworkOrchestrator:
 
     LOGGER.info('Network is restored')
 
+  def get_session(self):
+    return self._session
 
 class NetworkModule:
   """Define all the properties of a Network Module"""

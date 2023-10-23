@@ -306,12 +306,13 @@ class TestOrchestrator:
                     read_only=True)
           ],
           environment={
-              "HOST_USER": self._host_user,
-              "DEVICE_MAC": device.mac_addr,
-              "IPV4_ADDR": device.ip_addr,
-              "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
-              "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
-              "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
+            "TZ": self.get_session().get_timezone(),
+            "HOST_USER": self._host_user,
+            "DEVICE_MAC": device.mac_addr,
+            "IPV4_ADDR": device.ip_addr,
+            "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
+            "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
+            "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
           })
     except (docker.errors.APIError,
             docker.errors.ContainerError) as container_error:
