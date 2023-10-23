@@ -152,11 +152,24 @@ class TestReport():
     # Calculate pages
     test_count = len(json_data['tests']['results'])
 
+    # Multiple pages required
     if test_count > TESTS_FIRST_PAGE:
-      test_count -= TESTS_FIRST_PAGE
+      # First page
+      full_page = 1
 
-      full_page = (int)(test_count / TESTS_PER_PAGE)
+      # Remaining tests
+      test_count -= TESTS_FIRST_PAGE
+      full_page += (int)(test_count / TESTS_PER_PAGE)
       partial_page = 1 if test_count % TESTS_PER_PAGE > 0 else 0
+
+    # 1 page required
+    elif test_count == TESTS_FIRST_PAGE:
+      full_page = 1
+      partial_page = 0
+    # Less than 1 page required
+    else:
+      full_page = 0
+      partial_page = 1
 
     max_page = full_page + partial_page
 
@@ -167,6 +180,7 @@ class TestReport():
 
   def generate_page(self, json_data, page_num, max_page):
     # Placeholder until available in json report
+
     version = 'v1.0.2 (2023-10-20)'
     page = '<div class="page">'
     page += self.generate_header(json_data)
@@ -209,8 +223,10 @@ class TestReport():
         </div>'''
     if page_num == 1:
       start = 0
+    elif page_num == 2:
+      start = TESTS_FIRST_PAGE
     else:
-      start = TESTS_FIRST_PAGE * (page_num - 1) + (page_num-2) * TESTS_PER_PAGE
+      start = (page_num-2) * TESTS_PER_PAGE + TESTS_FIRST_PAGE
     results_on_page = TESTS_FIRST_PAGE if page_num == 1 else TESTS_PER_PAGE
     result_end = min(start+results_on_page, len(json_data['tests']['results']))
     for ix in range(result_end-start):
