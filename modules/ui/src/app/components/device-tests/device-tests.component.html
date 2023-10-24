@@ -15,7 +15,10 @@ limitations under the License.
 -->
 <form [class.disabled]="disabled" [formGroup]="deviceForm">
   <section class="device-form-test-modules" formArrayName="test_modules">
-    <p class="device-tests-title">Device options</p>
+    <p class="device-tests-title">Test modules</p>
+    <p class="device-tests-description">
+      All modules are required to pass for qualification
+    </p>
     <p *ngFor="let test of test_modules.controls; let i = index">
       <mat-checkbox [formControlName]="i">
         {{testModules[i].displayName}}

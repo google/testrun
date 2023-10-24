@@ -20,7 +20,7 @@ import {IResult, StatusOfTestResult} from '../../model/testrun-status';
 import {MatTableModule} from '@angular/material/table';
 import {of} from 'rxjs';
 import {TEST_DATA} from '../../mocks/progress.mock';
-import {TestRunService} from '../../test-run.service';
+import {TestRunService} from '../../services/test-run.service';
 
 describe('ProgressTableComponent', () => {
   let component: ProgressTableComponent;

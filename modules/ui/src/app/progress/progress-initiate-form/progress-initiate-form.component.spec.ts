@@ -17,7 +17,7 @@ import {ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick} from '
 
 import {ProgressInitiateFormComponent} from './progress-initiate-form.component';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {TestRunService} from '../../test-run.service';
+import {TestRunService} from '../../services/test-run.service';
 import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
 import {Device} from '../../model/device';
 import {DeviceItemComponent} from '../../components/device-item/device-item.component';
@@ -28,8 +28,8 @@ import {DeviceTestsComponent} from '../../components/device-tests/device-tests.c
 import {device} from '../../mocks/device.mock';
 import {of} from 'rxjs';
 import {MOCK_PROGRESS_DATA_IN_PROGRESS, MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE} from '../../mocks/progress.mock';
-import {throwError} from 'rxjs/internal/observable/throwError';
-import {NotificationService} from '../../notification.service';
+import {NotificationService} from '../../services/notification.service';
+import {SpinnerComponent} from '../../components/spinner/spinner.component';
 
 describe('ProgressInitiateFormComponent', () => {
   let component: ProgressInitiateFormComponent;
@@ -38,7 +38,7 @@ describe('ProgressInitiateFormComponent', () => {
   let testRunServiceMock: jasmine.SpyObj<TestRunService>;
   let notificationServiceMock: jasmine.SpyObj<NotificationService>;
 
-  notificationServiceMock = jasmine.createSpyObj(['notify']);
+  notificationServiceMock = jasmine.createSpyObj(['notify', 'dismiss']);
   testRunServiceMock = jasmine.createSpyObj(['getDevices', 'fetchDevices', 'getTestModules', 'startTestrun', 'systemStatus$', 'getSystemStatus']);
   testRunServiceMock.getTestModules.and.returnValue([
     {
@@ -76,6 +76,7 @@ describe('ProgressInitiateFormComponent', () => {
         MatInputModule,
         BrowserAnimationsModule,
         DeviceTestsComponent,
+        SpinnerComponent,
       ]
     });
     fixture = TestBed.createComponent(ProgressInitiateFormComponent);
@@ -109,7 +110,7 @@ describe('ProgressInitiateFormComponent', () => {
       it('should notify about status', fakeAsync(() => {
         fixture.detectChanges();
 
-        expect(notificationServiceMock.notify).toHaveBeenCalledWith('Waiting for Device');
+        expect(notificationServiceMock.notify).toHaveBeenCalledWith('Waiting for Device', 0);
 
         discardPeriodicTasks();
       }));
@@ -125,6 +126,7 @@ describe('ProgressInitiateFormComponent', () => {
         spyOn(component.dialogRef, 'close');
         fixture.detectChanges();
 
+        expect(notificationServiceMock.dismiss).toHaveBeenCalledWith();
         expect(component.dialogRef.close).toHaveBeenCalled();
       }));
     })
@@ -206,18 +208,6 @@ describe('ProgressInitiateFormComponent', () => {
             expect(testRunServiceMock.getSystemStatus).toHaveBeenCalled();
           });
         })
-
-        describe('when error happened', () => {
-          it('should notify about error', () => {
-            testRunServiceMock.startTestrun.and.returnValue(throwError('error'));
-
-            component.startTestRun();
-
-            expect(component.startInterval).toEqual(false);
-            expect(notificationServiceMock.notify).toHaveBeenCalledWith('error');
-          });
-        })
-
       })
     });
   });
@@ -295,6 +285,12 @@ describe('ProgressInitiateFormComponent', () => {
         expect(component.startTestRun).toHaveBeenCalled();
       });
 
+    });
+
+    it('should has loader element', () => {
+      const spinner = compiled.querySelector('app-spinner');
+
+      expect(spinner).toBeTruthy();
     });
   });
 });

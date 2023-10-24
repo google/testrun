@@ -15,7 +15,7 @@
  */
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {Observable} from 'rxjs/internal/Observable';
-import {TestRunService} from '../test-run.service';
+import {TestRunService} from '../services/test-run.service';
 import {IDevice, IResult, StatusOfTestrun, TestrunStatus, TestsData} from '../model/testrun-status';
 import {interval, map, shareReplay, Subject, takeUntil, tap} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';

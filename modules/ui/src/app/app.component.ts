@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, HostBinding, OnInit, ViewChild} from '@angular/core';
 import {MatIconRegistry} from '@angular/material/icon';
 import {DomSanitizer} from '@angular/platform-browser';
 import {MatDrawer, MatDrawerToggleResult} from '@angular/material/sidenav';
-import {TestRunService} from './test-run.service';
+import {TestRunService} from './services/test-run.service';
 import {Observable} from 'rxjs/internal/Observable';
 import {Device} from './model/device';
+import {take} from 'rxjs';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -36,11 +37,13 @@ export class AppComponent implements OnInit {
   devices$!: Observable<Device[] | null>;
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
+  @HostBinding('class.active-menu') isMenuOpen: boolean = false;
+  interfaces: string[] = [];
 
   constructor(
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
-    private testRunService: TestRunService
+    private testRunService: TestRunService,
   ) {
     testRunService.fetchDevices();
     this.matIconRegistry.addSvgIcon(
@@ -77,4 +80,21 @@ export class AppComponent implements OnInit {
     return await this.settingsDrawer.open();
   }
 
+  public toggleMenu(event: MouseEvent) {
+    event.stopPropagation();
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  public openFeedbackModal() {
+    // action TBD
+  }
+
+  openGeneralSettings() {
+    this.testRunService.getSystemInterfaces()
+      .pipe(take(1))
+      .subscribe(async (interfaces) => {
+        this.interfaces = interfaces;
+        await this.settingsDrawer.open();
+      })
+  }
 }

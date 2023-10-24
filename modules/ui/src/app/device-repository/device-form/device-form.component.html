@@ -34,7 +34,12 @@ limitations under the License.
   <mat-form-field appearance="outline">
     <mat-label>MAC address</mat-label>
     <input class="device-form-mac-address" formControlName="mac_addr" matInput
-           placeholder="xx:xx:xx:xx:xx:xx">
+           [dropSpecialCharacters]="false"
+           [showMaskTyped]="true"
+           [specialCharacters]="[ ':' ]"
+           mask="AA:AA:AA:AA:AA:AA"
+           shownMaskExpression="__:__:__:__:__:__"
+           type="text">
     <mat-hint>Please enter MAC address</mat-hint>
     <mat-error *ngIf="mac_addr.errors?.['required'] && !mac_addr.errors?.['pattern']">
       <span>MAC address is <strong>required</strong></span>
@@ -57,7 +62,12 @@ limitations under the License.
   </mat-error>
 
   <mat-dialog-actions align="end" class="device-form-actions">
-    <button (click)="cancel()" class="close-button" mat-flat-button>Cancel</button>
+    <button (click)="delete()" *ngIf="data.device" class="delete-button" mat-flat-button
+            type="button">Delete
+    </button>
+    <button (click)="cancel()" class="close-button" mat-flat-button type="button">Cancel</button>
     <button (click)="saveDevice()" class="save-button" color="primary" mat-flat-button>Save</button>
   </mat-dialog-actions>
+
+  <app-spinner></app-spinner>
 </form>
