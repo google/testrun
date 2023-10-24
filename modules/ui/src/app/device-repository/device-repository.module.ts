@@ -30,6 +30,9 @@ import {DeviceRepositoryRoutingModule} from './device-repository-routing.module'
 import {DeviceRepositoryComponent} from './device-repository.component';
 import {DeviceItemComponent} from '../components/device-item/device-item.component';
 import {DeviceTestsComponent} from '../components/device-tests/device-tests.component';
+import {SpinnerComponent} from '../components/spinner/spinner.component';
+import {DeleteFormComponent} from '../components/delete-form/delete-form.component';
+import {NgxMaskDirective, NgxMaskPipe, provideNgxMask} from 'ngx-mask';
 
 @NgModule({
   declarations: [
@@ -50,7 +53,13 @@ import {DeviceTestsComponent} from '../components/device-tests/device-tests.comp
     MatInputModule,
     DeviceItemComponent,
     DeviceTestsComponent,
+    SpinnerComponent,
+    DeleteFormComponent,
+    NgxMaskDirective,
+    NgxMaskPipe,
+
   ],
+  providers: [provideNgxMask()]
 })
 export class DeviceRepositoryModule {
 }

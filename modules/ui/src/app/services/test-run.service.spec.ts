@@ -15,13 +15,13 @@
  */
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {fakeAsync, getTestBed, TestBed, tick} from '@angular/core/testing';
-import {Device, TestModule} from './model/device';
+import {Device, TestModule} from '../model/device';
 
 import {TestRunService} from './test-run.service';
-import {SystemConfig} from './model/setting';
-import {MOCK_PROGRESS_DATA_IN_PROGRESS} from './mocks/progress.mock';
-import {StatusOfTestResult, TestrunStatus} from './model/testrun-status';
-import {device} from './mocks/device.mock';
+import {SystemConfig} from '../model/setting';
+import {MOCK_PROGRESS_DATA_IN_PROGRESS} from '../mocks/progress.mock';
+import {StatusOfTestResult, TestrunStatus} from '../model/testrun-status';
+import {device} from '../mocks/device.mock';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -205,24 +205,12 @@ describe('TestRunService', () => {
       expect(req.request.body).toEqual(JSON.stringify({device}));
       req.flush({});
     });
-
-    it('should have error when timeout exceeded', fakeAsync(() => {
-      const apiUrl = 'http://localhost:8000/system/start'
-
-      service.startTestrun(device, 1000).subscribe(() => {
-      }, (error) => {
-        expect(error.toString()).toEqual('Timeout has occurred');
-      });
-
-      httpTestingController.expectOne(apiUrl);
-      tick(1001);
-    }));
   });
 
-  it('getHistory should return history', () => {
+  it('getHistory should return reports', () => {
     let result: TestrunStatus[] = [];
 
-    const history = [{
+    const reports = [{
       "status": "Completed",
       "device": device,
       "report": "https://api.testrun.io/report.pdf",
@@ -234,13 +222,13 @@ describe('TestRunService', () => {
       expect(res).toEqual(result);
     });
 
-    result = history;
+    result = reports;
     service.fetchHistory();
-    const req = httpTestingController.expectOne('http://localhost:8000/history');
+    const req = httpTestingController.expectOne('http://localhost:8000/reports');
 
     expect(req.request.method).toBe('GET');
 
-    req.flush(history);
+    req.flush(reports);
   });
 
   describe('#getResultClass', () => {
@@ -306,4 +294,27 @@ describe('TestRunService', () => {
     });
 
   });
+
+  it('deleteDevice should have necessary request data', () => {
+    const apiUrl = 'http://localhost:8000/device'
+
+    service.deleteDevice(device).subscribe((res) => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(apiUrl);
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.body).toEqual(JSON.stringify(device));
+    req.flush({});
+  });
+
+  it('removeDevice should remove device from device list', fakeAsync(() => {
+    const deviceArray = [device] as Device[];
+    service.setDevices(deviceArray);
+    tick();
+    service.removeDevice(device);
+
+    expect(service.hasDevice("00:1e:42:35:73:c4")).toEqual(false);
+  }));
+
 });

@@ -24,6 +24,12 @@ export interface TestrunStatus {
   report?: string;
 }
 
+export interface HistoryTestrun extends TestrunStatus {
+  deviceFirmware: string,
+  deviceInfo: string,
+  duration: string,
+}
+
 export interface TestsData {
   total?: number;
   results?: IResult[];

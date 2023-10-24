@@ -16,6 +16,12 @@
 @use '@angular/material' as mat;
 @import "../theming/colors";
 
+$toolbar-height: 56px;
+$nav-close-width: 80px;
+$nav-open-width: 236px;
+$nav-close-btn-width: 48px;
+$nav-open-btn-width: 210px;
+
 .app-container {
   height: 100%;
 }
@@ -25,20 +31,57 @@
 }
 
 .mat-drawer-content {
+  height: calc(100% - 56px);
   background: $white;
 }
 
 .mat-drawer-side {
-  border-right: none;
+  margin-top: $toolbar-height;
+}
+
+:host.active-menu {
+  .app-sidebar {
+    width: $nav-open-width;
+    align-items: start;
+  }
+
+  .app-sidebar-button {
+    width: $nav-open-btn-width;
+    height: $toolbar-height;
+    border-radius: 0 100px 100px 0;
+    margin: 0;
+    padding: 0 16px;
+  }
+
+  .app-sidebar-button:first-child {
+    margin-top: 8px;
+  }
+
+  .app-sidebar-button-active {
+    border: 1px solid mat.get-color-from-palette($color-primary, 50);
+    background-color: mat.get-color-from-palette($color-primary, 50);
+  }
+
+  .app-sidebar-button-active > .mat-icon,
+  .sidebar-button-label {
+    color: $grey-800;
+  }
+
+  .sidebar-button-label {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0.25px;
+  }
 }
 
 .app-sidebar {
   display: flex;
   flex-direction: column;
-  background-color: $color-background-grey;
+  background-color: $white;
   height: 100%;
   gap: 8px;
-  width: 80px;
+  width: $nav-close-width;
   align-items: center;
 }
 
@@ -49,8 +92,22 @@
   padding: 0;
   box-sizing: border-box;
   height: 34px;
-  margin: 6px 0;
+  margin: 11px 0;
   line-height: 50%;
+}
+
+.app-sidebar-button {
+  width: $nav-close-btn-width;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.app-sidebar-button:first-child {
+  margin-top: 19px;
+}
+
+.app-toolbar-button-menu {
+  margin: 11px 17px 11px 16px;
 }
 
 .app-sidebar-button:disabled {
@@ -62,9 +119,12 @@
   width: 24px;
   font-size: 24px;
   color: $dark-grey;
+  height: 24px;
 }
 
 .app-sidebar-button > .mat-icon {
+  margin: 0 11px;
+  min-width: 24px;
   line-height: 18px;
 }
 
@@ -86,6 +146,7 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
+  width: 120px;
 }
 
 .logo-link .mat-icon {
@@ -94,16 +155,22 @@
 }
 
 .app-toolbar {
-  height: 56px;
-  padding: 0 6px 0 16px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  height: $toolbar-height;
+  padding: 0;
   background-color: $white;
   border-bottom: 1px solid $light-grey;
   color: $grey-800;
 }
 
 .app-content {
+  position: static;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: 1fr;
+  margin-top: $toolbar-height;
 }
 
 .app-content-main {
@@ -116,4 +183,8 @@
   width: 320px;
   box-shadow: none;
   border-left: 1px solid $light-grey;
+}
+
+.app-toolbar-button-general-settings {
+  margin-left: 72px;
 }

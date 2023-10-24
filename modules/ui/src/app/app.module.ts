@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClientModule} from '@angular/common/http';
+import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
 import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
@@ -30,6 +30,9 @@ import {GeneralSettingsComponent} from './components/general-settings/general-se
 import {ReactiveFormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
+import {ErrorInterceptor} from './interceptors/error.interceptor';
+import {LoadingInterceptor} from './interceptors/loading.interceptor';
+import {SpinnerComponent} from './components/spinner/spinner.component';
 
 @NgModule({
   declarations: [AppComponent, GeneralSettingsComponent],
@@ -47,8 +50,16 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
     ReactiveFormsModule,
     MatFormFieldModule,
     MatSnackBarModule,
+    SpinnerComponent,
   ],
-  providers: [],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {

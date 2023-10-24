@@ -23,10 +23,15 @@ export class NotificationService {
   constructor(private snackBar: MatSnackBar) {
   }
 
-  notify(message: string) {
-    this.snackBar.open(message, 'x', {
+  notify(message: string, duration = 5000) {
+    this.snackBar.open(message, 'OK', {
       horizontalPosition: 'right',
-      panelClass: 'test-run-notification'
+      panelClass: 'test-run-notification',
+      duration: duration,
     })
+  }
+
+  dismiss() {
+    this.snackBar.dismiss();
   }
 }

@@ -13,9 +13,9 @@
 # limitations under the License.
 
 # Image name: test-run/ui
-FROM node:latest as build
+FROM node:20 as build
 
-WORKDIR modules/ui
+WORKDIR /modules/ui
 COPY modules/ui/ . 
 RUN npm install && npm run build
 

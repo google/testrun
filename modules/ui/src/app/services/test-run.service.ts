@@ -17,12 +17,10 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
 import {Observable} from 'rxjs/internal/Observable';
-import {Device, TestModule} from './model/device';
-import {map, ReplaySubject, retry, timeout} from 'rxjs';
-import {SystemConfig} from './model/setting';
-import {StatusOfTestResult, StatusResultClassName, TestrunStatus} from './model/testrun-status';
-import {catchError} from 'rxjs/internal/operators/catchError';
-import {throwError} from 'rxjs/internal/observable/throwError';
+import {Device, TestModule} from '../model/device';
+import {map, ReplaySubject, retry} from 'rxjs';
+import {SystemConfig} from '../model/setting';
+import {StatusOfTestResult, StatusResultClassName, TestrunStatus} from '../model/testrun-status';
 
 const API_URL = 'http://localhost:8000'
 
@@ -102,8 +100,7 @@ export class TestRunService {
 
   getSystemConfig(): Observable<SystemConfig> {
     return this.http
-      .get<SystemConfig>(`${API_URL}/system/config`)
-      .pipe(retry(1))
+      .get<SystemConfig>(`${API_URL}/system/config`);
   }
 
   createSystemConfig(data: SystemConfig): Observable<any> {
@@ -114,8 +111,7 @@ export class TestRunService {
 
   getSystemInterfaces(): Observable<string[]> {
     return this.http
-      .get<string[]>(`${API_URL}/system/interfaces`)
-      .pipe(retry(1));
+      .get<string[]>(`${API_URL}/system/interfaces`);
   }
 
   getSystemStatus(): void {
@@ -129,7 +125,7 @@ export class TestRunService {
   stopTestrun(): Observable<boolean> {
     return this.http
       .post<any>(`${API_URL}/system/stop`, {})
-      .pipe(retry(1), map(() => true));
+      .pipe(map(() => true));
   }
 
   getTestModules(): TestModule[] {
@@ -139,7 +135,15 @@ export class TestRunService {
   saveDevice(device: Device): Observable<boolean> {
     return this.http
       .post<boolean>(`${API_URL}/device`, JSON.stringify(device))
-      .pipe(retry(1), map(() => true));
+      .pipe(map(() => true));
+  }
+
+  deleteDevice(device: Device): Observable<boolean> {
+    return this.http
+      .delete<boolean>(`${API_URL}/device`, {
+        body: JSON.stringify(device)
+      })
+      .pipe(map(() => true));
   }
 
   hasDevice(macAddress: string): boolean {
@@ -159,9 +163,15 @@ export class TestRunService {
     this.devices.next(this.devices.value);
   }
 
+  removeDevice(deviceToDelete: Device): void {
+    const idx = this.devices.value?.findIndex(device => deviceToDelete.mac_addr === device.mac_addr)!;
+    this.devices.value?.splice(idx, 1)
+    this.devices.next(this.devices.value);
+  }
+
   fetchHistory(): void {
     this.http
-      .get<TestrunStatus[]>(`${API_URL}/history`)
+      .get<TestrunStatus[]>(`${API_URL}/reports`)
       .pipe(retry(1))
       .subscribe(data => {
         this.history.next(data)
@@ -181,13 +191,11 @@ export class TestRunService {
     }
   }
 
-  startTestrun(device: Device, timeoutMs = 120000): Observable<boolean> {
+  startTestrun(device: Device): Observable<boolean> {
     return this.http
       .post<any>(`${API_URL}/system/start`, JSON.stringify({device}))
       .pipe(
-        timeout(timeoutMs),
-        map(() => true),
-        catchError(err => throwError(err.error?.error || err.message))
+        map(() => true)
       );
   }
 }

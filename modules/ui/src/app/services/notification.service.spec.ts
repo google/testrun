@@ -23,6 +23,9 @@ describe('NotificationService', () => {
 
   const mockMatSnackBar = {
     open: () => {
+    },
+    dismiss: () => {
+
     }
   };
 
@@ -50,12 +53,35 @@ describe('NotificationService', () => {
       const args = matSnackBarSpy.calls.argsFor(0);
       expect(args.length).toBe(3);
       expect(args[0]).toBe('something good happened');
-      expect(args[1]).toBe('x');
+      expect(args[1]).toBe('OK');
       expect(args[2]).toEqual({
         horizontalPosition: 'right',
         panelClass: 'test-run-notification',
+        duration: 5000
+      });
+    });
+
+    it('should open snackbar with duration', () => {
+      const matSnackBarSpy = spyOn(mockMatSnackBar, 'open').and.stub();
+
+      service.notify('something good happened', 15000);
+
+      const args = matSnackBarSpy.calls.argsFor(0);
+      expect(args[2]).toEqual({
+        horizontalPosition: 'right',
+        panelClass: 'test-run-notification',
+        duration: 15000
       });
     });
   });
 
+  describe('dismiss', () => {
+    it('should close snackbar', () => {
+      const matSnackBarSpy = spyOn(mockMatSnackBar, 'dismiss').and.stub();
+
+      service.dismiss();
+
+      expect(matSnackBarSpy).toHaveBeenCalled();
+    });
+  });
 });

@@ -18,17 +18,19 @@ import {ComponentFixture, fakeAsync, TestBed, tick} from '@angular/core/testing'
 import {Router} from '@angular/router';
 import {RouterTestingModule} from '@angular/router/testing';
 import {AppComponent} from './app.component';
-import {TestRunService} from './test-run.service';
+import {SpinnerComponent} from './components/spinner/spinner.component';
+import {TestRunService} from './services/test-run.service';
 import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
 import {Device} from './model/device';
 import {device} from './mocks/device.mock';
-import {Component, EventEmitter, Output} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {AppRoutingModule} from './app-routing.module';
+import {of} from 'rxjs/internal/observable/of';
 import SpyObj = jasmine.SpyObj;
 
 describe('AppComponent', () => {
@@ -39,12 +41,13 @@ describe('AppComponent', () => {
   let mockService: SpyObj<TestRunService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['getDevices', 'fetchDevices', 'getSystemStatus', 'fetchHistory']);
+    mockService = jasmine.createSpyObj(['getDevices', 'fetchDevices', 'getSystemStatus', 'fetchHistory', 'getSystemInterfaces']);
     mockService.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>([device]));
+    mockService.getSystemInterfaces.and.returnValue(of([]));
 
     TestBed.configureTestingModule({
       imports: [RouterTestingModule, HttpClientTestingModule, AppRoutingModule, MatButtonModule,
-        BrowserAnimationsModule, MatIconModule, MatToolbarModule, MatSidenavModule],
+        BrowserAnimationsModule, MatIconModule, MatToolbarModule, MatSidenavModule, SpinnerComponent],
       providers: [{provide: TestRunService, useValue: mockService}],
       declarations: [AppComponent, FakeGeneralSettingsComponent]
     });
@@ -168,15 +171,43 @@ describe('AppComponent', () => {
     expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
   }));
 
-  it('should call settingsDrawer toggle on click settings button', () => {
+  it('should call settingsDrawer open on click settings button', () => {
     const settingsBtn = compiled.querySelector(
       '.app-toolbar-button-general-settings'
     ) as HTMLButtonElement;
-    spyOn(component.settingsDrawer, 'toggle');
+    spyOn(component.settingsDrawer, 'open');
 
     settingsBtn.click();
 
-    expect(component.settingsDrawer.toggle).toHaveBeenCalledTimes(1);
+    expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
+  });
+
+  it('should toggle menu open state on click menu button', () => {
+    const menuBtn = compiled.querySelector(
+      '.app-toolbar-button-menu'
+    ) as HTMLButtonElement;
+
+    menuBtn.click();
+
+    expect(component.isMenuOpen).toBeTrue();
+
+    menuBtn.click();
+
+    expect(component.isMenuOpen).toBeFalse();
+  });
+
+  it('should have spinner', () => {
+    const spinner = compiled.querySelector('app-spinner');
+
+    expect(spinner).toBeTruthy();
+  });
+
+  describe('feedback button', () => {
+    it('should be present', () => {
+      const button = compiled.querySelector('.feedback-button');
+
+      expect(button).toBeTruthy();
+    });
   });
 
   describe('with no devices setted', () => {
@@ -194,7 +225,7 @@ describe('AppComponent', () => {
       expect(runtimeBtn.disabled).toBe(true);
     }));
 
-    it('should have "device repository" button disabled', fakeAsync(() => {
+    it('should not have "device repository" button disabled', fakeAsync(() => {
       const deviceRepositorytBtn = compiled.querySelector(
         '.app-sidebar-button-device-repository'
       ) as HTMLButtonElement;
@@ -202,7 +233,6 @@ describe('AppComponent', () => {
       expect(deviceRepositorytBtn.disabled).toBe(false);
     }));
   });
-
 });
 
 @Component({
@@ -210,6 +240,7 @@ describe('AppComponent', () => {
   template: '<div></div>'
 })
 class FakeGeneralSettingsComponent {
+  @Input() interfaces = [];
   @Output() closeSettingEvent = new EventEmitter<void>();
   @Output() openSettingEvent = new EventEmitter<void>();
 }

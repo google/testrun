@@ -25,6 +25,21 @@ body {
   font-family: 'Open Sans', sans-serif;
 }
 
+/* Custom Scroollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $secondary;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: $dark-grey;
+}
+
 .app-sidebar-button-active .mat-icon path {
   fill: $white;
 }
@@ -71,6 +86,34 @@ mat-hint {
   display: none;
 }
 
+.mat-sort-header-container.mat-focus-indicator:focus::before {
+  content: none;
+}
+
+.app-sidebar-button {
+  .mdc-button__label {
+    position: relative;
+    left: -999px;
+  }
+}
+
+
+.active-menu {
+  .app-sidebar-button {
+    .mdc-button__label {
+      left: 0;
+    }
+  }
+
+  .app-sidebar-button-active .mat-icon path {
+    fill: $grey-800;
+  }
+}
+
+.filter-button.active .filter-icon path {
+  fill: mat.get-color-from-palette($color-primary, 600);
+}
+
 .table-cell-result-text {
   margin: 0;
   padding: 4px;
@@ -78,6 +121,7 @@ mat-hint {
   font-size: 12px;
   line-height: 16px;
   letter-spacing: 0.3px;
+  white-space: nowrap;
 
   &.green {
     background: $green-50;
@@ -112,4 +156,17 @@ h2.title {
 .mat-mdc-snack-bar-container {
   --mat-snack-bar-button-color: #ffffff;
   --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+body:has(.initiate-test-run-dialog) app-root app-spinner,
+body:has(.device-form-dialog) app-root app-spinner {
+  display: none;
+}
+
+body:has(.filter-dialog-content) .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+  opacity: 0;
+}
+
+.text-nowrap {
+  white-space: nowrap;
 }
