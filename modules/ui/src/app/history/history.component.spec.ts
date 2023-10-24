@@ -16,12 +16,17 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {HistoryComponent} from './history.component';
-import {TestRunService} from '../test-run.service';
+import {TestRunService} from '../services/test-run.service';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {HistoryModule} from './history.module';
 import {of} from 'rxjs';
 import {TestrunStatus} from '../model/testrun-status';
 import SpyObj = jasmine.SpyObj;
+import {LiveAnnouncer} from '@angular/cdk/a11y';
+import {MatDialogRef} from '@angular/material/dialog';
+import {FilterDialogComponent} from '../components/filter-dialog/filter-dialog.component';
+import {ElementRef} from '@angular/core';
+import {FilterName} from '../model/filters';
 
 const history = [{
   "status": "compliant",
@@ -41,12 +46,19 @@ describe('HistoryComponent', () => {
   let fixture: ComponentFixture<HistoryComponent>;
   let compiled: HTMLElement;
   let mockService: SpyObj<TestRunService>;
+  let mockLiveAnnouncer: SpyObj<LiveAnnouncer>
 
   beforeEach(() => {
     mockService = jasmine.createSpyObj(['fetchHistory', 'getHistory', 'getResultClass']);
+    mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
+    mockService.getHistory.and.returnValue(of(history));
+
     TestBed.configureTestingModule({
       imports: [HistoryModule, BrowserAnimationsModule],
-      providers: [{provide: TestRunService, useValue: mockService}],
+      providers: [
+        { provide: TestRunService, useValue: mockService },
+        { provide: LiveAnnouncer, useValue: mockLiveAnnouncer }
+      ],
       declarations: [HistoryComponent]
     });
     fixture = TestBed.createComponent(HistoryComponent);
@@ -56,20 +68,26 @@ describe('HistoryComponent', () => {
   });
 
   describe('Class tests', () => {
-    beforeEach(() => {
-      mockService.getHistory.and.returnValue(of(history));
-    })
-
     it('should create', () => {
       expect(component).toBeTruthy();
     });
 
-    it('should set history value', () => {
+    it('should set dataSource data', () => {
       component.ngOnInit();
 
-      component.history$.subscribe(res => {
-        expect(res).toEqual(history)
-      })
+      expect(component.dataSource.data).toBeTruthy();
+    });
+
+    it('#sortData should call liveAnnouncer with sorted direction message', () => {
+      component.sortData({ active: '', direction: 'desc' });
+
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith('Sorted descending');
+    });
+
+    it('#sortData should call liveAnnouncer with "Sorting cleared" message', () => {
+      component.sortData({ active: '', direction: '' });
+
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith('Sorting cleared');
     });
 
     it('#getFormattedDateString should return string in the format "d MMM y H:mm"', () => {
@@ -103,12 +121,70 @@ describe('HistoryComponent', () => {
 
       expect(result).toEqual(expectedResult);
     });
+
+    it('should open filter dialog with data', () => {
+      const event = {
+        currentTarget: null,
+        stopPropagation: () => {}
+      } as Event;
+      const openSpy = spyOn(component.dialog, 'open').and
+        .returnValue({
+          afterClosed: () => of(true)
+        } as MatDialogRef<typeof FilterDialogComponent>);
+      fixture.detectChanges();
+
+      component.openFilter(event, '');
+
+      expect(openSpy).toHaveBeenCalled();
+      expect(openSpy).toHaveBeenCalledWith(FilterDialogComponent, {
+        data: {
+          filter: '',
+          trigger: new ElementRef(event.currentTarget),
+          availableStatuses: ['compliant']
+        },
+        autoFocus: true,
+        hasBackdrop: true,
+        disableClose: true,
+        panelClass: 'filter-form-dialog',
+      });
+
+      openSpy.calls.reset();
+    });
+
+    it('should update filteredValues when filter dialog closes with data', () => {
+      const event = {
+        currentTarget: null,
+        stopPropagation: () => {}
+      } as Event;
+
+      const mockFilteredData = {
+        results: ['compliant'],
+        deviceInfo: 'mockDevice',
+        deviceFirmware: 'mockFirmware',
+        dateRange:
+          {start: 'Wed Jun 21 2023 00:00:00', end: 'Thu Jun 22 2023 00:00:00'}
+      }
+
+      spyOn(component.dialog, 'open').and
+        .returnValue({
+          afterClosed: () => of(mockFilteredData)
+        } as MatDialogRef<typeof FilterDialogComponent>);
+      fixture.detectChanges();
+
+      component.openFilter(event, FilterName.Started);
+      component.openFilter(event, FilterName.Results);
+      component.openFilter(event, FilterName.DeviceFirmware);
+      component.openFilter(event, FilterName.DeviceInfo);
+      expect((component.filteredValues) as any).toEqual(mockFilteredData);
+
+    });
   });
 
   describe('DOM tests', () => {
     describe('with no devices', () => {
       beforeEach(() => {
         mockService.getHistory.and.returnValue(of([]));
+        component.ngOnInit();
         fixture.detectChanges();
       })
 

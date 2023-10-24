@@ -17,9 +17,9 @@ import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {AbstractControl, FormArray, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {Device, TestModule} from '../../model/device';
-import {TestRunService} from '../../test-run.service';
+import {TestRunService} from '../../services/test-run.service';
 import {DeviceValidators} from './device.validators';
-import {catchError, of, retry, Subject, takeUntil} from 'rxjs';
+import {catchError, of, Subject, takeUntil} from 'rxjs';
 import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
 
 const MAC_ADDRESS_PATTERN = '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
@@ -27,6 +27,16 @@ const MAC_ADDRESS_PATTERN = '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*
 interface DialogData {
   title?: string;
   device?: Device;
+}
+
+export enum FormAction {
+  Delete = 'Delete',
+  Save = 'Save',
+}
+
+export interface FormResponse {
+  device?: Device;
+  action: FormAction
 }
 
 @Component({
@@ -80,6 +90,10 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
+  delete(): void {
+    this.dialogRef.close({action: FormAction.Delete} as FormResponse);
+  }
+
   cancel(): void {
     this.dialogRef.close();
   }
@@ -101,14 +115,16 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
     this.testRunService.saveDevice(device)
       .pipe(
         takeUntil(this.destroy$),
-        retry(1),
         catchError(error => {
           this.error$.next(error.error);
           return of(null);
         }))
       .subscribe((deviceSaved: boolean | null) => {
         if (deviceSaved) {
-          this.dialogRef.close(device);
+          this.dialogRef.close({
+            action: FormAction.Save,
+            device
+          } as FormResponse);
         }
       });
   }

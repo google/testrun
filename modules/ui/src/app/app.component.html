@@ -13,37 +13,49 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<mat-drawer-container hasBackdrop="false" class="app-container">
+<mat-drawer-container hasBackdrop="false" class="app-container" autosize>
   <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
     <div class="app-sidebar">
       <ng-container
-        *ngTemplateOutlet="navButton;context:{icon: 'menu', label: 'Menu', name: 'menu'}">
+        *ngTemplateOutlet="navButtonRoute;context:{route: '/runtime', svgIcon: 'testrun_logo_small', label: 'Testrun', name: 'runtime'}">
       </ng-container>
       <ng-container
-        *ngTemplateOutlet="navButtonRoute;context:{route: '/runtime', svgIcon: 'testrun_logo_small', label: 'Runtime', name: 'runtime'}">
+        *ngTemplateOutlet="navButtonRoute;context:{route: '/device-repository',svgIcon: 'devices', label: 'Devices', name: 'device-repository'}">
       </ng-container>
       <ng-container
-        *ngTemplateOutlet="navButtonRoute;context:{route: '/device-repository',svgIcon: 'devices', label: 'Device repository', name: 'device-repository'}">
-      </ng-container>
-      <ng-container
-        *ngTemplateOutlet="navButtonRoute;context:{route: '/results',svgIcon: 'reports', label: 'Results', name: 'results'}">
+        *ngTemplateOutlet="navButtonRoute;context:{route: '/results',svgIcon: 'reports', label: 'Reports', name: 'results'}">
       </ng-container>
     </div>
   </mat-drawer>
 
   <mat-drawer-content class="app-content" role="region">
     <mat-toolbar class="app-toolbar">
+      <button
+        mat-button
+        class="app-toolbar-button app-toolbar-button-menu"
+        aria-label="Menu"
+        (click)="toggleMenu($event)">
+        <mat-icon>menu</mat-icon>
+      </button>
       <a class="logo-link" routerLink="/runtime" aria-label="Test run ui logo">
         <mat-icon svgIcon="testrun_logo_color"></mat-icon>
         <span>Testrun</span>
       </a>
+      <span class="spacer"></span>
+      <button (click)="openFeedbackModal()"
+              aria-label="Start feedback"
+              class="feedback-button"
+              color="primary"
+              mat-flat-button>
+        Have feedback?
+      </button>
       <span class="spacer"></span>
       <button
         #toggleSettingsBtn
         class="app-toolbar-button app-toolbar-button-general-settings"
         mat-icon-button
         aria-label="General settings"
-        (click)="settingsDrawer.toggle()">
+        (click)="openGeneralSettings()">
         <mat-icon>tune</mat-icon>
       </button>
     </mat-toolbar>
@@ -57,25 +69,16 @@ limitations under the License.
     position="end"
     class="settings-drawer">
     <app-general-settings
+      [interfaces]="interfaces"
       (closeSettingEvent)="closeSetting()"
       (openSettingEvent)="openSetting()">
     </app-general-settings>
   </mat-drawer>
 </mat-drawer-container>
 
-<ng-template #navButton let-svgIcon="svgIcon" let-icon="icon" let-label="label" let-name="name" >
-  <button
-    mat-button
-    class="app-sidebar-button app-sidebar-button-{{name}}"
-    [attr.aria-label]="label">
-    <mat-icon *ngIf="svgIcon" svgIcon="{{svgIcon}}"></mat-icon>
-    <mat-icon *ngIf="icon">{{icon}}</mat-icon>
-  </button>
-</ng-template>
 <ng-template #navButtonRoute let-icon="icon" let-label="label" let-name="name"
              let-route="route" let-svgIcon="svgIcon">
   <button
-    [attr.aria-label]="label"
     disabled="{{route !== '/device-repository' && !(devices$| async)?.length}}"
     class="app-sidebar-button app-sidebar-button-{{name}}"
     mat-button
@@ -83,5 +86,8 @@ limitations under the License.
     routerLinkActive="app-sidebar-button-active">
     <mat-icon *ngIf="svgIcon" svgIcon="{{svgIcon}}"></mat-icon>
     <mat-icon *ngIf="icon">{{icon}}</mat-icon>
+    <span class="sidebar-button-label">{{label}}</span>
   </button>
 </ng-template>
+
+<app-spinner></app-spinner>
