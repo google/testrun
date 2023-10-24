@@ -1,4 +1,8 @@
-  <img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
+<img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
+
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/google/testrun/badge)](https://securityscorecards.dev/viewer/?uri=github.com/google/testrun)
+[![CodeQL](https://github.com/google/testrun/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)](https://github.com/google/testrun/actions/workflows/github-code-scanning/codeql)
+[![Testrun test suite](https://github.com/google/testrun/actions/workflows/testing.yml/badge.svg?branch=main&event=push)](https://github.com/google/testrun/actions/workflows/testing.yml)
 
 ## Introduction :wave:
 Testrun automates specific test cases to verify network and security functionality in IoT devices. It is an open source tool which allows external manufacturers to test their devices for the purposes of Device Qualification within the BOS program.
