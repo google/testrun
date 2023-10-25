@@ -74,10 +74,10 @@ jobs:
       - name: Install Testrun
         shell: bash {0}
         run: sudo dpkg -i testrun*.deb
-        timeout-minutes: 10
+        timeout-minutes: 30
       - name: Run tests
         shell: bash {0}
-        run: testing/tests/test_tests
+        run: testing/api/test_api
       - name: Archive runtime results
         if: ${{ always() }}
         run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/ /usr/local/testrun/local/
