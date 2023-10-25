@@ -4,7 +4,7 @@
   "mac_addr": "02:42:aa:00:00:02",
   "test_modules": {
     "dns": {
-      "enabled": true
+      "enabled": false
     },
     "connection": {
       "enabled": true
@@ -13,10 +13,16 @@
       "enabled": true
     },
     "baseline": {
-      "enabled": true
+      "enabled": false
     },
     "nmap": {
       "enabled": true
+    },
+    "protocol": {
+      "enabled": false
+    },
+    "tls": {
+      "enabled": false
     }
   }
 }

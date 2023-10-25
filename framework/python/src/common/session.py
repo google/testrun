@@ -22,7 +22,6 @@ from common import util, logger
 NETWORK_KEY = 'network'
 DEVICE_INTF_KEY = 'device_intf'
 INTERNET_INTF_KEY = 'internet_intf'
-RUNTIME_KEY = 'runtime'
 MONITOR_PERIOD_KEY = 'monitor_period'
 STARTUP_TIMEOUT_KEY = 'startup_timeout'
 LOG_LEVEL_KEY = 'log_level'
@@ -47,6 +46,11 @@ class TestRunSession():
     self._config = self._get_default_config()
     self._load_config()
 
+    tz = util.run_command('cat /etc/timezone')
+    # TODO: Check if timezone is fetched successfully
+    self._timezone = tz[0]
+    LOGGER.info(f'System timezone is {self._timezone}')
+
   def start(self):
     self.reset()
     self._status = 'Waiting for Device'
@@ -70,7 +74,6 @@ class TestRunSession():
       'log_level': 'INFO',
       'startup_timeout': 60,
       'monitor_period': 30,
-      'runtime': 120,
       'max_device_reports': 5,
       'api_port': 8000
     }
@@ -98,9 +101,6 @@ class TestRunSession():
         self._config[NETWORK_KEY][INTERNET_INTF_KEY] = config_file_json.get(
           NETWORK_KEY, {}).get(INTERNET_INTF_KEY)
 
-      if RUNTIME_KEY in config_file_json:
-        self._config[RUNTIME_KEY] = config_file_json.get(RUNTIME_KEY)
-
       if STARTUP_TIMEOUT_KEY in config_file_json:
         self._config[STARTUP_TIMEOUT_KEY] = config_file_json.get(
           STARTUP_TIMEOUT_KEY)
@@ -125,9 +125,6 @@ class TestRunSession():
     with open(self._config_file, 'w', encoding='utf-8') as f:
       f.write(json.dumps(self._config, indent=2))
     util.set_file_owner(owner=util.get_host_user(), path=self._config_file)
-
-  def get_runtime(self):
-    return self._config.get(RUNTIME_KEY)
 
   def get_log_level(self):
     return self._config.get(LOG_LEVEL_KEY)
@@ -241,3 +238,6 @@ class TestRunSession():
     }
 
     return session_json
+
+  def get_timezone(self):
+    return self._timezone
