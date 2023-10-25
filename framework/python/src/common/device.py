@@ -38,7 +38,15 @@ class Device():
   def get_reports(self):
     return self.reports
 
-  # TODO: Add ability to remove reports once test reports have been cleaned up
+  def remove_report(self, timestamp):
+
+    remove_report_target = None
+    for report in self.reports:
+      if report.get_started() == timestamp:
+        remove_report_target = report
+
+    if remove_report_target is not None:
+      self.reports.remove(remove_report_target)
 
   def to_dict(self):
     """Returns the device as a python dictionary. This is used for the

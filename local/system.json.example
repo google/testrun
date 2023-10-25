@@ -6,6 +6,5 @@
   "log_level": "INFO",
   "startup_timeout": 60,
   "monitor_period": 300,
-  "runtime": 120,
   "max_device_reports": 5
 }

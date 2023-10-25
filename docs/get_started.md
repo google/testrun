@@ -24,6 +24,11 @@ Ensure the following software is installed on your Ubuntu LTS PC:
    - Build Essential
    - Net Tools
 
+### Device
+Any device with an ethernet connection, and support for IPv4 DHCP can be tested.
+
+However, to achieve a compliant test outcome, your device must be configured correctly and implement the required security features. These standards are outlined in the [Application Security Requirements for IoT Devices](https://partner-security.withgoogle.com/docs/iot_requirements). but further detail is available in [documentation for each test module](/docs/test/modules.md).
+
 ## Installation
 
 1. Download the latest version of the Testrun installer from the [releases page](https://github.com/google/test-run/releases)
@@ -41,6 +46,8 @@ Ensure the following software is installed on your Ubuntu LTS PC:
 1. Attach network interfaces:
    - Connect one USB Ethernet adapter to the internet source (e.g., router or switch) using an ethernet cable.
    - Connect the other USB Ethernet adapter directly to the IoT device you want to test using an ethernet cable.
+
+   **NOTE: The device under test should be powered off until prompted**
 
    **NOTE: Both adapters should be disabled in the host system (IPv4, IPv6 and general). You can do this by going to Settings > Network** 
 
@@ -82,7 +89,9 @@ Start Testrun with the command `sudo testrun`
 
  - During testing, if you would like to stop Testrun, click 'Stop' next to the test name.
 
-11. On completion of the test sequence, a report will appear under the history icon. 
+11. Once the notification 'Waiting for Device' appears, power on the device under test.
+
+12. On completion of the test sequence, a report will appear under the history icon. 
 
     ![](/docs/ui/history_icon.png)
 
@@ -94,3 +103,6 @@ If you encounter any issues or need assistance, consider the following:
 - Verify that the network interfaces are connected correctly.
 - Check the configuration settings.
 - Refer to the Testrun documentation or ask for assistance in the issues page: https://github.com/google/testrun/issues
+
+# Uninstall
+To uninstall Testrun, use the built-in dpkg uninstall command to remove Testrun correctly. For Testrun, this would be:  ```sudo apt-get remove testrun```
