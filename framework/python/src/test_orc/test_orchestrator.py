@@ -351,6 +351,7 @@ class TestOrchestrator:
         module_results = module_results_json["results"]
         for test_result in module_results:
           self._session.add_test_result(test_result)
+          self._session.add_total_tests(1)
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
       LOGGER.error(

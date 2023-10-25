@@ -23,8 +23,9 @@ E.g sudo cmd/start
 import docker
 import json
 import os
-import sys
+import shutil
 import signal
+import sys
 import time
 from common import logger, util
 from common.device import Device
@@ -104,7 +105,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     if self._no_ui:
 
-      # Check Test Run is able to start
+      # Check Testrun is able to start
       if self.get_net_orc().check_config() is False:
         return
 
@@ -207,6 +208,29 @@ class TestRun:  # pylint: disable=too-few-public-methods
         test_report = TestReport().from_json(report_json)
         device.add_report(test_report)
 
+  def delete_report(self, device: Device, timestamp):
+    LOGGER.debug(f'Deleting test report for device {device.model} ' +
+                 f'at {timestamp}')
+
+    # Locate reports folder
+    reports_folder = os.path.join(root_dir,
+                                  LOCAL_DEVICES_DIR,
+                                  device.device_folder, 'reports')
+
+    # Check if reports folder exists (device may have no reports)
+    if not os.path.exists(reports_folder):
+      return False
+
+    for report_folder in os.listdir(reports_folder):
+      if report_folder == timestamp:
+        shutil.rmtree(os.path.join(reports_folder, report_folder))
+
+        # TODO: Remove report from device (available in 1.0.2)
+
+        return True
+
+    return False
+
   def create_device(self, device: Device):
 
     # Define the device folder location
@@ -254,6 +278,21 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     return device.to_config_json()
 
+  def delete_device(self, device: Device):
+
+    # Obtain the config file path
+    device_folder = os.path.join(root_dir,
+                                  LOCAL_DEVICES_DIR,
+                                  device.device_folder)
+
+    # TODO: Remove associated testrun reports from session
+
+    # Delete the device directory
+    os.rmdir(device_folder)
+
+    # Remove the device from the current session device repository
+    self.get_session().remove_device(device)
+
   def start(self):
 
     self.get_session().start()
@@ -275,10 +314,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
           [NetworkEvent.DEVICE_STABLE]
       )
 
-      self._set_status('Waiting for Device')
-
     self.get_net_orc().start_listener()
     LOGGER.info('Waiting for devices on the network...')
+    self._set_status('Waiting for Device')
 
     # Keep application running until stopped
     while True:

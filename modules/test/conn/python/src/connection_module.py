@@ -26,6 +26,7 @@ LOGGER = None
 OUI_FILE = '/usr/local/etc/oui.txt'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
+DHCP_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
 SLAAC_PREFIX = 'fd10:77be:4186'
 TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
 
@@ -92,9 +93,12 @@ class ConnectionModule(TestModule):
           return True, 'Device responded to leased ip address'
         else:
           return False, 'Device did not respond to leased ip address'
+      else:
+        LOGGER.info('No IP information found in lease: ' + self._device_mac)
+        return False, 'No IP information found in lease: ' + self._device_mac
     else:
-      LOGGER.info('No DHCP lease found for: ' + self._device_mac)
-      return False, 'No DHCP lease found for: ' + self._device_mac
+      LOGGER.info('Failed to query DHCP Servers for lease information: ' + self._device_mac)
+      return False, 'Failed to query DHCP Servers for lease information: ' + self._device_mac
 
   def _connection_mac_address(self):
     LOGGER.info('Running connection.mac_address')
@@ -263,19 +267,10 @@ class ConnectionModule(TestModule):
   def _connection_ipv6_slaac(self):
     LOGGER.info('Running connection.ipv6_slaac')
     result = None
-    packet_capture = rdpcap(MONITOR_CAPTURE_FILE)
 
-    sends_ipv6 = False
-
-    for packet in packet_capture:
-      if IPv6 in packet and packet.src == self._device_mac:
-        sends_ipv6 = True
-        if ICMPv6ND_NS in packet:
-          ipv6_addr = str(packet[ICMPv6ND_NS].tgt)
-          if ipv6_addr.startswith(SLAAC_PREFIX):
-            self._device_ipv6_addr = ipv6_addr
-            LOGGER.info(f'Device has formed SLAAC address {ipv6_addr}')
-            result = True, f'Device has formed SLAAC address {ipv6_addr}'
+    slac_test, sends_ipv6 = self._has_slaac_addres()
+    if slac_test:
+      result = True, f'Device has formed SLAAC address {self._device_ipv6_addr}'
     if result is None:
       if sends_ipv6:
         LOGGER.info('Device does not support IPv6 SLAAC')
@@ -285,6 +280,21 @@ class ConnectionModule(TestModule):
         result = False, 'Device does not support IPv6'
     return result
 
+  def _has_slaac_addres(self):
+    packet_capture = rdpcap(DHCP_CAPTURE_FILE)
+    sends_ipv6 = False
+    for packet_number, packet in enumerate(packet_capture, start=1):
+      if IPv6 in packet and packet.src == self._device_mac:
+        sends_ipv6 = True
+        if ICMPv6ND_NS in packet:
+          ipv6_addr = str(packet[ICMPv6ND_NS].tgt)
+          if ipv6_addr.startswith(SLAAC_PREFIX):
+            self._device_ipv6_addr = ipv6_addr
+            LOGGER.info(f"SLAAC address detected at packet number {packet_number}")
+            LOGGER.info(f'Device has formed SLAAC address {ipv6_addr}')
+            return True, sends_ipv6
+    return False, sends_ipv6
+
   def _connection_ipv6_ping(self):
     LOGGER.info('Running connection.ipv6_ping')
     result = None
@@ -292,7 +302,7 @@ class ConnectionModule(TestModule):
       LOGGER.info('No IPv6 SLAAC address found. Cannot ping')
       result = False, 'No IPv6 SLAAC address found. Cannot ping'
     else:
-      if self._ping(self._device_ipv6_addr):
+      if self._ping(self._device_ipv6_addr, ipv6=True):
         LOGGER.info(f'Device responds to IPv6 ping on {self._device_ipv6_addr}')
         result = True, ('Device responds to IPv6 ping on ' +
                         f'{self._device_ipv6_addr}')
@@ -301,8 +311,12 @@ class ConnectionModule(TestModule):
         result = False, 'Device does not respond to IPv6 ping'
     return result
 
-  def _ping(self, host):
-    cmd = 'ping -c 1 ' + str(host)
+  def _ping(self, host, ipv6=False):
+    LOGGER.info('Pinging: ' + str(host))
+    cmd = 'ping -c 1 '
+    cmd += ' -6 ' if ipv6 else ''
+    cmd += str(host)
+    #cmd = 'ping -c 1 ' + str(host)
     success = util.run_command(cmd, output=False)
     return success
 
@@ -387,7 +401,17 @@ class ConnectionModule(TestModule):
     dhcp_setup = self.setup_single_dhcp_server()
     if dhcp_setup[0]:
       LOGGER.info(dhcp_setup[1])
-      lease = self._get_cur_lease()
+      # Lease timing could be in a state where 
+      # is is currently reneweing so we want to
+      # pad a few tries to make sure we don't
+      # miss a valid lease state
+      for _ in range(5):
+        lease = self._get_cur_lease()
+        if lease is not None:
+          break
+        else:
+          time.sleep(5)
+
       if lease is not None:
         if self._is_lease_active(lease):
           results = self.test_subnets(ranges)
@@ -532,6 +556,12 @@ class ConnectionModule(TestModule):
                 False,
                 'details':
                 'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' failed'
+            }
+        else:
+          result = {
+            'result': None, 
+            'details': 'Device does not have active lease, cannot test subnet change. ' + 
+            'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' skipped'
             }
       except Exception as e:  # pylint: disable=W0718
         result = {'result': False, 'details': 'Subnet test failed: ' + str(e)}

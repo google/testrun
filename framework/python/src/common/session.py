@@ -178,6 +178,9 @@ class TestRunSession():
         return device
     return None
 
+  def remove_device(self, device):
+    self._device_repository.remove(device)
+
   def get_status(self):
     return self._status
 

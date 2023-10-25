@@ -31,6 +31,36 @@ jobs:
     name:  Tests
     runs-on: ubuntu-20.04
     needs: testrun_baseline
+    timeout-minutes: 45
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2.3.4
+      - name: Install dependencies
+        shell: bash {0}
+        run: cmd/prepare
+      - name: Package Testrun  
+        shell: bash {0}
+        run: cmd/package
+      - name: Install Testrun
+        shell: bash {0}
+        run: sudo dpkg -i testrun*.deb
+      - name: Run tests
+        shell: bash {0}
+        run: testing/tests/test_tests
+      - name: Archive runtime results
+        if: ${{ always() }}
+        run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/
+      - name: Upload runtime results
+        uses: actions/upload-artifact@v3
+        if: ${{ always() }}
+        with:
+          if-no-files-found: error
+          name: runtime_${{ github.workflow }}_${{ github.run_id }}
+          path: runtime.tgz
+
+  testrun_api:
+    name:  API
+    runs-on: ubuntu-20.04
     timeout-minutes: 40
     steps:
       - name: Checkout source
@@ -58,27 +88,6 @@ jobs:
           if-no-files-found: error
           name: runtime_${{ github.workflow }}_${{ github.run_id }}
           path: runtime.tgz
-
-  testrun_api:
-    name:  API
-    runs-on: ubuntu-20.04
-    timeout-minutes: 40
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v2.3.4
-      - name: Install dependencies
-        shell: bash {0}
-        run: cmd/prepare
-      - name: Package Testrun
-        shell: bash {0}
-        run: cmd/package
-      - name: Install Testrun
-        shell: bash {0}
-        run: sudo dpkg -i testrun*.deb
-        timeout-minutes: 10
-      - name: Run tests
-        shell: bash {0}
-        run: testing/api/test_api
 
   pylint:
     name:  Pylint

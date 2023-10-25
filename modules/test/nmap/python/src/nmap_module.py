@@ -170,7 +170,6 @@ class NmapModule(TestModule):
         LOGGER.debug("Found service " + open_port_info["service"] +
                     " on port " + str(open_port) + "/" +
                     open_port_info["tcp_udp"])
-
         if not allowed:
           match_ports.append(open_port_info["number"] + "/" +
                             open_port_info["tcp_udp"])
