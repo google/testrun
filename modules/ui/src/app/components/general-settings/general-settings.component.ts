@@ -13,10 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<< HEAD
 import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {Subject, takeUntil, tap} from 'rxjs';
 import {TestRunService} from '../../test-run.service';
+=======
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {Subject, takeUntil, tap} from 'rxjs';
+import {TestRunService} from '../../services/test-run.service';
+>>>>>>> dev
 import {OnlyDifferentValuesValidator} from './only-different-values.validator';
 
 @Component({
@@ -25,9 +32,15 @@ import {OnlyDifferentValuesValidator} from './only-different-values.validator';
   styleUrls: ['./general-settings.component.scss']
 })
 export class GeneralSettingsComponent implements OnInit, OnDestroy {
+<<<<<<< HEAD
   @Output() closeSettingEvent = new EventEmitter<void>();
   @Output() openSettingEvent = new EventEmitter<void>();
   public readonly systemInterfaces$ = this.testRunService.getSystemInterfaces();
+=======
+  @Input() interfaces: string[] = [];
+  @Output() closeSettingEvent = new EventEmitter<void>();
+  @Output() openSettingEvent = new EventEmitter<void>();
+>>>>>>> dev
   public settingForm!: FormGroup;
   public isSubmitting = false;
   public hasSetting = false;

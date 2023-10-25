@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 import {inject} from '@angular/core';
+<<<<<<< HEAD
 import {TestRunService} from '../test-run.service';
+=======
+
+import {TestRunService} from '../services/test-run.service';
+>>>>>>> dev
 import {Router} from '@angular/router';
 import {Device} from '../model/device';
 import {map} from 'rxjs';

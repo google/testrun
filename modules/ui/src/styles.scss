@@ -25,6 +25,24 @@ body {
   font-family: 'Open Sans', sans-serif;
 }
 
+<<<<<<< HEAD
+=======
+/* Custom Scroollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $secondary;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: $dark-grey;
+}
+
+>>>>>>> dev
 .app-sidebar-button-active .mat-icon path {
   fill: $white;
 }
@@ -71,6 +89,37 @@ mat-hint {
   display: none;
 }
 
+<<<<<<< HEAD
+=======
+.mat-sort-header-container.mat-focus-indicator:focus::before {
+  content: none;
+}
+
+.app-sidebar-button {
+  .mdc-button__label {
+    position: relative;
+    left: -999px;
+  }
+}
+
+
+.active-menu {
+  .app-sidebar-button {
+    .mdc-button__label {
+      left: 0;
+    }
+  }
+
+  .app-sidebar-button-active .mat-icon path {
+    fill: $grey-800;
+  }
+}
+
+.filter-button.active .filter-icon path {
+  fill: mat.get-color-from-palette($color-primary, 600);
+}
+
+>>>>>>> dev
 .table-cell-result-text {
   margin: 0;
   padding: 4px;
@@ -78,6 +127,10 @@ mat-hint {
   font-size: 12px;
   line-height: 16px;
   letter-spacing: 0.3px;
+<<<<<<< HEAD
+=======
+  white-space: nowrap;
+>>>>>>> dev
 
   &.green {
     background: $green-50;
@@ -113,3 +166,19 @@ h2.title {
   --mat-snack-bar-button-color: #ffffff;
   --mdc-snackbar-supporting-text-color: #ffffff;
 }
+<<<<<<< HEAD
+=======
+
+body:has(.initiate-test-run-dialog) app-root app-spinner,
+body:has(.device-form-dialog) app-root app-spinner {
+  display: none;
+}
+
+body:has(.filter-dialog-content) .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+  opacity: 0;
+}
+
+.text-nowrap {
+  white-space: nowrap;
+}
+>>>>>>> dev

@@ -13,7 +13,7 @@
       "enabled": true
     },
     "baseline": {
-      "enabled": false
+      "enabled": true
     },
     "nmap": {
       "enabled": true

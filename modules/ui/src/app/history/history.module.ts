@@ -21,6 +21,11 @@ import {MatTableModule} from '@angular/material/table';
 import {MatIconModule} from '@angular/material/icon';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {DownloadReportComponent} from '../components/download-report/download-report.component';
+<<<<<<< HEAD
+=======
+import {MatSortModule} from '@angular/material/sort';
+import {FilterDialogComponent} from '../components/filter-dialog/filter-dialog.component';
+>>>>>>> dev
 
 @NgModule({
   declarations: [
@@ -32,7 +37,13 @@ import {DownloadReportComponent} from '../components/download-report/download-re
     MatTableModule,
     MatIconModule,
     MatToolbarModule,
+<<<<<<< HEAD
     DownloadReportComponent
+=======
+    MatSortModule,
+    DownloadReportComponent,
+    FilterDialogComponent
+>>>>>>> dev
   ],
   providers: [DatePipe]
 })

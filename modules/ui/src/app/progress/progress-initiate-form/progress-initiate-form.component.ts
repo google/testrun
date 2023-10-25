@@ -15,7 +15,11 @@
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
+<<<<<<< HEAD
 import {TestRunService} from '../../test-run.service';
+=======
+import {TestRunService} from '../../services/test-run.service';
+>>>>>>> dev
 import {Observable} from 'rxjs/internal/Observable';
 import {Device, TestModule} from '../../model/device';
 import {FormArray, FormBuilder, FormGroup} from '@angular/forms';
@@ -25,7 +29,11 @@ import {tap} from 'rxjs/internal/operators/tap';
 import {interval} from 'rxjs/internal/observable/interval';
 import {takeUntil} from 'rxjs/internal/operators/takeUntil';
 import {Subject} from 'rxjs/internal/Subject';
+<<<<<<< HEAD
 import {NotificationService} from '../../notification.service';
+=======
+import {NotificationService} from '../../services/notification.service';
+>>>>>>> dev
 
 @Component({
   selector: 'app-progress-initiate-form',
@@ -69,9 +77,16 @@ export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
         if (this.testRunStarted) {
           if (res.status === StatusOfTestrun.WaitingForDevice && !this.startInterval) {
             this.pullingSystemStatusData();
+<<<<<<< HEAD
             this.notify(res.status);
           }
           if (res.status !== StatusOfTestrun.WaitingForDevice) {
+=======
+            this.notify(res.status, 0);
+          }
+          if (res.status !== StatusOfTestrun.WaitingForDevice) {
+            this.dismiss();
+>>>>>>> dev
             this.destroy$.next(true);
             this.startInterval = false;
             this.dialogRef.close();
@@ -110,9 +125,14 @@ export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
             this.testRunStarted = true;
             this.testRunService.getSystemStatus();
           },
+<<<<<<< HEAD
           (error: string) => {
             this.startInterval = false;
             this.notify(error);
+=======
+          () => {
+            this.startInterval = false;
+>>>>>>> dev
           });
     }
   }
@@ -137,7 +157,16 @@ export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
     ).subscribe();
   }
 
+<<<<<<< HEAD
   private notify(message: string) {
     this.notificationService.notify(message);
+=======
+  private notify(message: string, duration = 5000) {
+    this.notificationService.notify(message, duration);
+  }
+
+  private dismiss() {
+    this.notificationService.dismiss();
+>>>>>>> dev
   }
 }

@@ -17,9 +17,16 @@ import {Component, OnInit} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {Observable} from 'rxjs/internal/Observable';
 import {Device} from '../model/device';
+<<<<<<< HEAD
 import {TestRunService} from '../test-run.service';
 import {DeviceFormComponent} from './device-form/device-form.component';
 import {Subject, takeUntil} from 'rxjs';
+=======
+import {TestRunService} from '../services/test-run.service';
+import {DeviceFormComponent, FormAction, FormResponse} from './device-form/device-form.component';
+import {Subject, takeUntil} from 'rxjs';
+import {DeleteFormComponent} from '../components/delete-form/delete-form.component';
+>>>>>>> dev
 
 @Component({
   selector: 'app-device-repository',
@@ -43,6 +50,10 @@ export class DeviceRepositoryComponent implements OnInit {
   }
 
   openDialog(selectedDevice?: Device): void {
+<<<<<<< HEAD
+=======
+
+>>>>>>> dev
     const dialogRef = this.dialog.open(DeviceFormComponent, {
       data: {
         device: selectedDevice || null,
@@ -56,12 +67,52 @@ export class DeviceRepositoryComponent implements OnInit {
 
     dialogRef?.afterClosed()
       .pipe(takeUntil(this.destroy$))
+<<<<<<< HEAD
       .subscribe(device => {
         if (!selectedDevice && device) {
           this.testRunService.addDevice(device);
         }
         if (selectedDevice && device) {
           this.testRunService.updateDevice(selectedDevice, device);
+=======
+      .subscribe((response: FormResponse) => {
+        if (!response) return;
+
+        if (response.action === FormAction.Save && response.device && !selectedDevice) {
+          this.testRunService.addDevice(response.device);
+        }
+        if (response.action === FormAction.Save && response.device && selectedDevice) {
+          this.testRunService.updateDevice(selectedDevice, response.device);
+        }
+        if (response.action === FormAction.Delete && selectedDevice) {
+          this.openDeleteDialog(selectedDevice);
+        }
+      });
+  }
+
+  openDeleteDialog(device: Device) {
+    const dialogRef = this.dialog.open(DeleteFormComponent, {
+      data: {
+        title: 'Delete device',
+        content: device.manufacturer + ' ' + device.model,
+        device: device,
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: 'delete-form-dialog'
+    });
+
+    dialogRef?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(deleteDevice => {
+        if (deleteDevice) {
+          this.testRunService.deleteDevice(device).subscribe(() => {
+            this.testRunService.removeDevice(device);
+          });
+        } else {
+          this.openDialog(device);
+>>>>>>> dev
         }
       });
   }

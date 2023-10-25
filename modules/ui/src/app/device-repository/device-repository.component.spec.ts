@@ -16,15 +16,27 @@
 import {ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
 import {of} from 'rxjs';
 import {Device} from '../model/device';
+<<<<<<< HEAD
 import {TestRunService} from '../test-run.service';
+=======
+import {TestRunService} from '../services/test-run.service';
+>>>>>>> dev
 
 import {DeviceRepositoryComponent} from './device-repository.component';
 import {DeviceRepositoryModule} from './device-repository.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+<<<<<<< HEAD
 import {DeviceFormComponent} from './device-form/device-form.component';
 import {MatDialogRef} from '@angular/material/dialog';
 import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
 import {device} from '../mocks/device.mock';
+=======
+import {DeviceFormComponent, FormAction} from './device-form/device-form.component';
+import {MatDialogRef} from '@angular/material/dialog';
+import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
+import {device} from '../mocks/device.mock';
+import {DeleteFormComponent} from '../components/delete-form/delete-form.component';
+>>>>>>> dev
 import SpyObj = jasmine.SpyObj;
 
 describe('DeviceRepositoryComponent', () => {
@@ -35,7 +47,11 @@ describe('DeviceRepositoryComponent', () => {
   let mockService: SpyObj<TestRunService>;
 
   beforeEach(() => {
+<<<<<<< HEAD
     mockService = jasmine.createSpyObj(['getDevices', 'fetchDevices', 'setDevices', 'getTestModules', 'addDevice', 'updateDevice']);
+=======
+    mockService = jasmine.createSpyObj(['getDevices', 'fetchDevices', 'setDevices', 'getTestModules', 'addDevice', 'updateDevice', 'deleteDevice', 'removeDevice']);
+>>>>>>> dev
     mockService.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>([]));
     mockService.getTestModules.and.returnValue([
       {
@@ -152,6 +168,7 @@ describe('DeviceRepositoryComponent', () => {
     expect(mockService.addDevice).not.toHaveBeenCalled();
   });
 
+<<<<<<< HEAD
   it('should add device if dialog closes with object', () => {
     const device = {
       "manufacturer": "Delta",
@@ -178,6 +195,15 @@ describe('DeviceRepositoryComponent', () => {
     spyOn(component.dialog, 'open').and
       .returnValue({
         afterClosed: () => of(device)
+=======
+  it('should add device if dialog closes with object and save action', () => {
+    spyOn(component.dialog, 'open').and
+      .returnValue({
+        afterClosed: () => of({
+          device,
+          action: FormAction.Save
+        })
+>>>>>>> dev
       } as MatDialogRef<typeof DeviceFormComponent>);
     mockService.addDevice.and.callThrough();
 
@@ -186,4 +212,64 @@ describe('DeviceRepositoryComponent', () => {
     expect(mockService.addDevice).toHaveBeenCalledWith(device);
   });
 
+<<<<<<< HEAD
+=======
+  it('should update device if dialog closes with object, action save and selected device', () => {
+    spyOn(component.dialog, 'open').and
+      .returnValue({
+        afterClosed: () => of({
+          device,
+          action: FormAction.Save
+        })
+      } as MatDialogRef<typeof DeviceFormComponent>);
+    mockService.updateDevice.and.callThrough();
+
+    component.openDialog(device);
+
+    expect(mockService.updateDevice).toHaveBeenCalledWith(device, device);
+  });
+
+  it('should delete device if dialog closes with object, action delete and selected device', () => {
+    const openDeleteDialogSpy = spyOn(component, 'openDeleteDialog');
+    spyOn(component.dialog, 'open').and
+      .returnValue({
+        afterClosed: () => of({
+          device,
+          action: FormAction.Delete
+        })
+      } as MatDialogRef<typeof DeviceFormComponent>);
+
+    component.openDialog(device);
+
+    expect(openDeleteDialogSpy).toHaveBeenCalledWith(device);
+  });
+
+  describe('delete device dialog', () => {
+    it('should delete device when dialog return true', () => {
+      spyOn(component.dialog, 'open').and
+        .returnValue({
+          afterClosed: () => of(true)
+        } as MatDialogRef<typeof DeleteFormComponent>);
+      mockService.deleteDevice.and.returnValue(of(true));
+      mockService.removeDevice.and.callThrough();
+
+      component.openDeleteDialog(device);
+
+      expect(mockService.deleteDevice).toHaveBeenCalledWith(device);
+      expect(mockService.removeDevice).toHaveBeenCalledWith(device);
+    });
+
+    it('should open device dialog when dialog return null', () => {
+      const openDeleteDialogSpy = spyOn(component, 'openDialog');
+      spyOn(component.dialog, 'open').and
+        .returnValue({
+          afterClosed: () => of(null)
+        } as MatDialogRef<typeof DeleteFormComponent>);
+
+      component.openDeleteDialog(device);
+
+      expect(openDeleteDialogSpy).toHaveBeenCalledWith(device);
+    });
+  });
+>>>>>>> dev
 });

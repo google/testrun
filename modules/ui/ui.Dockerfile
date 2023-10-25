@@ -16,6 +16,7 @@
 FROM node:20 as build
 
 WORKDIR /modules/ui
+<<<<<<< HEAD
 COPY modules/ui/ /modules/ui
 RUN npm install
 RUN npm run build
@@ -23,6 +24,14 @@ RUN npm run build
 FROM nginx:1.25.1
 
 COPY --from=build /modules/ui/dist/ /usr/share/nginx/html
+=======
+COPY modules/ui/ . 
+RUN npm install && npm run build
+
+FROM nginx:1.25.1
+
+COPY --from=build modules/ui/dist/ /usr/share/nginx/html
+>>>>>>> dev
 
 EXPOSE 8080
 

@@ -35,7 +35,10 @@ SAVED_DEVICE_REPORTS = "report/{device_folder}/"
 LOCAL_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
 TESTRUN_DIR = "/usr/local/testrun"
+<<<<<<< HEAD
 API_URL = "http://localhost:8000"
+=======
+>>>>>>> dev
 
 
 class TestOrchestrator:
@@ -351,6 +354,7 @@ class TestOrchestrator:
         module_results = module_results_json["results"]
         for test_result in module_results:
           self._session.add_test_result(test_result)
+          self._session.add_total_tests(1)
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
       LOGGER.error(

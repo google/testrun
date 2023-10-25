@@ -42,8 +42,12 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
+<<<<<<< HEAD
   exports: [RouterModule],
   providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}]
+=======
+  exports: [RouterModule]
+>>>>>>> dev
 })
 export class AppRoutingModule {
 }

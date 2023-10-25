@@ -16,7 +16,11 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Observable} from 'rxjs/internal/Observable';
 import {IResult, StatusResultClassName} from '../../model/testrun-status';
+<<<<<<< HEAD
 import {TestRunService} from '../../test-run.service';
+=======
+import {TestRunService} from '../../services/test-run.service';
+>>>>>>> dev
 
 @Component({
   selector: 'app-progress-table',

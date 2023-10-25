@@ -15,7 +15,11 @@
  */
 import {Injectable} from '@angular/core';
 import {AbstractControl, ValidationErrors, ValidatorFn} from '@angular/forms';
+<<<<<<< HEAD
 import {TestRunService} from '../../test-run.service';
+=======
+import {TestRunService} from '../../services/test-run.service';
+>>>>>>> dev
 import {Device} from '../../model/device';
 
 @Injectable({providedIn: 'root'})

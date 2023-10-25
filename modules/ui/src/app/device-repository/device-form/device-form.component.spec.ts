@@ -13,10 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<< HEAD
 import {ComponentFixture, fakeAsync, flush, TestBed} from '@angular/core/testing';
 
 import {DeviceFormComponent} from './device-form.component';
 import {TestRunService} from '../../test-run.service';
+=======
+import {ComponentFixture, fakeAsync, flush, TestBed, waitForAsync} from '@angular/core/testing';
+
+import {DeviceFormComponent, FormAction} from './device-form.component';
+import {TestRunService} from '../../services/test-run.service';
+>>>>>>> dev
 import {MatButtonModule} from '@angular/material/button';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatCheckboxModule} from '@angular/material/checkbox';
@@ -26,6 +33,11 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {Device} from '../../model/device';
 import {of, throwError} from 'rxjs';
 import {DeviceTestsComponent} from '../../components/device-tests/device-tests.component';
+<<<<<<< HEAD
+=======
+import {SpinnerComponent} from '../../components/spinner/spinner.component';
+import {NgxMaskDirective, NgxMaskPipe, provideNgxMask} from 'ngx-mask';
+>>>>>>> dev
 
 describe('DeviceFormComponent', () => {
   let component: DeviceFormComponent;
@@ -61,8 +73,26 @@ describe('DeviceFormComponent', () => {
             }
           }
         },
+<<<<<<< HEAD
         {provide: MAT_DIALOG_DATA, useValue: {}},],
       imports: [MatButtonModule, ReactiveFormsModule, MatCheckboxModule, MatInputModule, MatDialogModule, BrowserAnimationsModule, DeviceTestsComponent]
+=======
+        {provide: MAT_DIALOG_DATA, useValue: {}},
+        provideNgxMask()
+      ],
+      imports: [
+        MatButtonModule,
+        ReactiveFormsModule,
+        MatCheckboxModule,
+        MatInputModule,
+        MatDialogModule,
+        BrowserAnimationsModule,
+        DeviceTestsComponent,
+        SpinnerComponent,
+        NgxMaskDirective,
+        NgxMaskPipe,
+      ]
+>>>>>>> dev
     });
     fixture = TestBed.createComponent(DeviceFormComponent);
     component = fixture.componentInstance;
@@ -191,7 +221,14 @@ describe('DeviceFormComponent', () => {
     component.saveDevice();
 
     expect(closeSpy).toHaveBeenCalledTimes(1);
+<<<<<<< HEAD
     expect(closeSpy).toHaveBeenCalledWith(device);
+=======
+    expect(closeSpy).toHaveBeenCalledWith({
+      action: FormAction.Save,
+      device
+    });
+>>>>>>> dev
 
     closeSpy.calls.reset();
   });
@@ -211,7 +248,11 @@ describe('DeviceFormComponent', () => {
   });
 
   describe('device model', () => {
+<<<<<<< HEAD
     it('should not contain errors when input is correct', fakeAsync(() => {
+=======
+    it('should not contain errors when input is correct', waitForAsync(() => {
+>>>>>>> dev
       const model: HTMLInputElement = compiled.querySelector('.device-form-model')!;
       ['model', 'Gebäude', 'jardín'].forEach(value => {
         model.value = value;
@@ -227,20 +268,28 @@ describe('DeviceFormComponent', () => {
           expect(uiValue).toEqual(formValue);
           expect(errors).toBeNull();
         });
+<<<<<<< HEAD
 
         flush();
+=======
+>>>>>>> dev
       });
 
     }));
   });
 
   describe('device manufacturer', () => {
+<<<<<<< HEAD
     it('should not contain errors when input is correct', fakeAsync(() => {
+=======
+    it('should not contain errors when input is correct', () => {
+>>>>>>> dev
       const manufacturer: HTMLInputElement = compiled.querySelector('.device-form-manufacturer')!;
       ['manufacturer', 'Gebäude', 'jardín'].forEach(value => {
         manufacturer.value = value;
         manufacturer.dispatchEvent(new Event('input'));
 
+<<<<<<< HEAD
         fixture.whenStable().then(() => {
           const errors = component.manufacturer.errors;
           const uiValue = manufacturer.value;
@@ -253,6 +302,17 @@ describe('DeviceFormComponent', () => {
         flush();
       })
     }));
+=======
+        const errors = component.manufacturer.errors;
+        const uiValue = manufacturer.value;
+        const formValue = component.manufacturer.value;
+
+        expect(uiValue).toEqual(formValue);
+        expect(errors).toBeNull();
+
+      })
+    });
+>>>>>>> dev
   });
 
   describe('mac address', () => {
@@ -260,12 +320,17 @@ describe('DeviceFormComponent', () => {
       expect(component.mac_addr.disabled).toBeFalse();
     });
 
+<<<<<<< HEAD
     it('should not contain errors when input is correct', fakeAsync(() => {
+=======
+    it('should not contain errors when input is correct', () => {
+>>>>>>> dev
       const macAddress: HTMLInputElement = compiled.querySelector('.device-form-mac-address')!;
       ['07:07:07:07:07:07', '     07:07:07:07:07:07     '].forEach(value => {
         macAddress.value = value;
         macAddress.dispatchEvent(new Event('input'));
 
+<<<<<<< HEAD
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
@@ -303,6 +368,33 @@ describe('DeviceFormComponent', () => {
     }));
 
     it('should have "has_same_mac_address" error when MAC address is already used', fakeAsync(() => {
+=======
+        const errors = component.mac_addr.errors;
+        const formValue = component.mac_addr.value;
+
+        expect(macAddress.value).toEqual(formValue);
+        expect(errors).toBeNull();
+      })
+    });
+
+    it('should have "pattern" error when field does not satisfy pattern', () => {
+      ['value', 'q01e423573c4'].forEach(value => {
+        const macAddress: HTMLInputElement = compiled.querySelector('.device-form-mac-address')!;
+        macAddress.value = value;
+        macAddress.dispatchEvent(new Event('input'));
+        component.mac_addr.markAsTouched();
+        fixture.detectChanges();
+
+        const macAddressError = compiled.querySelector('mat-error')!.innerHTML;
+        const error = component.mac_addr.errors!['pattern'];
+
+        expect(error).toBeTruthy();
+        expect(macAddressError).toContain('Please, check. A MAC address consists of 12 hexadecimal digits (0 to 9, a to f, or A to F).');
+      })
+    });
+
+    it('should have "has_same_mac_address" error when MAC address is already used', () => {
+>>>>>>> dev
       testRunServiceMock.hasDevice.and.returnValue(true);
       const macAddress: HTMLInputElement = compiled.querySelector('.device-form-mac-address')!;
       macAddress.value = '07:07:07:07:07:07';
@@ -310,6 +402,7 @@ describe('DeviceFormComponent', () => {
       component.mac_addr.markAsTouched();
       fixture.detectChanges();
 
+<<<<<<< HEAD
       fixture.whenStable().then(() => {
         const macAddressError = compiled.querySelector('mat-error')!.innerHTML;
         const error = component.mac_addr.errors!['has_same_mac_address'];
@@ -320,6 +413,20 @@ describe('DeviceFormComponent', () => {
 
       flush();
     }));
+=======
+      const macAddressError = compiled.querySelector('mat-error')!.innerHTML;
+      const error = component.mac_addr.errors!['has_same_mac_address'];
+
+      expect(error).toBeTruthy();
+      expect(macAddressError).toContain('This MAC address is already used for another device in the repository.');
+    });
+  });
+
+  it('should have no delete device button', () => {
+    const deleteButton = compiled.querySelector('.delete-button')!;
+
+    expect(deleteButton).toBeNull();
+>>>>>>> dev
   });
 
   describe('when device is present', () => {
@@ -340,6 +447,7 @@ describe('DeviceFormComponent', () => {
       fixture.detectChanges();
     });
 
+<<<<<<< HEAD
     it('should fill form values with device values', () => {
       const model: HTMLInputElement = compiled.querySelector('.device-form-model')!;
       const manufacturer: HTMLInputElement = compiled.querySelector('.device-form-manufacturer')!;
@@ -349,6 +457,18 @@ describe('DeviceFormComponent', () => {
       expect(manufacturer.value).toEqual('Delta');
       expect(macAddress.value).toEqual('00:1e:42:35:73:c4');
     });
+=======
+    it('should fill form values with device values', waitForAsync(() => {
+      fixture.whenStable().then(() => {
+        const model: HTMLInputElement = compiled.querySelector('.device-form-model')!;
+        const manufacturer: HTMLInputElement = compiled.querySelector('.device-form-manufacturer')!;
+        const macAddress: HTMLInputElement = compiled.querySelector('.device-form-mac-address')!;
+        expect(model.value).toEqual('O3-DIN-CPU');
+        expect(manufacturer.value).toEqual('Delta');
+        expect(macAddress.value).toEqual('00:1e:42:35:73:c4');
+      });
+    }));
+>>>>>>> dev
 
     it('should save data even mac address already exist', fakeAsync(() => {
       const closeSpy = spyOn(component.dialogRef, 'close');
@@ -366,6 +486,7 @@ describe('DeviceFormComponent', () => {
       });
 
       expect(closeSpy).toHaveBeenCalledWith({
+<<<<<<< HEAD
         "manufacturer": "Delta",
         "model": "O3-DIN-CPU",
         "mac_addr": "00:1e:42:35:73:c4",
@@ -375,6 +496,20 @@ describe('DeviceFormComponent', () => {
           },
           "udmi": {
             "enabled": true,
+=======
+        action: FormAction.Save,
+        device: {
+          "manufacturer": "Delta",
+          "model": "O3-DIN-CPU",
+          "mac_addr": "00:1e:42:35:73:c4",
+          "test_modules": {
+            "connection": {
+              "enabled": false,
+            },
+            "udmi": {
+              "enabled": true,
+            }
+>>>>>>> dev
           }
         }
       });
@@ -386,5 +521,31 @@ describe('DeviceFormComponent', () => {
     it('should disable mac address', () => {
       expect(component.mac_addr.disabled).toBeTrue();
     });
+<<<<<<< HEAD
+=======
+
+    it('should have delete device button', () => {
+      const deleteButton = compiled.querySelector('.delete-button')!;
+
+      expect(deleteButton).toBeTruthy();
+    });
+
+    it('should close dialog with delete action on "delete" click', () => {
+      const closeSpy = spyOn(component.dialogRef, 'close');
+      const closeButton = compiled.querySelector('.delete-button') as HTMLButtonElement;
+
+      closeButton?.click();
+
+      expect(closeSpy).toHaveBeenCalledWith({action: FormAction.Delete});
+
+      closeSpy.calls.reset();
+    });
+  });
+
+  it('should has loader element', () => {
+    const spinner = compiled.querySelector('app-spinner');
+
+    expect(spinner).toBeTruthy();
+>>>>>>> dev
   });
 });

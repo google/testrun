@@ -13,6 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<< HEAD
+=======
+@use '@angular/material' as mat;
+>>>>>>> dev
 @import "../../theming/colors";
 @import "../../theming/variables";
 
@@ -61,6 +65,27 @@
   .table-cell-report {
     padding-left: 36px;
   }
+<<<<<<< HEAD
+=======
+
+  .filter-button {
+    display: flex;
+    width: 24px;
+    height: 24px;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    margin: 0 2px 0 8px;
+    padding: 0;
+    border: none;
+    background: $white;
+  }
+
+  .filter-button.active .mat-icon {
+    color: mat.get-color-from-palette($color-primary, 600);
+  }
+
+>>>>>>> dev
 }
 
 .results-content-empty {

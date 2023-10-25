@@ -15,14 +15,21 @@
  */
 @use '@angular/material' as mat;
 @import "../../../theming/colors";
+<<<<<<< HEAD
+=======
+@import "../../../theming/variables";
+>>>>>>> dev
 
 :host {
   display: flex;
   flex-direction: column;
   height: 100%;
+<<<<<<< HEAD
 }
 
 .setting-container-content {
+=======
+>>>>>>> dev
   flex: 1 0 auto;
 }
 
@@ -38,6 +45,10 @@
     font-style: normal;
     font-weight: 400;
     line-height: 28px;
+<<<<<<< HEAD
+=======
+    color: $dark-grey;
+>>>>>>> dev
   }
 
   &-button {
@@ -58,6 +69,16 @@
 
 .setting-drawer-content {
   padding: 11px 16px 16px;
+<<<<<<< HEAD
+=======
+  overflow: hidden;
+
+  form {
+    display: grid;
+    grid-template-rows: repeat(4, auto);
+    height: 100%;
+  }
+>>>>>>> dev
 }
 
 .error-message-container {
@@ -66,6 +87,10 @@
 
 .setting-form-label {
   font-size: 18px;
+<<<<<<< HEAD
+=======
+  color: $dark-grey;
+>>>>>>> dev
 
   &.device-label {
     display: inline-block;
@@ -73,11 +98,27 @@
   }
 }
 
+<<<<<<< HEAD
+=======
+.setting-label-description {
+  font-family: $font-secondary;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+  margin: 10px 0 0;
+  color: $dark-grey;
+}
+
+>>>>>>> dev
 .setting-radio-group {
   display: flex;
   flex-direction: column;
   margin-left: -10px;
   align-items: flex-start;
+<<<<<<< HEAD
+=======
+  overflow: scroll;
+>>>>>>> dev
 }
 
 .setting-radio-button {

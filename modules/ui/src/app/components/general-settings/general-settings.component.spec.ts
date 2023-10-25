@@ -16,7 +16,11 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {GeneralSettingsComponent} from './general-settings.component';
+<<<<<<< HEAD
 import {TestRunService} from '../../test-run.service';
+=======
+import {TestRunService} from '../../services/test-run.service';
+>>>>>>> dev
 import {of} from 'rxjs';
 import {SystemConfig} from '../../model/setting';
 import {MatRadioModule} from '@angular/material/radio';

@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 @import "../../../theming/colors";
+<<<<<<< HEAD
+=======
+@import "../../../theming/variables";
+>>>>>>> dev
 
 :host {
   overflow: auto;
@@ -25,8 +29,24 @@
 }
 
 .device-tests-title {
+<<<<<<< HEAD
   margin-top: 20px;
+=======
+  margin: 20px 0 8px;
+>>>>>>> dev
   font-size: 18px;
   line-height: 24px;
   color: $grey-800;
 }
+<<<<<<< HEAD
+=======
+
+.device-tests-description {
+  margin: 0;
+  font-family: $font-secondary;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+  color: $grey-800;
+}
+>>>>>>> dev

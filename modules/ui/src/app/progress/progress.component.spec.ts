@@ -16,7 +16,11 @@
 import {ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick} from '@angular/core/testing';
 
 import {ProgressComponent} from './progress.component';
+<<<<<<< HEAD
 import {TestRunService} from '../test-run.service';
+=======
+import {TestRunService} from '../services/test-run.service';
+>>>>>>> dev
 import {of} from 'rxjs';
 import {MOCK_PROGRESS_DATA_CANCELLED, MOCK_PROGRESS_DATA_COMPLIANT, MOCK_PROGRESS_DATA_IN_PROGRESS, MOCK_PROGRESS_DATA_NOT_STARTED, TEST_DATA} from '../mocks/progress.mock';
 import {MatButtonModule} from '@angular/material/button';

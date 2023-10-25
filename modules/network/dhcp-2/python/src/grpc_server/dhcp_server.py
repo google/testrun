@@ -30,7 +30,7 @@ class DHCPServer:
     global LOGGER
     LOGGER = logger.get_logger(LOG_NAME, 'dhcp-2')
     self.dhcp_config = DHCPConfig()
-    self.radvd = RADVDServer()
+    self.radvd = RADVDServer(enabled=False)
     self.isc_dhcp = ISCDHCPServer()
     self.dhcp_config.resolve_config()
 
@@ -38,7 +38,7 @@ class DHCPServer:
     LOGGER.info('Restarting DHCP server')
     isc_started = self.isc_dhcp.restart()
     radvd_started = self.radvd.restart()
-    started = isc_started and radvd_started
+    started = isc_started and (radvd_started or not self.radvd.enabled)
     LOGGER.info('DHCP server restarted: ' + str(started))
     return started
 
@@ -46,7 +46,7 @@ class DHCPServer:
     LOGGER.info('Starting DHCP server')
     isc_started = self.isc_dhcp.start()
     radvd_started = self.radvd.start()
-    started = isc_started and radvd_started
+    started = isc_started and (radvd_started or not self.radvd.enabled)
     LOGGER.info('DHCP server started: ' + str(started))
     return started
 
@@ -54,7 +54,7 @@ class DHCPServer:
     LOGGER.info('Stopping DHCP server')
     isc_stopped = self.isc_dhcp.stop()
     radvd_stopped = self.radvd.stop()
-    stopped = isc_stopped and radvd_stopped
+    stopped = isc_stopped and (radvd_stopped or not self.radvd.enabled)
     LOGGER.info('DHCP server stopped: ' + str(stopped))
     return stopped
 
@@ -62,7 +62,7 @@ class DHCPServer:
     LOGGER.info('Checking DHCP server status')
     isc_running = self.isc_dhcp.is_running()
     radvd_running = self.radvd.is_running()
-    running = isc_running and radvd_running
+    running = isc_running and (radvd_running or not self.radvd.enabled)
     LOGGER.info('DHCP server status: ' + str(running))
     return running
 

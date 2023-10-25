@@ -17,7 +17,11 @@ import {TestBed} from '@angular/core/testing';
 import {Router} from '@angular/router';
 
 import {allowToRunTestGuard} from './allow-to-run-test.guard';
+<<<<<<< HEAD
 import {TestRunService} from '../test-run.service';
+=======
+import {TestRunService} from '../services/test-run.service';
+>>>>>>> dev
 import {Device} from '../model/device';
 import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
 import {device} from '../mocks/device.mock';
