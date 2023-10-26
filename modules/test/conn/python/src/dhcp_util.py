@@ -179,20 +179,6 @@ class DHCPUtil():
     else:
       return None
 
-  def get_new_lease(self, mac_address, dhcp_server_primary=True):
-    lease = None
-    for _ in range(5):
-      LOGGER.info('Checking for new lease')
-      if lease is not None:
-        lease = self._get_cur_lease_from_server(mac_address,
-                                                dhcp_server_primary)
-        LOGGER.info('New Lease found: ' + str(lease))
-        break
-      else:
-        LOGGER.info('New lease not found. Waiting to check again')
-        time.sleep(5)
-    return lease
-
   def is_lease_active(self, lease):
     if 'ip' in lease:
       ip_addr = lease['ip']

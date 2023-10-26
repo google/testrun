@@ -207,7 +207,7 @@ class ConnectionModule(TestModule):
       self._dhcp_util.restore_failover_dhcp_server()
       LOGGER.info('Waiting 30 seconds for reserved lease to expire')
       time.sleep(30)
-      self._dhcp_util.get_new_lease(self._device_mac)
+      self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=60)
     else:
       result = None, 'Failed to configure network for test'
     return result
@@ -224,7 +224,6 @@ class ConnectionModule(TestModule):
       lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac, timeout=60)
       if lease is not None:
         LOGGER.info('Current device lease resolved')
-        LOGGER.debug(str(lease))
         if self._dhcp_util.is_lease_active(lease):
           # Shutdown the primary server
           if self._dhcp_util.stop_dhcp_server(dhcp_server_primary=True):
@@ -425,7 +424,8 @@ class ConnectionModule(TestModule):
       if final_result is None:
         final_result = result['result']
       else:
-        final_result &= result['result']
+        if result['result'] is not None:
+          final_result &= result['result']
         if result['result']:
           final_result_details += result['details'] + '\n'
 
@@ -511,27 +511,7 @@ class ConnectionModule(TestModule):
       LOGGER.debug('Failed to confirm subnet change')
     else:
       LOGGER.debug('Subnet change request failed.')
-    return False
-
-  def _get_cur_lease(self):
-    LOGGER.info('Checking current device lease')
-    response = self.dhcp1_client.get_lease(self._device_mac)
-    if response.code == 200:
-      lease = eval(response.message)  # pylint: disable=W0123
-      if lease:  # Check if non-empty lease
-        return lease
-    else:
-      return None
-
-  def _is_lease_active(self, lease):
-    if 'ip' in lease:
-      ip_addr = lease['ip']
-      LOGGER.info('Lease IP Resolved: ' + ip_addr)
-      LOGGER.info('Attempting to ping device...')
-      ping_success = self._ping(self._device_ipv4_addr)
-      LOGGER.info('Ping Success: ' + str(ping_success))
-      LOGGER.info('Current lease confirmed active in device')
-      return ping_success
+    return Falseget_new_lease
 
   def test_subnets(self, subnets):
     results = []
