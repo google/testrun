@@ -171,13 +171,16 @@ class DHCPUtil():
     return lease
 
   def _get_cur_lease_from_server(self, mac_address, dhcp_server_primary=True):
-    response = self.get_dhcp_client(dhcp_server_primary).get_lease(mac_address)
-    if response.code == 200:
-      lease = eval(response.message)  # pylint: disable=W0123
-      if lease:  # Check if non-empty lease
-        return lease
-    else:
-      return None
+    lease = None
+    # Check if the server is online first, old lease files can still return
+    # lease information that is no longer valid when a dhcp server is shutdown
+    if self.get_dhcp_server_status(dhcp_server_primary):
+      response = self.get_dhcp_client(dhcp_server_primary).get_lease(mac_address)
+      if response.code == 200:
+        lease_resp = eval(response.message)  # pylint: disable=W0123
+        if lease_resp:  # Check if non-empty lease
+          lease = lease_resp
+    return lease
 
   def is_lease_active(self, lease):
     if 'ip' in lease:
