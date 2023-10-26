@@ -442,20 +442,15 @@ class ConnectionModule(TestModule):
 
       # Wait for a new lease to be provided before exiting test
       # to prevent other test modules from failing
-      for _ in range(5):
-        LOGGER.info('Checking for new lease')
-        lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=60)
-        if lease is not None:
-          LOGGER.info('New lease found')
-          LOGGER.debug(str(lease))
-          LOGGER.info('Validating subnet for new lease...')
-          in_range = self.is_ip_in_range(lease['ip'], cur_range['start'],
-                                         cur_range['end'])
-          LOGGER.debug('Lease within subnet: ' + str(in_range))
-          break
-        else:
-          LOGGER.info('New lease not found. Waiting to check again')
-        time.sleep(5)
+      LOGGER.info('Checking for new lease')
+      lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=120)
+      if lease is not None:
+        LOGGER.info('Validating subnet for new lease...')
+        in_range = self.is_ip_in_range(lease['ip'], cur_range['start'],
+                                       cur_range['end'])
+        LOGGER.debug('Lease within subnet: ' + str(in_range))
+      else:
+        LOGGER.info('New lease not found. Waiting to check again')
 
     except Exception as e:  # pylint: disable=W0718
       LOGGER.error('Failed to restore DHCP server configuration: ' + str(e))
