@@ -100,7 +100,8 @@ class TestOrchestrator:
 
     self._session.stop()
 
-    report = TestReport().from_json(self._generate_report())
+    report = TestReport()
+    report.from_json(self._generate_report())
     device.add_report(report)
 
     self._write_reports(report)
@@ -164,7 +165,7 @@ class TestOrchestrator:
                      f"test {test_result['name']}")
         continue
       if (test_case.required_result.lower() == "required"
-          and test_result["result"].lower() == "non-compliant"):
+          and test_result["result"].lower() != "compliant"):
         result = "Non-Compliant"
     return result
 
@@ -211,7 +212,8 @@ class TestOrchestrator:
         oldest_timestamp = timestamp
         oldest_directory = completed_test
     if oldest_directory:
-      return oldest_timestamp, os.path.join(completed_tests_dir, oldest_directory)
+      return oldest_timestamp, os.path.join(completed_tests_dir,
+                                            oldest_directory)
     else:
       return None
 
