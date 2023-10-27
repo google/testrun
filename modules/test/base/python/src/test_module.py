@@ -108,7 +108,7 @@ class TestModule:
           test['description'] = 'No description was provided for this test'
         else:
           if result[0] is None:
-            test['result'] = 'Error'
+            test['result'] = 'Skipped'
             if len(result) > 1:
               test['description'] = result[1]
             else:
@@ -117,7 +117,7 @@ class TestModule:
             test['result'] = 'Compliant' if result[0] else 'Non-Compliant'
           test['description'] = result[1]
       else:
-        test['result'] = 'Error'
+        test['result'] = 'Skipped'
         test['description'] = 'An error occured whilst running this test'
 
       test['end'] = datetime.now().isoformat()
