@@ -1,6 +1,7 @@
 {
   "config": {
     "meta": {
+      "enabled": false,
       "name": "baseline",
       "display_name": "Baseline",
       "description": "Baseline test"
@@ -25,10 +26,10 @@
         "required_result": "Recommended"
       },
       {
-        "name": "baseline.error",
-        "test_description": "Simulate an error",
-        "expected_behavior": "A error test result is generated",
-        "required_result": "Error"
+        "name": "baseline.skipped",
+        "test_description": "Simulate a skipped test",
+        "expected_behavior": "A skipped test result is generated",
+        "required_result": "Skipped"
       }
     ]
   }
