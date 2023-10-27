@@ -1,7 +1,7 @@
 {
   "config": {
+    "enabled": false,
     "meta": {
-      "enabled": false,
       "name": "baseline",
       "display_name": "Baseline",
       "description": "Baseline test"
