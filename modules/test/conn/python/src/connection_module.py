@@ -463,7 +463,7 @@ class ConnectionModule(TestModule):
       LOGGER.info('Checking for new lease')
       # Subnet changes tend to take longer to pick up so we'll allow
       # for twice the lease wait time
-      lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=self._lease_wait_time_sec*2)
+      lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=2*self._lease_wait_time_sec*2)
       if lease is not None:
         LOGGER.info('Validating subnet for new lease...')
         in_range = self.is_ip_in_range(lease['ip'], cur_range['start'],
@@ -491,7 +491,7 @@ class ConnectionModule(TestModule):
         LOGGER.info('Checking for new lease')
         # Subnet changes tend to take longer to pick up so we'll allow
         # for twice the lease wait time
-        lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=self._lease_wait_time_sec)
+        lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=2*self._lease_wait_time_sec)
         if lease is not None:
           LOGGER.info('New lease found: ' + str(lease))
           LOGGER.info('Validating subnet for new lease...')
