@@ -43,6 +43,10 @@ class TestRunSession():
     self._runtime_params = []
     self._device_repository = []
     self._total_tests = 0
+
+    self._version = None
+    self._load_version()
+
     self._config_file = config_file
     self._config = self._get_default_config()
     self._load_config()
@@ -120,6 +124,17 @@ class TestRunSession():
           MAX_DEVICE_REPORTS_KEY)
 
       LOGGER.debug(self._config)
+
+  def _load_version(self):
+    version_cmd = util.run_command('dpkg-query --showformat=\'${Version}\' --show testrun')
+
+    if version_cmd:
+      version = version_cmd[0]
+      LOGGER.info(f'Running Testrun version {version}')
+    self._version = version
+
+  def get_version(self):
+    return self._version
 
   def _save_config(self):
     with open(self._config_file, 'w', encoding='utf-8') as f:
