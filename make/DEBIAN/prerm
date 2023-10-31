@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/ui
-FROM node:20 as build
+# Remove docker images
+echo Removing docker images
+docker_images=$(sudo docker images --filter=reference="test-run/*" -q)
 
-WORKDIR /modules/ui
-COPY modules/ui/ /modules/ui
-RUN npm install
-RUN npm run build
-
-FROM nginx:1.25.1
-
-COPY --from=build /modules/ui/dist/ /usr/share/nginx/html
-
-EXPOSE 8080
-
-CMD ["nginx", "-g", "daemon off;"]
+if [ -z "$docker_images" ]; then
+  echo No docker images to delete
+else
+  sudo docker rmi $docker_images > /dev/null
+fi

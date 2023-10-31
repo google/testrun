@@ -13,7 +13,6 @@
 # limitations under the License.
 """Connection test module"""
 import util
-import sys
 import time
 from datetime import datetime
 import traceback
@@ -318,7 +317,8 @@ class ConnectionModule(TestModule):
     else:
       if self._ping(self._device_ipv6_addr, ipv6=True):
         LOGGER.info(f'Device responds to IPv6 ping on {self._device_ipv6_addr}')
-        result = True, f'Device responds to IPv6 ping on {self._device_ipv6_addr}'
+        result = True, ('Device responds to IPv6 ping on ' +
+                        f'{self._device_ipv6_addr}')
       else:
         LOGGER.info('Device does not respond to IPv6 ping')
         result = False, 'Device does not respond to IPv6 ping'

@@ -17,6 +17,12 @@
     },
     "nmap": {
       "enabled": true
+    },
+    "protocol": {
+      "enabled": false
+    },
+    "tls": {
+      "enabled": false
     }
-  }
+  } 
 }
