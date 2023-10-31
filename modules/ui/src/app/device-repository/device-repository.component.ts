@@ -44,7 +44,6 @@ export class DeviceRepositoryComponent implements OnInit {
   }
 
   openDialog(selectedDevice?: Device): void {
-
     const dialogRef = this.dialog.open(DeviceFormComponent, {
       data: {
         device: selectedDevice || null,

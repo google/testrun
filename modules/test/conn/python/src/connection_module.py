@@ -13,7 +13,6 @@
 # limitations under the License.
 """Connection test module"""
 import util
-import sys
 import time
 from datetime import datetime
 from scapy.all import rdpcap, DHCP, Ether, IPv6, ICMPv6ND_NS
@@ -129,8 +128,7 @@ class ConnectionModule(TestModule):
       return result, 'No MAC address found.'
 
     # Read all the pcap files containing DHCP packet information
-    packets = rdpcap(STARTUP_CAPTURE_FILE)
-    packets.append(rdpcap(MONITOR_CAPTURE_FILE))
+    packets = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
 
     # Extract MAC addresses from DHCP packets
     mac_addresses = set()
@@ -139,7 +137,7 @@ class ConnectionModule(TestModule):
       if DHCP in packet:
         for option in packet[DHCP].options:
           # message-type, option 3 = DHCPREQUEST
-          if 'message-type' in option and option[1] == 3: 
+          if 'message-type' in option and option[1] == 3:
             mac_address = packet[Ether].src
             LOGGER.info('DHCPREQUEST detected MAC addres: ' + mac_address)
             if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
@@ -306,7 +304,8 @@ class ConnectionModule(TestModule):
     else:
       if self._ping(self._device_ipv6_addr, ipv6=True):
         LOGGER.info(f'Device responds to IPv6 ping on {self._device_ipv6_addr}')
-        result = True, f'Device responds to IPv6 ping on {self._device_ipv6_addr}'
+        result = True, ('Device responds to IPv6 ping on ' +
+                        f'{self._device_ipv6_addr}')
       else:
         LOGGER.info('Device does not respond to IPv6 ping')
         result = False, 'Device does not respond to IPv6 ping'
@@ -355,16 +354,6 @@ class ConnectionModule(TestModule):
         return False, 'DHCP server still running'
     else:
       return False, 'DHCP server stop command failed'
-
-
-    # TODO: This code is unreachable.
-    # Move primary DHCP server from failover into a single DHCP server config
-    LOGGER.info('Configuring primary DHCP server')
-    response = self.dhcp1_client.disable_failover()
-    if response.code == 200:
-      LOGGER.info('Primary DHCP server failover disabled')
-    else:
-      return False, 'Failed to disable primary DHCP server failover'
 
   def enable_failover(self):
     # Move primary DHCP server to primary failover

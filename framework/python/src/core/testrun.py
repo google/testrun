@@ -299,20 +299,13 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     self._start_network()
 
+    self.get_net_orc().get_listener().register_callback(
+      self._device_discovered,
+      [NetworkEvent.DEVICE_DISCOVERED]
+    )
+
     if self._net_only:
       LOGGER.info('Network only option configured, no tests will be run')
-
-      self.get_net_orc().get_listener().register_callback(
-        self._device_discovered,
-        [NetworkEvent.DEVICE_DISCOVERED]
-      )
-
-      self.get_net_orc().start_listener()
-      LOGGER.info('Waiting for devices on the network...')
-
-      while True:
-        time.sleep(self._session.get_runtime())
-
     else:
       self._test_orc.start()
 
@@ -321,27 +314,13 @@ class TestRun:  # pylint: disable=too-few-public-methods
           [NetworkEvent.DEVICE_STABLE]
       )
 
-      self.get_net_orc().get_listener().register_callback(
-        self._device_discovered,
-        [NetworkEvent.DEVICE_DISCOVERED]
-      )
+    self.get_net_orc().start_listener()
+    LOGGER.info('Waiting for devices on the network...')
+    self._set_status('Waiting for Device')
 
-      self.get_net_orc().start_listener()
-      self._set_status('Waiting for Device')
-      LOGGER.info('Waiting for devices on the network...')
-
-      time.sleep(self.get_session().get_runtime())
-
-      if not (self._test_orc.test_in_progress() or
-              self.get_net_orc().monitor_in_progress()):
-        LOGGER.info('''Timed out whilst waiting for
-          device or stopping due to test completion''')
-      else:
-        while (self._test_orc.test_in_progress() or
-          self.get_net_orc().monitor_in_progress()):
-          time.sleep(5)
-
-    self.stop()
+    # Keep application running until stopped
+    while True:
+      time.sleep(5)
 
   def stop(self, kill=False):
 
@@ -352,6 +331,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._stop_tests()
     self._stop_network(kill=kill)
     self._stop_ui()
+    self.get_session().set_status('Cancelled')
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
