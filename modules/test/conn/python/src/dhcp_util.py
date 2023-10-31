@@ -110,10 +110,11 @@ class DHCPUtil():
       return False
 
   def get_dhcp_server_status(self, dhcp_server_primary=True):
-    LOGGER.info('Checking DHCP server status')
+    server_name = 'primary' if dhcp_server_primary else 'secondary'
+    LOGGER.debug(f'Checking {server_name} DHCP server status')
     response = self.get_dhcp_client(dhcp_server_primary).get_status()
     if response.code == 200:
-      LOGGER.info('DHCP server status: ' + str(response.message))
+      LOGGER.debug(f'DHCP {server_name} server status: {response.message}')
       status = eval(response.message)  # pylint: disable=W0123
       return status['dhcpStatus']
     else:
