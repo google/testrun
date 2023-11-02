@@ -22,6 +22,8 @@ import os
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
+TESTS_FIRST_PAGE = 12
+TESTS_PER_PAGE = 20
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -129,45 +131,56 @@ class TestReport():
     '''
 
   def generate_test_sections(self,json_data):
-    results = json_data["tests"]["results"]
-    sections = ""
+    results = json_data['tests']['results']
+    sections = ''
     for result in results:
-        sections += self.generate_test_section(result)
+      sections += self.generate_test_section(result)
     return sections
 
   def generate_test_section(self, result):
     section_content = '<section class="test-section">\n'
     for key, value in result.items():
-        if value is not None:  # Check if the value is not None
-            formatted_key = key.replace('_', ' ').title()  # Replace underscores and capitalize
-            section_content += f'<p><strong>{formatted_key}:</strong> {value}</p>\n'
+      if value is not None:  # Check if the value is not None
+        # Replace underscores and capitalize
+        formatted_key = key.replace('_', ' ').title()
+        section_content += f'<p><strong>{formatted_key}:</strong> {value}</p>\n'
     section_content += '</section>\n<div style="margin-bottom: 40px;"></div>\n'
     return section_content
 
-  def generate_pages(self,json_data):
-    max_page = 1
-    reports_per_page = 25 # figure out how many can fit on other pages
+  def generate_pages(self, json_data):
 
     # Calculate pages
     test_count = len(json_data['tests']['results'])
 
-    # 10 tests can fit on the first page
-    if test_count > 10:
-      test_count -= 10
+    # Multiple pages required
+    if test_count > TESTS_FIRST_PAGE:
+      # First page
+      full_page = 1
 
-      full_page = (int)(test_count / reports_per_page)
-      partial_page = 1 if test_count % reports_per_page > 0 else 0
-      if partial_page > 0:
-        max_page += full_page + partial_page
+      # Remaining tests
+      test_count -= TESTS_FIRST_PAGE
+      full_page += (int)(test_count / TESTS_PER_PAGE)
+      partial_page = 1 if test_count % TESTS_PER_PAGE > 0 else 0
+
+    # 1 page required
+    elif test_count == TESTS_FIRST_PAGE:
+      full_page = 1
+      partial_page = 0
+    # Less than 1 page required
+    else:
+      full_page = 0
+      partial_page = 1
+
+    max_page = full_page + partial_page
 
     pages = ''
     for i in range(max_page):
       pages += self.generate_page(json_data, i+1, max_page)
     return pages
 
-  def generate_page(self,json_data, page_num, max_page):
+  def generate_page(self, json_data, page_num, max_page):
     # Placeholder until available in json report
-    version = 'v1.1-alpha (2023-10-02)'
+    version = 'v1.1-alpha (2023-11-02)'
     page = '<div class="page">'
     page += self.generate_header(json_data)
     if page_num == 1:
@@ -177,17 +190,16 @@ class TestReport():
     page += '</div>'
     if page_num < max_page:
       page += '<div style="break-after:page"></div>'
-      #page += f'''<p style="page-break-before: always"></p>'''
     return page
 
-  def generate_body(self,json_data, page_num=1, max_page=1):
+  def generate_body(self, json_data, page_num=1, max_page=1):
     return f'''
     <body>
       {self.generate_pages(json_data)}
     </body>
     '''
 
-  def generate_footer(self,page_num, max_page, version):
+  def generate_footer(self, page_num, max_page, version):
     footer = f'''
     <div class="footer">
       <img style="margin-bottom:10px;width:100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABFgAAAABCAYAAADqzRqJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA3SURBVHgB7cAxAQAQFEXRJ4MIMkjwS9hklMCoi1EBWljePWlHvQIAMy2mAMDNKV3ADysPAYCbB6fxBrzkZ2KOAAAAAElFTkSuQmCC" />
@@ -197,7 +209,7 @@ class TestReport():
     '''
     return footer
 
-  def generate_results(self,json_data, page_num):
+  def generate_results(self, json_data, page_num):
 
     result_list = '''
       <img style="margin-bottom:10px;width:100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABFgAAAABCAYAAADqzRqJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA3SURBVHgB7cAxAQAQFEXRJ4MIMkjwS9hklMCoi1EBWljePWlHvQIAMy2mAMDNKV3ADysPAYCbB6fxBrzkZ2KOAAAAAElFTkSuQmCC" />
@@ -210,10 +222,12 @@ class TestReport():
         </div>'''
     if page_num == 1:
       start = 0
+    elif page_num == 2:
+      start = TESTS_FIRST_PAGE
     else:
-      start = 10 * (page_num - 1) + (page_num-2) * 25
-    results_on_page = 10 if page_num == 1 else 25
-    result_end = min(results_on_page,len(json_data['tests']['results']))
+      start = (page_num-2) * TESTS_PER_PAGE + TESTS_FIRST_PAGE
+    results_on_page = TESTS_FIRST_PAGE if page_num == 1 else TESTS_PER_PAGE
+    result_end = min(start+results_on_page, len(json_data['tests']['results']))
     for ix in range(result_end-start):
       result = json_data['tests']['results'][ix+start]
       result_list += self.generate_result(result)
@@ -231,7 +245,7 @@ class TestReport():
     result_html = f'''
       <div class="result-line result-line-result">
           <div class="result-test-label" style="left: .1in;">{result['name']}</div>
-          <div class="result-test-label result-test-description" style="left: 2.8in;">{result['test_description']}</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">{result['description']}</div>
           <div class="result-test-label result-test-result {result_class}">{result['result']}</div>
       </div>
       '''
@@ -264,7 +278,10 @@ class TestReport():
     summary += self.generate_device_summary_label('Manufacturer',manufacturer)
     summary += self.generate_device_summary_label('Model',model)
     summary += self.generate_device_summary_label('Firmware',fw)
-    summary += self.generate_device_summary_label('MAC Address',mac,trailing_space=False)
+    summary += self.generate_device_summary_label(
+      'MAC Address',
+      mac,
+      trailing_space=False)
 
     # Add the result summary
     summary += self.generate_result_summary(json_data)
@@ -282,11 +299,13 @@ class TestReport():
     result_summary += self.generate_result_summary_item('Started', json_data['started'])
 
     # Convert the timestamp strings to datetime objects
-    start_time = datetime.strptime(json_data['started'], "%Y-%m-%d %H:%M:%S")
-    end_time = datetime.strptime(json_data['finished'], "%Y-%m-%d %H:%M:%S")
+    start_time = datetime.strptime(json_data['started'], '%Y-%m-%d %H:%M:%S')
+    end_time = datetime.strptime(json_data['finished'], '%Y-%m-%d %H:%M:%S')
     # Calculate the duration
     duration = end_time - start_time
-    result_summary += self.generate_result_summary_item('Duration',str(duration))
+    result_summary += self.generate_result_summary_item(
+      'Duration',
+      str(duration))
 
     result_summary += '\n</div>'
     return result_summary
@@ -305,7 +324,7 @@ class TestReport():
     <div class="summary-item-value">{value}</div>
     '''
     if trailing_space:
-     label += '''<div class="summary-item-space"></div>'''
+      label += '''<div class="summary-item-space"></div>'''
     return label
 
   def generate_head(self):

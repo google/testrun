@@ -30,7 +30,7 @@ class DHCPServer:
     global LOGGER
     LOGGER = logger.get_logger(LOG_NAME, 'dhcp-1')
     self.dhcp_config = DHCPConfig()
-    self.radvd = RADVDServer(enabled=False)
+    self.radvd = RADVDServer(enabled=True)
     self.isc_dhcp = ISCDHCPServer()
     self.dhcp_config.resolve_config()
 
