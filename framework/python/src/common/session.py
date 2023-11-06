@@ -174,7 +174,7 @@ class TestRunSession():
 
   def get_device(self, mac_addr):
     for device in self._device_repository:
-      if device.lower() == mac_addr.lower():
+      if device.mac_addr.lower() == mac_addr.lower():
         return device
     return None
 
