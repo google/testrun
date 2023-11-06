@@ -147,8 +147,10 @@ class Api:
 
     # Check Testrun is not already running
     if self._test_run.get_session().get_status() in [
+        "Starting",
         "In Progress",
         "Waiting for Device",
+        "Monitoring"
       ]:
       LOGGER.debug("Testrun is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
@@ -170,8 +172,6 @@ class Api:
                                 "ready for use. Ensure required interfaces " +
                                 "are connected.")
 
-    self._test_run.get_session().reset()
-    self._test_run.get_session().set_target_device(device)
     LOGGER.info("Starting Testrun with device target " +
                 f"{device.manufacturer} {device.model} with " +
                 f"MAC address {device.mac_addr}")
@@ -179,6 +179,9 @@ class Api:
     thread = threading.Thread(target=self._start_test_run,
                                         name="Testrun")
     thread.start()
+
+    self._test_run.get_session().set_target_device(device)
+
     return self._test_run.get_session().to_json()
 
   def _generate_msg(self, success, message):

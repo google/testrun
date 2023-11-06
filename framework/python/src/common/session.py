@@ -53,7 +53,7 @@ class TestRunSession():
 
   def start(self):
     self.reset()
-    self._status = 'Waiting for Device'
+    self._status = 'Starting'
     self._started = datetime.datetime.now()
 
   def get_started(self):
