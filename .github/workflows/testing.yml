@@ -115,3 +115,21 @@ jobs:
         with:
           name: Testrun Installer
           path: testrun*.deb
+
+  testrun_ui:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.10.0
+    - run: sudo apt install chromium-browser
+    - name: npm dependencies
+      run: npm ci
+    - name: Run tests
+      run: |
+        export CHROME_BIN=/usr/bin/chromium-browser
+        CI=true npm run test-headless
+      env:
+        CI: true
