@@ -53,4 +53,4 @@ cp -r {framework,modules} $MAKE_SRC_DIR/usr/local/testrun
 dpkg-deb --build --root-owner-group make
 
 # Rename the .deb file
-mv make.deb testrun_1-0-2_amd64.deb
+mv make.deb testrun_1-2-alpha_amd64.deb
