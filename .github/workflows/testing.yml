@@ -127,7 +127,7 @@ jobs:
         node-version: 18.10.0
     - run: sudo apt install chromium-browser
     - name: npm dependencies
-      run: npm ci
+      run: npm install && npm ci
       working-directory: ./modules/ui
     - name: Run tests
       run: |
