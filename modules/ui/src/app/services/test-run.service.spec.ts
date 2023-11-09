@@ -13,22 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
-import {fakeAsync, getTestBed, TestBed, tick} from '@angular/core/testing';
-import {Device, TestModule} from '../model/device';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
+import { fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
+import { Device, TestModule } from '../model/device';
 
-import {TestRunService} from './test-run.service';
-import {SystemConfig} from '../model/setting';
-import {MOCK_PROGRESS_DATA_IN_PROGRESS} from '../mocks/progress.mock';
-import {StatusOfTestResult, TestrunStatus} from '../model/testrun-status';
-import {device} from '../mocks/device.mock';
+import { TestRunService } from './test-run.service';
+import { SystemConfig } from '../model/setting';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/progress.mock';
+import { StatusOfTestResult, TestrunStatus } from '../model/testrun-status';
+import { device } from '../mocks/device.mock';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
     device_intf: 'mockDeviceValue',
-    internet_intf: 'mockInternetValue'
-  }
-}
+    internet_intf: 'mockInternetValue',
+  },
+};
 
 describe('TestRunService', () => {
   let injector: TestBed;
@@ -38,7 +41,7 @@ describe('TestRunService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [TestRunService]
+      providers: [TestRunService],
     });
     injector = getTestBed();
     httpTestingController = injector.get(HttpTestingController);
@@ -56,39 +59,39 @@ describe('TestRunService', () => {
   it('should have test modules', () => {
     expect(service.getTestModules()).toEqual([
       {
-        displayName: "Connection",
-        name: "connection",
-        enabled: true
+        displayName: 'Connection',
+        name: 'connection',
+        enabled: true,
       },
       {
-        displayName: "NTP",
-        name: "ntp",
-        enabled: true
+        displayName: 'NTP',
+        name: 'ntp',
+        enabled: true,
       },
       {
-        displayName: "DHCP",
-        name: "dhcp",
-        enabled: true
+        displayName: 'DHCP',
+        name: 'dhcp',
+        enabled: true,
       },
       {
-        displayName: "DNS",
-        name: "dns",
-        enabled: true
+        displayName: 'DNS',
+        name: 'dns',
+        enabled: true,
       },
       {
-        displayName: "Services",
-        name: "nmap",
-        enabled: true
+        displayName: 'Services',
+        name: 'nmap',
+        enabled: true,
       },
       {
-        displayName: "Security",
-        name: "security",
-        enabled: true
+        displayName: 'Security',
+        name: 'security',
+        enabled: true,
       },
       {
-        displayName: "TLS",
-        name: "tls",
-        enabled: true
+        displayName: 'TLS',
+        name: 'tls',
+        enabled: true,
       },
     ] as TestModule[]);
   });
@@ -97,13 +100,15 @@ describe('TestRunService', () => {
     let result: Device[] | null = null;
     const deviceArray = [device] as Device[];
 
-    service.getDevices().subscribe((res) => {
+    service.getDevices().subscribe(res => {
       expect(res).toEqual(result);
     });
 
     result = deviceArray;
     service.fetchDevices();
-    const req = httpTestingController.expectOne('http://localhost:8000/devices');
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/devices'
+    );
 
     expect(req.request.method).toBe('GET');
 
@@ -115,14 +120,13 @@ describe('TestRunService', () => {
 
     service.systemConfig$.subscribe(data => {
       expect(data).toEqual(MOCK_SYSTEM_CONFIG);
-    })
-
-  })
+    });
+  });
 
   it('getSystemConfig should return systemConfig data', () => {
-    const apiUrl = 'http://localhost:8000/system/config'
+    const apiUrl = 'http://localhost:8000/system/config';
 
-    service.getSystemConfig().subscribe((res) => {
+    service.getSystemConfig().subscribe(res => {
       expect(res).toEqual(MOCK_SYSTEM_CONFIG);
     });
 
@@ -132,23 +136,23 @@ describe('TestRunService', () => {
   });
 
   it('createSystemConfig should call systemConfig data', () => {
-    const apiUrl = 'http://localhost:8000/system/config'
+    const apiUrl = 'http://localhost:8000/system/config';
 
-    service.createSystemConfig(MOCK_SYSTEM_CONFIG).subscribe((res) => {
-      expect(res).toEqual({});
+    service.createSystemConfig(MOCK_SYSTEM_CONFIG).subscribe(res => {
+      expect(res).toEqual(MOCK_SYSTEM_CONFIG);
     });
 
     const req = httpTestingController.expectOne(apiUrl);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(MOCK_SYSTEM_CONFIG);
-    req.flush({});
+    req.flush(MOCK_SYSTEM_CONFIG);
   });
 
   it('getSystemInterfaces should return array of interfaces', () => {
-    const apiUrl = 'http://localhost:8000/system/interfaces'
+    const apiUrl = 'http://localhost:8000/system/interfaces';
     const mockSystemInterfaces: string[] = ['mockValue', 'mockValue'];
 
-    service.getSystemInterfaces().subscribe((res) => {
+    service.getSystemInterfaces().subscribe(res => {
       expect(res).toEqual(mockSystemInterfaces);
     });
 
@@ -162,27 +166,29 @@ describe('TestRunService', () => {
     service.setDevices(deviceArray);
     tick();
 
-    expect(service.hasDevice("00:1e:42:35:73:c4")).toEqual(true);
-    expect(service.hasDevice("    00:1e:42:35:73:c4    ")).toEqual(true);
+    expect(service.hasDevice('00:1e:42:35:73:c4')).toEqual(true);
+    expect(service.hasDevice('    00:1e:42:35:73:c4    ')).toEqual(true);
   }));
 
   it('getSystemStatus should get system status data', () => {
     const result = MOCK_PROGRESS_DATA_IN_PROGRESS;
 
-    service.systemStatus$.subscribe((res) => {
+    service.systemStatus$.subscribe(res => {
       expect(res).toEqual(result);
     });
 
     service.getSystemStatus();
-    const req = httpTestingController.expectOne('http://localhost:8000/system/status');
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/status'
+    );
     expect(req.request.method).toBe('GET');
     req.flush(result);
   });
 
   it('stopTestrun should have necessary request data', () => {
-    const apiUrl = 'http://localhost:8000/system/stop'
+    const apiUrl = 'http://localhost:8000/system/stop';
 
-    service.stopTestrun().subscribe((res) => {
+    service.stopTestrun().subscribe(res => {
       expect(res).toEqual(true);
     });
 
@@ -194,37 +200,41 @@ describe('TestRunService', () => {
 
   describe('#startTestRun', () => {
     it('should have necessary request data', () => {
-      const apiUrl = 'http://localhost:8000/system/start'
+      const apiUrl = 'http://localhost:8000/system/start';
 
-      service.startTestrun(device).subscribe((res) => {
+      service.startTestrun(device).subscribe(res => {
         expect(res).toEqual(true);
       });
 
       const req = httpTestingController.expectOne(apiUrl);
       expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(JSON.stringify({device}));
+      expect(req.request.body).toEqual(JSON.stringify({ device }));
       req.flush({});
     });
   });
 
   it('getHistory should return reports', () => {
-    let result: TestrunStatus[] = [];
+    let result: TestrunStatus[] | null = null;
 
-    const reports = [{
-      "status": "Completed",
-      "device": device,
-      "report": "https://api.testrun.io/report.pdf",
-      "started": "2023-06-22T10:11:00.123Z",
-      "finished": "2023-06-22T10:17:00.123Z",
-    }] as TestrunStatus[];
+    const reports = [
+      {
+        status: 'Completed',
+        device: device,
+        report: 'https://api.testrun.io/report.pdf',
+        started: '2023-06-22T10:11:00.123Z',
+        finished: '2023-06-22T10:17:00.123Z',
+      },
+    ] as TestrunStatus[];
 
-    service.getHistory().subscribe((res) => {
+    service.getHistory().subscribe(res => {
       expect(res).toEqual(result);
     });
 
     result = reports;
     service.fetchHistory();
-    const req = httpTestingController.expectOne('http://localhost:8000/reports');
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/reports'
+    );
 
     expect(req.request.method).toBe('GET');
 
@@ -234,7 +244,10 @@ describe('TestRunService', () => {
   describe('#getResultClass', () => {
     it('should return class "green" if test result is "Compliant" or "Smart Ready"', () => {
       const expectedResult = {
-        green: true, red: false, blue: false, grey: false
+        green: true,
+        red: false,
+        blue: false,
+        grey: false,
       };
 
       const result1 = service.getResultClass(StatusOfTestResult.Compliant);
@@ -244,7 +257,10 @@ describe('TestRunService', () => {
 
     it('should return class "blue" if test result is "Smart Ready" or "Informational"', () => {
       const expectedResult = {
-        green: false, red: false, blue: true, grey: false
+        green: false,
+        red: false,
+        blue: true,
+        grey: false,
       };
 
       const result1 = service.getResultClass(StatusOfTestResult.SmartReady);
@@ -256,7 +272,10 @@ describe('TestRunService', () => {
 
     it('should return class "read" if test result is "Non Compliant" or "Error"', () => {
       const expectedResult = {
-        green: false, red: true, blue: false, grey: false
+        green: false,
+        red: true,
+        blue: false,
+        grey: false,
       };
 
       const result = service.getResultClass(StatusOfTestResult.NonCompliant);
@@ -268,7 +287,10 @@ describe('TestRunService', () => {
 
     it('should return class "grey" if test result is "Skipped" or "Not Started"', () => {
       const expectedResult = {
-        green: false, red: false, blue: false, grey: true
+        green: false,
+        red: false,
+        blue: false,
+        grey: true,
       };
 
       const result1 = service.getResultClass(StatusOfTestResult.Skipped);
@@ -292,13 +314,12 @@ describe('TestRunService', () => {
 
       expect(service.getDevices().value).toEqual([device, device, device]);
     });
-
   });
 
   it('deleteDevice should have necessary request data', () => {
-    const apiUrl = 'http://localhost:8000/device'
+    const apiUrl = 'http://localhost:8000/device';
 
-    service.deleteDevice(device).subscribe((res) => {
+    service.deleteDevice(device).subscribe(res => {
       expect(res).toEqual(true);
     });
 
@@ -314,7 +335,6 @@ describe('TestRunService', () => {
     tick();
     service.removeDevice(device);
 
-    expect(service.hasDevice("00:1e:42:35:73:c4")).toEqual(false);
+    expect(service.hasDevice('00:1e:42:35:73:c4')).toEqual(false);
   }));
-
 });

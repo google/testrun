@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import "../../theming/colors";
-@import "../../theming/variables";
+@import '../../theming/colors';
+@import '../../theming/variables';
 
 :host {
   overflow: hidden;
@@ -52,7 +52,8 @@
     font-weight: 400;
   }
 
-  th, td {
+  th,
+  td {
     font-family: Roboto, sans-serif;
     font-size: 14px;
     line-height: 20px;
@@ -79,7 +80,6 @@
   .filter-button.active .mat-icon {
     color: mat.get-color-from-palette($color-primary, 600);
   }
-
 }
 
 .results-content-empty {

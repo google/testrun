@@ -17,13 +17,37 @@ limitations under the License.
   <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
     <div class="app-sidebar">
       <ng-container
-        *ngTemplateOutlet="navButtonRoute;context:{route: '/runtime', svgIcon: 'testrun_logo_small', label: 'Testrun', name: 'runtime'}">
+        *ngTemplateOutlet="
+          navButtonRoute;
+          context: {
+            route: '/runtime',
+            svgIcon: 'testrun_logo_small',
+            label: 'Testrun',
+            name: 'runtime'
+          }
+        ">
       </ng-container>
       <ng-container
-        *ngTemplateOutlet="navButtonRoute;context:{route: '/device-repository',svgIcon: 'devices', label: 'Devices', name: 'device-repository'}">
+        *ngTemplateOutlet="
+          navButtonRoute;
+          context: {
+            route: '/device-repository',
+            svgIcon: 'devices',
+            label: 'Devices',
+            name: 'device-repository'
+          }
+        ">
       </ng-container>
       <ng-container
-        *ngTemplateOutlet="navButtonRoute;context:{route: '/results',svgIcon: 'reports', label: 'Reports', name: 'results'}">
+        *ngTemplateOutlet="
+          navButtonRoute;
+          context: {
+            route: '/results',
+            svgIcon: 'reports',
+            label: 'Reports',
+            name: 'results'
+          }
+        ">
       </ng-container>
     </div>
   </mat-drawer>
@@ -42,11 +66,12 @@ limitations under the License.
         <span>Testrun</span>
       </a>
       <span class="spacer"></span>
-      <button (click)="openFeedbackModal()"
-              aria-label="Start feedback"
-              class="feedback-button"
-              color="primary"
-              mat-flat-button>
+      <button
+        (click)="openFeedbackModal()"
+        aria-label="Start feedback"
+        class="feedback-button"
+        color="primary"
+        mat-flat-button>
         Have feedback?
       </button>
       <span class="spacer"></span>
@@ -76,17 +101,24 @@ limitations under the License.
   </mat-drawer>
 </mat-drawer-container>
 
-<ng-template #navButtonRoute let-icon="icon" let-label="label" let-name="name"
-             let-route="route" let-svgIcon="svgIcon">
+<ng-template
+  #navButtonRoute
+  let-icon="icon"
+  let-label="label"
+  let-name="name"
+  let-route="route"
+  let-svgIcon="svgIcon">
   <button
-    disabled="{{route !== '/device-repository' && !(devices$| async)?.length}}"
-    class="app-sidebar-button app-sidebar-button-{{name}}"
+    disabled="{{
+      route !== '/device-repository' && !(devices$ | async)?.length
+    }}"
+    class="app-sidebar-button app-sidebar-button-{{ name }}"
     mat-button
-    routerLink="{{route}}"
+    routerLink="{{ route }}"
     routerLinkActive="app-sidebar-button-active">
-    <mat-icon *ngIf="svgIcon" svgIcon="{{svgIcon}}"></mat-icon>
-    <mat-icon *ngIf="icon">{{icon}}</mat-icon>
-    <span class="sidebar-button-label">{{label}}</span>
+    <mat-icon *ngIf="svgIcon" svgIcon="{{ svgIcon }}"></mat-icon>
+    <mat-icon *ngIf="icon">{{ icon }}</mat-icon>
+    <span class="sidebar-button-label">{{ label }}</span>
   </button>
 </ng-template>
 

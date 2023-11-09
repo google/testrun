@@ -13,26 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {FilterDialogComponent} from './filter-dialog.component';
-import {CommonModule} from '@angular/common';
-import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {MatButtonModule} from '@angular/material/button';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatInputModule} from '@angular/material/input';
-import {MatSelectModule} from '@angular/material/select';
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatDatepickerModule} from '@angular/material/datepicker';
-import {MatNativeDateModule} from '@angular/material/core';
-import {FilterName} from '../../model/filters';
-import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import { FilterDialogComponent } from './filter-dialog.component';
+import { CommonModule } from '@angular/common';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import {
+  MatDatepickerInputEvent,
+  MatDatepickerModule,
+} from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { FilterName } from '../../model/filters';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('FilterDialogComponent', () => {
   let component: FilterDialogComponent;
   let fixture: ComponentFixture<FilterDialogComponent>;
   let compiled: HTMLElement;
+  const mockData = { left: 0, bottom: 0 };
+  const mockClientRest = {
+    nativeElement: {
+      getBoundingClientRect: () => mockData,
+    },
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -49,37 +62,31 @@ describe('FilterDialogComponent', () => {
         MatSelectModule,
         MatCheckboxModule,
         MatDatepickerModule,
-        MatNativeDateModule
+        MatNativeDateModule,
       ],
       providers: [
         {
           provide: MatDialogRef,
           useValue: {
-            close: () => {},
-            updateSize: () => {},
-            updatePosition: () => {}
-          }
+            close: () => ({}),
+            updateSize: () => ({}),
+            updatePosition: () => ({}),
+          },
         },
-        {provide: MAT_DIALOG_DATA, useValue: {}},
-      ]
+        { provide: MAT_DIALOG_DATA, useValue: {} },
+      ],
     });
     fixture = TestBed.createComponent(FilterDialogComponent);
     component = fixture.componentInstance;
 
-    const mockData = {left: 0, bottom: 0};
-    const mockClientRest = {
-      nativeElement: {
-        getBoundingClientRect: () => mockData
-      }
-    }
     component.data = {
       trigger: mockClientRest,
       filter: FilterName.DeviceInfo,
-      availableStatuses: ['Compliant']
-    }
-    component.data.trigger.nativeElement = {getBoundingClientRect: () => mockData};
+    };
+    component.data.trigger.nativeElement = {
+      getBoundingClientRect: () => mockData,
+    };
     compiled = fixture.nativeElement as HTMLElement;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -88,7 +95,9 @@ describe('FilterDialogComponent', () => {
 
   it('should close dialog on "cancel" click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
-    const closeButton = compiled.querySelector('.cancel-button') as HTMLButtonElement;
+    const closeButton = compiled.querySelector(
+      '.cancel-button'
+    ) as HTMLButtonElement;
 
     closeButton?.click();
 
@@ -98,9 +107,17 @@ describe('FilterDialogComponent', () => {
   });
 
   it('should close dialog with data on "confirm" click', () => {
-    const mockFormData = { deviceInfo: '', deviceFirmware: '', results: [ 'Compliant' ], dateRange: { start: null, end: null } };
+    fixture.detectChanges();
+    const mockFormData = {
+      deviceInfo: '',
+      deviceFirmware: '',
+      results: ['Compliant', 'Non-Compliant'],
+      dateRange: { start: null, end: null },
+    };
     const closeSpy = spyOn(component.dialogRef, 'close');
-    const confirmButton = compiled.querySelector('.confirm-button') as HTMLButtonElement;
+    const confirmButton = compiled.querySelector(
+      '.confirm-button'
+    ) as HTMLButtonElement;
 
     confirmButton?.click();
 
@@ -109,14 +126,74 @@ describe('FilterDialogComponent', () => {
     closeSpy.calls.reset();
   });
 
-  it('#selectedChange should set date range data', () => {
-    const mockDate = 'Wed Jun 21 2023 00:00:00 GMT+0000';
-    const mockDate2 = 'Thu Jun 22 2023 00:00:00 GMT+0000';
+  describe('date filter', () => {
+    beforeEach(() => {
+      component.data = {
+        trigger: mockClientRest,
+        filter: FilterName.Started,
+      };
+      fixture.detectChanges();
+    });
 
-    component.selectedChange(mockDate);
-    expect(component.range).toEqual({start: mockDate, end: null});
+    it('#selectedChange should set date range data', () => {
+      const mockDate = new Date('Wed Jun 21 2023 00:00:00 GMT+0000');
+      const mockDate2 = new Date('Thu Jun 22 2023 00:00:00 GMT+0000');
 
-    component.selectedChange(mockDate2);
-    expect(component.range).toEqual({start: mockDate2, end: mockDate});
+      component.selectedChange(mockDate);
+      expect(component.range).toEqual({ start: mockDate, end: null });
+
+      component.selectedChange(mockDate2);
+      expect(component.range).toEqual({ start: mockDate, end: mockDate2 });
+    });
+
+    it('#startDateChanged should set date range data', () => {
+      const mockDate = new Date('Wed Jun 21 2023 00:00:00 GMT+0000');
+      component.startDateChanged({
+        value: mockDate,
+      } as MatDatepickerInputEvent<Date>);
+
+      expect(component.selectedRangeValue?.end).toEqual(null);
+      expect(component.selectedRangeValue?.start).toEqual(mockDate);
+    });
+
+    it('#startDateChanged should replace year if selected year later than current', () => {
+      const mockDate = new Date('Wed Jun 21 99999 00:00:00 GMT+0000');
+      const currentDate = new Date(mockDate);
+      currentDate.setFullYear(new Date().getFullYear());
+
+      component.startDateChanged({
+        value: mockDate,
+      } as MatDatepickerInputEvent<Date>);
+
+      expect(component.selectedRangeValue?.start).toEqual(currentDate);
+      expect(component.range.start).toEqual(currentDate);
+    });
+
+    it('#endDateChanged should set date range data', () => {
+      const mockDate = new Date('Wed Jun 21 2023 00:00:00 GMT+0000');
+      component.endDateChanged({
+        value: mockDate,
+      } as MatDatepickerInputEvent<Date>);
+
+      expect(component.selectedRangeValue?.start).toEqual(null);
+      expect(component.selectedRangeValue?.end).toEqual(mockDate);
+    });
+
+    it('#endDateChanged should replace year if selected year later than current', () => {
+      const mockDate = new Date('Wed Jun 21 99999 00:00:00 GMT+0000');
+      const currentDate = new Date(mockDate);
+      currentDate.setFullYear(new Date().getFullYear());
+
+      component.endDateChanged({
+        value: mockDate,
+      } as MatDatepickerInputEvent<Date>);
+
+      expect(component.selectedRangeValue?.end).toEqual(currentDate);
+      expect(component.range.end).toEqual(currentDate);
+    });
+
+    it('should max date as today', () => {
+      expect(component.calendar.maxDate?.getDate()).toBe(new Date().getDate());
+    });
   });
 });

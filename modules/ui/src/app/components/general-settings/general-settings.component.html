@@ -21,30 +21,37 @@ limitations under the License.
     aria-label="close"
     class="settings-drawer-header-button"
     mat-button>
-    <mat-icon
-      class="close-button-icon"
-      svgIcon="close"
-    ></mat-icon>
+    <mat-icon class="close-button-icon" svgIcon="close"></mat-icon>
   </button>
 </div>
 <div class="setting-drawer-content">
   <form *ngIf="interfaces.length" [formGroup]="settingForm">
-    <label class="setting-form-label" id="internet-radio-group-label">
+    <label
+      class="setting-form-label"
+      id="internet-radio-group-label"
+      for="internet-group">
       Select port used for Internet connection
     </label>
     <p class="setting-label-description">
-      Choose one of the following ports on your Laptop or Desktop: VLAN, USB, HDMI, etc.
+      Choose one of the following ports on your Laptop or Desktop: VLAN, USB,
+      HDMI, etc.
     </p>
     <mat-radio-group
-        aria-labelledby="internet-radio-group-label"
-        class="setting-radio-group"
-        formControlName="internet_intf">
-      <mat-radio-button *ngFor="let interface of interfaces" [value]="interface"
-                        class="setting-radio-button">
+      aria-labelledby="internet-radio-group-label"
+      id="internet-group"
+      class="setting-radio-group"
+      formControlName="internet_intf">
+      <mat-radio-button
+        *ngFor="let interface of interfaces"
+        [value]="interface"
+        class="setting-radio-button">
         {{ interface }}
       </mat-radio-button>
     </mat-radio-group>
-    <label class="setting-form-label device-label" id="device-radio-group-label">
+    <label
+      class="setting-form-label device-label"
+      id="device-radio-group-label"
+      for="device-group">
       Select port where you’ll connect the tested device
     </label>
     <p class="setting-label-description">
@@ -52,23 +59,27 @@ limitations under the License.
     </p>
     <mat-radio-group
       aria-labelledby="device-radio-group-label"
+      id="device-group"
       class="setting-radio-group"
       formControlName="device_intf">
-      <mat-radio-button *ngFor="let interface of interfaces" [value]="interface"
-                        class="setting-radio-button">
+      <mat-radio-button
+        *ngFor="let interface of interfaces"
+        [value]="interface"
+        class="setting-radio-button">
         {{ interface }}
       </mat-radio-button>
     </mat-radio-group>
-    <mat-error *ngIf="isSubmitting && isFormError" class="error-message-container">
-        <span>
-          Both interfaces must have different values
-        </span>
-    </mat-error>
   </form>
 </div>
+<mat-error *ngIf="isSubmitting && isFormError" class="error-message-container">
+  <span> Both interfaces must have different values </span>
+</mat-error>
 <div class="setting-drawer-footer">
-  <button mat-flat-button (click)="closeSetting()" [disabled]="!isFormValues || !hasSetting"
-          class="close-button">
+  <button
+    mat-flat-button
+    (click)="closeSetting()"
+    [disabled]="!isFormValues || !hasSetting"
+    class="close-button">
     Cancel
   </button>
   <button
@@ -80,4 +91,3 @@ limitations under the License.
     Save
   </button>
 </div>
-

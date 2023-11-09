@@ -17,5 +17,17 @@ export enum FilterName {
   DeviceInfo = 'deviceInfo',
   DeviceFirmware = 'deviceFirmware',
   Results = 'results',
-  Started = 'started'
+  Started = 'started',
+}
+
+export interface ReportFilters {
+  deviceInfo: string;
+  deviceFirmware: string;
+  results: string[];
+  dateRange: DateRange | string;
+}
+
+export interface DateRange {
+  start: string;
+  end: string;
 }

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, HostBinding, OnInit, ViewChild} from '@angular/core';
-import {MatIconRegistry} from '@angular/material/icon';
-import {DomSanitizer} from '@angular/platform-browser';
-import {MatDrawer, MatDrawerToggleResult} from '@angular/material/sidenav';
-import {TestRunService} from './services/test-run.service';
-import {Observable} from 'rxjs/internal/Observable';
-import {Device} from './model/device';
-import {take} from 'rxjs';
+import { Component, HostBinding, OnInit, ViewChild } from '@angular/core';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
+import { MatDrawer, MatDrawerToggleResult } from '@angular/material/sidenav';
+import { TestRunService } from './services/test-run.service';
+import { Observable } from 'rxjs/internal/Observable';
+import { Device } from './model/device';
+import { take } from 'rxjs';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -31,19 +31,19 @@ const CLOSE_URL = '/assets/icons/close.svg';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
   devices$!: Observable<Device[] | null>;
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
-  @HostBinding('class.active-menu') isMenuOpen: boolean = false;
+  @HostBinding('class.active-menu') isMenuOpen = false;
   interfaces: string[] = [];
 
   constructor(
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
-    private testRunService: TestRunService,
+    private testRunService: TestRunService
   ) {
     testRunService.fetchDevices();
     this.matIconRegistry.addSvgIcon(
@@ -73,7 +73,9 @@ export class AppComponent implements OnInit {
   }
 
   async closeSetting(): Promise<void> {
-    return await this.settingsDrawer.close().then(() => this.toggleSettingsBtn.focus());
+    return await this.settingsDrawer
+      .close()
+      .then(() => this.toggleSettingsBtn.focus());
   }
 
   async openSetting(): Promise<MatDrawerToggleResult> {
@@ -90,11 +92,12 @@ export class AppComponent implements OnInit {
   }
 
   openGeneralSettings() {
-    this.testRunService.getSystemInterfaces()
+    this.testRunService
+      .getSystemInterfaces()
       .pipe(take(1))
-      .subscribe(async (interfaces) => {
+      .subscribe(async interfaces => {
         this.interfaces = interfaces;
         await this.settingsDrawer.open();
-      })
+      });
   }
 }

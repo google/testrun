@@ -13,24 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {ComponentFixture, fakeAsync, TestBed, tick} from '@angular/core/testing';
-import {Router} from '@angular/router';
-import {RouterTestingModule} from '@angular/router/testing';
-import {AppComponent} from './app.component';
-import {SpinnerComponent} from './components/spinner/spinner.component';
-import {TestRunService} from './services/test-run.service';
-import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
-import {Device} from './model/device';
-import {device} from './mocks/device.mock';
-import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {MatSidenavModule} from '@angular/material/sidenav';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {AppRoutingModule} from './app-routing.module';
-import {of} from 'rxjs/internal/observable/of';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { AppComponent } from './app.component';
+import { SpinnerComponent } from './components/spinner/spinner.component';
+import { TestRunService } from './services/test-run.service';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { Device } from './model/device';
+import { device } from './mocks/device.mock';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AppRoutingModule } from './app-routing.module';
+import { of } from 'rxjs/internal/observable/of';
 import SpyObj = jasmine.SpyObj;
 
 describe('AppComponent', () => {
@@ -41,15 +46,32 @@ describe('AppComponent', () => {
   let mockService: SpyObj<TestRunService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['getDevices', 'fetchDevices', 'getSystemStatus', 'fetchHistory', 'getSystemInterfaces']);
-    mockService.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>([device]));
+    mockService = jasmine.createSpyObj([
+      'getDevices',
+      'fetchDevices',
+      'getSystemStatus',
+      'fetchHistory',
+      'getSystemInterfaces',
+    ]);
+    mockService.getDevices.and.returnValue(
+      new BehaviorSubject<Device[] | null>([device])
+    );
     mockService.getSystemInterfaces.and.returnValue(of([]));
 
     TestBed.configureTestingModule({
-      imports: [RouterTestingModule, HttpClientTestingModule, AppRoutingModule, MatButtonModule,
-        BrowserAnimationsModule, MatIconModule, MatToolbarModule, MatSidenavModule, SpinnerComponent],
-      providers: [{provide: TestRunService, useValue: mockService}],
-      declarations: [AppComponent, FakeGeneralSettingsComponent]
+      imports: [
+        RouterTestingModule,
+        HttpClientTestingModule,
+        AppRoutingModule,
+        MatButtonModule,
+        BrowserAnimationsModule,
+        MatIconModule,
+        MatToolbarModule,
+        MatSidenavModule,
+        SpinnerComponent,
+      ],
+      providers: [{ provide: TestRunService, useValue: mockService }],
+      declarations: [AppComponent, FakeGeneralSettingsComponent],
     });
 
     fixture = TestBed.createComponent(AppComponent);
@@ -150,16 +172,17 @@ describe('AppComponent', () => {
   }));
 
   it('should call toggleSettingsBtn focus when settingsDrawer close on closeSetting', fakeAsync(() => {
-    spyOn(component.settingsDrawer, 'close').and.returnValue(Promise.resolve('close'));
+    spyOn(component.settingsDrawer, 'close').and.returnValue(
+      Promise.resolve('close')
+    );
     spyOn(component.toggleSettingsBtn, 'focus');
 
     component.closeSetting();
     tick();
 
     component.settingsDrawer.close().then(() => {
-        expect(component.toggleSettingsBtn.focus).toHaveBeenCalled();
-      }
-    )
+      expect(component.toggleSettingsBtn.focus).toHaveBeenCalled();
+    });
   }));
 
   it('should call settingsDrawer open on openSetting', fakeAsync(() => {
@@ -212,14 +235,20 @@ describe('AppComponent', () => {
 
   describe('with no devices setted', () => {
     beforeEach(() => {
-      mockService.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>(null));
+      mockService.getDevices.and.returnValue(
+        new BehaviorSubject<Device[] | null>(null)
+      );
       component.ngOnInit();
       fixture.detectChanges();
     });
 
     it('should have "results" and "runtime" buttons disabled', fakeAsync(() => {
-      const resultBtn = compiled.querySelector('.app-sidebar-button-results') as HTMLButtonElement;
-      const runtimeBtn = compiled.querySelector('.app-sidebar-button-runtime') as HTMLButtonElement;
+      const resultBtn = compiled.querySelector(
+        '.app-sidebar-button-results'
+      ) as HTMLButtonElement;
+      const runtimeBtn = compiled.querySelector(
+        '.app-sidebar-button-runtime'
+      ) as HTMLButtonElement;
 
       expect(resultBtn.disabled).toBe(true);
       expect(runtimeBtn.disabled).toBe(true);
@@ -237,7 +266,7 @@ describe('AppComponent', () => {
 
 @Component({
   selector: 'app-general-settings',
-  template: '<div></div>'
+  template: '<div></div>',
 })
 class FakeGeneralSettingsComponent {
   @Input() interfaces = [];

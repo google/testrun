@@ -13,23 +13,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container *ngIf="systemStatus$ | async as data;  else empty">
+<ng-container *ngIf="systemStatus$ | async as data; else empty">
   <ng-container
-    *ngIf="data.status === StatusOfTestrun.InProgress
-          || data.status === StatusOfTestrun.Cancelled
-          || data.finished">
+    *ngIf="
+      data.status === StatusOfTestrun.InProgress ||
+      data.status === StatusOfTestrun.Cancelled ||
+      data.finished
+    ">
     <mat-toolbar class="progress-toolbar">
       <div class="toolbar-col-left">
         <div class="toolbar-row top">
-          <ng-container *ngTemplateOutlet="startNewTestrunButton"></ng-container>
+          <ng-container
+            *ngTemplateOutlet="startNewTestrunButton"></ng-container>
           <span class="vertical-divider"></span>
           <app-progress-breadcrumbs [breadcrumbs$]="breadcrumbs$">
           </app-progress-breadcrumbs>
         </div>
         <div class="toolbar-row bottom">
-
           <h2 class="title progress-title">
-            {{data.device.manufacturer}} {{data.device.model}} {{data.device.firmware}} {{data.started | date: 'd MMM y H:mm'}}
+            {{ data.device.manufacturer }} {{ data.device.model }}
+            {{ data.device.firmware }} {{ data.started | date: 'd MMM y H:mm' }}
           </h2>
           <button
             *ngIf="data.status === StatusOfTestrun.InProgress"
@@ -67,12 +70,13 @@ limitations under the License.
 </ng-template>
 
 <ng-template #startNewTestrunButton>
-  <button class="start-button"
-          aria-label="Start new testrun"
-          color="primary"
-          [disabled]="(systemStatus$ | async)?.status === StatusOfTestrun.InProgress"
-          (click)="openTestRunModal()"
-          mat-flat-button>
+  <button
+    class="start-button"
+    aria-label="Start new testrun"
+    color="primary"
+    [disabled]="(systemStatus$ | async)?.status === StatusOfTestrun.InProgress"
+    (click)="openTestRunModal()"
+    mat-flat-button>
     Start New Testrun
   </button>
 </ng-template>

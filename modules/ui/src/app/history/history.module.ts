@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {NgModule} from '@angular/core';
-import {CommonModule, DatePipe} from '@angular/common';
-import {HistoryComponent} from './history.component';
-import {HistoryRoutingModule} from './history-routing.module';
-import {MatTableModule} from '@angular/material/table';
-import {MatIconModule} from '@angular/material/icon';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {DownloadReportComponent} from '../components/download-report/download-report.component';
-import {MatSortModule} from '@angular/material/sort';
-import {FilterDialogComponent} from '../components/filter-dialog/filter-dialog.component';
+import { NgModule } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { HistoryComponent } from './history.component';
+import { HistoryRoutingModule } from './history-routing.module';
+import { MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { DownloadReportComponent } from '../components/download-report/download-report.component';
+import { MatSortModule } from '@angular/material/sort';
+import { FilterDialogComponent } from '../components/filter-dialog/filter-dialog.component';
 
 @NgModule({
-  declarations: [
-    HistoryComponent,
-  ],
+  declarations: [HistoryComponent],
   imports: [
     CommonModule,
     HistoryRoutingModule,
@@ -36,9 +34,8 @@ import {FilterDialogComponent} from '../components/filter-dialog/filter-dialog.c
     MatToolbarModule,
     MatSortModule,
     DownloadReportComponent,
-    FilterDialogComponent
+    FilterDialogComponent,
   ],
-  providers: [DatePipe]
+  providers: [DatePipe],
 })
-export class HistoryModule {
-}
+export class HistoryModule {}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import "../theming/colors";
+@import '../theming/colors';
 
 $toolbar-height: 56px;
 $nav-close-width: 80px;
@@ -85,7 +85,8 @@ $nav-open-btn-width: 210px;
   align-items: center;
 }
 
-.app-sidebar-button, .app-toolbar-button {
+.app-sidebar-button,
+.app-toolbar-button {
   border-radius: 20px;
   border: 1px solid transparent;
   min-width: 48px;
@@ -114,7 +115,8 @@ $nav-open-btn-width: 210px;
   background: rgba(0, 0, 0, 0.12);
 }
 
-.app-sidebar-button > .mat-icon, .app-toolbar-button > .mat-icon {
+.app-sidebar-button > .mat-icon,
+.app-toolbar-button > .mat-icon {
   margin-right: 0;
   width: 24px;
   font-size: 24px;

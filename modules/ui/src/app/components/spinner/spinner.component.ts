@@ -1,7 +1,7 @@
-import {Component, OnInit} from '@angular/core';
-import {LoaderService} from '../../services/loader.service';
-import {CommonModule} from '@angular/common';
-import {Observable} from 'rxjs/internal/Observable';
+import { Component, OnInit } from '@angular/core';
+import { LoaderService } from '../../services/loader.service';
+import { CommonModule } from '@angular/common';
+import { Observable } from 'rxjs/internal/Observable';
 
 @Component({
   selector: 'app-spinner',
@@ -13,8 +13,7 @@ import {Observable} from 'rxjs/internal/Observable';
 export class SpinnerComponent implements OnInit {
   loader$!: Observable<boolean>;
 
-  constructor(public loaderService: LoaderService) {
-  }
+  constructor(public loaderService: LoaderService) {}
 
   ngOnInit() {
     this.loader$ = this.loaderService.getLoading();

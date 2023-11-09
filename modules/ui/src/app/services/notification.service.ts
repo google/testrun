@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Injectable} from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import { Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotificationService {
-  constructor(private snackBar: MatSnackBar) {
-  }
+  constructor(private snackBar: MatSnackBar) {}
 
   notify(message: string, duration = 5000) {
     this.snackBar.open(message, 'OK', {
       horizontalPosition: 'right',
       panelClass: 'test-run-notification',
       duration: duration,
-    })
+    });
   }
 
   dismiss() {
