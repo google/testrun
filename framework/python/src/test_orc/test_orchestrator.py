@@ -253,6 +253,10 @@ class TestOrchestrator:
   def _run_test_module(self, module):
     """Start the test container and extract the results."""
 
+    # Check that Testrun is not stopping
+    if self.get_session().get_status() != "In Progress":
+      return
+
     device = self._session.get_target_device()
 
     LOGGER.info("Running test module " + module.name)
@@ -342,6 +346,12 @@ class TestOrchestrator:
         time.sleep(1)
       status = self._get_module_status(module)
 
+    # Check that Testrun has not been stopped whilst this module was running
+    if self.get_session().get_status() == "Stopping":
+      # Discard results for this module
+      LOGGER.info(f"Test module {module.name} has forcefully quit")
+      return
+
     # Get test results from module
     container_runtime_dir = os.path.join(
         self._root_path,
@@ -353,7 +363,6 @@ class TestOrchestrator:
         module_results = module_results_json["results"]
         for test_result in module_results:
           self._session.add_test_result(test_result)
-          self._session.add_total_tests(1)
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
       LOGGER.error(
