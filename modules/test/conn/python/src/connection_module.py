@@ -293,7 +293,9 @@ class ConnectionModule(TestModule):
     return result
 
   def _has_slaac_addres(self):
-    packet_capture = rdpcap(DHCP_CAPTURE_FILE)
+    packet_capture = (rdpcap(STARTUP_CAPTURE_FILE)
+                      + rdpcap(MONITOR_CAPTURE_FILE)
+                      + rdpcap(DHCP_CAPTURE_FILE))
     sends_ipv6 = False
     for packet_number, packet in enumerate(packet_capture, start=1):
       if IPv6 in packet and packet.src == self._device_mac:
@@ -302,8 +304,8 @@ class ConnectionModule(TestModule):
           ipv6_addr = str(packet[ICMPv6ND_NS].tgt)
           if ipv6_addr.startswith(SLAAC_PREFIX):
             self._device_ipv6_addr = ipv6_addr
-            LOGGER.info(
-                f"SLAAC address detected at packet number {packet_number}")
+            LOGGER.info('SLAAC address detected at packet number' +
+                        f'{packet_number}')
             LOGGER.info(f'Device has formed SLAAC address {ipv6_addr}')
             return True, sends_ipv6
     return False, sends_ipv6
