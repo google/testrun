@@ -52,7 +52,6 @@ class TestRunSession():
     LOGGER.debug(f'System timezone is {self._timezone}')
 
   def start(self):
-    self.reset()
     self._status = 'Waiting for Device'
     self._started = datetime.datetime.now()
 

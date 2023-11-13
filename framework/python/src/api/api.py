@@ -199,7 +199,6 @@ class Api:
   async def stop_test_run(self):
     LOGGER.debug("Received stop command. Stopping Testrun")
 
-    # TODO: Set status of 'Stopping'?
     self._test_run.stop()
 
     return self._generate_msg(True, "Testrun stopped")
