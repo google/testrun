@@ -163,7 +163,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
         if 'max_device_reports' in device_config_json:
           max_device_reports = device_config_json.get(MAX_DEVICE_REPORTS_KEY)
 
-        device = Device(folder_url=os.path.join(device_dir, device_folder),
+        folder_url = os.path.join(device_dir, device_folder)
+
+        device = Device(folder_url=folder_url,
                         manufacturer=device_manufacturer,
                         model=device_model,
                         mac_addr=mac_addr,
@@ -179,7 +181,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         LOGGER.debug(f'Loaded device {device.manufacturer} ' +
                      f'{device.model} with MAC address {device.mac_addr}')
 
-  def _load_test_reports(self, device: Device):
+  def _load_test_reports(self, device):
 
     LOGGER.debug(f'Loading test reports for device {device.model}')
 
@@ -205,7 +207,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
       with open(report_json_file_path, encoding='utf-8') as report_json_file:
         report_json = json.load(report_json_file)
-        test_report = TestReport().from_json(report_json)
+        test_report = TestReport()
+        test_report.from_json(report_json)
         device.add_report(test_report)
 
   def delete_report(self, device: Device, timestamp):

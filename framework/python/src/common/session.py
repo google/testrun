@@ -49,7 +49,7 @@ class TestRunSession():
     tz = util.run_command('cat /etc/timezone')
     # TODO: Check if timezone is fetched successfully
     self._timezone = tz[0]
-    LOGGER.info(f'System timezone is {self._timezone}')
+    LOGGER.debug(f'System timezone is {self._timezone}')
 
   def start(self):
     self.reset()

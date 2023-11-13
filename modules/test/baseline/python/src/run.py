@@ -20,7 +20,7 @@ import logger
 
 from baseline_module import BaselineModule
 
-LOGGER = logger.get_logger('test_module')
+LOGGER = logger.get_logger('test_baseline')
 RUNTIME = 1500
 
 
