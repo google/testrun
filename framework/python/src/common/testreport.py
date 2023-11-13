@@ -106,8 +106,6 @@ class TestReport():
     for test_result in json_file['tests']['results']:
       self.add_test(test_result)
 
-    return self
-
   # Create a pdf file in memory and return the bytes
   def to_pdf(self):
     # Resolve the data as html first
