@@ -14,7 +14,7 @@
 """Connection test module"""
 import util
 import time
-from datetime import datetime
+import datetime
 import traceback
 from scapy.all import rdpcap, DHCP, Ether, IPv6, ICMPv6ND_NS
 from test_module import TestModule
@@ -92,7 +92,7 @@ class ConnectionModule(TestModule):
         LOGGER.info('IP Resolved: ' + ip_addr)
         LOGGER.info('Attempting to ping device...')
         ping_success = self._ping(self._device_ipv4_addr)
-        LOGGER.info('Ping Success: ' + str(ping_success))
+        LOGGER.debug('Ping success: ' + str(ping_success))
         if ping_success:
           return True, 'Device responded to leased ip address'
         else:
@@ -198,7 +198,7 @@ class ConnectionModule(TestModule):
             LOGGER.info('Pinging device at IP: ' + ip_address)
             if self._ping(ip_address):
               LOGGER.debug('Ping success')
-              LOGGER.info('Reserved lease confirmed active in device')
+              LOGGER.debug('Reserved lease confirmed active in device')
               result = True, 'Device has accepted an IP address change'
               LOGGER.debug('Restoring DHCP failover configuration')
               break
@@ -482,21 +482,24 @@ class ConnectionModule(TestModule):
   def _test_subnet(self, subnet, lease):
     LOGGER.info("Testing subnet: " + str(subnet))
     if self._change_subnet(subnet):
-      expiration = datetime.strptime(lease['expires'], '%Y-%m-%d %H:%M:%S')
-      time_to_expire = expiration - datetime.now()
+      expiration = datetime.datetime.strptime(
+        lease['expires'], '%Y-%m-%d %H:%M:%S')
+      now_utc = datetime.datetime.now(
+        datetime.timezone.utc).replace(tzinfo=None)
+      time_to_expire = (expiration - now_utc).total_seconds()
       LOGGER.debug('Time until lease expiration: ' + str(time_to_expire))
       LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
-      if time_to_expire.total_seconds() > 0:
-        time.sleep(time_to_expire.total_seconds() +
-                   5)  # Wait until the expiration time and padd 5 seconds
-        LOGGER.info('Current lease expired. Checking for new lease')
-        LOGGER.info('Checking for new lease')
+      if time_to_expire > 0:
+        # Wait until the expiration time and add 5 seconds
+        time.sleep(time_to_expire + 5)
+        LOGGER.debug('Current lease expired. Checking for new lease')
+        LOGGER.debug('Checking for new lease')
         # Subnet changes tend to take longer to pick up so we'll allow
         # for twice the lease wait time
         lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=2*self._lease_wait_time_sec)
         if lease is not None:
-          LOGGER.info('New lease found: ' + str(lease))
-          LOGGER.info('Validating subnet for new lease...')
+          LOGGER.debug('New lease found: ' + str(lease))
+          LOGGER.debug('Validating subnet for new lease...')
           in_range = self.is_ip_in_range(lease['ip'], subnet['start'],
                                          subnet['end'])
           LOGGER.info('Lease within subnet: ' + str(in_range))
@@ -508,8 +511,9 @@ class ConnectionModule(TestModule):
       LOGGER.error('Failed to change subnet')
 
   def _wait_for_lease_expire(self, lease):
-    expiration = datetime.strptime(lease['expires'], '%Y-%m-%d %H:%M:%S')
-    time_to_expire = expiration - datetime.now()
+    expiration = datetime.datetime.strptime(
+      lease['expires'], '%Y-%m-%d %H:%M:%S')
+    time_to_expire = expiration - datetime.datetime.now()
     LOGGER.info('Time until lease expiration: ' + str(time_to_expire))
     LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
     if time_to_expire.total_seconds() > 0:
@@ -530,37 +534,38 @@ class ConnectionModule(TestModule):
       LOGGER.debug('Failed to confirm subnet change')
     else:
       LOGGER.debug('Subnet change request failed.')
-    return Falseget_new_lease
+    return False
 
   def test_subnets(self, subnets):
     results = []
     for subnet in subnets:
       result = {}
       try:
-        lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=self._lease_wait_time_sec)
+        lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
+                                              timeout=self._lease_wait_time_sec)
         if lease is not None:
           result = self._test_subnet(subnet, lease)
           if result:
             result = {
-                'result':
-                True,
-                'details':
-                'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' passed'
+              'result':
+              True,
+              'details':
+              'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' passed'
             }
           else:
             result = {
-                'result':
-                False,
-                'details':
-                'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' failed'
+              'result':
+              False,
+              'details':
+              'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' failed'
             }
         else:
           result = {
-              'result':
-              None,
-              'details':
-              'Device does not have active lease, cannot test subnet change. ' +
-              'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' skipped'
+            'result':
+            None,
+            'details':
+            'Device does not have active lease, cannot test subnet change. ' +
+            'Subnet ' + subnet['start'] + '-' + subnet['end'] + ' skipped'
           }
       except Exception as e:  # pylint: disable=W0718
         LOGGER.error('Subnet test failed: ' + str(e))
