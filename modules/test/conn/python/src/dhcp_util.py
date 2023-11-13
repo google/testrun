@@ -134,7 +134,7 @@ class DHCPUtil():
       LOGGER.info('Checking for new lease')
       if lease is None:
         lease = self.get_cur_lease(mac_address,dhcp_server_primary)
-        LOGGER.info('New Lease found: ' + str(lease))
+        LOGGER.info('New lease found: ' + str(lease))
         break
       else:
         LOGGER.info('New lease not found. Waiting to check again')
