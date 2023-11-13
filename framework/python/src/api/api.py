@@ -103,7 +103,13 @@ class Api:
     addrs = psutil.net_if_addrs()
     ifaces = []
     for iface in addrs:
+
+      # Ignore any interfaces that are not ethernet
+      if not iface.startswith("en"):
+        continue
+
       ifaces.append(iface)
+
     return ifaces
 
   async def post_sys_config(self, request: Request, response: Response):
