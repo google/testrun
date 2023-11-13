@@ -10,7 +10,7 @@
       "enabled": true
     },
     "ntp": {
-      "enabled": true
+      "enabled": false
     },
     "baseline": {
       "enabled": true
