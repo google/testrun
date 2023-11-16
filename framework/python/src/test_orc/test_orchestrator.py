@@ -235,7 +235,7 @@ class TestOrchestrator:
     # Copy the results to the timestamp directory
     # leave current copy in place for quick reference to
     # most recent test
-    shutil.copytree(cur_results_dir, completed_results_dir)
+    shutil.copytree(cur_results_dir, completed_results_dir, dirs_exist_ok=True)
     util.run_command(f"chown -R {self._host_user} '{completed_results_dir}'")
 
   def test_in_progress(self):
@@ -366,8 +366,8 @@ class TestOrchestrator:
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
       LOGGER.error(
-          f"Error occured whilst obbtaining results for module {module.name}")
-      LOGGER.debug(results_error)
+          f"Error occurred whilst obtaining results for module {module.name}")
+      LOGGER.error(results_error)
 
     LOGGER.info(f"Test module {module.name} has finished")
 
