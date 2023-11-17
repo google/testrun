@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import "../../../theming/colors";
-@import "../../../theming/variables";
+@import '../../../theming/colors';
+@import '../../../theming/variables';
 
 $icon-width: 80px;
 $border-radius: 12px;
@@ -23,7 +23,7 @@ $border-radius: 12px;
   display: grid;
   width: $device-item-width;
   border-radius: $border-radius;
-  border: 1px solid #C4C7C5;
+  border: 1px solid #c4c7c5;
   background: $white;
   box-sizing: border-box;
   grid-template-columns: 1fr 1fr $icon-width;
@@ -32,8 +32,8 @@ $border-radius: 12px;
   grid-row-gap: 4px;
   font-family: 'Open Sans', sans-serif;
   grid-template-areas:
-    "name name icon"
-    "manufacturer address icon";
+    'name name icon'
+    'manufacturer address icon';
 
   &:hover {
     cursor: pointer;
@@ -45,7 +45,7 @@ $border-radius: 12px;
   grid-area: name;
   justify-self: start;
   align-self: end;
-  color: #1F1F1F;
+  color: #1f1f1f;
   justify-content: start;
   font-size: 16px;
   font-weight: 500;
@@ -87,7 +87,7 @@ $border-radius: 12px;
   grid-area: icon;
   width: $icon-width;
   height: calc($icon-width - 2px);
-  background-color: #E8F0FE;
+  background-color: #e8f0fe;
   justify-self: end;
   border-top-right-radius: $border-radius;
   border-bottom-right-radius: $border-radius;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Device} from './device';
+import { Device } from './device';
 
 export interface TestrunStatus {
   status: string;
@@ -25,9 +25,9 @@ export interface TestrunStatus {
 }
 
 export interface HistoryTestrun extends TestrunStatus {
-  deviceFirmware: string,
-  deviceInfo: string,
-  duration: string,
+  deviceFirmware: string;
+  deviceInfo: string;
+  duration: string;
 }
 
 export interface TestsData {
@@ -55,7 +55,7 @@ export enum StatusOfTestrun {
   Compliant = 'Compliant', // used for Completed
   NonCompliant = 'Non-Compliant', // used for Completed
   SmartReady = 'Smart Ready', // used for Completed
-  Idle = 'Idle'
+  Idle = 'Idle',
 }
 
 export enum StatusOfTestResult {
@@ -65,17 +65,17 @@ export enum StatusOfTestResult {
   Skipped = 'Skipped',
   NotStarted = 'Not Started',
   Error = 'Error', // test failed to run
-  Info = 'Informational' // nice to know information, not necessarily compliant/non-compliant
+  Info = 'Informational', // nice to know information, not necessarily compliant/non-compliant
 }
 
 export interface StatusResultClassName {
-  green: boolean,
-  red: boolean,
-  blue: boolean,
-  grey: boolean
+  green: boolean;
+  red: boolean;
+  blue: boolean;
+  grey: boolean;
 }
 
 export type TestrunStatusKey = keyof typeof StatusOfTestrun;
-export type TestrunStatusValue = typeof StatusOfTestrun[TestrunStatusKey];
+export type TestrunStatusValue = (typeof StatusOfTestrun)[TestrunStatusKey];
 export type TestResultKey = keyof typeof StatusOfTestResult;
-export type TestResultValue = typeof StatusOfTestResult[TestResultKey];
+export type TestResultValue = (typeof StatusOfTestResult)[TestResultKey];

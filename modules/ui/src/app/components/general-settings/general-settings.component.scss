@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import "../../../theming/colors";
-@import "../../../theming/variables";
+@import '../../../theming/colors';
+@import '../../../theming/variables';
 
 :host {
   display: flex;
@@ -68,6 +68,11 @@
 
 .error-message-container {
   display: block;
+  margin-top: auto;
+}
+
+.error-message-container + .setting-drawer-footer {
+  margin-top: 0;
 }
 
 .setting-form-label {
@@ -115,12 +120,14 @@
 }
 
 .setting-drawer-footer {
+  margin-top: auto;
   display: flex;
   flex-shrink: 0;
   justify-content: flex-end;
   padding: 16px 24px 8px 24px;
 
-  .close-button, .save-button {
+  .close-button,
+  .save-button {
     padding: 0 24px;
     font-size: 14px;
     font-weight: 500;

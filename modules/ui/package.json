@@ -9,7 +9,11 @@
     "test": "ng test",
     "test:coverage": "ng test --code-coverage",
     "test-headless": "ng test --browsers=ChromeHeadless --watch=false",
-    "docker": "docker rm -f test-run-ui && docker rmi test-run-ui && docker build -t test-run-ui . &&  docker run -d -p 80:80 --name test-run-ui test-run-ui"
+    "docker": "docker rm -f test-run-ui && docker rmi test-run-ui && docker build -t test-run-ui . &&  docker run -d -p 80:80 --name test-run-ui test-run-ui",
+    "lint": "ng lint",
+    "lint:fix": "ng lint --fix",
+    "format": "npx prettier --check .",
+    "format:fix": "npx prettier --write ."
   },
   "private": true,
   "dependencies": {
@@ -30,15 +34,27 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^16.2.6",
+    "@angular-eslint/builder": "16.2.0",
+    "@angular-eslint/eslint-plugin": "16.2.0",
+    "@angular-eslint/eslint-plugin-template": "16.2.0",
+    "@angular-eslint/schematics": "16.2.0",
+    "@angular-eslint/template-parser": "16.2.0",
     "@angular/cli": "~16.1.8",
     "@angular/compiler-cli": "^16.2.10",
     "@types/jasmine": "~4.3.6",
+    "@typescript-eslint/eslint-plugin": "5.62.0",
+    "@typescript-eslint/parser": "5.62.0",
+    "eslint": "^8.49.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
     "jasmine-core": "~4.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "prettier": "^3.0.3",
+    "prettier-eslint": "^16.1.1",
     "typescript": "~5.1.3"
   }
 }

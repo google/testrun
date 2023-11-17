@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
-import {DeviceRepositoryComponent} from './device-repository.component';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { DeviceRepositoryComponent } from './device-repository.component';
 
-const routes: Routes = [{path: '', component: DeviceRepositoryComponent}];
+const routes: Routes = [{ path: '', component: DeviceRepositoryComponent }];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class DeviceRepositoryRoutingModule {
-}
+export class DeviceRepositoryRoutingModule {}

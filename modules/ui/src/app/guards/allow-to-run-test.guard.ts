@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {inject} from '@angular/core';
+import { inject } from '@angular/core';
 
-import {TestRunService} from '../services/test-run.service';
-import {Router} from '@angular/router';
-import {Device} from '../model/device';
-import {map} from 'rxjs';
+import { TestRunService } from '../services/test-run.service';
+import { Router } from '@angular/router';
+import { Device } from '../model/device';
+import { map } from 'rxjs';
 
 export const allowToRunTestGuard = () => {
   const testRunService = inject(TestRunService);
@@ -26,9 +26,9 @@ export const allowToRunTestGuard = () => {
 
   return testRunService.getDevices().pipe(
     map((devices: Device[] | null) => {
-      return !(devices?.length)
+      return !devices?.length
         ? router.parseUrl('/device-repository')
         : !!devices;
-    }),
+    })
   );
 };

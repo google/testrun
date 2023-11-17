@@ -13,26 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnInit} from '@angular/core';
-import {MatDialog} from '@angular/material/dialog';
-import {Observable} from 'rxjs/internal/Observable';
-import {Device} from '../model/device';
-import {TestRunService} from '../services/test-run.service';
-import {DeviceFormComponent, FormAction, FormResponse} from './device-form/device-form.component';
-import {Subject, takeUntil} from 'rxjs';
-import {DeleteFormComponent} from '../components/delete-form/delete-form.component';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { Observable } from 'rxjs/internal/Observable';
+import { Device } from '../model/device';
+import { TestRunService } from '../services/test-run.service';
+import {
+  DeviceFormComponent,
+  FormAction,
+  FormResponse,
+} from './device-form/device-form.component';
+import { Subject, takeUntil } from 'rxjs';
+import { DeleteFormComponent } from '../components/delete-form/delete-form.component';
 
 @Component({
   selector: 'app-device-repository',
   templateUrl: './device-repository.component.html',
   styleUrls: ['./device-repository.component.scss'],
 })
-export class DeviceRepositoryComponent implements OnInit {
+export class DeviceRepositoryComponent implements OnInit, OnDestroy {
   devices$!: Observable<Device[] | null>;
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
-  constructor(private testRunService: TestRunService, public dialog: MatDialog) {
-  }
+  constructor(
+    private testRunService: TestRunService,
+    public dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     this.devices$ = this.testRunService.getDevices();
@@ -47,23 +53,32 @@ export class DeviceRepositoryComponent implements OnInit {
     const dialogRef = this.dialog.open(DeviceFormComponent, {
       data: {
         device: selectedDevice || null,
-        title: selectedDevice ? 'Edit device' : 'Create device'
+        title: selectedDevice ? 'Edit device' : 'Create device',
       },
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'device-form-dialog'
+      panelClass: 'device-form-dialog',
     });
 
-    dialogRef?.afterClosed()
+    dialogRef
+      ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
       .subscribe((response: FormResponse) => {
         if (!response) return;
 
-        if (response.action === FormAction.Save && response.device && !selectedDevice) {
+        if (
+          response.action === FormAction.Save &&
+          response.device &&
+          !selectedDevice
+        ) {
           this.testRunService.addDevice(response.device);
         }
-        if (response.action === FormAction.Save && response.device && selectedDevice) {
+        if (
+          response.action === FormAction.Save &&
+          response.device &&
+          selectedDevice
+        ) {
           this.testRunService.updateDevice(selectedDevice, response.device);
         }
         if (response.action === FormAction.Delete && selectedDevice) {
@@ -82,10 +97,11 @@ export class DeviceRepositoryComponent implements OnInit {
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'delete-form-dialog'
+      panelClass: 'delete-form-dialog',
     });
 
-    dialogRef?.afterClosed()
+    dialogRef
+      ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
       .subscribe(deleteDevice => {
         if (deleteDevice) {

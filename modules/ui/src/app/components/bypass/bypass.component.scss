@@ -13,20 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Injectable} from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
-
-@Injectable({
-  providedIn: 'root'
-})
-export class NotificationService {
-  constructor(private snackBar: MatSnackBar) {
+:host {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  z-index: 10;
+  width: 100%;
+}
+.navigation-bypass-container {
+  margin: 0 auto 16px;
+  box-shadow:
+    0 3px 4px 0 rgb(0 0 0 / 14%),
+    0 3px 3px -2px rgb(0 0 0 / 12%),
+    0 1px 8px 0 rgb(0 0 0 / 20%);
+  background-color: white;
+  padding: 0 16px;
+  overflow: hidden;
+  display: flex;
+  &:focus-within .navigation-bypass-button {
+    max-height: 64px;
+    margin-top: 16px;
+    margin-bottom: 16px;
   }
+}
 
-  notify(message: string) {
-    this.snackBar.open(message, 'x', {
-      horizontalPosition: 'right',
-      panelClass: 'test-run-notification'
-    })
-  }
+.navigation-bypass-button {
+  max-height: 0;
 }

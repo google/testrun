@@ -13,11 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import "../../../theming/colors";
-@import "../../../theming/variables";
+@import '../../../theming/colors';
+@import '../../../theming/variables';
 
 :host {
-  overflow: auto;
+  overflow: hidden;
+}
+
+.device-tests-form {
+  height: 100%;
+  display: grid;
+  grid-template-rows: repeat(3, auto);
 }
 
 .disabled {
@@ -39,4 +45,8 @@
   line-height: 20px;
   letter-spacing: 0.2px;
   color: $grey-800;
+}
+
+.device-form-test-modules {
+  overflow: auto;
 }

@@ -13,19 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
-import {Observable} from 'rxjs/internal/Observable';
-import {TestRunService} from '../services/test-run.service';
-import {IDevice, IResult, StatusOfTestrun, TestrunStatus, TestsData} from '../model/testrun-status';
-import {interval, map, shareReplay, Subject, takeUntil, tap} from 'rxjs';
-import {MatDialog} from '@angular/material/dialog';
-import {ProgressInitiateFormComponent} from './progress-initiate-form/progress-initiate-form.component';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import { Observable } from 'rxjs/internal/Observable';
+import { TestRunService } from '../services/test-run.service';
+import {
+  IDevice,
+  IResult,
+  StatusOfTestrun,
+  TestrunStatus,
+  TestsData,
+} from '../model/testrun-status';
+import { interval, map, shareReplay, Subject, takeUntil, tap } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { ProgressInitiateFormComponent } from './progress-initiate-form/progress-initiate-form.component';
 
 @Component({
   selector: 'app-progress',
   templateUrl: './progress.component.html',
   styleUrls: ['./progress.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgressComponent implements OnInit, OnDestroy {
   public systemStatus$!: Observable<TestrunStatus>;
@@ -36,13 +47,16 @@ export class ProgressComponent implements OnInit, OnDestroy {
   private destroy$: Subject<boolean> = new Subject<boolean>();
   private startInterval = false;
 
-  constructor(private readonly testRunService: TestRunService, public dialog: MatDialog) {
+  constructor(
+    private readonly testRunService: TestRunService,
+    public dialog: MatDialog
+  ) {
     this.testRunService.getSystemStatus();
   }
 
   ngOnInit(): void {
     this.systemStatus$ = this.testRunService.systemStatus$.pipe(
-      tap((res) => {
+      tap(res => {
         if (res.status === StatusOfTestrun.InProgress && !this.startInterval) {
           this.pullingSystemStatusData();
         }
@@ -51,13 +65,13 @@ export class ProgressComponent implements OnInit, OnDestroy {
           this.startInterval = false;
         }
       }),
-      shareReplay({refCount: true, bufferSize: 1})
+      shareReplay({ refCount: true, bufferSize: 1 })
     );
 
     this.breadcrumbs$ = this.systemStatus$.pipe(
       map((res: TestrunStatus) => res?.device),
       map((res: IDevice) => [res?.manufacturer, res?.model, res?.firmware])
-    )
+    );
 
     this.dataSource$ = this.systemStatus$.pipe(
       map((res: TestrunStatus) => (res.tests as TestsData)?.results)
@@ -66,14 +80,17 @@ export class ProgressComponent implements OnInit, OnDestroy {
 
   private pullingSystemStatusData(): void {
     this.startInterval = true;
-    interval(5000).pipe(
-      takeUntil(this.destroy$),
-      tap(() => this.testRunService.getSystemStatus()),
-    ).subscribe();
+    interval(5000)
+      .pipe(
+        takeUntil(this.destroy$),
+        tap(() => this.testRunService.getSystemStatus())
+      )
+      .subscribe();
   }
 
   public stopTestrun(): void {
-    this.testRunService.stopTestrun()
+    this.testRunService
+      .stopTestrun()
       .pipe(takeUntil(this.destroy$))
       .subscribe();
   }
@@ -88,7 +105,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'initiate-test-run-dialog'
+      panelClass: 'initiate-test-run-dialog',
     });
   }
 }

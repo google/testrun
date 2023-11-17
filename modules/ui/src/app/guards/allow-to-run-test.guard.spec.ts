@@ -13,34 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {TestBed} from '@angular/core/testing';
-import {Router} from '@angular/router';
+import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 
-import {allowToRunTestGuard} from './allow-to-run-test.guard';
-import {TestRunService} from '../services/test-run.service';
-import {Device} from '../model/device';
-import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
-import {device} from '../mocks/device.mock';
+import { allowToRunTestGuard } from './allow-to-run-test.guard';
+import { TestRunService } from '../services/test-run.service';
+import { Device } from '../model/device';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { device } from '../mocks/device.mock';
 
 describe('allowToRunTestGuard', () => {
-  const mockRouter = jasmine.createSpyObj<Router>(['parseUrl'])
+  const mockRouter = jasmine.createSpyObj<Router>(['parseUrl']);
 
   const setup = (testRunServiceMock: unknown) => {
     TestBed.configureTestingModule({
       providers: [
         allowToRunTestGuard,
-        {provide: TestRunService, useValue: testRunServiceMock},
-        {provide: Router, useValue: mockRouter}
-      ]
+        { provide: TestRunService, useValue: testRunServiceMock },
+        { provide: Router, useValue: mockRouter },
+      ],
     });
 
     return TestBed.runInInjectionContext(allowToRunTestGuard);
-  }
+  };
 
   it('should allow to continue', () => {
-    const mockTestRunService: unknown = {getDevices: () => new BehaviorSubject<Device[] | null>([device])}
+    const mockTestRunService: unknown = {
+      getDevices: () => new BehaviorSubject<Device[] | null>([device]),
+    };
 
-    const guard = setup(mockTestRunService)
+    const guard = setup(mockTestRunService);
 
     guard.subscribe(res => {
       expect(res).toBeTrue();
@@ -48,10 +50,11 @@ describe('allowToRunTestGuard', () => {
   });
 
   it('should redirect to the "/device-repository" path', () => {
+    const mockTestRunService: unknown = {
+      getDevices: () => new BehaviorSubject<Device[] | null>([]),
+    };
 
-    const mockTestRunService: unknown = {getDevices: () => new BehaviorSubject<Device[] | null>([])}
-
-    const guard = setup(mockTestRunService)
+    const guard = setup(mockTestRunService);
 
     guard.subscribe(res => {
       expect(res).toBeFalsy();

@@ -13,17 +13,42 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<app-bypass></app-bypass>
 <mat-drawer-container hasBackdrop="false" class="app-container" autosize>
   <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
-    <div class="app-sidebar">
+    <div class="app-sidebar" #navigation>
       <ng-container
-        *ngTemplateOutlet="navButtonRoute;context:{route: '/runtime', svgIcon: 'testrun_logo_small', label: 'Testrun', name: 'runtime'}">
+        *ngTemplateOutlet="
+          navButtonRoute;
+          context: {
+            route: '/runtime',
+            svgIcon: 'testrun_logo_small',
+            label: 'Testrun',
+            name: 'runtime'
+          }
+        ">
       </ng-container>
       <ng-container
-        *ngTemplateOutlet="navButtonRoute;context:{route: '/device-repository',svgIcon: 'devices', label: 'Devices', name: 'device-repository'}">
+        *ngTemplateOutlet="
+          navButtonRoute;
+          context: {
+            route: '/device-repository',
+            svgIcon: 'devices',
+            label: 'Devices',
+            name: 'device-repository'
+          }
+        ">
       </ng-container>
       <ng-container
-        *ngTemplateOutlet="navButtonRoute;context:{route: '/results',svgIcon: 'reports', label: 'Reports', name: 'results'}">
+        *ngTemplateOutlet="
+          navButtonRoute;
+          context: {
+            route: '/results',
+            svgIcon: 'reports',
+            label: 'Reports',
+            name: 'results'
+          }
+        ">
       </ng-container>
     </div>
   </mat-drawer>
@@ -34,7 +59,8 @@ limitations under the License.
         mat-button
         class="app-toolbar-button app-toolbar-button-menu"
         aria-label="Menu"
-        (click)="toggleMenu($event)">
+        (click)="toggleMenu($event)"
+        (keydown.tab)="skipToNavigation($event)">
         <mat-icon>menu</mat-icon>
       </button>
       <a class="logo-link" routerLink="/runtime" aria-label="Test run ui logo">
@@ -42,11 +68,12 @@ limitations under the License.
         <span>Testrun</span>
       </a>
       <span class="spacer"></span>
-      <button (click)="openFeedbackModal()"
-              aria-label="Start feedback"
-              class="feedback-button"
-              color="primary"
-              mat-flat-button>
+      <button
+        (click)="openFeedbackModal()"
+        aria-label="Start feedback"
+        class="feedback-button"
+        color="primary"
+        mat-flat-button>
         Have feedback?
       </button>
       <span class="spacer"></span>
@@ -59,7 +86,7 @@ limitations under the License.
         <mat-icon>tune</mat-icon>
       </button>
     </mat-toolbar>
-    <div class="app-content-main">
+    <div class="app-content-main" role="main" id="main">
       <router-outlet></router-outlet>
     </div>
   </mat-drawer-content>
@@ -76,17 +103,24 @@ limitations under the License.
   </mat-drawer>
 </mat-drawer-container>
 
-<ng-template #navButtonRoute let-icon="icon" let-label="label" let-name="name"
-             let-route="route" let-svgIcon="svgIcon">
+<ng-template
+  #navButtonRoute
+  let-icon="icon"
+  let-label="label"
+  let-name="name"
+  let-route="route"
+  let-svgIcon="svgIcon">
   <button
-    disabled="{{route !== '/device-repository' && !(devices$| async)?.length}}"
-    class="app-sidebar-button app-sidebar-button-{{name}}"
+    disabled="{{
+      route !== '/device-repository' && !(devices$ | async)?.length
+    }}"
+    class="app-sidebar-button app-sidebar-button-{{ name }}"
     mat-button
-    routerLink="{{route}}"
+    routerLink="{{ route }}"
     routerLinkActive="app-sidebar-button-active">
-    <mat-icon *ngIf="svgIcon" svgIcon="{{svgIcon}}"></mat-icon>
-    <mat-icon *ngIf="icon">{{icon}}</mat-icon>
-    <span class="sidebar-button-label">{{label}}</span>
+    <mat-icon *ngIf="svgIcon" svgIcon="{{ svgIcon }}"></mat-icon>
+    <mat-icon *ngIf="icon">{{ icon }}</mat-icon>
+    <span class="sidebar-button-label">{{ label }}</span>
   </button>
 </ng-template>
 

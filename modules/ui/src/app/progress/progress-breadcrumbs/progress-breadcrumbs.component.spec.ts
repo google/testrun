@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {ProgressBreadcrumbsComponent} from './progress-breadcrumbs.component';
-import {MatIconModule} from '@angular/material/icon';
+import { ProgressBreadcrumbsComponent } from './progress-breadcrumbs.component';
+import { MatIconModule } from '@angular/material/icon';
 
 describe('ProgressBreadcrumbsComponent', () => {
   let component: ProgressBreadcrumbsComponent;
@@ -25,7 +25,7 @@ describe('ProgressBreadcrumbsComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [ProgressBreadcrumbsComponent],
-      imports: [MatIconModule]
+      imports: [MatIconModule],
     });
     fixture = TestBed.createComponent(ProgressBreadcrumbsComponent);
     component = fixture.componentInstance;

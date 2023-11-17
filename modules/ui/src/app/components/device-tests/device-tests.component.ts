@@ -13,19 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormArray, FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {TestModule, TestModules} from '../../model/device';
-import {MatCheckboxModule} from '@angular/material/checkbox';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  FormArray,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import { TestModule, TestModules } from '../../model/device';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-device-tests',
   standalone: true,
-  imports: [CommonModule, MatCheckboxModule, ReactiveFormsModule,],
+  imports: [CommonModule, MatCheckboxModule, ReactiveFormsModule],
   templateUrl: './device-tests.component.html',
   styleUrls: ['./device-tests.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DeviceTestsComponent implements OnInit {
   @Input() deviceForm!: FormGroup;
@@ -35,18 +45,22 @@ export class DeviceTestsComponent implements OnInit {
   @Input() disabled = false;
 
   get test_modules() {
-    return this.deviceForm?.controls['test_modules']! as FormArray;
+    return this.deviceForm?.controls['test_modules'] as FormArray;
   }
 
   ngOnInit() {
-    this.fillTestModulesFormControls()
+    this.fillTestModulesFormControls();
   }
 
   fillTestModulesFormControls() {
     this.test_modules.controls = [];
     if (this.deviceTestModules) {
       this.testModules.forEach(test => {
-        this.test_modules.push(new FormControl(this.deviceTestModules![test.name]?.enabled || false));
+        this.test_modules.push(
+          new FormControl(
+            (this.deviceTestModules as TestModules)[test.name]?.enabled || false
+          )
+        );
       });
     } else {
       this.testModules.forEach(test => {
@@ -54,5 +68,4 @@ export class DeviceTestsComponent implements OnInit {
       });
     }
   }
-
 }

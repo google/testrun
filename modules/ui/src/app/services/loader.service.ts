@@ -1,8 +1,8 @@
-import {Injectable} from '@angular/core';
-import {BehaviorSubject, delay, Observable, of, switchMap} from 'rxjs';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, delay, Observable, of, switchMap } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LoaderService {
   private loading$ = new BehaviorSubject<boolean>(false);
@@ -13,7 +13,7 @@ export class LoaderService {
 
   getLoading(): Observable<boolean> {
     return this.loading$.pipe(
-      switchMap((loading) => {
+      switchMap(loading => {
         if (loading) {
           return of(true).pipe(delay(1000));
         }
