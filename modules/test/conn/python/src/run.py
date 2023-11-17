@@ -20,7 +20,7 @@ import logger
 
 from connection_module import ConnectionModule
 
-LOGGER = logger.get_logger('connection_module')
+LOGGER = logger.get_logger('test_connection')
 
 
 class ConnectionModuleRunner:

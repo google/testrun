@@ -103,7 +103,13 @@ class Api:
     addrs = psutil.net_if_addrs()
     ifaces = []
     for iface in addrs:
+
+      # Ignore any interfaces that are not ethernet
+      if not iface.startswith("en"):
+        continue
+
       ifaces.append(iface)
+
     return ifaces
 
   async def post_sys_config(self, request: Request, response: Response):
@@ -196,7 +202,6 @@ class Api:
   async def stop_test_run(self):
     LOGGER.debug("Received stop command. Stopping Testrun")
 
-    # TODO: Set status of 'Stopping'?
     self._test_run.stop()
 
     return self._generate_msg(True, "Testrun stopped")

@@ -14,8 +14,9 @@
 
 """Track device object information."""
 
-from typing import Dict
+from typing import Dict, List
 from dataclasses import dataclass, field
+from common.testreport import TestReport
 
 @dataclass
 class Device():
@@ -29,7 +30,7 @@ class Device():
   ip_addr: str = None
   firmware: str = None
   device_folder: str = None
-  reports = []
+  reports: List[TestReport] = field(default_factory=list)
   max_device_reports: int = None
 
   def add_report(self, report):

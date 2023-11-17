@@ -106,8 +106,6 @@ class TestReport():
     for test_result in json_file['tests']['results']:
       self.add_test(test_result)
 
-    return self
-
   # Create a pdf file in memory and return the bytes
   def to_pdf(self):
     # Resolve the data as html first
@@ -180,8 +178,7 @@ class TestReport():
 
   def generate_page(self, json_data, page_num, max_page):
     # Placeholder until available in json report
-
-    version = 'v1.0.2 (2023-10-25)'
+    version = 'v1.1-alpha (2023-11-13)'
     page = '<div class="page">'
     page += self.generate_header(json_data)
     if page_num == 1:
