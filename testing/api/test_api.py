@@ -196,8 +196,14 @@ def get_network_interfaces():
 
   uses /sys/class/net rather than inetfaces as test-run uses the latter
   """
+  ifaces = []
   path = Path("/sys/class/net")
-  return [i.stem for i in path.iterdir() if i.is_dir()]
+  for i in path.iterdir():
+    if not i.is_dir():
+      continue
+    if i.stem.startswith("en"):
+      ifaces.append(i.stem)
+  return ifaces
 
 
 def local_delete_devices(path):

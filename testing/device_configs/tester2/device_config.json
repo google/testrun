@@ -10,13 +10,19 @@
       "enabled": true
     },
     "ntp": {
-      "enabled": true
+      "enabled": false
     },
     "baseline": {
       "enabled": true
     },
     "nmap": {
       "enabled": true
+    },
+    "protocol": {
+      "enabled": false
+    },
+    "tls": {
+      "enabled": false
     }
   }
 }

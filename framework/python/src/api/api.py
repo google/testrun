@@ -13,10 +13,12 @@
 # limitations under the License.
 
 from fastapi import FastAPI, APIRouter, Response, Request, status
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 import json
 from json import JSONDecodeError
+import os
 import psutil
 import requests
 import threading
@@ -31,6 +33,7 @@ DEVICE_MAC_ADDR_KEY = "mac_addr"
 DEVICE_MANUFACTURER_KEY = "manufacturer"
 DEVICE_MODEL_KEY = "model"
 DEVICE_TEST_MODULES_KEY = "test_modules"
+DEVICES_PATH = "/usr/local/testrun/local/devices"
 
 LATEST_RELEASE_CHECK = "https://api.github.com/repos/google/testrun/releases/latest"
 
@@ -64,6 +67,8 @@ class Api:
     self._router.add_api_route("/report",
                                self.delete_report,
                                methods=["DELETE"])
+    self._router.add_api_route("/report/{device_name}/{timestamp}",
+                               self.get_report)
 
     self._router.add_api_route("/devices", self.get_devices)
     self._router.add_api_route("/device",
@@ -103,7 +108,13 @@ class Api:
     addrs = psutil.net_if_addrs()
     ifaces = []
     for iface in addrs:
+
+      # Ignore any interfaces that are not ethernet
+      if not iface.startswith("en"):
+        continue
+
       ifaces.append(iface)
+
     return ifaces
 
   async def post_sys_config(self, request: Request, response: Response):
@@ -157,23 +168,24 @@ class Api:
     # Check if requested device is known in the device repository
     if device is None:
       response.status_code = status.HTTP_404_NOT_FOUND
-      return self._generate_msg(False,
-                                "A device with that MAC address " +
-                                "could not be found")
+      return self._generate_msg(
+        False,
+        "A device with that MAC address could not be found")
 
     device.firmware = body_json["device"]["firmware"]
 
     # Check Testrun is able to start
     if self._test_run.get_net_orc().check_config() is False:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-      return self._generate_msg(False,"Configured interfaces are " +
-                                "not ready for use. Ensure required " +
-                                "interfaces are connected.")
+      return self._generate_msg(False,"Configured interfaces are not " +
+                                "ready for use. Ensure required interfaces " +
+                                "are connected.")
 
     self._test_run.get_session().reset()
     self._test_run.get_session().set_target_device(device)
-    LOGGER.info(f"Starting Testrun with device target {device.manufacturer} " +
-                f"{device.model} with MAC address {device.mac_addr}")
+    LOGGER.info("Starting Testrun with device target " +
+                f"{device.manufacturer} {device.model} with " +
+                f"MAC address {device.mac_addr}")
 
     thread = threading.Thread(target=self._start_test_run,
                                         name="Testrun")
@@ -191,7 +203,9 @@ class Api:
 
   async def stop_test_run(self):
     LOGGER.debug("Received stop command. Stopping Testrun")
+
     self._test_run.stop()
+
     return self._generate_msg(True, "Testrun stopped")
 
   async def get_status(self):
@@ -353,6 +367,19 @@ class Api:
     except JSONDecodeError:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid JSON received")
+
+  async def get_report(self, response: Response,
+                       device_name, timestamp):
+
+    file_path = os.path.join(DEVICES_PATH, device_name, "reports",
+                             timestamp, "report.pdf")
+    LOGGER.debug(f"Received get report request for {device_name} / {timestamp}")
+    if os.path.isfile(file_path):
+      return FileResponse(file_path)
+    else:
+      LOGGER.info("Report could not be found, returning 404")
+      response.status_code = 404
+      return self._generate_msg(False, "Report could not be found")
 
   def _validate_device_json(self, json_obj):
 

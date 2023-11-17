@@ -14,8 +14,9 @@
 
 """Track device object information."""
 
-from typing import Dict
+from typing import Dict, List
 from dataclasses import dataclass, field
+from common.testreport import TestReport
 
 @dataclass
 class Device():
@@ -29,7 +30,7 @@ class Device():
   ip_addr: str = None
   firmware: str = None
   device_folder: str = None
-  reports = []
+  reports: List[TestReport] = field(default_factory=list)
   max_device_reports: int = None
 
   def add_report(self, report):
@@ -38,7 +39,15 @@ class Device():
   def get_reports(self):
     return self.reports
 
-  # TODO: Add ability to remove reports once test reports have been cleaned up
+  def remove_report(self, timestamp):
+
+    remove_report_target = None
+    for report in self.reports:
+      if report.get_started() == timestamp:
+        remove_report_target = report
+
+    if remove_report_target is not None:
+      self.reports.remove(remove_report_target)
 
   def to_dict(self):
     """Returns the device as a python dictionary. This is used for the

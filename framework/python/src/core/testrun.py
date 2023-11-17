@@ -163,7 +163,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
         if 'max_device_reports' in device_config_json:
           max_device_reports = device_config_json.get(MAX_DEVICE_REPORTS_KEY)
 
-        device = Device(folder_url=os.path.join(device_dir, device_folder),
+        folder_url = os.path.join(device_dir, device_folder)
+
+        device = Device(folder_url=folder_url,
                         manufacturer=device_manufacturer,
                         model=device_model,
                         mac_addr=mac_addr,
@@ -179,7 +181,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         LOGGER.debug(f'Loaded device {device.manufacturer} ' +
                      f'{device.model} with MAC address {device.mac_addr}')
 
-  def _load_test_reports(self, device: Device):
+  def _load_test_reports(self, device):
 
     LOGGER.debug(f'Loading test reports for device {device.model}')
 
@@ -205,7 +207,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
       with open(report_json_file_path, encoding='utf-8') as report_json_file:
         report_json = json.load(report_json_file)
-        test_report = TestReport().from_json(report_json)
+        test_report = TestReport()
+        test_report.from_json(report_json)
         device.add_report(test_report)
 
   def delete_report(self, device: Device, timestamp):
@@ -299,20 +302,13 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     self._start_network()
 
+    self.get_net_orc().get_listener().register_callback(
+      self._device_discovered,
+      [NetworkEvent.DEVICE_DISCOVERED]
+    )
+
     if self._net_only:
       LOGGER.info('Network only option configured, no tests will be run')
-
-      self.get_net_orc().get_listener().register_callback(
-        self._device_discovered,
-        [NetworkEvent.DEVICE_DISCOVERED]
-      )
-
-      self.get_net_orc().start_listener()
-      LOGGER.info('Waiting for devices on the network...')
-
-      while True:
-        time.sleep(self._session.get_runtime())
-
     else:
       self._test_orc.start()
 
@@ -321,27 +317,13 @@ class TestRun:  # pylint: disable=too-few-public-methods
           [NetworkEvent.DEVICE_STABLE]
       )
 
-      self.get_net_orc().get_listener().register_callback(
-        self._device_discovered,
-        [NetworkEvent.DEVICE_DISCOVERED]
-      )
+    self.get_net_orc().start_listener()
+    LOGGER.info('Waiting for devices on the network...')
+    self._set_status('Waiting for Device')
 
-      self.get_net_orc().start_listener()
-      self._set_status('Waiting for Device')
-      LOGGER.info('Waiting for devices on the network...')
-
-      time.sleep(self.get_session().get_runtime())
-
-      if not (self._test_orc.test_in_progress() or
-              self.get_net_orc().monitor_in_progress()):
-        LOGGER.info('''Timed out whilst waiting for
-          device or stopping due to test completion''')
-      else:
-        while (self._test_orc.test_in_progress() or
-          self.get_net_orc().monitor_in_progress()):
-          time.sleep(5)
-
-    self.stop()
+    # Keep application running until stopped
+    while True:
+      time.sleep(5)
 
   def stop(self, kill=False):
 
@@ -349,9 +331,12 @@ class TestRun:  # pylint: disable=too-few-public-methods
     if self.get_net_orc().get_listener() is not None:
       self.get_net_orc().get_listener().stop_listener()
 
+    self.get_session().set_status('Stopping')
+
     self._stop_tests()
-    self._stop_network(kill=kill)
+    self._stop_network(kill=True)
     self._stop_ui()
+    self.get_session().set_status('Cancelled')
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)

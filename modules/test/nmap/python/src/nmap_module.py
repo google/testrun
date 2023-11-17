@@ -153,7 +153,7 @@ class NmapModule(TestModule):
     for open_port, open_port_info in self._scan_results.items():
 
       for port in ports:
-        allowed = True if 'allowed' in port and port['allowed'] else False
+        allowed = True if "allowed" in port and port["allowed"] else False
         if (int(open_port_info["number"]) == int(port["number"]) and
             open_port_info["tcp_udp"] == port["type"] and
             open_port_info["state"] == "open"):
@@ -165,12 +165,12 @@ class NmapModule(TestModule):
                              open_port_info["tcp_udp"])
 
       if (open_port_info["service"] in services and
-          (open_port + "/" + open_port_info["tcp_udp"]) not in match_ports and
+          (open_port_info["number"] + "/" + open_port_info["tcp_udp"]
+           ) not in match_ports and
           open_port_info["state"] == "open"):
         LOGGER.debug("Found service " + open_port_info["service"] +
                     " on port " + str(open_port) + "/" +
                     open_port_info["tcp_udp"])
-        
         if not allowed:
           match_ports.append(open_port_info["number"] + "/" +
                             open_port_info["tcp_udp"])
