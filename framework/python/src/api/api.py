@@ -33,6 +33,7 @@ DEVICE_MANUFACTURER_KEY = "manufacturer"
 DEVICE_MODEL_KEY = "model"
 DEVICE_TEST_MODULES_KEY = "test_modules"
 DEVICES_PATH = "/usr/local/testrun/local/devices"
+DEFAULT_DEVICE_INTF = "enx123456789123"
 
 class Api:
   """Provide REST endpoints to manage Testrun"""
@@ -168,6 +169,13 @@ class Api:
         "A device with that MAC address could not be found")
 
     device.firmware = body_json["device"]["firmware"]
+
+    # Check if config has been updated (device interface not default)
+    if (self._test_run.get_session().get_device_interface()
+        == DEFAULT_DEVICE_INTF):
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False,"Testrun configuration has not yet " +
+                                "been completed.")
 
     # Check Testrun is able to start
     if self._test_run.get_net_orc().check_config() is False:
