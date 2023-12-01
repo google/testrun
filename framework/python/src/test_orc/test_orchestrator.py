@@ -336,8 +336,11 @@ class TestOrchestrator:
     status = self._get_module_status(module)
 
     log_stream = module.container.logs(stream=True, stdout=True, stderr=True)
-    while (time.time() < test_module_timeout and status == "running"
-           and self._session.get_status() == "In Progress"):
+    while (status == "running" and self._session.get_status() == "In Progress"):
+      if time.time() > test_module_timeout:
+          LOGGER.error("Module timeout exceeded, killing module: " + module.name)
+          self._stop_module(module=module,kill=True)
+          break
       try:
         line = next(log_stream).decode("utf-8").strip()
         if re.search(LOG_REGEX, line):
