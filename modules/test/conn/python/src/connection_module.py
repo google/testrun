@@ -143,7 +143,7 @@ class ConnectionModule(TestModule):
           # message-type, option 3 = DHCPREQUEST
           if 'message-type' in option and option[1] == 3:
             mac_address = packet[Ether].src
-            LOGGER.info('DHCPREQUEST detected MAC addres: ' + mac_address)
+            LOGGER.info('DHCPREQUEST detected MAC address: ' + mac_address)
             if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
               mac_addresses.add(mac_address.upper())
 
