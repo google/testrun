@@ -288,10 +288,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
                                   LOCAL_DEVICES_DIR,
                                   device.device_folder)
 
-    # TODO: Remove associated testrun reports from session
-
     # Delete the device directory
-    os.rmdir(device_folder)
+    shutil.rmtree(device_folder)
 
     # Remove the device from the current session device repository
     self.get_session().remove_device(device)
@@ -408,6 +406,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._set_status('In Progress')
     result = self._test_orc.run_test_modules()
     self._set_status(result)
+    self._stop_network()
 
   def get_session(self):
     return self._session

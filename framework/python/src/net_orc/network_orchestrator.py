@@ -61,7 +61,6 @@ class NetworkOrchestrator:
                 os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
     self.validator = NetworkValidator()
-    shutil.rmtree(os.path.join(os.getcwd(), NET_DIR), ignore_errors=True)
     self.network_config = NetworkConfig()
     self._ovs = OVSControl(self._session)
     self._ip_ctrl = IPControl()
@@ -70,6 +69,9 @@ class NetworkOrchestrator:
     """Start the network orchestrator."""
 
     LOGGER.debug('Starting network orchestrator')
+
+    # Delete the runtime/network directory
+    shutil.rmtree(os.path.join(os.getcwd(), NET_DIR), ignore_errors=True)
 
     # Get all components ready
     self.load_network_modules()

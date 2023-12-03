@@ -262,7 +262,7 @@ class Api:
       mac_addr = device_json.get("mac_addr").lower()
 
       # Check that device exists
-      device = self._sesison.get_device(mac_addr)
+      device = self._test_run.get_session().get_device(mac_addr)
 
       if device is None:
         response.status_code = 404
@@ -283,7 +283,8 @@ class Api:
       return self._generate_msg(True, "Successfully deleted the device")
 
     # TODO: Find specific exception to catch
-    except Exception:
+    except Exception as e:
+      LOGGER.error(e)
       response.status_code = 500
       return self._generate_msg(False, "An error occured whilst deleting " +
                                 "the device")
