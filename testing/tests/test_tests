@@ -107,14 +107,14 @@ for tester in $TESTERS; do
     tail -1 $testrun_log
       if [[ -n $(fgrep "All tests complete" $testrun_log) ]]; then
           sleep 10
-          kill -9 $TPID
+          sudo kill -9 $TPID
       fi
   
-        if [[ ! -d /proc/$TPID ]]; then
-            break
-        fi
-      
-        sleep 1
+      if [[ ! -d /proc/$TPID ]]; then
+          break
+      fi
+    
+      sleep 1
     done
 
 
