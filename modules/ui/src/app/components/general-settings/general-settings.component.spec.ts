@@ -13,30 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {GeneralSettingsComponent} from './general-settings.component';
-import {TestRunService} from '../../services/test-run.service';
-import {of} from 'rxjs';
-import {SystemConfig} from '../../model/setting';
-import {MatRadioModule} from '@angular/material/radio';
-import {ReactiveFormsModule} from '@angular/forms';
-import {MatButtonModule} from '@angular/material/button';
-import {MatIcon, MatIconModule} from '@angular/material/icon';
-import {MatIconTestingModule} from '@angular/material/icon/testing';
+import { GeneralSettingsComponent } from './general-settings.component';
+import { TestRunService } from '../../services/test-run.service';
+import { of } from 'rxjs';
+import { SystemConfig } from '../../model/setting';
+import { MatRadioModule } from '@angular/material/radio';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { Component } from '@angular/core';
 
 const MOCK_SYSTEM_CONFIG_EMPTY: SystemConfig = {
   network: {
     device_intf: '',
-    internet_intf: ''
-  }
-}
+    internet_intf: '',
+  },
+};
 
 const MOCK_SYSTEM_CONFIG_WITH_DATA: SystemConfig = {
   network: {
     device_intf: 'mockDeviceValue',
-    internet_intf: 'mockInternetValue'
-  }
+    internet_intf: 'mockInternetValue',
+  },
 };
 
 describe('GeneralSettingsComponent', () => {
@@ -45,15 +46,31 @@ describe('GeneralSettingsComponent', () => {
   let testRunServiceMock: jasmine.SpyObj<TestRunService>;
 
   beforeEach(async () => {
-    testRunServiceMock = jasmine.createSpyObj(['getSystemInterfaces', 'getSystemConfig', 'setSystemConfig', 'createSystemConfig']);
+    testRunServiceMock = jasmine.createSpyObj([
+      'getSystemInterfaces',
+      'getSystemConfig',
+      'setSystemConfig',
+      'createSystemConfig',
+      'setIsOpenAddDevice',
+    ]);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of([]));
-    testRunServiceMock.getSystemConfig.and.returnValue(of(MOCK_SYSTEM_CONFIG_EMPTY));
-    testRunServiceMock.createSystemConfig.and.returnValue(of({}));
+    testRunServiceMock.getSystemConfig.and.returnValue(
+      of(MOCK_SYSTEM_CONFIG_EMPTY)
+    );
+    testRunServiceMock.createSystemConfig.and.returnValue(
+      of(MOCK_SYSTEM_CONFIG_WITH_DATA)
+    );
 
     await TestBed.configureTestingModule({
-      declarations: [GeneralSettingsComponent, MatIcon],
-      providers: [{provide: TestRunService, useValue: testRunServiceMock}],
-      imports: [MatButtonModule, MatIconModule, MatRadioModule, ReactiveFormsModule, MatIconTestingModule]
+      declarations: [GeneralSettingsComponent, MatIcon, FakeSpinnerComponent],
+      providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
+      imports: [
+        MatButtonModule,
+        MatIconModule,
+        MatRadioModule,
+        ReactiveFormsModule,
+        MatIconTestingModule,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GeneralSettingsComponent);
@@ -74,12 +91,26 @@ describe('GeneralSettingsComponent', () => {
   });
 
   it('should set default values to form if systemConfig data', () => {
-    testRunServiceMock.getSystemConfig.and.returnValue(of(MOCK_SYSTEM_CONFIG_WITH_DATA));
+    testRunServiceMock.getSystemConfig.and.returnValue(
+      of(MOCK_SYSTEM_CONFIG_WITH_DATA)
+    );
 
     component.ngOnInit();
 
-    expect(component.deviceControl.value).toBe(MOCK_SYSTEM_CONFIG_WITH_DATA.network.device_intf);
-    expect(component.internetControl.value).toBe(MOCK_SYSTEM_CONFIG_WITH_DATA.network.internet_intf);
+    expect(component.deviceControl.value).toBe(
+      MOCK_SYSTEM_CONFIG_WITH_DATA.network.device_intf
+    );
+    expect(component.internetControl.value).toBe(
+      MOCK_SYSTEM_CONFIG_WITH_DATA.network.internet_intf
+    );
+  });
+
+  it('#reloadSetting should emit reloadInterfacesEvent', () => {
+    spyOn(component.reloadInterfacesEvent, 'emit');
+
+    component.reloadSetting();
+
+    expect(component.reloadInterfacesEvent.emit).toHaveBeenCalled();
   });
 
   describe('#closeSetting', () => {
@@ -106,7 +137,9 @@ describe('GeneralSettingsComponent', () => {
     it('should set value of settingForm on setSystemSetting', () => {
       component.closeSetting();
 
-      expect(component.settingForm.value).toEqual(MOCK_SYSTEM_CONFIG_WITH_DATA.network);
+      expect(component.settingForm.value).toEqual(
+        MOCK_SYSTEM_CONFIG_WITH_DATA.network
+      );
     });
   });
 
@@ -128,14 +161,35 @@ describe('GeneralSettingsComponent', () => {
     });
 
     it('should call createSystemConfig when setting form valid', () => {
-      const {device_intf, internet_intf} = MOCK_SYSTEM_CONFIG_WITH_DATA.network;
+      const { device_intf, internet_intf } =
+        MOCK_SYSTEM_CONFIG_WITH_DATA.network;
       component.deviceControl.setValue(device_intf);
       component.internetControl.setValue(internet_intf);
 
       component.saveSetting();
 
       expect(component.settingForm.invalid).toBeFalse();
-      expect(testRunServiceMock.createSystemConfig).toHaveBeenCalledWith(MOCK_SYSTEM_CONFIG_WITH_DATA);
+      expect(testRunServiceMock.createSystemConfig).toHaveBeenCalledWith(
+        MOCK_SYSTEM_CONFIG_WITH_DATA
+      );
+    });
+
+    it('should setIsOpenAddDevice as true on first save setting', () => {
+      const { device_intf, internet_intf } =
+        MOCK_SYSTEM_CONFIG_WITH_DATA.network;
+      component.deviceControl.setValue(device_intf);
+      component.internetControl.setValue(internet_intf);
+      component.hasSetting = false;
+
+      component.saveSetting();
+
+      expect(testRunServiceMock.setIsOpenAddDevice).toHaveBeenCalledWith(true);
     });
   });
 });
+
+@Component({
+  selector: 'app-spinner',
+  template: '<div></div>',
+})
+class FakeSpinnerComponent {}

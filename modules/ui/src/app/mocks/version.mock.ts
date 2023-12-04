@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,20 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Injectable} from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
+export const VERSION = {
+  installed_version: 'v1',
+  latest_version: 'v1',
+  latest_version_url: '',
+  update_available: false,
+};
 
-@Injectable({
-  providedIn: 'root'
-})
-export class NotificationService {
-  constructor(private snackBar: MatSnackBar) {
-  }
-
-  notify(message: string) {
-    this.snackBar.open(message, 'x', {
-      horizontalPosition: 'right',
-      panelClass: 'test-run-notification'
-    })
-  }
-}
+export const NEW_VERSION = {
+  installed_version: 'v1',
+  latest_version: 'v2',
+  latest_version_url: 'test-url',
+  update_available: true,
+};

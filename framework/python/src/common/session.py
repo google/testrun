@@ -57,7 +57,7 @@ class TestRunSession():
 
   def start(self):
     self.reset()
-    self._status = 'Starting'
+    self._status = 'Waiting for Device'
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -126,7 +126,8 @@ class TestRunSession():
       LOGGER.debug(self._config)
 
   def _load_version(self):
-    version_cmd = util.run_command('dpkg-query --showformat=\'${Version}\' --show testrun')
+    version_cmd = util.run_command(
+      'dpkg-query --showformat=\'${Version}\' --show testrun')
 
     if version_cmd:
       version = version_cmd[0]

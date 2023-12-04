@@ -13,14 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, HostBinding, OnInit, ViewChild} from '@angular/core';
-import {MatIconRegistry} from '@angular/material/icon';
-import {DomSanitizer} from '@angular/platform-browser';
-import {MatDrawer, MatDrawerToggleResult} from '@angular/material/sidenav';
-import {TestRunService} from './services/test-run.service';
-import {Observable} from 'rxjs/internal/Observable';
-import {Device} from './model/device';
-import {take} from 'rxjs';
+import {
+  Component,
+  ElementRef,
+  HostBinding,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
+import { MatDrawer } from '@angular/material/sidenav';
+import { TestRunService } from './services/test-run.service';
+import { Observable } from 'rxjs/internal/Observable';
+import { Device } from './model/device';
+import { take } from 'rxjs';
+import { TestrunStatus } from './model/testrun-status';
+import { Router } from '@angular/router';
+import { LoaderService } from './services/loader.service';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -31,19 +40,24 @@ const CLOSE_URL = '/assets/icons/close.svg';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
   devices$!: Observable<Device[] | null>;
+  systemStatus$!: Observable<TestrunStatus>;
+
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
-  @HostBinding('class.active-menu') isMenuOpen: boolean = false;
+  @ViewChild('navigation') public navigation!: ElementRef;
+  @HostBinding('class.active-menu') isMenuOpen = false;
   interfaces: string[] = [];
 
   constructor(
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private testRunService: TestRunService,
+    private readonly loaderService: LoaderService,
+    private route: Router
   ) {
     testRunService.fetchDevices();
     this.matIconRegistry.addSvgIcon(
@@ -70,31 +84,77 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.devices$ = this.testRunService.getDevices();
+    this.systemStatus$ = this.testRunService.systemStatus$;
+  }
+
+  navigateToDeviceRepository(): void {
+    this.route.navigate(['/device-repository']);
+    this.testRunService.setIsOpenAddDevice(true);
+  }
+
+  navigateToRuntime(): void {
+    this.route.navigate(['/runtime']);
   }
 
   async closeSetting(): Promise<void> {
-    return await this.settingsDrawer.close().then(() => this.toggleSettingsBtn.focus());
+    return await this.settingsDrawer
+      .close()
+      .then(() => this.toggleSettingsBtn.focus());
   }
 
-  async openSetting(): Promise<MatDrawerToggleResult> {
-    return await this.settingsDrawer.open();
+  async openSetting(): Promise<void> {
+    return await this.openGeneralSettings();
   }
+
+  reloadInterfaces(): void {
+    this.showLoading();
+    this.getSystemInterfaces();
+  }
+
+  /**
+   * Indicates, if side menu should be focused on keyboard navigation after menu is opened
+   */
+  focusNavigation = false;
 
   public toggleMenu(event: MouseEvent) {
     event.stopPropagation();
     this.isMenuOpen = !this.isMenuOpen;
+    if (this.isMenuOpen) {
+      this.focusNavigation = true; // user will be navigated to side menu on tab
+    }
   }
 
-  public openFeedbackModal() {
-    // action TBD
+  /**
+   * When side menu is opened
+   */
+  skipToNavigation(event: Event) {
+    if (this.focusNavigation) {
+      event.preventDefault(); // if not prevented, second element will be focused
+      this.navigation.nativeElement.firstChild.focus(); // focus first button on side
+      this.focusNavigation = false; // user will be navigated according to normal flow on tab
+    }
   }
 
-  openGeneralSettings() {
-    this.testRunService.getSystemInterfaces()
+  async openGeneralSettings() {
+    this.getSystemInterfaces();
+    await this.settingsDrawer.open();
+  }
+
+  private getSystemInterfaces(): void {
+    this.testRunService
+      .getSystemInterfaces()
       .pipe(take(1))
-      .subscribe(async (interfaces) => {
+      .subscribe(interfaces => {
         this.interfaces = interfaces;
-        await this.settingsDrawer.open();
-      })
+        this.hideLoading();
+      });
+  }
+
+  private showLoading() {
+    this.loaderService.setLoading(true);
+  }
+
+  private hideLoading() {
+    this.loaderService.setLoading(false);
   }
 }

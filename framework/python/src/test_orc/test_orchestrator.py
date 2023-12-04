@@ -76,6 +76,10 @@ class TestOrchestrator:
   def run_test_modules(self):
     """Iterates through each test module and starts the container."""
 
+    # Do not start test modules if status is not in progress, e.g. Stopping
+    if self.get_session().get_status() != "In Progress":
+      return
+
     device = self._session.get_target_device()
     self._test_in_progress = True
     LOGGER.info(

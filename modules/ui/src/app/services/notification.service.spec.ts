@@ -13,27 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {TestBed} from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
-import {NotificationService} from './notification.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import { NotificationService } from './notification.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 describe('NotificationService', () => {
   let service: NotificationService;
 
   const mockMatSnackBar = {
-    open: () => {
-    },
-    dismiss: () => {
-
-    }
+    open: () => ({}),
+    dismiss: () => ({}),
   };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        {provide: MatSnackBar, useValue: mockMatSnackBar},
-      ]
+      providers: [{ provide: MatSnackBar, useValue: mockMatSnackBar }],
     });
     service = TestBed.inject(NotificationService);
   });
@@ -57,7 +52,7 @@ describe('NotificationService', () => {
       expect(args[2]).toEqual({
         horizontalPosition: 'right',
         panelClass: 'test-run-notification',
-        duration: 5000
+        duration: 5000,
       });
     });
 
@@ -70,7 +65,7 @@ describe('NotificationService', () => {
       expect(args[2]).toEqual({
         horizontalPosition: 'right',
         panelClass: 'test-run-notification',
-        duration: 15000
+        duration: 15000,
       });
     });
   });

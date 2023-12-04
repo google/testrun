@@ -13,42 +13,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {LiveAnnouncer} from '@angular/cdk/a11y';
-import {TestRunService} from '../services/test-run.service';
-import {HistoryTestrun, StatusResultClassName, TestrunStatus} from '../model/testrun-status';
-import {DatePipe} from '@angular/common';
-import {MatSort, Sort} from '@angular/material/sort';
-import {Subject, takeUntil} from 'rxjs';
-import {MatTableDataSource} from '@angular/material/table';
-import {FilterDialogComponent} from '../components/filter-dialog/filter-dialog.component';
-import {MatDialog} from '@angular/material/dialog';
-import {tap} from 'rxjs/internal/operators/tap';
-import {FilterName} from '../model/filters';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { TestRunService } from '../services/test-run.service';
+import {
+  HistoryTestrun,
+  StatusResultClassName,
+  TestrunStatus,
+} from '../model/testrun-status';
+import { DatePipe } from '@angular/common';
+import { MatSort, Sort } from '@angular/material/sort';
+import { Subject, takeUntil } from 'rxjs';
+import { MatTableDataSource } from '@angular/material/table';
+import { FilterDialogComponent } from '../components/filter-dialog/filter-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import { tap } from 'rxjs/internal/operators/tap';
+import { DateRange, FilterName, Filters } from '../model/filters';
 
 @Component({
   selector: 'app-history',
   templateUrl: './history.component.html',
-  styleUrls: ['./history.component.scss']
+  styleUrls: ['./history.component.scss'],
 })
 export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
-  displayedColumns: string[] = ['started', 'duration', 'deviceInfo', 'deviceFirmware', 'status', 'report'];
-  dataSource: MatTableDataSource<HistoryTestrun> = new MatTableDataSource<HistoryTestrun>([]);
+  displayedColumns: string[] = [
+    'started',
+    'duration',
+    'deviceInfo',
+    'deviceFirmware',
+    'status',
+    'report',
+  ];
+  chips: string[] = ['chips'];
+  dataSource: MatTableDataSource<HistoryTestrun> =
+    new MatTableDataSource<HistoryTestrun>([]);
 
   public readonly FilterName = FilterName;
   public filterOpened = false;
   public activeFilter = '';
-  public resultList = ['Compliant', 'Non-Compliant', 'Informational', 'Error'];
-  public availableStatuses!: string[];
-  filteredValues = {
+  public resultList = ['Compliant', 'Non-Compliant'];
+  filteredValues: Filters = {
     deviceInfo: '',
     deviceFirmware: '',
-    results: [...this.resultList],
-    dateRange: ''
+    results: [],
+    dateRange: '',
   };
   private destroy$: Subject<boolean> = new Subject<boolean>();
   @ViewChild(MatSort) sort!: MatSort;
-
+  dataLoaded = false;
   constructor(
     private testRunService: TestRunService,
     private datePipe: DatePipe,
@@ -59,7 +78,8 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.testRunService.getHistory()
+    this.testRunService
+      .getHistory()
       .pipe(takeUntil(this.destroy$))
       .subscribe(res => {
         if (!res) {
@@ -67,17 +87,19 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         const data = this.formateData(res);
 
-        this.availableStatuses = data.map((item) => item.status);
         this.dataSource = new MatTableDataSource(data);
-        this.dataSource.sortingDataAccessor = (data: any, sortHeaderId: string): string => {
-          if (typeof data[sortHeaderId] === 'string') {
-            return data[sortHeaderId].toLocaleLowerCase();
-          }
 
-          return data[sortHeaderId];
+        this.dataSource.sortingDataAccessor = (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          data: any,
+          sortHeaderId: string
+        ): string => {
+          const value = data[sortHeaderId];
+          return typeof value === 'string' ? value.toLocaleLowerCase() : value;
         };
         this.dataSource.filterPredicate = this.customFilterPredicate();
-      })
+        this.dataLoaded = true;
+      });
   }
 
   ngAfterViewInit() {
@@ -87,10 +109,22 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
   customFilterPredicate() {
     const filterPredicate = (data: HistoryTestrun, filter: string): boolean => {
       const searchString = JSON.parse(filter);
-      const isIncludeDeviceInfo = this.filterStringData(data.deviceInfo, searchString.deviceInfo);
-      const isIncludeDeviceFirmware = this.filterStringData(data.deviceFirmware, searchString.deviceFirmware);
-      const isIncludeStatus = searchString.results?.includes(data.status);
-      const isIncludeStartedDate = this.filterStartedDateRange(data.started, searchString);
+      const isIncludeDeviceInfo = this.filterStringData(
+        data.deviceInfo,
+        searchString.deviceInfo
+      );
+      const isIncludeDeviceFirmware = this.filterStringData(
+        data.deviceFirmware,
+        searchString.deviceFirmware
+      );
+
+      const isIncludeStatus =
+        searchString.results?.length === 0 ||
+        searchString.results?.includes(data.status);
+      const isIncludeStartedDate = this.filterStartedDateRange(
+        data.started,
+        searchString
+      );
 
       return (
         isIncludeDeviceInfo &&
@@ -103,19 +137,38 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private filterStringData(data: string, searchString: string): boolean {
-    return data.toString().trim().toLowerCase().indexOf(searchString.toLowerCase()) !== -1;
+    return (
+      data
+        .toString()
+        .trim()
+        .toLowerCase()
+        .indexOf(searchString.trim().toLowerCase()) !== -1
+    );
   }
 
-  private filterStartedDateRange(startedDate: string | null, searchString: any): boolean {
+  private filterStartedDateRange(
+    startedDate: string | null,
+    searchString: { dateRange: DateRange }
+  ): boolean {
     let isIncludeDate = true;
 
-    if (!searchString.dateRange && !startedDate) {
+    if (!searchString.dateRange || !startedDate) {
       return isIncludeDate;
     }
 
-    const startDate = searchString.dateRange.start ? Date.parse(searchString.dateRange.start) : 0;
-    const endDate = searchString.dateRange.end ? Date.parse(searchString.dateRange.end) : 0;
-    const dateToFilter = Date.parse(startedDate!);
+    const startDate = searchString.dateRange.start
+      ? typeof searchString.dateRange.start === 'string'
+        ? Date.parse(searchString.dateRange.start)
+        : searchString.dateRange.start.getDate()
+      : 0;
+    const endDate = searchString.dateRange.end
+      ? typeof searchString.dateRange.end === 'string'
+        ? Date.parse(searchString.dateRange.end)
+        : searchString.dateRange.end.getDate()
+      : 0;
+
+    const startedDateWithoutTime = new Date(startedDate).toDateString();
+    const dateToFilter = Date.parse(startedDateWithoutTime);
 
     if (startDate && endDate && dateToFilter) {
       isIncludeDate = dateToFilter >= startDate && dateToFilter <= endDate;
@@ -132,9 +185,9 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
         ...item,
         deviceFirmware: item.device.firmware,
         deviceInfo: item.device.manufacturer + ' ' + item.device.model,
-        duration: this.getDuration(item.started, item.finished)
-      }
-    })
+        duration: this.getDuration(item.started, item.finished),
+      };
+    });
   }
 
   getFormattedDateString(date: string | null) {
@@ -165,7 +218,7 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
     const durationMinuts = this.transformDate(durationMillisecond, 'mm');
     const durationSeconds = this.transformDate(durationMillisecond, 'ss');
 
-    return `${durationMinuts}m ${durationSeconds}s`
+    return `${durationMinuts}m ${durationSeconds}s`;
   }
 
   public getResultClass(status: string): StatusResultClassName {
@@ -185,10 +238,10 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filterOpened = true;
     this.activeFilter = filter;
     const dialogRef = this.dialog.open(FilterDialogComponent, {
+      ariaLabel: 'Filters dialog',
       data: {
         filter,
         trigger: target,
-        availableStatuses: this.availableStatuses,
       },
       autoFocus: true,
       hasBackdrop: true,
@@ -196,7 +249,8 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
       panelClass: 'filter-form-dialog',
     });
 
-    dialogRef?.afterClosed()
+    dialogRef
+      ?.afterClosed()
       .pipe(
         takeUntil(this.destroy$),
         tap(() => {
@@ -224,8 +278,19 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
+  filterCleared(filters: Filters) {
+    this.filteredValues = filters;
+    this.dataSource.filter = JSON.stringify(this.filteredValues);
+  }
+
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
+  }
+
+  isFiltersEmpty() {
+    return Object.values(this.filteredValues).every(
+      value => value.length === 0
+    );
   }
 }

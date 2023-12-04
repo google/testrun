@@ -317,7 +317,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     self.get_net_orc().start_listener()
     LOGGER.info('Waiting for devices on the network...')
-    self._set_status('Waiting for Device')
 
     # Keep application running until stopped
     while True:
@@ -402,6 +401,11 @@ class TestRun:  # pylint: disable=too-few-public-methods
         'Waiting for device to obtain IP')
 
   def _device_stable(self, mac_addr):
+
+    # Do not continue testing if Testrun has cancelled during monitor phase
+    if self.get_session().get_status() == 'Cancelled':
+      return
+
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
     self._set_status('In Progress')
     result = self._test_orc.run_test_modules()

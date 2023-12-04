@@ -13,16 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {AbstractControl, FormArray, FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {Device, TestModule} from '../../model/device';
-import {TestRunService} from '../../services/test-run.service';
-import {DeviceValidators} from './device.validators';
-import {catchError, of, Subject, takeUntil} from 'rxjs';
-import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Device, TestModule } from '../../model/device';
+import { TestRunService } from '../../services/test-run.service';
+import { DeviceValidators } from './device.validators';
+import { catchError, of, Subject, takeUntil } from 'rxjs';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { EscapableDialogComponent } from '../../components/escapable-dialog/escapable-dialog.component';
 
-const MAC_ADDRESS_PATTERN = '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
+const MAC_ADDRESS_PATTERN =
+  '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
 
 interface DialogData {
   title?: string;
@@ -36,43 +44,49 @@ export enum FormAction {
 
 export interface FormResponse {
   device?: Device;
-  action: FormAction
+  action: FormAction;
 }
 
 @Component({
   selector: 'app-device-form',
   templateUrl: './device-form.component.html',
-  styleUrls: ['./device-form.component.scss']
+  styleUrls: ['./device-form.component.scss'],
 })
-export class DeviceFormComponent implements OnInit, OnDestroy {
+export class DeviceFormComponent
+  extends EscapableDialogComponent
+  implements OnInit, OnDestroy
+{
   deviceForm!: FormGroup;
   testModules: TestModule[] = [];
-  error$: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+  error$: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(
+    null
+  );
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
-    public dialogRef: MatDialogRef<DeviceFormComponent>,
+    public override dialogRef: MatDialogRef<DeviceFormComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private fb: FormBuilder,
     private testRunService: TestRunService,
-    private deviceValidators: DeviceValidators,
+    private deviceValidators: DeviceValidators
   ) {
+    super(dialogRef);
   }
 
   get model() {
-    return this.deviceForm.get('model')!;
+    return this.deviceForm.get('model') as AbstractControl;
   }
 
   get manufacturer() {
-    return this.deviceForm.get('manufacturer')!;
+    return this.deviceForm.get('manufacturer') as AbstractControl;
   }
 
   get mac_addr() {
-    return this.deviceForm.get('mac_addr')!;
+    return this.deviceForm.get('mac_addr') as AbstractControl;
   }
 
   get test_modules() {
-    return this.deviceForm.controls['test_modules']! as FormArray;
+    return this.deviceForm.controls['test_modules'] as FormArray;
   }
 
   ngOnInit() {
@@ -91,7 +105,7 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
   }
 
   delete(): void {
-    this.dialogRef.close({action: FormAction.Delete} as FormResponse);
+    this.dialogRef.close({ action: FormAction.Delete } as FormResponse);
   }
 
   cancel(): void {
@@ -112,18 +126,20 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
 
     const device = this.createDeviceFromForm();
 
-    this.testRunService.saveDevice(device)
+    this.testRunService
+      .saveDevice(device)
       .pipe(
         takeUntil(this.destroy$),
         catchError(error => {
           this.error$.next(error.error);
           return of(null);
-        }))
+        })
+      )
       .subscribe((deviceSaved: boolean | null) => {
         if (deviceSaved) {
           this.dialogRef.close({
             action: FormAction.Save,
-            device
+            device,
           } as FormResponse);
         }
       });
@@ -137,16 +153,18 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
 
   private createDeviceFromForm(): Device {
     const testModules: { [key: string]: { enabled: boolean } } = {};
-    this.deviceForm.value.test_modules.forEach((enabled: boolean, i: number) => {
-      testModules[this.testModules[i]?.name] = {
-        enabled: enabled
+    this.deviceForm.value.test_modules.forEach(
+      (enabled: boolean, i: number) => {
+        testModules[this.testModules[i]?.name] = {
+          enabled: enabled,
+        };
       }
-    });
+    );
     return {
       model: this.model.value.trim(),
       manufacturer: this.manufacturer.value.trim(),
       mac_addr: this.mac_addr.value.trim(),
-      test_modules: testModules
+      test_modules: testModules,
     } as Device;
   }
 
@@ -162,7 +180,7 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
 
   private setRequiredErrorIfEmpty(control: AbstractControl) {
     if (!control.value.trim()) {
-      control.setErrors({required: true});
+      control.setErrors({ required: true });
     }
   }
 
@@ -171,11 +189,13 @@ export class DeviceFormComponent implements OnInit, OnDestroy {
       model: ['', [this.deviceValidators.deviceStringFormat()]],
       manufacturer: ['', [this.deviceValidators.deviceStringFormat()]],
       mac_addr: [
-        {value: '', disabled: this.data.device}, [
+        { value: '', disabled: this.data.device },
+        [
           Validators.pattern(MAC_ADDRESS_PATTERN),
-          this.deviceValidators.differentMACAddress(this.data.device)
-        ]],
-      test_modules: new FormArray([])
+          this.deviceValidators.differentMACAddress(this.data.device),
+        ],
+      ],
+      test_modules: new FormArray([]),
     });
   }
 }

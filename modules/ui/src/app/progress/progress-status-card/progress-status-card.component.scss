@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import "../../../theming/colors";
+@import '../../../theming/colors';
 
 :host {
   height: 152px;
@@ -54,6 +54,7 @@
     color: $white;
     font-size: 14px;
     line-height: 20px;
+    white-space: normal;
   }
 
   .progress-card-status-text,

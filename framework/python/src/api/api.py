@@ -158,7 +158,6 @@ class Api:
 
     # Check Testrun is not already running
     if self._test_run.get_session().get_status() in [
-        "Starting",
         "In Progress",
         "Waiting for Device",
         "Monitoring"
@@ -226,7 +225,7 @@ class Api:
       return self._generate_msg(False, "Could not fetch current version")
 
     # Set the installed version
-    json_response["installed_version"] = current_version
+    json_response["installed_version"] = "v" + current_version
 
     # Check latest version number from GitHub API
     version_check = requests.get(LATEST_RELEASE_CHECK, timeout=5)
@@ -241,7 +240,7 @@ class Api:
     LOGGER.debug(f"Latest version available is {latest_version_no}")
 
     # Craft JSON response
-    json_response["latest_version"] = latest_version_no
+    json_response["latest_version"] = "v" + latest_version_no
     json_response["latest_version_url"] = version_check.json()["html_url"]
 
     # String comparison between current and latest version

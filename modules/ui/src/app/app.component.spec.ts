@@ -13,25 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {ComponentFixture, fakeAsync, TestBed, tick} from '@angular/core/testing';
-import {Router} from '@angular/router';
-import {RouterTestingModule} from '@angular/router/testing';
-import {AppComponent} from './app.component';
-import {SpinnerComponent} from './components/spinner/spinner.component';
-import {TestRunService} from './services/test-run.service';
-import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
-import {Device} from './model/device';
-import {device} from './mocks/device.mock';
-import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {MatSidenavModule} from '@angular/material/sidenav';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {AppRoutingModule} from './app-routing.module';
-import {of} from 'rxjs/internal/observable/of';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  flush,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { AppComponent } from './app.component';
+import { TestRunService } from './services/test-run.service';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { Device } from './model/device';
+import { device } from './mocks/device.mock';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AppRoutingModule } from './app-routing.module';
+import { of } from 'rxjs/internal/observable/of';
 import SpyObj = jasmine.SpyObj;
+import { BypassComponent } from './components/bypass/bypass.component';
+import { VersionComponent } from './components/version/version.component';
+import { CalloutComponent } from './components/callout/callout.component';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/progress.mock';
+import { LoaderService } from './services/loader.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -39,17 +49,62 @@ describe('AppComponent', () => {
   let compiled: HTMLElement;
   let router: Router;
   let mockService: SpyObj<TestRunService>;
+  let mockLoaderService: SpyObj<LoaderService>;
+
+  const enterKeyEvent = new KeyboardEvent('keydown', {
+    key: 'Enter',
+  });
+
+  const spaceKeyEvent = new KeyboardEvent('keydown', {
+    key: 'Space',
+  });
+
+  const keyboardCases = [
+    { name: 'enter', event: enterKeyEvent },
+    { name: 'space', event: spaceKeyEvent },
+  ];
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['getDevices', 'fetchDevices', 'getSystemStatus', 'fetchHistory', 'getSystemInterfaces']);
-    mockService.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>([device]));
+    mockService = jasmine.createSpyObj([
+      'getDevices',
+      'fetchDevices',
+      'getSystemStatus',
+      'fetchHistory',
+      'getSystemInterfaces',
+      'getVersion',
+      'fetchVersion',
+      'setIsOpenAddDevice',
+    ]);
+
+    mockLoaderService = jasmine.createSpyObj(['setLoading']);
+    mockService.getDevices.and.returnValue(
+      new BehaviorSubject<Device[] | null>([device])
+    );
     mockService.getSystemInterfaces.and.returnValue(of([]));
 
     TestBed.configureTestingModule({
-      imports: [RouterTestingModule, HttpClientTestingModule, AppRoutingModule, MatButtonModule,
-        BrowserAnimationsModule, MatIconModule, MatToolbarModule, MatSidenavModule, SpinnerComponent],
-      providers: [{provide: TestRunService, useValue: mockService}],
-      declarations: [AppComponent, FakeGeneralSettingsComponent]
+      imports: [
+        RouterTestingModule,
+        HttpClientTestingModule,
+        AppRoutingModule,
+        MatButtonModule,
+        BrowserAnimationsModule,
+        MatIconModule,
+        MatToolbarModule,
+        MatSidenavModule,
+        BypassComponent,
+        VersionComponent,
+        CalloutComponent,
+      ],
+      providers: [
+        { provide: TestRunService, useValue: mockService },
+        { provide: LoaderService, useValue: mockLoaderService },
+      ],
+      declarations: [
+        AppComponent,
+        FakeGeneralSettingsComponent,
+        FakeSpinnerComponent,
+      ],
     });
 
     fixture = TestBed.createComponent(AppComponent);
@@ -150,16 +205,17 @@ describe('AppComponent', () => {
   }));
 
   it('should call toggleSettingsBtn focus when settingsDrawer close on closeSetting', fakeAsync(() => {
-    spyOn(component.settingsDrawer, 'close').and.returnValue(Promise.resolve('close'));
+    spyOn(component.settingsDrawer, 'close').and.returnValue(
+      Promise.resolve('close')
+    );
     spyOn(component.toggleSettingsBtn, 'focus');
 
     component.closeSetting();
     tick();
 
     component.settingsDrawer.close().then(() => {
-        expect(component.toggleSettingsBtn.focus).toHaveBeenCalled();
-      }
-    )
+      expect(component.toggleSettingsBtn.focus).toHaveBeenCalled();
+    });
   }));
 
   it('should call settingsDrawer open on openSetting', fakeAsync(() => {
@@ -182,18 +238,62 @@ describe('AppComponent', () => {
     expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
   });
 
-  it('should toggle menu open state on click menu button', () => {
-    const menuBtn = compiled.querySelector(
-      '.app-toolbar-button-menu'
-    ) as HTMLButtonElement;
+  it('#reloadInterfaces should call setLoading in loaderService', () => {
+    component.reloadInterfaces();
 
-    menuBtn.click();
+    expect(mockLoaderService.setLoading).toHaveBeenCalledWith(true);
+  });
 
-    expect(component.isMenuOpen).toBeTrue();
+  describe('menu button', () => {
+    it('should toggle menu open state on click', () => {
+      const menuBtn = compiled.querySelector(
+        '.app-toolbar-button-menu'
+      ) as HTMLButtonElement;
 
-    menuBtn.click();
+      menuBtn.click();
 
-    expect(component.isMenuOpen).toBeFalse();
+      expect(component.isMenuOpen).toBeTrue();
+
+      menuBtn.click();
+
+      expect(component.isMenuOpen).toBeFalse();
+    });
+
+    it('should set flag focusNavigation if menu opens on click', () => {
+      component.isMenuOpen = false;
+      const menuBtn = compiled.querySelector(
+        '.app-toolbar-button-menu'
+      ) as HTMLButtonElement;
+
+      menuBtn.click();
+
+      expect(component.focusNavigation).toBeTrue();
+    });
+
+    it('should focus navigation on tab press if menu button was clicked', () => {
+      const menuBtn = compiled.querySelector(
+        '.app-toolbar-button-menu'
+      ) as HTMLButtonElement;
+
+      menuBtn.click();
+      menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
+      const navigationButton = compiled.querySelectorAll('.app-sidebar-button');
+
+      expect(component.focusNavigation).toBeFalse();
+      expect(document.activeElement).toBe(navigationButton[0]);
+    });
+
+    it('should not focus navigation button on tab press if menu button was not clicked', () => {
+      component.focusNavigation = false;
+      const menuBtn = compiled.querySelector(
+        '.app-toolbar-button-menu'
+      ) as HTMLButtonElement;
+
+      menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
+
+      expect(component.focusNavigation).toBeFalse();
+      expect(document.activeElement).toBe(document.body);
+    });
   });
 
   it('should have spinner', () => {
@@ -202,45 +302,134 @@ describe('AppComponent', () => {
     expect(spinner).toBeTruthy();
   });
 
-  describe('feedback button', () => {
-    it('should be present', () => {
-      const button = compiled.querySelector('.feedback-button');
+  it('should have bypass', () => {
+    const bypass = compiled.querySelector('app-bypass');
 
-      expect(button).toBeTruthy();
-    });
+    expect(bypass).toBeTruthy();
+  });
+
+  it('should have version', () => {
+    const version = compiled.querySelector('app-version');
+
+    expect(version).toBeTruthy();
   });
 
   describe('with no devices setted', () => {
     beforeEach(() => {
-      mockService.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>(null));
+      mockService.getDevices.and.returnValue(
+        new BehaviorSubject<Device[] | null>(null)
+      );
       component.ngOnInit();
       fixture.detectChanges();
     });
 
-    it('should have "results" and "runtime" buttons disabled', fakeAsync(() => {
-      const resultBtn = compiled.querySelector('.app-sidebar-button-results') as HTMLButtonElement;
-      const runtimeBtn = compiled.querySelector('.app-sidebar-button-runtime') as HTMLButtonElement;
+    it('should have callout component', () => {
+      const callout = compiled.querySelector('app-callout');
 
-      expect(resultBtn.disabled).toBe(true);
-      expect(runtimeBtn.disabled).toBe(true);
+      expect(callout).toBeTruthy();
+    });
+
+    it('should have callout content with "Create a Device" link ', () => {
+      const calloutLinkEl = compiled.querySelector(
+        '.message-link'
+      ) as HTMLAnchorElement;
+      const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+
+      expect(calloutLinkEl).toBeTruthy();
+      expect(calloutLinkContent).toContain('Create a Device');
+    });
+
+    keyboardCases.forEach(testCase => {
+      it(`should navigate to the device-repository on keydown ${testCase.name} "Create a Device" link`, fakeAsync(() => {
+        const calloutLinkEl = compiled.querySelector(
+          '.message-link'
+        ) as HTMLAnchorElement;
+
+        calloutLinkEl.dispatchEvent(testCase.event);
+        flush();
+
+        expect(router.url).toBe(`/device-repository`);
+      }));
+    });
+
+    it('should navigate to the device-repository on click "Create a Device" link', fakeAsync(() => {
+      const calloutLinkEl = compiled.querySelector(
+        '.message-link'
+      ) as HTMLAnchorElement;
+
+      calloutLinkEl.click();
+      flush();
+
+      expect(router.url).toBe(`/device-repository`);
+      expect(mockService.setIsOpenAddDevice).toHaveBeenCalledWith(true);
     }));
+  });
 
-    it('should not have "device repository" button disabled', fakeAsync(() => {
-      const deviceRepositorytBtn = compiled.querySelector(
-        '.app-sidebar-button-device-repository'
-      ) as HTMLButtonElement;
+  describe('with devices setted but without run the test ', () => {
+    beforeEach(() => {
+      mockService.getDevices.and.returnValue(
+        new BehaviorSubject<Device[] | null>([device])
+      );
+      component.ngOnInit();
+      fixture.detectChanges();
+    });
 
-      expect(deviceRepositorytBtn.disabled).toBe(false);
-    }));
+    it('should have callout component with "Run the Test" link', () => {
+      const callout = compiled.querySelector('app-callout');
+      const calloutLinkEl = compiled.querySelector(
+        '.message-link'
+      ) as HTMLAnchorElement;
+      const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+
+      expect(callout).toBeTruthy();
+      expect(calloutLinkContent).toContain('Run the Test');
+    });
+
+    keyboardCases.forEach(testCase => {
+      it(`should navigate to the runtime on keydown ${testCase.name} "Run the Test" link`, fakeAsync(() => {
+        const calloutLinkEl = compiled.querySelector(
+          '.message-link'
+        ) as HTMLAnchorElement;
+
+        calloutLinkEl.dispatchEvent(testCase.event);
+        flush();
+
+        expect(router.url).toBe(`/runtime`);
+      }));
+    });
+  });
+
+  describe('with devices setted and systemStatus data ', () => {
+    beforeEach(() => {
+      mockService.getDevices.and.returnValue(
+        new BehaviorSubject<Device[] | null>([device])
+      );
+      mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+      component.ngOnInit();
+      fixture.detectChanges();
+    });
+
+    it('should not have callout component', () => {
+      const callout = compiled.querySelector('app-callout');
+
+      expect(callout).toBeNull();
+    });
   });
 });
 
 @Component({
   selector: 'app-general-settings',
-  template: '<div></div>'
+  template: '<div></div>',
 })
 class FakeGeneralSettingsComponent {
   @Input() interfaces = [];
   @Output() closeSettingEvent = new EventEmitter<void>();
   @Output() openSettingEvent = new EventEmitter<void>();
+  @Output() reloadInterfacesEvent = new EventEmitter<void>();
 }
+
+@Component({
+  selector: 'app-spinner',
+  template: '<div></div>',
+})
+class FakeSpinnerComponent {}

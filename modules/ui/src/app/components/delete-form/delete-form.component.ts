@@ -13,9 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, Inject} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {MatButtonModule} from '@angular/material/button';
+import { Component, Inject } from '@angular/core';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { EscapableDialogComponent } from '../escapable-dialog/escapable-dialog.component';
 
 interface DialogData {
   title?: string;
@@ -27,11 +32,14 @@ interface DialogData {
   templateUrl: './delete-form.component.html',
   styleUrls: ['./delete-form.component.scss'],
   standalone: true,
-  imports: [MatDialogModule, MatButtonModule,]
+  imports: [MatDialogModule, MatButtonModule],
 })
-export class DeleteFormComponent {
-  constructor(public dialogRef: MatDialogRef<DeleteFormComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: DialogData,) {
+export class DeleteFormComponent extends EscapableDialogComponent {
+  constructor(
+    public override dialogRef: MatDialogRef<DeleteFormComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData
+  ) {
+    super(dialogRef);
   }
 
   confirm() {
