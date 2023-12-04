@@ -143,7 +143,7 @@ class ConnectionModule(TestModule):
           # message-type, option 3 = DHCPREQUEST
           if 'message-type' in option and option[1] == 3:
             mac_address = packet[Ether].src
-            LOGGER.info('DHCPREQUEST detected MAC addres: ' + mac_address)
+            LOGGER.info('DHCPREQUEST detected MAC address: ' + mac_address)
             if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
               mac_addresses.add(mac_address.upper())
 
@@ -465,7 +465,7 @@ class ConnectionModule(TestModule):
       LOGGER.info('Checking for new lease')
       # Subnet changes tend to take longer to pick up so we'll allow
       # for twice the lease wait time
-      lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=2*self._lease_wait_time_sec*2)
+      lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=2*self._lease_wait_time_sec)
       if lease is not None:
         LOGGER.info('Validating subnet for new lease...')
         in_range = self.is_ip_in_range(lease['ip'], cur_range['start'],
