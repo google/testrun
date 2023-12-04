@@ -19,6 +19,6 @@
 
 echo Installing system dependencies
 
-sudo apt-get install openvswitch-common openvswitch-switch python3 libpangocairo-1.0-0
+sudo apt-get update && apt-get install openvswitch-common openvswitch-switch python3 libpangocairo-1.0-0
 
 echo Finished installing system dependencies
