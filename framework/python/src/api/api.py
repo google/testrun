@@ -20,6 +20,7 @@ import json
 from json import JSONDecodeError
 import os
 import psutil
+import requests
 import threading
 import uvicorn
 
@@ -34,6 +35,8 @@ DEVICE_MODEL_KEY = "model"
 DEVICE_TEST_MODULES_KEY = "test_modules"
 DEVICES_PATH = "/usr/local/testrun/local/devices"
 DEFAULT_DEVICE_INTF = "enx123456789123"
+
+LATEST_RELEASE_CHECK = "https://api.github.com/repos/google/testrun/releases/latest"
 
 class Api:
   """Provide REST endpoints to manage Testrun"""
@@ -55,6 +58,8 @@ class Api:
     self._router.add_api_route("/system/stop", self.stop_test_run,
                                methods=["POST"])
     self._router.add_api_route("/system/status", self.get_status)
+
+    self._router.add_api_route("/system/version", self.get_version)
 
     # Deprecated: /history will be removed in version 1.1
     self._router.add_api_route("/history", self.get_reports)
@@ -154,8 +159,10 @@ class Api:
 
     # Check Testrun is not already running
     if self._test_run.get_session().get_status() in [
+        "Starting",
         "In Progress",
         "Waiting for Device",
+        "Monitoring"
       ]:
       LOGGER.debug("Testrun is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
@@ -184,8 +191,6 @@ class Api:
                                 "ready for use. Ensure required interfaces " +
                                 "are connected.")
 
-    self._test_run.get_session().reset()
-    self._test_run.get_session().set_target_device(device)
     LOGGER.info("Starting Testrun with device target " +
                 f"{device.manufacturer} {device.model} with " +
                 f"MAC address {device.mac_addr}")
@@ -193,6 +198,9 @@ class Api:
     thread = threading.Thread(target=self._start_test_run,
                                         name="Testrun")
     thread.start()
+
+    self._test_run.get_session().set_target_device(device)
+
     return self._test_run.get_session().to_json()
 
   def _generate_msg(self, success, message):
@@ -213,6 +221,46 @@ class Api:
 
   async def get_status(self):
     return self._test_run.get_session().to_json()
+
+  async def get_version(self, response: Response):
+    json_response = {}
+
+    # Obtain the current version
+    current_version = self._session.get_version()
+
+    # Check if current version was able to be obtained
+    if current_version is None:
+      response.status_code = 500
+      return self._generate_msg(False, "Could not fetch current version")
+
+    # Set the installed version
+    json_response["installed_version"] = current_version
+
+    # Check latest version number from GitHub API
+    version_check = requests.get(LATEST_RELEASE_CHECK, timeout=5)
+
+    # Check OK response was received
+    if version_check.status_code != 200:
+      response.status_code = 500
+      return self._generate_msg(False, "Failed to fetch latest version")
+
+    # Extract version number from response, removing the leading 'v'
+    latest_version_no = version_check.json()["name"].strip("v")
+    LOGGER.debug(f"Latest version available is {latest_version_no}")
+
+    # Craft JSON response
+    json_response["latest_version"] = latest_version_no
+    json_response["latest_version_url"] = version_check.json()["html_url"]
+
+    # String comparison between current and latest version
+    if latest_version_no > current_version:
+      json_response["update_available"] = True
+      LOGGER.debug("An update is available")
+    else:
+      json_response["update_available"] = False
+      LOGGER.debug("The latest version is installed")
+
+    return json_response
 
   async def get_reports(self):
     LOGGER.debug("Received reports list request")
@@ -267,7 +315,7 @@ class Api:
       mac_addr = device_json.get("mac_addr").lower()
 
       # Check that device exists
-      device = self._sesison.get_device(mac_addr)
+      device = self._test_run.get_session().get_device(mac_addr)
 
       if device is None:
         response.status_code = 404
@@ -288,7 +336,8 @@ class Api:
       return self._generate_msg(True, "Successfully deleted the device")
 
     # TODO: Find specific exception to catch
-    except Exception:
+    except Exception as e:
+      LOGGER.error(e)
       response.status_code = 500
       return self._generate_msg(False, "An error occured whilst deleting " +
                                 "the device")
