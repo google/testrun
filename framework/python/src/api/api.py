@@ -286,6 +286,7 @@ class Api:
     if self._test_run.delete_report(device, timestamp_formatted):
       return self._generate_msg(True, "Deleted report")
 
+    response.status_code = 500
     return self._generate_msg(False, "Error occured whilst deleting report")
 
   async def delete_device(self, request: Request, response: Response):

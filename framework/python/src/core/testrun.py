@@ -227,9 +227,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     for report_folder in os.listdir(reports_folder):
       if report_folder == timestamp:
         shutil.rmtree(os.path.join(reports_folder, report_folder))
-
-        # TODO: Remove report from device (available in 1.0.2)
-
+        device.remove_report(timestamp)
         return True
 
     return False
