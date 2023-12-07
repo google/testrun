@@ -408,7 +408,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
     self._set_status('In Progress')
     result = self._test_orc.run_test_modules()
-    self._set_status(result)
+
+    if result is not None:
+      self._set_status(result)
     self._stop_network()
 
   def get_session(self):

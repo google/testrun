@@ -106,7 +106,7 @@ class TestOrchestrator:
 
     # Do not carry on (generating a report) if Testrun has been stopped
     if self.get_session().get_status() != "In Progress":
-      return
+      return None
 
     report = TestReport()
     report.from_json(self._generate_report())
