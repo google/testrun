@@ -76,8 +76,9 @@ class Api:
                                methods=["DELETE"])
     self._router.add_api_route("/device", self.save_device, methods=["POST"])
 
-    # TODO: Make this configurable in system.json
-    origins = ["http://localhost:8080", "http://localhost:4200"]
+    # Allow all origins to access API which allows
+    # all client browsers to access via their IP
+    origins = ["*"]
 
     self._app = FastAPI()
     self._app.include_router(self._router)
@@ -99,7 +100,7 @@ class Api:
     LOGGER.info("API waiting for requests")
 
   def _start(self):
-    uvicorn.run(self._app, log_config=None, port=self._session.get_api_port())
+    uvicorn.run(self._app, log_config=None, host="0.0.0.0", port=self._session.get_api_port())
 
   def stop(self):
     LOGGER.info("Stopping API")

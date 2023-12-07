@@ -22,7 +22,7 @@ import {map, ReplaySubject, retry} from 'rxjs';
 import {SystemConfig} from '../model/setting';
 import {StatusOfTestResult, StatusResultClassName, TestrunStatus} from '../model/testrun-status';
 
-const API_URL = 'http://localhost:8000'
+const API_URL = `http://${window.location.hostname}:8000`;
 
 @Injectable({
   providedIn: 'root'
