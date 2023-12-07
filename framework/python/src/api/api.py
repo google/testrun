@@ -314,8 +314,11 @@ class Api:
         return self._generate_msg(False, "Device not found")
 
       # Check that Testrun is not currently running against this device
-      if self._session.get_target_device() == device:
-        # TODO: Check if this is the correct status code
+      if (self._session.get_target_device() == device and
+          self._session.get_status() not in [
+            "Cancelled",
+            "Compliant",
+            "Non-Compliant"]):
         response.status_code = 403
         return self._generate_msg(False, "Cannot delete this device whilst " +
                                   "it is being tested")
