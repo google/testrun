@@ -331,7 +331,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     self._stop_tests()
     self._stop_network(kill=True)
-    self._stop_ui()
     self.get_session().set_status('Cancelled')
 
   def _register_exits(self):
@@ -345,6 +344,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     if signum in (2, signal.SIGTERM):
       LOGGER.info('Exit signal received.')
       self.stop()
+      self._stop_ui()
       sys.exit(1)
 
   def _get_config_abs(self, config_file=None):
@@ -442,6 +442,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     LOGGER.info('User interface is ready on http://localhost:8080')
 
   def _stop_ui(self):
+    LOGGER.info('Stopping user interface')
     client = docker.from_env()
     try:
       container = client.containers.get('tr-ui')
