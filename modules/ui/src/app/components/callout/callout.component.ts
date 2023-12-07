@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -25,4 +25,6 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrls: ['./callout.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CalloutComponent {}
+export class CalloutComponent {
+  @Input() type = '';
+}

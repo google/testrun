@@ -79,20 +79,28 @@ limitations under the License.
       </button>
     </mat-toolbar>
     <div class="app-content-main" role="main" id="main">
-      <app-callout *ngIf="!(devices$ | async)?.length">
+      <app-callout
+        [type]="CalloutType.Info"
+        *ngIf="!(devices$ | async)?.length && isDevicesLoaded">
         Step 1: To perform a device test please
         <a
           (click)="navigateToDeviceRepository()"
           (keydown.enter)="navigateToDeviceRepository()"
           (keydown.space)="navigateToDeviceRepository()"
           tabindex="0"
+          role="button"
           class="message-link"
           >Create a Device</a
         >
         first.
       </app-callout>
       <app-callout
-        *ngIf="(devices$ | async)?.length && !(systemStatus$ | async)?.status">
+        [type]="CalloutType.Info"
+        *ngIf="
+          (devices$ | async)?.length &&
+          !(systemStatus$ | async)?.status &&
+          isStatusLoaded
+        ">
         Step 2: Once device is created navigate to Testrun Runtime tab where you
         can set up and
         <a
@@ -100,6 +108,7 @@ limitations under the License.
           (keydown.enter)="navigateToRuntime()"
           (keydown.space)="navigateToRuntime()"
           tabindex="0"
+          role="button"
           class="message-link"
           >Run the Test</a
         >.

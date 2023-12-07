@@ -37,6 +37,8 @@ import { LoaderService } from '../services/loader.service';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../services/loaderConfig';
 import { Device } from '../model/device';
 
+const EMPTY_RESULT = new Array(100).fill(null).map(() => ({}) as IResult);
+
 @Component({
   selector: 'app-progress',
   templateUrl: './progress.component.html',
@@ -63,9 +65,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
     private readonly testRunService: TestRunService,
     private readonly loaderService: LoaderService,
     public dialog: MatDialog
-  ) {
-    this.testRunService.getSystemStatus();
-  }
+  ) {}
 
   ngOnInit(): void {
     this.devices$ = this.testRunService.getDevices();
@@ -77,6 +77,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
           this.pullingSystemStatusData();
         }
         if (
+          res.status === StatusOfTestrun.WaitingForDevice ||
           res.status === StatusOfTestrun.Monitoring ||
           (res.status === StatusOfTestrun.InProgress &&
             this.resultIsEmpty(res.tests))
@@ -90,9 +91,8 @@ export class ProgressComponent implements OnInit, OnDestroy {
           this.hideLoading();
         }
         if (
-          res.finished ||
-          res.status === StatusOfTestrun.Idle ||
-          res.status === StatusOfTestrun.Failed
+          !this.testrunInProgress(res.status) &&
+          res.status !== StatusOfTestrun.Cancelling
         ) {
           this.isCancelling = false;
           this.destroy$.next(true);
@@ -109,7 +109,30 @@ export class ProgressComponent implements OnInit, OnDestroy {
     );
 
     this.dataSource$ = this.systemStatus$.pipe(
-      map((res: TestrunStatus) => (res.tests as TestsData)?.results)
+      map((res: TestrunStatus) => {
+        const results = (res.tests as TestsData)?.results || [];
+        if (
+          res.status === StatusOfTestrun.Monitoring ||
+          res.status === StatusOfTestrun.WaitingForDevice
+        ) {
+          return EMPTY_RESULT;
+        }
+
+        const total = (res.tests as TestsData)?.total || 100;
+        if (
+          res.status === StatusOfTestrun.InProgress &&
+          results.length < total
+        ) {
+          return [
+            ...results,
+            ...new Array(total - results.length)
+              .fill(null)
+              .map(() => ({}) as IResult),
+          ];
+        }
+
+        return results;
+      })
     );
   }
 
@@ -133,7 +156,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
 
   public openStopTestrunDialog() {
     const dialogRef = this.dialog.open(DeleteFormComponent, {
-      ariaLabel: 'Stop testrun dialog',
+      ariaLabel: 'Stop testrun',
       data: {
         title: 'Stop testrun',
         content:
@@ -190,7 +213,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
 
   openTestRunModal(): void {
     this.dialog.open(ProgressInitiateFormComponent, {
-      ariaLabel: 'Initiate testrun dialog',
+      ariaLabel: 'Initiate testrun',
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
@@ -198,7 +221,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
     });
   }
 
-  private resultIsEmpty(tests: TestsResponse | undefined) {
+  resultIsEmpty(tests: TestsResponse | undefined) {
     return (
       (tests as TestsData)?.results?.length === 0 ||
       (tests as IResult[])?.length === 0

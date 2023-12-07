@@ -74,6 +74,7 @@ describe('AppComponent', () => {
       'getVersion',
       'fetchVersion',
       'setIsOpenAddDevice',
+      'systemStatus$',
     ]);
 
     mockLoaderService = jasmine.createSpyObj(['setLoading']);
@@ -81,6 +82,7 @@ describe('AppComponent', () => {
       new BehaviorSubject<Device[] | null>([device])
     );
     mockService.getSystemInterfaces.and.returnValue(of([]));
+    (mockService.systemStatus$ as unknown) = of({});
 
     TestBed.configureTestingModule({
       imports: [

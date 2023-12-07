@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export interface SystemConfig {
-  network?: {
-    device_intf?: string;
-    internet_intf?: string;
-  };
+export enum CalloutType {
+  Info = 'info',
+  Warning = 'warning_amber',
 }

@@ -130,7 +130,7 @@ describe('DeviceRepositoryComponent', () => {
 
       expect(openSpy).toHaveBeenCalled();
       expect(openSpy).toHaveBeenCalledWith(DeviceFormComponent, {
-        ariaLabel: 'Edit device dialog',
+        ariaLabel: 'Edit device',
         data: {
           device: device,
           title: 'Edit device',
@@ -158,7 +158,7 @@ describe('DeviceRepositoryComponent', () => {
     expect(button).toBeTruthy();
     expect(openSpy).toHaveBeenCalled();
     expect(openSpy).toHaveBeenCalledWith(DeviceFormComponent, {
-      ariaLabel: 'Create device dialog',
+      ariaLabel: 'Create device',
       data: { device: null, title: 'Create device' },
       autoFocus: true,
       hasBackdrop: true,

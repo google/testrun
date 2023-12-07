@@ -25,6 +25,7 @@ import { ProgressComponent } from './progress.component';
 import { TestRunService } from '../services/test-run.service';
 import { of } from 'rxjs';
 import {
+  EMPTY_RESULT,
   MOCK_PROGRESS_DATA_CANCELLED,
   MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_COMPLIANT,
@@ -33,7 +34,7 @@ import {
   MOCK_PROGRESS_DATA_MONITORING,
   MOCK_PROGRESS_DATA_NOT_STARTED,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
-  TEST_DATA,
+  TEST_DATA_TABLE_RESULT,
 } from '../mocks/progress.mock';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -190,13 +191,40 @@ describe('ProgressComponent', () => {
         });
       });
 
-      it('should set dataSource$ value', () => {
-        const expectedResult = TEST_DATA.results;
+      describe('dataSource$', () => {
+        it('should set value with empty values if result length < total for status "In Progress"', () => {
+          const expectedResult = TEST_DATA_TABLE_RESULT;
 
-        component.ngOnInit();
+          testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+          component.ngOnInit();
 
-        component.dataSource$.subscribe(res => {
-          expect(res).toEqual(expectedResult);
+          component.dataSource$.subscribe(res => {
+            expect(res).toEqual(expectedResult);
+          });
+        });
+
+        it('should set value with empty values for status "Monitoring"', () => {
+          const expectedResult = EMPTY_RESULT;
+
+          testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_MONITORING);
+          component.ngOnInit();
+
+          component.dataSource$.subscribe(res => {
+            expect(res).toEqual(expectedResult);
+          });
+        });
+
+        it('should set value with empty values for status "Waiting for Device"', () => {
+          const expectedResult = EMPTY_RESULT;
+
+          testRunServiceMock.systemStatus$ = of(
+            MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
+          );
+          component.ngOnInit();
+
+          component.dataSource$.subscribe(res => {
+            expect(res).toEqual(expectedResult);
+          });
         });
       });
 
@@ -342,7 +370,7 @@ describe('ProgressComponent', () => {
 
         expect(openSpy).toHaveBeenCalled();
         expect(openSpy).toHaveBeenCalledWith(ProgressInitiateFormComponent, {
-          ariaLabel: 'Initiate testrun dialog',
+          ariaLabel: 'Initiate testrun',
           autoFocus: true,
           hasBackdrop: true,
           disableClose: true,
@@ -419,7 +447,7 @@ describe('ProgressComponent', () => {
         fixture.detectChanges();
         tick(5000);
 
-        expect(testRunServiceMock.getSystemStatus).toHaveBeenCalledTimes(2);
+        expect(testRunServiceMock.getSystemStatus).toHaveBeenCalledTimes(1);
         discardPeriodicTasks();
       }));
     });

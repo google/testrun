@@ -46,6 +46,7 @@ limitations under the License.
           </button>
           <app-download-report *ngIf="data.report" [data]="data">
             <button
+              tabindex="-1"
               class="report-button"
               aria-label="Download testrun report"
               mat-flat-button>
@@ -57,7 +58,11 @@ limitations under the License.
       <app-progress-status-card [systemStatus$]="systemStatus$">
       </app-progress-status-card>
     </mat-toolbar>
-    <section [class.progress-table-relative]="testrunInProgress(data.status)">
+    <section
+      class="progress-table"
+      [class.progress-table-progress-empty]="
+        testrunInProgress(data.status) && resultIsEmpty(data.tests)
+      ">
       <app-progress-table [dataSource$]="dataSource$"></app-progress-table>
       <app-spinner></app-spinner>
     </section>

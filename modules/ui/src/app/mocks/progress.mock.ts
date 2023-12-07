@@ -34,6 +34,15 @@ const TEST_DATA_RESULT: IResult[] = [
   },
 ];
 
+export const TEST_DATA_TABLE_RESULT: IResult[] = [
+  ...TEST_DATA_RESULT,
+  ...new Array(24).fill(null).map(() => ({}) as IResult),
+];
+
+export const EMPTY_RESULT = new Array(100)
+  .fill(null)
+  .map(() => ({}) as IResult);
+
 export const TEST_DATA: TestsData = {
   total: 26,
   results: TEST_DATA_RESULT,

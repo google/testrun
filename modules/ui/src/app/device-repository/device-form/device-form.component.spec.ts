@@ -176,7 +176,7 @@ describe('DeviceFormComponent', () => {
     fixture.whenStable().then(() => {
       const error = compiled.querySelector('mat-error');
       expect(error?.innerHTML).toContain(
-        'At least one test has to be selected.'
+        'At least one test has to be selected to save a Device.'
       );
     });
 

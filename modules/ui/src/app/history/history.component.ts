@@ -98,6 +98,7 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
           return typeof value === 'string' ? value.toLocaleLowerCase() : value;
         };
         this.dataSource.filterPredicate = this.customFilterPredicate();
+        this.dataSource.filter = JSON.stringify(this.filteredValues);
         this.dataLoaded = true;
       });
   }
@@ -238,7 +239,7 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filterOpened = true;
     this.activeFilter = filter;
     const dialogRef = this.dialog.open(FilterDialogComponent, {
-      ariaLabel: 'Filters dialog',
+      ariaLabel: 'Filters',
       data: {
         filter,
         trigger: target,

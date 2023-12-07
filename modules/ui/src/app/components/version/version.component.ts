@@ -45,7 +45,7 @@ export class VersionComponent implements OnInit {
 
   openUpdateWindow() {
     this.dialog.open(UpdateDialogComponent, {
-      ariaLabel: 'Update version dialog',
+      ariaLabel: 'Update version',
       data: this.version$.value,
       autoFocus: true,
       hasBackdrop: true,

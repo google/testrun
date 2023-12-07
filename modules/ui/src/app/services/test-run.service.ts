@@ -75,7 +75,7 @@ export class TestRunService {
   private devices = new BehaviorSubject<Device[] | null>(null);
   private isOpenAddDeviceSub$ = new BehaviorSubject<boolean>(false);
   public isOpenAddDevice$ = this.isOpenAddDeviceSub$.asObservable();
-  private _systemConfig = new BehaviorSubject<SystemConfig>({ network: {} });
+  private _systemConfig = new BehaviorSubject<SystemConfig | null>(null);
   public systemConfig$ = this._systemConfig.asObservable();
   private systemStatusSubject = new ReplaySubject<TestrunStatus>(1);
   public systemStatus$ = this.systemStatusSubject.asObservable();

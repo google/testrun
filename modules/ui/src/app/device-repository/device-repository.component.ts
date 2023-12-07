@@ -60,7 +60,7 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
 
   openDialog(selectedDevice?: Device): void {
     const dialogRef = this.dialog.open(DeviceFormComponent, {
-      ariaLabel: selectedDevice ? 'Edit device dialog' : 'Create device dialog',
+      ariaLabel: selectedDevice ? 'Edit device' : 'Create device',
       data: {
         device: selectedDevice || null,
         title: selectedDevice ? 'Edit device' : 'Create device',
@@ -99,7 +99,7 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
 
   openDeleteDialog(device: Device) {
     const dialogRef = this.dialog.open(DeleteFormComponent, {
-      ariaLabel: 'Delete device dialog',
+      ariaLabel: 'Delete device',
       data: {
         title: 'Delete device',
         content: `You are about to delete ${

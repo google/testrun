@@ -25,7 +25,9 @@ limitations under the License.
   </button>
 </div>
 <div class="setting-drawer-content">
-  <form *ngIf="interfaces.length" [formGroup]="settingForm">
+  <form
+    *ngIf="interfaces.length; else warning_message"
+    [formGroup]="settingForm">
     <label
       class="setting-form-label"
       id="internet-radio-group-label"
@@ -48,6 +50,9 @@ limitations under the License.
         {{ interface }}
       </mat-radio-button>
     </mat-radio-group>
+    <app-callout [type]="CalloutType.Warning" *ngIf="interfaces.length === 1">
+      Warning! Testrun requires two ports to operate correctly.
+    </app-callout>
     <label
       class="setting-form-label device-label"
       id="device-radio-group-label"
@@ -70,6 +75,11 @@ limitations under the License.
       </mat-radio-button>
     </mat-radio-group>
   </form>
+  <ng-template #warning_message>
+    <app-callout [type]="CalloutType.Warning">
+      Warning! No ports is detected.
+    </app-callout>
+  </ng-template>
 </div>
 <p class="message">
   If a port is missing from this list, you can
@@ -97,10 +107,10 @@ limitations under the License.
   </button>
   <button
     mat-raised-button
+    class="save-button"
     color="primary"
     (click)="saveSetting()"
-    [disabled]="!isFormValues"
-    class="save-button">
+    [disabled]="!isFormValues || isLessThanTwoInterfaces">
     Save
   </button>
 </div>

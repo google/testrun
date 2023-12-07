@@ -18,8 +18,11 @@
 @import '../../../theming/variables';
 
 :host {
-  position: absolute;
   width: 100%;
+}
+
+:host:has(.callout-container.info) {
+  position: absolute;
 }
 
 .callout-container {
@@ -27,20 +30,37 @@
   box-sizing: border-box;
   height: auto;
   min-height: 48px;
-  margin: 24px 32px;
   padding: 6px 24px;
   border-radius: 8px;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
-  background-color: mat.get-color-from-palette($color-primary, 50);
 }
 
 .callout-icon {
-  color: mat.get-color-from-palette($color-primary, 700);
+  flex-shrink: 0;
+  padding: 4px 0;
+}
+
+.callout-container.info {
+  margin: 24px 32px;
+  background-color: mat.get-color-from-palette($color-primary, 50);
+
+  .callout-icon {
+    color: mat.get-color-from-palette($color-primary, 700);
+  }
+}
+
+.callout-container.warning_amber {
+  background-color: $yellow-50;
+
+  .callout-icon {
+    color: $orange-700;
+  }
 }
 
 .callout-context {
   margin: 0;
+  padding: 6px 0;
   color: $grey-800;
   font-family: $font-secondary;
   font-size: 14px;

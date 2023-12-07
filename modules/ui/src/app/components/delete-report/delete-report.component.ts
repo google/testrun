@@ -53,7 +53,7 @@ export class DeleteReportComponent
   deleteReport(event: Event) {
     event.preventDefault();
     const dialogRef = this.dialog.open(DeleteFormComponent, {
-      ariaLabel: 'Delete report dialog',
+      ariaLabel: 'Delete report',
       data: {
         title: 'Delete report',
         content: this.getTestRunId(this.data),

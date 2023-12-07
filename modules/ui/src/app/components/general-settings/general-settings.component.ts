@@ -30,6 +30,7 @@ import {
 import { Subject, takeUntil, tap } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
 import { OnlyDifferentValuesValidator } from './only-different-values.validator';
+import { CalloutType } from '../../model/callout-type';
 
 @Component({
   selector: 'app-general-settings',
@@ -41,6 +42,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   @Output() closeSettingEvent = new EventEmitter<void>();
   @Output() openSettingEvent = new EventEmitter<void>();
   @Output() reloadInterfacesEvent = new EventEmitter<void>();
+  public readonly CalloutType = CalloutType;
   public settingForm!: FormGroup;
   public isSubmitting = false;
   public hasSetting = false;
@@ -60,6 +62,10 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
 
   get isFormError(): boolean {
     return this.settingForm.hasError('hasSameValues');
+  }
+
+  get isLessThanTwoInterfaces(): boolean {
+    return !this.interfaces.length || this.interfaces?.length < 2;
   }
 
   constructor(
@@ -111,10 +117,14 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       .getSystemConfig()
       .pipe(takeUntil(this.destroy$))
       .subscribe(config => {
-        const { device_intf, internet_intf } = config.network;
-        if (device_intf && internet_intf) {
+        if (config?.network) {
+          const { device_intf, internet_intf } = config.network;
+          if (device_intf && internet_intf) {
+            this.hasSetting = true;
+          } else {
+            this.openSetting();
+          }
           this.setDefaultFormValues(device_intf, internet_intf);
-          this.hasSetting = true;
         } else {
           this.openSetting();
         }
@@ -122,7 +132,10 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       });
   }
 
-  private setDefaultFormValues(device: string, internet: string): void {
+  private setDefaultFormValues(
+    device: string | undefined,
+    internet: string | undefined
+  ): void {
     this.deviceControl.setValue(device);
     this.internetControl.setValue(internet);
   }
@@ -168,9 +181,11 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     this.testRunService.systemConfig$
       .pipe(takeUntil(this.destroy$))
       .subscribe(config => {
-        const { device_intf, internet_intf } = config.network;
-        if (device_intf && internet_intf) {
-          this.setDefaultFormValues(device_intf, internet_intf);
+        if (config?.network) {
+          const { device_intf, internet_intf } = config.network;
+          if (device_intf && internet_intf) {
+            this.setDefaultFormValues(device_intf, internet_intf);
+          }
         }
       });
   }

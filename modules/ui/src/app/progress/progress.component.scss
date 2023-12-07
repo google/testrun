@@ -92,8 +92,22 @@
 .report-button {
   background-color: mat.get-color-from-palette($color-primary, 50);
   color: mat.get-color-from-palette($color-primary, 700);
+  & ::ng-deep .mat-mdc-button-touch-target {
+    height: auto;
+  }
 }
 
-.progress-table-relative {
+.progress-table {
+  overflow-y: auto;
+  flex: 1;
+  padding-top: 10px;
+}
+
+.progress-table-progress-empty {
   position: relative;
+  overflow-y: hidden;
+  & ::ng-deep .loader {
+    width: 196px;
+    height: 196px;
+  }
 }

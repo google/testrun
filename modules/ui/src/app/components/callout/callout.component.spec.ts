@@ -20,17 +20,26 @@ import { CalloutComponent } from './callout.component';
 describe('CalloutComponent', () => {
   let component: CalloutComponent;
   let fixture: ComponentFixture<CalloutComponent>;
+  let compiled: HTMLElement;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [CalloutComponent],
-    });
+    }).compileComponents();
     fixture = TestBed.createComponent(CalloutComponent);
     component = fixture.componentInstance;
+    component.type = 'mockValue';
+    compiled = fixture.nativeElement as HTMLElement;
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should have class provided from type', () => {
+    const calloutContainerdEl = compiled.querySelector('.callout-container');
+
+    expect(calloutContainerdEl?.classList).toContain('mockValue');
   });
 });

@@ -120,7 +120,9 @@ export class DeviceFormComponent
     }
 
     if (this.isAllTestsDisabled()) {
-      this.error$.next('At least one test has to be selected.');
+      this.error$.next(
+        'At least one test has to be selected to save a Device.'
+      );
       return;
     }
 

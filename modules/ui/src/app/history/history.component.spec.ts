@@ -154,7 +154,7 @@ describe('HistoryComponent', () => {
 
       expect(openSpy).toHaveBeenCalled();
       expect(openSpy).toHaveBeenCalledWith(FilterDialogComponent, {
-        ariaLabel: 'Filters dialog',
+        ariaLabel: 'Filters',
         data: {
           filter: '',
           trigger: new ElementRef(event.currentTarget),

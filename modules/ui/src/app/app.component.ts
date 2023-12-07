@@ -30,6 +30,9 @@ import { take } from 'rxjs';
 import { TestrunStatus } from './model/testrun-status';
 import { Router } from '@angular/router';
 import { LoaderService } from './services/loader.service';
+import { CalloutType } from './model/callout-type';
+import { tap } from 'rxjs/internal/operators/tap';
+import { shareReplay } from 'rxjs/internal/operators/shareReplay';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -43,14 +46,17 @@ const CLOSE_URL = '/assets/icons/close.svg';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
+  public readonly CalloutType = CalloutType;
   devices$!: Observable<Device[] | null>;
   systemStatus$!: Observable<TestrunStatus>;
+  interfaces: string[] = [];
+  isDevicesLoaded = false;
+  isStatusLoaded = false;
 
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
   @ViewChild('navigation') public navigation!: ElementRef;
   @HostBinding('class.active-menu') isMenuOpen = false;
-  interfaces: string[] = [];
 
   constructor(
     private matIconRegistry: MatIconRegistry,
@@ -59,7 +65,8 @@ export class AppComponent implements OnInit {
     private readonly loaderService: LoaderService,
     private route: Router
   ) {
-    testRunService.fetchDevices();
+    this.testRunService.fetchDevices();
+    this.testRunService.getSystemStatus();
     this.matIconRegistry.addSvgIcon(
       'devices',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_LOGO_URL)
@@ -83,8 +90,18 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.devices$ = this.testRunService.getDevices();
-    this.systemStatus$ = this.testRunService.systemStatus$;
+    this.devices$ = this.testRunService.getDevices().pipe(
+      tap(result => {
+        if (result !== null) {
+          this.isDevicesLoaded = true;
+        }
+      }),
+      shareReplay({ refCount: true, bufferSize: 1 })
+    );
+
+    this.systemStatus$ = this.testRunService.systemStatus$.pipe(
+      tap(() => (this.isStatusLoaded = true))
+    );
   }
 
   navigateToDeviceRepository(): void {

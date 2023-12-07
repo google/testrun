@@ -186,10 +186,10 @@ body:has(.filter-dialog-content)
   opacity: 0;
 }
 
-body:has(app-callout)
+body:has(app-callout .info)
   app-device-repository:not(:has(.device-repository-content-empty)),
-body:has(app-callout) app-history:not(:has(.results-content-empty)),
-body:has(app-callout) app-progress:not(:has(.progress-content-empty)) {
+body:has(app-callout .info) app-history:not(:has(.results-content-empty)),
+body:has(app-callout .info) app-progress:not(:has(.progress-content-empty)) {
   margin-top: 96px;
 }
 
