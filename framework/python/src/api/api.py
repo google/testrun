@@ -233,6 +233,7 @@ class Api:
     # Check OK response was received
     if version_check.status_code != 200:
       response.status_code = 500
+      LOGGER.error(version_check.content)
       return self._generate_msg(False, "Failed to fetch latest version")
 
     # Extract version number from response, removing the leading 'v'
