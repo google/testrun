@@ -292,8 +292,8 @@ class TestReport():
     # Add device configuration
     summary += '''
     <div class="summary-device-modules">
-      <div class="summary-device-modules-title">
-        Configuration
+      <div class="summary-item-label" style="margin-bottom:10px;">
+        Device Configuration
       </div>
     '''
 
@@ -492,14 +492,6 @@ class TestReport():
       margin: 0;
     }
 
-    .summary-device-modules-title {
-      font-size: 20px;
-      font-weight: 500;
-      color: #202124;
-      width: fit-content;
-      margin-bottom: 0.1in;
-    }
-
     .summary-device-modules {
       position: absolute;
       left: 3.2in;
@@ -511,7 +503,7 @@ class TestReport():
       font-weight: 500;
       color: #202124;
       width: fit-content;
-      padding-bottom: 0.05in;
+      margin-bottom: 0.1in;
     }
 
     .summary-vertical-line {
