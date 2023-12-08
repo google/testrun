@@ -99,7 +99,10 @@ class Api:
     LOGGER.info("API waiting for requests")
 
   def _start(self):
-    uvicorn.run(self._app, log_config=None, port=self._session.get_api_port())
+    uvicorn.run(self._app,
+                log_config=None,
+                host="0.0.0.0",
+                port=self._session.get_api_port())
 
   def stop(self):
     LOGGER.info("Stopping API")
