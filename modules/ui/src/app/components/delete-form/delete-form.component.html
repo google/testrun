@@ -13,12 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<span class="delete-form-title">{{data.title}}?</span>
-<p class="delete-form-content">You are about to delete {{data.content}}. Are you sure?</p>
+<span class="delete-form-title">{{ data.title }}?</span>
+<p class="delete-form-content">
+  {{ data.content }}
+</p>
 
 <mat-dialog-actions align="end" class="delete-form-actions">
-  <button (click)="cancel()" class="cancel-button" mat-flat-button>Cancel</button>
-  <button (click)="confirm()" class="confirm-button" mat-flat-button>Confirm</button>
+  <button (click)="cancel()" class="cancel-button" mat-flat-button>
+    Cancel
+  </button>
+  <button (click)="confirm()" class="confirm-button" mat-flat-button>
+    Confirm
+  </button>
 </mat-dialog-actions>
-
-

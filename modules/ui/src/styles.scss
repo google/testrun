@@ -16,7 +16,8 @@
 @use '@angular/material' as mat;
 @import './theming/theme';
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -49,7 +50,8 @@ body {
   border-radius: inherit;
 }
 
-.device-form-dialog, .initiate-test-run-dialog {
+.device-form-dialog,
+.initiate-test-run-dialog {
   max-height: 100vh;
 }
 
@@ -82,7 +84,8 @@ mat-hint {
 }
 
 .mdc-radio__native-control:focus:not(:focus-visible) ~ .mat-mdc-focus-indicator,
-.mdc-checkbox__native-control:focus:not(:focus-visible) ~ .mat-mdc-focus-indicator {
+.mdc-checkbox__native-control:focus:not(:focus-visible)
+  ~ .mat-mdc-focus-indicator {
   display: none;
 }
 
@@ -96,7 +99,6 @@ mat-hint {
     left: -999px;
   }
 }
-
 
 .active-menu {
   .app-sidebar-button {
@@ -153,20 +155,54 @@ h2.title {
   letter-spacing: 0;
 }
 
+.message-link {
+  color: mat.get-color-from-palette($color-primary, 700);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.message-link:hover {
+  color: mat.get-color-from-palette($color-primary, 800);
+}
+
 .mat-mdc-snack-bar-container {
   --mat-snack-bar-button-color: #ffffff;
   --mdc-snackbar-supporting-text-color: #ffffff;
 }
 
-body:has(.initiate-test-run-dialog) app-root app-spinner,
-body:has(.device-form-dialog) app-root app-spinner {
+body:has(.initiate-test-run-dialog)
+  app-root
+  app-spinner.connection-settings-spinner,
+body:has(.device-form-dialog) app-root app-spinner.connection-settings-spinner {
   display: none;
 }
 
-body:has(.filter-dialog-content) .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+body:has(app-spinner:not(.global-spiner)) app-root app-spinner.global-spinner {
+  display: none;
+}
+
+body:has(.filter-dialog-content)
+  .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
   opacity: 0;
+}
+
+body:has(app-callout .info)
+  app-device-repository:not(:has(.device-repository-content-empty)),
+body:has(app-callout .info) app-history:not(:has(.results-content-empty)),
+body:has(app-callout .info) app-progress:not(:has(.progress-content-empty)) {
+  margin-top: 96px;
 }
 
 .text-nowrap {
   white-space: nowrap;
+}
+
+.history-content
+  [mat-sort-header].cdk-program-focused
+  .mat-sort-header-container {
+  border-bottom: none;
+}
+
+.filter-chip .mat-mdc-focus-indicator::before {
+  border: none;
 }

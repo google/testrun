@@ -13,27 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {ProgressTableComponent} from './progress-table.component';
-import {IResult, StatusOfTestResult} from '../../model/testrun-status';
-import {MatTableModule} from '@angular/material/table';
-import {of} from 'rxjs';
-import {TEST_DATA} from '../../mocks/progress.mock';
-import {TestRunService} from '../../services/test-run.service';
+import { ProgressTableComponent } from './progress-table.component';
+import { IResult, StatusOfTestResult } from '../../model/testrun-status';
+import { MatTableModule } from '@angular/material/table';
+import { of } from 'rxjs';
+import { TEST_DATA } from '../../mocks/progress.mock';
+import { TestRunService } from '../../services/test-run.service';
 
 describe('ProgressTableComponent', () => {
   let component: ProgressTableComponent;
   let fixture: ComponentFixture<ProgressTableComponent>;
-  let testRunServiceMock: jasmine.SpyObj<TestRunService>;
 
-  testRunServiceMock = jasmine.createSpyObj(['getResultClass']);
+  const testRunServiceMock = jasmine.createSpyObj(['getResultClass']);
 
   describe('Class tests', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
         declarations: [ProgressTableComponent],
-        providers: [{provide: TestRunService, useValue: testRunServiceMock}],
+        providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
       });
       fixture = TestBed.createComponent(ProgressTableComponent);
       component = fixture.componentInstance;
@@ -46,14 +45,19 @@ describe('ProgressTableComponent', () => {
 
     it('#getResultClass should call the service method getResultClass"', () => {
       const expectedResult = {
-        green: false, red: true, blue: false, grey: false
+        green: false,
+        red: true,
+        blue: false,
+        grey: false,
       };
 
       testRunServiceMock.getResultClass.and.returnValue(expectedResult);
 
       const result = component.getResultClass(StatusOfTestResult.NonCompliant);
 
-      expect(testRunServiceMock.getResultClass).toHaveBeenCalledWith(StatusOfTestResult.NonCompliant);
+      expect(testRunServiceMock.getResultClass).toHaveBeenCalledWith(
+        StatusOfTestResult.NonCompliant
+      );
       expect(result).toEqual(expectedResult);
     });
   });
@@ -64,8 +68,8 @@ describe('ProgressTableComponent', () => {
     beforeEach(async () => {
       await TestBed.configureTestingModule({
         declarations: [ProgressTableComponent],
-        providers: [{provide: TestRunService, useValue: testRunServiceMock}],
-        imports: [MatTableModule]
+        providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
+        imports: [MatTableModule],
       }).compileComponents();
 
       fixture = TestBed.createComponent(ProgressTableComponent);

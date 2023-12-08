@@ -13,13 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {ProgressStatusCardComponent} from './progress-status-card.component';
-import {StatusOfTestrun, TestrunStatus} from '../../model/testrun-status';
-import {MOCK_PROGRESS_DATA_CANCELLED, MOCK_PROGRESS_DATA_COMPLIANT, MOCK_PROGRESS_DATA_IN_PROGRESS} from '../../mocks/progress.mock';
-import {ProgressModule} from '../progress.module';
-import {of} from 'rxjs';
+import { ProgressStatusCardComponent } from './progress-status-card.component';
+import { StatusOfTestrun, TestrunStatus } from '../../model/testrun-status';
+import {
+  MOCK_PROGRESS_DATA_CANCELLED,
+  MOCK_PROGRESS_DATA_COMPLIANT,
+  MOCK_PROGRESS_DATA_IN_PROGRESS,
+  MOCK_PROGRESS_DATA_MONITORING,
+  MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
+} from '../../mocks/progress.mock';
+import { ProgressModule } from '../progress.module';
+import { of } from 'rxjs';
 
 describe('ProgressStatusCardComponent', () => {
   let component: ProgressStatusCardComponent;
@@ -28,7 +34,7 @@ describe('ProgressStatusCardComponent', () => {
   describe('Class tests', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
-        declarations: [ProgressStatusCardComponent]
+        declarations: [ProgressStatusCardComponent],
       });
       fixture = TestBed.createComponent(ProgressStatusCardComponent);
       component = fixture.componentInstance;
@@ -39,17 +45,21 @@ describe('ProgressStatusCardComponent', () => {
     });
 
     describe('#getClass', () => {
-      it('should have class "progress" if status "In Progress"', () => {
+      it('should have class "progress" if status "In Progress", "Waiting for Device", "Monitoring"', () => {
         const expectedResult = {
           progress: true,
           'completed-success': false,
           'completed-failed': false,
-          canceled: false
+          canceled: false,
         };
 
         const result = component.getClass(StatusOfTestrun.InProgress);
+        const result1 = component.getClass(StatusOfTestrun.WaitingForDevice);
+        const result2 = component.getClass(StatusOfTestrun.Monitoring);
 
         expect(result).toEqual(expectedResult);
+        expect(result1).toEqual(expectedResult);
+        expect(result2).toEqual(expectedResult);
       });
 
       it('should have class "completed-success" if status "Compliant"', () => {
@@ -57,7 +67,7 @@ describe('ProgressStatusCardComponent', () => {
           progress: false,
           'completed-success': true,
           'completed-failed': false,
-          canceled: false
+          canceled: false,
         };
 
         const result = component.getClass(StatusOfTestrun.Compliant);
@@ -70,7 +80,7 @@ describe('ProgressStatusCardComponent', () => {
           progress: false,
           'completed-success': false,
           'completed-failed': true,
-          canceled: false
+          canceled: false,
         };
 
         const result = component.getClass(StatusOfTestrun.NonCompliant);
@@ -83,7 +93,7 @@ describe('ProgressStatusCardComponent', () => {
           progress: false,
           'completed-success': false,
           'completed-failed': false,
-          canceled: true
+          canceled: true,
         };
 
         const result = component.getClass(StatusOfTestrun.Cancelled);
@@ -154,9 +164,11 @@ describe('ProgressStatusCardComponent', () => {
 
     describe('#getProgressValue', () => {
       it('should return correct progress value if status "In Progress"', () => {
-        const expectedResult = Math.round(2 / 26 * 100);
+        const expectedResult = Math.round((2 / 26) * 100);
 
-        const result = component.getProgressValue(MOCK_PROGRESS_DATA_IN_PROGRESS);
+        const result = component.getProgressValue(
+          MOCK_PROGRESS_DATA_IN_PROGRESS
+        );
 
         expect(result).toEqual(expectedResult);
       });
@@ -177,7 +189,7 @@ describe('ProgressStatusCardComponent', () => {
     beforeEach(async () => {
       await TestBed.configureTestingModule({
         declarations: [ProgressStatusCardComponent],
-        imports: [ProgressModule]
+        imports: [ProgressModule],
       }).compileComponents();
 
       fixture = TestBed.createComponent(ProgressStatusCardComponent);
@@ -187,7 +199,7 @@ describe('ProgressStatusCardComponent', () => {
 
     describe('with not systemStatus$ data', () => {
       beforeEach(() => {
-        (component.systemStatus$ as any) = of(null);
+        (component.systemStatus$ as unknown) = of(null);
         fixture.detectChanges();
       });
 
@@ -223,14 +235,18 @@ describe('ProgressStatusCardComponent', () => {
       });
 
       it('should have progress card result', () => {
-        const progressCardResultEl = compiled.querySelector('.progress-card-result-text span');
+        const progressCardResultEl = compiled.querySelector(
+          '.progress-card-result-text span'
+        );
 
         expect(progressCardResultEl).not.toBeNull();
         expect(progressCardResultEl?.textContent).toEqual('Cancelled');
       });
 
       it('should have progress card status text as "Incomplete"', () => {
-        const progressCardStatusText = compiled.querySelector('.progress-card-status-text > span');
+        const progressCardStatusText = compiled.querySelector(
+          '.progress-card-status-text > span'
+        );
 
         expect(progressCardStatusText).not.toBeNull();
         expect(progressCardStatusText?.textContent).toEqual('Incomplete');
@@ -242,7 +258,6 @@ describe('ProgressStatusCardComponent', () => {
         component.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
         fixture.detectChanges();
       });
-
 
       it('should have class "progress" on progress card element', () => {
         const progressCardEl = compiled.querySelector('.progress-card');
@@ -257,18 +272,101 @@ describe('ProgressStatusCardComponent', () => {
       });
 
       it('should not have progress card result', () => {
-        const progressCardResultEl = compiled.querySelector('.progress-card-result-text span');
+        const progressCardResultEl = compiled.querySelector(
+          '.progress-card-result-text span'
+        );
 
         expect(progressCardResultEl).toBeNull();
       });
 
       it('should have progress card status text as "In Progress"', () => {
-        const progressCardStatusText = compiled.querySelector('.progress-card-status-text > span');
+        const progressCardStatusText = compiled.querySelector(
+          '.progress-card-status-text > span'
+        );
 
         expect(progressCardStatusText).not.toBeNull();
         expect(progressCardStatusText?.textContent).toEqual('In Progress');
       });
     });
-  });
 
+    describe('with available systemStatus$ data, as Waiting for Device', () => {
+      beforeEach(() => {
+        component.systemStatus$ = of(MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE);
+        fixture.detectChanges();
+      });
+
+      it('should have progress card content', () => {
+        const progressCardEl = compiled.querySelector('.progress-card');
+
+        expect(progressCardEl).not.toBeNull();
+      });
+
+      it('should have class "progress" on progress card element', () => {
+        const progressCardEl = compiled.querySelector('.progress-card');
+
+        expect(progressCardEl?.classList).toContain('progress');
+      });
+
+      it('should have progress card result title', () => {
+        const progressCardResultEl = compiled.querySelector(
+          '.progress-card-result-title'
+        );
+
+        expect(progressCardResultEl).not.toBeNull();
+        expect(progressCardResultEl?.textContent?.trim()).toEqual(
+          'Please connect and power on your device'
+        );
+      });
+
+      it('should have progress card status text as "Waiting for Device"', () => {
+        const progressCardStatusText = compiled.querySelector(
+          '.progress-card-status-text > span'
+        );
+
+        expect(progressCardStatusText).not.toBeNull();
+        expect(progressCardStatusText?.textContent).toEqual(
+          'Waiting for Device'
+        );
+      });
+    });
+
+    describe('with available systemStatus$ data, as Monitoring', () => {
+      beforeEach(() => {
+        component.systemStatus$ = of(MOCK_PROGRESS_DATA_MONITORING);
+        fixture.detectChanges();
+      });
+
+      it('should have progress card content', () => {
+        const progressCardEl = compiled.querySelector('.progress-card');
+
+        expect(progressCardEl).not.toBeNull();
+      });
+
+      it('should have class "progress" on progress card element', () => {
+        const progressCardEl = compiled.querySelector('.progress-card');
+
+        expect(progressCardEl?.classList).toContain('progress');
+      });
+
+      it('should have progress card result title', () => {
+        const progressCardResultEl = compiled.querySelector(
+          '.progress-card-result-title'
+        );
+
+        expect(progressCardResultEl).not.toBeNull();
+        expect(progressCardResultEl?.textContent?.trim()).toEqual(
+          'Please wait, this could take a few minutes'
+        );
+      });
+
+      it('should have progress card status text as "Waiting for Device"', () => {
+        const progressCardStatusText = compiled.querySelector(
+          '.progress-card-status-text > span'
+        );
+
+        expect(progressCardStatusText).not.toBeNull();
+        expect(progressCardStatusText?.textContent).toEqual('Monitoring');
+      });
+    });
+  });
 });

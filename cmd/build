@@ -24,6 +24,15 @@ if [[ $(which docker) && $(docker --version) ]]; then
     exit 1
 fi
 
+# Stop any running containers
+echo Stopping any running containers
+running_containers=$(docker container ls -q --filter name=tr-*)
+if [ -n "$running_containers" ]; then
+  docker container kill $running_containers
+else
+  echo No containers were found running
+fi
+
 # Builds all docker images
 echo Building docker images
 

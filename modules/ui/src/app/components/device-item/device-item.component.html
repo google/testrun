@@ -13,11 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<button (click)="itemClick()" [attr.aria-label]="'Edit device {{device.model}}'"
-        class="device-item" type="button">
-  <div [attr.aria-label]="device.model" class="item-name">{{device.model}}</div>
-  <div [attr.aria-label]="device.manufacturer"
-       class="item-manufacturer">{{device.manufacturer}}</div>
-  <div [attr.aria-label]="device.mac_addr" class="item-mac-address">{{device.mac_addr}}</div>
+<button
+  (click)="itemClick()"
+  [attr.aria-label]="'Edit device ' + device.model"
+  class="device-item"
+  type="button">
+  <div [attr.aria-label]="device.model" class="item-name">
+    {{ device.model }}
+  </div>
+  <div [attr.aria-label]="device.manufacturer" class="item-manufacturer">
+    {{ device.manufacturer }}
+  </div>
+  <div [attr.aria-label]="device.mac_addr" class="item-mac-address">
+    {{ device.mac_addr }}
+  </div>
   <div aria-label="Device icon" class="item-icon"></div>
 </button>

@@ -13,102 +13,265 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick} from '@angular/core/testing';
+import {
+  ComponentFixture,
+  discardPeriodicTasks,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
-import {ProgressComponent} from './progress.component';
-import {TestRunService} from '../services/test-run.service';
-import {of} from 'rxjs';
-import {MOCK_PROGRESS_DATA_CANCELLED, MOCK_PROGRESS_DATA_COMPLIANT, MOCK_PROGRESS_DATA_IN_PROGRESS, MOCK_PROGRESS_DATA_NOT_STARTED, TEST_DATA} from '../mocks/progress.mock';
-import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {Component, Input} from '@angular/core';
-import {Observable} from 'rxjs/internal/Observable';
-import {IResult, TestrunStatus} from '../model/testrun-status';
-import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
-import {Device} from '../model/device';
-import {ProgressInitiateFormComponent} from './progress-initiate-form/progress-initiate-form.component';
-import {DownloadReportComponent} from '../components/download-report/download-report.component';
+import { ProgressComponent } from './progress.component';
+import { TestRunService } from '../services/test-run.service';
+import { of } from 'rxjs';
+import {
+  EMPTY_RESULT,
+  MOCK_PROGRESS_DATA_CANCELLED,
+  MOCK_PROGRESS_DATA_CANCELLING,
+  MOCK_PROGRESS_DATA_COMPLIANT,
+  MOCK_PROGRESS_DATA_IN_PROGRESS,
+  MOCK_PROGRESS_DATA_IN_PROGRESS_EMPTY,
+  MOCK_PROGRESS_DATA_MONITORING,
+  MOCK_PROGRESS_DATA_NOT_STARTED,
+  MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
+  TEST_DATA_TABLE_RESULT,
+} from '../mocks/progress.mock';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { Component, Input } from '@angular/core';
+import { Observable } from 'rxjs/internal/Observable';
+import { IResult, TestrunStatus } from '../model/testrun-status';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { Device } from '../model/device';
+import { ProgressInitiateFormComponent } from './progress-initiate-form/progress-initiate-form.component';
+import { DownloadReportComponent } from '../components/download-report/download-report.component';
+import { device } from '../mocks/device.mock';
+import { DeleteFormComponent } from '../components/delete-form/delete-form.component';
+import { SpinnerComponent } from '../components/spinner/spinner.component';
+import { LoaderService } from '../services/loader.service';
 
 describe('ProgressComponent', () => {
   let component: ProgressComponent;
   let fixture: ComponentFixture<ProgressComponent>;
   let compiled: HTMLElement;
-  let testRunServiceMock: jasmine.SpyObj<TestRunService>;
 
-  testRunServiceMock = jasmine.createSpyObj(['getSystemStatus', 'setSystemStatus', 'systemStatus$', 'stopTestrun', 'getDevices']);
-  testRunServiceMock.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>([]));
+  const testRunServiceMock: jasmine.SpyObj<TestRunService> =
+    jasmine.createSpyObj([
+      'getSystemStatus',
+      'setSystemStatus',
+      'systemStatus$',
+      'stopTestrun',
+      'getDevices',
+    ]);
+
+  const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
+    ['setLoading']
+  );
+
+  testRunServiceMock.getDevices.and.returnValue(
+    new BehaviorSubject<Device[] | null>([])
+  );
 
   describe('Class tests', () => {
     beforeEach(() => {
       testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
+      testRunServiceMock.getDevices.and.returnValue(
+        new BehaviorSubject<Device[] | null>([device])
+      );
 
       TestBed.configureTestingModule({
         declarations: [
           ProgressComponent,
           FakeProgressBreadcrumbsComponent,
           FakeProgressStatusCardComponent,
-          FakeProgressTableComponent
+          FakeProgressTableComponent,
         ],
         providers: [
-          {provide: TestRunService, useValue: testRunServiceMock},
+          { provide: TestRunService, useValue: testRunServiceMock },
           {
             provide: MatDialogRef,
-            useValue: {}
-          },],
-        imports: [MatButtonModule, MatIconModule, MatToolbarModule, MatDialogModule]
-      });
+            useValue: {},
+          },
+        ],
+        imports: [
+          MatButtonModule,
+          MatIconModule,
+          MatToolbarModule,
+          MatDialogModule,
+        ],
+      })
+        .overrideComponent(ProgressComponent, {
+          set: {
+            providers: [
+              { provide: LoaderService, useValue: loaderServiceMock },
+            ],
+          },
+        })
+        .compileComponents();
+
       fixture = TestBed.createComponent(ProgressComponent);
       component = fixture.componentInstance;
     });
 
     afterEach(() => {
       testRunServiceMock.getSystemStatus.calls.reset();
+      testRunServiceMock.getDevices.calls.reset();
     });
 
     it('should create', () => {
       expect(component).toBeTruthy();
     });
 
-    it('#stopTestrun should call service method stopTestrun', () => {
-      component.stopTestrun();
+    describe('#stopTestrun', () => {
+      it('should call service method stopTestrun', () => {
+        component.stopTestrun();
 
-      expect(testRunServiceMock.stopTestrun).toHaveBeenCalled();
-    })
+        expect(testRunServiceMock.stopTestrun).toHaveBeenCalled();
+      });
+
+      it('should show loader', () => {
+        component.stopTestrun();
+
+        expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(true);
+      });
+
+      it('should update system status to Cancelling', () => {
+        component.currentStatus = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
+
+        component.stopTestrun();
+
+        expect(testRunServiceMock.setSystemStatus).toHaveBeenCalledWith(
+          MOCK_PROGRESS_DATA_CANCELLING
+        );
+      });
+    });
+
+    it('#openStopTestrunDialog should open delete dialog', () => {
+      const stopTestrunSpy = spyOn(component, 'stopTestrun');
+      spyOn(component.dialog, 'open').and.returnValue({
+        afterClosed: () => of(true),
+      } as MatDialogRef<typeof DeleteFormComponent>);
+
+      component.openStopTestrunDialog();
+
+      expect(stopTestrunSpy).toHaveBeenCalled();
+    });
 
     describe('#ngOnInit', () => {
       it('should set systemStatus$ value', () => {
         component.ngOnInit();
 
         component.systemStatus$.subscribe(res => {
-          expect(res).toEqual(MOCK_PROGRESS_DATA_IN_PROGRESS)
-        })
+          expect(res).toEqual(MOCK_PROGRESS_DATA_IN_PROGRESS);
+        });
+      });
+
+      it('should set devices$ value', () => {
+        component.ngOnInit();
+
+        component.devices$.subscribe(res => {
+          expect(res).toEqual([device]);
+        });
       });
 
       it('should set breadcrumbs$ value', () => {
         const expectedResult = [
           MOCK_PROGRESS_DATA_IN_PROGRESS.device.manufacturer,
           MOCK_PROGRESS_DATA_IN_PROGRESS.device.model,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.device.firmware
-        ]
+          MOCK_PROGRESS_DATA_IN_PROGRESS.device.firmware,
+        ];
 
         component.ngOnInit();
 
         component.breadcrumbs$.subscribe(res => {
           expect(res).toEqual(expectedResult);
-        })
+        });
       });
 
-      it('should set dataSource$ value', () => {
-        const expectedResult = TEST_DATA.results;
+      describe('dataSource$', () => {
+        it('should set value with empty values if result length < total for status "In Progress"', () => {
+          const expectedResult = TEST_DATA_TABLE_RESULT;
 
-        component.ngOnInit();
+          testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+          component.ngOnInit();
 
-        component.dataSource$.subscribe(res => {
-          expect(res).toEqual(expectedResult);
-        })
+          component.dataSource$.subscribe(res => {
+            expect(res).toEqual(expectedResult);
+          });
+        });
+
+        it('should set value with empty values for status "Monitoring"', () => {
+          const expectedResult = EMPTY_RESULT;
+
+          testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_MONITORING);
+          component.ngOnInit();
+
+          component.dataSource$.subscribe(res => {
+            expect(res).toEqual(expectedResult);
+          });
+        });
+
+        it('should set value with empty values for status "Waiting for Device"', () => {
+          const expectedResult = EMPTY_RESULT;
+
+          testRunServiceMock.systemStatus$ = of(
+            MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
+          );
+          component.ngOnInit();
+
+          component.dataSource$.subscribe(res => {
+            expect(res).toEqual(expectedResult);
+          });
+        });
+      });
+
+      describe('hideLoading', () => {
+        it('should called if testrun is finished', () => {
+          testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_COMPLIANT);
+
+          component.ngOnInit();
+
+          component.systemStatus$.subscribe(() => {
+            expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(false);
+          });
+        });
+
+        it('should called if testrun is in progress and have some test finished', () => {
+          testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+
+          component.ngOnInit();
+
+          component.systemStatus$.subscribe(() => {
+            expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(false);
+          });
+        });
+      });
+
+      describe('showLoading', () => {
+        it('should be called if testrun is monitoring', () => {
+          testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_MONITORING);
+
+          component.ngOnInit();
+
+          component.systemStatus$.subscribe(() => {
+            expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(true);
+          });
+        });
+
+        it('should be called if testrun is in progress and have some test finished', () => {
+          testRunServiceMock.systemStatus$ = of(
+            MOCK_PROGRESS_DATA_IN_PROGRESS_EMPTY
+          );
+
+          component.ngOnInit();
+
+          component.systemStatus$.subscribe(() => {
+            expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(true);
+          });
+        });
       });
     });
   });
@@ -122,13 +285,23 @@ describe('ProgressComponent', () => {
           ProgressComponent,
           FakeProgressBreadcrumbsComponent,
           FakeProgressStatusCardComponent,
-          FakeProgressTableComponent],
+          FakeProgressTableComponent,
+        ],
         providers: [
-          {provide: TestRunService, useValue: testRunServiceMock}, {
+          { provide: TestRunService, useValue: testRunServiceMock },
+          {
             provide: MatDialogRef,
-            useValue: {}
-          },],
-        imports: [MatButtonModule, MatIconModule, MatToolbarModule, MatDialogModule, DownloadReportComponent]
+            useValue: {},
+          },
+        ],
+        imports: [
+          MatButtonModule,
+          MatIconModule,
+          MatToolbarModule,
+          MatDialogModule,
+          DownloadReportComponent,
+          SpinnerComponent,
+        ],
       }).compileComponents();
 
       fixture = TestBed.createComponent(ProgressComponent);
@@ -138,16 +311,40 @@ describe('ProgressComponent', () => {
 
     afterEach(() => {
       testRunServiceMock.getSystemStatus.calls.reset();
+      testRunServiceMock.getDevices.calls.reset();
+    });
+
+    describe('with not devices$ data', () => {
+      beforeEach(() => {
+        (testRunServiceMock.systemStatus$ as unknown) = of(null);
+        testRunServiceMock.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([])
+        );
+        fixture.detectChanges();
+      });
+
+      it('should have disabled "Start" button', () => {
+        const startBtn = compiled.querySelector(
+          '.start-button'
+        ) as HTMLButtonElement;
+
+        expect(startBtn.disabled).toBeTrue();
+      });
     });
 
     describe('with not systemStatus$ data', () => {
       beforeEach(() => {
-        (testRunServiceMock.systemStatus$ as any) = of(null);
+        (testRunServiceMock.systemStatus$ as unknown) = of(null);
+        testRunServiceMock.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([device])
+        );
         fixture.detectChanges();
       });
 
       it('should have empty state content', () => {
-        const emptyContentEl = compiled.querySelector('.progress-content-empty');
+        const emptyContentEl = compiled.querySelector(
+          '.progress-content-empty'
+        );
         const toolbarEl = compiled.querySelector('.progress-toolbar');
 
         expect(emptyContentEl).not.toBeNull();
@@ -155,25 +352,29 @@ describe('ProgressComponent', () => {
       });
 
       it('should have enabled "Start" button', () => {
-        const startBtn = compiled.querySelector('.start-button') as HTMLButtonElement;
+        const startBtn = compiled.querySelector(
+          '.start-button'
+        ) as HTMLButtonElement;
 
         expect(startBtn.disabled).toBeFalse();
       });
 
       it('should open initiate test run modal when start button clicked', () => {
-        const openSpy = spyOn(component.dialog, 'open').and
-          .returnValue({
-            afterClosed: () => of(true)
-          } as MatDialogRef<typeof ProgressInitiateFormComponent>);
-        const startBtn = compiled.querySelector('.start-button') as HTMLButtonElement;
+        const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+          afterClosed: () => of(true),
+        } as MatDialogRef<typeof ProgressInitiateFormComponent>);
+        const startBtn = compiled.querySelector(
+          '.start-button'
+        ) as HTMLButtonElement;
         startBtn.click();
 
         expect(openSpy).toHaveBeenCalled();
         expect(openSpy).toHaveBeenCalledWith(ProgressInitiateFormComponent, {
+          ariaLabel: 'Initiate testrun',
           autoFocus: true,
           hasBackdrop: true,
           disableClose: true,
-          panelClass: 'initiate-test-run-dialog'
+          panelClass: 'initiate-test-run-dialog',
         });
 
         openSpy.calls.reset();
@@ -183,11 +384,22 @@ describe('ProgressComponent', () => {
     describe('with available systemStatus$ data, status "In Progress"', () => {
       beforeEach(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+        testRunServiceMock.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([device])
+        );
         fixture.detectChanges();
       });
 
+      it('should have spinner', () => {
+        const spinner = compiled.querySelector('app-spinner');
+
+        expect(spinner).toBeTruthy();
+      });
+
       it('should have toolbar content', () => {
-        const emptyContentEl = compiled.querySelector('.progress-content-empty');
+        const emptyContentEl = compiled.querySelector(
+          '.progress-content-empty'
+        );
         const toolbarEl = compiled.querySelector('.progress-toolbar');
 
         expect(toolbarEl).not.toBeNull();
@@ -201,15 +413,20 @@ describe('ProgressComponent', () => {
       });
 
       it('should call stopTestrun on click "Stop" button', () => {
-        const stopBtn = compiled.querySelector('.stop-button') as HTMLButtonElement;
+        const openDialogSpy = spyOn(component, 'openStopTestrunDialog');
+        const stopBtn = compiled.querySelector(
+          '.stop-button'
+        ) as HTMLButtonElement;
 
         stopBtn.click();
 
-        expect(testRunServiceMock.stopTestrun).toHaveBeenCalled();
-      })
+        expect(openDialogSpy).toHaveBeenCalled();
+      });
 
       it('should have disabled "Start" button', () => {
-        const startBtn = compiled.querySelector('.start-button') as HTMLButtonElement;
+        const startBtn = compiled.querySelector(
+          '.start-button'
+        ) as HTMLButtonElement;
 
         expect(startBtn.disabled).toBeTrue();
       });
@@ -224,17 +441,23 @@ describe('ProgressComponent', () => {
     describe('pullingSystemStatusData with available status "In Progress"', () => {
       it('should call again getSystemStatus)', fakeAsync(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+        testRunServiceMock.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([device])
+        );
         fixture.detectChanges();
         tick(5000);
 
-        expect(testRunServiceMock.getSystemStatus).toHaveBeenCalledTimes(2);
+        expect(testRunServiceMock.getSystemStatus).toHaveBeenCalledTimes(1);
         discardPeriodicTasks();
       }));
-    })
+    });
 
     describe('with available systemStatus$ data, as Completed', () => {
       beforeEach(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_COMPLIANT);
+        testRunServiceMock.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([device])
+        );
         fixture.detectChanges();
       });
 
@@ -244,8 +467,10 @@ describe('ProgressComponent', () => {
         expect(stopBtn).toBeNull();
       });
 
-      it('should have anable "Start" button', () => {
-        const startBtn = compiled.querySelector('.start-button') as HTMLButtonElement;
+      it('should have enabled "Start" button', () => {
+        const startBtn = compiled.querySelector(
+          '.start-button'
+        ) as HTMLButtonElement;
 
         expect(startBtn.disabled).toBeFalse();
       });
@@ -257,22 +482,33 @@ describe('ProgressComponent', () => {
       });
 
       it('should have report link', () => {
-        const link = compiled.querySelector('.download-report-link') as HTMLAnchorElement;
+        const link = compiled.querySelector(
+          '.download-report-link'
+        ) as HTMLAnchorElement;
 
         expect(link.href).toEqual('https://api.testrun.io/report.pdf');
-        expect(link.download).toEqual('delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20');
-        expect(link.title).toEqual('Download report for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20');
+        expect(link.download).toEqual(
+          'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
+        );
+        expect(link.title).toEqual(
+          'Download report for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
+        );
       });
     });
 
     describe('with available systemStatus$ data, as Cancelled', () => {
       beforeEach(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_CANCELLED);
+        testRunServiceMock.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([device])
+        );
         fixture.detectChanges();
       });
 
-      it('should have anable "Start" button', () => {
-        const startBtn = compiled.querySelector('.start-button') as HTMLButtonElement;
+      it('should have enabled "Start" button', () => {
+        const startBtn = compiled.querySelector(
+          '.start-button'
+        ) as HTMLButtonElement;
 
         expect(startBtn.disabled).toBeFalse();
       });
@@ -284,14 +520,69 @@ describe('ProgressComponent', () => {
       });
     });
 
+    describe('with available systemStatus$ data, as Waiting for Device', () => {
+      beforeEach(() => {
+        testRunServiceMock.systemStatus$ = of(
+          MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
+        );
+        testRunServiceMock.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([device])
+        );
+        fixture.detectChanges();
+      });
+
+      it('should have disabled "Start" button', () => {
+        const startBtn = compiled.querySelector(
+          '.start-button'
+        ) as HTMLButtonElement;
+
+        expect(startBtn.disabled).toBeTrue();
+      });
+
+      it('should have "Stop" button', () => {
+        const stopBtn = compiled.querySelector('.stop-button');
+
+        expect(stopBtn).not.toBeNull();
+      });
+    });
+
+    describe('with available systemStatus$ data, as Monitoring', () => {
+      beforeEach(() => {
+        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_MONITORING);
+        testRunServiceMock.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([device])
+        );
+        fixture.detectChanges();
+      });
+
+      it('should have disabled "Start" button', () => {
+        const startBtn = compiled.querySelector(
+          '.start-button'
+        ) as HTMLButtonElement;
+
+        expect(startBtn.disabled).toBeTrue();
+      });
+
+      it('should have "Stop" button', () => {
+        const stopBtn = compiled.querySelector('.stop-button');
+
+        expect(stopBtn).not.toBeNull();
+      });
+    });
+
     describe('with available systemStatus$ data, when Testrun not started on Idle status', () => {
       beforeEach(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_NOT_STARTED);
+        testRunServiceMock.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([device])
+        );
         fixture.detectChanges();
       });
 
       it('should have empty state content', () => {
-        const emptyContentEl = compiled.querySelector('.progress-content-empty');
+        const emptyContentEl = compiled.querySelector(
+          '.progress-content-empty'
+        );
         const toolbarEl = compiled.querySelector('.progress-toolbar');
 
         expect(emptyContentEl).not.toBeNull();
@@ -303,7 +594,7 @@ describe('ProgressComponent', () => {
 
 @Component({
   selector: 'app-progress-breadcrumbs',
-  template: '<div></div>'
+  template: '<div></div>',
 })
 class FakeProgressBreadcrumbsComponent {
   @Input() breadcrumbs$!: Observable<string[]>;
@@ -311,7 +602,7 @@ class FakeProgressBreadcrumbsComponent {
 
 @Component({
   selector: 'app-progress-status-card',
-  template: '<div></div>'
+  template: '<div></div>',
 })
 class FakeProgressStatusCardComponent {
   @Input() systemStatus$!: Observable<TestrunStatus>;
@@ -319,7 +610,7 @@ class FakeProgressStatusCardComponent {
 
 @Component({
   selector: 'app-progress-table',
-  template: '<div></div>'
+  template: '<div></div>',
 })
 class FakeProgressTableComponent {
   @Input() dataSource$!: Observable<IResult[] | undefined>;

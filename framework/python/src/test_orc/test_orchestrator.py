@@ -76,6 +76,10 @@ class TestOrchestrator:
   def run_test_modules(self):
     """Iterates through each test module and starts the container."""
 
+    # Do not start test modules if status is not in progress, e.g. Stopping
+    if self.get_session().get_status() != "In Progress":
+      return
+
     device = self._session.get_target_device()
     self._test_in_progress = True
     LOGGER.info(
@@ -99,6 +103,10 @@ class TestOrchestrator:
     LOGGER.info("All tests complete")
 
     self._session.stop()
+
+    # Do not carry on (generating a report) if Testrun has been stopped
+    if self.get_session().get_status() != "In Progress":
+      return None
 
     report = TestReport()
     report.from_json(self._generate_report())
@@ -338,9 +346,9 @@ class TestOrchestrator:
     log_stream = module.container.logs(stream=True, stdout=True, stderr=True)
     while (status == "running" and self._session.get_status() == "In Progress"):
       if time.time() > test_module_timeout:
-          LOGGER.error("Module timeout exceeded, killing module: " + module.name)
-          self._stop_module(module=module,kill=True)
-          break
+        LOGGER.error("Module timeout exceeded, killing module: " + module.name)
+        self._stop_module(module=module,kill=True)
+        break
       try:
         line = next(log_stream).decode("utf-8").strip()
         if re.search(LOG_REGEX, line):
