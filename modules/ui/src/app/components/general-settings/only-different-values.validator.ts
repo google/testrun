@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Injectable} from '@angular/core';
-import {AbstractControl, FormControl, ValidationErrors, ValidatorFn} from '@angular/forms';
+import { Injectable } from '@angular/core';
+import {
+  AbstractControl,
+  FormControl,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 
-@Injectable({providedIn: 'root'})
-
+@Injectable({ providedIn: 'root' })
 export class OnlyDifferentValuesValidator {
   public onlyDifferentSetting(): ValidatorFn {
     return (form: AbstractControl): ValidationErrors | null => {
@@ -36,9 +40,9 @@ export class OnlyDifferentValuesValidator {
       }
 
       if (deviceControlValue === internetControlValue) {
-        return {'hasSameValues': true}
+        return { hasSameValues: true };
       }
       return null;
-    }
+    };
   }
 }

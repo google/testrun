@@ -17,5 +17,45 @@ export enum FilterName {
   DeviceInfo = 'deviceInfo',
   DeviceFirmware = 'deviceFirmware',
   Results = 'results',
-  Started = 'started'
+  Started = 'started',
+  DateRange = 'dateRange',
+}
+
+export interface ReportFilters {
+  deviceInfo: string;
+  deviceFirmware: string;
+  results: string[];
+  dateRange: DateRange | string;
+}
+
+export class DateRange {
+  start: string | Date | null = '';
+  end: string | Date | null = '';
+  toString() {
+    if (this.start && this.end) {
+      return getDateString(this.start) + '-' + getDateString(this.end);
+    }
+    if (this.start && !this.end) {
+      return getDateString(this.start);
+    }
+    if (!this.start && this.end) {
+      return getDateString(this.end);
+    }
+    return '';
+  }
+}
+
+export class Filters {
+  deviceInfo = '';
+  deviceFirmware = '';
+  results: string[] = [];
+  dateRange: DateRange | string = '';
+}
+
+function getDateString(date: string | Date) {
+  if (typeof date === 'string') {
+    return date;
+  }
+
+  return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
 }

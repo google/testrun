@@ -190,7 +190,7 @@ class TestReport():
       page += '<div style="break-after:page"></div>'
     return page
 
-  def generate_body(self, json_data, page_num=1, max_page=1):
+  def generate_body(self, json_data):
     return f'''
     <body>
       {self.generate_pages(json_data)}
@@ -268,11 +268,15 @@ class TestReport():
       <div class="summary-vertical-line"></div>
      '''
     # Add the device information
-    manufacturer = json_data['device']['manufacturer'] if 'manufacturer' in json_data['device']  else 'Undefined'
-    model = json_data['device']['model'] if 'model' in json_data['device']  else 'Undefined'
-    fw = json_data['device']['firmware'] if 'firmware' in json_data['device']  else 'Undefined'
-    mac = json_data['device']['mac_addr'] if 'mac_addr' in json_data['device']  else 'Undefined'
-    
+    manufacturer = (json_data['device']['manufacturer']
+                    if 'manufacturer' in json_data['device'] else 'Undefined')
+    model = (json_data['device']['model']
+             if 'model' in json_data['device'] else 'Undefined')
+    fw = (json_data['device']['firmware']
+          if 'firmware' in json_data['device'] else 'Undefined')
+    mac = (json_data['device']['mac_addr']
+           if 'mac_addr' in json_data['device'] else 'Undefined')
+
     summary += self.generate_device_summary_label('Manufacturer',manufacturer)
     summary += self.generate_device_summary_label('Model',model)
     summary += self.generate_device_summary_label('Firmware',fw)
@@ -289,12 +293,18 @@ class TestReport():
 
   def generate_result_summary(self,json_data):
     if json_data['status'] == 'Compliant':
-      result_summary = '''<div class ="summary-color-box summary-box-compliant">'''
+      result_summary = '''<div class ="summary-color-box
+      summary-box-compliant">'''
     else:
-      result_summary = '''<div class ="summary-color-box summary-box-non-compliant">'''
-    result_summary += self.generate_result_summary_item('Test status', 'Complete')
-    result_summary += self.generate_result_summary_item('Test result', json_data['status'], style='color: white; font-size:24px; font-weight: 700;')
-    result_summary += self.generate_result_summary_item('Started', json_data['started'])
+      result_summary = '''<div class ="summary-color-box
+      summary-box-non-compliant">'''
+    result_summary += self.generate_result_summary_item('Test status',
+                                                        'Complete')
+    result_summary += self.generate_result_summary_item(
+      'Test result',json_data['status'],
+      style='color: white; font-size:24px; font-weight: 700;')
+    result_summary += self.generate_result_summary_item('Started',
+                                                        json_data['started'])
 
     # Convert the timestamp strings to datetime objects
     start_time = datetime.strptime(json_data['started'], '%Y-%m-%d %H:%M:%S')
@@ -311,7 +321,8 @@ class TestReport():
   def generate_result_summary_item(self, key, value, style=None):
     summary_item = f'''<div class="summary-box-label">{key}</div>'''
     if style is not None:
-      summary_item += f'''<div style="{style}" class="summary-box-value">{value}</div>'''
+      summary_item += f'''<div style="{style}"
+      class="summary-box-value">{value}</div>'''
     else:
       summary_item += f'''<div class="summary-box-value">{value}</div>'''
     return summary_item

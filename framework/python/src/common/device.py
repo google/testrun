@@ -43,7 +43,8 @@ class Device():
 
     remove_report_target = None
     for report in self.reports:
-      if report.get_started() == timestamp:
+      report_timestamp = report.get_started().strftime('%Y-%m-%dT%H:%M:%S')
+      if report_timestamp == timestamp:
         remove_report_target = report
 
     if remove_report_target is not None:

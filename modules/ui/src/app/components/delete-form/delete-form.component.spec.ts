@@ -13,11 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {DeleteFormComponent} from './delete-form.component';
-import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {MatButtonModule} from '@angular/material/button';
+import { DeleteFormComponent } from './delete-form.component';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { of } from 'rxjs';
 
 describe('DeleteFormComponent', () => {
   let component: DeleteFormComponent;
@@ -26,24 +31,24 @@ describe('DeleteFormComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [DeleteFormComponent, MatDialogModule, MatButtonModule,],
+      imports: [DeleteFormComponent, MatDialogModule, MatButtonModule],
       providers: [
         {
           provide: MatDialogRef,
           useValue: {
-            close: (result: any) => {
-            }
-          }
+            keydownEvents: () => of(new KeyboardEvent('keydown', { code: '' })),
+            close: () => ({}),
+          },
         },
-        {provide: MAT_DIALOG_DATA, useValue: {}},
-      ]
+        { provide: MAT_DIALOG_DATA, useValue: {} },
+      ],
     });
     fixture = TestBed.createComponent(DeleteFormComponent);
     component = fixture.componentInstance;
     component.data = {
       title: 'title',
       content: 'content',
-    }
+    };
     compiled = fixture.nativeElement as HTMLElement;
     fixture.detectChanges();
   });
@@ -59,14 +64,18 @@ describe('DeleteFormComponent', () => {
   });
 
   it('should has content', () => {
-    const content = compiled.querySelector('.delete-form-content') as HTMLElement;
+    const content = compiled.querySelector(
+      '.delete-form-content'
+    ) as HTMLElement;
 
-    expect(content.innerHTML).toEqual('You are about to delete content. Are you sure?');
+    expect(content.innerHTML.trim()).toEqual('content');
   });
 
   it('should close dialog on "cancel" click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
-    const closeButton = compiled.querySelector('.cancel-button') as HTMLButtonElement;
+    const closeButton = compiled.querySelector(
+      '.cancel-button'
+    ) as HTMLButtonElement;
 
     closeButton?.click();
 
@@ -77,7 +86,9 @@ describe('DeleteFormComponent', () => {
 
   it('should close dialog with true on "confirm" click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
-    const confirmButton = compiled.querySelector('.confirm-button') as HTMLButtonElement;
+    const confirmButton = compiled.querySelector(
+      '.confirm-button'
+    ) as HTMLButtonElement;
 
     confirmButton?.click();
 

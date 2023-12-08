@@ -13,26 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {MatDialogRef} from '@angular/material/dialog';
-import {TestRunService} from '../../services/test-run.service';
-import {Observable} from 'rxjs/internal/Observable';
-import {Device, TestModule} from '../../model/device';
-import {FormArray, FormBuilder, FormGroup} from '@angular/forms';
-import {DeviceValidators} from '../../device-repository/device-form/device.validators';
-import {StatusOfTestrun, TestrunStatus} from '../../model/testrun-status';
-import {tap} from 'rxjs/internal/operators/tap';
-import {interval} from 'rxjs/internal/observable/interval';
-import {takeUntil} from 'rxjs/internal/operators/takeUntil';
-import {Subject} from 'rxjs/internal/Subject';
-import {NotificationService} from '../../services/notification.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
+import { TestRunService } from '../../services/test-run.service';
+import { Observable } from 'rxjs/internal/Observable';
+import { Device, TestModule } from '../../model/device';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+} from '@angular/forms';
+import { DeviceValidators } from '../../device-repository/device-form/device.validators';
+import { StatusOfTestrun, TestrunStatus } from '../../model/testrun-status';
+import { tap } from 'rxjs/internal/operators/tap';
+import { interval } from 'rxjs/internal/observable/interval';
+import { takeUntil } from 'rxjs/internal/operators/takeUntil';
+import { Subject } from 'rxjs/internal/Subject';
+import { NotificationService } from '../../services/notification.service';
+import { EscapableDialogComponent } from '../../components/escapable-dialog/escapable-dialog.component';
 
 @Component({
   selector: 'app-progress-initiate-form',
   templateUrl: './progress-initiate-form.component.html',
-  styleUrls: ['./progress-initiate-form.component.scss']
+  styleUrls: ['./progress-initiate-form.component.scss'],
 })
-export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
+export class ProgressInitiateFormComponent
+  extends EscapableDialogComponent
+  implements OnInit, OnDestroy
+{
   initiateForm!: FormGroup;
   devices$!: Observable<Device[] | null>;
   selectedDevice: Device | null = null;
@@ -42,15 +51,17 @@ export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
   destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
-    public dialogRef: MatDialogRef<ProgressInitiateFormComponent>,
+    public override dialogRef: MatDialogRef<ProgressInitiateFormComponent>,
     private readonly testRunService: TestRunService,
     private fb: FormBuilder,
     private deviceValidators: DeviceValidators,
-    private notificationService: NotificationService) {
+    private notificationService: NotificationService
+  ) {
+    super(dialogRef);
   }
 
   get firmware() {
-    return this.initiateForm.get('firmware')!;
+    return this.initiateForm.get('firmware') as AbstractControl;
   }
 
   cancel(): void {
@@ -64,23 +75,28 @@ export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
     this.createInitiateForm();
     this.testModules = this.testRunService.getTestModules();
 
-    this.testRunService.systemStatus$.pipe(
-      tap((res) => {
-        if (this.testRunStarted) {
-          if (res.status === StatusOfTestrun.WaitingForDevice && !this.startInterval) {
-            this.pullingSystemStatusData();
-            this.notify(res.status, 0);
+    this.testRunService.systemStatus$
+      .pipe(
+        tap(res => {
+          if (this.testRunStarted) {
+            if (
+              res.status === StatusOfTestrun.WaitingForDevice &&
+              !this.startInterval
+            ) {
+              this.pullingSystemStatusData();
+              this.notify(res.status, 0);
+            }
+            if (res.status !== StatusOfTestrun.WaitingForDevice) {
+              this.dismiss();
+              this.destroy$.next(true);
+              this.startInterval = false;
+              this.dialogRef.close();
+            }
           }
-          if (res.status !== StatusOfTestrun.WaitingForDevice) {
-            this.dismiss();
-            this.destroy$.next(true);
-            this.startInterval = false;
-            this.dialogRef.close();
-          }
-        }
-      }),
-      takeUntil(this.destroy$),
-    ).subscribe();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
   }
 
   deviceSelected(device: Device) {
@@ -94,7 +110,7 @@ export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
 
   startTestRun() {
     if (!this.firmware.value.trim()) {
-      this.firmware.setErrors({required: true});
+      this.firmware.setErrors({ required: true });
     }
 
     if (this.initiateForm.invalid) {
@@ -103,8 +119,10 @@ export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
     }
 
     if (this.selectedDevice) {
+      this.testRunService.fetchVersion();
       this.selectedDevice.firmware = this.firmware.value.trim();
-      this.testRunService.startTestrun(this.selectedDevice)
+      this.testRunService
+        .startTestrun(this.selectedDevice)
         .pipe(takeUntil(this.destroy$))
         .subscribe(
           () => {
@@ -113,14 +131,15 @@ export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
           },
           () => {
             this.startInterval = false;
-          });
+          }
+        );
     }
   }
 
   private createInitiateForm() {
     this.initiateForm = this.fb.group({
       firmware: ['', [this.deviceValidators.deviceStringFormat()]],
-      test_modules: new FormArray([])
+      test_modules: new FormArray([]),
     });
   }
 
@@ -131,10 +150,12 @@ export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
 
   private pullingSystemStatusData(): void {
     this.startInterval = true;
-    interval(5000).pipe(
-      takeUntil(this.destroy$),
-      tap(() => this.testRunService.getSystemStatus()),
-    ).subscribe();
+    interval(5000)
+      .pipe(
+        takeUntil(this.destroy$),
+        tap(() => this.testRunService.getSystemStatus())
+      )
+      .subscribe();
   }
 
   private notify(message: string, duration = 5000) {

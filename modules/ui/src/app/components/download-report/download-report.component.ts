@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {TestrunStatus} from '../../model/testrun-status';
-import {CommonModule, DatePipe} from '@angular/common';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { TestrunStatus } from '../../model/testrun-status';
+import { CommonModule, DatePipe } from '@angular/common';
+import { ReportActionComponent } from '../report-action/report-action.component';
 
 @Component({
   selector: 'app-download-report',
@@ -24,24 +25,14 @@ import {CommonModule, DatePipe} from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   providers: [DatePipe],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DownloadReportComponent {
-  @Input() data!: TestrunStatus;
-
-  constructor(private datePipe: DatePipe) {
-  }
-
-  getTestRunId(data: TestrunStatus) {
-    return `${data.device.manufacturer} ${data.device.model} ${data.device.firmware} ${this.getFormattedDateString(data.started)}`;
-  }
-
+export class DownloadReportComponent extends ReportActionComponent {
   getReportTitle(data: TestrunStatus) {
-    return `${data.device.manufacturer} ${data.device.model} ${data.device.firmware} ${data.status} ${this.getFormattedDateString(data.started)}`.replace(/ /g, "_").toLowerCase();
+    return `${data.device.manufacturer} ${data.device.model} ${
+      data.device.firmware
+    } ${data.status} ${this.getFormattedDateString(data.started)}`
+      .replace(/ /g, '_')
+      .toLowerCase();
   }
-
-  getFormattedDateString(date: string | null) {
-    return date ? this.datePipe.transform(date, 'd MMM y H:mm') : '';
-  }
-
 }
