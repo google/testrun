@@ -44,7 +44,7 @@ mkdir -p $MAKE_SRC_DIR/usr/local/testrun/local/devices
 
 # Copy root_certs folder
 mkdir -p local/root_certs
-cp -r local/root_certs $MAKE_SRC_DIR/usr/local/testrun/local/root_certs
+cp -r local/root_certs $MAKE_SRC_DIR/usr/local/testrun/local/
 
 # Copy framework and modules into testrun folder
 cp -r {framework,modules} $MAKE_SRC_DIR/usr/local/testrun
