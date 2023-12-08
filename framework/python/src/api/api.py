@@ -76,8 +76,8 @@ class Api:
                                methods=["DELETE"])
     self._router.add_api_route("/device", self.save_device, methods=["POST"])
 
-    # TODO: Make this configurable in system.json
-    origins = ["http://localhost:8080", "http://localhost:4200"]
+    # Allow all origins to access the API
+    origins = ["*"]
 
     self._app = FastAPI()
     self._app.include_router(self._router)
