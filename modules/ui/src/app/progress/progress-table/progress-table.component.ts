@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {Observable} from 'rxjs/internal/Observable';
-import {IResult, StatusResultClassName} from '../../model/testrun-status';
-import {TestRunService} from '../../services/test-run.service';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Observable } from 'rxjs/internal/Observable';
+import { IResult, StatusResultClassName } from '../../model/testrun-status';
+import { TestRunService } from '../../services/test-run.service';
 
 @Component({
   selector: 'app-progress-table',
   templateUrl: './progress-table.component.html',
   styleUrls: ['./progress-table.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgressTableComponent {
   @Input() dataSource$!: Observable<IResult[] | undefined>;

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,22 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {inject} from '@angular/core';
 
-import {TestRunService} from '../services/test-run.service';
-import {Router} from '@angular/router';
-import {Device} from '../model/device';
-import {map} from 'rxjs';
-
-export const allowToRunTestGuard = () => {
-  const testRunService = inject(TestRunService);
-  const router = inject(Router);
-
-  return testRunService.getDevices().pipe(
-    map((devices: Device[] | null) => {
-      return !(devices?.length)
-        ? router.parseUrl('/device-repository')
-        : !!devices;
-    }),
-  );
-};
+export interface Version {
+  installed_version: string;
+  update_available: boolean;
+  latest_version: string;
+  latest_version_url: string;
+}

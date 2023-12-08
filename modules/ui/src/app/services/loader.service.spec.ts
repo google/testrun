@@ -1,6 +1,6 @@
-import {fakeAsync, TestBed, tick} from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
-import {LoaderService} from './loader.service';
+import { LoaderService } from './loader.service';
 
 describe('LoaderService', () => {
   let service: LoaderService;
@@ -18,7 +18,7 @@ describe('LoaderService', () => {
     it('should has delay if true', fakeAsync(() => {
       service.setLoading(true);
 
-      let timeoutSpy = jasmine.createSpy('timeoutSpy');
+      const timeoutSpy = jasmine.createSpy('timeoutSpy');
       service.getLoading().subscribe(timeoutSpy);
 
       expect(timeoutSpy).not.toHaveBeenCalled();
@@ -29,10 +29,10 @@ describe('LoaderService', () => {
     it('should has no delay if false', fakeAsync(() => {
       service.setLoading(false);
 
-      let timeoutSpy = jasmine.createSpy('timeoutSpy');
+      const timeoutSpy = jasmine.createSpy('timeoutSpy');
       service.getLoading().subscribe(timeoutSpy);
 
       expect(timeoutSpy).toHaveBeenCalledWith(false);
     }));
-  })
+  });
 });

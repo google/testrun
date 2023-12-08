@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {DeviceTestsComponent} from './device-tests.component';
-import {TestModule} from '../../model/device';
-import {FormArray, FormBuilder} from '@angular/forms';
+import { DeviceTestsComponent } from './device-tests.component';
+import { TestModule } from '../../model/device';
+import { FormArray, FormBuilder } from '@angular/forms';
 
 describe('DeviceTestsComponent', () => {
   let component: DeviceTestsComponent;
@@ -27,26 +27,24 @@ describe('DeviceTestsComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [DeviceTestsComponent],
-      providers: [
-        FormBuilder
-      ]
+      providers: [FormBuilder],
     });
     fixture = TestBed.createComponent(DeviceTestsComponent);
     component = fixture.componentInstance;
     component.testModules = [
       {
-        displayName: "Connection",
-        name: "connection",
-        enabled: true
+        displayName: 'Connection',
+        name: 'connection',
+        enabled: true,
       },
       {
-        displayName: "DNS",
-        name: "dns",
-        enabled: false
+        displayName: 'DNS',
+        name: 'dns',
+        enabled: false,
       },
     ] as TestModule[];
     component.deviceForm = new FormBuilder().group({
-      test_modules: new FormArray([])
+      test_modules: new FormArray([]),
     });
     fixture.detectChanges();
     compiled = fixture.nativeElement;
@@ -65,24 +63,24 @@ describe('DeviceTestsComponent', () => {
 
     it('should fill tests with device test values if device not present', () => {
       component.deviceTestModules = {
-        "connection": {
-          "enabled": false,
+        connection: {
+          enabled: false,
         },
-        "dns": {
-          "enabled": true,
-        }
+        dns: {
+          enabled: true,
+        },
       };
       component.ngOnInit();
 
       expect(component.test_modules.controls[0].value).toEqual(false);
       expect(component.test_modules.controls[1].value).toEqual(true);
     });
-  })
+  });
 
   describe('DOM tests', () => {
     it('should have checkboxes', () => {
-      const test = compiled.querySelectorAll('mat-checkbox input')!;
-      const testLabel = compiled.querySelectorAll('mat-checkbox label')!;
+      const test = compiled.querySelectorAll('mat-checkbox input');
+      const testLabel = compiled.querySelectorAll('mat-checkbox label');
 
       expect(test.length).toEqual(2);
       expect((test[0] as HTMLInputElement).checked).toBeTrue();

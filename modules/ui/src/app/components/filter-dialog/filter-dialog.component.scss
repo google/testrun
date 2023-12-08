@@ -14,14 +14,25 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import "../../../theming/colors";
+@import '../../../theming/colors';
 
 .filter-dialog-content {
+  display: flex;
+  flex-direction: column;
   padding: 16px 16px 0 16px;
 }
 
+.date-field {
+  flex-shrink: 0;
+}
+
+.date-calendar {
+  flex-grow: 1;
+  overflow: auto;
+  min-height: 2em;
+}
+
 .filter-dialog-actions {
-  margin-top: -8px;
   border-top: 1px solid $lighter-grey;
   gap: 16px;
 
@@ -53,5 +64,3 @@
     padding-bottom: 20px;
   }
 }
-
-

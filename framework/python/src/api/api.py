@@ -158,7 +158,6 @@ class Api:
 
     # Check Testrun is not already running
     if self._test_run.get_session().get_status() in [
-        "Starting",
         "In Progress",
         "Waiting for Device",
         "Monitoring"
@@ -226,7 +225,7 @@ class Api:
       return self._generate_msg(False, "Could not fetch current version")
 
     # Set the installed version
-    json_response["installed_version"] = current_version
+    json_response["installed_version"] = "v" + current_version
 
     # Check latest version number from GitHub API
     version_check = requests.get(LATEST_RELEASE_CHECK, timeout=5)
@@ -234,6 +233,7 @@ class Api:
     # Check OK response was received
     if version_check.status_code != 200:
       response.status_code = 500
+      LOGGER.error(version_check.content)
       return self._generate_msg(False, "Failed to fetch latest version")
 
     # Extract version number from response, removing the leading 'v'
@@ -241,7 +241,7 @@ class Api:
     LOGGER.debug(f"Latest version available is {latest_version_no}")
 
     # Craft JSON response
-    json_response["latest_version"] = latest_version_no
+    json_response["latest_version"] = "v" + latest_version_no
     json_response["latest_version_url"] = version_check.json()["html_url"]
 
     # String comparison between current and latest version
@@ -287,6 +287,7 @@ class Api:
     if self._test_run.delete_report(device, timestamp_formatted):
       return self._generate_msg(True, "Deleted report")
 
+    response.status_code = 500
     return self._generate_msg(False, "Error occured whilst deleting report")
 
   async def delete_device(self, request: Request, response: Response):
@@ -314,8 +315,11 @@ class Api:
         return self._generate_msg(False, "Device not found")
 
       # Check that Testrun is not currently running against this device
-      if self._session.get_target_device() == device:
-        # TODO: Check if this is the correct status code
+      if (self._session.get_target_device() == device and
+          self._session.get_status() not in [
+            "Cancelled",
+            "Compliant",
+            "Non-Compliant"]):
         response.status_code = 403
         return self._generate_msg(False, "Cannot delete this device whilst " +
                                   "it is being tested")

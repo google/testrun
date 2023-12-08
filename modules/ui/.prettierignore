@@ -1,7 +1,3 @@
-node_modules/
-.angular/
-dist/
-
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # Compiled output
@@ -17,6 +13,7 @@ yarn-error.log
 
 # IDEs and editors
 .idea/
+!.idea/copyright
 .project
 .classpath
 .c9/
