@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import "../theming/colors";
+@import '../theming/colors';
+@import '../theming/variables';
 
 $toolbar-height: 56px;
 $nav-close-width: 80px;
@@ -73,6 +74,10 @@ $nav-open-btn-width: 210px;
     line-height: 20px;
     letter-spacing: 0.25px;
   }
+
+  app-version {
+    padding: 0 16px;
+  }
 }
 
 .app-sidebar {
@@ -85,7 +90,8 @@ $nav-open-btn-width: 210px;
   align-items: center;
 }
 
-.app-sidebar-button, .app-toolbar-button {
+.app-sidebar-button,
+.app-toolbar-button {
   border-radius: 20px;
   border: 1px solid transparent;
   min-width: 48px;
@@ -114,7 +120,8 @@ $nav-open-btn-width: 210px;
   background: rgba(0, 0, 0, 0.12);
 }
 
-.app-sidebar-button > .mat-icon, .app-toolbar-button > .mat-icon {
+.app-sidebar-button > .mat-icon,
+.app-toolbar-button > .mat-icon {
   margin-right: 0;
   width: 24px;
   font-size: 24px;
@@ -154,6 +161,11 @@ $nav-open-btn-width: 210px;
   height: 23px;
 }
 
+.main-heading {
+  font-size: 18px;
+  line-height: 24px;
+}
+
 .app-toolbar {
   position: absolute;
   top: 0;
@@ -174,6 +186,7 @@ $nav-open-btn-width: 210px;
 }
 
 .app-content-main {
+  position: relative;
   display: grid;
   grid-template-rows: 0 auto;
   overflow: hidden;
@@ -187,4 +200,10 @@ $nav-open-btn-width: 210px;
 
 .app-toolbar-button-general-settings {
   margin-left: 72px;
+}
+
+app-version {
+  margin-top: auto;
+  margin-bottom: 16px;
+  max-width: 100%;
 }

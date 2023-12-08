@@ -13,32 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ScrollingModule} from '@angular/cdk/scrolling';
-import {CommonModule} from '@angular/common';
-import {HttpClientModule} from '@angular/common/http';
-import {NgModule} from '@angular/core';
-import {ReactiveFormsModule} from '@angular/forms';
-import {MatButtonModule} from '@angular/material/button';
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatDialogModule} from '@angular/material/dialog';
-import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {DeviceFormComponent} from './device-form/device-form.component';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
+import { NgModule } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { DeviceFormComponent } from './device-form/device-form.component';
 
-import {DeviceRepositoryRoutingModule} from './device-repository-routing.module';
-import {DeviceRepositoryComponent} from './device-repository.component';
-import {DeviceItemComponent} from '../components/device-item/device-item.component';
-import {DeviceTestsComponent} from '../components/device-tests/device-tests.component';
-import {SpinnerComponent} from '../components/spinner/spinner.component';
-import {DeleteFormComponent} from '../components/delete-form/delete-form.component';
-import {NgxMaskDirective, NgxMaskPipe, provideNgxMask} from 'ngx-mask';
+import { DeviceRepositoryRoutingModule } from './device-repository-routing.module';
+import { DeviceRepositoryComponent } from './device-repository.component';
+import { DeviceItemComponent } from '../components/device-item/device-item.component';
+import { DeviceTestsComponent } from '../components/device-tests/device-tests.component';
+import { SpinnerComponent } from '../components/spinner/spinner.component';
+import { DeleteFormComponent } from '../components/delete-form/delete-form.component';
+import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 
 @NgModule({
-  declarations: [
-    DeviceRepositoryComponent,
-    DeviceFormComponent,
-  ],
+  declarations: [DeviceRepositoryComponent, DeviceFormComponent],
   imports: [
     CommonModule,
     DeviceRepositoryRoutingModule,
@@ -57,9 +54,7 @@ import {NgxMaskDirective, NgxMaskPipe, provideNgxMask} from 'ngx-mask';
     DeleteFormComponent,
     NgxMaskDirective,
     NgxMaskPipe,
-
   ],
-  providers: [provideNgxMask()]
+  providers: [provideNgxMask()],
 })
-export class DeviceRepositoryModule {
-}
+export class DeviceRepositoryModule {}

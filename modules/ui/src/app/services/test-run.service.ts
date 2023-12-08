@@ -13,69 +13,80 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
-import {Observable} from 'rxjs/internal/Observable';
-import {Device, TestModule} from '../model/device';
-import {map, ReplaySubject, retry} from 'rxjs';
-import {SystemConfig} from '../model/setting';
-import {StatusOfTestResult, StatusResultClassName, TestrunStatus} from '../model/testrun-status';
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { Observable } from 'rxjs/internal/Observable';
+import { Device, TestModule } from '../model/device';
+import { map, ReplaySubject, retry } from 'rxjs';
+import { SystemConfig } from '../model/setting';
+import {
+  StatusOfTestResult,
+  StatusOfTestrun,
+  StatusResultClassName,
+  TestrunStatus,
+} from '../model/testrun-status';
+import { Version } from '../model/version';
 
 const API_URL = `http://${window.location.hostname}:8000`;
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TestRunService {
   private readonly testModules: TestModule[] = [
     {
-      displayName: "Connection",
-      name: "connection",
-      enabled: true
+      displayName: 'Connection',
+      name: 'connection',
+      enabled: true,
     },
     {
-      displayName: "NTP",
-      name: "ntp",
-      enabled: true
+      displayName: 'NTP',
+      name: 'ntp',
+      enabled: true,
     },
     {
-      displayName: "DHCP",
-      name: "dhcp",
-      enabled: true
+      displayName: 'DHCP',
+      name: 'dhcp',
+      enabled: true,
     },
     {
-      displayName: "DNS",
-      name: "dns",
-      enabled: true
+      displayName: 'DNS',
+      name: 'dns',
+      enabled: true,
     },
     {
-      displayName: "Services",
-      name: "nmap",
-      enabled: true
+      displayName: 'Services',
+      name: 'nmap',
+      enabled: true,
     },
     {
-      displayName: "Security",
-      name: "security",
-      enabled: true
+      displayName: 'Security',
+      name: 'security',
+      enabled: true,
     },
     {
-      displayName: "TLS",
-      name: "tls",
-      enabled: true
+      displayName: 'TLS',
+      name: 'tls',
+      enabled: true,
     },
   ];
 
   private devices = new BehaviorSubject<Device[] | null>(null);
-  private _systemConfig = new BehaviorSubject<SystemConfig>({network: {}});
+  private isOpenAddDeviceSub$ = new BehaviorSubject<boolean>(false);
+  public isOpenAddDevice$ = this.isOpenAddDeviceSub$.asObservable();
+  private _systemConfig = new BehaviorSubject<SystemConfig | null>(null);
   public systemConfig$ = this._systemConfig.asObservable();
   private systemStatusSubject = new ReplaySubject<TestrunStatus>(1);
   public systemStatus$ = this.systemStatusSubject.asObservable();
-  private history = new BehaviorSubject<TestrunStatus[]>([]);
+  private history = new BehaviorSubject<TestrunStatus[] | null>(null);
+  private version = new BehaviorSubject<Version | null>(null);
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient) {}
+
+  setIsOpenAddDevice(isOpen: boolean): void {
+    this.isOpenAddDeviceSub$.next(isOpen);
   }
-
   getDevices(): BehaviorSubject<Device[] | null> {
     return this.devices;
   }
@@ -93,38 +104,47 @@ export class TestRunService {
   }
 
   fetchDevices(): void {
-    this.http.get<any>(`${API_URL}/devices`).subscribe((devices: Device[]) => {
-      this.setDevices(devices);
-    });
+    this.http
+      .get<Device[]>(`${API_URL}/devices`)
+      .subscribe((devices: Device[]) => {
+        this.setDevices(devices);
+      });
   }
 
   getSystemConfig(): Observable<SystemConfig> {
-    return this.http
-      .get<SystemConfig>(`${API_URL}/system/config`);
+    return this.http.get<SystemConfig>(`${API_URL}/system/config`);
   }
 
-  createSystemConfig(data: SystemConfig): Observable<any> {
+  createSystemConfig(data: SystemConfig): Observable<SystemConfig> {
     return this.http
-      .post<any>(`${API_URL}/system/config`, data)
+      .post<SystemConfig>(`${API_URL}/system/config`, data)
       .pipe(retry(1));
   }
 
   getSystemInterfaces(): Observable<string[]> {
-    return this.http
-      .get<string[]>(`${API_URL}/system/interfaces`);
+    return this.http.get<string[]>(`${API_URL}/system/interfaces`);
   }
 
-  getSystemStatus(): void {
+  /**
+   * Gets system status.
+   * Status Cancelling exist only on FE. Every status except Cancelled
+   * should be overriden with Cancelling value during cancelling process
+   * @param isCancelling - indicates if status should be overridden with Cancelling value
+   */
+  getSystemStatus(isCancelling?: boolean): void {
     this.http
       .get<TestrunStatus>(`${API_URL}/system/status`)
       .subscribe((res: TestrunStatus) => {
+        if (isCancelling && res.status !== StatusOfTestrun.Cancelled) {
+          res.status = StatusOfTestrun.Cancelling;
+        }
         this.setSystemStatus(res);
       });
   }
 
   stopTestrun(): Observable<boolean> {
     return this.http
-      .post<any>(`${API_URL}/system/stop`, {})
+      .post<{ success: string }>(`${API_URL}/system/stop`, {})
       .pipe(map(() => true));
   }
 
@@ -141,32 +161,46 @@ export class TestRunService {
   deleteDevice(device: Device): Observable<boolean> {
     return this.http
       .delete<boolean>(`${API_URL}/device`, {
-        body: JSON.stringify(device)
+        body: JSON.stringify(device),
       })
       .pipe(map(() => true));
   }
 
   hasDevice(macAddress: string): boolean {
-    return this.devices.value?.some(device => device.mac_addr === macAddress.trim()) || false;
+    return (
+      this.devices.value?.some(
+        device => device.mac_addr === macAddress.trim()
+      ) || false
+    );
   }
 
   addDevice(device: Device): void {
-    this.devices.next(this.devices.value ? this.devices.value.concat([device]) : [device]);
+    this.devices.next(
+      this.devices.value ? this.devices.value.concat([device]) : [device]
+    );
   }
 
   updateDevice(deviceToUpdate: Device, update: Device): void {
-    const device = this.devices.value?.find(device => update.mac_addr === device.mac_addr)!;
-    device.model = update.model
-    device.manufacturer = update.manufacturer
-    device.test_modules = update.test_modules;
+    const device = this.devices.value?.find(
+      device => update.mac_addr === device.mac_addr
+    );
+    if (device) {
+      device.model = update.model;
+      device.manufacturer = update.manufacturer;
+      device.test_modules = update.test_modules;
 
-    this.devices.next(this.devices.value);
+      this.devices.next(this.devices.value);
+    }
   }
 
   removeDevice(deviceToDelete: Device): void {
-    const idx = this.devices.value?.findIndex(device => deviceToDelete.mac_addr === device.mac_addr)!;
-    this.devices.value?.splice(idx, 1)
-    this.devices.next(this.devices.value);
+    const idx = this.devices.value?.findIndex(
+      device => deviceToDelete.mac_addr === device.mac_addr
+    );
+    if (typeof idx === 'number') {
+      this.devices.value?.splice(idx, 1);
+      this.devices.next(this.devices.value);
+    }
   }
 
   fetchHistory(): void {
@@ -174,28 +208,67 @@ export class TestRunService {
       .get<TestrunStatus[]>(`${API_URL}/reports`)
       .pipe(retry(1))
       .subscribe(data => {
-        this.history.next(data)
+        this.history.next(data);
       });
   }
 
-  getHistory(): Observable<TestrunStatus[]> {
+  getHistory(): BehaviorSubject<TestrunStatus[] | null> {
     return this.history;
   }
 
   public getResultClass(result: string): StatusResultClassName {
     return {
-      'green': result === StatusOfTestResult.Compliant,
-      'red': result === StatusOfTestResult.NonCompliant || result === StatusOfTestResult.Error,
-      'blue': result === StatusOfTestResult.SmartReady || result === StatusOfTestResult.Info,
-      'grey': result === StatusOfTestResult.Skipped || result === StatusOfTestResult.NotStarted
-    }
+      green: result === StatusOfTestResult.Compliant,
+      red:
+        result === StatusOfTestResult.NonCompliant ||
+        result === StatusOfTestResult.Error,
+      blue:
+        result === StatusOfTestResult.SmartReady ||
+        result === StatusOfTestResult.Info,
+      grey:
+        result === StatusOfTestResult.Skipped ||
+        result === StatusOfTestResult.NotStarted,
+    };
   }
 
   startTestrun(device: Device): Observable<boolean> {
     return this.http
-      .post<any>(`${API_URL}/system/start`, JSON.stringify({device}))
-      .pipe(
-        map(() => true)
-      );
+      .post<TestrunStatus>(
+        `${API_URL}/system/start`,
+        JSON.stringify({ device })
+      )
+      .pipe(map(() => true));
+  }
+
+  getVersion(): BehaviorSubject<Version | null> {
+    return this.version;
+  }
+
+  fetchVersion(): void {
+    this.http
+      .get<Version>(`${API_URL}/system/version`)
+      .pipe(retry(1))
+      .subscribe(version => {
+        this.version.next(version);
+      });
+  }
+
+  deleteReport(mac_addr: string, started: string): Observable<boolean> {
+    return this.http
+      .delete<boolean>(`${API_URL}/report`, {
+        body: JSON.stringify({ mac_addr, timestamp: started }),
+      })
+      .pipe(map(() => true));
+  }
+
+  removeReport(mac_addr: string, started: string): void {
+    const idx = this.history.value?.findIndex(
+      report =>
+        report.device.mac_addr === mac_addr && report.started === started
+    );
+    if (typeof idx === 'number') {
+      this.history.value?.splice(idx, 1);
+      this.history.next(this.history.value);
+    }
   }
 }

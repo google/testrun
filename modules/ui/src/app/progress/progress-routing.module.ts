@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
-import {ProgressComponent} from './progress.component';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { ProgressComponent } from './progress.component';
 
-const routes: Routes = [{path: '', component: ProgressComponent}];
+const routes: Routes = [{ path: '', component: ProgressComponent }];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class ProgressRoutingModule {
-}
+export class ProgressRoutingModule {}

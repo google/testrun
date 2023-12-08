@@ -14,37 +14,49 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="settings-drawer-header">
-  <h4 class="settings-drawer-header-title">Connection settings</h4>
+  <h2 class="settings-drawer-header-title">Connection settings</h2>
   <button
     (click)="closeSetting()"
     [disabled]="!isFormValues || !hasSetting"
     aria-label="close"
     class="settings-drawer-header-button"
     mat-button>
-    <mat-icon
-      class="close-button-icon"
-      svgIcon="close"
-    ></mat-icon>
+    <mat-icon class="close-button-icon" svgIcon="close"></mat-icon>
   </button>
 </div>
 <div class="setting-drawer-content">
-  <form *ngIf="interfaces.length" [formGroup]="settingForm">
-    <label class="setting-form-label" id="internet-radio-group-label">
+  <form
+    *ngIf="interfaces.length; else warning_message"
+    [formGroup]="settingForm">
+    <label
+      class="setting-form-label"
+      id="internet-radio-group-label"
+      for="internet-group">
       Select port used for Internet connection
     </label>
     <p class="setting-label-description">
-      Choose one of the following ports on your Laptop or Desktop: VLAN, USB, HDMI, etc.
+      Choose one of the following ports on your Laptop or Desktop: VLAN, USB,
+      HDMI, etc.
     </p>
     <mat-radio-group
-        aria-labelledby="internet-radio-group-label"
-        class="setting-radio-group"
-        formControlName="internet_intf">
-      <mat-radio-button *ngFor="let interface of interfaces" [value]="interface"
-                        class="setting-radio-button">
+      aria-labelledby="internet-radio-group-label"
+      id="internet-group"
+      class="setting-radio-group"
+      formControlName="internet_intf">
+      <mat-radio-button
+        *ngFor="let interface of interfaces"
+        [value]="interface"
+        class="setting-radio-button">
         {{ interface }}
       </mat-radio-button>
     </mat-radio-group>
-    <label class="setting-form-label device-label" id="device-radio-group-label">
+    <app-callout [type]="CalloutType.Warning" *ngIf="interfaces.length === 1">
+      Warning! Testrun requires two ports to operate correctly.
+    </app-callout>
+    <label
+      class="setting-form-label device-label"
+      id="device-radio-group-label"
+      for="device-group">
       Select port where you’ll connect the tested device
     </label>
     <p class="setting-label-description">
@@ -52,32 +64,54 @@ limitations under the License.
     </p>
     <mat-radio-group
       aria-labelledby="device-radio-group-label"
+      id="device-group"
       class="setting-radio-group"
       formControlName="device_intf">
-      <mat-radio-button *ngFor="let interface of interfaces" [value]="interface"
-                        class="setting-radio-button">
+      <mat-radio-button
+        *ngFor="let interface of interfaces"
+        [value]="interface"
+        class="setting-radio-button">
         {{ interface }}
       </mat-radio-button>
     </mat-radio-group>
-    <mat-error *ngIf="isSubmitting && isFormError" class="error-message-container">
-        <span>
-          Both interfaces must have different values
-        </span>
-    </mat-error>
   </form>
+  <ng-template #warning_message>
+    <app-callout [type]="CalloutType.Warning">
+      Warning! No ports is detected.
+    </app-callout>
+  </ng-template>
 </div>
+<p class="message">
+  If a port is missing from this list, you can
+  <a
+    (click)="reloadSetting()"
+    (keydown.enter)="reloadSetting()"
+    (keydown.space)="reloadSetting()"
+    role="button"
+    tabindex="0"
+    class="message-link">
+    Refresh
+  </a>
+  the Connection settings
+</p>
+<mat-error *ngIf="isSubmitting && isFormError" class="error-message-container">
+  <span> Both interfaces must have different values </span>
+</mat-error>
 <div class="setting-drawer-footer">
-  <button mat-flat-button (click)="closeSetting()" [disabled]="!isFormValues || !hasSetting"
-          class="close-button">
+  <button
+    mat-flat-button
+    (click)="closeSetting()"
+    [disabled]="!isFormValues || !hasSetting"
+    class="close-button">
     Cancel
   </button>
   <button
     mat-raised-button
+    class="save-button"
     color="primary"
     (click)="saveSetting()"
-    [disabled]="!isFormValues"
-    class="save-button">
+    [disabled]="!isFormValues || isLessThanTwoInterfaces">
     Save
   </button>
 </div>
-
+<app-spinner class="connection-settings-spinner"></app-spinner>

@@ -14,32 +14,99 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <ng-container *ngIf="systemStatus$ | async as data">
-  <div class="progress-card" [ngClass]="getClass(data.status)">
+  <div
+    class="progress-card"
+    [ngClass]="getClass(data.status)"
+    aria-live="assertive"
+    role="alert">
     <div>
-      <p class="progress-card-status-title">
-        Test status
-      </p>
+      <p class="progress-card-status-title">Test status</p>
       <p class="progress-card-status-text">
-        <span>{{getTestStatus(data)}}</span>
-        <span>{{getTestsResult(data)}}</span>
+        <span>{{ getTestStatus(data) }}</span>
+        <span>{{ getTestsResult(data) }}</span>
       </p>
     </div>
-    <div>
-      <mat-progress-bar
-        *ngIf="data.status === StatusOfTestrun.InProgress"
-        class="progress-bar"
-        mode="determinate"
-        [value]="getProgressValue(data)"
-        [attr.aria-label]="data.status + ' ' + getProgressValue(data) + '%'">
-      </mat-progress-bar>
-      <div *ngIf="data.finished || data.status === StatusOfTestrun.Cancelled">
-        <p class="progress-card-result-title">
-          Test result
-        </p>
-        <p class="progress-card-result-text">
-          <span>{{data.status}}</span>
-        </p>
-      </div>
+    <div *ngIf="!data.finished" [ngSwitch]="data.status">
+      <ng-container
+        *ngSwitchCase="StatusOfTestrun.WaitingForDevice"
+        [ngTemplateOutlet]="WaitingForDevice">
+      </ng-container>
+      <ng-container
+        *ngSwitchCase="StatusOfTestrun.Monitoring"
+        [ngTemplateOutlet]="Monitoring">
+      </ng-container>
+      <ng-container *ngSwitchCase="StatusOfTestrun.InProgress">
+        <ng-container
+          *ngTemplateOutlet="
+            InProgress;
+            context: {
+              data: data
+            }
+          "></ng-container
+      ></ng-container>
+      <ng-container
+        *ngSwitchCase="StatusOfTestrun.Cancelling"
+        [ngTemplateOutlet]="Cancelling">
+      </ng-container>
+      <ng-container *ngSwitchCase="StatusOfTestrun.Cancelled">
+        <ng-container
+          *ngTemplateOutlet="
+            Finished;
+            context: {
+              data: data
+            }
+          "></ng-container
+      ></ng-container>
     </div>
+    <ng-container *ngIf="data.finished">
+      <ng-container
+        *ngTemplateOutlet="
+          Finished;
+          context: {
+            data: data
+          }
+        "></ng-container>
+    </ng-container>
   </div>
 </ng-container>
+<ng-template #InProgress let-data="data">
+  <mat-progress-bar
+    class="progress-bar"
+    mode="determinate"
+    [value]="getProgressValue(data)"
+    [attr.aria-label]="data.status + ' ' + getProgressValue(data) + '%'">
+  </mat-progress-bar>
+</ng-template>
+
+<ng-template #Cancelling>
+  <div>
+    <p class="progress-card-result-title">
+      Please wait, this operation could take up to a minute
+    </p>
+  </div>
+</ng-template>
+
+<ng-template #WaitingForDevice>
+  <div>
+    <p class="progress-card-result-title">
+      Please connect and power on your device
+    </p>
+  </div>
+</ng-template>
+
+<ng-template #Monitoring>
+  <div>
+    <p class="progress-card-result-title">
+      Please wait, this could take a few minutes
+    </p>
+  </div>
+</ng-template>
+
+<ng-template #Finished let-data="data">
+  <div>
+    <p class="progress-card-result-title">Test result</p>
+    <p class="progress-card-result-text">
+      <span>{{ data.status }}</span>
+    </p>
+  </div>
+</ng-template>
