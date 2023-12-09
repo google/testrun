@@ -17,6 +17,7 @@
 from datetime import datetime
 from weasyprint import HTML
 from io import BytesIO
+from common import util
 import base64
 import os
 
@@ -93,6 +94,9 @@ class TestReport():
 
     if 'firmware' in json_file['device']:
       self._device['firmware'] = json_file['device']['firmware']
+
+    if 'test_modules' in json_file['device']:
+      self._device['test_modules'] = json_file['device']['test_modules']
 
     self._status = json_file['status']
     self._started = datetime.strptime(json_file['started'], DATE_TIME_FORMAT)
@@ -285,11 +289,51 @@ class TestReport():
       mac,
       trailing_space=False)
 
+    # Add device configuration
+    summary += '''
+    <div class="summary-device-modules">
+      <div class="summary-item-label" style="margin-bottom:10px;">
+        Device Configuration
+      </div>
+    '''
+
+    if 'test_modules' in json_data['device']:
+
+      sorted_modules = {}
+
+      for test_module in json_data['device']['test_modules']:
+        if 'enabled' in json_data['device']['test_modules'][test_module]:
+          sorted_modules[test_module] = json_data['device']['test_modules'][
+            test_module]['enabled']
+
+      # Sort the modules by enabled first
+      sorted_modules = sorted(sorted_modules.items(),
+                              key=lambda x:x[1],
+                              reverse=True)
+
+      for module in sorted_modules:
+        summary += self.generate_device_module_label(
+          module[0],
+          module[1]
+        )
+
+    summary += '</div>'
+
     # Add the result summary
     summary += self.generate_result_summary(json_data)
 
     summary += '\n</div>'
     return summary
+
+  def generate_device_module_label(self, module, enabled):
+    label = '<div class="summary-device-module-label">'
+    if enabled:
+      label += '<span style="color:#34a853">✔ </span>'
+    else:
+      label += '<span style="color:#ea4335">✖ </span>'
+    label += util.get_module_display_name(module)
+    label += '</div>'
+    return label
 
   def generate_result_summary(self,json_data):
     if json_data['status'] == 'Compliant':
@@ -446,6 +490,20 @@ class TestReport():
       position: relative;
       padding-bottom: 15px;
       margin: 0;
+    }
+
+    .summary-device-modules {
+      position: absolute;
+      left: 3.2in;
+      top: .3in;
+    }
+
+    .summary-device-module-label {
+      font-size: 16px;
+      font-weight: 500;
+      color: #202124;
+      width: fit-content;
+      margin-bottom: 0.1in;
     }
 
     .summary-vertical-line {
