@@ -59,6 +59,7 @@ class Device():
     device_json['model'] = self.model
     if self.firmware is not None:
       device_json['firmware'] = self.firmware
+    device_json['test_modules'] = self.test_modules
     return device_json
 
   def to_config_json(self):
