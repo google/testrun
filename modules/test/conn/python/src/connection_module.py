@@ -210,6 +210,7 @@ class ConnectionModule(TestModule):
         else:
           result = None, 'Failed to create reserved lease for device'
       else:
+        LOGGER.info('Device has no current DHCP lease')
         result = None, 'Device has no current DHCP lease'
       # Restore the network
       self._dhcp_util.restore_failover_dhcp_server()
@@ -432,6 +433,7 @@ class ConnectionModule(TestModule):
         if self._dhcp_util.is_lease_active(lease):
           results = self.test_subnets(ranges)
       else:
+        LOGGER.info("Failed to confirm a valid active lease for the device")
         return None, 'Failed to confirm a valid active lease for the device'
     else:
       LOGGER.error(dhcp_setup[1])

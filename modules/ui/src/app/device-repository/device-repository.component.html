@@ -15,7 +15,7 @@ limitations under the License.
 -->
 <ng-container *ngIf="(devices$ | async)?.length; else empty">
   <mat-toolbar class="device-repository-toolbar">
-    <h2 class="title">Device Repository</h2>
+    <h2 class="title">Devices</h2>
     <ng-container *ngTemplateOutlet="addDeviceButton"></ng-container>
   </mat-toolbar>
   <div class="device-repository-content">

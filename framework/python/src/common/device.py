@@ -32,6 +32,7 @@ class Device():
   device_folder: str = None
   reports: List[TestReport] = field(default_factory=list)
   max_device_reports: int = None
+  reports: List[TestReport] = field(default_factory=list)
 
   def add_report(self, report):
     self.reports.append(report)

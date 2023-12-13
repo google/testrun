@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,34 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import '../../theming/colors';
-@import '../../theming/variables';
 
-:host {
-  overflow: hidden;
-  flex-direction: column;
-  display: flex;
-}
-
-.device-repository-content-empty {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.device-repository-toolbar {
-  padding-left: 32px;
-  gap: 16px;
-  background: $white;
-  height: 72px;
-}
-
-.device-repository-content {
-  align-content: start;
-  padding: 24px 32px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, $device-item-width);
-  gap: 16px;
-  overflow-y: auto;
+export enum Routes {
+  Devices = '/devices',
+  Testrun = '/testrun',
+  Reports = '/reports',
 }

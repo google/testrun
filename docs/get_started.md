@@ -105,4 +105,8 @@ If you encounter any issues or need assistance, consider the following:
 - Refer to the Testrun documentation or ask for assistance in the issues page: https://github.com/google/testrun/issues
 
 # Uninstall
+<<<<<<< HEAD
 To uninstall Testrun, use the built-in dpkg uninstall command to remove Testrun correctly. For Testrun, this would be:  ```sudo apt-get remove testrun```
+=======
+To uninstall Testrun, use the built-in dpkg uninstall command to remove Testrun correctly. For Testrun, this would be:  ```sudo apt-get remove testrun```
+>>>>>>> main
