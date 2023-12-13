@@ -64,6 +64,8 @@ describe('GeneralSettingsComponent', () => {
       'setSystemConfig',
       'createSystemConfig',
       'setIsOpenAddDevice',
+      'hasConnectionSetting$',
+      'setHasConnectionSetting',
     ]);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of([]));
     testRunServiceMock.getSystemConfig.and.returnValue(
@@ -72,6 +74,7 @@ describe('GeneralSettingsComponent', () => {
     testRunServiceMock.createSystemConfig.and.returnValue(
       of(MOCK_SYSTEM_CONFIG_WITH_DATA)
     );
+    testRunServiceMock.hasConnectionSetting$ = of(true);
 
     await TestBed.configureTestingModule({
       declarations: [
@@ -237,7 +240,6 @@ describe('GeneralSettingsComponent', () => {
       component.internetControl.setValue(
         MOCK_SYSTEM_CONFIG_WITH_DATA.network?.internet_intf
       );
-      component.hasSetting = false;
 
       component.saveSetting();
 

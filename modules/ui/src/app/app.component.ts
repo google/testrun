@@ -27,12 +27,13 @@ import { TestRunService } from './services/test-run.service';
 import { Observable } from 'rxjs/internal/Observable';
 import { Device } from './model/device';
 import { take } from 'rxjs';
-import { TestrunStatus } from './model/testrun-status';
+import { TestrunStatus, StatusOfTestrun } from './model/testrun-status';
 import { Router } from '@angular/router';
 import { LoaderService } from './services/loader.service';
 import { CalloutType } from './model/callout-type';
 import { tap } from 'rxjs/internal/operators/tap';
 import { shareReplay } from 'rxjs/internal/operators/shareReplay';
+import { Routes } from './model/routes';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -49,9 +50,14 @@ export class AppComponent implements OnInit {
   public readonly CalloutType = CalloutType;
   devices$!: Observable<Device[] | null>;
   systemStatus$!: Observable<TestrunStatus>;
+  isTestrunStarted$!: Observable<boolean>;
+  hasConnectionSetting$!: Observable<boolean | null>;
   interfaces: string[] = [];
   isDevicesLoaded = false;
   isStatusLoaded = false;
+  isConnectionSettingsLoaded = false;
+  public readonly StatusOfTestrun = StatusOfTestrun;
+  public readonly Routes = Routes;
 
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
@@ -102,15 +108,26 @@ export class AppComponent implements OnInit {
     this.systemStatus$ = this.testRunService.systemStatus$.pipe(
       tap(() => (this.isStatusLoaded = true))
     );
+
+    this.isTestrunStarted$ = this.testRunService.isTestrunStarted$;
+
+    this.hasConnectionSetting$ = this.testRunService.hasConnectionSetting$.pipe(
+      tap(result => {
+        if (result !== null) {
+          this.isConnectionSettingsLoaded = true;
+        }
+      }),
+      shareReplay({ refCount: true, bufferSize: 1 })
+    );
   }
 
   navigateToDeviceRepository(): void {
-    this.route.navigate(['/device-repository']);
+    this.route.navigate([Routes.Devices]);
     this.testRunService.setIsOpenAddDevice(true);
   }
 
   navigateToRuntime(): void {
-    this.route.navigate(['/runtime']);
+    this.route.navigate([Routes.Testrun]);
   }
 
   async closeSetting(): Promise<void> {

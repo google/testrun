@@ -160,7 +160,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
       data: {
         title: 'Stop testrun',
         content:
-          'Are you sure you would like to stop testrun without any track records and report generation?',
+          'Are you sure you would like to stop testrun without a report generation?',
       },
       autoFocus: true,
       hasBackdrop: true,

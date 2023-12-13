@@ -40,8 +40,12 @@ import SpyObj = jasmine.SpyObj;
 import { BypassComponent } from './components/bypass/bypass.component';
 import { VersionComponent } from './components/version/version.component';
 import { CalloutComponent } from './components/callout/callout.component';
-import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/progress.mock';
+import {
+  MOCK_PROGRESS_DATA_IDLE,
+  MOCK_PROGRESS_DATA_IN_PROGRESS,
+} from './mocks/progress.mock';
 import { LoaderService } from './services/loader.service';
+import { Routes } from './model/routes';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -75,6 +79,8 @@ describe('AppComponent', () => {
       'fetchVersion',
       'setIsOpenAddDevice',
       'systemStatus$',
+      'isTestrunStarted$',
+      'hasConnectionSetting$',
     ]);
 
     mockLoaderService = jasmine.createSpyObj(['setLoading']);
@@ -83,6 +89,8 @@ describe('AppComponent', () => {
     );
     mockService.getSystemInterfaces.and.returnValue(of([]));
     (mockService.systemStatus$ as unknown) = of({});
+    mockService.isTestrunStarted$ = of(true);
+    mockService.hasConnectionSetting$ = of(true);
 
     TestBed.configureTestingModule({
       imports: [
@@ -173,37 +181,37 @@ describe('AppComponent', () => {
     expect(generalSettingsButton).toBeDefined();
   });
 
-  it('should navigate to the device repository when "device repository" button is clicked', fakeAsync(() => {
+  it('should navigate to the devices when "devices" button is clicked', fakeAsync(() => {
     const button = compiled.querySelector(
-      '.app-sidebar-button-device-repository'
+      '.app-sidebar-button-devices'
     ) as HTMLButtonElement;
 
     button?.click();
     tick();
 
-    expect(router.url).toBe(`/device-repository`);
+    expect(router.url).toBe(Routes.Devices);
   }));
 
-  it('should navigate to the runtime when "runtime" button is clicked', fakeAsync(() => {
+  it('should navigate to the testrun when "testrun" button is clicked', fakeAsync(() => {
     const button = compiled.querySelector(
-      '.app-sidebar-button-runtime'
+      '.app-sidebar-button-testrun'
     ) as HTMLButtonElement;
 
     button?.click();
     tick();
 
-    expect(router.url).toBe(`/runtime`);
+    expect(router.url).toBe(Routes.Testrun);
   }));
 
-  it('should navigate to the results when "results" button is clicked', fakeAsync(() => {
+  it('should navigate to the reports when "reports" button is clicked', fakeAsync(() => {
     const button = compiled.querySelector(
-      '.app-sidebar-button-results'
+      '.app-sidebar-button-reports'
     ) as HTMLButtonElement;
 
     button?.click();
     tick();
 
-    expect(router.url).toBe(`/results`);
+    expect(router.url).toBe(Routes.Reports);
   }));
 
   it('should call toggleSettingsBtn focus when settingsDrawer close on closeSetting', fakeAsync(() => {
@@ -316,6 +324,43 @@ describe('AppComponent', () => {
     expect(version).toBeTruthy();
   });
 
+  describe('with no connection settings', () => {
+    beforeEach(() => {
+      mockService.hasConnectionSetting$ = of(false);
+      component.ngOnInit();
+      fixture.detectChanges();
+    });
+
+    it('should have callout component with "Step 1" text', () => {
+      const callout = compiled.querySelector('app-callout');
+      const calloutContent = callout?.innerHTML.trim();
+
+      expect(callout).toBeTruthy();
+      expect(calloutContent).toContain('Step 1');
+    });
+  });
+
+  describe('with system status as "Idle"', () => {
+    beforeEach(() => {
+      mockService.hasConnectionSetting$ = of(true);
+      mockService.getDevices.and.returnValue(
+        new BehaviorSubject<Device[] | null>([device])
+      );
+      mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IDLE);
+      mockService.isTestrunStarted$ = of(false);
+      component.ngOnInit();
+      fixture.detectChanges();
+    });
+
+    it('should have callout component with "Step 3" text', () => {
+      const callout = compiled.querySelector('app-callout');
+      const calloutContent = callout?.innerHTML.trim();
+
+      expect(callout).toBeTruthy();
+      expect(calloutContent).toContain('Step 3');
+    });
+  });
+
   describe('with no devices setted', () => {
     beforeEach(() => {
       mockService.getDevices.and.returnValue(
@@ -329,6 +374,14 @@ describe('AppComponent', () => {
       const callout = compiled.querySelector('app-callout');
 
       expect(callout).toBeTruthy();
+    });
+
+    it('should have callout component with "Step 2" text', () => {
+      const callout = compiled.querySelector('app-callout');
+      const calloutContent = callout?.innerHTML.trim();
+
+      expect(callout).toBeTruthy();
+      expect(calloutContent).toContain('Step 2');
     });
 
     it('should have callout content with "Create a Device" link ', () => {
@@ -350,7 +403,7 @@ describe('AppComponent', () => {
         calloutLinkEl.dispatchEvent(testCase.event);
         flush();
 
-        expect(router.url).toBe(`/device-repository`);
+        expect(router.url).toBe(Routes.Devices);
       }));
     });
 
@@ -362,21 +415,30 @@ describe('AppComponent', () => {
       calloutLinkEl.click();
       flush();
 
-      expect(router.url).toBe(`/device-repository`);
+      expect(router.url).toBe(Routes.Devices);
       expect(mockService.setIsOpenAddDevice).toHaveBeenCalledWith(true);
     }));
   });
 
-  describe('with devices setted but without run the test ', () => {
+  describe('with devices setted but without systemStatus data', () => {
     beforeEach(() => {
       mockService.getDevices.and.returnValue(
         new BehaviorSubject<Device[] | null>([device])
       );
+      mockService.isTestrunStarted$ = of(false);
       component.ngOnInit();
       fixture.detectChanges();
     });
 
-    it('should have callout component with "Run the Test" link', () => {
+    it('should have callout component with "Step 3" text', () => {
+      const callout = compiled.querySelector('app-callout');
+      const calloutContent = callout?.innerHTML.trim();
+
+      expect(callout).toBeTruthy();
+      expect(calloutContent).toContain('Step 3');
+    });
+
+    it('should have callout component with "Testrun" link', () => {
       const callout = compiled.querySelector('app-callout');
       const calloutLinkEl = compiled.querySelector(
         '.message-link'
@@ -384,7 +446,7 @@ describe('AppComponent', () => {
       const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
       expect(callout).toBeTruthy();
-      expect(calloutLinkContent).toContain('Run the Test');
+      expect(calloutLinkContent).toContain('Testrun');
     });
 
     keyboardCases.forEach(testCase => {
@@ -396,8 +458,25 @@ describe('AppComponent', () => {
         calloutLinkEl.dispatchEvent(testCase.event);
         flush();
 
-        expect(router.url).toBe(`/runtime`);
+        expect(router.url).toBe(Routes.Testrun);
       }));
+    });
+  });
+
+  describe('with devices setted, without systemStatus data, but run the tests ', () => {
+    beforeEach(() => {
+      mockService.getDevices.and.returnValue(
+        new BehaviorSubject<Device[] | null>([device])
+      );
+      mockService.isTestrunStarted$ = of(true);
+      component.ngOnInit();
+      fixture.detectChanges();
+    });
+
+    it('should not have callout component', () => {
+      const callout = compiled.querySelector('app-callout');
+
+      expect(callout).toBeNull();
     });
   });
 

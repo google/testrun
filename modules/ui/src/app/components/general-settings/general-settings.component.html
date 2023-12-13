@@ -17,7 +17,7 @@ limitations under the License.
   <h2 class="settings-drawer-header-title">Connection settings</h2>
   <button
     (click)="closeSetting()"
-    [disabled]="!isFormValues || !hasSetting"
+    [disabled]="!isFormValues || (hasConnectionSetting$ | async) !== true"
     aria-label="close"
     class="settings-drawer-header-button"
     mat-button>
@@ -28,15 +28,20 @@ limitations under the License.
   <form
     *ngIf="interfaces.length; else warning_message"
     [formGroup]="settingForm">
+    <app-callout
+      [type]="CalloutType.Warning"
+      *ngIf="interfaces.length === 1"
+      class="two-ports-message">
+      Warning! Testrun requires two ports to operate correctly.
+    </app-callout>
     <label
-      class="setting-form-label"
+      class="setting-form-label internet-label"
       id="internet-radio-group-label"
       for="internet-group">
       Select port used for Internet connection
     </label>
     <p class="setting-label-description">
-      Choose one of the following ports on your Laptop or Desktop: VLAN, USB,
-      HDMI, etc.
+      Choose one of the following ports on your Laptop or Desktop
     </p>
     <mat-radio-group
       aria-labelledby="internet-radio-group-label"
@@ -50,9 +55,6 @@ limitations under the License.
         {{ interface }}
       </mat-radio-button>
     </mat-radio-group>
-    <app-callout [type]="CalloutType.Warning" *ngIf="interfaces.length === 1">
-      Warning! Testrun requires two ports to operate correctly.
-    </app-callout>
     <label
       class="setting-form-label device-label"
       id="device-radio-group-label"
@@ -101,7 +103,7 @@ limitations under the License.
   <button
     mat-flat-button
     (click)="closeSetting()"
-    [disabled]="!isFormValues || !hasSetting"
+    [disabled]="!isFormValues || (hasConnectionSetting$ | async) !== true"
     class="close-button">
     Cancel
   </button>

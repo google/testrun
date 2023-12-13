@@ -22,18 +22,20 @@ limitations under the License.
     <ng-container *ngIf="selectedDevice === null">
       <ng-container *ngFor="let device of devices">
         <app-device-item
+          [class.device-item-focused]="device === prevDevice"
           (itemClicked)="deviceSelected(device)"
           [device]="device"></app-device-item>
       </ng-container>
     </ng-container>
     <app-device-item
       *ngIf="selectedDevice !== null"
+      [tabIndex]="-1"
       [device]="selectedDevice"></app-device-item>
     <mat-form-field
       [class.hidden]="selectedDevice === null"
       appearance="outline">
       <mat-label>Firmware</mat-label>
-      <input formControlName="firmware" matInput />
+      <input formControlName="firmware" matInput #firmwareInput />
       <mat-hint>Please enter device firmware</mat-hint>
       <mat-error *ngIf="firmware.errors?.['required']">
         <span>Firmware is <strong>required</strong></span>

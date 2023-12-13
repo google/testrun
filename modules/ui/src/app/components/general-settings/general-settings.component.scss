@@ -86,6 +86,10 @@
   }
 }
 
+:host:has(.two-ports-message) .internet-label {
+  padding-top: 16px;
+}
+
 .setting-label-description {
   font-family: $font-secondary;
   font-size: 14px;

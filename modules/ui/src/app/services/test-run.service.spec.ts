@@ -73,11 +73,6 @@ describe('TestRunService', () => {
         enabled: true,
       },
       {
-        displayName: 'DHCP',
-        name: 'dhcp',
-        enabled: true,
-      },
-      {
         displayName: 'DNS',
         name: 'dns',
         enabled: true,
@@ -132,6 +127,14 @@ describe('TestRunService', () => {
 
     service.systemConfig$.subscribe(data => {
       expect(data).toEqual(MOCK_SYSTEM_CONFIG);
+    });
+  });
+
+  it('setHasConnectionSetting should update the hasConnectionSetting$', () => {
+    service.setHasConnectionSetting(true);
+
+    service.hasConnectionSetting$.subscribe(data => {
+      expect(data).toEqual(true);
     });
   });
 
