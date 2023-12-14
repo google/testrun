@@ -380,8 +380,8 @@ class TLSUtil():
           tls_client_details += 'Completed handshake detected from server: '
           tls_client_details += result + '\n'
     else:
-      LOGGER.info('No client hello packets detected. Skipping')
-      tls_client_details = 'No client hello packets detected. Skipping'
+      LOGGER.info('No client hello packets detected')
+      tls_client_details = 'No client hello packets detected'
     return tls_client_valid, tls_client_details
 
   def is_ecdh_and_ecdsa(self, ciphers):
