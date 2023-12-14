@@ -43,6 +43,11 @@
   max-height: stretch;
 }
 
+.history-content-empty,
+.history-content-empty table {
+  height: 100%;
+}
+
 .history-content table {
   th {
     font-weight: 700;
@@ -87,7 +92,8 @@
   }
 }
 
-.results-content-empty {
+.results-content-empty,
+.results-content-filter-empty {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -124,4 +130,15 @@
 
 .hidden {
   display: none;
+}
+
+.results-content-empty-message-img {
+  width: 293px;
+  height: 154px;
+  background-image: url(/assets/icons/desktop.svg);
+}
+
+.results-content-filter-empty .results-content-empty-message-main {
+  line-height: 20px;
+  font-size: 14px;
 }

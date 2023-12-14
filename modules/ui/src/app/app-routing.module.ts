@@ -18,25 +18,25 @@ import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
-    path: 'runtime',
+    path: 'testrun',
     loadChildren: () =>
       import('./progress/progress.module').then(m => m.ProgressModule),
   },
   {
-    path: 'device-repository',
+    path: 'devices',
     loadChildren: () =>
       import('./device-repository/device-repository.module').then(
         m => m.DeviceRepositoryModule
       ),
   },
   {
-    path: 'results',
+    path: 'reports',
     loadChildren: () =>
       import('./history/history.module').then(m => m.HistoryModule),
   },
   {
     path: '',
-    redirectTo: 'device-repository',
+    redirectTo: 'devices',
     pathMatch: 'full',
   },
 ];

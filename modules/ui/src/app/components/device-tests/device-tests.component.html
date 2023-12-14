@@ -22,7 +22,7 @@ limitations under the License.
     <p
       *ngFor="let test of test_modules.controls; let i = index"
       [class.disabled]="disabled">
-      <mat-checkbox [formControlName]="i">
+      <mat-checkbox [formControlName]="i" [tabIndex]="disabled ? -1 : 0">
         {{ testModules[i].displayName }}
       </mat-checkbox>
     </p>

@@ -24,9 +24,14 @@ import { Device } from '../../model/device';
 })
 export class DeviceItemComponent {
   @Input() device!: Device;
+  @Input() tabIndex = 0;
   @Output() itemClicked = new EventEmitter<Device>();
 
   itemClick(): void {
     this.itemClicked.emit(this.device);
+  }
+
+  get label() {
+    return `${this.device.model} ${this.device.manufacturer} ${this.device.mac_addr}`;
   }
 }

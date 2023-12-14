@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import {
-  AfterViewInit,
   Component,
   ElementRef,
   OnDestroy,
@@ -42,7 +41,7 @@ import { DateRange, FilterName, Filters } from '../model/filters';
   templateUrl: './history.component.html',
   styleUrls: ['./history.component.scss'],
 })
-export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
+export class HistoryComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [
     'started',
     'duration',
@@ -66,7 +65,7 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
     dateRange: '',
   };
   private destroy$: Subject<boolean> = new Subject<boolean>();
-  @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild(MatSort, { static: false }) sort!: MatSort;
   dataLoaded = false;
   constructor(
     private testRunService: TestRunService,
@@ -99,12 +98,9 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
         };
         this.dataSource.filterPredicate = this.customFilterPredicate();
         this.dataSource.filter = JSON.stringify(this.filteredValues);
+        this.dataSource.sort = this.sort;
         this.dataLoaded = true;
       });
-  }
-
-  ngAfterViewInit() {
-    this.dataSource.sort = this.sort;
   }
 
   customFilterPredicate() {
@@ -194,7 +190,6 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
   getFormattedDateString(date: string | null) {
     return date ? this.datePipe.transform(date, 'd MMM y H:mm') : '';
   }
-
   sortData(sortState: Sort) {
     this.dataSource.sort = this.sort;
     if (sortState.direction) {

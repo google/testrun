@@ -28,7 +28,7 @@ import {
 } from '../model/testrun-status';
 import { Version } from '../model/version';
 
-const API_URL = `http://${window.location.hostname}:8000`;
+const API_URL = 'http://localhost:8000';
 
 @Injectable({
   providedIn: 'root',
@@ -43,11 +43,6 @@ export class TestRunService {
     {
       displayName: 'NTP',
       name: 'ntp',
-      enabled: true,
-    },
-    {
-      displayName: 'DHCP',
-      name: 'dhcp',
       enabled: true,
     },
     {
@@ -79,6 +74,10 @@ export class TestRunService {
   public systemConfig$ = this._systemConfig.asObservable();
   private systemStatusSubject = new ReplaySubject<TestrunStatus>(1);
   public systemStatus$ = this.systemStatusSubject.asObservable();
+  private isTestrunStartedSub$ = new BehaviorSubject<boolean>(false);
+  public isTestrunStarted$ = this.isTestrunStartedSub$.asObservable();
+  private hasConnectionSettingSub$ = new BehaviorSubject<boolean | null>(null);
+  public hasConnectionSetting$ = this.hasConnectionSettingSub$.asObservable();
   private history = new BehaviorSubject<TestrunStatus[] | null>(null);
   private version = new BehaviorSubject<Version | null>(null);
 
@@ -86,6 +85,10 @@ export class TestRunService {
 
   setIsOpenAddDevice(isOpen: boolean): void {
     this.isOpenAddDeviceSub$.next(isOpen);
+  }
+
+  setHasConnectionSetting(hasSetting: boolean): void {
+    this.hasConnectionSettingSub$.next(hasSetting);
   }
   getDevices(): BehaviorSubject<Device[] | null> {
     return this.devices;
@@ -232,6 +235,8 @@ export class TestRunService {
   }
 
   startTestrun(device: Device): Observable<boolean> {
+    this.isTestrunStartedSub$.next(true);
+
     return this.http
       .post<TestrunStatus>(
         `${API_URL}/system/start`,

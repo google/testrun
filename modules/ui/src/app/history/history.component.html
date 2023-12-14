@@ -16,10 +16,12 @@ limitations under the License.
 <ng-container *ngIf="dataLoaded">
   <ng-container *ngIf="this.dataSource?.data?.length; else empty">
     <mat-toolbar class="history-toolbar">
-      <h2 class="title">Results</h2>
+      <h2 class="title">Reports</h2>
     </mat-toolbar>
 
-    <div class="history-content">
+    <div
+      class="history-content"
+      [class.history-content-empty]="dataSource.filteredData.length === 0">
       <table
         (matSortChange)="sortData($event)"
         [dataSource]="dataSource"
@@ -159,6 +161,22 @@ limitations under the License.
           mat-header-row
           [class.hidden]="isFiltersEmpty()"></tr>
 
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+            <div class="results-content-filter-empty">
+              <ng-container
+                *ngTemplateOutlet="
+                  emptyMessage;
+                  context: {
+                    header:
+                      'Sorry, there are no reports matching the search criteria.',
+                    message: 'Please consider change or clear filters.'
+                  }
+                "></ng-container>
+            </div>
+          </td>
+        </tr>
+
         <tr *matRowDef="let row; columns: displayedColumns" mat-row></tr>
       </table>
     </div>
@@ -166,15 +184,15 @@ limitations under the License.
 </ng-container>
 <ng-template #empty>
   <div class="results-content-empty">
-    <div class="results-content-empty-message">
-      <span class="results-content-empty-message-header"
-        >Sorry, there are no reports yet!</span
-      >
-      <span class="results-content-empty-message-main"
-        >Reports will automatically generate following a test attempt
-        completion.</span
-      >
-    </div>
+    <ng-container
+      *ngTemplateOutlet="
+        emptyMessage;
+        context: {
+          header: 'Sorry, there are no reports yet!',
+          message:
+            'Reports will automatically generate following a test attempt completion.'
+        }
+      "></ng-container>
   </div>
 </ng-template>
 
@@ -192,4 +210,12 @@ limitations under the License.
       >filter_list</mat-icon
     >
   </button>
+</ng-template>
+
+<ng-template #emptyMessage let-header="header" let-message="message">
+  <div class="results-content-empty-message">
+    <div class="results-content-empty-message-img"></div>
+    <span class="results-content-empty-message-header">{{ header }}</span>
+    <span class="results-content-empty-message-main">{{ message }}</span>
+  </div>
 </ng-template>
