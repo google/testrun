@@ -111,7 +111,7 @@ class Api:
     for iface in addrs:
 
       # Ignore any interfaces that are not ethernet
-      if not iface.startswith("en"):
+      if not (iface.startswith("en") or iface.startswith("eth")):
         continue
 
       ifaces.append(iface)

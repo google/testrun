@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewChecked,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { TestRunService } from '../../services/test-run.service';
 import { Observable } from 'rxjs/internal/Observable';
@@ -25,13 +32,8 @@ import {
   FormGroup,
 } from '@angular/forms';
 import { DeviceValidators } from '../../device-repository/device-form/device.validators';
-import { StatusOfTestrun, TestrunStatus } from '../../model/testrun-status';
-import { tap } from 'rxjs/internal/operators/tap';
-import { interval } from 'rxjs/internal/observable/interval';
-import { takeUntil } from 'rxjs/internal/operators/takeUntil';
-import { Subject } from 'rxjs/internal/Subject';
-import { NotificationService } from '../../services/notification.service';
 import { EscapableDialogComponent } from '../../components/escapable-dialog/escapable-dialog.component';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-progress-initiate-form',
@@ -40,22 +42,22 @@ import { EscapableDialogComponent } from '../../components/escapable-dialog/esca
 })
 export class ProgressInitiateFormComponent
   extends EscapableDialogComponent
-  implements OnInit, OnDestroy
+  implements OnInit, AfterViewChecked
 {
+  @ViewChild('firmwareInput') firmwareInput!: ElementRef;
   initiateForm!: FormGroup;
   devices$!: Observable<Device[] | null>;
   selectedDevice: Device | null = null;
   testModules: TestModule[] = [];
-  public systemStatus$!: Observable<TestrunStatus>;
-  startInterval = false;
-  destroy$: Subject<boolean> = new Subject<boolean>();
+  prevDevice: Device | null = null;
+  setFirmwareFocus = false;
 
   constructor(
     public override dialogRef: MatDialogRef<ProgressInitiateFormComponent>,
     private readonly testRunService: TestRunService,
     private fb: FormBuilder,
     private deviceValidators: DeviceValidators,
-    private notificationService: NotificationService
+    private readonly changeDetectorRef: ChangeDetectorRef
   ) {
     super(dialogRef);
   }
@@ -68,44 +70,42 @@ export class ProgressInitiateFormComponent
     this.dialogRef.close();
   }
 
-  testRunStarted = false;
-
   ngOnInit() {
     this.devices$ = this.testRunService.getDevices();
     this.createInitiateForm();
     this.testModules = this.testRunService.getTestModules();
-
-    this.testRunService.systemStatus$
-      .pipe(
-        tap(res => {
-          if (this.testRunStarted) {
-            if (
-              res.status === StatusOfTestrun.WaitingForDevice &&
-              !this.startInterval
-            ) {
-              this.pullingSystemStatusData();
-              this.notify(res.status, 0);
-            }
-            if (res.status !== StatusOfTestrun.WaitingForDevice) {
-              this.dismiss();
-              this.destroy$.next(true);
-              this.startInterval = false;
-              this.dialogRef.close();
-            }
-          }
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe();
   }
 
   deviceSelected(device: Device) {
     this.selectedDevice = device;
+    this.prevDevice = device;
+    this.setFirmwareFocus = true;
   }
 
   changeDevice() {
     this.selectedDevice = null;
     this.firmware.setValue('');
+  }
+
+  ngAfterViewChecked() {
+    // When change device clicked, previously selected item should be focused
+    const item = window.document.querySelector(
+      '.device-item-focused button'
+    ) as HTMLButtonElement;
+    if (item) {
+      this.focusButton(item);
+      this.prevDevice = null;
+      this.changeDetectorRef.detectChanges();
+    }
+    if (this.setFirmwareFocus) {
+      this.firmwareInput?.nativeElement.focus();
+      this.setFirmwareFocus = false;
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  focusButton(button: HTMLButtonElement) {
+    button.focus();
   }
 
   startTestRun() {
@@ -123,16 +123,11 @@ export class ProgressInitiateFormComponent
       this.selectedDevice.firmware = this.firmware.value.trim();
       this.testRunService
         .startTestrun(this.selectedDevice)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(
-          () => {
-            this.testRunStarted = true;
-            this.testRunService.getSystemStatus();
-          },
-          () => {
-            this.startInterval = false;
-          }
-        );
+        .pipe(take(1))
+        .subscribe(() => {
+          this.testRunService.getSystemStatus();
+          this.cancel();
+        });
     }
   }
 
@@ -141,28 +136,5 @@ export class ProgressInitiateFormComponent
       firmware: ['', [this.deviceValidators.deviceStringFormat()]],
       test_modules: new FormArray([]),
     });
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next(true);
-    this.destroy$.unsubscribe();
-  }
-
-  private pullingSystemStatusData(): void {
-    this.startInterval = true;
-    interval(5000)
-      .pipe(
-        takeUntil(this.destroy$),
-        tap(() => this.testRunService.getSystemStatus())
-      )
-      .subscribe();
-  }
-
-  private notify(message: string, duration = 5000) {
-    this.notificationService.notify(message, duration);
-  }
-
-  private dismiss() {
-    this.notificationService.dismiss();
   }
 }

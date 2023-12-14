@@ -21,10 +21,10 @@ limitations under the License.
         *ngTemplateOutlet="
           navButtonRoute;
           context: {
-            route: '/runtime',
+            route: Routes.Testrun,
             svgIcon: 'testrun_logo_small',
             label: 'Testrun',
-            name: 'runtime'
+            name: 'testrun'
           }
         ">
       </ng-container>
@@ -32,10 +32,10 @@ limitations under the License.
         *ngTemplateOutlet="
           navButtonRoute;
           context: {
-            route: '/device-repository',
+            route: Routes.Devices,
             svgIcon: 'devices',
             label: 'Devices',
-            name: 'device-repository'
+            name: 'devices'
           }
         ">
       </ng-container>
@@ -43,10 +43,10 @@ limitations under the License.
         *ngTemplateOutlet="
           navButtonRoute;
           context: {
-            route: '/results',
+            route: Routes.Reports,
             svgIcon: 'reports',
             label: 'Reports',
-            name: 'results'
+            name: 'reports'
           }
         ">
       </ng-container>
@@ -64,7 +64,7 @@ limitations under the License.
         (keydown.tab)="skipToNavigation($event)">
         <mat-icon>menu</mat-icon>
       </button>
-      <a class="logo-link" routerLink="/runtime" aria-label="Test run ui logo">
+      <a class="logo-link" routerLink="/runtime" aria-label="Testrun ui logo">
         <mat-icon svgIcon="testrun_logo_color"></mat-icon>
         <h1 class="main-heading">Testrun</h1>
       </a>
@@ -81,8 +81,20 @@ limitations under the License.
     <div class="app-content-main" role="main" id="main">
       <app-callout
         [type]="CalloutType.Info"
-        *ngIf="!(devices$ | async)?.length && isDevicesLoaded">
-        Step 1: To perform a device test please
+        *ngIf="
+          (hasConnectionSetting$ | async) !== true && isConnectionSettingsLoaded
+        ">
+        Step 1: To perform a device test, please, select ports in Connection
+        settings.
+      </app-callout>
+      <app-callout
+        [type]="CalloutType.Info"
+        *ngIf="
+          (hasConnectionSetting$ | async) === true &&
+          !(devices$ | async)?.length &&
+          isDevicesLoaded
+        ">
+        Step 2: To perform a device test please
         <a
           (click)="navigateToDeviceRepository()"
           (keydown.enter)="navigateToDeviceRepository()"
@@ -97,12 +109,14 @@ limitations under the License.
       <app-callout
         [type]="CalloutType.Info"
         *ngIf="
+          (hasConnectionSetting$ | async) === true &&
           (devices$ | async)?.length &&
-          !(systemStatus$ | async)?.status &&
-          isStatusLoaded
+          (!(systemStatus$ | async)?.status ||
+            (systemStatus$ | async)?.status === StatusOfTestrun.Idle) &&
+          isStatusLoaded &&
+          (isTestrunStarted$ | async) === false
         ">
-        Step 2: Once device is created navigate to Testrun Runtime tab where you
-        can set up and
+        Step 3: Once device is created navigate to
         <a
           (click)="navigateToRuntime()"
           (keydown.enter)="navigateToRuntime()"
@@ -110,8 +124,9 @@ limitations under the License.
           tabindex="0"
           role="button"
           class="message-link"
-          >Run the Test</a
-        >.
+          >Testrun</a
+        >
+        tab.
       </app-callout>
       <router-outlet></router-outlet>
     </div>
