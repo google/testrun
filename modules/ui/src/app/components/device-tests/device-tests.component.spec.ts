@@ -46,11 +46,14 @@ describe('DeviceTestsComponent', () => {
     component.deviceForm = new FormBuilder().group({
       test_modules: new FormArray([]),
     });
-    fixture.detectChanges();
     compiled = fixture.nativeElement;
   });
 
   describe('component tests', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
     it('should create', () => {
       expect(component).toBeTruthy();
     });
@@ -79,6 +82,7 @@ describe('DeviceTestsComponent', () => {
 
   describe('DOM tests', () => {
     it('should have checkboxes', () => {
+      fixture.detectChanges();
       const test = compiled.querySelectorAll('mat-checkbox input');
       const testLabel = compiled.querySelectorAll('mat-checkbox label');
 
@@ -87,6 +91,22 @@ describe('DeviceTestsComponent', () => {
       expect((test[1] as HTMLInputElement).checked).toBeFalse();
       expect(testLabel[0].innerHTML.trim()).toEqual('Connection');
       expect(testLabel[1].innerHTML.trim()).toEqual('DNS');
+    });
+
+    it('should have tabindex -1 if disabled', () => {
+      component.disabled = true;
+      fixture.detectChanges();
+      const test = compiled.querySelectorAll('mat-checkbox input');
+
+      expect((test[0] as HTMLElement).tabIndex).toEqual(-1);
+    });
+
+    it('should have tabindex 0 if enabled', () => {
+      component.disabled = false;
+      fixture.detectChanges();
+      const test = compiled.querySelectorAll('mat-checkbox input');
+
+      expect((test[0] as HTMLElement).tabIndex).toEqual(0);
     });
   });
 });

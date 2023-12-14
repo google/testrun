@@ -89,6 +89,12 @@ export const MOCK_PROGRESS_DATA_CANCELLED: TestrunStatus =
 export const MOCK_PROGRESS_DATA_MONITORING: TestrunStatus =
   PROGRESS_DATA_RESPONSE(StatusOfTestrun.Monitoring, null, TEST_DATA);
 
+export const MOCK_PROGRESS_DATA_IDLE: TestrunStatus = PROGRESS_DATA_RESPONSE(
+  StatusOfTestrun.Idle,
+  null,
+  []
+);
+
 export const MOCK_PROGRESS_DATA_NOT_STARTED: TestrunStatus = {
   ...MOCK_PROGRESS_DATA_IN_PROGRESS,
   status: StatusOfTestrun.Idle,

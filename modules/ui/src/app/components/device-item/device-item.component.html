@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <button
+  [tabIndex]="tabIndex"
   (click)="itemClick()"
-  [attr.aria-label]="'Edit device ' + device.model"
+  [attr.aria-label]="label"
   class="device-item"
   type="button">
   <div [attr.aria-label]="device.model" class="item-name">
@@ -27,5 +28,5 @@ limitations under the License.
   <div [attr.aria-label]="device.mac_addr" class="item-mac-address">
     {{ device.mac_addr }}
   </div>
-  <div aria-label="Device icon" class="item-icon"></div>
+  <div class="item-icon"></div>
 </button>

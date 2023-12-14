@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 
 import { HistoryComponent } from './history.component';
 import { TestRunService } from '../services/test-run.service';
@@ -28,6 +28,7 @@ import { ElementRef } from '@angular/core';
 import { FilterName, ReportFilters } from '../model/filters';
 import SpyObj = jasmine.SpyObj;
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { MatSort } from '@angular/material/sort';
 
 const history = [
   {
@@ -83,10 +84,26 @@ describe('HistoryComponent', () => {
       expect(component).toBeTruthy();
     });
 
-    it('should set dataSource data', () => {
-      component.ngOnInit();
+    describe('ngOnInit', () => {
+      it('should set dataSource data', () => {
+        component.ngOnInit();
 
-      expect(component.dataSource.data).toBeTruthy();
+        expect(component.dataSource.data).toBeTruthy();
+      });
+
+      it('should update sort', fakeAsync(() => {
+        const sort = new MatSort();
+        component.sort = sort;
+        component.ngOnInit();
+
+        expect(component.dataSource.sort).toBeTruthy();
+      }));
+
+      it('should update filter', fakeAsync(() => {
+        component.ngOnInit();
+
+        expect(component.dataSource.filter).toBeTruthy();
+      }));
     });
 
     it('#sortData should call liveAnnouncer with sorted direction message', () => {
@@ -275,10 +292,25 @@ describe('HistoryComponent', () => {
         );
       });
 
-      it('should have filter ships', () => {
+      it('should have filter chips', () => {
         const chips = compiled.querySelector('app-filter-chips');
 
         expect(chips).toBeTruthy();
+      });
+
+      it('should have empty state when no data satisfy filters', () => {
+        component.dataSource.filter = JSON.stringify({
+          deviceInfo: 'some not existing data',
+          deviceFirmware: 'some not existing data',
+          results: [],
+          dateRange: '',
+        });
+        fixture.detectChanges();
+        const emptyMessage = compiled.querySelector(
+          '.results-content-filter-empty'
+        );
+
+        expect(emptyMessage).toBeTruthy();
       });
     });
   });

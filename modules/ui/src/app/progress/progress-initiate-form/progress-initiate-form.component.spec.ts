@@ -13,13 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  ComponentFixture,
-  discardPeriodicTasks,
-  fakeAsync,
-  TestBed,
-  tick,
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProgressInitiateFormComponent } from './progress-initiate-form.component';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -33,11 +27,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DeviceTestsComponent } from '../../components/device-tests/device-tests.component';
 import { device } from '../../mocks/device.mock';
 import { of } from 'rxjs';
-import {
-  MOCK_PROGRESS_DATA_IN_PROGRESS,
-  MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
-} from '../../mocks/progress.mock';
-import { NotificationService } from '../../services/notification.service';
+import { MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE } from '../../mocks/progress.mock';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 
 describe('ProgressInitiateFormComponent', () => {
@@ -45,7 +35,6 @@ describe('ProgressInitiateFormComponent', () => {
   let fixture: ComponentFixture<ProgressInitiateFormComponent>;
   let compiled: HTMLElement;
 
-  const notificationServiceMock = jasmine.createSpyObj(['notify', 'dismiss']);
   const testRunServiceMock = jasmine.createSpyObj([
     'getDevices',
     'fetchDevices',
@@ -78,7 +67,6 @@ describe('ProgressInitiateFormComponent', () => {
       declarations: [ProgressInitiateFormComponent],
       providers: [
         { provide: TestRunService, useValue: testRunServiceMock },
-        { provide: NotificationService, useValue: notificationServiceMock },
         {
           provide: MatDialogRef,
           useValue: {
@@ -104,54 +92,6 @@ describe('ProgressInitiateFormComponent', () => {
 
   afterEach(() => {
     testRunServiceMock.getSystemStatus.calls.reset();
-    notificationServiceMock.notify.calls.reset();
-  });
-
-  describe('when test run started', () => {
-    beforeEach(() => {
-      component.testRunStarted = true;
-    });
-    describe('with status "Waiting for device"', () => {
-      beforeEach(async () => {
-        testRunServiceMock.systemStatus$ = of(
-          MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
-        );
-      });
-
-      it('should call again getSystemStatus', fakeAsync(() => {
-        fixture.detectChanges();
-        tick(10000);
-
-        expect(testRunServiceMock.getSystemStatus).toHaveBeenCalledTimes(2);
-
-        discardPeriodicTasks();
-      }));
-
-      it('should notify about status', fakeAsync(() => {
-        fixture.detectChanges();
-
-        expect(notificationServiceMock.notify).toHaveBeenCalledWith(
-          'Waiting for Device',
-          0
-        );
-
-        discardPeriodicTasks();
-      }));
-    });
-
-    describe('with status not "Waiting for device"', () => {
-      beforeEach(async () => {
-        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
-      });
-
-      it('should call again getSystemStatus', fakeAsync(() => {
-        spyOn(component.dialogRef, 'close');
-        fixture.detectChanges();
-
-        expect(notificationServiceMock.dismiss).toHaveBeenCalledWith();
-        expect(component.dialogRef.close).toHaveBeenCalled();
-      }));
-    });
   });
 
   describe('Class tests', () => {
@@ -242,6 +182,41 @@ describe('ProgressInitiateFormComponent', () => {
         });
       });
     });
+
+    describe('#ngAfterViewChecked', () => {
+      it('should focus button with previously selected device', () => {
+        component.prevDevice = device;
+        const buttonSpy = spyOn(component, 'focusButton');
+        component.ngAfterViewChecked();
+        fixture.detectChanges();
+
+        expect(component.prevDevice).toBeNull();
+        expect(buttonSpy).toHaveBeenCalled();
+      });
+
+      it('should focus firmware', () => {
+        component.selectedDevice = device;
+        component.setFirmwareFocus = true;
+        const firmwareSpy = spyOn(
+          component.firmwareInput.nativeElement,
+          'focus'
+        );
+        component.ngAfterViewChecked();
+        fixture.detectChanges();
+
+        expect(firmwareSpy).toHaveBeenCalled();
+      });
+    });
+
+    it('should focus element on focusButton ', function () {
+      const deviceButton = compiled.querySelector(
+        'app-device-item button'
+      ) as HTMLButtonElement;
+      const buttonFocusSpy = spyOn(deviceButton, 'focus');
+      component.focusButton(deviceButton);
+
+      expect(buttonFocusSpy).toHaveBeenCalled();
+    });
   });
 
   describe('DOM tests', () => {
@@ -290,6 +265,12 @@ describe('ProgressInitiateFormComponent', () => {
         const deviceItem = compiled.querySelector('app-device-item');
 
         expect(deviceItem).toBeTruthy();
+      });
+
+      it('should have tabindex -1 for device item', () => {
+        const deviceItem = compiled.querySelector('app-device-item button');
+
+        expect((deviceItem as HTMLElement).tabIndex).toBe(-1);
       });
 
       it('should display firmware if device selected', () => {

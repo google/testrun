@@ -174,7 +174,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
                         max_device_reports=max_device_reports,
                         device_folder=device_folder)
 
-        # Load reports for this device
         self._load_test_reports(device)
 
         # Add device to device repository
@@ -194,6 +193,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
     # Check if reports folder exists (device may have no reports)
     if not os.path.exists(reports_folder):
       return
+
+    LOGGER.info(f'Loading reports from {reports_folder}')
 
     for report_folder in os.listdir(reports_folder):
       report_json_file_path = os.path.join(
@@ -394,6 +395,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
         return
 
       self.get_session().set_target_device(device)
+
+    self._set_status('In Progress')
 
     LOGGER.info(
         f'Discovered {device.manufacturer} {device.model} on the network. ' +

@@ -25,7 +25,10 @@ limitations under the License.
     mat-button
     *ngIf="version.update_available"
     class="version-content-update"
-    aria-label="click to open update window"
+    [attr.aria-label]="
+      version?.installed_version +
+      ' New version is available. Click here to update'
+    "
     (click)="openUpdateWindow()">
     {{ version?.installed_version }}
     <span

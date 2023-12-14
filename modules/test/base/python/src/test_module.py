@@ -102,6 +102,7 @@ class TestModule:
         LOGGER.debug(f'Test {test["name"]} is disabled')
 
       if result is not None:
+        # Compliant or non-compliant
         if isinstance(result, bool):
           test['result'] = 'Compliant' if result else 'Non-Compliant'
           test['description'] = 'No description was provided for this test'
