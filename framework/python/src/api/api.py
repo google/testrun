@@ -23,6 +23,7 @@ import psutil
 import requests
 import threading
 import uvicorn
+from urllib.parse import urlparse
 
 from common import logger
 from common.device import Device
@@ -100,7 +101,10 @@ class Api:
     LOGGER.info("API waiting for requests")
 
   def _start(self):
-    uvicorn.run(self._app, log_config=None, port=self._session.get_api_port())
+    uvicorn.run(self._app,
+                log_config=None,
+                host="0.0.0.0",
+                port=self._session.get_api_port())
 
   def stop(self):
     LOGGER.info("Stopping API")
@@ -262,9 +266,20 @@ class Api:
 
     return json_response
 
-  async def get_reports(self):
+  async def get_reports(self, request: Request):
     LOGGER.debug("Received reports list request")
-    return self._session.get_all_reports()
+    # Resolve the server IP from the request so we
+    # can fix the report URL
+    client_origin = request.headers.get("Origin")
+    parsed_url = urlparse(client_origin)
+    server_ip = parsed_url.hostname  # This will give you the IP address
+
+    reports = self._session.get_all_reports()
+    for report in reports:
+      # report URL is currently hard coded as localhost so we can
+      # replace that to fix the IP dynamically from the requester
+      report["report"] = report["report"].replace("localhost",server_ip)
+    return reports
 
   async def delete_report(self, request: Request, response: Response):
 
