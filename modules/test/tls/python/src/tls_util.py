@@ -382,7 +382,6 @@ class TLSUtil():
     else:
       LOGGER.info('No client hello packets detected')
       tls_client_details = 'No client hello packets detected'
-      return True, tls_client_details
     return tls_client_valid, tls_client_details
 
   def is_ecdh_and_ecdsa(self, ciphers):

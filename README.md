@@ -29,7 +29,7 @@ When manual testing or configuration changes are required, Testrun will provide 
  - Internet connection
 ### Software
 - Docker - installation guide: [https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
-### Device
+### Device under test (DUT)
  - DHCP client - The device must be able to obtain an IP address via DHCP
 
 ## Get started ▶️
