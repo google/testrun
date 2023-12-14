@@ -41,6 +41,8 @@ However, to achieve a compliant test outcome, your device must be configured cor
    - Testing data will be available in the ``local/devices/{device}/reports`` folders
    - Additional configuration options are available in the ``local/system.json`` file
 
+    **NOTE: Place your local CA certificate in local/root_certs (any name with a .crt extension) to perform TLS server tests**
+
 ## Start Testrun
 
 1. Attach network interfaces:
