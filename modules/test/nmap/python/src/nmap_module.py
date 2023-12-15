@@ -193,7 +193,8 @@ class NmapModule(TestModule):
     if len(open_ports) == 0:
       return True, "No telnet server found"
     else:
-      return False, f"Found telnet server running on port {', '.join(open_ports)}"
+      return (False,
+              f"Found telnet server running on port {', '.join(open_ports)}")
 
   def _security_services_smtp(self, config):
     LOGGER.info("Running security.services.smtp")
@@ -281,4 +282,5 @@ class NmapModule(TestModule):
           if config["version"] in open_port_info["version"]:
             return True, f"SSH server found running {open_port_info['version']}"
           else:
-            return False, f"SSH server found running {open_port_info['version']}"
+            return (False,
+                    f"SSH server found running {open_port_info['version']}")
