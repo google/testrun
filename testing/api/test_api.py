@@ -201,7 +201,7 @@ def get_network_interfaces():
   for i in path.iterdir():
     if not i.is_dir():
       continue
-    if i.stem.startswith("en"):
+    if i.stem.startswith("en") or i.stem.startswith("eth"):
       ifaces.append(i.stem)
   return ifaces
 

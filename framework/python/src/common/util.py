@@ -103,7 +103,6 @@ def get_module_display_name(search):
     'dns': 'DNS',
     'connection': 'Connection',
     'nmap': 'Services',
-    'security': 'Security',
     'tls': 'TLS'
   }
 
