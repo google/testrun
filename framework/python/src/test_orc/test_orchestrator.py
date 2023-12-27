@@ -173,7 +173,9 @@ class TestOrchestrator:
                      f"test {test_result['name']}")
         continue
       if (test_case.required_result.lower() == "required"
-          and test_result["result"].lower() != "compliant"):
+          and test_result["result"].lower() != "compliant"
+          and ("enabled" in test_result 
+          and not test_result["enabled"])):
         result = "Non-Compliant"
     return result
 

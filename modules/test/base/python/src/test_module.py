@@ -118,7 +118,10 @@ class TestModule:
           test['description'] = result[1]
       else:
         test['result'] = 'Skipped'
-        test['description'] = 'An error occured whilst running this test'
+        if 'enabled' in test and not test['enabled']:
+          test['description'] = 'Test disabled'
+        else:
+          test['description'] = 'An error occured whilst running this test'
 
       test['end'] = datetime.now().isoformat()
       duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(
