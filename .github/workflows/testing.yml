@@ -29,6 +29,7 @@ jobs:
         run: testing/baseline/test_baseline
     
   testrun_tests:
+    permissions: {}
     name:  Tests
     runs-on: ubuntu-20.04
     needs: testrun_baseline
@@ -60,6 +61,7 @@ jobs:
           path: runtime.tgz
 
   testrun_api:
+    permissions: {}
     name:  API
     runs-on: ubuntu-20.04
     timeout-minutes: 40
@@ -91,6 +93,7 @@ jobs:
           path: runtime.tgz
 
   pylint:
+    permissions: {}
     name:  Pylint
     runs-on: ubuntu-22.04
     timeout-minutes: 5
@@ -102,6 +105,7 @@ jobs:
         run: testing/pylint/test_pylint
 
   testrun_package:
+    permissions: {}
     name: Package
     runs-on: ubuntu-22.04
     timeout-minutes: 5
@@ -118,6 +122,7 @@ jobs:
           path: testrun*.deb
 
   testrun_ui:
+    permissions: {}
     name: UI
     runs-on: ubuntu-latest
     steps:
