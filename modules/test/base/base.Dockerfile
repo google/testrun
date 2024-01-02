@@ -22,7 +22,7 @@ ARG COMMON_DIR=framework/python/src/common
 RUN apt-get update
 
 # Install common software
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq net-tools iputils-ping tzdata tcpdump iproute2 jq python3 python3-pip dos2unix nmap --fix-missing
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq net-tools iputils-ping tzdata tcpdump iproute2 jq python3 python3-pip dos2unix nmap wget --fix-missing
 
 # Install common python modules
 COPY $COMMON_DIR/ /testrun/python/src/common
