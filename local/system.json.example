@@ -6,5 +6,12 @@
   "log_level": "INFO",
   "startup_timeout": 60,
   "monitor_period": 300,
-  "max_device_reports": 5
+  "max_device_reports": 5,
+  "switch": {
+    "host": "10.10.10.10",
+    "ssh_port": 22,
+    "username": "root",
+    "password": "Password123",
+    "device_intf": "eth1"
+  }
 }
