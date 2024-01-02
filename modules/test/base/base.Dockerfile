@@ -50,5 +50,8 @@ ARG CONTAINER_PROTO_DIR=testrun/python/src/grpc_server/proto
 COPY $NET_MODULE_DIR/dhcp-1/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/dhcp1/
 COPY $NET_MODULE_DIR/dhcp-2/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/dhcp2/
 
+# Update the oui.txt file from ieee
+RUN wget https://standards-oui.ieee.org/oui/oui.txt -P /usr/local/etc/
+
 # Start the test module
 ENTRYPOINT [ "/testrun/bin/start" ]
