@@ -13,26 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {MatProgressBarModule} from '@angular/material/progress-bar';
-import {MatTableModule} from '@angular/material/table';
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTableModule } from '@angular/material/table';
 
-import {ProgressRoutingModule} from './progress-routing.module';
-import {ProgressComponent} from './progress.component';
-import {ProgressBreadcrumbsComponent} from './progress-breadcrumbs/progress-breadcrumbs.component';
-import {ProgressStatusCardComponent} from './progress-status-card/progress-status-card.component';
-import {ProgressTableComponent} from './progress-table/progress-table.component';
-import {ProgressInitiateFormComponent} from './progress-initiate-form/progress-initiate-form.component';
-import {MatDialogModule} from '@angular/material/dialog';
-import {DeviceItemComponent} from '../components/device-item/device-item.component';
-import {MatInputModule} from '@angular/material/input';
-import {ReactiveFormsModule} from '@angular/forms';
-import {DeviceTestsComponent} from '../components/device-tests/device-tests.component';
-import {DownloadReportComponent} from '../components/download-report/download-report.component';
+import { ProgressRoutingModule } from './progress-routing.module';
+import { ProgressComponent } from './progress.component';
+import { ProgressBreadcrumbsComponent } from './progress-breadcrumbs/progress-breadcrumbs.component';
+import { ProgressStatusCardComponent } from './progress-status-card/progress-status-card.component';
+import { ProgressTableComponent } from './progress-table/progress-table.component';
+import { ProgressInitiateFormComponent } from './progress-initiate-form/progress-initiate-form.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { DeviceItemComponent } from '../components/device-item/device-item.component';
+import { MatInputModule } from '@angular/material/input';
+import { ReactiveFormsModule } from '@angular/forms';
+import { DeviceTestsComponent } from '../components/device-tests/device-tests.component';
+import { DownloadReportComponent } from '../components/download-report/download-report.component';
+import { SpinnerComponent } from '../components/spinner/spinner.component';
 
 @NgModule({
   declarations: [
@@ -40,7 +41,7 @@ import {DownloadReportComponent} from '../components/download-report/download-re
     ProgressBreadcrumbsComponent,
     ProgressStatusCardComponent,
     ProgressTableComponent,
-    ProgressInitiateFormComponent
+    ProgressInitiateFormComponent,
   ],
   imports: [
     CommonModule,
@@ -55,8 +56,8 @@ import {DownloadReportComponent} from '../components/download-report/download-re
     MatInputModule,
     ReactiveFormsModule,
     DeviceTestsComponent,
-    DownloadReportComponent
-  ]
+    DownloadReportComponent,
+    SpinnerComponent,
+  ],
 })
-export class ProgressModule {
-}
+export class ProgressModule {}

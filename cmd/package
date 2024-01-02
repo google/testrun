@@ -44,7 +44,7 @@ mkdir -p $MAKE_SRC_DIR/usr/local/testrun/local/devices
 
 # Copy root_certs folder
 mkdir -p local/root_certs
-cp -r local/root_certs $MAKE_SRC_DIR/usr/local/testrun/local/root_certs
+cp -r local/root_certs $MAKE_SRC_DIR/usr/local/testrun/local/
 
 # Copy framework and modules into testrun folder
 cp -r {framework,modules} $MAKE_SRC_DIR/usr/local/testrun
@@ -53,4 +53,4 @@ cp -r {framework,modules} $MAKE_SRC_DIR/usr/local/testrun
 dpkg-deb --build --root-owner-group make
 
 # Rename the .deb file
-mv make.deb testrun_1-0-3_amd64.deb
+mv make.deb testrun_1-1_amd64.deb

@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import "../../../theming/colors";
+@import '../../../theming/colors';
+@import '../../../theming/variables';
 
 :host {
   display: flex;
   flex-direction: column;
   height: 100%;
-}
-
-.setting-container-content {
   flex: 1 0 auto;
 }
 
@@ -38,6 +36,7 @@
     font-style: normal;
     font-weight: 400;
     line-height: 28px;
+    color: $dark-grey;
   }
 
   &-button {
@@ -58,14 +57,28 @@
 
 .setting-drawer-content {
   padding: 11px 16px 16px;
+  overflow: hidden;
+
+  form {
+    display: grid;
+    grid-template-rows: repeat(4, auto);
+    height: 100%;
+  }
 }
 
 .error-message-container {
   display: block;
+  margin-top: auto;
+  padding: 0 16px;
+}
+
+.error-message-container + .setting-drawer-footer {
+  margin-top: 0;
 }
 
 .setting-form-label {
   font-size: 18px;
+  color: $dark-grey;
 
   &.device-label {
     display: inline-block;
@@ -73,11 +86,25 @@
   }
 }
 
+:host:has(.two-ports-message) .internet-label {
+  padding-top: 16px;
+}
+
+.setting-label-description {
+  font-family: $font-secondary;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+  margin: 10px 0 0;
+  color: $dark-grey;
+}
+
 .setting-radio-group {
   display: flex;
   flex-direction: column;
   margin-left: -10px;
   align-items: flex-start;
+  overflow: scroll;
 }
 
 .setting-radio-button {
@@ -97,13 +124,25 @@
   }
 }
 
+.message {
+  margin: 0;
+  padding: 0 16px 16px;
+  color: $grey-800;
+  font-family: $font-secondary;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+}
+
 .setting-drawer-footer {
+  margin-top: auto;
   display: flex;
   flex-shrink: 0;
   justify-content: flex-end;
   padding: 16px 24px 8px 24px;
 
-  .close-button, .save-button {
+  .close-button,
+  .save-button {
     padding: 0 24px;
     font-size: 14px;
     font-weight: 500;

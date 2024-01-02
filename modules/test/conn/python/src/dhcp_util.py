@@ -21,6 +21,7 @@ import util
 LOG_NAME = 'dhcp_util'
 LOGGER = None
 
+
 class DHCPUtil():
   """Helper class for various tests concerning DHCP behavior"""
 
@@ -109,36 +110,77 @@ class DHCPUtil():
       return False
 
   def get_dhcp_server_status(self, dhcp_server_primary=True):
-    LOGGER.info('Checking DHCP server status')
+    server_name = 'primary' if dhcp_server_primary else 'secondary'
+    LOGGER.debug(f'Checking {server_name} DHCP server status')
     response = self.get_dhcp_client(dhcp_server_primary).get_status()
     if response.code == 200:
-      LOGGER.info('DHCP server status: ' + str(response.message))
+      LOGGER.debug(f'DHCP {server_name} server status: {response.message}')
       status = eval(response.message)  # pylint: disable=W0123
       return status['dhcpStatus']
     else:
       return False
 
-  def get_cur_lease(self, mac_address, dhcp_server_primary=True):
-    LOGGER.info('Checking current device lease')
-    response = self.get_dhcp_client(dhcp_server_primary).get_lease(mac_address)
-    if response.code == 200:
-      lease = eval(response.message)  # pylint: disable=W0123
-      if lease:  # Check if non-empty lease
-        return lease
-    else:
-      return None
+  def get_cur_lease(self, mac_address, timeout):
+    """
+      Retrieve the current lease for a given MAC address with retries.
 
-  def get_new_lease(self, mac_address, dhcp_server_primary=True):
+      Args:
+          mac_address (str): The MAC address of the client whose lease is being queried.
+          timeout (int): The maximum time (in seconds) to wait for a lease to be found.
+
+      Returns:
+          str or None: The lease information as a string if found, or None if no lease is found within the timeout.
+
+      Note:
+          This method will attempt to query both primary and secondary DHCP servers for the lease,
+          with a 5-second pause between retries until the `timeout` is reached.
+      """
+    LOGGER.info('Resolving current lease with max wait time of ' + str(timeout) + ' seconds')
+    start_time = time.time()
+
+    while True:
+      lease = self._get_cur_lease(mac_address)
+      if lease is not None or (time.time() - start_time) >= timeout:
+        return lease
+      time.sleep(5)
+
+  def _get_cur_lease(self, mac_address):
+    """
+    Retrieve the current lease for a given MAC address from both primary and secondary DHCP servers.
+
+    Args:
+        mac_address (str): The MAC address of the client whose lease is being queried.
+
+    Returns:
+        str or None: The lease information as a string if found, or None if no lease is found.
+    """
+    primary = False
+    lease = self._get_cur_lease_from_server(mac_address=mac_address,
+                                            dhcp_server_primary=True)
+    if lease is not None:
+      primary=True
+    else:
+      lease = self._get_cur_lease_from_server(mac_address=mac_address,
+                                              dhcp_server_primary=False)
+    if lease is not None:
+      lease['primary']=primary
+      log_msg = 'DHCP lease resolved from '
+      log_msg += 'primary' if lease['primary'] else 'secondary'
+      log_msg += ' server'
+      LOGGER.info(log_msg)
+      LOGGER.info('DHCP Lease resolved:\n' + str(lease))
+    return lease
+
+  def _get_cur_lease_from_server(self, mac_address, dhcp_server_primary=True):
     lease = None
-    for _ in range(5):
-      LOGGER.info('Checking for new lease')
-      if lease is None:
-        lease = self.get_cur_lease(mac_address,dhcp_server_primary)
-        LOGGER.info('New lease found: ' + str(lease))
-        break
-      else:
-        LOGGER.info('New lease not found. Waiting to check again')
-        time.sleep(5)
+    # Check if the server is online first, old lease files can still return
+    # lease information that is no longer valid when a dhcp server is shutdown
+    if self.get_dhcp_server_status(dhcp_server_primary):
+      response = self.get_dhcp_client(dhcp_server_primary).get_lease(mac_address)
+      if response.code == 200:
+        lease_resp = eval(response.message)  # pylint: disable=W0123
+        if lease_resp:  # Check if non-empty lease
+          lease = lease_resp
     return lease
 
   def is_lease_active(self, lease):

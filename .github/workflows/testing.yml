@@ -31,7 +31,7 @@ jobs:
     name:  Tests
     runs-on: ubuntu-20.04
     needs: testrun_baseline
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - name: Checkout source
         uses: actions/checkout@v2.3.4
@@ -44,13 +44,12 @@ jobs:
       - name: Install Testrun
         shell: bash {0}
         run: sudo dpkg -i testrun*.deb
-        timeout-minutes: 10
       - name: Run tests
         shell: bash {0}
         run: testing/tests/test_tests
       - name: Archive runtime results
         if: ${{ always() }}
-        run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/ /usr/local/testrun/local/
+        run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/
       - name: Upload runtime results
         uses: actions/upload-artifact@v3
         if: ${{ always() }}
@@ -69,16 +68,26 @@ jobs:
       - name: Install dependencies
         shell: bash {0}
         run: cmd/prepare
-      - name: Package Testrun
+      - name: Package Testrun  
         shell: bash {0}
         run: cmd/package
       - name: Install Testrun
         shell: bash {0}
         run: sudo dpkg -i testrun*.deb
-        timeout-minutes: 10
+        timeout-minutes: 30
       - name: Run tests
         shell: bash {0}
         run: testing/api/test_api
+      - name: Archive runtime results
+        if: ${{ always() }}
+        run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/ /usr/local/testrun/local/
+      - name: Upload runtime results
+        uses: actions/upload-artifact@v3
+        if: ${{ always() }}
+        with:
+          if-no-files-found: error
+          name: runtime_${{ github.workflow }}_${{ github.run_id }}
+          path: runtime.tgz
 
   pylint:
     name:  Pylint
@@ -106,3 +115,25 @@ jobs:
         with:
           name: Testrun Installer
           path: testrun*.deb
+
+  testrun_ui:
+    name: UI
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.10.0
+    - name: Install Chromium Browser
+      run: sudo apt install chromium-browser
+    - name: Install dependencies
+      run: npm install && npm ci
+      working-directory: ./modules/ui
+    - name: Run tests
+      run: |
+        export CHROME_BIN=/usr/bin/chromium-browser
+        CI=true npm run test-headless
+      env:
+        CI: true
+      working-directory: ./modules/ui

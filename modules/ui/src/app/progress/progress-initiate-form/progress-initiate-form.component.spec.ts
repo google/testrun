@@ -13,46 +13,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {ProgressInitiateFormComponent} from './progress-initiate-form.component';
-import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {TestRunService} from '../../test-run.service';
-import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
-import {Device} from '../../model/device';
-import {DeviceItemComponent} from '../../components/device-item/device-item.component';
-import {ReactiveFormsModule} from '@angular/forms';
-import {MatInputModule} from '@angular/material/input';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {DeviceTestsComponent} from '../../components/device-tests/device-tests.component';
-import {device} from '../../mocks/device.mock';
-import {of} from 'rxjs';
-import {MOCK_PROGRESS_DATA_IN_PROGRESS, MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE} from '../../mocks/progress.mock';
-import {throwError} from 'rxjs/internal/observable/throwError';
-import {NotificationService} from '../../notification.service';
+import { ProgressInitiateFormComponent } from './progress-initiate-form.component';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { TestRunService } from '../../services/test-run.service';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { Device } from '../../model/device';
+import { DeviceItemComponent } from '../../components/device-item/device-item.component';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { DeviceTestsComponent } from '../../components/device-tests/device-tests.component';
+import { device } from '../../mocks/device.mock';
+import { of } from 'rxjs';
+import { MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE } from '../../mocks/progress.mock';
+import { SpinnerComponent } from '../../components/spinner/spinner.component';
 
 describe('ProgressInitiateFormComponent', () => {
   let component: ProgressInitiateFormComponent;
   let fixture: ComponentFixture<ProgressInitiateFormComponent>;
   let compiled: HTMLElement;
-  let testRunServiceMock: jasmine.SpyObj<TestRunService>;
-  let notificationServiceMock: jasmine.SpyObj<NotificationService>;
 
-  notificationServiceMock = jasmine.createSpyObj(['notify']);
-  testRunServiceMock = jasmine.createSpyObj(['getDevices', 'fetchDevices', 'getTestModules', 'startTestrun', 'systemStatus$', 'getSystemStatus']);
+  const testRunServiceMock = jasmine.createSpyObj([
+    'getDevices',
+    'fetchDevices',
+    'getTestModules',
+    'startTestrun',
+    'systemStatus$',
+    'getSystemStatus',
+    'fetchVersion',
+  ]);
   testRunServiceMock.getTestModules.and.returnValue([
     {
-      displayName: "Connection",
-      name: "connection",
-      enabled: true
+      displayName: 'Connection',
+      name: 'connection',
+      enabled: true,
     },
     {
-      displayName: "DNS",
-      name: "dns",
-      enabled: false
+      displayName: 'DNS',
+      name: 'dns',
+      enabled: false,
     },
   ]);
-  testRunServiceMock.getDevices.and.returnValue(new BehaviorSubject<Device[] | null>([device, device]));
+  testRunServiceMock.getDevices.and.returnValue(
+    new BehaviorSubject<Device[] | null>([device, device])
+  );
   testRunServiceMock.startTestrun.and.returnValue(of(true));
   testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE);
 
@@ -60,15 +66,15 @@ describe('ProgressInitiateFormComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ProgressInitiateFormComponent],
       providers: [
-        {provide: TestRunService, useValue: testRunServiceMock},
-        {provide: NotificationService, useValue: notificationServiceMock},
+        { provide: TestRunService, useValue: testRunServiceMock },
         {
           provide: MatDialogRef,
           useValue: {
-            close: () => {
-            }
-          }
-        }],
+            keydownEvents: () => of(new KeyboardEvent('keydown', { code: '' })),
+            close: () => ({}),
+          },
+        },
+      ],
       imports: [
         MatDialogModule,
         DeviceItemComponent,
@@ -76,7 +82,8 @@ describe('ProgressInitiateFormComponent', () => {
         MatInputModule,
         BrowserAnimationsModule,
         DeviceTestsComponent,
-      ]
+        SpinnerComponent,
+      ],
     });
     fixture = TestBed.createComponent(ProgressInitiateFormComponent);
     component = fixture.componentInstance;
@@ -85,49 +92,6 @@ describe('ProgressInitiateFormComponent', () => {
 
   afterEach(() => {
     testRunServiceMock.getSystemStatus.calls.reset();
-    notificationServiceMock.notify.calls.reset();
-  });
-
-  describe('when test run started', () => {
-    beforeEach(() => {
-      component.testRunStarted = true;
-    });
-    describe('with status "Waiting for device"', () => {
-      beforeEach(async () => {
-        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE);
-      });
-
-      it('should call again getSystemStatus', fakeAsync(() => {
-        fixture.detectChanges();
-        tick(10000);
-
-        expect(testRunServiceMock.getSystemStatus).toHaveBeenCalledTimes(2);
-
-        discardPeriodicTasks();
-      }));
-
-      it('should notify about status', fakeAsync(() => {
-        fixture.detectChanges();
-
-        expect(notificationServiceMock.notify).toHaveBeenCalledWith('Waiting for Device');
-
-        discardPeriodicTasks();
-      }));
-
-    });
-
-    describe('with status not "Waiting for device"', () => {
-      beforeEach(async () => {
-        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
-      });
-
-      it('should call again getSystemStatus', fakeAsync(() => {
-        spyOn(component.dialogRef, 'close');
-        fixture.detectChanges();
-
-        expect(component.dialogRef.close).toHaveBeenCalled();
-      }));
-    })
   });
 
   describe('Class tests', () => {
@@ -149,12 +113,12 @@ describe('ProgressInitiateFormComponent', () => {
       component.ngOnInit();
 
       component.devices$.subscribe(res => {
-        expect(res).toEqual([device, device])
-      })
+        expect(res).toEqual([device, device]);
+      });
     });
 
     it('should update selectedDevice on deviceSelected', () => {
-      const newDevice = Object.assign({}, device, {manufacturer: 'Gamma'})
+      const newDevice = Object.assign({}, device, { manufacturer: 'Gamma' });
       component.deviceSelected(newDevice);
 
       expect(component.selectedDevice).toEqual(newDevice);
@@ -173,7 +137,11 @@ describe('ProgressInitiateFormComponent', () => {
         component.startTestRun();
 
         expect(component.firmware.errors).toBeTruthy();
-        expect(component.firmware.errors ? component.firmware.errors['required'] : false).toEqual(true);
+        expect(
+          component.firmware.errors
+            ? component.firmware.errors['required']
+            : false
+        ).toEqual(true);
       });
 
       describe('when selectedDevice is present and firmware is filled', () => {
@@ -186,16 +154,22 @@ describe('ProgressInitiateFormComponent', () => {
           component.startTestRun();
 
           expect(testRunServiceMock.startTestrun).toHaveBeenCalledWith({
-            "manufacturer": "Delta",
-            "model": "O3-DIN-CPU",
-            "mac_addr": "00:1e:42:35:73:c4",
-            "firmware": "firmware",
-            "test_modules": {
-              "dns": {
-                "enabled": true,
-              }
-            }
+            manufacturer: 'Delta',
+            model: 'O3-DIN-CPU',
+            mac_addr: '00:1e:42:35:73:c4',
+            firmware: 'firmware',
+            test_modules: {
+              dns: {
+                enabled: true,
+              },
+            },
           });
+        });
+
+        it('should call fetchVersion', () => {
+          component.startTestRun();
+
+          expect(testRunServiceMock.fetchVersion).toHaveBeenCalled();
         });
 
         describe('when result is success', () => {
@@ -205,20 +179,43 @@ describe('ProgressInitiateFormComponent', () => {
 
             expect(testRunServiceMock.getSystemStatus).toHaveBeenCalled();
           });
-        })
+        });
+      });
+    });
 
-        describe('when error happened', () => {
-          it('should notify about error', () => {
-            testRunServiceMock.startTestrun.and.returnValue(throwError('error'));
+    describe('#ngAfterViewChecked', () => {
+      it('should focus button with previously selected device', () => {
+        component.prevDevice = device;
+        const buttonSpy = spyOn(component, 'focusButton');
+        component.ngAfterViewChecked();
+        fixture.detectChanges();
 
-            component.startTestRun();
+        expect(component.prevDevice).toBeNull();
+        expect(buttonSpy).toHaveBeenCalled();
+      });
 
-            expect(component.startInterval).toEqual(false);
-            expect(notificationServiceMock.notify).toHaveBeenCalledWith('error');
-          });
-        })
+      it('should focus firmware', () => {
+        component.selectedDevice = device;
+        component.setFirmwareFocus = true;
+        const firmwareSpy = spyOn(
+          component.firmwareInput.nativeElement,
+          'focus'
+        );
+        component.ngAfterViewChecked();
+        fixture.detectChanges();
 
-      })
+        expect(firmwareSpy).toHaveBeenCalled();
+      });
+    });
+
+    it('should focus element on focusButton ', function () {
+      const deviceButton = compiled.querySelector(
+        'app-device-item button'
+      ) as HTMLButtonElement;
+      const buttonFocusSpy = spyOn(deviceButton, 'focus');
+      component.focusButton(deviceButton);
+
+      expect(buttonFocusSpy).toHaveBeenCalled();
     });
   });
 
@@ -237,20 +234,26 @@ describe('ProgressInitiateFormComponent', () => {
 
       it('should select device on device click', () => {
         spyOn(component, 'deviceSelected');
-        const deviceList = compiled.querySelector('app-device-item button') as HTMLButtonElement;
+        const deviceList = compiled.querySelector(
+          'app-device-item button'
+        ) as HTMLButtonElement;
         deviceList.click();
 
         expect(component.deviceSelected).toHaveBeenCalled();
       });
 
       it('should disable change device and start buttons', () => {
-        const changeDevice = compiled.querySelector('.progress-initiate-form-actions-change-device') as HTMLButtonElement;
-        const start = compiled.querySelector('.progress-initiate-form-actions-start') as HTMLButtonElement;
+        const changeDevice = compiled.querySelector(
+          '.progress-initiate-form-actions-change-device'
+        ) as HTMLButtonElement;
+        const start = compiled.querySelector(
+          '.progress-initiate-form-actions-start'
+        ) as HTMLButtonElement;
 
         expect(changeDevice.disabled).toEqual(true);
         expect(start.disabled).toEqual(true);
       });
-    })
+    });
 
     describe('with device', () => {
       beforeEach(() => {
@@ -264,6 +267,12 @@ describe('ProgressInitiateFormComponent', () => {
         expect(deviceItem).toBeTruthy();
       });
 
+      it('should have tabindex -1 for device item', () => {
+        const deviceItem = compiled.querySelector('app-device-item button');
+
+        expect((deviceItem as HTMLElement).tabIndex).toBe(-1);
+      });
+
       it('should display firmware if device selected', () => {
         const firmware = compiled.querySelector('input');
 
@@ -271,17 +280,19 @@ describe('ProgressInitiateFormComponent', () => {
       });
 
       it('should display tests if device selected', () => {
-        const testsForm = compiled.querySelector('app-device-tests form');
-        const tests = compiled.querySelectorAll('app-device-tests mat-checkbox');
+        const testsForm = compiled.querySelector('.device-form-test-modules');
+        const tests = compiled.querySelectorAll('.device-form-test-modules p');
 
         expect(testsForm).toBeTruthy();
-        expect(testsForm?.classList.contains('disabled')).toEqual(true);
+        expect(tests[0].classList.contains('disabled')).toEqual(true);
         expect(tests.length).toEqual(2);
       });
 
       it('should change device on change device button click', () => {
         spyOn(component, 'changeDevice');
-        const button = compiled.querySelector('.progress-initiate-form-actions-change-device') as HTMLButtonElement;
+        const button = compiled.querySelector(
+          '.progress-initiate-form-actions-change-device'
+        ) as HTMLButtonElement;
         button.click();
 
         expect(component.changeDevice).toHaveBeenCalled();
@@ -289,12 +300,19 @@ describe('ProgressInitiateFormComponent', () => {
 
       it('should start test run on start button click', () => {
         spyOn(component, 'startTestRun');
-        const button = compiled.querySelector('.progress-initiate-form-actions-start') as HTMLButtonElement;
+        const button = compiled.querySelector(
+          '.progress-initiate-form-actions-start'
+        ) as HTMLButtonElement;
         button.click();
 
         expect(component.startTestRun).toHaveBeenCalled();
       });
+    });
 
+    it('should has loader element', () => {
+      const spinner = compiled.querySelector('app-spinner');
+
+      expect(spinner).toBeTruthy();
     });
   });
 });

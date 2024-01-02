@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 export interface SystemConfig {
-  network: {
+  network?: {
     device_intf?: string;
     internet_intf?: string;
-  }
+  };
 }

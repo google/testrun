@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Device} from './device';
+import { Device } from './device';
 
 export interface TestrunStatus {
   status: string;
@@ -24,12 +24,18 @@ export interface TestrunStatus {
   report?: string;
 }
 
+export interface HistoryTestrun extends TestrunStatus {
+  deviceFirmware: string;
+  deviceInfo: string;
+  duration: string;
+}
+
 export interface TestsData {
   total?: number;
   results?: IResult[];
 }
 
-type TestsResponse = TestsData | IResult[];
+export type TestsResponse = TestsData | IResult[];
 
 export interface IDevice extends Device {
   firmware: string;
@@ -45,11 +51,13 @@ export enum StatusOfTestrun {
   InProgress = 'In Progress',
   WaitingForDevice = 'Waiting for Device',
   Cancelled = 'Cancelled',
+  Cancelling = 'Cancelling',
   Failed = 'Failed',
   Compliant = 'Compliant', // used for Completed
   NonCompliant = 'Non-Compliant', // used for Completed
   SmartReady = 'Smart Ready', // used for Completed
-  Idle = 'Idle'
+  Idle = 'Idle',
+  Monitoring = 'Monitoring',
 }
 
 export enum StatusOfTestResult {
@@ -59,17 +67,17 @@ export enum StatusOfTestResult {
   Skipped = 'Skipped',
   NotStarted = 'Not Started',
   Error = 'Error', // test failed to run
-  Info = 'Informational' // nice to know information, not necessarily compliant/non-compliant
+  Info = 'Informational', // nice to know information, not necessarily compliant/non-compliant
 }
 
 export interface StatusResultClassName {
-  green: boolean,
-  red: boolean,
-  blue: boolean,
-  grey: boolean
+  green: boolean;
+  red: boolean;
+  blue: boolean;
+  grey: boolean;
 }
 
 export type TestrunStatusKey = keyof typeof StatusOfTestrun;
-export type TestrunStatusValue = typeof StatusOfTestrun[TestrunStatusKey];
+export type TestrunStatusValue = (typeof StatusOfTestrun)[TestrunStatusKey];
 export type TestResultKey = keyof typeof StatusOfTestResult;
-export type TestResultValue = typeof StatusOfTestResult[TestResultKey];
+export type TestResultValue = (typeof StatusOfTestResult)[TestResultKey];

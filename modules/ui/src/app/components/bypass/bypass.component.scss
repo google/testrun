@@ -1,0 +1,43 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+:host {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  z-index: 10;
+  width: 100%;
+}
+.navigation-bypass-container {
+  margin: 0 auto 16px;
+  box-shadow:
+    0 3px 4px 0 rgb(0 0 0 / 14%),
+    0 3px 3px -2px rgb(0 0 0 / 12%),
+    0 1px 8px 0 rgb(0 0 0 / 20%);
+  background-color: white;
+  padding: 0 16px;
+  overflow: hidden;
+  display: flex;
+  &:focus-within .navigation-bypass-button {
+    max-height: 64px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+}
+
+.navigation-bypass-button {
+  max-height: 0;
+}

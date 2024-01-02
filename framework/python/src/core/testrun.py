@@ -23,8 +23,9 @@ E.g sudo cmd/start
 import docker
 import json
 import os
-import sys
+import shutil
 import signal
+import sys
 import time
 from common import logger, util
 from common.device import Device
@@ -104,7 +105,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     if self._no_ui:
 
-      # Check Test Run is able to start
+      # Check Testrun is able to start
       if self.get_net_orc().check_config() is False:
         return
 
@@ -128,7 +129,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._session.clear_device_repository()
     self._load_devices(device_dir=LOCAL_DEVICES_DIR)
 
-    # Temporarily removing loading of template device 
+    # Temporarily removing loading of template device
     # configs (feature not required yet)
     # self._load_devices(device_dir=RESOURCE_DEVICES_DIR)
     return self.get_session().get_device_repository()
@@ -146,7 +147,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
       # Check if device config file exists before loading
       if not os.path.exists(device_config_file_path):
-        LOGGER.error(f'Device configuration file missing from device {device_folder}')
+        LOGGER.error('Device configuration file missing ' +
+                     f'from device {device_folder}')
         continue
 
       # Open device config file
@@ -181,6 +183,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def _load_test_reports(self, device):
 
+    LOGGER.debug(f'Loading test reports for device {device.model}')
+
     # Locate reports folder
     reports_folder = os.path.join(root_dir,
                                   LOCAL_DEVICES_DIR,
@@ -208,6 +212,27 @@ class TestRun:  # pylint: disable=too-few-public-methods
         test_report = TestReport()
         test_report.from_json(report_json)
         device.add_report(test_report)
+
+  def delete_report(self, device: Device, timestamp):
+    LOGGER.debug(f'Deleting test report for device {device.model} ' +
+                 f'at {timestamp}')
+
+    # Locate reports folder
+    reports_folder = os.path.join(root_dir,
+                                  LOCAL_DEVICES_DIR,
+                                  device.device_folder, 'reports')
+
+    # Check if reports folder exists (device may have no reports)
+    if not os.path.exists(reports_folder):
+      return False
+
+    for report_folder in os.listdir(reports_folder):
+      if report_folder == timestamp:
+        shutil.rmtree(os.path.join(reports_folder, report_folder))
+        device.remove_report(timestamp)
+        return True
+
+    return False
 
   def create_device(self, device: Device):
 
@@ -256,6 +281,19 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     return device.to_config_json()
 
+  def delete_device(self, device: Device):
+
+    # Obtain the config file path
+    device_folder = os.path.join(root_dir,
+                                  LOCAL_DEVICES_DIR,
+                                  device.device_folder)
+
+    # Delete the device directory
+    shutil.rmtree(device_folder)
+
+    # Remove the device from the current session device repository
+    self.get_session().remove_device(device)
+
   def start(self):
 
     self.get_session().start()
@@ -279,21 +317,21 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     self.get_net_orc().start_listener()
     LOGGER.info('Waiting for devices on the network...')
-    self._set_status('Waiting for Device')
 
     # Keep application running until stopped
     while True:
       time.sleep(5)
 
-  def stop(self, kill=False):
+  def stop(self):
 
     # Prevent discovering new devices whilst stopping
     if self.get_net_orc().get_listener() is not None:
       self.get_net_orc().get_listener().stop_listener()
 
+    self.get_session().set_status('Stopping')
+
     self._stop_tests()
-    self._stop_network(kill=kill)
-    self._stop_ui()
+    self._stop_network(kill=True)
     self.get_session().set_status('Cancelled')
 
   def _register_exits(self):
@@ -306,7 +344,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
     LOGGER.debug('Exit signal received: ' + str(signum))
     if signum in (2, signal.SIGTERM):
       LOGGER.info('Exit signal received.')
-      self.stop(kill=True)
+      self.stop()
+      self._stop_ui()
       sys.exit(1)
 
   def _get_config_abs(self, config_file=None):
@@ -326,11 +365,11 @@ class TestRun:  # pylint: disable=too-few-public-methods
   def _start_network(self):
     # Start the network orchestrator
     if not self.get_net_orc().start():
-      self.stop(kill=True)
+      self.stop()
       sys.exit(1)
 
-  def _stop_network(self, kill=False):
-    self.get_net_orc().stop(kill=kill)
+  def _stop_network(self, kill=True):
+    self.get_net_orc().stop(kill)
 
   def _stop_tests(self):
     self._test_orc.stop()
@@ -364,9 +403,18 @@ class TestRun:  # pylint: disable=too-few-public-methods
         'Waiting for device to obtain IP')
 
   def _device_stable(self, mac_addr):
+
+    # Do not continue testing if Testrun has cancelled during monitor phase
+    if self.get_session().get_status() == 'Cancelled':
+      return
+
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
+    self._set_status('In Progress')
     result = self._test_orc.run_test_modules()
-    self._set_status(result)
+
+    if result is not None:
+      self._set_status(result)
+    self._stop_network()
 
   def get_session(self):
     return self._session
@@ -397,6 +445,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     LOGGER.info('User interface is ready on http://localhost:8080')
 
   def _stop_ui(self):
+    LOGGER.info('Stopping user interface')
     client = docker.from_env()
     try:
       container = client.containers.get('tr-ui')

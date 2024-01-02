@@ -17,6 +17,7 @@
 from datetime import datetime
 from weasyprint import HTML
 from io import BytesIO
+from common import util
 import base64
 import os
 
@@ -93,6 +94,9 @@ class TestReport():
 
     if 'firmware' in json_file['device']:
       self._device['firmware'] = json_file['device']['firmware']
+
+    if 'test_modules' in json_file['device']:
+      self._device['test_modules'] = json_file['device']['test_modules']
 
     self._status = json_file['status']
     self._started = datetime.strptime(json_file['started'], DATE_TIME_FORMAT)
@@ -178,8 +182,7 @@ class TestReport():
 
   def generate_page(self, json_data, page_num, max_page):
     # Placeholder until available in json report
-
-    version = 'v1.0.3 (2023-11-14)'
+    version = 'v1.1 (2023-12-15)'
     page = '<div class="page">'
     page += self.generate_header(json_data)
     if page_num == 1:
@@ -191,7 +194,7 @@ class TestReport():
       page += '<div style="break-after:page"></div>'
     return page
 
-  def generate_body(self, json_data, page_num=1, max_page=1):
+  def generate_body(self, json_data):
     return f'''
     <body>
       {self.generate_pages(json_data)}
@@ -269,11 +272,15 @@ class TestReport():
       <div class="summary-vertical-line"></div>
      '''
     # Add the device information
-    manufacturer = json_data['device']['manufacturer'] if 'manufacturer' in json_data['device']  else 'Undefined'
-    model = json_data['device']['model'] if 'model' in json_data['device']  else 'Undefined'
-    fw = json_data['device']['firmware'] if 'firmware' in json_data['device']  else 'Undefined'
-    mac = json_data['device']['mac_addr'] if 'mac_addr' in json_data['device']  else 'Undefined'
-    
+    manufacturer = (json_data['device']['manufacturer']
+                    if 'manufacturer' in json_data['device'] else 'Undefined')
+    model = (json_data['device']['model']
+             if 'model' in json_data['device'] else 'Undefined')
+    fw = (json_data['device']['firmware']
+          if 'firmware' in json_data['device'] else 'Undefined')
+    mac = (json_data['device']['mac_addr']
+           if 'mac_addr' in json_data['device'] else 'Undefined')
+
     summary += self.generate_device_summary_label('Manufacturer',manufacturer)
     summary += self.generate_device_summary_label('Model',model)
     summary += self.generate_device_summary_label('Firmware',fw)
@@ -282,20 +289,66 @@ class TestReport():
       mac,
       trailing_space=False)
 
+    # Add device configuration
+    summary += '''
+    <div class="summary-device-modules">
+      <div class="summary-item-label" style="margin-bottom:10px;">
+        Device Configuration
+      </div>
+    '''
+
+    if 'test_modules' in json_data['device']:
+
+      sorted_modules = {}
+
+      for test_module in json_data['device']['test_modules']:
+        if 'enabled' in json_data['device']['test_modules'][test_module]:
+          sorted_modules[test_module] = json_data['device']['test_modules'][
+            test_module]['enabled']
+
+      # Sort the modules by enabled first
+      sorted_modules = sorted(sorted_modules.items(),
+                              key=lambda x:x[1],
+                              reverse=True)
+
+      for module in sorted_modules:
+        summary += self.generate_device_module_label(
+          module[0],
+          module[1]
+        )
+
+    summary += '</div>'
+
     # Add the result summary
     summary += self.generate_result_summary(json_data)
 
     summary += '\n</div>'
     return summary
 
+  def generate_device_module_label(self, module, enabled):
+    label = '<div class="summary-device-module-label">'
+    if enabled:
+      label += '<span style="color:#34a853">✔ </span>'
+    else:
+      label += '<span style="color:#ea4335">✖ </span>'
+    label += util.get_module_display_name(module)
+    label += '</div>'
+    return label
+
   def generate_result_summary(self,json_data):
     if json_data['status'] == 'Compliant':
-      result_summary = '''<div class ="summary-color-box summary-box-compliant">'''
+      result_summary = '''<div class ="summary-color-box
+      summary-box-compliant">'''
     else:
-      result_summary = '''<div class ="summary-color-box summary-box-non-compliant">'''
-    result_summary += self.generate_result_summary_item('Test status', 'Complete')
-    result_summary += self.generate_result_summary_item('Test result', json_data['status'], style='color: white; font-size:24px; font-weight: 700;')
-    result_summary += self.generate_result_summary_item('Started', json_data['started'])
+      result_summary = '''<div class ="summary-color-box
+      summary-box-non-compliant">'''
+    result_summary += self.generate_result_summary_item('Test status',
+                                                        'Complete')
+    result_summary += self.generate_result_summary_item(
+      'Test result',json_data['status'],
+      style='color: white; font-size:24px; font-weight: 700;')
+    result_summary += self.generate_result_summary_item('Started',
+                                                        json_data['started'])
 
     # Convert the timestamp strings to datetime objects
     start_time = datetime.strptime(json_data['started'], '%Y-%m-%d %H:%M:%S')
@@ -312,7 +365,8 @@ class TestReport():
   def generate_result_summary_item(self, key, value, style=None):
     summary_item = f'''<div class="summary-box-label">{key}</div>'''
     if style is not None:
-      summary_item += f'''<div style="{style}" class="summary-box-value">{value}</div>'''
+      summary_item += f'''<div style="{style}"
+      class="summary-box-value">{value}</div>'''
     else:
       summary_item += f'''<div class="summary-box-value">{value}</div>'''
     return summary_item
@@ -436,6 +490,20 @@ class TestReport():
       position: relative;
       padding-bottom: 15px;
       margin: 0;
+    }
+
+    .summary-device-modules {
+      position: absolute;
+      left: 3.2in;
+      top: .3in;
+    }
+
+    .summary-device-module-label {
+      font-size: 16px;
+      font-weight: 500;
+      color: #202124;
+      width: fit-content;
+      margin-bottom: 0.1in;
     }
 
     .summary-vertical-line {

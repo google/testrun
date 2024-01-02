@@ -165,12 +165,12 @@ class NmapModule(TestModule):
                              open_port_info["tcp_udp"])
 
       if (open_port_info["service"] in services and
-          (open_port + "/" + open_port_info["tcp_udp"]) not in match_ports and
+          (open_port_info["number"] + "/" + open_port_info["tcp_udp"]
+           ) not in match_ports and
           open_port_info["state"] == "open"):
         LOGGER.debug("Found service " + open_port_info["service"] +
                     " on port " + str(open_port) + "/" +
                     open_port_info["tcp_udp"])
-
         if not allowed:
           match_ports.append(open_port_info["number"] + "/" +
                             open_port_info["tcp_udp"])
@@ -193,7 +193,8 @@ class NmapModule(TestModule):
     if len(open_ports) == 0:
       return True, "No telnet server found"
     else:
-      return False, f"Found telnet server running on port {', '.join(open_ports)}"
+      return (False,
+              f"Found telnet server running on port {', '.join(open_ports)}")
 
   def _security_services_smtp(self, config):
     LOGGER.info("Running security.services.smtp")
@@ -281,4 +282,5 @@ class NmapModule(TestModule):
           if config["version"] in open_port_info["version"]:
             return True, f"SSH server found running {open_port_info['version']}"
           else:
-            return False, f"SSH server found running {open_port_info['version']}"
+            return (False,
+                    f"SSH server found running {open_port_info['version']}")
