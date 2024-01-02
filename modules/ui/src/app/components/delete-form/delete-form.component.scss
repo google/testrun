@@ -13,20 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Injectable} from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
+@import '../../../theming/colors';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class NotificationService {
-  constructor(private snackBar: MatSnackBar) {
-  }
+:host {
+  display: grid;
+  overflow: hidden;
+  width: 570px;
+  padding: 24px 16px 8px 24px;
+  gap: 10px;
+}
 
-  notify(message: string) {
-    this.snackBar.open(message, 'x', {
-      horizontalPosition: 'right',
-      panelClass: 'test-run-notification'
-    })
-  }
+.delete-form-title {
+  color: #202124;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.delete-form-content {
+  font-family: Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+  color: $grey-800;
+}
+
+.delete-form-actions {
+  padding: 0;
+  min-height: 30px;
 }

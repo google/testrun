@@ -14,6 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Stop any running containers
+echo Stopping any running containers
+running_containers=$(docker container ls -q --filter name=tr-*)
+if [ -n "$running_containers" ]; then
+  docker container kill $running_containers
+else
+  echo No containers were found running
+fi
+
 # Remove docker images
 echo Removing docker images
 docker_images=$(sudo docker images --filter=reference="test-run/*" -q)

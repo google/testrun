@@ -42,6 +42,10 @@ class TestRunSession():
     self._runtime_params = []
     self._device_repository = []
     self._total_tests = 0
+
+    self._version = None
+    self._load_version()
+
     self._config_file = config_file
     self._config = self._get_default_config()
     self._load_config()
@@ -121,6 +125,18 @@ class TestRunSession():
 
       LOGGER.debug(self._config)
 
+  def _load_version(self):
+    version_cmd = util.run_command(
+      'dpkg-query --showformat=\'${Version}\' --show testrun')
+
+    if version_cmd:
+      version = version_cmd[0]
+      LOGGER.info(f'Running Testrun version {version}')
+    self._version = version
+
+  def get_version(self):
+    return self._version
+
   def _save_config(self):
     with open(self._config_file, 'w', encoding='utf-8') as f:
       f.write(json.dumps(self._config, indent=2))
@@ -174,9 +190,12 @@ class TestRunSession():
 
   def get_device(self, mac_addr):
     for device in self._device_repository:
-      if device.mac_addr == mac_addr:
+      if device.mac_addr.lower() == mac_addr.lower():
         return device
     return None
+
+  def remove_device(self, device):
+    self._device_repository.remove(device)
 
   def get_status(self):
     return self._status

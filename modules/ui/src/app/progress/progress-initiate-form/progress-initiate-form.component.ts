@@ -13,77 +13,73 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {MatDialogRef} from '@angular/material/dialog';
-import {TestRunService} from '../../test-run.service';
-import {Observable} from 'rxjs/internal/Observable';
-import {Device, TestModule} from '../../model/device';
-import {FormArray, FormBuilder, FormGroup} from '@angular/forms';
-import {DeviceValidators} from '../../device-repository/device-form/device.validators';
-import {StatusOfTestrun, TestrunStatus} from '../../model/testrun-status';
-import {tap} from 'rxjs/internal/operators/tap';
-import {interval} from 'rxjs/internal/observable/interval';
-import {takeUntil} from 'rxjs/internal/operators/takeUntil';
-import {Subject} from 'rxjs/internal/Subject';
-import {NotificationService} from '../../notification.service';
+import {
+  AfterViewChecked,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
+import { TestRunService } from '../../services/test-run.service';
+import { Observable } from 'rxjs/internal/Observable';
+import { Device, TestModule } from '../../model/device';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+} from '@angular/forms';
+import { DeviceValidators } from '../../device-repository/device-form/device.validators';
+import { EscapableDialogComponent } from '../../components/escapable-dialog/escapable-dialog.component';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-progress-initiate-form',
   templateUrl: './progress-initiate-form.component.html',
-  styleUrls: ['./progress-initiate-form.component.scss']
+  styleUrls: ['./progress-initiate-form.component.scss'],
 })
-export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
+export class ProgressInitiateFormComponent
+  extends EscapableDialogComponent
+  implements OnInit, AfterViewChecked
+{
+  @ViewChild('firmwareInput') firmwareInput!: ElementRef;
   initiateForm!: FormGroup;
   devices$!: Observable<Device[] | null>;
   selectedDevice: Device | null = null;
   testModules: TestModule[] = [];
-  public systemStatus$!: Observable<TestrunStatus>;
-  startInterval = false;
-  destroy$: Subject<boolean> = new Subject<boolean>();
+  prevDevice: Device | null = null;
+  setFirmwareFocus = false;
 
   constructor(
-    public dialogRef: MatDialogRef<ProgressInitiateFormComponent>,
+    public override dialogRef: MatDialogRef<ProgressInitiateFormComponent>,
     private readonly testRunService: TestRunService,
     private fb: FormBuilder,
     private deviceValidators: DeviceValidators,
-    private notificationService: NotificationService) {
+    private readonly changeDetectorRef: ChangeDetectorRef
+  ) {
+    super(dialogRef);
   }
 
   get firmware() {
-    return this.initiateForm.get('firmware')!;
+    return this.initiateForm.get('firmware') as AbstractControl;
   }
 
   cancel(): void {
     this.dialogRef.close();
   }
 
-  testRunStarted = false;
-
   ngOnInit() {
     this.devices$ = this.testRunService.getDevices();
     this.createInitiateForm();
     this.testModules = this.testRunService.getTestModules();
-
-    this.testRunService.systemStatus$.pipe(
-      tap((res) => {
-        if (this.testRunStarted) {
-          if (res.status === StatusOfTestrun.WaitingForDevice && !this.startInterval) {
-            this.pullingSystemStatusData();
-            this.notify(res.status);
-          }
-          if (res.status !== StatusOfTestrun.WaitingForDevice) {
-            this.destroy$.next(true);
-            this.startInterval = false;
-            this.dialogRef.close();
-          }
-        }
-      }),
-      takeUntil(this.destroy$),
-    ).subscribe();
   }
 
   deviceSelected(device: Device) {
     this.selectedDevice = device;
+    this.prevDevice = device;
+    this.setFirmwareFocus = true;
   }
 
   changeDevice() {
@@ -91,9 +87,30 @@ export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
     this.firmware.setValue('');
   }
 
+  ngAfterViewChecked() {
+    // When change device clicked, previously selected item should be focused
+    const item = window.document.querySelector(
+      '.device-item-focused button'
+    ) as HTMLButtonElement;
+    if (item) {
+      this.focusButton(item);
+      this.prevDevice = null;
+      this.changeDetectorRef.detectChanges();
+    }
+    if (this.setFirmwareFocus) {
+      this.firmwareInput?.nativeElement.focus();
+      this.setFirmwareFocus = false;
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  focusButton(button: HTMLButtonElement) {
+    button.focus();
+  }
+
   startTestRun() {
     if (!this.firmware.value.trim()) {
-      this.firmware.setErrors({required: true});
+      this.firmware.setErrors({ required: true });
     }
 
     if (this.initiateForm.invalid) {
@@ -102,42 +119,22 @@ export class ProgressInitiateFormComponent implements OnInit, OnDestroy {
     }
 
     if (this.selectedDevice) {
+      this.testRunService.fetchVersion();
       this.selectedDevice.firmware = this.firmware.value.trim();
-      this.testRunService.startTestrun(this.selectedDevice)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(
-          () => {
-            this.testRunStarted = true;
-            this.testRunService.getSystemStatus();
-          },
-          (error: string) => {
-            this.startInterval = false;
-            this.notify(error);
-          });
+      this.testRunService
+        .startTestrun(this.selectedDevice)
+        .pipe(take(1))
+        .subscribe(() => {
+          this.testRunService.getSystemStatus();
+          this.cancel();
+        });
     }
   }
 
   private createInitiateForm() {
     this.initiateForm = this.fb.group({
       firmware: ['', [this.deviceValidators.deviceStringFormat()]],
-      test_modules: new FormArray([])
+      test_modules: new FormArray([]),
     });
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next(true);
-    this.destroy$.unsubscribe();
-  }
-
-  private pullingSystemStatusData(): void {
-    this.startInterval = true;
-    interval(5000).pipe(
-      takeUntil(this.destroy$),
-      tap(() => this.testRunService.getSystemStatus()),
-    ).subscribe();
-  }
-
-  private notify(message: string) {
-    this.notificationService.notify(message);
   }
 }

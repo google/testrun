@@ -76,6 +76,10 @@ class TestOrchestrator:
   def run_test_modules(self):
     """Iterates through each test module and starts the container."""
 
+    # Do not start test modules if status is not in progress, e.g. Stopping
+    if self.get_session().get_status() != "In Progress":
+      return
+
     device = self._session.get_target_device()
     self._test_in_progress = True
     LOGGER.info(
@@ -99,6 +103,10 @@ class TestOrchestrator:
     LOGGER.info("All tests complete")
 
     self._session.stop()
+
+    # Do not carry on (generating a report) if Testrun has been stopped
+    if self.get_session().get_status() != "In Progress":
+      return None
 
     report = TestReport()
     report.from_json(self._generate_report())
@@ -235,7 +243,7 @@ class TestOrchestrator:
     # Copy the results to the timestamp directory
     # leave current copy in place for quick reference to
     # most recent test
-    shutil.copytree(cur_results_dir, completed_results_dir)
+    shutil.copytree(cur_results_dir, completed_results_dir, dirs_exist_ok=True)
     util.run_command(f"chown -R {self._host_user} '{completed_results_dir}'")
 
   def test_in_progress(self):
@@ -252,6 +260,10 @@ class TestOrchestrator:
 
   def _run_test_module(self, module):
     """Start the test container and extract the results."""
+
+    # Check that Testrun is not stopping
+    if self.get_session().get_status() != "In Progress":
+      return
 
     device = self._session.get_target_device()
 
@@ -332,8 +344,11 @@ class TestOrchestrator:
     status = self._get_module_status(module)
 
     log_stream = module.container.logs(stream=True, stdout=True, stderr=True)
-    while (time.time() < test_module_timeout and status == "running"
-           and self._session.get_status() == "In Progress"):
+    while (status == "running" and self._session.get_status() == "In Progress"):
+      if time.time() > test_module_timeout:
+        LOGGER.error("Module timeout exceeded, killing module: " + module.name)
+        self._stop_module(module=module,kill=True)
+        break
       try:
         line = next(log_stream).decode("utf-8").strip()
         if re.search(LOG_REGEX, line):
@@ -341,6 +356,12 @@ class TestOrchestrator:
       except Exception:  # pylint: disable=W0718
         time.sleep(1)
       status = self._get_module_status(module)
+
+    # Check that Testrun has not been stopped whilst this module was running
+    if self.get_session().get_status() == "Stopping":
+      # Discard results for this module
+      LOGGER.info(f"Test module {module.name} has forcefully quit")
+      return
 
     # Get test results from module
     container_runtime_dir = os.path.join(
@@ -356,8 +377,8 @@ class TestOrchestrator:
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
       LOGGER.error(
-          f"Error occured whilst obbtaining results for module {module.name}")
-      LOGGER.debug(results_error)
+          f"Error occurred whilst obtaining results for module {module.name}")
+      LOGGER.error(results_error)
 
     LOGGER.info(f"Test module {module.name} has finished")
 

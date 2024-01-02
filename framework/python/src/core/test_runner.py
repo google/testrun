@@ -61,8 +61,8 @@ class TestRunner:
       self._stop(True)
       sys.exit(1)
 
-  def stop(self, kill=False):
-    self.test_run.stop(kill)
+  def stop(self):
+    self.test_run.stop()
 
 
 def parse_args():

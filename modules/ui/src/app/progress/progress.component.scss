@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import "../../theming/colors";
+@import '../../theming/colors';
 
 :host {
   display: flex;
@@ -42,7 +42,7 @@
     flex-direction: column;
     flex: 1;
     min-width: 0;
-    padding: 0 32px 0 10px;
+    padding: 0 32px 0 0;
   }
 
   .toolbar-row {
@@ -92,4 +92,22 @@
 .report-button {
   background-color: mat.get-color-from-palette($color-primary, 50);
   color: mat.get-color-from-palette($color-primary, 700);
+  & ::ng-deep .mat-mdc-button-touch-target {
+    height: auto;
+  }
+}
+
+.progress-table {
+  overflow-y: auto;
+  flex: 1;
+  padding-top: 10px;
+}
+
+.progress-table-progress-empty {
+  position: relative;
+  overflow-y: hidden;
+  & ::ng-deep .loader {
+    width: 196px;
+    height: 196px;
+  }
 }

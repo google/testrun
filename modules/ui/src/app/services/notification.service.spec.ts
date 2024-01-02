@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {TestBed} from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
-import {NotificationService} from './notification.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import { NotificationService } from './notification.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 describe('NotificationService', () => {
   let service: NotificationService;
 
   const mockMatSnackBar = {
-    open: () => {
-    }
+    open: () => ({}),
+    dismiss: () => ({}),
   };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        {provide: MatSnackBar, useValue: mockMatSnackBar},
-      ]
+      providers: [{ provide: MatSnackBar, useValue: mockMatSnackBar }],
     });
     service = TestBed.inject(NotificationService);
   });
@@ -50,12 +48,35 @@ describe('NotificationService', () => {
       const args = matSnackBarSpy.calls.argsFor(0);
       expect(args.length).toBe(3);
       expect(args[0]).toBe('something good happened');
-      expect(args[1]).toBe('x');
+      expect(args[1]).toBe('OK');
       expect(args[2]).toEqual({
         horizontalPosition: 'right',
         panelClass: 'test-run-notification',
+        duration: 5000,
+      });
+    });
+
+    it('should open snackbar with duration', () => {
+      const matSnackBarSpy = spyOn(mockMatSnackBar, 'open').and.stub();
+
+      service.notify('something good happened', 15000);
+
+      const args = matSnackBarSpy.calls.argsFor(0);
+      expect(args[2]).toEqual({
+        horizontalPosition: 'right',
+        panelClass: 'test-run-notification',
+        duration: 15000,
       });
     });
   });
 
+  describe('dismiss', () => {
+    it('should close snackbar', () => {
+      const matSnackBarSpy = spyOn(mockMatSnackBar, 'dismiss').and.stub();
+
+      service.dismiss();
+
+      expect(matSnackBarSpy).toHaveBeenCalled();
+    });
+  });
 });

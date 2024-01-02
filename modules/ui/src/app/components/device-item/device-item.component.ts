@@ -13,20 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {Device} from '../../model/device';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Device } from '../../model/device';
 
 @Component({
   selector: 'app-device-item',
   templateUrl: './device-item.component.html',
   styleUrls: ['./device-item.component.scss'],
-  standalone: true
+  standalone: true,
 })
 export class DeviceItemComponent {
   @Input() device!: Device;
+  @Input() tabIndex = 0;
   @Output() itemClicked = new EventEmitter<Device>();
 
   itemClick(): void {
     this.itemClicked.emit(this.device);
+  }
+
+  get label() {
+    return `${this.device.model} ${this.device.manufacturer} ${this.device.mac_addr}`;
   }
 }

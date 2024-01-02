@@ -13,14 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container *ngIf="(devices$| async)?.length;  else empty">
+<ng-container *ngIf="(devices$ | async)?.length; else empty">
   <mat-toolbar class="device-repository-toolbar">
-    <h2 class="title">Device Repository</h2>
+    <h2 class="title">Devices</h2>
     <ng-container *ngTemplateOutlet="addDeviceButton"></ng-container>
   </mat-toolbar>
   <div class="device-repository-content">
-    <ng-container *ngFor="let device of (devices$| async)">
-      <app-device-item (itemClicked)="openDialog($event)" [device]="device"></app-device-item>
+    <ng-container *ngFor="let device of devices$ | async">
+      <app-device-item
+        (itemClicked)="openDialog($event)"
+        [device]="device"></app-device-item>
     </ng-container>
   </div>
 </ng-container>
@@ -32,8 +34,12 @@ limitations under the License.
 </ng-template>
 
 <ng-template #addDeviceButton>
-  <button (click)="openDialog()" aria-label="Add device" class="device-add-button" color="primary"
-          mat-flat-button>
+  <button
+    (click)="openDialog()"
+    aria-label="Add device"
+    class="device-add-button"
+    color="primary"
+    mat-flat-button>
     <mat-icon>add</mat-icon>
     Add device
   </button>

@@ -14,6 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Check if Docker is installed
+if [[ $(which docker) && $(docker --version) ]]; then
+    # Docker is installed
+    echo Using $(docker --version)
+  else
+    # Docker is not installed
+    echo Docker is not installed. Please follow the Get Started guide at https://github.com/google/testrun
+    exit 1
+fi
+
+# Stop any running containers
+echo Stopping any running containers
+running_containers=$(docker container ls -q --filter name=tr-*)
+if [ -n "$running_containers" ]; then
+  docker container kill $running_containers
+else
+  echo No containers were found running
+fi
+
 # Builds all docker images
 echo Building docker images
 

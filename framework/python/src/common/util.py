@@ -96,3 +96,18 @@ def get_user():
 
 def set_file_owner(path, owner):
   run_command(f'chown -R {owner} {path}')
+
+def get_module_display_name(search):
+  modules = {
+    'ntp': 'NTP',
+    'dns': 'DNS',
+    'connection': 'Connection',
+    'nmap': 'Services',
+    'tls': 'TLS'
+  }
+
+  for module in modules.items():
+    if search == module[0]:
+      return module[1]
+
+  return 'Unknown'
