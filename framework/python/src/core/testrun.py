@@ -446,7 +446,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     except ImageNotFound as ie:
       LOGGER.error('An error occured whilst starting the UI. ' +
                    'Please investigate and try again.')
-      print(ie)
+      LOGGER.error(ie)
       sys.exit(1)
 
     # TODO: Make port configurable
