@@ -29,8 +29,11 @@ pip3 install -r framework/requirements.txt
 cp -n local/system.json.example local/system.json
 
 # Set file permissions
-USER_NAME=$(logname)
-sudo chown "$USER_NAME" local/system.json
+# This does not work on GitHub actions
+if logname ; then
+  USER_NAME=$(logname)
+  sudo chown "$USER_NAME" local/system.json
+fi
 
 deactivate
 
