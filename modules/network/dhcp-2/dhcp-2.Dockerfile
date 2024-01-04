@@ -18,14 +18,11 @@ FROM test-run/base:latest
 ARG MODULE_NAME=dhcp-2
 ARG MODULE_DIR=modules/network/$MODULE_NAME
 
-#Update and get all additional requirements not contained in the base image
+# Update and get all additional requirements not contained in the base image
 RUN apt-get update --fix-missing
 
 # Install all necessary packages
 RUN apt-get install -y wget
-
-# Update the oui.txt file from ieee
-RUN wget http://standards-oui.ieee.org/oui.txt -P /usr/local/etc/
 
 # Install dhcp server
 RUN apt-get install -y isc-dhcp-server radvd systemd
