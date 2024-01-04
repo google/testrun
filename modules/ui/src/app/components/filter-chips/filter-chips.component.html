@@ -20,11 +20,16 @@ limitations under the License.
       class="filter-chip"
       *ngIf="!isValueEmpty(item.value)"
       (removed)="clearFilter(item.key)">
-      <ng-container *ngIf="item.key === 'deviceInfo'">Device</ng-container>
+      <ng-container *ngIf="item.key === 'deviceInfo'"
+        >Device contains "{{ item.value }}"</ng-container
+      >
       <ng-container *ngIf="item.key === 'deviceFirmware'">
-        Firmware
+        Firmware contains "{{ item.value }}"
       </ng-container>
-      {{ item.value }}
+      <ng-container
+        *ngIf="item.key !== 'deviceFirmware' && item.key !== 'deviceInfo'">
+        {{ item.value }}
+      </ng-container>
       <button
         class="filter-chip-remove"
         [attr.aria-label]="'clear filter ' + item.value"
@@ -34,14 +39,16 @@ limitations under the License.
       </button>
     </mat-chip-row>
   </ng-container>
+  <mat-chip-row class="filter-chip-clear-all">
+    <a
+      class="clear-all"
+      type="button"
+      (click)="clearAllFilters()"
+      (keydown.enter)="clearAllFilters()"
+      (keydown.space)="clearAllFilters()"
+      aria-label="Clear all filters"
+      tabindex="0"
+      >Clear all filters</a
+    >
+  </mat-chip-row>
 </mat-chip-set>
-<a
-  type="button"
-  (click)="clearAllFilters()"
-  (keydown.enter)="clearAllFilters()"
-  (keydown.space)="clearAllFilters()"
-  aria-label="Clear all filters"
-  class="clear-all"
-  tabindex="0"
-  >Clear all filters</a
->

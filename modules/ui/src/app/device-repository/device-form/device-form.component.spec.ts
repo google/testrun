@@ -49,6 +49,7 @@ describe('DeviceFormComponent', () => {
       'getTestModules',
       'hasDevice',
       'saveDevice',
+      'editDevice',
     ]);
     testRunServiceMock.getTestModules.and.returnValue([
       {
@@ -354,12 +355,12 @@ describe('DeviceFormComponent', () => {
     });
   });
 
-  it('should have no delete device button', () => {
+  it('should have hidden delete device button', () => {
     const deleteButton = compiled.querySelector(
       '.delete-button'
     ) as HTMLButtonElement;
 
-    expect(deleteButton).toBeNull();
+    expect(deleteButton.classList.contains('hidden')).toBeTrue();
   });
 
   describe('when device is present', () => {
@@ -387,17 +388,15 @@ describe('DeviceFormComponent', () => {
       const manufacturer: HTMLInputElement = compiled.querySelector(
         '.device-form-manufacturer'
       ) as HTMLInputElement;
-      const macAddress: HTMLInputElement = compiled.querySelector(
-        '.device-form-mac-address'
-      ) as HTMLInputElement;
+
       expect(model.value).toEqual('O3-DIN-CPU');
       expect(manufacturer.value).toEqual('Delta');
-      expect(macAddress.disabled).toBeTrue();
     });
 
     it('should save data even mac address already exist', fakeAsync(() => {
       const closeSpy = spyOn(component.dialogRef, 'close');
       testRunServiceMock.saveDevice.and.returnValue(of(true));
+      testRunServiceMock.editDevice.and.returnValue(of(true));
       testRunServiceMock.hasDevice.and.returnValue(true);
       // fill the test controls
       component.test_modules.push(new FormControl(false));
@@ -431,15 +430,12 @@ describe('DeviceFormComponent', () => {
       flush();
     }));
 
-    it('should disable mac address', () => {
-      expect(component.mac_addr.disabled).toBeTrue();
-    });
-
     it('should have delete device button', () => {
       const deleteButton = compiled.querySelector(
         '.delete-button'
       ) as HTMLButtonElement;
 
+      expect(deleteButton.classList.contains('hidden')).toBeFalse();
       expect(deleteButton).toBeTruthy();
     });
 

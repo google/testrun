@@ -496,6 +496,23 @@ describe('AppComponent', () => {
       expect(callout).toBeNull();
     });
   });
+
+  it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {
+    mockService.getDevices.and.returnValue(
+      new BehaviorSubject<Device[] | null>([])
+    );
+    component.ngOnInit();
+    fixture.detectChanges();
+
+    spyOn(component.settingsDrawer, 'close').and.returnValue(
+      Promise.resolve('close')
+    );
+    const spyToggle = spyOn(component.toggleSettingsBtn, 'focus');
+
+    await component.closeSetting();
+
+    expect(spyToggle).toHaveBeenCalledTimes(0);
+  });
 });
 
 @Component({

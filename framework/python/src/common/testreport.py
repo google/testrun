@@ -182,7 +182,7 @@ class TestReport():
 
   def generate_page(self, json_data, page_num, max_page):
     # Placeholder until available in json report
-    version = 'v1.1 (2023-12-15)'
+    version = 'v1.1.1-alpha (2023-01-04)'
     page = '<div class="page">'
     page += self.generate_header(json_data)
     if page_num == 1:

@@ -22,20 +22,28 @@ import {
 import { Observable } from 'rxjs/internal/Observable';
 import { TestRunService } from '../services/test-run.service';
 import {
-  IDevice,
   IResult,
   StatusOfTestrun,
   TestrunStatus,
   TestsData,
   TestsResponse,
 } from '../model/testrun-status';
-import { interval, map, shareReplay, Subject, takeUntil, tap } from 'rxjs';
+import {
+  interval,
+  map,
+  shareReplay,
+  Subject,
+  takeUntil,
+  tap,
+  timer,
+} from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { ProgressInitiateFormComponent } from './progress-initiate-form/progress-initiate-form.component';
 import { DeleteFormComponent } from '../components/delete-form/delete-form.component';
 import { LoaderService } from '../services/loader.service';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../services/loaderConfig';
 import { Device } from '../model/device';
+import { StateService } from '../services/state.service';
 
 const EMPTY_RESULT = new Array(100).fill(null).map(() => ({}) as IResult);
 
@@ -51,7 +59,6 @@ const EMPTY_RESULT = new Array(100).fill(null).map(() => ({}) as IResult);
 })
 export class ProgressComponent implements OnInit, OnDestroy {
   public systemStatus$!: Observable<TestrunStatus>;
-  public breadcrumbs$!: Observable<string[]>;
   public dataSource$!: Observable<IResult[] | undefined>;
   public devices$!: Observable<Device[] | null>;
   public readonly StatusOfTestrun = StatusOfTestrun;
@@ -59,12 +66,13 @@ export class ProgressComponent implements OnInit, OnDestroy {
   private destroy$: Subject<boolean> = new Subject<boolean>();
   private startInterval = false;
   public currentStatus: TestrunStatus | null = null;
-  private isCancelling = false;
+  isCancelling = false;
 
   constructor(
     private readonly testRunService: TestRunService,
     private readonly loaderService: LoaderService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private readonly state: StateService
   ) {}
 
   ngOnInit(): void {
@@ -94,6 +102,9 @@ export class ProgressComponent implements OnInit, OnDestroy {
           !this.testrunInProgress(res.status) &&
           res.status !== StatusOfTestrun.Cancelling
         ) {
+          if (this.isCancelling) {
+            this.state.focusFirstElementInMain();
+          }
           this.isCancelling = false;
           this.destroy$.next(true);
           this.startInterval = false;
@@ -101,11 +112,6 @@ export class ProgressComponent implements OnInit, OnDestroy {
         }
       }),
       shareReplay({ refCount: true, bufferSize: 1 })
-    );
-
-    this.breadcrumbs$ = this.systemStatus$.pipe(
-      map((res: TestrunStatus) => res?.device),
-      map((res: IDevice) => [res?.manufacturer, res?.model, res?.firmware])
     );
 
     this.dataSource$ = this.systemStatus$.pipe(
@@ -212,13 +218,24 @@ export class ProgressComponent implements OnInit, OnDestroy {
   }
 
   openTestRunModal(): void {
-    this.dialog.open(ProgressInitiateFormComponent, {
+    const dialogRef = this.dialog.open(ProgressInitiateFormComponent, {
       ariaLabel: 'Initiate testrun',
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'initiate-test-run-dialog',
     });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        timer(0)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe(() => {
+            this.state.focusFirstElementInMain();
+          });
+      });
   }
 
   resultIsEmpty(tests: TestsResponse | undefined) {

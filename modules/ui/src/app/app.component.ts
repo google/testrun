@@ -58,7 +58,7 @@ export class AppComponent implements OnInit {
   isConnectionSettingsLoaded = false;
   public readonly StatusOfTestrun = StatusOfTestrun;
   public readonly Routes = Routes;
-
+  private devicesLength = 0;
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
   @ViewChild('navigation') public navigation!: ElementRef;
@@ -99,7 +99,10 @@ export class AppComponent implements OnInit {
     this.devices$ = this.testRunService.getDevices().pipe(
       tap(result => {
         if (result !== null) {
+          this.devicesLength = result.length;
           this.isDevicesLoaded = true;
+        } else {
+          this.devicesLength = 0;
         }
       }),
       shareReplay({ refCount: true, bufferSize: 1 })
@@ -131,9 +134,11 @@ export class AppComponent implements OnInit {
   }
 
   async closeSetting(): Promise<void> {
-    return await this.settingsDrawer
-      .close()
-      .then(() => this.toggleSettingsBtn.focus());
+    return await this.settingsDrawer.close().then(() => {
+      if (this.devicesLength > 0) {
+        this.toggleSettingsBtn.focus();
+      } // else device create window will be opened
+    });
   }
 
   async openSetting(): Promise<void> {

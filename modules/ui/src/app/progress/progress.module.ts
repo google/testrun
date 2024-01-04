@@ -23,7 +23,6 @@ import { MatTableModule } from '@angular/material/table';
 
 import { ProgressRoutingModule } from './progress-routing.module';
 import { ProgressComponent } from './progress.component';
-import { ProgressBreadcrumbsComponent } from './progress-breadcrumbs/progress-breadcrumbs.component';
 import { ProgressStatusCardComponent } from './progress-status-card/progress-status-card.component';
 import { ProgressTableComponent } from './progress-table/progress-table.component';
 import { ProgressInitiateFormComponent } from './progress-initiate-form/progress-initiate-form.component';
@@ -38,7 +37,6 @@ import { SpinnerComponent } from '../components/spinner/spinner.component';
 @NgModule({
   declarations: [
     ProgressComponent,
-    ProgressBreadcrumbsComponent,
     ProgressStatusCardComponent,
     ProgressTableComponent,
     ProgressInitiateFormComponent,
