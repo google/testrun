@@ -36,6 +36,8 @@ from net_orc.listener import NetworkEvent
 from net_orc import network_orchestrator as net_orc
 from test_orc import test_orchestrator as test_orc
 
+from docker.errors import ImageNotFound
+
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -430,16 +432,22 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     client = docker.from_env()
 
-    client.containers.run(
-          image='test-run/ui',
-          auto_remove=True,
-          name='tr-ui',
-          hostname='testrun.io',
-          detach=True,
-          ports={
-            '80': 8080
-          }
-    )
+    try:
+      client.containers.run(
+            image='test-run/ui',
+            auto_remove=True,
+            name='tr-ui',
+            hostname='testrun.io',
+            detach=True,
+            ports={
+              '80': 8080
+            }
+      )
+    except ImageNotFound as ie:
+      LOGGER.error('An error occured whilst starting the UI. ' +
+                   'Please investigate and try again.')
+      LOGGER.error(ie)
+      sys.exit(1)
 
     # TODO: Make port configurable
     LOGGER.info('User interface is ready on http://localhost:8080')
