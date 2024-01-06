@@ -432,6 +432,15 @@ class Api:
         return self._generate_msg(False,
                                   "A device with that MAC " +
                                   "address could not be found")
+      
+      if (self._session.get_target_device() == device and
+          self._session.get_status() not in [
+            "Cancelled",
+            "Compliant",
+            "Non-Compliant"]):
+        response.status_code = 403
+        return self._generate_msg(False, "Cannot edit this device whilst " +
+                                  "it is being tested")
 
       # Check if a device exists with the new MAC address
       check_new_device = self._session.get_device(
