@@ -23,7 +23,7 @@ import {
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
-import { TestRunService } from './services/test-run.service';
+import { SystemInterfaces, TestRunService } from './services/test-run.service';
 import { Observable } from 'rxjs/internal/Observable';
 import { Device } from './model/device';
 import { take } from 'rxjs';
@@ -52,7 +52,7 @@ export class AppComponent implements OnInit {
   systemStatus$!: Observable<TestrunStatus>;
   isTestrunStarted$!: Observable<boolean>;
   hasConnectionSetting$!: Observable<boolean | null>;
-  interfaces: string[] = [];
+  interfaces: SystemInterfaces = {};
   isDevicesLoaded = false;
   isStatusLoaded = false;
   isConnectionSettingsLoaded = false;
@@ -131,6 +131,7 @@ export class AppComponent implements OnInit {
 
   navigateToRuntime(): void {
     this.route.navigate([Routes.Testrun]);
+    this.testRunService.setIsOpenStartTestrun(true);
   }
 
   async closeSetting(): Promise<void> {

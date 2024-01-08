@@ -44,6 +44,7 @@ import { LoaderService } from '../services/loader.service';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../services/loaderConfig';
 import { Device } from '../model/device';
 import { StateService } from '../services/state.service';
+import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 
 const EMPTY_RESULT = new Array(100).fill(null).map(() => ({}) as IResult);
 
@@ -64,6 +65,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
   public readonly StatusOfTestrun = StatusOfTestrun;
 
   private destroy$: Subject<boolean> = new Subject<boolean>();
+  private destroyInterval$: Subject<boolean> = new Subject<boolean>();
   private startInterval = false;
   public currentStatus: TestrunStatus | null = null;
   isCancelling = false;
@@ -77,6 +79,17 @@ export class ProgressComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.devices$ = this.testRunService.getDevices();
+
+    combineLatest([
+      this.testRunService.isOpenStartTestrun$,
+      this.testRunService.isTestrunStarted$,
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([isOpenStartTestrun, isTestrunStarted]) => {
+        if (isOpenStartTestrun && !isTestrunStarted) {
+          this.openTestRunModal();
+        }
+      });
 
     this.systemStatus$ = this.testRunService.systemStatus$.pipe(
       tap(res => {
@@ -106,7 +119,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
             this.state.focusFirstElementInMain();
           }
           this.isCancelling = false;
-          this.destroy$.next(true);
+          this.destroyInterval$.next(true);
           this.startInterval = false;
           this.hideLoading();
         }
@@ -154,7 +167,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
     this.startInterval = true;
     interval(5000)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyInterval$),
         tap(() => this.testRunService.getSystemStatus(this.isCancelling))
       )
       .subscribe();
@@ -215,6 +228,8 @@ export class ProgressComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
+    this.destroyInterval$.next(true);
+    this.destroyInterval$.unsubscribe();
   }
 
   openTestRunModal(): void {

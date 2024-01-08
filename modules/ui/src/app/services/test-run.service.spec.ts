@@ -20,7 +20,7 @@ import {
 import { fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
 import { Device, TestModule } from '../model/device';
 
-import { TestRunService } from './test-run.service';
+import { SystemInterfaces, TestRunService } from './test-run.service';
 import { SystemConfig } from '../model/setting';
 import {
   MOCK_PROGRESS_DATA_CANCELLING,
@@ -160,7 +160,10 @@ describe('TestRunService', () => {
 
   it('getSystemInterfaces should return array of interfaces', () => {
     const apiUrl = 'http://localhost:8000/system/interfaces';
-    const mockSystemInterfaces: string[] = ['mockValue', 'mockValue'];
+    const mockSystemInterfaces: SystemInterfaces = {
+      mockValue1: 'mockValue1',
+      mockValue2: 'mockValue2',
+    };
 
     service.getSystemInterfaces().subscribe(res => {
       expect(res).toEqual(mockSystemInterfaces);

@@ -50,6 +50,7 @@ describe('DeviceFormComponent', () => {
       'hasDevice',
       'saveDevice',
       'editDevice',
+      'setIsOpenAddDevice',
     ]);
     testRunServiceMock.getTestModules.and.returnValue([
       {
@@ -121,6 +122,16 @@ describe('DeviceFormComponent', () => {
     expect(closeSpy).toHaveBeenCalledWith();
 
     closeSpy.calls.reset();
+  });
+
+  it('should call setIsOpenAddDevice with false on "cancel" click', () => {
+    const closeButton = compiled.querySelector(
+      '.close-button'
+    ) as HTMLButtonElement;
+
+    closeButton?.click();
+
+    expect(testRunServiceMock.setIsOpenAddDevice).toHaveBeenCalledWith(false);
   });
 
   it('should not save data when fields are empty', () => {

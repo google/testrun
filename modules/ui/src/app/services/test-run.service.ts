@@ -30,6 +30,10 @@ import { Version } from '../model/version';
 
 const API_URL = 'http://localhost:8000';
 
+export type SystemInterfaces = {
+  [key: string]: string;
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -65,6 +69,8 @@ export class TestRunService {
   private devices = new BehaviorSubject<Device[] | null>(null);
   private isOpenAddDeviceSub$ = new BehaviorSubject<boolean>(false);
   public isOpenAddDevice$ = this.isOpenAddDeviceSub$.asObservable();
+  private isOpenStartTestrunSub$ = new BehaviorSubject<boolean>(false);
+  public isOpenStartTestrun$ = this.isOpenStartTestrunSub$.asObservable();
   private _systemConfig = new BehaviorSubject<SystemConfig | null>(null);
   public systemConfig$ = this._systemConfig.asObservable();
   private systemStatusSubject = new ReplaySubject<TestrunStatus>(1);
@@ -80,6 +86,10 @@ export class TestRunService {
 
   setIsOpenAddDevice(isOpen: boolean): void {
     this.isOpenAddDeviceSub$.next(isOpen);
+  }
+
+  setIsOpenStartTestrun(isOpen: boolean): void {
+    this.isOpenStartTestrunSub$.next(isOpen);
   }
 
   setHasConnectionSetting(hasSetting: boolean): void {
@@ -119,8 +129,8 @@ export class TestRunService {
       .pipe(retry(1));
   }
 
-  getSystemInterfaces(): Observable<string[]> {
-    return this.http.get<string[]>(`${API_URL}/system/interfaces`);
+  getSystemInterfaces(): Observable<SystemInterfaces> {
+    return this.http.get<SystemInterfaces>(`${API_URL}/system/interfaces`);
   }
 
   /**

@@ -110,6 +110,7 @@ export class DeviceFormComponent
   }
 
   cancel(): void {
+    this.testRunService.setIsOpenAddDevice(false);
     this.dialogRef.close();
   }
 

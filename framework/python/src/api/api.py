@@ -432,7 +432,7 @@ class Api:
         return self._generate_msg(False,
                                   "A device with that MAC " +
                                   "address could not be found")
-      
+
       if (self._session.get_target_device() == device and
           self._session.get_status() not in [
             "Cancelled",

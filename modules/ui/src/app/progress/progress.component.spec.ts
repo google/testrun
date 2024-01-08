@@ -65,6 +65,8 @@ describe('ProgressComponent', () => {
       'systemStatus$',
       'stopTestrun',
       'getDevices',
+      'isOpenStartTestrun$',
+      'isTestrunStarted$',
     ]);
 
   const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
@@ -79,6 +81,9 @@ describe('ProgressComponent', () => {
   testRunServiceMock.getDevices.and.returnValue(
     new BehaviorSubject<Device[] | null>([])
   );
+
+  testRunServiceMock.isOpenStartTestrun$ = new BehaviorSubject(false);
+  testRunServiceMock.isTestrunStarted$ = new BehaviorSubject(false);
 
   describe('Class tests', () => {
     beforeEach(() => {
@@ -131,6 +136,21 @@ describe('ProgressComponent', () => {
 
     it('should create', () => {
       expect(component).toBeTruthy();
+    });
+
+    describe('openTestRunModal on first flow', () => {
+      beforeEach(() => {
+        testRunServiceMock.isOpenStartTestrun$ = new BehaviorSubject(true);
+        component.ngOnInit();
+      });
+
+      it('should open the modal if isOpenStartTestrun$ as true', () => {
+        const openDialogSpy = spyOn(component, 'openTestRunModal');
+
+        component.ngOnInit();
+
+        expect(openDialogSpy).toHaveBeenCalled();
+      });
     });
 
     describe('#stopTestrun', () => {
