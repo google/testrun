@@ -28,7 +28,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { Subject, takeUntil, tap } from 'rxjs';
-import { TestRunService } from '../../services/test-run.service';
+import {
+  SystemInterfaces,
+  TestRunService,
+} from '../../services/test-run.service';
 import { OnlyDifferentValuesValidator } from './only-different-values.validator';
 import { CalloutType } from '../../model/callout-type';
 import { Observable } from 'rxjs/internal/Observable';
@@ -40,9 +43,8 @@ import { shareReplay } from 'rxjs/internal/operators/shareReplay';
   styleUrls: ['./general-settings.component.scss'],
 })
 export class GeneralSettingsComponent implements OnInit, OnDestroy {
-  @Input() interfaces: string[] = [];
+  @Input() interfaces: SystemInterfaces = {};
   @Output() closeSettingEvent = new EventEmitter<void>();
-  @Output() openSettingEvent = new EventEmitter<void>();
   @Output() reloadInterfacesEvent = new EventEmitter<void>();
   public readonly CalloutType = CalloutType;
   public settingForm!: FormGroup;
@@ -67,7 +69,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   }
 
   get isLessThanTwoInterfaces(): boolean {
-    return !this.interfaces.length || this.interfaces?.length < 2;
+    return Object.keys(this.interfaces).length < 2;
   }
 
   constructor(
@@ -129,12 +131,10 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
             this.testRunService.setHasConnectionSetting(true);
           } else {
             this.testRunService.setHasConnectionSetting(false);
-            this.openSetting();
           }
           this.setDefaultFormValues(device_intf, internet_intf);
         } else {
           this.testRunService.setHasConnectionSetting(false);
-          this.openSetting();
         }
         this.testRunService.setSystemConfig(config);
       });
@@ -172,13 +172,8 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.closeSetting();
         this.testRunService.setSystemConfig(data);
-        this.testRunService.setIsOpenAddDevice(true);
         this.testRunService.setHasConnectionSetting(true);
       });
-  }
-
-  private openSetting(): void {
-    this.openSettingEvent.emit();
   }
 
   private setSystemSetting(): void {

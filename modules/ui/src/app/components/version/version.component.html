@@ -29,7 +29,7 @@ limitations under the License.
       version?.installed_version +
       ' New version is available. Click here to update'
     "
-    (click)="openUpdateWindow()">
+    (click)="openUpdateWindow(version)">
     {{ version?.installed_version }}
     <span
       role="alert"

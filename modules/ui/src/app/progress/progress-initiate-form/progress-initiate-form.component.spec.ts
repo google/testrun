@@ -43,6 +43,7 @@ describe('ProgressInitiateFormComponent', () => {
     'systemStatus$',
     'getSystemStatus',
     'fetchVersion',
+    'setIsOpenStartTestrun',
   ]);
   testRunServiceMock.getTestModules.and.returnValue([
     {
@@ -107,6 +108,14 @@ describe('ProgressInitiateFormComponent', () => {
       spyOn(component.dialogRef, 'close');
       component.cancel();
       expect(component.dialogRef.close).toHaveBeenCalled();
+    });
+
+    it('should call setIsOpenAddDevice on cancel', () => {
+      component.cancel();
+
+      expect(testRunServiceMock.setIsOpenStartTestrun).toHaveBeenCalledWith(
+        false
+      );
     });
 
     it('should set devices$ value', () => {

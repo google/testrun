@@ -74,10 +74,6 @@ $nav-open-btn-width: 210px;
     line-height: 20px;
     letter-spacing: 0.25px;
   }
-
-  app-version {
-    padding: 0 16px;
-  }
 }
 
 .app-sidebar {
@@ -132,7 +128,7 @@ $nav-open-btn-width: 210px;
 .app-sidebar-button > .mat-icon {
   margin: 0 11px;
   min-width: 24px;
-  line-height: 18px;
+  line-height: 18px !important;
 }
 
 .app-sidebar-button-active {
@@ -159,6 +155,7 @@ $nav-open-btn-width: 210px;
 .logo-link .mat-icon {
   width: 36px;
   height: 23px;
+  line-height: 18px !important;
 }
 
 .main-heading {
@@ -206,4 +203,7 @@ app-version {
   margin-top: auto;
   margin-bottom: 16px;
   max-width: 100%;
+  width: $nav-close-width;
+  display: flex;
+  justify-content: center;
 }

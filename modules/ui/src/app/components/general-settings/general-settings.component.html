@@ -26,11 +26,11 @@ limitations under the License.
 </div>
 <div class="setting-drawer-content">
   <form
-    *ngIf="interfaces.length; else warning_message"
+    *ngIf="(interfaces | keyvalue).length > 0; else warning_message"
     [formGroup]="settingForm">
     <app-callout
       [type]="CalloutType.Warning"
-      *ngIf="interfaces.length === 1"
+      *ngIf="(interfaces | keyvalue).length === 1"
       class="two-ports-message">
       Warning! Testrun requires two ports to operate correctly.
     </app-callout>
@@ -49,10 +49,10 @@ limitations under the License.
       class="setting-radio-group"
       formControlName="internet_intf">
       <mat-radio-button
-        *ngFor="let interface of interfaces"
-        [value]="interface"
+        *ngFor="let interface of interfaces | keyvalue"
+        [value]="interface.key"
         class="setting-radio-button">
-        {{ interface }}
+        {{ interface.value }}
       </mat-radio-button>
     </mat-radio-group>
     <label
@@ -70,10 +70,10 @@ limitations under the License.
       class="setting-radio-group"
       formControlName="device_intf">
       <mat-radio-button
-        *ngFor="let interface of interfaces"
-        [value]="interface"
+        *ngFor="let interface of interfaces | keyvalue"
+        [value]="interface.key"
         class="setting-radio-button">
-        {{ interface }}
+        {{ interface.value }}
       </mat-radio-button>
     </mat-radio-group>
   </form>
