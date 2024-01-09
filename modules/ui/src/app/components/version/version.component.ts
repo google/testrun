@@ -17,10 +17,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TestRunService } from '../../services/test-run.service';
 import { Version } from '../../model/version';
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { UpdateDialogComponent } from './update-dialog/update-dialog.component';
+import { tap } from 'rxjs/internal/operators/tap';
+
+import { Observable } from 'rxjs/internal/Observable';
 
 @Component({
   selector: 'app-version',
@@ -30,23 +32,29 @@ import { UpdateDialogComponent } from './update-dialog/update-dialog.component';
   styleUrls: ['./version.component.scss'],
 })
 export class VersionComponent implements OnInit {
-  version$: BehaviorSubject<Version | null>;
+  version$!: Observable<Version | null>;
 
   constructor(
     private testRunService: TestRunService,
     public dialog: MatDialog
-  ) {
-    this.version$ = testRunService.getVersion();
-  }
+  ) {}
 
   ngOnInit() {
     this.testRunService.fetchVersion();
+
+    this.version$ = this.testRunService.getVersion().pipe(
+      tap(version => {
+        if (version?.update_available) {
+          this.openUpdateWindow(version);
+        }
+      })
+    );
   }
 
-  openUpdateWindow() {
+  openUpdateWindow(version: Version) {
     this.dialog.open(UpdateDialogComponent, {
       ariaLabel: 'Update version',
-      data: this.version$.value,
+      data: version,
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
