@@ -246,18 +246,21 @@ class DHCPUtil():
       LOGGER.error('Failed to stop secondary DHCP server')
       return False
 
-  def wait_for_lease_expire(self, lease):
+  def wait_for_lease_expire(self, lease, max_wait_time=30):
     expiration_utc = datetime.strptime(
       lease['expires'], '%Y-%m-%d %H:%M:%S')
     # lease information stored in UTC so we need to convert to local time
     expiration = self.utc_to_local(expiration_utc)
     time_to_expire = expiration - datetime.now(tz=tz.tzlocal())
-    LOGGER.info('Time until lease expiration: ' + str(time_to_expire))
+    # Wait until the expiration time and padd 5 seconds
+    # If wait time is longer than max_wait_time, only wait
+    # for the max wait time
+    wait_time =  min(max_wait_time,time_to_expire.total_seconds() + 5) if time_to_expire.total_seconds() > 0 else 0
+    LOGGER.info('Time until lease expiration: ' + str(wait_time))
     LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
-    if time_to_expire.total_seconds() > 0:
-      time.sleep(time_to_expire.total_seconds() +
-                 5)  # Wait until the expiration time and padd 5 seconds
-      LOGGER.info('Current lease expired.')
+    if wait_time>0:
+      time.sleep(wait_time)
+    LOGGER.info('Current lease expired.')
 
   # Convert from a UTC datetime to the local time zone
   def utc_to_local(self, utc_datetime):

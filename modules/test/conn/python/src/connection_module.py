@@ -14,7 +14,6 @@
 """Connection test module"""
 import util
 import time
-import datetime
 import traceback
 from scapy.all import rdpcap, DHCP, Ether, IPv6, ICMPv6ND_NS
 from test_module import TestModule
@@ -192,7 +191,7 @@ class ConnectionModule(TestModule):
         ip_address = '10.10.10.30'
         if self._dhcp_util.add_reserved_lease(lease['hostname'],
                                               lease['hw_addr'], ip_address):
-          self._dhcp_util.wait_for_lease_expire(lease)
+          self._dhcp_util.wait_for_lease_expire(lease,self._lease_wait_time_sec)
           LOGGER.info('Checking device accepted new ip')
           for _ in range(5):
             LOGGER.info('Pinging device at IP: ' + ip_address)
@@ -242,7 +241,7 @@ class ConnectionModule(TestModule):
           # Shutdown the primary server
           if self._dhcp_util.stop_dhcp_server(dhcp_server_primary=True):
             # Wait until the current lease is expired
-            self._dhcp_util.wait_for_lease_expire(lease)
+            self._dhcp_util.wait_for_lease_expire(lease,self._lease_wait_time_sec)
             # Make sure the device has received a new lease from the
             # secondary server
             if self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=self._lease_wait_time_sec):
@@ -433,7 +432,7 @@ class ConnectionModule(TestModule):
         if self._dhcp_util.is_lease_active(lease):
           results = self.test_subnets(ranges)
       else:
-        LOGGER.info("Failed to confirm a valid active lease for the device")
+        LOGGER.info('Failed to confirm a valid active lease for the device')
         return None, 'Failed to confirm a valid active lease for the device'
     else:
       LOGGER.error(dhcp_setup[1])
@@ -460,7 +459,7 @@ class ConnectionModule(TestModule):
 
       # Wait for the current lease to expire
       lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=self._lease_wait_time_sec)
-      self._dhcp_util.wait_for_lease_expire(lease)
+      self._dhcp_util.wait_for_lease_expire(lease,self._lease_wait_time_sec)
 
       # Wait for a new lease to be provided before exiting test
       # to prevent other test modules from failing
@@ -482,9 +481,9 @@ class ConnectionModule(TestModule):
     return final_result, final_result_details
 
   def _test_subnet(self, subnet, lease):
-    LOGGER.info("Testing subnet: " + str(subnet))
+    LOGGER.info('Testing subnet: ' + str(subnet))
     if self._change_subnet(subnet):
-      self._dhcp_util.wait_for_lease_expire(lease)
+      self._dhcp_util.wait_for_lease_expire(lease,self._lease_wait_time_sec)
       LOGGER.debug('Checking for new lease')
       # Subnet changes tend to take longer to pick up so we'll allow
       # for twice the lease wait time
