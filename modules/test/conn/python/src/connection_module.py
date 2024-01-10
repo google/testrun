@@ -459,8 +459,8 @@ class ConnectionModule(TestModule):
       self.restore_failover_dhcp_server(cur_range)
 
       # Wait for the current lease to expire
-      self._wait_for_lease_expire(self._dhcp_util.get_cur_lease(
-          self._device_mac,timeout=self._lease_wait_time_sec))
+      lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=self._lease_wait_time_sec)
+      self._dhcp_util.wait_for_lease_expire(lease)
 
       # Wait for a new lease to be provided before exiting test
       # to prevent other test modules from failing
@@ -484,44 +484,23 @@ class ConnectionModule(TestModule):
   def _test_subnet(self, subnet, lease):
     LOGGER.info("Testing subnet: " + str(subnet))
     if self._change_subnet(subnet):
-      expiration = datetime.datetime.strptime(
-        lease['expires'], '%Y-%m-%d %H:%M:%S')
-      now_utc = datetime.datetime.now(
-        datetime.timezone.utc).replace(tzinfo=None)
-      time_to_expire = (expiration - now_utc).total_seconds()
-      LOGGER.debug('Time until lease expiration: ' + str(time_to_expire))
-      LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
-      if time_to_expire > 0:
-        # Wait until the expiration time and add 5 seconds
-        time.sleep(time_to_expire + 5)
-        LOGGER.debug('Current lease expired. Checking for new lease')
-        LOGGER.debug('Checking for new lease')
-        # Subnet changes tend to take longer to pick up so we'll allow
-        # for twice the lease wait time
-        lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=2*self._lease_wait_time_sec)
-        if lease is not None:
-          LOGGER.debug('New lease found: ' + str(lease))
-          LOGGER.debug('Validating subnet for new lease...')
-          in_range = self.is_ip_in_range(lease['ip'], subnet['start'],
-                                         subnet['end'])
-          LOGGER.info('Lease within subnet: ' + str(in_range))
-          return in_range
-        else:
-          LOGGER.info('Device did not receive lease in subnet')
-          return False
+      self._dhcp_util.wait_for_lease_expire(lease)
+      LOGGER.debug('Checking for new lease')
+      # Subnet changes tend to take longer to pick up so we'll allow
+      # for twice the lease wait time
+      lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,timeout=2*self._lease_wait_time_sec)
+      if lease is not None:
+        LOGGER.debug('New lease found: ' + str(lease))
+        LOGGER.debug('Validating subnet for new lease...')
+        in_range = self.is_ip_in_range(lease['ip'], subnet['start'],
+                                       subnet['end'])
+        LOGGER.info('Lease within subnet: ' + str(in_range))
+        return in_range
+      else:
+        LOGGER.info('Device did not receive lease in subnet')
+        return False
     else:
       LOGGER.error('Failed to change subnet')
-
-  def _wait_for_lease_expire(self, lease):
-    expiration = datetime.datetime.strptime(
-      lease['expires'], '%Y-%m-%d %H:%M:%S')
-    time_to_expire = expiration - datetime.datetime.now()
-    LOGGER.info('Time until lease expiration: ' + str(time_to_expire))
-    LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
-    if time_to_expire.total_seconds() > 0:
-      time.sleep(time_to_expire.total_seconds() +
-                 5)  # Wait until the expiration time and padd 5 seconds
-      LOGGER.info('Current lease expired.')
 
   def _change_subnet(self, subnet):
     LOGGER.info('Changing subnet to: ' + str(subnet))

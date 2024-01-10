@@ -17,6 +17,7 @@ device behaviors"""
 import time
 from datetime import datetime
 import util
+from dateutil import tz
 
 LOG_NAME = 'dhcp_util'
 LOGGER = None
@@ -246,11 +247,25 @@ class DHCPUtil():
       return False
 
   def wait_for_lease_expire(self, lease):
-    expiration = datetime.strptime(lease['expires'], '%Y-%m-%d %H:%M:%S')
-    time_to_expire = expiration - datetime.now()
+    expiration_utc = datetime.strptime(
+      lease['expires'], '%Y-%m-%d %H:%M:%S')
+    # lease information stored in UTC so we need to convert to local time
+    expiration = self.utc_to_local(expiration_utc)
+    time_to_expire = expiration - datetime.now(tz=tz.tzlocal())
     LOGGER.info('Time until lease expiration: ' + str(time_to_expire))
     LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
     if time_to_expire.total_seconds() > 0:
       time.sleep(time_to_expire.total_seconds() +
                  5)  # Wait until the expiration time and padd 5 seconds
       LOGGER.info('Current lease expired.')
+
+  # Convert from a UTC datetime to the local time zone
+  def utc_to_local(self, utc_datetime):
+    # Set the time zone for the UTC datetime
+    utc = utc_datetime.replace(tzinfo=tz.tzutc())
+
+    # Convert to local time zone
+    local_datetime = utc.astimezone(tz.tzlocal())
+
+    return local_datetime
+
