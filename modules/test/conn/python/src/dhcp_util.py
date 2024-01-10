@@ -126,17 +126,22 @@ class DHCPUtil():
       Retrieve the current lease for a given MAC address with retries.
 
       Args:
-          mac_address (str): The MAC address of the client whose lease is being queried.
-          timeout (int): The maximum time (in seconds) to wait for a lease to be found.
+          mac_address (str): The MAC address of the client whose 
+                             lease is being queried.
+          timeout (int): The maximum time (in seconds) to wait 
+                         for a lease to be found.
 
       Returns:
-          str or None: The lease information as a string if found, or None if no lease is found within the timeout.
+          str or None: The lease information as a string if found, 
+                       or None if no lease is found within the timeout.
 
       Note:
-          This method will attempt to query both primary and secondary DHCP servers for the lease,
-          with a 5-second pause between retries until the `timeout` is reached.
+          This method will attempt to query both primary and secondary 
+          DHCP servers for the lease, with a 5-second pause between 
+          retries until the `timeout` is reached.
       """
-    LOGGER.info('Resolving current lease with max wait time of ' + str(timeout) + ' seconds')
+    LOGGER.info('Resolving current lease with max wait time of ' +
+                str(timeout) + ' seconds')
     start_time = time.time()
 
     while True:
@@ -147,24 +152,27 @@ class DHCPUtil():
 
   def _get_cur_lease(self, mac_address):
     """
-    Retrieve the current lease for a given MAC address from both primary and secondary DHCP servers.
+    Retrieve the current lease for a given MAC address from both
+    primary and secondary DHCP servers.
 
     Args:
-        mac_address (str): The MAC address of the client whose lease is being queried.
+        mac_address (str): The MAC address of the client whose
+                           lease is being queried.
 
     Returns:
-        str or None: The lease information as a string if found, or None if no lease is found.
+        str or None: The lease information as a string if found,
+                     or None if no lease is found.
     """
     primary = False
     lease = self._get_cur_lease_from_server(mac_address=mac_address,
                                             dhcp_server_primary=True)
     if lease is not None:
-      primary=True
+      primary = True
     else:
       lease = self._get_cur_lease_from_server(mac_address=mac_address,
                                               dhcp_server_primary=False)
     if lease is not None:
-      lease['primary']=primary
+      lease['primary'] = primary
       log_msg = 'DHCP lease resolved from '
       log_msg += 'primary' if lease['primary'] else 'secondary'
       log_msg += ' server'
@@ -177,7 +185,8 @@ class DHCPUtil():
     # Check if the server is online first, old lease files can still return
     # lease information that is no longer valid when a dhcp server is shutdown
     if self.get_dhcp_server_status(dhcp_server_primary):
-      response = self.get_dhcp_client(dhcp_server_primary).get_lease(mac_address)
+      response = self.get_dhcp_client(dhcp_server_primary).get_lease(
+          mac_address)
       if response.code == 200:
         lease_resp = eval(response.message)  # pylint: disable=W0123
         if lease_resp:  # Check if non-empty lease
@@ -247,18 +256,19 @@ class DHCPUtil():
       return False
 
   def wait_for_lease_expire(self, lease, max_wait_time=30):
-    expiration_utc = datetime.strptime(
-      lease['expires'], '%Y-%m-%d %H:%M:%S')
+    expiration_utc = datetime.strptime(lease['expires'], '%Y-%m-%d %H:%M:%S')
     # lease information stored in UTC so we need to convert to local time
     expiration = self.utc_to_local(expiration_utc)
     time_to_expire = expiration - datetime.now(tz=tz.tzlocal())
     # Wait until the expiration time and padd 5 seconds
     # If wait time is longer than max_wait_time, only wait
     # for the max wait time
-    wait_time =  min(max_wait_time,time_to_expire.total_seconds() + 5) if time_to_expire.total_seconds() > 0 else 0
+    wait_time = min(max_wait_time,
+                    time_to_expire.total_seconds() +
+                    5) if time_to_expire.total_seconds() > 0 else 0
     LOGGER.info('Time until lease expiration: ' + str(wait_time))
     LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
-    if wait_time>0:
+    if wait_time > 0:
       time.sleep(wait_time)
     LOGGER.info('Current lease expired.')
 
@@ -271,4 +281,3 @@ class DHCPUtil():
     local_datetime = utc.astimezone(tz.tzlocal())
 
     return local_datetime
-
