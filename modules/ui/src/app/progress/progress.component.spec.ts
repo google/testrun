@@ -51,6 +51,7 @@ import { device } from '../mocks/device.mock';
 import { DeleteFormComponent } from '../components/delete-form/delete-form.component';
 import { SpinnerComponent } from '../components/spinner/spinner.component';
 import { LoaderService } from '../services/loader.service';
+import { StateService } from '../services/state.service';
 
 describe('ProgressComponent', () => {
   let component: ProgressComponent;
@@ -64,15 +65,25 @@ describe('ProgressComponent', () => {
       'systemStatus$',
       'stopTestrun',
       'getDevices',
+      'isOpenStartTestrun$',
+      'isTestrunStarted$',
     ]);
 
   const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
-    ['setLoading']
+    ['setLoading', 'getLoading']
+  );
+
+  const stateServiceMock: jasmine.SpyObj<StateService> = jasmine.createSpyObj(
+    'stateServiceMock',
+    ['focusFirstElementInMain']
   );
 
   testRunServiceMock.getDevices.and.returnValue(
     new BehaviorSubject<Device[] | null>([])
   );
+
+  testRunServiceMock.isOpenStartTestrun$ = new BehaviorSubject(false);
+  testRunServiceMock.isTestrunStarted$ = new BehaviorSubject(false);
 
   describe('Class tests', () => {
     beforeEach(() => {
@@ -85,12 +96,12 @@ describe('ProgressComponent', () => {
       TestBed.configureTestingModule({
         declarations: [
           ProgressComponent,
-          FakeProgressBreadcrumbsComponent,
           FakeProgressStatusCardComponent,
           FakeProgressTableComponent,
         ],
         providers: [
           { provide: TestRunService, useValue: testRunServiceMock },
+          { provide: StateService, useValue: stateServiceMock },
           {
             provide: MatDialogRef,
             useValue: {},
@@ -101,6 +112,8 @@ describe('ProgressComponent', () => {
           MatIconModule,
           MatToolbarModule,
           MatDialogModule,
+          SpinnerComponent,
+          DownloadReportComponent,
         ],
       })
         .overrideComponent(ProgressComponent, {
@@ -123,6 +136,21 @@ describe('ProgressComponent', () => {
 
     it('should create', () => {
       expect(component).toBeTruthy();
+    });
+
+    describe('openTestRunModal on first flow', () => {
+      beforeEach(() => {
+        testRunServiceMock.isOpenStartTestrun$ = new BehaviorSubject(true);
+        component.ngOnInit();
+      });
+
+      it('should open the modal if isOpenStartTestrun$ as true', () => {
+        const openDialogSpy = spyOn(component, 'openTestRunModal');
+
+        component.ngOnInit();
+
+        expect(openDialogSpy).toHaveBeenCalled();
+      });
     });
 
     describe('#stopTestrun', () => {
@@ -177,20 +205,6 @@ describe('ProgressComponent', () => {
         });
       });
 
-      it('should set breadcrumbs$ value', () => {
-        const expectedResult = [
-          MOCK_PROGRESS_DATA_IN_PROGRESS.device.manufacturer,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.device.model,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.device.firmware,
-        ];
-
-        component.ngOnInit();
-
-        component.breadcrumbs$.subscribe(res => {
-          expect(res).toEqual(expectedResult);
-        });
-      });
-
       describe('dataSource$', () => {
         it('should set value with empty values if result length < total for status "In Progress"', () => {
           const expectedResult = TEST_DATA_TABLE_RESULT;
@@ -226,6 +240,16 @@ describe('ProgressComponent', () => {
             expect(res).toEqual(expectedResult);
           });
         });
+      });
+
+      it('should call focusFirstElementInMain when testrun stops after cancelling', () => {
+        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_COMPLIANT);
+        component.isCancelling = true;
+
+        component.ngOnInit();
+        fixture.detectChanges();
+
+        expect(stateServiceMock.focusFirstElementInMain).toHaveBeenCalled();
       });
 
       describe('hideLoading', () => {
@@ -283,12 +307,12 @@ describe('ProgressComponent', () => {
       await TestBed.configureTestingModule({
         declarations: [
           ProgressComponent,
-          FakeProgressBreadcrumbsComponent,
           FakeProgressStatusCardComponent,
           FakeProgressTableComponent,
         ],
         providers: [
           { provide: TestRunService, useValue: testRunServiceMock },
+          { provide: StateService, useValue: stateServiceMock },
           {
             provide: MatDialogRef,
             useValue: {},
@@ -302,7 +326,15 @@ describe('ProgressComponent', () => {
           DownloadReportComponent,
           SpinnerComponent,
         ],
-      }).compileComponents();
+      })
+        .overrideComponent(ProgressComponent, {
+          set: {
+            providers: [
+              { provide: LoaderService, useValue: loaderServiceMock },
+            ],
+          },
+        })
+        .compileComponents();
 
       fixture = TestBed.createComponent(ProgressComponent);
       compiled = fixture.nativeElement as HTMLElement;
@@ -359,7 +391,7 @@ describe('ProgressComponent', () => {
         expect(startBtn.disabled).toBeFalse();
       });
 
-      it('should open initiate test run modal when start button clicked', () => {
+      it('should open initiate test run modal when start button clicked', fakeAsync(() => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(true),
         } as MatDialogRef<typeof ProgressInitiateFormComponent>);
@@ -376,9 +408,11 @@ describe('ProgressComponent', () => {
           disableClose: true,
           panelClass: 'initiate-test-run-dialog',
         });
+        tick(0);
+        expect(stateServiceMock.focusFirstElementInMain).toHaveBeenCalled();
 
         openSpy.calls.reset();
-      });
+      }));
     });
 
     describe('with available systemStatus$ data, status "In Progress"', () => {
@@ -591,14 +625,6 @@ describe('ProgressComponent', () => {
     });
   });
 });
-
-@Component({
-  selector: 'app-progress-breadcrumbs',
-  template: '<div></div>',
-})
-class FakeProgressBreadcrumbsComponent {
-  @Input() breadcrumbs$!: Observable<string[]>;
-}
 
 @Component({
   selector: 'app-progress-status-card',

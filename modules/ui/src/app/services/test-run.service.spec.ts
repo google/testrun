@@ -20,7 +20,7 @@ import {
 import { fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
 import { Device, TestModule } from '../model/device';
 
-import { TestRunService } from './test-run.service';
+import { SystemInterfaces, TestRunService } from './test-run.service';
 import { SystemConfig } from '../model/setting';
 import {
   MOCK_PROGRESS_DATA_CANCELLING,
@@ -80,11 +80,6 @@ describe('TestRunService', () => {
       {
         displayName: 'Services',
         name: 'nmap',
-        enabled: true,
-      },
-      {
-        displayName: 'Security',
-        name: 'security',
         enabled: true,
       },
       {
@@ -165,7 +160,10 @@ describe('TestRunService', () => {
 
   it('getSystemInterfaces should return array of interfaces', () => {
     const apiUrl = 'http://localhost:8000/system/interfaces';
-    const mockSystemInterfaces: string[] = ['mockValue', 'mockValue'];
+    const mockSystemInterfaces: SystemInterfaces = {
+      mockValue1: 'mockValue1',
+      mockValue2: 'mockValue2',
+    };
 
     service.getSystemInterfaces().subscribe(res => {
       expect(res).toEqual(mockSystemInterfaces);
@@ -245,32 +243,50 @@ describe('TestRunService', () => {
     });
   });
 
-  it('getHistory should return reports', () => {
-    let result: TestrunStatus[] | null = null;
+  describe('getHistory', () => {
+    it('should return reports', () => {
+      let result: TestrunStatus[] | null = null;
 
-    const reports = [
-      {
-        status: 'Completed',
-        device: device,
-        report: 'https://api.testrun.io/report.pdf',
-        started: '2023-06-22T10:11:00.123Z',
-        finished: '2023-06-22T10:17:00.123Z',
-      },
-    ] as TestrunStatus[];
+      const reports = [
+        {
+          status: 'Completed',
+          device: device,
+          report: 'https://api.testrun.io/report.pdf',
+          started: '2023-06-22T10:11:00.123Z',
+          finished: '2023-06-22T10:17:00.123Z',
+        },
+      ] as TestrunStatus[];
 
-    service.getHistory().subscribe(res => {
-      expect(res).toEqual(result);
+      service.getHistory().subscribe(res => {
+        expect(res).toEqual(result);
+      });
+
+      result = reports;
+      service.fetchHistory();
+      const req = httpTestingController.expectOne(
+        'http://localhost:8000/reports'
+      );
+
+      expect(req.request.method).toBe('GET');
+
+      req.flush(reports);
     });
 
-    result = reports;
-    service.fetchHistory();
-    const req = httpTestingController.expectOne(
-      'http://localhost:8000/reports'
-    );
+    it('should return [] when error happens', () => {
+      let result: TestrunStatus[] | null = null;
 
-    expect(req.request.method).toBe('GET');
+      service.getHistory().subscribe(res => {
+        expect(res).toEqual(result);
+      });
 
-    req.flush(reports);
+      result = [];
+      service.fetchHistory();
+      const req = httpTestingController.expectOne({
+        url: 'http://localhost:8000/reports',
+      });
+
+      req.flush([], { status: 500, statusText: 'error' });
+    });
   });
 
   describe('#getResultClass', () => {
@@ -435,4 +451,32 @@ describe('TestRunService', () => {
         )
     ).toEqual(false);
   }));
+
+  it('#saveDevice should have necessary request data', () => {
+    const apiUrl = 'http://localhost:8000/device';
+
+    service.saveDevice(device).subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(apiUrl);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(JSON.stringify(device));
+    req.flush(true);
+  });
+
+  it('#editDevice should have necessary request data', () => {
+    const apiUrl = 'http://localhost:8000/device/edit';
+
+    service.editDevice(device, '01:01:01:01:01:01').subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(apiUrl);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(
+      JSON.stringify({ mac_addr: '01:01:01:01:01:01', device })
+    );
+    req.flush(true);
+  });
 });

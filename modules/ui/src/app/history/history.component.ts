@@ -30,7 +30,7 @@ import {
 import { DatePipe } from '@angular/common';
 import { MatSort, Sort } from '@angular/material/sort';
 import { Subject, takeUntil } from 'rxjs';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatRow, MatTableDataSource } from '@angular/material/table';
 import { FilterDialogComponent } from '../components/filter-dialog/filter-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { tap } from 'rxjs/internal/operators/tap';
@@ -67,6 +67,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
   private destroy$: Subject<boolean> = new Subject<boolean>();
   @ViewChild(MatSort, { static: false }) sort!: MatSort;
   dataLoaded = false;
+  selectedRow: MatRow | null = null;
   constructor(
     private testRunService: TestRunService,
     private datePipe: DatePipe,
@@ -285,8 +286,35 @@ export class HistoryComponent implements OnInit, OnDestroy {
   }
 
   isFiltersEmpty() {
-    return Object.values(this.filteredValues).every(
-      value => value.length === 0
-    );
+    return Object.values(this.filteredValues).every(value => {
+      if (value.start === '') {
+        return value.end.length === 0;
+      }
+      return value.length === 0;
+    });
+  }
+
+  selectRow(row: MatRow) {
+    this.selectedRow = row;
+  }
+
+  trackByStarted(index: number, item: TestrunStatus) {
+    return item.started;
+  }
+
+  focusNextButton() {
+    // Try to focus next interactive element, if exists
+    const next = window.document.querySelector(
+      '.report-selected + tr a'
+    ) as HTMLButtonElement;
+    if (next) {
+      next.focus();
+    } else {
+      // If next interactive element doest not exist, add menu reports button should be focused
+      const menuButton = window.document.querySelector(
+        '.app-sidebar-button-reports'
+      ) as HTMLButtonElement;
+      menuButton?.focus();
+    }
   }
 }

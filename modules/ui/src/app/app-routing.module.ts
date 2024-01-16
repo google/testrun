@@ -21,6 +21,7 @@ const routes: Routes = [
     path: 'testrun',
     loadChildren: () =>
       import('./progress/progress.module').then(m => m.ProgressModule),
+    title: 'Testrun',
   },
   {
     path: 'devices',
@@ -28,11 +29,13 @@ const routes: Routes = [
       import('./device-repository/device-repository.module').then(
         m => m.DeviceRepositoryModule
       ),
+    title: 'Testrun - Devices',
   },
   {
     path: 'reports',
     loadChildren: () =>
       import('./history/history.module').then(m => m.HistoryModule),
+    title: 'Testrun - Reports',
   },
   {
     path: '',
