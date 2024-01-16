@@ -28,6 +28,7 @@ import { DeviceValidators } from './device.validators';
 import { catchError, of, Subject, takeUntil } from 'rxjs';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { EscapableDialogComponent } from '../../components/escapable-dialog/escapable-dialog.component';
+import { Observable } from 'rxjs/internal/Observable';
 
 const MAC_ADDRESS_PATTERN =
   '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
@@ -109,6 +110,7 @@ export class DeviceFormComponent
   }
 
   cancel(): void {
+    this.testRunService.setIsOpenAddDevice(false);
     this.dialogRef.close();
   }
 
@@ -128,8 +130,7 @@ export class DeviceFormComponent
 
     const device = this.createDeviceFromForm();
 
-    this.testRunService
-      .saveDevice(device)
+    this.updateDevice(device)
       .pipe(
         takeUntil(this.destroy$),
         catchError(error => {
@@ -145,6 +146,13 @@ export class DeviceFormComponent
           } as FormResponse);
         }
       });
+  }
+
+  private updateDevice(device: Device): Observable<boolean> {
+    if (this.data.device) {
+      return this.testRunService.editDevice(device, this.data.device.mac_addr);
+    }
+    return this.testRunService.saveDevice(device);
   }
 
   private isAllTestsDisabled(): boolean {
@@ -191,7 +199,7 @@ export class DeviceFormComponent
       model: ['', [this.deviceValidators.deviceStringFormat()]],
       manufacturer: ['', [this.deviceValidators.deviceStringFormat()]],
       mac_addr: [
-        { value: '', disabled: this.data.device },
+        '',
         [
           Validators.pattern(MAC_ADDRESS_PATTERN),
           this.deviceValidators.differentMACAddress(this.data.device),

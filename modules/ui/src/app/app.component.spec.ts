@@ -38,7 +38,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { of } from 'rxjs/internal/observable/of';
 import SpyObj = jasmine.SpyObj;
 import { BypassComponent } from './components/bypass/bypass.component';
-import { VersionComponent } from './components/version/version.component';
 import { CalloutComponent } from './components/callout/callout.component';
 import {
   MOCK_PROGRESS_DATA_IDLE,
@@ -75,19 +74,18 @@ describe('AppComponent', () => {
       'getSystemStatus',
       'fetchHistory',
       'getSystemInterfaces',
-      'getVersion',
-      'fetchVersion',
       'setIsOpenAddDevice',
       'systemStatus$',
       'isTestrunStarted$',
       'hasConnectionSetting$',
+      'setIsOpenStartTestrun',
     ]);
 
     mockLoaderService = jasmine.createSpyObj(['setLoading']);
     mockService.getDevices.and.returnValue(
       new BehaviorSubject<Device[] | null>([device])
     );
-    mockService.getSystemInterfaces.and.returnValue(of([]));
+    mockService.getSystemInterfaces.and.returnValue(of({}));
     (mockService.systemStatus$ as unknown) = of({});
     mockService.isTestrunStarted$ = of(true);
     mockService.hasConnectionSetting$ = of(true);
@@ -103,7 +101,6 @@ describe('AppComponent', () => {
         MatToolbarModule,
         MatSidenavModule,
         BypassComponent,
-        VersionComponent,
         CalloutComponent,
       ],
       providers: [
@@ -114,6 +111,7 @@ describe('AppComponent', () => {
         AppComponent,
         FakeGeneralSettingsComponent,
         FakeSpinnerComponent,
+        FakeVersionComponent,
       ],
     });
 
@@ -324,177 +322,220 @@ describe('AppComponent', () => {
     expect(version).toBeTruthy();
   });
 
-  describe('with no connection settings', () => {
-    beforeEach(() => {
-      mockService.hasConnectionSetting$ = of(false);
-      component.ngOnInit();
-      fixture.detectChanges();
+  describe('Callout component visibility', () => {
+    describe('with no connection settings', () => {
+      beforeEach(() => {
+        mockService.hasConnectionSetting$ = of(false);
+        component.ngOnInit();
+        fixture.detectChanges();
+      });
+
+      it('should have callout component with "Step 1" text', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutContent = callout?.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutContent).toContain('Step 1');
+      });
+
+      it('should have callout content with "Connection settings" link ', () => {
+        const calloutLinkEl = compiled.querySelector(
+          '.message-link'
+        ) as HTMLAnchorElement;
+        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+
+        expect(calloutLinkEl).toBeTruthy();
+        expect(calloutLinkContent).toContain('Connection settings');
+      });
+
+      keyboardCases.forEach(testCase => {
+        it(`should call openSetting on keydown ${testCase.name} "Connection settings" link`, fakeAsync(() => {
+          const spyOpenSetting = spyOn(component, 'openSetting');
+          const calloutLinkEl = compiled.querySelector(
+            '.message-link'
+          ) as HTMLAnchorElement;
+
+          calloutLinkEl.dispatchEvent(testCase.event);
+          flush();
+
+          expect(spyOpenSetting).toHaveBeenCalled();
+        }));
+      });
     });
 
-    it('should have callout component with "Step 1" text', () => {
-      const callout = compiled.querySelector('app-callout');
-      const calloutContent = callout?.innerHTML.trim();
+    describe('with system status as "Idle"', () => {
+      beforeEach(() => {
+        mockService.hasConnectionSetting$ = of(true);
+        mockService.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([device])
+        );
+        mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IDLE);
+        mockService.isTestrunStarted$ = of(false);
+        component.ngOnInit();
+        fixture.detectChanges();
+      });
 
-      expect(callout).toBeTruthy();
-      expect(calloutContent).toContain('Step 1');
-    });
-  });
+      it('should have callout component with "Step 3" text', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutContent = callout?.innerHTML.trim();
 
-  describe('with system status as "Idle"', () => {
-    beforeEach(() => {
-      mockService.hasConnectionSetting$ = of(true);
-      mockService.getDevices.and.returnValue(
-        new BehaviorSubject<Device[] | null>([device])
-      );
-      mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IDLE);
-      mockService.isTestrunStarted$ = of(false);
-      component.ngOnInit();
-      fixture.detectChanges();
-    });
-
-    it('should have callout component with "Step 3" text', () => {
-      const callout = compiled.querySelector('app-callout');
-      const calloutContent = callout?.innerHTML.trim();
-
-      expect(callout).toBeTruthy();
-      expect(calloutContent).toContain('Step 3');
-    });
-  });
-
-  describe('with no devices setted', () => {
-    beforeEach(() => {
-      mockService.getDevices.and.returnValue(
-        new BehaviorSubject<Device[] | null>(null)
-      );
-      component.ngOnInit();
-      fixture.detectChanges();
+        expect(callout).toBeTruthy();
+        expect(calloutContent).toContain('Step 3');
+      });
     });
 
-    it('should have callout component', () => {
-      const callout = compiled.querySelector('app-callout');
+    describe('with no devices setted', () => {
+      beforeEach(() => {
+        mockService.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>(null)
+        );
+        component.ngOnInit();
+        fixture.detectChanges();
+      });
 
-      expect(callout).toBeTruthy();
-    });
+      it('should have callout component', () => {
+        const callout = compiled.querySelector('app-callout');
 
-    it('should have callout component with "Step 2" text', () => {
-      const callout = compiled.querySelector('app-callout');
-      const calloutContent = callout?.innerHTML.trim();
+        expect(callout).toBeTruthy();
+      });
 
-      expect(callout).toBeTruthy();
-      expect(calloutContent).toContain('Step 2');
-    });
+      it('should have callout component with "Step 2" text', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutContent = callout?.innerHTML.trim();
 
-    it('should have callout content with "Create a Device" link ', () => {
-      const calloutLinkEl = compiled.querySelector(
-        '.message-link'
-      ) as HTMLAnchorElement;
-      const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+        expect(callout).toBeTruthy();
+        expect(calloutContent).toContain('Step 2');
+      });
 
-      expect(calloutLinkEl).toBeTruthy();
-      expect(calloutLinkContent).toContain('Create a Device');
-    });
+      it('should have callout content with "Create a Device" link ', () => {
+        const calloutLinkEl = compiled.querySelector(
+          '.message-link'
+        ) as HTMLAnchorElement;
+        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
-    keyboardCases.forEach(testCase => {
-      it(`should navigate to the device-repository on keydown ${testCase.name} "Create a Device" link`, fakeAsync(() => {
+        expect(calloutLinkEl).toBeTruthy();
+        expect(calloutLinkContent).toContain('Create a Device');
+      });
+
+      keyboardCases.forEach(testCase => {
+        it(`should navigate to the device-repository on keydown ${testCase.name} "Create a Device" link`, fakeAsync(() => {
+          const calloutLinkEl = compiled.querySelector(
+            '.message-link'
+          ) as HTMLAnchorElement;
+
+          calloutLinkEl.dispatchEvent(testCase.event);
+          flush();
+
+          expect(router.url).toBe(Routes.Devices);
+        }));
+      });
+
+      it('should navigate to the device-repository on click "Create a Device" link', fakeAsync(() => {
         const calloutLinkEl = compiled.querySelector(
           '.message-link'
         ) as HTMLAnchorElement;
 
-        calloutLinkEl.dispatchEvent(testCase.event);
+        calloutLinkEl.click();
         flush();
 
         expect(router.url).toBe(Routes.Devices);
+        expect(mockService.setIsOpenAddDevice).toHaveBeenCalledWith(true);
       }));
     });
 
-    it('should navigate to the device-repository on click "Create a Device" link', fakeAsync(() => {
-      const calloutLinkEl = compiled.querySelector(
-        '.message-link'
-      ) as HTMLAnchorElement;
+    describe('with devices setted but without systemStatus data', () => {
+      beforeEach(() => {
+        mockService.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([device])
+        );
+        mockService.isTestrunStarted$ = of(false);
+        component.ngOnInit();
+        fixture.detectChanges();
+      });
 
-      calloutLinkEl.click();
-      flush();
+      it('should have callout component with "Step 3" text', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutContent = callout?.innerHTML.trim();
 
-      expect(router.url).toBe(Routes.Devices);
-      expect(mockService.setIsOpenAddDevice).toHaveBeenCalledWith(true);
-    }));
-  });
+        expect(callout).toBeTruthy();
+        expect(calloutContent).toContain('Step 3');
+      });
 
-  describe('with devices setted but without systemStatus data', () => {
-    beforeEach(() => {
-      mockService.getDevices.and.returnValue(
-        new BehaviorSubject<Device[] | null>([device])
-      );
-      mockService.isTestrunStarted$ = of(false);
-      component.ngOnInit();
-      fixture.detectChanges();
-    });
-
-    it('should have callout component with "Step 3" text', () => {
-      const callout = compiled.querySelector('app-callout');
-      const calloutContent = callout?.innerHTML.trim();
-
-      expect(callout).toBeTruthy();
-      expect(calloutContent).toContain('Step 3');
-    });
-
-    it('should have callout component with "Testrun" link', () => {
-      const callout = compiled.querySelector('app-callout');
-      const calloutLinkEl = compiled.querySelector(
-        '.message-link'
-      ) as HTMLAnchorElement;
-      const calloutLinkContent = calloutLinkEl.innerHTML.trim();
-
-      expect(callout).toBeTruthy();
-      expect(calloutLinkContent).toContain('Testrun');
-    });
-
-    keyboardCases.forEach(testCase => {
-      it(`should navigate to the runtime on keydown ${testCase.name} "Run the Test" link`, fakeAsync(() => {
+      it('should have callout component with "Testrun" link', () => {
+        const callout = compiled.querySelector('app-callout');
         const calloutLinkEl = compiled.querySelector(
           '.message-link'
         ) as HTMLAnchorElement;
+        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
-        calloutLinkEl.dispatchEvent(testCase.event);
-        flush();
+        expect(callout).toBeTruthy();
+        expect(calloutLinkContent).toContain('Testrun');
+      });
 
-        expect(router.url).toBe(Routes.Testrun);
-      }));
+      keyboardCases.forEach(testCase => {
+        it(`should navigate to the runtime on keydown ${testCase.name} "Run the Test" link`, fakeAsync(() => {
+          const calloutLinkEl = compiled.querySelector(
+            '.message-link'
+          ) as HTMLAnchorElement;
+
+          calloutLinkEl.dispatchEvent(testCase.event);
+          flush();
+
+          expect(router.url).toBe(Routes.Testrun);
+        }));
+      });
+    });
+
+    describe('with devices setted, without systemStatus data, but run the tests ', () => {
+      beforeEach(() => {
+        mockService.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([device])
+        );
+        mockService.isTestrunStarted$ = of(true);
+        component.ngOnInit();
+        fixture.detectChanges();
+      });
+
+      it('should not have callout component', () => {
+        const callout = compiled.querySelector('app-callout');
+
+        expect(callout).toBeNull();
+      });
+    });
+
+    describe('with devices setted and systemStatus data ', () => {
+      beforeEach(() => {
+        mockService.getDevices.and.returnValue(
+          new BehaviorSubject<Device[] | null>([device])
+        );
+        mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+        component.ngOnInit();
+        fixture.detectChanges();
+      });
+
+      it('should not have callout component', () => {
+        const callout = compiled.querySelector('app-callout');
+
+        expect(callout).toBeNull();
+      });
     });
   });
 
-  describe('with devices setted, without systemStatus data, but run the tests ', () => {
-    beforeEach(() => {
-      mockService.getDevices.and.returnValue(
-        new BehaviorSubject<Device[] | null>([device])
-      );
-      mockService.isTestrunStarted$ = of(true);
-      component.ngOnInit();
-      fixture.detectChanges();
-    });
+  it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {
+    mockService.getDevices.and.returnValue(
+      new BehaviorSubject<Device[] | null>([])
+    );
+    component.ngOnInit();
+    fixture.detectChanges();
 
-    it('should not have callout component', () => {
-      const callout = compiled.querySelector('app-callout');
+    spyOn(component.settingsDrawer, 'close').and.returnValue(
+      Promise.resolve('close')
+    );
+    const spyToggle = spyOn(component.toggleSettingsBtn, 'focus');
 
-      expect(callout).toBeNull();
-    });
-  });
+    await component.closeSetting();
 
-  describe('with devices setted and systemStatus data ', () => {
-    beforeEach(() => {
-      mockService.getDevices.and.returnValue(
-        new BehaviorSubject<Device[] | null>([device])
-      );
-      mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
-      component.ngOnInit();
-      fixture.detectChanges();
-    });
-
-    it('should not have callout component', () => {
-      const callout = compiled.querySelector('app-callout');
-
-      expect(callout).toBeNull();
-    });
+    expect(spyToggle).toHaveBeenCalledTimes(0);
   });
 });
 
@@ -505,7 +546,6 @@ describe('AppComponent', () => {
 class FakeGeneralSettingsComponent {
   @Input() interfaces = [];
   @Output() closeSettingEvent = new EventEmitter<void>();
-  @Output() openSettingEvent = new EventEmitter<void>();
   @Output() reloadInterfacesEvent = new EventEmitter<void>();
 }
 
@@ -514,3 +554,9 @@ class FakeGeneralSettingsComponent {
   template: '<div></div>',
 })
 class FakeSpinnerComponent {}
+
+@Component({
+  selector: 'app-version',
+  template: '<div></div>',
+})
+class FakeVersionComponent {}

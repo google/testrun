@@ -25,6 +25,7 @@ limitations under the License.
       <table
         (matSortChange)="sortData($event)"
         [dataSource]="dataSource"
+        [trackBy]="trackByStarted"
         mat-table
         matSort
         tabindex="0">
@@ -132,7 +133,10 @@ limitations under the License.
                 file_download
               </mat-icon>
             </app-download-report>
-            <app-delete-report *ngIf="data?.device" [data]="data">
+            <app-delete-report
+              *ngIf="data?.device"
+              [data]="data"
+              (deviceRemoved)="focusNextButton()">
               <mat-icon
                 class="delete-report-icon"
                 fontSet="material-icons-outlined">
@@ -177,7 +181,12 @@ limitations under the License.
           </td>
         </tr>
 
-        <tr *matRowDef="let row; columns: displayedColumns" mat-row></tr>
+        <tr
+          *matRowDef="let row; columns: displayedColumns"
+          mat-row
+          #rowElement
+          [class.report-selected]="rowElement === selectedRow"
+          (click)="selectRow(rowElement)"></tr>
       </table>
     </div>
   </ng-container>

@@ -25,14 +25,21 @@ limitations under the License.
 </p>
 
 <mat-dialog-actions align="end" class="version-update-actions">
-  <button (click)="cancel()" class="cancel-button" mat-flat-button>
+  <button
+    (click)="cancel()"
+    class="cancel-button"
+    color="primary"
+    mat-button
+    type="button">
     Ignore
   </button>
   <a
     href="{{ data.latest_version_url }}"
     target="_blank"
     class="download-link"
-    mat-flat-button
+    color="primary"
+    mat-button
+    type="button"
     (click)="cancel()">
     Download
   </a>

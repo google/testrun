@@ -19,11 +19,11 @@ limitations under the License.
   [attr.aria-label]="label"
   class="device-item"
   type="button">
-  <div [attr.aria-label]="device.model" class="item-name">
-    {{ device.model }}
-  </div>
   <div [attr.aria-label]="device.manufacturer" class="item-manufacturer">
     {{ device.manufacturer }}
+  </div>
+  <div [attr.aria-label]="device.model" class="item-name">
+    {{ device.model }}
   </div>
   <div [attr.aria-label]="device.mac_addr" class="item-mac-address">
     {{ device.mac_addr }}

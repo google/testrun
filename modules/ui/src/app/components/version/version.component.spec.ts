@@ -49,6 +49,7 @@ describe('VersionComponent', () => {
   describe('update is not available', () => {
     beforeEach(() => {
       versionBehaviorSubject$.next(VERSION);
+      mockService.getVersion.and.returnValue(versionBehaviorSubject$);
       fixture.detectChanges();
     });
 
@@ -64,6 +65,7 @@ describe('VersionComponent', () => {
   describe('update is available', () => {
     beforeEach(() => {
       versionBehaviorSubject$.next(NEW_VERSION);
+      mockService.getVersion.and.returnValue(versionBehaviorSubject$);
       fixture.detectChanges();
     });
 

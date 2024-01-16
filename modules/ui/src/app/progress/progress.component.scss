@@ -101,13 +101,13 @@
   overflow-y: auto;
   flex: 1;
   padding-top: 10px;
+  & ::ng-deep .loader {
+    width: 196px;
+    height: 196px;
+  }
 }
 
 .progress-table-progress-empty {
   position: relative;
   overflow-y: hidden;
-  & ::ng-deep .loader {
-    width: 196px;
-    height: 196px;
-  }
 }
