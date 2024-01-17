@@ -28,13 +28,13 @@ class TestModule:
 
   def __init__(self, module_name, log_name, log_dir=None,conf_file=CONF_FILE,results_dir=RESULTS_DIR):
     self._module_name = module_name
-    self._results_dir=results_dir
+    self._results_dir=results_dir if results_dir is not None else RESULTS_DIR
     self._device_mac = os.environ.get('DEVICE_MAC','')
     self._ipv4_addr = os.environ.get('IPV4_ADDR','')
     self._ipv4_subnet = os.environ.get('IPV4_SUBNET','')
     self._ipv6_subnet = os.environ.get('IPV6_SUBNET','')
     self._add_logger(log_name=log_name, module_name=module_name, log_dir=log_dir)
-    self._config = self._read_config(conf_file=conf_file)
+    self._config = self._read_config(conf_file=conf_file if conf_file is not None else CONF_FILE)
     self._device_ipv4_addr = None
     self._device_ipv6_addr = None
 

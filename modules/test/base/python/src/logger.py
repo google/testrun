@@ -58,5 +58,6 @@ def get_logger(name, log_file=None, log_dir=_LOG_DIR):
     LOGGERS[name].setLevel(log_level)
     add_stream_handler(LOGGERS[name])
   if log_file is not None:
+    log_dir = log_dir if log_dir is not None else _LOG_DIR
     add_file_handler(LOGGERS[name], log_file, log_dir=log_dir)
   return LOGGERS[name]

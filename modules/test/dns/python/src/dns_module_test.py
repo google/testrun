@@ -41,7 +41,7 @@ class TLSModuleTest(unittest.TestCase):
     # Create the output directory and ignore errors if it already exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    log = logger.get_logger(MODULE_NAME)
+    log = logger.get_logger(MODULE_NAME,log_dir=OUTPUT_DIR)
 
     global DNS_MODULE
     DNS_MODULE = DNSModule(module='dns',
