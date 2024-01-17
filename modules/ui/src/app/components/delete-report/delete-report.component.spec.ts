@@ -55,6 +55,7 @@ describe('DeleteReportComponent', () => {
     });
 
     it('#deleteReport should open delete dialog', () => {
+      const deviceRemovedSpy = spyOn(component.deviceRemoved, 'emit');
       spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
       } as MatDialogRef<typeof DeleteFormComponent>);
@@ -71,6 +72,7 @@ describe('DeleteReportComponent', () => {
         '01:02:03:04:05:06',
         '2023-06-22T09:20:00.123Z'
       );
+      expect(deviceRemovedSpy).toHaveBeenCalled();
     });
   });
 

@@ -86,6 +86,16 @@ limitations under the License.
         ">
         Step 1: To perform a device test, please, select ports in Connection
         settings.
+        <a
+          (click)="openSetting()"
+          (keydown.enter)="openSetting()"
+          (keydown.space)="openSetting()"
+          aria-label="The Connection settings link opens the menu. No redirect to other pages."
+          tabindex="0"
+          role="link"
+          class="message-link"
+          >Connection settings</a
+        >
       </app-callout>
       <app-callout
         [type]="CalloutType.Info"
@@ -99,8 +109,9 @@ limitations under the License.
           (click)="navigateToDeviceRepository()"
           (keydown.enter)="navigateToDeviceRepository()"
           (keydown.space)="navigateToDeviceRepository()"
+          aria-label="The Create a Device link redirects to the Devices page and opens the menu there."
           tabindex="0"
-          role="button"
+          role="link"
           class="message-link"
           >Create a Device</a
         >
@@ -121,8 +132,9 @@ limitations under the License.
           (click)="navigateToRuntime()"
           (keydown.enter)="navigateToRuntime()"
           (keydown.space)="navigateToRuntime()"
+          aria-label="The Testrun link redirects to the Testrun page and opens a menu there."
           tabindex="0"
-          role="button"
+          role="link"
           class="message-link"
           >Testrun</a
         >
@@ -139,7 +151,6 @@ limitations under the License.
     <app-general-settings
       [interfaces]="interfaces"
       (closeSettingEvent)="closeSetting()"
-      (openSettingEvent)="openSetting()"
       (reloadInterfacesEvent)="reloadInterfaces()">
     </app-general-settings>
   </mat-drawer>

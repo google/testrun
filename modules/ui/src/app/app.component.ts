@@ -23,7 +23,7 @@ import {
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
-import { TestRunService } from './services/test-run.service';
+import { SystemInterfaces, TestRunService } from './services/test-run.service';
 import { Observable } from 'rxjs/internal/Observable';
 import { Device } from './model/device';
 import { take } from 'rxjs';
@@ -52,13 +52,13 @@ export class AppComponent implements OnInit {
   systemStatus$!: Observable<TestrunStatus>;
   isTestrunStarted$!: Observable<boolean>;
   hasConnectionSetting$!: Observable<boolean | null>;
-  interfaces: string[] = [];
+  interfaces: SystemInterfaces = {};
   isDevicesLoaded = false;
   isStatusLoaded = false;
   isConnectionSettingsLoaded = false;
   public readonly StatusOfTestrun = StatusOfTestrun;
   public readonly Routes = Routes;
-
+  private devicesLength = 0;
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
   @ViewChild('navigation') public navigation!: ElementRef;
@@ -99,7 +99,10 @@ export class AppComponent implements OnInit {
     this.devices$ = this.testRunService.getDevices().pipe(
       tap(result => {
         if (result !== null) {
+          this.devicesLength = result.length;
           this.isDevicesLoaded = true;
+        } else {
+          this.devicesLength = 0;
         }
       }),
       shareReplay({ refCount: true, bufferSize: 1 })
@@ -128,12 +131,15 @@ export class AppComponent implements OnInit {
 
   navigateToRuntime(): void {
     this.route.navigate([Routes.Testrun]);
+    this.testRunService.setIsOpenStartTestrun(true);
   }
 
   async closeSetting(): Promise<void> {
-    return await this.settingsDrawer
-      .close()
-      .then(() => this.toggleSettingsBtn.focus());
+    return await this.settingsDrawer.close().then(() => {
+      if (this.devicesLength > 0) {
+        this.toggleSettingsBtn.focus();
+      } // else device create window will be opened
+    });
   }
 
   async openSetting(): Promise<void> {

@@ -43,6 +43,18 @@ const history = [
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
   },
+  {
+    status: 'compliant',
+    device: {
+      manufacturer: 'Delta',
+      model: '03-DIN-SRC',
+      mac_addr: '01:02:03:04:05:07',
+      firmware: '1.2.3',
+    },
+    report: 'https://api.testrun.io/report.pdf',
+    started: '2023-07-23T10:11:00.123Z',
+    finished: '2023-07-23T10:17:10.123Z',
+  },
 ] as TestrunStatus[];
 
 describe('HistoryComponent', () => {
@@ -214,6 +226,47 @@ describe('HistoryComponent', () => {
         mockFilteredData
       );
     });
+
+    it('should return true if filters has no values', () => {
+      component.filteredValues = {
+        deviceInfo: '',
+        deviceFirmware: '',
+        results: [],
+        dateRange: { start: '', end: '' },
+      };
+
+      expect(component.isFiltersEmpty()).toBeTrue();
+    });
+
+    describe('#focusNextButton', () => {
+      beforeEach(() => {
+        fixture.detectChanges();
+      });
+
+      it('should focus next active element if exist', () => {
+        const row = window.document.querySelector('tbody tr') as HTMLElement;
+        row.classList.add('report-selected');
+        const nextButton = window.document.querySelector(
+          '.report-selected + tr a'
+        ) as HTMLButtonElement;
+        const buttonFocusSpy = spyOn(nextButton, 'focus');
+
+        component.focusNextButton();
+
+        expect(buttonFocusSpy).toHaveBeenCalled();
+      });
+
+      it('should focus navigation button if next active element does not exist', () => {
+        const button = document.createElement('BUTTON');
+        button.classList.add('app-sidebar-button-reports');
+        document.querySelector('body')?.appendChild(button);
+        const buttonFocusSpy = spyOn(button, 'focus');
+
+        component.focusNextButton();
+
+        expect(buttonFocusSpy).toHaveBeenCalled();
+      });
+    });
   });
 
   describe('DOM tests', () => {
@@ -311,6 +364,15 @@ describe('HistoryComponent', () => {
         );
 
         expect(emptyMessage).toBeTruthy();
+      });
+
+      it('should select row on row click', () => {
+        component.selectedRow = null;
+        const row = window.document.querySelector('tbody tr') as HTMLElement;
+
+        row.click();
+
+        expect(component.selectedRow).toBeTruthy();
       });
     });
   });

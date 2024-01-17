@@ -32,17 +32,17 @@ $border-radius: 12px;
   grid-row-gap: 4px;
   font-family: 'Open Sans', sans-serif;
   grid-template-areas:
-    'name name icon'
-    'manufacturer address icon';
+    'manufacturer manufacturer icon'
+    'name address icon';
 
   &:hover {
     cursor: pointer;
   }
 }
 
-.item-name {
+.item-manufacturer {
   padding: 0 16px;
-  grid-area: name;
+  grid-area: manufacturer;
   justify-self: start;
   align-self: end;
   color: #1f1f1f;
@@ -57,9 +57,9 @@ $border-radius: 12px;
   text-align: start;
 }
 
-.item-manufacturer {
+.item-name {
   padding: 0 16px;
-  grid-area: manufacturer;
+  grid-area: name;
   justify-self: start;
   color: $grey-800;
   font-size: 14px;

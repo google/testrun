@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  OnDestroy,
+  Output,
+} from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { ReportActionComponent } from '../report-action/report-action.component';
@@ -36,6 +42,7 @@ export class DeleteReportComponent
   extends ReportActionComponent
   implements OnDestroy
 {
+  @Output() deviceRemoved = new EventEmitter<void>();
   private destroy$: Subject<boolean> = new Subject<boolean>();
   constructor(
     private testRunService: TestRunService,
@@ -72,6 +79,7 @@ export class DeleteReportComponent
           this.testRunService
             .deleteReport(this.data.device.mac_addr, this.data.started || '')
             .subscribe(() => {
+              this.deviceRemoved.emit();
               this.testRunService.removeReport(
                 this.data.device.mac_addr,
                 this.data.started || ''

@@ -17,7 +17,8 @@
 @import '../../../theming/colors';
 
 :host {
-  height: 152px;
+  height: auto;
+  min-height: 152px;
 }
 
 .progress-card {
@@ -26,6 +27,7 @@
   justify-content: space-between;
   width: 295px;
   height: 100%;
+  min-height: 152px;
   box-sizing: border-box;
   padding: 16px 32px;
 
