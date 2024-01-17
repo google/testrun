@@ -39,6 +39,7 @@ class TestRunSession():
     self._started = None
     self._finished = None
     self._results = []
+    self._module_reports = {}
     self._runtime_params = []
     self._device_repository = []
     self._total_tests = 0
@@ -214,6 +215,9 @@ class TestRunSession():
 
   def add_test_result(self, test_result):
     self._results.append(test_result)
+
+  def add_module_report(self, module, report):
+    self._module_reports[module]=report
 
   def get_all_reports(self):
 
