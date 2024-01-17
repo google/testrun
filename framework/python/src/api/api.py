@@ -77,6 +77,9 @@ class Api:
                                self.delete_device,
                                methods=["DELETE"])
     self._router.add_api_route("/device", self.save_device, methods=["POST"])
+    self._router.add_api_route("/device/edit",
+                               self.edit_device,
+                               methods=["POST"])
 
     # Allow all origins to access the API
     origins = ["*"]
@@ -365,6 +368,7 @@ class Api:
                                 "the device")
 
   async def save_device(self, request: Request, response: Response):
+
     LOGGER.debug("Received device post request")
 
     try:
@@ -392,8 +396,9 @@ class Api:
 
       else:
 
-        self._test_run.save_device(device, device_json)
-        response.status_code = status.HTTP_200_OK
+        response.status_code = status.HTTP_409_CONFLICT
+        return self._generate_msg(False, "A device with that " +
+                                  "MAC address already exists")
 
       return device.to_config_json()
 
@@ -401,6 +406,74 @@ class Api:
     except JSONDecodeError:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid JSON received")
+
+  async def edit_device(self, request: Request, response: Response):
+
+    LOGGER.debug("Received device edit request")
+
+    try:
+      req_raw = (await request.body()).decode("UTF-8")
+      req_json = json.loads(req_raw)
+
+      # Validate top level fields
+      if not (DEVICE_MAC_ADDR_KEY in req_json and
+          "device" in req_json):
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(False, "Invalid request received")
+
+      # Extract device information from request
+      device_json = req_json.get("device")
+
+      if not self._validate_device_json(device_json):
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(False, "Invalid request received")
+
+      # Get device from old MAC address
+      device = self._session.get_device(req_json.get(DEVICE_MAC_ADDR_KEY))
+
+      # Check if device exists
+      if device is None:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return self._generate_msg(False,
+                                  "A device with that MAC " +
+                                  "address could not be found")
+
+      if (self._session.get_target_device() == device and
+          self._session.get_status() not in [
+            "Cancelled",
+            "Compliant",
+            "Non-Compliant"]):
+        response.status_code = 403
+        return self._generate_msg(False, "Cannot edit this device whilst " +
+                                  "it is being tested")
+
+      # Check if a device exists with the new MAC address
+      check_new_device = self._session.get_device(
+        device_json.get(DEVICE_MAC_ADDR_KEY))
+
+      if not check_new_device is None and (device.mac_addr 
+                                           != check_new_device.mac_addr):
+        response.status_code = status.HTTP_409_CONFLICT
+        return self._generate_msg(False,
+                                  "A device with that MAC address " +
+                                  "already exists")
+
+      # Update the device
+      device.mac_addr = device_json.get(DEVICE_MAC_ADDR_KEY).lower()
+      device.manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
+      device.model = device_json.get(DEVICE_MODEL_KEY)
+      device.test_modules = device_json.get(DEVICE_TEST_MODULES_KEY)
+
+      self._test_run.save_device(device, device_json)
+      response.status_code = status.HTTP_200_OK
+
+      return device.to_config_json()
+
+    # Catch JSON Decode error etc
+    except JSONDecodeError:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False, "Invalid JSON received")
+
 
   async def get_report(self, response: Response,
                        device_name, timestamp):
