@@ -114,14 +114,17 @@ class Api:
 
   async def get_sys_interfaces(self):
     addrs = psutil.net_if_addrs()
-    ifaces = []
-    for iface in addrs:
+    ifaces = {}
+
+    # pylint: disable=consider-using-dict-items
+    for key in addrs.keys():
+      nic = addrs[key]
 
       # Ignore any interfaces that are not ethernet
-      if not (iface.startswith("en") or iface.startswith("eth")):
+      if not (key.startswith("en") or key.startswith("eth")):
         continue
 
-      ifaces.append(iface)
+      ifaces[key] = nic[0].address
 
     return ifaces
 
