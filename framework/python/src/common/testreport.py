@@ -250,6 +250,7 @@ class TestReport():
       {module_reports}
     </div>'''
     page += self.generate_footer(page_num,max_page)
+    page += '</div>' #Page end
     page += '<div style="break-after:page"></div>'
     return page
 
