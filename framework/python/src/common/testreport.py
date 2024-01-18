@@ -211,16 +211,13 @@ class TestReport():
     content = ''
     for module_report in self._module_reports:
       # Convert markdown to html
-      markdown_html = markdown.markdown(report_out,extensions=['markdown.extensions.tables'])
+      markdown_html = markdown.markdown(module_report,extensions=['markdown.extensions.tables'])
       content += markdown_html + '\n'
 
-    # Add styling to the markdown
-    content = content.replace("<table>","<table class=markdown-table>")
+    #Add styling to the markdown
+    content = content.replace('<table>','<table class=markdown-table>')
 
-    return f'''
-    <div> id="markdown-content">
-      {content}
-    </div>'''
+    return content
     
   def generate_footer(self, page_num, max_page, version):
     footer = f'''

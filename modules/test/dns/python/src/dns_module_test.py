@@ -81,6 +81,8 @@ class TLSModuleTest(unittest.TestCase):
     markdown_html = markdown.markdown(report_out,extensions=['markdown.extensions.tables'])
     log.info(markdown_html)
 
+    markdown_html = markdown_html.replace('<table>','<table class=markdown-table>')
+    log.info(markdown_html)
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
