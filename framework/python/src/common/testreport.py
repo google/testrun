@@ -195,8 +195,7 @@ class TestReport():
     page += self.generate_results(json_data, page_num)
     page += self.generate_footer(page_num,max_page)
     page += '</div>'
-    if page_num < max_page:
-      page += '<div style="break-after:page"></div>'
+    page += '<div style="break-after:page"></div>'
     return page
 
   def generate_module_pages(self,json_data,module_reports,page_num,max_page):
