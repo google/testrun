@@ -114,7 +114,12 @@ class TestOrchestrator:
 
     self._write_reports(report)
     self._test_in_progress = False
-    self._timestamp_results(device)
+
+    # Move testing output from runtime to local device folder
+    timestamp_dir = self._timestamp_results(device)
+
+    # Archive the runtime directory
+    self._zip_results(timestamp_dir)
 
     LOGGER.debug("Cleaning old test results...")
     self._cleanup_old_test_results(device)
@@ -245,6 +250,31 @@ class TestOrchestrator:
     # most recent test
     shutil.copytree(cur_results_dir, completed_results_dir, dirs_exist_ok=True)
     util.run_command(f"chown -R {self._host_user} '{completed_results_dir}'")
+
+    return completed_results_dir
+
+  def _zip_results(self, dest_path):
+
+    LOGGER.debug("Archiving test results")
+
+    # Define where to save the zip file
+    zip_location = os.path.join(dest_path, "results")
+
+    # The runtime directory to include in ZIP
+    path_to_zip = os.path.join(
+      self._root_path,
+      RUNTIME_DIR,
+      self._session.get_target_device().mac_addr.replace(":", ""))
+
+    # Create ZIP file
+    shutil.make_archive(zip_location, "zip", path_to_zip)
+
+    # Check that the ZIP was successfully created
+    if os.path.exists(zip_location + ".zip"):
+      return zip_location
+    else:
+      LOGGER.error("An error occured whilst attempting to " +
+                   "archive the test attempt")
 
   def test_in_progress(self):
     return self._test_in_progress
