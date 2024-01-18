@@ -57,6 +57,8 @@ class TestReport():
     self._results = []
     self._module_reports = []
     self._report_url = ''
+    # Placeholder until available in json report
+    self._version = 'v1.1.1-alpha (2023-01-04)'
 
   def add_module_reports(self,module_reports):
     self._module_reports = module_reports
@@ -182,32 +184,84 @@ class TestReport():
 
     pages = ''
     for i in range(max_page):
-      pages += self.generate_page(json_data, i+1, max_page)
+      pages += self.generate_results_page(json_data=json_data, page_num=i+1, max_page=max_page)
     return pages
 
-  def generate_page(self, json_data, page_num, max_page):
-    # Placeholder until available in json report
-    version = 'v1.1.1-alpha (2023-01-04)'
+  def generate_results_page(self, json_data, page_num, max_page):
     page = '<div class="page">'
     page += self.generate_header(json_data)
     if page_num == 1:
       page += self.generate_summary(json_data)
     page += self.generate_results(json_data, page_num)
-    page += self.generate_footer(page_num,max_page,version)
+    page += self.generate_footer(page_num,max_page)
     page += '</div>'
     if page_num < max_page:
       page += '<div style="break-after:page"></div>'
+    return page
+
+  def generate_module_pages(self,json_data,module_reports,page_num,max_page):
+    # ToDo: Figure out how to make this dynamic
+    # Content max size taken from css module-page-conten class
+    content_max_size = 913
+    page_content = ''
+    pages = ''
+    content_size = 0
+    content = module_reports.split('\n')
+    active_table = False
+    
+    for line in content:
+      if '<h1' in line:
+        content_size+=40
+      elif '<h2' in line:
+        content_size+=30
+      elif '<tr>' in line:
+        content_size+=37
+      elif '<li>' in line:
+        content_size+=20
+
+      if '<table' in line:
+        active_table = True
+      elif '</table>' in line:
+        active_table = False
+
+      if content_size >= content_max_size:
+        # If we are in the middle of a tagble, we need
+        # to close the table
+        if active_table:
+          page_content+='</tbody></table>'
+        page = self.generate_module_page(json_data,page_content,page_num,max_page)
+        pages += page + '\n'
+        content_size = 0
+        page_num+=1
+        # If we were in the middle of a table, we need
+        # to restart it for the rest of the rows
+        page_content = '<table class=markdown-table></tbody>\n' if active_table else ''
+      page_content+=line+'\n'
+    if len(page_content)>0:
+      page = self.generate_module_page(json_data,page_content,page_num,max_page)
+      pages += page + '\n'
+    return pages
+
+  def generate_module_page(self,json_data, module_reports, page_num, max_page):
+    page = '<div class="page">'
+    page += self.generate_header(json_data)
+    page+=f'''
+    <div class=module-page-content>
+      {module_reports}
+    </div>'''
+    page += self.generate_footer(page_num,max_page)
+    page += '<div style="break-after:page"></div>'
     return page
 
   def generate_body(self, json_data):
     return f'''
     <body>
       {self.generate_pages(json_data)}
-      {self.generate_module_reports()}
+      {self.generate_module_reports(json_data)}
     </body>
     '''
 
-  def generate_module_reports(self):
+  def generate_module_reports(self, json_data):
     content = ''
     for module_report in self._module_reports:
       # Convert markdown to html
@@ -219,17 +273,15 @@ class TestReport():
     content = content.replace('<h1>','<h1 class=markdown-header>')
     content = content.replace('<h2>','<h2 class=markdown-header>')
 
-    .markdown-header{
-      margin-left:20px;
-    }
+    content = self.generate_module_pages(json_data=json_data, module_reports=content, page_num=1, max_page=1)
 
     return content
     
-  def generate_footer(self, page_num, max_page, version):
+  def generate_footer(self, page_num, max_page):
     footer = f'''
     <div class="footer">
       <img style="margin-bottom:10px;width:100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABFgAAAABCAYAAADqzRqJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA3SURBVHgB7cAxAQAQFEXRJ4MIMkjwS9hklMCoi1EBWljePWlHvQIAMy2mAMDNKV3ADysPAYCbB6fxBrzkZ2KOAAAAAElFTkSuQmCC" />
-      <div class="footer-label">Testrun {version}</div>
+      <div class="footer-label">Testrun {self._version}</div>
       <div class="footer-label" style="right: 0px">Page {page_num}/{max_page}</div>
     </div>
     '''
@@ -679,6 +731,19 @@ class TestReport():
 
     .markdown-header{
       margin-left:20px;
+    }
+
+    .module-page-content{
+      /*Page height minus header(93px), footer(30px), 
+      and a 20px buffer*/
+      height: calc(11in - 93px - 30px - 20px);
+      
+      /* In case we mess something up in our calculations
+        we'll cut off the content of the page so 
+        the header, footer and line break work
+        as expected
+      */
+      overflow: hidden;
     }
 
     @media print {
