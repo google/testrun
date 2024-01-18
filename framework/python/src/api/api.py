@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+"""Provides Testrun data via REST API."""
 from fastapi import FastAPI, APIRouter, Response, Request, status
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,7 +37,8 @@ DEVICE_TEST_MODULES_KEY = "test_modules"
 DEVICES_PATH = "/usr/local/testrun/local/devices"
 DEFAULT_DEVICE_INTF = "enx123456789123"
 
-LATEST_RELEASE_CHECK = "https://api.github.com/repos/google/testrun/releases/latest"
+LATEST_RELEASE_CHECK = ("https://api.github.com/repos/google/" +
+                        "testrun/releases/latest")
 
 class Api:
   """Provide REST endpoints to manage Testrun"""
@@ -450,7 +451,7 @@ class Api:
       check_new_device = self._session.get_device(
         device_json.get(DEVICE_MAC_ADDR_KEY))
 
-      if not check_new_device is None and (device.mac_addr 
+      if not check_new_device is None and (device.mac_addr
                                            != check_new_device.mac_addr):
         response.status_code = status.HTTP_409_CONFLICT
         return self._generate_msg(False,
