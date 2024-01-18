@@ -216,6 +216,12 @@ class TestReport():
 
     #Add styling to the markdown
     content = content.replace('<table>','<table class=markdown-table>')
+    content = content.replace('<h1>','<h1 class=markdown-header>')
+    content = content.replace('<h2>','<h2 class=markdown-header>')
+
+    .markdown-header{
+      margin-left:20px;
+    }
 
     return content
     
@@ -669,6 +675,10 @@ class TestReport():
       border: 1px solid #dddddd;
       text-align: left;
       padding: 8px;
+    }
+
+    .markdown-header{
+      margin-left:20px;
     }
 
     @media print {
