@@ -17,6 +17,7 @@ import unittest
 from common import logger
 from scapy.all import rdpcap, DNS, IP
 import os
+import markdown
 
 MODULE_NAME = 'dns_module_test'
 
@@ -68,11 +69,24 @@ class TLSModuleTest(unittest.TestCase):
 
     self.assertEqual(report_out,report_local)
 
+  def dns_module_markdown_to_html(self):
+    log = logger.get_logger(MODULE_NAME)
+
+    report_path = os.path.join(OUTPUT_DIR, "dns_report.md")
+
+     # Read the generated report
+    with open(report_path, 'r', encoding='utf-8') as file:
+      report_out=file.read()
+
+    markdown_html = markdown.markdown(report_out,extensions=['markdown.extensions.tables'])
+    log.info(markdown_html)
+
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   # Module report test
   suite.addTest(TLSModuleTest('dns_module_report_test'))
+  suite.addTest(TLSModuleTest('dns_module_markdown_to_html'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)

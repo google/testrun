@@ -110,6 +110,7 @@ class TestOrchestrator:
 
     report = TestReport()
     report.from_json(self._generate_report())
+    report.add_module_reports(self.get_session().get_module_reports())
     device.add_report(report)
 
     self._write_reports(report)
@@ -385,7 +386,7 @@ class TestOrchestrator:
     try:
       with open(report_file, "r", encoding="utf-8") as f:
         module_report = f.read()
-        self._session.add_module_report(module.name,module_report)
+        self._session.add_module_report(module_report)
     except (FileNotFoundError, PermissionError) as report_error:
         LOGGER.error(
           f"Error occurred whilst obtaining report for module {module.name}")

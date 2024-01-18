@@ -20,6 +20,7 @@ from io import BytesIO
 from common import util
 import base64
 import os
+import markdown
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
@@ -54,7 +55,11 @@ class TestReport():
     self._finished = finished
     self._total_tests = total_tests
     self._results = []
+    self._module_reports = []
     self._report_url = ''
+
+  def add_module_reports(self,module_reports):
+    self._module_reports = module_reports
 
   def get_status(self):
     return self._status
@@ -198,9 +203,25 @@ class TestReport():
     return f'''
     <body>
       {self.generate_pages(json_data)}
+      {self.generate_module_reports()}
     </body>
     '''
 
+  def generate_module_reports(self):
+    content = ''
+    for module_report in self._module_reports:
+      # Convert markdown to html
+      markdown_html = markdown.markdown(report_out,extensions=['markdown.extensions.tables'])
+      content += markdown_html + '\n'
+
+    # Add styling to the markdown
+    content = content.replace("<table>","<table class=markdown-table>")
+
+    return f'''
+    <div> id="markdown-content">
+      {content}
+    </div>'''
+    
   def generate_footer(self, page_num, max_page, version):
     footer = f'''
     <div class="footer">
@@ -639,6 +660,18 @@ class TestReport():
       position: absolute;
       top: 20px;
       font-size: 12px;
+    }
+
+    /*CSS for the markdown tables */
+    .markdown-table{
+      border-collapse: collapse;
+      margin-left: 20px;
+    }
+
+    .markdown-table th, .markdown-table td {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
     }
 
     @media print {

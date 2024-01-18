@@ -72,26 +72,28 @@ class DNSModule(TestModule):
 
     table_content = ''
     for row in dns_table_data:
-      table_content += f"""| {row['Source']: ^12} | {row['Destination']: ^13} | {row['Type']: ^9} | {row['Data']: ^{max_data_length}} |\n\r"""
+      table_content += f'''| {row['Source']: ^12} | {row['Destination']: ^13} | {row['Type']: ^9} | {row['Data']: ^{max_data_length}} |\r'''
 
     # Dynamically adjust the header width based on the longest 'Destination' content
     header = f'''| {'Source': ^12} | {'Destination': ^{13}} | {'Type': ^9} | {'Data': ^{max_data_length}} |'''
     header_line = f'''|{'-' * 14}|{'-' * 15}|{'-' * 11}|{'-' * (max_data_length + 2)}|'''
 
-    # Markdown template
-        #\r{header}\r{header_line}\r{table_content}
+    summary = '## Summary'
+    summary += f'''\n- Requests to local DNS server: {local_requests}'''
+    summary += f'''\n- Requests to external DNS servers: {external_requests}'''
+    summary += f'''\n- Total DNS requests: {total_requests}'''
+    summary += f'''\n- Total DNS responses: {total_responses}'''
 
     markdown_template = f'''# DNS Module
-
-    \r{header}\r{header_line}\r{table_content}
-
-    ## Summary
-
-     Requests to local DNS server: {local_requests}
-     Requests to external DNS servers: {external_requests}
-     Total DNS requests: {total_requests}
-     Total DNS responses: {total_responses}
+    \r{header}\r{header_line}\r{table_content}\r{summary}
     '''
+
+   #  \r## Summary\r
+   #  - Requests to local DNS server: {local_requests}
+   #  - Requests to external DNS servers: {external_requests}
+   #  - Total DNS requests: {total_requests}
+   #  - Total DNS responses: {total_responses}
+   # '''
 
     LOGGER.debug("Markdown Report:\n" + markdown_template)
 

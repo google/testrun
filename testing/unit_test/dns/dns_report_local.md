@@ -1,179 +1,1 @@
-# DNS Module
-
-    |    Source    |  Destination  |   Type    |        Data         ||--------------|---------------|-----------|---------------------|| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |    8.8.8.8    |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |    8.8.8.8    |   Query   | mqtt.googleapis.com |
-|   8.8.8.8    |  10.10.10.4   | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|   8.8.8.8    |  10.10.10.4   | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     |
-| 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     |
-|  10.10.10.4  |    8.8.8.8    |   Query   |    pool.ntp.org     |
-|  10.10.10.4  |    8.8.8.8    |   Query   |    pool.ntp.org     |
-|   8.8.8.8    |  10.10.10.4   | Response  |    pool.ntp.org     |
-|  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     |
-|   8.8.8.8    |  10.10.10.4   | Response  |    pool.ntp.org     |
-|  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     |
-| 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     |
-|  10.10.10.4  |    8.8.8.8    |   Query   |    pool.ntp.org     |
-|  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     |
-|  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     |
-|   8.8.8.8    |  10.10.10.4   | Response  |    pool.ntp.org     |
-|  10.10.10.4  |    8.8.8.8    | Response  |    pool.ntp.org     |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |    8.8.8.8    |   Query   | mqtt.googleapis.com |
-|   8.8.8.8    |  10.10.10.4   | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     |
-| 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     |
-|  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     |
-|  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     |
-|  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     |
-|  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-|  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |
-
-
-    ## Summary
-
-     Requests to local DNS server: 71
-     Requests to external DNS servers: 6
-     Total DNS requests: 77
-     Total DNS responses: 91
-    
+# DNS Module    |    Source    |  Destination  |   Type    |        Data         ||--------------|---------------|-----------|---------------------|| 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |    8.8.8.8    |   Query   | mqtt.googleapis.com ||  10.10.10.4  |    8.8.8.8    |   Query   | mqtt.googleapis.com ||   8.8.8.8    |  10.10.10.4   | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||   8.8.8.8    |  10.10.10.4   | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     || 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     ||  10.10.10.4  |    8.8.8.8    |   Query   |    pool.ntp.org     ||  10.10.10.4  |    8.8.8.8    |   Query   |    pool.ntp.org     ||   8.8.8.8    |  10.10.10.4   | Response  |    pool.ntp.org     ||  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     ||   8.8.8.8    |  10.10.10.4   | Response  |    pool.ntp.org     ||  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     || 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     ||  10.10.10.4  |    8.8.8.8    |   Query   |    pool.ntp.org     ||  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     ||  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     ||   8.8.8.8    |  10.10.10.4   | Response  |    pool.ntp.org     ||  10.10.10.4  |    8.8.8.8    | Response  |    pool.ntp.org     || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |    8.8.8.8    |   Query   | mqtt.googleapis.com ||   8.8.8.8    |  10.10.10.4   | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     || 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     ||  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     ||  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   |    pool.ntp.org     ||  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     ||  10.10.10.4  |  10.10.10.14  | Response  |    pool.ntp.org     || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com || 10.10.10.14  |  10.10.10.4   |   Query   | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com ||  10.10.10.4  |  10.10.10.14  | Response  | mqtt.googleapis.com |## Summary- Requests to local DNS server: 71- Requests to external DNS servers: 6- Total DNS requests: 77- Total DNS responses: 91    
