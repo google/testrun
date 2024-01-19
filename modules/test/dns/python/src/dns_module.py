@@ -49,8 +49,6 @@ class DNSModule(TestModule):
     LOGGER = self._get_logger()
 
   def generate_module_report(self):
-    LOGGER.info('Generating module report')
-
     # Extract DNS data from the pcap file
     dns_table_data = self.extract_dns_data()
 
@@ -68,7 +66,7 @@ class DNSModule(TestModule):
     #total_requests = len(dns_table_data)
 
     # Find the maximum length of 'Destination' values
-    max_data_length = max(len(row['Data']) for row in dns_table_data)
+    max_data_length = max(len(row['Data']) for row in dns_table_data) if len(dns_table_data)>0 else 8
 
     table_content = ''
     for row in dns_table_data:
@@ -87,13 +85,6 @@ class DNSModule(TestModule):
     markdown_template = f'''# DNS Module
     \r{header}\r{header_line}\r{table_content}\r{summary}
     '''
-
-   #  \r## Summary\r
-   #  - Requests to local DNS server: {local_requests}
-   #  - Requests to external DNS servers: {external_requests}
-   #  - Total DNS requests: {total_requests}
-   #  - Total DNS responses: {total_responses}
-   # '''
 
     LOGGER.debug("Markdown Report:\n" + markdown_template)
 
