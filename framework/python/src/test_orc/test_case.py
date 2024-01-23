@@ -24,3 +24,13 @@ class TestCase:  # pylint: disable=too-few-public-methods,too-many-instance-attr
   description: str = ""
   expected_behavior: str = ""
   required_result: str = "Recommended"
+  result: str = "Non-Compliant"
+
+  def to_dict(self):
+    return {
+      "name": self.name,
+      "description": self.description,
+      "expected_behavior": self.expected_behavior,
+      "required_result": self.required_result,
+      "result": self.result
+    }

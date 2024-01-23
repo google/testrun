@@ -21,6 +21,7 @@ from common import util
 import base64
 import os
 import markdown
+from test_orc.test_case import TestCase
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
@@ -89,8 +90,19 @@ class TestReport():
     report_json['status'] = self._status
     report_json['started'] = self._started.strftime(DATE_TIME_FORMAT)
     report_json['finished'] = self._finished.strftime(DATE_TIME_FORMAT)
+
+    test_results = []
+    for test in self._results:
+      test_results.append({
+        'name': test.name,
+        'description': test.description,
+        'expected_behavior': test.expected_behavior,
+        'required_result': test.required_result,
+        'result': test.result
+      })
+
     report_json['tests'] = {'total': self._total_tests,
-                            'results': self._results}
+                            'results': test_results}
     report_json['report'] = self._report_url
     return report_json
 
@@ -116,7 +128,13 @@ class TestReport():
 
     # Loop through test results
     for test_result in json_file['tests']['results']:
-      self.add_test(test_result)
+      test_case = TestCase(
+        name=test_result['name'],
+        description=test_result['description'],
+        expected_behavior=test_result['expected_behavior'],
+        required_result=test_result['required_result'],
+        result=test_result['result'])
+      self.add_test(test_case)
 
   # Create a pdf file in memory and return the bytes
   def to_pdf(self):
@@ -186,7 +204,8 @@ class TestReport():
     pages = ''
     for i in range(num_pages):
       self._cur_page+=1
-      pages += self.generate_results_page(json_data=json_data, page_num=self._cur_page)
+      pages += self.generate_results_page(json_data=json_data,
+                                          page_num=self._cur_page)
     return pages
 
   def generate_results_page(self, json_data, page_num):
