@@ -217,7 +217,7 @@ class TestReport():
       elif '<h2' in line:
         content_size+=30 + header_padding
       elif '<tr>' in line:
-        content_size+=37
+        content_size+=39
       elif '<li>' in line:
         content_size+=20
 
@@ -225,9 +225,14 @@ class TestReport():
         active_table = True
       elif '</table>' in line:
         active_table = False
-
-      if content_size >= content_max_size:
-        # If we are in the middle of a tagble, we need
+      # If the current line is within the content size limit over the
+      # we'll add it to this page, otherweise, we'll put it on the next
+      # page. Also make sure that if there is less than 20 pixels
+      # left after a header, start a new page or the summary
+      # title will be left with no information after it. Current minimum 
+      # summary item is 20 pixels, adjust if we update the <li> element.
+      if content_size >= content_max_size or ('<h' in line and content_max_size-content_size<20):
+        # If we are in the middle of a table, we need
         # to close the table
         if active_table:
           page_content+='</tbody></table>'
@@ -738,6 +743,8 @@ class TestReport():
 
     .markdown-header{
       margin-left:20px;
+      margin-top:20px;
+      margin-bottom:20px;
     }
 
     .module-page-content{

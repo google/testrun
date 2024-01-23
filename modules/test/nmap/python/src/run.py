@@ -38,7 +38,8 @@ class NmapModuleRunner:
 
     self._test_module = NmapModule(module)
     self._test_module.run_tests()
-
+    self._test_module.generate_module_report()
+    
     LOGGER.info('nmap test module finished')
 
   def add_logger(self, module):

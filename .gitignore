@@ -5,8 +5,10 @@ error
 pylint.out
 __pycache__/
 build/
+testing/unit/report/output/
 testing/unit_test/temp/
 testing/unit_test/dns/output/
+testing/unit_test/nmap/output/
 *.deb
 
 make/DEBIAN/postinst

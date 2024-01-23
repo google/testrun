@@ -19,24 +19,102 @@ import json
 import threading
 import xmltodict
 from test_module import TestModule
+import os
 
 LOG_NAME = "test_nmap"
+MODULE_REPORT_FILE_NAME='nmap_report.md'
+NMAP_SCAN_RESULTS_SCAN_FILE = 'nmap_scan_results.json'
 LOGGER = None
 
 
 class NmapModule(TestModule):
   """NMAP Test module"""
 
-  def __init__(self, module):
-    super().__init__(module_name=module, log_name=LOG_NAME)
+  def __init__(self,
+               module,
+               log_dir=None,
+               conf_file=None,
+               results_dir=None,
+               run=True,
+               nmap_scan_results_path=None):
+    super().__init__(module_name=module,
+                     log_name=LOG_NAME,
+                     log_dir=log_dir,
+                     conf_file=conf_file,
+                     results_dir=results_dir)
     self._scan_tcp_results = None
     self._udp_tcp_results = None
     self._scan_results = {}
 
+    self._nmap_scan_results_path = self._results_dir if nmap_scan_results_path is None else nmap_scan_results_path
     global LOGGER
     LOGGER = self._get_logger()
 
-    self._run_nmap()
+    if run:
+      self._run_nmap()
+
+  def generate_module_report(self):
+    # Use os.path.join to create the complete file path
+    nmap_scan_results_file = os.path.join(self._nmap_scan_results_path, NMAP_SCAN_RESULTS_SCAN_FILE)
+    LOGGER.info('Scan Results File:\n' + str(nmap_scan_results_file))
+
+    # Read the nmap scan results
+    with open(nmap_scan_results_file, 'r', encoding='utf-8') as file:
+      nmap_scan_results= json.loads(file.read())
+
+    tcp_open = 0
+    udp_open = 0
+
+    # Parse the results into a table format
+    nmap_table_data = []
+    for key, value in nmap_scan_results.items():
+      nmap_table_data.append({
+        'Port': value['number'],
+        'Type': value['tcp_udp'],
+        'State': value['state'],
+        'Service': value['service'],
+        'Version': value['version']
+        })
+
+      if value['state'] == 'open':
+        if value['tcp_udp'] == 'tcp':
+          tcp_open+=1
+        else:
+          udp_open+=1
+
+    # Find the maximum column lengths
+    max_service_length = max(len(row['Service']) for row in nmap_table_data) if len(nmap_table_data)>0 else 15
+    max_version_length = max(len(row['Version']) for row in nmap_table_data) if len(nmap_table_data)>0 else 15
+
+    table_content = ''
+    for row in nmap_table_data:
+      table_content += f'''| {row['Port']: ^10} | {row['Type']: ^10} | {row['State']: ^10} | {row['Service']: ^{max_service_length}} | {row['Version']: ^{max_version_length}} |\n'''
+
+    # Dynamically adjust the header width based on the longest 'Destination' content
+    header = f'''| {'Port': ^10} | {'Type': ^{10}} | {'State': ^{10}} | {'Service': ^{max_service_length}} | {'Version': ^{max_version_length}} |'''
+    header_line = f'''|{'-' * 12}|{'-' * 12}|{'-' * 12}|{'-' * (max_service_length + 2)}|{'-' * (max_version_length + 2)}|'''
+
+    summary = '## Summary'
+    summary += f'''\n- TCP Ports Open: {tcp_open}'''
+    summary += f'''\n- UDP Ports Open: {udp_open}'''
+    summary += f'''\n- Total Ports Open: {tcp_open + udp_open}'''
+
+    markdown_template = f'''# NMAP Module
+    \r{header}\r{header_line}\r{table_content}\r{summary}
+    '''
+
+    LOGGER.debug("Markdown Report:\n" + markdown_template)
+
+    # Use os.path.join to create the complete file path
+    report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
+
+    # Write the content to a file 
+    with open(report_path, 'w', encoding='utf-8') as file:
+      file.write(markdown_template)
+
+    LOGGER.info('Module report generated at: ' + str(report_path))  
+
+    return report_path  
 
   def _run_nmap(self):
     LOGGER.info("Running nmap module")
@@ -59,6 +137,19 @@ class NmapModule(TestModule):
     LOGGER.debug("UDP scan results: " + str(self._scan_udp_results))
 
     self._process_port_results()
+
+    self._write_nmap_results_to_file()
+
+
+  def _write_nmap_results_to_file(self):
+    scan_file = os.path.join(self._results_dir,NMAP_SCAN_RESULTS_SCAN_FILE)
+
+    # Convert nmap scan results to JSON format
+    json_data = json.dumps(self._scan_results, indent=2)
+
+    # Write JSON data to a file
+    with open(scan_file, 'w') as file:
+      file.write(json_data)
 
   def _process_port_results(self):
 
