@@ -19,7 +19,7 @@ LOG_NAME = 'test_tls'
 LOGGER = None
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
-GATWEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
+GATEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
 
 
 class TLSModule(TestModule):
@@ -98,7 +98,7 @@ class TLSModule(TestModule):
 
     # Generate results based on the state
     result_message = ''
-    result_state None
+    result_state = None
     #If any of the packetes detect failed client comms, fail the test
     if (not monitor_result[0] and monitor_result[0] is not None) or (
         not startup_result[0] and startup_result[0] is not None) or (
@@ -125,7 +125,7 @@ class TLSModule(TestModule):
       if gateway_result[0]:
         result_state = True
         result_message += gateway_result[1]
-        
+
     return result_state, result_message
 
   def _resolve_device_ip(self):
