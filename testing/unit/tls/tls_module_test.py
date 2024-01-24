@@ -23,22 +23,25 @@ import netifaces
 import ssl
 import http.client
 
-CAPTURE_DIR = 'testing/unit_test/temp'
-MODULE_NAME = 'tls_module_test'
+
+MODULE = 'tls'
+# Define the file paths
+TEST_FILES_DIR = 'testing/unit/' + MODULE
+OUTPUT_DIR = TEST_FILES_DIR + '/output'
+
 TLS_UTIL = None
 PACKET_CAPTURE = None
-
 
 class TLSModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning TLS behaviors"""
 
   @classmethod
   def setUpClass(cls):
-    log = logger.get_logger(MODULE_NAME)
+    log = logger.get_logger('test_' + MODULE)
     global TLS_UTIL
     TLS_UTIL = TLSUtil(log,
                        bin_dir='modules/test/tls/bin',
-                       cert_out_dir='testing/unit_test/temp',
+                       cert_out_dir=OUTPUT_DIR,
                        root_certs_dir='local/root_certs')
 
   # Test 1.2 server when only 1.2 connection is established
@@ -159,8 +162,8 @@ class TLSModuleTest(unittest.TestCase):
                       tls_generate=None,
                       disable_valid_ciphers=False):
     # Make the capture file
-    os.makedirs(CAPTURE_DIR, exist_ok=True)
-    capture_file = CAPTURE_DIR + '/client_tls.pcap'
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    capture_file = OUTPUT_DIR + '/client_tls.pcap'
 
     # Resolve the client ip used
     client_ip = self.get_interface_ip('eth0')

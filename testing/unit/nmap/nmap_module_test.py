@@ -18,14 +18,13 @@ from common import logger
 from scapy.all import rdpcap, DNS, IP, wrpcap
 import os
 
-MODULE_NAME = 'nmap_module_test'
+MODULE = 'nmap'
 
 # Define the file paths
-OUTPUT_DIR = 'testing/unit_test/nmap/output/'
-TEMP_DIR = 'testing/unit_test/temp/nmap'
-CONF_FILE = 'modules/test/nmap/conf/module_config.json'
-LOCAL_REPORT='testing/unit_test/nmap/nmap_report_local.md'
-NMAP_TEST_FILES_DIR = 'testing/unit_test/nmap'
+TEST_FILES_DIR = 'testing/unit/' + MODULE
+OUTPUT_DIR = TEST_FILES_DIR + '/output/'
+LOCAL_REPORT = TEST_FILES_DIR + '/nmap_report_local.md'
+CONF_FILE = 'modules/test/'+ MODULE + '/conf/module_config.json'
 
 class NMAPTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""
@@ -34,16 +33,15 @@ class NMAPTest(unittest.TestCase):
   def setUpClass(cls):
     # Create the output directories and ignore errors if it already exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    os.makedirs(TEMP_DIR, exist_ok=True)
 
   # Test the module report generation
   def nmap_module_report_test(self):
-    nmap_module = NmapModule(module='nmap',
+    nmap_module = NmapModule(module=MODULE,
                            log_dir=OUTPUT_DIR,
                            conf_file=CONF_FILE,
                            results_dir=OUTPUT_DIR,
                            run=False,
-                           nmap_scan_results_path=NMAP_TEST_FILES_DIR)
+                           nmap_scan_results_path=TEST_FILES_DIR)
 
     report_out_path= nmap_module.generate_module_report()
 

@@ -125,18 +125,7 @@ class TLSModule(TestModule):
       if gateway_result[0]:
         result_state = True
         result_message += gateway_result[1]
-
-    # if (not monitor_result[0] and monitor_result[0] is not None) or (
-    #     not startup_result[0] and startup_result[0] is not None):
-    #   result = False, startup_result[1] + monitor_result[1]
-    # elif monitor_result[0] and startup_result[0]:
-    #   result = True, startup_result[1] + monitor_result[1]
-    # elif monitor_result[0] and startup_result[0] is None:
-    #   result = True, monitor_result[1]
-    # elif startup_result[0] and monitor_result[0] is None:
-    #   result = True, startup_result[1]
-    # else:
-    #   result = None, startup_result[1]
+        
     return result_state, result_message
 
   def _resolve_device_ip(self):

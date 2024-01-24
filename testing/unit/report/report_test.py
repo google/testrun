@@ -17,9 +17,12 @@ from testreport import TestReport
 import os
 import json
 
+MODULE = 'report'
+
 # Define the file paths
-OUTPUT_DIR = 'testing/unit/report/output/'
-UNIT_TEST_DIR = 'testing/unit_test/'
+TEST_FILES_DIR = 'testing/unit/' + MODULE
+OUTPUT_DIR = TEST_FILES_DIR + '/output/'
+UNIT_TEST_DIR = 'testing/unit/'
 
 class ReportTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""
@@ -33,7 +36,7 @@ class ReportTest(unittest.TestCase):
     report = TestReport()
 
     # Load the json report data
-    with open(os.path.join('testing/unit','report/report.json'), 'r', encoding='utf-8') as file:
+    with open(os.path.join(TEST_FILES_DIR,'report.json'), 'r', encoding='utf-8') as file:
       report_json=json.loads(file.read())
     report.from_json(report_json)
 
