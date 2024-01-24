@@ -112,7 +112,7 @@ class TLSModule(TestModule):
         gateway_result += monitor_result[1]
     else:
       # Append monitor results
-      if monitor_result[0]: 
+      if monitor_result[0]:
         result_state = True
         result_message += monitor_result[1]
 

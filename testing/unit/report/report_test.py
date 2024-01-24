@@ -24,6 +24,7 @@ TEST_FILES_DIR = 'testing/unit/' + MODULE
 OUTPUT_DIR = TEST_FILES_DIR + '/output/'
 UNIT_TEST_DIR = 'testing/unit/'
 
+
 class ReportTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""
 
@@ -36,8 +37,10 @@ class ReportTest(unittest.TestCase):
     report = TestReport()
 
     # Load the json report data
-    with open(os.path.join(TEST_FILES_DIR,'report.json'), 'r', encoding='utf-8') as file:
-      report_json=json.loads(file.read())
+    with open(os.path.join(TEST_FILES_DIR, 'report.json'),
+              'r',
+              encoding='utf-8') as file:
+      report_json = json.loads(file.read())
     report.from_json(report_json)
 
     # Load all module markdown reports
@@ -46,17 +49,20 @@ class ReportTest(unittest.TestCase):
     reports_md.append(self.get_module_md_report('nmap'))
     report.add_module_reports(reports_md)
 
-    # Generate the report 
-    with open(os.path.join(OUTPUT_DIR,'report.html'), 'w', encoding='utf-8') as file:
+    # Generate the report
+    with open(os.path.join(OUTPUT_DIR, 'report.html'), 'w',
+              encoding='utf-8') as file:
       file.write(report.to_html())
 
-  def get_module_md_report(self,module):
-  	# Combine the path components using os.path.join
-    report_file = os.path.join(UNIT_TEST_DIR, module, module + '_report_local.md')
+  def get_module_md_report(self, module):
+    # Combine the path components using os.path.join
+    report_file = os.path.join(UNIT_TEST_DIR, module,
+                               module + '_report_local.md')
 
     with open(report_file, 'r', encoding='utf-8') as file:
-      report=file.read()
+      report = file.read()
     return report
+
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()

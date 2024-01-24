@@ -23,7 +23,6 @@ import netifaces
 import ssl
 import http.client
 
-
 MODULE = 'tls'
 # Define the file paths
 TEST_FILES_DIR = 'testing/unit/' + MODULE
@@ -31,6 +30,7 @@ OUTPUT_DIR = TEST_FILES_DIR + '/output'
 
 TLS_UTIL = None
 PACKET_CAPTURE = None
+
 
 class TLSModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning TLS behaviors"""
