@@ -21,12 +21,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Subject, takeUntil, tap } from 'rxjs';
 import {
   SystemInterfaces,
@@ -38,6 +33,7 @@ import { Observable } from 'rxjs/internal/Observable';
 import { shareReplay } from 'rxjs/internal/operators/shareReplay';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { EventType } from '../../model/event-type';
+import { SettingOption } from '../../model/setting';
 
 @Component({
   selector: 'app-general-settings',
@@ -45,13 +41,25 @@ import { EventType } from '../../model/event-type';
   styleUrls: ['./general-settings.component.scss'],
 })
 export class GeneralSettingsComponent implements OnInit, OnDestroy {
-  @Input() interfaces: SystemInterfaces = {};
+  private _interfaces: SystemInterfaces = {};
+  @Input()
+  get interfaces(): SystemInterfaces {
+    return this._interfaces;
+  }
+  set interfaces(value: SystemInterfaces) {
+    this._interfaces = value;
+    this.setSystemSetting();
+  }
   @Output() closeSettingEvent = new EventEmitter<void>();
   @Output() reloadInterfacesEvent = new EventEmitter<void>();
   public readonly CalloutType = CalloutType;
   public readonly EventType = EventType;
   public settingForm!: FormGroup;
   public isSubmitting = false;
+  public defaultInternetOption = {
+    key: '',
+    value: 'Not specified',
+  };
   hasConnectionSetting$!: Observable<boolean | null>;
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -117,8 +125,8 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   private createSettingForm(): FormGroup {
     return (this.settingForm = this.fb.group(
       {
-        device_intf: ['', Validators.required],
-        internet_intf: ['', Validators.required],
+        device_intf: [''],
+        internet_intf: [this.defaultInternetOption],
       },
       {
         validators: [this.onlyDifferentValuesValidator.onlyDifferentSetting()],
@@ -147,12 +155,31 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       });
   }
 
+  compare(c1: SettingOption, c2: SettingOption): boolean {
+    return c1 && c2 && c1.key === c2.key && c1.value === c2.value;
+  }
+
   private setDefaultFormValues(
     device: string | undefined,
     internet: string | undefined
   ): void {
-    this.deviceControl.setValue(device);
-    this.internetControl.setValue(internet);
+    if (device && this.interfaces[device]) {
+      const deviceData = this.transformValueToObj(device);
+      this.deviceControl.setValue(deviceData);
+    }
+    if (internet && this.interfaces[internet]) {
+      const interneData = this.transformValueToObj(internet);
+      this.internetControl.setValue(interneData);
+    } else {
+      this.internetControl.setValue(this.defaultInternetOption);
+    }
+  }
+
+  private transformValueToObj(value: string): SettingOption {
+    return {
+      key: value,
+      value: this.interfaces[value],
+    };
   }
 
   private cleanFormErrorMessage(): void {
@@ -168,8 +195,8 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     const { device_intf, internet_intf } = this.settingForm.value;
     const data = {
       network: {
-        device_intf,
-        internet_intf,
+        device_intf: device_intf.key,
+        internet_intf: internet_intf.key,
       },
     };
 
@@ -189,9 +216,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       .subscribe(config => {
         if (config?.network) {
           const { device_intf, internet_intf } = config.network;
-          if (device_intf && internet_intf) {
-            this.setDefaultFormValues(device_intf, internet_intf);
-          }
+          this.setDefaultFormValues(device_intf, internet_intf);
         }
       });
   }
