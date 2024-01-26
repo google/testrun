@@ -284,6 +284,9 @@ class TestOrchestrator:
       container_runtime_dir = os.path.join(device_test_dir, module.name)
       os.makedirs(container_runtime_dir, exist_ok=True)
 
+      container_log_file = os.path.join(container_runtime_dir, 'module.log')
+      container_logs = []
+
       network_runtime_dir = os.path.join(self._root_path, "runtime/network")
 
       device_startup_capture = os.path.join(device_test_dir, "startup.pcap")
@@ -355,11 +358,18 @@ class TestOrchestrator:
         break
       try:
         line = next(log_stream).decode("utf-8").strip()
+        container_logs.append(line)
         if re.search(LOG_REGEX, line):
           print(line)
       except Exception:  # pylint: disable=W0718
-        time.sleep(1)
+        # Do nothing
+        continue
       status = self._get_module_status(module)
+
+    # Save all container logs to file
+    with open(container_log_file, "w", encoding="utf-8") as f:
+      for line in container_logs:
+        f.write(line + "\n")
 
     # Check that Testrun has not been stopped whilst this module was running
     if self.get_session().get_status() == "Stopping":

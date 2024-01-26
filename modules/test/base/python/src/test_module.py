@@ -78,7 +78,7 @@ class TestModule:
 
     if self._config['config']['network']:
       self._device_ipv4_addr = self._get_device_ipv4()
-      LOGGER.info('Device IP Resolved: ' + str(self._device_ipv4_addr))
+      LOGGER.info('Device IP resolved: ' + str(self._device_ipv4_addr))
 
     tests = self._get_tests()
     for test in tests:
@@ -91,10 +91,15 @@ class TestModule:
         LOGGER.debug('Attempting to run test: ' + test['name'])
         # Resolve the correct python method by test name and run test
         if hasattr(self, test_method_name):
-          if 'config' in test:
-            result = getattr(self, test_method_name)(config=test['config'])
-          else:
-            result = getattr(self, test_method_name)()
+          try:
+            if 'config' in test:
+              result = getattr(self, test_method_name)(config=test['config'])
+            else:
+              result = getattr(self, test_method_name)()
+          except Exception as e:
+            LOGGER.info(f'An error occurred whilst running {test["name"]}')
+            LOGGER.error(e)
+            return None
         else:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
           result = None
