@@ -34,6 +34,7 @@ import { CalloutType } from './model/callout-type';
 import { tap } from 'rxjs/internal/operators/tap';
 import { shareReplay } from 'rxjs/internal/operators/shareReplay';
 import { Routes } from './model/routes';
+import { StateService } from './services/state.service';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -59,6 +60,7 @@ export class AppComponent implements OnInit {
   public readonly StatusOfTestrun = StatusOfTestrun;
   public readonly Routes = Routes;
   private devicesLength = 0;
+  private openedSettingFromToggleBtn = true;
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
   @ViewChild('navigation') public navigation!: ElementRef;
@@ -69,6 +71,7 @@ export class AppComponent implements OnInit {
     private domSanitizer: DomSanitizer,
     private testRunService: TestRunService,
     private readonly loaderService: LoaderService,
+    private readonly state: StateService,
     private route: Router
   ) {
     this.testRunService.fetchDevices();
@@ -139,11 +142,15 @@ export class AppComponent implements OnInit {
       if (this.devicesLength > 0) {
         this.toggleSettingsBtn.focus();
       } // else device create window will be opened
+
+      if (!this.openedSettingFromToggleBtn) {
+        this.state.focusFirstElementInMain();
+      }
     });
   }
 
   async openSetting(): Promise<void> {
-    return await this.openGeneralSettings();
+    return await this.openGeneralSettings(false);
   }
 
   reloadInterfaces(): void {
@@ -175,7 +182,8 @@ export class AppComponent implements OnInit {
     }
   }
 
-  async openGeneralSettings() {
+  async openGeneralSettings(openSettingFromToggleBtn: boolean) {
+    this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
     this.getSystemInterfaces();
     await this.settingsDrawer.open();
   }

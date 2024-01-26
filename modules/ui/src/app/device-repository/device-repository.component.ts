@@ -32,6 +32,8 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 import { DeleteFormComponent } from '../components/delete-form/delete-form.component';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
+import { StateService } from '../services/state.service';
+import { timer } from 'rxjs/internal/observable/timer';
 
 @Component({
   selector: 'app-device-repository',
@@ -45,6 +47,7 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
 
   constructor(
     private testRunService: TestRunService,
+    private readonly state: StateService,
     public dialog: MatDialog,
     private element: ElementRef,
     private readonly changeDetectorRef: ChangeDetectorRef
@@ -93,6 +96,11 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
           !selectedDevice
         ) {
           this.testRunService.addDevice(response.device);
+          timer(10)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+              this.state.focusFirstElementInMain();
+            });
         }
         if (
           response.action === FormAction.Save &&
