@@ -16,13 +16,21 @@
         "name": "dns.network.hostname_resolution",
         "test_description": "Verify the device sends DNS requests",
         "expected_behavior": "The device sends DNS requests.",
-        "required_result": "Required"
+        "required_result": "Required",
+        "steps_to_resolve": [
+          "Install a supported DNS client",
+          "Ensure DNS servers have been set correctly",
+          "Ensure the gateway IP has been set and the device has internet access"
+        ]
       },
       {
         "name": "dns.network.from_dhcp",
         "test_description": "Verify the device allows for a DNS server to be entered automatically", 
         "expected_behavior": "The device sends DNS requests to the DNS server provided by the DHCP server",
-        "required_result": "Roadmap"
+        "required_result": "Roadmap",
+        "steps_to_resolve": [
+          "Install a DNS client that supports fetching DNS servers from DHCP options"
+        ]
       }
     ]
   }

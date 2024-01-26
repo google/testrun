@@ -16,13 +16,22 @@
         "name": "security.tls.v1_2_server",
         "test_description": "Check the device web server TLS 1.2 & certificate is valid",
         "expected_behavior": "TLS 1.2 certificate is issued to the web browser client when accessed",
-        "required_result": "Required"
+        "required_result": "Required",
+        "steps_to_resolve": [
+          "Enable TLS 1.2 support in the web server configuration",
+          "Disable TLS 1.0 and 1.1",
+          "Sign the certificate used by the web server"
+        ]
       },
       {
         "name": "security.tls.v1_2_client",
         "test_description": "Device uses TLS with connection to an external service on port 443 (or any other port which could be running the webserver-HTTPS)",
         "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers",
-        "required_result": "Required"
+        "required_result": "Required",
+        "steps_to_resolve": [
+          "Disable connections to unsecure services",
+          "Ensure any URLs connected to are secure (https)"
+        ]
       }
     ]
   }

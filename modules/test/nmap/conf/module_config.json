@@ -40,7 +40,11 @@
               "type": "udp"
             }
           ]
-        }
+        },
+        "steps_to_resolve": [
+          "Disable the FTP server",
+          "Switch to a secure SFTP server"
+        ]
       },
       {
         "name": "security.ssh.version",
@@ -56,7 +60,10 @@
             }
           ],
           "version": "protocol 2.0"
-        }
+        },
+        "steps_to_resolve": [
+          "Upgrade the SSH server to at least protocol 2.0"
+        ]
       },
       {
         "name": "security.services.telnet",
@@ -77,7 +84,11 @@
               "type": "udp"
             }
           ]
-        }
+        },
+        "steps_to_resolve": [
+          "Disable the Telnet server",
+          "Use SSH instead of Telnet if required"
+        ]
       },
       {
         "name": "security.services.smtp",
@@ -102,7 +113,10 @@
               "type": "tcp"
             }
           ]
-        }
+        },
+        "steps_to_resolve": [
+          "Disable the SMTP server"
+        ]
       },
       {
         "name": "security.services.http",
@@ -133,7 +147,11 @@
               "allowed": true
             }
           ]
-        }
+        },
+        "steps_to_resolve": [
+          "Disable all unsecure HTTP servers",
+          "Setup TLS on the web server"
+        ]
       },
       {
         "name": "security.services.pop",
@@ -172,7 +190,10 @@
               "type": "udp"
             }
           ]
-        }
+        },
+        "steps_to_resolve": [
+          "Disable the POP server"
+        ]
       },
       {
         "name": "security.services.imap",
@@ -219,7 +240,10 @@
               "type": "udp"
             }
           ]
-        }
+        },
+        "steps_to_resolve": [
+          "Disable the IMAP server"
+        ]
       },
       {
         "name": "security.services.snmpv3",
@@ -240,7 +264,10 @@
               "type": "udp"
             }
           ]
-        }
+        },
+        "steps_to_resolve": [
+          "Disable the SNMP server"
+        ]
       },
       {
         "name": "security.services.vnc",
@@ -292,7 +319,10 @@
               "type": "tcp"
             }
           ]
-        }
+        },
+        "steps_to_resolve": [
+          "Disable the VNC server"
+        ]
       },
       {
         "name": "security.services.tftp",
@@ -322,7 +352,10 @@
               "type": "udp"
             }
           ]
-        }
+        },
+        "steps_to_resolve": [
+          "Disable the TFTP server"
+        ]
       },
       {
         "name": "ntp.network.ntp_server",
@@ -339,7 +372,11 @@
               "type": "udp"
             }
           ]
-        }
+        },
+        "steps_to_resolve": [
+          "Disable the NTP server",
+          "Drop traffic entering port 123/udp"
+        ]
       }
     ]
   }
