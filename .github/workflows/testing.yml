@@ -130,7 +130,7 @@ jobs:
     - name: Install Node
       uses: actions/setup-node@v4
       with:
-        node-version: 18.10.0
+        node-version: 18.13.0
     - name: Install Chromium Browser
       run: sudo apt install chromium-browser
     - name: Install dependencies
