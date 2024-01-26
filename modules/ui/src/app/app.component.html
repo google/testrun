@@ -14,7 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <app-bypass></app-bypass>
-<mat-drawer-container hasBackdrop="false" class="app-container" autosize>
+<mat-drawer-container
+  [class.active-menu]="isMenuOpen | async"
+  hasBackdrop="false"
+  class="app-container"
+  autosize>
   <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
     <div class="app-sidebar" #navigation>
       <ng-container
@@ -84,9 +88,7 @@ limitations under the License.
     <div class="app-content-main" role="main" id="main">
       <app-callout
         [type]="CalloutType.Info"
-        *ngIf="
-          (hasConnectionSetting$ | async) !== true && isConnectionSettingsLoaded
-        ">
+        *ngIf="(hasConnectionSetting$ | async) === false">
         Step 1: To perform a device test, please, select ports in
         <a
           (click)="openSetting()"
@@ -103,8 +105,7 @@ limitations under the License.
         [type]="CalloutType.Info"
         *ngIf="
           (hasConnectionSetting$ | async) === true &&
-          !(devices$ | async)?.length &&
-          isDevicesLoaded
+          !(devices$ | async)?.length
         ">
         Step 2: To perform a device test please
         <a
@@ -126,7 +127,7 @@ limitations under the License.
           (devices$ | async)?.length &&
           (!(systemStatus$ | async)?.status ||
             (systemStatus$ | async)?.status === StatusOfTestrun.Idle) &&
-          isStatusLoaded &&
+          isStatusLoaded === true &&
           (isTestrunStarted$ | async) === false
         ">
         Step 3: Once device is created navigate to
@@ -151,7 +152,7 @@ limitations under the License.
     position="end"
     class="settings-drawer">
     <app-general-settings
-      [interfaces]="interfaces"
+      [interfaces]="(interfaces | async) ?? {}"
       (closeSettingEvent)="closeSetting()"
       (reloadInterfacesEvent)="reloadInterfaces()">
     </app-general-settings>

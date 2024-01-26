@@ -17,7 +17,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Device, DeviceView } from '../../model/device';
 
 import { DeviceItemComponent } from './device-item.component';
-import { DeviceRepositoryModule } from '../../device-repository/device-repository.module';
+import { DeviceRepositoryModule } from '../../pages/devices/device-repository.module';
 
 describe('DeviceItemComponent', () => {
   let component: DeviceItemComponent;
