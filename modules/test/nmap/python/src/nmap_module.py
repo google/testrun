@@ -69,13 +69,14 @@ class NmapModule(TestModule):
     # Parse the results into a table format
     nmap_table_data = []
     for _, value in nmap_scan_results.items():
-      nmap_table_data.append({
-          'Port': value['number'],
-          'Type': value['tcp_udp'],
-          'State': value['state'],
-          'Service': value['service'],
-          'Version': value['version']
-      })
+      if value['state'] == 'open':
+        nmap_table_data.append({
+            'Port': value['number'],
+            'Type': value['tcp_udp'],
+            'State': value['state'],
+            'Service': value['service'],
+            'Version': value['version']
+        })
 
       if value['state'] == 'open':
         if value['tcp_udp'] == 'tcp':
@@ -83,39 +84,44 @@ class NmapModule(TestModule):
         else:
           udp_open += 1
 
-    # Find the maximum column lengths
-    max_service_length = max(
-        len(row['Service'])
-        for row in nmap_table_data) if len(nmap_table_data) > 0 else 15
-    max_version_length = max(
-        len(row['Version'])
-        for row in nmap_table_data) if len(nmap_table_data) > 0 else 15
-
-    table_content = ''
-    for row in nmap_table_data:
-      table_content += (f'''| {row['Port']: ^10} | {row['Type']: ^10} '''
-                        f'''| {row['State']: ^10} '''
-                        f'''| {row['Service']: ^{max_service_length}} '''
-                        f'''| {row['Version']: ^{max_version_length}} |\n''')
-
-    # Dynamically adjust the header width based on the
-    # longest 'Destination' content
-    header = (f'''| {'Port': ^10} | {'Type': ^{10}} | {'State': ^{10}} '''
-              f'''| {'Service': ^{max_service_length}} '''
-              f'''| {'Version': ^{max_version_length}} |''')
-    header_line = (f'''|{'-' * 12}|{'-' * 12}|{'-' * 12}|'''
-                   f'''{'-' * (max_service_length + 2)}'''
-                   f'''|{'-' * (max_version_length + 2)}|''')
-
     summary = '## Summary'
     summary += f'''\n- TCP Ports Open: {tcp_open}'''
     summary += f'''\n- UDP Ports Open: {udp_open}'''
     summary += f'''\n- Total Ports Open: {tcp_open + udp_open}'''
 
-    markdown_template = f'''# NMAP Module
-    \r{header}\r{header_line}\r{table_content}\r{summary}
-    '''
+    if (tcp_open + udp_open)>0:
 
+      # Find the maximum column lengths
+      max_service_length = max(
+          len(row['Service'])
+          for row in nmap_table_data) if len(nmap_table_data) > 0 else 15
+      max_version_length = max(
+          len(row['Version'])
+          for row in nmap_table_data) if len(nmap_table_data) > 0 else 15
+
+      table_content = ''
+      for row in nmap_table_data:
+        table_content += (f'''| {row['Port']: ^10} | {row['Type']: ^10} '''
+                          f'''| {row['State']: ^10} '''
+                          f'''| {row['Service']: ^{max_service_length}} '''
+                          f'''| {row['Version']: ^{max_version_length}} |\n''')
+
+      # Dynamically adjust the header width based on the
+      # longest 'Destination' content
+      header = (f'''| {'Port': ^10} | {'Type': ^{10}} | {'State': ^{10}} '''
+                f'''| {'Service': ^{max_service_length}} '''
+                f'''| {'Version': ^{max_version_length}} |''')
+      header_line = (f'''|{'-' * 12}|{'-' * 12}|{'-' * 12}|'''
+                     f'''{'-' * (max_service_length + 2)}'''
+                     f'''|{'-' * (max_version_length + 2)}|''')
+
+      markdown_template = (f'''# NMAP Module\n'''
+      f'''\n{header}\n{header_line}\n{table_content}\n{summary}''')
+
+    else:
+      markdown_template = (f'''# NMAP Module\n'''
+      f'''\n- No ports detected open\n'''
+      f'''\n{summary}''')
     LOGGER.debug('Markdown Report:\n' + markdown_template)
 
     # Use os.path.join to create the complete file path
