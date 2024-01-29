@@ -80,11 +80,20 @@ class TLSModule(TestModule):
     monitor_result = self._tls_util.validate_tls_client(
         client_ip=client_ip,
         tls_version=tls_version,
-        capture_file=MONITOR_CAPTURE_FILE)
+        capture_file=[MONITOR_CAPTURE_FILE])
     startup_result = self._tls_util.validate_tls_client(
         client_ip=client_ip,
         tls_version=tls_version,
-        capture_file=STARTUP_CAPTURE_FILE)
+        capture_file=[STARTUP_CAPTURE_FILE])
+    gateway_result = self._tls_util.validate_tls_client(
+        client_ip=client_ip,
+        tls_version=tls_version,
+        capture_file=[GATEWAY_CAPTURE_FILE])
+
+    client_results = self._tls_util.validate_tls_client(
+        client_ip=client_ip,
+        tls_version=tls_version,
+        capture_files=[MONITOR_CAPTURE_FILE,STARTUP_CAPTURE_FILE,GATEWAY_CAPTURE_FILE])
 
     LOGGER.info('Montor: ' + str(monitor_result))
     LOGGER.info('Startup: ' + str(startup_result))
