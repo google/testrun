@@ -15,6 +15,7 @@
 from nmap_module import NmapModule
 import unittest
 import os
+import shutil
 
 MODULE = 'nmap'
 
@@ -34,13 +35,18 @@ class NMAPTest(unittest.TestCase):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
   # Test the module report generation
-  def nmap_module_report_test(self):
+  def nmap_module_ports_open_report_test(self):
+    # Move test scan into expected folder
+    src_scan_results_path = os.path.join(TEST_FILES_DIR,'ports_open_scan_result.json')
+    dst_scan_results_path = os.path.join(OUTPUT_DIR,'nmap_scan_results.json')
+    shutil.copy(src_scan_results_path, dst_scan_results_path)
+
     nmap_module = NmapModule(module=MODULE,
                              log_dir=OUTPUT_DIR,
                              conf_file=CONF_FILE,
                              results_dir=OUTPUT_DIR,
                              run=False,
-                             nmap_scan_results_path=TEST_FILES_DIR)
+                             nmap_scan_results_path=OUTPUT_DIR)
 
     report_out_path = nmap_module.generate_module_report()
 
@@ -49,7 +55,34 @@ class NMAPTest(unittest.TestCase):
       report_out = file.read()
 
     # Read the local good report
-    with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
+    local_report = TEST_FILES_DIR + '/ports_open_report.md'
+    with open(local_report, 'r', encoding='utf-8') as file:
+      report_local = file.read()
+
+    self.assertEqual(report_out, report_local)
+
+    # Test the module report generation with all ports closed
+  def nmap_module_report_all_closed_test(self):
+    src_scan_results_path = os.path.join(TEST_FILES_DIR,'all_closed_scan_result.json')
+    dst_scan_results_path = os.path.join(OUTPUT_DIR,'nmap_scan_results.json')
+    shutil.copy(src_scan_results_path, dst_scan_results_path)
+
+    nmap_module = NmapModule(module=MODULE,
+                             log_dir=OUTPUT_DIR,
+                             conf_file=CONF_FILE,
+                             results_dir=OUTPUT_DIR,
+                             run=False,
+                             nmap_scan_results_path=OUTPUT_DIR)
+
+    report_out_path = nmap_module.generate_module_report()
+
+    # Read the generated report
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
+
+    # Read the local good report
+    local_report = TEST_FILES_DIR + '/all_closed_report.md'
+    with open(local_report, 'r', encoding='utf-8') as file:
       report_local = file.read()
 
     self.assertEqual(report_out, report_local)
@@ -58,7 +91,8 @@ class NMAPTest(unittest.TestCase):
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   # Module report test
-  suite.addTest(NMAPTest('nmap_module_report_test'))
+  suite.addTest(NMAPTest('nmap_module_ports_open_report_test'))
+  suite.addTest(NMAPTest('nmap_module_report_all_closed_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)
