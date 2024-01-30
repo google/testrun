@@ -153,6 +153,7 @@ limitations under the License.
     class="settings-drawer">
     <app-general-settings
       [interfaces]="(interfaces | async) ?? {}"
+      [hasConnectionSettings]="(hasConnectionSetting$ | async) ?? false"
       (closeSettingEvent)="closeSetting()"
       (reloadInterfacesEvent)="reloadInterfaces()">
     </app-general-settings>

@@ -15,7 +15,11 @@
  */
 import { combineReducers, createReducer, on } from '@ngrx/store';
 import * as Actions from './actions';
-import { initialAppComponentState } from './state';
+import {
+  initialAppComponentState,
+  initialSettingsState,
+  initialSharedState,
+} from './state';
 
 export const appFeatureKey = 'app';
 
@@ -35,6 +39,24 @@ export const appComponentReducer = createReducer(
   }))
 );
 
+export const sharedReducer = createReducer(
+  initialSharedState,
+  on(Actions.setHasConnectionSettings, (state, { hasConnectionSettings }) => ({
+    ...state,
+    hasConnectionSettings,
+  }))
+);
+
+export const settingsReducer = createReducer(
+  initialSettingsState,
+  on(Actions.fetchSystemConfigSuccess, (state, { systemConfig }) => ({
+    ...state,
+    systemConfig,
+  }))
+);
+
 export const rootReducer = combineReducers({
   appComponent: appComponentReducer,
+  shared: sharedReducer,
+  settings: settingsReducer,
 });

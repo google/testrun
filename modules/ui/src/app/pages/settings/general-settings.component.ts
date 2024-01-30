@@ -23,17 +23,17 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Subject, takeUntil, tap } from 'rxjs';
-import {
-  SystemInterfaces,
-  TestRunService,
-} from '../../services/test-run.service';
+import { SystemInterfaces } from '../../services/test-run.service';
 import { OnlyDifferentValuesValidator } from './only-different-values.validator';
 import { CalloutType } from '../../model/callout-type';
-import { Observable } from 'rxjs/internal/Observable';
-import { shareReplay } from 'rxjs/internal/operators/shareReplay';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { EventType } from '../../model/event-type';
-import { SettingOption } from '../../model/setting';
+import { SettingOption, SystemConfig } from '../../model/setting';
+import { Store } from '@ngrx/store';
+import { AppState } from '../../store/state';
+import { selectSystemConfig } from '../../store/selectors';
+import { createSystemConfig } from '../../store/actions';
+import { AppEffects } from '../../store/effects';
 
 @Component({
   selector: 'app-general-settings',
@@ -41,15 +41,8 @@ import { SettingOption } from '../../model/setting';
   styleUrls: ['./general-settings.component.scss'],
 })
 export class GeneralSettingsComponent implements OnInit, OnDestroy {
-  private _interfaces: SystemInterfaces = {};
-  @Input()
-  get interfaces(): SystemInterfaces {
-    return this._interfaces;
-  }
-  set interfaces(value: SystemInterfaces) {
-    this._interfaces = value;
-    this.setSystemSetting();
-  }
+  @Input() interfaces: SystemInterfaces = {};
+  @Input() hasConnectionSettings = false;
   @Output() closeSettingEvent = new EventEmitter<void>();
   @Output() reloadInterfacesEvent = new EventEmitter<void>();
   public readonly CalloutType = CalloutType;
@@ -60,9 +53,8 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     key: '',
     value: 'Not specified',
   };
-  hasConnectionSetting$!: Observable<boolean | null>;
   private destroy$: Subject<boolean> = new Subject<boolean>();
-
+  private systemConfig: SystemConfig = {};
   get deviceControl(): FormControl {
     return this.settingForm.get('device_intf') as FormControl;
   }
@@ -84,33 +76,48 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   }
 
   constructor(
-    private readonly testRunService: TestRunService,
     private readonly fb: FormBuilder,
     private liveAnnouncer: LiveAnnouncer,
-    private readonly onlyDifferentValuesValidator: OnlyDifferentValuesValidator
+    private readonly onlyDifferentValuesValidator: OnlyDifferentValuesValidator,
+    private store: Store<AppState>,
+    private effects: AppEffects
   ) {}
 
   ngOnInit() {
-    this.hasConnectionSetting$ = this.testRunService.hasConnectionSetting$.pipe(
-      shareReplay({ refCount: true, bufferSize: 1 })
-    );
-
     this.createSettingForm();
-    this.setSettingView();
     this.cleanFormErrorMessage();
+
+    this.store
+      .select(selectSystemConfig)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(config => {
+        this.systemConfig = config;
+        this.setDefaultFormValues(
+          this.systemConfig?.network?.device_intf,
+          this.systemConfig?.network?.internet_intf
+        );
+      });
+
+    this.effects.onCreateSystemConfigSuccess$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.closeSetting(EventType.Save);
+      });
   }
 
   reloadSetting(): void {
     this.reloadInterfacesEvent.emit();
   }
-
   closeSetting(message: string): void {
     this.resetForm();
     this.closeSettingEvent.emit();
     this.liveAnnouncer.announce(
       `The ${message} finished. The connection setting panel is closed.`
     );
-    this.setSystemSetting();
+    this.setDefaultFormValues(
+      this.systemConfig?.network?.device_intf,
+      this.systemConfig?.network?.internet_intf
+    );
   }
 
   saveSetting(): void {
@@ -135,26 +142,6 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     ));
   }
 
-  private setSettingView(): void {
-    this.testRunService
-      .getSystemConfig()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(config => {
-        if (config?.network) {
-          const { device_intf, internet_intf } = config.network;
-          if (device_intf && internet_intf) {
-            this.testRunService.setHasConnectionSetting(true);
-          } else {
-            this.testRunService.setHasConnectionSetting(false);
-          }
-          this.setDefaultFormValues(device_intf, internet_intf);
-        } else {
-          this.testRunService.setHasConnectionSetting(false);
-        }
-        this.testRunService.setSystemConfig(config);
-      });
-  }
-
   compare(c1: SettingOption, c2: SettingOption): boolean {
     return c1 && c2 && c1.key === c2.key && c1.value === c2.value;
   }
@@ -168,8 +155,8 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       this.deviceControl.setValue(deviceData);
     }
     if (internet && this.interfaces[internet]) {
-      const interneData = this.transformValueToObj(internet);
-      this.internetControl.setValue(interneData);
+      const internetData = this.transformValueToObj(internet);
+      this.internetControl.setValue(internetData);
     } else {
       this.internetControl.setValue(this.defaultInternetOption);
     }
@@ -193,32 +180,14 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
 
   private createSystemConfig(): void {
     const { device_intf, internet_intf } = this.settingForm.value;
-    const data = {
+    const data: SystemConfig = {
       network: {
         device_intf: device_intf.key,
         internet_intf: internet_intf.key,
       },
     };
 
-    this.testRunService
-      .createSystemConfig(data)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.closeSetting(EventType.Save);
-        this.testRunService.setSystemConfig(data);
-        this.testRunService.setHasConnectionSetting(true);
-      });
-  }
-
-  private setSystemSetting(): void {
-    this.testRunService.systemConfig$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(config => {
-        if (config?.network) {
-          const { device_intf, internet_intf } = config.network;
-          this.setDefaultFormValues(device_intf, internet_intf);
-        }
-      });
+    this.store.dispatch(createSystemConfig({ data }));
   }
 
   private resetForm(): void {

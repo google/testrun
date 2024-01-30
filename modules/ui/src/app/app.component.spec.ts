@@ -86,7 +86,6 @@ describe('AppComponent', () => {
       'setIsOpenAddDevice',
       'systemStatus$',
       'isTestrunStarted$',
-      'hasConnectionSetting$',
       'setIsOpenStartTestrun',
     ]);
 
@@ -98,10 +97,8 @@ describe('AppComponent', () => {
     mockService.getDevices.and.returnValue(
       new BehaviorSubject<Device[] | null>([device])
     );
-    mockService.getSystemInterfaces.and.returnValue(of({}));
     (mockService.systemStatus$ as unknown) = of({});
     mockService.isTestrunStarted$ = of(true);
-    mockService.hasConnectionSetting$ = of(true);
 
     TestBed.configureTestingModule({
       imports: [
@@ -146,6 +143,7 @@ describe('AppComponent', () => {
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
     router = TestBed.get(Router);
+    component.hasConnectionSetting$ = of(true);
     fixture.detectChanges();
     compiled = fixture.nativeElement as HTMLElement;
     spyOn(store, 'dispatch').and.callFake(() => {});
@@ -359,7 +357,7 @@ describe('AppComponent', () => {
   describe('Callout component visibility', () => {
     describe('with no connection settings', () => {
       beforeEach(() => {
-        mockService.hasConnectionSetting$ = of(false);
+        component.hasConnectionSetting$ = of(false);
         component.ngOnInit();
         fixture.detectChanges();
       });
@@ -399,7 +397,7 @@ describe('AppComponent', () => {
 
     describe('with system status as "Idle"', () => {
       beforeEach(() => {
-        mockService.hasConnectionSetting$ = of(true);
+        component.hasConnectionSetting$ = of(true);
         mockService.getDevices.and.returnValue(
           new BehaviorSubject<Device[] | null>([device])
         );
@@ -579,6 +577,7 @@ describe('AppComponent', () => {
 })
 class FakeGeneralSettingsComponent {
   @Input() interfaces = [];
+  @Input() hasConnectionSettings = false;
   @Output() closeSettingEvent = new EventEmitter<void>();
   @Output() reloadInterfacesEvent = new EventEmitter<void>();
 }

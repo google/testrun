@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 import * as fromReducer from './reducers';
-import { initialAppComponentState } from './state';
+import {
+  initialAppComponentState,
+  initialSettingsState,
+  initialSharedState,
+} from './state';
 import {
   fetchInterfacesSuccess,
+  fetchSystemConfigSuccess,
+  setHasConnectionSettings,
   toggleMenu,
   updateFocusNavigation,
 } from './actions';
@@ -69,6 +75,35 @@ describe('Reducer', () => {
       const state = fromReducer.appComponentReducer(initialState, action);
 
       const newState = { ...initialState, ...{ isMenuOpen: true } };
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setHasConnectionSettings action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setHasConnectionSettings({ hasConnectionSettings: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ hasConnectionSettings: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('fetchSystemConfigSuccess action', () => {
+    it('should update state', () => {
+      const initialState = initialSettingsState;
+      const action = fetchSystemConfigSuccess({
+        systemConfig: { network: { device_intf: '111' } },
+      });
+      const state = fromReducer.settingsReducer(initialState, action);
+
+      const newState = {
+        ...initialState,
+        ...{ systemConfig: { network: { device_intf: '111' } } },
+      };
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);
     });

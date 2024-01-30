@@ -18,21 +18,25 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
 import { SystemInterfaces, TestRunService } from './services/test-run.service';
-import { Observable } from 'rxjs/internal/Observable';
+import { Observable } from 'rxjs';
 import { Device } from './model/device';
 import { TestrunStatus, StatusOfTestrun } from './model/testrun-status';
 import { Router } from '@angular/router';
 import { LoaderService } from './services/loader.service';
 import { CalloutType } from './model/callout-type';
-import { tap } from 'rxjs/internal/operators/tap';
-import { shareReplay } from 'rxjs/internal/operators/shareReplay';
+import { tap, shareReplay } from 'rxjs/operators';
 import { Routes } from './model/routes';
 import { FocusManagerService } from './services/focus-manager.service';
 import { State, Store } from '@ngrx/store';
 import { AppState } from './store/state';
-import { selectInterfaces, selectMenuOpened } from './store/selectors';
+import {
+  selectHasConnectionSettings,
+  selectInterfaces,
+  selectMenuOpened,
+} from './store/selectors';
 import {
   fetchInterfaces,
+  fetchSystemConfig,
   toggleMenu,
   updateFocusNavigation,
 } from './store/actions';
@@ -57,7 +61,9 @@ export class AppComponent implements OnInit {
   devices$!: Observable<Device[] | null>;
   systemStatus$!: Observable<TestrunStatus>;
   isTestrunStarted$!: Observable<boolean>;
-  hasConnectionSetting$!: Observable<boolean | null>;
+  hasConnectionSetting$: Observable<boolean | null> = this.store.select(
+    selectHasConnectionSettings
+  );
   isStatusLoaded = false;
   isConnectionSettingsLoaded = false;
   private devicesLength = 0;
@@ -122,7 +128,7 @@ export class AppComponent implements OnInit {
 
     this.isTestrunStarted$ = this.testRunService.isTestrunStarted$;
 
-    this.hasConnectionSetting$ = this.testRunService.hasConnectionSetting$.pipe(
+    this.hasConnectionSetting$.pipe(
       tap(result => {
         if (result !== null) {
           this.isConnectionSettingsLoaded = true;
@@ -130,6 +136,10 @@ export class AppComponent implements OnInit {
       }),
       shareReplay({ refCount: true, bufferSize: 1 })
     );
+
+    this.getSystemInterfaces();
+
+    this.store.dispatch(fetchSystemConfig());
   }
 
   navigateToDeviceRepository(): void {
@@ -182,7 +192,6 @@ export class AppComponent implements OnInit {
 
   async openGeneralSettings(openSettingFromToggleBtn: boolean) {
     this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
-    this.getSystemInterfaces();
     await this.settingsDrawer.open();
   }
 

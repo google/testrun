@@ -31,3 +31,13 @@ export const selectInterfaces = createSelector(
   selectAppState,
   (state: AppState) => state.appComponent.interfaces
 );
+
+export const selectSystemConfig = createSelector(
+  selectAppState,
+  (state: AppState) => state.settings.systemConfig
+);
+
+export const selectHasConnectionSettings = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.hasConnectionSettings
+);

@@ -17,9 +17,12 @@
 import { Device } from '../model/device';
 import { TestrunStatus } from '../model/testrun-status';
 import { SystemInterfaces } from '../services/test-run.service';
+import { SystemConfig } from '../model/setting';
 
 export interface AppState {
   appComponent: AppComponentState;
+  settings: SettingsState;
+  shared: SharedState;
 }
 
 export interface AppComponentState {
@@ -35,13 +38,17 @@ export interface AppComponentState {
 
 export interface SharedState {
   //used in app, devices, testrun
-  devices: Device[] | null;
+  devices?: Device[] | null;
   //app, testrun
-  systemStatus: TestrunStatus | null;
+  systemStatus?: TestrunStatus | null;
   //app, testrun
-  isTestrunStarted: boolean;
+  isTestrunStarted?: boolean;
   //app, settings
-  hasConnectionSetting: boolean;
+  hasConnectionSettings: boolean;
+}
+
+export interface SettingsState {
+  systemConfig: SystemConfig;
 }
 
 export const initialAppComponentState: AppComponentState = {
@@ -50,4 +57,12 @@ export const initialAppComponentState: AppComponentState = {
   focusNavigation: false,
   isStatusLoaded: false,
   devicesLength: 0,
+};
+
+export const initialSettingsState: SettingsState = {
+  systemConfig: {},
+};
+
+export const initialSharedState: SharedState = {
+  hasConnectionSettings: false,
 };

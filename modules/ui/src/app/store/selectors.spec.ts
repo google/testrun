@@ -13,8 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { AppState } from './state';
-import { selectInterfaces, selectMenuOpened } from './selectors';
+import {
+  selectHasConnectionSettings,
+  selectInterfaces,
+  selectMenuOpened,
+  selectSystemConfig,
+} from './selectors';
 
 describe('Selectors', () => {
   const initialState: AppState = {
@@ -24,6 +30,12 @@ describe('Selectors', () => {
       isStatusLoaded: false,
       devicesLength: 0,
       focusNavigation: false,
+    },
+    settings: {
+      systemConfig: {},
+    },
+    shared: {
+      hasConnectionSettings: false,
     },
   };
 
@@ -35,5 +47,15 @@ describe('Selectors', () => {
   it('should select interfaces', () => {
     const result = selectInterfaces.projector(initialState);
     expect(result).toEqual({});
+  });
+
+  it('should select system config', () => {
+    const result = selectSystemConfig.projector(initialState);
+    expect(result).toEqual({});
+  });
+
+  it('should select has connection settings', () => {
+    const result = selectHasConnectionSettings.projector(initialState);
+    expect(result).toEqual(false);
   });
 });

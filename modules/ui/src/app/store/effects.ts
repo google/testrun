@@ -23,7 +23,7 @@ import * as AppActions from './actions';
 import { AppState } from './state';
 import { TestRunService } from '../services/test-run.service';
 import { filter } from 'rxjs';
-import { selectMenuOpened } from './selectors';
+import { selectMenuOpened, selectSystemConfig } from './selectors';
 
 @Injectable()
 export class AppEffects {
@@ -48,6 +48,76 @@ export class AppEffects {
     );
   });
 
+  onFetchSystemConfig$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchSystemConfig),
+      switchMap(() =>
+        this.testrunService
+          .getSystemConfig()
+          .pipe(
+            map(systemConfig =>
+              AppActions.fetchSystemConfigSuccess({ systemConfig })
+            )
+          )
+      )
+    );
+  });
+
+  onFetchSystemConfigSuccessNonEmpty$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchSystemConfigSuccess),
+      withLatestFrom(this.store.select(selectSystemConfig)),
+      filter(
+        ([, systemConfig]) =>
+          systemConfig.network != null &&
+          systemConfig.network.device_intf != '' &&
+          systemConfig.network.internet_intf != ''
+      ),
+      map(() =>
+        AppActions.setHasConnectionSettings({ hasConnectionSettings: true })
+      )
+    );
+  });
+
+  onFetchSystemConfigSuccessEmpty$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchSystemConfigSuccess),
+      withLatestFrom(this.store.select(selectSystemConfig)),
+      filter(
+        ([, systemConfig]) =>
+          systemConfig.network == null ||
+          systemConfig.network.device_intf === '' ||
+          systemConfig.network.internet_intf === ''
+      ),
+      map(() =>
+        AppActions.setHasConnectionSettings({ hasConnectionSettings: false })
+      )
+    );
+  });
+
+  onCreateSystemConfig$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.createSystemConfig),
+      switchMap(action =>
+        this.testrunService
+          .createSystemConfig(action.data)
+          .pipe(
+            map(() =>
+              AppActions.createSystemConfigSuccess({ data: action.data })
+            )
+          )
+      )
+    );
+  });
+
+  onCreateSystemConfigSuccess$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.createSystemConfigSuccess),
+      map(action =>
+        AppActions.fetchSystemConfigSuccess({ systemConfig: action.data })
+      )
+    );
+  });
   constructor(
     private actions$: Actions,
     private testrunService: TestRunService,
