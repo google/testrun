@@ -551,6 +551,36 @@ describe('AppComponent', () => {
         expect(callout).toBeNull();
       });
     });
+
+    describe('error', () => {
+      describe('with error', () => {
+        beforeEach(() => {
+          component.error$ = of(true);
+          component.ngOnInit();
+          fixture.detectChanges();
+        });
+        it('should have callout component', () => {
+          const callout = compiled.querySelector('app-callout');
+          const calloutContent = callout?.innerHTML.trim();
+
+          expect(callout).toBeTruthy();
+          expect(calloutContent).toContain('Selected port is missing!');
+        });
+      });
+
+      describe('with no error', () => {
+        beforeEach(() => {
+          component.error$ = of(false);
+          component.ngOnInit();
+          fixture.detectChanges();
+        });
+        it('should not have callout component', () => {
+          const callout = compiled.querySelector('app-callout');
+
+          expect(callout).toBeNull();
+        });
+      });
+    });
   });
 
   it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {

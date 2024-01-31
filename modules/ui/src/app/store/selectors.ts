@@ -41,3 +41,8 @@ export const selectHasConnectionSettings = createSelector(
   selectAppState,
   (state: AppState) => state.shared.hasConnectionSettings
 );
+
+export const selectError = createSelector(
+  selectAppState,
+  (state: AppState) => state.appComponent.error
+);

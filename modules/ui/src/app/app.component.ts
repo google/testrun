@@ -30,6 +30,7 @@ import { FocusManagerService } from './services/focus-manager.service';
 import { State, Store } from '@ngrx/store';
 import { AppState } from './store/state';
 import {
+  selectError,
   selectHasConnectionSettings,
   selectInterfaces,
   selectMenuOpened,
@@ -71,6 +72,7 @@ export class AppComponent implements OnInit {
   isMenuOpen: Observable<boolean> = this.store.select(selectMenuOpened);
   interfaces: Observable<SystemInterfaces> =
     this.store.select(selectInterfaces);
+  error$: Observable<boolean> = this.store.select(selectError);
 
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
@@ -140,6 +142,7 @@ export class AppComponent implements OnInit {
     this.getSystemInterfaces();
 
     this.store.dispatch(fetchSystemConfig());
+    //this.store.dispatch(fetchSystemConfigAndInterfaces());
   }
 
   navigateToDeviceRepository(): void {

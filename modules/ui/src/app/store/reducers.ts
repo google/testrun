@@ -36,6 +36,10 @@ export const appComponentReducer = createReducer(
   on(Actions.updateFocusNavigation, (state, { focusNavigation }) => ({
     ...state,
     focusNavigation,
+  })),
+  on(Actions.updateError, (state, { error }) => ({
+    ...state,
+    error,
   }))
 );
 

@@ -86,6 +86,20 @@ limitations under the License.
       </button>
     </mat-toolbar>
     <div class="app-content-main" role="main" id="main">
+      <app-callout [type]="CalloutType.Error" *ngIf="(error$ | async) === true">
+        Selected port is missing! Please define a valid one using
+        <a
+          (click)="openSetting()"
+          (keydown.enter)="openSetting()"
+          (keydown.space)="openSetting()"
+          aria-label="The Connection settings link opens the panel. No redirect to other pages."
+          tabindex="0"
+          role="link"
+          class="message-link"
+          >Settings</a
+        >
+        panel.
+      </app-callout>
       <app-callout
         [type]="CalloutType.Info"
         *ngIf="(hasConnectionSetting$ | async) === false">

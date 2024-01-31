@@ -24,6 +24,7 @@ import {
   fetchSystemConfigSuccess,
   setHasConnectionSettings,
   toggleMenu,
+  updateError,
   updateFocusNavigation,
 } from './actions';
 
@@ -104,6 +105,18 @@ describe('Reducer', () => {
         ...initialState,
         ...{ systemConfig: { network: { device_intf: '111' } } },
       };
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('updateError action', () => {
+    it('should update state', () => {
+      const initialState = initialAppComponentState;
+      const action = updateError({ error: true });
+      const state = fromReducer.appComponentReducer(initialState, action);
+      const newState = { ...initialState, ...{ error: true } };
+
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);
     });

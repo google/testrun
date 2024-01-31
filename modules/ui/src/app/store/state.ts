@@ -32,6 +32,7 @@ export interface AppComponentState {
    * Indicates, if side menu should be focused on keyboard navigation after menu is opened
    */
   focusNavigation: boolean;
+  error: boolean;
   isStatusLoaded: boolean; // TODO should be updated in effect when fetch status
   devicesLength: number; // TODO should be renamed to focusToggleSettingsBtn (true when devices.length > 0) and updated in effect when fetch device
 }
@@ -57,6 +58,7 @@ export const initialAppComponentState: AppComponentState = {
   focusNavigation: false,
   isStatusLoaded: false,
   devicesLength: 0,
+  error: false,
 };
 
 export const initialSettingsState: SettingsState = {

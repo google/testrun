@@ -33,6 +33,16 @@ export const updateFocusNavigation = createAction(
   props<{ focusNavigation: boolean }>()
 );
 
+export const updateValidInterfaces = createAction(
+  '[App Component] Update Valid Interfaces',
+  props<{ validInterfaces: boolean }>()
+);
+
+export const updateError = createAction(
+  '[App Component] Update Error',
+  props<{ error: boolean }>()
+);
+
 // Settings
 export const fetchSystemConfig = createAction('[Settings] Fetch System Config');
 

@@ -115,7 +115,7 @@ describe('Effects', () => {
   });
 
   it('onCreateSystemConfig$ should call createSystemConfigSuccess', done => {
-    actions$ = of(actions.createSystemConfig);
+    actions$ = of(actions.createSystemConfig({ data: {} }));
 
     effects.onCreateSystemConfig$.subscribe(action => {
       expect(action).toEqual(actions.createSystemConfigSuccess({ data: {} }));
@@ -131,6 +131,80 @@ describe('Effects', () => {
         actions.fetchSystemConfigSuccess({ systemConfig: {} })
       );
       done();
+    });
+  });
+
+  describe('onValidateInterfaces$', () => {
+    it('should call updateError with false if interfaces are valid', done => {
+      actions$ = of(actions.updateValidInterfaces({ validInterfaces: true }));
+
+      effects.onValidateInterfaces$.subscribe(action => {
+        expect(action).toEqual(actions.updateError({ error: false }));
+        done();
+      });
+    });
+
+    it('should call updateError with true if interfaces are not valid', done => {
+      actions$ = of(actions.updateValidInterfaces({ validInterfaces: false }));
+
+      effects.onValidateInterfaces$.subscribe(action => {
+        expect(action).toEqual(actions.updateError({ error: true }));
+        done();
+      });
+    });
+  });
+
+  describe('checkInterfacesInConfig$', () => {
+    it('should call updateValidInterfaces with false if interface is no longer available', done => {
+      actions$ = of(
+        actions.fetchInterfacesSuccess({
+          interfaces: {
+            enx00e04c020fa8: '00:e0:4c:02:0f:a8',
+            enx207bd26205e9: '20:7b:d2:62:05:e9',
+          },
+        }),
+        actions.fetchSystemConfigSuccess({
+          systemConfig: {
+            network: {
+              device_intf: 'enx00e04c020fa2',
+              internet_intf: 'enx207bd26205e9',
+            },
+          },
+        })
+      );
+
+      effects.checkInterfacesInConfig$.subscribe(action => {
+        expect(action).toEqual(
+          actions.updateValidInterfaces({ validInterfaces: false })
+        );
+        done();
+      });
+    });
+
+    it('should call updateValidInterfaces with true if interface is available', done => {
+      actions$ = of(
+        actions.fetchInterfacesSuccess({
+          interfaces: {
+            enx00e04c020fa8: '00:e0:4c:02:0f:a8',
+            enx207bd26205e9: '20:7b:d2:62:05:e9',
+          },
+        }),
+        actions.fetchSystemConfigSuccess({
+          systemConfig: {
+            network: {
+              device_intf: 'enx00e04c020fa8',
+              internet_intf: 'enx207bd26205e9',
+            },
+          },
+        })
+      );
+
+      effects.checkInterfacesInConfig$.subscribe(action => {
+        expect(action).toEqual(
+          actions.updateValidInterfaces({ validInterfaces: true })
+        );
+        done();
+      });
     });
   });
 });

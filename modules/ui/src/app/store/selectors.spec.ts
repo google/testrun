@@ -16,6 +16,7 @@
 
 import { AppState } from './state';
 import {
+  selectError,
   selectHasConnectionSettings,
   selectInterfaces,
   selectMenuOpened,
@@ -30,6 +31,7 @@ describe('Selectors', () => {
       isStatusLoaded: false,
       devicesLength: 0,
       focusNavigation: false,
+      error: false,
     },
     settings: {
       systemConfig: {},
@@ -56,6 +58,11 @@ describe('Selectors', () => {
 
   it('should select has connection settings', () => {
     const result = selectHasConnectionSettings.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select error', () => {
+    const result = selectError.projector(initialState);
     expect(result).toEqual(false);
   });
 });
