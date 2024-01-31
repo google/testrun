@@ -143,3 +143,23 @@ jobs:
       env:
         CI: true
       working-directory: ./modules/ui
+
+  linters_ui:
+    permissions: {}
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4.1.1
+    - name: Install Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18.13.0
+    - name: Install dependencies
+      run: npm install && npm ci
+      working-directory: ./modules/ui
+    - name: Run ESLint
+      run: npm run lint
+      working-directory: ./modules/ui
+    - name: Run format check
+      run: npm run format
+      working-directory: ./modules/ui
