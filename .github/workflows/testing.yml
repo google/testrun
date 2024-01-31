@@ -146,7 +146,7 @@ jobs:
 
   linters_ui:
     permissions: {}
-    name: UI Linters
+    name: ESLint
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4.1.1
