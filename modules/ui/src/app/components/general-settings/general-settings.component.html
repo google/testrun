@@ -16,8 +16,7 @@ limitations under the License.
 <div class="settings-drawer-header">
   <h2 class="settings-drawer-header-title">Connection settings</h2>
   <button
-    (click)="closeSetting()"
-    [disabled]="!isFormValues || (hasConnectionSetting$ | async) !== true"
+    (click)="closeSetting(EventType.Close)"
     aria-label="close"
     class="settings-drawer-header-button"
     mat-button>
@@ -26,94 +25,139 @@ limitations under the License.
 </div>
 <div class="setting-drawer-content">
   <form
-    *ngIf="interfaces.length; else warning_message"
-    [formGroup]="settingForm">
-    <app-callout
-      [type]="CalloutType.Warning"
-      *ngIf="interfaces.length === 1"
-      class="two-ports-message">
-      Warning! Testrun requires two ports to operate correctly.
-    </app-callout>
-    <label
-      class="setting-form-label internet-label"
-      id="internet-radio-group-label"
-      for="internet-group">
-      Select port used for Internet connection
-    </label>
-    <p class="setting-label-description">
-      Choose one of the following ports on your Laptop or Desktop
+    [formGroup]="settingForm"
+    [class.setting-drawer-content-form-empty]="
+      (interfaces | keyvalue).length === 0
+    ">
+    <ng-container
+      *ngIf="(interfaces | keyvalue).length > 0; else warning_message">
+      <app-callout
+        [type]="CalloutType.Warning"
+        *ngIf="(interfaces | keyvalue).length === 1"
+        class="two-ports-message">
+        Warning! Testrun requires two ports to operate correctly.
+      </app-callout>
+      <label
+        class="setting-form-label device-label"
+        id="device-group-label"
+        for="device-group">
+        Select port where you’ll connect the tested device
+      </label>
+      <p class="setting-label-description">
+        Choose one of the options where you’ll connect IoT device for testing
+      </p>
+      <mat-form-field appearance="outline" class="setting-field">
+        <mat-label>Device connection port</mat-label>
+        <mat-select
+          aria-labelledby="device-group-label"
+          id="device-group"
+          class="setting-radio-group"
+          [compareWith]="compare"
+          formControlName="device_intf">
+          <mat-select-trigger>
+            <ng-container *ngIf="deviceControl.value">
+              <p *ngIf="deviceControl.value.key" class="option-value top">
+                {{ deviceControl.value.key }}
+              </p>
+              <p *ngIf="deviceControl.value.value" class="option-value bottom">
+                {{ deviceControl.value.value }}
+              </p>
+            </ng-container>
+          </mat-select-trigger>
+          <mat-option
+            *ngFor="let interface of interfaces | keyvalue"
+            [value]="interface"
+            class="setting-option-value">
+            <p class="option-value top">{{ interface.key }}</p>
+            <p class="option-value bottom">{{ interface.value }}</p>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <label
+        class="setting-form-label internet-label"
+        id="internet-group-label"
+        for="internet-group">
+        Select port used for Internet connection
+      </label>
+      <p class="setting-label-description">
+        Choose one of the following ports on your Laptop or Desktop
+      </p>
+      <mat-form-field appearance="outline" class="setting-field">
+        <mat-label>Internet connection port</mat-label>
+        <mat-select
+          aria-labelledby="internet-group-label"
+          id="internet-group"
+          class="setting-radio-group"
+          [compareWith]="compare"
+          formControlName="internet_intf">
+          <mat-select-trigger>
+            <ng-container *ngIf="internetControl.value">
+              <p *ngIf="internetControl.value.key" class="option-value top">
+                {{ internetControl.value.key }}
+              </p>
+              <p
+                *ngIf="internetControl.value.value"
+                class="option-value bottom">
+                {{ internetControl.value.value }}
+              </p>
+            </ng-container>
+          </mat-select-trigger>
+          <mat-option
+            [value]="defaultInternetOption"
+            class="setting-option-value">
+            <p class="option-value top">{{ defaultInternetOption.key }}</p>
+            <p class="option-value bottom">{{ defaultInternetOption.value }}</p>
+          </mat-option>
+          <mat-option
+            *ngFor="let interface of interfaces | keyvalue"
+            [value]="interface"
+            class="setting-option-value">
+            <p class="option-value top">{{ interface.key }}</p>
+            <p class="option-value bottom">{{ interface.value }}</p>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </ng-container>
+    <p class="message">
+      If a port is missing from this list, you can
+      <a
+        (click)="reloadSetting()"
+        (keydown.enter)="reloadSetting()"
+        (keydown.space)="reloadSetting()"
+        role="button"
+        tabindex="0"
+        class="message-link">
+        Refresh
+      </a>
+      the Connection settings
     </p>
-    <mat-radio-group
-      aria-labelledby="internet-radio-group-label"
-      id="internet-group"
-      class="setting-radio-group"
-      formControlName="internet_intf">
-      <mat-radio-button
-        *ngFor="let interface of interfaces"
-        [value]="interface"
-        class="setting-radio-button">
-        {{ interface }}
-      </mat-radio-button>
-    </mat-radio-group>
-    <label
-      class="setting-form-label device-label"
-      id="device-radio-group-label"
-      for="device-group">
-      Select port where you’ll connect the tested device
-    </label>
-    <p class="setting-label-description">
-      Choose one of the options where you’ll connect IoT device for testing
-    </p>
-    <mat-radio-group
-      aria-labelledby="device-radio-group-label"
-      id="device-group"
-      class="setting-radio-group"
-      formControlName="device_intf">
-      <mat-radio-button
-        *ngFor="let interface of interfaces"
-        [value]="interface"
-        class="setting-radio-button">
-        {{ interface }}
-      </mat-radio-button>
-    </mat-radio-group>
+    <mat-error
+      *ngIf="isSubmitting && isFormError"
+      class="error-message-container">
+      <span>Both interfaces must have different values</span>
+    </mat-error>
+    <div class="setting-drawer-footer">
+      <button
+        mat-flat-button
+        (click)="closeSetting(EventType.Close)"
+        [disabled]="!isFormValues || (hasConnectionSetting$ | async) !== true"
+        class="close-button">
+        Cancel
+      </button>
+      <button
+        mat-raised-button
+        class="save-button"
+        color="primary"
+        (click)="saveSetting()"
+        [disabled]="!isFormValues || isLessThanTwoInterfaces">
+        Save
+      </button>
+    </div>
   </form>
   <ng-template #warning_message>
     <app-callout [type]="CalloutType.Warning">
       Warning! No ports is detected.
     </app-callout>
   </ng-template>
-</div>
-<p class="message">
-  If a port is missing from this list, you can
-  <a
-    (click)="reloadSetting()"
-    (keydown.enter)="reloadSetting()"
-    (keydown.space)="reloadSetting()"
-    role="button"
-    tabindex="0"
-    class="message-link">
-    Refresh
-  </a>
-  the Connection settings
-</p>
-<mat-error *ngIf="isSubmitting && isFormError" class="error-message-container">
-  <span> Both interfaces must have different values </span>
-</mat-error>
-<div class="setting-drawer-footer">
-  <button
-    mat-flat-button
-    (click)="closeSetting()"
-    [disabled]="!isFormValues || (hasConnectionSetting$ | async) !== true"
-    class="close-button">
-    Cancel
-  </button>
-  <button
-    mat-raised-button
-    class="save-button"
-    color="primary"
-    (click)="saveSetting()"
-    [disabled]="!isFormValues || isLessThanTwoInterfaces">
-    Save
-  </button>
 </div>
 <app-spinner class="connection-settings-spinner"></app-spinner>

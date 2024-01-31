@@ -45,7 +45,7 @@ export class DeviceValidators {
   public differentMACAddress(device?: Device): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value?.trim();
-      if (value && !device) {
+      if (value && (!device || device?.mac_addr !== value)) {
         const result = this.testRunService.hasDevice(value);
         return result ? { has_same_mac_address: true } : null;
       }

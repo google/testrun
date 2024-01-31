@@ -19,3 +19,8 @@ export interface SystemConfig {
     internet_intf?: string;
   };
 }
+
+export interface SettingOption {
+  key: string;
+  value: string;
+}

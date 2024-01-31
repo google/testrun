@@ -52,7 +52,7 @@ $device-form-min-width: 285px;
 }
 
 .close-button {
-  color: $grey-700;
+  color: $primary;
 }
 
 .device-form-mac-address-error {
@@ -60,6 +60,10 @@ $device-form-min-width: 285px;
 }
 
 .delete-button {
-  color: $grey-700;
+  color: $primary;
   margin-right: auto;
+}
+
+.hidden {
+  display: none;
 }

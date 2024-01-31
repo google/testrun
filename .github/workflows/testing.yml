@@ -7,12 +7,13 @@ on:
 
 jobs:
   testrun_baseline:
+    permissions: {}
     name:  Baseline
     runs-on: ubuntu-20.04
     timeout-minutes: 20
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v4.1.1
       - name: Install dependencies
         shell: bash {0}
         run: cmd/prepare
@@ -28,13 +29,14 @@ jobs:
         run: testing/baseline/test_baseline
     
   testrun_tests:
+    permissions: {}
     name:  Tests
     runs-on: ubuntu-20.04
     needs: testrun_baseline
     timeout-minutes: 45
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v4.1.1
       - name: Install dependencies
         shell: bash {0}
         run: cmd/prepare
@@ -51,20 +53,21 @@ jobs:
         if: ${{ always() }}
         run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/
       - name: Upload runtime results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           if-no-files-found: error
-          name: runtime_${{ github.workflow }}_${{ github.run_id }}
+          name: runtime_tests_${{ github.run_id }}
           path: runtime.tgz
 
   testrun_api:
+    permissions: {}
     name:  API
     runs-on: ubuntu-20.04
     timeout-minutes: 40
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v4.1.1
       - name: Install dependencies
         shell: bash {0}
         run: cmd/prepare
@@ -82,47 +85,50 @@ jobs:
         if: ${{ always() }}
         run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/ /usr/local/testrun/local/
       - name: Upload runtime results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           if-no-files-found: error
-          name: runtime_${{ github.workflow }}_${{ github.run_id }}
+          name: runtime_api_${{ github.run_id }}
           path: runtime.tgz
 
   pylint:
+    permissions: {}
     name:  Pylint
     runs-on: ubuntu-22.04
     timeout-minutes: 5
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v4.1.1
       - name: Run pylint
         shell: bash {0}
         run: testing/pylint/test_pylint
 
   testrun_package:
+    permissions: {}
     name: Package
     runs-on: ubuntu-22.04
     timeout-minutes: 5
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v4.1.1
       - name: Package Testrun
         shell: bash {0}
         run: cmd/package
       - name: Archive package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: Testrun Installer
+          name: testrun_installer
           path: testrun*.deb
 
   testrun_ui:
+    permissions: {}
     name: UI
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4.1.1
     - name: Install Node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: 18.10.0
     - name: Install Chromium Browser

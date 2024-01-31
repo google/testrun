@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick,
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { GeneralSettingsComponent } from './general-settings.component';
-import { TestRunService } from '../../services/test-run.service';
+import {
+  SystemInterfaces,
+  TestRunService,
+} from '../../services/test-run.service';
 import { of } from 'rxjs';
 import { SystemConfig } from '../../model/setting';
 import { MatRadioModule } from '@angular/material/radio';
@@ -30,6 +28,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { Component, Input } from '@angular/core';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
+import SpyObj = jasmine.SpyObj;
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 const MOCK_SYSTEM_CONFIG_EMPTY: SystemConfig = {
   network: {
@@ -40,21 +43,21 @@ const MOCK_SYSTEM_CONFIG_EMPTY: SystemConfig = {
 
 const MOCK_SYSTEM_CONFIG_WITH_DATA: SystemConfig = {
   network: {
-    device_intf: 'mockDeviceValue',
-    internet_intf: 'mockInternetValue',
+    device_intf: 'mockDeviceKey',
+    internet_intf: 'mockInternetKey',
   },
 };
 
-const MOCK_SYSTEM_CONFIG_WITH_ONE_SETTING: SystemConfig = {
-  network: {
-    device_intf: 'mockDeviceValue',
-  },
+const MOCK_INTERFACES: SystemInterfaces = {
+  mockDeviceKey: 'mockDeviceValue',
+  mockInternetKey: 'mockInternetValue',
 };
 
 describe('GeneralSettingsComponent', () => {
   let component: GeneralSettingsComponent;
   let fixture: ComponentFixture<GeneralSettingsComponent>;
-  let testRunServiceMock: jasmine.SpyObj<TestRunService>;
+  let testRunServiceMock: SpyObj<TestRunService>;
+  let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
   let compiled: HTMLElement;
 
   beforeEach(async () => {
@@ -63,18 +66,21 @@ describe('GeneralSettingsComponent', () => {
       'getSystemConfig',
       'setSystemConfig',
       'createSystemConfig',
-      'setIsOpenAddDevice',
       'hasConnectionSetting$',
       'setHasConnectionSetting',
+      'systemConfig$',
     ]);
-    testRunServiceMock.getSystemInterfaces.and.returnValue(of([]));
+    testRunServiceMock.getSystemInterfaces.and.returnValue(of({}));
     testRunServiceMock.getSystemConfig.and.returnValue(
       of(MOCK_SYSTEM_CONFIG_EMPTY)
     );
     testRunServiceMock.createSystemConfig.and.returnValue(
       of(MOCK_SYSTEM_CONFIG_WITH_DATA)
     );
+    testRunServiceMock.systemConfig$ = of(MOCK_SYSTEM_CONFIG_EMPTY);
     testRunServiceMock.hasConnectionSetting$ = of(true);
+
+    mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
 
     await TestBed.configureTestingModule({
       declarations: [
@@ -83,13 +89,19 @@ describe('GeneralSettingsComponent', () => {
         FakeSpinnerComponent,
         FakeCalloutComponent,
       ],
-      providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
+      providers: [
+        { provide: TestRunService, useValue: testRunServiceMock },
+        { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
+      ],
       imports: [
+        BrowserAnimationsModule,
         MatButtonModule,
         MatIconModule,
         MatRadioModule,
         ReactiveFormsModule,
         MatIconTestingModule,
+        MatInputModule,
+        MatSelectModule,
       ],
     }).compileComponents();
 
@@ -107,14 +119,15 @@ describe('GeneralSettingsComponent', () => {
     testRunServiceMock.getSystemConfig.and.returnValue(
       of(MOCK_SYSTEM_CONFIG_WITH_DATA)
     );
+    component.interfaces = { mockDeviceKey: 'mockDeviceValue' };
+
+    const expectedDevice = { key: 'mockDeviceKey', value: 'mockDeviceValue' };
 
     component.ngOnInit();
 
-    expect(component.deviceControl.value).toBe(
-      MOCK_SYSTEM_CONFIG_WITH_DATA?.network?.device_intf
-    );
-    expect(component.internetControl.value).toBe(
-      MOCK_SYSTEM_CONFIG_WITH_DATA?.network?.internet_intf
+    expect(component.deviceControl.value).toEqual(expectedDevice);
+    expect(component.internetControl.value).toEqual(
+      component.defaultInternetOption
     );
   });
 
@@ -126,76 +139,51 @@ describe('GeneralSettingsComponent', () => {
     expect(component.reloadInterfacesEvent.emit).toHaveBeenCalled();
   });
 
-  describe('#openSetting', () => {
-    it('should call openSetting if device and internet data are unavailable', () => {
-      spyOn(component.openSettingEvent, 'emit');
-
-      component.ngOnInit();
-
-      expect(component.openSettingEvent.emit).toHaveBeenCalled();
-    });
-
-    it('should call openSetting if not systemConfig data', fakeAsync(() => {
-      spyOn(component.openSettingEvent, 'emit');
-      testRunServiceMock.getSystemConfig.and.returnValue(of({}));
-      tick();
-
-      component.ngOnInit();
-
-      expect(component.openSettingEvent.emit).toHaveBeenCalled();
-    }));
-
-    it('should call openSetting if only one setting available', fakeAsync(() => {
-      spyOn(component.openSettingEvent, 'emit');
-      testRunServiceMock.getSystemConfig.and.returnValue(
-        of(MOCK_SYSTEM_CONFIG_WITH_ONE_SETTING)
-      );
-      tick();
-
-      component.ngOnInit();
-
-      expect(component.openSettingEvent.emit).toHaveBeenCalled();
-    }));
-
-    it('should not call openSetting if device and internet data are available', fakeAsync(() => {
-      spyOn(component.openSettingEvent, 'emit');
-      testRunServiceMock.getSystemConfig.and.returnValue(
-        of(MOCK_SYSTEM_CONFIG_WITH_DATA)
-      );
-      tick();
-
-      component.ngOnInit();
-
-      expect(component.openSettingEvent.emit).not.toHaveBeenCalled();
-    }));
-  });
-
   describe('#closeSetting', () => {
     beforeEach(() => {
       testRunServiceMock.systemConfig$ = of(MOCK_SYSTEM_CONFIG_WITH_DATA);
+      component.interfaces = MOCK_INTERFACES;
     });
 
     it('should emit closeSettingEvent', () => {
       spyOn(component.closeSettingEvent, 'emit');
 
-      component.closeSetting();
+      component.closeSetting('Message');
 
       expect(component.closeSettingEvent.emit).toHaveBeenCalled();
+    });
+
+    it('should call liveAnnouncer with provided message', () => {
+      const mockMessage = 'mock event';
+
+      component.closeSetting(mockMessage);
+
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+        `The ${mockMessage} finished. The connection setting panel is closed.`
+      );
     });
 
     it('should call reset settingForm', () => {
       spyOn(component.settingForm, 'reset');
 
-      component.closeSetting();
+      component.closeSetting('Message');
 
       expect(component.settingForm.reset).toHaveBeenCalled();
     });
 
     it('should set value of settingForm on setSystemSetting', () => {
-      component.closeSetting();
+      component.closeSetting('Message');
 
-      expect(component.settingForm.value).toEqual(
-        MOCK_SYSTEM_CONFIG_WITH_DATA.network
+      const expectedDevice = { key: 'mockDeviceKey', value: 'mockDeviceValue' };
+      const expectedInternet = {
+        key: 'mockInternetKey',
+        value: 'mockInternetValue',
+      };
+
+      expect(component.settingForm.value.device_intf).toEqual(expectedDevice);
+
+      expect(component.settingForm.value.internet_intf).toEqual(
+        expectedInternet
       );
     });
   });
@@ -218,38 +206,31 @@ describe('GeneralSettingsComponent', () => {
     });
 
     it('should call createSystemConfig when setting form valid', () => {
-      component.deviceControl.setValue(
-        MOCK_SYSTEM_CONFIG_WITH_DATA?.network?.device_intf
-      );
-      component.internetControl.setValue(
-        MOCK_SYSTEM_CONFIG_WITH_DATA?.network?.internet_intf
-      );
+      const expectedResult = {
+        network: {
+          device_intf: 'mockDeviceKey',
+          internet_intf: '',
+        },
+      };
+
+      component.deviceControl.setValue({
+        key: 'mockDeviceKey',
+        value: 'mockDeviceValue',
+      });
+      component.internetControl.setValue(component.defaultInternetOption);
 
       component.saveSetting();
 
       expect(component.settingForm.invalid).toBeFalse();
       expect(testRunServiceMock.createSystemConfig).toHaveBeenCalledWith(
-        MOCK_SYSTEM_CONFIG_WITH_DATA
+        expectedResult
       );
-    });
-
-    it('should setIsOpenAddDevice as true on first save setting', () => {
-      component.deviceControl.setValue(
-        MOCK_SYSTEM_CONFIG_WITH_DATA.network?.device_intf
-      );
-      component.internetControl.setValue(
-        MOCK_SYSTEM_CONFIG_WITH_DATA.network?.internet_intf
-      );
-
-      component.saveSetting();
-
-      expect(testRunServiceMock.setIsOpenAddDevice).toHaveBeenCalledWith(true);
     });
   });
 
   describe('with no intefaces data', () => {
     beforeEach(() => {
-      component.interfaces = [];
+      component.interfaces = {};
       fixture.detectChanges();
     });
 
@@ -270,7 +251,7 @@ describe('GeneralSettingsComponent', () => {
 
   describe('with intefaces lenght less then two', () => {
     beforeEach(() => {
-      component.interfaces = ['mockDeviceValue'];
+      component.interfaces = { mockDeviceValue: 'mockDeviceValue' };
       testRunServiceMock.systemConfig$ = of(MOCK_SYSTEM_CONFIG_WITH_DATA);
       testRunServiceMock.getSystemConfig.and.returnValue(
         of(MOCK_SYSTEM_CONFIG_WITH_DATA)
@@ -301,9 +282,12 @@ describe('GeneralSettingsComponent', () => {
     });
   });
 
-  describe('with intefaces lenght more then one', () => {
+  describe('with interfaces length more then one', () => {
     beforeEach(() => {
-      component.interfaces = ['mockDeviceValue', 'mockInternetValue'];
+      component.interfaces = {
+        mockDeviceValue: 'mockDeviceValue',
+        mockInterfaceValue: 'mockInterfaceValue',
+      };
       testRunServiceMock.systemConfig$ = of(MOCK_SYSTEM_CONFIG_WITH_DATA);
       testRunServiceMock.getSystemConfig.and.returnValue(
         of(MOCK_SYSTEM_CONFIG_WITH_DATA)

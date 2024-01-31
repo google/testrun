@@ -26,14 +26,12 @@ limitations under the License.
         <div class="toolbar-row top">
           <ng-container
             *ngTemplateOutlet="startNewTestrunButton"></ng-container>
-          <span class="vertical-divider"></span>
-          <app-progress-breadcrumbs [breadcrumbs$]="breadcrumbs$">
-          </app-progress-breadcrumbs>
         </div>
         <div class="toolbar-row bottom">
           <h2 class="title progress-title">
-            {{ data.device.manufacturer }} {{ data.device.model }}
-            {{ data.device.firmware }} {{ data.started | date: 'd MMM y H:mm' }}
+            {{ data.device.manufacturer }} {{ data.device.model }} v{{
+              data.device.firmware
+            }}
           </h2>
           <button
             *ngIf="testrunInProgress(data.status)"

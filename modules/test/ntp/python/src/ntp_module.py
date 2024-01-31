@@ -36,7 +36,9 @@ class NTPModule(TestModule):
   def _ntp_network_ntp_support(self):
     LOGGER.info('Running ntp.network.ntp_support')
     result = None
-    packet_capture = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
+    packet_capture = (rdpcap(STARTUP_CAPTURE_FILE) +
+                      rdpcap(MONITOR_CAPTURE_FILE) +
+                      rdpcap(NTP_SERVER_CAPTURE_FILE))
 
     device_sends_ntp4 = False
     device_sends_ntp3 = False
@@ -71,7 +73,9 @@ class NTPModule(TestModule):
   def _ntp_network_ntp_dhcp(self):
     LOGGER.info('Running ntp.network.ntp_dhcp')
     result = None
-    packet_capture = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
+    packet_capture = (rdpcap(STARTUP_CAPTURE_FILE) +
+                      rdpcap(MONITOR_CAPTURE_FILE) +
+                      rdpcap(NTP_SERVER_CAPTURE_FILE))
 
     device_sends_ntp = False
     ntp_to_local = False

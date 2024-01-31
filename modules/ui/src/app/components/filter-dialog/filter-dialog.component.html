@@ -21,7 +21,11 @@ limitations under the License.
       appearance="outline"
       class="text-field"
       *ngIf="data.filter === FilterName.DeviceInfo">
-      <input class="text-field-input" formControlName="deviceInfo" matInput />
+      <input
+        class="text-field-input"
+        formControlName="deviceInfo"
+        matInput
+        aria-label="device name" />
     </mat-form-field>
     <mat-form-field
       appearance="outline"
@@ -30,7 +34,8 @@ limitations under the License.
       <input
         class="text-field-input"
         formControlName="deviceFirmware"
-        matInput />
+        matInput
+        aria-label="device firmware" />
     </mat-form-field>
     <div formArrayName="results" *ngIf="data.filter === FilterName.Results">
       <p

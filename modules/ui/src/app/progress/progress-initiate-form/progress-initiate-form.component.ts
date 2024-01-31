@@ -67,6 +67,7 @@ export class ProgressInitiateFormComponent
   }
 
   cancel(): void {
+    this.testRunService.setIsOpenStartTestrun(false);
     this.dialogRef.close();
   }
 
