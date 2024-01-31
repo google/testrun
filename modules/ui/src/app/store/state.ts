@@ -17,9 +17,12 @@
 import { Device } from '../model/device';
 import { TestrunStatus } from '../model/testrun-status';
 import { SystemInterfaces } from '../services/test-run.service';
+import { SystemConfig } from '../model/setting';
 
 export interface AppState {
   appComponent: AppComponentState;
+  settings: SettingsState;
+  shared: SharedState;
 }
 
 export interface AppComponentState {
@@ -29,19 +32,24 @@ export interface AppComponentState {
    * Indicates, if side menu should be focused on keyboard navigation after menu is opened
    */
   focusNavigation: boolean;
+  error: boolean;
   isStatusLoaded: boolean; // TODO should be updated in effect when fetch status
   devicesLength: number; // TODO should be renamed to focusToggleSettingsBtn (true when devices.length > 0) and updated in effect when fetch device
 }
 
 export interface SharedState {
   //used in app, devices, testrun
-  devices: Device[] | null;
+  devices?: Device[] | null;
   //app, testrun
-  systemStatus: TestrunStatus | null;
+  systemStatus?: TestrunStatus | null;
   //app, testrun
-  isTestrunStarted: boolean;
+  isTestrunStarted?: boolean;
   //app, settings
-  hasConnectionSetting: boolean;
+  hasConnectionSettings: boolean;
+}
+
+export interface SettingsState {
+  systemConfig: SystemConfig;
 }
 
 export const initialAppComponentState: AppComponentState = {
@@ -50,4 +58,13 @@ export const initialAppComponentState: AppComponentState = {
   focusNavigation: false,
   isStatusLoaded: false,
   devicesLength: 0,
+  error: false,
+};
+
+export const initialSettingsState: SettingsState = {
+  systemConfig: {},
+};
+
+export const initialSharedState: SharedState = {
+  hasConnectionSettings: false,
 };
