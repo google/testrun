@@ -140,7 +140,7 @@ limitations under the License.
       <button
         mat-flat-button
         (click)="closeSetting(EventType.Close)"
-        [disabled]="!isFormValues || (hasConnectionSetting$ | async) !== true"
+        [disabled]="!isFormValues || hasConnectionSettings !== true"
         class="close-button">
         Cancel
       </button>

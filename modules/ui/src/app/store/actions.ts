@@ -15,6 +15,7 @@
  */
 
 import { createAction, props } from '@ngrx/store';
+import { SystemConfig } from '../model/setting';
 import { SystemInterfaces } from '../services/test-run.service';
 
 // App component
@@ -30,4 +31,42 @@ export const fetchInterfacesSuccess = createAction(
 export const updateFocusNavigation = createAction(
   '[App Component] update focus navigation',
   props<{ focusNavigation: boolean }>()
+);
+
+export const updateValidInterfaces = createAction(
+  '[App Component] Update Valid Interfaces',
+  props<{ validInterfaces: boolean }>()
+);
+
+export const updateError = createAction(
+  '[App Component] Update Error',
+  props<{ error: boolean }>()
+);
+
+// Settings
+export const fetchSystemConfig = createAction('[Settings] Fetch System Config');
+
+export const fetchSystemConfigSuccess = createAction(
+  '[Settings] Fetch System Config Success',
+  props<{ systemConfig: SystemConfig }>()
+);
+
+export const createSystemConfig = createAction(
+  '[Settings] Create System Config',
+  props<{
+    data: SystemConfig;
+  }>()
+);
+
+export const createSystemConfigSuccess = createAction(
+  '[Settings] Create System Config Success',
+  props<{
+    data: SystemConfig;
+  }>()
+);
+
+// Shared
+export const setHasConnectionSettings = createAction(
+  '[Shared] Set Has Connection Settings',
+  props<{ hasConnectionSettings: boolean }>()
 );
