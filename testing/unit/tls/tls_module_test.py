@@ -22,7 +22,6 @@ import time
 import netifaces
 import ssl
 import http.client
-from tls_server import TLSServer
 
 MODULE = 'tls'
 # Define the file paths
@@ -309,39 +308,6 @@ class TLSModuleTest(unittest.TestCase):
     tls_server.stop()
     self.assertTrue(test_results[0])
 
-  def test_server(self,host='localhost', port=8443, path='/'):
-      # Create an SSL context
-      context = ssl.create_default_context()
-
-      # You may need to adjust the SSL options based on your server's requirements
-      context.options |= ssl.OP_NO_TLSv1_1  # Disable TLS 1.1
-
-      context.check_hostname = False
-      context.verify_mode = ssl.CERT_NONE
-
-      #context.options |= 0x04
-
-      # Create an HTTPS connection
-      connection = http.client.HTTPSConnection(host, port, context=context)
-
-      try:
-          # Send a GET request
-          connection.request('GET', path)
-
-          # Get the response
-          response = connection.getresponse()
-
-          # Print the response status and data
-          print(f"Status: {response.status}")
-          print("Response:")
-          print(response.read().decode('utf-8'))
-
-      except ssl.SSLError as e:
-          print(f'SSL error occurred: {e}')
-
-      finally:
-          # Close the connection
-          connection.close()
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   suite.addTest(TLSModuleTest('client_hello_packets_test'))
@@ -366,8 +332,5 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('test_client_tls_with_non_tls_client'))
   suite.addTest(TLSModuleTest('security_tls_client_unsupported_tls_client'))
 
-  #suite.addTest(TLSModuleTest('security_tls_v1_2_legacy_server_test'))
-
-  
   runner = unittest.TextTestRunner()
   runner.run(suite)
