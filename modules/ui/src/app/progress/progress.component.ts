@@ -22,20 +22,29 @@ import {
 import { Observable } from 'rxjs/internal/Observable';
 import { TestRunService } from '../services/test-run.service';
 import {
-  IDevice,
   IResult,
   StatusOfTestrun,
   TestrunStatus,
   TestsData,
   TestsResponse,
 } from '../model/testrun-status';
-import { interval, map, shareReplay, Subject, takeUntil, tap } from 'rxjs';
+import {
+  interval,
+  map,
+  shareReplay,
+  Subject,
+  takeUntil,
+  tap,
+  timer,
+} from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { ProgressInitiateFormComponent } from './progress-initiate-form/progress-initiate-form.component';
 import { DeleteFormComponent } from '../components/delete-form/delete-form.component';
 import { LoaderService } from '../services/loader.service';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../services/loaderConfig';
 import { Device } from '../model/device';
+import { StateService } from '../services/state.service';
+import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 
 const EMPTY_RESULT = new Array(100).fill(null).map(() => ({}) as IResult);
 
@@ -51,24 +60,36 @@ const EMPTY_RESULT = new Array(100).fill(null).map(() => ({}) as IResult);
 })
 export class ProgressComponent implements OnInit, OnDestroy {
   public systemStatus$!: Observable<TestrunStatus>;
-  public breadcrumbs$!: Observable<string[]>;
   public dataSource$!: Observable<IResult[] | undefined>;
   public devices$!: Observable<Device[] | null>;
   public readonly StatusOfTestrun = StatusOfTestrun;
 
   private destroy$: Subject<boolean> = new Subject<boolean>();
+  private destroyInterval$: Subject<boolean> = new Subject<boolean>();
   private startInterval = false;
   public currentStatus: TestrunStatus | null = null;
-  private isCancelling = false;
+  isCancelling = false;
 
   constructor(
     private readonly testRunService: TestRunService,
     private readonly loaderService: LoaderService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private readonly state: StateService
   ) {}
 
   ngOnInit(): void {
     this.devices$ = this.testRunService.getDevices();
+
+    combineLatest([
+      this.testRunService.isOpenStartTestrun$,
+      this.testRunService.isTestrunStarted$,
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([isOpenStartTestrun, isTestrunStarted]) => {
+        if (isOpenStartTestrun && !isTestrunStarted) {
+          this.openTestRunModal();
+        }
+      });
 
     this.systemStatus$ = this.testRunService.systemStatus$.pipe(
       tap(res => {
@@ -94,18 +115,16 @@ export class ProgressComponent implements OnInit, OnDestroy {
           !this.testrunInProgress(res.status) &&
           res.status !== StatusOfTestrun.Cancelling
         ) {
+          if (this.isCancelling) {
+            this.state.focusFirstElementInMain();
+          }
           this.isCancelling = false;
-          this.destroy$.next(true);
+          this.destroyInterval$.next(true);
           this.startInterval = false;
           this.hideLoading();
         }
       }),
       shareReplay({ refCount: true, bufferSize: 1 })
-    );
-
-    this.breadcrumbs$ = this.systemStatus$.pipe(
-      map((res: TestrunStatus) => res?.device),
-      map((res: IDevice) => [res?.manufacturer, res?.model, res?.firmware])
     );
 
     this.dataSource$ = this.systemStatus$.pipe(
@@ -148,7 +167,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
     this.startInterval = true;
     interval(5000)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntil(this.destroyInterval$),
         tap(() => this.testRunService.getSystemStatus(this.isCancelling))
       )
       .subscribe();
@@ -156,9 +175,9 @@ export class ProgressComponent implements OnInit, OnDestroy {
 
   public openStopTestrunDialog() {
     const dialogRef = this.dialog.open(DeleteFormComponent, {
-      ariaLabel: 'Stop testrun',
+      ariaLabel: `Stop testrun ${this.getTestRunName()}`,
       data: {
-        title: 'Stop testrun',
+        title: `Stop testrun ${this.getTestRunName()}`,
         content:
           'Are you sure you would like to stop testrun without a report generation?',
       },
@@ -184,6 +203,14 @@ export class ProgressComponent implements OnInit, OnDestroy {
     this.sendCloseRequest();
   }
 
+  private getTestRunName(): string {
+    if (this.currentStatus?.device) {
+      const device = this.currentStatus.device;
+      return `${device.manufacturer} ${device.model} v${device.firmware}`;
+    } else {
+      return '';
+    }
+  }
   private setCancellingStatus() {
     this.isCancelling = true;
     if (this.currentStatus) {
@@ -209,16 +236,29 @@ export class ProgressComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
+    this.destroyInterval$.next(true);
+    this.destroyInterval$.unsubscribe();
   }
 
   openTestRunModal(): void {
-    this.dialog.open(ProgressInitiateFormComponent, {
+    const dialogRef = this.dialog.open(ProgressInitiateFormComponent, {
       ariaLabel: 'Initiate testrun',
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'initiate-test-run-dialog',
     });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        timer(10)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe(() => {
+            this.state.focusFirstElementInMain();
+          });
+      });
   }
 
   resultIsEmpty(tests: TestsResponse | undefined) {

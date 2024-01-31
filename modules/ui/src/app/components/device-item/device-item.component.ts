@@ -32,6 +32,6 @@ export class DeviceItemComponent {
   }
 
   get label() {
-    return `${this.device.model} ${this.device.manufacturer} ${this.device.mac_addr}`;
+    return `${this.device.manufacturer} ${this.device.model} ${this.device.mac_addr}`;
   }
 }

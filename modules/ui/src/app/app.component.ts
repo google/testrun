@@ -23,7 +23,7 @@ import {
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
-import { TestRunService } from './services/test-run.service';
+import { SystemInterfaces, TestRunService } from './services/test-run.service';
 import { Observable } from 'rxjs/internal/Observable';
 import { Device } from './model/device';
 import { take } from 'rxjs';
@@ -34,6 +34,7 @@ import { CalloutType } from './model/callout-type';
 import { tap } from 'rxjs/internal/operators/tap';
 import { shareReplay } from 'rxjs/internal/operators/shareReplay';
 import { Routes } from './model/routes';
+import { StateService } from './services/state.service';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -52,13 +53,14 @@ export class AppComponent implements OnInit {
   systemStatus$!: Observable<TestrunStatus>;
   isTestrunStarted$!: Observable<boolean>;
   hasConnectionSetting$!: Observable<boolean | null>;
-  interfaces: string[] = [];
+  interfaces: SystemInterfaces = {};
   isDevicesLoaded = false;
   isStatusLoaded = false;
   isConnectionSettingsLoaded = false;
   public readonly StatusOfTestrun = StatusOfTestrun;
   public readonly Routes = Routes;
-
+  private devicesLength = 0;
+  private openedSettingFromToggleBtn = true;
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
   @ViewChild('navigation') public navigation!: ElementRef;
@@ -69,6 +71,7 @@ export class AppComponent implements OnInit {
     private domSanitizer: DomSanitizer,
     private testRunService: TestRunService,
     private readonly loaderService: LoaderService,
+    private readonly state: StateService,
     private route: Router
   ) {
     this.testRunService.fetchDevices();
@@ -99,7 +102,10 @@ export class AppComponent implements OnInit {
     this.devices$ = this.testRunService.getDevices().pipe(
       tap(result => {
         if (result !== null) {
+          this.devicesLength = result.length;
           this.isDevicesLoaded = true;
+        } else {
+          this.devicesLength = 0;
         }
       }),
       shareReplay({ refCount: true, bufferSize: 1 })
@@ -128,16 +134,23 @@ export class AppComponent implements OnInit {
 
   navigateToRuntime(): void {
     this.route.navigate([Routes.Testrun]);
+    this.testRunService.setIsOpenStartTestrun(true);
   }
 
   async closeSetting(): Promise<void> {
-    return await this.settingsDrawer
-      .close()
-      .then(() => this.toggleSettingsBtn.focus());
+    return await this.settingsDrawer.close().then(() => {
+      if (this.devicesLength > 0) {
+        this.toggleSettingsBtn.focus();
+      } // else device create window will be opened
+
+      if (!this.openedSettingFromToggleBtn) {
+        this.state.focusFirstElementInMain();
+      }
+    });
   }
 
   async openSetting(): Promise<void> {
-    return await this.openGeneralSettings();
+    return await this.openGeneralSettings(false);
   }
 
   reloadInterfaces(): void {
@@ -169,7 +182,8 @@ export class AppComponent implements OnInit {
     }
   }
 
-  async openGeneralSettings() {
+  async openGeneralSettings(openSettingFromToggleBtn: boolean) {
+    this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
     this.getSystemInterfaces();
     await this.settingsDrawer.open();
   }

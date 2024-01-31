@@ -75,6 +75,12 @@ class TestReport():
   def add_test(self, test):
     self._results.append(test)
 
+  def set_report_url(self, url):
+    self._report_url = url
+
+  def get_report_url(self):
+    return self._report_url
+
   def to_json(self):
     report_json = {}
     report_json['device'] = self._device
@@ -182,7 +188,7 @@ class TestReport():
 
   def generate_page(self, json_data, page_num, max_page):
     # Placeholder until available in json report
-    version = 'v1.1 (2023-12-15)'
+    version = 'v1.1.1 (2024-01-31)'
     page = '<div class="page">'
     page += self.generate_header(json_data)
     if page_num == 1:

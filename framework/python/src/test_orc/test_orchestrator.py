@@ -115,6 +115,7 @@ class TestOrchestrator:
     self._write_reports(report)
     self._test_in_progress = False
     self._timestamp_results(device)
+    self.get_session().set_report_url(report.get_report_url())
 
     LOGGER.debug("Cleaning old test results...")
     self._cleanup_old_test_results(device)
@@ -234,6 +235,7 @@ class TestOrchestrator:
       device.mac_addr.replace(":", "")
     )
 
+    # Define the directory 
     completed_results_dir = os.path.join(
       self._root_path,
       LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
@@ -245,6 +247,8 @@ class TestOrchestrator:
     # most recent test
     shutil.copytree(cur_results_dir, completed_results_dir, dirs_exist_ok=True)
     util.run_command(f"chown -R {self._host_user} '{completed_results_dir}'")
+
+    return completed_results_dir
 
   def test_in_progress(self):
     return self._test_in_progress

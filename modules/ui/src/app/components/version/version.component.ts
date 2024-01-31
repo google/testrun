@@ -13,14 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TestRunService } from '../../services/test-run.service';
 import { Version } from '../../model/version';
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { UpdateDialogComponent } from './update-dialog/update-dialog.component';
+import { tap } from 'rxjs/internal/operators/tap';
+
+import { Observable } from 'rxjs/internal/Observable';
+import { Subject } from 'rxjs/internal/Subject';
+import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 
 @Component({
   selector: 'app-version',
@@ -29,28 +33,47 @@ import { UpdateDialogComponent } from './update-dialog/update-dialog.component';
   templateUrl: './version.component.html',
   styleUrls: ['./version.component.scss'],
 })
-export class VersionComponent implements OnInit {
-  version$: BehaviorSubject<Version | null>;
+export class VersionComponent implements OnInit, OnDestroy {
+  version$!: Observable<Version | null>;
+  private destroy$: Subject<boolean> = new Subject<boolean>();
+
+  private isDialogClosed = false;
 
   constructor(
     private testRunService: TestRunService,
     public dialog: MatDialog
-  ) {
-    this.version$ = testRunService.getVersion();
-  }
+  ) {}
 
   ngOnInit() {
     this.testRunService.fetchVersion();
+
+    this.version$ = this.testRunService.getVersion().pipe(
+      tap(version => {
+        if (version?.update_available && !this.isDialogClosed) {
+          this.openUpdateWindow(version);
+        }
+      })
+    );
   }
 
-  openUpdateWindow() {
-    this.dialog.open(UpdateDialogComponent, {
+  openUpdateWindow(version: Version) {
+    const dialogRef = this.dialog.open(UpdateDialogComponent, {
       ariaLabel: 'Update version',
-      data: this.version$.value,
+      data: version,
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'version-update-dialog',
     });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => (this.isDialogClosed = true));
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next(true);
+    this.destroy$.unsubscribe();
   }
 }

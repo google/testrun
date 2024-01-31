@@ -21,18 +21,19 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Subject, takeUntil, tap } from 'rxjs';
-import { TestRunService } from '../../services/test-run.service';
+import {
+  SystemInterfaces,
+  TestRunService,
+} from '../../services/test-run.service';
 import { OnlyDifferentValuesValidator } from './only-different-values.validator';
 import { CalloutType } from '../../model/callout-type';
 import { Observable } from 'rxjs/internal/Observable';
 import { shareReplay } from 'rxjs/internal/operators/shareReplay';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { EventType } from '../../model/event-type';
+import { SettingOption } from '../../model/setting';
 
 @Component({
   selector: 'app-general-settings',
@@ -40,22 +41,34 @@ import { shareReplay } from 'rxjs/internal/operators/shareReplay';
   styleUrls: ['./general-settings.component.scss'],
 })
 export class GeneralSettingsComponent implements OnInit, OnDestroy {
-  @Input() interfaces: string[] = [];
+  private _interfaces: SystemInterfaces = {};
+  @Input()
+  get interfaces(): SystemInterfaces {
+    return this._interfaces;
+  }
+  set interfaces(value: SystemInterfaces) {
+    this._interfaces = value;
+    this.setSystemSetting();
+  }
   @Output() closeSettingEvent = new EventEmitter<void>();
-  @Output() openSettingEvent = new EventEmitter<void>();
   @Output() reloadInterfacesEvent = new EventEmitter<void>();
   public readonly CalloutType = CalloutType;
+  public readonly EventType = EventType;
   public settingForm!: FormGroup;
   public isSubmitting = false;
+  public defaultInternetOption = {
+    key: '',
+    value: 'Not specified',
+  };
   hasConnectionSetting$!: Observable<boolean | null>;
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
   get deviceControl(): FormControl {
-    return this.settingForm.get('device_intf') as FormControl;
+    return this.settingForm?.get('device_intf') as FormControl;
   }
 
   get internetControl(): FormControl {
-    return this.settingForm.get('internet_intf') as FormControl;
+    return this.settingForm?.get('internet_intf') as FormControl;
   }
 
   get isFormValues(): boolean {
@@ -67,12 +80,13 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   }
 
   get isLessThanTwoInterfaces(): boolean {
-    return !this.interfaces.length || this.interfaces?.length < 2;
+    return Object.keys(this.interfaces).length < 2;
   }
 
   constructor(
     private readonly testRunService: TestRunService,
     private readonly fb: FormBuilder,
+    private liveAnnouncer: LiveAnnouncer,
     private readonly onlyDifferentValuesValidator: OnlyDifferentValuesValidator
   ) {}
 
@@ -90,9 +104,12 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     this.reloadInterfacesEvent.emit();
   }
 
-  closeSetting(): void {
+  closeSetting(message: string): void {
     this.resetForm();
     this.closeSettingEvent.emit();
+    this.liveAnnouncer.announce(
+      `The ${message} finished. The connection setting panel is closed.`
+    );
     this.setSystemSetting();
   }
 
@@ -108,8 +125,8 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   private createSettingForm(): FormGroup {
     return (this.settingForm = this.fb.group(
       {
-        device_intf: ['', Validators.required],
-        internet_intf: ['', Validators.required],
+        device_intf: [''],
+        internet_intf: [this.defaultInternetOption],
       },
       {
         validators: [this.onlyDifferentValuesValidator.onlyDifferentSetting()],
@@ -129,23 +146,40 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
             this.testRunService.setHasConnectionSetting(true);
           } else {
             this.testRunService.setHasConnectionSetting(false);
-            this.openSetting();
           }
           this.setDefaultFormValues(device_intf, internet_intf);
         } else {
           this.testRunService.setHasConnectionSetting(false);
-          this.openSetting();
         }
         this.testRunService.setSystemConfig(config);
       });
+  }
+
+  compare(c1: SettingOption, c2: SettingOption): boolean {
+    return c1 && c2 && c1.key === c2.key && c1.value === c2.value;
   }
 
   private setDefaultFormValues(
     device: string | undefined,
     internet: string | undefined
   ): void {
-    this.deviceControl.setValue(device);
-    this.internetControl.setValue(internet);
+    if (device && this.interfaces[device]) {
+      const deviceData = this.transformValueToObj(device);
+      this.deviceControl.setValue(deviceData);
+    }
+    if (internet && this.interfaces[internet]) {
+      const interneData = this.transformValueToObj(internet);
+      this.internetControl.setValue(interneData);
+    } else {
+      this.internetControl.setValue(this.defaultInternetOption);
+    }
+  }
+
+  private transformValueToObj(value: string): SettingOption {
+    return {
+      key: value,
+      value: this.interfaces[value],
+    };
   }
 
   private cleanFormErrorMessage(): void {
@@ -161,8 +195,8 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     const { device_intf, internet_intf } = this.settingForm.value;
     const data = {
       network: {
-        device_intf,
-        internet_intf,
+        device_intf: device_intf.key,
+        internet_intf: internet_intf.key,
       },
     };
 
@@ -170,15 +204,10 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       .createSystemConfig(data)
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        this.closeSetting();
+        this.closeSetting(EventType.Save);
         this.testRunService.setSystemConfig(data);
-        this.testRunService.setIsOpenAddDevice(true);
         this.testRunService.setHasConnectionSetting(true);
       });
-  }
-
-  private openSetting(): void {
-    this.openSettingEvent.emit();
   }
 
   private setSystemSetting(): void {
@@ -187,9 +216,9 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       .subscribe(config => {
         if (config?.network) {
           const { device_intf, internet_intf } = config.network;
-          if (device_intf && internet_intf) {
-            this.setDefaultFormValues(device_intf, internet_intf);
-          }
+          this.setDefaultFormValues(device_intf, internet_intf);
+        } else {
+          this.internetControl?.setValue(this.defaultInternetOption);
         }
       });
   }
