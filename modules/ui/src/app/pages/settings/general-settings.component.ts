@@ -26,7 +26,7 @@ import { Subject, takeUntil, tap } from 'rxjs';
 import { SystemInterfaces } from '../../services/test-run.service';
 import { OnlyDifferentValuesValidator } from './only-different-values.validator';
 import { CalloutType } from '../../model/callout-type';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { CdkTrapFocus, LiveAnnouncer } from '@angular/cdk/a11y';
 import { EventType } from '../../model/event-type';
 import { SettingOption, SystemConfig } from '../../model/setting';
 import { Store } from '@ngrx/store';
@@ -39,6 +39,7 @@ import { AppEffects } from '../../store/effects';
   selector: 'app-general-settings',
   templateUrl: './general-settings.component.html',
   styleUrls: ['./general-settings.component.scss'],
+  hostDirectives: [CdkTrapFocus],
 })
 export class GeneralSettingsComponent implements OnInit, OnDestroy {
   @Input() interfaces: SystemInterfaces = {};
