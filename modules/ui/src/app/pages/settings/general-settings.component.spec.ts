@@ -235,9 +235,9 @@ describe('GeneralSettingsComponent', () => {
     });
   });
 
-  describe('with interfaces length less than two', () => {
+  describe('with interfaces length less than one', () => {
     beforeEach(() => {
-      component.interfaces = { mockDeviceValue: 'mockDeviceValue' };
+      component.interfaces = {};
       fixture.detectChanges();
     });
 
