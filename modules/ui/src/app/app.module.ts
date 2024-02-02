@@ -42,6 +42,7 @@ import { StoreModule } from '@ngrx/store';
 import { appFeatureKey, rootReducer } from './store/reducers';
 import { EffectsModule } from '@ngrx/effects';
 import { AppEffects } from './store/effects';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 @NgModule({
   declarations: [AppComponent, GeneralSettingsComponent],
@@ -67,6 +68,7 @@ import { AppEffects } from './store/effects';
     CalloutComponent,
     StoreModule.forRoot({ [appFeatureKey]: rootReducer }),
     EffectsModule.forRoot([AppEffects]),
+    CdkTrapFocus,
   ],
   providers: [
     {
