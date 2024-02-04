@@ -64,11 +64,11 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
   get deviceControl(): FormControl {
-    return this.settingForm?.get('device_intf') as FormControl;
+    return this.settingForm.get('device_intf') as FormControl;
   }
 
   get internetControl(): FormControl {
-    return this.settingForm?.get('internet_intf') as FormControl;
+    return this.settingForm.get('internet_intf') as FormControl;
   }
 
   get isFormValues(): boolean {
@@ -217,8 +217,6 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
         if (config?.network) {
           const { device_intf, internet_intf } = config.network;
           this.setDefaultFormValues(device_intf, internet_intf);
-        } else {
-          this.internetControl?.setValue(this.defaultInternetOption);
         }
       });
   }

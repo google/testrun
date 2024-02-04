@@ -16,7 +16,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProgressInitiateFormComponent } from './progress-initiate-form.component';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { TestRunService } from '../../services/test-run.service';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Device } from '../../model/device';
@@ -75,6 +79,7 @@ describe('ProgressInitiateFormComponent', () => {
             close: () => ({}),
           },
         },
+        { provide: MAT_DIALOG_DATA, useValue: {} },
       ],
       imports: [
         MatDialogModule,

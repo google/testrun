@@ -22,7 +22,7 @@ import {
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs/internal/Observable';
-import { Device } from '../model/device';
+import { Device, DeviceView } from '../model/device';
 import { TestRunService } from '../services/test-run.service';
 import {
   DeviceFormComponent,
@@ -32,6 +32,9 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 import { DeleteFormComponent } from '../components/delete-form/delete-form.component';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
+import { ProgressInitiateFormComponent } from '../progress/progress-initiate-form/progress-initiate-form.component';
+import { Routes } from '../model/routes';
+import { Router } from '@angular/router';
 import { StateService } from '../services/state.service';
 import { timer } from 'rxjs/internal/observable/timer';
 
@@ -42,6 +45,7 @@ import { timer } from 'rxjs/internal/observable/timer';
 })
 export class DeviceRepositoryComponent implements OnInit, OnDestroy {
   devices$!: Observable<Device[] | null>;
+  readonly DeviceView = DeviceView;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   selectedDevice: Device | undefined | null;
 
@@ -50,7 +54,8 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
     private readonly state: StateService,
     public dialog: MatDialog,
     private element: ElementRef,
-    private readonly changeDetectorRef: ChangeDetectorRef
+    private readonly changeDetectorRef: ChangeDetectorRef,
+    private route: Router
   ) {}
 
   ngOnInit(): void {
@@ -68,6 +73,28 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
+  }
+
+  openStartTestrun(selectedDevice: Device): void {
+    const dialogRef = this.dialog.open(ProgressInitiateFormComponent, {
+      ariaLabel: 'Initiate testrun',
+      data: {
+        device: selectedDevice,
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: 'initiate-test-run-dialog',
+    });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(data => {
+        if (data === 'testrunStarted') {
+          this.route.navigate([Routes.Testrun]);
+        }
+      });
   }
 
   openDialog(selectedDevice?: Device, focusDeleteButton = false): void {
