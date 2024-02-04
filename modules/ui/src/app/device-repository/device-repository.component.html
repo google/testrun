@@ -22,6 +22,8 @@ limitations under the License.
     <ng-container *ngFor="let device of devices$ | async">
       <app-device-item
         (itemClicked)="openDialog($event)"
+        (startTestrunClicked)="openStartTestrun($event)"
+        [deviceView]="DeviceView.WithActions"
         [class.device-item-selected]="device === selectedDevice"
         [device]="device"></app-device-item>
     </ng-container>

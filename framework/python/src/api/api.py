@@ -375,6 +375,7 @@ class Api:
                                 "the device")
 
   async def save_device(self, request: Request, response: Response):
+
     LOGGER.debug("Received device post request")
 
     try:
