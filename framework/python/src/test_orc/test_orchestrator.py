@@ -389,7 +389,6 @@ class TestOrchestrator:
             json.JSONDecodeError) as results_error:
       LOGGER.error(
         f"Error occurred whilst obtaining results for module {module.name}")
-
       LOGGER.error(results_error)
 
     # Get report from the module
