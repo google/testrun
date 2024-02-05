@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Provides Testrun data via REST API."""
+
 from fastapi import FastAPI, APIRouter, Response, Request, status
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -77,7 +78,9 @@ class Api:
     self._router.add_api_route("/device",
                                self.delete_device,
                                methods=["DELETE"])
-    self._router.add_api_route("/device", self.save_device, methods=["POST"])
+    self._router.add_api_route("/device",
+                               self.save_device,
+                               methods=["POST"])
     self._router.add_api_route("/device/edit",
                                self.edit_device,
                                methods=["POST"])

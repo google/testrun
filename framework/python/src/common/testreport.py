@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Store previous test run information."""
 
 from datetime import datetime
@@ -31,14 +30,14 @@ TESTS_PER_PAGE = 20
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 # Locate the test-run root directory, 4 levels, src->python->framework->test-run
-root_dir = os.path.dirname(os.path.dirname(
-  os.path.dirname(os.path.dirname(current_dir))))
+root_dir = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(current_dir))))
 
 # Obtain the report resources directory
-report_resource_dir = os.path.join(root_dir,
-                                    RESOURCES_DIR)
+report_resource_dir = os.path.join(root_dir, RESOURCES_DIR)
 
 test_run_img_file = os.path.join(report_resource_dir, 'testrun.png')
+
 
 class TestReport():
   """Represents a previous Testrun report."""
@@ -47,8 +46,7 @@ class TestReport():
                status='Non-Compliant',
                started=None,
                finished=None,
-               total_tests=0
-              ):
+               total_tests=0):
     self._device = {}
     self._status: str = status
     self._started = started
@@ -61,7 +59,7 @@ class TestReport():
     # Placeholder until available in json report
     self._version = 'v1.1.1-alpha (2023-01-04)'
 
-  def add_module_reports(self,module_reports):
+  def add_module_reports(self, module_reports):
     self._module_reports = module_reports
 
   def get_status(self):
@@ -95,8 +93,10 @@ class TestReport():
     report_json['status'] = self._status
     report_json['started'] = self._started.strftime(DATE_TIME_FORMAT)
     report_json['finished'] = self._finished.strftime(DATE_TIME_FORMAT)
-    report_json['tests'] = {'total': self._total_tests,
-                            'results': self._results}
+    report_json['tests'] = {
+        'total': self._total_tests,
+        'results': self._results
+    }
     report_json['report'] = self._report_url
     return report_json
 
@@ -146,7 +146,7 @@ class TestReport():
     </html>
     '''
 
-  def generate_test_sections(self,json_data):
+  def generate_test_sections(self, json_data):
     results = json_data['tests']['results']
     sections = ''
     for result in results:
@@ -190,9 +190,10 @@ class TestReport():
     num_pages = full_page + partial_page
 
     pages = ''
-    for i in range(num_pages):
-      self._cur_page+=1
-      pages += self.generate_results_page(json_data=json_data, page_num=self._cur_page)
+    for _ in range(num_pages):
+      self._cur_page += 1
+      pages += self.generate_results_page(json_data=json_data,
+                                          page_num=self._cur_page)
     return pages
 
   def generate_results_page(self, json_data, page_num):
@@ -206,59 +207,66 @@ class TestReport():
     page += '<div style="break-after:page"></div>'
     return page
 
-  def generate_module_pages(self,json_data,module_reports):
+  def generate_module_pages(self, json_data, module_reports):
     # ToDo: Figure out how to make this dynamic
     # Content max size taken from css module-page-conten class
     content_max_size = 913
-    header_padding=40 # Top and bottom padding for markdown headers
+    header_padding = 40  # Top and bottom padding for markdown headers
     page_content = ''
     pages = ''
     content_size = 0
     content = module_reports.split('\n')
     active_table = False
-    
+
     for line in content:
       if '<h1' in line:
-        content_size+=40 + header_padding
+        content_size += 40 + header_padding
       elif '<h2' in line:
-        content_size+=30 + header_padding
+        content_size += 30 + header_padding
       elif '<tr>' in line:
-        content_size+=37
+        content_size += 39
       elif '<li>' in line:
-        content_size+=20
+        content_size += 20
 
       if '<table' in line:
         active_table = True
       elif '</table>' in line:
         active_table = False
-
-      if content_size >= content_max_size:
-        # If we are in the middle of a tagble, we need
+      # If the current line is within the content size limit over the
+      # we'll add it to this page, otherweise, we'll put it on the next
+      # page. Also make sure that if there is less than 20 pixels
+      # left after a header, start a new page or the summary
+      # title will be left with no information after it. Current minimum
+      # summary item is 20 pixels, adjust if we update the <li> element.
+      if content_size >= content_max_size or (
+          '<h' in line and content_max_size - content_size < 20):
+        # If we are in the middle of a table, we need
         # to close the table
         if active_table:
-          page_content+='</tbody></table>'
-        page = self.generate_module_page(json_data,page_content)
+          page_content += '</tbody></table>'
+        page = self.generate_module_page(json_data, page_content)
         pages += page + '\n'
         content_size = 0
         # If we were in the middle of a table, we need
         # to restart it for the rest of the rows
-        page_content = '<table class=markdown-table></tbody>\n' if active_table else ''
-      page_content+=line+'\n'
-    if len(page_content)>0:
-      page = self.generate_module_page(json_data,page_content)
+        page_content = ('<table class=markdown-table></tbody>\n'
+                        if active_table else '')
+      page_content += line + '\n'
+    if len(page_content) > 0:
+      page = self.generate_module_page(json_data, page_content)
       pages += page + '\n'
     return pages
 
-  def generate_module_page(self,json_data, module_reports):
-    self._cur_page+=1
+  def generate_module_page(self, json_data, module_reports):
+    self._cur_page += 1
     page = '<div class="page">'
     page += self.generate_header(json_data)
-    page+=f'''
+    page += f'''
     <div class=module-page-content>
       {module_reports}
     </div>'''
     page += self.generate_footer(self._cur_page)
-    page += '</div>' #Page end
+    page += '</div>'  #Page end
     page += '<div style="break-after:page"></div>'
     return page
 
@@ -272,24 +280,26 @@ class TestReport():
     </body>
     '''
     # Set the max pages after all pages have been generated
-    return body.replace('MAX_PAGE',str(self._cur_page))
+    return body.replace('MAX_PAGE', str(self._cur_page))
 
   def generate_module_reports(self, json_data):
     content = ''
     for module_report in self._module_reports:
       # Convert markdown to html
-      markdown_html = markdown.markdown(module_report,extensions=['markdown.extensions.tables'])
+      markdown_html = markdown.markdown(
+          module_report, extensions=['markdown.extensions.tables'])
       content += markdown_html + '\n'
 
     #Add styling to the markdown
-    content = content.replace('<table>','<table class=markdown-table>')
-    content = content.replace('<h1>','<h1 class=markdown-header>')
-    content = content.replace('<h2>','<h2 class=markdown-header>')
+    content = content.replace('<table>', '<table class=markdown-table>')
+    content = content.replace('<h1>', '<h1 class=markdown-header>')
+    content = content.replace('<h2>', '<h2 class=markdown-header>')
 
-    content = self.generate_module_pages(json_data=json_data, module_reports=content)
+    content = self.generate_module_pages(json_data=json_data,
+                                         module_reports=content)
 
     return content
-    
+
   def generate_footer(self, page_num):
     footer = f'''
     <div class="footer">
@@ -316,16 +326,17 @@ class TestReport():
     elif page_num == 2:
       start = TESTS_FIRST_PAGE
     else:
-      start = (page_num-2) * TESTS_PER_PAGE + TESTS_FIRST_PAGE
+      start = (page_num - 2) * TESTS_PER_PAGE + TESTS_FIRST_PAGE
     results_on_page = TESTS_FIRST_PAGE if page_num == 1 else TESTS_PER_PAGE
-    result_end = min(start+results_on_page, len(json_data['tests']['results']))
-    for ix in range(result_end-start):
-      result = json_data['tests']['results'][ix+start]
+    result_end = min(start + results_on_page,
+                     len(json_data['tests']['results']))
+    for ix in range(result_end - start):
+      result = json_data['tests']['results'][ix + start]
       result_list += self.generate_result(result)
     result_list += '</div>'
     return result_list
 
-  def generate_result(self,result):
+  def generate_result(self, result):
     if result['result'] == 'Non-Compliant':
       result_class = 'result-test-result-non-compliant'
     elif result['result'] == 'Compliant':
@@ -355,7 +366,7 @@ class TestReport():
 
   def generate_summary(self, json_data):
     # Generate the basic content section layout
-    summary =  '''
+    summary = '''
      <div class="summary-content">
       <img style="margin-bottom:30px;width:100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABFgAAAABCAYAAADqzRqJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA3SURBVHgB7cAxAQAQFEXRJ4MIMkjwS9hklMCoi1EBWljePWlHvQIAMy2mAMDNKV3ADysPAYCbB6fxBrzkZ2KOAAAAAElFTkSuQmCC" />
       <div class="summary-vertical-line"></div>
@@ -370,13 +381,12 @@ class TestReport():
     mac = (json_data['device']['mac_addr']
            if 'mac_addr' in json_data['device'] else 'Undefined')
 
-    summary += self.generate_device_summary_label('Manufacturer',manufacturer)
-    summary += self.generate_device_summary_label('Model',model)
-    summary += self.generate_device_summary_label('Firmware',fw)
-    summary += self.generate_device_summary_label(
-      'MAC Address',
-      mac,
-      trailing_space=False)
+    summary += self.generate_device_summary_label('Manufacturer', manufacturer)
+    summary += self.generate_device_summary_label('Model', model)
+    summary += self.generate_device_summary_label('Firmware', fw)
+    summary += self.generate_device_summary_label('MAC Address',
+                                                  mac,
+                                                  trailing_space=False)
 
     # Add device configuration
     summary += '''
@@ -393,18 +403,15 @@ class TestReport():
       for test_module in json_data['device']['test_modules']:
         if 'enabled' in json_data['device']['test_modules'][test_module]:
           sorted_modules[test_module] = json_data['device']['test_modules'][
-            test_module]['enabled']
+              test_module]['enabled']
 
       # Sort the modules by enabled first
       sorted_modules = sorted(sorted_modules.items(),
-                              key=lambda x:x[1],
+                              key=lambda x: x[1],
                               reverse=True)
 
       for module in sorted_modules:
-        summary += self.generate_device_module_label(
-          module[0],
-          module[1]
-        )
+        summary += self.generate_device_module_label(module[0], module[1])
 
     summary += '</div>'
 
@@ -424,7 +431,7 @@ class TestReport():
     label += '</div>'
     return label
 
-  def generate_result_summary(self,json_data):
+  def generate_result_summary(self, json_data):
     if json_data['status'] == 'Compliant':
       result_summary = '''<div class ="summary-color-box
       summary-box-compliant">'''
@@ -434,8 +441,9 @@ class TestReport():
     result_summary += self.generate_result_summary_item('Test status',
                                                         'Complete')
     result_summary += self.generate_result_summary_item(
-      'Test result',json_data['status'],
-      style='color: white; font-size:24px; font-weight: 700;')
+        'Test result',
+        json_data['status'],
+        style='color: white; font-size:24px; font-weight: 700;')
     result_summary += self.generate_result_summary_item('Started',
                                                         json_data['started'])
 
@@ -444,9 +452,8 @@ class TestReport():
     end_time = datetime.strptime(json_data['finished'], '%Y-%m-%d %H:%M:%S')
     # Calculate the duration
     duration = end_time - start_time
-    result_summary += self.generate_result_summary_item(
-      'Duration',
-      str(duration))
+    result_summary += self.generate_result_summary_item('Duration',
+                                                        str(duration))
 
     result_summary += '\n</div>'
     return result_summary
@@ -744,6 +751,8 @@ class TestReport():
 
     .markdown-header{
       margin-left:20px;
+      margin-top:20px;
+      margin-bottom:20px;
     }
 
     .module-page-content{

@@ -381,10 +381,10 @@ class TestOrchestrator:
           self._session.add_test_result(test_result)
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
-        LOGGER.error(
-          f"Error occurred whilst obtaining results for module {module.name}")
+      LOGGER.error(
+        f"Error occurred whilst obtaining results for module {module.name}")
 
-        LOGGER.error(results_error)
+      LOGGER.error(results_error)
     # Get report from the module
     report_file = f"{container_runtime_dir}/{module.name}_report.md"
     try:
@@ -392,9 +392,9 @@ class TestOrchestrator:
         module_report = f.read()
         self._session.add_module_report(module_report)
     except (FileNotFoundError, PermissionError) as report_error:
-        LOGGER.error(
-          f"Error occurred whilst obtaining report for module {module.name}")
-        LOGGER.error(report_error)  
+      LOGGER.error(
+        f"Error occurred whilst obtaining report for module {module.name}")
+      LOGGER.error(report_error)
 
     LOGGER.info(f"Test module {module.name} has finished")
 
