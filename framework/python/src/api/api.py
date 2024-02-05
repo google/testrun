@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Manages the Testrun API"""
 
 from fastapi import FastAPI, APIRouter, Response, Request, status
 from fastapi.responses import FileResponse
@@ -37,7 +38,8 @@ DEVICE_TEST_MODULES_KEY = "test_modules"
 DEVICES_PATH = "/usr/local/testrun/local/devices"
 DEFAULT_DEVICE_INTF = "enx123456789123"
 
-LATEST_RELEASE_CHECK = "https://api.github.com/repos/google/testrun/releases/latest"
+LATEST_RELEASE_CHECK = ("https://api.github.com/repos/google/" +
+    "testrun/releases/latest")
 
 class Api:
   """Provide REST endpoints to manage Testrun"""
@@ -76,8 +78,12 @@ class Api:
     self._router.add_api_route("/device",
                                self.delete_device,
                                methods=["DELETE"])
-    self._router.add_api_route("/device", self.save_device, methods=["POST"])
-    self._router.add_api_route("/device/edit", self.edit_device, methods=["POST"])
+    self._router.add_api_route("/device",
+                               self.save_device,
+                               methods=["POST"])
+    self._router.add_api_route("/device/edit",
+                               self.edit_device,
+                               methods=["POST"])
 
     # Allow all origins to access the API
     origins = ["*"]
