@@ -358,14 +358,21 @@ class TestOrchestrator:
         self._stop_module(module=module,kill=True)
         break
       try:
-        line = next(log_stream).decode("utf-8").strip()
-        container_logs.append(line)
-        if re.search(LOG_REGEX, line):
-          print(line)
+        lines = self._get_container_logs(log_stream)
+        container_logs.extend(lines)
+        for line in lines:
+          #line = next(log_stream).decode("utf-8").strip()
+          if re.search(LOG_REGEX, line):
+            print(line)
       except Exception:  # pylint: disable=W0718
         # Do nothing
         continue
       status = self._get_module_status(module)
+
+    # Resolve any remaining data in the log stream
+    # that is likely left over after the container was
+    # stopped
+    container_logs.extend(self._get_container_logs(log_stream))
 
     # Save all container logs to file
     with open(container_log_file, "w", encoding="utf-8") as f:
@@ -391,10 +398,10 @@ class TestOrchestrator:
           self._session.add_test_result(test_result)
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
-        LOGGER.error(
-          f"Error occurred whilst obtaining results for module {module.name}")
+      LOGGER.error(
+        f"Error occurred whilst obtaining results for module {module.name}")
 
-        LOGGER.error(results_error)
+      LOGGER.error(results_error)
     # Get report from the module
     report_file = f"{container_runtime_dir}/{module.name}_report.md"
     try:
@@ -402,9 +409,9 @@ class TestOrchestrator:
         module_report = f.read()
         self._session.add_module_report(module_report)
     except (FileNotFoundError, PermissionError) as report_error:
-        LOGGER.error(
-          f"Error occurred whilst obtaining report for module {module.name}")
-        LOGGER.error(report_error)  
+      LOGGER.error(
+        f"Error occurred whilst obtaining report for module {module.name}")
+      LOGGER.error(report_error)
 
     LOGGER.info(f"Test module {module.name} has finished")
 
@@ -413,6 +420,16 @@ class TestOrchestrator:
     if container is not None:
       return container.status
     return None
+  
+  # Resolve all current log data in the containers log_stream
+  def _get_container_logs(self,log_stream):
+    container_logs = []
+    for log_chunk in log_stream:
+      lines = log_chunk.decode('utf-8').splitlines()
+      # Process each line and strip blank space
+      processed_lines = [line.strip() for line in lines if line.strip()]
+      container_logs.extend(processed_lines)
+    return container_logs
 
   def _get_test_module(self, name):
     for test_module in self._test_modules:
