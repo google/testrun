@@ -90,11 +90,11 @@ class TLSModule(TestModule):
     #If any of the packetes detect failed client comms, fail the test
     if not client_results[0] and client_results[0] is not None:
       result_state = False
-      result_message += client_results[1]
+      result_message = client_results[1]
     else:
       if client_results[0]:
         result_state = True
-        result_message += client_results[1]
+        result_message = client_results[1]
     return result_state, result_message
 
   def _resolve_device_ip(self):
