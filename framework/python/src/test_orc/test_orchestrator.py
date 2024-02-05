@@ -256,26 +256,29 @@ class TestOrchestrator:
 
   def _zip_results(self, dest_path):
 
-    LOGGER.debug("Archiving test results")
+    try:
+      LOGGER.debug("Archiving test results")
 
-    # Define where to save the zip file
-    zip_location = os.path.join(dest_path, "results")
+      # Define where to save the zip file
+      zip_location = os.path.join(dest_path, "results")
 
-    # The runtime directory to include in ZIP
-    path_to_zip = os.path.join(
-      self._root_path,
-      RUNTIME_DIR,
-      self._session.get_target_device().mac_addr.replace(":", ""))
+      # The runtime directory to include in ZIP
+      path_to_zip = os.path.join(
+        self._root_path,
+        RUNTIME_DIR,
+        self._session.get_target_device().mac_addr.replace(":", ""))
 
-    # Create ZIP file
-    shutil.make_archive(zip_location, "zip", path_to_zip)
+      # Create ZIP file
+      shutil.make_archive(zip_location, "zip", path_to_zip)
 
-    # Check that the ZIP was successfully created
-    if os.path.exists(zip_location + ".zip"):
-      return zip_location
-    else:
-      LOGGER.error("An error occured whilst attempting to " +
-                   "archive the test attempt")
+      # Check that the ZIP was successfully created
+      zip_file = zip_location + ".zip"
+      LOGGER.info(f'''Archive {'created at ' + zip_file
+                               if os.path.exists(zip_file)
+                               else'creation failed'}''')
+
+    except Exception as error:
+      LOGGER.error(f"Failed to create zip file: {error}")
 
   def test_in_progress(self):
     return self._test_in_progress
