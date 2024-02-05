@@ -82,6 +82,9 @@ class TLSUtil():
     except ssl.SSLError as e:
       LOGGER.info(f'SSL error occurred: {e}')
       return None
+    except Exception as e:
+      LOGGER.error(e)
+      return None
 
     return cert_pem
 

@@ -271,7 +271,7 @@ class TestOrchestrator:
 
     device = self._session.get_target_device()
 
-    LOGGER.info("Running test module " + module.name)
+    LOGGER.info(f"Running test module {module.name}")
 
     try:
 
@@ -283,6 +283,9 @@ class TestOrchestrator:
 
       container_runtime_dir = os.path.join(device_test_dir, module.name)
       os.makedirs(container_runtime_dir, exist_ok=True)
+
+      container_log_file = os.path.join(container_runtime_dir, "module.log")
+      container_logs = []
 
       network_runtime_dir = os.path.join(self._root_path, "runtime/network")
 
@@ -354,12 +357,26 @@ class TestOrchestrator:
         self._stop_module(module=module,kill=True)
         break
       try:
-        line = next(log_stream).decode("utf-8").strip()
-        if re.search(LOG_REGEX, line):
-          print(line)
+        lines = self._get_container_logs(log_stream)
+        container_logs.extend(lines)
+        for line in lines:
+          #line = next(log_stream).decode("utf-8").strip()
+          if re.search(LOG_REGEX, line):
+            print(line)
       except Exception:  # pylint: disable=W0718
-        time.sleep(1)
+        # Do nothing
+        continue
       status = self._get_module_status(module)
+
+    # Resolve any remaining data in the log stream
+    # that is likely left over after the container was
+    # stopped
+    container_logs.extend(self._get_container_logs(log_stream))
+
+    # Save all container logs to file
+    with open(container_log_file, "w", encoding="utf-8") as f:
+      for line in container_logs:
+        f.write(line + "\n")
 
     # Check that Testrun has not been stopped whilst this module was running
     if self.get_session().get_status() == "Stopping":
@@ -385,6 +402,16 @@ class TestOrchestrator:
       LOGGER.error(results_error)
 
     LOGGER.info(f"Test module {module.name} has finished")
+
+  # Resolve all current log data in the containers log_stream
+  def _get_container_logs(self,log_stream):
+    container_logs = []
+    for log_chunk in log_stream:
+      lines = log_chunk.decode("utf-8").splitlines()
+      # Process each line and strip blank space
+      processed_lines = [line.strip() for line in lines if line.strip()]
+      container_logs.extend(processed_lines)
+    return container_logs
 
   def _get_module_status(self, module):
     container = self._get_module_container(module)
