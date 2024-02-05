@@ -52,29 +52,37 @@ class Api:
 
     self._session = self._test_run.get_session()
 
-    self._router.add_api_route("/system/interfaces", self.get_sys_interfaces)
-    self._router.add_api_route("/system/config", self.post_sys_config,
+    self._router.add_api_route("/system/interfaces",
+                               self.get_sys_interfaces)
+    self._router.add_api_route("/system/config",
+                               self.post_sys_config,
                               methods=["POST"])
-    self._router.add_api_route("/system/config", self.get_sys_config)
-    self._router.add_api_route("/system/start", self.start_test_run,
+    self._router.add_api_route("/system/config",
+                               self.get_sys_config)
+    self._router.add_api_route("/system/start",
+                               self.start_test_run,
                                methods=["POST"])
-    self._router.add_api_route("/system/stop", self.stop_test_run,
+    self._router.add_api_route("/system/stop",
+                               self.stop_test_run,
                                methods=["POST"])
-    self._router.add_api_route("/system/status", self.get_status)
+    self._router.add_api_route("/system/status",
+                               self.get_status)
 
-    self._router.add_api_route("/system/version", self.get_version)
+    self._router.add_api_route("/system/version",
+                               self.get_version)
 
-    # Deprecated: /history will be removed in version 1.1
-    self._router.add_api_route("/history", self.get_reports)
-
-    self._router.add_api_route("/reports", self.get_reports)
+    self._router.add_api_route("/reports",
+                               self.get_reports)
     self._router.add_api_route("/report",
                                self.delete_report,
                                methods=["DELETE"])
     self._router.add_api_route("/report/{device_name}/{timestamp}",
                                self.get_report)
+    self._router.add_api_route("/export/{device_name}/{timestamp}",
+                               self.get_results)
 
-    self._router.add_api_route("/devices", self.get_devices)
+    self._router.add_api_route("/devices",
+                               self.get_devices)
     self._router.add_api_route("/device",
                                self.delete_device,
                                methods=["DELETE"])
@@ -497,6 +505,20 @@ class Api:
       LOGGER.info("Report could not be found, returning 404")
       response.status_code = 404
       return self._generate_msg(False, "Report could not be found")
+
+  async def get_results(self, response: Response,
+                       device_name, timestamp):
+
+    file_path = os.path.join(DEVICES_PATH, device_name, "reports",
+                             timestamp, "results.zip")
+    LOGGER.debug("Received get results " +
+                 f"request for {device_name} / {timestamp}")
+    if os.path.isfile(file_path):
+      return FileResponse(file_path)
+    else:
+      LOGGER.info("Test results could not be found, returning 404")
+      response.status_code = 404
+      return self._generate_msg(False, "Test results could not be found")
 
   def _validate_device_json(self, json_obj):
 
