@@ -103,9 +103,7 @@ export class AppEffects {
       withLatestFrom(this.store.select(selectSystemConfig)),
       filter(
         ([, systemConfig]) =>
-          systemConfig.network != null &&
-          systemConfig.network.device_intf != '' &&
-          systemConfig.network.internet_intf != ''
+          systemConfig.network != null && systemConfig.network.device_intf != ''
       ),
       map(() =>
         AppActions.setHasConnectionSettings({ hasConnectionSettings: true })
@@ -120,8 +118,7 @@ export class AppEffects {
       filter(
         ([, systemConfig]) =>
           systemConfig.network == null ||
-          systemConfig.network.device_intf === '' ||
-          systemConfig.network.internet_intf === ''
+          systemConfig.network.device_intf === ''
       ),
       map(() =>
         AppActions.setHasConnectionSettings({ hasConnectionSettings: false })
