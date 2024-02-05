@@ -81,10 +81,11 @@ class TLSModule(TestModule):
     client_results = self._tls_util.validate_tls_client(
         client_ip=client_ip,
         tls_version=tls_version,
-        capture_files=[MONITOR_CAPTURE_FILE,STARTUP_CAPTURE_FILE,GATEWAY_CAPTURE_FILE])
+        capture_files=[MONITOR_CAPTURE_FILE,STARTUP_CAPTURE_FILE,
+                       GATEWAY_CAPTURE_FILE])
 
     # Generate results based on the state
-    result_message = ''
+    result_message = 'No outbound connections were found.'
     result_state = None
     #If any of the packetes detect failed client comms, fail the test
     if not client_results[0] and client_results[0] is not None:
@@ -93,7 +94,7 @@ class TLSModule(TestModule):
     else:
       if client_results[0]:
         result_state = True
-        result_message += client_results[1] 
+        result_message += client_results[1]
     return result_state, result_message
 
   def _resolve_device_ip(self):

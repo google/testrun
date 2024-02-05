@@ -419,7 +419,8 @@ class TLSUtil():
         dst_ip = packet['dst_ip']
         tls_version = '1.0'
         if dst_ip not in unsupported_tls_dst_ips:
-          LOGGER.info(f'''Unsupported TLS {tls_version} connections detected to {dst_ip}''')
+          LOGGER.info(f'''Unsupported TLS {tls_version}
+                      connections detected to {dst_ip}''')
           unsupported_tls_dst_ips[dst_ip] = [tls_version]
 
     if len(tls_1_1_packets)>0:
@@ -428,19 +429,23 @@ class TLSUtil():
         tls_version = '1.1'
         # Check if the IP is already in the dictionary
         if dst_ip in unsupported_tls_dst_ips:
-            # If the IP is already present, append the new TLS version to the list
-            unsupported_tls_dst_ips[dst_ip].append(tls_version)
+          # If the IP is already present, append the new TLS version to the
+          # list
+          unsupported_tls_dst_ips[dst_ip].append(tls_version)
         else:
-            # If the IP is not present, create a new list with the current TLS version
-            LOGGER.info(f'''Unsupported TLS {tls_version} connections detected to {dst_ip}''')
-            unsupported_tls_dst_ips[dst_ip] = [tls_version]
+          # If the IP is not present, create a new list with the current
+          # TLS version
+          LOGGER.info(f'''Unsupported TLS {tls_version} connections detected
+                      to {dst_ip}''')
+          unsupported_tls_dst_ips[dst_ip] = [tls_version]
     return unsupported_tls_dst_ips
 
   # Check if the device has made any outbound connections that use any
   # version of TLS.
   def get_tls_client_connection_ips(self, client_ip, capture_files):
     LOGGER.info('Checking client for TLS client connections')
-    packets = self.get_tls_client_connection_packetes(client_ip=client_ip,capture_files=capture_files)
+    packets = self.get_tls_client_connection_packetes(
+      client_ip=client_ip,capture_files=capture_files)
 
     tls_dst_ips = set()  # Store unique destination IPs
     for packet in packets:
@@ -450,7 +455,8 @@ class TLSUtil():
 
   def validate_tls_client(self, client_ip, tls_version, capture_files):
     LOGGER.info('Validating client for TLS: ' + tls_version)
-    hello_packets = self.get_hello_packets(capture_files, client_ip, tls_version)
+    hello_packets = self.get_hello_packets(
+      capture_files, client_ip, tls_version)
     client_hello_results = self.process_hello_packets(hello_packets,tls_version)
 
     handshakes = {'complete': [], 'incomplete': []}
@@ -505,7 +511,8 @@ class TLSUtil():
       tls_client_details = 'No client hello packets detected'
 
     # Resolve all non-TLS related client connections
-    non_tls_client_ips = self.get_non_tls_client_connection_ips(client_ip,capture_files)
+    non_tls_client_ips = self.get_non_tls_client_connection_ips(client_ip,
+                                                                capture_files)
 
     # Resolve all TLS related client connections
     tls_client_ips = self.get_tls_client_connection_ips(client_ip,capture_files)
@@ -520,14 +527,16 @@ class TLSUtil():
           tls_client_valid = False
           tls_client_details+= f'''\nNon-TLS connection detected to {ip}'''
         else:
-          LOGGER.info(f'''TLS connection detected to {ip}. Ignoring non-TLS traffic detected to this IP''')
+          LOGGER.info(f'''TLS connection detected to {ip}.
+                       Ignoring non-TLS traffic detected to this IP''')
 
     unsupported_tls_ips = self.get_unsupported_tls_ips(client_ip,capture_files)
     if len(unsupported_tls_ips)>0:
       tls_client_valid = False
       for ip, tls_versions in unsupported_tls_ips.items():
         for tls_version in tls_versions:
-          tls_client_details+=f'''\nUnsupported TLS {tls_version} connection detected to {ip}'''
+          tls_client_details+=f'''\nUnsupported TLS {tls_version}
+          connection detected to {ip}'''
     return tls_client_valid, tls_client_details
 
   def is_ecdh_and_ecdsa(self, ciphers):
