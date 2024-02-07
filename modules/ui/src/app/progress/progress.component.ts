@@ -175,9 +175,9 @@ export class ProgressComponent implements OnInit, OnDestroy {
 
   public openStopTestrunDialog() {
     const dialogRef = this.dialog.open(DeleteFormComponent, {
-      ariaLabel: 'Stop testrun',
+      ariaLabel: `Stop testrun ${this.getTestRunName()}`,
       data: {
-        title: 'Stop testrun',
+        title: `Stop testrun ${this.getTestRunName()}`,
         content:
           'Are you sure you would like to stop testrun without a report generation?',
       },
@@ -203,6 +203,14 @@ export class ProgressComponent implements OnInit, OnDestroy {
     this.sendCloseRequest();
   }
 
+  private getTestRunName(): string {
+    if (this.currentStatus?.device) {
+      const device = this.currentStatus.device;
+      return `${device.manufacturer} ${device.model} v${device.firmware}`;
+    } else {
+      return '';
+    }
+  }
   private setCancellingStatus() {
     this.isCancelling = true;
     if (this.currentStatus) {
@@ -245,7 +253,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        timer(0)
+        timer(10)
           .pipe(takeUntil(this.destroy$))
           .subscribe(() => {
             this.state.focusFirstElementInMain();

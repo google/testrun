@@ -43,6 +43,7 @@ class TestRunSession():
     self._runtime_params = []
     self._device_repository = []
     self._total_tests = 0
+    self._report_url = None
 
     self._version = None
     self._load_version()
@@ -238,17 +239,22 @@ class TestRunSession():
   def get_total_tests(self):
     return self._total_tests
 
+  def get_report_url(self):
+    return self._report_url
+
+  def set_report_url(self, url):
+    self._report_url = url
+
   def reset(self):
     self.set_status('Idle')
     self.set_target_device(None)
+    self._report_url = None
     self._total_tests = 0
     self._results = []
     self._started = None
     self._finished = None
 
   def to_json(self):
-
-    # TODO: Add report URL
 
     results = {
       'total': self.get_total_tests(),
@@ -262,6 +268,9 @@ class TestRunSession():
       'finished': self.get_finished(),
       'tests': results
     }
+
+    if self._report_url is not None:
+      session_json['report'] = self.get_report_url()
 
     return session_json
 
