@@ -1,5 +1,5 @@
 Package: Testrun
-Version: 1.1.1-alpha
+Version: 1.2-alpha
 Architecture: amd64
 Maintainer: Google <boddey@google.com>
 Homepage: https://github.com/google/testrun
