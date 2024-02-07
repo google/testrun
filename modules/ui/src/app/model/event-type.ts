@@ -13,14 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export interface SystemConfig {
-  network?: {
-    device_intf?: string;
-    internet_intf?: string;
-  };
-}
-
-export interface SettingOption {
-  key: string;
-  value: string;
+export enum EventType {
+  Close = 'Close event',
+  Save = 'Save event',
 }

@@ -408,7 +408,7 @@ describe('ProgressComponent', () => {
           disableClose: true,
           panelClass: 'initiate-test-run-dialog',
         });
-        tick(0);
+        tick(10);
         expect(stateServiceMock.focusFirstElementInMain).toHaveBeenCalled();
 
         openSpy.calls.reset();
