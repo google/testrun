@@ -30,12 +30,18 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { device } from '../mocks/device.mock';
 import { DeleteFormComponent } from '../components/delete-form/delete-form.component';
 import SpyObj = jasmine.SpyObj;
+import { StateService } from '../services/state.service';
 
 describe('DeviceRepositoryComponent', () => {
   let component: DeviceRepositoryComponent;
   let fixture: ComponentFixture<DeviceRepositoryComponent>;
   let compiled: HTMLElement;
   let mockService: SpyObj<TestRunService>;
+
+  const stateServiceMock: jasmine.SpyObj<StateService> = jasmine.createSpyObj(
+    'stateServiceMock',
+    ['focusFirstElementInMain']
+  );
 
   beforeEach(() => {
     mockService = jasmine.createSpyObj([
@@ -67,7 +73,10 @@ describe('DeviceRepositoryComponent', () => {
     ]);
     TestBed.configureTestingModule({
       imports: [DeviceRepositoryModule, BrowserAnimationsModule],
-      providers: [{ provide: TestRunService, useValue: mockService }],
+      providers: [
+        { provide: TestRunService, useValue: mockService },
+        { provide: StateService, useValue: stateServiceMock },
+      ],
       declarations: [DeviceRepositoryComponent],
     });
     fixture = TestBed.createComponent(DeviceRepositoryComponent);

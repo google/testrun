@@ -39,7 +39,7 @@ export class OnlyDifferentValuesValidator {
         return null;
       }
 
-      if (deviceControlValue === internetControlValue) {
+      if (deviceControlValue.key === internetControlValue.key) {
         return { hasSameValues: true };
       }
       return null;

@@ -2,8 +2,9 @@
 
 ## Table of Contents
 1) Network Overview (this page)
-2) [Addresses](addresses.md)
-3) [Add a new network service](add_new_service.md)
+2) [How to identify network interfaces](identify_interfaces.md)
+3) [Addresses](addresses.md)
+4) [Add a new network service](add_new_service.md)
 
 Test Run provides several built-in network services that can be utilized for testing purposes. These services are already available and can be used without any additional configuration. 
 

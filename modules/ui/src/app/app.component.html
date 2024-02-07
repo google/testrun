@@ -64,7 +64,10 @@ limitations under the License.
         (keydown.tab)="skipToNavigation($event)">
         <mat-icon>menu</mat-icon>
       </button>
-      <a class="logo-link" routerLink="/runtime" aria-label="Testrun ui logo">
+      <a
+        class="logo-link"
+        routerLink="{{ Routes.Testrun }}"
+        aria-label="Testrun ui logo">
         <mat-icon svgIcon="testrun_logo_color"></mat-icon>
         <h1 class="main-heading">Testrun</h1>
       </a>
@@ -74,7 +77,7 @@ limitations under the License.
         class="app-toolbar-button app-toolbar-button-general-settings"
         mat-icon-button
         aria-label="Connection settings"
-        (click)="openGeneralSettings()">
+        (click)="openGeneralSettings(true)">
         <mat-icon>tune</mat-icon>
       </button>
     </mat-toolbar>
@@ -84,18 +87,17 @@ limitations under the License.
         *ngIf="
           (hasConnectionSetting$ | async) !== true && isConnectionSettingsLoaded
         ">
-        Step 1: To perform a device test, please, select ports in Connection
-        settings.
+        Step 1: To perform a device test, please, select ports in
         <a
           (click)="openSetting()"
           (keydown.enter)="openSetting()"
           (keydown.space)="openSetting()"
-          aria-label="The Connection settings link opens the menu. No redirect to other pages."
+          aria-label="The Connection settings link opens the panel. No redirect to other pages."
           tabindex="0"
           role="link"
           class="message-link"
           >Connection settings</a
-        >
+        >.
       </app-callout>
       <app-callout
         [type]="CalloutType.Info"
@@ -109,7 +111,7 @@ limitations under the License.
           (click)="navigateToDeviceRepository()"
           (keydown.enter)="navigateToDeviceRepository()"
           (keydown.space)="navigateToDeviceRepository()"
-          aria-label="The Create a Device link redirects to the Devices page and opens the menu there."
+          aria-label="The Create a Device link redirects to the Devices page and opens the dialogue there."
           tabindex="0"
           role="link"
           class="message-link"
@@ -132,7 +134,7 @@ limitations under the License.
           (click)="navigateToRuntime()"
           (keydown.enter)="navigateToRuntime()"
           (keydown.space)="navigateToRuntime()"
-          aria-label="The Testrun link redirects to the Testrun page and opens a menu there."
+          aria-label="The Testrun link redirects to the Testrun page and opens the dialogue there."
           tabindex="0"
           role="link"
           class="message-link"

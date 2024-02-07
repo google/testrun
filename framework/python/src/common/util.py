@@ -32,21 +32,21 @@ def run_command(cmd, output=True):
   by any return code from the process other than zero."""
 
   success = False
-  process = subprocess.Popen(shlex.split(cmd),
+  with subprocess.Popen(shlex.split(cmd),
                              stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-  stdout, stderr = process.communicate()
+                             stderr=subprocess.PIPE) as process:
+    stdout, stderr = process.communicate()
 
-  if process.returncode != 0 and output:
-    err_msg = f'{stderr.strip()}. Code: {process.returncode}'
-    LOGGER.error('Command failed: ' + cmd)
-    LOGGER.error('Error: ' + err_msg)
-  else:
-    success = True
-  if output:
-    return stdout.strip().decode('utf-8'), stderr
-  else:
-    return success
+    if process.returncode != 0 and output:
+      err_msg = f'{stderr.strip()}. Code: {process.returncode}'
+      LOGGER.error('Command failed: ' + cmd)
+      LOGGER.error('Error: ' + err_msg)
+    else:
+      success = True
+    if output:
+      return stdout.strip().decode('utf-8'), stderr
+    else:
+      return success
 
 
 def interface_exists(interface):
