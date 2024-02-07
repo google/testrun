@@ -30,6 +30,8 @@ import { GeneralSettingsComponent } from './components/general-settings/general-
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { LoadingInterceptor } from './interceptors/loading.interceptor';
 import { SpinnerComponent } from './components/spinner/spinner.component';
@@ -49,6 +51,8 @@ import { CalloutComponent } from './components/callout/callout.component';
     MatSidenavModule,
     MatButtonToggleModule,
     MatRadioModule,
+    MatInputModule,
+    MatSelectModule,
     HttpClientModule,
     ReactiveFormsModule,
     MatFormFieldModule,

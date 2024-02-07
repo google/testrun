@@ -22,6 +22,7 @@ limitations under the License.
     <ng-container *ngIf="selectedDevice === null">
       <ng-container *ngFor="let device of devices">
         <app-device-item
+          [deviceView]="DeviceView.Basic"
           [class.device-item-focused]="device === prevDevice"
           (itemClicked)="deviceSelected(device)"
           [device]="device"></app-device-item>
@@ -29,6 +30,7 @@ limitations under the License.
     </ng-container>
     <app-device-item
       *ngIf="selectedDevice !== null"
+      [deviceView]="DeviceView.Basic"
       [tabIndex]="-1"
       [device]="selectedDevice"></app-device-item>
     <mat-form-field
@@ -52,9 +54,6 @@ limitations under the License.
   </section>
 
   <mat-dialog-actions class="progress-initiate-form-actions">
-    <button (click)="cancel()" color="primary" mat-button type="button">
-      Cancel
-    </button>
     <button
       (click)="changeDevice()"
       [disabled]="selectedDevice === null"
@@ -63,6 +62,9 @@ limitations under the License.
       mat-button
       type="button">
       Change Device
+    </button>
+    <button (click)="cancel()" color="primary" mat-button type="button">
+      Cancel
     </button>
     <button
       (click)="startTestRun()"

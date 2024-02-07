@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TestRunService } from '../../services/test-run.service';
 import { Version } from '../../model/version';
@@ -23,6 +23,8 @@ import { UpdateDialogComponent } from './update-dialog/update-dialog.component';
 import { tap } from 'rxjs/internal/operators/tap';
 
 import { Observable } from 'rxjs/internal/Observable';
+import { Subject } from 'rxjs/internal/Subject';
+import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 
 @Component({
   selector: 'app-version',
@@ -31,8 +33,11 @@ import { Observable } from 'rxjs/internal/Observable';
   templateUrl: './version.component.html',
   styleUrls: ['./version.component.scss'],
 })
-export class VersionComponent implements OnInit {
+export class VersionComponent implements OnInit, OnDestroy {
   version$!: Observable<Version | null>;
+  private destroy$: Subject<boolean> = new Subject<boolean>();
+
+  private isDialogClosed = false;
 
   constructor(
     private testRunService: TestRunService,
@@ -44,7 +49,7 @@ export class VersionComponent implements OnInit {
 
     this.version$ = this.testRunService.getVersion().pipe(
       tap(version => {
-        if (version?.update_available) {
+        if (version?.update_available && !this.isDialogClosed) {
           this.openUpdateWindow(version);
         }
       })
@@ -52,7 +57,7 @@ export class VersionComponent implements OnInit {
   }
 
   openUpdateWindow(version: Version) {
-    this.dialog.open(UpdateDialogComponent, {
+    const dialogRef = this.dialog.open(UpdateDialogComponent, {
       ariaLabel: 'Update version',
       data: version,
       autoFocus: true,
@@ -60,5 +65,15 @@ export class VersionComponent implements OnInit {
       disableClose: true,
       panelClass: 'version-update-dialog',
     });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => (this.isDialogClosed = true));
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next(true);
+    this.destroy$.unsubscribe();
   }
 }

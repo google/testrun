@@ -18,13 +18,14 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  Inject,
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TestRunService } from '../../services/test-run.service';
 import { Observable } from 'rxjs/internal/Observable';
-import { Device, TestModule } from '../../model/device';
+import { Device, TestModule, DeviceView } from '../../model/device';
 import {
   AbstractControl,
   FormArray,
@@ -34,6 +35,10 @@ import {
 import { DeviceValidators } from '../../device-repository/device-form/device.validators';
 import { EscapableDialogComponent } from '../../components/escapable-dialog/escapable-dialog.component';
 import { take } from 'rxjs';
+
+interface DialogData {
+  device?: Device;
+}
 
 @Component({
   selector: 'app-progress-initiate-form',
@@ -51,9 +56,11 @@ export class ProgressInitiateFormComponent
   testModules: TestModule[] = [];
   prevDevice: Device | null = null;
   setFirmwareFocus = false;
+  readonly DeviceView = DeviceView;
 
   constructor(
     public override dialogRef: MatDialogRef<ProgressInitiateFormComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private readonly testRunService: TestRunService,
     private fb: FormBuilder,
     private deviceValidators: DeviceValidators,
@@ -66,15 +73,19 @@ export class ProgressInitiateFormComponent
     return this.initiateForm.get('firmware') as AbstractControl;
   }
 
-  cancel(): void {
+  cancel(data?: string): void {
     this.testRunService.setIsOpenStartTestrun(false);
-    this.dialogRef.close();
+    this.dialogRef.close(data);
   }
 
   ngOnInit() {
     this.devices$ = this.testRunService.getDevices();
     this.createInitiateForm();
     this.testModules = this.testRunService.getTestModules();
+
+    if (this.data?.device) {
+      this.deviceSelected(this.data.device);
+    }
   }
 
   deviceSelected(device: Device) {
@@ -127,7 +138,7 @@ export class ProgressInitiateFormComponent
         .pipe(take(1))
         .subscribe(() => {
           this.testRunService.getSystemStatus();
-          this.cancel();
+          this.cancel('testrunStarted');
         });
     }
   }

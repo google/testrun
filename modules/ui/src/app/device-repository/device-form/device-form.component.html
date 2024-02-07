@@ -13,7 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<form [formGroup]="deviceForm" class="device-form">
+<form
+  [formGroup]="deviceForm"
+  class="device-form"
+  [class.device-form-create]="!data.device"
+  [class.device-form-edit]="data.device">
   <span class="device-form-title">{{ data.title }}</span>
   <mat-form-field appearance="outline">
     <mat-label>Device Manufacturer</mat-label>

@@ -115,6 +115,7 @@ class TestOrchestrator:
 
     self._write_reports(report)
     self._test_in_progress = False
+    self.get_session().set_report_url(report.get_report_url())
 
     # Move testing output from runtime to local device folder
     timestamp_dir = self._timestamp_results(device)
@@ -240,6 +241,7 @@ class TestOrchestrator:
       device.mac_addr.replace(":", "")
     )
 
+    # Define the directory 
     completed_results_dir = os.path.join(
       self._root_path,
       LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),

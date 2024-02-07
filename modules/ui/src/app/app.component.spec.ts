@@ -45,6 +45,7 @@ import {
 } from './mocks/progress.mock';
 import { LoaderService } from './services/loader.service';
 import { Routes } from './model/routes';
+import { StateService } from './services/state.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -53,6 +54,7 @@ describe('AppComponent', () => {
   let router: Router;
   let mockService: SpyObj<TestRunService>;
   let mockLoaderService: SpyObj<LoaderService>;
+  let mockStateService: SpyObj<StateService>;
 
   const enterKeyEvent = new KeyboardEvent('keydown', {
     key: 'Enter',
@@ -82,6 +84,10 @@ describe('AppComponent', () => {
     ]);
 
     mockLoaderService = jasmine.createSpyObj(['setLoading']);
+    mockStateService = jasmine.createSpyObj('mockStateService', [
+      'focusFirstElementInMain',
+    ]);
+
     mockService.getDevices.and.returnValue(
       new BehaviorSubject<Device[] | null>([device])
     );
@@ -106,6 +112,7 @@ describe('AppComponent', () => {
       providers: [
         { provide: TestRunService, useValue: mockService },
         { provide: LoaderService, useValue: mockLoaderService },
+        { provide: StateService, useValue: mockStateService },
       ],
       declarations: [
         AppComponent,
@@ -223,6 +230,21 @@ describe('AppComponent', () => {
 
     component.settingsDrawer.close().then(() => {
       expect(component.toggleSettingsBtn.focus).toHaveBeenCalled();
+    });
+  }));
+
+  it('should call focusFirstElementInMain if settingsDrawer opened not from toggleBtn', fakeAsync(() => {
+    spyOn(component.settingsDrawer, 'close').and.returnValue(
+      Promise.resolve('close')
+    );
+
+    component.openGeneralSettings(false);
+    tick();
+    component.closeSetting();
+    flush();
+
+    component.settingsDrawer.close().then(() => {
+      expect(mockStateService.focusFirstElementInMain).toHaveBeenCalled();
     });
   }));
 
