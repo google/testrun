@@ -117,22 +117,6 @@ describe('TestRunService', () => {
     req.flush(deviceArray);
   });
 
-  it('setSystemConfig should update the systemConfig data', () => {
-    service.setSystemConfig(MOCK_SYSTEM_CONFIG);
-
-    service.systemConfig$.subscribe(data => {
-      expect(data).toEqual(MOCK_SYSTEM_CONFIG);
-    });
-  });
-
-  it('setHasConnectionSetting should update the hasConnectionSetting$', () => {
-    service.setHasConnectionSetting(true);
-
-    service.hasConnectionSetting$.subscribe(data => {
-      expect(data).toEqual(true);
-    });
-  });
-
   it('getSystemConfig should return systemConfig data', () => {
     const apiUrl = 'http://localhost:8000/system/config';
 
