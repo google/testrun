@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Image name: test-run/ui
-FROM node:20@sha256:ffebb4405810c92d267a764b21975fb2d96772e41877248a37bf3abaa0d3b590 as build as build
+FROM node@sha256:ffebb4405810c92d267a764b21975fb2d96772e41877248a37bf3abaa0d3b590 as build
 
 WORKDIR /modules/ui
 COPY modules/ui/ /modules/ui
