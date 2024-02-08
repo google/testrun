@@ -44,18 +44,9 @@ export const updateError = createAction(
 );
 
 // Settings
-export const fetchSystemConfig = createAction('[Settings] Fetch System Config');
-
 export const fetchSystemConfigSuccess = createAction(
   '[Settings] Fetch System Config Success',
   props<{ systemConfig: SystemConfig }>()
-);
-
-export const createSystemConfig = createAction(
-  '[Settings] Create System Config',
-  props<{
-    data: SystemConfig;
-  }>()
 );
 
 export const createSystemConfigSuccess = createAction(

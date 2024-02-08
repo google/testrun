@@ -20,13 +20,14 @@ import {
   ValidationErrors,
   ValidatorFn,
 } from '@angular/forms';
+import { FormKey } from '../../model/setting';
 
 @Injectable({ providedIn: 'root' })
 export class OnlyDifferentValuesValidator {
   public onlyDifferentSetting(): ValidatorFn {
     return (form: AbstractControl): ValidationErrors | null => {
-      const deviceControl = form.get('device_intf') as FormControl;
-      const internetControl = form.get('internet_intf') as FormControl;
+      const deviceControl = form.get(FormKey.DEVICE) as FormControl;
+      const internetControl = form.get(FormKey.INTERNET) as FormControl;
 
       if (!deviceControl || !internetControl) {
         return null;
