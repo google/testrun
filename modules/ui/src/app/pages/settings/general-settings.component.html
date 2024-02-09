@@ -29,61 +29,63 @@ limitations under the License.
     [class.setting-drawer-content-form-empty]="
       (vm.interfaces | keyvalue).length === 0
     ">
-    <ng-container
-      *ngIf="(vm.interfaces | keyvalue).length > 0; else warning_message">
-      <app-callout
-        [type]="CalloutType.Warning"
-        *ngIf="(vm.interfaces | keyvalue).length === 1"
-        class="two-ports-message">
-        Warning! Testrun requires two ports to operate correctly.
-      </app-callout>
+    <section class="setting-drawer-content-inputs">
+      <ng-container
+        *ngIf="(vm.interfaces | keyvalue).length > 0; else warning_message">
+        <app-callout
+          [type]="CalloutType.Warning"
+          *ngIf="(vm.interfaces | keyvalue).length === 1"
+          class="two-ports-message">
+          Warning! Testrun requires two ports to operate correctly.
+        </app-callout>
 
+        <app-settings-dropdown
+          [controlName]="FormKey.DEVICE"
+          groupLabel="Select port where you’ll connect the tested device"
+          description="Choose one of the options where you’ll connect IoT device for testing"
+          label="Device connection port"
+          key="device"
+          [options]="vm.deviceOptions">
+        </app-settings-dropdown>
+        <app-settings-dropdown
+          [controlName]="FormKey.INTERNET"
+          groupLabel="Select port used for Internet connection"
+          description="Choose one of the following ports on your Laptop or Desktop"
+          label="Internet connection port"
+          key="internet"
+          [options]="vm.internetOptions">
+        </app-settings-dropdown>
+      </ng-container>
+      <p class="message">
+        If a port is missing from this list, you can
+        <a
+          (click)="reloadSetting()"
+          (keydown.enter)="reloadSetting()"
+          (keydown.space)="reloadSetting()"
+          role="button"
+          tabindex="0"
+          class="message-link">
+          Refresh
+        </a>
+        the Connection settings
+      </p>
       <app-settings-dropdown
-        [controlName]="FormKey.DEVICE"
-        groupLabel="Select port where you’ll connect the tested device"
-        description="Choose one of the options where you’ll connect IoT device for testing"
-        label="Device connection port"
-        key="device"
-        [options]="vm.deviceOptions">
-      </app-settings-dropdown>
-      <app-settings-dropdown
-        [controlName]="FormKey.INTERNET"
-        groupLabel="Select port used for Internet connection"
+        [controlName]="FormKey.LOG_LEVEL"
+        groupLabel="Select the logging level for Testrun events"
         description="Choose one of the following ports on your Laptop or Desktop"
-        label="Internet connection port"
-        key="internet"
-        [options]="vm.internetOptions">
+        label="Log level"
+        key="log-level"
+        [options]="vm.logLevelOptions">
       </app-settings-dropdown>
-    </ng-container>
-    <p class="message">
-      If a port is missing from this list, you can
-      <a
-        (click)="reloadSetting()"
-        (keydown.enter)="reloadSetting()"
-        (keydown.space)="reloadSetting()"
-        role="button"
-        tabindex="0"
-        class="message-link">
-        Refresh
-      </a>
-      the Connection settings
-    </p>
-    <app-settings-dropdown
-      [controlName]="FormKey.LOG_LEVEL"
-      groupLabel="Select the logging level for Testrun events"
-      description="Choose one of the following ports on your Laptop or Desktop"
-      label="Log level"
-      key="log-level"
-      [options]="vm.logLevelOptions">
-    </app-settings-dropdown>
-    <app-settings-dropdown
-      [controlName]="FormKey.MONITOR_PERIOD"
-      groupLabel="Select device monitoring time period"
-      description="Choose one of the options for Monitoring Device time, when Testrun will observe the device before starting tests. The optimal time to pass the qualification is 300s."
-      label="Monitoring period"
-      key="monitoring-period"
-      [options]="vm.monitoringPeriodOptions">
-    </app-settings-dropdown>
+      <app-settings-dropdown
+        [controlName]="FormKey.MONITOR_PERIOD"
+        groupLabel="Select device monitoring time period"
+        description="Choose one of the options for Monitoring Device time, when Testrun will observe the device before starting tests. The optimal time to pass the qualification is 300s."
+        label="Monitoring period"
+        key="monitoring-period"
+        [options]="vm.monitoringPeriodOptions">
+      </app-settings-dropdown>
+    </section>
     <mat-error
       *ngIf="vm.isSubmitting && isFormError"
       class="error-message-container">
