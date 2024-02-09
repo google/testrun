@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Manages the Testrun API"""
+"""Provides Testrun data via REST API."""
 
 from fastapi import FastAPI, APIRouter, Response, Request, status
 from fastapi.responses import FileResponse
@@ -39,7 +39,7 @@ DEVICES_PATH = "/usr/local/testrun/local/devices"
 DEFAULT_DEVICE_INTF = "enx123456789123"
 
 LATEST_RELEASE_CHECK = ("https://api.github.com/repos/google/" +
-    "testrun/releases/latest")
+                        "testrun/releases/latest")
 
 class Api:
   """Provide REST endpoints to manage Testrun"""
@@ -126,14 +126,17 @@ class Api:
 
   async def get_sys_interfaces(self):
     addrs = psutil.net_if_addrs()
-    ifaces = []
-    for iface in addrs:
+    ifaces = {}
+
+    # pylint: disable=consider-using-dict-items
+    for key in addrs.keys():
+      nic = addrs[key]
 
       # Ignore any interfaces that are not ethernet
-      if not (iface.startswith("en") or iface.startswith("eth")):
+      if not (key.startswith("en") or key.startswith("eth")):
         continue
 
-      ifaces.append(iface)
+      ifaces[key] = nic[0].address
 
     return ifaces
 
@@ -255,31 +258,37 @@ class Api:
     json_response["installed_version"] = "v" + current_version
 
     # Check latest version number from GitHub API
-    version_check = requests.get(LATEST_RELEASE_CHECK, timeout=5)
+    try:
+      version_check = requests.get(LATEST_RELEASE_CHECK, timeout=5)
 
-    # Check OK response was received
-    if version_check.status_code != 200:
+      # Check OK response was received
+      if version_check.status_code != 200:
+        response.status_code = 500
+        LOGGER.error(version_check.content)
+        return self._generate_msg(False, "Failed to fetch latest version")
+
+      # Extract version number from response, removing the leading 'v'
+      latest_version_no = version_check.json()["name"].strip("v")
+      LOGGER.debug(f"Latest version available is {latest_version_no}")
+
+      # Craft JSON response
+      json_response["latest_version"] = "v" + latest_version_no
+      json_response["latest_version_url"] = version_check.json()["html_url"]
+
+      # String comparison between current and latest version
+      if latest_version_no > current_version:
+        json_response["update_available"] = True
+        LOGGER.debug("An update is available")
+      else:
+        json_response["update_available"] = False
+        LOGGER.debug("The latest version is installed")
+
+      return json_response
+    except Exception as e:
       response.status_code = 500
-      LOGGER.error(version_check.content)
+      LOGGER.error("Failed to fetch latest version")
+      LOGGER.debug(e)
       return self._generate_msg(False, "Failed to fetch latest version")
-
-    # Extract version number from response, removing the leading 'v'
-    latest_version_no = version_check.json()["name"].strip("v")
-    LOGGER.debug(f"Latest version available is {latest_version_no}")
-
-    # Craft JSON response
-    json_response["latest_version"] = "v" + latest_version_no
-    json_response["latest_version_url"] = version_check.json()["html_url"]
-
-    # String comparison between current and latest version
-    if latest_version_no > current_version:
-      json_response["update_available"] = True
-      LOGGER.debug("An update is available")
-    else:
-      json_response["update_available"] = False
-      LOGGER.debug("The latest version is installed")
-
-    return json_response
 
   async def get_reports(self, request: Request):
     LOGGER.debug("Received reports list request")
@@ -460,7 +469,7 @@ class Api:
       check_new_device = self._session.get_device(
         device_json.get(DEVICE_MAC_ADDR_KEY))
 
-      if not check_new_device is None and (device.mac_addr 
+      if not check_new_device is None and (device.mac_addr
                                            != check_new_device.mac_addr):
         response.status_code = status.HTTP_409_CONFLICT
         return self._generate_msg(False,
@@ -482,6 +491,7 @@ class Api:
     except JSONDecodeError:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid JSON received")
+
 
   async def get_report(self, response: Response,
                        device_name, timestamp):

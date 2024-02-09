@@ -159,6 +159,7 @@ h2.title {
   color: mat.get-color-from-palette($color-primary, 700);
   text-decoration: none;
   cursor: pointer;
+  font-weight: 500;
 }
 
 .message-link:hover {
@@ -168,6 +169,12 @@ h2.title {
 .mat-mdc-snack-bar-container {
   --mat-snack-bar-button-color: #ffffff;
   --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+.mat-mdc-option {
+  --mat-option-hover-state-layer-color: #e8f0fe;
+  --mat-option-focus-state-layer-color: #e8f0fe;
+  --mat-option-selected-state-layer-color: #e8f0fe;
 }
 
 body:has(.initiate-test-run-dialog)
@@ -186,11 +193,28 @@ body:has(.filter-dialog-content)
   opacity: 0;
 }
 
-body:has(app-callout .info)
+body:has(app-callout .info):not(:has(app-callout .error))
   app-device-repository:not(:has(.device-repository-content-empty)),
-body:has(app-callout .info) app-history:not(:has(.results-content-empty)),
-body:has(app-callout .info) app-progress:not(:has(.progress-content-empty)) {
+body:has(app-callout .info):not(:has(app-callout .error))
+  app-history:not(:has(.results-content-empty)),
+body:has(app-callout .info):not(:has(app-callout .error))
+  app-progress:not(:has(.progress-content-empty)),
+body:has(app-callout .error):not(:has(app-callout .info))
+  app-device-repository:not(:has(.device-repository-content-empty)),
+body:has(app-callout .error):not(:has(app-callout .info))
+  app-history:not(:has(.results-content-empty)),
+body:has(app-callout .error):not(:has(app-callout .info))
+  app-progress:not(:has(.progress-content-empty)) {
   margin-top: 96px;
+}
+
+body:has(app-callout .info):has(app-callout .error)
+  app-device-repository:not(:has(.device-repository-content-empty)),
+body:has(app-callout .info):has(app-callout .error)
+  app-history:not(:has(.results-content-empty)),
+body:has(app-callout .info):has(app-callout .error)
+  app-progress:not(:has(.progress-content-empty)) {
+  margin-top: 156px;
 }
 
 .text-nowrap {

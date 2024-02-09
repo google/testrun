@@ -1,0 +1,151 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@use 'node_modules/@angular/material/index' as mat;
+@import 'src/theming/colors';
+@import 'src/theming/variables';
+
+:host {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.history-toolbar {
+  padding-left: 32px;
+  gap: 10px;
+  background: $white;
+  height: 72px;
+}
+
+.history-content {
+  margin: 0 32px 39px 32px;
+  overflow-y: auto;
+  border-radius: 4px;
+  border: 1px solid $lighter-grey;
+  height: -webkit-fit-content;
+  height: -moz-fit-content;
+  height: fit-content;
+  max-height: -webkit-fill-available;
+  max-height: -moz-available;
+  max-height: stretch;
+}
+
+.history-content-empty,
+.history-content-empty table {
+  height: 100%;
+}
+
+.history-content table {
+  th {
+    font-weight: 700;
+  }
+
+  td {
+    font-weight: 400;
+  }
+
+  th,
+  td {
+    font-family: Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0.2px;
+  }
+
+  .table-cell-actions {
+    padding-left: 8px;
+    white-space: nowrap;
+  }
+
+  .table-cell-actions * {
+    margin: 0 4px;
+  }
+
+  .filter-button {
+    display: flex;
+    width: 24px;
+    height: 24px;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    margin: 0 2px 0 8px;
+    padding: 0;
+    border: none;
+    background: $white;
+    cursor: pointer;
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+    &:active {
+      background-color: rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  .filter-button.active .mat-icon {
+    color: mat.get-color-from-palette($color-primary, 600);
+  }
+}
+
+.results-content-empty,
+.results-content-filter-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  grid-row: 1/3;
+}
+
+.results-content-empty-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.results-content-empty-message-header {
+  font-weight: 400;
+  line-height: 28px;
+  font-size: 22px;
+  color: $black;
+}
+
+.results-content-empty-message-main {
+  font-family: Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.1px;
+  color: #202124;
+}
+
+.download-report-icon,
+.delete-report-icon {
+  color: $dark-grey;
+}
+
+.hidden {
+  display: none;
+}
+
+.results-content-empty-message-img {
+  width: 293px;
+  height: 154px;
+  background-image: url(/src/assets/icons/desktop.svg);
+}
+
+.results-content-filter-empty .results-content-empty-message-main {
+  line-height: 20px;
+  font-size: 14px;
+}

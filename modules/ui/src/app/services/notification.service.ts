@@ -22,9 +22,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export class NotificationService {
   constructor(private snackBar: MatSnackBar) {}
 
-  notify(message: string, duration = 5000) {
+  notify(message: string, duration = 0) {
     this.snackBar.open(message, 'OK', {
-      horizontalPosition: 'right',
+      horizontalPosition: 'center',
       panelClass: 'test-run-notification',
       duration: duration,
     });

@@ -82,6 +82,12 @@ class TestReport():
   def add_test(self, test):
     self._results.append(test)
 
+  def set_report_url(self, url):
+    self._report_url = url
+
+  def get_report_url(self):
+    return self._report_url
+
   def to_json(self):
     report_json = {}
     report_json['device'] = self._device
