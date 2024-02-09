@@ -56,8 +56,7 @@
 }
 
 .setting-drawer-content {
-  padding: 11px 16px 8px 16px;
-  overflow: hidden;
+  padding: 0 16px 8px 16px;
   flex: 1;
 
   form {
@@ -83,7 +82,7 @@
 
 .message {
   margin: 0;
-  padding: 16px 0 0 0;
+  padding: 10px 0 16px 0;
   color: $grey-800;
   font-family: $font-secondary;
   font-size: 14px;

@@ -2,6 +2,10 @@
 @import '../../../../../theming/colors';
 @import '../../../../../theming/variables';
 
+:host {
+  padding-top: 16px;
+}
+
 .setting-form-label {
   font-size: 18px;
   color: $dark-grey;
@@ -16,7 +20,7 @@
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
-  margin: 10px 0;
+  margin: 8px 0;
   color: $dark-grey;
 }
 

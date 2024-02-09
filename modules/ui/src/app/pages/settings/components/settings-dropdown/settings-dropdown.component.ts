@@ -14,9 +14,8 @@ import {
 } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { SettingOption } from '../../../../model/setting';
+import { SystemInterfaces, SettingOption } from '../../../../model/setting';
 import { KeyValuePipe, NgForOf, NgIf } from '@angular/common';
-import { SystemInterfaces } from '../../../../services/test-run.service';
 
 @Component({
   selector: 'app-settings-dropdown',

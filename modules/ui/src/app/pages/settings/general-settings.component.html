@@ -68,6 +68,22 @@ limitations under the License.
       </a>
       the Connection settings
     </p>
+    <app-settings-dropdown
+      [controlName]="FormKey.LOG_LEVEL"
+      groupLabel="Select the logging level for Testrun events"
+      description="Choose one of the following ports on your Laptop or Desktop"
+      label="Log level"
+      key="log-level"
+      [options]="vm.logLevelOptions">
+    </app-settings-dropdown>
+    <app-settings-dropdown
+      [controlName]="FormKey.MONITOR_PERIOD"
+      groupLabel="Select device monitoring time period"
+      description="Choose one of the options for Monitoring Device time, when Testrun will observe the device before starting tests. The optimal time to pass the qualification is 300s."
+      label="Monitoring period"
+      key="monitoring-period"
+      [options]="vm.monitoringPeriodOptions">
+    </app-settings-dropdown>
     <mat-error
       *ngIf="vm.isSubmitting && isFormError"
       class="error-message-container">

@@ -16,7 +16,7 @@
 
 import { createAction, props } from '@ngrx/store';
 import { SystemConfig } from '../model/setting';
-import { SystemInterfaces } from '../services/test-run.service';
+import { SystemInterfaces } from '../model/setting';
 
 // App component
 export const toggleMenu = createAction('[App Component] Toggle Menu');

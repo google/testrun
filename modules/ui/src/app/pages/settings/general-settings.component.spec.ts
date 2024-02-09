@@ -177,6 +177,8 @@ describe('GeneralSettingsComponent', () => {
           device_intf: 'mockDeviceKey',
           internet_intf: '',
         },
+        log_level: 'INFO',
+        monitor_period: 600,
       };
 
       component.deviceControl.setValue({
@@ -187,6 +189,16 @@ describe('GeneralSettingsComponent', () => {
       component.internetControl.setValue({
         key: '',
         value: 'defaultValue',
+      });
+
+      component.logLevel.setValue({
+        key: 'INFO',
+        value: '',
+      });
+
+      component.monitorPeriod.setValue({
+        key: '600',
+        value: '',
       });
 
       component.saveSetting();
