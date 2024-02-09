@@ -24,3 +24,8 @@ export interface SettingOption {
   key: string;
   value: string;
 }
+
+export enum FormKey {
+  DEVICE = 'device_intf',
+  INTERNET = 'internet_intf',
+}

@@ -43,6 +43,7 @@ import { appFeatureKey, rootReducer } from './store/reducers';
 import { EffectsModule } from '@ngrx/effects';
 import { AppEffects } from './store/effects';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { SettingsDropdownComponent } from './pages/settings/components/settings-dropdown/settings-dropdown.component';
 
 @NgModule({
   declarations: [AppComponent, GeneralSettingsComponent],
@@ -69,6 +70,7 @@ import { CdkTrapFocus } from '@angular/cdk/a11y';
     StoreModule.forRoot({ [appFeatureKey]: rootReducer }),
     EffectsModule.forRoot([AppEffects]),
     CdkTrapFocus,
+    SettingsDropdownComponent,
   ],
   providers: [
     {
