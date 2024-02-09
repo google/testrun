@@ -17,13 +17,13 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { map, withLatestFrom } from 'rxjs/operators';
 
 import * as AppActions from './actions';
 import { AppState } from './state';
 import { TestRunService } from '../services/test-run.service';
 import { filter, combineLatest } from 'rxjs';
-import { selectMenuOpened, selectSystemConfig } from './selectors';
+import { selectMenuOpened } from './selectors';
 
 @Injectable()
 export class AppEffects {
@@ -61,18 +61,6 @@ export class AppEffects {
     );
   });
 
-  onFetchInterfaces$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(AppActions.fetchInterfaces),
-      switchMap(() =>
-        this.testrunService
-          .getSystemInterfaces()
-          .pipe(
-            map(interfaces => AppActions.fetchInterfacesSuccess({ interfaces }))
-          )
-      )
-    );
-  });
   onMenuOpened$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(AppActions.toggleMenu),
@@ -82,73 +70,6 @@ export class AppEffects {
     );
   });
 
-  onFetchSystemConfig$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(AppActions.fetchSystemConfig),
-      switchMap(() =>
-        this.testrunService
-          .getSystemConfig()
-          .pipe(
-            map(systemConfig =>
-              AppActions.fetchSystemConfigSuccess({ systemConfig })
-            )
-          )
-      )
-    );
-  });
-
-  onFetchSystemConfigSuccessNonEmpty$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(AppActions.fetchSystemConfigSuccess),
-      withLatestFrom(this.store.select(selectSystemConfig)),
-      filter(
-        ([, systemConfig]) =>
-          systemConfig.network != null && systemConfig.network.device_intf != ''
-      ),
-      map(() =>
-        AppActions.setHasConnectionSettings({ hasConnectionSettings: true })
-      )
-    );
-  });
-
-  onFetchSystemConfigSuccessEmpty$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(AppActions.fetchSystemConfigSuccess),
-      withLatestFrom(this.store.select(selectSystemConfig)),
-      filter(
-        ([, systemConfig]) =>
-          systemConfig.network == null ||
-          systemConfig.network.device_intf === ''
-      ),
-      map(() =>
-        AppActions.setHasConnectionSettings({ hasConnectionSettings: false })
-      )
-    );
-  });
-
-  onCreateSystemConfig$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(AppActions.createSystemConfig),
-      switchMap(action =>
-        this.testrunService
-          .createSystemConfig(action.data)
-          .pipe(
-            map(() =>
-              AppActions.createSystemConfigSuccess({ data: action.data })
-            )
-          )
-      )
-    );
-  });
-
-  onCreateSystemConfigSuccess$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(AppActions.createSystemConfigSuccess),
-      map(action =>
-        AppActions.fetchSystemConfigSuccess({ systemConfig: action.data })
-      )
-    );
-  });
   constructor(
     private actions$: Actions,
     private testrunService: TestRunService,

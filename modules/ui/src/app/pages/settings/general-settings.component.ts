@@ -16,52 +16,43 @@
 import {
   Component,
   EventEmitter,
-  Input,
   OnDestroy,
   OnInit,
   Output,
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Subject, takeUntil, tap } from 'rxjs';
-import { SystemInterfaces } from '../../services/test-run.service';
 import { OnlyDifferentValuesValidator } from './only-different-values.validator';
 import { CalloutType } from '../../model/callout-type';
 import { CdkTrapFocus, LiveAnnouncer } from '@angular/cdk/a11y';
 import { EventType } from '../../model/event-type';
-import { SettingOption, SystemConfig } from '../../model/setting';
-import { Store } from '@ngrx/store';
-import { AppState } from '../../store/state';
-import { selectSystemConfig } from '../../store/selectors';
-import { createSystemConfig } from '../../store/actions';
-import { AppEffects } from '../../store/effects';
+import { FormKey, SystemConfig } from '../../model/setting';
+import { SettingsStore } from './settings.store';
+import { LoaderService } from '../../services/loader.service';
 
 @Component({
   selector: 'app-general-settings',
   templateUrl: './general-settings.component.html',
   styleUrls: ['./general-settings.component.scss'],
   hostDirectives: [CdkTrapFocus],
+  providers: [SettingsStore],
 })
 export class GeneralSettingsComponent implements OnInit, OnDestroy {
-  @Input() interfaces: SystemInterfaces = {};
-  @Input() hasConnectionSettings = false;
   @Output() closeSettingEvent = new EventEmitter<void>();
-  @Output() reloadInterfacesEvent = new EventEmitter<void>();
   public readonly CalloutType = CalloutType;
   public readonly EventType = EventType;
+  public readonly FormKey = FormKey;
   public settingForm!: FormGroup;
-  public isSubmitting = false;
-  public defaultInternetOption = {
-    key: '',
-    value: 'Not specified',
-  };
+  viewModel$ = this.settingsStore.viewModel$;
+
   private destroy$: Subject<boolean> = new Subject<boolean>();
-  private systemConfig: SystemConfig = {};
+
   get deviceControl(): FormControl {
-    return this.settingForm.get('device_intf') as FormControl;
+    return this.settingForm.get(FormKey.DEVICE) as FormControl;
   }
 
   get internetControl(): FormControl {
-    return this.settingForm.get('internet_intf') as FormControl;
+    return this.settingForm.get(FormKey.INTERNET) as FormControl;
   }
 
   get isFormValues(): boolean {
@@ -72,42 +63,25 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     return this.settingForm.hasError('hasSameValues');
   }
 
-  get isLessThanOneInterfaces(): boolean {
-    return Object.keys(this.interfaces).length < 1;
-  }
-
   constructor(
     private readonly fb: FormBuilder,
     private liveAnnouncer: LiveAnnouncer,
     private readonly onlyDifferentValuesValidator: OnlyDifferentValuesValidator,
-    private store: Store<AppState>,
-    private effects: AppEffects
+    private settingsStore: SettingsStore,
+    private readonly loaderService: LoaderService
   ) {}
 
   ngOnInit() {
     this.createSettingForm();
     this.cleanFormErrorMessage();
-
-    this.store
-      .select(selectSystemConfig)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(config => {
-        this.systemConfig = config;
-        this.setDefaultFormValues(
-          this.systemConfig?.network?.device_intf,
-          this.systemConfig?.network?.internet_intf
-        );
-      });
-
-    this.effects.onCreateSystemConfigSuccess$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.closeSetting(EventType.Save);
-      });
+    this.settingsStore.getInterfaces();
+    this.settingsStore.getSystemConfig();
+    this.setDefaultFormValues();
   }
 
   reloadSetting(): void {
-    this.reloadInterfacesEvent.emit();
+    this.showLoading();
+    this.getSystemInterfaces();
   }
   closeSetting(message: string): void {
     this.resetForm();
@@ -115,66 +89,40 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     this.liveAnnouncer.announce(
       `The ${message} finished. The connection setting panel is closed.`
     );
-    this.setDefaultFormValues(
-      this.systemConfig?.network?.device_intf,
-      this.systemConfig?.network?.internet_intf
-    );
+    this.setDefaultFormValues();
   }
 
   saveSetting(): void {
     if (this.settingForm.invalid) {
-      this.isSubmitting = true;
+      this.settingsStore.setIsSubmitting(true);
       this.settingForm.markAllAsTouched();
     } else {
       this.createSystemConfig();
     }
   }
 
-  private createSettingForm(): FormGroup {
-    return (this.settingForm = this.fb.group(
+  private createSettingForm() {
+    this.settingForm = this.fb.group(
       {
         device_intf: [''],
-        internet_intf: [this.defaultInternetOption],
+        internet_intf: [''],
       },
       {
         validators: [this.onlyDifferentValuesValidator.onlyDifferentSetting()],
         updateOn: 'change',
       }
-    ));
+    );
   }
 
-  compare(c1: SettingOption, c2: SettingOption): boolean {
-    return c1 && c2 && c1.key === c2.key && c1.value === c2.value;
-  }
-
-  private setDefaultFormValues(
-    device: string | undefined,
-    internet: string | undefined
-  ): void {
-    if (device && this.interfaces[device]) {
-      const deviceData = this.transformValueToObj(device);
-      this.deviceControl.setValue(deviceData);
-    }
-    if (internet && this.interfaces[internet]) {
-      const internetData = this.transformValueToObj(internet);
-      this.internetControl.setValue(internetData);
-    } else {
-      this.internetControl.setValue(this.defaultInternetOption);
-    }
-  }
-
-  private transformValueToObj(value: string): SettingOption {
-    return {
-      key: value,
-      value: this.interfaces[value],
-    };
+  private setDefaultFormValues() {
+    this.settingsStore.setDefaultFormValues(this.settingForm);
   }
 
   private cleanFormErrorMessage(): void {
     this.settingForm.valueChanges
       .pipe(
         takeUntil(this.destroy$),
-        tap(() => (this.isSubmitting = false))
+        tap(() => this.settingsStore.setIsSubmitting(false))
       )
       .subscribe();
   }
@@ -187,8 +135,12 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
         internet_intf: internet_intf.key,
       },
     };
-
-    this.store.dispatch(createSystemConfig({ data }));
+    this.settingsStore.updateSystemConfig({
+      onSystemConfigUpdate: () => {
+        this.closeSetting(EventType.Save);
+      },
+      config: data,
+    });
   }
 
   private resetForm(): void {
@@ -198,5 +150,18 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
+  }
+
+  private getSystemInterfaces(): void {
+    this.settingsStore.getInterfaces();
+    this.hideLoading();
+  }
+
+  private showLoading() {
+    this.loaderService.setLoading(true);
+  }
+
+  private hideLoading() {
+    this.loaderService.setLoading(false);
   }
 }
