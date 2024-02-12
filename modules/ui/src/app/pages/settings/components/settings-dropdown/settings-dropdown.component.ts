@@ -66,4 +66,8 @@ export class SettingsDropdownComponent implements OnInit, OnDestroy {
   compare(c1: SettingOption, c2: SettingOption): boolean {
     return c1 && c2 && c1.key === c2.key && c1.value === c2.value;
   }
+
+  asIsOrder() {
+    return 1;
+  }
 }

@@ -27,7 +27,7 @@
       </ng-container>
     </mat-select-trigger>
     <mat-option
-      *ngFor="let option of options | keyvalue"
+      *ngFor="let option of options | keyvalue: asIsOrder"
       [value]="option"
       class="setting-option-value">
       <p class="option-value top">{{ option.key }}</p>
