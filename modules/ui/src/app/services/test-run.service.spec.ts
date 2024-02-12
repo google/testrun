@@ -20,8 +20,8 @@ import {
 import { fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
 import { Device, TestModule } from '../model/device';
 
-import { SystemInterfaces, TestRunService } from './test-run.service';
-import { SystemConfig } from '../model/setting';
+import { TestRunService } from './test-run.service';
+import { SystemConfig, SystemInterfaces } from '../model/setting';
 import {
   MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
@@ -115,22 +115,6 @@ describe('TestRunService', () => {
     expect(req.request.method).toBe('GET');
 
     req.flush(deviceArray);
-  });
-
-  it('setSystemConfig should update the systemConfig data', () => {
-    service.setSystemConfig(MOCK_SYSTEM_CONFIG);
-
-    service.systemConfig$.subscribe(data => {
-      expect(data).toEqual(MOCK_SYSTEM_CONFIG);
-    });
-  });
-
-  it('setHasConnectionSetting should update the hasConnectionSetting$', () => {
-    service.setHasConnectionSetting(true);
-
-    service.hasConnectionSetting$.subscribe(data => {
-      expect(data).toEqual(true);
-    });
   });
 
   it('getSystemConfig should return systemConfig data', () => {

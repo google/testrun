@@ -241,7 +241,7 @@ class TestOrchestrator:
       device.mac_addr.replace(":", "")
     )
 
-    # Define the directory 
+    # Define the directory
     completed_results_dir = os.path.join(
       self._root_path,
       LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),

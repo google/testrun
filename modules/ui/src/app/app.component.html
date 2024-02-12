@@ -14,7 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <app-bypass></app-bypass>
-<mat-drawer-container hasBackdrop="false" class="app-container" autosize>
+<mat-drawer-container
+  [class.active-menu]="isMenuOpen | async"
+  hasBackdrop="false"
+  class="app-container"
+  autosize>
   <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
     <div class="app-sidebar" #navigation>
       <ng-container
@@ -82,11 +86,23 @@ limitations under the License.
       </button>
     </mat-toolbar>
     <div class="app-content-main" role="main" id="main">
+      <app-callout [type]="CalloutType.Error" *ngIf="(error$ | async) === true">
+        Selected port is missing! Please define a valid one using
+        <a
+          (click)="openSetting()"
+          (keydown.enter)="openSetting()"
+          (keydown.space)="openSetting()"
+          aria-label="The Connection settings link opens the panel. No redirect to other pages."
+          tabindex="0"
+          role="link"
+          class="message-link"
+          >Settings</a
+        >
+        panel.
+      </app-callout>
       <app-callout
         [type]="CalloutType.Info"
-        *ngIf="
-          (hasConnectionSetting$ | async) !== true && isConnectionSettingsLoaded
-        ">
+        *ngIf="(hasConnectionSetting$ | async) === false">
         Step 1: To perform a device test, please, select ports in
         <a
           (click)="openSetting()"
@@ -103,8 +119,7 @@ limitations under the License.
         [type]="CalloutType.Info"
         *ngIf="
           (hasConnectionSetting$ | async) === true &&
-          !(devices$ | async)?.length &&
-          isDevicesLoaded
+          !(devices$ | async)?.length
         ">
         Step 2: To perform a device test please
         <a
@@ -126,7 +141,7 @@ limitations under the License.
           (devices$ | async)?.length &&
           (!(systemStatus$ | async)?.status ||
             (systemStatus$ | async)?.status === StatusOfTestrun.Idle) &&
-          isStatusLoaded &&
+          isStatusLoaded === true &&
           (isTestrunStarted$ | async) === false
         ">
         Step 3: Once device is created navigate to
@@ -150,10 +165,7 @@ limitations under the License.
     mode="over"
     position="end"
     class="settings-drawer">
-    <app-general-settings
-      [interfaces]="interfaces"
-      (closeSettingEvent)="closeSetting()"
-      (reloadInterfacesEvent)="reloadInterfaces()">
+    <app-general-settings (closeSettingEvent)="closeSetting()">
     </app-general-settings>
   </mat-drawer>
 </mat-drawer-container>

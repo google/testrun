@@ -175,6 +175,10 @@ class TestRunSession():
     self._config.update(config_json)
     self._save_config()
 
+    # Update log level
+    LOGGER.debug(f'Setting log level to {config_json["log_level"]}')
+    logger.set_log_level(config_json['log_level'])
+
   def set_target_device(self, device):
     self._device = device
 

@@ -19,7 +19,7 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
 import { Device, TestModule } from '../model/device';
 import { map, ReplaySubject, retry } from 'rxjs';
-import { SystemConfig } from '../model/setting';
+import { SystemConfig, SystemInterfaces } from '../model/setting';
 import {
   StatusOfTestResult,
   StatusOfTestrun,
@@ -29,10 +29,6 @@ import {
 import { Version } from '../model/version';
 
 const API_URL = 'http://localhost:8000';
-
-export type SystemInterfaces = {
-  [key: string]: string;
-};
 
 @Injectable({
   providedIn: 'root',
@@ -71,14 +67,10 @@ export class TestRunService {
   public isOpenAddDevice$ = this.isOpenAddDeviceSub$.asObservable();
   private isOpenStartTestrunSub$ = new BehaviorSubject<boolean>(false);
   public isOpenStartTestrun$ = this.isOpenStartTestrunSub$.asObservable();
-  private _systemConfig = new BehaviorSubject<SystemConfig | null>(null);
-  public systemConfig$ = this._systemConfig.asObservable();
   private systemStatusSubject = new ReplaySubject<TestrunStatus>(1);
   public systemStatus$ = this.systemStatusSubject.asObservable();
   private isTestrunStartedSub$ = new BehaviorSubject<boolean>(false);
   public isTestrunStarted$ = this.isTestrunStartedSub$.asObservable();
-  private hasConnectionSettingSub$ = new BehaviorSubject<boolean | null>(null);
-  public hasConnectionSetting$ = this.hasConnectionSettingSub$.asObservable();
   private history = new BehaviorSubject<TestrunStatus[] | null>(null);
   private version = new BehaviorSubject<Version | null>(null);
 
@@ -92,19 +84,12 @@ export class TestRunService {
     this.isOpenStartTestrunSub$.next(isOpen);
   }
 
-  setHasConnectionSetting(hasSetting: boolean): void {
-    this.hasConnectionSettingSub$.next(hasSetting);
-  }
   getDevices(): BehaviorSubject<Device[] | null> {
     return this.devices;
   }
 
   setDevices(devices: Device[]): void {
     this.devices.next(devices);
-  }
-
-  setSystemConfig(config: SystemConfig): void {
-    this._systemConfig.next(config);
   }
 
   setSystemStatus(status: TestrunStatus): void {
