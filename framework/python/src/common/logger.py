@@ -62,5 +62,5 @@ def get_logger(name, log_file=None, log_dir=None):
   return LOGGERS[name]
 
 def set_log_level(level):
-  for log in LOGGERS:
-    LOGGERS[log].setLevel(level)
+  for log in LOGGERS.items():
+    log[1].setLevel(level)
