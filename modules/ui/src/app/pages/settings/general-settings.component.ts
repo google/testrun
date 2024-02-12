@@ -55,6 +55,14 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     return this.settingForm.get(FormKey.INTERNET) as FormControl;
   }
 
+  get logLevel(): FormControl {
+    return this.settingForm.get(FormKey.LOG_LEVEL) as FormControl;
+  }
+
+  get monitorPeriod(): FormControl {
+    return this.settingForm.get(FormKey.MONITOR_PERIOD) as FormControl;
+  }
+
   get isFormValues(): boolean {
     return this.internetControl.value && this.deviceControl.value;
   }
@@ -106,6 +114,8 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       {
         device_intf: [''],
         internet_intf: [''],
+        log_level: [''],
+        monitor_period: [''],
       },
       {
         validators: [this.onlyDifferentValuesValidator.onlyDifferentSetting()],
@@ -128,12 +138,15 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   }
 
   private createSystemConfig(): void {
-    const { device_intf, internet_intf } = this.settingForm.value;
+    const { device_intf, internet_intf, log_level, monitor_period } =
+      this.settingForm.value;
     const data: SystemConfig = {
       network: {
         device_intf: device_intf.key,
         internet_intf: internet_intf.key,
       },
+      log_level: log_level.key,
+      monitor_period: Number(monitor_period.key),
     };
     this.settingsStore.updateSystemConfig({
       onSystemConfigUpdate: () => {

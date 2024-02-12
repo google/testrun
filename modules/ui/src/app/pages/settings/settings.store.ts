@@ -16,11 +16,13 @@
 
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
+import { TestRunService } from '../../services/test-run.service';
 import {
+  FormKey,
+  SettingOption,
+  SystemConfig,
   SystemInterfaces,
-  TestRunService,
-} from '../../services/test-run.service';
-import { FormKey, SettingOption, SystemConfig } from '../../model/setting';
+} from '../../model/setting';
 import { exhaustMap, switchMap, Observable } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import * as AppActions from '../../store/actions';
@@ -38,15 +40,37 @@ export interface SettingsComponentState {
   deviceOptions: SystemInterfaces;
   internetOptions: SystemInterfaces;
   logLevelOptions: { [key: string]: string };
-  monitoringPeriodOptions: { [key: string]: string };
+  monitoringPeriodOptions: SystemInterfaces;
 }
 
 export const DEFAULT_INTERNET_OPTION = {
   '': 'Not specified',
 };
 
+export const LOG_LEVELS = {
+  DEBUG: '',
+  INFO: '',
+  WARNING: '',
+  ERROR: '',
+  CRITICAL: '',
+};
+
+export const MONITORING_PERIOD = {
+  30: 'Extremely fast device',
+  60: '',
+  120: '',
+  240: '',
+  300: 'Optimal',
+  360: '',
+  420: '',
+  480: '',
+  560: '',
+  600: 'Very slow device',
+};
 @Injectable()
 export class SettingsStore extends ComponentStore<SettingsComponentState> {
+  private static readonly DEFAULT_LOG_LEVEL = 'INFO';
+  private static readonly DEFAULT_MONITORING_PERIOD = '300';
   private systemConfig$ = this.select(state => state.systemConfig);
   private hasConnectionSettings$ = this.store.select(
     selectHasConnectionSettings
@@ -168,6 +192,16 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
               internetOptions,
               formGroup
             );
+            this.setDefaultLogLevelValue(
+              config.log_level,
+              LOG_LEVELS,
+              formGroup
+            );
+            this.setDefaultMonitoringPeriodValue(
+              config.monitor_period?.toString(),
+              MONITORING_PERIOD,
+              formGroup
+            );
           })
         )
       )
@@ -175,38 +209,79 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
   });
 
   private setDefaultDeviceInterfaceValue(
-    device: string | undefined,
-    interfaces: { [key: string]: string },
+    value: string | undefined,
+    options: { [key: string]: string },
     formGroup: FormGroup
   ): void {
-    if (device && interfaces[device]) {
-      const deviceData = this.transformValueToObj(device, interfaces);
-      (formGroup.get(FormKey.DEVICE) as FormControl).setValue(deviceData);
-    }
+    this.setDefaultValue(
+      value,
+      undefined,
+      options,
+      formGroup.get(FormKey.DEVICE) as FormControl
+    );
   }
 
   private setDefaultInternetInterfaceValue(
-    internet: string | undefined,
-    interfaces: { [key: string]: string },
+    value: string | undefined,
+    options: { [key: string]: string },
     formGroup: FormGroup
   ): void {
-    const control = formGroup.get('internet_intf') as FormControl;
-    if (internet && interfaces[internet]) {
-      const internetData = this.transformValueToObj(internet, interfaces);
+    this.setDefaultValue(
+      value,
+      '',
+      options,
+      formGroup.get(FormKey.INTERNET) as FormControl
+    );
+  }
+
+  private setDefaultLogLevelValue(
+    value: string | undefined,
+    options: { [key: string]: string },
+    formGroup: FormGroup
+  ): void {
+    this.setDefaultValue(
+      value,
+      SettingsStore.DEFAULT_LOG_LEVEL,
+      options,
+      formGroup.get(FormKey.LOG_LEVEL) as FormControl
+    );
+  }
+
+  private setDefaultMonitoringPeriodValue(
+    value: string | undefined,
+    options: { [key: string]: string },
+    formGroup: FormGroup
+  ): void {
+    this.setDefaultValue(
+      value,
+      SettingsStore.DEFAULT_MONITORING_PERIOD,
+      options,
+      formGroup.get(FormKey.MONITOR_PERIOD) as FormControl
+    );
+  }
+
+  private setDefaultValue(
+    value: string | undefined,
+    defaultValue: string | undefined,
+    options: { [key: string]: string },
+    control: FormControl
+  ): void {
+    if (value && options[value] !== undefined) {
+      const internetData = this.transformValueToObj(value, options);
       control.setValue(internetData);
-    } else {
-      const internetData = this.transformValueToObj('', interfaces);
+    } else if (defaultValue !== undefined) {
+      const internetData = this.transformValueToObj(defaultValue, options);
       control.setValue(internetData);
     }
   }
 
   private transformValueToObj(
     value: string,
-    interfaces: { [key: string]: string }
+    options: { [key: string]: string }
   ): SettingOption {
     return {
       key: value,
-      value: interfaces[value],
+      value: options[value],
     };
   }
 
@@ -222,8 +297,8 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
       interfaces: {},
       deviceOptions: {},
       internetOptions: {},
-      logLevelOptions: {},
-      monitoringPeriodOptions: {},
+      logLevelOptions: LOG_LEVELS,
+      monitoringPeriodOptions: MONITORING_PERIOD,
     });
   }
 }

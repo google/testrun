@@ -17,7 +17,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
-import { SystemInterfaces, TestRunService } from './services/test-run.service';
+import { TestRunService } from './services/test-run.service';
 import { Observable } from 'rxjs';
 import { Device } from './model/device';
 import { TestrunStatus, StatusOfTestrun } from './model/testrun-status';
@@ -36,6 +36,7 @@ import {
 } from './store/selectors';
 import { toggleMenu, updateFocusNavigation } from './store/actions';
 import { appFeatureKey } from './store/reducers';
+import { SystemInterfaces } from './model/setting';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';

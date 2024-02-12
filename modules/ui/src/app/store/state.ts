@@ -16,7 +16,7 @@
 
 import { Device } from '../model/device';
 import { TestrunStatus } from '../model/testrun-status';
-import { SystemInterfaces } from '../services/test-run.service';
+import { SystemInterfaces } from '../model/setting';
 
 export interface AppState {
   appComponent: AppComponentState;
