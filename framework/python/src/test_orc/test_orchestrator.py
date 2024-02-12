@@ -88,7 +88,7 @@ class TestOrchestrator:
     test_modules = []
     for module in self._test_modules:
 
-      if module is None or not module.enable_container or not module.enabled:
+      if module is None or not module.enable_container:
         continue
 
       if not self._is_module_enabled(module, device):
@@ -254,12 +254,18 @@ class TestOrchestrator:
     return self._test_in_progress
 
   def _is_module_enabled(self, module, device):
+
+    # Enable module as fallback
     enabled = True
     if device.test_modules is not None:
       test_modules = device.test_modules
       if module.name in test_modules:
         if "enabled" in test_modules[module.name]:
           enabled = test_modules[module.name]["enabled"]
+      else:
+        # Module has not been specified in the device config
+        enabled = module.enabled
+
     return enabled
 
   def _run_test_module(self, module):
