@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DEFAULT_INTERNET_OPTION, SettingsStore } from './settings.store';
+import {
+  DEFAULT_INTERNET_OPTION,
+  LOG_LEVELS,
+  MONITORING_PERIOD,
+  SettingsStore,
+} from './settings.store';
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { TestBed } from '@angular/core/testing';
@@ -28,12 +33,14 @@ import {
 } from '../../store/actions';
 import { fetchInterfacesSuccess } from '../../store/actions';
 import { FormBuilder, FormControl } from '@angular/forms';
-import { FormKey } from '../../model/setting';
+import { FormKey, SystemConfig } from '../../model/setting';
 import {
   MOCK_DEVICE_VALUE,
   MOCK_INTERFACE_VALUE,
   MOCK_INTERFACES,
   MOCK_INTERNET_OPTIONS,
+  MOCK_LOG_VALUE,
+  MOCK_PERIOD_VALUE,
   MOCK_SYSTEM_CONFIG_WITH_DATA,
   MOCK_SYSTEM_CONFIG_WITH_NO_DATA,
 } from '../../mocks/settings.mock';
@@ -84,7 +91,7 @@ describe('SettingsStore', () => {
           startup_timeout: 60,
           monitor_period: 60,
           runtime: 120,
-        };
+        } as SystemConfig;
 
         settingsStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
           expect(store.systemConfig).toEqual(config);
@@ -131,8 +138,8 @@ describe('SettingsStore', () => {
           interfaces: {},
           deviceOptions: {},
           internetOptions: {},
-          logLevelOptions: {},
-          monitoringPeriodOptions: {},
+          logLevelOptions: LOG_LEVELS,
+          monitoringPeriodOptions: MONITORING_PERIOD,
         });
         done();
       });
@@ -270,6 +277,8 @@ describe('SettingsStore', () => {
           const form = fb.group({
             device_intf: ['value'],
             internet_intf: ['value'],
+            log_level: ['value'],
+            monitor_period: ['value'],
           });
           settingsStore.setDefaultFormValues(form);
 
@@ -279,6 +288,12 @@ describe('SettingsStore', () => {
           expect((form.get(FormKey.INTERNET) as FormControl).value).toEqual(
             MOCK_INTERFACE_VALUE
           );
+          expect((form.get(FormKey.LOG_LEVEL) as FormControl).value).toEqual(
+            MOCK_LOG_VALUE
+          );
+          expect(
+            (form.get(FormKey.MONITOR_PERIOD) as FormControl).value
+          ).toEqual(MOCK_PERIOD_VALUE);
         });
       });
 
@@ -292,15 +307,27 @@ describe('SettingsStore', () => {
           const form = fb.group({
             device_intf: ['value'],
             internet_intf: ['value'],
+            log_level: [''],
+            monitor_period: [''],
           });
           settingsStore.setDefaultFormValues(form);
 
-          expect((form.get('device_intf') as FormControl).value).toEqual(
+          expect((form.get(FormKey.DEVICE) as FormControl).value).toEqual(
             'value'
           );
-          expect((form.get('internet_intf') as FormControl).value).toEqual({
+          expect((form.get(FormKey.INTERNET) as FormControl).value).toEqual({
             key: '',
             value: DEFAULT_INTERNET_OPTION[''],
+          });
+          expect((form.get(FormKey.LOG_LEVEL) as FormControl).value).toEqual({
+            key: 'INFO',
+            value: '',
+          });
+          expect(
+            (form.get(FormKey.MONITOR_PERIOD) as FormControl).value
+          ).toEqual({
+            key: '300',
+            value: 'Optimal',
           });
         });
       });

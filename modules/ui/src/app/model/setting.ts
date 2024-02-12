@@ -18,6 +18,8 @@ export interface SystemConfig {
     device_intf?: string;
     internet_intf?: string;
   };
+  log_level?: string;
+  monitor_period?: number;
 }
 
 export interface SettingOption {
@@ -28,4 +30,10 @@ export interface SettingOption {
 export enum FormKey {
   DEVICE = 'device_intf',
   INTERNET = 'internet_intf',
+  LOG_LEVEL = 'log_level',
+  MONITOR_PERIOD = 'monitor_period',
 }
+
+export type SystemInterfaces = {
+  [key: string]: string;
+};

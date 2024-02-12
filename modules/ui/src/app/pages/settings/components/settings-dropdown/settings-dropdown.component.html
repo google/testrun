@@ -1,6 +1,6 @@
 <label
   class="setting-form-label {{ key }}-label"
-  id="i{{ key }}-label"
+  id="{{ key }}-label"
   for="{{ key }}-group">
   {{ groupLabel }}
 </label>
@@ -27,7 +27,7 @@
       </ng-container>
     </mat-select-trigger>
     <mat-option
-      *ngFor="let option of options | keyvalue"
+      *ngFor="let option of options | keyvalue: asIsOrder"
       [value]="option"
       class="setting-option-value">
       <p class="option-value top">{{ option.key }}</p>

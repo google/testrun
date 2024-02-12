@@ -14,9 +14,8 @@ import {
 } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { SettingOption } from '../../../../model/setting';
+import { SystemInterfaces, SettingOption } from '../../../../model/setting';
 import { KeyValuePipe, NgForOf, NgIf } from '@angular/common';
-import { SystemInterfaces } from '../../../../services/test-run.service';
 
 @Component({
   selector: 'app-settings-dropdown',
@@ -66,5 +65,9 @@ export class SettingsDropdownComponent implements OnInit, OnDestroy {
 
   compare(c1: SettingOption, c2: SettingOption): boolean {
     return c1 && c2 && c1.key === c2.key && c1.value === c2.value;
+  }
+
+  asIsOrder() {
+    return 1;
   }
 }

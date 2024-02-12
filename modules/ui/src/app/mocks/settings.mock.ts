@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { SystemConfig } from '../model/setting';
-import { SystemInterfaces } from '../services/test-run.service';
+import { SystemConfig, SystemInterfaces } from '../model/setting';
 
 export const MOCK_SYSTEM_CONFIG_WITH_NO_DATA: SystemConfig = {
   network: {
     device_intf: '',
     internet_intf: '',
   },
+  log_level: '',
+  monitor_period: undefined,
 };
 
 export const MOCK_SYSTEM_CONFIG_WITH_DATA: SystemConfig = {
@@ -28,6 +29,8 @@ export const MOCK_SYSTEM_CONFIG_WITH_DATA: SystemConfig = {
     device_intf: 'mockDeviceKey',
     internet_intf: 'mockInternetKey',
   },
+  log_level: 'DEBUG',
+  monitor_period: 600,
 };
 
 export const MOCK_INTERFACES: SystemInterfaces = {
@@ -47,4 +50,13 @@ export const MOCK_DEVICE_VALUE: SystemInterfaces = {
 export const MOCK_INTERFACE_VALUE: SystemInterfaces = {
   key: 'mockInternetKey',
   value: 'mockInternetValue',
+};
+export const MOCK_LOG_VALUE: SystemInterfaces = {
+  key: 'DEBUG',
+  value: '',
+};
+
+export const MOCK_PERIOD_VALUE: SystemInterfaces = {
+  key: '600',
+  value: 'Very slow device',
 };
