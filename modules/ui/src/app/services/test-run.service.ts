@@ -234,7 +234,8 @@ export class TestRunService {
         result === StatusOfTestResult.Error,
       blue:
         result === StatusOfTestResult.SmartReady ||
-        result === StatusOfTestResult.Info,
+        result === StatusOfTestResult.Info ||
+        result === StatusOfTestResult.InProgress,
       grey:
         result === StatusOfTestResult.Skipped ||
         result === StatusOfTestResult.NotStarted,
