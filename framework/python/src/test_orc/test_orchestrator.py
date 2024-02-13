@@ -24,6 +24,7 @@ from common import logger, util
 from common.testreport import TestReport
 from test_orc.module import TestModule
 from test_orc.test_case import TestCase
+import threading
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
@@ -42,6 +43,7 @@ class TestOrchestrator:
 
   def __init__(self, session, net_orc):
     self._test_modules = []
+    self._container_logs = []
     self._session = session
     self._api_url = (self._session.get_api_url() +
                      ":" + str(self._session.get_api_port()))
@@ -357,32 +359,22 @@ class TestOrchestrator:
     test_module_timeout = time.time() + module.timeout
     status = self._get_module_status(module)
 
+    # Resolving container logs is blocking so we need to spawn a new thread for this
     log_stream = module.container.logs(stream=True, stdout=True, stderr=True)
+    log_thread = threading.Thread(target=self._get_container_logs,args=(log_stream,))
+    log_thread.daemon=True
+    log_thread.start()
+
     while (status == "running" and self._session.get_status() == "In Progress"):
       if time.time() > test_module_timeout:
         LOGGER.error("Module timeout exceeded, killing module: " + module.name)
         self._stop_module(module=module,kill=True)
         break
-      try:
-        lines = self._get_container_logs(log_stream)
-        container_logs.extend(lines)
-        for line in lines:
-          #line = next(log_stream).decode("utf-8").strip()
-          if re.search(LOG_REGEX, line):
-            print(line)
-      except Exception:  # pylint: disable=W0718
-        # Do nothing
-        continue
       status = self._get_module_status(module)
-
-    # Resolve any remaining data in the log stream
-    # that is likely left over after the container was
-    # stopped
-    container_logs.extend(self._get_container_logs(log_stream))
 
     # Save all container logs to file
     with open(container_log_file, "w", encoding="utf-8") as f:
-      for line in container_logs:
+      for line in self._container_logs:
         f.write(line + "\n")
 
     # Check that Testrun has not been stopped whilst this module was running
@@ -412,13 +404,15 @@ class TestOrchestrator:
 
   # Resolve all current log data in the containers log_stream
   def _get_container_logs(self,log_stream):
-    container_logs = []
+    self._container_logs = []
     for log_chunk in log_stream:
       lines = log_chunk.decode("utf-8").splitlines()
       # Process each line and strip blank space
       processed_lines = [line.strip() for line in lines if line.strip()]
-      container_logs.extend(processed_lines)
-    return container_logs
+      self._container_logs.extend(processed_lines)
+      for line in lines:
+          if re.search(LOG_REGEX, line):
+            print(line)
 
   def _get_module_status(self, module):
     container = self._get_module_container(module)
