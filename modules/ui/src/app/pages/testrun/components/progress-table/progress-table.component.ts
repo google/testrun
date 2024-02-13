@@ -13,13 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+  QueryList,
+  ViewChild,
+  ViewChildren,
+} from '@angular/core';
+import { MatAccordion, MatExpansionPanel } from '@angular/material/expansion';
 import { Observable } from 'rxjs/internal/Observable';
 import {
   IResult,
   StatusResultClassName,
 } from '../../../../model/testrun-status';
+import { CalloutType } from '../../../../model/callout-type';
 import { TestRunService } from '../../../../services/test-run.service';
+import { tap } from 'rxjs/internal/operators/tap';
+import { shareReplay } from 'rxjs/internal/operators/shareReplay';
 
 @Component({
   selector: 'app-progress-table',
@@ -27,14 +39,38 @@ import { TestRunService } from '../../../../services/test-run.service';
   styleUrls: ['./progress-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProgressTableComponent {
+export class ProgressTableComponent implements OnInit {
+  @ViewChild(MatAccordion) accordion!: MatAccordion;
+  @ViewChildren(MatExpansionPanel) panels!: QueryList<MatExpansionPanel>;
+  public readonly CalloutType = CalloutType;
   @Input() dataSource$!: Observable<IResult[] | undefined>;
-
-  displayedColumns: string[] = ['name', 'description', 'result'];
+  isAllCollapsed!: boolean;
+  stepsToResolve?: IResult[];
 
   constructor(private readonly testRunService: TestRunService) {}
 
+  ngOnInit() {
+    this.dataSource$ = this.dataSource$.pipe(
+      tap(
+        items =>
+          (this.stepsToResolve = items?.filter(item => item.recommendations))
+      ),
+      shareReplay({ refCount: true, bufferSize: 1 })
+    );
+  }
+
+  public checkAllCollapsed(): void {
+    this.isAllCollapsed = this.panels
+      ?.toArray()
+      .every(panel => !panel.expanded);
+  }
+
   public getResultClass(result: string): StatusResultClassName {
     return this.testRunService.getResultClass(result);
+  }
+  public getAriaLabel(): string {
+    const action = this.isAllCollapsed ? 'Expand' : 'Collapse';
+    const message = this.stepsToResolve?.length === 1 ? 'row' : 'all rows';
+    return `${action} ${message}`;
   }
 }

@@ -34,6 +34,19 @@ const TEST_DATA_RESULT: IResult[] = [
   },
 ];
 
+export const TEST_DATA_RESULT_WITH_RECOMMENDATIONS: IResult[] = [
+  {
+    name: 'dns.network.from_dhcp',
+    description:
+      'The device should use the DNS server provided by the DHCP server',
+    result: 'Non-Compliant',
+    recommendations: [
+      'An example of a step to resolve',
+      'Disable any running NTP server',
+    ],
+  },
+];
+
 export const TEST_DATA_TABLE_RESULT: IResult[] = [
   ...TEST_DATA_RESULT,
   ...new Array(24).fill(null).map(() => ({}) as IResult),
