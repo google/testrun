@@ -67,6 +67,7 @@ export enum StatusOfTestResult {
   NonCompliant = 'Non-Compliant', // device does not support feature but feature is required
   Skipped = 'Skipped',
   NotStarted = 'Not Started',
+  InProgress = 'In Progress',
   Error = 'Error', // test failed to run
   Info = 'Informational', // nice to know information, not necessarily compliant/non-compliant
 }

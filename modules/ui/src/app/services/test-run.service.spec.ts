@@ -287,7 +287,7 @@ describe('TestRunService', () => {
       expect(result1).toEqual(expectedResult);
     });
 
-    it('should return class "blue" if test result is "Smart Ready" or "Informational"', () => {
+    it('should return class "blue" if test result is "Smart Ready" or "Informational" or "In Progress"', () => {
       const expectedResult = {
         green: false,
         red: false,
@@ -295,11 +295,17 @@ describe('TestRunService', () => {
         grey: false,
       };
 
-      const result1 = service.getResultClass(StatusOfTestResult.SmartReady);
-      const result2 = service.getResultClass(StatusOfTestResult.Info);
+      const resultForSmartReady = service.getResultClass(
+        StatusOfTestResult.SmartReady
+      );
+      const resultForInfo = service.getResultClass(StatusOfTestResult.Info);
+      const resultForInProgress = service.getResultClass(
+        StatusOfTestResult.InProgress
+      );
 
-      expect(result1).toEqual(expectedResult);
-      expect(result2).toEqual(expectedResult);
+      expect(resultForSmartReady).toEqual(expectedResult);
+      expect(resultForInfo).toEqual(expectedResult);
+      expect(resultForInProgress).toEqual(expectedResult);
     });
 
     it('should return class "read" if test result is "Non Compliant" or "Error"', () => {
