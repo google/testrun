@@ -35,7 +35,6 @@ SAVED_DEVICE_REPORTS = "report/{device_folder}/"
 LOCAL_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
 TESTRUN_DIR = "/usr/local/testrun"
-API_URL = "http://localhost:8000"
 
 
 class TestOrchestrator:
@@ -44,6 +43,8 @@ class TestOrchestrator:
   def __init__(self, session, net_orc):
     self._test_modules = []
     self._session = session
+    self._api_url = (self._session.get_api_url() +
+                     ":" + str(self._session.get_api_port()))
     self._net_orc = net_orc
     self._test_in_progress = False
     self._path = os.path.dirname(
@@ -157,7 +158,7 @@ class TestOrchestrator:
     report["status"] = self._calculate_result()
     report["tests"] = self.get_session().get_report_tests()
     report["report"] = (
-      API_URL + "/" +
+      self._api_url + "/" +
       SAVED_DEVICE_REPORTS.replace("{device_folder}",
       self.get_session().get_target_device().device_folder) +
       self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S")

@@ -25,6 +25,7 @@ INTERNET_INTF_KEY = 'internet_intf'
 MONITOR_PERIOD_KEY = 'monitor_period'
 STARTUP_TIMEOUT_KEY = 'startup_timeout'
 LOG_LEVEL_KEY = 'log_level'
+API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
@@ -80,6 +81,7 @@ class TestRunSession():
       'startup_timeout': 60,
       'monitor_period': 30,
       'max_device_reports': 5,
+      'api_url': 'http://localhost',
       'api_port': 8000
     }
 
@@ -116,6 +118,9 @@ class TestRunSession():
 
       if LOG_LEVEL_KEY in config_file_json:
         self._config[LOG_LEVEL_KEY] = config_file_json.get(LOG_LEVEL_KEY)
+
+      if API_URL_KEY in config_file_json:
+        self._config[API_URL_KEY] = config_file_json.get(API_URL_KEY)
 
       if API_PORT_KEY in config_file_json:
         self._config[API_PORT_KEY] = config_file_json.get(API_PORT_KEY)
@@ -163,6 +168,9 @@ class TestRunSession():
 
   def get_startup_timeout(self):
     return self._config.get(STARTUP_TIMEOUT_KEY)
+
+  def get_api_url(self):
+    return self._config.get(API_URL_KEY)
 
   def get_api_port(self):
     return self._config.get(API_PORT_KEY)
