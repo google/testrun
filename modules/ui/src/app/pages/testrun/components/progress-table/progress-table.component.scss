@@ -93,7 +93,7 @@ $row-horizontal-padding: 16px;
 
 .expansion-panel-header ::ng-deep.mat-content {
   display: grid;
-  grid-template-columns: 1fr 2.2fr 150px;
+  grid-template-columns: 1fr 2.2fr 154px;
 }
 
 .expansion-panel-header ::ng-deep .mat-expansion-indicator {
@@ -103,6 +103,15 @@ $row-horizontal-padding: 16px;
     border-width: 0 3px 3px 0;
     padding: 3.5px;
     color: $dark-grey;
+  }
+}
+
+.tests-container {
+  .expander-button:hover,
+  .expansion-panel-row:not(.mat-expanded)
+    .expansion-panel-header:not([aria-disabled='true']):hover,
+  .expansion-panel-header:hover {
+    background: $color-background-grey;
   }
 }
 
