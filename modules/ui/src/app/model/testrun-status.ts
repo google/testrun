@@ -45,6 +45,7 @@ export interface IResult {
   name: string;
   description: string;
   result: string;
+  recommendations?: string[];
 }
 
 export enum StatusOfTestrun {

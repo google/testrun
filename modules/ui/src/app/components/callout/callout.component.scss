@@ -72,6 +72,20 @@
   }
 }
 
+.callout-container.error_outline {
+  display: flex;
+  align-items: flex-start;
+  background: $color-background-grey;
+
+  .callout-icon {
+    color: $grey-700;
+  }
+
+  .callout-context {
+    font-weight: bold;
+  }
+}
+
 .callout-context {
   margin: 0;
   padding: 6px 0;

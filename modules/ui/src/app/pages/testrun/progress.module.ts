@@ -19,7 +19,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatTableModule } from '@angular/material/table';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 import { ProgressRoutingModule } from './progress-routing.module';
 import { ProgressComponent } from './progress.component';
@@ -33,6 +33,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { DeviceTestsComponent } from '../../components/device-tests/device-tests.component';
 import { DownloadReportComponent } from '../../components/download-report/download-report.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
+import { CalloutComponent } from '../../components/callout/callout.component';
 
 @NgModule({
   declarations: [
@@ -48,14 +49,15 @@ import { SpinnerComponent } from '../../components/spinner/spinner.component';
     MatIconModule,
     MatToolbarModule,
     MatProgressBarModule,
-    MatTableModule,
     MatDialogModule,
     DeviceItemComponent,
     MatInputModule,
+    MatExpansionModule,
     ReactiveFormsModule,
     DeviceTestsComponent,
     DownloadReportComponent,
     SpinnerComponent,
+    CalloutComponent,
   ],
 })
 export class ProgressModule {}
