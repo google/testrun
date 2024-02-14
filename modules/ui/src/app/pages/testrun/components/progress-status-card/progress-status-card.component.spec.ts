@@ -48,42 +48,52 @@ describe('ProgressStatusCardComponent', () => {
     });
 
     describe('#getClass', () => {
-      it('should have class "progress" if status "In Progress", "Waiting for Device", "Monitoring"', () => {
-        const expectedResult = {
-          progress: true,
-          'completed-success': false,
-          'completed-failed': false,
-          canceled: false,
-        };
+      const availableClasses = {
+        progress: false,
+        'completed-success': false,
+        'completed-failed': false,
+        canceled: false,
+      };
 
-        const result = component.getClass(StatusOfTestrun.InProgress);
-        const result1 = component.getClass(StatusOfTestrun.WaitingForDevice);
-        const result2 = component.getClass(StatusOfTestrun.Monitoring);
+      const statusesForProgressClass = [
+        StatusOfTestrun.InProgress,
+        StatusOfTestrun.WaitingForDevice,
+        StatusOfTestrun.Monitoring,
+      ];
 
-        expect(result).toEqual(expectedResult);
-        expect(result1).toEqual(expectedResult);
-        expect(result2).toEqual(expectedResult);
+      const statusesForCompletedSuccessClass = [
+        StatusOfTestrun.Compliant,
+        StatusOfTestrun.CompliantLimited,
+        StatusOfTestrun.CompliantHigh,
+      ];
+
+      statusesForProgressClass.forEach(testCase => {
+        it(`should have class "progress" if status "${testCase}"`, () => {
+          const expectedResult = { ...availableClasses, progress: true };
+
+          const result = component.getClass(testCase);
+
+          expect(result).toEqual(expectedResult);
+        });
       });
 
-      it('should have class "completed-success" if status "Compliant"', () => {
-        const expectedResult = {
-          progress: false,
-          'completed-success': true,
-          'completed-failed': false,
-          canceled: false,
-        };
+      statusesForCompletedSuccessClass.forEach(testCase => {
+        it(`should have class "completed-success" if status "${testCase}"`, () => {
+          const expectedResult = {
+            ...availableClasses,
+            'completed-success': true,
+          };
 
-        const result = component.getClass(StatusOfTestrun.Compliant);
+          const result = component.getClass(testCase);
 
-        expect(result).toEqual(expectedResult);
+          expect(result).toEqual(expectedResult);
+        });
       });
 
       it('should have class "completed-failed" if status "Non Compliant"', () => {
         const expectedResult = {
-          progress: false,
-          'completed-success': false,
+          ...availableClasses,
           'completed-failed': true,
-          canceled: false,
         };
 
         const result = component.getClass(StatusOfTestrun.NonCompliant);
@@ -93,9 +103,7 @@ describe('ProgressStatusCardComponent', () => {
 
       it('should have class "canceled" if status "Cancelled"', () => {
         const expectedResult = {
-          progress: false,
-          'completed-success': false,
-          'completed-failed': false,
+          ...availableClasses,
           canceled: true,
         };
 

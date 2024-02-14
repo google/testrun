@@ -274,68 +274,73 @@ describe('TestRunService', () => {
   });
 
   describe('#getResultClass', () => {
-    it('should return class "green" if test result is "Compliant" or "Smart Ready"', () => {
-      const expectedResult = {
-        green: true,
-        red: false,
-        blue: false,
-        grey: false,
-      };
+    const availableResultClasses = {
+      green: false,
+      red: false,
+      blue: false,
+      grey: false,
+    };
 
-      const result1 = service.getResultClass(StatusOfTestResult.Compliant);
+    const statusesForGreenRes = [
+      StatusOfTestResult.Compliant,
+      StatusOfTestResult.CompliantLimited,
+      StatusOfTestResult.CompliantHigh,
+    ];
 
-      expect(result1).toEqual(expectedResult);
+    const statusesForBlueRes = [
+      StatusOfTestResult.SmartReady,
+      StatusOfTestResult.Info,
+      StatusOfTestResult.InProgress,
+    ];
+
+    const statusesForRedRes = [
+      StatusOfTestResult.NonCompliant,
+      StatusOfTestResult.Error,
+    ];
+
+    const statusesForGreyRes = [
+      StatusOfTestResult.Skipped,
+      StatusOfTestResult.NotStarted,
+    ];
+
+    statusesForGreenRes.forEach(testCase => {
+      it(`should return class "green" if test result is "${testCase}"`, () => {
+        const expectedResult = { ...availableResultClasses, green: true };
+
+        const result = service.getResultClass(testCase);
+
+        expect(result).toEqual(expectedResult);
+      });
     });
 
-    it('should return class "blue" if test result is "Smart Ready" or "Informational" or "In Progress"', () => {
-      const expectedResult = {
-        green: false,
-        red: false,
-        blue: true,
-        grey: false,
-      };
+    statusesForBlueRes.forEach(testCase => {
+      it(`should return class "blue" if test result is "${testCase}"`, () => {
+        const expectedResult = { ...availableResultClasses, blue: true };
 
-      const resultForSmartReady = service.getResultClass(
-        StatusOfTestResult.SmartReady
-      );
-      const resultForInfo = service.getResultClass(StatusOfTestResult.Info);
-      const resultForInProgress = service.getResultClass(
-        StatusOfTestResult.InProgress
-      );
+        const result = service.getResultClass(testCase);
 
-      expect(resultForSmartReady).toEqual(expectedResult);
-      expect(resultForInfo).toEqual(expectedResult);
-      expect(resultForInProgress).toEqual(expectedResult);
+        expect(result).toEqual(expectedResult);
+      });
     });
 
-    it('should return class "read" if test result is "Non Compliant" or "Error"', () => {
-      const expectedResult = {
-        green: false,
-        red: true,
-        blue: false,
-        grey: false,
-      };
+    statusesForRedRes.forEach(testCase => {
+      it(`should return class "red" if test result is "${testCase}"`, () => {
+        const expectedResult = { ...availableResultClasses, red: true };
 
-      const result = service.getResultClass(StatusOfTestResult.NonCompliant);
-      const result2 = service.getResultClass(StatusOfTestResult.Error);
+        const result = service.getResultClass(testCase);
 
-      expect(result).toEqual(expectedResult);
-      expect(result2).toEqual(expectedResult);
+        expect(result).toEqual(expectedResult);
+      });
     });
 
-    it('should return class "grey" if test result is "Skipped" or "Not Started"', () => {
-      const expectedResult = {
-        green: false,
-        red: false,
-        blue: false,
-        grey: true,
-      };
+    statusesForGreyRes.forEach(testCase => {
+      it(`should return class "grey" if test result is "${testCase}"`, () => {
+        const expectedResult = { ...availableResultClasses, grey: true };
 
-      const result1 = service.getResultClass(StatusOfTestResult.Skipped);
-      const result2 = service.getResultClass(StatusOfTestResult.NotStarted);
+        const result = service.getResultClass(testCase);
 
-      expect(result1).toEqual(expectedResult);
-      expect(result2).toEqual(expectedResult);
+        expect(result).toEqual(expectedResult);
+      });
     });
   });
 
