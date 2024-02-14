@@ -79,8 +79,8 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     return this.settingForm.hasError('hasSameValues');
   }
 
-  get isLessThanTwoInterfaces(): boolean {
-    return Object.keys(this.interfaces).length < 2;
+  get isLessThanOneInterface(): boolean {
+    return Object.keys(this.interfaces).length < 1;
   }
 
   constructor(

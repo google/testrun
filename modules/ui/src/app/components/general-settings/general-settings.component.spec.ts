@@ -249,13 +249,9 @@ describe('GeneralSettingsComponent', () => {
     });
   });
 
-  describe('with intefaces lenght less then two', () => {
+  describe('with interfaces length less than one', () => {
     beforeEach(() => {
-      component.interfaces = { mockDeviceValue: 'mockDeviceValue' };
-      testRunServiceMock.systemConfig$ = of(MOCK_SYSTEM_CONFIG_WITH_DATA);
-      testRunServiceMock.getSystemConfig.and.returnValue(
-        of(MOCK_SYSTEM_CONFIG_WITH_DATA)
-      );
+      component.interfaces = {};
       fixture.detectChanges();
     });
 
