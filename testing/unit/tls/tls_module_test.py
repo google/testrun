@@ -90,6 +90,87 @@ class TLSModuleTest(unittest.TestCase):
                                                        tls_1_3_results)
     self.assertTrue(test_results[0])
 
+  def security_tls_server_results_test(self, ):
+    # Generic messages to test they are passing through
+    # to the results as expected
+    fail_message = 'Certificate not validated'
+    success_message = 'Certificate validated'
+    none_message = 'Failed to resolve public certificate'
+
+    # Both None
+    tls_1_2_results = None, none_message
+    tls_1_3_results = None, none_message
+    expected = None, (f'TLS 1.2 not validated: {none_message}\n'
+                      f'TLS 1.3 not validated: {none_message}')
+    result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                 tls_1_3_results)
+    self.assertEqual(result, expected)
+
+    # TLS 1.2 Pass and TLS 1.3 None
+    tls_1_2_results = True, success_message
+    expected = True, f'TLS 1.2 validated: {success_message}'
+    result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                 tls_1_3_results)
+    self.assertEqual(result, expected)
+
+    # TLS 1.2 Fail and TLS 1.3 None
+    tls_1_2_results = False, fail_message
+    expected = False, f'TLS 1.2 not validated: {fail_message}'
+    result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                 tls_1_3_results)
+    self.assertEqual(result, expected)
+
+    # TLS 1.3 Pass and TLS 1.2 None
+    tls_1_2_results = None, fail_message
+    tls_1_3_results = True, success_message
+    expected = True, f'TLS 1.3 validated: {success_message}'
+    result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                 tls_1_3_results)
+    self.assertEqual(result, expected)
+
+    # TLS 1.3 Fail and TLS 1.2 None
+    tls_1_3_results = False, fail_message
+    expected = False, f'TLS 1.3 not validated: {fail_message}'
+    result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                 tls_1_3_results)
+    self.assertEqual(result, expected)
+
+    # TLS 1.2 Pass and TLS 1.3 Pass
+    tls_1_2_results = True, success_message
+    tls_1_3_results = True, success_message
+    expected = True, (f'TLS 1.2 validated: {success_message}\n'
+      f'TLS 1.3 validated: {success_message}')
+    result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                 tls_1_3_results)
+    self.assertEqual(result, expected)
+
+    # TLS 1.2 Pass and TLS 1.3 Fail
+    tls_1_2_results = True, success_message
+    tls_1_3_results = False, fail_message
+    expected = True, (f'TLS 1.2 validated: {success_message}\n'
+                      f'TLS 1.3 not validated: {fail_message}')
+    result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                 tls_1_3_results)
+    self.assertEqual(result, expected)
+
+    # TLS 1.2 Fail and TLS 1.2 Pass
+    tls_1_2_results = False, fail_message
+    tls_1_3_results = True, success_message
+    expected = True, (f'TLS 1.2 not validated: {fail_message}\n'
+                      f'TLS 1.3 validated: {success_message}')
+    result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                 tls_1_3_results)
+    self.assertEqual(result, expected)
+
+
+    # TLS 1.2 Fail and TLS 1.2 Fail
+    tls_1_3_results = False, fail_message
+    expected = False, (f'TLS 1.2 not validated: {fail_message}\n'
+                      f'TLS 1.3 not validated: {fail_message}')
+    result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
+                                                 tls_1_3_results)
+    self.assertEqual(result, expected)
+
   # Test 1.2 server when 1.3 and 1.2 failed connection is established
   def security_tls_v1_2_fail_server_test(self):
     tls_1_2_results = False, 'Signature faild'
@@ -124,12 +205,12 @@ class TLSModuleTest(unittest.TestCase):
   # generate a skip result
   def security_tls_client_skip_test(self):
     print('security_tls_client_skip_test')
-    capture_file = os.path.join(TEST_FILES_DIR,'no_tls.pcap')
+    capture_file = os.path.join(TEST_FILES_DIR, 'no_tls.pcap')
 
     # Run the client test
     test_results = TLS_UTIL.validate_tls_client(client_ip='172.27.253.167',
-                                        tls_version='1.2',
-                                        capture_files=[capture_file])
+                                                tls_version='1.2',
+                                                capture_files=[capture_file])
     print(str(test_results))
     self.assertIsNone(test_results[0])
 
@@ -185,30 +266,28 @@ class TLSModuleTest(unittest.TestCase):
                                         capture_files=[capture_file])
 
   def test_client_tls_with_non_tls_client(self):
-    print("\ntest_client_tls_with_non_tls_client")
-    capture_file = os.path.join(TEST_FILES_DIR,'monitor.pcap')
+    print('\ntest_client_tls_with_non_tls_client')
+    capture_file = os.path.join(TEST_FILES_DIR, 'monitor.pcap')
 
     # Run the client test
     test_results = TLS_UTIL.validate_tls_client(client_ip='10.10.10.14',
-                                        tls_version='1.2',
-                                        capture_files=[capture_file])
+                                                tls_version='1.2',
+                                                capture_files=[capture_file])
     print(str(test_results))
     self.assertFalse(test_results[0])
 
   # Scan a known capture without u unsupported TLS traffic to
   # generate a fail result
   def security_tls_client_unsupported_tls_client(self):
-    print("\nsecurity_tls_client_unsupported_tls_client")
-    capture_file = os.path.join(TEST_FILES_DIR,'unsupported_tls.pcap')
+    print('\nsecurity_tls_client_unsupported_tls_client')
+    capture_file = os.path.join(TEST_FILES_DIR, 'unsupported_tls.pcap')
 
     # Run the client test
     test_results = TLS_UTIL.validate_tls_client(client_ip='172.27.253.167',
-                                        tls_version='1.2',
-                                        capture_files=[capture_file])
+                                                tls_version='1.2',
+                                                capture_files=[capture_file])
     print(str(test_results))
     self.assertFalse(test_results[0])
-    
-
 
   def generate_tls_traffic(self,
                            capture_file,
@@ -295,19 +374,6 @@ class TLSModuleTest(unittest.TestCase):
       print(f'Error: {e}')
       return None
 
-  def security_tls_v1_2_legacy_server_test(self):
-    tls_server = TLSServer('testing/unit/tls/TLSServer.crt', 'testing/unit/tls/TLSServer.key', port=8443)
-
-    # Start the server in a daemon thread
-    server_thread = threading.Thread(target=tls_server.start, daemon=True)
-    server_thread.start()
-
-    test_results = TLS_UTIL.validate_tls_server('localhost:8443', tls_version='1.2')
-    self.test_server()
-    #time.sleep(30)
-    tls_server.stop()
-    self.assertTrue(test_results[0])
-
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   suite.addTest(TLSModuleTest('client_hello_packets_test'))
@@ -331,6 +397,8 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('security_tls_v1_2_client_cipher_fail_test'))
   suite.addTest(TLSModuleTest('test_client_tls_with_non_tls_client'))
   suite.addTest(TLSModuleTest('security_tls_client_unsupported_tls_client'))
+
+  suite.addTest(TLSModuleTest('security_tls_server_results_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)

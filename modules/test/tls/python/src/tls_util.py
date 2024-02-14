@@ -178,39 +178,35 @@ class TLSUtil():
             return True, 'Device signed by cert:' + root_cert
           else:
             LOGGER.info('Device not signed by cert: ' + root_cert)
-        except Exception as e: # pylint: disable=W0718
+        except Exception as e:  # pylint: disable=W0718
           LOGGER.error('Failed to check cert:' + root_cert)
           LOGGER.error(str(e))
     return False, 'Device certificate has not been signed'
 
   def process_tls_server_results(self, tls_1_2_results, tls_1_3_results):
     results = ''
-    if tls_1_2_results[0] is None and tls_1_3_results[0]:
-      results = True, 'TLS 1.3 validated: ' + tls_1_3_results[1]
-    elif tls_1_3_results[0] is None and tls_1_2_results[0]:
-      results = True, 'TLS 1.2 validated: ' + tls_1_2_results[1]
-    elif tls_1_2_results[0] and tls_1_3_results[0]:
-      description = 'TLS 1.2 validated: ' + tls_1_2_results[1] + '. '
-      description += '\nTLS 1.3 validated: ' + tls_1_3_results[1] + '. '
-      results = True, description
-    elif tls_1_2_results[0] and not tls_1_3_results[0]:
-      description = 'TLS 1.2 validated: ' + tls_1_2_results[1] + '. '
-      description += '\nTLS 1.3 not validated: ' + tls_1_3_results[1] + '. '
-      results = True, description
-    elif tls_1_3_results[0] and not tls_1_2_results[0]:
-      description = 'TLS 1.2 not validated: ' + tls_1_2_results[1] + '. '
-      description += 'TLS 1.3 validated: ' + tls_1_3_results[1] + '. '
-      results = True, description
-    elif not tls_1_3_results[0] and not tls_1_2_results[0] and tls_1_2_results[
-        0] is not None and tls_1_3_results is not None:
-      description = 'TLS 1.2 not validated:' + tls_1_2_results[1] + '. '
-      description += 'TLS 1.3 not validated: ' + tls_1_3_results[1] + '. '
-      results = False, description
+    if tls_1_2_results[0] is None and tls_1_3_results[0] is not None:
+      # Validate only TLS 1.3 results
+      description = 'TLS 1.3' + (' not' if not tls_1_3_results[
+          0] else '') + ' validated: ' + tls_1_3_results[1]
+      results = tls_1_3_results[0], description
+    elif tls_1_3_results[0] is None and tls_1_2_results[0] is not None:
+      # Vaidate only TLS 1.2 results
+      description = 'TLS 1.2' + (' not' if not tls_1_2_results[
+          0] else '') + ' validated: ' + tls_1_2_results[1]
+      results = tls_1_2_results[0], description
+    elif tls_1_3_results[0] is not None and tls_1_2_results[0] is not None:
+      # Validate both results
+      description = 'TLS 1.2' + (' not' if not tls_1_2_results[
+          0] else '') + ' validated: ' + tls_1_2_results[1]
+      description += '\nTLS 1.3' + (' not' if not tls_1_3_results[
+          0] else '') + ' validated: ' + tls_1_3_results[1]
+      results = tls_1_2_results[0] or tls_1_3_results[0], description
     else:
-      description = 'TLS 1.2 not validated: ' + tls_1_2_results[1] + '. '
-      description += 'TLS 1.3 not validated: ' + tls_1_3_results[1] + '. '
+      description = f'TLS 1.2 not validated: {tls_1_2_results[1]}'
+      description += f'\nTLS 1.3 not validated: {tls_1_3_results[1]}'
       results = None, description
-    LOGGER.info('TLS 1.2 server test results: ' + str(results))
+    LOGGER.info('TLS server test results: ' + str(results))
     return results
 
   def validate_tls_server(self, host, tls_version):
@@ -265,68 +261,68 @@ class TLSUtil():
   def get_hello_packets(self, capture_files, src_ip, tls_version):
     combined_results = []
     for capture_file in capture_files:
-        bin_file = self._bin_dir + '/get_client_hello_packets.sh'
-        args = f'{capture_file} {src_ip} {tls_version}'
-        command = f'{bin_file} {args}'
-        response = util.run_command(command)
-        packets = response[0].strip()
-        if len(packets)>0:
-          # Parse each packet and append key-value pairs to combined_results
-          result = self.parse_packets(json.loads(packets), capture_file)
-          combined_results.extend(result)
+      bin_file = self._bin_dir + '/get_client_hello_packets.sh'
+      args = f'{capture_file} {src_ip} {tls_version}'
+      command = f'{bin_file} {args}'
+      response = util.run_command(command)
+      packets = response[0].strip()
+      if len(packets) > 0:
+        # Parse each packet and append key-value pairs to combined_results
+        result = self.parse_packets(json.loads(packets), capture_file)
+        combined_results.extend(result)
     return combined_results
 
   def get_handshake_complete(self, capture_files, src_ip, dst_ip, tls_version):
     combined_results = ''
     for capture_file in capture_files:
-        bin_file = self._bin_dir + '/get_handshake_complete.sh'
-        args = f'{capture_file} {src_ip} {dst_ip} {tls_version}'
-        command = f'{bin_file} {args}'
-        response = util.run_command(command)
-        if len(response)>0:
-            combined_results+=response[0]
+      bin_file = self._bin_dir + '/get_handshake_complete.sh'
+      args = f'{capture_file} {src_ip} {dst_ip} {tls_version}'
+      command = f'{bin_file} {args}'
+      response = util.run_command(command)
+      if len(response) > 0:
+        combined_results += response[0]
     return combined_results
 
   # Resolve all connections from the device that don't use TLS
   def get_non_tls_packetes(self, client_ip, capture_files):
     combined_packets = []
     for capture_file in capture_files:
-        bin_file = self._bin_dir + '/get_non_tls_client_connections.sh'
-        args = f'{capture_file} {client_ip}'
-        command = f'{bin_file} {args}'
-        response = util.run_command(command)
-        if len(response)>0:
-            packets = json.loads(response[0].strip())
-            combined_packets.extend(packets)
+      bin_file = self._bin_dir + '/get_non_tls_client_connections.sh'
+      args = f'{capture_file} {client_ip}'
+      command = f'{bin_file} {args}'
+      response = util.run_command(command)
+      if len(response) > 0:
+        packets = json.loads(response[0].strip())
+        combined_packets.extend(packets)
     return combined_packets
 
   # Resolve all connections from the device that use TLS
   def get_tls_client_connection_packetes(self, client_ip, capture_files):
     combined_packets = []
     for capture_file in capture_files:
-        bin_file = self._bin_dir + '/get_tls_client_connections.sh'
-        args = f'{capture_file} {client_ip}'
-        command = f'{bin_file} {args}'
-        response = util.run_command(command)
-        packets = json.loads(response[0].strip())
-        combined_packets.extend(packets)
+      bin_file = self._bin_dir + '/get_tls_client_connections.sh'
+      args = f'{capture_file} {client_ip}'
+      command = f'{bin_file} {args}'
+      response = util.run_command(command)
+      packets = json.loads(response[0].strip())
+      combined_packets.extend(packets)
     return combined_packets
 
-  # Resolve any TLS packets for the specified version. Does not care if the 
+  # Resolve any TLS packets for the specified version. Does not care if the
   # connections are established or any other validation only
   # that there is some level of connection attempt from the device
   # using the TLS version specified.
   def get_tls_packets(self, capture_files, src_ip, tls_version):
     combined_results = []
     for capture_file in capture_files:
-        bin_file = self._bin_dir + '/get_tls_packets.sh'
-        args = f'{capture_file} {src_ip} {tls_version}'
-        command = f'{bin_file} {args}'
-        response = util.run_command(command)
-        packets = response[0].strip()
-        # Parse each packet and append key-value pairs to combined_results
-        result = self.parse_packets(json.loads(packets), capture_file)
-        combined_results.extend(result)
+      bin_file = self._bin_dir + '/get_tls_packets.sh'
+      args = f'{capture_file} {src_ip} {tls_version}'
+      command = f'{bin_file} {args}'
+      response = util.run_command(command)
+      packets = response[0].strip()
+      # Parse each packet and append key-value pairs to combined_results
+      result = self.parse_packets(json.loads(packets), capture_file)
+      combined_results.extend(result)
     return combined_results
 
   def parse_packets(self, packets, capture_file):
@@ -353,7 +349,7 @@ class TLSUtil():
       hello_packets.append(hello_packet)
     return hello_packets
 
-  def process_hello_packets(self,hello_packets, tls_version = '1.2'):
+  def process_hello_packets(self, hello_packets, tls_version='1.2'):
     # Validate the ciphers only for tls 1.2
     client_hello_results = {'valid': [], 'invalid': []}
     if tls_version == '1.2':
@@ -381,18 +377,20 @@ class TLSUtil():
     return client_hello_results
 
   # Check if the device has made any outbound connections that don't
-  # use TLS.  Since some protocols do use non-encrypted methods (NTP, DHCP, etc.)
-  # we will assume any local connections using the same IP subnet as our 
+  # use TLS. Since some protocols do use non-encrypted methods (NTP, DHCP, etc.)
+  # we will assume any local connections using the same IP subnet as our
   # local network are approved and only connections to IP addresses outside
   # our network will be flagged.
   def get_non_tls_client_connection_ips(self, client_ip, capture_files):
     LOGGER.info('Checking client for non-TLS client connections')
-    packets = self.get_non_tls_packetes(client_ip=client_ip,capture_files=capture_files)
+    packets = self.get_non_tls_packetes(client_ip=client_ip,
+                                        capture_files=capture_files)
 
     # Extract the subnet from the client IP address
     src_ip = ipaddress.ip_address(client_ip)
-    src_subnet = ipaddress.ip_network(src_ip,strict=False)
-    subnet_with_mask = ipaddress.ip_network(src_subnet, strict=False).supernet(new_prefix=24)
+    src_subnet = ipaddress.ip_network(src_ip, strict=False)
+    subnet_with_mask = ipaddress.ip_network(
+        src_subnet, strict=False).supernet(new_prefix=24)
 
     non_tls_dst_ips = set()  # Store unique destination IPs
     for packet in packets:
@@ -404,17 +402,17 @@ class TLSUtil():
     return non_tls_dst_ips
 
   # Check if the device has made any outbound connections that don't
-  # use TLS.  Since some protocols do use non-encrypted methods (NTP, DHCP, etc.)
-  # we will assume any local connections using the same IP subnet as our 
+  # use TLS. Since some protocols do use non-encrypted methods (NTP, DHCP, etc.)
+  # we will assume any local connections using the same IP subnet as our
   # local network are approved and only connections to IP addresses outside
   # our network will be flagged.
   def get_unsupported_tls_ips(self, client_ip, capture_files):
     LOGGER.info('Checking client for unsupported TLS client connections')
-    tls_1_0_packets = self.get_tls_packets(capture_files,client_ip,'1.0')
-    tls_1_1_packets = self.get_tls_packets(capture_files,client_ip,'1.1')
+    tls_1_0_packets = self.get_tls_packets(capture_files, client_ip, '1.0')
+    tls_1_1_packets = self.get_tls_packets(capture_files, client_ip, '1.1')
 
     unsupported_tls_dst_ips = {}
-    if len(tls_1_0_packets)>0:
+    if len(tls_1_0_packets) > 0:
       for packet in tls_1_0_packets:
         dst_ip = packet['dst_ip']
         tls_version = '1.0'
@@ -423,7 +421,7 @@ class TLSUtil():
                       connections detected to {dst_ip}''')
           unsupported_tls_dst_ips[dst_ip] = [tls_version]
 
-    if len(tls_1_1_packets)>0:
+    if len(tls_1_1_packets) > 0:
       for packet in tls_1_1_packets:
         dst_ip = packet['dst_ip']
         tls_version = '1.1'
@@ -445,7 +443,7 @@ class TLSUtil():
   def get_tls_client_connection_ips(self, client_ip, capture_files):
     LOGGER.info('Checking client for TLS client connections')
     packets = self.get_tls_client_connection_packetes(
-      client_ip=client_ip,capture_files=capture_files)
+        client_ip=client_ip, capture_files=capture_files)
 
     tls_dst_ips = set()  # Store unique destination IPs
     for packet in packets:
@@ -455,9 +453,10 @@ class TLSUtil():
 
   def validate_tls_client(self, client_ip, tls_version, capture_files):
     LOGGER.info('Validating client for TLS: ' + tls_version)
-    hello_packets = self.get_hello_packets(
-      capture_files, client_ip, tls_version)
-    client_hello_results = self.process_hello_packets(hello_packets,tls_version)
+    hello_packets = self.get_hello_packets(capture_files, client_ip,
+                                           tls_version)
+    client_hello_results = self.process_hello_packets(hello_packets,
+                                                      tls_version)
 
     handshakes = {'complete': [], 'incomplete': []}
     for packet in client_hello_results['valid']:
@@ -511,31 +510,32 @@ class TLSUtil():
       tls_client_details = 'No client hello packets detected'
 
     # Resolve all non-TLS related client connections
-    non_tls_client_ips = self.get_non_tls_client_connection_ips(client_ip,
-                                                                capture_files)
+    non_tls_client_ips = self.get_non_tls_client_connection_ips(
+        client_ip, capture_files)
 
     # Resolve all TLS related client connections
-    tls_client_ips = self.get_tls_client_connection_ips(client_ip,capture_files)
+    tls_client_ips = self.get_tls_client_connection_ips(client_ip,
+                                                        capture_files)
 
     # Filter out all outbound TLS connections regardless on whether
     # or not they were validated.  If they were not validated,
     # they will already be failed by those tests and we only
     # need to report true unencrypted oubound connections
-    if len(non_tls_client_ips)>0:
+    if len(non_tls_client_ips) > 0:
       for ip in non_tls_client_ips:
         if ip not in tls_client_ips:
           tls_client_valid = False
-          tls_client_details+= f'''\nNon-TLS connection detected to {ip}'''
+          tls_client_details += f'''\nNon-TLS connection detected to {ip}'''
         else:
           LOGGER.info(f'''TLS connection detected to {ip}.
                        Ignoring non-TLS traffic detected to this IP''')
 
-    unsupported_tls_ips = self.get_unsupported_tls_ips(client_ip,capture_files)
-    if len(unsupported_tls_ips)>0:
+    unsupported_tls_ips = self.get_unsupported_tls_ips(client_ip, capture_files)
+    if len(unsupported_tls_ips) > 0:
       tls_client_valid = False
       for ip, tls_versions in unsupported_tls_ips.items():
         for tls_version in tls_versions:
-          tls_client_details+=f'''\nUnsupported TLS {tls_version}
+          tls_client_details += f'''\nUnsupported TLS {tls_version}
           connection detected to {ip}'''
     return tls_client_valid, tls_client_details
 
