@@ -15,7 +15,7 @@
 import util
 import time
 import traceback
-from scapy.all import rdpcap, DHCP, Ether, IPv6, ICMPv6ND_NS
+from scapy.all import rdpcap, DHCP, ARP, Ether, IPv6, ICMPv6ND_NS
 from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
 from dhcp2.client import Client as DHCPClient2
@@ -73,6 +73,60 @@ class ConnectionModule(TestModule):
 
     # response = self.dhcp1_client.set_dhcp_range('10.10.10.20','10.10.10.30')
     # print("Set Range: " + str(response))
+
+  def _connection_switch_arp_inspection(self):
+    LOGGER.info('Running connection.switch.arp_inspection')
+
+    no_arp = True
+
+    # Read all the pcap files
+    packets = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
+    for packet in packets:
+
+      # We are not interested in packets unless they are ARP packets
+      if not ARP in packet:
+        continue
+
+      # We are only interested in packets from the device
+      if packet.src != self._device_mac:
+        continue
+
+      # Get the ARP packet
+      arp_packet = packet[ARP]
+      no_arp = False
+
+      # Check MAC address matches IP address
+      if (arp_packet.hwsrc != self._device_mac or
+          arp_packet.psrc != self._device_ipv4_addr):
+        return False, 'Device is sending false ARP response'
+
+    if no_arp:
+      return None, 'No ARP packets from the device found'
+
+    return True, 'Device uses ARP'
+
+  def _connection_switch_dhcp_snooping(self):
+    LOGGER.info('Running connection.switch.dhcp_snooping')
+
+    disallowed_dhcp_types = [2, 4, 5, 6, 9, 10, 12, 13, 15, 17]
+
+    # Read all the pcap files
+    packets = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
+    for packet in packets:
+
+      # We are not interested in packets unless they are DHCP packets
+      if not DHCP in packet:
+        continue
+
+      # We are only interested in packets from the device
+      if packet.src != self._device_mac:
+        continue
+
+      dhcp_type = self._get_dhcp_type(packet)
+      if dhcp_type in disallowed_dhcp_types:
+        return False, 'Device has sent disallowed DHCP message'
+    
+    return True, 'Device does not act as a DHCP server'
 
   def _connection_private_address(self, config):
     LOGGER.info('Running connection.private_address')
@@ -141,7 +195,7 @@ class ConnectionModule(TestModule):
       if DHCP in packet:
         for option in packet[DHCP].options:
           # message-type, option 3 = DHCPREQUEST
-          if 'message-type' in option and option[1] == 3:
+          if self._get_dhcp_type(packet) == 3:
             mac_address = packet[Ether].src
             LOGGER.info('DHCPREQUEST detected MAC address: ' + mac_address)
             if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
@@ -159,6 +213,12 @@ class ConnectionModule(TestModule):
       return result, 'Device is using a single IP address'
     else:
       return result, 'Device is using multiple IP addresses'
+
+  def _get_dhcp_type(self, packet):
+    for option in packet[DHCP].options:
+      # message-type, option 3 = DHCPREQUEST
+      if 'message-type' in option:
+        return option[1]
 
   def _connection_target_ping(self):
     LOGGER.info('Running connection.target_ping')
