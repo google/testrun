@@ -228,7 +228,10 @@ export class TestRunService {
 
   public getResultClass(result: string): StatusResultClassName {
     return {
-      green: result === StatusOfTestResult.Compliant,
+      green:
+        result === StatusOfTestResult.Compliant ||
+        result === StatusOfTestResult.CompliantLimited ||
+        result === StatusOfTestResult.CompliantHigh,
       red:
         result === StatusOfTestResult.NonCompliant ||
         result === StatusOfTestResult.Error,

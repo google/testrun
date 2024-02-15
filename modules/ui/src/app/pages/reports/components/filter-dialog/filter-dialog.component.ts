@@ -56,6 +56,7 @@ import {
   DateRange as LocalDateRange,
 } from '../../../../model/filters';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
+import { StatusOfTestResult } from '../../../../model/testrun-status';
 
 interface DialogData {
   trigger: ElementRef;
@@ -93,8 +94,10 @@ export class FilterDialogComponent
   implements OnInit
 {
   resultList = [
-    { value: 'Compliant', enabled: false },
-    { value: 'Non-Compliant', enabled: false },
+    { value: StatusOfTestResult.Compliant, enabled: false },
+    { value: StatusOfTestResult.CompliantLimited, enabled: false },
+    { value: StatusOfTestResult.CompliantHigh, enabled: false },
+    { value: StatusOfTestResult.NonCompliant, enabled: false },
   ];
   filterForm!: FormGroup;
   selectedRangeValue!: DateRange<Date> | undefined;
