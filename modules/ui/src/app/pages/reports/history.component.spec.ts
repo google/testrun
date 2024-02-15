@@ -324,9 +324,7 @@ describe('HistoryComponent', () => {
       });
 
       it('should have addition valid class on table cell "Status"', () => {
-        const statusResultEl = compiled.querySelector(
-          '.table-cell-result-text'
-        );
+        const statusResultEl = compiled.querySelector('.cell-result-text');
 
         expect(statusResultEl?.classList).toContain('red');
       });

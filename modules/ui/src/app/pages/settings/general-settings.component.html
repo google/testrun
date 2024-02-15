@@ -23,116 +23,70 @@ limitations under the License.
     <mat-icon class="close-button-icon" svgIcon="close"></mat-icon>
   </button>
 </div>
-<div class="setting-drawer-content">
+<div class="setting-drawer-content" *ngIf="viewModel$ | async as vm">
   <form
     [formGroup]="settingForm"
     [class.setting-drawer-content-form-empty]="
-      (interfaces | keyvalue).length === 0
+      (vm.interfaces | keyvalue).length === 0
     ">
-    <ng-container
-      *ngIf="(interfaces | keyvalue).length > 0; else warning_message">
-      <app-callout
-        [type]="CalloutType.Warning"
-        *ngIf="(interfaces | keyvalue).length === 1"
-        class="two-ports-message">
-        Warning! Testrun requires two ports to operate correctly.
-      </app-callout>
-      <label
-        class="setting-form-label device-label"
-        id="device-group-label"
-        for="device-group">
-        Select port where you’ll connect the tested device
-      </label>
-      <p class="setting-label-description">
-        Choose one of the options where you’ll connect IoT device for testing
+    <section class="setting-drawer-content-inputs">
+      <ng-container
+        *ngIf="(vm.interfaces | keyvalue).length > 0; else warning_message">
+        <app-callout
+          [type]="CalloutType.Warning"
+          *ngIf="(vm.interfaces | keyvalue).length === 1"
+          class="two-ports-message">
+          Warning! Testrun requires two ports to operate correctly.
+        </app-callout>
+
+        <app-settings-dropdown
+          [controlName]="FormKey.DEVICE"
+          groupLabel="Select port where you’ll connect the tested device"
+          description="Choose one of the options where you’ll connect IoT device for testing"
+          label="Device connection port"
+          key="device"
+          [options]="vm.deviceOptions">
+        </app-settings-dropdown>
+        <app-settings-dropdown
+          [controlName]="FormKey.INTERNET"
+          groupLabel="Select port used for Internet connection"
+          description="Choose one of the following ports on your Laptop or Desktop"
+          label="Internet connection port"
+          key="internet"
+          [options]="vm.internetOptions">
+        </app-settings-dropdown>
+      </ng-container>
+      <p class="message">
+        If a port is missing from this list, you can
+        <a
+          (click)="reloadSetting()"
+          (keydown.enter)="reloadSetting()"
+          (keydown.space)="reloadSetting()"
+          role="button"
+          tabindex="0"
+          class="message-link">
+          Refresh
+        </a>
+        the Connection settings
       </p>
-      <mat-form-field appearance="outline" class="setting-field">
-        <mat-label>Device connection port</mat-label>
-        <mat-select
-          aria-labelledby="device-group-label"
-          id="device-group"
-          class="setting-radio-group"
-          [compareWith]="compare"
-          formControlName="device_intf">
-          <mat-select-trigger>
-            <ng-container *ngIf="deviceControl.value">
-              <p *ngIf="deviceControl.value.key" class="option-value top">
-                {{ deviceControl.value.key }}
-              </p>
-              <p *ngIf="deviceControl.value.value" class="option-value bottom">
-                {{ deviceControl.value.value }}
-              </p>
-            </ng-container>
-          </mat-select-trigger>
-          <mat-option
-            *ngFor="let interface of interfaces | keyvalue"
-            [value]="interface"
-            class="setting-option-value">
-            <p class="option-value top">{{ interface.key }}</p>
-            <p class="option-value bottom">{{ interface.value }}</p>
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-      <label
-        class="setting-form-label internet-label"
-        id="internet-group-label"
-        for="internet-group">
-        Select port used for Internet connection
-      </label>
-      <p class="setting-label-description">
-        Choose one of the following ports on your Laptop or Desktop
-      </p>
-      <mat-form-field appearance="outline" class="setting-field">
-        <mat-label>Internet connection port</mat-label>
-        <mat-select
-          aria-labelledby="internet-group-label"
-          id="internet-group"
-          class="setting-radio-group"
-          [compareWith]="compare"
-          formControlName="internet_intf">
-          <mat-select-trigger>
-            <ng-container *ngIf="internetControl.value">
-              <p *ngIf="internetControl.value.key" class="option-value top">
-                {{ internetControl.value.key }}
-              </p>
-              <p
-                *ngIf="internetControl.value.value"
-                class="option-value bottom">
-                {{ internetControl.value.value }}
-              </p>
-            </ng-container>
-          </mat-select-trigger>
-          <mat-option
-            [value]="defaultInternetOption"
-            class="setting-option-value">
-            <p class="option-value top">{{ defaultInternetOption.key }}</p>
-            <p class="option-value bottom">{{ defaultInternetOption.value }}</p>
-          </mat-option>
-          <mat-option
-            *ngFor="let interface of interfaces | keyvalue"
-            [value]="interface"
-            class="setting-option-value">
-            <p class="option-value top">{{ interface.key }}</p>
-            <p class="option-value bottom">{{ interface.value }}</p>
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </ng-container>
-    <p class="message">
-      If a port is missing from this list, you can
-      <a
-        (click)="reloadSetting()"
-        (keydown.enter)="reloadSetting()"
-        (keydown.space)="reloadSetting()"
-        role="button"
-        tabindex="0"
-        class="message-link">
-        Refresh
-      </a>
-      the Connection settings
-    </p>
+      <app-settings-dropdown
+        [controlName]="FormKey.LOG_LEVEL"
+        groupLabel="Select the logging level for Testrun events"
+        label="Log level"
+        key="log-level"
+        [options]="vm.logLevelOptions">
+      </app-settings-dropdown>
+      <app-settings-dropdown
+        [controlName]="FormKey.MONITOR_PERIOD"
+        groupLabel="Select device monitoring time period"
+        description="Choose one of the options for Monitoring Device time, when Testrun will observe the device before starting tests. The optimal time to pass the qualification is 300s."
+        label="Monitoring period"
+        key="monitoring-period"
+        [options]="vm.monitoringPeriodOptions">
+      </app-settings-dropdown>
+    </section>
     <mat-error
-      *ngIf="isSubmitting && isFormError"
+      *ngIf="vm.isSubmitting && isFormError"
       class="error-message-container">
       <span>Both interfaces must have different values</span>
     </mat-error>
@@ -140,7 +94,7 @@ limitations under the License.
       <button
         mat-flat-button
         (click)="closeSetting(EventType.Close)"
-        [disabled]="!isFormValues || hasConnectionSettings !== true"
+        [disabled]="!isFormValues || vm.hasConnectionSettings !== true"
         class="close-button">
         Cancel
       </button>
@@ -149,7 +103,7 @@ limitations under the License.
         class="save-button"
         color="primary"
         (click)="saveSetting()"
-        [disabled]="!isFormValues || isLessThanOneInterfaces">
+        [disabled]="!isFormValues || vm.isLessThanOneInterface">
         Save
       </button>
     </div>

@@ -16,9 +16,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { GeneralSettingsComponent } from './general-settings.component';
-import { SystemInterfaces } from '../../services/test-run.service';
 import { of } from 'rxjs';
-import { SystemConfig } from '../../model/setting';
 import { MatRadioModule } from '@angular/material/radio';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -30,38 +28,35 @@ import SpyObj = jasmine.SpyObj;
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { AppEffects } from '../../store/effects';
-import { selectSystemConfig } from '../../store/selectors';
-import { AppState } from '../../store/state';
-import { createSystemConfig } from '../../store/actions';
-
-const MOCK_SYSTEM_CONFIG_WITH_DATA: SystemConfig = {
-  network: {
-    device_intf: 'mockDeviceKey',
-    internet_intf: 'mockInternetKey',
-  },
-};
-
-const MOCK_INTERFACES: SystemInterfaces = {
-  mockDeviceKey: 'mockDeviceValue',
-  mockInternetKey: 'mockInternetValue',
-};
+import { provideMockStore } from '@ngrx/store/testing';
+import { LoaderService } from '../../services/loader.service';
+import { SettingsStore } from './settings.store';
+import {
+  MOCK_INTERFACES,
+  MOCK_INTERNET_OPTIONS,
+  MOCK_SYSTEM_CONFIG_WITH_DATA,
+} from '../../mocks/settings.mock';
+import { SettingsDropdownComponent } from './components/settings-dropdown/settings-dropdown.component';
 
 describe('GeneralSettingsComponent', () => {
   let component: GeneralSettingsComponent;
   let fixture: ComponentFixture<GeneralSettingsComponent>;
   let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
   let compiled: HTMLElement;
-  let mockEffects: SpyObj<AppEffects>;
-  let store: MockStore<AppState>;
+  let mockLoaderService: SpyObj<LoaderService>;
+  let mockSettingsStore: SpyObj<SettingsStore>;
 
   beforeEach(async () => {
     mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
-    mockEffects = jasmine.createSpyObj(['onCreateSystemConfigSuccess$']);
-
-    // @ts-expect-error mock empty value in test
-    mockEffects.onCreateSystemConfigSuccess$ = of({});
+    mockLoaderService = jasmine.createSpyObj('LoaderService', ['setLoading']);
+    mockSettingsStore = jasmine.createSpyObj('SettingsStore', [
+      'getInterfaces',
+      'updateSystemConfig',
+      'setIsSubmitting',
+      'setDefaultFormValues',
+      'getSystemConfig',
+      'viewModel$',
+    ]);
 
     await TestBed.configureTestingModule({
       declarations: [
@@ -71,7 +66,8 @@ describe('GeneralSettingsComponent', () => {
       ],
       providers: [
         { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
-        { provide: AppEffects, useValue: mockEffects },
+        { provide: LoaderService, useValue: mockLoaderService },
+        { provide: SettingsStore, useValue: mockSettingsStore },
         provideMockStore(),
       ],
       imports: [
@@ -84,49 +80,44 @@ describe('GeneralSettingsComponent', () => {
         MatIcon,
         MatInputModule,
         MatSelectModule,
+        SettingsDropdownComponent,
       ],
     }).compileComponents();
 
+    TestBed.overrideProvider(SettingsStore, { useValue: mockSettingsStore });
+
     fixture = TestBed.createComponent(GeneralSettingsComponent);
+
     component = fixture.componentInstance;
+    component.viewModel$ = of({
+      systemConfig: {},
+      hasConnectionSettings: false,
+      isSubmitting: false,
+      isLessThanOneInterface: false,
+      interfaces: {},
+      deviceOptions: {},
+      internetOptions: {},
+      logLevelOptions: {},
+      monitoringPeriodOptions: {},
+    });
     fixture.detectChanges();
     compiled = fixture.nativeElement as HTMLElement;
-    store = TestBed.inject(MockStore);
 
-    store.overrideSelector(selectSystemConfig, MOCK_SYSTEM_CONFIG_WITH_DATA);
     component.ngOnInit();
-    spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should set default values to form if systemConfig data', () => {
-    component.interfaces = { mockDeviceKey: 'mockDeviceValue' };
-
-    const expectedDevice = { key: 'mockDeviceKey', value: 'mockDeviceValue' };
-
-    component.ngOnInit();
-
-    expect(component.deviceControl.value).toEqual(expectedDevice);
-    expect(component.internetControl.value).toEqual(
-      component.defaultInternetOption
-    );
-  });
-
-  it('#reloadSetting should emit reloadInterfacesEvent', () => {
-    spyOn(component.reloadInterfacesEvent, 'emit');
-
+  it('#reloadSetting should call setLoading in loaderService', () => {
     component.reloadSetting();
 
-    expect(component.reloadInterfacesEvent.emit).toHaveBeenCalled();
+    expect(mockLoaderService.setLoading).toHaveBeenCalledWith(true);
   });
 
   describe('#closeSetting', () => {
     beforeEach(() => {
-      store.overrideSelector(selectSystemConfig, MOCK_SYSTEM_CONFIG_WITH_DATA);
-      component.interfaces = MOCK_INTERFACES;
       component.ngOnInit();
     });
 
@@ -156,26 +147,15 @@ describe('GeneralSettingsComponent', () => {
       expect(component.settingForm.reset).toHaveBeenCalled();
     });
 
-    it('should set value of settingForm on setSystemSetting', () => {
+    it('should call setDefaultFormValues', () => {
       component.closeSetting('Message');
 
-      const expectedDevice = { key: 'mockDeviceKey', value: 'mockDeviceValue' };
-      const expectedInternet = {
-        key: 'mockInternetKey',
-        value: 'mockInternetValue',
-      };
-
-      expect(component.settingForm.value.device_intf).toEqual(expectedDevice);
-
-      expect(component.settingForm.value.internet_intf).toEqual(
-        expectedInternet
-      );
+      expect(mockSettingsStore.setDefaultFormValues).toHaveBeenCalled();
     });
   });
 
   describe('#saveSetting', () => {
     beforeEach(() => {
-      store.overrideSelector(selectSystemConfig, MOCK_SYSTEM_CONFIG_WITH_DATA);
       component.ngOnInit();
     });
 
@@ -187,8 +167,8 @@ describe('GeneralSettingsComponent', () => {
       component.saveSetting();
 
       expect(component.settingForm.invalid).toBeTrue();
-      expect(component.isSubmitting).toBeTrue();
       expect(component.isFormError).toBeTrue();
+      expect(mockSettingsStore.setIsSubmitting).toHaveBeenCalledWith(true);
     });
 
     it('should call createSystemConfig when setting form valid', () => {
@@ -197,26 +177,53 @@ describe('GeneralSettingsComponent', () => {
           device_intf: 'mockDeviceKey',
           internet_intf: '',
         },
+        log_level: 'INFO',
+        monitor_period: 600,
       };
 
       component.deviceControl.setValue({
         key: 'mockDeviceKey',
         value: 'mockDeviceValue',
       });
-      component.internetControl.setValue(component.defaultInternetOption);
+
+      component.internetControl.setValue({
+        key: '',
+        value: 'defaultValue',
+      });
+
+      component.logLevel.setValue({
+        key: 'INFO',
+        value: '',
+      });
+
+      component.monitorPeriod.setValue({
+        key: '600',
+        value: '',
+      });
 
       component.saveSetting();
 
+      const args = mockSettingsStore.updateSystemConfig.calls.argsFor(0);
+      // @ts-expect-error config is in object
+      expect(args[0].config).toEqual(expectedResult);
       expect(component.settingForm.invalid).toBeFalse();
-      expect(store.dispatch).toHaveBeenCalledWith(
-        createSystemConfig({ data: expectedResult })
-      );
+      expect(mockSettingsStore.updateSystemConfig).toHaveBeenCalled();
     });
   });
 
-  describe('with no intefaces data', () => {
+  describe('with no interfaces data', () => {
     beforeEach(() => {
-      component.interfaces = {};
+      component.viewModel$ = of({
+        systemConfig: {},
+        hasConnectionSettings: false,
+        isSubmitting: false,
+        isLessThanOneInterface: false,
+        interfaces: {},
+        deviceOptions: {},
+        internetOptions: {},
+        logLevelOptions: {},
+        monitoringPeriodOptions: {},
+      });
       fixture.detectChanges();
     });
 
@@ -237,7 +244,17 @@ describe('GeneralSettingsComponent', () => {
 
   describe('with interfaces length less than one', () => {
     beforeEach(() => {
-      component.interfaces = {};
+      component.viewModel$ = of({
+        systemConfig: {},
+        hasConnectionSettings: false,
+        isSubmitting: false,
+        isLessThanOneInterface: true,
+        interfaces: {},
+        deviceOptions: {},
+        internetOptions: {},
+        logLevelOptions: {},
+        monitoringPeriodOptions: {},
+      });
       fixture.detectChanges();
     });
 
@@ -266,10 +283,17 @@ describe('GeneralSettingsComponent', () => {
 
   describe('with interfaces length more then one', () => {
     beforeEach(() => {
-      component.interfaces = {
-        mockDeviceValue: 'mockDeviceValue',
-        mockInterfaceValue: 'mockInterfaceValue',
-      };
+      component.viewModel$ = of({
+        systemConfig: {},
+        hasConnectionSettings: false,
+        isSubmitting: false,
+        isLessThanOneInterface: false,
+        interfaces: MOCK_INTERFACES,
+        deviceOptions: MOCK_INTERFACES,
+        internetOptions: MOCK_INTERNET_OPTIONS,
+        logLevelOptions: {},
+        monitoringPeriodOptions: {},
+      });
       fixture.detectChanges();
     });
 

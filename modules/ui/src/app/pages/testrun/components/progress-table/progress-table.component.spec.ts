@@ -17,10 +17,16 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProgressTableComponent } from './progress-table.component';
 import { IResult, StatusOfTestResult } from '../../../../model/testrun-status';
-import { MatTableModule } from '@angular/material/table';
 import { of } from 'rxjs';
-import { TEST_DATA } from '../../../../mocks/progress.mock';
+import {
+  TEST_DATA,
+  TEST_DATA_RESULT_WITH_RECOMMENDATIONS,
+} from '../../../../mocks/progress.mock';
 import { TestRunService } from '../../../../services/test-run.service';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { Component, Input } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ProgressTableComponent', () => {
   let component: ProgressTableComponent;
@@ -36,7 +42,7 @@ describe('ProgressTableComponent', () => {
       });
       fixture = TestBed.createComponent(ProgressTableComponent);
       component = fixture.componentInstance;
-      fixture.detectChanges();
+      component.dataSource$ = of(TEST_DATA.results);
     });
 
     it('should create', () => {
@@ -67,9 +73,9 @@ describe('ProgressTableComponent', () => {
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        declarations: [ProgressTableComponent],
+        declarations: [ProgressTableComponent, FakeCalloutComponent],
         providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
-        imports: [MatTableModule],
+        imports: [BrowserAnimationsModule, MatExpansionModule, MatIconModule],
       }).compileComponents();
 
       fixture = TestBed.createComponent(ProgressTableComponent);
@@ -84,9 +90,9 @@ describe('ProgressTableComponent', () => {
       });
 
       it('should be unavailable', () => {
-        const table = compiled.querySelector('.progress-table');
+        const tests = compiled.querySelector('.tests-container');
 
-        expect(table).toBeNull();
+        expect(tests).toBeNull();
       });
     });
 
@@ -97,17 +103,45 @@ describe('ProgressTableComponent', () => {
       });
 
       it('should be available', () => {
-        const table = compiled.querySelector('.progress-table');
+        const tests = compiled.querySelector('.tests-container');
 
-        expect(table).not.toBeNull();
+        expect(tests).not.toBeNull();
       });
 
-      it('should have table rows as provided from data', () => {
+      it('should have rows as provided from data', () => {
         const expectedRowsLength = (TEST_DATA.results as IResult[]).length;
-        const tableRows = compiled.querySelectorAll('.table-row');
+        const testsRows = compiled.querySelectorAll('.tests-row');
 
-        expect(tableRows.length).toBe(expectedRowsLength);
+        expect(testsRows.length).toBe(expectedRowsLength);
+      });
+
+      it('should not have expand/collapse button', () => {
+        const button = compiled.querySelector('.expander-button');
+
+        expect(button).toBeNull();
+      });
+    });
+
+    describe('with recommendations', () => {
+      beforeEach(() => {
+        component.dataSource$ = of(TEST_DATA_RESULT_WITH_RECOMMENDATIONS);
+        fixture.detectChanges();
+      });
+
+      it('should have expand/collapse button', () => {
+        const button = compiled.querySelector('.expander-button');
+
+        expect(button).not.toBeNull();
+        expect(button?.ariaLabel).toBe('Collapse row');
       });
     });
   });
 });
+
+@Component({
+  selector: 'app-callout',
+  template: '<div></div>',
+})
+class FakeCalloutComponent {
+  @Input() type = '';
+}

@@ -19,7 +19,7 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
 import { Device, TestModule } from '../model/device';
 import { map, ReplaySubject, retry } from 'rxjs';
-import { SystemConfig } from '../model/setting';
+import { SystemConfig, SystemInterfaces } from '../model/setting';
 import {
   StatusOfTestResult,
   StatusOfTestrun,
@@ -29,10 +29,7 @@ import {
 import { Version } from '../model/version';
 
 const API_URL = 'http://localhost:8000';
-
-export type SystemInterfaces = {
-  [key: string]: string;
-};
+export const SYSTEM_STOP = '/system/stop';
 
 @Injectable({
   providedIn: 'root',
@@ -141,7 +138,7 @@ export class TestRunService {
 
   stopTestrun(): Observable<boolean> {
     return this.http
-      .post<{ success: string }>(`${API_URL}/system/stop`, {})
+      .post<{ success: string }>(`${API_URL}${SYSTEM_STOP}`, {})
       .pipe(map(() => true));
   }
 
@@ -232,13 +229,17 @@ export class TestRunService {
 
   public getResultClass(result: string): StatusResultClassName {
     return {
-      green: result === StatusOfTestResult.Compliant,
+      green:
+        result === StatusOfTestResult.Compliant ||
+        result === StatusOfTestResult.CompliantLimited ||
+        result === StatusOfTestResult.CompliantHigh,
       red:
         result === StatusOfTestResult.NonCompliant ||
         result === StatusOfTestResult.Error,
       blue:
         result === StatusOfTestResult.SmartReady ||
-        result === StatusOfTestResult.Info,
+        result === StatusOfTestResult.Info ||
+        result === StatusOfTestResult.InProgress,
       grey:
         result === StatusOfTestResult.Skipped ||
         result === StatusOfTestResult.NotStarted,

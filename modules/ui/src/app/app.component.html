@@ -165,11 +165,7 @@ limitations under the License.
     mode="over"
     position="end"
     class="settings-drawer">
-    <app-general-settings
-      [interfaces]="(interfaces | async) ?? {}"
-      [hasConnectionSettings]="(hasConnectionSetting$ | async) ?? false"
-      (closeSettingEvent)="closeSetting()"
-      (reloadInterfacesEvent)="reloadInterfaces()">
+    <app-general-settings (closeSettingEvent)="closeSetting()">
     </app-general-settings>
   </mat-drawer>
 </mat-drawer-container>
