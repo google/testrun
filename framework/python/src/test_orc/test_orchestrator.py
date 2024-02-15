@@ -510,8 +510,8 @@ class TestOrchestrator:
             required_result=test_case_json["required_result"]
           )
 
-          if "steps_to_resolve" in test_case_json:
-            test_case.steps_to_resolve = test_case_json["steps_to_resolve"]
+          if "recommendations" in test_case_json:
+            test_case.recommendations = test_case_json["recommendations"]
 
           module.tests.append(test_case)
         except Exception as error:

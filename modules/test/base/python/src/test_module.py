@@ -126,8 +126,8 @@ class TestModule:
 
       # Remove the steps to resolve if compliant already
       if (test['result'] == 'Compliant' and
-          'steps_to_resolve' in test):
-        test.pop('steps_to_resolve')
+          'recommendations' in test):
+        test.pop('recommendations')
 
       test['end'] = datetime.now().isoformat()
       duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(

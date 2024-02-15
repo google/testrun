@@ -41,7 +41,7 @@
             }
           ]
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Disable the FTP server",
           "Switch to a secure SFTP server"
         ]
@@ -61,7 +61,7 @@
           ],
           "version": "protocol 2.0"
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Upgrade the SSH server to at least protocol 2.0"
         ]
       },
@@ -85,7 +85,7 @@
             }
           ]
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Disable the Telnet server",
           "Use SSH instead of Telnet if required"
         ]
@@ -114,7 +114,7 @@
             }
           ]
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Disable the SMTP server"
         ]
       },
@@ -148,7 +148,7 @@
             }
           ]
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Disable all unsecure HTTP servers",
           "Setup TLS on the web server"
         ]
@@ -191,7 +191,7 @@
             }
           ]
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Disable the POP server"
         ]
       },
@@ -241,7 +241,7 @@
             }
           ]
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Disable the IMAP server"
         ]
       },
@@ -265,7 +265,7 @@
             }
           ]
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Disable the SNMP server"
         ]
       },
@@ -320,7 +320,7 @@
             }
           ]
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Disable the VNC server"
         ]
       },
@@ -353,7 +353,7 @@
             }
           ]
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Disable the TFTP server"
         ]
       },
@@ -373,7 +373,7 @@
             }
           ]
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Disable the NTP server",
           "Drop traffic entering port 123/udp"
         ]

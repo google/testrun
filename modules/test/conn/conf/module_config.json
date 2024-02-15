@@ -18,7 +18,7 @@
         "test_description": "The device under test has received an IP address from the DHCP server and responds to an ICMP echo (ping) request",
         "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.",
         "required_result": "Required",
-        "steps_to_resolve": [
+        "recommendations": [
           "Enable DHCP",
           "Install a DHCP client"
         ]
@@ -28,7 +28,7 @@
         "test_description": "Check and note device physical address.",
         "expected_behavior": "N/A",
         "required_result": "Required",
-        "steps_to_resolve": [
+        "recommendations": [
           "Ensure that the MAC address is set by hardware only"
         ]
       },
@@ -37,7 +37,7 @@
         "test_description": "The device under test hs a MAC address prefix that is registered against a known manufacturer.",
         "expected_behavior": "The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database.",
         "required_result": "Required",
-        "steps_to_resolve": [
+        "recommendations": [
           "Register the device MAC address with IEEE"
         ]
       },
@@ -63,7 +63,7 @@
             }
           ]
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Install a DHCP client that supports private address space"
         ]
       },
@@ -81,7 +81,7 @@
             }
           ]
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Install a DHCP client that supports shared address space",
           "Enable shared address space support in the DHCP client"
         ]
@@ -91,7 +91,7 @@
         "test_description": "The network switch port connected to the device reports only one IP address for the device under test.",
         "expected_behavior": "The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible.",
         "required_result": "Required",
-        "steps_to_resolve": [
+        "recommendations": [
           "Ensure that all ports on the device are isolated",
           "Ensure only one DHCP client is running"
         ]
@@ -101,7 +101,7 @@
         "test_description": "The device under test responds to an ICMP echo (ping) request.",
         "expected_behavior": "The device under test responds to an ICMP echo (ping) request.",
         "required_result": "Required",
-        "steps_to_resolve": [
+        "recommendations": [
           "Configure device to allow ICMP requests (ping)",
           "Create a firewall exception to allow ICMP requests from LAN"
         ]
@@ -114,7 +114,7 @@
         "config":{
           "lease_wait_time_sec": 60
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Install a compliant DHCP client"
         ]
       },
@@ -126,7 +126,7 @@
         "config":{
           "lease_wait_time_sec": 60
         },
-        "steps_to_resolve": [
+        "recommendations": [
           "Install a compliant DHCP client"
         ]
       },
@@ -135,7 +135,7 @@
         "test_description": "The device forms a valid IPv6 address as a combination of the IPv6 router prefix and the device interface identifier",
         "expected_behavior": "The device under test complies with RFC4862 and forms a valid IPv6 SLAAC address",
         "required_result": "Required",
-        "steps_to_resolve": [
+        "recommendations": [
           "Install a network manager that supports IPv6",
           "Disable DHCPv6"
         ]
@@ -145,7 +145,7 @@
         "test_description": "The device responds to an IPv6 ping (ICMPv6 Echo) request to the SLAAC address",
         "expected_behavior": "The device responds to the ping as per RFC4443",
         "required_result": "Required",
-        "steps_to_resolve": [
+        "recommendations": [
           "Enable ping response to IPv6 ICMP requests in network manager settings",
           "Create a firewall exception to allow ICMPv6 via LAN"
         ]

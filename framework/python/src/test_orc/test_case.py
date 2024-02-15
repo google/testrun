@@ -24,4 +24,4 @@ class TestCase:  # pylint: disable=too-few-public-methods,too-many-instance-attr
   description: str = ""
   expected_behavior: str = ""
   required_result: str = "Recommended"
-  steps_to_resolve: list = field(default_factory=lambda: [])
+  recommendations: list = field(default_factory=lambda: [])
