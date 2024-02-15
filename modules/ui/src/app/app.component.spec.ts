@@ -43,7 +43,6 @@ import {
   MOCK_PROGRESS_DATA_IDLE,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
 } from './mocks/progress.mock';
-import { LoaderService } from './services/loader.service';
 import { Routes } from './model/routes';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { State } from '@ngrx/store';
@@ -58,7 +57,6 @@ describe('AppComponent', () => {
   let compiled: HTMLElement;
   let router: Router;
   let mockService: SpyObj<TestRunService>;
-  let mockLoaderService: SpyObj<LoaderService>;
   let store: MockStore<AppState>;
   let focusNavigation = true;
   let mockFocusManagerService: SpyObj<FocusManagerService>;
@@ -89,7 +87,6 @@ describe('AppComponent', () => {
       'setIsOpenStartTestrun',
     ]);
 
-    mockLoaderService = jasmine.createSpyObj(['setLoading']);
     mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
       'focusFirstElementInContainer',
     ]);
@@ -115,7 +112,6 @@ describe('AppComponent', () => {
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
-        { provide: LoaderService, useValue: mockLoaderService },
         {
           provide: State,
           useValue: {
@@ -288,12 +284,6 @@ describe('AppComponent', () => {
     settingsBtn.click();
 
     expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
-  });
-
-  it('#reloadInterfaces should call setLoading in loaderService', () => {
-    component.reloadInterfaces();
-
-    expect(mockLoaderService.setLoading).toHaveBeenCalledWith(true);
   });
 
   describe('menu button', () => {

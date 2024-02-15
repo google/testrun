@@ -16,12 +16,10 @@
 
 import { Device } from '../model/device';
 import { TestrunStatus } from '../model/testrun-status';
-import { SystemInterfaces } from '../services/test-run.service';
-import { SystemConfig } from '../model/setting';
+import { SystemInterfaces } from '../model/setting';
 
 export interface AppState {
   appComponent: AppComponentState;
-  settings: SettingsState;
   shared: SharedState;
 }
 
@@ -48,10 +46,6 @@ export interface SharedState {
   hasConnectionSettings: boolean;
 }
 
-export interface SettingsState {
-  systemConfig: SystemConfig;
-}
-
 export const initialAppComponentState: AppComponentState = {
   isMenuOpen: false,
   interfaces: {},
@@ -59,10 +53,6 @@ export const initialAppComponentState: AppComponentState = {
   isStatusLoaded: false,
   devicesLength: 0,
   error: false,
-};
-
-export const initialSettingsState: SettingsState = {
-  systemConfig: {},
 };
 
 export const initialSharedState: SharedState = {

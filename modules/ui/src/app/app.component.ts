@@ -17,12 +17,11 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
-import { SystemInterfaces, TestRunService } from './services/test-run.service';
+import { TestRunService } from './services/test-run.service';
 import { Observable } from 'rxjs';
 import { Device } from './model/device';
 import { TestrunStatus, StatusOfTestrun } from './model/testrun-status';
 import { Router } from '@angular/router';
-import { LoaderService } from './services/loader.service';
 import { CalloutType } from './model/callout-type';
 import { tap, shareReplay } from 'rxjs/operators';
 import { Routes } from './model/routes';
@@ -35,13 +34,9 @@ import {
   selectInterfaces,
   selectMenuOpened,
 } from './store/selectors';
-import {
-  fetchInterfaces,
-  fetchSystemConfig,
-  toggleMenu,
-  updateFocusNavigation,
-} from './store/actions';
+import { toggleMenu, updateFocusNavigation } from './store/actions';
 import { appFeatureKey } from './store/reducers';
+import { SystemInterfaces } from './model/setting';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -82,7 +77,6 @@ export class AppComponent implements OnInit {
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private testRunService: TestRunService,
-    private readonly loaderService: LoaderService,
     private route: Router,
     private store: Store<AppState>,
     private state: State<AppState>,
@@ -138,11 +132,6 @@ export class AppComponent implements OnInit {
       }),
       shareReplay({ refCount: true, bufferSize: 1 })
     );
-
-    this.getSystemInterfaces();
-
-    this.store.dispatch(fetchSystemConfig());
-    //this.store.dispatch(fetchSystemConfigAndInterfaces());
   }
 
   navigateToDeviceRepository(): void {
@@ -170,11 +159,6 @@ export class AppComponent implements OnInit {
     return await this.openGeneralSettings(false);
   }
 
-  reloadInterfaces(): void {
-    this.showLoading();
-    this.getSystemInterfaces();
-  }
-
   public toggleMenu(event: MouseEvent) {
     event.stopPropagation();
     this.store.dispatch(toggleMenu());
@@ -196,18 +180,5 @@ export class AppComponent implements OnInit {
   async openGeneralSettings(openSettingFromToggleBtn: boolean) {
     this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
     await this.settingsDrawer.open();
-  }
-
-  private getSystemInterfaces(): void {
-    this.store.dispatch(fetchInterfaces());
-    this.hideLoading();
-  }
-
-  private showLoading() {
-    this.loaderService.setLoading(true);
-  }
-
-  private hideLoading() {
-    this.loaderService.setLoading(false);
   }
 }

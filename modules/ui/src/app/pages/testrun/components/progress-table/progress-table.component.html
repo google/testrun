@@ -13,53 +13,68 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container
-  *ngIf="dataSource$ | async as dataSource"
-  class="progress-content">
-  <table
-    mat-table
-    [dataSource]="dataSource"
-    class="progress-table"
-    tabindex="0">
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef class="table-header-cell">Name</th>
-      <td mat-cell *matCellDef="let element" class="table-cell">
-        <span>{{ element.name }}</span>
-      </td>
-    </ng-container>
+<ng-container *ngIf="dataSource$ | async as dataSource">
+  <mat-accordion displayMode="flat" multi class="tests-container" tabindex="0">
+    <section class="tests-header-row">
+      <span class="tests-header-cell">Name</span>
+      <span class="tests-header-cell">Description</span>
+      <span class="tests-header-cell">Result</span>
+      <span class="tests-header-cell expander-button-cell">
+        <button
+          *ngIf="stepsToResolve?.length"
+          mat-icon-button
+          class="expander-button"
+          [attr.aria-label]="getAriaLabel()"
+          (click)="isAllCollapsed ? accordion.openAll() : accordion.closeAll()">
+          <mat-icon fontSet="material-icons-outlined">
+            {{ isAllCollapsed ? 'keyboard_arrow_down' : 'keyboard_arrow_up' }}
+          </mat-icon>
+        </button>
+      </span>
+    </section>
 
-    <ng-container matColumnDef="description">
-      <th mat-header-cell *matHeaderCellDef class="table-header-cell">
-        Description
-      </th>
-      <td mat-cell *matCellDef="let element" class="table-cell">
-        <span>{{ element.description }}</span>
-      </td>
+    <ng-container *ngFor="let item of dataSource">
+      <mat-expansion-panel
+        *ngIf="item.recommendations; else simpleRow"
+        [expanded]="true"
+        (afterCollapse)="checkAllCollapsed()"
+        (afterExpand)="checkAllCollapsed()"
+        class="expansion-panel-row tests-row">
+        <mat-expansion-panel-header class="expansion-panel-header">
+          <ng-container
+            *ngTemplateOutlet="
+              ItemData;
+              context: { item: item }
+            "></ng-container>
+        </mat-expansion-panel-header>
+        <div class="expansion-panel-content cel-description">
+          <app-callout [type]="CalloutType.ErrorOutline">
+            Steps to resolve
+            <ul class="cel-description-list">
+              <li *ngFor="let point of item.recommendations">{{ point }}</li>
+            </ul>
+          </app-callout>
+        </div>
+      </mat-expansion-panel>
+      <ng-template #simpleRow>
+        <div class="tests-item-row tests-row">
+          <ng-container
+            *ngTemplateOutlet="
+              ItemData;
+              context: { item: item }
+            "></ng-container>
+        </div>
+      </ng-template>
     </ng-container>
-
-    <ng-container matColumnDef="result">
-      <th mat-header-cell *matHeaderCellDef class="table-header-cell">
-        Result
-      </th>
-      <td
-        mat-cell
-        *matCellDef="let element"
-        class="table-cell table-cell-result">
-        <span
-          class="table-cell-result-text"
-          [ngClass]="getResultClass(element.result)">
-          <span>{{ element.result }}</span>
-        </span>
-      </td>
-    </ng-container>
-
-    <tr
-      mat-header-row
-      *matHeaderRowDef="displayedColumns"
-      class="table-header-row"></tr>
-    <tr
-      mat-row
-      *matRowDef="let row; columns: displayedColumns"
-      class="table-row"></tr>
-  </table>
+  </mat-accordion>
 </ng-container>
+
+<ng-template #ItemData let-item="item">
+  <span class="tests-item-cell">{{ item.name }}</span>
+  <span class="tests-item-cell">{{ item.description }}</span>
+  <span class="tests-item-cell tests-item-cell-result">
+    <span class="cell-result-text" [ngClass]="getResultClass(item.result)">
+      <span>{{ item.result }}</span>
+    </span>
+  </span>
+</ng-template>

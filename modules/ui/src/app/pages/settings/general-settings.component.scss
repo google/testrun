@@ -56,19 +56,24 @@
 }
 
 .setting-drawer-content {
-  padding: 11px 16px 8px 16px;
+  padding: 0 16px 8px 16px;
   overflow: hidden;
   flex: 1;
 
   form {
     display: grid;
-    grid-template-rows: repeat(7, auto) 1fr;
     height: 100%;
   }
 
   .setting-drawer-content-form-empty {
     grid-template-rows: repeat(2, auto) 1fr;
   }
+}
+
+.setting-drawer-content-inputs {
+  overflow: auto;
+  margin: 0 -16px;
+  padding: 0 16px;
 }
 
 .error-message-container {
@@ -81,70 +86,9 @@
   margin-top: 0;
 }
 
-.setting-form-label {
-  font-size: 18px;
-  color: $dark-grey;
-}
-
-:host:has(.two-ports-message) .internet-label {
-  padding-top: 16px;
-}
-
-.setting-label-description {
-  font-family: $font-secondary;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: 0.2px;
-  margin: 10px 0;
-  color: $dark-grey;
-}
-
-.setting-option-value {
-  padding: 14px 16px;
-}
-
-.option-value {
-  margin: 0;
-  font-family: Roboto;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 20px;
-  letter-spacing: 0.2px;
-
-  &.top {
-    color: #3c4043;
-  }
-
-  &.bottom {
-    color: #5f6368;
-  }
-}
-
-.setting-field {
-  ::ng-deep .mat-mdc-form-field-infix {
-    min-height: 76px;
-    display: flex;
-    align-items: center;
-  }
-
-  ::ng-deep .mat-mdc-floating-label {
-    font-family: Roboto;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 20px;
-    letter-spacing: 0.2px;
-  }
-
-  ::ng-deep .mat-mdc-floating-label:not(.mdc-floating-label--float-above) {
-    top: 35px;
-  }
-}
-
 .message {
   margin: 0;
-  padding: 16px 0 0 0;
+  padding: 6px 0 12px 0;
   color: $grey-800;
   font-family: $font-secondary;
   font-size: 14px;

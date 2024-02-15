@@ -20,7 +20,6 @@ import {
   selectHasConnectionSettings,
   selectInterfaces,
   selectMenuOpened,
-  selectSystemConfig,
 } from './selectors';
 
 describe('Selectors', () => {
@@ -32,9 +31,6 @@ describe('Selectors', () => {
       devicesLength: 0,
       focusNavigation: false,
       error: false,
-    },
-    settings: {
-      systemConfig: {},
     },
     shared: {
       hasConnectionSettings: false,
@@ -48,11 +44,6 @@ describe('Selectors', () => {
 
   it('should select interfaces', () => {
     const result = selectInterfaces.projector(initialState);
-    expect(result).toEqual({});
-  });
-
-  it('should select system config', () => {
-    const result = selectSystemConfig.projector(initialState);
     expect(result).toEqual({});
   });
 
