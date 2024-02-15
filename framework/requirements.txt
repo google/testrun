@@ -19,3 +19,6 @@ pydantic==1.10.11
 # Requirements for testing
 pytest
 pytest-timeout
+
+# Requirements for the report
+markdown

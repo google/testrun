@@ -17,6 +17,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { BypassComponent } from './bypass.component';
 import { Component } from '@angular/core';
+import { FocusManagerService } from '../../services/focus-manager.service';
+import SpyObj = jasmine.SpyObj;
 
 @Component({
   selector: 'app-test-bypass',
@@ -29,11 +31,14 @@ class TestBypassComponent {}
 describe('BypassComponent', () => {
   let component: TestBypassComponent;
   let fixture: ComponentFixture<TestBypassComponent>;
+  let mockService: SpyObj<FocusManagerService>;
 
   beforeEach(() => {
+    mockService = jasmine.createSpyObj(['focusFirstElementInContainer']);
     TestBed.configureTestingModule({
       imports: [BypassComponent],
       declarations: [TestBypassComponent],
+      providers: [{ provide: FocusManagerService, useValue: mockService }],
     });
     fixture = TestBed.createComponent(TestBypassComponent);
     component = fixture.componentInstance;
@@ -49,13 +54,10 @@ describe('BypassComponent', () => {
       const button = fixture.nativeElement.querySelector(
         '.navigation-bypass-button'
       ) as HTMLButtonElement;
-      const testButton = fixture.nativeElement.querySelector(
-        '#test-button'
-      ) as HTMLButtonElement;
 
       button?.click();
 
-      expect(document.activeElement).toBe(testButton);
+      expect(mockService.focusFirstElementInContainer).toHaveBeenCalled();
     });
   });
 });

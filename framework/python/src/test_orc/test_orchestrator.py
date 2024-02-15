@@ -110,11 +110,18 @@ class TestOrchestrator:
 
     report = TestReport()
     report.from_json(self._generate_report())
+    report.add_module_reports(self.get_session().get_module_reports())
     device.add_report(report)
 
     self._write_reports(report)
     self._test_in_progress = False
-    self._timestamp_results(device)
+    self.get_session().set_report_url(report.get_report_url())
+
+    # Move testing output from runtime to local device folder
+    timestamp_dir = self._timestamp_results(device)
+
+    # Archive the runtime directory
+    self._zip_results(timestamp_dir)
 
     LOGGER.debug("Cleaning old test results...")
     self._cleanup_old_test_results(device)
@@ -236,6 +243,7 @@ class TestOrchestrator:
       device.mac_addr.replace(":", "")
     )
 
+    # Define the directory
     completed_results_dir = os.path.join(
       self._root_path,
       LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
@@ -247,6 +255,34 @@ class TestOrchestrator:
     # most recent test
     shutil.copytree(cur_results_dir, completed_results_dir, dirs_exist_ok=True)
     util.run_command(f"chown -R {self._host_user} '{completed_results_dir}'")
+
+    return completed_results_dir
+
+  def _zip_results(self, dest_path):
+
+    try:
+      LOGGER.debug("Archiving test results")
+
+      # Define where to save the zip file
+      zip_location = os.path.join(dest_path, "results")
+
+      # The runtime directory to include in ZIP
+      path_to_zip = os.path.join(
+        self._root_path,
+        RUNTIME_DIR,
+        self._session.get_target_device().mac_addr.replace(":", ""))
+
+      # Create ZIP file
+      shutil.make_archive(zip_location, "zip", path_to_zip)
+
+      # Check that the ZIP was successfully created
+      zip_file = zip_location + ".zip"
+      LOGGER.info(f'''Archive {'created at ' + zip_file
+                               if os.path.exists(zip_file)
+                               else'creation failed'}''')
+
+    except Exception as error:
+      LOGGER.error(f"Failed to create zip file: {error}")
 
   def test_in_progress(self):
     return self._test_in_progress
@@ -379,8 +415,19 @@ class TestOrchestrator:
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
       LOGGER.error(
-          f"Error occurred whilst obtaining results for module {module.name}")
+        f"Error occurred whilst obtaining results for module {module.name}")
+
       LOGGER.error(results_error)
+    # Get report from the module
+    report_file = f"{container_runtime_dir}/{module.name}_report.md"
+    try:
+      with open(report_file, "r", encoding="utf-8") as f:
+        module_report = f.read()
+        self._session.add_module_report(module_report)
+    except (FileNotFoundError, PermissionError) as report_error:
+      LOGGER.error(
+        f"Error occurred whilst obtaining report for module {module.name}")
+      LOGGER.error(report_error)
 
     LOGGER.info(f"Test module {module.name} has finished")
 

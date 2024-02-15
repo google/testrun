@@ -39,9 +39,11 @@ class TestRunSession():
     self._started = None
     self._finished = None
     self._results = []
+    self._module_reports = []
     self._runtime_params = []
     self._device_repository = []
     self._total_tests = 0
+    self._report_url = None
 
     self._version = None
     self._load_version()
@@ -173,6 +175,10 @@ class TestRunSession():
     self._config.update(config_json)
     self._save_config()
 
+    # Update log level
+    LOGGER.debug(f'Setting log level to {config_json["log_level"]}')
+    logger.set_log_level(config_json['log_level'])
+
   def set_target_device(self, device):
     self._device = device
 
@@ -206,6 +212,9 @@ class TestRunSession():
   def get_test_results(self):
     return self._results
 
+  def get_module_reports(self):
+    return self._module_reports
+
   def get_report_tests(self):
     return {
       'total': self.get_total_tests(),
@@ -214,6 +223,9 @@ class TestRunSession():
 
   def add_test_result(self, test_result):
     self._results.append(test_result)
+
+  def add_module_report(self, module_report):
+    self._module_reports.append(module_report)
 
   def get_all_reports(self):
 
@@ -231,17 +243,22 @@ class TestRunSession():
   def get_total_tests(self):
     return self._total_tests
 
+  def get_report_url(self):
+    return self._report_url
+
+  def set_report_url(self, url):
+    self._report_url = url
+
   def reset(self):
     self.set_status('Idle')
     self.set_target_device(None)
+    self._report_url = None
     self._total_tests = 0
     self._results = []
     self._started = None
     self._finished = None
 
   def to_json(self):
-
-    # TODO: Add report URL
 
     results = {
       'total': self.get_total_tests(),
@@ -255,6 +272,9 @@ class TestRunSession():
       'finished': self.get_finished(),
       'tests': results
     }
+
+    if self._report_url is not None:
+      session_json['report'] = self.get_report_url()
 
     return session_json
 

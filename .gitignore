@@ -5,7 +5,11 @@ error
 pylint.out
 __pycache__/
 build/
-testing/unit_test/temp/
-*.deb
+# Ignore generated files from unit tests
+testing/unit/dns/output/
+testing/unit/nmap/output/
+testing/unit/tls/output/
+testing/unit/report/output/
 
+*.deb
 make/DEBIAN/postinst

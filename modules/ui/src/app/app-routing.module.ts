@@ -20,19 +20,22 @@ const routes: Routes = [
   {
     path: 'testrun',
     loadChildren: () =>
-      import('./progress/progress.module').then(m => m.ProgressModule),
+      import('./pages/testrun/progress.module').then(m => m.ProgressModule),
+    title: 'Testrun',
   },
   {
     path: 'devices',
     loadChildren: () =>
-      import('./device-repository/device-repository.module').then(
+      import('./pages/devices/device-repository.module').then(
         m => m.DeviceRepositoryModule
       ),
+    title: 'Testrun - Devices',
   },
   {
     path: 'reports',
     loadChildren: () =>
-      import('./history/history.module').then(m => m.HistoryModule),
+      import('./pages/reports/history.module').then(m => m.HistoryModule),
+    title: 'Testrun - Reports',
   },
   {
     path: '',
