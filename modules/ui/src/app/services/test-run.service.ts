@@ -29,6 +29,7 @@ import {
 import { Version } from '../model/version';
 
 const API_URL = 'http://localhost:8000';
+export const SYSTEM_STOP = '/system/stop';
 
 @Injectable({
   providedIn: 'root',
@@ -137,7 +138,7 @@ export class TestRunService {
 
   stopTestrun(): Observable<boolean> {
     return this.http
-      .post<{ success: string }>(`${API_URL}/system/stop`, {})
+      .post<{ success: string }>(`${API_URL}${SYSTEM_STOP}`, {})
       .pipe(map(() => true));
   }
 
