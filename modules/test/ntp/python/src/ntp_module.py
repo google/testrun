@@ -140,8 +140,12 @@ class NTPModule(TestModule):
         # Local NTP server syncs to external servers so we need to filter only
         # for traffic to/from the device
         if self._device_mac in (source_mac, destination_mac):
-          source_ip = packet[IP].src
-          destination_ip = packet[IP].dst
+          if IP in packet:
+            source_ip = packet[IP].src
+            dest_ip = packet[IP].dst
+          elif IPv6 in packet:
+            source_ip = packet[IPv6].src
+            dest_ip = packet[IPv6].dst
 
           # 'Mode' field indicates client (3) or server (4)
           ntp_mode = 'Client' if packet[NTP].mode == 3 else 'Server'
@@ -151,7 +155,7 @@ class NTPModule(TestModule):
 
           ntp_data.append({
               'Source': source_ip,
-              'Destination': destination_ip,
+              'Destination': dest_ip,
               'Type': ntp_mode,
               'Version': str(ntp_version),
               'Timestamp': float(packet.time),
