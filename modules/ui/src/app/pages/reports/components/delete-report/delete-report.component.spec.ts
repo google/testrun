@@ -19,22 +19,17 @@ import { DeleteReportComponent } from './delete-report.component';
 import { of } from 'rxjs';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { DeleteFormComponent } from '../../../../components/delete-form/delete-form.component';
-import { TestRunService } from '../../../../services/test-run.service';
-import SpyObj = jasmine.SpyObj;
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../../../mocks/progress.mock';
 
 describe('DeleteReportComponent', () => {
   let compiled: HTMLElement;
   let component: DeleteReportComponent;
   let fixture: ComponentFixture<DeleteReportComponent>;
-  let mockService: SpyObj<TestRunService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['deleteReport', 'removeReport']);
     TestBed.configureTestingModule({
       imports: [DeleteReportComponent, MatDialogModule],
       providers: [
-        { provide: TestRunService, useValue: mockService },
         {
           provide: MatDialogRef,
           useValue: {
@@ -55,23 +50,13 @@ describe('DeleteReportComponent', () => {
     });
 
     it('#deleteReport should open delete dialog', () => {
-      const deviceRemovedSpy = spyOn(component.deviceRemoved, 'emit');
+      const deviceRemovedSpy = spyOn(component.removeDevice, 'emit');
       spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
       } as MatDialogRef<typeof DeleteFormComponent>);
-      mockService.deleteReport.and.returnValue(of(true));
-      mockService.removeReport.and.callThrough();
 
       component.deleteReport(new Event('click'));
 
-      expect(mockService.deleteReport).toHaveBeenCalledWith(
-        '01:02:03:04:05:06',
-        '2023-06-22T09:20:00.123Z'
-      );
-      expect(mockService.removeReport).toHaveBeenCalledWith(
-        '01:02:03:04:05:06',
-        '2023-06-22T09:20:00.123Z'
-      );
       expect(deviceRemovedSpy).toHaveBeenCalled();
     });
   });
