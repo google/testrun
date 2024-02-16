@@ -13,11 +13,12 @@
 # limitations under the License.
 """NTP test module"""
 from test_module import TestModule
-from scapy.all import rdpcap, IP, NTP, UDP, Ether
+from scapy.all import rdpcap, IP, IPv6, NTP, UDP, Ether
 from datetime import datetime
+import os
 
 LOG_NAME = 'test_ntp'
-MODULE_REPORT_FILE_NAME='ntp_report.md'
+MODULE_REPORT_FILE_NAME = 'ntp_report.md'
 NTP_SERVER_CAPTURE_FILE = '/runtime/network/ntp.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
@@ -26,22 +27,23 @@ LOGGER = None
 
 class NTPModule(TestModule):
   """NTP Test module"""
+
   def __init__(self,
-             module,
-             log_dir=None,
-             conf_file=None,
-             results_dir=None,
-             NTP_SERVER_CAPTURE_FILE=NTP_SERVER_CAPTURE_FILE,
-             STARTUP_CAPTURE_FILE=STARTUP_CAPTURE_FILE,
-             MONITOR_CAPTURE_FILE=MONITOR_CAPTURE_FILE):
+               module,
+               log_dir=None,
+               conf_file=None,
+               results_dir=None,
+               ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE,
+               startup_capture_file=STARTUP_CAPTURE_FILE,
+               monitor_capture_file=MONITOR_CAPTURE_FILE):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
                      log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
-    self.ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE
-    self.startup_capture_file=STARTUP_CAPTURE_FILE
-    self.monitor_capture_file=MONITOR_CAPTURE_FILE
+    self.ntp_server_capture_file = ntp_server_capture_file
+    self.startup_capture_file = startup_capture_file
+    self.monitor_capture_file = monitor_capture_file
     # TODO: This should be fetched dynamically
     self._ntp_server = '10.10.10.5'
 
@@ -56,12 +58,13 @@ class NTPModule(TestModule):
     for row in ntp_table_data:
       # Timestamp of the NTP packet
       dt_object = datetime.utcfromtimestamp(row['Timestamp'])
-     
+
       # Extract milliseconds from the fractional part of the timestamp
       milliseconds = int((row['Timestamp'] % 1) * 1000)
 
       # Format the datetime object with milliseconds
-      formatted_time = dt_object.strftime('%b %d, %Y %H:%M:%S.') + '{:03d}'.format(milliseconds)
+      formatted_time = dt_object.strftime(
+          '%b %d, %Y %H:%M:%S.') + f'{milliseconds:03d}'
 
       table_content += (f'''| {row['Source']: ^17} '''
                         f'''| {row['Destination']: ^17} '''
@@ -70,16 +73,17 @@ class NTPModule(TestModule):
                         f'''| {formatted_time: ^{27}} |\n''')
 
     # Set the summary variables
-    local_requests = sum(1 for row in ntp_table_data
-                         if row['Destination'] == self._ntp_server and row['Type'] == 'Client')
-    external_requests = sum(1 for row in ntp_table_data
-                            if row['Destination'] != self._ntp_server and row['Type'] == 'Client')
+    local_requests = sum(
+        1 for row in ntp_table_data
+        if row['Destination'] == self._ntp_server and row['Type'] == 'Client')
+    external_requests = sum(
+        1 for row in ntp_table_data
+        if row['Destination'] != self._ntp_server and row['Type'] == 'Client')
 
-    total_requests = sum(1 for row in ntp_table_data
-                            if row['Type'] == 'Client')
+    total_requests = sum(1 for row in ntp_table_data if row['Type'] == 'Client')
 
     total_responses = sum(1 for row in ntp_table_data
-                            if row['Type'] == 'Server')
+                          if row['Type'] == 'Server')
 
     summary = '## Summary'
     summary += f'''\n- Requests to local NTP servers: {local_requests}'''
@@ -87,7 +91,7 @@ class NTPModule(TestModule):
     summary += f'''\n- Total NTP requests: {total_requests}'''
     summary += f'''\n- Total NTP responses: {total_responses}'''
 
-    if total_requests + total_responses >0:
+    if total_requests + total_responses > 0:
 
       header = (f'''| {'Source': ^17} '''
                 f'''| {'Destination': ^17} '''
@@ -98,24 +102,25 @@ class NTPModule(TestModule):
                      f'''|{'-' * 11}'''
                      f'''|{'-' * 29}|''')
 
-      markdown_template = (f'''# NTP Module\n'''
-        f'''\n{header}\n{header_line}\n{table_content}\n{summary}''')
+      markdown_template = (
+          f'''# NTP Module\n'''
+          f'''\n{header}\n{header_line}\n{table_content}\n{summary}''')
 
     else:
       markdown_template = (f'''# NTP Module\n'''
-      f'''\n- No NTP traffic detected\n'''
-      f'''\n{summary}''')
+                           f'''\n- No NTP traffic detected\n'''
+                           f'''\n{summary}''')
 
-    LOGGER.debug("Markdown Report:\n" + markdown_template)
+    LOGGER.debug('Markdown Report:\n' + markdown_template)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
 
-    # Write the content to a file 
+    # Write the content to a file
     with open(report_path, 'w', encoding='utf-8') as file:
       file.write(markdown_template)
 
-    LOGGER.info('Module report generated at: ' + str(report_path))  
+    LOGGER.info('Module report generated at: ' + str(report_path))
 
     return report_path
 
@@ -134,14 +139,13 @@ class NTPModule(TestModule):
 
         # Local NTP server syncs to external servers so we need to filter only
         # for traffic to/from the device
-        if ((source_mac == self._device_mac) or 
-            (destination_mac == self._device_mac)):
+        if self._device_mac in (source_mac, destination_mac):
           source_ip = packet[IP].src
           destination_ip = packet[IP].dst
 
           # 'Mode' field indicates client (3) or server (4)
           ntp_mode = 'Client' if packet[NTP].mode == 3 else 'Server'
-          
+
           # 'VN' field indicates NTP version
           ntp_version = packet[NTP].version
 
@@ -150,7 +154,7 @@ class NTPModule(TestModule):
               'Destination': destination_ip,
               'Type': ntp_mode,
               'Version': str(ntp_version),
-              'Timestamp': packet.time,  
+              'Timestamp': packet.time,
           })
 
     # Filter unique entries based on 'Timestamp'

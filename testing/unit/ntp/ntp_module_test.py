@@ -26,12 +26,14 @@ REPORTS_DIR = '/reports'
 CAPTURES_DIR = '/captures'
 
 LOCAL_REPORT = f'{TEST_FILES_DIR}/{REPORTS_DIR}/ntp_report_local.md'
-LOCAL_REPORT_NO_NTP = f'{TEST_FILES_DIR}/{REPORTS_DIR}/ntp_report_local_no_ntp.md'
+LOCAL_REPORT_NO_NTP = (f'{TEST_FILES_DIR}/{REPORTS_DIR}/'
+                       f'ntp_report_local_no_ntp.md')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 # Define the capture files to be used for the test
-NTP_SERVER_CAPTURE_FILE = F'{TEST_FILES_DIR}/{CAPTURES_DIR}/ntp.pcap'
-STARTUP_CAPTURE_FILE = F'{TEST_FILES_DIR}/{CAPTURES_DIR}/startup.pcap'
-MONITOR_CAPTURE_FILE = F'{TEST_FILES_DIR}/{CAPTURES_DIR}/monitor.pcap'
+NTP_SERVER_CAPTURE_FILE = f'{TEST_FILES_DIR}/{CAPTURES_DIR}/ntp.pcap'
+STARTUP_CAPTURE_FILE = f'{TEST_FILES_DIR}/{CAPTURES_DIR}/startup.pcap'
+MONITOR_CAPTURE_FILE = f'{TEST_FILES_DIR}/{CAPTURES_DIR}/monitor.pcap'
+
 
 class NTPModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""
@@ -48,11 +50,10 @@ class NTPModuleTest(unittest.TestCase):
                            log_dir=OUTPUT_DIR,
                            conf_file=CONF_FILE,
                            results_dir=OUTPUT_DIR,
-                           NTP_SERVER_CAPTURE_FILE=NTP_SERVER_CAPTURE_FILE,
-                           STARTUP_CAPTURE_FILE=STARTUP_CAPTURE_FILE,
-                           MONITOR_CAPTURE_FILE=MONITOR_CAPTURE_FILE)
+                           ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE,
+                           startup_capture_file=STARTUP_CAPTURE_FILE,
+                           monitor_capture_file=MONITOR_CAPTURE_FILE)
 
-    
     report_out_path = ntp_module.generate_module_report()
 
     # Read the generated report
@@ -99,9 +100,9 @@ class NTPModuleTest(unittest.TestCase):
                            log_dir=OUTPUT_DIR,
                            conf_file=CONF_FILE,
                            results_dir=OUTPUT_DIR,
-                           NTP_SERVER_CAPTURE_FILE=ntp_server_cap_file,
-                           STARTUP_CAPTURE_FILE=startup_cap_file,
-                           MONITOR_CAPTURE_FILE=monitor_cap_file)
+                           ntp_server_capture_file=ntp_server_cap_file,
+                           startup_capture_file=startup_cap_file,
+                           monitor_capture_file=monitor_cap_file)
 
     report_out_path = ntp_module.generate_module_report()
 
