@@ -154,7 +154,7 @@ class NTPModule(TestModule):
               'Destination': destination_ip,
               'Type': ntp_mode,
               'Version': str(ntp_version),
-              'Timestamp': packet.time,
+              'Timestamp': float(packet.time),
           })
 
     # Filter unique entries based on 'Timestamp'
