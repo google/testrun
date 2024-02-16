@@ -19,21 +19,21 @@ PYTHONPATH="$PYTHONPATH:$PWD/modules/test/ntp/python/src"
 # Set the python path with all sources
 export PYTHONPATH
 
-# # Run the DHCP Unit tests
-# python3 -u $PWD/modules/network/dhcp-1/python/src/grpc_server/dhcp_config_test.py
-# python3 -u $PWD/modules/network/dhcp-2/python/src/grpc_server/dhcp_config_test.py
+# Run the DHCP Unit tests
+python3 -u $PWD/modules/network/dhcp-1/python/src/grpc_server/dhcp_config_test.py
+python3 -u $PWD/modules/network/dhcp-2/python/src/grpc_server/dhcp_config_test.py
 
-# # Run the TLS Module Unit Tests
-# python3 -u $PWD/testing/unit/tls/tls_module_test.py
+# Run the TLS Module Unit Tests
+python3 -u $PWD/testing/unit/tls/tls_module_test.py
 
-# # Run the DNS Module Unit Tests
-# python3 -u $PWD/testing/unit/dns/dns_module_test.py
+# Run the DNS Module Unit Tests
+python3 -u $PWD/testing/unit/dns/dns_module_test.py
 
-# # Run the NMAP Module Unit Tests
-# python3 -u $PWD/testing/unit/nmap/nmap_module_test.py
+# Run the NMAP Module Unit Tests
+python3 -u $PWD/testing/unit/nmap/nmap_module_test.py
 
-# # Run the Report Unit Tests
-# python3 -u $PWD/testing/unit/report/report_test.py
+# Run the Report Unit Tests
+python3 -u $PWD/testing/unit/report/report_test.py
 
 # Run the NMAP Module Unit Tests
 python3 -u $PWD/testing/unit/ntp/ntp_module_test.py
