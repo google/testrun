@@ -23,7 +23,6 @@ import {
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { ReportActionComponent } from '../../../../components/report-action/report-action.component';
-import { TestRunService } from '../../../../services/test-run.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteFormComponent } from '../../../../components/delete-form/delete-form.component';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
@@ -42,10 +41,9 @@ export class DeleteReportComponent
   extends ReportActionComponent
   implements OnDestroy
 {
-  @Output() deviceRemoved = new EventEmitter<void>();
+  @Output() removeDevice = new EventEmitter<void>();
   private destroy$: Subject<boolean> = new Subject<boolean>();
   constructor(
-    private testRunService: TestRunService,
     public dialog: MatDialog,
     datePipe: DatePipe
   ) {
@@ -76,15 +74,7 @@ export class DeleteReportComponent
       .pipe(takeUntil(this.destroy$))
       .subscribe(deleteReport => {
         if (deleteReport) {
-          this.testRunService
-            .deleteReport(this.data.device.mac_addr, this.data.started || '')
-            .subscribe(() => {
-              this.deviceRemoved.emit();
-              this.testRunService.removeReport(
-                this.data.device.mac_addr,
-                this.data.started || ''
-              );
-            });
+          this.removeDevice.emit();
         }
       });
   }
