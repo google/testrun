@@ -23,176 +23,48 @@ import {
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { TestRunService } from '../../services/test-run.service';
 import {
-  HistoryTestrun,
   StatusResultClassName,
   TestrunStatus,
 } from '../../model/testrun-status';
 import { DatePipe } from '@angular/common';
 import { MatSort, Sort } from '@angular/material/sort';
 import { Subject, takeUntil } from 'rxjs';
-import { MatRow, MatTableDataSource } from '@angular/material/table';
+import { MatRow } from '@angular/material/table';
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { tap } from 'rxjs/internal/operators/tap';
-import { DateRange, FilterName, Filters } from '../../model/filters';
+import { FilterName, Filters } from '../../model/filters';
+import { ReportsStore } from './reports.store';
 
 @Component({
   selector: 'app-history',
   templateUrl: './history.component.html',
   styleUrls: ['./history.component.scss'],
+  providers: [ReportsStore],
 })
 export class HistoryComponent implements OnInit, OnDestroy {
-  displayedColumns: string[] = [
-    'started',
-    'duration',
-    'deviceInfo',
-    'deviceFirmware',
-    'status',
-    'report',
-  ];
-  chips: string[] = ['chips'];
-  dataSource: MatTableDataSource<HistoryTestrun> =
-    new MatTableDataSource<HistoryTestrun>([]);
-
   public readonly FilterName = FilterName;
-  public filterOpened = false;
-  public activeFilter = '';
-  public resultList = ['Compliant', 'Non-Compliant'];
-  filteredValues: Filters = {
-    deviceInfo: '',
-    deviceFirmware: '',
-    results: [],
-    dateRange: '',
-  };
   private destroy$: Subject<boolean> = new Subject<boolean>();
   @ViewChild(MatSort, { static: false }) sort!: MatSort;
-  dataLoaded = false;
-  selectedRow: MatRow | null = null;
+  viewModel$ = this.store.viewModel$;
   constructor(
     private testRunService: TestRunService,
     private datePipe: DatePipe,
     private liveAnnouncer: LiveAnnouncer,
-    public dialog: MatDialog
-  ) {
-    this.testRunService.fetchHistory();
-  }
+    public dialog: MatDialog,
+    private store: ReportsStore
+  ) {}
 
   ngOnInit() {
-    this.testRunService
-      .getHistory()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(res => {
-        if (!res) {
-          return;
-        }
-        const data = this.formateData(res);
-
-        this.dataSource = new MatTableDataSource(data);
-
-        this.dataSource.sortingDataAccessor = (
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          data: any,
-          sortHeaderId: string
-        ): string => {
-          const value = data[sortHeaderId];
-          return typeof value === 'string' ? value.toLocaleLowerCase() : value;
-        };
-        this.dataSource.filterPredicate = this.customFilterPredicate();
-        this.dataSource.filter = JSON.stringify(this.filteredValues);
-        this.dataSource.sort = this.sort;
-        this.dataLoaded = true;
-      });
-  }
-
-  customFilterPredicate() {
-    const filterPredicate = (data: HistoryTestrun, filter: string): boolean => {
-      const searchString = JSON.parse(filter);
-      const isIncludeDeviceInfo = this.filterStringData(
-        data.deviceInfo,
-        searchString.deviceInfo
-      );
-      const isIncludeDeviceFirmware = this.filterStringData(
-        data.deviceFirmware,
-        searchString.deviceFirmware
-      );
-
-      const isIncludeStatus =
-        searchString.results?.length === 0 ||
-        searchString.results?.includes(data.status);
-      const isIncludeStartedDate = this.filterStartedDateRange(
-        data.started,
-        searchString
-      );
-
-      return (
-        isIncludeDeviceInfo &&
-        isIncludeDeviceFirmware &&
-        isIncludeStatus &&
-        isIncludeStartedDate
-      );
-    };
-    return filterPredicate;
-  }
-
-  private filterStringData(data: string, searchString: string): boolean {
-    return (
-      data
-        .toString()
-        .trim()
-        .toLowerCase()
-        .indexOf(searchString.trim().toLowerCase()) !== -1
-    );
-  }
-
-  private filterStartedDateRange(
-    startedDate: string | null,
-    searchString: { dateRange: DateRange }
-  ): boolean {
-    let isIncludeDate = true;
-
-    if (!searchString.dateRange || !startedDate) {
-      return isIncludeDate;
-    }
-
-    const startDate = searchString.dateRange.start
-      ? typeof searchString.dateRange.start === 'string'
-        ? Date.parse(searchString.dateRange.start)
-        : searchString.dateRange.start.getDate()
-      : 0;
-    const endDate = searchString.dateRange.end
-      ? typeof searchString.dateRange.end === 'string'
-        ? Date.parse(searchString.dateRange.end)
-        : searchString.dateRange.end.getDate()
-      : 0;
-
-    const startedDateWithoutTime = new Date(startedDate).toDateString();
-    const dateToFilter = Date.parse(startedDateWithoutTime);
-
-    if (startDate && endDate && dateToFilter) {
-      isIncludeDate = dateToFilter >= startDate && dateToFilter <= endDate;
-    } else if (startDate && dateToFilter) {
-      isIncludeDate = dateToFilter >= startDate;
-    }
-
-    return isIncludeDate;
-  }
-
-  private formateData(data: TestrunStatus[]): HistoryTestrun[] {
-    return data.map(item => {
-      return {
-        ...item,
-        deviceFirmware: item.device.firmware,
-        deviceInfo: item.device.manufacturer + ' ' + item.device.model,
-        duration: this.getDuration(item.started, item.finished),
-      };
-    });
+    this.store.getHistory();
+    this.store.updateSort(this.sort);
   }
 
   getFormattedDateString(date: string | null) {
     return date ? this.datePipe.transform(date, 'd MMM y H:mm') : '';
   }
   sortData(sortState: Sort) {
-    this.dataSource.sort = this.sort;
+    this.store.updateSort(this.sort);
     if (sortState.direction) {
       this.liveAnnouncer.announce(`Sorted ${sortState.direction}ending`);
     } else {
@@ -200,40 +72,22 @@ export class HistoryComponent implements OnInit, OnDestroy {
     }
   }
 
-  private transformDate(date: number, format: string) {
-    return this.datePipe.transform(date, format);
-  }
-
-  public getDuration(started: string | null, finished: string | null): string {
-    if (!started || !finished) {
-      return '';
-    }
-    const startedDate = new Date(started);
-    const finishedDate = new Date(finished);
-
-    const durationMillisecond = finishedDate.getTime() - startedDate.getTime();
-    const durationMinuts = this.transformDate(durationMillisecond, 'mm');
-    const durationSeconds = this.transformDate(durationMillisecond, 'ss');
-
-    return `${durationMinuts}m ${durationSeconds}s`;
-  }
-
   public getResultClass(status: string): StatusResultClassName {
     return this.testRunService.getResultClass(status);
   }
 
-  openFilter(event: Event, filter: string) {
+  openFilter(event: Event, filter: string, filterOpened: boolean) {
     event.stopPropagation();
     const target = new ElementRef(event.currentTarget);
 
-    if (!this.filterOpened) {
+    if (!filterOpened) {
       this.openFilterDialog(target, filter);
     }
   }
 
   openFilterDialog(target: ElementRef<EventTarget | null>, filter: string) {
-    this.filterOpened = true;
-    this.activeFilter = filter;
+    this.store.setFilterOpened(true);
+    this.store.setActiveFiler(filter);
     const dialogRef = this.dialog.open(FilterDialogComponent, {
       ariaLabel: 'Filters',
       data: {
@@ -251,33 +105,32 @@ export class HistoryComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         tap(() => {
-          this.filterOpened = false;
-          this.activeFilter = '';
+          this.store.setFilterOpened(false);
+          this.store.setActiveFiler('');
         })
       )
       .subscribe(filteredData => {
         if (filteredData) {
           if (filter === FilterName.Results) {
-            this.filteredValues.results = filteredData.results;
+            this.store.setFilteredValuesResults(filteredData.results);
           }
           if (filter === FilterName.DeviceInfo) {
-            this.filteredValues.deviceInfo = filteredData.deviceInfo;
+            this.store.setFilteredValuesDeviceInfo(filteredData.deviceInfo);
           }
           if (filter === FilterName.DeviceFirmware) {
-            this.filteredValues.deviceFirmware = filteredData.deviceFirmware;
+            this.store.setFilteredValuesDeviceFirmware(
+              filteredData.deviceFirmware
+            );
           }
           if (filter === FilterName.Started) {
-            this.filteredValues.dateRange = filteredData.dateRange;
+            this.store.setFilteredValuesDateRange(filteredData.dateRange);
           }
-
-          this.dataSource.filter = JSON.stringify(this.filteredValues);
         }
       });
   }
 
   filterCleared(filters: Filters) {
-    this.filteredValues = filters;
-    this.dataSource.filter = JSON.stringify(this.filteredValues);
+    this.store.setFilteredValues(filters);
   }
 
   ngOnDestroy() {
@@ -285,17 +138,8 @@ export class HistoryComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
-  isFiltersEmpty() {
-    return Object.values(this.filteredValues).every(value => {
-      if (value.start === '') {
-        return value.end.length === 0;
-      }
-      return value.length === 0;
-    });
-  }
-
   selectRow(row: MatRow) {
-    this.selectedRow = row;
+    this.store.setSelectedRow(row);
   }
 
   trackByStarted(index: number, item: TestrunStatus) {
@@ -316,5 +160,13 @@ export class HistoryComponent implements OnInit, OnDestroy {
       ) as HTMLButtonElement;
       menuButton?.focus();
     }
+  }
+
+  removeDevice(data: TestrunStatus) {
+    this.store.deleteReport({
+      mac_addr: data.device.mac_addr,
+      started: data.started,
+    });
+    this.focusNextButton();
   }
 }
