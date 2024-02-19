@@ -19,6 +19,7 @@ LOG_NAME = 'test_tls'
 LOGGER = None
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
+GATEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
 
 
 class TLSModule(TestModule):
@@ -77,30 +78,24 @@ class TLSModule(TestModule):
       return None, 'Could not resolve device IP address'
 
   def _validate_tls_client(self, client_ip, tls_version):
-    monitor_result = self._tls_util.validate_tls_client(
+    client_results = self._tls_util.validate_tls_client(
         client_ip=client_ip,
         tls_version=tls_version,
-        capture_file=MONITOR_CAPTURE_FILE)
-    startup_result = self._tls_util.validate_tls_client(
-        client_ip=client_ip,
-        tls_version=tls_version,
-        capture_file=STARTUP_CAPTURE_FILE)
+        capture_files=[MONITOR_CAPTURE_FILE,STARTUP_CAPTURE_FILE,
+                       GATEWAY_CAPTURE_FILE])
 
-    LOGGER.info('Montor: ' + str(monitor_result))
-    LOGGER.info('Startup: ' + str(startup_result))
-
-    if (not monitor_result[0] and monitor_result[0] is not None) or (
-        not startup_result[0] and startup_result[0] is not None):
-      result = False, startup_result[1] + monitor_result[1]
-    elif monitor_result[0] and startup_result[0]:
-      result = True, startup_result[1] + monitor_result[1]
-    elif monitor_result[0] and startup_result[0] is None:
-      result = True, monitor_result[1]
-    elif startup_result[0] and monitor_result[0] is None:
-      result = True, startup_result[1]
+    # Generate results based on the state
+    result_message = 'No outbound connections were found.'
+    result_state = None
+    #If any of the packetes detect failed client comms, fail the test
+    if not client_results[0] and client_results[0] is not None:
+      result_state = False
+      result_message = client_results[1]
     else:
-      result = None, startup_result[1]
-    return result
+      if client_results[0]:
+        result_state = True
+        result_message = client_results[1]
+    return result_state, result_message
 
   def _resolve_device_ip(self):
     # If the ipv4 address wasn't resolved yet, try again

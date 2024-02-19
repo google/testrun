@@ -176,7 +176,8 @@ class Api:
       ]:
       LOGGER.debug("Testrun is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
-      return self._generate_msg(False, "Testrun is already running")
+      return self._generate_msg(False, "Testrun cannot be started " +
+                                "whilst a test is running on another device")
 
     # Check if requested device is known in the device repository
     if device is None:
