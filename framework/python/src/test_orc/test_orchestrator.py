@@ -24,6 +24,7 @@ from common import logger, util
 from common.testreport import TestReport
 from test_orc.module import TestModule
 from test_orc.test_case import TestCase
+import threading
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
@@ -35,7 +36,6 @@ SAVED_DEVICE_REPORTS = "report/{device_folder}/"
 LOCAL_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
 TESTRUN_DIR = "/usr/local/testrun"
-API_URL = "http://localhost:8000"
 
 
 class TestOrchestrator:
@@ -43,7 +43,10 @@ class TestOrchestrator:
 
   def __init__(self, session, net_orc):
     self._test_modules = []
+    self._container_logs = []
     self._session = session
+    self._api_url = (self._session.get_api_url() + ":" +
+                     str(self._session.get_api_port()))
     self._net_orc = net_orc
     self._test_in_progress = False
     self._path = os.path.dirname(
@@ -88,7 +91,7 @@ class TestOrchestrator:
     test_modules = []
     for module in self._test_modules:
 
-      if module is None or not module.enable_container or not module.enabled:
+      if module is None or not module.enable_container:
         continue
 
       if not self._is_module_enabled(module, device):
@@ -133,15 +136,15 @@ class TestOrchestrator:
     LOGGER.debug(f"Writing reports to {out_dir}")
 
     # Write the json report
-    with open(os.path.join(out_dir,"report.json"),"w", encoding="utf-8") as f:
+    with open(os.path.join(out_dir, "report.json"), "w", encoding="utf-8") as f:
       json.dump(test_report.to_json(), f, indent=2)
 
     # Write the html report
-    with open(os.path.join(out_dir,"report.html"),"w", encoding="utf-8") as f:
+    with open(os.path.join(out_dir, "report.html"), "w", encoding="utf-8") as f:
       f.write(test_report.to_html())
 
     # Write the pdf report
-    with open(os.path.join(out_dir,"report.pdf"),"wb") as f:
+    with open(os.path.join(out_dir, "report.pdf"), "wb") as f:
       f.write(test_report.to_pdf().getvalue())
 
     util.run_command(f"chown -R {self._host_user} {out_dir}")
@@ -157,11 +160,10 @@ class TestOrchestrator:
     report["status"] = self._calculate_result()
     report["tests"] = self.get_session().get_report_tests()
     report["report"] = (
-      API_URL + "/" +
-      SAVED_DEVICE_REPORTS.replace("{device_folder}",
-      self.get_session().get_target_device().device_folder) +
-      self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S")
-    )
+        self._api_url + "/" + SAVED_DEVICE_REPORTS.replace(
+            "{device_folder}",
+            self.get_session().get_target_device().device_folder) +
+        self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S"))
 
     return report
 
@@ -229,18 +231,14 @@ class TestOrchestrator:
   def _timestamp_results(self, device):
 
     # Define the current device results directory
-    cur_results_dir = os.path.join(
-      self._root_path,
-      RUNTIME_DIR,
-      device.mac_addr.replace(":", "")
-    )
+    cur_results_dir = os.path.join(self._root_path, RUNTIME_DIR,
+                                   device.mac_addr.replace(":", ""))
 
-    # Define the directory 
+    # Define the directory
     completed_results_dir = os.path.join(
-      self._root_path,
-      LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
-      self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S")
-    )
+        self._root_path,
+        LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
+        self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S"))
 
     # Copy the results to the timestamp directory
     # leave current copy in place for quick reference to
@@ -254,12 +252,18 @@ class TestOrchestrator:
     return self._test_in_progress
 
   def _is_module_enabled(self, module, device):
+
+    # Enable module as fallback
     enabled = True
     if device.test_modules is not None:
       test_modules = device.test_modules
       if module.name in test_modules:
         if "enabled" in test_modules[module.name]:
           enabled = test_modules[module.name]["enabled"]
+      else:
+        # Module has not been specified in the device config
+        enabled = module.enabled
+
     return enabled
 
   def _run_test_module(self, module):
@@ -271,18 +275,19 @@ class TestOrchestrator:
 
     device = self._session.get_target_device()
 
-    LOGGER.info("Running test module " + module.name)
+    LOGGER.info(f"Running test module {module.name}")
 
     try:
 
       device_test_dir = os.path.join(self._root_path, RUNTIME_DIR,
                                      device.mac_addr.replace(":", ""))
 
-      root_certs_dir = os.path.join(self._root_path,DEVICE_ROOT_CERTS)
-
+      root_certs_dir = os.path.join(self._root_path, DEVICE_ROOT_CERTS)
 
       container_runtime_dir = os.path.join(device_test_dir, module.name)
       os.makedirs(container_runtime_dir, exist_ok=True)
+
+      container_log_file = os.path.join(container_runtime_dir, "module.log")
 
       network_runtime_dir = os.path.join(self._root_path, "runtime/network")
 
@@ -324,13 +329,13 @@ class TestOrchestrator:
                     read_only=True)
           ],
           environment={
-            "TZ": self.get_session().get_timezone(),
-            "HOST_USER": self._host_user,
-            "DEVICE_MAC": device.mac_addr,
-            "IPV4_ADDR": device.ip_addr,
-            "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
-            "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
-            "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
+              "TZ": self.get_session().get_timezone(),
+              "HOST_USER": self._host_user,
+              "DEVICE_MAC": device.mac_addr,
+              "IPV4_ADDR": device.ip_addr,
+              "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
+              "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
+              "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
           })
     except (docker.errors.APIError,
             docker.errors.ContainerError) as container_error:
@@ -347,19 +352,24 @@ class TestOrchestrator:
     test_module_timeout = time.time() + module.timeout
     status = self._get_module_status(module)
 
+    # Resolving container logs is blocking so we need to spawn a new thread
     log_stream = module.container.logs(stream=True, stdout=True, stderr=True)
+    log_thread = threading.Thread(target=self._get_container_logs,
+                                  args=(log_stream, ))
+    log_thread.daemon = True
+    log_thread.start()
+
     while (status == "running" and self._session.get_status() == "In Progress"):
       if time.time() > test_module_timeout:
         LOGGER.error("Module timeout exceeded, killing module: " + module.name)
-        self._stop_module(module=module,kill=True)
+        self._stop_module(module=module, kill=True)
         break
-      try:
-        line = next(log_stream).decode("utf-8").strip()
-        if re.search(LOG_REGEX, line):
-          print(line)
-      except Exception:  # pylint: disable=W0718
-        time.sleep(1)
       status = self._get_module_status(module)
+
+    # Save all container logs to file
+    with open(container_log_file, "w", encoding="utf-8") as f:
+      for line in self._container_logs:
+        f.write(line + "\n")
 
     # Check that Testrun has not been stopped whilst this module was running
     if self.get_session().get_status() == "Stopping":
@@ -385,6 +395,20 @@ class TestOrchestrator:
       LOGGER.error(results_error)
 
     LOGGER.info(f"Test module {module.name} has finished")
+
+  # Resolve all current log data in the containers log_stream
+  # this method is blocking so should be called in
+  # a thread or within a proper blocking context
+  def _get_container_logs(self, log_stream):
+    self._container_logs = []
+    for log_chunk in log_stream:
+      lines = log_chunk.decode("utf-8").splitlines()
+      # Process each line and strip blank space
+      processed_lines = [line.strip() for line in lines if line.strip()]
+      self._container_logs.extend(processed_lines)
+      for line in lines:
+        if re.search(LOG_REGEX, line):
+          print(line)
 
   def _get_module_status(self, module):
     container = self._get_module_container(module)
@@ -459,13 +483,12 @@ class TestOrchestrator:
       for test_case_json in module_json["config"]["tests"]:
         try:
           test_case = TestCase(
-            name=test_case_json["name"],
-            description=test_case_json["test_description"],
-            expected_behavior=test_case_json["expected_behavior"],
-            required_result=test_case_json["required_result"]
-          )
+              name=test_case_json["name"],
+              description=test_case_json["test_description"],
+              expected_behavior=test_case_json["expected_behavior"],
+              required_result=test_case_json["required_result"])
           module.tests.append(test_case)
-        except Exception as error:
+        except Exception as error:  # pylint: disable=W0718
           LOGGER.error("Failed to load test case. See error for details")
           LOGGER.error(error)
 
