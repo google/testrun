@@ -87,7 +87,8 @@ class TLSModule(TestModule):
     # Generate results based on the state
     result_message = 'No outbound connections were found.'
     result_state = None
-    #If any of the packetes detect failed client comms, fail the test
+
+    # If any of the packetes detect failed client comms, fail the test
     if not client_results[0] and client_results[0] is not None:
       result_state = False
       result_message = client_results[1]

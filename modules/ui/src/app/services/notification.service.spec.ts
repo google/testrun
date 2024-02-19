@@ -50,9 +50,13 @@ describe('NotificationService', () => {
       expect(args[0]).toBe('something good happened');
       expect(args[1]).toBe('OK');
       expect(args[2]).toEqual({
-        horizontalPosition: 'right',
+        horizontalPosition: 'center',
         panelClass: 'test-run-notification',
+<<<<<<< HEAD
         duration: 5000,
+=======
+        duration: 0,
+>>>>>>> dev
       });
     });
 
@@ -63,7 +67,11 @@ describe('NotificationService', () => {
 
       const args = matSnackBarSpy.calls.argsFor(0);
       expect(args[2]).toEqual({
+<<<<<<< HEAD
         horizontalPosition: 'right',
+=======
+        horizontalPosition: 'center',
+>>>>>>> dev
         panelClass: 'test-run-notification',
         duration: 15000,
       });

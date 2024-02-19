@@ -19,7 +19,11 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
 import { Device, TestModule } from '../model/device';
 import { map, ReplaySubject, retry } from 'rxjs';
+<<<<<<< HEAD
 import { SystemConfig } from '../model/setting';
+=======
+import { SystemConfig, SystemInterfaces } from '../model/setting';
+>>>>>>> dev
 import {
   StatusOfTestResult,
   StatusOfTestrun,
@@ -28,11 +32,16 @@ import {
 } from '../model/testrun-status';
 import { Version } from '../model/version';
 
+<<<<<<< HEAD
 const API_URL = `http://${window.location.hostname}:8000`;
 
 export type SystemInterfaces = {
   [key: string]: string;
 };
+=======
+const API_URL = 'http://localhost:8000';
+export const SYSTEM_STOP = '/system/stop';
+>>>>>>> dev
 
 @Injectable({
   providedIn: 'root',
@@ -71,15 +80,22 @@ export class TestRunService {
   public isOpenAddDevice$ = this.isOpenAddDeviceSub$.asObservable();
   private isOpenStartTestrunSub$ = new BehaviorSubject<boolean>(false);
   public isOpenStartTestrun$ = this.isOpenStartTestrunSub$.asObservable();
+<<<<<<< HEAD
   private _systemConfig = new BehaviorSubject<SystemConfig | null>(null);
   public systemConfig$ = this._systemConfig.asObservable();
+=======
+>>>>>>> dev
   private systemStatusSubject = new ReplaySubject<TestrunStatus>(1);
   public systemStatus$ = this.systemStatusSubject.asObservable();
   private isTestrunStartedSub$ = new BehaviorSubject<boolean>(false);
   public isTestrunStarted$ = this.isTestrunStartedSub$.asObservable();
+<<<<<<< HEAD
   private hasConnectionSettingSub$ = new BehaviorSubject<boolean | null>(null);
   public hasConnectionSetting$ = this.hasConnectionSettingSub$.asObservable();
   private history = new BehaviorSubject<TestrunStatus[] | null>(null);
+=======
+  // private history = new BehaviorSubject<TestrunStatus[] | null>(null);
+>>>>>>> dev
   private version = new BehaviorSubject<Version | null>(null);
 
   constructor(private http: HttpClient) {}
@@ -92,9 +108,12 @@ export class TestRunService {
     this.isOpenStartTestrunSub$.next(isOpen);
   }
 
+<<<<<<< HEAD
   setHasConnectionSetting(hasSetting: boolean): void {
     this.hasConnectionSettingSub$.next(hasSetting);
   }
+=======
+>>>>>>> dev
   getDevices(): BehaviorSubject<Device[] | null> {
     return this.devices;
   }
@@ -103,10 +122,13 @@ export class TestRunService {
     this.devices.next(devices);
   }
 
+<<<<<<< HEAD
   setSystemConfig(config: SystemConfig): void {
     this._systemConfig.next(config);
   }
 
+=======
+>>>>>>> dev
   setSystemStatus(status: TestrunStatus): void {
     this.systemStatusSubject.next(status);
   }
@@ -152,7 +174,11 @@ export class TestRunService {
 
   stopTestrun(): Observable<boolean> {
     return this.http
+<<<<<<< HEAD
       .post<{ success: string }>(`${API_URL}/system/stop`, {})
+=======
+      .post<{ success: string }>(`${API_URL}${SYSTEM_STOP}`, {})
+>>>>>>> dev
       .pipe(map(() => true));
   }
 
@@ -226,6 +252,7 @@ export class TestRunService {
     }
   }
 
+<<<<<<< HEAD
   fetchHistory(): void {
     this.http.get<TestrunStatus[]>(`${API_URL}/reports`).subscribe(
       data => {
@@ -239,17 +266,33 @@ export class TestRunService {
 
   getHistory(): BehaviorSubject<TestrunStatus[] | null> {
     return this.history;
+=======
+  getHistory(): Observable<TestrunStatus[] | null> {
+    return this.http.get<TestrunStatus[]>(`${API_URL}/reports`);
+>>>>>>> dev
   }
 
   public getResultClass(result: string): StatusResultClassName {
     return {
+<<<<<<< HEAD
       green: result === StatusOfTestResult.Compliant,
+=======
+      green:
+        result === StatusOfTestResult.Compliant ||
+        result === StatusOfTestResult.CompliantLimited ||
+        result === StatusOfTestResult.CompliantHigh,
+>>>>>>> dev
       red:
         result === StatusOfTestResult.NonCompliant ||
         result === StatusOfTestResult.Error,
       blue:
         result === StatusOfTestResult.SmartReady ||
+<<<<<<< HEAD
         result === StatusOfTestResult.Info,
+=======
+        result === StatusOfTestResult.Info ||
+        result === StatusOfTestResult.InProgress,
+>>>>>>> dev
       grey:
         result === StatusOfTestResult.Skipped ||
         result === StatusOfTestResult.NotStarted,
@@ -287,6 +330,7 @@ export class TestRunService {
       })
       .pipe(map(() => true));
   }
+<<<<<<< HEAD
 
   removeReport(mac_addr: string, started: string): void {
     const idx = this.history.value?.findIndex(
@@ -298,4 +342,6 @@ export class TestRunService {
       this.history.next(this.history.value);
     }
   }
+=======
+>>>>>>> dev
 }

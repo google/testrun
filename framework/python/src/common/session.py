@@ -40,6 +40,7 @@ class TestRunSession():
     self._started = None
     self._finished = None
     self._results = []
+    self._module_reports = []
     self._runtime_params = []
     self._device_repository = []
     self._total_tests = 0
@@ -182,6 +183,10 @@ class TestRunSession():
     self._config.update(config_json)
     self._save_config()
 
+    # Update log level
+    LOGGER.debug(f'Setting log level to {config_json["log_level"]}')
+    logger.set_log_level(config_json['log_level'])
+
   def set_target_device(self, device):
     self._device = device
 
@@ -215,6 +220,9 @@ class TestRunSession():
   def get_test_results(self):
     return self._results
 
+  def get_module_reports(self):
+    return self._module_reports
+
   def get_report_tests(self):
     return {
       'total': self.get_total_tests(),
@@ -223,6 +231,9 @@ class TestRunSession():
 
   def add_test_result(self, test_result):
     self._results.append(test_result)
+
+  def add_module_report(self, module_report):
+    self._module_reports.append(module_report)
 
   def get_all_reports(self):
 

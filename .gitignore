@@ -8,7 +8,10 @@ build/
 
 # Ignore generated files from unit tests
 testing/unit_test/temp/
+testing/unit/dns/output/
+testing/unit/nmap/output/
 testing/unit/tls/output/
+testing/unit/report/output/
 
 *.deb
 make/DEBIAN/postinst

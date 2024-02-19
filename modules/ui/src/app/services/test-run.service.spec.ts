@@ -20,8 +20,13 @@ import {
 import { fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
 import { Device, TestModule } from '../model/device';
 
+<<<<<<< HEAD
 import { SystemInterfaces, TestRunService } from './test-run.service';
 import { SystemConfig } from '../model/setting';
+=======
+import { TestRunService } from './test-run.service';
+import { SystemConfig, SystemInterfaces } from '../model/setting';
+>>>>>>> dev
 import {
   MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
@@ -117,6 +122,7 @@ describe('TestRunService', () => {
     req.flush(deviceArray);
   });
 
+<<<<<<< HEAD
   it('setSystemConfig should update the systemConfig data', () => {
     service.setSystemConfig(MOCK_SYSTEM_CONFIG);
 
@@ -133,6 +139,8 @@ describe('TestRunService', () => {
     });
   });
 
+=======
+>>>>>>> dev
   it('getSystemConfig should return systemConfig data', () => {
     const apiUrl = 'http://localhost:8000/system/config';
 
@@ -262,7 +270,11 @@ describe('TestRunService', () => {
       });
 
       result = reports;
+<<<<<<< HEAD
       service.fetchHistory();
+=======
+      service.getHistory();
+>>>>>>> dev
       const req = httpTestingController.expectOne(
         'http://localhost:8000/reports'
       );
@@ -272,7 +284,11 @@ describe('TestRunService', () => {
       req.flush(reports);
     });
 
+<<<<<<< HEAD
     it('should return [] when error happens', () => {
+=======
+    /*    it('should return [] when error happens', () => {
+>>>>>>> dev
       let result: TestrunStatus[] | null = null;
 
       service.getHistory().subscribe(res => {
@@ -286,6 +302,7 @@ describe('TestRunService', () => {
       });
 
       req.flush([], { status: 500, statusText: 'error' });
+<<<<<<< HEAD
     });
   });
 
@@ -346,6 +363,79 @@ describe('TestRunService', () => {
 
       expect(result1).toEqual(expectedResult);
       expect(result2).toEqual(expectedResult);
+=======
+    });*/
+  });
+
+  describe('#getResultClass', () => {
+    const availableResultClasses = {
+      green: false,
+      red: false,
+      blue: false,
+      grey: false,
+    };
+
+    const statusesForGreenRes = [
+      StatusOfTestResult.Compliant,
+      StatusOfTestResult.CompliantLimited,
+      StatusOfTestResult.CompliantHigh,
+    ];
+
+    const statusesForBlueRes = [
+      StatusOfTestResult.SmartReady,
+      StatusOfTestResult.Info,
+      StatusOfTestResult.InProgress,
+    ];
+
+    const statusesForRedRes = [
+      StatusOfTestResult.NonCompliant,
+      StatusOfTestResult.Error,
+    ];
+
+    const statusesForGreyRes = [
+      StatusOfTestResult.Skipped,
+      StatusOfTestResult.NotStarted,
+    ];
+
+    statusesForGreenRes.forEach(testCase => {
+      it(`should return class "green" if test result is "${testCase}"`, () => {
+        const expectedResult = { ...availableResultClasses, green: true };
+
+        const result = service.getResultClass(testCase);
+
+        expect(result).toEqual(expectedResult);
+      });
+    });
+
+    statusesForBlueRes.forEach(testCase => {
+      it(`should return class "blue" if test result is "${testCase}"`, () => {
+        const expectedResult = { ...availableResultClasses, blue: true };
+
+        const result = service.getResultClass(testCase);
+
+        expect(result).toEqual(expectedResult);
+      });
+    });
+
+    statusesForRedRes.forEach(testCase => {
+      it(`should return class "red" if test result is "${testCase}"`, () => {
+        const expectedResult = { ...availableResultClasses, red: true };
+
+        const result = service.getResultClass(testCase);
+
+        expect(result).toEqual(expectedResult);
+      });
+    });
+
+    statusesForGreyRes.forEach(testCase => {
+      it(`should return class "grey" if test result is "${testCase}"`, () => {
+        const expectedResult = { ...availableResultClasses, grey: true };
+
+        const result = service.getResultClass(testCase);
+
+        expect(result).toEqual(expectedResult);
+      });
+>>>>>>> dev
     });
   });
 
@@ -419,7 +509,11 @@ describe('TestRunService', () => {
     req.flush({});
   });
 
+<<<<<<< HEAD
   it('removeReport should remove device from history list', fakeAsync(() => {
+=======
+  /*  it('removeReport should remove device from history list', fakeAsync(() => {
+>>>>>>> dev
     const reports = [
       {
         status: 'Completed',
@@ -450,7 +544,11 @@ describe('TestRunService', () => {
             report.started === '2023-06-22T10:11:00.123Z'
         )
     ).toEqual(false);
+<<<<<<< HEAD
   }));
+=======
+  }));*/
+>>>>>>> dev
 
   it('#saveDevice should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/device';

@@ -43,9 +43,19 @@ import {
   MOCK_PROGRESS_DATA_IDLE,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
 } from './mocks/progress.mock';
+<<<<<<< HEAD
 import { LoaderService } from './services/loader.service';
 import { Routes } from './model/routes';
 import { StateService } from './services/state.service';
+=======
+import { Routes } from './model/routes';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { State } from '@ngrx/store';
+import { appFeatureKey } from './store/reducers';
+import { FocusManagerService } from './services/focus-manager.service';
+import { AppState } from './store/state';
+import { toggleMenu, updateFocusNavigation } from './store/actions';
+>>>>>>> dev
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -53,8 +63,14 @@ describe('AppComponent', () => {
   let compiled: HTMLElement;
   let router: Router;
   let mockService: SpyObj<TestRunService>;
+<<<<<<< HEAD
   let mockLoaderService: SpyObj<LoaderService>;
   let mockStateService: SpyObj<StateService>;
+=======
+  let store: MockStore<AppState>;
+  let focusNavigation = true;
+  let mockFocusManagerService: SpyObj<FocusManagerService>;
+>>>>>>> dev
 
   const enterKeyEvent = new KeyboardEvent('keydown', {
     key: 'Enter',
@@ -79,6 +95,7 @@ describe('AppComponent', () => {
       'setIsOpenAddDevice',
       'systemStatus$',
       'isTestrunStarted$',
+<<<<<<< HEAD
       'hasConnectionSetting$',
       'setIsOpenStartTestrun',
     ]);
@@ -86,15 +103,27 @@ describe('AppComponent', () => {
     mockLoaderService = jasmine.createSpyObj(['setLoading']);
     mockStateService = jasmine.createSpyObj('mockStateService', [
       'focusFirstElementInMain',
+=======
+      'setIsOpenStartTestrun',
+    ]);
+
+    mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
+      'focusFirstElementInContainer',
+>>>>>>> dev
     ]);
 
     mockService.getDevices.and.returnValue(
       new BehaviorSubject<Device[] | null>([device])
     );
+<<<<<<< HEAD
     mockService.getSystemInterfaces.and.returnValue(of({}));
     (mockService.systemStatus$ as unknown) = of({});
     mockService.isTestrunStarted$ = of(true);
     mockService.hasConnectionSetting$ = of(true);
+=======
+    (mockService.systemStatus$ as unknown) = of({});
+    mockService.isTestrunStarted$ = of(true);
+>>>>>>> dev
 
     TestBed.configureTestingModule({
       imports: [
@@ -111,8 +140,25 @@ describe('AppComponent', () => {
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
+<<<<<<< HEAD
         { provide: LoaderService, useValue: mockLoaderService },
         { provide: StateService, useValue: mockStateService },
+=======
+        {
+          provide: State,
+          useValue: {
+            getValue: () => ({
+              [appFeatureKey]: {
+                appComponent: {
+                  focusNavigation: focusNavigation,
+                },
+              },
+            }),
+          },
+        },
+        provideMockStore({}),
+        { provide: FocusManagerService, useValue: mockFocusManagerService },
+>>>>>>> dev
       ],
       declarations: [
         AppComponent,
@@ -122,11 +168,14 @@ describe('AppComponent', () => {
       ],
     });
 
+    store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
     router = TestBed.get(Router);
+    component.hasConnectionSetting$ = of(true);
     fixture.detectChanges();
     compiled = fixture.nativeElement as HTMLElement;
+    spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
   it('should create the app', () => {
@@ -233,7 +282,11 @@ describe('AppComponent', () => {
     });
   }));
 
+<<<<<<< HEAD
   it('should call focusFirstElementInMain if settingsDrawer opened not from toggleBtn', fakeAsync(() => {
+=======
+  it('should call focusFirstElementInContainer if settingsDrawer opened not from toggleBtn', fakeAsync(() => {
+>>>>>>> dev
     spyOn(component.settingsDrawer, 'close').and.returnValue(
       Promise.resolve('close')
     );
@@ -244,7 +297,13 @@ describe('AppComponent', () => {
     flush();
 
     component.settingsDrawer.close().then(() => {
+<<<<<<< HEAD
       expect(mockStateService.focusFirstElementInMain).toHaveBeenCalled();
+=======
+      expect(
+        mockFocusManagerService.focusFirstElementInContainer
+      ).toHaveBeenCalled();
+>>>>>>> dev
     });
   }));
 
@@ -268,6 +327,7 @@ describe('AppComponent', () => {
     expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
   });
 
+<<<<<<< HEAD
   it('#reloadInterfaces should call setLoading in loaderService', () => {
     component.reloadInterfaces();
 
@@ -276,12 +336,17 @@ describe('AppComponent', () => {
 
   describe('menu button', () => {
     it('should toggle menu open state on click', () => {
+=======
+  describe('menu button', () => {
+    it('should dispatch toggleMenu action', () => {
+>>>>>>> dev
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
       ) as HTMLButtonElement;
 
       menuBtn.click();
 
+<<<<<<< HEAD
       expect(component.isMenuOpen).toBeTrue();
 
       menuBtn.click();
@@ -301,10 +366,18 @@ describe('AppComponent', () => {
     });
 
     it('should focus navigation on tab press if menu button was clicked', () => {
+=======
+      expect(store.dispatch).toHaveBeenCalledWith(toggleMenu());
+    });
+
+    it('should focus navigation on tab press if menu button was clicked', () => {
+      focusNavigation = true;
+>>>>>>> dev
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
       ) as HTMLButtonElement;
 
+<<<<<<< HEAD
       menuBtn.click();
       menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
       const navigationButton = compiled.querySelectorAll('.app-sidebar-button');
@@ -315,13 +388,31 @@ describe('AppComponent', () => {
 
     it('should not focus navigation button on tab press if menu button was not clicked', () => {
       component.focusNavigation = false;
+=======
+      menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
+      const navigation = compiled.querySelector('.app-sidebar');
+
+      expect(store.dispatch).toHaveBeenCalledWith(
+        updateFocusNavigation({ focusNavigation: false })
+      );
+      expect(
+        mockFocusManagerService.focusFirstElementInContainer
+      ).toHaveBeenCalledWith(navigation);
+    });
+
+    it('should not focus navigation button on tab press if menu button was not clicked', () => {
+      focusNavigation = false;
+>>>>>>> dev
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
       ) as HTMLButtonElement;
 
       menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
 
+<<<<<<< HEAD
       expect(component.focusNavigation).toBeFalse();
+=======
+>>>>>>> dev
       expect(document.activeElement).toBe(document.body);
     });
   });
@@ -347,7 +438,11 @@ describe('AppComponent', () => {
   describe('Callout component visibility', () => {
     describe('with no connection settings', () => {
       beforeEach(() => {
+<<<<<<< HEAD
         mockService.hasConnectionSetting$ = of(false);
+=======
+        component.hasConnectionSetting$ = of(false);
+>>>>>>> dev
         component.ngOnInit();
         fixture.detectChanges();
       });
@@ -387,7 +482,11 @@ describe('AppComponent', () => {
 
     describe('with system status as "Idle"', () => {
       beforeEach(() => {
+<<<<<<< HEAD
         mockService.hasConnectionSetting$ = of(true);
+=======
+        component.hasConnectionSetting$ = of(true);
+>>>>>>> dev
         mockService.getDevices.and.returnValue(
           new BehaviorSubject<Device[] | null>([device])
         );
@@ -541,6 +640,39 @@ describe('AppComponent', () => {
         expect(callout).toBeNull();
       });
     });
+<<<<<<< HEAD
+=======
+
+    describe('error', () => {
+      describe('with error', () => {
+        beforeEach(() => {
+          component.error$ = of(true);
+          component.ngOnInit();
+          fixture.detectChanges();
+        });
+        it('should have callout component', () => {
+          const callout = compiled.querySelector('app-callout');
+          const calloutContent = callout?.innerHTML.trim();
+
+          expect(callout).toBeTruthy();
+          expect(calloutContent).toContain('Selected port is missing!');
+        });
+      });
+
+      describe('with no error', () => {
+        beforeEach(() => {
+          component.error$ = of(false);
+          component.ngOnInit();
+          fixture.detectChanges();
+        });
+        it('should not have callout component', () => {
+          const callout = compiled.querySelector('app-callout');
+
+          expect(callout).toBeNull();
+        });
+      });
+    });
+>>>>>>> dev
   });
 
   it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {
@@ -567,6 +699,10 @@ describe('AppComponent', () => {
 })
 class FakeGeneralSettingsComponent {
   @Input() interfaces = [];
+<<<<<<< HEAD
+=======
+  @Input() hasConnectionSettings = false;
+>>>>>>> dev
   @Output() closeSettingEvent = new EventEmitter<void>();
   @Output() reloadInterfacesEvent = new EventEmitter<void>();
 }

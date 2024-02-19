@@ -17,7 +17,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { BypassComponent } from './bypass.component';
 import { Component } from '@angular/core';
+<<<<<<< HEAD
 import { StateService } from '../../services/state.service';
+=======
+import { FocusManagerService } from '../../services/focus-manager.service';
+>>>>>>> dev
 import SpyObj = jasmine.SpyObj;
 
 @Component({
@@ -31,6 +35,7 @@ class TestBypassComponent {}
 describe('BypassComponent', () => {
   let component: TestBypassComponent;
   let fixture: ComponentFixture<TestBypassComponent>;
+<<<<<<< HEAD
   let mockService: SpyObj<StateService>;
 
   beforeEach(() => {
@@ -39,6 +44,16 @@ describe('BypassComponent', () => {
       imports: [BypassComponent],
       declarations: [TestBypassComponent],
       providers: [{ provide: StateService, useValue: mockService }],
+=======
+  let mockService: SpyObj<FocusManagerService>;
+
+  beforeEach(() => {
+    mockService = jasmine.createSpyObj(['focusFirstElementInContainer']);
+    TestBed.configureTestingModule({
+      imports: [BypassComponent],
+      declarations: [TestBypassComponent],
+      providers: [{ provide: FocusManagerService, useValue: mockService }],
+>>>>>>> dev
     });
     fixture = TestBed.createComponent(TestBypassComponent);
     component = fixture.componentInstance;
@@ -57,7 +72,11 @@ describe('BypassComponent', () => {
 
       button?.click();
 
+<<<<<<< HEAD
       expect(mockService.focusFirstElementInMain).toHaveBeenCalled();
+=======
+      expect(mockService.focusFirstElementInContainer).toHaveBeenCalled();
+>>>>>>> dev
     });
   });
 });

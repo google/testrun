@@ -14,22 +14,45 @@
  * limitations under the License.
  */
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+<<<<<<< HEAD
 import { Device } from '../../model/device';
+=======
+import { Device, DeviceView } from '../../model/device';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+>>>>>>> dev
 
 @Component({
   selector: 'app-device-item',
   templateUrl: './device-item.component.html',
   styleUrls: ['./device-item.component.scss'],
   standalone: true,
+<<<<<<< HEAD
+=======
+  imports: [CommonModule, MatButtonModule, MatIconModule],
+>>>>>>> dev
 })
 export class DeviceItemComponent {
   @Input() device!: Device;
   @Input() tabIndex = 0;
+<<<<<<< HEAD
+=======
+  @Input() deviceView!: string;
+>>>>>>> dev
   @Output() itemClicked = new EventEmitter<Device>();
+  @Output() startTestrunClicked = new EventEmitter<Device>();
+  readonly DeviceView = DeviceView;
 
   itemClick(): void {
     this.itemClicked.emit(this.device);
   }
+<<<<<<< HEAD
+=======
+  startTestrunClick(): void {
+    this.startTestrunClicked.emit(this.device);
+  }
+>>>>>>> dev
 
   get label() {
     return `${this.device.manufacturer} ${this.device.model} ${this.device.mac_addr}`;

@@ -13,6 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<< HEAD
+<<<<<<<< HEAD:modules/ui/src/app/services/notification.service.ts
+=======
+>>>>>>> dev
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -22,9 +26,15 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export class NotificationService {
   constructor(private snackBar: MatSnackBar) {}
 
+<<<<<<< HEAD
   notify(message: string, duration = 5000) {
     this.snackBar.open(message, 'OK', {
       horizontalPosition: 'right',
+=======
+  notify(message: string, duration = 0) {
+    this.snackBar.open(message, 'OK', {
+      horizontalPosition: 'center',
+>>>>>>> dev
       panelClass: 'test-run-notification',
       duration: duration,
     });
@@ -32,5 +42,19 @@ export class NotificationService {
 
   dismiss() {
     this.snackBar.dismiss();
+<<<<<<< HEAD
+========
+:host {
+  display: inline-block;
+}
+
+.delete-report-button {
+  cursor: pointer;
+  display: inline-block;
+  & ::ng-deep .mdc-icon-button__ripple {
+    display: none;
+>>>>>>>> dev:modules/ui/src/app/pages/reports/components/delete-report/delete-report.component.scss
+=======
+>>>>>>> dev
   }
 }

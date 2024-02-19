@@ -40,7 +40,11 @@ $nav-open-btn-width: 210px;
   margin-top: $toolbar-height;
 }
 
+<<<<<<< HEAD
 :host.active-menu {
+=======
+.active-menu {
+>>>>>>> dev
   .app-sidebar {
     width: $nav-open-width;
     align-items: start;

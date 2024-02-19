@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<< HEAD
 import {
   Component,
   ElementRef,
@@ -35,6 +36,32 @@ import { tap } from 'rxjs/internal/operators/tap';
 import { shareReplay } from 'rxjs/internal/operators/shareReplay';
 import { Routes } from './model/routes';
 import { StateService } from './services/state.service';
+=======
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
+import { MatDrawer } from '@angular/material/sidenav';
+import { TestRunService } from './services/test-run.service';
+import { Observable } from 'rxjs';
+import { Device } from './model/device';
+import { TestrunStatus, StatusOfTestrun } from './model/testrun-status';
+import { Router } from '@angular/router';
+import { CalloutType } from './model/callout-type';
+import { tap, shareReplay } from 'rxjs/operators';
+import { Routes } from './model/routes';
+import { FocusManagerService } from './services/focus-manager.service';
+import { State, Store } from '@ngrx/store';
+import { AppState } from './store/state';
+import {
+  selectError,
+  selectHasConnectionSettings,
+  selectInterfaces,
+  selectMenuOpened,
+} from './store/selectors';
+import { toggleMenu, updateFocusNavigation } from './store/actions';
+import { appFeatureKey } from './store/reducers';
+import { SystemInterfaces } from './model/setting';
+>>>>>>> dev
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -49,6 +76,7 @@ const CLOSE_URL = '/assets/icons/close.svg';
 })
 export class AppComponent implements OnInit {
   public readonly CalloutType = CalloutType;
+<<<<<<< HEAD
   devices$!: Observable<Device[] | null>;
   systemStatus$!: Observable<TestrunStatus>;
   isTestrunStarted$!: Observable<boolean>;
@@ -65,14 +93,44 @@ export class AppComponent implements OnInit {
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
   @ViewChild('navigation') public navigation!: ElementRef;
   @HostBinding('class.active-menu') isMenuOpen = false;
+=======
+  public readonly StatusOfTestrun = StatusOfTestrun;
+  public readonly Routes = Routes;
+
+  devices$!: Observable<Device[] | null>;
+  systemStatus$!: Observable<TestrunStatus>;
+  isTestrunStarted$!: Observable<boolean>;
+  hasConnectionSetting$: Observable<boolean | null> = this.store.select(
+    selectHasConnectionSettings
+  );
+  isStatusLoaded = false;
+  isConnectionSettingsLoaded = false;
+  private devicesLength = 0;
+  private openedSettingFromToggleBtn = true;
+  isMenuOpen: Observable<boolean> = this.store.select(selectMenuOpened);
+  interfaces: Observable<SystemInterfaces> =
+    this.store.select(selectInterfaces);
+  error$: Observable<boolean> = this.store.select(selectError);
+
+  @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
+  @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
+  @ViewChild('navigation') public navigation!: ElementRef;
+>>>>>>> dev
 
   constructor(
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private testRunService: TestRunService,
+<<<<<<< HEAD
     private readonly loaderService: LoaderService,
     private readonly state: StateService,
     private route: Router
+=======
+    private route: Router,
+    private store: Store<AppState>,
+    private state: State<AppState>,
+    private readonly focusManagerService: FocusManagerService
+>>>>>>> dev
   ) {
     this.testRunService.fetchDevices();
     this.testRunService.getSystemStatus();
@@ -103,7 +161,10 @@ export class AppComponent implements OnInit {
       tap(result => {
         if (result !== null) {
           this.devicesLength = result.length;
+<<<<<<< HEAD
           this.isDevicesLoaded = true;
+=======
+>>>>>>> dev
         } else {
           this.devicesLength = 0;
         }
@@ -117,7 +178,11 @@ export class AppComponent implements OnInit {
 
     this.isTestrunStarted$ = this.testRunService.isTestrunStarted$;
 
+<<<<<<< HEAD
     this.hasConnectionSetting$ = this.testRunService.hasConnectionSetting$.pipe(
+=======
+    this.hasConnectionSetting$.pipe(
+>>>>>>> dev
       tap(result => {
         if (result !== null) {
           this.isConnectionSettingsLoaded = true;
@@ -142,9 +207,14 @@ export class AppComponent implements OnInit {
       if (this.devicesLength > 0) {
         this.toggleSettingsBtn.focus();
       } // else device create window will be opened
+<<<<<<< HEAD
 
       if (!this.openedSettingFromToggleBtn) {
         this.state.focusFirstElementInMain();
+=======
+      if (!this.openedSettingFromToggleBtn) {
+        this.focusManagerService.focusFirstElementInContainer();
+>>>>>>> dev
       }
     });
   }
@@ -153,6 +223,7 @@ export class AppComponent implements OnInit {
     return await this.openGeneralSettings(false);
   }
 
+<<<<<<< HEAD
   reloadInterfaces(): void {
     this.showLoading();
     this.getSystemInterfaces();
@@ -169,21 +240,36 @@ export class AppComponent implements OnInit {
     if (this.isMenuOpen) {
       this.focusNavigation = true; // user will be navigated to side menu on tab
     }
+=======
+  public toggleMenu(event: MouseEvent) {
+    event.stopPropagation();
+    this.store.dispatch(toggleMenu());
+>>>>>>> dev
   }
 
   /**
    * When side menu is opened
    */
   skipToNavigation(event: Event) {
+<<<<<<< HEAD
     if (this.focusNavigation) {
       event.preventDefault(); // if not prevented, second element will be focused
       this.navigation.nativeElement.firstChild.focus(); // focus first button on side
       this.focusNavigation = false; // user will be navigated according to normal flow on tab
+=======
+    if (this.state.getValue()[appFeatureKey].appComponent.focusNavigation) {
+      event.preventDefault(); // if not prevented, second element will be focused
+      this.focusManagerService.focusFirstElementInContainer(
+        this.navigation.nativeElement
+      );
+      this.store.dispatch(updateFocusNavigation({ focusNavigation: false })); // user will be navigated according to normal flow on tab
+>>>>>>> dev
     }
   }
 
   async openGeneralSettings(openSettingFromToggleBtn: boolean) {
     this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
+<<<<<<< HEAD
     this.getSystemInterfaces();
     await this.settingsDrawer.open();
   }
@@ -205,4 +291,8 @@ export class AppComponent implements OnInit {
   private hideLoading() {
     this.loaderService.setLoading(false);
   }
+=======
+    await this.settingsDrawer.open();
+  }
+>>>>>>> dev
 }
