@@ -30,7 +30,7 @@ PYTHONPATH="$PYTHONPATH:$PWD/modules/test/base/python/src"
 PYTHONPATH="$PYTHONPATH:$PWD/modules/test/tls/python/src"
 PYTHONPATH="$PYTHONPATH:$PWD/modules/test/dns/python/src"
 PYTHONPATH="$PYTHONPATH:$PWD/modules/test/nmap/python/src"
-
+PYTHONPATH="$PYTHONPATH:$PWD/modules/test/ntp/python/src"
 # Set the python path with all sources
 export PYTHONPATH
 
@@ -49,6 +49,9 @@ python3 -u $PWD/testing/unit/nmap/nmap_module_test.py
 
 # Run the Report Unit Tests
 python3 -u $PWD/testing/unit/report/report_test.py
+
+# Run the NMAP Module Unit Tests
+python3 -u $PWD/testing/unit/ntp/ntp_module_test.py
 
 
 popd >/dev/null 2>&1

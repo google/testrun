@@ -64,7 +64,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   }
 
   get isFormValues(): boolean {
-    return this.internetControl.value && this.deviceControl.value;
+    return this.internetControl?.value.value && this.deviceControl?.value.value;
   }
 
   get isFormError(): boolean {
@@ -90,6 +90,8 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   reloadSetting(): void {
     this.showLoading();
     this.getSystemInterfaces();
+    this.settingsStore.getSystemConfig();
+    this.setDefaultFormValues();
   }
   closeSetting(message: string): void {
     this.resetForm();
