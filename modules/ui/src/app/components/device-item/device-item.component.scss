@@ -173,3 +173,20 @@ $border-radius: 12px;
   height: 24px;
   font-size: 24px;
 }
+
+.device-item {
+  .item-manufacturer {
+    display: block;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .item-name {
+    width: 230px;
+    box-sizing: border-box;
+    text-align: start;
+  }
+}
