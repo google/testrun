@@ -216,7 +216,6 @@ class ConnectionModule(TestModule):
 
   def _get_dhcp_type(self, packet):
     for option in packet[DHCP].options:
-      # message-type, option 3 = DHCPREQUEST
       if 'message-type' in option:
         return option[1]
 
