@@ -124,6 +124,11 @@ class TestModule:
         test['result'] = 'Skipped'
         test['description'] = 'An error occured whilst running this test'
 
+      # Remove the steps to resolve if compliant already
+      if (test['result'] == 'Compliant' and
+          'recommendations' in test):
+        test.pop('recommendations')
+
       test['end'] = datetime.now().isoformat()
       duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(
           test['start'])
