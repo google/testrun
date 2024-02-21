@@ -116,6 +116,7 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
       ...DEFAULT_INTERNET_OPTION,
       ...interfaces,
     },
+    isLessThanOneInterface: Object.keys(interfaces).length < 1,
   }));
 
   getInterfaces = this.effect(trigger$ => {
@@ -215,7 +216,7 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
   ): void {
     this.setDefaultValue(
       value,
-      undefined,
+      '',
       options,
       formGroup.get(FormKey.DEVICE) as FormControl
     );

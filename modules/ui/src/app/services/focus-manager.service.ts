@@ -9,13 +9,20 @@ export class FocusManagerService {
       '#main'
     )
   ) {
-    const firstControl: HTMLElement | undefined | null =
-      container?.querySelector(
-        'button:not([disabled="true"]), a:not([disabled="true"]), table'
-      );
+    const dialogOpened = window.document.querySelector('.mdc-dialog--open');
+    const parentElem = dialogOpened ? dialogOpened : container;
+    const firstInteractiveElem = this.findFirstInteractiveElem(parentElem);
 
-    if (firstControl) {
-      firstControl.focus();
+    if (firstInteractiveElem) {
+      firstInteractiveElem.focus();
     }
+  }
+
+  private findFirstInteractiveElem(
+    parentEl: Document | Element | null
+  ): HTMLElement | undefined | null {
+    return parentEl?.querySelector(
+      'button:not([disabled="true"]):not([tabindex="-1"]), a:not([disabled="true"]), input:not([disabled="true"]), table'
+    );
   }
 }

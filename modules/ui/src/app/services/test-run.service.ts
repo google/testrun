@@ -29,6 +29,7 @@ import {
 import { Version } from '../model/version';
 
 const API_URL = 'http://localhost:8000';
+export const SYSTEM_STOP = '/system/stop';
 
 @Injectable({
   providedIn: 'root',
@@ -71,7 +72,7 @@ export class TestRunService {
   public systemStatus$ = this.systemStatusSubject.asObservable();
   private isTestrunStartedSub$ = new BehaviorSubject<boolean>(false);
   public isTestrunStarted$ = this.isTestrunStartedSub$.asObservable();
-  private history = new BehaviorSubject<TestrunStatus[] | null>(null);
+  // private history = new BehaviorSubject<TestrunStatus[] | null>(null);
   private version = new BehaviorSubject<Version | null>(null);
 
   constructor(private http: HttpClient) {}
@@ -137,7 +138,7 @@ export class TestRunService {
 
   stopTestrun(): Observable<boolean> {
     return this.http
-      .post<{ success: string }>(`${API_URL}/system/stop`, {})
+      .post<{ success: string }>(`${API_URL}${SYSTEM_STOP}`, {})
       .pipe(map(() => true));
   }
 
@@ -211,19 +212,8 @@ export class TestRunService {
     }
   }
 
-  fetchHistory(): void {
-    this.http.get<TestrunStatus[]>(`${API_URL}/reports`).subscribe(
-      data => {
-        this.history.next(data);
-      },
-      () => {
-        this.history.next([]);
-      }
-    );
-  }
-
-  getHistory(): BehaviorSubject<TestrunStatus[] | null> {
-    return this.history;
+  getHistory(): Observable<TestrunStatus[] | null> {
+    return this.http.get<TestrunStatus[]>(`${API_URL}/reports`);
   }
 
   public getResultClass(result: string): StatusResultClassName {
@@ -275,16 +265,5 @@ export class TestRunService {
         body: JSON.stringify({ mac_addr, timestamp: started }),
       })
       .pipe(map(() => true));
-  }
-
-  removeReport(mac_addr: string, started: string): void {
-    const idx = this.history.value?.findIndex(
-      report =>
-        report.device.mac_addr === mac_addr && report.started === started
-    );
-    if (typeof idx === 'number') {
-      this.history.value?.splice(idx, 1);
-      this.history.next(this.history.value);
-    }
   }
 }

@@ -403,6 +403,7 @@ class TestOrchestrator:
         self._root_path,
         "runtime/test/" + device.mac_addr.replace(":", "") + "/" + module.name)
     results_file = f"{container_runtime_dir}/{module.name}-result.json"
+
     try:
       with open(results_file, "r", encoding="utf-8-sig") as f:
         module_results_json = json.load(f)
@@ -515,7 +516,12 @@ class TestOrchestrator:
             name=test_case_json["name"],
             description=test_case_json["test_description"],
             expected_behavior=test_case_json["expected_behavior"],
-            required_result=test_case_json["required_result"])
+            required_result=test_case_json["required_result"]
+          )
+
+          if "recommendations" in test_case_json:
+            test_case.recommendations = test_case_json["recommendations"]
+
           module.tests.append(test_case)
         except Exception as error:
           LOGGER.error("Failed to load test case. See error for details")
