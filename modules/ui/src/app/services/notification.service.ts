@@ -18,13 +18,26 @@
 =======
 >>>>>>> dev
 import { Injectable } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import {
+  MatSnackBar,
+  MatSnackBarRef,
+  TextOnlySnackBar,
+} from '@angular/material/snack-bar';
+import { FocusManagerService } from './focus-manager.service';
+import { delay } from 'rxjs/internal/operators/delay';
+import { take } from 'rxjs/internal/operators/take';
+
+const TIMEOUT_MS = 8000;
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService {
-  constructor(private snackBar: MatSnackBar) {}
+  private snackBarRef!: MatSnackBarRef<TextOnlySnackBar>;
+  constructor(
+    public snackBar: MatSnackBar,
+    private focusManagerService: FocusManagerService
+  ) {}
 
 <<<<<<< HEAD
   notify(message: string, duration = 5000) {
@@ -32,14 +45,24 @@ export class NotificationService {
       horizontalPosition: 'right',
 =======
   notify(message: string, duration = 0) {
-    this.snackBar.open(message, 'OK', {
+    this.snackBarRef = this.snackBar.open(message, 'OK', {
       horizontalPosition: 'center',
 >>>>>>> dev
       panelClass: 'test-run-notification',
       duration: duration,
+      politeness: 'assertive',
     });
-  }
 
+    this.snackBarRef
+      .afterOpened()
+      .pipe(take(1), delay(TIMEOUT_MS))
+      .subscribe(() => this.setFocusToActionButton());
+
+    this.snackBarRef
+      .afterDismissed()
+      .pipe(take(1))
+      .subscribe(() => this.focusManagerService.focusFirstElementInContainer());
+  }
   dismiss() {
     this.snackBar.dismiss();
 <<<<<<< HEAD
@@ -56,5 +79,12 @@ export class NotificationService {
 >>>>>>>> dev:modules/ui/src/app/pages/reports/components/delete-report/delete-report.component.scss
 =======
 >>>>>>> dev
+  }
+
+  private setFocusToActionButton(): void {
+    const btn = document.querySelector(
+      '.test-run-notification button'
+    ) as HTMLButtonElement;
+    btn?.focus();
   }
 }
