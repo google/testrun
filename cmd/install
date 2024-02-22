@@ -46,4 +46,8 @@ deactivate
 # Build docker images
 sudo cmd/build
 
+# Create local folder
+mkdir -p local/devices
+mkdir -p local/root_certs
+
 echo Finished installing Testrun
