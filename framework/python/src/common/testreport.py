@@ -20,6 +20,7 @@ from common import util
 import base64
 import os
 import markdown
+from test_orc.test_case import TestCase
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
@@ -93,10 +94,19 @@ class TestReport():
     report_json['status'] = self._status
     report_json['started'] = self._started.strftime(DATE_TIME_FORMAT)
     report_json['finished'] = self._finished.strftime(DATE_TIME_FORMAT)
-    report_json['tests'] = {
-        'total': self._total_tests,
-        'results': self._results
-    }
+
+    test_results = []
+    for test in self._results:
+      test_results.append({
+        'name': test.name,
+        'description': test.description,
+        'expected_behavior': test.expected_behavior,
+        'required_result': test.required_result,
+        'result': test.result
+      })
+
+    report_json['tests'] = {'total': self._total_tests,
+                            'results': test_results}
     report_json['report'] = self._report_url
     return report_json
 
@@ -122,7 +132,13 @@ class TestReport():
 
     # Loop through test results
     for test_result in json_file['tests']['results']:
-      self.add_test(test_result)
+      test_case = TestCase(
+        name=test_result['name'],
+        description=test_result['description'],
+        expected_behavior=test_result['expected_behavior'],
+        required_result=test_result['required_result'],
+        result=test_result['result'])
+      self.add_test(test_case)
 
   # Create a pdf file in memory and return the bytes
   def to_pdf(self):
@@ -315,7 +331,7 @@ class TestReport():
     result_list = '''
       <img style="margin-bottom:10px;width:100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABFgAAAABCAYAAADqzRqJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA3SURBVHgB7cAxAQAQFEXRJ4MIMkjwS9hklMCoi1EBWljePWlHvQIAMy2mAMDNKV3ADysPAYCbB6fxBrzkZ2KOAAAAAElFTkSuQmCC" />
       <div class="result-list">
-        <span class="result-list-title">Results List</span>
+        <h3>Results List</h3>
         <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
           <div class="result-list-header-label" style="left: .1in">Name</div>
           <div class="result-list-header-label" style="left: 2.8in">Description</div>
@@ -358,8 +374,8 @@ class TestReport():
       tr_img_b64 = base64.b64encode(f.read()).decode('utf-8')
     return f'''
     <div class="header">
-      <h3 class="header-text">Testrun report</h3>
-      <h1 class="header-title" style="top: 50%;">{json_data["device"]["manufacturer"]} {json_data["device"]["model"]}</h1>
+      <h1>Testrun report</h1>
+      <h2 style="top: 50%;">{json_data["device"]["manufacturer"]} {json_data["device"]["model"]}</h2>
       <img src="data:image/png;base64,{tr_img_b64}" alt="Test Run" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
     </div>
     '''
@@ -412,6 +428,36 @@ class TestReport():
 
       for module in sorted_modules:
         summary += self.generate_device_module_label(module[0], module[1])
+
+    summary += '</div>'
+
+    # Add device configuration
+    summary += '''
+    <div class="summary-device-modules">
+      <div class="summary-item-label" style="margin-bottom:10px;">
+        <h4>Device Configuration</h4>
+      </div>
+    '''
+
+    if 'test_modules' in json_data['device']:
+
+      sorted_modules = {}
+
+      for test_module in json_data['device']['test_modules']:
+        if 'enabled' in json_data['device']['test_modules'][test_module]:
+          sorted_modules[test_module] = json_data['device']['test_modules'][
+            test_module]['enabled']
+
+      # Sort the modules by enabled first
+      sorted_modules = sorted(sorted_modules.items(),
+                              key=lambda x:x[1],
+                              reverse=True)
+
+      for module in sorted_modules:
+        summary += self.generate_device_module_label(
+          module[0],
+          module[1]
+        )
 
     summary += '</div>'
 
@@ -469,7 +515,7 @@ class TestReport():
 
   def generate_device_summary_label(self, key, value, trailing_space=True):
     label = f'''
-    <div class="summary-item-label">{key}</div>
+    <div class="summary-item-label"><h4>{key}</h4></div>
     <div class="summary-item-value">{value}</div>
     '''
     if trailing_space:
@@ -547,16 +593,28 @@ class TestReport():
       position: relative;
     }
 
-    .header-text {
+    h1 {
       margin: 0 0 8px 0;
       font-size: 20px;
       font-weight: 400;
     }
 
-    .header-title {
+    h2 {
       margin: 0px;
       font-size: 48px;
       font-weight: 700;
+    }
+
+    h3 {
+      font-size: 24px;
+    }
+
+    h4 {
+      font-size: 12px;
+      font-weight: 500;
+      color: #5F6368;
+      margin-bottom: 0;
+      margin-top: 0;
     }
 
     /* Define the summary related css elements*/
@@ -570,9 +628,6 @@ class TestReport():
 
     .summary-item-label {
       position: relative;
-      font-size: 12px;
-      font-weight: 500;
-      color: #5F6368;
     }
 
     .summary-item-value {

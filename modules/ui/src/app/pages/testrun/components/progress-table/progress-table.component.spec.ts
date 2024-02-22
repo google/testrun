@@ -16,6 +16,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProgressTableComponent } from './progress-table.component';
+
 import { IResult, StatusOfTestResult } from '../../../../model/testrun-status';
 import { of } from 'rxjs';
 import {

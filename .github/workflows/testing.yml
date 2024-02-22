@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install dependencies
         shell: bash {0}
         run: cmd/prepare
@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install dependencies
         shell: bash {0}
         run: cmd/prepare
@@ -50,7 +50,7 @@ jobs:
         if: ${{ always() }}
         run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/
       - name: Upload runtime results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
         if: ${{ always() }}
         with:
           if-no-files-found: error
@@ -64,7 +64,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install dependencies
         shell: bash {0}
         run: cmd/prepare
@@ -79,7 +79,7 @@ jobs:
         if: ${{ always() }}
         run: sudo tar --exclude-vcs -czf runtime.tgz runtime/ local/
       - name: Upload runtime results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
         if: ${{ always() }}
         with:
           if-no-files-found: error
@@ -93,7 +93,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Run pylint
         shell: bash {0}
         run: testing/pylint/test_pylint
@@ -105,12 +105,12 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Package Testrun
         shell: bash {0}
         run: cmd/package
       - name: Archive package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
         with:
           name: testrun_installer
           path: testrun*.deb
@@ -120,9 +120,9 @@ jobs:
     name: UI
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4.1.1
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Install Node
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
       with:
         node-version: 18.13.0
     - name: Install Chromium Browser
@@ -143,9 +143,9 @@ jobs:
     name: ESLint
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4.1.1
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Install Node
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
       with:
         node-version: 18.13.0
     - name: Install dependencies

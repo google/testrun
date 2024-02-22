@@ -229,7 +229,7 @@ def test_get_system_interfaces(testrun):
   r = requests.get(f"{API}/system/interfaces")
   response = json.loads(r.text)
   local_interfaces = get_network_interfaces()
-  assert set(response) == set(local_interfaces)
+  assert set(response.keys()) == set(local_interfaces)
 
   # schema expects a flat list
   assert all([isinstance(x, str) for x in response])
@@ -260,13 +260,18 @@ def test_modify_device(testing_devices, testrun):
   }
   updated_device["test_modules"] = new_test_modules
 
+  updated_device_payload = {}
+  updated_device_payload["device"] = updated_device
+  updated_device_payload["mac_addr"] = mac_addr
+
   print("updated_device")
   pretty_print(updated_device)
   print("api_device")
   pretty_print(api_device)
 
   # update device
-  r = requests.post(f"{API}/device", data=json.dumps(updated_device))
+  r = requests.post(f"{API}/device/edit",
+                    data=json.dumps(updated_device_payload))
 
   assert r.status_code == 200
 
