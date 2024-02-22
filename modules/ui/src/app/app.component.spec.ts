@@ -621,4 +621,7 @@ class FakeSpinnerComponent {}
   selector: 'app-version',
   template: '<div></div>',
 })
-class FakeVersionComponent {}
+class FakeVersionComponent {
+  @Input() consentShown!: boolean;
+  @Output() consentShownEvent = new EventEmitter<void>();
+}

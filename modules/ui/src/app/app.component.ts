@@ -38,6 +38,7 @@ import { toggleMenu, updateFocusNavigation } from './store/actions';
 import { appFeatureKey } from './store/reducers';
 import { SystemInterfaces } from './model/setting';
 import { GeneralSettingsComponent } from './pages/settings/general-settings.component';
+import { AppStore } from './app.store';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -49,6 +50,7 @@ const CLOSE_URL = '/assets/icons/close.svg';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  providers: [AppStore],
 })
 export class AppComponent implements OnInit {
   public readonly CalloutType = CalloutType;
@@ -74,6 +76,7 @@ export class AppComponent implements OnInit {
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
   @ViewChild('navigation') public navigation!: ElementRef;
   @ViewChild('settings') public settings!: GeneralSettingsComponent;
+  viewModel$ = this.appStore.viewModel$;
 
   constructor(
     private matIconRegistry: MatIconRegistry,
@@ -82,7 +85,8 @@ export class AppComponent implements OnInit {
     private route: Router,
     private store: Store<AppState>,
     private state: State<AppState>,
-    private readonly focusManagerService: FocusManagerService
+    private readonly focusManagerService: FocusManagerService,
+    private appStore: AppStore
   ) {
     this.testRunService.fetchDevices();
     this.testRunService.getSystemStatus();
@@ -183,5 +187,9 @@ export class AppComponent implements OnInit {
     this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
     this.settings.getSystemInterfaces();
     await this.settingsDrawer.open();
+  }
+
+  consentShown() {
+    this.appStore.setContent();
   }
 }
