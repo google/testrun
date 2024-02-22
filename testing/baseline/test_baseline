@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TESTRUN_OUT=/tmp/testrun.log
-TESTRUN_DIR=/usr/local/testrun
+TESTRUN_OUT=testrun.log
 
 ifconfig
 
@@ -38,10 +37,10 @@ sudo /usr/share/openvswitch/scripts/ovs-ctl start
 sudo docker build ./testing/docker/ci_baseline -t ci1 -f  ./testing/docker/ci_baseline/Dockerfile
 
 # Copy configuration to testrun
-sudo cp testing/baseline/system.json $TESTRUN_DIR/local/system.json
+sudo cp testing/baseline/system.json local/system.json
 
 # Copy device configs to testrun
-sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
+sudo cp -r testing/device_configs/* local/devices
 
 sudo testrun --single-intf --no-ui --validate > $TESTRUN_OUT 2>&1 & 
 TPID=$!

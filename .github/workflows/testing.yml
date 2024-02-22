@@ -17,13 +17,10 @@ jobs:
       - name: Install dependencies
         shell: bash {0}
         run: cmd/prepare
-      - name: Package Testrun
-        shell: bash {0}
-        run: cmd/package
       - name: Install Testrun
         shell: bash {0}
         timeout-minutes: 10
-        run: sudo dpkg -i testrun*.deb
+        run: cmd/install
       - name: Run baseline tests
         shell: bash {0}
         run: testing/baseline/test_baseline
