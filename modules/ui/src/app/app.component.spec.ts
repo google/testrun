@@ -266,6 +266,14 @@ describe('AppComponent', () => {
     });
   }));
 
+  it('should update interfaces', () => {
+    spyOn(component.settings, 'getSystemInterfaces');
+
+    component.openGeneralSettings(false);
+
+    expect(component.settings.getSystemInterfaces).toHaveBeenCalled();
+  });
+
   it('should call settingsDrawer open on openSetting', fakeAsync(() => {
     spyOn(component.settingsDrawer, 'open');
 
@@ -600,6 +608,7 @@ class FakeGeneralSettingsComponent {
   @Input() hasConnectionSettings = false;
   @Output() closeSettingEvent = new EventEmitter<void>();
   @Output() reloadInterfacesEvent = new EventEmitter<void>();
+  getSystemInterfaces = () => {};
 }
 
 @Component({
