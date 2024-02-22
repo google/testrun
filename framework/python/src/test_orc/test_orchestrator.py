@@ -176,13 +176,8 @@ class TestOrchestrator:
   def _calculate_result(self):
     result = "Compliant"
     for test_result in self._session.get_test_results():
-      test_case = self.get_test_case(test_result["name"])
-      if test_case is None:
-        LOGGER.error("Error occured whilst loading information about " +
-                     f"test {test_result['name']}")
-        continue
-      if (test_case.required_result.lower() == "required"
-          and test_result["result"].lower() != "compliant"):
+      if (test_result.required_result.lower() == "required"
+          and test_result.result.lower() != "compliant"):
         result = "Non-Compliant"
     return result
 
@@ -309,6 +304,11 @@ class TestOrchestrator:
 
     LOGGER.info(f"Running test module {module.name}")
 
+    # Get all tests to be executed and set to in progress
+    for test in module.tests:
+      test.result = "In Progress"
+      self.get_session().add_test_result(test)
+
     try:
 
       device_test_dir = os.path.join(self._root_path, RUNTIME_DIR,
@@ -420,7 +420,18 @@ class TestOrchestrator:
         module_results_json = json.load(f)
         module_results = module_results_json["results"]
         for test_result in module_results:
-          self._session.add_test_result(test_result)
+
+          # Convert dict into TestCase object
+          test_case = TestCase(
+            name=test_result["name"],
+            description=test_result["description"],
+            expected_behavior=test_result["expected_behavior"],
+            required_result=test_result["required_result"],
+            result=test_result["result"])
+          test_case.result=test_result["result"]
+
+          self._session.add_test_result(test_case)
+
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
       LOGGER.error(

@@ -19,13 +19,16 @@ import { TestRunService } from '../../services/test-run.service';
 import { Version } from '../../model/version';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { UpdateDialogComponent } from './update-dialog/update-dialog.component';
 import { tap } from 'rxjs/internal/operators/tap';
 
 import { Observable } from 'rxjs/internal/Observable';
 import { Subject } from 'rxjs/internal/Subject';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
+import { filter } from 'rxjs';
+import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 
+// eslint-disable-next-line @typescript-eslint/ban-types
+declare const gtag: Function;
 @Component({
   selector: 'app-version',
   standalone: true,
@@ -48,28 +51,38 @@ export class VersionComponent implements OnInit, OnDestroy {
     this.testRunService.fetchVersion();
 
     this.version$ = this.testRunService.getVersion().pipe(
+      filter(version => version !== null),
       tap(version => {
-        if (version?.update_available && !this.isDialogClosed) {
-          this.openUpdateWindow(version);
+        if (!this.isDialogClosed) {
+          // @ts-expect-error null is filtered
+          this.openConsentDialog(version);
         }
       })
     );
   }
 
-  openUpdateWindow(version: Version) {
-    const dialogRef = this.dialog.open(UpdateDialogComponent, {
-      ariaLabel: 'Update version',
+  openConsentDialog(version: Version) {
+    const dialogRef = this.dialog.open(ConsentDialogComponent, {
+      ariaLabel: 'Consent dialog',
       data: version,
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'version-update-dialog',
+      panelClass: 'consent-dialog',
     });
 
     dialogRef
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => (this.isDialogClosed = true));
+      .subscribe((grant: boolean) => {
+        this.isDialogClosed = true;
+        if (grant === null) {
+          return;
+        }
+        gtag('consent', 'update', {
+          analytics_storage: grant ? 'granted' : 'denied',
+        });
+      });
   }
 
   ngOnDestroy() {

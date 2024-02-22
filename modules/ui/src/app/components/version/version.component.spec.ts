@@ -21,6 +21,10 @@ import SpyObj = jasmine.SpyObj;
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Version } from '../../model/version';
 import { NEW_VERSION, VERSION } from '../../mocks/version.mock';
+import { of } from 'rxjs';
+import { MatDialogRef } from '@angular/material/dialog';
+import { DeviceFormComponent } from '../../pages/devices/components/device-form/device-form.component';
+import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 
 describe('VersionComponent', () => {
   let component: VersionComponent;
@@ -44,6 +48,33 @@ describe('VersionComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should open consent window on start', () => {
+    const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+      afterClosed: () => of(true),
+    } as MatDialogRef<typeof DeviceFormComponent>);
+    versionBehaviorSubject$.next(VERSION);
+    mockService.getVersion.and.returnValue(versionBehaviorSubject$);
+    fixture.detectChanges();
+    component.ngOnInit();
+
+    expect(openSpy).toHaveBeenCalled();
+  });
+
+  it('should open consent window when button clicked', () => {
+    const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+      afterClosed: () => of(true),
+    } as MatDialogRef<typeof ConsentDialogComponent>);
+    versionBehaviorSubject$.next(VERSION);
+    mockService.getVersion.and.returnValue(versionBehaviorSubject$);
+    fixture.detectChanges();
+    const button = compiled.querySelector(
+      '.version-content'
+    ) as HTMLButtonElement;
+    button.click();
+
+    expect(openSpy).toHaveBeenCalled();
   });
 
   describe('update is not available', () => {

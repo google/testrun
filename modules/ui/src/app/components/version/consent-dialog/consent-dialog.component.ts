@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,31 +14,45 @@
  * limitations under the License.
  */
 import { Component, Inject } from '@angular/core';
+import { EscapableDialogComponent } from '../../escapable-dialog/escapable-dialog.component';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
 import { Version } from '../../../model/version';
-import { EscapableDialogComponent } from '../../escapable-dialog/escapable-dialog.component';
+import { MatButtonModule } from '@angular/material/button';
+import { CalloutComponent } from '../../callout/callout.component';
+import { CalloutType } from '../../../model/callout-type';
+import { NgIf } from '@angular/common';
+
+type DialogData = Version;
 
 @Component({
-  selector: 'app-update-dialog',
+  selector: 'app-consent-dialog',
   standalone: true,
-  imports: [MatDialogModule, MatButtonModule],
-  templateUrl: './update-dialog.component.html',
-  styleUrls: ['./update-dialog.component.scss'],
+  imports: [MatDialogModule, MatButtonModule, CalloutComponent, NgIf],
+  templateUrl: './consent-dialog.component.html',
+  styleUrl: './consent-dialog.component.scss',
 })
-export class UpdateDialogComponent extends EscapableDialogComponent {
+export class ConsentDialogComponent extends EscapableDialogComponent {
+  public readonly CalloutType = CalloutType;
   constructor(
-    public override dialogRef: MatDialogRef<UpdateDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: Version
+    public override dialogRef: MatDialogRef<ConsentDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {
     super(dialogRef);
   }
 
+  confirm() {
+    this.dialogRef.close(true);
+  }
+
   cancel() {
+    this.dialogRef.close(false);
+  }
+
+  cancelOnDownload() {
     this.dialogRef.close();
   }
 }

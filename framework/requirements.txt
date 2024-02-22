@@ -2,23 +2,23 @@
 requests<2.29.0
 
 # Requirements for the net_orc module
-docker
-ipaddress
-netifaces
-scapy
+docker==7.0.0
+ipaddress==1.0.23
+netifaces==0.11.0
+scapy==2.5.0
 
 # Requirments for the test_orc module
-weasyprint
+weasyprint==60.2
 
 # Requirements for the API
 fastapi==0.109.1
-psutil
-uvicorn
+psutil==5.9.8
+uvicorn==0.27.0
 pydantic==1.10.11
 
 # Requirements for testing
-pytest
-pytest-timeout
+pytest==7.4.4
+pytest-timeout==2.2.0
 
 # Requirements for the report
-markdown
+markdown==3.5.2
