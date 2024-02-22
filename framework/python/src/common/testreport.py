@@ -408,33 +408,6 @@ class TestReport():
     summary += '''
     <div class="summary-device-modules">
       <div class="summary-item-label" style="margin-bottom:10px;">
-        Device Configuration
-      </div>
-    '''
-
-    if 'test_modules' in json_data['device']:
-
-      sorted_modules = {}
-
-      for test_module in json_data['device']['test_modules']:
-        if 'enabled' in json_data['device']['test_modules'][test_module]:
-          sorted_modules[test_module] = json_data['device']['test_modules'][
-              test_module]['enabled']
-
-      # Sort the modules by enabled first
-      sorted_modules = sorted(sorted_modules.items(),
-                              key=lambda x: x[1],
-                              reverse=True)
-
-      for module in sorted_modules:
-        summary += self.generate_device_module_label(module[0], module[1])
-
-    summary += '</div>'
-
-    # Add device configuration
-    summary += '''
-    <div class="summary-device-modules">
-      <div class="summary-item-label" style="margin-bottom:10px;">
         <h4>Device Configuration</h4>
       </div>
     '''
