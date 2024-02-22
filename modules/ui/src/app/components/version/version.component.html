@@ -16,22 +16,16 @@ limitations under the License.
 <ng-container *ngIf="version$ | async as version">
   <button
     mat-button
-    *ngIf="!version.update_available"
     class="version-content"
-    [attr.aria-label]="version?.installed_version">
-    {{ version?.installed_version }}
-  </button>
-  <button
-    mat-button
-    *ngIf="version.update_available"
-    class="version-content-update"
+    [class.version-content-update]="version.update_available"
     [attr.aria-label]="
       version?.installed_version +
       ' New version is available. Click here to update'
     "
-    (click)="openUpdateWindow(version)">
+    (click)="openConsentDialog(version)">
     {{ version?.installed_version }}
     <span
+      *ngIf="version.update_available"
       role="alert"
       aria-live="assertive"
       class="version-content-update-text">

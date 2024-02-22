@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,24 +15,24 @@
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { UpdateDialogComponent } from './update-dialog.component';
+import { ConsentDialogComponent } from './consent-dialog.component';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { NEW_VERSION } from '../../../mocks/version.mock';
 import { of } from 'rxjs';
+import { NEW_VERSION, VERSION } from '../../../mocks/version.mock';
 
-describe('UpdateDialogComponent', () => {
-  let component: UpdateDialogComponent;
-  let fixture: ComponentFixture<UpdateDialogComponent>;
+describe('ConsentDialogComponent', () => {
+  let component: ConsentDialogComponent;
+  let fixture: ComponentFixture<ConsentDialogComponent>;
   let compiled: HTMLElement;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [UpdateDialogComponent, MatDialogModule, MatButtonModule],
+      imports: [ConsentDialogComponent, MatDialogModule, MatButtonModule],
       providers: [
         {
           provide: MatDialogRef,
@@ -44,7 +44,7 @@ describe('UpdateDialogComponent', () => {
         { provide: MAT_DIALOG_DATA, useValue: {} },
       ],
     });
-    fixture = TestBed.createComponent(UpdateDialogComponent);
+    fixture = TestBed.createComponent(ConsentDialogComponent);
     component = fixture.componentInstance;
     component.data = NEW_VERSION;
     fixture.detectChanges();
@@ -55,30 +55,6 @@ describe('UpdateDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should has title', () => {
-    const title = compiled.querySelector(
-      '.version-update-title'
-    ) as HTMLElement;
-
-    expect(title.innerHTML).toEqual('Software is outdated!');
-  });
-
-  it('should has content', () => {
-    const content = compiled.querySelector(
-      '.version-update-content'
-    ) as HTMLElement;
-
-    const innerContent = content.innerHTML.trim();
-    expect(innerContent).toContain(
-      'You are currently using an outdated software'
-    );
-    expect(innerContent).toContain('v1');
-    expect(innerContent).toContain('v2');
-    expect(innerContent).toContain(
-      'Please consider to update or continue at your own risk.'
-    );
-  });
-
   it('should close dialog on "cancel" click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
     const closeButton = compiled.querySelector(
@@ -87,7 +63,20 @@ describe('UpdateDialogComponent', () => {
 
     closeButton?.click();
 
-    expect(closeSpy).toHaveBeenCalledWith();
+    expect(closeSpy).toHaveBeenCalledWith(false);
+
+    closeSpy.calls.reset();
+  });
+
+  it('should close dialog on "confirm" click', () => {
+    const closeSpy = spyOn(component.dialogRef, 'close');
+    const confirmButton = compiled.querySelector(
+      '.confirm-button'
+    ) as HTMLButtonElement;
+
+    confirmButton?.click();
+
+    expect(closeSpy).toHaveBeenCalledWith(true);
 
     closeSpy.calls.reset();
   });
@@ -103,5 +92,43 @@ describe('UpdateDialogComponent', () => {
     expect(closeSpy).toHaveBeenCalledWith();
 
     closeSpy.calls.reset();
+  });
+
+  describe('with new version available', () => {
+    beforeEach(() => {
+      component.data = NEW_VERSION;
+      fixture.detectChanges();
+    });
+
+    it('should has content', () => {
+      const content = compiled.querySelector(
+        '.consent-update-content'
+      ) as HTMLElement;
+
+      const innerContent = content.innerHTML.trim();
+      expect(innerContent).toContain(
+        'You are currently using an outdated software'
+      );
+      expect(innerContent).toContain('v1');
+      expect(innerContent).toContain('v2');
+      expect(innerContent).toContain(
+        'Please consider to update or continue at your own risk.'
+      );
+    });
+  });
+
+  describe('with no new version available', () => {
+    beforeEach(() => {
+      component.data = VERSION;
+      fixture.detectChanges();
+    });
+
+    it('should has content', () => {
+      const content = compiled.querySelector(
+        '.consent-update-content'
+      ) as HTMLElement;
+
+      expect(content).toBeNull();
+    });
   });
 });
