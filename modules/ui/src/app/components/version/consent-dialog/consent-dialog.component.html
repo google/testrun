@@ -14,79 +14,87 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <section class="testrun-logo"></section>
-
-<section class="consent-main-content">
-  <h1>Welcome to Testrun!</h1>
-  <p>
-    The application is ready to run the testing process for your devices. Here
-    is a list of links you could find valuable:
-  </p>
-  <ul>
-    <li>
-      <a
-        href="https://github.com/google/testrun#readme"
-        target="_blank"
-        class="message-link"
-        >FAQ page</a
-      >
-      on github
-    </li>
-    <li>
-      To file a bug go to
-      <a
-        href="https://github.com/google/testrun/issues/new/choose"
-        target="_blank"
-        class="message-link"
-        >github issues</a
-      >
-    </li>
-    <li>
-      Use the
-      <a
-        href="https://forms.gle/3meUBSRgozSTJxmN6"
-        target="_blank"
-        class="message-link"
-        >feedback form</a
-      >
-      to share you thoughts
-    </li>
-  </ul>
-</section>
-
-<section class="consent-update" *ngIf="data.update_available === true">
-  <app-callout [type]="CalloutType.Warning">
-    <span class="consent-update-title">Software is outdated!</span>
-    <p class="consent-update-content">
-      You are currently using an outdated software (<b>{{
-        data.installed_version
-      }}</b
-      >).
-      <br />
-      The actual version number is <b>{{ data.latest_version }}</b
-      >. Please consider to update or continue at your own risk.
+<section class="content-container">
+  <section class="consent-main-content">
+    <h2>Welcome to Testrun!</h2>
+    <p>
+      The application is ready to run the testing process for your devices. Here
+      is a list of links you could find valuable:
     </p>
-    <p class="download-link-container">
+    <ul>
+      <li>
+        <a
+          href="https://github.com/google/testrun#readme"
+          target="_blank"
+          class="message-link"
+          >FAQ page</a
+        >
+        on github
+      </li>
+      <li>
+        To file a bug go to
+        <a
+          href="https://github.com/google/testrun/issues/new/choose"
+          target="_blank"
+          class="message-link"
+          >github issues</a
+        >
+      </li>
+      <li>
+        Use the
+        <a
+          href="https://forms.gle/3meUBSRgozSTJxmN6"
+          target="_blank"
+          class="message-link"
+          >feedback form</a
+        >
+        to share you thoughts
+      </li>
+    </ul>
+  </section>
+
+  <section class="consent-update" *ngIf="data.update_available === true">
+    <app-callout [type]="CalloutType.Warning">
+      <span class="consent-update-title">Software is outdated!</span>
+      <p class="consent-update-content">
+        You are currently using an outdated software (<b>{{
+          data.installed_version
+        }}</b
+        >).
+        <br />
+        The actual version number is <b>{{ data.latest_version }}</b
+        >. Please consider to update or continue at your own risk.
+      </p>
+      <p class="download-link-container">
+        <a
+          href="{{ data.latest_version_url }}"
+          target="_blank"
+          class="download-link"
+          color="primary"
+          mat-button
+          type="button"
+          (click)="cancelOnDownload()">
+          Download
+        </a>
+      </p>
+    </app-callout>
+  </section>
+  <section>
+    <app-callout [type]="CalloutType.Info">
+      Testrun uses Google Analytics to learn about how our users use the
+      application. By installing and running Testrun, you understand and accept
+      the Terms of Service found
       <a
-        href="{{ data.latest_version_url }}"
+        href="https://policies.google.com/technologies/partner-sites"
         target="_blank"
-        class="download-link"
-        color="primary"
-        mat-button
-        type="button"
-        (click)="cancelOnDownload()">
-        Download
-      </a>
-    </p>
-  </app-callout>
+        class="message-link"
+        aria-label="Terms of service"
+        >here</a
+      >.
+    </app-callout>
+  </section>
 </section>
 
-<section>
-  <app-callout [type]="CalloutType.Info">
-    Testrun uses Google Analytics to learn about how our users use the
-    application. By installing and running Testrun, you understand and accept
-    the Terms of Service found here.
-  </app-callout>
-</section>
 <mat-dialog-actions class="consent-actions">
   <button
     (click)="cancel()"

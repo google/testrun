@@ -32,6 +32,10 @@
   align-items: start !important;
 }
 
+.content-container {
+  overflow: scroll;
+}
+
 .testrun-logo {
   height: 62px;
   background-image: url(/assets/icons/testrun_logo.svg);
@@ -50,7 +54,7 @@
   letter-spacing: 0.2px;
   color: $grey-800;
 
-  h1 {
+  h2 {
     font-size: 14px;
   }
 
