@@ -116,11 +116,7 @@ mat-hint {
   fill: mat.get-color-from-palette($color-primary, 600);
 }
 
-<<<<<<< HEAD
-.table-cell-result-text {
-=======
 .cell-result-text {
->>>>>>> dev
   margin: 0;
   padding: 4px;
   border-radius: 2px;
@@ -197,15 +193,6 @@ body:has(.filter-dialog-content)
   opacity: 0;
 }
 
-<<<<<<< HEAD
-body:has(app-callout .info)
-  app-device-repository:not(:has(.device-repository-content-empty)),
-body:has(app-callout .info) app-history:not(:has(.results-content-empty)),
-body:has(app-callout .info) app-progress:not(:has(.progress-content-empty)) {
-  margin-top: 96px;
-}
-
-=======
 body:has(app-callout .info):not(:has(app-callout .error))
   app-device-repository:not(:has(.device-repository-content-empty)),
 body:has(app-callout .info):not(:has(app-callout .error))
@@ -230,7 +217,6 @@ body:has(app-callout .info):has(app-callout .error)
   margin-top: 156px;
 }
 
->>>>>>> dev
 .text-nowrap {
   white-space: nowrap;
 }

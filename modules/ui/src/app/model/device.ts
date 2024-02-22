@@ -37,12 +37,9 @@ export interface TestModule {
   displayName: string;
   name: string;
   enabled: boolean;
-<<<<<<< HEAD
-=======
 }
 
 export enum DeviceView {
   Basic = 'basic',
   WithActions = 'with actions',
->>>>>>> dev
 }

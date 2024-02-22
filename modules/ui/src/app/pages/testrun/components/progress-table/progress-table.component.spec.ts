@@ -16,13 +16,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProgressTableComponent } from './progress-table.component';
-<<<<<<< HEAD:modules/ui/src/app/progress/progress-table/progress-table.component.spec.ts
-import { IResult, StatusOfTestResult } from '../../model/testrun-status';
-import { MatTableModule } from '@angular/material/table';
-import { of } from 'rxjs';
-import { TEST_DATA } from '../../mocks/progress.mock';
-import { TestRunService } from '../../services/test-run.service';
-=======
+
 import { IResult, StatusOfTestResult } from '../../../../model/testrun-status';
 import { of } from 'rxjs';
 import {
@@ -34,7 +28,6 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
->>>>>>> dev:modules/ui/src/app/pages/testrun/components/progress-table/progress-table.component.spec.ts
 
 describe('ProgressTableComponent', () => {
   let component: ProgressTableComponent;
@@ -81,15 +74,9 @@ describe('ProgressTableComponent', () => {
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-<<<<<<< HEAD:modules/ui/src/app/progress/progress-table/progress-table.component.spec.ts
-        declarations: [ProgressTableComponent],
-        providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
-        imports: [MatTableModule],
-=======
         declarations: [ProgressTableComponent, FakeCalloutComponent],
         providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
         imports: [BrowserAnimationsModule, MatExpansionModule, MatIconModule],
->>>>>>> dev:modules/ui/src/app/pages/testrun/components/progress-table/progress-table.component.spec.ts
       }).compileComponents();
 
       fixture = TestBed.createComponent(ProgressTableComponent);

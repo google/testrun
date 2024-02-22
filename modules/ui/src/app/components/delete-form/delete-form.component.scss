@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-<<<<<<<< HEAD:modules/ui/src/app/components/delete-form/delete-form.component.scss
 @import '../../../theming/colors';
 
 :host {
@@ -41,20 +40,4 @@
 .delete-form-actions {
   padding: 0;
   min-height: 30px;
-========
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
-
-@Component({
-  selector: 'app-callout',
-  standalone: true,
-  imports: [CommonModule, MatIconModule],
-  templateUrl: './callout.component.html',
-  styleUrls: ['./callout.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class CalloutComponent {
-  @Input() type = '';
->>>>>>>> dev:modules/ui/src/app/components/callout/callout.component.ts
 }

@@ -13,27 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-<<<<<<<< HEAD:modules/ui/src/app/services/notification.service.ts
-import { Injectable } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
-
-@Injectable({
-  providedIn: 'root',
-})
-export class NotificationService {
-  constructor(private snackBar: MatSnackBar) {}
-
-  notify(message: string, duration = 5000) {
-    this.snackBar.open(message, 'OK', {
-      horizontalPosition: 'right',
-      panelClass: 'test-run-notification',
-      duration: duration,
-    });
-  }
-
-  dismiss() {
-    this.snackBar.dismiss();
-========
 :host {
   display: inline-block;
 }
@@ -43,6 +22,5 @@ export class NotificationService {
   display: inline-block;
   & ::ng-deep .mdc-icon-button__ripple {
     display: none;
->>>>>>>> dev:modules/ui/src/app/pages/reports/components/delete-report/delete-report.component.scss
   }
 }

@@ -20,21 +20,13 @@ const routes: Routes = [
   {
     path: 'testrun',
     loadChildren: () =>
-<<<<<<< HEAD
-      import('./progress/progress.module').then(m => m.ProgressModule),
-=======
       import('./pages/testrun/progress.module').then(m => m.ProgressModule),
->>>>>>> dev
     title: 'Testrun',
   },
   {
     path: 'devices',
     loadChildren: () =>
-<<<<<<< HEAD
-      import('./device-repository/device-repository.module').then(
-=======
       import('./pages/devices/device-repository.module').then(
->>>>>>> dev
         m => m.DeviceRepositoryModule
       ),
     title: 'Testrun - Devices',
@@ -42,11 +34,7 @@ const routes: Routes = [
   {
     path: 'reports',
     loadChildren: () =>
-<<<<<<< HEAD
-      import('./history/history.module').then(m => m.HistoryModule),
-=======
       import('./pages/reports/history.module').then(m => m.HistoryModule),
->>>>>>> dev
     title: 'Testrun - Reports',
   },
   {

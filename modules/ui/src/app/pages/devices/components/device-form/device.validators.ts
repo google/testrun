@@ -15,14 +15,8 @@
  */
 import { Injectable } from '@angular/core';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-<<<<<<< HEAD:modules/ui/src/app/device-repository/device-form/device.validators.ts
-import { TestRunService } from '../../services/test-run.service';
-import { Device } from '../../model/device';
-=======
 import { TestRunService } from '../../../../services/test-run.service';
 import { Device } from '../../../../model/device';
->>>>>>> dev:modules/ui/src/app/pages/devices/components/device-form/device.validators.ts
-
 @Injectable({ providedIn: 'root' })
 
 /**

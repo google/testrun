@@ -20,13 +20,8 @@ import {
 import { fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
 import { Device, TestModule } from '../model/device';
 
-<<<<<<< HEAD
-import { SystemInterfaces, TestRunService } from './test-run.service';
-import { SystemConfig } from '../model/setting';
-=======
 import { TestRunService } from './test-run.service';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
->>>>>>> dev
 import {
   MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
@@ -122,25 +117,6 @@ describe('TestRunService', () => {
     req.flush(deviceArray);
   });
 
-<<<<<<< HEAD
-  it('setSystemConfig should update the systemConfig data', () => {
-    service.setSystemConfig(MOCK_SYSTEM_CONFIG);
-
-    service.systemConfig$.subscribe(data => {
-      expect(data).toEqual(MOCK_SYSTEM_CONFIG);
-    });
-  });
-
-  it('setHasConnectionSetting should update the hasConnectionSetting$', () => {
-    service.setHasConnectionSetting(true);
-
-    service.hasConnectionSetting$.subscribe(data => {
-      expect(data).toEqual(true);
-    });
-  });
-
-=======
->>>>>>> dev
   it('getSystemConfig should return systemConfig data', () => {
     const apiUrl = 'http://localhost:8000/system/config';
 
@@ -270,11 +246,7 @@ describe('TestRunService', () => {
       });
 
       result = reports;
-<<<<<<< HEAD
-      service.fetchHistory();
-=======
       service.getHistory();
->>>>>>> dev
       const req = httpTestingController.expectOne(
         'http://localhost:8000/reports'
       );
@@ -283,88 +255,6 @@ describe('TestRunService', () => {
 
       req.flush(reports);
     });
-
-<<<<<<< HEAD
-    it('should return [] when error happens', () => {
-=======
-    /*    it('should return [] when error happens', () => {
->>>>>>> dev
-      let result: TestrunStatus[] | null = null;
-
-      service.getHistory().subscribe(res => {
-        expect(res).toEqual(result);
-      });
-
-      result = [];
-      service.fetchHistory();
-      const req = httpTestingController.expectOne({
-        url: 'http://localhost:8000/reports',
-      });
-
-      req.flush([], { status: 500, statusText: 'error' });
-<<<<<<< HEAD
-    });
-  });
-
-  describe('#getResultClass', () => {
-    it('should return class "green" if test result is "Compliant" or "Smart Ready"', () => {
-      const expectedResult = {
-        green: true,
-        red: false,
-        blue: false,
-        grey: false,
-      };
-
-      const result1 = service.getResultClass(StatusOfTestResult.Compliant);
-
-      expect(result1).toEqual(expectedResult);
-    });
-
-    it('should return class "blue" if test result is "Smart Ready" or "Informational"', () => {
-      const expectedResult = {
-        green: false,
-        red: false,
-        blue: true,
-        grey: false,
-      };
-
-      const result1 = service.getResultClass(StatusOfTestResult.SmartReady);
-      const result2 = service.getResultClass(StatusOfTestResult.Info);
-
-      expect(result1).toEqual(expectedResult);
-      expect(result2).toEqual(expectedResult);
-    });
-
-    it('should return class "read" if test result is "Non Compliant" or "Error"', () => {
-      const expectedResult = {
-        green: false,
-        red: true,
-        blue: false,
-        grey: false,
-      };
-
-      const result = service.getResultClass(StatusOfTestResult.NonCompliant);
-      const result2 = service.getResultClass(StatusOfTestResult.Error);
-
-      expect(result).toEqual(expectedResult);
-      expect(result2).toEqual(expectedResult);
-    });
-
-    it('should return class "grey" if test result is "Skipped" or "Not Started"', () => {
-      const expectedResult = {
-        green: false,
-        red: false,
-        blue: false,
-        grey: true,
-      };
-
-      const result1 = service.getResultClass(StatusOfTestResult.Skipped);
-      const result2 = service.getResultClass(StatusOfTestResult.NotStarted);
-
-      expect(result1).toEqual(expectedResult);
-      expect(result2).toEqual(expectedResult);
-=======
-    });*/
   });
 
   describe('#getResultClass', () => {
@@ -435,7 +325,6 @@ describe('TestRunService', () => {
 
         expect(result).toEqual(expectedResult);
       });
->>>>>>> dev
     });
   });
 
@@ -508,47 +397,6 @@ describe('TestRunService', () => {
     );
     req.flush({});
   });
-
-<<<<<<< HEAD
-  it('removeReport should remove device from history list', fakeAsync(() => {
-=======
-  /*  it('removeReport should remove device from history list', fakeAsync(() => {
->>>>>>> dev
-    const reports = [
-      {
-        status: 'Completed',
-        device: device,
-        report: 'https://api.testrun.io/report.pdf',
-        started: '2023-06-22T10:11:00.123Z',
-        finished: '2023-06-22T10:17:00.123Z',
-      },
-      {
-        status: 'Completed',
-        device: device,
-        report: 'https://api.testrun.io/report.pdf',
-        started: '2023-07-22T10:11:00.123Z',
-        finished: '2023-07-22T10:17:00.123Z',
-      },
-    ] as TestrunStatus[];
-
-    service.getHistory().next(reports);
-    tick();
-    service.removeReport('00:1e:42:35:73:c4', '2023-06-22T10:11:00.123Z');
-
-    expect(
-      service
-        .getHistory()
-        .value?.some(
-          report =>
-            report.device.mac_addr === '00:1e:42:35:73:c4' &&
-            report.started === '2023-06-22T10:11:00.123Z'
-        )
-    ).toEqual(false);
-<<<<<<< HEAD
-  }));
-=======
-  }));*/
->>>>>>> dev
 
   it('#saveDevice should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/device';

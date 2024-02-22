@@ -20,10 +20,7 @@ import {
   ValidationErrors,
   ValidatorFn,
 } from '@angular/forms';
-<<<<<<< HEAD:modules/ui/src/app/components/general-settings/only-different-values.validator.ts
-=======
 import { FormKey } from '../../model/setting';
->>>>>>> dev:modules/ui/src/app/pages/settings/only-different-values.validator.ts
 
 @Injectable({ providedIn: 'root' })
 export class OnlyDifferentValuesValidator {

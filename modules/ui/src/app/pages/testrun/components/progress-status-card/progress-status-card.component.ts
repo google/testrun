@@ -20,11 +20,7 @@ import {
   StatusOfTestrun,
   TestrunStatus,
   TestsData,
-<<<<<<< HEAD:modules/ui/src/app/progress/progress-status-card/progress-status-card.component.ts
-} from '../../model/testrun-status';
-=======
 } from '../../../../model/testrun-status';
->>>>>>> dev:modules/ui/src/app/pages/testrun/components/progress-status-card/progress-status-card.component.ts
 
 @Component({
   selector: 'app-progress-status-card',
@@ -50,11 +46,8 @@ export class ProgressStatusCardComponent {
         status === StatusOfTestrun.Monitoring,
       'completed-success':
         status === StatusOfTestrun.Compliant ||
-<<<<<<< HEAD:modules/ui/src/app/progress/progress-status-card/progress-status-card.component.ts
-=======
         status === StatusOfTestrun.CompliantLimited ||
         status === StatusOfTestrun.CompliantHigh ||
->>>>>>> dev:modules/ui/src/app/pages/testrun/components/progress-status-card/progress-status-card.component.ts
         status === StatusOfTestrun.SmartReady,
       'completed-failed': status === StatusOfTestrun.NonCompliant,
       canceled:
@@ -74,14 +67,6 @@ export class ProgressStatusCardComponent {
         (data.tests as TestsData)?.results?.length &&
         (data.tests as TestsData)?.total
       ) {
-<<<<<<< HEAD:modules/ui/src/app/progress/progress-status-card/progress-status-card.component.ts
-        return `${(data.tests as TestsData)?.results?.length}/${(
-          data.tests as TestsData
-        )?.total}`;
-      } else if ((data.tests as IResult[])?.length) {
-        return `${(data.tests as IResult[])?.length}/${(data.tests as IResult[])
-          ?.length}`;
-=======
         return `${(data.tests as TestsData)?.results?.length}/${
           (data.tests as TestsData)?.total
         }`;
@@ -89,7 +74,6 @@ export class ProgressStatusCardComponent {
         return `${(data.tests as IResult[])?.length}/${
           (data.tests as IResult[])?.length
         }`;
->>>>>>> dev:modules/ui/src/app/pages/testrun/components/progress-status-card/progress-status-card.component.ts
       }
     }
     return '';

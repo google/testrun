@@ -14,15 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <app-bypass></app-bypass>
-<<<<<<< HEAD
-<mat-drawer-container hasBackdrop="false" class="app-container" autosize>
-=======
 <mat-drawer-container
   [class.active-menu]="isMenuOpen | async"
   hasBackdrop="false"
   class="app-container"
   autosize>
->>>>>>> dev
   <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
     <div class="app-sidebar" #navigation>
       <ng-container
@@ -90,13 +86,6 @@ limitations under the License.
       </button>
     </mat-toolbar>
     <div class="app-content-main" role="main" id="main">
-<<<<<<< HEAD
-      <app-callout
-        [type]="CalloutType.Info"
-        *ngIf="
-          (hasConnectionSetting$ | async) !== true && isConnectionSettingsLoaded
-        ">
-=======
       <app-callout [type]="CalloutType.Error" *ngIf="(error$ | async) === true">
         Selected port is missing! Please define a valid one using
         <a
@@ -114,7 +103,6 @@ limitations under the License.
       <app-callout
         [type]="CalloutType.Info"
         *ngIf="(hasConnectionSetting$ | async) === false">
->>>>>>> dev
         Step 1: To perform a device test, please, select ports in
         <a
           (click)="openSetting()"
@@ -131,12 +119,7 @@ limitations under the License.
         [type]="CalloutType.Info"
         *ngIf="
           (hasConnectionSetting$ | async) === true &&
-<<<<<<< HEAD
-          !(devices$ | async)?.length &&
-          isDevicesLoaded
-=======
           !(devices$ | async)?.length
->>>>>>> dev
         ">
         Step 2: To perform a device test please
         <a
@@ -158,11 +141,7 @@ limitations under the License.
           (devices$ | async)?.length &&
           (!(systemStatus$ | async)?.status ||
             (systemStatus$ | async)?.status === StatusOfTestrun.Idle) &&
-<<<<<<< HEAD
-          isStatusLoaded &&
-=======
           isStatusLoaded === true &&
->>>>>>> dev
           (isTestrunStarted$ | async) === false
         ">
         Step 3: Once device is created navigate to
@@ -186,14 +165,7 @@ limitations under the License.
     mode="over"
     position="end"
     class="settings-drawer">
-<<<<<<< HEAD
-    <app-general-settings
-      [interfaces]="interfaces"
-      (closeSettingEvent)="closeSetting()"
-      (reloadInterfacesEvent)="reloadInterfaces()">
-=======
     <app-general-settings (closeSettingEvent)="closeSetting()">
->>>>>>> dev
     </app-general-settings>
   </mat-drawer>
 </mat-drawer-container>

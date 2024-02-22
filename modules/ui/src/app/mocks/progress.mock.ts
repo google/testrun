@@ -34,8 +34,6 @@ const TEST_DATA_RESULT: IResult[] = [
   },
 ];
 
-<<<<<<< HEAD
-=======
 export const TEST_DATA_RESULT_WITH_RECOMMENDATIONS: IResult[] = [
   {
     name: 'dns.network.from_dhcp',
@@ -49,7 +47,6 @@ export const TEST_DATA_RESULT_WITH_RECOMMENDATIONS: IResult[] = [
   },
 ];
 
->>>>>>> dev
 export const TEST_DATA_TABLE_RESULT: IResult[] = [
   ...TEST_DATA_RESULT,
   ...new Array(24).fill(null).map(() => ({}) as IResult),

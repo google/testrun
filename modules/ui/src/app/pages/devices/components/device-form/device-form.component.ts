@@ -22,21 +22,13 @@ import {
   Validators,
 } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-<<<<<<< HEAD:modules/ui/src/app/device-repository/device-form/device-form.component.ts
-import { Device, TestModule } from '../../model/device';
-import { TestRunService } from '../../services/test-run.service';
-import { DeviceValidators } from './device.validators';
-import { catchError, of, Subject, takeUntil } from 'rxjs';
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { EscapableDialogComponent } from '../../components/escapable-dialog/escapable-dialog.component';
-=======
+
 import { Device, TestModule } from '../../../../model/device';
 import { TestRunService } from '../../../../services/test-run.service';
 import { DeviceValidators } from './device.validators';
 import { catchError, of, Subject, takeUntil } from 'rxjs';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
->>>>>>> dev:modules/ui/src/app/pages/devices/components/device-form/device-form.component.ts
 import { Observable } from 'rxjs/internal/Observable';
 
 const MAC_ADDRESS_PATTERN =

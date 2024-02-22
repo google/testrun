@@ -22,10 +22,7 @@ limitations under the License.
     <ng-container *ngIf="selectedDevice === null">
       <ng-container *ngFor="let device of devices">
         <app-device-item
-<<<<<<< HEAD:modules/ui/src/app/progress/progress-initiate-form/progress-initiate-form.component.html
-=======
           [deviceView]="DeviceView.Basic"
->>>>>>> dev:modules/ui/src/app/pages/testrun/components/progress-initiate-form/progress-initiate-form.component.html
           [class.device-item-focused]="device === prevDevice"
           (itemClicked)="deviceSelected(device)"
           [device]="device"></app-device-item>
@@ -33,10 +30,7 @@ limitations under the License.
     </ng-container>
     <app-device-item
       *ngIf="selectedDevice !== null"
-<<<<<<< HEAD:modules/ui/src/app/progress/progress-initiate-form/progress-initiate-form.component.html
-=======
       [deviceView]="DeviceView.Basic"
->>>>>>> dev:modules/ui/src/app/pages/testrun/components/progress-initiate-form/progress-initiate-form.component.html
       [tabIndex]="-1"
       [device]="selectedDevice"></app-device-item>
     <mat-form-field
@@ -60,12 +54,6 @@ limitations under the License.
   </section>
 
   <mat-dialog-actions class="progress-initiate-form-actions">
-<<<<<<< HEAD:modules/ui/src/app/progress/progress-initiate-form/progress-initiate-form.component.html
-    <button (click)="cancel()" color="primary" mat-button type="button">
-      Cancel
-    </button>
-=======
->>>>>>> dev:modules/ui/src/app/pages/testrun/components/progress-initiate-form/progress-initiate-form.component.html
     <button
       (click)="changeDevice()"
       [disabled]="selectedDevice === null"
