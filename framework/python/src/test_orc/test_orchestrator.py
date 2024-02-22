@@ -34,7 +34,6 @@ LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
 SAVED_DEVICE_REPORTS = "report/{device_folder}/"
 LOCAL_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
-TESTRUN_DIR = "/usr/local/testrun"
 API_URL = "http://localhost:8000"
 
 

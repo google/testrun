@@ -14,3 +14,5 @@ testing/unit/report/output/
 
 *.deb
 make/DEBIAN/postinst
+
+testrun.log

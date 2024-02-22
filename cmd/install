@@ -16,7 +16,13 @@
 
 echo Installing application dependencies
 
-TESTRUN_DIR=/usr/local/testrun
+if [[ -z "${TESTRUN_DIR}" ]]; then
+  TESTRUN_DIR=/usr/local/testrun
+else
+  TESTRUN_DIR="${TESTRUN_DIR}"
+fi
+
+echo Installing Testrun at $TESTRUN_DIR
 cd $TESTRUN_DIR
 
 python3 -m venv venv
