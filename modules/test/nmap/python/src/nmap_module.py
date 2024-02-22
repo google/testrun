@@ -401,4 +401,4 @@ class NmapModule(TestModule):
             return True, f"SSH server found running {open_port_info['version']}"
           else:
             return (False,
-                    f'''SSH server found running {open_port_info['version']}''')
+                    f"SSH server found running {open_port_info['version']}")

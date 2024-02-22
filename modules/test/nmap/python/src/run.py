@@ -17,7 +17,6 @@ import argparse
 import signal
 import sys
 import logger
-
 from nmap_module import NmapModule
 
 LOG_NAME = 'nmap_runner'

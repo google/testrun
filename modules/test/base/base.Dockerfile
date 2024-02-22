@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Image name: test-run/base-test
-FROM ubuntu:jammy
+FROM ubuntu@sha256:e6173d4dc55e76b87c4af8db8821b1feae4146dd47341e4d431118c7dd060a74
 
 ARG MODULE_NAME=base
 ARG MODULE_DIR=modules/test/$MODULE_NAME

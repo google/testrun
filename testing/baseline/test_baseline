@@ -23,7 +23,7 @@ ifconfig
 sudo apt-get update
 sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils isc-dhcp-client
 
-pip3 install pytest
+pip3 install pytest==7.4.4
 
 # Setup device network
 sudo ip link add dev endev0a type veth peer name endev0b

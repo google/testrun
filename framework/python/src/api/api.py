@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Provides Testrun data via REST API."""
-
 from fastapi import FastAPI, APIRouter, Response, Request, status
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -187,7 +186,8 @@ class Api:
       ]:
       LOGGER.debug("Testrun is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
-      return self._generate_msg(False, "Testrun is already running")
+      return self._generate_msg(False, "Testrun cannot be started " +
+                                "whilst a test is running on another device")
 
     # Check if requested device is known in the device repository
     if device is None:
@@ -386,7 +386,6 @@ class Api:
                                 "the device")
 
   async def save_device(self, request: Request, response: Response):
-
     LOGGER.debug("Received device post request")
 
     try:
