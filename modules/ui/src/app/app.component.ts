@@ -37,6 +37,7 @@ import {
 import { toggleMenu, updateFocusNavigation } from './store/actions';
 import { appFeatureKey } from './store/reducers';
 import { SystemInterfaces } from './model/setting';
+import { GeneralSettingsComponent } from './pages/settings/general-settings.component';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -72,6 +73,7 @@ export class AppComponent implements OnInit {
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
   @ViewChild('navigation') public navigation!: ElementRef;
+  @ViewChild('settings') public settings!: GeneralSettingsComponent;
 
   constructor(
     private matIconRegistry: MatIconRegistry,
@@ -179,6 +181,7 @@ export class AppComponent implements OnInit {
 
   async openGeneralSettings(openSettingFromToggleBtn: boolean) {
     this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
+    this.settings.getSystemInterfaces();
     await this.settingsDrawer.open();
   }
 }
