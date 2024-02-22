@@ -28,7 +28,7 @@ pip3 install -r framework/requirements.txt
 # Copy the default configuration
 cp -n local/system.json.example local/system.json
 
-# Set file permissions
+# Set file permissions on system config
 # This does not work on GitHub actions
 if logname ; then
   USER_NAME=$(logname)
