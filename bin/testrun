@@ -22,11 +22,16 @@ fi
 # Ensure that /var/run/netns folder exists
 sudo mkdir -p /var/run/netns
 
-export TESTRUNPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/..
-cd $TESTRUNPATH
+FILE_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# Create device folder if it doesn't exist
-mkdir -p local/devices
+# Check if Testrun was installed as a package
+if [ $FILE_PATH == "/usr/bin" ] ; then
+  export TESTRUN_PATH="/usr/local/testrun"
+else
+  export TESTRUN_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/..
+fi
+
+cd $TESTRUN_PATH
 
 # Remove existing runtime data
 rm -rf runtime/*
@@ -35,7 +40,7 @@ rm -rf runtime/*
 source venv/bin/activate
 
 # Set the PYTHONPATH to include the "src" directory
-export PYTHONPATH="$TESTRUNPATH/framework/python/src"
+export PYTHONPATH="$TESTRUN_PATH/framework/python/src"
 python -u framework/python/src/core/test_runner.py $@ 2>&1 | tee testrun.log
 
 deactivate

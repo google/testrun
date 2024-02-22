@@ -77,7 +77,7 @@ jobs:
         run: testing/api/test_api
       - name: Archive runtime results
         if: ${{ always() }}
-        run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/ /usr/local/testrun/local/
+        run: sudo tar --exclude-vcs -czf runtime.tgz runtime/ local/
       - name: Upload runtime results
         uses: actions/upload-artifact@v4
         if: ${{ always() }}

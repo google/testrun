@@ -37,7 +37,6 @@ API = "http://127.0.0.1:8000"
 LOG_PATH = "/tmp/testrun.log"
 TEST_SITE_DIR = ".."
 
-TESTRUN_DIR = "/usr/local/testrun"
 DEVICES_DIRECTORY = "local/devices"
 TESTING_DEVICES = "../device_configs"
 SYSTEM_CONFIG_PATH = "local/system.json"
@@ -112,7 +111,7 @@ def testing_devices():
   local_delete_devices(ALL_DEVICES)
   shutil.copytree(
       os.path.join(os.path.dirname(__file__), TESTING_DEVICES),
-      os.path.join(TESTRUN_DIR, DEVICES_DIRECTORY),
+      os.path.join(DEVICES_DIRECTORY),
       dirs_exist_ok=True,
   )
   return local_get_devices()
@@ -209,8 +208,7 @@ def get_network_interfaces():
 def local_delete_devices(path):
   """ Deletes all local devices 
   """
-  devices_path = os.path.join(TESTRUN_DIR, DEVICES_DIRECTORY)
-  for thing in Path(devices_path).glob(path):
+  for thing in Path(DEVICES_DIRECTORY).glob(path):
     if thing.is_file():
       thing.unlink()
     else:
@@ -220,7 +218,7 @@ def local_delete_devices(path):
 def local_get_devices():
   """ Returns path to device configs of devices in local/devices directory"""
   return sorted(
-      Path(os.path.join(TESTRUN_DIR, DEVICES_DIRECTORY)).glob(
+      Path(DEVICES_DIRECTORY).glob(
           "*/device_config.json"
       )
   )
@@ -240,7 +238,7 @@ def test_get_system_interfaces(testrun):
 def test_modify_device(testing_devices, testrun):
   with open(
       os.path.join(
-          TESTRUN_DIR, DEVICES_DIRECTORY, testing_devices[1]
+          DEVICES_DIRECTORY, testing_devices[1]
       )
   ) as f:
     local_device = json.load(f)
@@ -345,7 +343,7 @@ def test_create_get_devices(empty_devices_dir, testrun):
 def test_get_system_config(testrun):
   r = requests.get(f"{API}/system/config")
 
-  with open(os.path.join(TESTRUN_DIR, SYSTEM_CONFIG_PATH)) as f:
+  with open(SYSTEM_CONFIG_PATH) as f:
     local_config = json.load(f)
 
   api_config = json.loads(r.text)
