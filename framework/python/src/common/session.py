@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Track testing status."""
-
+import copy
 import datetime
 import json
 import os
@@ -216,13 +216,35 @@ class TestRunSession():
     return self._module_reports
 
   def get_report_tests(self):
+    """Returns the current test results in JSON-friendly format
+    (in Python dictionary)"""
+    test_results = []
+    for test_result in self._results:
+      test_results.append(test_result.to_dict())
+
     return {
       'total': self.get_total_tests(),
-      'results': self.get_test_results()
+      'results': test_results
     }
 
-  def add_test_result(self, test_result):
-    self._results.append(test_result)
+  def add_test_result(self, result):
+
+    updated = False
+
+    # Check if test has already been added
+    for test_result in self._results:
+
+      # result type is TestCase object
+      if test_result.name == result.name:
+
+        # Just update the result and description
+        test_result.result = result.result
+        test_result.description = result.description
+        updated = True
+
+    if not updated:
+      result.result = 'In Progress'
+      self._results.append(result)
 
   def add_module_report(self, module_report):
     self._module_reports.append(module_report)
@@ -265,9 +287,14 @@ class TestRunSession():
       'results': self.get_test_results()
     }
 
+    # Remove reports from device for session status
+    device = copy.deepcopy(self.get_target_device())
+    if device is not None:
+      device.reports = None
+
     session_json = {
       'status': self.get_status(),
-      'device': self.get_target_device(),
+      'device': device,
       'started': self.get_started(),
       'finished': self.get_finished(),
       'tests': results
