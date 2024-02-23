@@ -13,17 +13,14 @@
 # limitations under the License.
 
 """Test assertions for CI network baseline test"""
-# Temporarily disabled because using Pytest fixtures
-# TODO refactor fixtures to not trigger error
 # pylint: disable=redefined-outer-name
 
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 import copy
 import json
 import os
 from pathlib import Path
 import re
-import shutil
 import shutil
 import signal
 import subprocess
@@ -66,7 +63,7 @@ def query_test_count() -> int:
 
 
 def start_test_device(
-    device_name, mac_address, image_name="ci_test_device1", args=""
+    device_name, mac_address, image_name="test-run/ci_device_1", args=""
 ):
   """ Start test device container with given name """
   cmd = subprocess.run(
@@ -121,24 +118,23 @@ def testing_devices():
 @pytest.fixture
 def testrun(request):
   """ Start intstance of testrun """
-  test_name = request.node.originalname
   proc = subprocess.Popen(
       "testrun",
       stdout=subprocess.PIPE,
       stderr=subprocess.STDOUT,
       encoding="utf-8",
-      preexec_fn=os.setsid,
+      preexec_fn=os.setsid
   )
 
   while True:
     try:
-      outs, errs = proc.communicate(timeout=1)
+      outs = proc.communicate(timeout=1)[0]
     except subprocess.TimeoutExpired as e:
       if e.output is not None:
         output = e.output.decode("utf-8")
         if re.search("API waiting for requests", output):
           break
-    except Exception as e:
+    except Exception:
       pytest.fail("testrun terminated")
 
   time.sleep(2)
@@ -147,7 +143,7 @@ def testrun(request):
 
   os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
   try:
-    outs, errs = proc.communicate(timeout=60)
+    outs = proc.communicate(timeout=60)[0]
   except Exception as e:
     print(e.output)
     os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
@@ -158,11 +154,13 @@ def testrun(request):
   print(outs)
 
   cmd = subprocess.run(
-      f"docker stop $(docker ps -a -q)", shell=True, capture_output=True
+      "docker stop $(docker ps -a -q)", shell=True,
+      capture_output=True
   )
   print(cmd.stdout)
   cmd = subprocess.run(
-      f"docker rm  $(docker ps -a -q)", shell=True, capture_output=True
+      "docker rm  $(docker ps -a -q)", shell=True,
+      capture_output=True
   )
   print(cmd.stdout)
 
@@ -241,7 +239,7 @@ def test_modify_device(testing_devices, testrun):
   with open(
       os.path.join(
           TESTRUN_DIR, DEVICES_DIRECTORY, testing_devices[1]
-      )
+      ), encoding="utf-8"
   ) as f:
     local_device = json.load(f)
 
@@ -301,7 +299,6 @@ def test_create_get_devices(empty_devices_dir, testrun):
 
   r = requests.post(f"{API}/device", data=json.dumps(device_1))
   print(r.text)
-  device1_response = r.text
   assert r.status_code == 201
   assert len(local_get_devices()) == 1
 
@@ -318,7 +315,6 @@ def test_create_get_devices(empty_devices_dir, testrun):
       },
   }
   r = requests.post(f"{API}/device", data=json.dumps(device_2))
-  device2_response = json.loads(r.text)
   assert r.status_code == 201
   assert len(local_get_devices()) == 2
 
@@ -328,7 +324,8 @@ def test_create_get_devices(empty_devices_dir, testrun):
   pretty_print(all_devices)
 
   with open(
-      os.path.join(os.path.dirname(__file__), "mockito/get_devices.json")
+      os.path.join(os.path.dirname(__file__), "mockito/get_devices.json"),
+      encoding="utf-8"
   ) as f:
     mockito = json.load(f)
 
@@ -350,7 +347,10 @@ def test_create_get_devices(empty_devices_dir, testrun):
 def test_get_system_config(testrun):
   r = requests.get(f"{API}/system/config")
 
-  with open(os.path.join(TESTRUN_DIR, SYSTEM_CONFIG_PATH)) as f:
+  with open(
+    os.path.join(TESTRUN_DIR, SYSTEM_CONFIG_PATH),
+    encoding="utf-8"
+  ) as f:
     local_config = json.load(f)
 
   api_config = json.loads(r.text)
@@ -370,14 +370,13 @@ def test_get_system_config(testrun):
   )
 
 
-# TODO change to invalid jsdon request
-@pytest.mark.skip()
 def test_invalid_path_get(testrun):
   r = requests.get(f"{API}/blah/blah")
   response = json.loads(r.text)
   assert r.status_code == 404
   with open(
-      os.path.join(os.path.dirname(__file__), "mockito/invalid_request.json")
+      os.path.join(os.path.dirname(__file__), "mockito/invalid_request.json"),
+      encoding="utf-8"
   ) as f:
     mockito = json.load(f)
 
@@ -421,7 +420,7 @@ def test_trigger_run(testing_devices, testrun):
   with open(
       os.path.join(
           os.path.dirname(__file__), "mockito/running_system_status.json"
-      )
+      ), encoding="utf-8"
   ) as f:
     mockito = json.load(f)
 
@@ -463,26 +462,24 @@ def test_stop_running_test(testing_devices, testrun):
   pretty_print(response)
   assert response == {"success": "Testrun stopped"}
   time.sleep(1)
+
   # Validate response
   r = requests.get(f"{API}/system/status")
   response = json.loads(r.text)
   pretty_print(response)
 
-  #TODO uncomment when bug is fixed
-  #assert len(response["tests"]["results"]) == response["tests"]["total"]
-  assert len(response["tests"]["results"]) < 15
-  #TODO uncomment when bug is fixed
-  #assert response["status"] == "Stopped"
+  len(response["tests"]["results"]) == response["tests"]["total"]
+  assert response["status"] == "Cancelled"
 
 
-@pytest.mark.skip()
 def test_stop_running_not_running(testrun):
   # Validate response
   r = requests.post(f"{API}/system/stop")
   response = json.loads(r.text)
   pretty_print(response)
 
-  assert False
+  assert r.status_code == 404
+  assert response["error"] == "Testrun is not currently running"
 
 def test_multiple_runs(testing_devices, testrun):
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
@@ -539,12 +536,10 @@ def test_multiple_runs(testing_devices, testrun):
 
   stop_test_device("x123")
 
-#TODO uncomment when functionality is implemented
-@pytest.mark.skip()
 def test_create_invalid_chars(empty_devices_dir, testrun):
   # local_delete_devices(ALL_DEVICES)
-  # We must start test run with no devices in local/devices for this test 
-  # to function as expected!
+  # We must start test run with no devices in local/devices for this test
+  # to function as expected
   assert len(local_get_devices()) == 0
 
   # Test adding device
