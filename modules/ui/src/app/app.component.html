@@ -54,7 +54,11 @@ limitations under the License.
           }
         ">
       </ng-container>
-      <app-version></app-version>
+      <ng-container *ngIf="viewModel$ | async as vm">
+        <app-version
+          [consentShown]="vm.consentShown"
+          (consentShownEvent)="consentShown()"></app-version>
+      </ng-container>
     </div>
   </mat-drawer>
 

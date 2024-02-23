@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TestRunService } from '../../services/test-run.service';
 import { Version } from '../../model/version';
@@ -37,10 +44,10 @@ declare const gtag: Function;
   styleUrls: ['./version.component.scss'],
 })
 export class VersionComponent implements OnInit, OnDestroy {
+  @Input() consentShown!: boolean;
+  @Output() consentShownEvent = new EventEmitter<void>();
   version$!: Observable<Version | null>;
   private destroy$: Subject<boolean> = new Subject<boolean>();
-
-  private isDialogClosed = false;
 
   constructor(
     private testRunService: TestRunService,
@@ -53,9 +60,10 @@ export class VersionComponent implements OnInit, OnDestroy {
     this.version$ = this.testRunService.getVersion().pipe(
       filter(version => version !== null),
       tap(version => {
-        if (!this.isDialogClosed) {
+        if (!this.consentShown) {
           // @ts-expect-error null is filtered
           this.openConsentDialog(version);
+          this.consentShownEvent.emit();
         }
       })
     );
@@ -75,7 +83,6 @@ export class VersionComponent implements OnInit, OnDestroy {
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
       .subscribe((grant: boolean) => {
-        this.isDialogClosed = true;
         if (grant === null) {
           return;
         }
