@@ -16,6 +16,13 @@
 
 echo Installing application dependencies
 
+while getopts ":l" option; do
+   case $option in
+      l) # Install Testrun in local directory
+         TESTRUN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")"/.. && pwd)
+   esac
+done
+
 if [[ -z "${TESTRUN_DIR}" ]]; then
   TESTRUN_DIR=/usr/local/testrun
 else
@@ -23,6 +30,7 @@ else
 fi
 
 echo Installing Testrun at $TESTRUN_DIR
+mkdir -p $TESTRUN_DIR
 cd $TESTRUN_DIR
 
 python3 -m venv venv
