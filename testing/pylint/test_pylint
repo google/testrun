@@ -21,7 +21,7 @@ sudo cmd/install
 source venv/bin/activate
 sudo pip3 install pylint==3.0.3
 
-files=$(find ./framework -path ./venv -prune -o -name '*.py' -print)
+files=$(find . -path ./venv -prune -o -name '*.py' -print)
 
 OUT=pylint.out
 
