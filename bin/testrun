@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Check that user is root
 if [[ "$EUID" -ne 0 ]]; then
     echo "Must run as root. Use sudo $0"
     exit 1
@@ -22,6 +23,7 @@ fi
 # Ensure that /var/run/netns folder exists
 sudo mkdir -p /var/run/netns
 
+# Get the directory of the running script
 FILE_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Check if Testrun was installed as a package
