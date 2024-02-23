@@ -58,7 +58,7 @@ class TestReport():
     self._report_url = ''
     self._cur_page = 0
     # Placeholder until available in json report
-    self._version = 'v1.1.1-alpha (2023-01-04)'
+    self._version = 'v1.2-alpha'
 
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
