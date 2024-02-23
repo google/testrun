@@ -103,7 +103,6 @@ class TestModule:
           except Exception as e:
             LOGGER.error(f'An error occurred whilst running {test["name"]}')
             LOGGER.error(e)
-            result = None
         else:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
           result = None
