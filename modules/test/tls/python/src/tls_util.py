@@ -83,6 +83,9 @@ class TLSUtil():
     except ssl.SSLError as e:
       LOGGER.info(f'SSL error occurred: {e}')
       return None
+    except socket.timeout as e:
+      LOGGER.info(f'Socket timeout')
+      return None
 
     return cert_pem
 
