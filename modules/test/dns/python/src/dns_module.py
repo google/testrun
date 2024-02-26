@@ -77,15 +77,10 @@ class DNSModule(TestModule):
 
       table_content = ''
       for row in dns_table_data:
-        #table_content += f'''| {row['Source']: ^12} | {row['Destination']: ^13} | {row['Type']: ^9} | {row['Data']: ^{max_data_length}} |\r'''
         table_content += (f'''| {row['Source']: ^12} '''
                           f'''| {row['Destination']: ^13} '''
                           f'''| {row['Type']: ^9} '''
                           f'''| {row['Data']: ^{max_data_length}} |\n''')
-
-      # Dynamically adjust the header width based on the longest 'Destination' content
-      # header = f'''| {'Source': ^12} | {'Destination': ^{13}} | {'Type': ^9} | {'Data': ^{max_data_length}} |'''
-      # header_line = f'''|{'-' * 14}|{'-' * 15}|{'-' * 11}|{'-' * (max_data_length + 2)}|'''
 
       header = (f'''| {'Source': ^12} '''
                 f'''| {'Destination': ^{13}} '''
