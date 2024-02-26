@@ -30,7 +30,7 @@ FILE_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 if [ $FILE_PATH == "/usr/bin" ] ; then
   export TESTRUN_PATH="/usr/local/testrun"
 else
-  export TESTRUN_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/..
+  export TESTRUN_PATH=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")"/.. && pwd)
 fi
 
 cd $TESTRUN_PATH
