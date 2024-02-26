@@ -167,7 +167,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
-  private getSystemInterfaces(): void {
+  getSystemInterfaces(): void {
     this.settingsStore.getInterfaces();
     this.hideLoading();
   }

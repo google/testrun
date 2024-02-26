@@ -54,7 +54,11 @@ limitations under the License.
           }
         ">
       </ng-container>
-      <app-version></app-version>
+      <ng-container *ngIf="viewModel$ | async as vm">
+        <app-version
+          [consentShown]="vm.consentShown"
+          (consentShownEvent)="consentShown()"></app-version>
+      </ng-container>
     </div>
   </mat-drawer>
 
@@ -165,7 +169,7 @@ limitations under the License.
     mode="over"
     position="end"
     class="settings-drawer">
-    <app-general-settings (closeSettingEvent)="closeSetting()">
+    <app-general-settings #settings (closeSettingEvent)="closeSetting()">
     </app-general-settings>
   </mat-drawer>
 </mat-drawer-container>
