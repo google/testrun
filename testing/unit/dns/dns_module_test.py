@@ -19,18 +19,20 @@ import os
 
 MODULE = 'dns'
 
-# Define the file paths
+# Define the directories
 TEST_FILES_DIR = 'testing/unit/' + MODULE
-OUTPUT_DIR = TEST_FILES_DIR + '/output/'
-# TEMP_DIR = TEST_FILES_DIR + '/temp/'
-LOCAL_REPORT = TEST_FILES_DIR + '/dns_report_local.md'
-LOCAL_REPORT_NO_DNS = TEST_FILES_DIR + '/dns_report_local_no_dns.md'
-CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
-# Define the capture files to be used for the test
-DNS_SERVER_CAPTURE_FILE = TEST_FILES_DIR + '/dns.pcap'
-STARTUP_CAPTURE_FILE = TEST_FILES_DIR + '/startup.pcap'
-MONITOR_CAPTURE_FILE = TEST_FILES_DIR + '/monitor.pcap'
+OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
+REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
+CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
 
+LOCAL_REPORT = os.path.join(REPORTS_DIR,'dns_report_local.md')
+LOCAL_REPORT_NO_DNS = os.path.join(REPORTS_DIR,'dns_report_local_no_dns.md')
+CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
+
+# Define the capture files to be used for the test
+DNS_SERVER_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'dns.pcap')
+STARTUP_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'startup.pcap')
+MONITOR_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'monitor.pcap')
 
 class TLSModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""

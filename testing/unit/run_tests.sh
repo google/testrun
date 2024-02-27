@@ -47,11 +47,10 @@ python3 -u $PWD/testing/unit/dns/dns_module_test.py
 # Run the NMAP Module Unit Tests
 python3 -u $PWD/testing/unit/nmap/nmap_module_test.py
 
-# Run the Report Unit Tests
-python3 -u $PWD/testing/unit/report/report_test.py
-
-# Run the NMAP Module Unit Tests
+# Run the NTP Module Unit Tests
 python3 -u $PWD/testing/unit/ntp/ntp_module_test.py
 
+# # Run the Report Unit Tests
+python3 -u $PWD/testing/unit/report/report_test.py
 
 popd >/dev/null 2>&1

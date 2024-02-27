@@ -308,8 +308,8 @@ class TestReport():
 
     #Add styling to the markdown
     content = content.replace('<table>', '<table class=markdown-table>')
-    content = content.replace('<h1>', '<h1 class=markdown-header>')
-    content = content.replace('<h2>', '<h2 class=markdown-header>')
+    content = content.replace('<h1>', '<h1 class=markdown-header-h1>')
+    content = content.replace('<h2>', '<h2 class=markdown-header-h2>')
 
     content = self.generate_module_pages(json_data=json_data,
                                          module_reports=content)
@@ -777,10 +777,24 @@ class TestReport():
       padding: 8px;
     }
 
-    .markdown-header{
+    .markdown-header-h1{
       margin-left:20px;
       margin-top:20px;
       margin-bottom:20px;
+      margin-right:0px;
+
+      font-size: 2em;
+      font-weight: bold;
+    }
+
+    .markdown-header-h2{
+      margin-left:20px;
+      margin-top:20px;
+      margin-bottom:20px;
+      margin-right:0px;
+
+      font-size: 1.5em;
+      font-weight: bold;
     }
 
     .module-page-content{
