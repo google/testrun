@@ -21,8 +21,11 @@ MODULE = 'nmap'
 
 # Define the file paths
 TEST_FILES_DIR = 'testing/unit/' + MODULE
-OUTPUT_DIR = TEST_FILES_DIR + '/output/'
-LOCAL_REPORT = TEST_FILES_DIR + '/nmap_report_local.md'
+OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
+REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
+RESULTS_DIR = os.path.join(TEST_FILES_DIR,'results/')
+
+LOCAL_REPORT = os.path.join(REPORTS_DIR,'nmap_report_local.md')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 
@@ -37,7 +40,7 @@ class NMAPTest(unittest.TestCase):
   # Test the module report generation
   def nmap_module_ports_open_report_test(self):
     # Move test scan into expected folder
-    src_scan_results_path = os.path.join(TEST_FILES_DIR,'ports_open_scan_result.json')
+    src_scan_results_path = os.path.join(RESULTS_DIR,'ports_open_scan_result.json')
     dst_scan_results_path = os.path.join(OUTPUT_DIR,'nmap_scan_results.json')
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
@@ -55,7 +58,8 @@ class NMAPTest(unittest.TestCase):
       report_out = file.read()
 
     # Read the local good report
-    local_report = TEST_FILES_DIR + '/ports_open_report.md'
+
+    local_report = os.path.join(REPORTS_DIR,'ports_open_report.md')
     with open(local_report, 'r', encoding='utf-8') as file:
       report_local = file.read()
 
@@ -63,7 +67,7 @@ class NMAPTest(unittest.TestCase):
 
     # Test the module report generation with all ports closed
   def nmap_module_report_all_closed_test(self):
-    src_scan_results_path = os.path.join(TEST_FILES_DIR,'all_closed_scan_result.json')
+    src_scan_results_path = os.path.join(RESULTS_DIR,'all_closed_scan_result.json')
     dst_scan_results_path = os.path.join(OUTPUT_DIR,'nmap_scan_results.json')
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
@@ -81,7 +85,7 @@ class NMAPTest(unittest.TestCase):
       report_out = file.read()
 
     # Read the local good report
-    local_report = TEST_FILES_DIR + '/all_closed_report.md'
+    local_report = os.path.join(REPORTS_DIR,'all_closed_report.md')
     with open(local_report, 'r', encoding='utf-8') as file:
       report_local = file.read()
 
