@@ -78,54 +78,24 @@ class TLSModule(TestModule):
       return None, 'Could not resolve device IP address'
 
   def _validate_tls_client(self, client_ip, tls_version):
-    monitor_result = self._tls_util.validate_tls_client(
+    client_results = self._tls_util.validate_tls_client(
         client_ip=client_ip,
         tls_version=tls_version,
-        capture_file=MONITOR_CAPTURE_FILE)
-    startup_result = self._tls_util.validate_tls_client(
-        client_ip=client_ip,
-        tls_version=tls_version,
-        capture_file=STARTUP_CAPTURE_FILE)
-    gateway_result = self._tls_util.validate_tls_client(
-        client_ip=client_ip,
-        tls_version=tls_version,
-        capture_file=GATEWAY_CAPTURE_FILE)
-
-    LOGGER.info('Montor: ' + str(monitor_result))
-    LOGGER.info('Startup: ' + str(startup_result))
-    LOGGER.info('Gateway: ' + str(gateway_result))
-
+        capture_files=[MONITOR_CAPTURE_FILE,STARTUP_CAPTURE_FILE,
+                       GATEWAY_CAPTURE_FILE])
 
     # Generate results based on the state
-    result_message = ''
+    result_message = 'No outbound connections were found.'
     result_state = None
-    #If any of the packetes detect failed client comms, fail the test
-    if (not monitor_result[0] and monitor_result[0] is not None) or (
-        not startup_result[0] and startup_result[0] is not None) or (
-        not gateway_result[0] and gateway_result[0] is not None):
+
+    # If any of the packetes detect failed client comms, fail the test
+    if not client_results[0] and client_results[0] is not None:
       result_state = False
-      if monitor_result[0] is not None:
-        result_message += monitor_result[1]
-      if startup_result[0] is not None:
-        result_message += monitor_result[1]
-      if monitor_result[0] is not None:
-        gateway_result += monitor_result[1]
+      result_message = client_results[1]
     else:
-      # Append monitor results
-      if monitor_result[0]:
+      if client_results[0]:
         result_state = True
-        result_message += monitor_result[1]
-
-      # Append startup results
-      if startup_result[0]:
-        result_state = True
-        result_message += startup_result[1]
-
-      # Append gateway results
-      if gateway_result[0]:
-        result_state = True
-        result_message += gateway_result[1]
-
+        result_message = client_results[1]
     return result_state, result_message
 
   def _resolve_device_ip(self):

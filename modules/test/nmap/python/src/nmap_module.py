@@ -57,7 +57,6 @@ class NmapModule(TestModule):
     # Use os.path.join to create the complete file path
     nmap_scan_results_file = os.path.join(self._nmap_scan_results_path,
                                           NMAP_SCAN_RESULTS_SCAN_FILE)
-    LOGGER.info('Scan Results File:\n' + str(nmap_scan_results_file))
 
     # Read the nmap scan results
     with open(nmap_scan_results_file, 'r', encoding='utf-8') as file:
@@ -401,4 +400,4 @@ class NmapModule(TestModule):
             return True, f"SSH server found running {open_port_info['version']}"
           else:
             return (False,
-                    f'''SSH server found running {open_port_info['version']}''')
+                    f"SSH server found running {open_port_info['version']}")

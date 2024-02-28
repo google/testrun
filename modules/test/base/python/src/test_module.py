@@ -95,10 +95,15 @@ class TestModule:
         LOGGER.debug('Attempting to run test: ' + test['name'])
         # Resolve the correct python method by test name and run test
         if hasattr(self, test_method_name):
-          if 'config' in test:
-            result = getattr(self, test_method_name)(config=test['config'])
-          else:
-            result = getattr(self, test_method_name)()
+          try:
+            if 'config' in test:
+              result = getattr(self, test_method_name)(config=test['config'])
+            else:
+              result = getattr(self, test_method_name)()
+          except Exception as e:
+            LOGGER.info(f'An error occurred whilst running {test["name"]}')
+            LOGGER.error(e)
+            return None
         else:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
           result = None
@@ -123,6 +128,11 @@ class TestModule:
       else:
         test['result'] = 'Skipped'
         test['description'] = 'An error occured whilst running this test'
+
+      # Remove the steps to resolve if compliant already
+      if (test['result'] == 'Compliant' and
+          'recommendations' in test):
+        test.pop('recommendations')
 
       test['end'] = datetime.now().isoformat()
       duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(

@@ -255,22 +255,6 @@ describe('TestRunService', () => {
 
       req.flush(reports);
     });
-
-    /*    it('should return [] when error happens', () => {
-      let result: TestrunStatus[] | null = null;
-
-      service.getHistory().subscribe(res => {
-        expect(res).toEqual(result);
-      });
-
-      result = [];
-      service.fetchHistory();
-      const req = httpTestingController.expectOne({
-        url: 'http://localhost:8000/reports',
-      });
-
-      req.flush([], { status: 500, statusText: 'error' });
-    });*/
   });
 
   describe('#getResultClass', () => {
@@ -413,39 +397,6 @@ describe('TestRunService', () => {
     );
     req.flush({});
   });
-
-  /*  it('removeReport should remove device from history list', fakeAsync(() => {
-    const reports = [
-      {
-        status: 'Completed',
-        device: device,
-        report: 'https://api.testrun.io/report.pdf',
-        started: '2023-06-22T10:11:00.123Z',
-        finished: '2023-06-22T10:17:00.123Z',
-      },
-      {
-        status: 'Completed',
-        device: device,
-        report: 'https://api.testrun.io/report.pdf',
-        started: '2023-07-22T10:11:00.123Z',
-        finished: '2023-07-22T10:17:00.123Z',
-      },
-    ] as TestrunStatus[];
-
-    service.getHistory().next(reports);
-    tick();
-    service.removeReport('00:1e:42:35:73:c4', '2023-06-22T10:11:00.123Z');
-
-    expect(
-      service
-        .getHistory()
-        .value?.some(
-          report =>
-            report.device.mac_addr === '00:1e:42:35:73:c4' &&
-            report.started === '2023-06-22T10:11:00.123Z'
-        )
-    ).toEqual(false);
-  }));*/
 
   it('#saveDevice should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/device';

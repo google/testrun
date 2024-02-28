@@ -21,18 +21,18 @@ MODULE = 'ntp'
 
 # Define the file paths
 TEST_FILES_DIR = 'testing/unit/' + MODULE
-OUTPUT_DIR = f'{TEST_FILES_DIR}/output/'
-REPORTS_DIR = '/reports'
-CAPTURES_DIR = '/captures'
+OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
+REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
+CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
 
-LOCAL_REPORT = f'{TEST_FILES_DIR}/{REPORTS_DIR}/ntp_report_local.md'
-LOCAL_REPORT_NO_NTP = (f'{TEST_FILES_DIR}/{REPORTS_DIR}/'
-                       f'ntp_report_local_no_ntp.md')
+LOCAL_REPORT = os.path.join(REPORTS_DIR,'ntp_report_local.md')
+LOCAL_REPORT_NO_NTP = os.path.join(REPORTS_DIR,'ntp_report_local_no_ntp.md')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
+
 # Define the capture files to be used for the test
-NTP_SERVER_CAPTURE_FILE = f'{TEST_FILES_DIR}/{CAPTURES_DIR}/ntp.pcap'
-STARTUP_CAPTURE_FILE = f'{TEST_FILES_DIR}/{CAPTURES_DIR}/startup.pcap'
-MONITOR_CAPTURE_FILE = f'{TEST_FILES_DIR}/{CAPTURES_DIR}/monitor.pcap'
+NTP_SERVER_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'ntp.pcap')
+STARTUP_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'startup.pcap')
+MONITOR_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'monitor.pcap')
 
 
 class NTPModuleTest(unittest.TestCase):

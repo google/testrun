@@ -50,6 +50,7 @@ body {
   border-radius: inherit;
 }
 
+.consent-dialog,
 .device-form-dialog,
 .initiate-test-run-dialog {
   max-height: 100vh;
@@ -175,6 +176,10 @@ h2.title {
   --mat-option-hover-state-layer-color: #e8f0fe;
   --mat-option-focus-state-layer-color: #e8f0fe;
   --mat-option-selected-state-layer-color: #e8f0fe;
+}
+
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-focus-label-text-color: #1a73e8;
 }
 
 body:has(.initiate-test-run-dialog)
