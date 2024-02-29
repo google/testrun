@@ -13,23 +13,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container *ngIf="(devices$ | async)?.length; else empty">
-  <mat-toolbar class="device-repository-toolbar">
-    <h2 class="title">Devices</h2>
-    <ng-container *ngTemplateOutlet="addDeviceButton"></ng-container>
-  </mat-toolbar>
-  <div class="device-repository-content">
-    <ng-container *ngFor="let device of devices$ | async">
-      <app-device-item
-        (itemClicked)="openDialog($event)"
-        (startTestrunClicked)="openStartTestrun($event)"
-        [deviceView]="DeviceView.WithActions"
-        [class.device-item-selected]="device === selectedDevice"
-        [device]="device"></app-device-item>
-    </ng-container>
-  </div>
+<ng-container *ngIf="viewModel$ | async as vm">
+  <ng-container *ngIf="vm.devices.length > 0; else empty">
+    <mat-toolbar class="device-repository-toolbar">
+      <h2 class="title">Devices {{ vm.selectedDevice === null }}</h2>
+      <ng-container *ngTemplateOutlet="addDeviceButton"></ng-container>
+    </mat-toolbar>
+    <div class="device-repository-content">
+      <ng-container *ngFor="let device of vm.devices">
+        <app-device-item
+          (itemClicked)="openDialog(vm.devices, $event)"
+          (startTestrunClicked)="openStartTestrun($event, vm.devices)"
+          [deviceView]="DeviceView.WithActions"
+          [class.device-item-selected]="device === vm.selectedDevice"
+          [device]="device"></app-device-item>
+      </ng-container>
+    </div>
+  </ng-container>
 </ng-container>
-
 <ng-template #empty>
   <div class="device-repository-content-empty">
     <ng-container *ngTemplateOutlet="addDeviceButton"></ng-container>

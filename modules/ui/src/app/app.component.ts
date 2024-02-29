@@ -19,7 +19,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
 import { TestRunService } from './services/test-run.service';
 import { Observable } from 'rxjs';
-import { Device } from './model/device';
 import { TestrunStatus, StatusOfTestrun } from './model/testrun-status';
 import { Router } from '@angular/router';
 import { CalloutType } from './model/callout-type';
@@ -34,7 +33,11 @@ import {
   selectInterfaces,
   selectMenuOpened,
 } from './store/selectors';
-import { toggleMenu, updateFocusNavigation } from './store/actions';
+import {
+  setIsOpenAddDevice,
+  toggleMenu,
+  updateFocusNavigation,
+} from './store/actions';
 import { appFeatureKey } from './store/reducers';
 import { SystemInterfaces } from './model/setting';
 import { GeneralSettingsComponent } from './pages/settings/general-settings.component';
@@ -56,8 +59,6 @@ export class AppComponent implements OnInit {
   public readonly CalloutType = CalloutType;
   public readonly StatusOfTestrun = StatusOfTestrun;
   public readonly Routes = Routes;
-
-  devices$!: Observable<Device[] | null>;
   systemStatus$!: Observable<TestrunStatus>;
   isTestrunStarted$!: Observable<boolean>;
   hasConnectionSetting$: Observable<boolean | null> = this.store.select(
@@ -65,7 +66,6 @@ export class AppComponent implements OnInit {
   );
   isStatusLoaded = false;
   isConnectionSettingsLoaded = false;
-  private devicesLength = 0;
   private openedSettingFromToggleBtn = true;
   isMenuOpen: Observable<boolean> = this.store.select(selectMenuOpened);
   interfaces: Observable<SystemInterfaces> =
@@ -88,7 +88,7 @@ export class AppComponent implements OnInit {
     private readonly focusManagerService: FocusManagerService,
     private appStore: AppStore
   ) {
-    this.testRunService.fetchDevices();
+    this.appStore.getDevices();
     this.testRunService.getSystemStatus();
     this.matIconRegistry.addSvgIcon(
       'devices',
@@ -113,17 +113,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.devices$ = this.testRunService.getDevices().pipe(
-      tap(result => {
-        if (result !== null) {
-          this.devicesLength = result.length;
-        } else {
-          this.devicesLength = 0;
-        }
-      }),
-      shareReplay({ refCount: true, bufferSize: 1 })
-    );
-
     this.systemStatus$ = this.testRunService.systemStatus$.pipe(
       tap(() => (this.isStatusLoaded = true))
     );
@@ -142,7 +131,7 @@ export class AppComponent implements OnInit {
 
   navigateToDeviceRepository(): void {
     this.route.navigate([Routes.Devices]);
-    this.testRunService.setIsOpenAddDevice(true);
+    this.store.dispatch(setIsOpenAddDevice({ isOpenAddDevice: true }));
   }
 
   navigateToRuntime(): void {
@@ -150,9 +139,9 @@ export class AppComponent implements OnInit {
     this.testRunService.setIsOpenStartTestrun(true);
   }
 
-  async closeSetting(): Promise<void> {
+  async closeSetting(hasDevices: boolean): Promise<void> {
     return await this.settingsDrawer.close().then(() => {
-      if (this.devicesLength > 0) {
+      if (hasDevices) {
         this.toggleSettingsBtn.focus();
       } // else device create window will be opened
       if (!this.openedSettingFromToggleBtn) {

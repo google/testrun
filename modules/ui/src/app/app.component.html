@@ -15,6 +15,7 @@ limitations under the License.
 -->
 <app-bypass></app-bypass>
 <mat-drawer-container
+  *ngIf="viewModel$ | async as vm"
   [class.active-menu]="isMenuOpen | async"
   hasBackdrop="false"
   class="app-container"
@@ -54,11 +55,9 @@ limitations under the License.
           }
         ">
       </ng-container>
-      <ng-container *ngIf="viewModel$ | async as vm">
-        <app-version
-          [consentShown]="vm.consentShown"
-          (consentShownEvent)="consentShown()"></app-version>
-      </ng-container>
+      <app-version
+        [consentShown]="vm.consentShown"
+        (consentShownEvent)="consentShown()"></app-version>
     </div>
   </mat-drawer>
 
@@ -122,8 +121,7 @@ limitations under the License.
       <app-callout
         [type]="CalloutType.Info"
         *ngIf="
-          (hasConnectionSetting$ | async) === true &&
-          !(devices$ | async)?.length
+          (hasConnectionSetting$ | async) === true && vm.hasDevices === false
         ">
         Step 2: To perform a device test please
         <a
@@ -142,7 +140,7 @@ limitations under the License.
         [type]="CalloutType.Info"
         *ngIf="
           (hasConnectionSetting$ | async) === true &&
-          (devices$ | async)?.length &&
+          vm.hasDevices &&
           (!(systemStatus$ | async)?.status ||
             (systemStatus$ | async)?.status === StatusOfTestrun.Idle) &&
           isStatusLoaded === true &&
@@ -169,7 +167,9 @@ limitations under the License.
     mode="over"
     position="end"
     class="settings-drawer">
-    <app-general-settings #settings (closeSettingEvent)="closeSetting()">
+    <app-general-settings
+      #settings
+      (closeSettingEvent)="closeSetting(vm.hasDevices)">
     </app-general-settings>
   </mat-drawer>
 </mat-drawer-container>

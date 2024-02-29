@@ -21,7 +21,6 @@ import {
 } from '@angular/core/testing';
 
 import { DeviceFormComponent, FormAction } from './device-form.component';
-import { TestRunService } from '../../../../services/test-run.service';
 import { MatButtonModule } from '@angular/material/button';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -33,44 +32,30 @@ import {
 } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Device } from '../../../../model/device';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 import { DeviceTestsComponent } from '../../../../components/device-tests/device-tests.component';
 import { SpinnerComponent } from '../../../../components/spinner/spinner.component';
 import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
+import { DevicesStore } from '../../devices.store';
+import { device, MOCK_TEST_MODULES } from '../../../../mocks/device.mock';
+import SpyObj = jasmine.SpyObj;
 
 describe('DeviceFormComponent', () => {
   let component: DeviceFormComponent;
   let fixture: ComponentFixture<DeviceFormComponent>;
-  let testRunServiceMock: jasmine.SpyObj<TestRunService>;
+  let mockDevicesStore: SpyObj<DevicesStore>;
   let compiled: HTMLElement;
 
   beforeEach(() => {
-    testRunServiceMock = jasmine.createSpyObj([
-      'getTestModules',
-      'hasDevice',
-      'saveDevice',
+    mockDevicesStore = jasmine.createSpyObj('DevicesStore', [
       'editDevice',
-      'setIsOpenAddDevice',
+      'saveDevice',
     ]);
-    testRunServiceMock.getTestModules.and.returnValue([
-      {
-        displayName: 'Connection',
-        name: 'connection',
-        enabled: true,
-      },
-      {
-        displayName: 'Smart Ready',
-        name: 'udmi',
-        enabled: false,
-      },
-    ]);
+
     TestBed.configureTestingModule({
       declarations: [DeviceFormComponent],
       providers: [
-        {
-          provide: TestRunService,
-          useValue: testRunServiceMock,
-        },
+        { provide: DevicesStore, useValue: mockDevicesStore },
         {
           provide: MatDialogRef,
           useValue: {
@@ -94,10 +79,15 @@ describe('DeviceFormComponent', () => {
         NgxMaskPipe,
       ],
     });
+    TestBed.overrideProvider(DevicesStore, { useValue: mockDevicesStore });
+
     fixture = TestBed.createComponent(DeviceFormComponent);
     component = fixture.componentInstance;
     compiled = fixture.nativeElement as HTMLElement;
-    component.data = {};
+    component.data = {
+      testModules: MOCK_TEST_MODULES,
+      devices: [],
+    };
     fixture.detectChanges();
   });
 
@@ -124,18 +114,7 @@ describe('DeviceFormComponent', () => {
     closeSpy.calls.reset();
   });
 
-  it('should call setIsOpenAddDevice with false on "cancel" click', () => {
-    const closeButton = compiled.querySelector(
-      '.close-button'
-    ) as HTMLButtonElement;
-
-    closeButton?.click();
-
-    expect(testRunServiceMock.setIsOpenAddDevice).toHaveBeenCalledWith(false);
-  });
-
   it('should not save data when fields are empty', () => {
-    const closeSpy = spyOn(component.dialogRef, 'close');
     const saveButton = compiled.querySelector(
       '.save-button'
     ) as HTMLButtonElement;
@@ -159,65 +138,29 @@ describe('DeviceFormComponent', () => {
       saveButton?.click();
       fixture.detectChanges();
 
-      fixture.whenStable().then(() => {
-        const requiredErrors = compiled.querySelectorAll('mat-error');
-        expect(requiredErrors?.length).toEqual(3);
+      const requiredErrors = compiled.querySelectorAll('mat-error');
+      expect(requiredErrors?.length).toEqual(3);
 
-        requiredErrors.forEach(error => {
-          expect(error?.innerHTML).toContain('required');
-        });
+      requiredErrors.forEach(error => {
+        expect(error?.innerHTML).toContain('required');
       });
-
-      expect(closeSpy).not.toHaveBeenCalled();
-
-      closeSpy.calls.reset();
     });
   });
 
   it('should not save data if no test selected', fakeAsync(() => {
-    const closeSpy = spyOn(component.dialogRef, 'close');
     component.model.setValue('model');
     component.manufacturer.setValue('manufacturer');
     component.mac_addr.setValue('07:07:07:07:07:07');
     component.test_modules.setValue([false, false]);
-    testRunServiceMock.hasDevice.and.returnValue(true);
 
     component.saveDevice();
     fixture.detectChanges();
 
-    fixture.whenStable().then(() => {
-      const error = compiled.querySelector('mat-error');
-      expect(error?.innerHTML).toContain(
-        'At least one test has to be selected to save a Device.'
-      );
-    });
-
-    expect(closeSpy).not.toHaveBeenCalled();
-
-    closeSpy.calls.reset();
-    flush();
-  }));
-
-  it('should not save data when server response with error', fakeAsync(() => {
-    const closeSpy = spyOn(component.dialogRef, 'close');
-    component.model.setValue('model');
-    component.manufacturer.setValue('manufacturer');
-    component.mac_addr.setValue('07:07:07:07:07:07');
-    testRunServiceMock.hasDevice.and.returnValue(false);
-    testRunServiceMock.saveDevice.and.returnValue(
-      throwError({ error: 'some error' })
+    const error = compiled.querySelector('mat-error');
+    expect(error?.innerHTML).toContain(
+      'At least one test has to be selected to save a Device.'
     );
 
-    component.saveDevice();
-    fixture.detectChanges();
-
-    fixture.whenStable().then(() => {
-      const error = compiled.querySelector('mat-error');
-      expect(error?.innerHTML).toContain('some error');
-    });
-    expect(closeSpy).not.toHaveBeenCalled();
-
-    closeSpy.calls.reset();
     flush();
   }));
 
@@ -235,22 +178,16 @@ describe('DeviceFormComponent', () => {
         },
       },
     };
-    const closeSpy = spyOn(component.dialogRef, 'close');
     component.model.setValue('model');
     component.manufacturer.setValue('manufacturer');
     component.mac_addr.setValue('07:07:07:07:07:07');
-    testRunServiceMock.hasDevice.and.returnValue(false);
-    testRunServiceMock.saveDevice.and.returnValue(of(true));
 
     component.saveDevice();
 
-    expect(closeSpy).toHaveBeenCalledTimes(1);
-    expect(closeSpy).toHaveBeenCalledWith({
-      action: FormAction.Save,
-      device,
-    });
-
-    closeSpy.calls.reset();
+    const args = mockDevicesStore.saveDevice.calls.argsFor(0);
+    // @ts-expect-error config is in object
+    expect(args[0].device).toEqual(device);
+    expect(mockDevicesStore.saveDevice).toHaveBeenCalled();
   });
 
   describe('test modules', () => {
@@ -347,11 +284,17 @@ describe('DeviceFormComponent', () => {
     });
 
     it('should have "has_same_mac_address" error when MAC address is already used', () => {
-      testRunServiceMock.hasDevice.and.returnValue(true);
+      component.data = {
+        testModules: MOCK_TEST_MODULES,
+        devices: [device],
+      };
+      component.ngOnInit();
+      fixture.detectChanges();
+
       const macAddress: HTMLInputElement = compiled.querySelector(
         '.device-form-mac-address'
       ) as HTMLInputElement;
-      macAddress.value = '07:07:07:07:07:07';
+      macAddress.value = '00:1e:42:35:73:c4';
       macAddress.dispatchEvent(new Event('input'));
       component.mac_addr.markAsTouched();
       fixture.detectChanges();
@@ -377,6 +320,8 @@ describe('DeviceFormComponent', () => {
   describe('when device is present', () => {
     beforeEach(() => {
       component.data = {
+        devices: [device],
+        testModules: MOCK_TEST_MODULES,
         device: {
           manufacturer: 'Delta',
           model: 'O3-DIN-CPU',
@@ -405,10 +350,6 @@ describe('DeviceFormComponent', () => {
     });
 
     it('should save data even mac address already exist', fakeAsync(() => {
-      const closeSpy = spyOn(component.dialogRef, 'close');
-      testRunServiceMock.saveDevice.and.returnValue(of(true));
-      testRunServiceMock.editDevice.and.returnValue(of(true));
-      testRunServiceMock.hasDevice.and.returnValue(true);
       // fill the test controls
       component.test_modules.push(new FormControl(false));
       component.test_modules.push(new FormControl(true));
@@ -420,24 +361,23 @@ describe('DeviceFormComponent', () => {
         expect(error).toBeFalse();
       });
 
-      expect(closeSpy).toHaveBeenCalledWith({
-        action: FormAction.Save,
-        device: {
-          manufacturer: 'Delta',
-          model: 'O3-DIN-CPU',
-          mac_addr: '00:1e:42:35:73:c4',
-          test_modules: {
-            connection: {
-              enabled: false,
-            },
-            udmi: {
-              enabled: true,
-            },
+      const args = mockDevicesStore.editDevice.calls.argsFor(0);
+      // @ts-expect-error config is in object
+      expect(args[0].device).toEqual({
+        manufacturer: 'Delta',
+        model: 'O3-DIN-CPU',
+        mac_addr: '00:1e:42:35:73:c4',
+        test_modules: {
+          connection: {
+            enabled: false,
+          },
+          udmi: {
+            enabled: true,
           },
         },
       });
+      expect(mockDevicesStore.editDevice).toHaveBeenCalled();
 
-      closeSpy.calls.reset();
       flush();
     }));
 
