@@ -498,7 +498,14 @@ class TestOrchestrator:
     loaded_modules = "Loaded the following test modules: "
     test_modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
 
-    for module_dir in os.listdir(test_modules_dir):
+    module_dirs = os.listdir(test_modules_dir)
+    # Check if the directory protocol exists and move it to the beginning
+    # protocol should always be run first so BACnet binding doesn't get
+    # corrupted during DHCP changes in the conn module
+    if 'protocol' in module_dirs:
+      module_dirs.insert(0, module_dirs.pop(module_dirs.index('protocol')))
+
+    for module_dir in module_dirs:
 
       if self._get_test_module(module_dir) is None:
         loaded_module = self._load_test_module(module_dir)
