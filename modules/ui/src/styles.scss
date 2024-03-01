@@ -235,3 +235,15 @@ body:has(app-callout .info):has(app-callout .error)
 .filter-chip .mat-mdc-focus-indicator::before {
   border: none;
 }
+
+.version-content,
+.version-content-update {
+  &.mat-mdc-button.cdk-program-focused
+    .mat-mdc-button-persistent-ripple::before {
+    opacity: 0;
+  }
+  &.mat-mdc-button.cdk-program-focused:focus-visible
+    .mat-mdc-button-persistent-ripple::before {
+    opacity: var(--mat-text-button-focus-state-layer-opacity);
+  }
+}
