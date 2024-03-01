@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Provides high level management of the test orchestrator."""
+import copy
 import os
 import json
 import re
@@ -306,8 +307,15 @@ class TestOrchestrator:
 
     # Get all tests to be executed and set to in progress
     for test in module.tests:
-      test.result = "In Progress"
-      self.get_session().add_test_result(test)
+
+      test_copy = copy.deepcopy(test)
+      test_copy.result = "In Progress"
+
+      # We don't want steps to resolve for in progress tests
+      if hasattr(test_copy, "recommendations"):
+        test_copy.recommendations = None
+
+      self.get_session().add_test_result(test_copy)
 
     try:
 
@@ -429,6 +437,12 @@ class TestOrchestrator:
             required_result=test_result["required_result"],
             result=test_result["result"])
           test_case.result=test_result["result"]
+
+          if (test_case.result == "Non-Compliant" and
+              "recommendations" in test_result):
+            test_case.recommendations = test_result["recommendations"]
+          else:
+            test_case.recommendations = None
 
           self._session.add_test_result(test_case)
 
