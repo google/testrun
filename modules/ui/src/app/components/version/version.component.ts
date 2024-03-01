@@ -71,7 +71,7 @@ export class VersionComponent implements OnInit, OnDestroy {
 
   openConsentDialog(version: Version) {
     const dialogRef = this.dialog.open(ConsentDialogComponent, {
-      ariaLabel: 'Consent dialog',
+      ariaLabel: 'Welcome to Testrun modal window',
       data: version,
       autoFocus: true,
       hasBackdrop: true,
