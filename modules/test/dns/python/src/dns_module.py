@@ -64,8 +64,7 @@ class DNSModule(TestModule):
     total_responses = sum(1 for row in dns_table_data
                             if row['Type'] == 'Response')
 
-    summary = '## Summary'
-    summary += f'''\n- Requests to local DNS server: {local_requests}'''
+    summary = f'''\n- Requests to local DNS server: {local_requests}'''
     summary += f'''\n- Requests to external DNS servers: {external_requests}'''
     summary += f'''\n- Total DNS requests: {total_requests}'''
     summary += f'''\n- Total DNS responses: {total_responses}'''
@@ -73,7 +72,9 @@ class DNSModule(TestModule):
     if (total_requests + total_responses) > 0:
 
       # Find the maximum length of 'Destination' values
-      max_data_length = max(len(row['Data']) for row in dns_table_data) if len(dns_table_data)>0 else 8
+      max_data_length = max(len(row['Data'])
+                            for row in dns_table_data
+                            ) if len(dns_table_data)>0 else 8
 
       table_content = ''
       for row in dns_table_data:
@@ -101,7 +102,7 @@ class DNSModule(TestModule):
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
 
-    # Write the content to a file 
+    # Write the content to a file
     with open(report_path, 'w', encoding='utf-8') as file:
       file.write(markdown_template)
 

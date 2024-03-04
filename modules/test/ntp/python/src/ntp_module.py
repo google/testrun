@@ -85,8 +85,7 @@ class NTPModule(TestModule):
     total_responses = sum(1 for row in ntp_table_data
                           if row['Type'] == 'Server')
 
-    summary = '## Summary'
-    summary += f'''\n- Requests to local NTP servers: {local_requests}'''
+    summary = f'''\n- Requests to local NTP servers: {local_requests}'''
     summary += f'''\n- Requests to external NTP servers: {external_requests}'''
     summary += f'''\n- Total NTP requests: {total_requests}'''
     summary += f'''\n- Total NTP responses: {total_responses}'''

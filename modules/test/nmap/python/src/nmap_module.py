@@ -83,8 +83,7 @@ class NmapModule(TestModule):
         else:
           udp_open += 1
 
-    summary = '## Summary'
-    summary += f'''\n- TCP Ports Open: {tcp_open}'''
+    summary = f'''\n- TCP Ports Open: {tcp_open}'''
     summary += f'''\n- UDP Ports Open: {udp_open}'''
     summary += f'''\n- Total Ports Open: {tcp_open + udp_open}'''
 

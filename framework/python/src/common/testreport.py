@@ -319,7 +319,6 @@ class TestReport():
   def generate_footer(self, page_num):
     footer = f'''
     <div class="footer">
-      <img style="margin-bottom:10px;width:100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABFgAAAABCAYAAADqzRqJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA3SURBVHgB7cAxAQAQFEXRJ4MIMkjwS9hklMCoi1EBWljePWlHvQIAMy2mAMDNKV3ADysPAYCbB6fxBrzkZ2KOAAAAAElFTkSuQmCC" />
       <div class="footer-label">Testrun {self._version}</div>
       <div class="footer-label" style="right: 0px">Page {page_num}/MAX_PAGE</div>
     </div>
@@ -329,7 +328,6 @@ class TestReport():
   def generate_results(self, json_data, page_num):
 
     result_list = '''
-      <img style="margin-bottom:10px;width:100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABFgAAAABCAYAAADqzRqJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA3SURBVHgB7cAxAQAQFEXRJ4MIMkjwS9hklMCoi1EBWljePWlHvQIAMy2mAMDNKV3ADysPAYCbB6fxBrzkZ2KOAAAAAElFTkSuQmCC" />
       <div class="result-list">
         <h3>Results List</h3>
         <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
@@ -375,8 +373,8 @@ class TestReport():
     return f'''
     <div class="header">
       <h1>Testrun report</h1>
-      <h2 style="top: 50%;">{json_data["device"]["manufacturer"]} {json_data["device"]["model"]}</h2>
-      <img src="data:image/png;base64,{tr_img_b64}" alt="Test Run" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+      <h2 style="top: 50%;max-width:700px">{json_data["device"]["manufacturer"]} {json_data["device"]["model"]}</h2>
+      <img src="data:image/png;base64,{tr_img_b64}" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
     </div>
     '''
 
@@ -397,12 +395,16 @@ class TestReport():
     mac = (json_data['device']['mac_addr']
            if 'mac_addr' in json_data['device'] else 'Undefined')
 
+    summary += '<div class="device-information">'
+
     summary += self.generate_device_summary_label('Manufacturer', manufacturer)
     summary += self.generate_device_summary_label('Model', model)
     summary += self.generate_device_summary_label('Firmware', fw)
     summary += self.generate_device_summary_label('MAC Address',
                                                   mac,
                                                   trailing_space=False)
+
+    summary += '</div>'
 
     # Add device configuration
     summary += '''
@@ -590,6 +592,14 @@ class TestReport():
       margin-top: 0;
     }
 
+    .device-information {
+      padding-top: 0.2in;
+      padding-left: 0.3in;
+      background-color: #F8F9FA;
+      width: 250px;
+      height: 2.6in;
+    }
+
     /* Define the summary related css elements*/
     .summary-content {
       position: relative;
@@ -597,6 +607,7 @@ class TestReport():
       height: var(--summary-height);
       margin-top: 19px;
       margin-bottom: 19px;
+      background-color: #E8EAED;
     }
 
     .summary-item-label {
@@ -644,9 +655,9 @@ class TestReport():
     .summary-color-box {
       position: absolute;
       right: 0in;
-      top: .3in;
+      top: 0in;
       width: 2.6in;
-      height: 226px;
+      height: var(--summary-height);
     }
 
     .summary-box-compliant {
@@ -663,7 +674,7 @@ class TestReport():
       color: #DADCE0;
       position: relative;
       top: 10px;
-      left: 10px;
+      left: 20px;
       font-weight: 500;
     }
 
@@ -673,7 +684,7 @@ class TestReport():
       color: #ffffff;
       position: relative;
       top: 10px;
-      left: 10px;
+      left: 20px;
     }
 
     .result-list-title {
@@ -766,7 +777,7 @@ class TestReport():
     }
 
     /*CSS for the markdown tables */
-    .markdown-table{
+    .markdown-table {
       border-collapse: collapse;
       margin-left: 20px;
     }
@@ -777,27 +788,25 @@ class TestReport():
       padding: 8px;
     }
 
-    .markdown-header-h1{
+    .markdown-header-h1 {
       margin-left:20px;
       margin-top:20px;
       margin-bottom:20px;
       margin-right:0px;
 
       font-size: 2em;
-      font-weight: bold;
     }
 
-    .markdown-header-h2{
+    .markdown-header-h2 {
       margin-left:20px;
       margin-top:20px;
       margin-bottom:20px;
       margin-right:0px;
 
       font-size: 1.5em;
-      font-weight: bold;
     }
 
-    .module-page-content{
+    .module-page-content {
       /*Page height minus header(93px), footer(30px), 
       and a 20px bottom padding.*/
       height: calc(11in - 93px - 30px - 20px);
