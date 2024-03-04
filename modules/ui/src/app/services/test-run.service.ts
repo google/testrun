@@ -63,46 +63,26 @@ export class TestRunService {
     },
   ];
 
-  private devices = new BehaviorSubject<Device[] | null>(null);
-  private isOpenAddDeviceSub$ = new BehaviorSubject<boolean>(false);
-  public isOpenAddDevice$ = this.isOpenAddDeviceSub$.asObservable();
   private isOpenStartTestrunSub$ = new BehaviorSubject<boolean>(false);
   public isOpenStartTestrun$ = this.isOpenStartTestrunSub$.asObservable();
   private systemStatusSubject = new ReplaySubject<TestrunStatus>(1);
   public systemStatus$ = this.systemStatusSubject.asObservable();
   private isTestrunStartedSub$ = new BehaviorSubject<boolean>(false);
   public isTestrunStarted$ = this.isTestrunStartedSub$.asObservable();
-  // private history = new BehaviorSubject<TestrunStatus[] | null>(null);
   private version = new BehaviorSubject<Version | null>(null);
 
   constructor(private http: HttpClient) {}
 
-  setIsOpenAddDevice(isOpen: boolean): void {
-    this.isOpenAddDeviceSub$.next(isOpen);
-  }
-
   setIsOpenStartTestrun(isOpen: boolean): void {
     this.isOpenStartTestrunSub$.next(isOpen);
-  }
-
-  getDevices(): BehaviorSubject<Device[] | null> {
-    return this.devices;
-  }
-
-  setDevices(devices: Device[]): void {
-    this.devices.next(devices);
   }
 
   setSystemStatus(status: TestrunStatus): void {
     this.systemStatusSubject.next(status);
   }
 
-  fetchDevices(): void {
-    this.http
-      .get<Device[]>(`${API_URL}/devices`)
-      .subscribe((devices: Device[]) => {
-        this.setDevices(devices);
-      });
+  fetchDevices(): Observable<Device[]> {
+    return this.http.get<Device[]>(`${API_URL}/devices`);
   }
 
   getSystemConfig(): Observable<SystemConfig> {
@@ -172,44 +152,6 @@ export class TestRunService {
         body: JSON.stringify(device),
       })
       .pipe(map(() => true));
-  }
-
-  hasDevice(macAddress: string): boolean {
-    return (
-      this.devices.value?.some(
-        device => device.mac_addr === macAddress.trim()
-      ) || false
-    );
-  }
-
-  addDevice(device: Device): void {
-    this.devices.next(
-      this.devices.value ? this.devices.value.concat([device]) : [device]
-    );
-  }
-
-  updateDevice(deviceToUpdate: Device, update: Device): void {
-    const device = this.devices.value?.find(
-      device => deviceToUpdate.mac_addr === device.mac_addr
-    );
-    if (device) {
-      device.model = update.model;
-      device.manufacturer = update.manufacturer;
-      device.test_modules = update.test_modules;
-      device.mac_addr = update.mac_addr;
-
-      this.devices.next(this.devices.value);
-    }
-  }
-
-  removeDevice(deviceToDelete: Device): void {
-    const idx = this.devices.value?.findIndex(
-      device => deviceToDelete.mac_addr === device.mac_addr
-    );
-    if (typeof idx === 'number') {
-      this.devices.value?.splice(idx, 1);
-      this.devices.next(this.devices.value);
-    }
   }
 
   getHistory(): Observable<TestrunStatus[] | null> {

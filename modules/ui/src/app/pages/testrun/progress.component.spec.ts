@@ -44,19 +44,21 @@ import { Observable } from 'rxjs/internal/Observable';
 import { IResult, TestrunStatus } from '../../model/testrun-status';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { Device } from '../../model/device';
 import { ProgressInitiateFormComponent } from './components/progress-initiate-form/progress-initiate-form.component';
 import { DownloadReportComponent } from '../../components/download-report/download-report.component';
-import { device } from '../../mocks/device.mock';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { LoaderService } from '../../services/loader.service';
 import { FocusManagerService } from '../../services/focus-manager.service';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { AppState } from '../../store/state';
+import { selectDevices, selectHasDevices } from '../../store/selectors';
 
 describe('ProgressComponent', () => {
   let component: ProgressComponent;
   let fixture: ComponentFixture<ProgressComponent>;
   let compiled: HTMLElement;
+  let store: MockStore<AppState>;
 
   const testRunServiceMock: jasmine.SpyObj<TestRunService> =
     jasmine.createSpyObj([
@@ -76,10 +78,6 @@ describe('ProgressComponent', () => {
   const stateServiceMock: jasmine.SpyObj<FocusManagerService> =
     jasmine.createSpyObj('stateServiceMock', ['focusFirstElementInContainer']);
 
-  testRunServiceMock.getDevices.and.returnValue(
-    new BehaviorSubject<Device[] | null>([])
-  );
-
   testRunServiceMock.isOpenStartTestrun$ = new BehaviorSubject(false);
   testRunServiceMock.isTestrunStarted$ = new BehaviorSubject(false);
 
@@ -87,9 +85,6 @@ describe('ProgressComponent', () => {
     beforeEach(() => {
       testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
-      testRunServiceMock.getDevices.and.returnValue(
-        new BehaviorSubject<Device[] | null>([device])
-      );
 
       TestBed.configureTestingModule({
         declarations: [
@@ -104,6 +99,12 @@ describe('ProgressComponent', () => {
             provide: MatDialogRef,
             useValue: {},
           },
+          provideMockStore({
+            selectors: [
+              { selector: selectDevices, value: [] },
+              { selector: selectHasDevices, value: false },
+            ],
+          }),
         ],
         imports: [
           MatButtonModule,
@@ -123,13 +124,13 @@ describe('ProgressComponent', () => {
         })
         .compileComponents();
 
+      store = TestBed.inject(MockStore);
       fixture = TestBed.createComponent(ProgressComponent);
       component = fixture.componentInstance;
     });
 
     afterEach(() => {
       testRunServiceMock.getSystemStatus.calls.reset();
-      testRunServiceMock.getDevices.calls.reset();
     });
 
     it('should create', () => {
@@ -195,11 +196,11 @@ describe('ProgressComponent', () => {
         });
       });
 
-      it('should set devices$ value', () => {
+      it('should set hasDevices$ value', () => {
         component.ngOnInit();
 
-        component.devices$.subscribe(res => {
-          expect(res).toEqual([device]);
+        component.hasDevices$.subscribe(res => {
+          expect(res).toEqual(false);
         });
       });
 
@@ -317,6 +318,12 @@ describe('ProgressComponent', () => {
             provide: MatDialogRef,
             useValue: {},
           },
+          provideMockStore({
+            selectors: [
+              { selector: selectHasDevices, value: false },
+              { selector: selectDevices, value: [] },
+            ],
+          }),
         ],
         imports: [
           MatButtonModule,
@@ -336,6 +343,7 @@ describe('ProgressComponent', () => {
         })
         .compileComponents();
 
+      store = TestBed.inject(MockStore);
       fixture = TestBed.createComponent(ProgressComponent);
       compiled = fixture.nativeElement as HTMLElement;
       component = fixture.componentInstance;
@@ -343,15 +351,12 @@ describe('ProgressComponent', () => {
 
     afterEach(() => {
       testRunServiceMock.getSystemStatus.calls.reset();
-      testRunServiceMock.getDevices.calls.reset();
     });
 
     describe('with not devices$ data', () => {
       beforeEach(() => {
         (testRunServiceMock.systemStatus$ as unknown) = of(null);
-        testRunServiceMock.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([])
-        );
+        store.overrideSelector(selectHasDevices, false);
         fixture.detectChanges();
       });
 
@@ -367,9 +372,7 @@ describe('ProgressComponent', () => {
     describe('with not systemStatus$ data', () => {
       beforeEach(() => {
         (testRunServiceMock.systemStatus$ as unknown) = of(null);
-        testRunServiceMock.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
+        store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
 
@@ -420,9 +423,7 @@ describe('ProgressComponent', () => {
     describe('with available systemStatus$ data, status "In Progress"', () => {
       beforeEach(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
-        testRunServiceMock.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
+        store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
 
@@ -477,9 +478,7 @@ describe('ProgressComponent', () => {
     describe('pullingSystemStatusData with available status "In Progress"', () => {
       it('should call again getSystemStatus)', fakeAsync(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
-        testRunServiceMock.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
+        store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
         tick(5000);
 
@@ -491,9 +490,7 @@ describe('ProgressComponent', () => {
     describe('with available systemStatus$ data, as Completed', () => {
       beforeEach(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_COMPLIANT);
-        testRunServiceMock.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
+        store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
 
@@ -535,9 +532,7 @@ describe('ProgressComponent', () => {
     describe('with available systemStatus$ data, as Cancelled', () => {
       beforeEach(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_CANCELLED);
-        testRunServiceMock.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
+        store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
 
@@ -561,9 +556,7 @@ describe('ProgressComponent', () => {
         testRunServiceMock.systemStatus$ = of(
           MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
         );
-        testRunServiceMock.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
+        store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
 
@@ -585,9 +578,7 @@ describe('ProgressComponent', () => {
     describe('with available systemStatus$ data, as Monitoring', () => {
       beforeEach(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_MONITORING);
-        testRunServiceMock.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
+        store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
 
@@ -609,9 +600,7 @@ describe('ProgressComponent', () => {
     describe('with available systemStatus$ data, when Testrun not started on Idle status', () => {
       beforeEach(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_NOT_STARTED);
-        testRunServiceMock.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
+        store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
 

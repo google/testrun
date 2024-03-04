@@ -70,6 +70,15 @@ export class AppEffects {
     );
   });
 
+  onSetDevices$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setDevices),
+      map(({ devices }) =>
+        AppActions.setHasDevices({ hasDevices: devices.length > 0 })
+      )
+    );
+  });
+
   constructor(
     private actions$: Actions,
     private testrunService: TestRunService,
