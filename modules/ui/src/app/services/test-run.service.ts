@@ -18,7 +18,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
 import { Device, TestModule } from '../model/device';
-import { map, ReplaySubject, retry } from 'rxjs';
+import { catchError, map, of, ReplaySubject, retry } from 'rxjs';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
 import {
   StatusOfTestResult,
@@ -195,7 +195,11 @@ export class TestRunService {
   fetchVersion(): void {
     this.http
       .get<Version>(`${API_URL}/system/version`)
-      .pipe(retry(1))
+      .pipe(
+        catchError(() => {
+          return of(this.version.value);
+        })
+      )
       .subscribe(version => {
         this.version.next(version);
       });
