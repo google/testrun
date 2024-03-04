@@ -18,7 +18,9 @@ from common import util
 DEVICE_BRIDGE = 'tr-d'
 INTERNET_BRIDGE = 'tr-c'
 LOGGER = logger.get_logger('ovs_ctrl')
-
+DEVICER_ARP_COOKIE = '1000'
+UNKNOWN_ARP_COOKIE = '1183'
+CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f'
 
 class OVSControl:
   """OVS Control"""
@@ -166,31 +168,30 @@ class OVSControl:
     self.add_flow(bridge_name=DEVICE_BRIDGE,flow=drop_dhcp_flow)
 
   def add_arp_inspection_filter(self,ip_address,mac_address):
-    # Combine IP address and MAC address
-    combined_str = ip_address + mac_address
-
-    # Convert combined string to integer
-    cookie_value = int(combined_str.replace(':', '').replace('.', ''))
-
     # Allow ARP packets with known MAC-to-IP mappings
-    drop_bad_arp= f'table=0, cookie={cookie_value}, priority=65535, arp, arp_tpa={ip_address}, arp_tha={mac_address}, action=normal'
-    self.add_flow(bridge_name=DEVICE_BRIDGE,flow=drop_bad_arp)
+    allow_known_arps= f'table=0, cookie={DEVICER_ARP_COOKIE}, priority=65535, arp, arp_tpa={ip_address}, arp_tha={mac_address}, action=normal'
+    self.add_flow(bridge_name=DEVICE_BRIDGE,flow=allow_known_arps)
+
+    DHCP1_MAC = f'{CONTAINER_MAC_PREFIX}:02'
+    DHCP2_MAC = f'{CONTAINER_MAC_PREFIX}:03'
+    DHCP1_IP = '10.10.10.2'
+    DHCP2_IP = '10.10.10.3'
+
+    dhcp_1_arps= f'table=0, priority=65535, arp, arp_tpa={DHCP1_IP}, arp_tha={DHCP1_MAC}, action=normal'
+    dhcp_2_arps= f'table=0, priority=65535, arp, arp_tpa={DHCP2_IP}, arp_tha={DHCP2_MAC}, action=normal'
+    self.add_flow(bridge_name=DEVICE_BRIDGE,flow=dhcp_1_arps)
+    self.add_flow(bridge_name=DEVICE_BRIDGE,flow=dhcp_2_arps)
 
     # Drop ARP packets with unknown MAC-to-IP mappings
     drop_unknown_arps = (
-        f'table=0, priority=0, arp, '
+        f'table=0, cookie={UNKNOWN_ARP_COOKIE} priority=100, arp, '
         f'action=drop'
     )
     self.add_flow(bridge_name=DEVICE_BRIDGE,flow=drop_unknown_arps)
 
-  def delete_arp_inspection_filter(self,ip_address,mac_address):
-    # Combine IP address and MAC address
-    combined_str = ip_address + mac_address
-
-    # Convert combined string to integer
-    cookie_value = int(combined_str.replace(':', '').replace('.', ''))
-
-    self.delete_flow(bridge_name=DEVICE_BRIDGE,flow=f'cookie={cookie_value}')
+  def delete_arp_inspection_filter(self):
+    self.delete_flow(bridge_name=DEVICE_BRIDGE,flow=f'cookie={DEVICER_ARP_COOKIE}/-1')
+    self.delete_flow(bridge_name=DEVICE_BRIDGE,flow=f'cookie={UNKNOWN_ARP_COOKIE}/-1')
     
 
   def delete_bridge(self, bridge_name):

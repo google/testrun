@@ -326,6 +326,9 @@ class TestOrchestrator:
 
       client = docker.from_env()
 
+      # if module.name == 'connection':
+      #   self._net_orc.remove_arp_filters()
+
       module.container = client.containers.run(
           module.image_name,
           auto_remove=True,

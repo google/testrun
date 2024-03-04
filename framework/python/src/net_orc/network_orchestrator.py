@@ -193,7 +193,7 @@ class NetworkOrchestrator:
     LOGGER.info(
         f'Device with mac addr {device.mac_addr} has obtained IP address '
         f'{device.ip_addr}')
-    self._ovs.add_arp_inspection_filter(ip_address=device.ip_addr,mac_address=device.mac_addr)
+    # self._ovs.add_arp_inspection_filter(ip_address=device.ip_addr,mac_address=device.mac_addr)
 
     self._start_device_monitor(device)
 
@@ -661,6 +661,10 @@ class NetworkOrchestrator:
           LOGGER.error('Failed to add ' + net_module.name +
                        ' to internet bridge ' + DEVICE_BRIDGE + '. Exiting.')
           sys.exit(1)
+
+  def remove_arp_filters(self):
+    LOGGER.info('Removing ARP inspection filters')
+    self._ovs.delete_arp_inspection_filter()
 
   def restore_net(self):
 
