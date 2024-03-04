@@ -15,15 +15,17 @@
 
 import BAC0
 import logging
+from BAC0.core.io.IOExceptions import UnknownPropertyError, ReadPropertyException, NoResponseFromController, DeviceNotConnected
 
 LOGGER = None
 BAC0_LOG = '/root/.BAC0/BAC0.log'
+
 
 class BACnet():
   """BACnet Test module"""
 
   def __init__(self, log):
-    # Set the log 
+    # Set the log
     global LOGGER
     LOGGER = log
 
@@ -33,20 +35,22 @@ class BACnet():
                    stderr=logging.CRITICAL)
 
     self.devices = []
+    self.bacnet = None
 
   def discover(self, local_ip=None):
     LOGGER.info('Performing BACnet discovery...')
-    bacnet = BAC0.lite(local_ip)
-    LOGGER.info('Local BACnet object: ' + str(bacnet))
+    self.bacnet = BAC0.lite(local_ip)
+    LOGGER.info('Local BACnet object: ' + str(self.bacnet))
     try:
-      bacnet.discover(global_broadcast=True)
-    except Exception as e:
+      self.bacnet.discover(global_broadcast=True)
+    except Exception as e:  # pylint: disable=W0718
       LOGGER.error(e)
     LOGGER.info('BACnet discovery complete')
-    with open(BAC0_LOG,'r',encoding='utf-8') as f:
+    with open(BAC0_LOG, 'r', encoding='utf-8') as f:
       bac0_log = f.read()
     LOGGER.info('BAC0 Log:\n' + bac0_log)
-    self.devices = bacnet.devices
+
+    self.devices = self.bacnet.devices
 
   # Check if the device being tested is in the discovered devices list
   def validate_device(self, local_ip, device_ip):
@@ -57,9 +61,8 @@ class BACnet():
     if len(self.devices) > 0:
       # Load a fail result initially and pass only
       # if we can validate it's the right device responding
-      result = False, (
-        'Could not confirm discovered BACnet device is the ' +
-        'same as device being tested')
+      result = False, ('Could not confirm discovered BACnet device is the ' +
+                       'same as device being tested')
       for device in self.devices:
         address = device[2]
         LOGGER.info('Checking device: ' + str(device))
@@ -71,3 +74,21 @@ class BACnet():
     if result is not None:
       LOGGER.info(result[1])
     return result
+
+  def validate_protocol_version(self, device_ip, device_id):
+    LOGGER.info(f'Resolving protocol version for BACnet device: {device_id}')
+    try:
+      version = self.bacnet.read(
+          f'{device_ip} device {device_id} protocolVersion')
+      revision = self.bacnet.read(
+          f'{device_ip} device {device_id} protocolRevision')
+      protocol_version = f'{version}.{revision}'
+      result = True
+      result_description = (
+          f'BACnet protocol version detected: {protocol_version}')
+    except (UnknownPropertyError, ReadPropertyException,
+            NoResponseFromController, DeviceNotConnected) as e:
+      result = False
+      result_description = f'Failed to resolve protocol version {e}'
+      LOGGER.error(result_description)
+    return result, result_description
