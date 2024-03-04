@@ -51,13 +51,19 @@ If the application has come across a problem at any point during setup or use, p
 The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md). In short, checkout the [Google CLA](https://cla.developers.google.com/) site to get started.
 
 ## FAQ :raising_hand:
-1) What device networking functionality is validated by Testrun?
+1) I have an issue with installing/upgrading Testrun, what do I do?
+
+  Sometimes, issues may arise when installing or upgrading Testrun - this may happen due to one of many reasons due to the nature of the application. However, most of the time, it can be resolved by following a full Testrun re-install by using these commands:
+   - ```sudo docker system prune -a```
+   - ```sudo apt install ./testrun-*.deb```
+
+2) What device networking functionality is validated by Testrun?
 
   Best practices and requirements for IoT devices are constantly changing due to technological advances and discovery of vulnerabilities. 
   The current expectations for IoT devices on Google deployments can be found in the [Application Security Requirements for IoT Devices](https://partner-security.withgoogle.com/docs/iot_requirements).
   Testrun aims to automate as much of the Application Security Requirements as possible.
 
-2) What services are provided on the virtual network?
+3) What services are provided on the virtual network?
 
   The following are network services that are containerized and accessible to the device under test though are likely to change over time:
  - DHCP in failover configuration with internet connectivity
@@ -66,10 +72,10 @@ The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md)
  - NTPv4
  - 802.1x Port Based Authentication
   
-3) Can I run Testrun on a virtual machine?
+4) Can I run Testrun on a virtual machine?
 
   Testrun can be virtualized if the 2x ethernet adapters are passed through to a Virtual Box VM as a USB device rather than managed network adapters. A full guide will be provided once virtualization of Testrun has been fully tested.
 
- 4) Can I connect multiple devices to Testrun?
+5) Can I connect multiple devices to Testrun?
 
   In short, Yes you can. The way in which multiple devices could be tested simultaneously is yet to be decided. However, if you simply want to add field/peer devices during runtime (even another laptop performing manual testing) then you may connect the USB ethernet adapter to an unmanaged switch.

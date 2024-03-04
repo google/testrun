@@ -97,9 +97,8 @@ class TestModule:
             else:
               result = getattr(self, test_method_name)()
           except Exception as e:
-            LOGGER.info(f'An error occurred whilst running {test["name"]}')
+            LOGGER.error(f'An error occurred whilst running {test["name"]}')
             LOGGER.error(e)
-            return None
         else:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
           result = None
