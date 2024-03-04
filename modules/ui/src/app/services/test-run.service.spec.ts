@@ -87,6 +87,11 @@ describe('TestRunService', () => {
         name: 'tls',
         enabled: true,
       },
+      {
+        displayName: 'Protocol',
+        name: 'protocol',
+        enabled: true,
+      },
     ] as TestModule[]);
   });
 
