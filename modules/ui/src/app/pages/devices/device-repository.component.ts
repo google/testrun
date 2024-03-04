@@ -21,9 +21,7 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable } from 'rxjs/internal/Observable';
 import { Device, DeviceView } from '../../model/device';
-import { TestRunService } from '../../services/test-run.service';
 import {
   DeviceFormComponent,
   FormAction,
@@ -37,35 +35,37 @@ import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
 import { timer } from 'rxjs/internal/observable/timer';
 import { ProgressInitiateFormComponent } from '../testrun/components/progress-initiate-form/progress-initiate-form.component';
+import { DevicesStore } from './devices.store';
 
 @Component({
   selector: 'app-device-repository',
   templateUrl: './device-repository.component.html',
   styleUrls: ['./device-repository.component.scss'],
+  providers: [DevicesStore],
 })
 export class DeviceRepositoryComponent implements OnInit, OnDestroy {
-  devices$!: Observable<Device[] | null>;
   readonly DeviceView = DeviceView;
   private destroy$: Subject<boolean> = new Subject<boolean>();
-  selectedDevice: Device | undefined | null;
+  viewModel$ = this.devicesStore.viewModel$;
 
   constructor(
-    private testRunService: TestRunService,
     private readonly focusManagerService: FocusManagerService,
     public dialog: MatDialog,
     private element: ElementRef,
     private readonly changeDetectorRef: ChangeDetectorRef,
-    private route: Router
+    private route: Router,
+    private devicesStore: DevicesStore
   ) {}
 
   ngOnInit(): void {
-    this.devices$ = this.testRunService.getDevices();
-
-    combineLatest([this.devices$, this.testRunService.isOpenAddDevice$])
+    combineLatest([
+      this.devicesStore.devices$,
+      this.devicesStore.isOpenAddDevice$,
+    ])
       .pipe(takeUntil(this.destroy$))
       .subscribe(([devices, isOpenAddDevice]) => {
         if (!devices?.length && isOpenAddDevice) {
-          this.openDialog();
+          this.openDialog(devices);
         }
       });
   }
@@ -75,10 +75,11 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
-  openStartTestrun(selectedDevice: Device): void {
+  openStartTestrun(selectedDevice: Device, devices: Device[]): void {
     const dialogRef = this.dialog.open(ProgressInitiateFormComponent, {
       ariaLabel: 'Initiate testrun',
       data: {
+        devices,
         device: selectedDevice,
       },
       autoFocus: true,
@@ -97,12 +98,18 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
       });
   }
 
-  openDialog(selectedDevice?: Device, focusDeleteButton = false): void {
+  openDialog(
+    devices: Device[] = [],
+    selectedDevice?: Device,
+    focusDeleteButton = false
+  ): void {
     const dialogRef = this.dialog.open(DeviceFormComponent, {
       ariaLabel: selectedDevice ? 'Edit device' : 'Create device',
       data: {
         device: selectedDevice || null,
         title: selectedDevice ? 'Edit device' : 'Create device',
+        testModules: this.devicesStore.testModules,
+        devices,
       },
       autoFocus: focusDeleteButton ? '.delete-button' : true,
       hasBackdrop: true,
@@ -114,36 +121,30 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
       .subscribe((response: FormResponse) => {
-        this.selectedDevice = null;
-        if (!response) return;
-
+        this.devicesStore.selectDevice(null);
+        if (!response) {
+          this.devicesStore.setIsOpenAddDevice(false);
+          return;
+        }
         if (
           response.action === FormAction.Save &&
           response.device &&
           !selectedDevice
         ) {
-          this.testRunService.addDevice(response.device);
           timer(10)
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => {
               this.focusManagerService.focusFirstElementInContainer();
             });
         }
-        if (
-          response.action === FormAction.Save &&
-          response.device &&
-          selectedDevice
-        ) {
-          this.testRunService.updateDevice(selectedDevice, response.device);
-        }
         if (response.action === FormAction.Delete && selectedDevice) {
-          this.selectedDevice = selectedDevice;
-          this.openDeleteDialog(selectedDevice);
+          this.devicesStore.selectDevice(selectedDevice);
+          this.openDeleteDialog(devices, selectedDevice);
         }
       });
   }
 
-  openDeleteDialog(device: Device) {
+  openDeleteDialog(devices: Device[], device: Device) {
     const dialogRef = this.dialog.open(DeleteFormComponent, {
       ariaLabel: 'Delete device',
       data: {
@@ -164,14 +165,16 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(deleteDevice => {
         if (deleteDevice) {
-          this.testRunService.deleteDevice(device).subscribe(() => {
-            this.testRunService.removeDevice(device);
-            this.focusNextButton();
-            this.selectedDevice = null;
+          this.devicesStore.deleteDevice({
+            device,
+            onDelete: () => {
+              this.focusNextButton();
+              this.devicesStore.selectDevice(null);
+            },
           });
         } else {
-          this.openDialog(device, true);
-          this.selectedDevice = null;
+          this.openDialog(devices, device, true);
+          this.devicesStore.selectDevice(null);
         }
       });
   }

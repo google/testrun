@@ -17,7 +17,7 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
+import { getTestBed, TestBed } from '@angular/core/testing';
 import { Device, TestModule } from '../model/device';
 
 import { TestRunService } from './test-run.service';
@@ -90,19 +90,11 @@ describe('TestRunService', () => {
     ] as TestModule[]);
   });
 
-  it('setIsOpenAddDevice should update the isOpenAddDevice$ value', () => {
-    service.setIsOpenAddDevice(true);
-
-    service.isOpenAddDevice$.subscribe(value => {
-      expect(value).toBe(true);
-    });
-  });
-
-  it('getDevices should return devices', () => {
-    let result: Device[] | null = null;
+  it('fetchDevices should return devices', () => {
+    let result: Device[] = [];
     const deviceArray = [device] as Device[];
 
-    service.getDevices().subscribe(res => {
+    service.fetchDevices().subscribe(res => {
       expect(res).toEqual(result);
     });
 
@@ -157,15 +149,6 @@ describe('TestRunService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockSystemInterfaces);
   });
-
-  it('hasDevice should return true if device with mac address already exist', fakeAsync(() => {
-    const deviceArray = [device] as Device[];
-    service.setDevices(deviceArray);
-    tick();
-
-    expect(service.hasDevice('00:1e:42:35:73:c4')).toEqual(true);
-    expect(service.hasDevice('    00:1e:42:35:73:c4    ')).toEqual(true);
-  }));
 
   describe('getSystemStatus', () => {
     it('should get system status data with no changes', () => {
@@ -328,21 +311,6 @@ describe('TestRunService', () => {
     });
   });
 
-  describe('#addDevice', () => {
-    it('should create array with new value if previous value is null', function () {
-      service.addDevice(device);
-
-      expect(service.getDevices().value).toEqual([device]);
-    });
-
-    it('should add new value if previous value is array', function () {
-      service.setDevices([device, device]);
-      service.addDevice(device);
-
-      expect(service.getDevices().value).toEqual([device, device, device]);
-    });
-  });
-
   it('deleteDevice should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/device';
 
@@ -355,15 +323,6 @@ describe('TestRunService', () => {
     expect(req.request.body).toEqual(JSON.stringify(device));
     req.flush({});
   });
-
-  it('removeDevice should remove device from device list', fakeAsync(() => {
-    const deviceArray = [device] as Device[];
-    service.setDevices(deviceArray);
-    tick();
-    service.removeDevice(device);
-
-    expect(service.hasDevice('00:1e:42:35:73:c4')).toEqual(false);
-  }));
 
   it('fetchVersion should get system version', () => {
     const version = VERSION;
