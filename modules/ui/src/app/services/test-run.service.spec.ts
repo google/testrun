@@ -28,7 +28,7 @@ import {
 } from '../mocks/progress.mock';
 import { StatusOfTestResult, TestrunStatus } from '../model/testrun-status';
 import { device } from '../mocks/device.mock';
-import { VERSION } from '../mocks/version.mock';
+import { NEW_VERSION, VERSION } from '../mocks/version.mock';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -333,6 +333,23 @@ describe('TestRunService', () => {
     );
     expect(req.request.method).toBe('GET');
     req.flush(version);
+
+    service.getVersion().subscribe(res => {
+      expect(res).toEqual(version);
+    });
+  });
+
+  it('fetchVersion should return old version when error happens', () => {
+    const version = NEW_VERSION;
+    const mockErrorResponse = { status: 500, statusText: 'Error' };
+    const data = 'Invalid request parameters';
+    service.getVersion().next(version);
+    service.fetchVersion();
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/version'
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush(data, mockErrorResponse);
 
     service.getVersion().subscribe(res => {
       expect(res).toEqual(version);
