@@ -61,6 +61,11 @@ export class TestRunService {
       name: 'tls',
       enabled: true,
     },
+    {
+      displayName: 'Protocol',
+      name: 'protocol',
+      enabled: true,
+    },
   ];
 
   private isOpenStartTestrunSub$ = new BehaviorSubject<boolean>(false);
