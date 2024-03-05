@@ -135,7 +135,7 @@ export class AppComponent implements OnInit {
   }
 
   navigateToRuntime(): void {
-    this.route.navigate([Routes.Testrun]);
+    this.route.navigate([Routes.Testing]);
     this.testRunService.setIsOpenStartTestrun(true);
   }
 
