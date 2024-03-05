@@ -214,7 +214,7 @@ class TestReport():
 
   def generate_results_page(self, json_data, page_num):
     page = '<div class="page">'
-    page += self.generate_header(json_data)
+    page += self.generate_header(json_data, (page_num == 1))
     if page_num == 1:
       page += self.generate_summary(json_data)
     page += self.generate_results(json_data, page_num)
@@ -225,7 +225,7 @@ class TestReport():
 
   def generate_module_pages(self, json_data, module_reports):
     # ToDo: Figure out how to make this dynamic
-    # Content max size taken from css module-page-conten class
+    # Content max size taken from css module-page-content class
     content_max_size = 913
     header_padding = 40  # Top and bottom padding for markdown headers
     page_content = ''
@@ -248,6 +248,7 @@ class TestReport():
         active_table = True
       elif '</table>' in line:
         active_table = False
+
       # If the current line is within the content size limit over the
       # we'll add it to this page, otherweise, we'll put it on the next
       # page. Also make sure that if there is less than 20 pixels
@@ -276,7 +277,7 @@ class TestReport():
   def generate_module_page(self, json_data, module_reports):
     self._cur_page += 1
     page = '<div class="page">'
-    page += self.generate_header(json_data)
+    page += self.generate_header(json_data, False)
     page += f'''
     <div class=module-page-content>
       {module_reports}
@@ -367,23 +368,37 @@ class TestReport():
       '''
     return result_html
 
-  def generate_header(self, json_data):
+  def generate_header(self, json_data, first_page):
     with open(test_run_img_file, 'rb') as f:
       tr_img_b64 = base64.b64encode(f.read()).decode('utf-8')
-    return f'''
-    <div class="header">
-      <h1>Testrun report</h1>
-      <h2 style="top: 50%;max-width:700px">{json_data["device"]["manufacturer"]} {json_data["device"]["model"]}</h2>
-      <img src="data:image/png;base64,{tr_img_b64}" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+    header = ''
+
+    if first_page:
+      header += f'''
+        <div class="header">
+          <h1>Testrun report</h1>
+          <h2 style="top: 50%;max-width:700px">
+            {json_data["device"]["manufacturer"]}
+            {json_data["device"]["model"]}
+          </h2>'''
+    else:
+      header += f'''
+        <div class="header" style="margin-bottom:1px solid #DADCE0">
+          <h1>Testrun report</h1>
+          <h3 style="margin-top:0;max-width:700px">
+            {json_data["device"]["manufacturer"]}
+            {json_data["device"]["model"]}
+          </h3>'''
+    header += f'''<img src="data:image/png;base64,
+      {tr_img_b64}" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
     </div>
     '''
+    return header
 
   def generate_summary(self, json_data):
     # Generate the basic content section layout
     summary = '''
      <div class="summary-content">
-      <img style="margin-bottom:30px;width:100%;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABFgAAAABCAYAAADqzRqJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA3SURBVHgB7cAxAQAQFEXRJ4MIMkjwS9hklMCoi1EBWljePWlHvQIAMy2mAMDNKV3ADysPAYCbB6fxBrzkZ2KOAAAAAElFTkSuQmCC" />
-      <div class="summary-vertical-line"></div>
      '''
     # Add the device information
     manufacturer = (json_data['device']['manufacturer']
@@ -768,11 +783,13 @@ class TestReport():
       height: 30px;
       width: 8.5in;
       bottom: 0in;
+      border-top: 1px solid #D3D3D3;
     }
 
     .footer-label {
+      color: #3C4043;
       position: absolute;
-      top: 20px;
+      top: 5px;
       font-size: 12px;
     }
 
@@ -780,10 +797,11 @@ class TestReport():
     .markdown-table {
       border-collapse: collapse;
       margin-left: 20px;
+      background-color: #F8F9FA;
     }
 
     .markdown-table th, .markdown-table td {
-      border: 1px solid #dddddd;
+      border: none;
       text-align: left;
       padding: 8px;
     }
