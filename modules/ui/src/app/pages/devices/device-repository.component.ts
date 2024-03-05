@@ -93,7 +93,7 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(data => {
         if (data === 'testrunStarted') {
-          this.route.navigate([Routes.Testrun]);
+          this.route.navigate([Routes.Testing]);
         }
       });
   }
