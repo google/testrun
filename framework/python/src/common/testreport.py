@@ -308,8 +308,8 @@ class TestReport():
 
     #Add styling to the markdown
     content = content.replace('<table>', '<table class=markdown-table>')
-    content = content.replace('<h1>', '<h1 class=markdown-header>')
-    content = content.replace('<h2>', '<h2 class=markdown-header>')
+    content = content.replace('<h1>', '<h1 class=markdown-header-h1>')
+    content = content.replace('<h2>', '<h2 class=markdown-header-h2>')
 
     content = self.generate_module_pages(json_data=json_data,
                                          module_reports=content)
@@ -403,33 +403,6 @@ class TestReport():
     summary += self.generate_device_summary_label('MAC Address',
                                                   mac,
                                                   trailing_space=False)
-
-    # Add device configuration
-    summary += '''
-    <div class="summary-device-modules">
-      <div class="summary-item-label" style="margin-bottom:10px;">
-        Device Configuration
-      </div>
-    '''
-
-    if 'test_modules' in json_data['device']:
-
-      sorted_modules = {}
-
-      for test_module in json_data['device']['test_modules']:
-        if 'enabled' in json_data['device']['test_modules'][test_module]:
-          sorted_modules[test_module] = json_data['device']['test_modules'][
-              test_module]['enabled']
-
-      # Sort the modules by enabled first
-      sorted_modules = sorted(sorted_modules.items(),
-                              key=lambda x: x[1],
-                              reverse=True)
-
-      for module in sorted_modules:
-        summary += self.generate_device_module_label(module[0], module[1])
-
-    summary += '</div>'
 
     # Add device configuration
     summary += '''
@@ -804,10 +777,24 @@ class TestReport():
       padding: 8px;
     }
 
-    .markdown-header{
+    .markdown-header-h1{
       margin-left:20px;
       margin-top:20px;
       margin-bottom:20px;
+      margin-right:0px;
+
+      font-size: 2em;
+      font-weight: bold;
+    }
+
+    .markdown-header-h2{
+      margin-left:20px;
+      margin-top:20px;
+      margin-bottom:20px;
+      margin-right:0px;
+
+      font-size: 1.5em;
+      font-weight: bold;
     }
 
     .module-page-content{

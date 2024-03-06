@@ -17,6 +17,7 @@
 import { createAction, props } from '@ngrx/store';
 import { SystemConfig } from '../model/setting';
 import { SystemInterfaces } from '../model/setting';
+import { Device } from '../model/device';
 
 // App component
 export const toggleMenu = createAction('[App Component] Toggle Menu');
@@ -49,15 +50,23 @@ export const fetchSystemConfigSuccess = createAction(
   props<{ systemConfig: SystemConfig }>()
 );
 
-export const createSystemConfigSuccess = createAction(
-  '[Settings] Create System Config Success',
-  props<{
-    data: SystemConfig;
-  }>()
-);
-
 // Shared
 export const setHasConnectionSettings = createAction(
   '[Shared] Set Has Connection Settings',
   props<{ hasConnectionSettings: boolean }>()
+);
+
+export const setIsOpenAddDevice = createAction(
+  '[Shared] Set Is Open Add Device',
+  props<{ isOpenAddDevice: boolean }>()
+);
+
+export const setHasDevices = createAction(
+  '[Shared] Set Has Devices',
+  props<{ hasDevices: boolean }>()
+);
+
+export const setDevices = createAction(
+  '[Shared] Set Devices',
+  props<{ devices: Device[] }>()
 );

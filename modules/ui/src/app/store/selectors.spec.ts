@@ -16,9 +16,12 @@
 
 import { AppState } from './state';
 import {
+  selectDevices,
   selectError,
   selectHasConnectionSettings,
+  selectHasDevices,
   selectInterfaces,
+  selectIsOpenAddDevice,
   selectMenuOpened,
 } from './selectors';
 
@@ -34,6 +37,9 @@ describe('Selectors', () => {
     },
     shared: {
       hasConnectionSettings: false,
+      devices: [],
+      hasDevices: false,
+      isOpenAddDevice: false,
     },
   };
 
@@ -54,6 +60,21 @@ describe('Selectors', () => {
 
   it('should select error', () => {
     const result = selectError.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select devices', () => {
+    const result = selectDevices.projector(initialState);
+    expect(result).toEqual([]);
+  });
+
+  it('should select hasDevices', () => {
+    const result = selectHasDevices.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select isOpenAddDevice', () => {
+    const result = selectIsOpenAddDevice.projector(initialState);
     expect(result).toEqual(false);
   });
 });
