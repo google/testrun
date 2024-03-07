@@ -43,7 +43,7 @@ export interface SharedState {
   //app, testrun
   isTestrunStarted?: boolean;
   //app, settings
-  hasConnectionSettings: boolean;
+  hasConnectionSettings: boolean | null;
   // app, devices
   isOpenAddDevice: boolean;
 }
@@ -58,7 +58,7 @@ export const initialAppComponentState: AppComponentState = {
 };
 
 export const initialSharedState: SharedState = {
-  hasConnectionSettings: false,
+  hasConnectionSettings: null,
   isOpenAddDevice: false,
   hasDevices: false,
   devices: [],
