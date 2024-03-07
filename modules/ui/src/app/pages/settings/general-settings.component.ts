@@ -97,7 +97,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     this.resetForm();
     this.closeSettingEvent.emit();
     this.liveAnnouncer.announce(
-      `The ${message} finished. The connection setting panel is closed.`
+      `The ${message} finished. The system settings panel is closed.`
     );
     this.setDefaultFormValues();
   }

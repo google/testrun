@@ -95,8 +95,6 @@ export class FilterDialogComponent
 {
   resultList = [
     { value: StatusOfTestResult.Compliant, enabled: false },
-    { value: StatusOfTestResult.CompliantLimited, enabled: false },
-    { value: StatusOfTestResult.CompliantHigh, enabled: false },
     { value: StatusOfTestResult.NonCompliant, enabled: false },
   ];
   filterForm!: FormGroup;

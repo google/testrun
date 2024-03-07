@@ -233,7 +233,7 @@ describe('AppComponent', () => {
     button?.click();
     tick();
 
-    expect(router.url).toBe(Routes.Testrun);
+    expect(router.url).toBe(Routes.Testing);
   }));
 
   it('should navigate to the reports when "reports" button is clicked', fakeAsync(() => {
@@ -397,14 +397,14 @@ describe('AppComponent', () => {
         expect(calloutContent).toContain('Step 1');
       });
 
-      it('should have callout content with "Connection settings" link ', () => {
+      it('should have callout content with "System settings" link ', () => {
         const calloutLinkEl = compiled.querySelector(
           '.message-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(calloutLinkEl).toBeTruthy();
-        expect(calloutLinkContent).toContain('Connection settings');
+        expect(calloutLinkContent).toContain('System settings');
       });
 
       keyboardCases.forEach(testCase => {
@@ -514,7 +514,7 @@ describe('AppComponent', () => {
         expect(calloutContent).toContain('Step 3');
       });
 
-      it('should have callout component with "Testrun" link', () => {
+      it('should have callout component with "testing" link', () => {
         const callout = compiled.querySelector('app-callout');
         const calloutLinkEl = compiled.querySelector(
           '.message-link'
@@ -522,7 +522,7 @@ describe('AppComponent', () => {
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Testrun');
+        expect(calloutLinkContent).toContain('testing');
       });
 
       keyboardCases.forEach(testCase => {
@@ -534,7 +534,7 @@ describe('AppComponent', () => {
           calloutLinkEl.dispatchEvent(testCase.event);
           flush();
 
-          expect(router.url).toBe(Routes.Testrun);
+          expect(router.url).toBe(Routes.Testing);
         }));
       });
     });
