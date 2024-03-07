@@ -114,19 +114,11 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.systemStatus$ = this.testRunService.systemStatus$.pipe(
-      tap(() => (this.isStatusLoaded = true))
+      tap(() => (this.isStatusLoaded = true)),
+      shareReplay({ refCount: true, bufferSize: 1 })
     );
 
     this.isTestrunStarted$ = this.testRunService.isTestrunStarted$;
-
-    this.hasConnectionSetting$.pipe(
-      tap(result => {
-        if (result !== null) {
-          this.isConnectionSettingsLoaded = true;
-        }
-      }),
-      shareReplay({ refCount: true, bufferSize: 1 })
-    );
   }
 
   navigateToDeviceRepository(): void {
