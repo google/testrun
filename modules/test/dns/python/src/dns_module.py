@@ -56,9 +56,11 @@ class DNSModule(TestModule):
 
     # Set the summary variables
     local_requests = sum(1 for row in dns_table_data
-                         if row['Destination'] == self._dns_server and row['Type'] == 'Query')
+                         if row['Destination'] ==
+                         self._dns_server and row['Type'] == 'Query')
     external_requests = sum(1 for row in dns_table_data
-                            if row['Destination'] != self._dns_server and row['Type'] == 'Query')
+                            if row['Destination'] !=
+                            self._dns_server and row['Type'] == 'Query')
 
     total_requests = sum(1 for row in dns_table_data
                             if row['Type'] == 'Query')
