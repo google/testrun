@@ -438,14 +438,23 @@ class TestOrchestrator:
         f"Error occurred whilst obtaining results for module {module.name}")
       LOGGER.error(results_error)
 
-    # Get report from the module if generated
+    # Get the markdown report from the module if generated
     markdown_file = f"{container_runtime_dir}/{module.name}_report.md"
     try:
       with open(markdown_file, "r", encoding="utf-8") as f:
         module_report = f.read()
         self._session.add_module_report(module_report)
     except (FileNotFoundError, PermissionError):
-      LOGGER.debug("Test module did not produce a module report")
+      LOGGER.debug("Test module did not produce a markdown module report")
+
+    # Get the HTML report from the module if generated
+    html_file = f"{container_runtime_dir}/{module.name}_report.html"
+    try:
+      with open(html_file, "r", encoding="utf-8") as f:
+        module_report = f.read()
+        self._session.add_module_report(module_report)
+    except (FileNotFoundError, PermissionError):
+      LOGGER.debug("Test module did not produce a html module report")
 
     LOGGER.info(f"Test module {module.name} has finished")
 

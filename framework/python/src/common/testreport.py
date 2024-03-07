@@ -223,55 +223,14 @@ class TestReport():
     page += '<div style="break-after:page"></div>'
     return page
 
-  def generate_module_pages(self, json_data, module_reports):
-    # ToDo: Figure out how to make this dynamic
-    # Content max size taken from css module-page-content class
-    content_max_size = 913
-    header_padding = 40  # Top and bottom padding for markdown headers
-    page_content = ''
+  def generate_module_pages(self, json_data):
+
     pages = ''
-    content_size = 0
-    content = module_reports.split('\n')
-    active_table = False
+    for report in self._module_reports:
 
-    for line in content:
-      if '<h1' in line:
-        content_size += 40 + header_padding
-      elif '<h2' in line:
-        content_size += 30 + header_padding
-      elif '<tr>' in line:
-        content_size += 39
-      elif '<li>' in line:
-        content_size += 20
-
-      if '<table' in line:
-        active_table = True
-      elif '</table>' in line:
-        active_table = False
-
-      # If the current line is within the content size limit over the
-      # we'll add it to this page, otherweise, we'll put it on the next
-      # page. Also make sure that if there is less than 20 pixels
-      # left after a header, start a new page or the summary
-      # title will be left with no information after it. Current minimum
-      # summary item is 20 pixels, adjust if we update the <li> element.
-      if content_size >= content_max_size or (
-          '<h' in line and content_max_size - content_size < 20):
-        # If we are in the middle of a table, we need
-        # to close the table
-        if active_table:
-          page_content += '</tbody></table>'
-        page = self.generate_module_page(json_data, page_content)
-        pages += page + '\n'
-        content_size = 0
-        # If we were in the middle of a table, we need
-        # to restart it for the rest of the rows
-        page_content = ('<table class=markdown-table></tbody>\n'
-                        if active_table else '')
-      page_content += line + '\n'
-    if len(page_content) > 0:
-      page = self.generate_module_page(json_data, page_content)
+      page = self.generate_module_page(json_data, report)
       pages += page + '\n'
+
     return pages
 
   def generate_module_page(self, json_data, module_reports):
@@ -293,29 +252,11 @@ class TestReport():
     body = f'''
     <body>
       {self.generate_pages(json_data)}
-      {self.generate_module_reports(json_data)}
+      {self.generate_module_pages(json_data)}
     </body>
     '''
     # Set the max pages after all pages have been generated
     return body.replace('MAX_PAGE', str(self._cur_page))
-
-  def generate_module_reports(self, json_data):
-    content = ''
-    for module_report in self._module_reports:
-      # Convert markdown to html
-      markdown_html = markdown.markdown(
-          module_report, extensions=['markdown.extensions.tables'])
-      content += markdown_html + '\n'
-
-    #Add styling to the markdown
-    content = content.replace('<table>', '<table class=markdown-table>')
-    content = content.replace('<h1>', '<h1 class=markdown-header-h1>')
-    content = content.replace('<h2>', '<h2 class=markdown-header-h2>')
-
-    content = self.generate_module_pages(json_data=json_data,
-                                         module_reports=content)
-
-    return content
 
   def generate_footer(self, page_num):
     footer = f'''
@@ -545,6 +486,13 @@ class TestReport():
       unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
 
+    @font-face {
+      font-family: 'Roboto Mono';
+      font-style: normal;
+      src: url(https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
     /* Define some common body formatting*/
     body {
       font-family: 'Google Sans', sans-serif;
@@ -605,6 +553,76 @@ class TestReport():
       color: #5F6368;
       margin-bottom: 0;
       margin-top: 0;
+    }
+
+    .module-summary {
+      background-color: #F8F9FA;
+      width: 100%;
+      margin-bottom: 25px;
+      margin-top: 25px;
+    }
+
+    .module-summary thead tr th {
+      text-align: left;
+      padding-top: 15px;
+      padding-left: 15px;
+      font-weight: 500;
+      color: #5F6368;
+      font-size: 14px;
+    }
+
+    .module-summary tbody tr td {
+      padding-bottom: 15px;
+      padding-left: 15px;
+      font-size: 24px;
+    }
+
+    .module-data {
+      border: 1px solid #DADCE0;
+      border-radius: 3px;
+      border-spacing: 0;
+    }
+
+    .module-data thead tr th {
+      text-align: left;
+      padding: 12px 25px;
+      color: #3C4043;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .module-data tbody tr td {
+      text-align: left;
+      padding: 12px 25px;
+      color: #3C4043;
+      font-size: 14px;
+      font-weight: 400;
+      border-top: 1px solid #DADCE0;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .callout-container.info {
+      background-color: #e8f0fe;
+    }
+
+    .callout-container.info .icon {
+      width: 22px;
+      height: 22px;
+      background-size: contain;
+      background-image: url('data:image/png;base64,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');
+    }
+
+    .callout-container {
+      display: flex;
+      box-sizing: border-box;
+      height: auto;
+      min-height: 48px;
+      padding: 6px 24px;
+      border-radius: 8px;
+      align-items: center;
+      gap: 10px;
+      color: #3c4043;
+      font-size: 14px;
     }
 
     .device-information {
@@ -807,20 +825,16 @@ class TestReport():
     }
 
     .markdown-header-h1 {
-      margin-left:20px;
       margin-top:20px;
       margin-bottom:20px;
       margin-right:0px;
-
       font-size: 2em;
     }
 
     .markdown-header-h2 {
-      margin-left:20px;
       margin-top:20px;
       margin-bottom:20px;
       margin-right:0px;
-
       font-size: 1.5em;
     }
 
@@ -835,6 +849,10 @@ class TestReport():
         as expected
       */
       overflow: hidden;
+    }
+
+    .module-page-content h1 {
+      font-size: 32px;
     }
 
     @media print {
