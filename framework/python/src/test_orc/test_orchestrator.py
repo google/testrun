@@ -466,6 +466,7 @@ class TestOrchestrator:
     try:
       with open(html_file, "r", encoding="utf-8") as f:
         module_report = f.read()
+        LOGGER.debug(f"Adding module report for module {module.name}")
         self._session.add_module_report(module_report)
     except (FileNotFoundError, PermissionError):
       LOGGER.debug("Test module did not produce a html module report")

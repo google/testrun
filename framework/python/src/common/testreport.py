@@ -233,13 +233,13 @@ class TestReport():
 
     return pages
 
-  def generate_module_page(self, json_data, module_reports):
+  def generate_module_page(self, json_data, module_report):
     self._cur_page += 1
     page = '<div class="page">'
     page += self.generate_header(json_data, False)
     page += f'''
     <div class=module-page-content>
-      {module_reports}
+      {module_report}
     </div>'''
     page += self.generate_footer(self._cur_page)
     page += '</div>'  #Page end
