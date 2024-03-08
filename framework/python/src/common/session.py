@@ -255,6 +255,7 @@ class TestRunSession():
         # Just update the result and description
         test_result.result = result.result
         test_result.description = result.description
+        test_result.recommendations = result.recommendations
         updated = True
 
     if not updated:

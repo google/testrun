@@ -15,7 +15,6 @@
  */
 import { Injectable } from '@angular/core';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { TestRunService } from '../../../../services/test-run.service';
 import { Device } from '../../../../model/device';
 @Injectable({ providedIn: 'root' })
 
@@ -23,8 +22,6 @@ import { Device } from '../../../../model/device';
  * Validator uses for Device Name and Device Manufacturer inputs
  */
 export class DeviceValidators {
-  constructor(private testRunService: TestRunService) {}
-
   readonly STRING_FORMAT_REGEXP = new RegExp(
     "^([a-z0-9\\p{L}\\p{M}.',-_ ]{1,64})$",
     'u'
@@ -41,14 +38,20 @@ export class DeviceValidators {
     };
   }
 
-  public differentMACAddress(device?: Device): ValidatorFn {
+  public differentMACAddress(devices: Device[], device?: Device): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value?.trim();
       if (value && (!device || device?.mac_addr !== value)) {
-        const result = this.testRunService.hasDevice(value);
+        const result = this.hasDevice(value, devices);
         return result ? { has_same_mac_address: true } : null;
       }
       return null;
     };
+  }
+
+  private hasDevice(macAddress: string, devices: Device[]): boolean {
+    return (
+      devices.some(device => device.mac_addr === macAddress.trim()) || false
+    );
   }
 }

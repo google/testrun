@@ -25,9 +25,6 @@ import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 import { TestRunService } from './services/test-run.service';
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { Device } from './model/device';
-import { device } from './mocks/device.mock';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -49,7 +46,18 @@ import { State } from '@ngrx/store';
 import { appFeatureKey } from './store/reducers';
 import { FocusManagerService } from './services/focus-manager.service';
 import { AppState } from './store/state';
-import { toggleMenu, updateFocusNavigation } from './store/actions';
+import {
+  setIsOpenAddDevice,
+  toggleMenu,
+  updateFocusNavigation,
+} from './store/actions';
+import {
+  selectError,
+  selectHasConnectionSettings,
+  selectHasDevices,
+  selectInterfaces,
+  selectMenuOpened,
+} from './store/selectors';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -76,24 +84,18 @@ describe('AppComponent', () => {
 
   beforeEach(() => {
     mockService = jasmine.createSpyObj([
-      'getDevices',
-      'fetchDevices',
       'getSystemStatus',
-      'fetchHistory',
-      'getSystemInterfaces',
-      'setIsOpenAddDevice',
       'systemStatus$',
       'isTestrunStarted$',
       'setIsOpenStartTestrun',
+      'fetchDevices',
+      'getTestModules',
     ]);
 
     mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
       'focusFirstElementInContainer',
     ]);
 
-    mockService.getDevices.and.returnValue(
-      new BehaviorSubject<Device[] | null>([device])
-    );
     (mockService.systemStatus$ as unknown) = of({});
     mockService.isTestrunStarted$ = of(true);
 
@@ -124,7 +126,15 @@ describe('AppComponent', () => {
             }),
           },
         },
-        provideMockStore({}),
+        provideMockStore({
+          selectors: [
+            { selector: selectInterfaces, value: {} },
+            { selector: selectHasConnectionSettings, value: true },
+            { selector: selectError, value: null },
+            { selector: selectMenuOpened, value: false },
+            { selector: selectHasDevices, value: false },
+          ],
+        }),
         { provide: FocusManagerService, useValue: mockFocusManagerService },
       ],
       declarations: [
@@ -139,8 +149,6 @@ describe('AppComponent', () => {
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
     router = TestBed.get(Router);
-    component.hasConnectionSetting$ = of(true);
-    fixture.detectChanges();
     compiled = fixture.nativeElement as HTMLElement;
     spyOn(store, 'dispatch').and.callFake(() => {});
   });
@@ -203,6 +211,8 @@ describe('AppComponent', () => {
   });
 
   it('should navigate to the devices when "devices" button is clicked', fakeAsync(() => {
+    fixture.detectChanges();
+
     const button = compiled.querySelector(
       '.app-sidebar-button-devices'
     ) as HTMLButtonElement;
@@ -214,6 +224,8 @@ describe('AppComponent', () => {
   }));
 
   it('should navigate to the testrun when "testrun" button is clicked', fakeAsync(() => {
+    fixture.detectChanges();
+
     const button = compiled.querySelector(
       '.app-sidebar-button-testrun'
     ) as HTMLButtonElement;
@@ -221,10 +233,12 @@ describe('AppComponent', () => {
     button?.click();
     tick();
 
-    expect(router.url).toBe(Routes.Testrun);
+    expect(router.url).toBe(Routes.Testing);
   }));
 
   it('should navigate to the reports when "reports" button is clicked', fakeAsync(() => {
+    fixture.detectChanges();
+
     const button = compiled.querySelector(
       '.app-sidebar-button-reports'
     ) as HTMLButtonElement;
@@ -236,12 +250,14 @@ describe('AppComponent', () => {
   }));
 
   it('should call toggleSettingsBtn focus when settingsDrawer close on closeSetting', fakeAsync(() => {
+    fixture.detectChanges();
+
     spyOn(component.settingsDrawer, 'close').and.returnValue(
       Promise.resolve('close')
     );
     spyOn(component.toggleSettingsBtn, 'focus');
 
-    component.closeSetting();
+    component.closeSetting(true);
     tick();
 
     component.settingsDrawer.close().then(() => {
@@ -250,13 +266,15 @@ describe('AppComponent', () => {
   }));
 
   it('should call focusFirstElementInContainer if settingsDrawer opened not from toggleBtn', fakeAsync(() => {
+    fixture.detectChanges();
+
     spyOn(component.settingsDrawer, 'close').and.returnValue(
       Promise.resolve('close')
     );
 
     component.openGeneralSettings(false);
     tick();
-    component.closeSetting();
+    component.closeSetting(false);
     flush();
 
     component.settingsDrawer.close().then(() => {
@@ -267,6 +285,8 @@ describe('AppComponent', () => {
   }));
 
   it('should update interfaces', () => {
+    fixture.detectChanges();
+
     spyOn(component.settings, 'getSystemInterfaces');
 
     component.openGeneralSettings(false);
@@ -275,6 +295,7 @@ describe('AppComponent', () => {
   });
 
   it('should call settingsDrawer open on openSetting', fakeAsync(() => {
+    fixture.detectChanges();
     spyOn(component.settingsDrawer, 'open');
 
     component.openSetting();
@@ -284,6 +305,8 @@ describe('AppComponent', () => {
   }));
 
   it('should call settingsDrawer open on click settings button', () => {
+    fixture.detectChanges();
+
     const settingsBtn = compiled.querySelector(
       '.app-toolbar-button-general-settings'
     ) as HTMLButtonElement;
@@ -295,6 +318,11 @@ describe('AppComponent', () => {
   });
 
   describe('menu button', () => {
+    beforeEach(() => {
+      store.overrideSelector(selectHasDevices, false);
+      fixture.detectChanges();
+    });
+
     it('should dispatch toggleMenu action', () => {
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
@@ -347,6 +375,7 @@ describe('AppComponent', () => {
   });
 
   it('should have version', () => {
+    fixture.detectChanges();
     const version = compiled.querySelector('app-version');
 
     expect(version).toBeTruthy();
@@ -368,14 +397,14 @@ describe('AppComponent', () => {
         expect(calloutContent).toContain('Step 1');
       });
 
-      it('should have callout content with "Connection settings" link ', () => {
+      it('should have callout content with "System settings" link ', () => {
         const calloutLinkEl = compiled.querySelector(
           '.message-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(calloutLinkEl).toBeTruthy();
-        expect(calloutLinkContent).toContain('Connection settings');
+        expect(calloutLinkContent).toContain('System settings');
       });
 
       keyboardCases.forEach(testCase => {
@@ -396,9 +425,7 @@ describe('AppComponent', () => {
     describe('with system status as "Idle"', () => {
       beforeEach(() => {
         component.hasConnectionSetting$ = of(true);
-        mockService.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
+        store.overrideSelector(selectHasDevices, true);
         mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IDLE);
         mockService.isTestrunStarted$ = of(false);
         component.ngOnInit();
@@ -416,10 +443,7 @@ describe('AppComponent', () => {
 
     describe('with no devices setted', () => {
       beforeEach(() => {
-        mockService.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>(null)
-        );
-        component.ngOnInit();
+        store.overrideSelector(selectHasDevices, false);
         fixture.detectChanges();
       });
 
@@ -469,17 +493,16 @@ describe('AppComponent', () => {
         flush();
 
         expect(router.url).toBe(Routes.Devices);
-        expect(mockService.setIsOpenAddDevice).toHaveBeenCalledWith(true);
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setIsOpenAddDevice({ isOpenAddDevice: true })
+        );
       }));
     });
 
     describe('with devices setted but without systemStatus data', () => {
       beforeEach(() => {
-        mockService.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
+        store.overrideSelector(selectHasDevices, true);
         mockService.isTestrunStarted$ = of(false);
-        component.ngOnInit();
         fixture.detectChanges();
       });
 
@@ -491,7 +514,7 @@ describe('AppComponent', () => {
         expect(calloutContent).toContain('Step 3');
       });
 
-      it('should have callout component with "Testrun" link', () => {
+      it('should have callout component with "testing" link', () => {
         const callout = compiled.querySelector('app-callout');
         const calloutLinkEl = compiled.querySelector(
           '.message-link'
@@ -499,7 +522,7 @@ describe('AppComponent', () => {
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Testrun');
+        expect(calloutLinkContent).toContain('testing');
       });
 
       keyboardCases.forEach(testCase => {
@@ -511,18 +534,15 @@ describe('AppComponent', () => {
           calloutLinkEl.dispatchEvent(testCase.event);
           flush();
 
-          expect(router.url).toBe(Routes.Testrun);
+          expect(router.url).toBe(Routes.Testing);
         }));
       });
     });
 
     describe('with devices setted, without systemStatus data, but run the tests ', () => {
       beforeEach(() => {
-        mockService.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
+        store.overrideSelector(selectHasDevices, true);
         mockService.isTestrunStarted$ = of(true);
-        component.ngOnInit();
         fixture.detectChanges();
       });
 
@@ -533,13 +553,10 @@ describe('AppComponent', () => {
       });
     });
 
-    describe('with devices setted and systemStatus data ', () => {
+    describe('with devices setted and systemStatus data', () => {
       beforeEach(() => {
-        mockService.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
+        store.overrideSelector(selectHasDevices, true);
         mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
-        component.ngOnInit();
         fixture.detectChanges();
       });
 
@@ -569,7 +586,7 @@ describe('AppComponent', () => {
       describe('with no error', () => {
         beforeEach(() => {
           component.error$ = of(false);
-          component.ngOnInit();
+          store.overrideSelector(selectHasDevices, true);
           fixture.detectChanges();
         });
         it('should not have callout component', () => {
@@ -582,10 +599,6 @@ describe('AppComponent', () => {
   });
 
   it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {
-    mockService.getDevices.and.returnValue(
-      new BehaviorSubject<Device[] | null>([])
-    );
-    component.ngOnInit();
     fixture.detectChanges();
 
     spyOn(component.settingsDrawer, 'close').and.returnValue(
@@ -593,7 +606,7 @@ describe('AppComponent', () => {
     );
     const spyToggle = spyOn(component.toggleSettingsBtn, 'focus');
 
-    await component.closeSetting();
+    await component.closeSetting(false);
 
     expect(spyToggle).toHaveBeenCalledTimes(0);
   });

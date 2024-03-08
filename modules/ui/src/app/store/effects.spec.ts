@@ -24,6 +24,7 @@ import * as actions from './actions';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from './state';
 import { selectMenuOpened } from './selectors';
+import { device } from '../mocks/device.mock';
 describe('Effects', () => {
   let actions$ = new Observable<Action>();
   let effects: AppEffects;
@@ -52,6 +53,15 @@ describe('Effects', () => {
     effects = TestBed.inject(AppEffects);
 
     store.refreshState();
+  });
+
+  it('onSetDevices$ should call setHasDevices', done => {
+    actions$ = of(actions.setDevices({ devices: [device] }));
+
+    effects.onSetDevices$.subscribe(action => {
+      expect(action).toEqual(actions.setHasDevices({ hasDevices: true }));
+      done();
+    });
   });
 
   it('onMenuOpened$ should call updateFocusNavigation', done => {
