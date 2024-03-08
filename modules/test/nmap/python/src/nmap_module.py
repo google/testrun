@@ -122,7 +122,7 @@ class NmapModule(TestModule):
 
         table_content += (f'''
             <tr>
-              <td>{row['Port']}</td>
+              <td>{row['Port']}/{row['Type']}</td>
               <td>{row['State']}</td>
               <td>{row['Service']}</td>
               <td>{row['Version']}</td>
