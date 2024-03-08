@@ -32,9 +32,9 @@ const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
 
 export const UNAVAILABLE_VERSION = {
-  installed_version: '?.?',
+  installed_version: 'v?.?',
   update_available: false,
-  latest_version: '?.?',
+  latest_version: 'v?.?',
   latest_version_url: '',
 };
 
