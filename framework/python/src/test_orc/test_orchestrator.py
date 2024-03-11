@@ -127,8 +127,8 @@ class TestOrchestrator:
     # Archive the runtime directory
     self._zip_results(timestamp_dir)
 
-    LOGGER.debug("Cleaning old test results...")
-    self._cleanup_old_test_results(device)
+    #LOGGER.debug("Cleaning old test results...")
+    #self._cleanup_old_test_results(device)
 
     LOGGER.debug("Old test results cleaned")
 
@@ -182,53 +182,53 @@ class TestOrchestrator:
         result = "Non-Compliant"
     return result
 
-  def _cleanup_old_test_results(self, device):
+  # def _cleanup_old_test_results(self, device):
 
-    if device.max_device_reports is not None:
-      max_device_reports = device.max_device_reports
-    else:
-      max_device_reports = self._session.get_max_device_reports()
+  #   if device.max_device_reports is not None:
+  #     max_device_reports = device.max_device_reports
+  #   else:
+  #     max_device_reports = self._session.get_max_device_reports()
 
-    completed_results_dir = os.path.join(
-        self._root_path,
-        LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder))
+  #   completed_results_dir = os.path.join(
+  #       self._root_path,
+  #       LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder))
 
-    completed_tests = os.listdir(completed_results_dir)
-    cur_test_count = len(completed_tests)
-    if cur_test_count > max_device_reports:
-      LOGGER.debug("Current device has more than max tests results allowed: " +
-                   str(cur_test_count) + ">" + str(max_device_reports))
+  #   completed_tests = os.listdir(completed_results_dir)
+  #   cur_test_count = len(completed_tests)
+  #   if cur_test_count > max_device_reports:
+  #     LOGGER.debug("Current device has more than max tests results allowed: " +
+  #                  str(cur_test_count) + ">" + str(max_device_reports))
 
-      # Find and delete the oldest test
-      oldest_test = self._find_oldest_test(completed_results_dir)
-      if oldest_test is not None:
-        LOGGER.debug("Oldest test found, removing: " + str(oldest_test[1]))
-        shutil.rmtree(oldest_test[1], ignore_errors=True)
+  #     # Find and delete the oldest test
+  #     oldest_test = self._find_oldest_test(completed_results_dir)
+  #     if oldest_test is not None:
+  #       LOGGER.debug("Oldest test found, removing: " + str(oldest_test[1]))
+  #       shutil.rmtree(oldest_test[1], ignore_errors=True)
 
-        # Remove oldest test from session
-        oldest_timestamp = oldest_test[0]
-        self.get_session().get_target_device().remove_report(oldest_timestamp)
+  #       # Remove oldest test from session
+  #       oldest_timestamp = oldest_test[0]
+  #       self.get_session().get_target_device().remove_report(oldest_timestamp)
 
-        # Confirm the delete was succesful
-        new_test_count = len(os.listdir(completed_results_dir))
-        if (new_test_count != cur_test_count
-            and new_test_count > max_device_reports):
-          # Continue cleaning up until we're under the max
-          self._cleanup_old_test_results(device)
+  #       # Confirm the delete was succesful
+  #       new_test_count = len(os.listdir(completed_results_dir))
+  #       if (new_test_count != cur_test_count
+  #           and new_test_count > max_device_reports):
+  #         # Continue cleaning up until we're under the max
+  #         self._cleanup_old_test_results(device)
 
-  def _find_oldest_test(self, completed_tests_dir):
-    oldest_timestamp = None
-    oldest_directory = None
-    for completed_test in os.listdir(completed_tests_dir):
-      timestamp = datetime.strptime(str(completed_test), "%Y-%m-%dT%H:%M:%S")
-      if oldest_timestamp is None or timestamp < oldest_timestamp:
-        oldest_timestamp = timestamp
-        oldest_directory = completed_test
-    if oldest_directory:
-      return oldest_timestamp, os.path.join(completed_tests_dir,
-                                            oldest_directory)
-    else:
-      return None
+  # def _find_oldest_test(self, completed_tests_dir):
+  #   oldest_timestamp = None
+  #   oldest_directory = None
+  #   for completed_test in os.listdir(completed_tests_dir):
+  #     timestamp = datetime.strptime(str(completed_test), "%Y-%m-%dT%H:%M:%S")
+  #     if oldest_timestamp is None or timestamp < oldest_timestamp:
+  #       oldest_timestamp = timestamp
+  #       oldest_directory = completed_test
+  #   if oldest_directory:
+  #     return oldest_timestamp, os.path.join(completed_tests_dir,
+  #                                           oldest_directory)
+  #   else:
+  #     return None
 
   def _timestamp_results(self, device):
 
