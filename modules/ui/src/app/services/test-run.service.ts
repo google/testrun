@@ -31,6 +31,13 @@ import { Version } from '../model/version';
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
 
+export const UNAVAILABLE_VERSION = {
+  installed_version: 'v?.?',
+  update_available: false,
+  latest_version: 'v?.?',
+  latest_version_url: '',
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -202,7 +209,10 @@ export class TestRunService {
       .get<Version>(`${API_URL}/system/version`)
       .pipe(
         catchError(() => {
-          return of(this.version.value);
+          const previousVersion = this.version.value?.installed_version
+            ? this.version.value
+            : UNAVAILABLE_VERSION;
+          return of(previousVersion);
         })
       )
       .subscribe(version => {
