@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { Device } from '../model/device';
 import { TestrunStatus } from '../model/testrun-status';
 import { SystemInterfaces } from '../model/setting';
+import { Device } from '../model/device';
 
 export interface AppState {
   appComponent: AppComponentState;
@@ -36,14 +35,17 @@ export interface AppComponentState {
 }
 
 export interface SharedState {
+  devices: Device[];
   //used in app, devices, testrun
-  devices?: Device[] | null;
+  hasDevices: boolean;
   //app, testrun
   systemStatus?: TestrunStatus | null;
   //app, testrun
   isTestrunStarted?: boolean;
   //app, settings
-  hasConnectionSettings: boolean;
+  hasConnectionSettings: boolean | null;
+  // app, devices
+  isOpenAddDevice: boolean;
 }
 
 export const initialAppComponentState: AppComponentState = {
@@ -56,5 +58,8 @@ export const initialAppComponentState: AppComponentState = {
 };
 
 export const initialSharedState: SharedState = {
-  hasConnectionSettings: false,
+  hasConnectionSettings: null,
+  isOpenAddDevice: false,
+  hasDevices: false,
+  devices: [],
 };

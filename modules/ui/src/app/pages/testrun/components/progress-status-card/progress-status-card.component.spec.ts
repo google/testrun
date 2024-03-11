@@ -171,6 +171,17 @@ describe('ProgressStatusCardComponent', () => {
 
         expect(result).toEqual(expectedResult);
       });
+
+      it('should return test status "Monitoring" if finished with status "Monitoring"', () => {
+        const MOCK_MONITORING_FINISHED_DATA = {
+          ...MOCK_PROGRESS_DATA_MONITORING,
+          finished: '2023-06-22T09:20:00.123Z',
+        };
+
+        const result = component.getTestStatus(MOCK_MONITORING_FINISHED_DATA);
+
+        expect(result).toEqual(StatusOfTestrun.Monitoring);
+      });
     });
 
     describe('#getProgressValue', () => {

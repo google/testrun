@@ -103,7 +103,8 @@ def get_module_display_name(search):
     'dns': 'DNS',
     'connection': 'Connection',
     'nmap': 'Services',
-    'tls': 'TLS'
+    'tls': 'TLS',
+    'protocol': 'Protocol'
   }
 
   for module in modules.items():

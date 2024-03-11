@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TESTRUN_DIR=/usr/local/testrun
-
 ifconfig
 
 # Setup requirements
@@ -39,10 +37,10 @@ sudo docker build ./testing/docker/ci_test_device1 -t test-run/ci_device_1 -f  .
 sudo chown -R $USER local
 
 # Copy configuration to testrun
-sudo cp testing/api/system.json $TESTRUN_DIR/local/system.json
+sudo cp testing/api/system.json local/system.json
 
 # Needs to be sudo because this invokes bin/testrun 
-sudo $TESTRUN_DIR/venv/bin/python3 -m pytest -v testing/api/test_api.py
+sudo venv/bin/python3 -m pytest -v testing/api/test_api.py
 
 # Clean up network interfaces after use
 sudo docker network rm endev0

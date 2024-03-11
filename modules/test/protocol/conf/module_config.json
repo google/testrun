@@ -1,6 +1,6 @@
 {
   "config": {
-    "enabled": false,
+    "enabled": true,
     "meta": {
       "name": "protocol",
       "display_name": "Protocol",
@@ -17,13 +17,19 @@
         "name": "protocol.valid_bacnet",
         "test_description": "Can valid BACnet traffic be seen",
         "expected_behavior": "BACnet traffic can be seen on the network and packets are valid and not malformed",
-        "required_result": "Required"
+        "required_result": "Recommended"
+      },
+      {
+        "name": "protocol.bacnet.version",
+        "test_description": "Can valid BACnet traffic be seen",
+        "expected_behavior": "BACnet traffic can be seen on the network and packets are valid and not malformed",
+        "required_result": "Recommended"
       },
       {
         "name": "protocol.valid_modbus",
         "test_description": "Can valid Modbus traffic be seen",
         "expected_behavior": "Any Modbus functionality works as expected and valid modbus traffic can be observed",
-        "required_result": "Required",
+        "required_result": "Recommended",
         "config":{
           "port": 502,
           "device_id": 1,

@@ -21,15 +21,12 @@ $row-height: 48px;
 $row-horizontal-padding: 16px;
 $expander-button-size: 28px;
 
-:host {
-  overflow-y: auto;
-  margin: 16px 0;
-}
-
 .tests-container {
   display: block;
-  border: 1px solid $lighter-grey;
-  border-bottom: none;
+
+  & > :last-child {
+    border-bottom: none;
+  }
 }
 
 .tests-header-row {

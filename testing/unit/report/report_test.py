@@ -20,10 +20,9 @@ import json
 MODULE = 'report'
 
 # Define the file paths
-TEST_FILES_DIR = 'testing/unit/' + MODULE
-OUTPUT_DIR = TEST_FILES_DIR + '/output/'
 UNIT_TEST_DIR = 'testing/unit/'
-
+TEST_FILES_DIR = os.path.join('testing/unit',MODULE)
+OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
 
 class ReportTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""
@@ -47,6 +46,7 @@ class ReportTest(unittest.TestCase):
     reports_md = []
     reports_md.append(self.get_module_md_report('dns'))
     reports_md.append(self.get_module_md_report('nmap'))
+    reports_md.append(self.get_module_md_report('ntp'))
     report.add_module_reports(reports_md)
 
     # Generate the report
@@ -56,8 +56,9 @@ class ReportTest(unittest.TestCase):
 
   def get_module_md_report(self, module):
     # Combine the path components using os.path.join
-    report_file = os.path.join(UNIT_TEST_DIR, module,
-                               module + '_report_local.md')
+    report_file = os.path.join(UNIT_TEST_DIR,
+      os.path.join(module,
+        os.path.join('reports',module+'_report_local.md')))
 
     with open(report_file, 'r', encoding='utf-8') as file:
       report = file.read()

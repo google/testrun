@@ -17,11 +17,15 @@ import * as fromReducer from './reducers';
 import { initialAppComponentState, initialSharedState } from './state';
 import {
   fetchInterfacesSuccess,
+  setDevices,
   setHasConnectionSettings,
+  setHasDevices,
+  setIsOpenAddDevice,
   toggleMenu,
   updateError,
   updateFocusNavigation,
 } from './actions';
+import { device } from '../mocks/device.mock';
 
 describe('Reducer', () => {
   describe('unknown action', () => {
@@ -94,6 +98,43 @@ describe('Reducer', () => {
       const action = updateError({ error: true });
       const state = fromReducer.appComponentReducer(initialState, action);
       const newState = { ...initialState, ...{ error: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setIsOpenAddDevice action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setIsOpenAddDevice({ isOpenAddDevice: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ isOpenAddDevice: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setHasDevices action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setHasDevices({ hasDevices: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ hasDevices: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setDevices action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const devices = [device, device];
+      const action = setDevices({ devices });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ devices } };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);

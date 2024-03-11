@@ -34,7 +34,7 @@ DEVICE_MAC_ADDR_KEY = "mac_addr"
 DEVICE_MANUFACTURER_KEY = "manufacturer"
 DEVICE_MODEL_KEY = "model"
 DEVICE_TEST_MODULES_KEY = "test_modules"
-DEVICES_PATH = "/usr/local/testrun/local/devices"
+DEVICES_PATH = "local/devices"
 DEFAULT_DEVICE_INTF = "enx123456789123"
 
 LATEST_RELEASE_CHECK = ("https://api.github.com/repos/google/" +

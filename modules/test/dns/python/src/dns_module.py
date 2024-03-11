@@ -63,18 +63,6 @@ class DNSModule(TestModule):
 
     total_responses = sum(1 for row in dns_table_data
                             if row['Type'] == 'Response')
-    #total_requests = len(dns_table_data)
-
-    # Find the maximum length of 'Destination' values
-    max_data_length = max(len(row['Data']) for row in dns_table_data) if len(dns_table_data)>0 else 8
-
-    table_content = ''
-    for row in dns_table_data:
-      table_content += f'''| {row['Source']: ^12} | {row['Destination']: ^13} | {row['Type']: ^9} | {row['Data']: ^{max_data_length}} |\r'''
-
-    # Dynamically adjust the header width based on the longest 'Destination' content
-    header = f'''| {'Source': ^12} | {'Destination': ^{13}} | {'Type': ^9} | {'Data': ^{max_data_length}} |'''
-    header_line = f'''|{'-' * 14}|{'-' * 15}|{'-' * 11}|{'-' * (max_data_length + 2)}|'''
 
     summary = '## Summary'
     summary += f'''\n- Requests to local DNS server: {local_requests}'''
@@ -82,11 +70,33 @@ class DNSModule(TestModule):
     summary += f'''\n- Total DNS requests: {total_requests}'''
     summary += f'''\n- Total DNS responses: {total_responses}'''
 
-    markdown_template = f'''# DNS Module
-    \r{header}\r{header_line}\r{table_content}\r{summary}
-    '''
+    if (total_requests + total_responses) > 0:
 
-    LOGGER.debug("Markdown Report:\n" + markdown_template)
+      # Find the maximum length of 'Destination' values
+      max_data_length = max(len(row['Data']) for row in dns_table_data) if len(dns_table_data)>0 else 8
+
+      table_content = ''
+      for row in dns_table_data:
+        table_content += (f'''| {row['Source']: ^12} '''
+                          f'''| {row['Destination']: ^13} '''
+                          f'''| {row['Type']: ^9} '''
+                          f'''| {row['Data']: ^{max_data_length}} |\n''')
+
+      header = (f'''| {'Source': ^12} '''
+                f'''| {'Destination': ^{13}} '''
+                f'''| {'Type': ^{9}} '''
+                f'''| {'Data': ^{max_data_length}} |''')
+      header_line = (f'''|{'-' * 14}|{'-' * 15}|{'-' * 11}|'''
+                     f'''{'-' * (max_data_length + 2)}''')
+
+      markdown_template = (f'''# DNS Module\n'''
+      f'''\n{header}\n{header_line}\n{table_content}\n{summary}''')
+
+    else:
+      markdown_template = (f'''# DNS Module\n'''
+      f'''\n- No DNS traffic detected\n'''
+      f'''\n{summary}''')
+    LOGGER.debug('Markdown Report:\n' + markdown_template)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
