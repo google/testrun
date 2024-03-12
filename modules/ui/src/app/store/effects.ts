@@ -40,13 +40,18 @@ export class AppEffects {
           },
         ]) =>
           AppActions.updateValidInterfaces({
-            validInterfaces:
-              network != null &&
-              // @ts-expect-error network is not null
-              interfaces[network.device_intf] != null &&
-              (network.internet_intf == '' ||
-                // @ts-expect-error network is not null
-                interfaces[network.internet_intf] != null),
+            validInterfaces: {
+              hasSetInterfaces: network != null,
+              deviceValid:
+                !!network &&
+                !!network.device_intf &&
+                !!interfaces[network.device_intf],
+              internetValid:
+                !!network &&
+                (network?.internet_intf == '' ||
+                  (!!network.internet_intf &&
+                    !!interfaces[network.internet_intf])),
+            },
           })
       )
     )
@@ -56,7 +61,18 @@ export class AppEffects {
     return this.actions$.pipe(
       ofType(AppActions.updateValidInterfaces),
       map(({ validInterfaces }) =>
-        AppActions.updateError({ error: !validInterfaces })
+        AppActions.updateError({
+          settingMissedError: {
+            isSettingMissed:
+              validInterfaces.hasSetInterfaces &&
+              (!validInterfaces.deviceValid || !validInterfaces.internetValid),
+            devicePortMissed:
+              validInterfaces.hasSetInterfaces && !validInterfaces.deviceValid,
+            internetPortMissed:
+              validInterfaces.hasSetInterfaces &&
+              !validInterfaces.internetValid,
+          },
+        })
       )
     );
   });
