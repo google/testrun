@@ -21,14 +21,14 @@
       },
       {
         "name": "protocol.bacnet.version",
-        "test_description": "Can valid BACnet traffic be seen",
-        "expected_behavior": "BACnet traffic can be seen on the network and packets are valid and not malformed",
+        "test_description": "Obtain the version of BACnet client used",
+        "expected_behavior": "The BACnet client implements an up to date version of BACnet",
         "required_result": "Recommended"
       },
       {
         "name": "protocol.valid_modbus",
         "test_description": "Can valid Modbus traffic be seen",
-        "expected_behavior": "Any Modbus functionality works as expected and valid modbus traffic can be observed",
+        "expected_behavior": "Any Modbus functionality works as expected and valid Modbus traffic can be observed",
         "required_result": "Recommended",
         "config":{
           "port": 502,
