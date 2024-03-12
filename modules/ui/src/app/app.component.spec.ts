@@ -568,12 +568,17 @@ describe('AppComponent', () => {
     });
 
     describe('error', () => {
-      describe('with error', () => {
+      describe('with settingMissedError with one port is missed', () => {
         beforeEach(() => {
-          component.error$ = of(true);
+          component.settingMissedError$ = of({
+            isSettingMissed: true,
+            devicePortMissed: true,
+            internetPortMissed: false,
+          });
           component.ngOnInit();
           fixture.detectChanges();
         });
+
         it('should have callout component', () => {
           const callout = compiled.querySelector('app-callout');
           const calloutContent = callout?.innerHTML.trim();
@@ -583,9 +588,29 @@ describe('AppComponent', () => {
         });
       });
 
-      describe('with no error', () => {
+      describe('with settingMissedError with two ports are missed', () => {
         beforeEach(() => {
-          component.error$ = of(false);
+          component.settingMissedError$ = of({
+            isSettingMissed: true,
+            devicePortMissed: true,
+            internetPortMissed: true,
+          });
+          component.ngOnInit();
+          fixture.detectChanges();
+        });
+
+        it('should have callout component', () => {
+          const callout = compiled.querySelector('app-callout');
+          const calloutContent = callout?.innerHTML.trim();
+
+          expect(callout).toBeTruthy();
+          expect(calloutContent).toContain('No ports are detected.');
+        });
+      });
+
+      describe('with no settingMissedError', () => {
+        beforeEach(() => {
+          component.settingMissedError$ = of(null);
           store.overrideSelector(selectHasDevices, true);
           fixture.detectChanges();
         });

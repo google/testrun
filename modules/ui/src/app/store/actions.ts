@@ -15,7 +15,11 @@
  */
 
 import { createAction, props } from '@ngrx/store';
-import { SystemConfig } from '../model/setting';
+import {
+  InterfacesValidation,
+  SettingMissedError,
+  SystemConfig,
+} from '../model/setting';
 import { SystemInterfaces } from '../model/setting';
 import { Device } from '../model/device';
 
@@ -36,12 +40,12 @@ export const updateFocusNavigation = createAction(
 
 export const updateValidInterfaces = createAction(
   '[App Component] Update Valid Interfaces',
-  props<{ validInterfaces: boolean }>()
+  props<{ validInterfaces: InterfacesValidation }>()
 );
 
 export const updateError = createAction(
-  '[App Component] Update Error',
-  props<{ error: boolean }>()
+  '[App Component] Update Setting Missed Error',
+  props<{ settingMissedError: SettingMissedError }>()
 );
 
 // Settings
