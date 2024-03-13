@@ -94,10 +94,20 @@ describe('Reducer', () => {
 
   describe('updateError action', () => {
     it('should update state', () => {
+      const mockSettingMissedError = {
+        isSettingMissed: true,
+        devicePortMissed: true,
+        internetPortMissed: true,
+      };
       const initialState = initialAppComponentState;
-      const action = updateError({ error: true });
+      const action = updateError({
+        settingMissedError: mockSettingMissedError,
+      });
       const state = fromReducer.appComponentReducer(initialState, action);
-      const newState = { ...initialState, ...{ error: true } };
+      const newState = {
+        ...initialState,
+        ...{ settingMissedError: mockSettingMissedError },
+      };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);
