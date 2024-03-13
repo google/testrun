@@ -16,6 +16,7 @@ from dns_module import DNSModule
 import unittest
 from scapy.all import rdpcap, DNS, wrpcap
 import os
+from testreport import TestReport
 
 MODULE = 'dns'
 
@@ -25,8 +26,8 @@ OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
 REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
 CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
 
-LOCAL_REPORT = os.path.join(REPORTS_DIR,'dns_report_local.md')
-LOCAL_REPORT_NO_DNS = os.path.join(REPORTS_DIR,'dns_report_local_no_dns.md')
+LOCAL_REPORT = os.path.join(REPORTS_DIR,'dns_report_local.html')
+LOCAL_REPORT_NO_DNS = os.path.join(REPORTS_DIR,'dns_report_local_no_dns.html')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 # Define the capture files to be used for the test
@@ -58,6 +59,12 @@ class TLSModuleTest(unittest.TestCase):
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
+      formatted_report = self.add_formatting(report_out)
+
+    # Write back the new formatted_report value
+    out_report_path = os.path.join(OUTPUT_DIR,'dns_report_with_dns.html')
+    with open(out_report_path, 'w', encoding='utf-8') as file:
+      file.write(formatted_report)
 
     # Read the local good report
     with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
@@ -108,6 +115,12 @@ class TLSModuleTest(unittest.TestCase):
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
+      formatted_report = self.add_formatting(report_out)
+
+    # Write back the new formatted_report value
+    out_report_path = os.path.join(OUTPUT_DIR,'dns_report_no_dns.html')
+    with open(out_report_path, 'w', encoding='utf-8') as file:
+      file.write(formatted_report)
 
     # Read the local good report
     with open(LOCAL_REPORT_NO_DNS, 'r', encoding='utf-8') as file:
@@ -115,6 +128,16 @@ class TLSModuleTest(unittest.TestCase):
 
     self.assertEqual(report_out, report_local)
 
+
+  def add_formatting(self,body):
+    return f'''
+    <!DOCTYPE html>
+    <html lang="en">
+    {TestReport().generate_head()}
+    <body>
+      {body}
+    </body>
+    </html'''
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
