@@ -114,7 +114,8 @@ $expander-button-size: 28px;
   .expander-button:hover,
   .expansion-panel-row:not(.mat-expanded)
     .expansion-panel-header:not([aria-disabled='true']):hover,
-  .expansion-panel-header:hover {
+  .expansion-panel-header:hover,
+  .expansion-panel-header:hover + ::ng-deep.mat-expansion-panel-content {
     background: $color-background-grey;
   }
 }
