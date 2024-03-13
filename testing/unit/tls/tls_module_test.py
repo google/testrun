@@ -305,7 +305,7 @@ class TLSModuleTest(unittest.TestCase):
                     results_dir=OUTPUT_DIR,
                     startup_capture_file=pcap_file,
                     monitor_capture_file=pcap_file,
-                    gateway_capture_file=pcap_file)
+                    tls_capture_file=pcap_file)
     report_out_path = tls.generate_module_report()
 
     with open(report_out_path, 'r', encoding='utf-8') as file:
@@ -327,7 +327,7 @@ class TLSModuleTest(unittest.TestCase):
                     results_dir=OUTPUT_DIR,
                     startup_capture_file=pcap_file,
                     monitor_capture_file=pcap_file,
-                    gateway_capture_file=pcap_file)
+                    tls_capture_file=pcap_file)
     report_out_path = tls.generate_module_report()
 
     # Read the generated report

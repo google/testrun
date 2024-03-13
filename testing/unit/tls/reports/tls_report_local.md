@@ -1,4 +1,4 @@
-# Connection Module
+# TLS Module
 
 ### Certificate
 | Property | Value |

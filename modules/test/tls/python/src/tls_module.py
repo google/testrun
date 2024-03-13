@@ -25,7 +25,7 @@ LOG_NAME = 'test_tls'
 MODULE_REPORT_FILE_NAME = 'tls_report.md'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
-GATEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
+TLS_CAPTURE_FILE = '/runtime/output/tls.pcap'
 
 LOGGER = None
 
@@ -40,7 +40,7 @@ class TLSModule(TestModule):
                results_dir=None,
                startup_capture_file=STARTUP_CAPTURE_FILE,
                monitor_capture_file=MONITOR_CAPTURE_FILE,
-               gateway_capture_file=GATEWAY_CAPTURE_FILE):
+               tls_capture_file=TLS_CAPTURE_FILE):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
                      log_dir=log_dir,
@@ -48,7 +48,7 @@ class TLSModule(TestModule):
                      results_dir=results_dir)
     self.startup_capture_file = startup_capture_file
     self.monitor_capture_file = monitor_capture_file
-    self.gateway_capture_file = gateway_capture_file
+    self.tls_capture_file = tls_capture_file
     global LOGGER
     LOGGER = self._get_logger()
     self._tls_util = TLSUtil(LOGGER)
@@ -73,7 +73,7 @@ class TLSModule(TestModule):
     # List of capture files to scan
     pcap_files = [
         self.startup_capture_file, self.monitor_capture_file,
-        self.gateway_capture_file
+        self.tls_capture_file
     ]
     certificates = self.extract_certificates_from_pcap(pcap_files,
                                                        self._device_mac)
@@ -143,7 +143,7 @@ class TLSModule(TestModule):
                            f'''| {signed_by: ^11} |''')
       summary_table+=f'\n{summary_table_row}'
 
-    markdown_template = '# Connection Module\n' + '\n'.join(
+    markdown_template = '# TLS Module\n' + '\n'.join(
         '\n' + tables for tables in cert_tables)
 
     summary = f'## Summary\n\n{summary_table}'
