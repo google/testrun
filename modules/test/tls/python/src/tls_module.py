@@ -77,77 +77,83 @@ class TLSModule(TestModule):
     ]
     certificates = self.extract_certificates_from_pcap(pcap_files,
                                                        self._device_mac)
-    cert_tables = []
-    for cert_num, ((ip_address, port), cert) in enumerate(certificates.items()):
-      # Extract certificate data
-      not_valid_before = cert.not_valid_before
-      not_valid_after = cert.not_valid_after
-      version_value = f'{cert.version.value + 1} ({hex(cert.version.value)})'
-      signature_alg_value = cert.signature_algorithm_oid._name  # pylint: disable=W0212
-      not_before = str(not_valid_before)
-      not_after = str(not_valid_after)
-      public_key = cert.public_key()
-      signed_by = 'None'
-      if isinstance(public_key, rsa.RSAPublicKey):
-          public_key_type = "RSA"
-      elif isinstance(public_key, dsa.DSAPublicKey):
-          public_key_type = "DSA"
-      elif isinstance(public_key, ec.EllipticCurvePublicKey):
-          public_key_type = "EC"
-      else:
-          public_key_type = "Unknown"
-      # Calculate certificate length
-      cert_length = len(cert.public_bytes(encoding=serialization.Encoding.DER))
-      # Generate the Certificate table
-      cert_table = (f'| Property | Value |\n'
-                    f'|---|---|\n'
-                    f"| {'Version':<17} | {version_value:^25} |\n"
-                    f"| {'Signature Alg.':<17} | {signature_alg_value:^25} |\n"
-                    f"| {'Validity from':<17} | {not_before:^25} |\n"
-                    f"| {'Valid to':<17} | {not_after:^25} |")
+    if len(certificates)>0:
+      cert_tables = []
+      for cert_num, ((ip_address, port), cert) in enumerate(certificates.items()):
+        # Extract certificate data
+        not_valid_before = cert.not_valid_before
+        not_valid_after = cert.not_valid_after
+        version_value = f'{cert.version.value + 1} ({hex(cert.version.value)})'
+        signature_alg_value = cert.signature_algorithm_oid._name  # pylint: disable=W0212
+        not_before = str(not_valid_before)
+        not_after = str(not_valid_after)
+        public_key = cert.public_key()
+        signed_by = 'None'
+        if isinstance(public_key, rsa.RSAPublicKey):
+            public_key_type = "RSA"
+        elif isinstance(public_key, dsa.DSAPublicKey):
+            public_key_type = "DSA"
+        elif isinstance(public_key, ec.EllipticCurvePublicKey):
+            public_key_type = "EC"
+        else:
+            public_key_type = "Unknown"
+        # Calculate certificate length
+        cert_length = len(cert.public_bytes(encoding=serialization.Encoding.DER))
+        # Generate the Certificate table
+        cert_table = (f'| Property | Value |\n'
+                      f'|---|---|\n'
+                      f"| {'Version':<17} | {version_value:^25} |\n"
+                      f"| {'Signature Alg.':<17} | {signature_alg_value:^25} |\n"
+                      f"| {'Validity from':<17} | {not_before:^25} |\n"
+                      f"| {'Valid to':<17} | {not_after:^25} |")
 
-      # Generate the Subject table
-      subj_table = ('| Distinguished Name | Value |\n'
-                    '|---|---|')
-      for val in cert.subject.rdns:
-        dn = val.rfc4514_string().split('=')
-        subj_table += f'\n| {dn[0]} | {dn[1]}'
+        # Generate the Subject table
+        subj_table = ('| Distinguished Name | Value |\n'
+                      '|---|---|')
+        for val in cert.subject.rdns:
+          dn = val.rfc4514_string().split('=')
+          subj_table += f'\n| {dn[0]} | {dn[1]}'
 
-      # Generate the Issuer table
-      iss_table = ('| Distinguished Name | Value |\n'
-                   '|---|---|')
-      for val in cert.issuer.rdns:
-        dn = val.rfc4514_string().split('=')
-        iss_table += f'\n| {dn[0]} | {dn[1]}'
-        if 'CN' in dn[0]:
-          signed_by = dn[1]
-
-      ext_table = None
-      if cert.extensions:
-        ext_table = ('| Extension | Value |\n'
+        # Generate the Issuer table
+        iss_table = ('| Distinguished Name | Value |\n'
                      '|---|---|')
-        for extension in cert.extensions:
-          for extension_value in extension.value:
-            ext_table += f'\n| {extension.oid._name} | {extension_value.value}'  # pylint: disable=W0212
-      cert_table = f'### Certificate\n{cert_table}'
-      cert_table += f'\n\n### Subject\n{subj_table}'
-      cert_table += f'\n\n### Issuer\n{iss_table}'
-      if ext_table is not None:
-        cert_table += f'\n\n### Extensions\n{ext_table}'
-      cert_tables.append(cert_table)
-      summary_table_row = (f'''| {cert_num+1: ^5} '''
-                           f'''| {not_after: ^25} '''
-                           f'''| {cert_length: ^8} '''
-                           f'''| {public_key_type: ^6} '''
-                           f'''| {port: ^10} '''
-                           f'''| {signed_by: ^11} |''')
-      summary_table+=f'\n{summary_table_row}'
+        for val in cert.issuer.rdns:
+          dn = val.rfc4514_string().split('=')
+          iss_table += f'\n| {dn[0]} | {dn[1]}'
+          if 'CN' in dn[0]:
+            signed_by = dn[1]
 
-    markdown_template = '# TLS Module\n' + '\n'.join(
-        '\n' + tables for tables in cert_tables)
+        ext_table = None
+        if cert.extensions:
+          ext_table = ('| Extension | Value |\n'
+                       '|---|---|')
+          for extension in cert.extensions:
+            for extension_value in extension.value:
+              ext_table += f'\n| {extension.oid._name} | {extension_value.value}'  # pylint: disable=W0212
+        cert_table = f'### Certificate\n{cert_table}'
+        cert_table += f'\n\n### Subject\n{subj_table}'
+        cert_table += f'\n\n### Issuer\n{iss_table}'
+        if ext_table is not None:
+          cert_table += f'\n\n### Extensions\n{ext_table}'
+        cert_tables.append(cert_table)
+        summary_table_row = (f'''| {cert_num+1: ^5} '''
+                             f'''| {not_after: ^25} '''
+                             f'''| {cert_length: ^8} '''
+                             f'''| {public_key_type: ^6} '''
+                             f'''| {port: ^10} '''
+                             f'''| {signed_by: ^11} |''')
+        summary_table+=f'\n{summary_table_row}'
 
+      markdown_template = '# TLS Module\n' + '\n'.join(
+          '\n' + tables for tables in cert_tables)
+
+      # summary = f'## Summary\n\n{summary_table}'
+      # markdown_template += f'\n\n{summary}'
+    else:
+      markdown_template = (f'''# TLS Module\n'''
+        f'''\n- No device certificates detected\n''')
+      
     summary = f'## Summary\n\n{summary_table}'
-
     markdown_template += f'\n\n{summary}'
     LOGGER.debug('Markdown Report:\n' + markdown_template)
 

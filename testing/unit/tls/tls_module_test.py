@@ -33,6 +33,7 @@ CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
 
 LOCAL_REPORT = os.path.join(REPORTS_DIR,'tls_report_local.md')
 LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR,'tls_report_ext_local.md')
+LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR,'tls_report_no_cert_local.md')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 TLS_UTIL = None
@@ -330,12 +331,25 @@ class TLSModuleTest(unittest.TestCase):
                     tls_capture_file=pcap_file)
     report_out_path = tls.generate_module_report()
 
+  def tls_module_report_no_cert_test(self):
+    print('\ntls_module_report_no_cert_test')
+    os.environ['DEVICE_MAC'] = ''
+    pcap_file = os.path.join(CAPTURES_DIR,'tls_ext.pcap')
+    tls = TLSModule(module=MODULE,
+                    log_dir=OUTPUT_DIR,
+                    conf_file=CONF_FILE,
+                    results_dir=OUTPUT_DIR,
+                    startup_capture_file=pcap_file,
+                    monitor_capture_file=pcap_file,
+                    tls_capture_file=pcap_file)
+    report_out_path = tls.generate_module_report()
+
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
 
     # Read the local good report
-    with open(LOCAL_REPORT_EXT, 'r', encoding='utf-8') as file:
+    with open(LOCAL_REPORT_NO_CERT, 'r', encoding='utf-8') as file:
       report_local = file.read()
 
     self.assertEqual(report_out, report_local)
@@ -455,6 +469,7 @@ if __name__ == '__main__':
   # Test various report module outputs
   suite.addTest(TLSModuleTest('tls_module_report_test'))
   suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
+  suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)
