@@ -20,7 +20,7 @@ import {
   TestsData,
 } from '../model/testrun-status';
 
-const TEST_DATA_RESULT: IResult[] = [
+export const TEST_DATA_RESULT: IResult[] = [
   {
     name: 'dns.network.hostname_resolution',
     description: 'The device should resolve hostnames',
