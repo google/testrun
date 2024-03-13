@@ -43,7 +43,7 @@ Once you have met the hardware and software requirements, you can get started wi
 Testrun will constantly evolve to further support end-users by automating device network behaviour against industry standards. For further information on upcoming features, check out the [Roadmap](docs/roadmap.pdf).
 
 ## Accessibility :busts_in_silhouette:
-We are proud to support accessibility throughout the Testrun product and constantly strive to provide an enjoyable experience for all of our users. You can read more about [Google and Accessibility here](https://www.google.co.uk/accessibility).
+we are proud of our tool and strive to provide an enjoyable experience for all of our users. Testrun goes through rigorous accessibility testing at each release. You can read more about [Google and Accessibility here](https://www.google.co.uk/accessibility). You are welcome to submit a new issue and provide feedback on our implementations.
 
 ## Issue reporting :triangular_flag_on_post:
 If the application has come across a problem at any point during setup or use, please raise an issue under the [issues tab](https://github.com/auto-iot/test-run/issues). Issue templates exist for both bug reports and feature requests. If neither of these are appropriate for your issue, raise a blank issue instead.
