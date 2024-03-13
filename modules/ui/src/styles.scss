@@ -247,3 +247,21 @@ body:has(app-callout .info):has(app-callout .error)
     opacity: var(--mat-text-button-focus-state-layer-opacity);
   }
 }
+
+.device-item-with-actions[class*='helperbird'],
+.progress-card[class*='helperbird'] {
+  width: max-content !important;
+}
+
+.device-item-with-actions[class*='helperbird'] {
+  min-width: 352px !important;
+}
+
+.progress-card[class*='helperbird'] {
+  min-width: 295px !important;
+}
+
+.device-repository-content[class*='helperbird'] {
+  display: flex !important;
+  flex-wrap: wrap;
+}
