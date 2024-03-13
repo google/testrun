@@ -13,10 +13,11 @@
 # limitations under the License.
 """Module run all the TLS related unit tests"""
 from tls_util import TLSUtil
+from tls_module import TLSModule
+import os
 import unittest
 from common import logger
 from scapy.all import sniff, wrpcap
-import os
 import threading
 import time
 import netifaces
@@ -26,18 +27,23 @@ import http.client
 MODULE = 'tls'
 # Define the file paths
 TEST_FILES_DIR = 'testing/unit/' + MODULE
-OUTPUT_DIR = TEST_FILES_DIR + '/output'
+OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
+REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
+CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
+
+LOCAL_REPORT = os.path.join(REPORTS_DIR,'tls_report_local.md')
+LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR,'tls_report_ext_local.md')
+CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 TLS_UTIL = None
 PACKET_CAPTURE = None
-
 
 class TLSModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning TLS behaviors"""
 
   @classmethod
   def setUpClass(cls):
-    log = logger.get_logger('test_' + MODULE)
+    log = logger.get_logger('unit_test_' + MODULE)
     global TLS_UTIL
     TLS_UTIL = TLSUtil(log,
                        bin_dir='modules/test/tls/bin',
@@ -205,7 +211,7 @@ class TLSModuleTest(unittest.TestCase):
   # generate a skip result
   def security_tls_client_skip_test(self):
     print('security_tls_client_skip_test')
-    capture_file = os.path.join(TEST_FILES_DIR, 'no_tls.pcap')
+    capture_file = os.path.join(CAPTURES_DIR, 'no_tls.pcap')
 
     # Run the client test
     test_results = TLS_UTIL.validate_tls_client(client_ip='172.27.253.167',
@@ -267,7 +273,7 @@ class TLSModuleTest(unittest.TestCase):
 
   def test_client_tls_with_non_tls_client(self):
     print('\ntest_client_tls_with_non_tls_client')
-    capture_file = os.path.join(TEST_FILES_DIR, 'monitor.pcap')
+    capture_file = os.path.join(CAPTURES_DIR, 'monitor.pcap')
 
     # Run the client test
     test_results = TLS_UTIL.validate_tls_client(client_ip='10.10.10.14',
@@ -280,7 +286,7 @@ class TLSModuleTest(unittest.TestCase):
   # generate a fail result
   def security_tls_client_unsupported_tls_client(self):
     print('\nsecurity_tls_client_unsupported_tls_client')
-    capture_file = os.path.join(TEST_FILES_DIR, 'unsupported_tls.pcap')
+    capture_file = os.path.join(CAPTURES_DIR, 'unsupported_tls.pcap')
 
     # Run the client test
     test_results = TLS_UTIL.validate_tls_client(client_ip='172.27.253.167',
@@ -288,6 +294,51 @@ class TLSModuleTest(unittest.TestCase):
                                                 capture_files=[capture_file])
     print(str(test_results))
     self.assertFalse(test_results[0])
+
+  def tls_module_report_test(self):
+    print('\ntls_module_report_test')
+    os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
+    pcap_file = os.path.join(CAPTURES_DIR,'tls.pcap')
+    tls = TLSModule(module=MODULE,
+                    log_dir=OUTPUT_DIR,
+                    conf_file=CONF_FILE,
+                    results_dir=OUTPUT_DIR,
+                    startup_capture_file=pcap_file,
+                    monitor_capture_file=pcap_file,
+                    gateway_capture_file=pcap_file)
+    report_out_path = tls.generate_module_report()
+
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
+
+    # Read the local good report
+    with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
+      report_local = file.read()
+
+    self.assertEqual(report_out, report_local)
+
+  def tls_module_report_ext_test(self):
+    print('\ntls_module_report_ext_test')
+    os.environ['DEVICE_MAC'] = '28:29:86:27:d6:05'
+    pcap_file = os.path.join(CAPTURES_DIR,'tls_ext.pcap')
+    tls = TLSModule(module=MODULE,
+                    log_dir=OUTPUT_DIR,
+                    conf_file=CONF_FILE,
+                    results_dir=OUTPUT_DIR,
+                    startup_capture_file=pcap_file,
+                    monitor_capture_file=pcap_file,
+                    gateway_capture_file=pcap_file)
+    report_out_path = tls.generate_module_report()
+
+    # Read the generated report
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
+
+    # Read the local good report
+    with open(LOCAL_REPORT_EXT, 'r', encoding='utf-8') as file:
+      report_local = file.read()
+
+    self.assertEqual(report_out, report_local)
 
   def generate_tls_traffic(self,
                            capture_file,
@@ -398,7 +449,12 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('test_client_tls_with_non_tls_client'))
   suite.addTest(TLSModuleTest('security_tls_client_unsupported_tls_client'))
 
+  # Test the results options for tls server tests
   suite.addTest(TLSModuleTest('security_tls_server_results_test'))
+
+  # Test various report module outputs
+  suite.addTest(TLSModuleTest('tls_module_report_test'))
+  suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)
