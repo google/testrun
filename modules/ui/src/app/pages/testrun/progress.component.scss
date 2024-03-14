@@ -102,10 +102,6 @@
   margin: 10px 0;
   border-radius: 4px;
   border: 1px solid $lighter-grey;
-  & ::ng-deep .loader {
-    width: 196px;
-    height: 196px;
-  }
 }
 
 .progress-table-progress-empty {
