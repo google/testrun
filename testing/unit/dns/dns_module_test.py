@@ -42,7 +42,6 @@ class TLSModuleTest(unittest.TestCase):
   def setUpClass(cls):
     # Create the output directories and ignore errors if it already exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    # os.makedirs(TEMP_DIR, exist_ok=True)
 
   # Test the module report generation
   def dns_module_report_test(self):
