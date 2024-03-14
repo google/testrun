@@ -15,33 +15,24 @@
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DownloadReportComponent } from './download-report.component';
+import { DownloadReportPdfComponent } from './download-report-pdf.component';
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/progress.mock';
 
 describe('DownloadReportComponent', () => {
-  let component: DownloadReportComponent;
-  let fixture: ComponentFixture<DownloadReportComponent>;
+  let component: DownloadReportPdfComponent;
+  let fixture: ComponentFixture<DownloadReportPdfComponent>;
 
   describe('Class tests', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
-        imports: [DownloadReportComponent],
+        imports: [DownloadReportPdfComponent],
       });
-      fixture = TestBed.createComponent(DownloadReportComponent);
+      fixture = TestBed.createComponent(DownloadReportPdfComponent);
       component = fixture.componentInstance;
     });
 
     it('should create', () => {
       expect(component).toBeTruthy();
-    });
-
-    it('#getReportTitle should return data for download property of link', () => {
-      const expectedResult =
-        'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20';
-
-      const result = component.getReportTitle(MOCK_PROGRESS_DATA_COMPLIANT);
-
-      expect(result).toEqual(expectedResult);
     });
   });
 
@@ -50,9 +41,9 @@ describe('DownloadReportComponent', () => {
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        imports: [DownloadReportComponent],
+        imports: [DownloadReportPdfComponent],
       }).compileComponents();
-      fixture = TestBed.createComponent(DownloadReportComponent);
+      fixture = TestBed.createComponent(DownloadReportPdfComponent);
       compiled = fixture.nativeElement as HTMLElement;
       component = fixture.componentInstance;
     });
@@ -75,9 +66,6 @@ describe('DownloadReportComponent', () => {
     describe('with data provided', () => {
       beforeEach(() => {
         component.data = MOCK_PROGRESS_DATA_COMPLIANT;
-        component.title =
-          'Download pdf for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20';
-        component.href = MOCK_PROGRESS_DATA_COMPLIANT.report;
 
         fixture.detectChanges();
       });
