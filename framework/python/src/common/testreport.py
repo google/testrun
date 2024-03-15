@@ -223,16 +223,6 @@ class TestReport():
     page += '<div style="break-after:page"></div>'
     return page
 
-  def generate_module_pages(self, json_data):
-
-    pages = ''
-    for report in self._module_reports:
-
-      page = self.generate_module_page(json_data, report)
-      pages += page + '\n'
-
-    return pages
-
   def generate_module_page(self, json_data, module_report):
     self._cur_page += 1
     page = '<div class="page">'
@@ -245,6 +235,76 @@ class TestReport():
     page += '</div>'  #Page end
     page += '<div style="break-after:page"></div>'
     return page
+
+  def generate_module_pages(self, json_data):
+    pages = ''
+    content_max_size = 913
+      
+    for module_reports in self._module_reports:
+      # ToDo: Figure out how to make this dynamic
+      # Padding values  from CSS 
+      # Element sizes from inspection of rendered report
+      h1_padding = 8
+      module_summary_padding = 50 # 25 top and 25 bottom
+
+      # Reset values for each module report
+      data_table_active = False
+      data_rows_active=False
+      page_content = ''
+      content_size = 0
+      content = module_reports.split('\n')
+
+      for line in content:
+        if '<h1' in line:
+          content_size += 40 + h1_padding
+        elif 'module-summary' in line:
+          content_size += 85.333 + module_summary_padding
+
+        # Track module-data table state
+        elif '<table class="module-data"' in line:
+          data_table_active=True
+        elif '</table>' in line and data_table_active:
+          data_table_active=False
+
+        # Add module-data header size, ignore rows, should
+        # only be one so only care about a header existence
+        elif '<thead>' in line and data_table_active:
+          content_size += 41.333
+
+        # Track module-data table state
+        elif '<tbody>' in line and data_table_active:
+          data_rows_active = True
+        elif '</tbody>' in line and data_rows_active:
+          data_rows_active = False
+
+        # Add appropriate content size for each data row
+        # update if CSS changes for this element
+        elif '<tr>' in line and data_rows_active:
+          content_size += 40.667
+
+        # If the current line is within the content size limit
+        # we'll add it to this page, otherweise, we'll put it on the next
+        # page. Also make sure that if there is less than 40 pixels
+        # left after a data row, start a new page or the row will get cut off.
+        # Current row size is 40.667 so rounding to 41 padding, 
+        # adjust if we update the "module-data tbody tr" element.
+        if content_size >= content_max_size or (
+          data_rows_active and content_max_size - content_size < 41):
+          # If in the middle of a table, close the table
+          if data_rows_active:
+            page_content += '</tbody></table>'
+          page = self.generate_module_page(json_data, page_content)
+          pages += page + '\n'
+          content_size = 0
+          # If in the middle of a data table, restart
+          # it for the rest of the rows
+          page_content = ('<table class=module-data></tbody>\n'
+                          if data_rows_active else '')
+        page_content += line + '\n'
+      if len(page_content) > 0:
+        page = self.generate_module_page(json_data, page_content)
+        pages += page + '\n'
+    return pages
 
   def generate_body(self, json_data):
     self._num_pages = 0
