@@ -42,7 +42,7 @@ limitations under the License.
             mat-flat-button>
             Stop
           </button>
-          <app-download-report *ngIf="data.report" [data]="data">
+          <app-download-report-pdf *ngIf="data.report" [data]="data">
             <button
               tabindex="-1"
               class="report-button"
@@ -50,7 +50,7 @@ limitations under the License.
               mat-flat-button>
               Download Report
             </button>
-          </app-download-report>
+          </app-download-report-pdf>
         </div>
       </div>
       <app-progress-status-card [systemStatus$]="systemStatus$">
