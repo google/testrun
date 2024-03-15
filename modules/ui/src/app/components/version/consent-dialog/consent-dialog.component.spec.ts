@@ -81,7 +81,7 @@ describe('ConsentDialogComponent', () => {
     closeSpy.calls.reset();
   });
 
-  it('should close dialog on download link click', () => {
+  it('should not close dialog on download link click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
     const confirmButton = compiled.querySelector(
       '.download-link'
@@ -89,9 +89,7 @@ describe('ConsentDialogComponent', () => {
 
     confirmButton?.click();
 
-    expect(closeSpy).toHaveBeenCalledWith();
-
-    closeSpy.calls.reset();
+    expect(closeSpy).toHaveBeenCalledTimes(0);
   });
 
   describe('with new version available', () => {
