@@ -16,7 +16,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { VersionComponent } from './version.component';
-import { TestRunService } from '../../services/test-run.service';
+import {
+  TestRunService,
+  UNAVAILABLE_VERSION,
+} from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Version } from '../../model/version';
@@ -48,6 +51,21 @@ describe('VersionComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should get correct aria label for version button', () => {
+    const labelUnavailableVersion = component.getVersionButtonLabel(
+      UNAVAILABLE_VERSION.installed_version
+    );
+
+    const labelAvailableVersion = component.getVersionButtonLabel(
+      VERSION.installed_version
+    );
+
+    expect(labelUnavailableVersion).toContain(
+      'Version temporarily unavailable.'
+    );
+    expect(labelAvailableVersion).toContain('New version is available.');
   });
 
   it('should open consent window on start', () => {
