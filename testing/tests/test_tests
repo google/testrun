@@ -27,7 +27,7 @@ mkdir -p $TEST_DIR
 sudo apt-get update
 sudo apt-get install -y openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils isc-dhcp-client
 
-pip3 install pytest
+pip3 install pytest==7.4.4
 
 # Start OVS
 # Setup device network
@@ -102,21 +102,20 @@ for tester in $TESTERS; do
     --name=$tester \
     ci_test_device1 $args
   
-wait $TPID
-#WAITING=600
-#for i in `seq 1 $WAITING`; do
-#  tail -1 $testrun_log
-#    if [[ -n $(fgrep "All tests complete" $testrun_log) ]]; then
-#        sleep 10
-#        kill -9 $TPID
-#    fi
-#
-#      if [[ ! -d /proc/$TPID ]]; then
-#          break
-#      fi
-#    
-#      sleep 1
-#  done
+  WAITING=600
+  for i in `seq 1 $WAITING`; do
+    tail -1 $testrun_log
+      if [[ -n $(fgrep "All tests complete" $testrun_log) ]]; then
+          sleep 10
+          sudo kill -9 $TPID
+      fi
+  
+      if [[ ! -d /proc/$TPID ]]; then
+          break
+      fi
+    
+      sleep 1
+    done
 
 
   # Following line indicates that tests are completed but wait till it exits

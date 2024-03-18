@@ -13,11 +13,56 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<button (click)="itemClick()" [attr.aria-label]="'Edit device {{device.model}}'"
-        class="device-item" type="button">
-  <div [attr.aria-label]="device.model" class="item-name">{{device.model}}</div>
-  <div [attr.aria-label]="device.manufacturer"
-       class="item-manufacturer">{{device.manufacturer}}</div>
-  <div [attr.aria-label]="device.mac_addr" class="item-mac-address">{{device.mac_addr}}</div>
-  <div aria-label="Device icon" class="item-icon"></div>
+<button
+  *ngIf="deviceView === DeviceView.Basic"
+  [tabIndex]="tabIndex"
+  (click)="itemClick()"
+  [attr.aria-label]="label"
+  [ngClass]="{ 'non-interective': tabIndex !== 0 }"
+  class="device-item"
+  type="button">
+  <div [attr.aria-label]="device.manufacturer" class="item-manufacturer">
+    {{ device.manufacturer }}
+  </div>
+  <div [attr.aria-label]="device.model" class="item-name">
+    {{ device.model }}
+  </div>
+  <div [attr.aria-label]="device.mac_addr" class="item-mac-address">
+    {{ device.mac_addr }}
+  </div>
 </button>
+
+<div
+  *ngIf="deviceView === DeviceView.WithActions"
+  class="device-item-with-actions">
+  <button
+    [tabIndex]="tabIndex"
+    (click)="itemClick()"
+    attr.aria-label="Edit device {{ label }}"
+    class="button-edit"
+    type="button">
+    <div [attr.aria-label]="device.manufacturer" class="item-manufacturer">
+      <p class="item-manufacturer-text">{{ device.manufacturer }}</p>
+      <mat-icon
+        class="item-manufacturer-icon"
+        fontSet="material-symbols-outlined">
+        edit_square</mat-icon
+      >
+    </div>
+    <div [attr.aria-label]="device.model" class="item-name">
+      {{ device.model }}
+    </div>
+    <div [attr.aria-label]="device.mac_addr" class="item-mac-address">
+      {{ device.mac_addr }}
+    </div>
+  </button>
+  <button
+    (click)="startTestrunClick()"
+    attr.aria-label="Start new testrun for device {{ label }}"
+    class="button-start"
+    mat-flat-button>
+    <mat-icon class="button-start-icon" fontSet="material-icons-outlined">
+      play_arrow</mat-icon
+    >
+  </button>
+</div>

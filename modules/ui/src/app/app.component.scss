@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import "../theming/colors";
+@import '../theming/colors';
+@import '../theming/variables';
 
 $toolbar-height: 56px;
 $nav-close-width: 80px;
@@ -39,7 +40,7 @@ $nav-open-btn-width: 210px;
   margin-top: $toolbar-height;
 }
 
-:host.active-menu {
+.active-menu {
   .app-sidebar {
     width: $nav-open-width;
     align-items: start;
@@ -50,7 +51,7 @@ $nav-open-btn-width: 210px;
     height: $toolbar-height;
     border-radius: 0 100px 100px 0;
     margin: 0;
-    padding: 0 16px;
+    padding: 0 24px;
   }
 
   .app-sidebar-button:first-child {
@@ -85,7 +86,8 @@ $nav-open-btn-width: 210px;
   align-items: center;
 }
 
-.app-sidebar-button, .app-toolbar-button {
+.app-sidebar-button,
+.app-toolbar-button {
   border-radius: 20px;
   border: 1px solid transparent;
   min-width: 48px;
@@ -114,7 +116,8 @@ $nav-open-btn-width: 210px;
   background: rgba(0, 0, 0, 0.12);
 }
 
-.app-sidebar-button > .mat-icon, .app-toolbar-button > .mat-icon {
+.app-sidebar-button > .mat-icon,
+.app-toolbar-button > .mat-icon {
   margin-right: 0;
   width: 24px;
   font-size: 24px;
@@ -123,9 +126,9 @@ $nav-open-btn-width: 210px;
 }
 
 .app-sidebar-button > .mat-icon {
-  margin: 0 11px;
+  margin: 0 3px;
   min-width: 24px;
-  line-height: 18px;
+  line-height: 18px !important;
 }
 
 .app-sidebar-button-active {
@@ -152,6 +155,12 @@ $nav-open-btn-width: 210px;
 .logo-link .mat-icon {
   width: 36px;
   height: 23px;
+  line-height: 18px !important;
+}
+
+.main-heading {
+  font-size: 18px;
+  line-height: 24px;
 }
 
 .app-toolbar {
@@ -174,6 +183,7 @@ $nav-open-btn-width: 210px;
 }
 
 .app-content-main {
+  position: relative;
   display: grid;
   grid-template-rows: 0 auto;
   overflow: hidden;
@@ -187,4 +197,13 @@ $nav-open-btn-width: 210px;
 
 .app-toolbar-button-general-settings {
   margin-left: 72px;
+}
+
+app-version {
+  margin-top: auto;
+  margin-bottom: 16px;
+  max-width: 100%;
+  width: $nav-close-width;
+  display: flex;
+  justify-content: center;
 }

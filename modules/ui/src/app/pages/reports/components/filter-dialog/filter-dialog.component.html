@@ -1,0 +1,79 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<mat-dialog-content
+  class="filter-dialog-content"
+  [ngStyle]="{ 'max-height': 'calc(100vh - ' + topPosition + 'px)' }">
+  <form [formGroup]="filterForm">
+    <mat-form-field
+      appearance="outline"
+      class="text-field"
+      *ngIf="data.filter === FilterName.DeviceInfo">
+      <input
+        class="text-field-input"
+        formControlName="deviceInfo"
+        matInput
+        aria-label="device name" />
+    </mat-form-field>
+    <mat-form-field
+      appearance="outline"
+      class="text-field"
+      *ngIf="data.filter === FilterName.DeviceFirmware">
+      <input
+        class="text-field-input"
+        formControlName="deviceFirmware"
+        matInput
+        aria-label="device firmware" />
+    </mat-form-field>
+    <div formArrayName="results" *ngIf="data.filter === FilterName.Results">
+      <p
+        *ngFor="let result of results.controls; let i = index"
+        class="filter-result-item">
+        <mat-checkbox [formControlName]="i">
+          {{ resultList[i].value }}
+        </mat-checkbox>
+      </p>
+    </div>
+  </form>
+  <ng-container *ngIf="data.filter === FilterName.Started">
+    <mat-form-field appearance="outline" class="date-field">
+      <mat-date-range-input>
+        <input
+          matStartDate
+          placeholder="mm/dd/yyyy"
+          [(ngModel)]="range.start"
+          (dateChange)="startDateChanged($event)" />
+        <input
+          matEndDate
+          placeholder="mm/dd/yyyy"
+          [(ngModel)]="range.end"
+          (dateChange)="endDateChanged($event)" />
+      </mat-date-range-input>
+    </mat-form-field>
+
+    <mat-calendar
+      [selected]="selectedRangeValue"
+      (selectedChange)="selectedChange($event)"
+      [maxDate]="today"
+      class="date-calendar">
+    </mat-calendar>
+  </ng-container>
+</mat-dialog-content>
+<mat-dialog-actions align="end" class="filter-dialog-actions">
+  <button (click)="cancel()" class="cancel-button" mat-flat-button>
+    Cancel
+  </button>
+  <button (click)="confirm()" class="confirm-button" mat-flat-button>Ok</button>
+</mat-dialog-actions>

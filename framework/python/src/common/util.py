@@ -32,21 +32,21 @@ def run_command(cmd, output=True):
   by any return code from the process other than zero."""
 
   success = False
-  process = subprocess.Popen(shlex.split(cmd),
+  with subprocess.Popen(shlex.split(cmd),
                              stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-  stdout, stderr = process.communicate()
+                             stderr=subprocess.PIPE) as process:
+    stdout, stderr = process.communicate()
 
-  if process.returncode != 0 and output:
-    err_msg = f'{stderr.strip()}. Code: {process.returncode}'
-    LOGGER.error('Command failed: ' + cmd)
-    LOGGER.error('Error: ' + err_msg)
-  else:
-    success = True
-  if output:
-    return stdout.strip().decode('utf-8'), stderr
-  else:
-    return success
+    if process.returncode != 0 and output:
+      err_msg = f'{stderr.strip()}. Code: {process.returncode}'
+      LOGGER.error('Command failed: ' + cmd)
+      LOGGER.error('Error: ' + err_msg)
+    else:
+      success = True
+    if output:
+      return stdout.strip().decode('utf-8'), stderr
+    else:
+      return success
 
 
 def interface_exists(interface):
@@ -96,3 +96,19 @@ def get_user():
 
 def set_file_owner(path, owner):
   run_command(f'chown -R {owner} {path}')
+
+def get_module_display_name(search):
+  modules = {
+    'ntp': 'NTP',
+    'dns': 'DNS',
+    'connection': 'Connection',
+    'nmap': 'Services',
+    'tls': 'TLS',
+    'protocol': 'Protocol'
+  }
+
+  for module in modules.items():
+    if search == module[0]:
+      return module[1]
+
+  return 'Unknown'

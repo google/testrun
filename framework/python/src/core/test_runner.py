@@ -61,19 +61,19 @@ class TestRunner:
       self._stop(True)
       sys.exit(1)
 
-  def stop(self, kill=False):
-    self.test_run.stop(kill)
+  def stop(self):
+    self.test_run.stop()
 
 
 def parse_args():
   parser = argparse.ArgumentParser(
-      description="Test Run",
+      description="Testrun",
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument(
       "-f",
       "--config-file",
       default=None,
-      help="Define the configuration file for Test Run and Network Orchestrator"
+      help="Define the configuration file for Testrun and Network Orchestrator"
   )
   parser.add_argument(
       "--validate",

@@ -14,13 +14,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Check if Docker is installed
+if [[ $(which docker) && $(docker --version) ]]; then
+    # Docker is installed
+    echo Using $(docker --version)
+  else
+    # Docker is not installed
+    echo Docker is not installed. Please follow the Get Started guide at https://github.com/google/testrun
+    exit 1
+fi
+
+# Stop any running containers
+echo Stopping any running containers
+running_containers=$(docker container ls -q --filter name=tr-*)
+if [ -n "$running_containers" ]; then
+  docker container kill $running_containers
+else
+  echo No containers were found running
+fi
+
 # Builds all docker images
 echo Building docker images
 
 # Build user interface
 echo Building user interface
-mkdir -p build/ui
-docker build -t test-run/ui -f modules/ui/ui.Dockerfile . 2>&1 | tee build/ui/ui.log
+if docker build -t test-run/ui -f modules/ui/ui.Dockerfile . ; then
+  echo Successully built the user interface
+else
+  echo An error occured whilst building the user interface
+  exit 1
+fi
 
 # Build network modules
 echo Building network modules
@@ -28,7 +51,12 @@ mkdir -p build/network
 for dir in modules/network/* ; do
   module=$(basename $dir)
   echo Building network module $module...
-  docker build -f modules/network/$module/$module.Dockerfile -t test-run/$module . 2>&1 | tee build/network/$module.log
+  if docker build -f modules/network/$module/$module.Dockerfile -t test-run/$module . ; then
+    echo Successfully built container for network $module
+  else
+    echo An error occured whilst building container for network module $module
+    exit 1
+  fi
 done
 
 # Build validators
@@ -37,7 +65,12 @@ mkdir -p build/devices
 for dir in modules/devices/* ; do
   module=$(basename $dir)
   echo Building validator module $module...
-  docker build -f modules/devices/$module/$module.Dockerfile -t test-run/$module . 2>&1 | tee build/devices/$module.log
+  if docker build -f modules/devices/$module/$module.Dockerfile -t test-run/$module . ; then
+    echo Successfully built container for device module $module
+  else
+    echo An error occured whilst building container for device module $module
+    exit 1
+  fi
 done
 
 # Build test modules
@@ -46,7 +79,12 @@ mkdir -p build/test
 for dir in modules/test/* ; do
   module=$(basename $dir)
   echo Building test module $module...
-  docker build -f modules/test/$module/$module.Dockerfile -t test-run/$module-test . 2>&1 | tee build/test/$module.log
+  if docker build -f modules/test/$module/$module.Dockerfile -t test-run/$module-test . ; then
+    echo Successfully built container for test module $module
+  else
+    echo An error occured whilst building container for test module $module
+    exit 1
+  fi
 done
 
 echo Finished building modules

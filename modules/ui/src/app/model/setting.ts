@@ -14,8 +14,38 @@
  * limitations under the License.
  */
 export interface SystemConfig {
-  network: {
+  network?: {
     device_intf?: string;
     internet_intf?: string;
-  }
+  };
+  log_level?: string;
+  monitor_period?: number;
 }
+
+export interface InterfacesValidation {
+  hasSetInterfaces: boolean;
+  deviceValid: boolean;
+  internetValid: boolean;
+}
+
+export interface SettingMissedError {
+  isSettingMissed: boolean;
+  devicePortMissed: boolean;
+  internetPortMissed: boolean;
+}
+
+export interface SettingOption {
+  key: string;
+  value: string;
+}
+
+export enum FormKey {
+  DEVICE = 'device_intf',
+  INTERNET = 'internet_intf',
+  LOG_LEVEL = 'log_level',
+  MONITOR_PERIOD = 'monitor_period',
+}
+
+export type SystemInterfaces = {
+  [key: string]: string;
+};

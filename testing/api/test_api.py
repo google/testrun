@@ -37,7 +37,6 @@ API = "http://127.0.0.1:8000"
 LOG_PATH = "/tmp/testrun.log"
 TEST_SITE_DIR = ".."
 
-TESTRUN_DIR = "/usr/local/testrun"
 DEVICES_DIRECTORY = "local/devices"
 TESTING_DEVICES = "../device_configs"
 SYSTEM_CONFIG_PATH = "local/system.json"
@@ -112,7 +111,7 @@ def testing_devices():
   local_delete_devices(ALL_DEVICES)
   shutil.copytree(
       os.path.join(os.path.dirname(__file__), TESTING_DEVICES),
-      os.path.join(TESTRUN_DIR, DEVICES_DIRECTORY),
+      os.path.join(DEVICES_DIRECTORY),
       dirs_exist_ok=True,
   )
   return local_get_devices()
@@ -123,7 +122,7 @@ def testrun(request):
   """ Start intstance of testrun """
   test_name = request.node.originalname
   proc = subprocess.Popen(
-      "testrun",
+      "bin/testrun",
       stdout=subprocess.PIPE,
       stderr=subprocess.STDOUT,
       encoding="utf-8",
@@ -196,15 +195,20 @@ def get_network_interfaces():
 
   uses /sys/class/net rather than inetfaces as test-run uses the latter
   """
+  ifaces = []
   path = Path("/sys/class/net")
-  return [i.stem for i in path.iterdir() if i.is_dir()]
+  for i in path.iterdir():
+    if not i.is_dir():
+      continue
+    if i.stem.startswith("en") or i.stem.startswith("eth"):
+      ifaces.append(i.stem)
+  return ifaces
 
 
 def local_delete_devices(path):
   """ Deletes all local devices 
   """
-  devices_path = os.path.join(TESTRUN_DIR, DEVICES_DIRECTORY)
-  for thing in Path(devices_path).glob(path):
+  for thing in Path(DEVICES_DIRECTORY).glob(path):
     if thing.is_file():
       thing.unlink()
     else:
@@ -214,7 +218,7 @@ def local_delete_devices(path):
 def local_get_devices():
   """ Returns path to device configs of devices in local/devices directory"""
   return sorted(
-      Path(os.path.join(TESTRUN_DIR, DEVICES_DIRECTORY)).glob(
+      Path(DEVICES_DIRECTORY).glob(
           "*/device_config.json"
       )
   )
@@ -225,7 +229,7 @@ def test_get_system_interfaces(testrun):
   r = requests.get(f"{API}/system/interfaces")
   response = json.loads(r.text)
   local_interfaces = get_network_interfaces()
-  assert set(response) == set(local_interfaces)
+  assert set(response.keys()) == set(local_interfaces)
 
   # schema expects a flat list
   assert all([isinstance(x, str) for x in response])
@@ -234,7 +238,7 @@ def test_get_system_interfaces(testrun):
 def test_modify_device(testing_devices, testrun):
   with open(
       os.path.join(
-          TESTRUN_DIR, DEVICES_DIRECTORY, testing_devices[1]
+          DEVICES_DIRECTORY, testing_devices[1]
       )
   ) as f:
     local_device = json.load(f)
@@ -256,13 +260,18 @@ def test_modify_device(testing_devices, testrun):
   }
   updated_device["test_modules"] = new_test_modules
 
+  updated_device_payload = {}
+  updated_device_payload["device"] = updated_device
+  updated_device_payload["mac_addr"] = mac_addr
+
   print("updated_device")
   pretty_print(updated_device)
   print("api_device")
   pretty_print(api_device)
 
   # update device
-  r = requests.post(f"{API}/device", data=json.dumps(updated_device))
+  r = requests.post(f"{API}/device/edit",
+                    data=json.dumps(updated_device_payload))
 
   assert r.status_code == 200
 
@@ -339,7 +348,7 @@ def test_create_get_devices(empty_devices_dir, testrun):
 def test_get_system_config(testrun):
   r = requests.get(f"{API}/system/config")
 
-  with open(os.path.join(TESTRUN_DIR, SYSTEM_CONFIG_PATH)) as f:
+  with open(SYSTEM_CONFIG_PATH) as f:
     local_config = json.load(f)
 
   api_config = json.loads(r.text)

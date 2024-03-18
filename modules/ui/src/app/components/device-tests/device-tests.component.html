@@ -13,15 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<form [class.disabled]="disabled" [formGroup]="deviceForm">
+<form [formGroup]="deviceForm" class="device-tests-form">
+  <p class="device-tests-title">Test modules</p>
+  <p class="device-tests-description">
+    All modules are required to pass for qualification
+  </p>
   <section class="device-form-test-modules" formArrayName="test_modules">
-    <p class="device-tests-title">Test modules</p>
-    <p class="device-tests-description">
-      All modules are required to pass for qualification
-    </p>
-    <p *ngFor="let test of test_modules.controls; let i = index">
-      <mat-checkbox [formControlName]="i">
-        {{testModules[i].displayName}}
+    <p
+      *ngFor="let test of test_modules.controls; let i = index"
+      [class.disabled]="disabled">
+      <mat-checkbox [formControlName]="i" [tabIndex]="disabled ? -1 : 0">
+        {{ testModules[i].displayName }}
       </mat-checkbox>
     </p>
   </section>

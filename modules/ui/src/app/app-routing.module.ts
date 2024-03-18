@@ -13,37 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
-import {allowToRunTestGuard} from './guards/allow-to-run-test.guard';
-import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
-    path: 'runtime',
-    canActivate: [allowToRunTestGuard],
-    loadChildren: () => import('./progress/progress.module').then(m => m.ProgressModule)
+    path: 'testing',
+    loadChildren: () =>
+      import('./pages/testrun/progress.module').then(m => m.ProgressModule),
+    title: 'Testrun',
   },
   {
-    path: 'device-repository',
-    loadChildren: () => import('./device-repository/device-repository.module').then(m => m.DeviceRepositoryModule)
+    path: 'devices',
+    loadChildren: () =>
+      import('./pages/devices/device-repository.module').then(
+        m => m.DeviceRepositoryModule
+      ),
+    title: 'Testrun - Devices',
   },
   {
-    path: 'results',
-    canActivate: [allowToRunTestGuard],
-    loadChildren: () => import('./history/history.module').then(m => m.HistoryModule)
+    path: 'reports',
+    loadChildren: () =>
+      import('./pages/reports/history.module').then(m => m.HistoryModule),
+    title: 'Testrun - Reports',
   },
   {
     path: '',
-    redirectTo: 'runtime',
-    pathMatch: 'full'
-  }
+    redirectTo: 'devices',
+    pathMatch: 'full',
+  },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { useHash: true })],
   exports: [RouterModule],
-  providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}]
 })
-export class AppRoutingModule {
-}
+export class AppRoutingModule {}

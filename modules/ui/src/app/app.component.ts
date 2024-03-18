@@ -13,14 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, HostBinding, OnInit, ViewChild} from '@angular/core';
-import {MatIconRegistry} from '@angular/material/icon';
-import {DomSanitizer} from '@angular/platform-browser';
-import {MatDrawer, MatDrawerToggleResult} from '@angular/material/sidenav';
-import {TestRunService} from './services/test-run.service';
-import {Observable} from 'rxjs/internal/Observable';
-import {Device} from './model/device';
-import {take} from 'rxjs';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
+import { MatDrawer } from '@angular/material/sidenav';
+import { TestRunService } from './services/test-run.service';
+import { Observable } from 'rxjs';
+import { TestrunStatus, StatusOfTestrun } from './model/testrun-status';
+import { Router } from '@angular/router';
+import { CalloutType } from './model/callout-type';
+import { tap, shareReplay } from 'rxjs/operators';
+import { Routes } from './model/routes';
+import { FocusManagerService } from './services/focus-manager.service';
+import { State, Store } from '@ngrx/store';
+import { AppState } from './store/state';
+import {
+  selectError,
+  selectHasConnectionSettings,
+  selectInterfaces,
+  selectMenuOpened,
+} from './store/selectors';
+import {
+  setIsOpenAddDevice,
+  toggleMenu,
+  updateFocusNavigation,
+} from './store/actions';
+import { appFeatureKey } from './store/reducers';
+import { SettingMissedError, SystemInterfaces } from './model/setting';
+import { GeneralSettingsComponent } from './pages/settings/general-settings.component';
+import { AppStore } from './app.store';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
@@ -31,21 +52,44 @@ const CLOSE_URL = '/assets/icons/close.svg';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  providers: [AppStore],
 })
 export class AppComponent implements OnInit {
-  devices$!: Observable<Device[] | null>;
+  public readonly CalloutType = CalloutType;
+  public readonly StatusOfTestrun = StatusOfTestrun;
+  public readonly Routes = Routes;
+  systemStatus$!: Observable<TestrunStatus>;
+  isTestrunStarted$!: Observable<boolean>;
+  hasConnectionSetting$: Observable<boolean | null> = this.store.select(
+    selectHasConnectionSettings
+  );
+  isStatusLoaded = false;
+  private openedSettingFromToggleBtn = true;
+  isMenuOpen: Observable<boolean> = this.store.select(selectMenuOpened);
+  interfaces: Observable<SystemInterfaces> =
+    this.store.select(selectInterfaces);
+  settingMissedError$: Observable<SettingMissedError | null> =
+    this.store.select(selectError);
+
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
-  @HostBinding('class.active-menu') isMenuOpen: boolean = false;
-  interfaces: string[] = [];
+  @ViewChild('navigation') public navigation!: ElementRef;
+  @ViewChild('settings') public settings!: GeneralSettingsComponent;
+  viewModel$ = this.appStore.viewModel$;
 
   constructor(
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private testRunService: TestRunService,
+    private route: Router,
+    private store: Store<AppState>,
+    private state: State<AppState>,
+    private readonly focusManagerService: FocusManagerService,
+    private appStore: AppStore
   ) {
-    testRunService.fetchDevices();
+    this.appStore.getDevices();
+    this.testRunService.getSystemStatus();
     this.matIconRegistry.addSvgIcon(
       'devices',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_LOGO_URL)
@@ -69,32 +113,64 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.devices$ = this.testRunService.getDevices();
+    this.systemStatus$ = this.testRunService.systemStatus$.pipe(
+      tap(() => (this.isStatusLoaded = true)),
+      shareReplay({ refCount: true, bufferSize: 1 })
+    );
+
+    this.isTestrunStarted$ = this.testRunService.isTestrunStarted$;
   }
 
-  async closeSetting(): Promise<void> {
-    return await this.settingsDrawer.close().then(() => this.toggleSettingsBtn.focus());
+  navigateToDeviceRepository(): void {
+    this.route.navigate([Routes.Devices]);
+    this.store.dispatch(setIsOpenAddDevice({ isOpenAddDevice: true }));
   }
 
-  async openSetting(): Promise<MatDrawerToggleResult> {
-    return await this.settingsDrawer.open();
+  navigateToRuntime(): void {
+    this.route.navigate([Routes.Testing]);
+    this.testRunService.setIsOpenStartTestrun(true);
+  }
+
+  async closeSetting(hasDevices: boolean): Promise<void> {
+    return await this.settingsDrawer.close().then(() => {
+      if (hasDevices) {
+        this.toggleSettingsBtn.focus();
+      } // else device create window will be opened
+      if (!this.openedSettingFromToggleBtn) {
+        this.focusManagerService.focusFirstElementInContainer();
+      }
+    });
+  }
+
+  async openSetting(): Promise<void> {
+    return await this.openGeneralSettings(false);
   }
 
   public toggleMenu(event: MouseEvent) {
     event.stopPropagation();
-    this.isMenuOpen = !this.isMenuOpen;
+    this.store.dispatch(toggleMenu());
   }
 
-  public openFeedbackModal() {
-    // action TBD
+  /**
+   * When side menu is opened
+   */
+  skipToNavigation(event: Event) {
+    if (this.state.getValue()[appFeatureKey].appComponent.focusNavigation) {
+      event.preventDefault(); // if not prevented, second element will be focused
+      this.focusManagerService.focusFirstElementInContainer(
+        this.navigation.nativeElement
+      );
+      this.store.dispatch(updateFocusNavigation({ focusNavigation: false })); // user will be navigated according to normal flow on tab
+    }
   }
 
-  openGeneralSettings() {
-    this.testRunService.getSystemInterfaces()
-      .pipe(take(1))
-      .subscribe(async (interfaces) => {
-        this.interfaces = interfaces;
-        await this.settingsDrawer.open();
-      })
+  async openGeneralSettings(openSettingFromToggleBtn: boolean) {
+    this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
+    this.settings.getSystemInterfaces();
+    await this.settingsDrawer.open();
+  }
+
+  consentShown() {
+    this.appStore.setContent();
   }
 }

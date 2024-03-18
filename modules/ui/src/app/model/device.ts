@@ -27,14 +27,19 @@ export interface Device {
 export interface TestModules {
   [key: string]: {
     enabled: boolean;
-  }
+  };
 }
 
 /**
  * Test Module interface used on ui
  */
 export interface TestModule {
-  displayName: string,
-  name: string,
-  enabled: boolean,
+  displayName: string;
+  name: string;
+  enabled: boolean;
+}
+
+export enum DeviceView {
+  Basic = 'basic',
+  WithActions = 'with actions',
 }

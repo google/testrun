@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {Device} from '../../model/device';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Device, DeviceView } from '../../model/device';
 
-import {DeviceItemComponent} from './device-item.component';
-import {DeviceRepositoryModule} from '../../device-repository/device-repository.module';
+import { DeviceItemComponent } from './device-item.component';
+import { DeviceRepositoryModule } from '../../pages/devices/device-repository.module';
 
 describe('DeviceItemComponent', () => {
   let component: DeviceItemComponent;
@@ -26,20 +26,20 @@ describe('DeviceItemComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [DeviceRepositoryModule, DeviceItemComponent]
+      imports: [DeviceRepositoryModule, DeviceItemComponent],
     });
     fixture = TestBed.createComponent(DeviceItemComponent);
     component = fixture.componentInstance;
     compiled = fixture.nativeElement as HTMLElement;
     component.device = {
-      "manufacturer": "Delta",
-      "model": "O3-DIN-CPU",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-        "dns": {
-          "enabled": true,
-        }
-      }
+      manufacturer: 'Delta',
+      model: 'O3-DIN-CPU',
+      mac_addr: '00:1e:42:35:73:c4',
+      test_modules: {
+        dns: {
+          enabled: true,
+        },
+      },
     } as Device;
     fixture.detectChanges();
   });
@@ -48,21 +48,59 @@ describe('DeviceItemComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should display information about device', () => {
-    const name = compiled.querySelector('.item-name');
-    const manufacturer = compiled.querySelector('.item-manufacturer');
-    const mac = compiled.querySelector('.item-mac-address');
+  describe('with device view as Basic', () => {
+    beforeEach(() => {
+      component.deviceView = DeviceView.Basic;
+      fixture.detectChanges();
+    });
 
-    expect(name?.textContent).toEqual("O3-DIN-CPU");
-    expect(manufacturer?.textContent).toEqual("Delta");
-    expect(mac?.textContent).toEqual("00:1e:42:35:73:c4");
+    it('should display information about device', () => {
+      const name = compiled.querySelector('.item-name');
+      const manufacturer = compiled.querySelector('.item-manufacturer');
+      const mac = compiled.querySelector('.item-mac-address');
+
+      expect(name?.textContent?.trim()).toEqual('O3-DIN-CPU');
+      expect(manufacturer?.textContent?.trim()).toEqual('Delta');
+      expect(mac?.textContent?.trim()).toEqual('00:1e:42:35:73:c4');
+    });
+
+    it('should emit mac address', () => {
+      const clickSpy = spyOn(component.itemClicked, 'emit');
+      const item = compiled.querySelector('.device-item') as HTMLElement;
+      item.click();
+
+      expect(clickSpy).toHaveBeenCalledWith(component.device);
+    });
+
+    it('should have tabindex', () => {
+      component.tabIndex = -2;
+      fixture.detectChanges();
+      const item = compiled.querySelector('.device-item') as HTMLElement;
+
+      expect(item.tabIndex).toBe(-2);
+    });
   });
 
-  it('should emit mac address', () => {
-    const clickSpy = spyOn(component.itemClicked, 'emit');
-    const item = compiled.querySelector('.device-item') as HTMLElement;
-    item.click();
+  describe('with device view as WithActions', () => {
+    beforeEach(() => {
+      component.deviceView = DeviceView.WithActions;
+      fixture.detectChanges();
+    });
 
-    expect(clickSpy).toHaveBeenCalledWith(component.device);
+    it('should emit device on click edit button', () => {
+      const clickSpy = spyOn(component.itemClicked, 'emit');
+      const editBtn = compiled.querySelector('.button-edit') as HTMLElement;
+      editBtn.click();
+
+      expect(clickSpy).toHaveBeenCalledWith(component.device);
+    });
+
+    it('should emit device on click start button', () => {
+      const clickSpy = spyOn(component.startTestrunClicked, 'emit');
+      const editBtn = compiled.querySelector('.button-start') as HTMLElement;
+      editBtn.click();
+
+      expect(clickSpy).toHaveBeenCalledWith(component.device);
+    });
   });
 });

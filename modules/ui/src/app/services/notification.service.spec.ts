@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {TestBed} from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
-import {NotificationService} from './notification.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import { NotificationService } from './notification.service';
+import {
+  MatSnackBar,
+  MatSnackBarRef,
+  TextOnlySnackBar,
+} from '@angular/material/snack-bar';
+import { of } from 'rxjs/internal/observable/of';
 
 describe('NotificationService', () => {
   let service: NotificationService;
 
   const mockMatSnackBar = {
-    open: () => {
-    },
-    dismiss: () => {
-
-    }
+    open: () => ({}),
+    dismiss: () => ({}),
   };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        {provide: MatSnackBar, useValue: mockMatSnackBar},
-      ]
+      providers: [{ provide: MatSnackBar, useValue: mockMatSnackBar }],
     });
     service = TestBed.inject(NotificationService);
   });
@@ -44,33 +44,34 @@ describe('NotificationService', () => {
 
   describe('notify', () => {
     it('should open snackbar with message', () => {
-      const matSnackBarSpy = spyOn(mockMatSnackBar, 'open').and.stub();
+      const openSpy = spyOn(service.snackBar, 'open').and.returnValues({
+        afterOpened: () => of(void 0),
+        afterDismissed: () => of({ dismissedByAction: true }),
+      } as MatSnackBarRef<TextOnlySnackBar>);
 
       service.notify('something good happened');
 
-      expect(matSnackBarSpy).toHaveBeenCalled();
-
-      const args = matSnackBarSpy.calls.argsFor(0);
-      expect(args.length).toBe(3);
-      expect(args[0]).toBe('something good happened');
-      expect(args[1]).toBe('OK');
-      expect(args[2]).toEqual({
-        horizontalPosition: 'right',
+      expect(openSpy).toHaveBeenCalledWith('something good happened', 'OK', {
+        horizontalPosition: 'center',
         panelClass: 'test-run-notification',
-        duration: 5000
+        duration: 0,
+        politeness: 'assertive',
       });
     });
 
     it('should open snackbar with duration', () => {
-      const matSnackBarSpy = spyOn(mockMatSnackBar, 'open').and.stub();
+      const openSpy = spyOn(service.snackBar, 'open').and.returnValues({
+        afterOpened: () => of(void 0),
+        afterDismissed: () => of({ dismissedByAction: true }),
+      } as MatSnackBarRef<TextOnlySnackBar>);
 
       service.notify('something good happened', 15000);
 
-      const args = matSnackBarSpy.calls.argsFor(0);
-      expect(args[2]).toEqual({
-        horizontalPosition: 'right',
+      expect(openSpy).toHaveBeenCalledWith('something good happened', 'OK', {
+        horizontalPosition: 'center',
         panelClass: 'test-run-notification',
-        duration: 15000
+        duration: 15000,
+        politeness: 'assertive',
       });
     });
   });

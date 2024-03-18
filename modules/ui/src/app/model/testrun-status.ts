@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Device} from './device';
+import { Device } from './device';
 
 export interface TestrunStatus {
   status: string;
@@ -25,9 +25,9 @@ export interface TestrunStatus {
 }
 
 export interface HistoryTestrun extends TestrunStatus {
-  deviceFirmware: string,
-  deviceInfo: string,
-  duration: string,
+  deviceFirmware: string;
+  deviceInfo: string;
+  duration: string;
 }
 
 export interface TestsData {
@@ -35,7 +35,7 @@ export interface TestsData {
   results?: IResult[];
 }
 
-type TestsResponse = TestsData | IResult[];
+export type TestsResponse = TestsData | IResult[];
 
 export interface IDevice extends Device {
   firmware: string;
@@ -45,37 +45,45 @@ export interface IResult {
   name: string;
   description: string;
   result: string;
+  recommendations?: string[];
 }
 
 export enum StatusOfTestrun {
   InProgress = 'In Progress',
   WaitingForDevice = 'Waiting for Device',
   Cancelled = 'Cancelled',
+  Cancelling = 'Cancelling',
   Failed = 'Failed',
   Compliant = 'Compliant', // used for Completed
+  CompliantLimited = 'Compliant (Limited)',
+  CompliantHigh = 'Compliant (High)',
   NonCompliant = 'Non-Compliant', // used for Completed
   SmartReady = 'Smart Ready', // used for Completed
-  Idle = 'Idle'
+  Idle = 'Idle',
+  Monitoring = 'Monitoring',
 }
 
 export enum StatusOfTestResult {
   Compliant = 'Compliant', // device supports feature
+  CompliantLimited = 'Compliant (Limited)',
+  CompliantHigh = 'Compliant (High)',
   SmartReady = 'Smart Ready',
   NonCompliant = 'Non-Compliant', // device does not support feature but feature is required
   Skipped = 'Skipped',
   NotStarted = 'Not Started',
+  InProgress = 'In Progress',
   Error = 'Error', // test failed to run
-  Info = 'Informational' // nice to know information, not necessarily compliant/non-compliant
+  Info = 'Informational', // nice to know information, not necessarily compliant/non-compliant
 }
 
 export interface StatusResultClassName {
-  green: boolean,
-  red: boolean,
-  blue: boolean,
-  grey: boolean
+  green: boolean;
+  red: boolean;
+  blue: boolean;
+  grey: boolean;
 }
 
 export type TestrunStatusKey = keyof typeof StatusOfTestrun;
-export type TestrunStatusValue = typeof StatusOfTestrun[TestrunStatusKey];
+export type TestrunStatusValue = (typeof StatusOfTestrun)[TestrunStatusKey];
 export type TestResultKey = keyof typeof StatusOfTestResult;
-export type TestResultValue = typeof StatusOfTestResult[TestResultKey];
+export type TestResultValue = (typeof StatusOfTestResult)[TestResultKey];

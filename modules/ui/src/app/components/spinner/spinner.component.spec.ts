@@ -1,18 +1,21 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {SpinnerComponent} from './spinner.component';
-import {LoaderService} from '../../services/loader.service';
-import {of} from 'rxjs';
+import { SpinnerComponent } from './spinner.component';
+import { LoaderService } from '../../services/loader.service';
+import { of } from 'rxjs';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('SpinnerComponent', () => {
   let component: SpinnerComponent;
   let fixture: ComponentFixture<SpinnerComponent>;
-  let loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(['getLoading']);
+  const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
+    ['getLoading']
+  );
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [SpinnerComponent],
-      providers: [{provide: LoaderService, useValue: loaderServiceMock}],
+      imports: [SpinnerComponent, BrowserAnimationsModule],
+      providers: [{ provide: LoaderService, useValue: loaderServiceMock }],
     });
     fixture = TestBed.createComponent(SpinnerComponent);
     component = fixture.componentInstance;
@@ -38,5 +41,4 @@ describe('SpinnerComponent', () => {
 
     expect(spinner).toBeTruthy();
   });
-
 });

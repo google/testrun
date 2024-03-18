@@ -14,8 +14,9 @@
 
 """Track device object information."""
 
-from typing import Dict
+from typing import Dict, List
 from dataclasses import dataclass, field
+from common.testreport import TestReport
 
 @dataclass
 class Device():
@@ -29,8 +30,9 @@ class Device():
   ip_addr: str = None
   firmware: str = None
   device_folder: str = None
-  reports = []
+  reports: List[TestReport] = field(default_factory=list)
   max_device_reports: int = None
+  reports: List[TestReport] = field(default_factory=list)
 
   def add_report(self, report):
     self.reports.append(report)
@@ -42,7 +44,8 @@ class Device():
 
     remove_report_target = None
     for report in self.reports:
-      if report.get_started() == timestamp:
+      report_timestamp = report.get_started().strftime('%Y-%m-%dT%H:%M:%S')
+      if report_timestamp == timestamp:
         remove_report_target = report
 
     if remove_report_target is not None:
@@ -57,6 +60,7 @@ class Device():
     device_json['model'] = self.model
     if self.firmware is not None:
       device_json['firmware'] = self.firmware
+    device_json['test_modules'] = self.test_modules
     return device_json
 
   def to_config_json(self):

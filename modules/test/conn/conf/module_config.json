@@ -10,26 +10,36 @@
     "docker": {
       "depends_on": "base",
       "enable_container": true,
-      "timeout": 600
+      "timeout": 1800
     },
     "tests": [
       {
         "name": "connection.dhcp_address",
         "test_description": "The device under test has received an IP address from the DHCP server and responds to an ICMP echo (ping) request",
         "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.",
-        "required_result": "Required"
+        "required_result": "Required",
+        "recommendations": [
+          "Enable DHCP",
+          "Install a DHCP client"
+        ]
       },
       {
         "name": "connection.mac_address",
         "test_description": "Check and note device physical address.",
         "expected_behavior": "N/A",
-        "required_result": "Required"
+        "required_result": "Required",
+        "recommendations": [
+          "Ensure that the MAC address is set by hardware only"
+        ]
       },
       {
         "name": "connection.mac_oui",
         "test_description": "The device under test hs a MAC address prefix that is registered against a known manufacturer.",
         "expected_behavior": "The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database.",
-        "required_result": "Required"
+        "required_result": "Required",
+        "recommendations": [
+          "Register the device MAC address with IEEE"
+        ]
       },
       {
         "name": "connection.private_address",
@@ -37,6 +47,7 @@
         "expected_behavior": "The device under test accepts IP addresses within all ranges specified in RFC 1918 and communicates using these addresses.  The Internet Assigned Numbers Authority (IANA) has reserved the following three blocks of the IP address space for private internets.  10.0.0.0 - 10.255.255.255.255 (10/8 prefix). 172.16.0.0 - 172.31.255.255 (172.16/12 prefix).  192.168.0.0 - 192.168.255.255 (192.168/16 prefix)",
         "required_result": "Required",
         "config": {
+          "lease_wait_time_sec": 60,
           "ranges": [
             {
               "start": "10.0.0.100",
@@ -51,7 +62,10 @@
               "end": "192.168.255.255"
             }
           ]
-        }
+        },
+        "recommendations": [
+          "Install a DHCP client that supports private address space"
+        ]
       },
       {
         "name": "connection.shared_address",
@@ -59,49 +73,82 @@
         "expected_behavior": "The device under test accepts IP addresses within the ranges specified in RFC 6598 and communicates using these addresses",
         "required_result": "Required",
         "config": {
+          "lease_wait_time_sec": 60,
           "ranges": [
             {
               "start": "100.64.0.1",
               "end": "100.64.255.254"
             }
           ]
-        }
+        },
+        "recommendations": [
+          "Install a DHCP client that supports shared address space",
+          "Enable shared address space support in the DHCP client"
+        ]
       },
       {
         "name": "connection.single_ip",
         "test_description": "The network switch port connected to the device reports only one IP address for the device under test.",
         "expected_behavior": "The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible.",
-        "required_result": "Required"
+        "required_result": "Required",
+        "recommendations": [
+          "Ensure that all ports on the device are isolated",
+          "Ensure only one DHCP client is running"
+        ]
       },
       {
         "name": "connection.target_ping",
         "test_description": "The device under test responds to an ICMP echo (ping) request.",
         "expected_behavior": "The device under test responds to an ICMP echo (ping) request.",
-        "required_result": "Required"
+        "required_result": "Required",
+        "recommendations": [
+          "Configure device to allow ICMP requests (ping)",
+          "Create a firewall exception to allow ICMP requests from LAN"
+        ]
       },
       {
         "name": "connection.ipaddr.ip_change",
         "test_description": "The device responds to a ping (ICMP echo request) to the new IP address it has received after the initial DHCP lease has expired.",
         "expected_behavior": "If the lease expires before the client receiveds a DHCPACK, the client moves to INIT state, MUST immediately stop any other network processing and requires network initialization parameters as if the client were uninitialized.  If the client then receives a DHCPACK allocating the client its previous network addres, the client SHOULD continue network processing.  If the client is given a new network address, it MUST NOT continue using the previous network address and SHOULD notify the local users of the problem.",
-        "required_result": "Required"
+        "required_result": "Required",
+        "config":{
+          "lease_wait_time_sec": 60
+        },
+        "recommendations": [
+          "Install a compliant DHCP client"
+        ]
       },
       {
         "name": "connection.ipaddr.dhcp_failover",
         "test_description": "The device has requested a DHCPREQUEST/REBIND to the DHCP failover server after the primary DHCP server has been brought down.",
         "expected_behavior": "",
-        "required_result": "Required"
+        "required_result": "Required",
+        "config":{
+          "lease_wait_time_sec": 60
+        },
+        "recommendations": [
+          "Install a compliant DHCP client"
+        ]
       },
       {
         "name": "connection.ipv6_slaac",
         "test_description": "The device forms a valid IPv6 address as a combination of the IPv6 router prefix and the device interface identifier",
         "expected_behavior": "The device under test complies with RFC4862 and forms a valid IPv6 SLAAC address",
-        "required_result": "Required"
+        "required_result": "Required",
+        "recommendations": [
+          "Install a network manager that supports IPv6",
+          "Disable DHCPv6"
+        ]
       },
       {
         "name": "connection.ipv6_ping",
         "test_description": "The device responds to an IPv6 ping (ICMPv6 Echo) request to the SLAAC address",
         "expected_behavior": "The device responds to the ping as per RFC4443",
-        "required_result": "Required"
+        "required_result": "Required",
+        "recommendations": [
+          "Enable ping response to IPv6 ICMP requests in network manager settings",
+          "Create a firewall exception to allow ICMPv6 via LAN"
+        ]
       }
     ]
   }

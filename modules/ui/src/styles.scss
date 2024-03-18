@@ -16,7 +16,8 @@
 @use '@angular/material' as mat;
 @import './theming/theme';
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -49,7 +50,9 @@ body {
   border-radius: inherit;
 }
 
-.device-form-dialog, .initiate-test-run-dialog {
+.consent-dialog,
+.device-form-dialog,
+.initiate-test-run-dialog {
   max-height: 100vh;
 }
 
@@ -82,7 +85,8 @@ mat-hint {
 }
 
 .mdc-radio__native-control:focus:not(:focus-visible) ~ .mat-mdc-focus-indicator,
-.mdc-checkbox__native-control:focus:not(:focus-visible) ~ .mat-mdc-focus-indicator {
+.mdc-checkbox__native-control:focus:not(:focus-visible)
+  ~ .mat-mdc-focus-indicator {
   display: none;
 }
 
@@ -97,11 +101,10 @@ mat-hint {
   }
 }
 
-
 .active-menu {
   .app-sidebar-button {
     .mdc-button__label {
-      left: 0;
+      left: 8px;
     }
   }
 
@@ -114,7 +117,7 @@ mat-hint {
   fill: mat.get-color-from-palette($color-primary, 600);
 }
 
-.table-cell-result-text {
+.cell-result-text {
   margin: 0;
   padding: 4px;
   border-radius: 2px;
@@ -153,20 +156,94 @@ h2.title {
   letter-spacing: 0;
 }
 
+.message-link {
+  color: mat.get-color-from-palette($color-primary, 700);
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.message-link:hover {
+  color: mat.get-color-from-palette($color-primary, 800);
+}
+
 .mat-mdc-snack-bar-container {
   --mat-snack-bar-button-color: #ffffff;
   --mdc-snackbar-supporting-text-color: #ffffff;
 }
 
-body:has(.initiate-test-run-dialog) app-root app-spinner,
-body:has(.device-form-dialog) app-root app-spinner {
+.mat-mdc-option {
+  --mat-option-hover-state-layer-color: #e8f0fe;
+  --mat-option-focus-state-layer-color: #e8f0fe;
+  --mat-option-selected-state-layer-color: #e8f0fe;
+}
+
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-focus-label-text-color: #1a73e8;
+}
+
+body:has(.initiate-test-run-dialog)
+  app-root
+  app-spinner.connection-settings-spinner,
+body:has(.device-form-dialog) app-root app-spinner.connection-settings-spinner {
   display: none;
 }
 
-body:has(.filter-dialog-content) .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+body:has(app-spinner:not(.global-spiner)) app-root app-spinner.global-spinner {
+  display: none;
+}
+
+body:has(.filter-dialog-content)
+  .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
   opacity: 0;
+}
+
+body:has(app-callout .info):not(:has(app-callout .error))
+  app-device-repository:not(:has(.device-repository-content-empty)),
+body:has(app-callout .info):not(:has(app-callout .error))
+  app-history:not(:has(.results-content-empty)),
+body:has(app-callout .info):not(:has(app-callout .error))
+  app-progress:not(:has(.progress-content-empty)),
+body:has(app-callout .error):not(:has(app-callout .info))
+  app-device-repository:not(:has(.device-repository-content-empty)),
+body:has(app-callout .error):not(:has(app-callout .info))
+  app-history:not(:has(.results-content-empty)),
+body:has(app-callout .error):not(:has(app-callout .info))
+  app-progress:not(:has(.progress-content-empty)) {
+  margin-top: 96px;
+}
+
+body:has(app-callout .info):has(app-callout .error)
+  app-device-repository:not(:has(.device-repository-content-empty)),
+body:has(app-callout .info):has(app-callout .error)
+  app-history:not(:has(.results-content-empty)),
+body:has(app-callout .info):has(app-callout .error)
+  app-progress:not(:has(.progress-content-empty)) {
+  margin-top: 156px;
 }
 
 .text-nowrap {
   white-space: nowrap;
+}
+
+.history-content
+  [mat-sort-header].cdk-program-focused
+  .mat-sort-header-container {
+  border-bottom: none;
+}
+
+.filter-chip .mat-mdc-focus-indicator::before {
+  border: none;
+}
+
+.version-content,
+.version-content-update {
+  &.mat-mdc-button.cdk-program-focused
+    .mat-mdc-button-persistent-ripple::before {
+    opacity: 0;
+  }
+  &.mat-mdc-button.cdk-program-focused:focus-visible
+    .mat-mdc-button-persistent-ripple::before {
+    opacity: var(--mat-text-button-focus-state-layer-opacity);
+  }
 }

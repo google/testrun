@@ -13,15 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Device} from '../model/device';
+import { Device } from '../model/device';
 
 export const device = {
-  "manufacturer": "Delta",
-  "model": "O3-DIN-CPU",
-  "mac_addr": "00:1e:42:35:73:c4",
-  "test_modules": {
-    "dns": {
-      "enabled": true,
-    }
-  }
+  manufacturer: 'Delta',
+  model: 'O3-DIN-CPU',
+  mac_addr: '00:1e:42:35:73:c4',
+  test_modules: {
+    dns: {
+      enabled: true,
+    },
+  },
 } as Device;
+export const updated_device = {
+  manufacturer: 'Alpha',
+  model: 'O3-XYZ-CPU',
+  mac_addr: '00:1e:42:35:73:11',
+  test_modules: {
+    dns: {
+      enabled: true,
+    },
+  },
+} as Device;
+
+export const MOCK_TEST_MODULES = [
+  {
+    displayName: 'Connection',
+    name: 'connection',
+    enabled: true,
+  },
+  {
+    displayName: 'Smart Ready',
+    name: 'udmi',
+    enabled: false,
+  },
+];

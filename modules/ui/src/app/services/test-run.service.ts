@@ -13,118 +13,124 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {BehaviorSubject} from 'rxjs/internal/BehaviorSubject';
-import {Observable} from 'rxjs/internal/Observable';
-import {Device, TestModule} from '../model/device';
-import {map, ReplaySubject, retry} from 'rxjs';
-import {SystemConfig} from '../model/setting';
-import {StatusOfTestResult, StatusResultClassName, TestrunStatus} from '../model/testrun-status';
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { Observable } from 'rxjs/internal/Observable';
+import { Device, TestModule } from '../model/device';
+import { catchError, map, of, ReplaySubject, retry } from 'rxjs';
+import { SystemConfig, SystemInterfaces } from '../model/setting';
+import {
+  StatusOfTestResult,
+  StatusOfTestrun,
+  StatusResultClassName,
+  TestrunStatus,
+} from '../model/testrun-status';
+import { Version } from '../model/version';
 
-const API_URL = 'http://localhost:8000'
+const API_URL = `http://${window.location.hostname}:8000`;
+export const SYSTEM_STOP = '/system/stop';
+
+export const UNAVAILABLE_VERSION = {
+  installed_version: 'v?.?',
+  update_available: false,
+  latest_version: 'v?.?',
+  latest_version_url: '',
+};
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TestRunService {
   private readonly testModules: TestModule[] = [
     {
-      displayName: "Connection",
-      name: "connection",
-      enabled: true
+      displayName: 'Connection',
+      name: 'connection',
+      enabled: true,
     },
     {
-      displayName: "NTP",
-      name: "ntp",
-      enabled: true
+      displayName: 'NTP',
+      name: 'ntp',
+      enabled: true,
     },
     {
-      displayName: "DHCP",
-      name: "dhcp",
-      enabled: true
+      displayName: 'DNS',
+      name: 'dns',
+      enabled: true,
     },
     {
-      displayName: "DNS",
-      name: "dns",
-      enabled: true
+      displayName: 'Services',
+      name: 'nmap',
+      enabled: true,
     },
     {
-      displayName: "Services",
-      name: "nmap",
-      enabled: true
+      displayName: 'TLS',
+      name: 'tls',
+      enabled: true,
     },
     {
-      displayName: "Security",
-      name: "security",
-      enabled: true
-    },
-    {
-      displayName: "TLS",
-      name: "tls",
-      enabled: true
+      displayName: 'Protocol',
+      name: 'protocol',
+      enabled: true,
     },
   ];
 
-  private devices = new BehaviorSubject<Device[] | null>(null);
-  private _systemConfig = new BehaviorSubject<SystemConfig>({network: {}});
-  public systemConfig$ = this._systemConfig.asObservable();
+  private isOpenStartTestrunSub$ = new BehaviorSubject<boolean>(false);
+  public isOpenStartTestrun$ = this.isOpenStartTestrunSub$.asObservable();
   private systemStatusSubject = new ReplaySubject<TestrunStatus>(1);
   public systemStatus$ = this.systemStatusSubject.asObservable();
-  private history = new BehaviorSubject<TestrunStatus[]>([]);
+  private isTestrunStartedSub$ = new BehaviorSubject<boolean>(false);
+  public isTestrunStarted$ = this.isTestrunStartedSub$.asObservable();
+  private version = new BehaviorSubject<Version | null>(null);
 
-  constructor(private http: HttpClient) {
-  }
+  constructor(private http: HttpClient) {}
 
-  getDevices(): BehaviorSubject<Device[] | null> {
-    return this.devices;
-  }
-
-  setDevices(devices: Device[]): void {
-    this.devices.next(devices);
-  }
-
-  setSystemConfig(config: SystemConfig): void {
-    this._systemConfig.next(config);
+  setIsOpenStartTestrun(isOpen: boolean): void {
+    this.isOpenStartTestrunSub$.next(isOpen);
   }
 
   setSystemStatus(status: TestrunStatus): void {
     this.systemStatusSubject.next(status);
   }
 
-  fetchDevices(): void {
-    this.http.get<any>(`${API_URL}/devices`).subscribe((devices: Device[]) => {
-      this.setDevices(devices);
-    });
+  fetchDevices(): Observable<Device[]> {
+    return this.http.get<Device[]>(`${API_URL}/devices`);
   }
 
   getSystemConfig(): Observable<SystemConfig> {
-    return this.http
-      .get<SystemConfig>(`${API_URL}/system/config`);
+    return this.http.get<SystemConfig>(`${API_URL}/system/config`);
   }
 
-  createSystemConfig(data: SystemConfig): Observable<any> {
+  createSystemConfig(data: SystemConfig): Observable<SystemConfig> {
     return this.http
-      .post<any>(`${API_URL}/system/config`, data)
+      .post<SystemConfig>(`${API_URL}/system/config`, data)
       .pipe(retry(1));
   }
 
-  getSystemInterfaces(): Observable<string[]> {
-    return this.http
-      .get<string[]>(`${API_URL}/system/interfaces`);
+  getSystemInterfaces(): Observable<SystemInterfaces> {
+    return this.http.get<SystemInterfaces>(`${API_URL}/system/interfaces`);
   }
 
-  getSystemStatus(): void {
+  /**
+   * Gets system status.
+   * Status Cancelling exist only on FE. Every status except Cancelled
+   * should be overriden with Cancelling value during cancelling process
+   * @param isCancelling - indicates if status should be overridden with Cancelling value
+   */
+  getSystemStatus(isCancelling?: boolean): void {
     this.http
       .get<TestrunStatus>(`${API_URL}/system/status`)
       .subscribe((res: TestrunStatus) => {
+        if (isCancelling && res.status !== StatusOfTestrun.Cancelled) {
+          res.status = StatusOfTestrun.Cancelling;
+        }
         this.setSystemStatus(res);
       });
   }
 
   stopTestrun(): Observable<boolean> {
     return this.http
-      .post<any>(`${API_URL}/system/stop`, {})
+      .post<{ success: string }>(`${API_URL}${SYSTEM_STOP}`, {})
       .pipe(map(() => true));
   }
 
@@ -138,64 +144,87 @@ export class TestRunService {
       .pipe(map(() => true));
   }
 
+  editDevice(device: Device, mac_addr: string): Observable<boolean> {
+    type EditDeviceRequest = {
+      mac_addr: string; // original mac address
+      device: Device;
+    };
+    const request: EditDeviceRequest = {
+      mac_addr,
+      device,
+    };
+
+    return this.http
+      .post<boolean>(`${API_URL}/device/edit`, JSON.stringify(request))
+      .pipe(map(() => true));
+  }
   deleteDevice(device: Device): Observable<boolean> {
     return this.http
       .delete<boolean>(`${API_URL}/device`, {
-        body: JSON.stringify(device)
+        body: JSON.stringify(device),
       })
       .pipe(map(() => true));
   }
 
-  hasDevice(macAddress: string): boolean {
-    return this.devices.value?.some(device => device.mac_addr === macAddress.trim()) || false;
-  }
-
-  addDevice(device: Device): void {
-    this.devices.next(this.devices.value ? this.devices.value.concat([device]) : [device]);
-  }
-
-  updateDevice(deviceToUpdate: Device, update: Device): void {
-    const device = this.devices.value?.find(device => update.mac_addr === device.mac_addr)!;
-    device.model = update.model
-    device.manufacturer = update.manufacturer
-    device.test_modules = update.test_modules;
-
-    this.devices.next(this.devices.value);
-  }
-
-  removeDevice(deviceToDelete: Device): void {
-    const idx = this.devices.value?.findIndex(device => deviceToDelete.mac_addr === device.mac_addr)!;
-    this.devices.value?.splice(idx, 1)
-    this.devices.next(this.devices.value);
-  }
-
-  fetchHistory(): void {
-    this.http
-      .get<TestrunStatus[]>(`${API_URL}/reports`)
-      .pipe(retry(1))
-      .subscribe(data => {
-        this.history.next(data)
-      });
-  }
-
-  getHistory(): Observable<TestrunStatus[]> {
-    return this.history;
+  getHistory(): Observable<TestrunStatus[] | null> {
+    return this.http.get<TestrunStatus[]>(`${API_URL}/reports`);
   }
 
   public getResultClass(result: string): StatusResultClassName {
     return {
-      'green': result === StatusOfTestResult.Compliant,
-      'red': result === StatusOfTestResult.NonCompliant || result === StatusOfTestResult.Error,
-      'blue': result === StatusOfTestResult.SmartReady || result === StatusOfTestResult.Info,
-      'grey': result === StatusOfTestResult.Skipped || result === StatusOfTestResult.NotStarted
-    }
+      green:
+        result === StatusOfTestResult.Compliant ||
+        result === StatusOfTestResult.CompliantLimited ||
+        result === StatusOfTestResult.CompliantHigh,
+      red:
+        result === StatusOfTestResult.NonCompliant ||
+        result === StatusOfTestResult.Error,
+      blue:
+        result === StatusOfTestResult.SmartReady ||
+        result === StatusOfTestResult.Info ||
+        result === StatusOfTestResult.InProgress,
+      grey:
+        result === StatusOfTestResult.Skipped ||
+        result === StatusOfTestResult.NotStarted,
+    };
   }
 
   startTestrun(device: Device): Observable<boolean> {
+    this.isTestrunStartedSub$.next(true);
+
     return this.http
-      .post<any>(`${API_URL}/system/start`, JSON.stringify({device}))
+      .post<TestrunStatus>(
+        `${API_URL}/system/start`,
+        JSON.stringify({ device })
+      )
+      .pipe(map(() => true));
+  }
+
+  getVersion(): BehaviorSubject<Version | null> {
+    return this.version;
+  }
+
+  fetchVersion(): void {
+    this.http
+      .get<Version>(`${API_URL}/system/version`)
       .pipe(
-        map(() => true)
-      );
+        catchError(() => {
+          const previousVersion = this.version.value?.installed_version
+            ? this.version.value
+            : UNAVAILABLE_VERSION;
+          return of(previousVersion);
+        })
+      )
+      .subscribe(version => {
+        this.version.next(version);
+      });
+  }
+
+  deleteReport(mac_addr: string, started: string): Observable<boolean> {
+    return this.http
+      .delete<boolean>(`${API_URL}/report`, {
+        body: JSON.stringify({ mac_addr, timestamp: started }),
+      })
+      .pipe(map(() => true));
   }
 }

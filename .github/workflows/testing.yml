@@ -7,34 +7,33 @@ on:
 
 jobs:
   testrun_baseline:
+    permissions: {}
     name:  Baseline
     runs-on: ubuntu-20.04
     timeout-minutes: 20
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install dependencies
         shell: bash {0}
         run: cmd/prepare
-      - name: Package Testrun
-        shell: bash {0}
-        run: cmd/package
       - name: Install Testrun
         shell: bash {0}
         timeout-minutes: 10
-        run: sudo dpkg -i testrun*.deb
+        run: TESTRUN_DIR=. cmd/install
       - name: Run baseline tests
         shell: bash {0}
         run: testing/baseline/test_baseline
     
   testrun_tests:
+    permissions: {}
     name:  Tests
     runs-on: ubuntu-20.04
     needs: testrun_baseline
     timeout-minutes: 45
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install dependencies
         shell: bash {0}
         run: cmd/prepare
@@ -51,67 +50,110 @@ jobs:
         if: ${{ always() }}
         run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/
       - name: Upload runtime results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
         if: ${{ always() }}
         with:
           if-no-files-found: error
-          name: runtime_${{ github.workflow }}_${{ github.run_id }}
+          name: runtime_tests_${{ github.run_id }}
           path: runtime.tgz
 
   testrun_api:
+    permissions: {}
     name:  API
     runs-on: ubuntu-20.04
     timeout-minutes: 40
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install dependencies
         shell: bash {0}
         run: cmd/prepare
-      - name: Package Testrun  
-        shell: bash {0}
-        run: cmd/package
       - name: Install Testrun
         shell: bash {0}
-        run: sudo dpkg -i testrun*.deb
+        run: TESTRUN_DIR=. cmd/install
         timeout-minutes: 30
       - name: Run tests
         shell: bash {0}
         run: testing/api/test_api
       - name: Archive runtime results
         if: ${{ always() }}
-        run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/ /usr/local/testrun/local/
+        run: sudo tar --exclude-vcs -czf runtime.tgz runtime/ local/
       - name: Upload runtime results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
         if: ${{ always() }}
         with:
           if-no-files-found: error
-          name: runtime_${{ github.workflow }}_${{ github.run_id }}
+          name: runtime_api_${{ github.run_id }}
           path: runtime.tgz
 
   pylint:
+    permissions: {}
     name:  Pylint
     runs-on: ubuntu-22.04
     timeout-minutes: 5
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Run pylint
         shell: bash {0}
         run: testing/pylint/test_pylint
 
   testrun_package:
+    permissions: {}
     name: Package
     runs-on: ubuntu-22.04
     timeout-minutes: 5
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Package Testrun
         shell: bash {0}
         run: cmd/package
       - name: Archive package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
         with:
-          name: Testrun Installer
+          name: testrun_installer
           path: testrun*.deb
+
+  testrun_ui:
+    permissions: {}
+    name: UI
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    - name: Install Node
+      uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
+      with:
+        node-version: 18.13.0
+    - name: Install Chromium Browser
+      run: sudo apt install chromium-browser
+    - name: Install dependencies
+      run: npm install && npm ci
+      working-directory: ./modules/ui
+    - name: Run tests
+      run: |
+        export CHROME_BIN=/usr/bin/chromium-browser
+        CI=true npm run test-headless
+      env:
+        CI: true
+      working-directory: ./modules/ui
+
+  linters_ui:
+    permissions: {}
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    - name: Install Node
+      uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
+      with:
+        node-version: 18.13.0
+    - name: Install dependencies
+      run: npm install && npm ci
+      working-directory: ./modules/ui
+    - name: Run ESLint
+      run: npm run lint
+      working-directory: ./modules/ui
+    - name: Run format check
+      run: npm run format
+      working-directory: ./modules/ui

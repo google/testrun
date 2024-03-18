@@ -25,7 +25,6 @@ _CONF_DIR = 'local'
 _CONF_FILE_NAME = 'system.json'
 
 
-
 # Set log level
 log_level = _DEFAULT_LEVEL
 
@@ -48,12 +47,10 @@ def add_file_handler(log, log_file, log_dir):
   handler.setFormatter(log_format)
   log.addHandler(handler)
 
-
 def add_stream_handler(log):
   handler = logging.StreamHandler()
   handler.setFormatter(log_format)
   log.addHandler(handler)
-
 
 def get_logger(name, log_file=None, log_dir=None):
   if name not in LOGGERS:
@@ -63,3 +60,7 @@ def get_logger(name, log_file=None, log_dir=None):
   if log_file is not None and log_dir is not None:
     add_file_handler(LOGGERS[name], log_file, log_dir)
   return LOGGERS[name]
+
+def set_log_level(level):
+  for log in LOGGERS.items():
+    log[1].setLevel(level)
