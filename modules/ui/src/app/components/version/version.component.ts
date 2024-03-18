@@ -22,7 +22,10 @@ import {
   Output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TestRunService } from '../../services/test-run.service';
+import {
+  TestRunService,
+  UNAVAILABLE_VERSION,
+} from '../../services/test-run.service';
 import { Version } from '../../model/version';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -67,6 +70,12 @@ export class VersionComponent implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  getVersionButtonLabel(installedVersion: string): string {
+    return installedVersion === UNAVAILABLE_VERSION.installed_version
+      ? 'Version temporarily unavailable. Click to open the Welcome modal'
+      : `${installedVersion} New version is available. Click to update`;
   }
 
   openConsentDialog(version: Version) {
