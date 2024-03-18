@@ -1,4 +1,5 @@
 name: Testrun test suite
+permissions: {}
 
 on:
   pull_request:
