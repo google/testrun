@@ -71,7 +71,9 @@ class TestRunSession():
 
   def stop(self):
     self.set_status('Stopping')
+    self.finish()
 
+  def finish(self):
     # Set any in progress test results to Error
     for test_result in self._results:
       if test_result.result == 'In Progress':
