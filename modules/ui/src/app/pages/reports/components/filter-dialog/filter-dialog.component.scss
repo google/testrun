@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<< HEAD:modules/ui/src/app/pages/reports/components/filter-dialog/filter-dialog.component.scss
 @use 'node_modules/@angular/material/index' as mat;
 @import 'src/theming/colors';
 
@@ -24,6 +25,20 @@
 
 .date-field {
   flex-shrink: 0;
+=======
+@import '../../../theming/colors';
+@import '../../../theming/variables';
+
+:host {
+  overflow-y: auto;
+  margin: 16px 0;
+}
+
+table,
+tr {
+  border: 1px solid $lighter-grey;
+  border-collapse: collapse;
+>>>>>>> main:modules/ui/src/app/progress/progress-table/progress-table.component.scss
 }
 
 .date-calendar {

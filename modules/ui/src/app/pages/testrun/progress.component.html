@@ -82,7 +82,11 @@ limitations under the License.
     aria-label="Start new testrun"
     color="primary"
     [disabled]="
+<<<<<<< HEAD:modules/ui/src/app/pages/testrun/progress.component.html
       (hasDevices$ | async) === false ||
+=======
+      !(devices$ | async)?.length ||
+>>>>>>> main:modules/ui/src/app/progress/progress.component.html
       testrunInProgress((systemStatus$ | async)?.status)
     "
     (click)="openTestRunModal()"

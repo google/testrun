@@ -16,18 +16,25 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { VersionComponent } from './version.component';
+<<<<<<< HEAD
 import {
   TestRunService,
   UNAVAILABLE_VERSION,
 } from '../../services/test-run.service';
+=======
+import { TestRunService } from '../../services/test-run.service';
+>>>>>>> main
 import SpyObj = jasmine.SpyObj;
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Version } from '../../model/version';
 import { NEW_VERSION, VERSION } from '../../mocks/version.mock';
+<<<<<<< HEAD
 import { of } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 import { DeviceFormComponent } from '../../pages/devices/components/device-form/device-form.component';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
+=======
+>>>>>>> main
 
 describe('VersionComponent', () => {
   let component: VersionComponent;
@@ -53,6 +60,7 @@ describe('VersionComponent', () => {
     expect(component).toBeTruthy();
   });
 
+<<<<<<< HEAD
   it('should get correct aria label for version button', () => {
     const labelUnavailableVersion = component.getVersionButtonLabel(
       UNAVAILABLE_VERSION.installed_version
@@ -95,6 +103,8 @@ describe('VersionComponent', () => {
     expect(openSpy).toHaveBeenCalled();
   });
 
+=======
+>>>>>>> main
   describe('update is not available', () => {
     beforeEach(() => {
       versionBehaviorSubject$.next(VERSION);

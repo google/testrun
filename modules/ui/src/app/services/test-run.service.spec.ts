@@ -17,18 +17,30 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
+<<<<<<< HEAD
 import { getTestBed, TestBed } from '@angular/core/testing';
 import { Device, TestModule } from '../model/device';
 
 import { TestRunService, UNAVAILABLE_VERSION } from './test-run.service';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
+=======
+import { fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
+import { Device, TestModule } from '../model/device';
+
+import { SystemInterfaces, TestRunService } from './test-run.service';
+import { SystemConfig } from '../model/setting';
+>>>>>>> main
 import {
   MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
 } from '../mocks/progress.mock';
 import { StatusOfTestResult, TestrunStatus } from '../model/testrun-status';
 import { device } from '../mocks/device.mock';
+<<<<<<< HEAD
 import { NEW_VERSION, VERSION } from '../mocks/version.mock';
+=======
+import { VERSION } from '../mocks/version.mock';
+>>>>>>> main
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -87,6 +99,7 @@ describe('TestRunService', () => {
         name: 'tls',
         enabled: true,
       },
+<<<<<<< HEAD
       {
         displayName: 'Protocol',
         name: 'protocol',
@@ -100,6 +113,24 @@ describe('TestRunService', () => {
     const deviceArray = [device] as Device[];
 
     service.fetchDevices().subscribe(res => {
+=======
+    ] as TestModule[]);
+  });
+
+  it('setIsOpenAddDevice should update the isOpenAddDevice$ value', () => {
+    service.setIsOpenAddDevice(true);
+
+    service.isOpenAddDevice$.subscribe(value => {
+      expect(value).toBe(true);
+    });
+  });
+
+  it('getDevices should return devices', () => {
+    let result: Device[] | null = null;
+    const deviceArray = [device] as Device[];
+
+    service.getDevices().subscribe(res => {
+>>>>>>> main
       expect(res).toEqual(result);
     });
 
@@ -114,6 +145,25 @@ describe('TestRunService', () => {
     req.flush(deviceArray);
   });
 
+<<<<<<< HEAD
+=======
+  it('setSystemConfig should update the systemConfig data', () => {
+    service.setSystemConfig(MOCK_SYSTEM_CONFIG);
+
+    service.systemConfig$.subscribe(data => {
+      expect(data).toEqual(MOCK_SYSTEM_CONFIG);
+    });
+  });
+
+  it('setHasConnectionSetting should update the hasConnectionSetting$', () => {
+    service.setHasConnectionSetting(true);
+
+    service.hasConnectionSetting$.subscribe(data => {
+      expect(data).toEqual(true);
+    });
+  });
+
+>>>>>>> main
   it('getSystemConfig should return systemConfig data', () => {
     const apiUrl = 'http://localhost:8000/system/config';
 
@@ -155,6 +205,18 @@ describe('TestRunService', () => {
     req.flush(mockSystemInterfaces);
   });
 
+<<<<<<< HEAD
+=======
+  it('hasDevice should return true if device with mac address already exist', fakeAsync(() => {
+    const deviceArray = [device] as Device[];
+    service.setDevices(deviceArray);
+    tick();
+
+    expect(service.hasDevice('00:1e:42:35:73:c4')).toEqual(true);
+    expect(service.hasDevice('    00:1e:42:35:73:c4    ')).toEqual(true);
+  }));
+
+>>>>>>> main
   describe('getSystemStatus', () => {
     it('should get system status data with no changes', () => {
       const result = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
@@ -234,7 +296,11 @@ describe('TestRunService', () => {
       });
 
       result = reports;
+<<<<<<< HEAD
       service.getHistory();
+=======
+      service.fetchHistory();
+>>>>>>> main
       const req = httpTestingController.expectOne(
         'http://localhost:8000/reports'
       );
@@ -243,6 +309,7 @@ describe('TestRunService', () => {
 
       req.flush(reports);
     });
+<<<<<<< HEAD
   });
 
   describe('#getResultClass', () => {
@@ -313,6 +380,98 @@ describe('TestRunService', () => {
 
         expect(result).toEqual(expectedResult);
       });
+=======
+
+    it('should return [] when error happens', () => {
+      let result: TestrunStatus[] | null = null;
+
+      service.getHistory().subscribe(res => {
+        expect(res).toEqual(result);
+      });
+
+      result = [];
+      service.fetchHistory();
+      const req = httpTestingController.expectOne({
+        url: 'http://localhost:8000/reports',
+      });
+
+      req.flush([], { status: 500, statusText: 'error' });
+    });
+  });
+
+  describe('#getResultClass', () => {
+    it('should return class "green" if test result is "Compliant" or "Smart Ready"', () => {
+      const expectedResult = {
+        green: true,
+        red: false,
+        blue: false,
+        grey: false,
+      };
+
+      const result1 = service.getResultClass(StatusOfTestResult.Compliant);
+
+      expect(result1).toEqual(expectedResult);
+    });
+
+    it('should return class "blue" if test result is "Smart Ready" or "Informational"', () => {
+      const expectedResult = {
+        green: false,
+        red: false,
+        blue: true,
+        grey: false,
+      };
+
+      const result1 = service.getResultClass(StatusOfTestResult.SmartReady);
+      const result2 = service.getResultClass(StatusOfTestResult.Info);
+
+      expect(result1).toEqual(expectedResult);
+      expect(result2).toEqual(expectedResult);
+    });
+
+    it('should return class "read" if test result is "Non Compliant" or "Error"', () => {
+      const expectedResult = {
+        green: false,
+        red: true,
+        blue: false,
+        grey: false,
+      };
+
+      const result = service.getResultClass(StatusOfTestResult.NonCompliant);
+      const result2 = service.getResultClass(StatusOfTestResult.Error);
+
+      expect(result).toEqual(expectedResult);
+      expect(result2).toEqual(expectedResult);
+    });
+
+    it('should return class "grey" if test result is "Skipped" or "Not Started"', () => {
+      const expectedResult = {
+        green: false,
+        red: false,
+        blue: false,
+        grey: true,
+      };
+
+      const result1 = service.getResultClass(StatusOfTestResult.Skipped);
+      const result2 = service.getResultClass(StatusOfTestResult.NotStarted);
+
+      expect(result1).toEqual(expectedResult);
+      expect(result2).toEqual(expectedResult);
+    });
+  });
+
+  describe('#addDevice', () => {
+    it('should create array with new value if previous value is null', function () {
+      service.addDevice(device);
+
+      expect(service.getDevices().value).toEqual([device]);
+    });
+
+    it('should add new value if previous value is array', function () {
+      service.setDevices([device, device]);
+      service.addDevice(device);
+
+      expect(service.getDevices().value).toEqual([device, device, device]);
+>>>>>>> main
     });
   });
 
@@ -329,6 +488,7 @@ describe('TestRunService', () => {
     req.flush({});
   });
 
+<<<<<<< HEAD
   describe('#fetchVersion', () => {
     it('should get system version', () => {
       const version = VERSION;
@@ -375,6 +535,29 @@ describe('TestRunService', () => {
       service.getVersion().subscribe(res => {
         expect(res).toEqual(UNAVAILABLE_VERSION);
       });
+=======
+  it('removeDevice should remove device from device list', fakeAsync(() => {
+    const deviceArray = [device] as Device[];
+    service.setDevices(deviceArray);
+    tick();
+    service.removeDevice(device);
+
+    expect(service.hasDevice('00:1e:42:35:73:c4')).toEqual(false);
+  }));
+
+  it('fetchVersion should get system version', () => {
+    const version = VERSION;
+
+    service.fetchVersion();
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/version'
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush(version);
+
+    service.getVersion().subscribe(res => {
+      expect(res).toEqual(version);
+>>>>>>> main
     });
   });
 
@@ -396,6 +579,42 @@ describe('TestRunService', () => {
     req.flush({});
   });
 
+<<<<<<< HEAD
+=======
+  it('removeReport should remove device from history list', fakeAsync(() => {
+    const reports = [
+      {
+        status: 'Completed',
+        device: device,
+        report: 'https://api.testrun.io/report.pdf',
+        started: '2023-06-22T10:11:00.123Z',
+        finished: '2023-06-22T10:17:00.123Z',
+      },
+      {
+        status: 'Completed',
+        device: device,
+        report: 'https://api.testrun.io/report.pdf',
+        started: '2023-07-22T10:11:00.123Z',
+        finished: '2023-07-22T10:17:00.123Z',
+      },
+    ] as TestrunStatus[];
+
+    service.getHistory().next(reports);
+    tick();
+    service.removeReport('00:1e:42:35:73:c4', '2023-06-22T10:11:00.123Z');
+
+    expect(
+      service
+        .getHistory()
+        .value?.some(
+          report =>
+            report.device.mac_addr === '00:1e:42:35:73:c4' &&
+            report.started === '2023-06-22T10:11:00.123Z'
+        )
+    ).toEqual(false);
+  }));
+
+>>>>>>> main
   it('#saveDevice should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/device';
 

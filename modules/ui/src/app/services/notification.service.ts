@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<< HEAD
 
 import { Injectable } from '@angular/core';
 import {
@@ -25,11 +26,27 @@ import { delay } from 'rxjs/internal/operators/delay';
 import { take } from 'rxjs/internal/operators/take';
 
 const TIMEOUT_MS = 8000;
+=======
+<<<<<<<< HEAD:modules/ui/src/app/pages/reports/components/delete-report/delete-report.component.scss
+:host {
+  display: inline-block;
+}
+
+.delete-report-button {
+  cursor: pointer;
+  display: inline-block;
+  & ::ng-deep .mdc-icon-button__ripple {
+    display: none;
+========
+import { Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+>>>>>>> main
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService {
+<<<<<<< HEAD
   private snackBarRef!: MatSnackBarRef<TextOnlySnackBar>;
   constructor(
     public snackBar: MatSnackBar,
@@ -63,5 +80,20 @@ export class NotificationService {
       '.test-run-notification button'
     ) as HTMLButtonElement;
     btn?.focus();
+=======
+  constructor(private snackBar: MatSnackBar) {}
+
+  notify(message: string, duration = 5000) {
+    this.snackBar.open(message, 'OK', {
+      horizontalPosition: 'right',
+      panelClass: 'test-run-notification',
+      duration: duration,
+    });
+  }
+
+  dismiss() {
+    this.snackBar.dismiss();
+>>>>>>>> main:modules/ui/src/app/services/notification.service.ts
+>>>>>>> main
   }
 }

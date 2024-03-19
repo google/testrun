@@ -1,0 +1,46 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<span class="version-update-title">Software is outdated!</span>
+<p class="version-update-content">
+  You are currently using an outdated software (<b>{{
+    data.installed_version
+  }}</b
+  >).
+  <br />
+  The actual version number is <b>{{ data.latest_version }}</b
+  >. Please consider to update or continue at your own risk.
+</p>
+
+<mat-dialog-actions align="end" class="version-update-actions">
+  <button
+    (click)="cancel()"
+    class="cancel-button"
+    color="primary"
+    mat-button
+    type="button">
+    Ignore
+  </button>
+  <a
+    href="{{ data.latest_version_url }}"
+    target="_blank"
+    class="download-link"
+    color="primary"
+    mat-button
+    type="button"
+    (click)="cancel()">
+    Download
+  </a>
+</mat-dialog-actions>

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<< HEAD
 import {
   Component,
   EventEmitter,
@@ -29,16 +30,29 @@ import {
 import { Version } from '../../model/version';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+=======
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TestRunService } from '../../services/test-run.service';
+import { Version } from '../../model/version';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { UpdateDialogComponent } from './update-dialog/update-dialog.component';
+>>>>>>> main
 import { tap } from 'rxjs/internal/operators/tap';
 
 import { Observable } from 'rxjs/internal/Observable';
 import { Subject } from 'rxjs/internal/Subject';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
+<<<<<<< HEAD
 import { filter } from 'rxjs';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 declare const gtag: Function;
+=======
+
+>>>>>>> main
 @Component({
   selector: 'app-version',
   standalone: true,
@@ -47,11 +61,19 @@ declare const gtag: Function;
   styleUrls: ['./version.component.scss'],
 })
 export class VersionComponent implements OnInit, OnDestroy {
+<<<<<<< HEAD
   @Input() consentShown!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
   version$!: Observable<Version | null>;
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
+=======
+  version$!: Observable<Version | null>;
+  private destroy$: Subject<boolean> = new Subject<boolean>();
+
+  private isDialogClosed = false;
+
+>>>>>>> main
   constructor(
     private testRunService: TestRunService,
     public dialog: MatDialog
@@ -61,17 +83,24 @@ export class VersionComponent implements OnInit, OnDestroy {
     this.testRunService.fetchVersion();
 
     this.version$ = this.testRunService.getVersion().pipe(
+<<<<<<< HEAD
       filter(version => version !== null),
       tap(version => {
         if (!this.consentShown) {
           // @ts-expect-error null is filtered
           this.openConsentDialog(version);
           this.consentShownEvent.emit();
+=======
+      tap(version => {
+        if (version?.update_available && !this.isDialogClosed) {
+          this.openUpdateWindow(version);
+>>>>>>> main
         }
       })
     );
   }
 
+<<<<<<< HEAD
   getVersionButtonLabel(installedVersion: string): string {
     return installedVersion === UNAVAILABLE_VERSION.installed_version
       ? 'Version temporarily unavailable. Click to open the Welcome modal'
@@ -81,16 +110,26 @@ export class VersionComponent implements OnInit, OnDestroy {
   openConsentDialog(version: Version) {
     const dialogRef = this.dialog.open(ConsentDialogComponent, {
       ariaLabel: 'Welcome to Testrun modal window',
+=======
+  openUpdateWindow(version: Version) {
+    const dialogRef = this.dialog.open(UpdateDialogComponent, {
+      ariaLabel: 'Update version',
+>>>>>>> main
       data: version,
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
+<<<<<<< HEAD
       panelClass: 'consent-dialog',
+=======
+      panelClass: 'version-update-dialog',
+>>>>>>> main
     });
 
     dialogRef
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
+<<<<<<< HEAD
       .subscribe((grant: boolean) => {
         if (grant === null) {
           return;
@@ -99,6 +138,9 @@ export class VersionComponent implements OnInit, OnDestroy {
           analytics_storage: grant ? 'granted' : 'denied',
         });
       });
+=======
+      .subscribe(() => (this.isDialogClosed = true));
+>>>>>>> main
   }
 
   ngOnDestroy() {

@@ -58,7 +58,7 @@ class TestReport():
     self._report_url = ''
     self._cur_page = 0
     # Placeholder until available in json report
-    self._version = 'v1.2-alpha'
+    self._version = 'v1.2'
 
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
@@ -223,82 +223,13 @@ class TestReport():
     page += '<div style="break-after:page"></div>'
     return page
 
-  def generate_module_pages(self, json_data, module_reports):
-    # ToDo: Figure out how to make this dynamic
-    # Content max size taken from css module-page-conten class
-    content_max_size = 913
-    header_padding = 40  # Top and bottom padding for markdown headers
-    page_content = ''
-    pages = ''
-    content_size = 0
-    content = module_reports.split('\n')
-    active_table = False
-
-    for line in content:
-      if '<h1' in line:
-        content_size += 40 + header_padding
-      elif '<h2' in line:
-        content_size += 30 + header_padding
-      elif '<h3' in line:
-        content_size += 23 + header_padding
-      elif '<tr>' in line:
-        content_size += 39
-      elif '<li>' in line:
-        content_size += 20
-
-      if '<table' in line:
-        active_table = True
-      elif '</table>' in line:
-        active_table = False
-      # If the current line is within the content size limit over the
-      # we'll add it to this page, otherweise, we'll put it on the next
-      # page. Also make sure that if there is less than 20 pixels
-      # left after a header, start a new page or the summary
-      # title will be left with no information after it. Current minimum
-      # summary item is 20 pixels, adjust if we update the <li> element.
-      if content_size >= content_max_size or (
-          '<h' in line and content_max_size - content_size < 20):
-        # If we are in the middle of a table, we need
-        # to close the table
-        if active_table:
-          page_content += '</tbody></table>'
-        page = self.generate_module_page(json_data, page_content)
-        pages += page + '\n'
-        content_size = 0
-        # If we were in the middle of a table, we need
-        # to restart it for the rest of the rows
-        page_content = ('<table class=markdown-table></tbody>\n'
-                        if active_table else '')
-      page_content += line + '\n'
-    if len(page_content) > 0:
-      page = self.generate_module_page(json_data, page_content)
-      pages += page + '\n'
-    return pages
-
-  def generate_module_page(self, json_data, module_reports):
-    self._cur_page += 1
-    page = '<div class="page">'
-    page += self.generate_header(json_data)
-    page += f'''
-    <div class=module-page-content>
-      {module_reports}
-    </div>'''
-    page += self.generate_footer(self._cur_page)
-    page += '</div>'  #Page end
-    page += '<div style="break-after:page"></div>'
-    return page
-
   def generate_body(self, json_data):
-    self._num_pages = 0
-    self._cur_page = 0
-    body = f'''
+    return f'''
     <body>
       {self.generate_pages(json_data)}
       {self.generate_module_reports(json_data)}
     </body>
     '''
-    # Set the max pages after all pages have been generated
-    return body.replace('MAX_PAGE', str(self._cur_page))
 
   def generate_module_reports(self, json_data):
     content = ''
@@ -406,6 +337,36 @@ class TestReport():
     summary += self.generate_device_summary_label('MAC Address',
                                                   mac,
                                                   trailing_space=False)
+
+    # Add device configuration
+    summary += '''
+    <div class="summary-device-modules">
+      <div class="summary-item-label" style="margin-bottom:10px;">
+        <h4>Device Configuration</h4>
+      </div>
+    '''
+
+    if 'test_modules' in json_data['device']:
+
+      sorted_modules = {}
+
+      for test_module in json_data['device']['test_modules']:
+        if 'enabled' in json_data['device']['test_modules'][test_module]:
+          sorted_modules[test_module] = json_data['device']['test_modules'][
+            test_module]['enabled']
+
+      # Sort the modules by enabled first
+      sorted_modules = sorted(sorted_modules.items(),
+                              key=lambda x:x[1],
+                              reverse=True)
+
+      for module in sorted_modules:
+        summary += self.generate_device_module_label(
+          module[0],
+          module[1]
+        )
+
+    summary += '</div>'
 
     # Add device configuration
     summary += '''

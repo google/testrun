@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+<<<<<<< HEAD
 import { Device, DeviceView } from '../../model/device';
 
 import { DeviceItemComponent } from './device-item.component';
 import { DeviceRepositoryModule } from '../../pages/devices/device-repository.module';
+=======
+import { Device } from '../../model/device';
+
+import { DeviceItemComponent } from './device-item.component';
+import { DeviceRepositoryModule } from '../../device-repository/device-repository.module';
+>>>>>>> main
 
 describe('DeviceItemComponent', () => {
   let component: DeviceItemComponent;
@@ -54,6 +61,7 @@ describe('DeviceItemComponent', () => {
       fixture.detectChanges();
     });
 
+<<<<<<< HEAD
     it('should display information about device', () => {
       const name = compiled.querySelector('.item-name');
       const manufacturer = compiled.querySelector('.item-manufacturer');
@@ -79,6 +87,11 @@ describe('DeviceItemComponent', () => {
 
       expect(item.tabIndex).toBe(-2);
     });
+=======
+    expect(name?.textContent?.trim()).toEqual('O3-DIN-CPU');
+    expect(manufacturer?.textContent?.trim()).toEqual('Delta');
+    expect(mac?.textContent?.trim()).toEqual('00:1e:42:35:73:c4');
+>>>>>>> main
   });
 
   describe('with device view as WithActions', () => {
@@ -102,5 +115,13 @@ describe('DeviceItemComponent', () => {
 
       expect(clickSpy).toHaveBeenCalledWith(component.device);
     });
+  });
+
+  it('should have tabindex', () => {
+    component.tabIndex = -2;
+    fixture.detectChanges();
+    const item = compiled.querySelector('.device-item') as HTMLElement;
+
+    expect(item.tabIndex).toBe(-2);
   });
 });

@@ -16,6 +16,10 @@
 
 export enum Routes {
   Devices = '/devices',
+<<<<<<< HEAD
   Testing = '/testing',
+=======
+  Testrun = '/testrun',
+>>>>>>> main
   Reports = '/reports',
 }

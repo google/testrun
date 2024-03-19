@@ -21,6 +21,7 @@
   width: 100%;
 }
 
+<<<<<<< HEAD
 :host:has(.callout-container.info),
 :host:has(.callout-container.error) {
   position: absolute;
@@ -30,6 +31,12 @@
   top: 60px;
 }
 
+=======
+:host:has(.callout-container.info) {
+  position: absolute;
+}
+
+>>>>>>> main
 .callout-container {
   display: flex;
   box-sizing: border-box;
@@ -63,6 +70,7 @@
   }
 }
 
+<<<<<<< HEAD
 .callout-container.error {
   margin: 24px 32px;
   background-color: $red-50;
@@ -86,6 +94,8 @@
   }
 }
 
+=======
+>>>>>>> main
 .callout-context {
   margin: 0;
   padding: 6px 0;

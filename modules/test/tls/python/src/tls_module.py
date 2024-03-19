@@ -26,8 +26,7 @@ MODULE_REPORT_FILE_NAME = 'tls_report.md'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 TLS_CAPTURE_FILE = '/runtime/output/tls.pcap'
-
-LOGGER = None
+GATEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
 
 
 class TLSModule(TestModule):
@@ -252,9 +251,8 @@ class TLSModule(TestModule):
     client_results = self._tls_util.validate_tls_client(
         client_ip=client_ip,
         tls_version=tls_version,
-        capture_files=[
-            MONITOR_CAPTURE_FILE, STARTUP_CAPTURE_FILE, GATEWAY_CAPTURE_FILE
-        ])
+        capture_files=[MONITOR_CAPTURE_FILE,STARTUP_CAPTURE_FILE,
+                       GATEWAY_CAPTURE_FILE])
 
     # Generate results based on the state
     result_message = 'No outbound connections were found.'

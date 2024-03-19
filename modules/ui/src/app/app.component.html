@@ -14,21 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <app-bypass></app-bypass>
+<<<<<<< HEAD
 <mat-drawer-container
   *ngIf="viewModel$ | async as vm"
   [class.active-menu]="isMenuOpen | async"
   hasBackdrop="false"
   class="app-container"
   autosize>
+=======
+<mat-drawer-container hasBackdrop="false" class="app-container" autosize>
+>>>>>>> main
   <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
     <div class="app-sidebar" #navigation>
       <ng-container
         *ngTemplateOutlet="
           navButtonRoute;
           context: {
+<<<<<<< HEAD
             route: Routes.Testing,
             svgIcon: 'testrun_logo_small',
             label: 'Testing',
+=======
+            route: Routes.Testrun,
+            svgIcon: 'testrun_logo_small',
+            label: 'Testrun',
+>>>>>>> main
             name: 'testrun'
           }
         ">
@@ -55,9 +65,13 @@ limitations under the License.
           }
         ">
       </ng-container>
+<<<<<<< HEAD
       <app-version
         [consentShown]="vm.consentShown"
         (consentShownEvent)="consentShown()"></app-version>
+=======
+      <app-version></app-version>
+>>>>>>> main
     </div>
   </mat-drawer>
 
@@ -73,7 +87,11 @@ limitations under the License.
       </button>
       <a
         class="logo-link"
+<<<<<<< HEAD
         routerLink="{{ Routes.Testing }}"
+=======
+        routerLink="{{ Routes.Testrun }}"
+>>>>>>> main
         aria-label="Testrun ui logo">
         <mat-icon svgIcon="testrun_logo_color"></mat-icon>
         <h1 class="main-heading">Testrun</h1>
@@ -83,12 +101,17 @@ limitations under the License.
         #toggleSettingsBtn
         class="app-toolbar-button app-toolbar-button-general-settings"
         mat-icon-button
+<<<<<<< HEAD
         aria-label="System settings"
+=======
+        aria-label="Connection settings"
+>>>>>>> main
         (click)="openGeneralSettings(true)">
         <mat-icon>tune</mat-icon>
       </button>
     </mat-toolbar>
     <div class="app-content-main" role="main" id="main">
+<<<<<<< HEAD
       <ng-container *ngIf="settingMissedError$ | async as error">
         <app-callout [type]="CalloutType.Error" *ngIf="error.isSettingMissed">
           <ng-container
@@ -117,11 +140,19 @@ limitations under the License.
       <app-callout
         [type]="CalloutType.Info"
         *ngIf="(hasConnectionSetting$ | async) === false">
+=======
+      <app-callout
+        [type]="CalloutType.Info"
+        *ngIf="
+          (hasConnectionSetting$ | async) !== true && isConnectionSettingsLoaded
+        ">
+>>>>>>> main
         Step 1: To perform a device test, please, select ports in
         <a
           (click)="openSetting()"
           (keydown.enter)="openSetting()"
           (keydown.space)="openSetting()"
+<<<<<<< HEAD
           aria-label="The System settings link opens the panel. No redirect to other pages."
           tabindex="0"
           role="link"
@@ -129,11 +160,25 @@ limitations under the License.
           >System settings</a
         >
         panel.
+=======
+          aria-label="The Connection settings link opens the panel. No redirect to other pages."
+          tabindex="0"
+          role="link"
+          class="message-link"
+          >Connection settings</a
+        >.
+>>>>>>> main
       </app-callout>
       <app-callout
         [type]="CalloutType.Info"
         *ngIf="
+<<<<<<< HEAD
           (hasConnectionSetting$ | async) === true && vm.hasDevices === false
+=======
+          (hasConnectionSetting$ | async) === true &&
+          !(devices$ | async)?.length &&
+          isDevicesLoaded
+>>>>>>> main
         ">
         Step 2: To perform a device test please
         <a
@@ -152,6 +197,7 @@ limitations under the License.
         [type]="CalloutType.Info"
         *ngIf="
           (hasConnectionSetting$ | async) === true &&
+<<<<<<< HEAD
           vm.hasDevices &&
           (!(systemStatus$ | async)?.status ||
             (systemStatus$ | async)?.status === StatusOfTestrun.Idle) &&
@@ -159,16 +205,35 @@ limitations under the License.
           (isTestrunStarted$ | async) === false
         ">
         Step 3: Once device is created, you are able to
+=======
+          (devices$ | async)?.length &&
+          (!(systemStatus$ | async)?.status ||
+            (systemStatus$ | async)?.status === StatusOfTestrun.Idle) &&
+          isStatusLoaded &&
+          (isTestrunStarted$ | async) === false
+        ">
+        Step 3: Once device is created navigate to
+>>>>>>> main
         <a
           (click)="navigateToRuntime()"
           (keydown.enter)="navigateToRuntime()"
           (keydown.space)="navigateToRuntime()"
+<<<<<<< HEAD
           aria-label="The start testing link redirects to the Testing page and opens the dialogue there."
           tabindex="0"
           role="link"
           class="message-link"
           >start testing</a
         >.
+=======
+          aria-label="The Testrun link redirects to the Testrun page and opens the dialogue there."
+          tabindex="0"
+          role="link"
+          class="message-link"
+          >Testrun</a
+        >
+        tab.
+>>>>>>> main
       </app-callout>
       <router-outlet></router-outlet>
     </div>
@@ -180,8 +245,14 @@ limitations under the License.
     autoFocus="#setting-panel-close-button"
     class="settings-drawer">
     <app-general-settings
+<<<<<<< HEAD
       #settings
       (closeSettingEvent)="closeSetting(vm.hasDevices)">
+=======
+      [interfaces]="interfaces"
+      (closeSettingEvent)="closeSetting()"
+      (reloadInterfacesEvent)="reloadInterfaces()">
+>>>>>>> main
     </app-general-settings>
   </mat-drawer>
 </mat-drawer-container>

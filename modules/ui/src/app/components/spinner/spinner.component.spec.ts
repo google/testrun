@@ -3,7 +3,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SpinnerComponent } from './spinner.component';
 import { LoaderService } from '../../services/loader.service';
 import { of } from 'rxjs';
+<<<<<<< HEAD
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+=======
+>>>>>>> main
 
 describe('SpinnerComponent', () => {
   let component: SpinnerComponent;
@@ -14,7 +17,11 @@ describe('SpinnerComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+<<<<<<< HEAD
       imports: [SpinnerComponent, BrowserAnimationsModule],
+=======
+      imports: [SpinnerComponent],
+>>>>>>> main
       providers: [{ provide: LoaderService, useValue: loaderServiceMock }],
     });
     fixture = TestBed.createComponent(SpinnerComponent);

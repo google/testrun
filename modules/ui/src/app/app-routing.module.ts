@@ -18,15 +18,25 @@ import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
+<<<<<<< HEAD
     path: 'testing',
     loadChildren: () =>
       import('./pages/testrun/progress.module').then(m => m.ProgressModule),
+=======
+    path: 'testrun',
+    loadChildren: () =>
+      import('./progress/progress.module').then(m => m.ProgressModule),
+>>>>>>> main
     title: 'Testrun',
   },
   {
     path: 'devices',
     loadChildren: () =>
+<<<<<<< HEAD
       import('./pages/devices/device-repository.module').then(
+=======
+      import('./device-repository/device-repository.module').then(
+>>>>>>> main
         m => m.DeviceRepositoryModule
       ),
     title: 'Testrun - Devices',
@@ -34,7 +44,11 @@ const routes: Routes = [
   {
     path: 'reports',
     loadChildren: () =>
+<<<<<<< HEAD
       import('./pages/reports/history.module').then(m => m.HistoryModule),
+=======
+      import('./history/history.module').then(m => m.HistoryModule),
+>>>>>>> main
     title: 'Testrun - Reports',
   },
   {

@@ -1,0 +1,230 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<ng-container *ngIf="dataLoaded">
+  <ng-container *ngIf="this.dataSource?.data?.length; else empty">
+    <mat-toolbar class="history-toolbar">
+      <h2 class="title">Reports</h2>
+    </mat-toolbar>
+
+    <div
+      class="history-content"
+      [class.history-content-empty]="dataSource.filteredData.length === 0">
+      <table
+        (matSortChange)="sortData($event)"
+        [dataSource]="dataSource"
+        [trackBy]="trackByStarted"
+        mat-table
+        matSort
+        tabindex="0">
+        <!-- Started Column -->
+        <ng-container matColumnDef="started">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header
+            sortActionDescription="Sort by started date">
+            Started
+            <ng-container
+              *ngTemplateOutlet="
+                filterButton;
+                context: { name: FilterName.Started }
+              ">
+            </ng-container>
+          </th>
+          <td *matCellDef="let data" class="text-nowrap" mat-cell>
+            {{ getFormattedDateString(data.started) }}
+          </td>
+        </ng-container>
+
+        <!-- Duration Column -->
+        <ng-container matColumnDef="duration">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header
+            sortActionDescription="Sort by duration time">
+            Duration
+          </th>
+          <td *matCellDef="let data" class="text-nowrap" mat-cell>
+            {{ data.duration }}
+          </td>
+        </ng-container>
+
+        <!-- Device Column -->
+        <ng-container matColumnDef="deviceInfo">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header
+            sortActionDescription="Sort by device">
+            Device
+            <ng-container
+              *ngTemplateOutlet="
+                filterButton;
+                context: { name: FilterName.DeviceInfo }
+              ">
+            </ng-container>
+          </th>
+          <td *matCellDef="let data" mat-cell>{{ data.deviceInfo }}</td>
+        </ng-container>
+
+        <!-- Firmware Column -->
+        <ng-container matColumnDef="deviceFirmware">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header
+            sortActionDescription="Sort by firmware">
+            Firmware
+            <ng-container
+              *ngTemplateOutlet="
+                filterButton;
+                context: { name: FilterName.DeviceFirmware }
+              ">
+            </ng-container>
+          </th>
+          <td *matCellDef="let data" mat-cell>{{ data.deviceFirmware }}</td>
+        </ng-container>
+
+        <!-- Result Column -->
+        <ng-container matColumnDef="status">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header
+            sortActionDescription="Sort by result">
+            Result
+            <ng-container
+              *ngTemplateOutlet="
+                filterButton;
+                context: { name: FilterName.Results }
+              ">
+            </ng-container>
+          </th>
+          <td *matCellDef="let data" mat-cell>
+            <span
+              [ngClass]="getResultClass(data.status)"
+              class="table-cell-result-text">
+              {{ data.status }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="report">
+          <th *matHeaderCellDef mat-header-cell>Actions</th>
+          <td *matCellDef="let data" class="table-cell-actions" mat-cell>
+            <app-download-report *ngIf="data?.device" [data]="data">
+              <mat-icon
+                class="download-report-icon"
+                fontSet="material-icons-outlined">
+                file_download
+              </mat-icon>
+            </app-download-report>
+            <app-delete-report
+              *ngIf="data?.device"
+              [data]="data"
+              (deviceRemoved)="focusNextButton()">
+              <mat-icon
+                class="delete-report-icon"
+                fontSet="material-icons-outlined">
+                delete
+              </mat-icon>
+            </app-delete-report>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="chips">
+          <th
+            *matHeaderCellDef
+            [attr.colspan]="displayedColumns.length"
+            mat-header-cell>
+            <div>
+              <app-filter-chips
+                [filters]="filteredValues"
+                (filterCleared)="filterCleared($event)"></app-filter-chips>
+            </div>
+          </th>
+        </ng-container>
+
+        <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
+        <tr
+          *matHeaderRowDef="chips"
+          mat-header-row
+          [class.hidden]="isFiltersEmpty()"></tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+            <div class="results-content-filter-empty">
+              <ng-container
+                *ngTemplateOutlet="
+                  emptyMessage;
+                  context: {
+                    header:
+                      'Sorry, there are no reports matching the search criteria.',
+                    message: 'Please consider change or clear filters.'
+                  }
+                "></ng-container>
+            </div>
+          </td>
+        </tr>
+
+        <tr
+          *matRowDef="let row; columns: displayedColumns"
+          mat-row
+          #rowElement
+          [class.report-selected]="rowElement === selectedRow"
+          (click)="selectRow(rowElement)"></tr>
+      </table>
+    </div>
+  </ng-container>
+</ng-container>
+<ng-template #empty>
+  <div class="results-content-empty">
+    <ng-container
+      *ngTemplateOutlet="
+        emptyMessage;
+        context: {
+          header: 'Sorry, there are no reports yet!',
+          message:
+            'Reports will automatically generate following a test attempt completion.'
+        }
+      "></ng-container>
+  </div>
+</ng-template>
+
+<ng-template #filterButton let-name="name">
+  <button
+    mat-button
+    (click)="openFilter($event, name)"
+    (keydown.enter)="openFilter($event, name)"
+    (keydown.space)="openFilter($event, name)"
+    class="filter-button filter-button-{{ name }}"
+    [ngClass]="filterOpened && activeFilter === name ? 'active' : ''"
+    attr.aria-label="filter by {{ name }}"
+    mat-button>
+    <mat-icon fontSet="material-icons-outlined" class="filter-icon"
+      >filter_list</mat-icon
+    >
+  </button>
+</ng-template>
+
+<ng-template #emptyMessage let-header="header" let-message="message">
+  <div class="results-content-empty-message">
+    <div class="results-content-empty-message-img"></div>
+    <span class="results-content-empty-message-header">{{ header }}</span>
+    <span class="results-content-empty-message-main">{{ message }}</span>
+  </div>
+</ng-template>

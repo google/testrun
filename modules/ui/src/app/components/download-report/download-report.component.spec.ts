@@ -75,10 +75,13 @@ describe('DownloadReportComponent', () => {
     describe('with data provided', () => {
       beforeEach(() => {
         component.data = MOCK_PROGRESS_DATA_COMPLIANT;
+<<<<<<< HEAD
         component.title =
           'Download pdf for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20';
         component.href = MOCK_PROGRESS_DATA_COMPLIANT.report;
 
+=======
+>>>>>>> main
         fixture.detectChanges();
       });
 
@@ -95,7 +98,11 @@ describe('DownloadReportComponent', () => {
           'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
         );
         expect(downloadReportLink.title).toEqual(
+<<<<<<< HEAD
           'Download pdf for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
+=======
+          'Download report for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
+>>>>>>> main
         );
       });
     });

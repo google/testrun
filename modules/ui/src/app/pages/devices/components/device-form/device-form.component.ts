@@ -22,6 +22,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+<<<<<<< HEAD:modules/ui/src/app/pages/devices/components/device-form/device-form.component.ts
 
 import { Device, TestModule } from '../../../../model/device';
 import { DeviceValidators } from './device.validators';
@@ -30,6 +31,16 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
 import { DevicesStore } from '../../devices.store';
 
+=======
+import { Device, TestModule } from '../../model/device';
+import { TestRunService } from '../../services/test-run.service';
+import { DeviceValidators } from './device.validators';
+import { catchError, of, Subject, takeUntil } from 'rxjs';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { EscapableDialogComponent } from '../../components/escapable-dialog/escapable-dialog.component';
+import { Observable } from 'rxjs/internal/Observable';
+
+>>>>>>> main:modules/ui/src/app/device-repository/device-form/device-form.component.ts
 const MAC_ADDRESS_PATTERN =
   '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
 
@@ -50,11 +61,24 @@ export interface FormResponse {
   action: FormAction;
 }
 
+export enum FormAction {
+  Delete = 'Delete',
+  Save = 'Save',
+}
+
+export interface FormResponse {
+  device?: Device;
+  action: FormAction;
+}
+
 @Component({
   selector: 'app-device-form',
   templateUrl: './device-form.component.html',
   styleUrls: ['./device-form.component.scss'],
+<<<<<<< HEAD:modules/ui/src/app/pages/devices/components/device-form/device-form.component.ts
   providers: [DevicesStore],
+=======
+>>>>>>> main:modules/ui/src/app/device-repository/device-form/device-form.component.ts
 })
 export class DeviceFormComponent
   extends EscapableDialogComponent
@@ -71,8 +95,13 @@ export class DeviceFormComponent
     public override dialogRef: MatDialogRef<DeviceFormComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private fb: FormBuilder,
+<<<<<<< HEAD:modules/ui/src/app/pages/devices/components/device-form/device-form.component.ts
     private deviceValidators: DeviceValidators,
     private devicesStore: DevicesStore
+=======
+    private testRunService: TestRunService,
+    private deviceValidators: DeviceValidators
+>>>>>>> main:modules/ui/src/app/device-repository/device-form/device-form.component.ts
   ) {
     super(dialogRef);
   }
@@ -113,6 +142,7 @@ export class DeviceFormComponent
   }
 
   cancel(): void {
+    this.testRunService.setIsOpenAddDevice(false);
     this.dialogRef.close();
   }
 
@@ -132,6 +162,7 @@ export class DeviceFormComponent
 
     const device = this.createDeviceFromForm();
 
+<<<<<<< HEAD:modules/ui/src/app/pages/devices/components/device-form/device-form.component.ts
     this.updateDevice(device, () => {
       this.dialogRef.close({
         action: FormAction.Save,
@@ -146,10 +177,34 @@ export class DeviceFormComponent
         device,
         mac_addr: this.data.device.mac_addr,
         onSuccess: callback,
+=======
+    this.updateDevice(device)
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(error => {
+          this.error$.next(error.error);
+          return of(null);
+        })
+      )
+      .subscribe((deviceSaved: boolean | null) => {
+        if (deviceSaved) {
+          this.dialogRef.close({
+            action: FormAction.Save,
+            device,
+          } as FormResponse);
+        }
+>>>>>>> main:modules/ui/src/app/device-repository/device-form/device-form.component.ts
       });
     } else {
       this.devicesStore.saveDevice({ device, onSuccess: callback });
     }
+  }
+
+  private updateDevice(device: Device): Observable<boolean> {
+    if (this.data.device) {
+      return this.testRunService.editDevice(device, this.data.device.mac_addr);
+    }
+    return this.testRunService.saveDevice(device);
   }
 
   private isAllTestsDisabled(): boolean {
@@ -199,10 +254,14 @@ export class DeviceFormComponent
         '',
         [
           Validators.pattern(MAC_ADDRESS_PATTERN),
+<<<<<<< HEAD:modules/ui/src/app/pages/devices/components/device-form/device-form.component.ts
           this.deviceValidators.differentMACAddress(
             this.data.devices,
             this.data.device
           ),
+=======
+          this.deviceValidators.differentMACAddress(this.data.device),
+>>>>>>> main:modules/ui/src/app/device-repository/device-form/device-form.component.ts
         ],
       ],
       test_modules: new FormArray([]),

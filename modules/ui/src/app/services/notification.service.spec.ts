@@ -16,12 +16,16 @@
 import { TestBed } from '@angular/core/testing';
 
 import { NotificationService } from './notification.service';
+<<<<<<< HEAD
 import {
   MatSnackBar,
   MatSnackBarRef,
   TextOnlySnackBar,
 } from '@angular/material/snack-bar';
 import { of } from 'rxjs/internal/observable/of';
+=======
+import { MatSnackBar } from '@angular/material/snack-bar';
+>>>>>>> main
 
 describe('NotificationService', () => {
   let service: NotificationService;
@@ -44,6 +48,7 @@ describe('NotificationService', () => {
 
   describe('notify', () => {
     it('should open snackbar with message', () => {
+<<<<<<< HEAD
       const openSpy = spyOn(service.snackBar, 'open').and.returnValues({
         afterOpened: () => of(void 0),
         afterDismissed: () => of({ dismissedByAction: true }),
@@ -56,10 +61,27 @@ describe('NotificationService', () => {
         panelClass: 'test-run-notification',
         duration: 0,
         politeness: 'assertive',
+=======
+      const matSnackBarSpy = spyOn(mockMatSnackBar, 'open').and.stub();
+
+      service.notify('something good happened');
+
+      expect(matSnackBarSpy).toHaveBeenCalled();
+
+      const args = matSnackBarSpy.calls.argsFor(0);
+      expect(args.length).toBe(3);
+      expect(args[0]).toBe('something good happened');
+      expect(args[1]).toBe('OK');
+      expect(args[2]).toEqual({
+        horizontalPosition: 'right',
+        panelClass: 'test-run-notification',
+        duration: 5000,
+>>>>>>> main
       });
     });
 
     it('should open snackbar with duration', () => {
+<<<<<<< HEAD
       const openSpy = spyOn(service.snackBar, 'open').and.returnValues({
         afterOpened: () => of(void 0),
         afterDismissed: () => of({ dismissedByAction: true }),
@@ -72,6 +94,17 @@ describe('NotificationService', () => {
         panelClass: 'test-run-notification',
         duration: 15000,
         politeness: 'assertive',
+=======
+      const matSnackBarSpy = spyOn(mockMatSnackBar, 'open').and.stub();
+
+      service.notify('something good happened', 15000);
+
+      const args = matSnackBarSpy.calls.argsFor(0);
+      expect(args[2]).toEqual({
+        horizontalPosition: 'right',
+        panelClass: 'test-run-notification',
+        duration: 15000,
+>>>>>>> main
       });
     });
   });
