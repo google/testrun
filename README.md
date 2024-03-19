@@ -4,8 +4,6 @@
 [![CodeQL](https://github.com/google/testrun/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)](https://github.com/google/testrun/actions/workflows/github-code-scanning/codeql)
 [![Testrun test suite](https://github.com/google/testrun/actions/workflows/testing.yml/badge.svg?branch=main&event=push)](https://github.com/google/testrun/actions/workflows/testing.yml)
 
-<strong>Disclaimer</strong>: Testrun uses Google Analytics to learn about how our users use Testrun. By installing and running Testrun, you understand and accept the Terms of Service found [here](https://policies.google.com/technologies/partner-sites).
-
 ## Introduction :wave:
 Testrun automates specific test cases to verify network and security functionality in IoT devices. It is an open source tool which allows manufacturers of IP capable devices to test their devices for the purposes of Device Qualification within the BOS program.
 
