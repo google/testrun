@@ -4,8 +4,6 @@
 [![CodeQL](https://github.com/google/testrun/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)](https://github.com/google/testrun/actions/workflows/github-code-scanning/codeql)
 [![Testrun test suite](https://github.com/google/testrun/actions/workflows/testing.yml/badge.svg?branch=main&event=push)](https://github.com/google/testrun/actions/workflows/testing.yml)
 
-<strong>Disclaimer</strong>: Testrun uses Google Analytics to learn about how our users use Testrun. By installing and running Testrun, you understand and accept the Terms of Service found [here](https://policies.google.com/technologies/partner-sites).
-
 ## Introduction :wave:
 Testrun automates specific test cases to verify network and security functionality in IoT devices. It is an open source tool which allows manufacturers of IP capable devices to test their devices for the purposes of Device Qualification within the BOS program.
 
@@ -42,7 +40,10 @@ When manual testing or configuration changes are required, Testrun will provide 
 Once you have met the hardware and software requirements, you can get started with Testrun by following the [Get started guide](docs/get_started.md).
 
 ## Roadmap :chart_with_upwards_trend:
-Testrun will constantly evolve to further support end-users by automating device network behaviour against industry standards.
+Testrun will constantly evolve to further support end-users by automating device network behaviour against industry standards. For further information on upcoming features, check out the [Roadmap](docs/roadmap.pdf).
+
+## Accessibility :busts_in_silhouette:
+we are proud of our tool and strive to provide an enjoyable experience for all of our users. Testrun goes through rigorous accessibility testing at each release. You can read more about [Google and Accessibility here](https://www.google.co.uk/accessibility). You are welcome to submit a new issue and provide feedback on our implementations.
 
 ## Issue reporting :triangular_flag_on_post:
 If the application has come across a problem at any point during setup or use, please raise an issue under the [issues tab](https://github.com/auto-iot/test-run/issues). Issue templates exist for both bug reports and feature requests. If neither of these are appropriate for your issue, raise a blank issue instead.
@@ -70,10 +71,10 @@ The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md)
  - IPv6 SLAAC
  - DNS
  - NTPv4
-  
+
 4) Can I run Testrun on a virtual machine?
 
-  Testrun can be virtualized if the 2x ethernet adapters are passed through to a Virtual Box VM as a USB device rather than managed network adapters. A full guide will be provided once virtualization of Testrun has been fully tested.
+  Testrun can be virtualized if the 2x ethernet adapters are passed through to a VirtualBox VM as a USB device rather than managed network adapters. A full guide will be provided once virtualization of Testrun has been fully tested.
 
  5) Can I connect multiple devices to Testrun?
 

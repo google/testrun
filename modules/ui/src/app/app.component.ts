@@ -39,7 +39,7 @@ import {
   updateFocusNavigation,
 } from './store/actions';
 import { appFeatureKey } from './store/reducers';
-import { SystemInterfaces } from './model/setting';
+import { SettingMissedError, SystemInterfaces } from './model/setting';
 import { GeneralSettingsComponent } from './pages/settings/general-settings.component';
 import { AppStore } from './app.store';
 
@@ -65,12 +65,12 @@ export class AppComponent implements OnInit {
     selectHasConnectionSettings
   );
   isStatusLoaded = false;
-  isConnectionSettingsLoaded = false;
   private openedSettingFromToggleBtn = true;
   isMenuOpen: Observable<boolean> = this.store.select(selectMenuOpened);
   interfaces: Observable<SystemInterfaces> =
     this.store.select(selectInterfaces);
-  error$: Observable<boolean> = this.store.select(selectError);
+  settingMissedError$: Observable<SettingMissedError | null> =
+    this.store.select(selectError);
 
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;

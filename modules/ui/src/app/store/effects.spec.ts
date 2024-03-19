@@ -77,27 +77,59 @@ describe('Effects', () => {
   });
 
   describe('onValidateInterfaces$', () => {
-    it('should call updateError with false if interfaces are valid', done => {
-      actions$ = of(actions.updateValidInterfaces({ validInterfaces: true }));
+    it('should call updateError and set false if interfaces are not missed', done => {
+      actions$ = of(
+        actions.updateValidInterfaces({
+          validInterfaces: {
+            hasSetInterfaces: false,
+            deviceValid: false,
+            internetValid: false,
+          },
+        })
+      );
 
       effects.onValidateInterfaces$.subscribe(action => {
-        expect(action).toEqual(actions.updateError({ error: false }));
+        expect(action).toEqual(
+          actions.updateError({
+            settingMissedError: {
+              isSettingMissed: false,
+              devicePortMissed: false,
+              internetPortMissed: false,
+            },
+          })
+        );
         done();
       });
     });
 
-    it('should call updateError with true if interfaces are not valid', done => {
-      actions$ = of(actions.updateValidInterfaces({ validInterfaces: false }));
+    it('should call updateError and set true if interfaces are missed', done => {
+      actions$ = of(
+        actions.updateValidInterfaces({
+          validInterfaces: {
+            hasSetInterfaces: true,
+            deviceValid: false,
+            internetValid: false,
+          },
+        })
+      );
 
       effects.onValidateInterfaces$.subscribe(action => {
-        expect(action).toEqual(actions.updateError({ error: true }));
+        expect(action).toEqual(
+          actions.updateError({
+            settingMissedError: {
+              isSettingMissed: true,
+              devicePortMissed: true,
+              internetPortMissed: true,
+            },
+          })
+        );
         done();
       });
     });
   });
 
   describe('checkInterfacesInConfig$', () => {
-    it('should call updateValidInterfaces with false if interface is no longer available', done => {
+    it('should call updateValidInterfaces and set deviceValid as false if device interface is no longer available', done => {
       actions$ = of(
         actions.fetchInterfacesSuccess({
           interfaces: {
@@ -117,13 +149,19 @@ describe('Effects', () => {
 
       effects.checkInterfacesInConfig$.subscribe(action => {
         expect(action).toEqual(
-          actions.updateValidInterfaces({ validInterfaces: false })
+          actions.updateValidInterfaces({
+            validInterfaces: {
+              hasSetInterfaces: true,
+              deviceValid: false,
+              internetValid: true,
+            },
+          })
         );
         done();
       });
     });
 
-    it('should call updateValidInterfaces with true if interface is available', done => {
+    it('should call updateValidInterfaces and set all true if interface is set and valid', done => {
       actions$ = of(
         actions.fetchInterfacesSuccess({
           interfaces: {
@@ -143,7 +181,13 @@ describe('Effects', () => {
 
       effects.checkInterfacesInConfig$.subscribe(action => {
         expect(action).toEqual(
-          actions.updateValidInterfaces({ validInterfaces: true })
+          actions.updateValidInterfaces({
+            validInterfaces: {
+              hasSetInterfaces: true,
+              deviceValid: true,
+              internetValid: true,
+            },
+          })
         );
         done();
       });
