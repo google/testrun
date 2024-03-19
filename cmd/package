@@ -18,6 +18,9 @@
 
 MAKE_SRC_DIR=make
 
+# Delete existing make files
+rm -rf $MAKE_SRC_DIR/usr
+
 # Copy testrun script to /bin
 mkdir -p $MAKE_SRC_DIR/bin
 cp bin/testrun $MAKE_SRC_DIR/bin/testrun

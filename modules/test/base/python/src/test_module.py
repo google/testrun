@@ -105,7 +105,6 @@ class TestModule:
             LOGGER.error(e)
         else:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
-          result = None
       else:
         LOGGER.debug(f'Test {test["name"]} is disabled')
 
