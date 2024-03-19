@@ -13,29 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestrunStatus } from '../../model/testrun-status';
 import { CommonModule, DatePipe } from '@angular/common';
+import { DownloadReportComponent } from '../download-report/download-report.component';
+import { MatIcon } from '@angular/material/icon';
 import { ReportActionComponent } from '../report-action/report-action.component';
 
 @Component({
-  selector: 'app-download-report',
-  templateUrl: './download-report.component.html',
-  styleUrls: ['./download-report.component.scss'],
+  selector: 'app-download-report-zip',
+  templateUrl: './download-report-zip.component.html',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DownloadReportComponent, MatIcon],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DownloadReportComponent extends ReportActionComponent {
-  @Input() href: string | undefined;
-  @Input() title!: string;
-
-  getReportTitle(data: TestrunStatus) {
-    return `${data.device.manufacturer} ${data.device.model} ${
-      data.device.firmware
-    } ${data.status} ${this.getFormattedDateString(data.started)}`
-      .replace(/ /g, '_')
-      .toLowerCase();
+export class DownloadReportZipComponent extends ReportActionComponent {
+  getZipLink(data: TestrunStatus) {
+    return data.report?.replace('report', 'export');
   }
 }

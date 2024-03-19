@@ -338,18 +338,16 @@ describe('HistoryComponent', () => {
         expect(statusResultEl?.classList).toContain('red');
       });
 
-      it('should have report link', () => {
-        const link = compiled.querySelector(
-          '.download-report-link'
-        ) as HTMLAnchorElement;
+      it('should have report pdf link', () => {
+        const link = compiled.querySelector('app-download-report-pdf');
 
-        expect(link.href).toEqual('https://api.testrun.io/report.pdf');
-        expect(link.download).toEqual(
-          'delta_03-din-src_1.2.2_compliant_23_jun_2023_10:11'
-        );
-        expect(link.title).toEqual(
-          'Download report for Test Run # Delta 03-DIN-SRC 1.2.2 23 Jun 2023 10:11'
-        );
+        expect(link).toBeTruthy();
+      });
+
+      it('should have report zip link', () => {
+        const link = compiled.querySelector('app-download-report-zip');
+
+        expect(link).toBeTruthy();
       });
 
       it('should have filter chips', () => {
