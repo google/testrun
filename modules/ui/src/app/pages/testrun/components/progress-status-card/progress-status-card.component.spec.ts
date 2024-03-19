@@ -16,27 +16,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProgressStatusCardComponent } from './progress-status-card.component';
-<<<<<<< HEAD:modules/ui/src/app/pages/testrun/components/progress-status-card/progress-status-card.component.spec.ts
 import {
   StatusOfTestrun,
   TestrunStatus,
 } from '../../../../model/testrun-status';
-=======
-import { StatusOfTestrun, TestrunStatus } from '../../model/testrun-status';
->>>>>>> main:modules/ui/src/app/progress/progress-status-card/progress-status-card.component.spec.ts
 import {
   MOCK_PROGRESS_DATA_CANCELLED,
   MOCK_PROGRESS_DATA_COMPLIANT,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_MONITORING,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
-<<<<<<< HEAD:modules/ui/src/app/pages/testrun/components/progress-status-card/progress-status-card.component.spec.ts
 } from '../../../../mocks/progress.mock';
 import { ProgressModule } from '../../progress.module';
-=======
-} from '../../mocks/progress.mock';
-import { ProgressModule } from '../progress.module';
->>>>>>> main:modules/ui/src/app/progress/progress-status-card/progress-status-card.component.spec.ts
 import { of } from 'rxjs';
 
 describe('ProgressStatusCardComponent', () => {
@@ -57,7 +48,6 @@ describe('ProgressStatusCardComponent', () => {
     });
 
     describe('#getClass', () => {
-<<<<<<< HEAD:modules/ui/src/app/pages/testrun/components/progress-status-card/progress-status-card.component.spec.ts
       const availableClasses = {
         progress: false,
         'completed-success': false,
@@ -93,32 +83,6 @@ describe('ProgressStatusCardComponent', () => {
             ...availableClasses,
             'completed-success': true,
           };
-=======
-      it('should have class "progress" if status "In Progress", "Waiting for Device", "Monitoring"', () => {
-        const expectedResult = {
-          progress: true,
-          'completed-success': false,
-          'completed-failed': false,
-          canceled: false,
-        };
-
-        const result = component.getClass(StatusOfTestrun.InProgress);
-        const result1 = component.getClass(StatusOfTestrun.WaitingForDevice);
-        const result2 = component.getClass(StatusOfTestrun.Monitoring);
-
-        expect(result).toEqual(expectedResult);
-        expect(result1).toEqual(expectedResult);
-        expect(result2).toEqual(expectedResult);
-      });
-
-      it('should have class "completed-success" if status "Compliant"', () => {
-        const expectedResult = {
-          progress: false,
-          'completed-success': true,
-          'completed-failed': false,
-          canceled: false,
-        };
->>>>>>> main:modules/ui/src/app/progress/progress-status-card/progress-status-card.component.spec.ts
 
           const result = component.getClass(testCase);
 
@@ -130,10 +94,6 @@ describe('ProgressStatusCardComponent', () => {
         const expectedResult = {
           ...availableClasses,
           'completed-failed': true,
-<<<<<<< HEAD:modules/ui/src/app/pages/testrun/components/progress-status-card/progress-status-card.component.spec.ts
-=======
-          canceled: false,
->>>>>>> main:modules/ui/src/app/progress/progress-status-card/progress-status-card.component.spec.ts
         };
 
         const result = component.getClass(StatusOfTestrun.NonCompliant);
@@ -143,13 +103,7 @@ describe('ProgressStatusCardComponent', () => {
 
       it('should have class "canceled" if status "Cancelled"', () => {
         const expectedResult = {
-<<<<<<< HEAD:modules/ui/src/app/pages/testrun/components/progress-status-card/progress-status-card.component.spec.ts
           ...availableClasses,
-=======
-          progress: false,
-          'completed-success': false,
-          'completed-failed': false,
->>>>>>> main:modules/ui/src/app/progress/progress-status-card/progress-status-card.component.spec.ts
           canceled: true,
         };
 

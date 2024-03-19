@@ -18,16 +18,8 @@ export interface SystemConfig {
     device_intf?: string;
     internet_intf?: string;
   };
-<<<<<<< HEAD
   log_level?: string;
   monitor_period?: number;
-=======
-}
-
-export interface SettingOption {
-  key: string;
-  value: string;
->>>>>>> main
 }
 
 export interface InterfacesValidation {

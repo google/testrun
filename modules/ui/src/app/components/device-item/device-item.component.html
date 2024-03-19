@@ -14,17 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <button
-<<<<<<< HEAD
   *ngIf="deviceView === DeviceView.Basic"
   [tabIndex]="tabIndex"
   (click)="itemClick()"
   [attr.aria-label]="label"
   [ngClass]="{ 'non-interective': tabIndex !== 0 }"
-=======
-  [tabIndex]="tabIndex"
-  (click)="itemClick()"
-  [attr.aria-label]="label"
->>>>>>> main
   class="device-item"
   type="button">
   <div [attr.aria-label]="device.manufacturer" class="item-manufacturer">
@@ -36,10 +30,6 @@ limitations under the License.
   <div [attr.aria-label]="device.mac_addr" class="item-mac-address">
     {{ device.mac_addr }}
   </div>
-<<<<<<< HEAD
-=======
-  <div class="item-icon"></div>
->>>>>>> main
 </button>
 
 <div

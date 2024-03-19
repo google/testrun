@@ -40,11 +40,7 @@ $nav-open-btn-width: 210px;
   margin-top: $toolbar-height;
 }
 
-<<<<<<< HEAD
 .active-menu {
-=======
-:host.active-menu {
->>>>>>> main
   .app-sidebar {
     width: $nav-open-width;
     align-items: start;
@@ -55,11 +51,7 @@ $nav-open-btn-width: 210px;
     height: $toolbar-height;
     border-radius: 0 100px 100px 0;
     margin: 0;
-<<<<<<< HEAD
     padding: 0 24px;
-=======
-    padding: 0 16px;
->>>>>>> main
   }
 
   .app-sidebar-button:first-child {
@@ -134,11 +126,7 @@ $nav-open-btn-width: 210px;
 }
 
 .app-sidebar-button > .mat-icon {
-<<<<<<< HEAD
   margin: 0 3px;
-=======
-  margin: 0 11px;
->>>>>>> main
   min-width: 24px;
   line-height: 18px !important;
 }

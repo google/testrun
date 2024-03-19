@@ -25,12 +25,6 @@ import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 import { TestRunService } from './services/test-run.service';
-<<<<<<< HEAD
-=======
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { Device } from './model/device';
-import { device } from './mocks/device.mock';
->>>>>>> main
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -46,7 +40,6 @@ import {
   MOCK_PROGRESS_DATA_IDLE,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
 } from './mocks/progress.mock';
-<<<<<<< HEAD
 import { Routes } from './model/routes';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { State } from '@ngrx/store';
@@ -65,11 +58,6 @@ import {
   selectInterfaces,
   selectMenuOpened,
 } from './store/selectors';
-=======
-import { LoaderService } from './services/loader.service';
-import { Routes } from './model/routes';
-import { StateService } from './services/state.service';
->>>>>>> main
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -77,14 +65,9 @@ describe('AppComponent', () => {
   let compiled: HTMLElement;
   let router: Router;
   let mockService: SpyObj<TestRunService>;
-<<<<<<< HEAD
   let store: MockStore<AppState>;
   let focusNavigation = true;
   let mockFocusManagerService: SpyObj<FocusManagerService>;
-=======
-  let mockLoaderService: SpyObj<LoaderService>;
-  let mockStateService: SpyObj<StateService>;
->>>>>>> main
 
   const enterKeyEvent = new KeyboardEvent('keydown', {
     key: 'Enter',
@@ -101,7 +84,6 @@ describe('AppComponent', () => {
 
   beforeEach(() => {
     mockService = jasmine.createSpyObj([
-<<<<<<< HEAD
       'getSystemStatus',
       'systemStatus$',
       'isTestrunStarted$',
@@ -116,32 +98,6 @@ describe('AppComponent', () => {
 
     (mockService.systemStatus$ as unknown) = of({});
     mockService.isTestrunStarted$ = of(true);
-=======
-      'getDevices',
-      'fetchDevices',
-      'getSystemStatus',
-      'fetchHistory',
-      'getSystemInterfaces',
-      'setIsOpenAddDevice',
-      'systemStatus$',
-      'isTestrunStarted$',
-      'hasConnectionSetting$',
-      'setIsOpenStartTestrun',
-    ]);
-
-    mockLoaderService = jasmine.createSpyObj(['setLoading']);
-    mockStateService = jasmine.createSpyObj('mockStateService', [
-      'focusFirstElementInMain',
-    ]);
-
-    mockService.getDevices.and.returnValue(
-      new BehaviorSubject<Device[] | null>([device])
-    );
-    mockService.getSystemInterfaces.and.returnValue(of({}));
-    (mockService.systemStatus$ as unknown) = of({});
-    mockService.isTestrunStarted$ = of(true);
-    mockService.hasConnectionSetting$ = of(true);
->>>>>>> main
 
     TestBed.configureTestingModule({
       imports: [
@@ -158,7 +114,6 @@ describe('AppComponent', () => {
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
-<<<<<<< HEAD
         {
           provide: State,
           useValue: {
@@ -181,10 +136,6 @@ describe('AppComponent', () => {
           ],
         }),
         { provide: FocusManagerService, useValue: mockFocusManagerService },
-=======
-        { provide: LoaderService, useValue: mockLoaderService },
-        { provide: StateService, useValue: mockStateService },
->>>>>>> main
       ],
       declarations: [
         AppComponent,
@@ -260,11 +211,8 @@ describe('AppComponent', () => {
   });
 
   it('should navigate to the devices when "devices" button is clicked', fakeAsync(() => {
-<<<<<<< HEAD
     fixture.detectChanges();
 
-=======
->>>>>>> main
     const button = compiled.querySelector(
       '.app-sidebar-button-devices'
     ) as HTMLButtonElement;
@@ -276,11 +224,8 @@ describe('AppComponent', () => {
   }));
 
   it('should navigate to the testrun when "testrun" button is clicked', fakeAsync(() => {
-<<<<<<< HEAD
     fixture.detectChanges();
 
-=======
->>>>>>> main
     const button = compiled.querySelector(
       '.app-sidebar-button-testrun'
     ) as HTMLButtonElement;
@@ -288,19 +233,12 @@ describe('AppComponent', () => {
     button?.click();
     tick();
 
-<<<<<<< HEAD
     expect(router.url).toBe(Routes.Testing);
   }));
 
   it('should navigate to the reports when "reports" button is clicked', fakeAsync(() => {
     fixture.detectChanges();
 
-=======
-    expect(router.url).toBe(Routes.Testrun);
-  }));
-
-  it('should navigate to the reports when "reports" button is clicked', fakeAsync(() => {
->>>>>>> main
     const button = compiled.querySelector(
       '.app-sidebar-button-reports'
     ) as HTMLButtonElement;
@@ -312,11 +250,8 @@ describe('AppComponent', () => {
   }));
 
   it('should call toggleSettingsBtn focus when settingsDrawer close on closeSetting', fakeAsync(() => {
-<<<<<<< HEAD
     fixture.detectChanges();
 
-=======
->>>>>>> main
     spyOn(component.settingsDrawer, 'close').and.returnValue(
       Promise.resolve('close')
     );
@@ -328,24 +263,6 @@ describe('AppComponent', () => {
     component.settingsDrawer.close().then(() => {
       expect(component.toggleSettingsBtn.focus).toHaveBeenCalled();
     });
-<<<<<<< HEAD
-=======
-  }));
-
-  it('should call focusFirstElementInMain if settingsDrawer opened not from toggleBtn', fakeAsync(() => {
-    spyOn(component.settingsDrawer, 'close').and.returnValue(
-      Promise.resolve('close')
-    );
-
-    component.openGeneralSettings(false);
-    tick();
-    component.closeSetting();
-    flush();
-
-    component.settingsDrawer.close().then(() => {
-      expect(mockStateService.focusFirstElementInMain).toHaveBeenCalled();
-    });
->>>>>>> main
   }));
 
   it('should call focusFirstElementInContainer if settingsDrawer opened not from toggleBtn', fakeAsync(() => {
@@ -388,11 +305,8 @@ describe('AppComponent', () => {
   }));
 
   it('should call settingsDrawer open on click settings button', () => {
-<<<<<<< HEAD
     fixture.detectChanges();
 
-=======
->>>>>>> main
     const settingsBtn = compiled.querySelector(
       '.app-toolbar-button-general-settings'
     ) as HTMLButtonElement;
@@ -403,7 +317,6 @@ describe('AppComponent', () => {
     expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
   });
 
-<<<<<<< HEAD
   describe('menu button', () => {
     beforeEach(() => {
       store.overrideSelector(selectHasDevices, false);
@@ -411,54 +324,21 @@ describe('AppComponent', () => {
     });
 
     it('should dispatch toggleMenu action', () => {
-=======
-  it('#reloadInterfaces should call setLoading in loaderService', () => {
-    component.reloadInterfaces();
-
-    expect(mockLoaderService.setLoading).toHaveBeenCalledWith(true);
-  });
-
-  describe('menu button', () => {
-    it('should toggle menu open state on click', () => {
->>>>>>> main
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
       ) as HTMLButtonElement;
 
       menuBtn.click();
 
-<<<<<<< HEAD
       expect(store.dispatch).toHaveBeenCalledWith(toggleMenu());
     });
 
     it('should focus navigation on tab press if menu button was clicked', () => {
       focusNavigation = true;
-=======
-      expect(component.isMenuOpen).toBeTrue();
-
-      menuBtn.click();
-
-      expect(component.isMenuOpen).toBeFalse();
-    });
-
-    it('should set flag focusNavigation if menu opens on click', () => {
-      component.isMenuOpen = false;
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
       ) as HTMLButtonElement;
 
-      menuBtn.click();
-
-      expect(component.focusNavigation).toBeTrue();
-    });
-
-    it('should focus navigation on tab press if menu button was clicked', () => {
->>>>>>> main
-      const menuBtn = compiled.querySelector(
-        '.app-toolbar-button-menu'
-      ) as HTMLButtonElement;
-
-<<<<<<< HEAD
       menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
       const navigation = compiled.querySelector('.app-sidebar');
 
@@ -472,28 +352,12 @@ describe('AppComponent', () => {
 
     it('should not focus navigation button on tab press if menu button was not clicked', () => {
       focusNavigation = false;
-=======
-      menuBtn.click();
-      menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
-      const navigationButton = compiled.querySelectorAll('.app-sidebar-button');
-
-      expect(component.focusNavigation).toBeFalse();
-      expect(document.activeElement).toBe(navigationButton[0]);
-    });
-
-    it('should not focus navigation button on tab press if menu button was not clicked', () => {
-      component.focusNavigation = false;
->>>>>>> main
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
       ) as HTMLButtonElement;
 
       menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
 
-<<<<<<< HEAD
-=======
-      expect(component.focusNavigation).toBeFalse();
->>>>>>> main
       expect(document.activeElement).toBe(document.body);
     });
   });
@@ -511,10 +375,7 @@ describe('AppComponent', () => {
   });
 
   it('should have version', () => {
-<<<<<<< HEAD
     fixture.detectChanges();
-=======
->>>>>>> main
     const version = compiled.querySelector('app-version');
 
     expect(version).toBeTruthy();
@@ -523,11 +384,7 @@ describe('AppComponent', () => {
   describe('Callout component visibility', () => {
     describe('with no connection settings', () => {
       beforeEach(() => {
-<<<<<<< HEAD
         component.hasConnectionSetting$ = of(false);
-=======
-        mockService.hasConnectionSetting$ = of(false);
->>>>>>> main
         component.ngOnInit();
         fixture.detectChanges();
       });
@@ -540,22 +397,14 @@ describe('AppComponent', () => {
         expect(calloutContent).toContain('Step 1');
       });
 
-<<<<<<< HEAD
       it('should have callout content with "System settings" link ', () => {
-=======
-      it('should have callout content with "Connection settings" link ', () => {
->>>>>>> main
         const calloutLinkEl = compiled.querySelector(
           '.message-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(calloutLinkEl).toBeTruthy();
-<<<<<<< HEAD
         expect(calloutLinkContent).toContain('System settings');
-=======
-        expect(calloutLinkContent).toContain('Connection settings');
->>>>>>> main
       });
 
       keyboardCases.forEach(testCase => {
@@ -575,15 +424,8 @@ describe('AppComponent', () => {
 
     describe('with system status as "Idle"', () => {
       beforeEach(() => {
-<<<<<<< HEAD
         component.hasConnectionSetting$ = of(true);
         store.overrideSelector(selectHasDevices, true);
-=======
-        mockService.hasConnectionSetting$ = of(true);
-        mockService.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
->>>>>>> main
         mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IDLE);
         mockService.isTestrunStarted$ = of(false);
         component.ngOnInit();
@@ -601,14 +443,7 @@ describe('AppComponent', () => {
 
     describe('with no devices setted', () => {
       beforeEach(() => {
-<<<<<<< HEAD
         store.overrideSelector(selectHasDevices, false);
-=======
-        mockService.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>(null)
-        );
-        component.ngOnInit();
->>>>>>> main
         fixture.detectChanges();
       });
 
@@ -658,28 +493,16 @@ describe('AppComponent', () => {
         flush();
 
         expect(router.url).toBe(Routes.Devices);
-<<<<<<< HEAD
         expect(store.dispatch).toHaveBeenCalledWith(
           setIsOpenAddDevice({ isOpenAddDevice: true })
         );
-=======
-        expect(mockService.setIsOpenAddDevice).toHaveBeenCalledWith(true);
->>>>>>> main
       }));
     });
 
     describe('with devices setted but without systemStatus data', () => {
       beforeEach(() => {
-<<<<<<< HEAD
         store.overrideSelector(selectHasDevices, true);
         mockService.isTestrunStarted$ = of(false);
-=======
-        mockService.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
-        mockService.isTestrunStarted$ = of(false);
-        component.ngOnInit();
->>>>>>> main
         fixture.detectChanges();
       });
 
@@ -691,11 +514,7 @@ describe('AppComponent', () => {
         expect(calloutContent).toContain('Step 3');
       });
 
-<<<<<<< HEAD
       it('should have callout component with "testing" link', () => {
-=======
-      it('should have callout component with "Testrun" link', () => {
->>>>>>> main
         const callout = compiled.querySelector('app-callout');
         const calloutLinkEl = compiled.querySelector(
           '.message-link'
@@ -703,11 +522,7 @@ describe('AppComponent', () => {
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-<<<<<<< HEAD
         expect(calloutLinkContent).toContain('testing');
-=======
-        expect(calloutLinkContent).toContain('Testrun');
->>>>>>> main
       });
 
       keyboardCases.forEach(testCase => {
@@ -719,27 +534,15 @@ describe('AppComponent', () => {
           calloutLinkEl.dispatchEvent(testCase.event);
           flush();
 
-<<<<<<< HEAD
           expect(router.url).toBe(Routes.Testing);
-=======
-          expect(router.url).toBe(Routes.Testrun);
->>>>>>> main
         }));
       });
     });
 
     describe('with devices setted, without systemStatus data, but run the tests ', () => {
       beforeEach(() => {
-<<<<<<< HEAD
         store.overrideSelector(selectHasDevices, true);
         mockService.isTestrunStarted$ = of(true);
-=======
-        mockService.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
-        mockService.isTestrunStarted$ = of(true);
-        component.ngOnInit();
->>>>>>> main
         fixture.detectChanges();
       });
 
@@ -750,20 +553,10 @@ describe('AppComponent', () => {
       });
     });
 
-<<<<<<< HEAD
     describe('with devices setted and systemStatus data', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
         mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
-=======
-    describe('with devices setted and systemStatus data ', () => {
-      beforeEach(() => {
-        mockService.getDevices.and.returnValue(
-          new BehaviorSubject<Device[] | null>([device])
-        );
-        mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
-        component.ngOnInit();
->>>>>>> main
         fixture.detectChanges();
       });
 
@@ -773,7 +566,6 @@ describe('AppComponent', () => {
         expect(callout).toBeNull();
       });
     });
-<<<<<<< HEAD
 
     describe('error', () => {
       describe('with settingMissedError with one port is missed', () => {
@@ -832,15 +624,6 @@ describe('AppComponent', () => {
   });
 
   it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {
-=======
-  });
-
-  it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {
-    mockService.getDevices.and.returnValue(
-      new BehaviorSubject<Device[] | null>([])
-    );
-    component.ngOnInit();
->>>>>>> main
     fixture.detectChanges();
 
     spyOn(component.settingsDrawer, 'close').and.returnValue(
@@ -848,11 +631,7 @@ describe('AppComponent', () => {
     );
     const spyToggle = spyOn(component.toggleSettingsBtn, 'focus');
 
-<<<<<<< HEAD
     await component.closeSetting(false);
-=======
-    await component.closeSetting();
->>>>>>> main
 
     expect(spyToggle).toHaveBeenCalledTimes(0);
   });
@@ -864,7 +643,6 @@ describe('AppComponent', () => {
 })
 class FakeGeneralSettingsComponent {
   @Input() interfaces = [];
-<<<<<<< HEAD
   @Input() hasConnectionSettings = false;
   @Output() closeSettingEvent = new EventEmitter<void>();
   @Output() reloadInterfacesEvent = new EventEmitter<void>();
@@ -884,20 +662,4 @@ class FakeSpinnerComponent {}
 class FakeVersionComponent {
   @Input() consentShown!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
-=======
-  @Output() closeSettingEvent = new EventEmitter<void>();
-  @Output() reloadInterfacesEvent = new EventEmitter<void>();
->>>>>>> main
 }
-
-@Component({
-  selector: 'app-spinner',
-  template: '<div></div>',
-})
-class FakeSpinnerComponent {}
-
-@Component({
-  selector: 'app-version',
-  template: '<div></div>',
-})
-class FakeVersionComponent {}

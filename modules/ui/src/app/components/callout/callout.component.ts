@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-<<<<<<<< HEAD:modules/ui/src/app/components/callout/callout.component.ts
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -28,33 +27,4 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class CalloutComponent {
   @Input() type = '';
-========
-@import '../../../theming/colors';
-
-:host {
-  display: grid;
-  overflow: hidden;
-  width: 570px;
-  padding: 24px 16px 8px 24px;
-  gap: 10px;
-}
-
-.delete-form-title {
-  color: #202124;
-  font-size: 18px;
-  line-height: 24px;
-}
-
-.delete-form-content {
-  font-family: Roboto, sans-serif;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: 0.2px;
-  color: $grey-800;
-}
-
-.delete-form-actions {
-  padding: 0;
-  min-height: 30px;
->>>>>>>> main:modules/ui/src/app/components/delete-form/delete-form.component.scss
 }

@@ -15,24 +15,13 @@
  */
 import { Injectable } from '@angular/core';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-<<<<<<< HEAD:modules/ui/src/app/pages/devices/components/device-form/device.validators.ts
 import { Device } from '../../../../model/device';
-=======
-import { TestRunService } from '../../services/test-run.service';
-import { Device } from '../../model/device';
-
->>>>>>> main:modules/ui/src/app/device-repository/device-form/device.validators.ts
 @Injectable({ providedIn: 'root' })
 
 /**
  * Validator uses for Device Name and Device Manufacturer inputs
  */
 export class DeviceValidators {
-<<<<<<< HEAD:modules/ui/src/app/pages/devices/components/device-form/device.validators.ts
-=======
-  constructor(private testRunService: TestRunService) {}
-
->>>>>>> main:modules/ui/src/app/device-repository/device-form/device.validators.ts
   readonly STRING_FORMAT_REGEXP = new RegExp(
     "^([a-z0-9\\p{L}\\p{M}.',-_ ]{1,64})$",
     'u'
@@ -53,23 +42,16 @@ export class DeviceValidators {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value?.trim();
       if (value && (!device || device?.mac_addr !== value)) {
-<<<<<<< HEAD:modules/ui/src/app/pages/devices/components/device-form/device.validators.ts
         const result = this.hasDevice(value, devices);
-=======
-        const result = this.testRunService.hasDevice(value);
->>>>>>> main:modules/ui/src/app/device-repository/device-form/device.validators.ts
         return result ? { has_same_mac_address: true } : null;
       }
       return null;
     };
-<<<<<<< HEAD:modules/ui/src/app/pages/devices/components/device-form/device.validators.ts
   }
 
   private hasDevice(macAddress: string, devices: Device[]): boolean {
     return (
       devices.some(device => device.mac_addr === macAddress.trim()) || false
     );
-=======
->>>>>>> main:modules/ui/src/app/device-repository/device-form/device.validators.ts
   }
 }

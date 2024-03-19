@@ -16,7 +16,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProgressInitiateFormComponent } from './progress-initiate-form.component';
-<<<<<<< HEAD:modules/ui/src/app/pages/testrun/components/progress-initiate-form/progress-initiate-form.component.spec.ts
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -36,21 +35,6 @@ import { MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE } from '../../../../mocks/progres
 import { SpinnerComponent } from '../../../../components/spinner/spinner.component';
 import { provideMockStore } from '@ngrx/store/testing';
 import { selectDevices } from '../../../../store/selectors';
-=======
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { TestRunService } from '../../services/test-run.service';
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { Device } from '../../model/device';
-import { DeviceItemComponent } from '../../components/device-item/device-item.component';
-import { ReactiveFormsModule } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { DeviceTestsComponent } from '../../components/device-tests/device-tests.component';
-import { device } from '../../mocks/device.mock';
-import { of } from 'rxjs';
-import { MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE } from '../../mocks/progress.mock';
-import { SpinnerComponent } from '../../components/spinner/spinner.component';
->>>>>>> main:modules/ui/src/app/progress/progress-initiate-form/progress-initiate-form.component.spec.ts
 
 describe('ProgressInitiateFormComponent', () => {
   let component: ProgressInitiateFormComponent;
@@ -97,13 +81,10 @@ describe('ProgressInitiateFormComponent', () => {
             close: () => ({}),
           },
         },
-<<<<<<< HEAD:modules/ui/src/app/pages/testrun/components/progress-initiate-form/progress-initiate-form.component.spec.ts
         { provide: MAT_DIALOG_DATA, useValue: {} },
         provideMockStore({
           selectors: [{ selector: selectDevices, value: [device, device] }],
         }),
-=======
->>>>>>> main:modules/ui/src/app/progress/progress-initiate-form/progress-initiate-form.component.spec.ts
       ],
       imports: [
         MatDialogModule,
