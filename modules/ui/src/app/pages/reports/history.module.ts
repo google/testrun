@@ -25,6 +25,8 @@ import { MatSortModule } from '@angular/material/sort';
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { FilterChipsComponent } from './components/filter-chips/filter-chips.component';
 import { DeleteReportComponent } from './components/delete-report/delete-report.component';
+import { DownloadReportZipComponent } from '../../components/download-report-zip/download-report-zip.component';
+import { DownloadReportPdfComponent } from '../../components/download-report-pdf/download-report-pdf.component';
 
 @NgModule({
   declarations: [HistoryComponent],
@@ -39,6 +41,8 @@ import { DeleteReportComponent } from './components/delete-report/delete-report.
     FilterDialogComponent,
     FilterChipsComponent,
     DeleteReportComponent,
+    DownloadReportZipComponent,
+    DownloadReportPdfComponent,
   ],
   providers: [DatePipe],
 })

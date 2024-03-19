@@ -130,7 +130,7 @@
   color: #202124;
 }
 
-.download-report-icon,
+::ng-deep .download-report-icon,
 .delete-report-icon {
   color: $dark-grey;
 }

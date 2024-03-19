@@ -21,15 +21,12 @@ $row-height: 48px;
 $row-horizontal-padding: 16px;
 $expander-button-size: 28px;
 
-:host {
-  overflow-y: auto;
-  margin: 16px 0;
-}
-
 .tests-container {
   display: block;
-  border: 1px solid $lighter-grey;
-  border-bottom: none;
+
+  & > :last-child {
+    border-bottom: none;
+  }
 }
 
 .tests-header-row {
@@ -117,7 +114,8 @@ $expander-button-size: 28px;
   .expander-button:hover,
   .expansion-panel-row:not(.mat-expanded)
     .expansion-panel-header:not([aria-disabled='true']):hover,
-  .expansion-panel-header:hover {
+  .expansion-panel-header:hover,
+  .expansion-panel-header:hover + ::ng-deep.mat-expansion-panel-content {
     background: $color-background-grey;
   }
 }

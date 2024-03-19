@@ -135,7 +135,7 @@ describe('GeneralSettingsComponent', () => {
       component.closeSetting(mockMessage);
 
       expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-        `The ${mockMessage} finished. The connection setting panel is closed.`
+        `The ${mockMessage} finished. The system settings panel is closed.`
       );
     });
 

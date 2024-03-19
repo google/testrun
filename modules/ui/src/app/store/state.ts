@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { Device } from '../model/device';
 import { TestrunStatus } from '../model/testrun-status';
-import { SystemInterfaces } from '../model/setting';
+import { SettingMissedError, SystemInterfaces } from '../model/setting';
+import { Device } from '../model/device';
 
 export interface AppState {
   appComponent: AppComponentState;
@@ -30,20 +29,23 @@ export interface AppComponentState {
    * Indicates, if side menu should be focused on keyboard navigation after menu is opened
    */
   focusNavigation: boolean;
-  error: boolean;
+  settingMissedError: SettingMissedError | null;
   isStatusLoaded: boolean; // TODO should be updated in effect when fetch status
   devicesLength: number; // TODO should be renamed to focusToggleSettingsBtn (true when devices.length > 0) and updated in effect when fetch device
 }
 
 export interface SharedState {
+  devices: Device[];
   //used in app, devices, testrun
-  devices?: Device[] | null;
+  hasDevices: boolean;
   //app, testrun
   systemStatus?: TestrunStatus | null;
   //app, testrun
   isTestrunStarted?: boolean;
   //app, settings
-  hasConnectionSettings: boolean;
+  hasConnectionSettings: boolean | null;
+  // app, devices
+  isOpenAddDevice: boolean;
 }
 
 export const initialAppComponentState: AppComponentState = {
@@ -52,9 +54,12 @@ export const initialAppComponentState: AppComponentState = {
   focusNavigation: false,
   isStatusLoaded: false,
   devicesLength: 0,
-  error: false,
+  settingMissedError: null,
 };
 
 export const initialSharedState: SharedState = {
-  hasConnectionSettings: false,
+  hasConnectionSettings: null,
+  isOpenAddDevice: false,
+  hasDevices: false,
+  devices: [],
 };

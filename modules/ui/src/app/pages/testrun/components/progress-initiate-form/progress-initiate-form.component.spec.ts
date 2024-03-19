@@ -33,6 +33,8 @@ import { device } from '../../../../mocks/device.mock';
 import { of } from 'rxjs';
 import { MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE } from '../../../../mocks/progress.mock';
 import { SpinnerComponent } from '../../../../components/spinner/spinner.component';
+import { provideMockStore } from '@ngrx/store/testing';
+import { selectDevices } from '../../../../store/selectors';
 
 describe('ProgressInitiateFormComponent', () => {
   let component: ProgressInitiateFormComponent;
@@ -80,6 +82,9 @@ describe('ProgressInitiateFormComponent', () => {
           },
         },
         { provide: MAT_DIALOG_DATA, useValue: {} },
+        provideMockStore({
+          selectors: [{ selector: selectDevices, value: [device, device] }],
+        }),
       ],
       imports: [
         MatDialogModule,

@@ -16,7 +16,6 @@
 import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { Device } from '../../model/device';
-import { TestRunService } from '../../services/test-run.service';
 
 import { DeviceRepositoryComponent } from './device-repository.component';
 import { DeviceRepositoryModule } from './device-repository.module';
@@ -26,76 +25,62 @@ import {
   FormAction,
 } from './components/device-form/device-form.component';
 import { MatDialogRef } from '@angular/material/dialog';
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { device } from '../../mocks/device.mock';
+import { device, MOCK_TEST_MODULES } from '../../mocks/device.mock';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import SpyObj = jasmine.SpyObj;
 import { FocusManagerService } from '../../services/focus-manager.service';
+import { DevicesStore } from './devices.store';
 
 describe('DeviceRepositoryComponent', () => {
   let component: DeviceRepositoryComponent;
   let fixture: ComponentFixture<DeviceRepositoryComponent>;
   let compiled: HTMLElement;
-  let mockService: SpyObj<TestRunService>;
+  let mockDevicesStore: SpyObj<DevicesStore>;
 
   const stateServiceMock: jasmine.SpyObj<FocusManagerService> =
     jasmine.createSpyObj('stateServiceMock', ['focusFirstElementInContainer']);
 
-  beforeEach(() => {
-    mockService = jasmine.createSpyObj([
-      'getDevices',
-      'fetchDevices',
-      'setDevices',
-      'getTestModules',
-      'addDevice',
-      'updateDevice',
+  beforeEach(async () => {
+    mockDevicesStore = jasmine.createSpyObj('DevicesStore', [
+      'setIsOpenAddDevice',
+      'selectDevice',
       'deleteDevice',
-      'removeDevice',
-      'isOpenAddDevice$',
     ]);
-    mockService.isOpenAddDevice$ = new BehaviorSubject(false);
-    mockService.getDevices.and.returnValue(
-      new BehaviorSubject<Device[] | null>([])
-    );
-    mockService.getTestModules.and.returnValue([
-      {
-        displayName: 'Connection',
-        name: 'connection',
-        enabled: true,
-      },
-      {
-        displayName: 'Smart Ready',
-        name: 'udmi',
-        enabled: false,
-      },
-    ]);
-    TestBed.configureTestingModule({
+
+    mockDevicesStore.testModules = MOCK_TEST_MODULES;
+
+    await TestBed.configureTestingModule({
       imports: [DeviceRepositoryModule, BrowserAnimationsModule],
       providers: [
-        { provide: TestRunService, useValue: mockService },
+        { provide: DevicesStore, useValue: mockDevicesStore },
         { provide: FocusManagerService, useValue: stateServiceMock },
       ],
       declarations: [DeviceRepositoryComponent],
-    });
+    }).compileComponents();
+
+    TestBed.overrideProvider(DevicesStore, { useValue: mockDevicesStore });
+
     fixture = TestBed.createComponent(DeviceRepositoryComponent);
     component = fixture.componentInstance;
     compiled = fixture.nativeElement as HTMLElement;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('with no devices devices', () => {
+  describe('with no devices', () => {
     beforeEach(() => {
-      mockService.getDevices = jasmine.createSpy().and.returnValue(of([]));
-      mockService.isOpenAddDevice$ = new BehaviorSubject(true);
-      component.ngOnInit();
+      component.viewModel$ = of({
+        devices: [] as Device[],
+        selectedDevice: null,
+      });
+      mockDevicesStore.devices$ = of([]);
+      mockDevicesStore.isOpenAddDevice$ = of(true);
+      fixture.detectChanges();
     });
 
     it('should show only add device button if no device added', () => {
-      fixture.detectChanges();
       const button = compiled.querySelector(
         '.device-repository-content-empty button'
       );
@@ -114,26 +99,53 @@ describe('DeviceRepositoryComponent', () => {
 
   describe('with devices', () => {
     beforeEach(() => {
-      mockService.getDevices.and.returnValue(
-        new BehaviorSubject<Device[] | null>([device, device, device])
-      );
-      component.ngOnInit();
+      component.viewModel$ = of({
+        devices: [device, device, device],
+        selectedDevice: device,
+      });
+      fixture.detectChanges();
     });
 
     it('should show device item', fakeAsync(() => {
-      fixture.detectChanges();
       const item = compiled.querySelectorAll('app-device-item');
 
       expect(item.length).toEqual(3);
     }));
 
     it('should add device-item-selected class for selected device', fakeAsync(() => {
-      component.selectedDevice = device;
-      fixture.detectChanges();
       const item = compiled.querySelector('app-device-item');
 
       expect(item?.classList.contains('device-item-selected')).toBeTrue();
     }));
+
+    it('should open device dialog on "add device button" click', () => {
+      const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+        afterClosed: () => of(true),
+      } as MatDialogRef<typeof DeviceFormComponent>);
+      fixture.detectChanges();
+      const button = compiled.querySelector(
+        '.device-add-button'
+      ) as HTMLButtonElement;
+      button?.click();
+
+      expect(button).toBeTruthy();
+      expect(openSpy).toHaveBeenCalled();
+      expect(openSpy).toHaveBeenCalledWith(DeviceFormComponent, {
+        ariaLabel: 'Create device',
+        data: {
+          device: null,
+          title: 'Create device',
+          testModules: MOCK_TEST_MODULES,
+          devices: [],
+        },
+        autoFocus: true,
+        hasBackdrop: true,
+        disableClose: true,
+        panelClass: 'device-form-dialog',
+      });
+
+      openSpy.calls.reset();
+    });
 
     describe('#openDialog', () => {
       it('should open device dialog on item click', () => {
@@ -142,7 +154,7 @@ describe('DeviceRepositoryComponent', () => {
         } as MatDialogRef<typeof DeviceFormComponent>);
         fixture.detectChanges();
 
-        component.openDialog(device);
+        component.openDialog([device], device);
 
         expect(openSpy).toHaveBeenCalled();
         expect(openSpy).toHaveBeenCalledWith(DeviceFormComponent, {
@@ -150,6 +162,8 @@ describe('DeviceRepositoryComponent', () => {
           data: {
             device: device,
             title: 'Edit device',
+            devices: [device],
+            testModules: MOCK_TEST_MODULES,
           },
           autoFocus: true,
           hasBackdrop: true,
@@ -166,13 +180,15 @@ describe('DeviceRepositoryComponent', () => {
         } as MatDialogRef<typeof DeviceFormComponent>);
         fixture.detectChanges();
 
-        component.openDialog(device, true);
+        component.openDialog([device], device, true);
 
         expect(openSpy).toHaveBeenCalledWith(DeviceFormComponent, {
           ariaLabel: 'Edit device',
           data: {
             device: device,
             title: 'Edit device',
+            devices: [device],
+            testModules: MOCK_TEST_MODULES,
           },
           autoFocus: '.delete-button',
           hasBackdrop: true,
@@ -185,73 +201,17 @@ describe('DeviceRepositoryComponent', () => {
     });
   });
 
-  it('should open device dialog on "add device button" click', () => {
-    const openSpy = spyOn(component.dialog, 'open').and.returnValue({
-      afterClosed: () => of(true),
-    } as MatDialogRef<typeof DeviceFormComponent>);
-    fixture.detectChanges();
-    const button = compiled.querySelector(
-      '.device-repository-content-empty button'
-    ) as HTMLButtonElement;
-    button?.click();
-
-    expect(button).toBeTruthy();
-    expect(openSpy).toHaveBeenCalled();
-    expect(openSpy).toHaveBeenCalledWith(DeviceFormComponent, {
-      ariaLabel: 'Create device',
-      data: { device: null, title: 'Create device' },
-      autoFocus: true,
-      hasBackdrop: true,
-      disableClose: true,
-      panelClass: 'device-form-dialog',
-    });
-
-    openSpy.calls.reset();
-  });
-
-  it('should not add device if dialog closes with null', () => {
+  it('should call setIsOpenAddDevice if dialog closes with null', () => {
     spyOn(component.dialog, 'open').and.returnValue({
       afterClosed: () => of(null),
     } as MatDialogRef<typeof DeviceFormComponent>);
-    mockService.addDevice.and.callThrough();
 
     component.openDialog();
 
-    expect(mockService.addDevice).not.toHaveBeenCalled();
-  });
-
-  it('should add device if dialog closes with object and save action', () => {
-    spyOn(component.dialog, 'open').and.returnValue({
-      afterClosed: () =>
-        of({
-          device,
-          action: FormAction.Save,
-        }),
-    } as MatDialogRef<typeof DeviceFormComponent>);
-    mockService.addDevice.and.callThrough();
-
-    component.openDialog();
-
-    expect(mockService.addDevice).toHaveBeenCalledWith(device);
-  });
-
-  it('should update device if dialog closes with object, action save and selected device', () => {
-    spyOn(component.dialog, 'open').and.returnValue({
-      afterClosed: () =>
-        of({
-          device,
-          action: FormAction.Save,
-        }),
-    } as MatDialogRef<typeof DeviceFormComponent>);
-    mockService.updateDevice.and.callThrough();
-
-    component.openDialog(device);
-
-    expect(mockService.updateDevice).toHaveBeenCalledWith(device, device);
+    expect(mockDevicesStore.setIsOpenAddDevice).toHaveBeenCalled();
   });
 
   it('should delete device if dialog closes with object, action delete and selected device', () => {
-    const openDeleteDialogSpy = spyOn(component, 'openDeleteDialog');
     spyOn(component.dialog, 'open').and.returnValue({
       afterClosed: () =>
         of({
@@ -260,21 +220,21 @@ describe('DeviceRepositoryComponent', () => {
         }),
     } as MatDialogRef<typeof DeviceFormComponent>);
 
-    component.openDialog(device);
+    component.openDialog([device], device);
 
-    expect(openDeleteDialogSpy).toHaveBeenCalledWith(device);
+    expect(mockDevicesStore.deleteDevice).toHaveBeenCalled();
   });
 
   describe('delete device dialog', () => {
     beforeEach(() => {
-      mockService.getDevices.and.returnValue(
-        new BehaviorSubject<Device[] | null>([device, device, device])
-      );
-      component.ngOnInit();
+      component.viewModel$ = of({
+        devices: [device, device, device],
+        selectedDevice: device,
+      });
+      fixture.detectChanges();
     });
 
     it('should show device item', fakeAsync(() => {
-      fixture.detectChanges();
       const item = compiled.querySelectorAll('app-device-item');
 
       expect(item.length).toEqual(3);
@@ -284,58 +244,24 @@ describe('DeviceRepositoryComponent', () => {
       spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
       } as MatDialogRef<typeof DeleteFormComponent>);
-      mockService.deleteDevice.and.returnValue(of(true));
-      mockService.removeDevice.and.callThrough();
 
-      component.openDeleteDialog(device);
+      component.openDeleteDialog([device], device);
 
-      expect(mockService.deleteDevice).toHaveBeenCalledWith(device);
-      expect(mockService.removeDevice).toHaveBeenCalledWith(device);
+      const args = mockDevicesStore.deleteDevice.calls.argsFor(0);
+      // @ts-expect-error config is in object
+      expect(args[0].device).toEqual(device);
+      expect(mockDevicesStore.deleteDevice).toHaveBeenCalled();
     });
 
-    it('should focus next device when dialog return true and next device is exist', fakeAsync(() => {
-      spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of(true),
-      } as MatDialogRef<typeof DeleteFormComponent>);
-      component.selectedDevice = device;
-      mockService.deleteDevice.and.returnValue(of(true));
-      mockService.removeDevice.and.callThrough();
-      fixture.detectChanges();
-      const deviceButton = compiled.querySelector(
-        '.device-item-selected + app-device-item button'
-      ) as HTMLButtonElement;
-      const buttonFocusSpy = spyOn(deviceButton, 'focus');
-
-      component.openDeleteDialog(device);
-
-      expect(buttonFocusSpy).toHaveBeenCalled();
-    }));
-
-    it('should focus add button when dialog return true and next device is not exist', fakeAsync(() => {
-      spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of(true),
-      } as MatDialogRef<typeof DeleteFormComponent>);
-      component.selectedDevice = null;
-      mockService.deleteDevice.and.returnValue(of(true));
-      mockService.removeDevice.and.callThrough();
-      fixture.detectChanges();
-
-      component.openDeleteDialog(device);
-
-      expect(
-        document.activeElement?.classList.contains('device-add-button')
-      ).toBeTrue();
-    }));
-
     it('should open device dialog when dialog return null', () => {
-      const openDeleteDialogSpy = spyOn(component, 'openDialog');
+      const openDeviceDialogSpy = spyOn(component, 'openDialog');
       spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(null),
       } as MatDialogRef<typeof DeleteFormComponent>);
 
-      component.openDeleteDialog(device);
+      component.openDeleteDialog([device], device);
 
-      expect(openDeleteDialogSpy).toHaveBeenCalledWith(device, true);
+      expect(openDeviceDialogSpy).toHaveBeenCalledWith([device], device, true);
     });
   });
 });

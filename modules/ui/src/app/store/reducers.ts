@@ -33,9 +33,9 @@ export const appComponentReducer = createReducer(
     ...state,
     focusNavigation,
   })),
-  on(Actions.updateError, (state, { error }) => ({
+  on(Actions.updateError, (state, { settingMissedError }) => ({
     ...state,
-    error,
+    settingMissedError,
   }))
 );
 
@@ -45,6 +45,24 @@ export const sharedReducer = createReducer(
     return {
       ...state,
       hasConnectionSettings,
+    };
+  }),
+  on(Actions.setIsOpenAddDevice, (state, { isOpenAddDevice }) => {
+    return {
+      ...state,
+      isOpenAddDevice,
+    };
+  }),
+  on(Actions.setHasDevices, (state, { hasDevices }) => {
+    return {
+      ...state,
+      hasDevices,
+    };
+  }),
+  on(Actions.setDevices, (state, { devices }) => {
+    return {
+      ...state,
+      devices,
     };
   })
 );

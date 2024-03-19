@@ -37,7 +37,22 @@ export const selectHasConnectionSettings = createSelector(
   (state: AppState) => state.shared.hasConnectionSettings
 );
 
+export const selectIsOpenAddDevice = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.isOpenAddDevice
+);
+
+export const selectHasDevices = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.hasDevices
+);
+
+export const selectDevices = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.devices
+);
+
 export const selectError = createSelector(
   selectAppState,
-  (state: AppState) => state.appComponent.error
+  (state: AppState) => state.appComponent.settingMissedError
 );

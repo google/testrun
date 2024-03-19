@@ -24,7 +24,6 @@ import {
 } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TestRunService } from '../../../../services/test-run.service';
-import { Observable } from 'rxjs/internal/Observable';
 import { Device, TestModule, DeviceView } from '../../../../model/device';
 import {
   AbstractControl,
@@ -35,6 +34,9 @@ import {
 import { DeviceValidators } from '../../../devices/components/device-form/device.validators';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
 import { take } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { AppState } from '../../../../store/state';
+import { selectDevices } from '../../../../store/selectors';
 
 interface DialogData {
   device?: Device;
@@ -51,7 +53,7 @@ export class ProgressInitiateFormComponent
 {
   @ViewChild('firmwareInput') firmwareInput!: ElementRef;
   initiateForm!: FormGroup;
-  devices$!: Observable<Device[] | null>;
+  devices$ = this.store.select(selectDevices);
   selectedDevice: Device | null = null;
   testModules: TestModule[] = [];
   prevDevice: Device | null = null;
@@ -64,7 +66,8 @@ export class ProgressInitiateFormComponent
     private readonly testRunService: TestRunService,
     private fb: FormBuilder,
     private deviceValidators: DeviceValidators,
-    private readonly changeDetectorRef: ChangeDetectorRef
+    private readonly changeDetectorRef: ChangeDetectorRef,
+    private store: Store<AppState>
   ) {
     super(dialogRef);
   }
@@ -79,7 +82,6 @@ export class ProgressInitiateFormComponent
   }
 
   ngOnInit() {
-    this.devices$ = this.testRunService.getDevices();
     this.createInitiateForm();
     this.testModules = this.testRunService.getTestModules();
 
@@ -132,9 +134,11 @@ export class ProgressInitiateFormComponent
 
     if (this.selectedDevice) {
       this.testRunService.fetchVersion();
-      this.selectedDevice.firmware = this.firmware.value.trim();
       this.testRunService
-        .startTestrun(this.selectedDevice)
+        .startTestrun({
+          ...this.selectedDevice,
+          firmware: this.firmware.value.trim(),
+        })
         .pipe(take(1))
         .subscribe(() => {
           this.testRunService.getSystemStatus();

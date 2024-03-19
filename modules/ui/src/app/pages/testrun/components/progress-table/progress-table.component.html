@@ -33,7 +33,7 @@ limitations under the License.
       </span>
     </section>
 
-    <ng-container *ngFor="let item of dataSource">
+    <ng-container *ngFor="let item of dataSource; trackBy: trackTest">
       <mat-expansion-panel
         *ngIf="item.recommendations; else simpleRow"
         [expanded]="true"

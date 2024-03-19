@@ -239,6 +239,8 @@ class TestReport():
         content_size += 40 + header_padding
       elif '<h2' in line:
         content_size += 30 + header_padding
+      elif '<h3' in line:
+        content_size += 23 + header_padding
       elif '<tr>' in line:
         content_size += 39
       elif '<li>' in line:
@@ -310,6 +312,7 @@ class TestReport():
     content = content.replace('<table>', '<table class=markdown-table>')
     content = content.replace('<h1>', '<h1 class=markdown-header-h1>')
     content = content.replace('<h2>', '<h2 class=markdown-header-h2>')
+    content = content.replace('<h3>', '<h3 class=markdown-header-h3>')
 
     content = self.generate_module_pages(json_data=json_data,
                                          module_reports=content)
@@ -794,6 +797,16 @@ class TestReport():
       margin-right:0px;
 
       font-size: 1.5em;
+      font-weight: bold;
+    }
+
+    .markdown-header-h3{
+      margin-left:20px;
+      margin-top:20px;
+      margin-bottom:24px;
+      margin-right:0px;
+
+      font-size: 1.17em;
       font-weight: bold;
     }
 

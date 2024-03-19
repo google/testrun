@@ -73,4 +73,8 @@ export class ProgressTableComponent implements OnInit {
     const message = this.stepsToResolve?.length === 1 ? 'row' : 'all rows';
     return `${action} ${message}`;
   }
+
+  public trackTest(index: number, item: IResult) {
+    return item.name + item.result;
+  }
 }

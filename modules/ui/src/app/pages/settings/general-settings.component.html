@@ -14,10 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="settings-drawer-header">
-  <h2 class="settings-drawer-header-title">Connection settings</h2>
+  <h2 class="settings-drawer-header-title">System settings</h2>
   <button
     (click)="closeSetting(EventType.Close)"
     aria-label="close"
+    id="setting-panel-close-button"
     class="settings-drawer-header-button"
     mat-button>
     <mat-icon class="close-button-icon" svgIcon="close"></mat-icon>
@@ -41,16 +42,16 @@ limitations under the License.
 
         <app-settings-dropdown
           [controlName]="FormKey.DEVICE"
-          groupLabel="Select port where you’ll connect the tested device"
-          description="Choose one of the options where you’ll connect IoT device for testing"
+          groupLabel="Device port"
+          description="Port where IoT device is connected for testing"
           label="Device connection port"
           key="device"
           [options]="vm.deviceOptions">
         </app-settings-dropdown>
         <app-settings-dropdown
           [controlName]="FormKey.INTERNET"
-          groupLabel="Select port used for Internet connection"
-          description="Choose one of the following ports on your Laptop or Desktop"
+          groupLabel="Internet port"
+          description="Port used for internet connection"
           label="Internet connection port"
           key="internet"
           [options]="vm.internetOptions">
@@ -67,19 +68,20 @@ limitations under the License.
           class="message-link">
           Refresh
         </a>
-        the Connection settings
+        the System settings
       </p>
       <app-settings-dropdown
         [controlName]="FormKey.LOG_LEVEL"
-        groupLabel="Select the logging level for Testrun events"
+        groupLabel="Log level"
+        description="Logging level of details"
         label="Log level"
         key="log-level"
         [options]="vm.logLevelOptions">
       </app-settings-dropdown>
       <app-settings-dropdown
         [controlName]="FormKey.MONITOR_PERIOD"
-        groupLabel="Select device monitoring time period"
-        description="Choose one of the options for Monitoring Device time, when Testrun will observe the device before starting tests. The optimal time to pass the qualification is 300s."
+        groupLabel="Monitoring Time"
+        description="Time period for Testrun to observe the device before starting tests"
         label="Monitoring period"
         key="monitoring-period"
         [options]="vm.monitoringPeriodOptions">

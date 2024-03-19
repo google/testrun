@@ -17,6 +17,13 @@
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap } from 'rxjs/operators';
+import { selectHasDevices } from './store/selectors';
+import { Store } from '@ngrx/store';
+import { AppState } from './store/state';
+import { TestRunService } from './services/test-run.service';
+import { exhaustMap } from 'rxjs';
+import { Device } from './model/device';
+import { setDevices } from './store/actions';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export interface AppComponentState {
@@ -25,9 +32,11 @@ export interface AppComponentState {
 @Injectable()
 export class AppStore extends ComponentStore<AppComponentState> {
   private consentShown$ = this.select(state => state.consentShown);
+  private hasDevices$ = this.store.select(selectHasDevices);
 
   viewModel$ = this.select({
     consentShown: this.consentShown$,
+    hasDevices: this.hasDevices$,
   });
 
   updateConsent = this.updater((state, consentShown: boolean) => ({
@@ -44,7 +53,22 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  constructor() {
+  getDevices = this.effect(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap(() => {
+        return this.testRunService.fetchDevices().pipe(
+          tap((devices: Device[]) => {
+            this.store.dispatch(setDevices({ devices }));
+          })
+        );
+      })
+    );
+  });
+
+  constructor(
+    private store: Store<AppState>,
+    private testRunService: TestRunService
+  ) {
     super({
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,
     });

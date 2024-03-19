@@ -18,7 +18,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
-    path: 'testrun',
+    path: 'testing',
     loadChildren: () =>
       import('./pages/testrun/progress.module').then(m => m.ProgressModule),
     title: 'Testrun',
