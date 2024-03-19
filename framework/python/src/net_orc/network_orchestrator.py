@@ -116,8 +116,6 @@ class NetworkOrchestrator:
     """Start the virtual testing network."""
     LOGGER.info('Starting network')
 
-    #self.build_network_modules()
-
     self.create_net()
     self.start_network_services()
 
@@ -139,6 +137,11 @@ class NetworkOrchestrator:
     """Stop the network orchestrator."""
     self.stop_validator(kill=kill)
     self.stop_network(kill=kill)
+
+    # Listener may not have been defined yet
+    if self.get_listener() is not None:
+      self.get_listener().stop_listener()
+      self.get_listener().reset()
 
   def stop_validator(self, kill=False):
     """Stop the network validator."""
@@ -339,7 +342,10 @@ class NetworkOrchestrator:
 
     self._create_private_net()
 
-    self._listener = Listener(self._session)
+    # Listener may have already been created. Only create if not
+    if self._listener is None:
+      self._listener = Listener(self._session)
+
     self.get_listener().register_callback(self._device_discovered,
                                           [NetworkEvent.DEVICE_DISCOVERED])
     self.get_listener().register_callback(self._dhcp_lease_ack,
@@ -486,12 +492,12 @@ class NetworkOrchestrator:
       container = self._get_service_container(net_module)
       if container is not None:
         if kill:
-          LOGGER.debug('Killing container:' + net_module.container_name)
+          LOGGER.debug('Killing container: ' + net_module.container_name)
           container.kill()
         else:
-          LOGGER.debug('Stopping container:' + net_module.container_name)
+          LOGGER.debug('Stopping container: ' + net_module.container_name)
           container.stop()
-        LOGGER.debug('Container stopped:' + net_module.container_name)
+        LOGGER.debug('Container stopped: ' + net_module.container_name)
     except Exception as error:  # pylint: disable=W0703
       LOGGER.error('Container stop error')
       LOGGER.error(error)
