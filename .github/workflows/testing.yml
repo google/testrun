@@ -99,23 +99,6 @@ jobs:
         shell: bash {0}
         run: testing/pylint/test_pylint
 
-  testrun_package:
-    permissions: {}
-    name: Package
-    runs-on: ubuntu-22.04
-    timeout-minutes: 5
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - name: Package Testrun
-        shell: bash {0}
-        run: cmd/package
-      - name: Archive package
-        uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
-        with:
-          name: testrun_installer
-          path: testrun*.deb
-
   testrun_ui:
     permissions: {}
     name: UI
