@@ -27,6 +27,7 @@ import { of } from 'rxjs';
 import {
   EMPTY_RESULT,
   MOCK_PROGRESS_DATA_CANCELLED,
+  MOCK_PROGRESS_DATA_CANCELLED_EMPTY,
   MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_COMPLIANT,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
@@ -233,6 +234,19 @@ describe('ProgressComponent', () => {
 
           testRunServiceMock.systemStatus$ = of(
             MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
+          );
+          component.ngOnInit();
+
+          component.dataSource$.subscribe(res => {
+            expect(res).toEqual(expectedResult);
+          });
+        });
+
+        it('should set value with empty values for status "Cancelled" and empty result', () => {
+          const expectedResult = EMPTY_RESULT;
+
+          testRunServiceMock.systemStatus$ = of(
+            MOCK_PROGRESS_DATA_CANCELLED_EMPTY
           );
           component.ngOnInit();
 
