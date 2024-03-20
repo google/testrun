@@ -184,7 +184,6 @@ class TLSUtil():
         args = f'{root_cert_path} {device_cert_path}'
         command = f'{bin_file} {args}'
         response = util.run_command(command)
-        LOGGER.info('Response: ' + str(response))
         if f'{device_cert_path}: OK' in str(response):
           LOGGER.info('Device signed by cert:' + root_cert)
           return True, root_cert_path
@@ -242,18 +241,20 @@ class TLSUtil():
       dev_cert = f.read()
     with open(intermediate_cert_path, 'r', encoding='utf-8') as f:
       inter_cert = f.read()
+
+    combined_cert_name = 'device_cert_full.crt'
     combined_cert = dev_cert + inter_cert
     combined_cert_path = os.path.join(self._cert_out_dir,
-                                      'device_cert_full.crt')
+                                      combined_cert_name)
     with open(combined_cert_path, 'w', encoding='utf-8') as f:
       f.write(combined_cert)
 
     # Use openssl script to validate the combined certificate
     # against the available trusted CA's
-    args = f'{intermediate_cert_path} {device_cert_path}'
+    args = f'{intermediate_cert_path} {combined_cert_path}'
     command = f'{bin_file} {args}'
     response = util.run_command(command)
-    return 'device_cert.crt: OK' in str(response)
+    return combined_cert_name +': OK' in str(response)
 
   def get_ca_issuer(self, certificate):
     cert_file_path = None
@@ -269,7 +270,6 @@ class TLSUtil():
 
   def resolve_ca_issuer(self, certificate):
     LOGGER.info('Resolving CA Issuer')
-    LOGGER.info('type: ' + str(type(certificate)))
     # Print the certificate information
     cert_text = crypto.dump_certificate(crypto.FILETYPE_TEXT,
                                         certificate).decode()
