@@ -265,7 +265,8 @@ class Api:
       if version_check.status_code != 200:
         response.status_code = 500
         LOGGER.error(version_check.content)
-        return self._generate_msg(False, "Failed to fetch latest version")
+        return self._generate_msg(False, "Failed to fetch latest version. " +
+                                  "Please, check the internet connection")
 
       # Extract version number from response, removing the leading 'v'
       latest_version_no = version_check.json()["name"].strip("v")
@@ -288,7 +289,8 @@ class Api:
       response.status_code = 500
       LOGGER.error("Failed to fetch latest version")
       LOGGER.debug(e)
-      return self._generate_msg(False, "Failed to fetch latest version")
+      return self._generate_msg(False, "Failed to fetch latest version. " +
+                                "Please, check the internet connection")
 
   async def get_reports(self, request: Request):
     LOGGER.debug("Received reports list request")
