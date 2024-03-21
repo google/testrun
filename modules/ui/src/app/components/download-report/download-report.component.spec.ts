@@ -76,7 +76,7 @@ describe('DownloadReportComponent', () => {
       beforeEach(() => {
         component.data = MOCK_PROGRESS_DATA_COMPLIANT;
         component.title =
-          'Download pdf for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20';
+          'Download pdf for Testrun # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20';
         component.href = MOCK_PROGRESS_DATA_COMPLIANT.report;
 
         fixture.detectChanges();
