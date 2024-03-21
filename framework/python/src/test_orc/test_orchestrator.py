@@ -36,7 +36,7 @@ LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
 SAVED_DEVICE_REPORTS = "report/{device_folder}/"
 LOCAL_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
-TESTRUN_DIR = "/usr/local/testrun"
+API_URL = "http://localhost:8000"
 
 
 class TestOrchestrator:
@@ -106,11 +106,11 @@ class TestOrchestrator:
 
     LOGGER.info("All tests complete")
 
-    self._session.stop()
+    self._session.finish()
 
     # Do not carry on (generating a report) if Testrun has been stopped
     if self.get_session().get_status() != "In Progress":
-      return None
+      return "Cancelled"
 
     report = TestReport()
     report.from_json(self._generate_report())

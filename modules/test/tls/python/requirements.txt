@@ -1,2 +1,4 @@
 cryptography
 pyOpenSSL
+pyshark
+requests

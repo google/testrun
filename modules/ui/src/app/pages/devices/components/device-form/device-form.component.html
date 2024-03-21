@@ -19,21 +19,41 @@ limitations under the License.
   [class.device-form-create]="!data.device"
   [class.device-form-edit]="data.device">
   <span class="device-form-title">{{ data.title }}</span>
-  <mat-form-field appearance="outline">
+  <mat-form-field appearance="outline" class="manufacturer-field">
     <mat-label>Device Manufacturer</mat-label>
     <input
       class="device-form-manufacturer"
       formControlName="manufacturer"
       matInput />
     <mat-hint>Please enter device manufacturer name</mat-hint>
+    <mat-error
+      *ngIf="manufacturer.hasError('invalid_format')"
+      role="alert"
+      aria-live="assertive">
+      <span
+        >Please, check. The manufacturer name must be a maximum of 64
+        characters. Only letters, numbers, and accented letters are
+        permitted.</span
+      >
+    </mat-error>
     <mat-error *ngIf="manufacturer.errors?.['required']">
       <span>Device Manufacturer is <strong>required</strong></span>
     </mat-error>
   </mat-form-field>
-  <mat-form-field appearance="outline">
+  <mat-form-field appearance="outline" class="model-field">
     <mat-label>Device Model</mat-label>
     <input class="device-form-model" formControlName="model" matInput />
     <mat-hint>Please enter device name</mat-hint>
+    <mat-error
+      *ngIf="model.hasError('invalid_format')"
+      role="alert"
+      aria-live="assertive">
+      <span
+        >Please, check. The device model name must be a maximum of 64
+        characters. Only letters, numbers, and accented letters are
+        permitted.</span
+      >
+    </mat-error>
     <mat-error *ngIf="model.errors?.['required']">
       <span>Device Model is <strong>required</strong></span>
     </mat-error>

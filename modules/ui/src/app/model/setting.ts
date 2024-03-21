@@ -22,6 +22,18 @@ export interface SystemConfig {
   monitor_period?: number;
 }
 
+export interface InterfacesValidation {
+  hasSetInterfaces: boolean;
+  deviceValid: boolean;
+  internetValid: boolean;
+}
+
+export interface SettingMissedError {
+  isSettingMissed: boolean;
+  devicePortMissed: boolean;
+  internetPortMissed: boolean;
+}
+
 export interface SettingOption {
   key: string;
   value: string;

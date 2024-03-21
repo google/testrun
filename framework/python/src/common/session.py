@@ -70,6 +70,15 @@ class TestRunSession():
     return self._finished
 
   def stop(self):
+    self.set_status('Stopping')
+    self.finish()
+
+  def finish(self):
+    # Set any in progress test results to Error
+    for test_result in self._results:
+      if test_result.result == 'In Progress':
+        test_result.result = 'Error'
+
     self._finished = datetime.datetime.now()
 
   def _get_default_config(self):

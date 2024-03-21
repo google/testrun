@@ -44,6 +44,7 @@ class ReportTest(unittest.TestCase):
 
     # Load all module markdown reports
     reports_md = []
+    reports_md.append(self.get_module_md_report('tls'))
     reports_md.append(self.get_module_md_report('dns'))
     reports_md.append(self.get_module_md_report('nmap'))
     reports_md.append(self.get_module_md_report('ntp'))

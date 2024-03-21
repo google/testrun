@@ -33,7 +33,7 @@ describe('Selectors', () => {
       isStatusLoaded: false,
       devicesLength: 0,
       focusNavigation: false,
-      error: false,
+      settingMissedError: null,
     },
     shared: {
       hasConnectionSettings: false,
@@ -58,9 +58,9 @@ describe('Selectors', () => {
     expect(result).toEqual(false);
   });
 
-  it('should select error', () => {
+  it('should select settingMissedError', () => {
     const result = selectError.projector(initialState);
-    expect(result).toEqual(false);
+    expect(result).toEqual(null);
   });
 
   it('should select devices', () => {
