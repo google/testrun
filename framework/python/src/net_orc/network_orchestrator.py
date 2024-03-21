@@ -73,6 +73,16 @@ class NetworkOrchestrator:
     # Delete the runtime/network directory
     shutil.rmtree(os.path.join(os.getcwd(), NET_DIR), ignore_errors=True)
 
+    # Cleanup any old config files test files
+    conf_runtime_dir = os.path.join(RUNTIME_DIR,'conf')
+    shutil.rmtree(conf_runtime_dir, ignore_errors=True)
+    os.makedirs(conf_runtime_dir, exist_ok=True)
+
+    # Copy the system config file to the runtime directory
+    system_conf_runtime = os.path.join(conf_runtime_dir,'system.json')
+    with open(system_conf_runtime, 'w', encoding='utf-8') as f:
+      json.dump(self.get_session().get_config(), f, indent=2)
+      
     # Get all components ready
     self.load_network_modules()
 
