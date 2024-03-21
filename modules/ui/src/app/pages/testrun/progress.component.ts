@@ -135,7 +135,8 @@ export class ProgressComponent implements OnInit, OnDestroy {
         const results = (res.tests as TestsData)?.results || [];
         if (
           res.status === StatusOfTestrun.Monitoring ||
-          res.status === StatusOfTestrun.WaitingForDevice
+          res.status === StatusOfTestrun.WaitingForDevice ||
+          (res.status === StatusOfTestrun.Cancelled && !results.length)
         ) {
           return EMPTY_RESULT;
         }

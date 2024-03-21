@@ -48,8 +48,4 @@ export class ConsentDialogComponent {
   cancel() {
     this.dialogRef.close(false);
   }
-
-  cancelOnDownload() {
-    this.dialogRef.close();
-  }
 }
