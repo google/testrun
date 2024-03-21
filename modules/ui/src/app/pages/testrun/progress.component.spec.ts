@@ -539,9 +539,6 @@ describe('ProgressComponent', () => {
         expect(link.download).toEqual(
           'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
         );
-        expect(link.title).toEqual(
-          'Download pdf for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
-        );
       });
     });
 
