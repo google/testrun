@@ -30,6 +30,8 @@ TEST_FILES_DIR = 'testing/unit/' + MODULE
 OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
 REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
 CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
+CERT_DIR = os.path.join(TEST_FILES_DIR,'certs/')
+ROOT_CERTS_DIR = os.path.join(TEST_FILES_DIR,'root_certs')
 
 LOCAL_REPORT = os.path.join(REPORTS_DIR,'tls_report_local.md')
 LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR,'tls_report_ext_local.md')
@@ -49,7 +51,7 @@ class TLSModuleTest(unittest.TestCase):
     TLS_UTIL = TLSUtil(log,
                        bin_dir='modules/test/tls/bin',
                        cert_out_dir=OUTPUT_DIR,
-                       root_certs_dir='local/root_certs')
+                       root_certs_dir=ROOT_CERTS_DIR)
 
   # Test 1.2 server when only 1.2 connection is established
   def security_tls_v1_2_server_test(self):
@@ -439,6 +441,18 @@ class TLSModuleTest(unittest.TestCase):
       print(f'Error: {e}')
       return None
 
+  def tls_module_trusted_ca_cert_chain_test(self):
+    print('\ntls_module_trusted_ca_cert_chain_test')
+    cert_path = os.path.join(CERT_DIR,'_.google.com.crt')
+    cert_valid = TLS_UTIL.validate_cert_chain(device_cert_path=cert_path)
+    self.assertEqual(cert_valid, True)
+
+  def tls_module_local_ca_cert_test(self):
+    print('\ntls_module_trusted_ca_cert_chain_test')
+    cert_path = os.path.join(CERT_DIR,'device_cert_local.crt')
+    cert_valid = TLS_UTIL.validate_local_ca_signature(device_cert_path=cert_path)
+    self.assertEqual(cert_valid[0], True)
+
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   suite.addTest(TLSModuleTest('client_hello_packets_test'))
@@ -470,6 +484,10 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('tls_module_report_test'))
   suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
   suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
+
+  # Test signature validation  methods
+  suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
+  suite.addTest(TLSModuleTest('tls_module_local_ca_cert_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)

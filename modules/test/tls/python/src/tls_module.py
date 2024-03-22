@@ -253,7 +253,7 @@ class TLSModule(TestModule):
         client_ip=client_ip,
         tls_version=tls_version,
         capture_files=[
-            MONITOR_CAPTURE_FILE, STARTUP_CAPTURE_FILE, GATEWAY_CAPTURE_FILE
+            MONITOR_CAPTURE_FILE, STARTUP_CAPTURE_FILE, TLS_CAPTURE_FILE
         ])
 
     # Generate results based on the state

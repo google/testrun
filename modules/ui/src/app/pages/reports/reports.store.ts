@@ -64,6 +64,8 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
       return typeof value === 'string' ? value.toLocaleLowerCase() : value;
     };
     dataSource.filterPredicate = this.customFilterPredicate();
+    dataSource.filter = JSON.stringify(state.filteredValues);
+    dataSource.sort = state.dataSource.sort;
 
     return {
       ...state,
