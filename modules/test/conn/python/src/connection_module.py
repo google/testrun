@@ -488,6 +488,7 @@ class ConnectionModule(TestModule):
 
     except Exception as e:  # pylint: disable=W0718
       LOGGER.error('Failed to restore DHCP server configuration: ' + str(e))
+      LOGGER.error(traceback.format_exc())
 
     return final_result, final_result_details
 

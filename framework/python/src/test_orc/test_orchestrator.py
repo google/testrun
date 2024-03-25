@@ -273,7 +273,7 @@ class TestOrchestrator:
                                if os.path.exists(zip_file)
                                else'creation failed'}''')
 
-    except Exception as error:
+    except Exception as error: # pylint: disable=W0703
       LOGGER.error(f"Failed to create zip file: {error}")
 
   def test_in_progress(self):

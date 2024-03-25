@@ -241,7 +241,7 @@ class TestReport():
 
     for module_reports in self._module_reports:
       # ToDo: Figure out how to make this dynamic
-      # Padding values  from CSS 
+      # Padding values  from CSS
       # Element sizes from inspection of rendered report
       h1_padding = 8
       module_summary_padding = 50 # 25 top and 25 bottom
@@ -285,7 +285,7 @@ class TestReport():
         # we'll add it to this page, otherweise, we'll put it on the next
         # page. Also make sure that if there is less than 40 pixels
         # left after a data row, start a new page or the row will get cut off.
-        # Current row size is 40.667 so rounding to 41 padding, 
+        # Current row size is 40.667 so rounding to 41 padding,
         # adjust if we update the "module-data tbody tr" element.
         if content_size >= content_max_size or (
           data_rows_active and content_max_size - content_size < 41):
