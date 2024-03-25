@@ -26,8 +26,7 @@ LOG_NAME = 'test_tls'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 TLS_CAPTURE_FILE = '/runtime/output/tls.pcap'
-
-LOGGER = None
+GATEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
 
 
 class TLSModule(TestModule):

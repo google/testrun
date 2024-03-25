@@ -57,7 +57,7 @@ class TestReport():
     self._report_url = ''
     self._cur_page = 0
     # Placeholder until available in json report
-    self._version = 'v1.2-alpha'
+    self._version = 'v1.2'
 
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
@@ -418,6 +418,36 @@ class TestReport():
     summary += self.generate_device_summary_label('MAC Address',
                                                   mac,
                                                   trailing_space=False)
+
+    summary += '</div>'
+
+    # Add device configuration
+    summary += '''
+    <div class="summary-device-modules">
+      <div class="summary-item-label" style="margin-bottom:10px;">
+        <h4>Device Configuration</h4>
+      </div>
+    '''
+
+    if 'test_modules' in json_data['device']:
+
+      sorted_modules = {}
+
+      for test_module in json_data['device']['test_modules']:
+        if 'enabled' in json_data['device']['test_modules'][test_module]:
+          sorted_modules[test_module] = json_data['device']['test_modules'][
+            test_module]['enabled']
+
+      # Sort the modules by enabled first
+      sorted_modules = sorted(sorted_modules.items(),
+                              key=lambda x:x[1],
+                              reverse=True)
+
+      for module in sorted_modules:
+        summary += self.generate_device_module_label(
+          module[0],
+          module[1]
+        )
 
     summary += '</div>'
 
