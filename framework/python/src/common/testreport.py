@@ -306,12 +306,16 @@ class TestReport():
     return pages
 
   def generate_body(self, json_data):
-    return f'''
+    self._num_pages = 0
+    self._cur_page = 0
+    body = f'''
     <body>
       {self.generate_pages(json_data)}
       {self.generate_module_pages(json_data)}
     </body>
     '''
+    # Set the max pages after all pages have been generated
+    return body.replace('MAX_PAGE', str(self._cur_page))
 
   def generate_footer(self, page_num):
     footer = f'''
