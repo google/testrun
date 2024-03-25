@@ -87,6 +87,7 @@ class NTPModule(TestModule):
             <td>{total_requests}</td>
             <td>{total_responses}</td>   
           </tr>
+        </tbody>
       </table>
       ''')
 

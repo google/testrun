@@ -37,7 +37,7 @@ class TLSModuleRunner:
 
     self._test_module = TLSModule(module)
     self._test_module.run_tests()
-    self._test_module.generate_module_report()
+    #self._test_module.generate_module_report()
 
   def _handler(self, signum):
     LOGGER.debug('SigtermEnum: ' + str(signal.SIGTERM))
