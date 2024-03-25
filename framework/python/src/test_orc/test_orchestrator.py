@@ -29,7 +29,8 @@ import threading
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
-RUNTIME_DIR = "runtime/test"
+RUNTIME_DIR = "runtime"
+RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR,"test")
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
 LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
@@ -65,8 +66,8 @@ class TestOrchestrator:
 
     # Setup the output directory
     self._host_user = util.get_host_user()
-    os.makedirs(RUNTIME_DIR, exist_ok=True)
-    util.run_command(f"chown -R {self._host_user} {RUNTIME_DIR}")
+    os.makedirs(RUNTIME_TEST_DIR, exist_ok=True)
+    util.run_command(f"chown -R {self._host_user} {RUNTIME_TEST_DIR}")
 
     # Setup the root_certs folder
     os.makedirs(DEVICE_ROOT_CERTS, exist_ok=True)
@@ -137,7 +138,7 @@ class TestOrchestrator:
   def _write_reports(self, test_report):
 
     out_dir = os.path.join(
-        self._root_path, RUNTIME_DIR,
+        self._root_path, RUNTIME_TEST_DIR,
         self._session.get_target_device().mac_addr.replace(":", ""))
 
     LOGGER.debug(f"Writing reports to {out_dir}")
@@ -233,7 +234,7 @@ class TestOrchestrator:
   def _timestamp_results(self, device):
 
     # Define the current device results directory
-    cur_results_dir = os.path.join(self._root_path, RUNTIME_DIR,
+    cur_results_dir = os.path.join(self._root_path, RUNTIME_TEST_DIR,
                                    device.mac_addr.replace(":", ""))
 
     # Define the directory
@@ -261,8 +262,7 @@ class TestOrchestrator:
       # The runtime directory to include in ZIP
       path_to_zip = os.path.join(
         self._root_path,
-        RUNTIME_DIR,
-        self._session.get_target_device().mac_addr.replace(":", ""))
+        RUNTIME_DIR)
 
       # Create ZIP file
       shutil.make_archive(zip_location, "zip", path_to_zip)
@@ -319,7 +319,7 @@ class TestOrchestrator:
 
     try:
 
-      device_test_dir = os.path.join(self._root_path, RUNTIME_DIR,
+      device_test_dir = os.path.join(self._root_path, RUNTIME_TEST_DIR,
                                      device.mac_addr.replace(":", ""))
 
       root_certs_dir = os.path.join(self._root_path, DEVICE_ROOT_CERTS)
