@@ -22,7 +22,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, dsa, ec
 
 LOG_NAME = 'test_tls'
-MODULE_REPORT_FILE_NAME = 'tls_report.md'
+#MODULE_REPORT_FILE_NAME = 'tls_report.html'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 TLS_CAPTURE_FILE = '/runtime/output/tls.pcap'
@@ -52,22 +52,9 @@ class TLSModule(TestModule):
     LOGGER = self._get_logger()
     self._tls_util = TLSUtil(LOGGER)
 
-  def generate_module_report(self):
-    summary = '## Summary'
+  # def generate_module_report(self):
 
-    summary_header = (f'''| {'#': ^5} '''
-              f'''| {'Expiry': ^{25}} '''
-              f'''| {'Length': ^{8}} '''
-              f'''| {'Type': ^{6}} '''
-              f'''| {'Port No.': ^{10}} '''
-              f'''| {'Signed by': ^{11}} | ''')
-    summary_header_line = (f'''|{'-' * 7}'''
-                           f'''|{'-' * 27}'''
-                           f'''|{'-' * 10}'''
-                           f'''|{'-' * 8}'''
-                           f'''|{'-' * 12}'''
-                           f'''|{'-' * 13}|''')
-    summary_table = f'{summary_header}\n{summary_header_line}'
+    html_content = '<h1>TLS Module</h1>'
 
     # List of capture files to scan
     pcap_files = [
@@ -76,9 +63,40 @@ class TLSModule(TestModule):
     ]
     certificates = self.extract_certificates_from_pcap(pcap_files,
                                                        self._device_mac)
-    if len(certificates)>0:
+    if len(certificates) > 0:
+
+      # Add summary table
+      summary_table = '''
+        <table class="module-summary">
+          <thead>
+            <tr>
+              <th>Expiry</th>
+              <th>Length</th>
+              <th>Type</th>
+              <th>Port number</th>
+              <th>Signed by</th>
+            </tr>
+          </thead>
+          <tbody>       
+        '''
+
+      # table_content = '''
+      #   <table class="module-data">
+      #     <thead>
+      #       <tr>
+      #         <th>Expiry</th>
+      #         <th>Length</th>
+      #         <th>Type</th>
+      #         <th>Port number</th>
+      #         <th>Signed by</th>
+      #       </tr>
+      #     </thead>
+      #     <tbody>'''
+
       cert_tables = []
-      for cert_num, ((ip_address, port), cert) in enumerate(certificates.items()):
+      for cert_num, ((ip_address, port), cert) in enumerate(
+          certificates.items()):
+
         # Extract certificate data
         not_valid_before = cert.not_valid_before
         not_valid_after = cert.not_valid_after
@@ -89,22 +107,24 @@ class TLSModule(TestModule):
         public_key = cert.public_key()
         signed_by = 'None'
         if isinstance(public_key, rsa.RSAPublicKey):
-            public_key_type = "RSA"
+          public_key_type = 'RSA'
         elif isinstance(public_key, dsa.DSAPublicKey):
-            public_key_type = "DSA"
+          public_key_type = 'DSA'
         elif isinstance(public_key, ec.EllipticCurvePublicKey):
-            public_key_type = "EC"
+          public_key_type = 'EC'
         else:
-            public_key_type = "Unknown"
+          public_key_type = 'Unknown'
         # Calculate certificate length
-        cert_length = len(cert.public_bytes(encoding=serialization.Encoding.DER))
+        cert_length = len(cert.public_bytes(
+          encoding=serialization.Encoding.DER))
+
         # Generate the Certificate table
-        cert_table = (f'| Property | Value |\n'
-                      f'|---|---|\n'
-                      f"| {'Version':<17} | {version_value:^25} |\n"
-                      f"| {'Signature Alg.':<17} | {signature_alg_value:^25} |\n"
-                      f"| {'Validity from':<17} | {not_before:^25} |\n"
-                      f"| {'Valid to':<17} | {not_after:^25} |")
+        # cert_table = (f'| Property | Value |\n'
+        #               f'|---|---|\n'
+        #               f"| {'Version':<17} | {version_value:^25} |\n"
+        #               f"| {'Signature Alg.':<17} | {signature_alg_value:^25} |\n"
+        #               f"| {'Validity from':<17} | {not_before:^25} |\n"
+        #               f"| {'Valid to':<17} | {not_after:^25} |")
 
         # Generate the Subject table
         subj_table = ('| Distinguished Name | Value |\n'
@@ -123,45 +143,52 @@ class TLSModule(TestModule):
             signed_by = dn[1]
 
         ext_table = None
-        if cert.extensions:
-          ext_table = ('| Extension | Value |\n'
-                       '|---|---|')
-          for extension in cert.extensions:
-            for extension_value in extension.value:
-              ext_table += f'\n| {extension.oid._name} | {extension_value.value}'  # pylint: disable=W0212
-        cert_table = f'### Certificate\n{cert_table}'
-        cert_table += f'\n\n### Subject\n{subj_table}'
-        cert_table += f'\n\n### Issuer\n{iss_table}'
-        if ext_table is not None:
-          cert_table += f'\n\n### Extensions\n{ext_table}'
-        cert_tables.append(cert_table)
-        summary_table_row = (f'''| {cert_num+1: ^5} '''
-                             f'''| {not_after: ^25} '''
-                             f'''| {cert_length: ^8} '''
-                             f'''| {public_key_type: ^6} '''
-                             f'''| {port: ^10} '''
-                             f'''| {signed_by: ^11} |''')
-        summary_table+=f'\n{summary_table_row}'
+        # if cert.extensions:
+        #   ext_table = ('| Extension | Value |\n'
+        #                '|---|---|')
+        #   for extension in cert.extensions:
+        #     for extension_value in extension.value:
+        #       ext_table += f'''\n| {extension.oid._name} |
+        #       {extension_value.value}'''  # pylint: disable=W0212
+        # cert_table = f'### Certificate\n{cert_table}'
+        # cert_table += f'\n\n### Subject\n{subj_table}'
+        # cert_table += f'\n\n### Issuer\n{iss_table}'
+        # if ext_table is not None:
+        #   cert_table += f'\n\n### Extensions\n{ext_table}'
+        # cert_tables.append(cert_table)
 
-      markdown_template = '# TLS Module\n' + '\n'.join(
-          '\n' + tables for tables in cert_tables)
+        summary_table += f'''
+              <tr>
+                <td>{not_after}</td>
+                <td>{cert_length}</td>
+                <td>{public_key_type}</td>
+                <td>{port}</td>
+                <td>{signed_by}</td>
+              </tr>
+            '''
 
-      # summary = f'## Summary\n\n{summary_table}'
-      # markdown_template += f'\n\n{summary}'
+      summary_table += '''
+          </tbody>
+        </table>
+      '''
+
+      html_content += summary_table
+
     else:
-      markdown_template = (f'''# TLS Module\n'''
-        f'''\n- No device certificates detected\n''')
-      
-    summary = f'## Summary\n\n{summary_table}'
-    markdown_template += f'\n\n{summary}'
-    LOGGER.debug('Markdown Report:\n' + markdown_template)
+      html_content += ('''
+        <div class="callout-container info">
+          <div class="icon"></div>
+          No TLS certificates found on the device
+        </div>''')
+
+    LOGGER.debug('Module report:\n' + html_content)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
 
     # Write the content to a file
     with open(report_path, 'w', encoding='utf-8') as file:
-      file.write(markdown_template)
+      file.write(html_content)
 
     LOGGER.info('Module report generated at: ' + str(report_path))
     return report_path

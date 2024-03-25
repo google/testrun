@@ -59,7 +59,7 @@ class ReportTest(unittest.TestCase):
     # Combine the path components using os.path.join
     report_file = os.path.join(UNIT_TEST_DIR,
       os.path.join(module,
-        os.path.join('reports',module+'_report_local.md')))
+        os.path.join('reports',module+'_report_local.html')))
 
     with open(report_file, 'r', encoding='utf-8') as file:
       report = file.read()
