@@ -22,7 +22,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, dsa, ec
 
 LOG_NAME = 'test_tls'
-MODULE_REPORT_FILE_NAME = 'tls_report.html'
+#MODULE_REPORT_FILE_NAME = 'tls_report.html'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 TLS_CAPTURE_FILE = '/runtime/output/tls.pcap'
@@ -53,7 +53,7 @@ class TLSModule(TestModule):
     LOGGER = self._get_logger()
     self._tls_util = TLSUtil(LOGGER)
 
-  def generate_module_report(self):
+  # def generate_module_report(self):
 
     html_content = '<h1>TLS Module</h1>'
 

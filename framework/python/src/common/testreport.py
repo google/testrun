@@ -19,7 +19,6 @@ from io import BytesIO
 from common import util
 import base64
 import os
-import markdown
 from test_orc.test_case import TestCase
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -239,7 +238,7 @@ class TestReport():
   def generate_module_pages(self, json_data):
     pages = ''
     content_max_size = 913
-      
+
     for module_reports in self._module_reports:
       # ToDo: Figure out how to make this dynamic
       # Padding values  from CSS 
