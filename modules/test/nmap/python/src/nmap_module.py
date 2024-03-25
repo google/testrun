@@ -21,7 +21,7 @@ from test_module import TestModule
 import os
 
 LOG_NAME = 'test_nmap'
-MODULE_REPORT_FILE_NAME = 'nmap_report.md'
+MODULE_REPORT_FILE_NAME = 'nmap_report.html'
 NMAP_SCAN_RESULTS_SCAN_FILE = 'nmap_scan_results.json'
 LOGGER = None
 
@@ -83,52 +83,74 @@ class NmapModule(TestModule):
         else:
           udp_open += 1
 
-    summary = '## Summary'
-    summary += f'''\n- TCP Ports Open: {tcp_open}'''
-    summary += f'''\n- UDP Ports Open: {udp_open}'''
-    summary += f'''\n- Total Ports Open: {tcp_open + udp_open}'''
+    html_content = '<h1>Services Module</h1>'
 
-    if (tcp_open + udp_open)>0:
+    # Add summary table
+    html_content += (f'''
+      <table class="module-summary">
+        <thead>
+          <tr>
+            <th>TCP ports open</th>
+            <th>UDP ports open</th>
+            <th>Total ports open</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{tcp_open}</td>
+            <td>{udp_open}</td>
+            <td>{tcp_open + udp_open}</td>
+          </tr>
+      </table>
+                     ''')
 
-      # Find the maximum column lengths
-      max_service_length = max(
-          len(row['Service'])
-          for row in nmap_table_data) if len(nmap_table_data) > 0 else 15
-      max_version_length = max(
-          len(row['Version'])
-          for row in nmap_table_data) if len(nmap_table_data) > 0 else 15
+    if (tcp_open + udp_open) > 0:
 
-      table_content = ''
+      table_content = '''
+        <table class="module-data">
+          <thead>
+            <tr>
+              <th>Port</th>
+              <th>State</th>
+              <th>Service</th>
+              <th>Version</th>
+            </tr>
+          </thead>
+          <tbody>'''
+
       for row in nmap_table_data:
-        table_content += (f'''| {row['Port']: ^10} | {row['Type']: ^10} '''
-                          f'''| {row['State']: ^10} '''
-                          f'''| {row['Service']: ^{max_service_length}} '''
-                          f'''| {row['Version']: ^{max_version_length}} |\n''')
 
-      # Dynamically adjust the header width based on the
-      # longest 'Destination' content
-      header = (f'''| {'Port': ^10} | {'Type': ^{10}} | {'State': ^{10}} '''
-                f'''| {'Service': ^{max_service_length}} '''
-                f'''| {'Version': ^{max_version_length}} |''')
-      header_line = (f'''|{'-' * 12}|{'-' * 12}|{'-' * 12}|'''
-                     f'''{'-' * (max_service_length + 2)}'''
-                     f'''|{'-' * (max_version_length + 2)}|''')
+        table_content += (f'''
+            <tr>
+              <td>{row['Port']}/{row['Type']}</td>
+              <td>{row['State']}</td>
+              <td>{row['Service']}</td>
+              <td>{row['Version']}</td>
+            </tr>''')
 
-      markdown_template = (f'''# NMAP Module\n'''
-      f'''\n{header}\n{header_line}\n{table_content}\n{summary}''')
+      table_content += '''
+            </tbody>
+          </table>
+                       '''
+
+      html_content += table_content
 
     else:
-      markdown_template = (f'''# NMAP Module\n'''
-      f'''\n- No ports detected open\n'''
-      f'''\n{summary}''')
-    LOGGER.debug('Markdown Report:\n' + markdown_template)
+
+      html_content += ('''
+        <div class="callout-container info">
+          <div class="icon"></div>
+          No open ports detected
+        </div>''')
+
+    LOGGER.debug('Module report:\n' + html_content)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
 
     # Write the content to a file
     with open(report_path, 'w', encoding='utf-8') as file:
-      file.write(markdown_template)
+      file.write(html_content)
 
     LOGGER.info('Module report generated at: ' + str(report_path))
 
