@@ -82,7 +82,7 @@ class NetworkOrchestrator:
     system_conf_runtime = os.path.join(conf_runtime_dir,'system.json')
     with open(system_conf_runtime, 'w', encoding='utf-8') as f:
       json.dump(self.get_session().get_config(), f, indent=2)
-      
+
     # Get all components ready
     self.load_network_modules()
 
@@ -199,9 +199,9 @@ class NetworkOrchestrator:
     wrpcap(os.path.join(device_runtime_dir, 'startup.pcap'), packet_capture)
 
     # Copy the device config file to the runtime directory
-    runtime_device_conf = os.path.join(device_runtime_dir,'device_config.json') 
+    runtime_device_conf = os.path.join(device_runtime_dir,'device_config.json')
     with open(runtime_device_conf, 'w', encoding='utf-8') as f:
-      json.dump(self._session.get_target_device().to_config_json(), f, indent=2) 
+      json.dump(self._session.get_target_device().to_config_json(), f, indent=2)
 
     if device.ip_addr is None:
       LOGGER.info(
