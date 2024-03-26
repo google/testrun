@@ -37,6 +37,12 @@
   padding: 0;
   background: $white;
 
+  ::ng-deep .download-report-link {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+  }
+
   .toolbar-col-left {
     display: flex;
     flex-direction: column;
