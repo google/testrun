@@ -87,6 +87,7 @@ $border-radius: 12px;
 
     .item-manufacturer-icon {
       visibility: visible;
+      width: 24px;
     }
   }
 }
@@ -115,6 +116,7 @@ $border-radius: 12px;
 
   .item-manufacturer-icon {
     display: flex;
+    width: 0;
     visibility: hidden;
     font-size: 20px;
     align-items: center;

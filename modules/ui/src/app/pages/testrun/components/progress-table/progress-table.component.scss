@@ -24,6 +24,12 @@ $expander-button-size: 28px;
 .tests-container {
   display: block;
 
+  &:focus-visible {
+    outline: none;
+    border: 1px solid $black;
+    border-radius: 4px;
+  }
+
   & > :last-child {
     border-bottom: none;
   }
