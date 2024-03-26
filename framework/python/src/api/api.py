@@ -285,7 +285,7 @@ class Api:
         LOGGER.debug("The latest version is installed")
 
       return json_response
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       response.status_code = 500
       LOGGER.error("Failed to fetch latest version")
       LOGGER.debug(e)
@@ -381,7 +381,7 @@ class Api:
       return self._generate_msg(True, "Successfully deleted the device")
 
     # TODO: Find specific exception to catch
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       LOGGER.error(e)
       response.status_code = 500
       return self._generate_msg(False, "An error occured whilst deleting " +

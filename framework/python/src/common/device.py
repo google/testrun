@@ -42,9 +42,7 @@ class Device():
     return self.reports
 
   def remove_report(self, timestamp: datetime):
-    # remove_report_target = None
     for report in self.reports:
-      report_timestamp = report.get_started().strftime('%Y-%m-%dT%H:%M:%S')
       if report.get_started() == timestamp:
         self.reports.remove(report)
         break

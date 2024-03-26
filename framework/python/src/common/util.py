@@ -71,7 +71,7 @@ def get_os_user():
   except OSError:
     # Handle the OSError exception
     LOGGER.error('An OS error occured whilst calling os.getlogin()')
-  except Exception:
+  except Exception: # pylint: disable=W0703
     # Catch any other unexpected exceptions
     LOGGER.error('An unknown exception occured whilst calling os.getlogin()')
   return user
