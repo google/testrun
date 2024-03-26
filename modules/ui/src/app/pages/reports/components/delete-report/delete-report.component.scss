@@ -19,7 +19,12 @@
 
 .delete-report-button {
   cursor: pointer;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px 0;
+  margin: 0 4px;
   & ::ng-deep .mdc-icon-button__ripple {
     display: none;
   }
