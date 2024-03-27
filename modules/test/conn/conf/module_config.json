@@ -14,6 +14,18 @@
     },
     "tests": [
       {
+        "name": "connection.switch.arp_inspection",
+        "test_description": "The device implements ARP correctly as per RFC826",
+        "expected_behavior": "Device continues to operate correctly when ARP inspection is enabled on the switch.  No functionality is lost with ARP inspection enabled.",
+        "required_result": "Required"
+      },
+      {
+        "name": "connection.switch.dhcp_snooping",
+        "test_description": "The device operates as a DHCP client and operates correctly when DHCP snooping is enabled on a switch.",
+        "expected_behavior": "Device continues to operate correctly when DHCP snooping is enabled on the switch.",
+        "required_result": "Required"
+      },
+      {
         "name": "connection.dhcp_address",
         "test_description": "The device under test has received an IP address from the DHCP server and responds to an ICMP echo (ping) request",
         "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.",
@@ -34,7 +46,7 @@
       },
       {
         "name": "connection.mac_oui",
-        "test_description": "The device under test hs a MAC address prefix that is registered against a known manufacturer.",
+        "test_description": "The device under test has a MAC address prefix that is registered against a known manufacturer.",
         "expected_behavior": "The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database.",
         "required_result": "Required",
         "recommendations": [
