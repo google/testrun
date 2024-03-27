@@ -73,17 +73,17 @@ limitations under the License.
 
   <ng-container *ngIf="data.filter === FilterName.Started">
     <mat-form-field appearance="outline" class="date-field">
-      <mat-label>mm/dd/yyyy - mm/dd/yyyy</mat-label>
+      <mat-label>Started date</mat-label>
       <mat-date-range-input>
         <input
           matStartDate
-          placeholder="mm/dd/yyyy"
+          placeholder="MM/DD/YYYY"
           [(ngModel)]="range.start"
           #startDate="ngModel"
           (dateChange)="startDateChanged($event)" />
         <input
           matEndDate
-          placeholder="mm/dd/yyyy"
+          placeholder="MM/DD/YYYY"
           [(ngModel)]="range.end"
           #endDate="ngModel"
           (dateChange)="endDateChanged($event)" />
