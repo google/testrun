@@ -211,7 +211,8 @@ class NetworkOrchestrator:
     LOGGER.info(
         f'Device with mac addr {device.mac_addr} has obtained IP address '
         f'{device.ip_addr}')
-    # self._ovs.add_arp_inspection_filter(ip_address=device.ip_addr,mac_address=device.mac_addr)
+    self._ovs.add_arp_inspection_filter(ip_address=device.ip_addr,
+                                        mac_address=device.mac_addr)
 
     self._start_device_monitor(device)
 
