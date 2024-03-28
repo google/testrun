@@ -17,7 +17,6 @@ import argparse
 import signal
 import sys
 import logger
-
 from nmap_module import NmapModule
 
 LOG_NAME = 'nmap_runner'
@@ -38,6 +37,7 @@ class NmapModuleRunner:
 
     self._test_module = NmapModule(module)
     self._test_module.run_tests()
+    self._test_module.generate_module_report()
 
     LOGGER.info('nmap test module finished')
 

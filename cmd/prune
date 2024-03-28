@@ -1,0 +1,39 @@
+#!/bin/bash -e
+
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Stop any running containers
+echo Stopping any running containers
+running_containers=$(docker container ls -q --filter name=tr-*)
+if [ -n "$running_containers" ]; then
+  docker container kill $running_containers
+else
+  echo No containers were found running
+fi
+
+# Remove docker images
+echo Removing docker images
+docker_images=$(sudo docker images --filter=reference="test-run/*" -q)
+
+if [ -z "$docker_images" ]; then
+  echo No docker images to delete
+else
+  sudo docker rmi $docker_images > /dev/null
+fi
+
+# Remove docker networks
+echo Removing docker networks
+sudo docker network rm endev0 > /dev/null
+sudo docker network rm tr-private-net > /dev/null

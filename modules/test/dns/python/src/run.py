@@ -39,6 +39,7 @@ class DNSModuleRunner:
 
     self._test_module = DNSModule(module)
     self._test_module.run_tests()
+    self._test_module.generate_module_report()
 
     LOGGER.info("DNS test module finished")
 

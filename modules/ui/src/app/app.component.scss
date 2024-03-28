@@ -40,7 +40,7 @@ $nav-open-btn-width: 210px;
   margin-top: $toolbar-height;
 }
 
-:host.active-menu {
+.active-menu {
   .app-sidebar {
     width: $nav-open-width;
     align-items: start;
@@ -51,7 +51,7 @@ $nav-open-btn-width: 210px;
     height: $toolbar-height;
     border-radius: 0 100px 100px 0;
     margin: 0;
-    padding: 0 16px;
+    padding: 0 24px;
   }
 
   .app-sidebar-button:first-child {
@@ -126,7 +126,7 @@ $nav-open-btn-width: 210px;
 }
 
 .app-sidebar-button > .mat-icon {
-  margin: 0 11px;
+  margin: 0 3px;
   min-width: 24px;
   line-height: 18px !important;
 }

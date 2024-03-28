@@ -18,7 +18,9 @@ from common import util
 DEVICE_BRIDGE = 'tr-d'
 INTERNET_BRIDGE = 'tr-c'
 LOGGER = logger.get_logger('ovs_ctrl')
-
+DEVICER_ARP_COOKIE = '1000'
+UNKNOWN_ARP_COOKIE = '1183'
+CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f'
 
 class OVSControl:
   """OVS Control"""
@@ -49,6 +51,12 @@ class OVSControl:
     # modify the existing bridge
     success = util.run_command(f"""ovs-vsctl --may-exist
                              add-port {bridge_name} {port}""")
+    return success
+
+  def delete_flow(self, bridge_name, flow):
+    # Delete a flow from the bridge using ovs-ofctl commands
+    LOGGER.debug(f'Deleting flow {flow} from bridge: {bridge_name}')
+    success = util.run_command(f'ovs-ofctl del-flows {bridge_name} \'{flow}\'')
     return success
 
   def get_bridge_ports(self, bridge_name):
@@ -125,6 +133,13 @@ class OVSControl:
     self.add_flow(bridge_name=DEVICE_BRIDGE,
                   flow='table=0, dl_dst=01:80:c2:00:00:03, actions=flood')
 
+    # Add a DHCP snooping equivalent to the device bridge
+    # ToDo Define these IP's dynamically
+    dhcp_server_primary_ip = '10.10.10.2'
+    dhcp_server_secondary_ip = '10.10.10.3'
+    self.add_dhcp_filters(dhcp_server_primary_ip=dhcp_server_primary_ip,
+      dhcp_server_secondary_ip=dhcp_server_secondary_ip)
+
     # Set ports up
     self.set_bridge_up(DEVICE_BRIDGE)
     self.set_bridge_up(INTERNET_BRIDGE)
@@ -135,6 +150,58 @@ class OVSControl:
       return self.validate_baseline_network()
     else:
       return None
+
+  def add_dhcp_filters(self,dhcp_server_primary_ip,dhcp_server_secondary_ip):
+
+    # Allow DHCP traffic from primary server
+    allow_primary_dhcp_server = (
+      'table=0, dl_type=0x800, priority=65535, tp_src=67, ' +
+      f'tp_dst=68, nw_src={dhcp_server_primary_ip}, actions=normal')
+    self.add_flow(bridge_name=DEVICE_BRIDGE,flow=allow_primary_dhcp_server)
+
+    # Allow DHCP traffic from secondary server
+    allow_secondary_dhcp_server = (
+      'table=0, dl_type=0x800, priority=65535, ' +
+      f'tp_src=67, tp_dst=68, nw_src={dhcp_server_secondary_ip},' +
+       ' actions=normal''')
+    self.add_flow(bridge_name=DEVICE_BRIDGE,flow=allow_secondary_dhcp_server)
+
+    # Drop DHCP packets not associated with known servers
+    drop_dhcp_flow = ('table=0, dl_type=0x800, priority=0, ' +
+                      'tp_src=67, tp_dst=68, actions=drop')
+    self.add_flow(bridge_name=DEVICE_BRIDGE,flow=drop_dhcp_flow)
+
+  def add_arp_inspection_filter(self,ip_address,mac_address):
+    # Allow ARP packets with known MAC-to-IP mappings
+    allow_known_arps= (f'table=0, cookie={DEVICER_ARP_COOKIE}, ' +
+                       f'priority=65535, arp, arp_tpa={ip_address}, ' +
+                       f'arp_tha={mac_address}, action=normal')
+    self.add_flow(bridge_name=DEVICE_BRIDGE,flow=allow_known_arps)
+
+    dhcp1_mac = f'{CONTAINER_MAC_PREFIX}:02'
+    dhcp2_mac = f'{CONTAINER_MAC_PREFIX}:03'
+    dhcp1_ip = '10.10.10.2'
+    dhcp2_ip = '10.10.10.3'
+
+    dhcp_1_arps= ('table=0, priority=65535, arp, ' +
+                  f'arp_tpa={dhcp1_ip}, arp_tha={dhcp1_mac}, action=normal')
+    dhcp_2_arps= ('table=0, priority=65535, arp, ' +
+                  f'arp_tpa={dhcp2_ip}, arp_tha={dhcp2_mac}, action=normal')
+    self.add_flow(bridge_name=DEVICE_BRIDGE,flow=dhcp_1_arps)
+    self.add_flow(bridge_name=DEVICE_BRIDGE,flow=dhcp_2_arps)
+
+    # Drop ARP packets with unknown MAC-to-IP mappings
+    drop_unknown_arps = (
+        f'table=0, cookie={UNKNOWN_ARP_COOKIE} priority=100, arp, '
+        f'action=drop'
+    )
+    self.add_flow(bridge_name=DEVICE_BRIDGE,flow=drop_unknown_arps)
+
+  def delete_arp_inspection_filter(self):
+    self.delete_flow(bridge_name=DEVICE_BRIDGE,
+                     flow=f'cookie={DEVICER_ARP_COOKIE}/-1')
+    self.delete_flow(bridge_name=DEVICE_BRIDGE,
+                     flow=f'cookie={UNKNOWN_ARP_COOKIE}/-1')
 
   def delete_bridge(self, bridge_name):
     LOGGER.debug('Deleting OVS Bridge: ' + bridge_name)

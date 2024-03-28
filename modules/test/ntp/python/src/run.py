@@ -38,6 +38,7 @@ class NTPModuleRunner:
 
     self._test_module = NTPModule(module)
     self._test_module.run_tests()
+    self._test_module.generate_module_report()
 
     LOGGER.info("NTP test module finished")
 

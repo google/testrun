@@ -50,6 +50,7 @@ body {
   border-radius: inherit;
 }
 
+.consent-dialog,
 .device-form-dialog,
 .initiate-test-run-dialog {
   max-height: 100vh;
@@ -103,7 +104,7 @@ mat-hint {
 .active-menu {
   .app-sidebar-button {
     .mdc-button__label {
-      left: 0;
+      left: 8px;
     }
   }
 
@@ -116,7 +117,7 @@ mat-hint {
   fill: mat.get-color-from-palette($color-primary, 600);
 }
 
-.table-cell-result-text {
+.cell-result-text {
   margin: 0;
   padding: 4px;
   border-radius: 2px;
@@ -177,6 +178,10 @@ h2.title {
   --mat-option-selected-state-layer-color: #e8f0fe;
 }
 
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-focus-label-text-color: #1a73e8;
+}
+
 body:has(.initiate-test-run-dialog)
   app-root
   app-spinner.connection-settings-spinner,
@@ -193,11 +198,37 @@ body:has(.filter-dialog-content)
   opacity: 0;
 }
 
-body:has(app-callout .info)
+body
+  #main:has(app-callout .info):not(:has(app-callout .error))
   app-device-repository:not(:has(.device-repository-content-empty)),
-body:has(app-callout .info) app-history:not(:has(.results-content-empty)),
-body:has(app-callout .info) app-progress:not(:has(.progress-content-empty)) {
+body
+  #main:has(app-callout .info):not(:has(app-callout .error))
+  app-history:not(:has(.results-content-empty)),
+body
+  #main:has(app-callout .info):not(:has(app-callout .error))
+  app-progress:not(:has(.progress-content-empty)),
+body
+  #main:has(app-callout .error):not(:has(app-callout .info))
+  app-device-repository:not(:has(.device-repository-content-empty)),
+body
+  #main:has(app-callout .error):not(:has(app-callout .info))
+  app-history:not(:has(.results-content-empty)),
+body
+  #main:has(app-callout .error):not(:has(app-callout .info))
+  app-progress:not(:has(.progress-content-empty)) {
   margin-top: 96px;
+}
+
+body
+  #main:has(app-callout .info):has(app-callout .error)
+  app-device-repository:not(:has(.device-repository-content-empty)),
+body
+  #main:has(app-callout .info):has(app-callout .error)
+  app-history:not(:has(.results-content-empty)),
+body
+  #main:has(app-callout .info):has(app-callout .error)
+  app-progress:not(:has(.progress-content-empty)) {
+  margin-top: 156px;
 }
 
 .text-nowrap {
@@ -212,4 +243,16 @@ body:has(app-callout .info) app-progress:not(:has(.progress-content-empty)) {
 
 .filter-chip .mat-mdc-focus-indicator::before {
   border: none;
+}
+
+.version-content,
+.version-content-update {
+  &.mat-mdc-button.cdk-program-focused
+    .mat-mdc-button-persistent-ripple::before {
+    opacity: 0;
+  }
+  &.mat-mdc-button.cdk-program-focused:focus-visible
+    .mat-mdc-button-persistent-ripple::before {
+    opacity: var(--mat-text-button-focus-state-layer-opacity);
+  }
 }

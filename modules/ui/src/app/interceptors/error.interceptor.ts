@@ -30,6 +30,11 @@ import {
 } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
 
+import { SYSTEM_STOP } from '../services/test-run.service';
+
+const DEFAULT_TIMEOUT_MS = 5000;
+const SYSTEM_STOP_TIMEOUT_MS = 10000;
+
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
   constructor(private notificationService: NotificationService) {}
@@ -37,10 +42,13 @@ export class ErrorInterceptor implements HttpInterceptor {
   intercept(
     request: HttpRequest<unknown>,
     next: HttpHandler,
-    timeoutMs = 5000
+    timeoutMs = DEFAULT_TIMEOUT_MS
   ): Observable<HttpEvent<unknown>> {
+    const timeoutValue = request.url.includes(SYSTEM_STOP)
+      ? SYSTEM_STOP_TIMEOUT_MS
+      : timeoutMs;
     return next.handle(request).pipe(
-      timeout(timeoutMs),
+      timeout(timeoutValue),
       catchError((error: HttpErrorResponse | TimeoutError) => {
         if (error instanceof TimeoutError) {
           this.notificationService.notify(

@@ -24,30 +24,24 @@
   min-width: 48px;
   height: 34px;
   max-width: 100%;
+  background: $color-background-grey;
+  border-radius: 20px;
+  cursor: pointer;
   & ::ng-deep .mdc-button__label {
     text-overflow: ellipsis;
     overflow: hidden;
   }
 }
 
-.version-content {
-  pointer-events: none;
-}
-
-.version-content-update {
-  background: $color-background-grey;
-  border-radius: 20px;
-  cursor: pointer;
-  &:after {
-    content: '';
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    border-radius: 100%;
-    background: $red-800;
-    top: 3px;
-    right: 3px;
-  }
+.version-content-update:after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 100%;
+  background: $red-800;
+  top: 3px;
+  right: 3px;
 }
 
 .version-content-update-text {

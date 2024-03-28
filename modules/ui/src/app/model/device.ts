@@ -38,3 +38,8 @@ export interface TestModule {
   name: string;
   enabled: boolean;
 }
+
+export enum DeviceView {
+  Basic = 'basic',
+  WithActions = 'with actions',
+}

@@ -16,7 +16,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { StateService } from '../../services/state.service';
+import { FocusManagerService } from '../../services/focus-manager.service';
 
 @Component({
   selector: 'app-bypass',
@@ -26,9 +26,9 @@ import { StateService } from '../../services/state.service';
   styleUrls: ['./bypass.component.scss'],
 })
 export class BypassComponent {
-  constructor(private readonly state: StateService) {}
+  constructor(private readonly focusManagerService: FocusManagerService) {}
   skipToMainContent(event: Event) {
     event.preventDefault();
-    this.state.focusFirstElementInMain();
+    this.focusManagerService.focusFirstElementInContainer();
   }
 }

@@ -12,6 +12,8 @@ Before starting with Testrun, ensure you have the following hardware:
 - 2x USB Ethernet adapter (one may be a built-in Ethernet port)
 - Internet connection
 
+**NOTE: Running in a virtual machine? Checkout the virtual machine documentation [here](/docs/virtual_machine.md).**
+
 ### Software
 
 Ensure the following software is installed on your Ubuntu LTS PC:
