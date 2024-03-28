@@ -77,6 +77,14 @@ class ConnectionModule(TestModule):
   def _connection_switch_arp_inspection(self):
     LOGGER.info('Running connection.switch.arp_inspection')
 
+    # If the ipv4 address wasn't resolved yet, try again
+    if self._device_ipv4_addr is None:
+      self._device_ipv4_addr = self._get_device_ipv4()
+
+    if self._device_ipv4_addr is None:
+      LOGGER.error('No device IP could be resolved')
+      return 'Error', 'Could not resolve device IP address'
+
     no_arp = True
 
     # Read all the pcap files
@@ -99,7 +107,8 @@ class ConnectionModule(TestModule):
       if (arp_packet.hwsrc == self._device_mac and
           arp_packet.psrc != self._device_ipv4_addr):
         LOGGER.info(f'Bad ARP packet detected for MAC: {self._device_mac}')
-        LOGGER.info(f'ARP packet IP {arp_packet.psrc} does not match {self._device_ipv4_addr}')
+        LOGGER.info(f'''ARP packet from IP {arp_packet.psrc} does not match
+                    {self._device_ipv4_addr}''')
         return False, 'Device is sending false ARP response'
 
     if no_arp:
@@ -127,7 +136,7 @@ class ConnectionModule(TestModule):
       dhcp_type = self._get_dhcp_type(packet)
       if dhcp_type in disallowed_dhcp_types:
         return False, 'Device has sent disallowed DHCP message'
-    
+
     return True, 'Device does not act as a DHCP server'
 
   def _connection_private_address(self, config):
@@ -230,7 +239,7 @@ class ConnectionModule(TestModule):
 
     if self._device_ipv4_addr is None:
       LOGGER.error('No device IP could be resolved')
-      return False, 'Could not resolve device IP'
+      return 'Error', 'Could not resolve device IP address'
     else:
       if self._ping(self._device_ipv4_addr):
         return True, 'Device responds to ping'

@@ -98,5 +98,5 @@ fi
 # Small pause to let all core services stabalize
 sleep 3
 
-# Start the networking service
-$BIN_DIR/start_test_module $MODULE_NAME $IFACE > /runtime/output/container.log
+# Start the test module
+$BIN_DIR/start_test_module $MODULE_NAME $IFACE
