@@ -155,30 +155,38 @@ class OVSControl:
 
     # Allow DHCP traffic from primary server
     allow_primary_dhcp_server = (
-      f'table=0, dl_type=0x800, priority=65535, tp_src=67, tp_dst=68, nw_src={dhcp_server_primary_ip}, actions=normal')
+      'table=0, dl_type=0x800, priority=65535, tp_src=67, ' +
+      f'tp_dst=68, nw_src={dhcp_server_primary_ip}, actions=normal')
     self.add_flow(bridge_name=DEVICE_BRIDGE,flow=allow_primary_dhcp_server)
 
     # Allow DHCP traffic from secondary server
     allow_secondary_dhcp_server = (
-      f'table=0, dl_type=0x800, priority=65535, tp_src=67, tp_dst=68, nw_src={dhcp_server_secondary_ip}, actions=normal')
+      'table=0, dl_type=0x800, priority=65535, ' +
+      f'tp_src=67, tp_dst=68, nw_src={dhcp_server_secondary_ip},' +
+       ' actions=normal''')
     self.add_flow(bridge_name=DEVICE_BRIDGE,flow=allow_secondary_dhcp_server)
 
     # Drop DHCP packets not associated with known servers
-    drop_dhcp_flow = 'table=0, dl_type=0x800, priority=0, tp_src=67, tp_dst=68, actions=drop'
+    drop_dhcp_flow = ('table=0, dl_type=0x800, priority=0, ' +
+                      'tp_src=67, tp_dst=68, actions=drop')
     self.add_flow(bridge_name=DEVICE_BRIDGE,flow=drop_dhcp_flow)
 
   def add_arp_inspection_filter(self,ip_address,mac_address):
     # Allow ARP packets with known MAC-to-IP mappings
-    allow_known_arps= f'table=0, cookie={DEVICER_ARP_COOKIE}, priority=65535, arp, arp_tpa={ip_address}, arp_tha={mac_address}, action=normal'
+    allow_known_arps= (f'table=0, cookie={DEVICER_ARP_COOKIE}, ' +
+                       f'priority=65535, arp, arp_tpa={ip_address}, ' +
+                       f'arp_tha={mac_address}, action=normal')
     self.add_flow(bridge_name=DEVICE_BRIDGE,flow=allow_known_arps)
 
-    DHCP1_MAC = f'{CONTAINER_MAC_PREFIX}:02'
-    DHCP2_MAC = f'{CONTAINER_MAC_PREFIX}:03'
-    DHCP1_IP = '10.10.10.2'
-    DHCP2_IP = '10.10.10.3'
+    dhcp1_mac = f'{CONTAINER_MAC_PREFIX}:02'
+    dhcp2_mac = f'{CONTAINER_MAC_PREFIX}:03'
+    dhcp1_ip = '10.10.10.2'
+    dhcp2_ip = '10.10.10.3'
 
-    dhcp_1_arps= f'table=0, priority=65535, arp, arp_tpa={DHCP1_IP}, arp_tha={DHCP1_MAC}, action=normal'
-    dhcp_2_arps= f'table=0, priority=65535, arp, arp_tpa={DHCP2_IP}, arp_tha={DHCP2_MAC}, action=normal'
+    dhcp_1_arps= ('table=0, priority=65535, arp, ' +
+                  f'arp_tpa={dhcp1_ip}, arp_tha={dhcp1_mac}, action=normal')
+    dhcp_2_arps= ('table=0, priority=65535, arp, ' +
+                  f'arp_tpa={dhcp2_ip}, arp_tha={dhcp2_mac}, action=normal')
     self.add_flow(bridge_name=DEVICE_BRIDGE,flow=dhcp_1_arps)
     self.add_flow(bridge_name=DEVICE_BRIDGE,flow=dhcp_2_arps)
 
@@ -190,9 +198,10 @@ class OVSControl:
     self.add_flow(bridge_name=DEVICE_BRIDGE,flow=drop_unknown_arps)
 
   def delete_arp_inspection_filter(self):
-    self.delete_flow(bridge_name=DEVICE_BRIDGE,flow=f'cookie={DEVICER_ARP_COOKIE}/-1')
-    self.delete_flow(bridge_name=DEVICE_BRIDGE,flow=f'cookie={UNKNOWN_ARP_COOKIE}/-1')
-    
+    self.delete_flow(bridge_name=DEVICE_BRIDGE,
+                     flow=f'cookie={DEVICER_ARP_COOKIE}/-1')
+    self.delete_flow(bridge_name=DEVICE_BRIDGE,
+                     flow=f'cookie={UNKNOWN_ARP_COOKIE}/-1')
 
   def delete_bridge(self, bridge_name):
     LOGGER.debug('Deleting OVS Bridge: ' + bridge_name)

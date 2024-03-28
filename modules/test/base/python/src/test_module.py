@@ -82,7 +82,7 @@ class TestModule:
 
     if self._config['config']['network']:
       self._device_ipv4_addr = self._get_device_ipv4()
-      LOGGER.info('Device IP Resolved: ' + str(self._device_ipv4_addr))
+      LOGGER.info('Resolved device IP: ' + str(self._device_ipv4_addr))
 
     tests = self._get_tests()
     for test in tests:
@@ -109,22 +109,32 @@ class TestModule:
         LOGGER.debug(f'Test {test["name"]} is disabled')
 
       if result is not None:
-        # Compliant or non-compliant
+        # Compliant or non-compliant as a boolean only
         if isinstance(result, bool):
           test['result'] = 'Compliant' if result else 'Non-Compliant'
           test['description'] = 'No description was provided for this test'
         else:
+          # Skipped result
           if result[0] is None:
             test['result'] = 'Skipped'
             if len(result) > 1:
               test['description'] = result[1]
             else:
               test['description'] = 'An error occured whilst running this test'
-          else:
+          # Compliant / Non-Compliant result
+          elif isinstance(result[0], bool):
             test['result'] = 'Compliant' if result[0] else 'Non-Compliant'
-          test['description'] = result[1]
+          # Result may be a string, e.g error
+          elif result[0] == 'Error':
+            test['result'] = result[0]
+
+          # Check that description is a string
+          if isinstance(result[1], str):
+            test['description'] = result[1]
+          else:
+            test['description'] = 'No description was provided for this test'
       else:
-        test['result'] = 'Skipped'
+        test['result'] = 'Error'
         test['description'] = 'An error occured whilst running this test'
 
       # Remove the steps to resolve if compliant already
