@@ -356,6 +356,8 @@ class TestReport():
       result_class = 'result-test-result-non-compliant'
     elif result['result'] == 'Compliant':
       result_class = 'result-test-result-compliant'
+    elif result['result'] == 'Error':
+      result_class = 'result-test-result-error'
     else:
       result_class = 'result-test-result-skipped'
 
@@ -857,10 +859,16 @@ class TestReport():
       max-width: 380px;
     }
 
+    .result-test-result-error {
+      background-color: #FCE8E6;
+      color: #C5221F;
+      left: 7.3in;
+    }
+
     .result-test-result-non-compliant {
       background-color: #FCE8E6;
       color: #C5221F;
-      left: 7.02in;
+      left: 7.04in;
     }
 
     .result-test-result {
@@ -882,7 +890,7 @@ class TestReport():
     .result-test-result-skipped {
       background-color: #e3e3e3;
       color: #393939;
-      left: 7.2in;
+      left: 7.22in;
     }
 
     /* CSS for the footer */
