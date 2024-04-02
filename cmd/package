@@ -17,6 +17,7 @@
 # Creates a package for Testrun
 
 MAKE_SRC_DIR=make
+TESTRUN_VER="1-2-1-alpha"
 
 # Delete existing make files
 rm -rf $MAKE_SRC_DIR/usr
@@ -56,4 +57,7 @@ cp -r {framework,modules} $MAKE_SRC_DIR/usr/local/testrun
 dpkg-deb --build --root-owner-group make
 
 # Rename the .deb file
-mv make.deb testrun_1-2_amd64.deb
+mv make.deb testrun_${TESTRUN_VER}_amd64.deb
+
+# Echo package version
+echo Created installation package at testrun_${TESTRUN_VER}_amd64.deb
