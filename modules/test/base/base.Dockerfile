@@ -55,7 +55,7 @@ RUN mkdir -p /usr/local/etc
 COPY $MODULE_DIR/usr/local/etc/oui.txt /usr/local/etc/oui.txt
 
 # Update the oui.txt file from ieee
-RUN wget https://standards-oui.ieee.org/oui/oui.txt -O -P /usr/local/etc/ || echo "Unable to update the MAC OUI database"
+RUN wget https://standards-oui.ieee.org/oui.txt -O /usr/local/etc/oui.txt || echo "Unable to update the MAC OUI database"
 
 # Start the test module
 ENTRYPOINT [ "/testrun/bin/start" ]
