@@ -342,12 +342,16 @@ class TestRun:  # pylint: disable=too-few-public-methods
     signal.signal(signal.SIGABRT, self._exit_handler)
     signal.signal(signal.SIGQUIT, self._exit_handler)
 
+  def shutdown(self):
+    LOGGER.info('Shutting down Testrun')
+    self.stop()
+    self._stop_ui()
+
   def _exit_handler(self, signum, arg):  # pylint: disable=unused-argument
     LOGGER.debug('Exit signal received: ' + str(signum))
     if signum in (2, signal.SIGTERM):
       LOGGER.info('Exit signal received.')
-      self.stop()
-      self._stop_ui()
+      self.shutdown()
       sys.exit(1)
 
   def _get_config_abs(self, config_file=None):
