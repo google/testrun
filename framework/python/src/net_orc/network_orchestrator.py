@@ -357,7 +357,9 @@ class NetworkOrchestrator:
     if 'CI' in os.environ:
       self._ci_post_network_create()
 
-    self._create_private_net()
+    # Private network not used, disable until
+    # a use case is determined
+    #self._create_private_net()
 
     # Listener may have already been created. Only create if not
     if self._listener is None:
