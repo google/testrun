@@ -152,6 +152,32 @@ describe('GeneralSettingsComponent', () => {
 
       expect(mockSettingsStore.setDefaultFormValues).toHaveBeenCalled();
     });
+
+    it('should disable setting form when get settingDisable as true ', () => {
+      spyOn(component.settingForm, 'disable');
+
+      component.settingsDisable = true;
+
+      expect(component.settingForm.disable).toHaveBeenCalled();
+    });
+
+    it('should enable setting form when get settingDisable as false ', () => {
+      spyOn(component.settingForm, 'enable');
+
+      component.settingsDisable = false;
+
+      expect(component.settingForm.enable).toHaveBeenCalled();
+    });
+
+    it('should disable "Save" button when get settingDisable as true', () => {
+      component.settingsDisable = true;
+
+      const saveBtn = compiled.querySelector(
+        '.save-button'
+      ) as HTMLButtonElement;
+
+      expect(saveBtn.disabled).toBeTrue();
+    });
   });
 
   describe('#saveSetting', () => {

@@ -119,3 +119,14 @@
     }
   }
 }
+
+.settings-disabled-overlay {
+  position: absolute;
+  width: 100%;
+  left: 0;
+  right: 0;
+  top: 75px;
+  bottom: 45px;
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 2;
+}

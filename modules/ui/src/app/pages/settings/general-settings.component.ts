@@ -16,6 +16,7 @@
 import {
   Component,
   EventEmitter,
+  Input,
   OnDestroy,
   OnInit,
   Output,
@@ -39,6 +40,15 @@ import { LoaderService } from '../../services/loader.service';
 })
 export class GeneralSettingsComponent implements OnInit, OnDestroy {
   @Output() closeSettingEvent = new EventEmitter<void>();
+
+  private isSettingsDisable = false;
+  get settingsDisable(): boolean {
+    return this.isSettingsDisable;
+  }
+  @Input() set settingsDisable(value: boolean) {
+    this.isSettingsDisable = value;
+    value ? this.disableSettings() : this.enableSettings();
+  }
   public readonly CalloutType = CalloutType;
   public readonly EventType = EventType;
   public readonly FormKey = FormKey;
@@ -109,6 +119,14 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     } else {
       this.createSystemConfig();
     }
+  }
+
+  private disableSettings(): void {
+    this.settingForm.disable();
+  }
+
+  private enableSettings(): void {
+    this.settingForm.enable();
   }
 
   private createSettingForm() {
