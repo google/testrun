@@ -30,6 +30,7 @@ export class DeviceItemComponent {
   @Input() device!: Device;
   @Input() tabIndex = 0;
   @Input() deviceView!: string;
+  @Input() disabled = false;
   @Output() itemClicked = new EventEmitter<Device>();
   @Output() startTestrunClicked = new EventEmitter<Device>();
   readonly DeviceView = DeviceView;

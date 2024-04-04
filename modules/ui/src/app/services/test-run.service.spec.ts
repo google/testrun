@@ -26,6 +26,8 @@ import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/progress.mock';
 import { StatusOfTestResult, TestrunStatus } from '../model/testrun-status';
 import { device } from '../mocks/device.mock';
 import { NEW_VERSION, VERSION } from '../mocks/version.mock';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { AppState } from '../store/state';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -38,15 +40,18 @@ describe('TestRunService', () => {
   let injector: TestBed;
   let httpTestingController: HttpTestingController;
   let service: TestRunService;
+  let store: MockStore<AppState>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [TestRunService],
+      providers: [TestRunService, provideMockStore({})],
     });
     injector = getTestBed();
     httpTestingController = injector.get(HttpTestingController);
     service = injector.get(TestRunService);
+    store = TestBed.inject(MockStore);
+    spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
   afterEach(() => {

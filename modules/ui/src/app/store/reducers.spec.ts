@@ -17,6 +17,8 @@ import * as fromReducer from './reducers';
 import { initialAppComponentState, initialSharedState } from './state';
 import {
   fetchInterfacesSuccess,
+  setDeviceInProgress,
+  setDevices,
   setHasConnectionSettings,
   setHasDevices,
   setIsOpenAddDevice,
@@ -27,6 +29,7 @@ import {
   updateError,
   updateFocusNavigation,
 } from './actions';
+import { device } from '../mocks/device.mock';
 import { MOCK_PROGRESS_DATA_CANCELLING } from '../mocks/progress.mock';
 
 describe('Reducer', () => {
@@ -134,6 +137,35 @@ describe('Reducer', () => {
       const action = setHasDevices({ hasDevices: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ hasDevices: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setDevices action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const devices = [device, device];
+      const action = setDevices({ devices });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ devices } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setDeviceInProgress action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const deviceInProgress = device;
+      const action = setDeviceInProgress({ device: deviceInProgress });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = {
+        ...initialState,
+        ...{ deviceInProgress: deviceInProgress },
+      };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);

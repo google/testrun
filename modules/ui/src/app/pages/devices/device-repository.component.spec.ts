@@ -79,6 +79,7 @@ describe('DeviceRepositoryComponent', () => {
       component.viewModel$ = of({
         devices: [] as Device[],
         selectedDevice: null,
+        deviceInProgress: null,
       });
       mockDevicesStore.devices$ = of([]);
       mockDevicesStore.isOpenAddDevice$ = of(true);
@@ -107,6 +108,7 @@ describe('DeviceRepositoryComponent', () => {
       component.viewModel$ = of({
         devices: [device, device, device],
         selectedDevice: device,
+        deviceInProgress: device,
       });
       fixture.detectChanges();
     });
@@ -204,6 +206,12 @@ describe('DeviceRepositoryComponent', () => {
         openSpy.calls.reset();
       });
     });
+
+    it('should disable device if deviceInProgress is exist', () => {
+      const item = compiled.querySelector('app-device-item');
+
+      expect(item?.getAttribute('ng-reflect-disabled')).toBeTruthy();
+    });
   });
 
   it('should call setIsOpenAddDevice if dialog closes with null', () => {
@@ -235,6 +243,7 @@ describe('DeviceRepositoryComponent', () => {
       component.viewModel$ = of({
         devices: [device, device, device],
         selectedDevice: device,
+        deviceInProgress: null,
       });
       fixture.detectChanges();
     });
