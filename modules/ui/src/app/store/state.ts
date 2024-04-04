@@ -46,6 +46,7 @@ export interface SharedState {
   hasConnectionSettings: boolean | null;
   // app, devices
   isOpenAddDevice: boolean;
+  deviceInProgress: Device | null;
 }
 
 export const initialAppComponentState: AppComponentState = {
@@ -62,4 +63,5 @@ export const initialSharedState: SharedState = {
   isOpenAddDevice: false,
   hasDevices: false,
   devices: [],
+  deviceInProgress: null,
 };

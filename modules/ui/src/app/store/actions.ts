@@ -74,3 +74,8 @@ export const setDevices = createAction(
   '[Shared] Set Devices',
   props<{ devices: Device[] }>()
 );
+
+export const setDeviceInProgress = createAction(
+  '[Shared] Set Device In Progress',
+  props<{ device: Device | null }>()
+);

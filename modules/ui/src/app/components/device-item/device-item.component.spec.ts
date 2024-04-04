@@ -102,5 +102,27 @@ describe('DeviceItemComponent', () => {
 
       expect(clickSpy).toHaveBeenCalledWith(component.device);
     });
+
+    it('should disable buttons if disable set to true', () => {
+      component.disabled = true;
+      fixture.detectChanges();
+
+      const startBtn = compiled.querySelector('.button-start') as HTMLElement;
+      const editBtn = compiled.querySelector('.button-edit') as HTMLElement;
+
+      expect(editBtn.getAttribute('disabled')).not.toBeNull();
+      expect(startBtn.getAttribute('disabled')).toBeTruthy();
+    });
+
+    it('should not disable buttons if disable set to false', () => {
+      component.disabled = false;
+      fixture.detectChanges();
+
+      const startBtn = compiled.querySelector('.button-start') as HTMLElement;
+      const editBtn = compiled.querySelector('.button-edit') as HTMLElement;
+
+      expect(editBtn.getAttribute('disabled')).toBeNull();
+      expect(startBtn.getAttribute('disabled')).toBeFalsy();
+    });
   });
 });

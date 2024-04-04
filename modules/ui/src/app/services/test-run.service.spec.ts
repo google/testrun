@@ -29,6 +29,9 @@ import {
 import { StatusOfTestResult, TestrunStatus } from '../model/testrun-status';
 import { device } from '../mocks/device.mock';
 import { NEW_VERSION, VERSION } from '../mocks/version.mock';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { AppState } from '../store/state';
+import { setDeviceInProgress } from '../store/actions';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -41,15 +44,18 @@ describe('TestRunService', () => {
   let injector: TestBed;
   let httpTestingController: HttpTestingController;
   let service: TestRunService;
+  let store: MockStore<AppState>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [TestRunService],
+      providers: [TestRunService, provideMockStore({})],
     });
     injector = getTestBed();
     httpTestingController = injector.get(HttpTestingController);
     service = injector.get(TestRunService);
+    store = TestBed.inject(MockStore);
+    spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
   afterEach(() => {
@@ -169,6 +175,21 @@ describe('TestRunService', () => {
       );
       expect(req.request.method).toBe('GET');
       req.flush(result);
+    });
+
+    it('should dispatch setDeviceInProgress when testrun is in progress', () => {
+      const result = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
+
+      service.getSystemStatus();
+      const req = httpTestingController.expectOne(
+        'http://localhost:8000/system/status'
+      );
+
+      req.flush(result);
+
+      expect(store.dispatch).toHaveBeenCalledWith(
+        setDeviceInProgress({ device: result.device })
+      );
     });
 
     it('should get cancelling data if status is cancelling', () => {

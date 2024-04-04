@@ -17,6 +17,7 @@ import * as fromReducer from './reducers';
 import { initialAppComponentState, initialSharedState } from './state';
 import {
   fetchInterfacesSuccess,
+  setDeviceInProgress,
   setDevices,
   setHasConnectionSettings,
   setHasDevices,
@@ -145,6 +146,22 @@ describe('Reducer', () => {
       const action = setDevices({ devices });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ devices } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setDeviceInProgress action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const deviceInProgress = device;
+      const action = setDeviceInProgress({ device: deviceInProgress });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = {
+        ...initialState,
+        ...{ deviceInProgress: deviceInProgress },
+      };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);

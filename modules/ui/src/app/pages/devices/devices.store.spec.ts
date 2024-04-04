@@ -17,7 +17,10 @@ import { TestBed } from '@angular/core/testing';
 import { of, skip, take } from 'rxjs';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../../store/state';
-import { selectHasDevices } from '../../store/selectors';
+import {
+  selectDeviceInProgress,
+  selectHasDevices,
+} from '../../store/selectors';
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { device, updated_device } from '../../mocks/device.mock';
@@ -45,6 +48,7 @@ describe('DevicesStore', () => {
           selectors: [
             { selector: selectDevices, value: [device] },
             { selector: selectIsOpenAddDevice, value: true },
+            { selector: selectDeviceInProgress, value: device },
           ],
         }),
         { provide: TestRunService, useValue: mockService },
@@ -79,6 +83,7 @@ describe('DevicesStore', () => {
         expect(store).toEqual({
           devices: [device],
           selectedDevice: null,
+          deviceInProgress: device,
         });
         done();
       });

@@ -52,6 +52,11 @@ export const selectDevices = createSelector(
   (state: AppState) => state.shared.devices
 );
 
+export const selectDeviceInProgress = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.deviceInProgress
+);
+
 export const selectError = createSelector(
   selectAppState,
   (state: AppState) => state.appComponent.settingMissedError

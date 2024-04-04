@@ -27,6 +27,9 @@ import {
   TestrunStatus,
 } from '../model/testrun-status';
 import { Version } from '../model/version';
+import { Store } from '@ngrx/store';
+import { AppState } from '../store/state';
+import { setDeviceInProgress } from '../store/actions';
 
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
@@ -83,7 +86,10 @@ export class TestRunService {
   public isTestrunStarted$ = this.isTestrunStartedSub$.asObservable();
   private version = new BehaviorSubject<Version | null>(null);
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private store: Store<AppState>
+  ) {}
 
   setIsOpenStartTestrun(isOpen: boolean): void {
     this.isOpenStartTestrunSub$.next(isOpen);
@@ -125,6 +131,16 @@ export class TestRunService {
           res.status = StatusOfTestrun.Cancelling;
         }
         this.setSystemStatus(res);
+        this.store.dispatch(
+          setDeviceInProgress({
+            device:
+              res.status === StatusOfTestrun.Monitoring ||
+              res.status === StatusOfTestrun.InProgress ||
+              res.status === StatusOfTestrun.WaitingForDevice
+                ? res.device
+                : null,
+          })
+        );
       });
   }
 
