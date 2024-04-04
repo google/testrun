@@ -491,7 +491,7 @@ class NetworkOrchestrator:
         name=net_module.container_name,
         hostname=net_module.container_name,
         # Undetermined version of docker seems to have broken
-        # DNS configuration (/etc/resolv.conf)  Re-add when/if 
+        # DNS configuration (/etc/resolv.conf)  Re-add when/if
         # this network is utilized and DNS issue is resolved
         #network=PRIVATE_DOCKER_NET,
         privileged=True,
