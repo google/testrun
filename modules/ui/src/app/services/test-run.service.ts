@@ -118,14 +118,15 @@ export class TestRunService {
    * @param isCancelling - indicates if status should be overridden with Cancelling value
    */
   getSystemStatus(isCancelling?: boolean): void {
-    this.http
-      .get<TestrunStatus>(`${API_URL}/system/status`)
-      .subscribe((res: TestrunStatus) => {
+    this.http.get<TestrunStatus>(`${API_URL}/system/status`).subscribe(
+      (res: TestrunStatus) => {
         if (isCancelling && res.status !== StatusOfTestrun.Cancelled) {
           res.status = StatusOfTestrun.Cancelling;
         }
         this.setSystemStatus(res);
-      });
+      },
+      err => console.error('HTTP Error', err)
+    );
   }
 
   stopTestrun(): Observable<boolean> {
