@@ -408,6 +408,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     # Do not continue testing if Testrun has cancelled during monitor phase
     if self.get_session().get_status() == 'Cancelled':
+      self._stop_network()
       return
 
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')

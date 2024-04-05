@@ -16,7 +16,7 @@ all of the virtual network services"""
 import ipaddress
 import json
 import os
-from scapy.all import sniff, wrpcap, BOOTP
+from scapy.all import sniff, wrpcap, BOOTP, AsyncSniffer
 import shutil
 import subprocess
 import sys
@@ -243,11 +243,22 @@ class NetworkOrchestrator:
     LOGGER.info(f'Monitoring device with mac addr {device.mac_addr} '
                 f'for {str(self._session.get_monitor_period())} seconds')
 
+
+
     device_runtime_dir = os.path.join(RUNTIME_DIR, TEST_DIR,
                                       device.mac_addr.replace(':', ''))
 
-    packet_capture = sniff(iface=self._session.get_device_interface(),
+    sniffer = AsyncSniffer(iface=self._session.get_device_interface(),
                            timeout=self._session.get_monitor_period())
+    sniffer.start()
+
+    while sniffer.running:
+      if not self._ip_ctrl.check_interface_status(self._session.get_device_interface()):
+        self._session.set_status('Cancelled')
+        sniffer.stop()
+        LOGGER.error('Device interface disconnected, cancelling Testrun')
+
+    packet_capture = sniffer.results
     wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'), packet_capture)
 
     self._monitor_in_progress = False
