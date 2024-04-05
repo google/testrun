@@ -232,6 +232,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
       if report_folder == timestamp:
         shutil.rmtree(os.path.join(reports_folder, report_folder))
         device.remove_report(timestamp)
+        LOGGER.debug('Successfully deleted the report')
         return True
 
     return False
