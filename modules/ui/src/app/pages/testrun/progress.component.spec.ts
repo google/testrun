@@ -72,6 +72,7 @@ describe('ProgressComponent', () => {
       'isTestrunStarted$',
       'fetchSystemStatus',
       'getTestModules',
+      'testrunInProgress',
     ]);
 
   const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
@@ -209,6 +210,7 @@ describe('ProgressComponent', () => {
   describe('DOM tests', () => {
     beforeEach(async () => {
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
+      testRunServiceMock.testrunInProgress.and.returnValue(false);
 
       await TestBed.configureTestingModule({
         declarations: [
@@ -334,6 +336,7 @@ describe('ProgressComponent', () => {
           selectSystemStatus,
           MOCK_PROGRESS_DATA_IN_PROGRESS
         );
+        testRunServiceMock.testrunInProgress.and.returnValue(true);
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
@@ -459,6 +462,7 @@ describe('ProgressComponent', () => {
           selectSystemStatus,
           MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
         );
+        testRunServiceMock.testrunInProgress.and.returnValue(true);
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
@@ -484,6 +488,7 @@ describe('ProgressComponent', () => {
           selectSystemStatus,
           MOCK_PROGRESS_DATA_MONITORING
         );
+        testRunServiceMock.testrunInProgress.and.returnValue(true);
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });

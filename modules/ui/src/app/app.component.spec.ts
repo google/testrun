@@ -93,6 +93,7 @@ describe('AppComponent', () => {
       'setIsOpenStartTestrun',
       'fetchDevices',
       'getTestModules',
+      'testrunInProgress',
     ]);
 
     mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [

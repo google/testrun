@@ -17,7 +17,7 @@ limitations under the License.
   <ng-container *ngIf="vm.systemStatus as data; else empty">
     <ng-container
       *ngIf="
-        testrunInProgress(data.status) ||
+        isTestrunInProgress(data.status) ||
         data.status === StatusOfTestrun.Cancelled ||
         data.status === StatusOfTestrun.Cancelling ||
         data.finished
@@ -41,7 +41,7 @@ limitations under the License.
               }}
             </h2>
             <button
-              *ngIf="testrunInProgress(data.status)"
+              *ngIf="isTestrunInProgress(data.status)"
               (click)="openStopTestrunDialog(vm.systemStatus)"
               class="stop-button"
               aria-label="Stop testrun"
@@ -66,7 +66,7 @@ limitations under the License.
       <section
         class="progress-table"
         [class.progress-table-progress-empty]="
-          testrunInProgress(data.status) && resultIsEmpty(data.tests)
+          isTestrunInProgress(data.status) && resultIsEmpty(data.tests)
         ">
         <app-progress-table
           [dataSource]="vm.dataSource"
@@ -100,7 +100,7 @@ limitations under the License.
       aria-label="Start new testrun"
       color="primary"
       [disabled]="
-        hasDevices === false || testrunInProgress(systemStatus?.status)
+        hasDevices === false || isTestrunInProgress(systemStatus?.status)
       "
       (click)="openTestRunModal()"
       mat-flat-button>
