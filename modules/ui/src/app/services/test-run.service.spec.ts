@@ -26,7 +26,11 @@ import {
   MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
 } from '../mocks/progress.mock';
-import { StatusOfTestResult, TestrunStatus } from '../model/testrun-status';
+import {
+  StatusOfTestResult,
+  StatusOfTestrun,
+  TestrunStatus,
+} from '../model/testrun-status';
 import { device } from '../mocks/device.mock';
 import { NEW_VERSION, VERSION } from '../mocks/version.mock';
 
@@ -312,6 +316,37 @@ describe('TestRunService', () => {
         const result = service.getResultClass(testCase);
 
         expect(result).toEqual(expectedResult);
+      });
+    });
+  });
+
+  describe('#testrunInProgress', () => {
+    const resultsInProgress = [
+      StatusOfTestrun.InProgress,
+      StatusOfTestrun.WaitingForDevice,
+      StatusOfTestrun.Monitoring,
+    ];
+
+    const resultsNotInProgress = [
+      StatusOfTestrun.Idle,
+      StatusOfTestrun.Cancelled,
+      StatusOfTestrun.Compliant,
+      StatusOfTestrun.NonCompliant,
+    ];
+
+    resultsInProgress.forEach(testCase => {
+      it(`should return true if restrun result is "${testCase}"`, () => {
+        const result = service.testrunInProgress(testCase);
+
+        expect(result).toBeTrue();
+      });
+    });
+
+    resultsNotInProgress.forEach(testCase => {
+      it(`should return false if restrun result is "${testCase}"`, () => {
+        const result = service.testrunInProgress(testCase);
+
+        expect(result).toBeFalse();
       });
     });
   });

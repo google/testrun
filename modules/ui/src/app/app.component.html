@@ -181,9 +181,7 @@ limitations under the License.
     class="settings-drawer">
     <app-general-settings
       #settings
-      [settingsDisable]="
-        (systemStatus$ | async)?.status === StatusOfTestrun.InProgress
-      "
+      [settingsDisable]="isTestrunInProgress((systemStatus$ | async)?.status)"
       (closeSettingEvent)="closeSetting(vm.hasDevices)">
     </app-general-settings>
   </mat-drawer>

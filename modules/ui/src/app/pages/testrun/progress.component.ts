@@ -97,7 +97,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
     this.systemStatus$ = this.testRunService.systemStatus$.pipe(
       tap(res => {
         this.currentStatus = res;
-        if (this.testrunInProgress(res.status) && !this.startInterval) {
+        if (this.isTestrunInProgress(res.status) && !this.startInterval) {
           this.pullingSystemStatusData();
         }
         if (
@@ -115,7 +115,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
           this.hideLoading();
         }
         if (
-          !this.testrunInProgress(res.status) &&
+          !this.isTestrunInProgress(res.status) &&
           res.status !== StatusOfTestrun.Cancelling
         ) {
           if (this.isCancelling) {
@@ -159,12 +159,8 @@ export class ProgressComponent implements OnInit, OnDestroy {
     );
   }
 
-  testrunInProgress(status?: string): boolean {
-    return (
-      status === StatusOfTestrun.InProgress ||
-      status === StatusOfTestrun.WaitingForDevice ||
-      status === StatusOfTestrun.Monitoring
-    );
+  isTestrunInProgress(status?: string) {
+    return this.testRunService.testrunInProgress(status);
   }
 
   private pullingSystemStatusData(): void {

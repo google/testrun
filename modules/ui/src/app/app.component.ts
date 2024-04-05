@@ -173,4 +173,8 @@ export class AppComponent implements OnInit {
   consentShown() {
     this.appStore.setContent();
   }
+
+  isTestrunInProgress(status?: string) {
+    return this.testRunService.testrunInProgress(status);
+  }
 }

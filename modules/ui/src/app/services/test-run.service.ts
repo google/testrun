@@ -189,6 +189,14 @@ export class TestRunService {
     };
   }
 
+  testrunInProgress(status?: string): boolean {
+    return (
+      status === StatusOfTestrun.InProgress ||
+      status === StatusOfTestrun.WaitingForDevice ||
+      status === StatusOfTestrun.Monitoring
+    );
+  }
+
   startTestrun(device: Device): Observable<boolean> {
     this.isTestrunStartedSub$.next(true);
 

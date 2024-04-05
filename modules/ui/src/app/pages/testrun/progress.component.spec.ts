@@ -71,6 +71,7 @@ describe('ProgressComponent', () => {
       'getDevices',
       'isOpenStartTestrun$',
       'isTestrunStarted$',
+      'testrunInProgress',
     ]);
 
   const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
@@ -319,6 +320,7 @@ describe('ProgressComponent', () => {
   describe('DOM tests', () => {
     beforeEach(async () => {
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
+      testRunServiceMock.testrunInProgress.and.returnValue(false);
 
       await TestBed.configureTestingModule({
         declarations: [
@@ -439,6 +441,7 @@ describe('ProgressComponent', () => {
     describe('with available systemStatus$ data, status "In Progress"', () => {
       beforeEach(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+        testRunServiceMock.testrunInProgress.and.returnValue(true);
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
@@ -494,6 +497,7 @@ describe('ProgressComponent', () => {
     describe('pullingSystemStatusData with available status "In Progress"', () => {
       it('should call again getSystemStatus)', fakeAsync(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+        testRunServiceMock.testrunInProgress.and.returnValue(true);
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
         tick(5000);
@@ -569,6 +573,7 @@ describe('ProgressComponent', () => {
         testRunServiceMock.systemStatus$ = of(
           MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
         );
+        testRunServiceMock.testrunInProgress.and.returnValue(true);
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
@@ -591,6 +596,7 @@ describe('ProgressComponent', () => {
     describe('with available systemStatus$ data, as Monitoring', () => {
       beforeEach(() => {
         testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_MONITORING);
+        testRunServiceMock.testrunInProgress.and.returnValue(true);
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
