@@ -335,7 +335,7 @@ describe('TestRunService', () => {
     ];
 
     resultsInProgress.forEach(testCase => {
-      it(`should return true if restrun result is "${testCase}"`, () => {
+      it(`should return true if testrun result is "${testCase}"`, () => {
         const result = service.testrunInProgress(testCase);
 
         expect(result).toBeTrue();
@@ -343,7 +343,7 @@ describe('TestRunService', () => {
     });
 
     resultsNotInProgress.forEach(testCase => {
-      it(`should return false if restrun result is "${testCase}"`, () => {
+      it(`should return false if testrun result is "${testCase}"`, () => {
         const result = service.testrunInProgress(testCase);
 
         expect(result).toBeFalse();
