@@ -17,6 +17,7 @@
 from typing import Dict, List
 from dataclasses import dataclass, field
 from common.testreport import TestReport
+from datetime import datetime
 
 @dataclass
 class Device():
@@ -40,16 +41,11 @@ class Device():
   def get_reports(self):
     return self.reports
 
-  def remove_report(self, timestamp):
-
-    remove_report_target = None
+  def remove_report(self, timestamp: datetime):
     for report in self.reports:
-      report_timestamp = report.get_started().strftime('%Y-%m-%dT%H:%M:%S')
-      if report_timestamp == timestamp:
-        remove_report_target = report
-
-    if remove_report_target is not None:
-      self.reports.remove(remove_report_target)
+      if report.get_started().strftime('%Y-%m-%dT%H:%M:%S') == timestamp:
+        self.reports.remove(report)
+        return
 
   def to_dict(self):
     """Returns the device as a python dictionary. This is used for the
