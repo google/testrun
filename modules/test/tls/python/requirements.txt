@@ -1,4 +1,4 @@
-cryptography==2.8
+cryptography==42.0.4
 pyOpenSSL==19.0.0
 lxml==5.1.0 # Requirement of pyshark but if upgraded automatically above 5.1 will cause a python crash
 pyshark==0.6
