@@ -20,12 +20,23 @@ import json
 import os
 from common import util
 import ipaddress
+import requests
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from ipaddress import IPv4Address
 
 LOG_NAME = 'tls_util'
 LOGGER = None
 DEFAULT_BIN_DIR = '/testrun/bin'
 DEFAULT_CERTS_OUT_DIR = '/runtime/output'
 DEFAULT_ROOT_CERTS_DIR = '/testrun/root_certs'
+# Define private IP subnets
+PRIVATE_SUBNETS = [
+    ipaddress.ip_network('10.0.0.0/8'),
+    ipaddress.ip_network('172.16.0.0/12'),
+    ipaddress.ip_network('192.168.0.0/16')
+]
 
 
 class TLSUtil():
@@ -39,7 +50,8 @@ class TLSUtil():
     global LOGGER
     LOGGER = logger
     self._bin_dir = bin_dir
-    self._dev_cert_file = cert_out_dir + '/device_cert.crt'
+    self._cert_out_dir = cert_out_dir
+    self._dev_cert_file = 'device_cert.crt'
     self._root_certs_dir = root_certs_dir
 
   def get_public_certificate(self,
@@ -153,6 +165,46 @@ class TLSUtil():
     # Reconnect to the device but with validate signature option
     # set to true which will check for proper cert chains
     # within the valid CA root certs stored on the server
+    if self.validate_trusted_ca_signature(host):
+      LOGGER.info('Authorized Certificate Authority signature confirmed')
+      return True, 'Authorized Certificate Authority signature confirmed'
+    else:
+      LOGGER.info('Authorized Certificate Authority signature not present')
+
+      device_cert_path = os.path.join(self._cert_out_dir, self._dev_cert_file)
+      signed, ca_file = self.validate_local_ca_signature(
+          device_cert_path=device_cert_path)
+      if signed:
+        return True, 'Device signed by cert:' + ca_file
+    return False, 'Device certificate has not been signed'
+
+  def validate_local_ca_signature(self, device_cert_path):
+    bin_file = self._bin_dir + '/check_cert_signature.sh'
+    # Get a list of all root certificates
+    root_certs = os.listdir(self._root_certs_dir)
+    LOGGER.info('Root Certs Found: ' + str(len(root_certs)))
+    for root_cert in root_certs:
+      try:
+        # Create the file path
+        root_cert_path = os.path.join(self._root_certs_dir, root_cert)
+        LOGGER.info('Checking root cert: ' + str(root_cert_path))
+        args = f'{root_cert_path} {device_cert_path}'
+        command = f'{bin_file} {args}'
+        response = util.run_command(command)
+        if f'{device_cert_path}: OK' in str(response):
+          LOGGER.info('Device signed by cert:' + root_cert)
+          return True, root_cert_path
+        else:
+          LOGGER.info('Device not signed by cert: ' + root_cert)
+      except Exception as e:  # pylint: disable=W0718
+        LOGGER.error('Failed to check cert:' + root_cert)
+        LOGGER.error(str(e))
+    return False, None
+
+  def validate_trusted_ca_signature(self, host):
+    # Reconnect to the device but with validate signature option
+    # set to true which will check for proper cert chains
+    # within the valid CA root certs stored on the server
     LOGGER.info(
         'Checking for valid signature from authorized Certificate Authorities')
     public_cert = self.get_public_certificate(host,
@@ -163,47 +215,126 @@ class TLSUtil():
       return True, 'Authorized Certificate Authority signature confirmed'
     else:
       LOGGER.info('Authorized Certificate Authority signature not present')
-      LOGGER.info('Resolving configured root certificates')
-      bin_file = self._bin_dir + '/check_cert_signature.sh'
-      # Get a list of all root certificates
-      root_certs = os.listdir(self._root_certs_dir)
-      LOGGER.info('Root Certs Found: ' + str(len(root_certs)))
-      for root_cert in root_certs:
-        try:
-          # Create the file path
-          root_cert_path = os.path.join(self._root_certs_dir, root_cert)
-          LOGGER.info('Checking root cert: ' + str(root_cert_path))
-          args = f'{root_cert_path} {self._dev_cert_file}'
-          command = f'{bin_file} {args}'
-          response = util.run_command(command)
-          if 'device_cert.crt: OK' in str(response):
-            LOGGER.info('Device signed by cert:' + root_cert)
-            return True, 'Device signed by cert:' + root_cert
-          else:
-            LOGGER.info('Device not signed by cert: ' + root_cert)
-        except Exception as e:  # pylint: disable=W0718
-          LOGGER.error('Failed to check cert:' + root_cert)
-          LOGGER.error(str(e))
-    return False, 'Device certificate has not been signed'
+      LOGGER.info('Checking for authorized CA certificate chain')
+      device_cert_path = os.path.join(self._cert_out_dir, self._dev_cert_file)
+      return self.validate_cert_chain(device_cert_path=device_cert_path)
+
+  def validate_cert_chain(self, device_cert_path):
+    LOGGER.info('Validating certificate chain')
+    # Load the certificate from the PEM file
+    with open(device_cert_path, 'rb') as cert_file:
+      cert_bytes = cert_file.read()
+
+    # Load pem encoding into a certifiate so we can process the contents
+    certificate = crypto.load_certificate(crypto.FILETYPE_PEM, cert_bytes)
+
+    ca_issuer_cert, cert_file_path = self.get_ca_issuer(certificate)
+    if ca_issuer_cert is not None and cert_file_path is not None:
+      LOGGER.info('CA Issuer resolved')
+      cert_text = crypto.dump_certificate(crypto.FILETYPE_TEXT,
+                                          ca_issuer_cert).decode()
+      LOGGER.info(cert_text)
+      return self.validate_trusted_ca_signature_chain(
+          device_cert_path=device_cert_path,
+          intermediate_cert_path=cert_file_path)
+    else:
+      return False
+
+  def validate_trusted_ca_signature_chain(self, device_cert_path,
+                                          intermediate_cert_path):
+    bin_file = self._bin_dir + '/check_cert_chain_signature.sh'
+    # Combine the device and intermediate certificates
+    with open(device_cert_path, 'r', encoding='utf-8') as f:
+      dev_cert = f.read()
+    with open(intermediate_cert_path, 'r', encoding='utf-8') as f:
+      inter_cert = f.read()
+
+    combined_cert_name = 'device_cert_full.crt'
+    combined_cert = dev_cert + inter_cert
+    combined_cert_path = os.path.join(self._cert_out_dir, combined_cert_name)
+    with open(combined_cert_path, 'w', encoding='utf-8') as f:
+      f.write(combined_cert)
+
+    # Use openssl script to validate the combined certificate
+    # against the available trusted CA's
+    args = f'{intermediate_cert_path} {combined_cert_path}'
+    command = f'{bin_file} {args}'
+    response = util.run_command(command)
+    return combined_cert_name + ': OK' in str(response)
+
+  def get_ca_issuer(self, certificate):
+    cert_file_path = None
+    ca_issuer_cert = None
+    ca_issuers_uri = self.resolve_ca_issuer(certificate)
+    if ca_issuers_uri is not None:
+      ca_issuer_cert = self.get_certificate(ca_issuers_uri)
+      if ca_issuer_cert is not None:
+        # Write the intermediate certificate to file
+        cert_name = ca_issuers_uri.split('/')[-1]
+        cert_file_path = self.write_cert_to_file(cert_name, ca_issuer_cert)
+    return ca_issuer_cert, cert_file_path
+
+  def resolve_ca_issuer(self, certificate):
+    LOGGER.info('Resolving CA Issuer')
+    # Print the certificate information
+    cert_text = crypto.dump_certificate(crypto.FILETYPE_TEXT,
+                                        certificate).decode()
+    # Extract 'CA Issuers - URI' field
+    ca_issuers_uri = None
+    for line in cert_text.split('\n'):
+      if 'CA Issuers - URI' in line:
+        ca_issuers_uri = line.split(':', 1)[1].strip()
+        break
+    LOGGER.info(f'CA Issuers resolved: {ca_issuers_uri}')
+    return ca_issuers_uri
+
+  def get_certificate(self, uri, timeout=10):
+    LOGGER.info(f'Resolving certificate from {uri}')
+    certificate = None
+    try:
+      # Fetch the certificate file from the URI
+      response = requests.get(uri, timeout=timeout)
+      response.raise_for_status()  # Raise an error for HTTP errors
+
+      # Load the certificate from the PEM format
+      certificate_data = response.content
+
+      try:
+        LOGGER.info('Attempting to resolve certificate in PEM format')
+        # Load the certificate from the PEM format
+        certificate = x509.load_pem_x509_certificate(certificate_data,
+                                                     default_backend())
+        LOGGER.info('PEM format certificate resolved')
+      except ValueError:
+        # Load the certificate from the DER format
+        LOGGER.info('Failed to resolve PEM format, attempting DER format')
+        certificate = x509.load_der_x509_certificate(certificate_data,
+                                                     default_backend())
+        LOGGER.info('DER format certificate resolved.')
+      except Exception:  # pylint: disable=W0718
+        LOGGER.error('Failed to load certificate in expected formats')
+    except requests.exceptions.RequestException as e:
+      LOGGER.error(f'Error fetching certificate from URI: {e}')
+    return certificate
 
   def process_tls_server_results(self, tls_1_2_results, tls_1_3_results):
     results = ''
     if tls_1_2_results[0] is None and tls_1_3_results[0] is not None:
       # Validate only TLS 1.3 results
-      description = 'TLS 1.3' + (' not' if not tls_1_3_results[
-          0] else '') + ' validated: ' + tls_1_3_results[1]
+      description = 'TLS 1.3' + (' not' if not tls_1_3_results[0] else
+                                 '') + ' validated: ' + tls_1_3_results[1]
       results = tls_1_3_results[0], description
     elif tls_1_3_results[0] is None and tls_1_2_results[0] is not None:
       # Vaidate only TLS 1.2 results
-      description = 'TLS 1.2' + (' not' if not tls_1_2_results[
-          0] else '') + ' validated: ' + tls_1_2_results[1]
+      description = 'TLS 1.2' + (' not' if not tls_1_2_results[0] else
+                                 '') + ' validated: ' + tls_1_2_results[1]
       results = tls_1_2_results[0], description
     elif tls_1_3_results[0] is not None and tls_1_2_results[0] is not None:
       # Validate both results
-      description = 'TLS 1.2' + (' not' if not tls_1_2_results[
-          0] else '') + ' validated: ' + tls_1_2_results[1]
-      description += '\nTLS 1.3' + (' not' if not tls_1_3_results[
-          0] else '') + ' validated: ' + tls_1_3_results[1]
+      description = 'TLS 1.2' + (' not' if not tls_1_2_results[0] else
+                                 '') + ' validated: ' + tls_1_2_results[1]
+      description += '\nTLS 1.3' + (' not' if not tls_1_3_results[0] else
+                                    '') + ' validated: ' + tls_1_3_results[1]
       results = tls_1_2_results[0] or tls_1_3_results[0], description
     else:
       description = f'TLS 1.2 not validated: {tls_1_2_results[1]}'
@@ -219,7 +350,7 @@ class TLSUtil():
     if cert_pem:
 
       # Write pem encoding to a file
-      self.write_cert_to_file(cert_pem)
+      self.write_cert_to_file(self._dev_cert_file, cert_pem)
 
       # Load pem encoding into a certifiate so we can process the contents
       public_cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_pem)
@@ -249,9 +380,30 @@ class TLSUtil():
       LOGGER.info('Failed to resolve public certificate')
       return None, 'Failed to resolve public certificate'
 
-  def write_cert_to_file(self, pem_cert):
-    with open(self._dev_cert_file, 'w', encoding='UTF-8') as f:
-      f.write(pem_cert)
+  def write_cert_to_file(self, cert_name, cert):
+    try:
+      cert_file = os.path.join(self._cert_out_dir, cert_name)
+      if isinstance(cert, str):
+        with open(cert_file, 'w', encoding='UTF-8') as f:
+          f.write(cert)
+        return cert_file
+      elif isinstance(cert, bytes):
+        with open(cert_file, 'wb') as f:
+          f.write(cert)
+        return cert_file
+      elif isinstance(cert, x509.Certificate):
+        with open(cert_file, 'wb') as f:
+          # Serialize the certificate to PEM format
+          certificate_bytes = cert.public_bytes(
+              encoding=serialization.Encoding.PEM)
+          f.write(certificate_bytes)
+        return cert_file
+      else:
+        LOGGER.error(f'Cannot write certificate file, '
+                     f'unsupported content type: {type(cert)}')
+    except Exception as e:  # pylint: disable=W0718
+      LOGGER.error(f'Failed to write certificate to file: {e}')
+    return None
 
   def get_ciphers(self, capture_file, dst_ip, dst_port):
     bin_file = self._bin_dir + '/get_ciphers.sh'
@@ -454,6 +606,13 @@ class TLSUtil():
       tls_dst_ips.add(str(dst_ip))
     return tls_dst_ips
 
+  def is_private_ip(self, ip):
+    # Check if an IP is within any private IP subnet
+    for subnet in PRIVATE_SUBNETS:
+      if ip in subnet:
+        return True
+    return False
+
   def validate_tls_client(self, client_ip, tls_version, capture_files):
     LOGGER.info('Validating client for TLS: ' + tls_version)
     hello_packets = self.get_hello_packets(capture_files, client_ip,
@@ -526,7 +685,13 @@ class TLSUtil():
     # need to report true unencrypted oubound connections
     if len(non_tls_client_ips) > 0:
       for ip in non_tls_client_ips:
-        if ip not in tls_client_ips:
+        if self.is_private_ip(IPv4Address(ip)):
+          # Allow private IP unencrypted traffic but report in results
+          LOGGER.info(
+              f'Non-TLS client traffic detected on private subnet to {ip}')
+          tls_client_details += (
+              f'\nAllowing non-TLS traffic to private subnet {ip}')
+        elif ip not in tls_client_ips:
           tls_client_valid = False
           tls_client_details += f'''\nNon-TLS connection detected to {ip}'''
         else:
@@ -537,8 +702,8 @@ class TLSUtil():
     if len(unsupported_tls_ips) > 0:
       tls_client_valid = False
       for ip, tls_versions in unsupported_tls_ips.items():
-        for tls_version in tls_versions:
-          tls_client_details += f'''\nUnsupported TLS {tls_version}
+        for version in tls_versions:
+          tls_client_details += f'''\nUnsupported TLS {version}
           connection detected to {ip}'''
     return tls_client_valid, tls_client_details
 

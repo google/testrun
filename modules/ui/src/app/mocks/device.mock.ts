@@ -25,3 +25,26 @@ export const device = {
     },
   },
 } as Device;
+export const updated_device = {
+  manufacturer: 'Alpha',
+  model: 'O3-XYZ-CPU',
+  mac_addr: '00:1e:42:35:73:11',
+  test_modules: {
+    dns: {
+      enabled: true,
+    },
+  },
+} as Device;
+
+export const MOCK_TEST_MODULES = [
+  {
+    displayName: 'Connection',
+    name: 'connection',
+    enabled: true,
+  },
+  {
+    displayName: 'Smart Ready',
+    name: 'udmi',
+    enabled: false,
+  },
+];

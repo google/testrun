@@ -45,6 +45,7 @@ export interface IResult {
   name: string;
   description: string;
   result: string;
+  recommendations?: string[];
 }
 
 export enum StatusOfTestrun {
@@ -54,6 +55,8 @@ export enum StatusOfTestrun {
   Cancelling = 'Cancelling',
   Failed = 'Failed',
   Compliant = 'Compliant', // used for Completed
+  CompliantLimited = 'Compliant (Limited)',
+  CompliantHigh = 'Compliant (High)',
   NonCompliant = 'Non-Compliant', // used for Completed
   SmartReady = 'Smart Ready', // used for Completed
   Idle = 'Idle',
@@ -62,10 +65,13 @@ export enum StatusOfTestrun {
 
 export enum StatusOfTestResult {
   Compliant = 'Compliant', // device supports feature
+  CompliantLimited = 'Compliant (Limited)',
+  CompliantHigh = 'Compliant (High)',
   SmartReady = 'Smart Ready',
   NonCompliant = 'Non-Compliant', // device does not support feature but feature is required
   Skipped = 'Skipped',
   NotStarted = 'Not Started',
+  InProgress = 'In Progress',
   Error = 'Error', // test failed to run
   Info = 'Informational', // nice to know information, not necessarily compliant/non-compliant
 }

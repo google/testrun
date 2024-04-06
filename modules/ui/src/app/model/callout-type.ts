@@ -16,4 +16,6 @@
 export enum CalloutType {
   Info = 'info',
   Warning = 'warning_amber',
+  Error = 'error',
+  ErrorOutline = 'error_outline',
 }

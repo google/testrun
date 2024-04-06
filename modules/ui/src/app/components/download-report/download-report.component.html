@@ -16,10 +16,10 @@ limitations under the License.
 <ng-container *ngIf="data">
   <a
     class="download-report-link"
-    download="{{ getReportTitle(data) }}"
-    href="{{ data.report }}"
+    [download]="getReportTitle(data)"
+    [href]="href"
     target="_blank"
-    title="Download report for Test Run # {{ getTestRunId(data) }}">
+    [matTooltip]="title">
     <ng-content></ng-content>
   </a>
 </ng-container>

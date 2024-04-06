@@ -232,6 +232,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
       if report_folder == timestamp:
         shutil.rmtree(os.path.join(reports_folder, report_folder))
         device.remove_report(timestamp)
+        LOGGER.debug('Successfully deleted the report')
         return True
 
     return False
@@ -330,7 +331,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     if self.get_net_orc().get_listener() is not None:
       self.get_net_orc().get_listener().stop_listener()
 
-    self.get_session().set_status('Stopping')
+    self.get_session().stop()
 
     self._stop_tests()
     self._stop_network(kill=True)
