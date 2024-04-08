@@ -21,6 +21,7 @@ from json import JSONDecodeError
 import os
 import psutil
 import requests
+import signal
 import threading
 import uvicorn
 from urllib.parse import urlparse
@@ -66,6 +67,9 @@ class Api:
                                methods=["POST"])
     self._router.add_api_route("/system/status",
                                self.get_status)
+    self._router.add_api_route("/system/shutdown",
+                               self.shutdown,
+                               methods=["POST"])
 
     self._router.add_api_route("/system/version",
                                self.get_version)
@@ -242,6 +246,26 @@ class Api:
 
   async def get_status(self):
     return self._test_run.get_session().to_json()
+
+  def shutdown(self, response: Response):
+
+    LOGGER.debug("Received request to shutdown Testrun")
+
+    # Check that Testrun is not currently running
+    if (self._session.get_status() not in [
+            "Cancelled",
+            "Compliant",
+            "Non-Compliant",
+            "Idle"]):
+      LOGGER.debug("Unable to shutdown Testrun as Testrun is in progress")
+      response.status_code = 400
+      return self._generate_msg(
+        False,
+        "Unable to shutdown. A test is currently in progress."
+      )
+
+    self._test_run.shutdown()
+    os.kill(os.getpid(), signal.SIGTERM)
 
   async def get_version(self, response: Response):
     json_response = {}
