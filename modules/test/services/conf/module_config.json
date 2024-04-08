@@ -1,8 +1,8 @@
 {
   "config": {
     "meta": {
-      "name": "nmap",
-      "display_name": "nmap",
+      "name": "services",
+      "display_name": "Services",
       "description": "Scan for open ports using nmap"
     },
     "network": true,

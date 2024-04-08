@@ -60,7 +60,7 @@ export class TestRunService {
     },
     {
       displayName: 'Services',
-      name: 'nmap',
+      name: 'services',
       enabled: true,
     },
     {
