@@ -47,8 +47,7 @@ CONTAINER_NAME = 'network_orchestrator'
 class NetworkOrchestrator:
   """Manage and controls a virtual testing network."""
 
-  def __init__(self,
-               session):
+  def __init__(self, session):
 
     self._session = session
     self._monitor_in_progress = False
@@ -74,12 +73,12 @@ class NetworkOrchestrator:
     shutil.rmtree(os.path.join(os.getcwd(), NET_DIR), ignore_errors=True)
 
     # Cleanup any old config files test files
-    conf_runtime_dir = os.path.join(RUNTIME_DIR,'conf')
+    conf_runtime_dir = os.path.join(RUNTIME_DIR, 'conf')
     shutil.rmtree(conf_runtime_dir, ignore_errors=True)
     os.makedirs(conf_runtime_dir, exist_ok=True)
 
     # Copy the system config file to the runtime directory
-    system_conf_runtime = os.path.join(conf_runtime_dir,'system.json')
+    system_conf_runtime = os.path.join(conf_runtime_dir, 'system.json')
     with open(system_conf_runtime, 'w', encoding='utf-8') as f:
       json.dump(self.get_session().get_config(), f, indent=2)
 
@@ -199,7 +198,7 @@ class NetworkOrchestrator:
     wrpcap(os.path.join(device_runtime_dir, 'startup.pcap'), packet_capture)
 
     # Copy the device config file to the runtime directory
-    runtime_device_conf = os.path.join(device_runtime_dir,'device_config.json')
+    runtime_device_conf = os.path.join(device_runtime_dir, 'device_config.json')
     with open(runtime_device_conf, 'w', encoding='utf-8') as f:
       json.dump(self._session.get_target_device().to_config_json(), f, indent=2)
 
@@ -243,8 +242,6 @@ class NetworkOrchestrator:
     LOGGER.info(f'Monitoring device with mac addr {device.mac_addr} '
                 f'for {str(self._session.get_monitor_period())} seconds')
 
-
-
     device_runtime_dir = os.path.join(RUNTIME_DIR, TEST_DIR,
                                       device.mac_addr.replace(':', ''))
 
@@ -253,7 +250,8 @@ class NetworkOrchestrator:
     sniffer.start()
 
     while sniffer.running:
-      if not self._ip_ctrl.check_interface_status(self._session.get_device_interface()):
+      if not self._ip_ctrl.check_interface_status(
+          self._session.get_device_interface()):
         self._session.set_status('Cancelled')
         sniffer.stop()
         LOGGER.error('Device interface disconnected, cancelling Testrun')
@@ -493,20 +491,19 @@ class NetworkOrchestrator:
     try:
       client = docker.from_env()
       net_module.container = client.containers.run(
-        net_module.image_name,
-        auto_remove=True,
-        cap_add=['NET_ADMIN'],
-        name=net_module.container_name,
-        hostname=net_module.container_name,
-        network=PRIVATE_DOCKER_NET,
-        privileged=True,
-        detach=True,
-        mounts=net_module.mounts,
-        environment={
-          'TZ': self.get_session().get_timezone(),
-          'HOST_USER': util.get_host_user()
-        }
-      )
+          net_module.image_name,
+          auto_remove=True,
+          cap_add=['NET_ADMIN'],
+          name=net_module.container_name,
+          hostname=net_module.container_name,
+          network=PRIVATE_DOCKER_NET,
+          privileged=True,
+          detach=True,
+          mounts=net_module.mounts,
+          environment={
+              'TZ': self.get_session().get_timezone(),
+              'HOST_USER': util.get_host_user()
+          })
     except docker.errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)
@@ -733,6 +730,7 @@ class NetworkOrchestrator:
 
   def get_session(self):
     return self._session
+
 
 class NetworkModule:
   """Define all the properties of a Network Module"""
