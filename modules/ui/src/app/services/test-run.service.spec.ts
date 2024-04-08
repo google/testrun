@@ -79,7 +79,7 @@ describe('TestRunService', () => {
       },
       {
         displayName: 'Services',
-        name: 'nmap',
+        name: 'services',
         enabled: true,
       },
       {
