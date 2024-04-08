@@ -16,11 +16,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { VersionComponent } from './version.component';
-import { TestRunService } from '../../services/test-run.service';
+import {
+  TestRunService,
+  UNAVAILABLE_VERSION,
+} from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Version } from '../../model/version';
 import { NEW_VERSION, VERSION } from '../../mocks/version.mock';
+import { of } from 'rxjs';
+import { MatDialogRef } from '@angular/material/dialog';
+import { DeviceFormComponent } from '../../pages/devices/components/device-form/device-form.component';
+import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 
 describe('VersionComponent', () => {
   let component: VersionComponent;
@@ -46,9 +53,52 @@ describe('VersionComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should get correct aria label for version button', () => {
+    const labelUnavailableVersion = component.getVersionButtonLabel(
+      UNAVAILABLE_VERSION.installed_version
+    );
+
+    const labelAvailableVersion = component.getVersionButtonLabel(
+      VERSION.installed_version
+    );
+
+    expect(labelUnavailableVersion).toContain(
+      'Version temporarily unavailable.'
+    );
+    expect(labelAvailableVersion).toContain('New version is available.');
+  });
+
+  it('should open consent window on start', () => {
+    const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+      afterClosed: () => of(true),
+    } as MatDialogRef<typeof DeviceFormComponent>);
+    versionBehaviorSubject$.next(VERSION);
+    mockService.getVersion.and.returnValue(versionBehaviorSubject$);
+    fixture.detectChanges();
+    component.ngOnInit();
+
+    expect(openSpy).toHaveBeenCalled();
+  });
+
+  it('should open consent window when button clicked', () => {
+    const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+      afterClosed: () => of(true),
+    } as MatDialogRef<typeof ConsentDialogComponent>);
+    versionBehaviorSubject$.next(VERSION);
+    mockService.getVersion.and.returnValue(versionBehaviorSubject$);
+    fixture.detectChanges();
+    const button = compiled.querySelector(
+      '.version-content'
+    ) as HTMLButtonElement;
+    button.click();
+
+    expect(openSpy).toHaveBeenCalled();
+  });
+
   describe('update is not available', () => {
     beforeEach(() => {
       versionBehaviorSubject$.next(VERSION);
+      mockService.getVersion.and.returnValue(versionBehaviorSubject$);
       fixture.detectChanges();
     });
 
@@ -64,6 +114,7 @@ describe('VersionComponent', () => {
   describe('update is available', () => {
     beforeEach(() => {
       versionBehaviorSubject$.next(NEW_VERSION);
+      mockService.getVersion.and.returnValue(versionBehaviorSubject$);
       fixture.detectChanges();
     });
 

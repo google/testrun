@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Track testing status."""
-
+import copy
 import datetime
 import json
 import os
@@ -25,6 +25,7 @@ INTERNET_INTF_KEY = 'internet_intf'
 MONITOR_PERIOD_KEY = 'monitor_period'
 STARTUP_TIMEOUT_KEY = 'startup_timeout'
 LOG_LEVEL_KEY = 'log_level'
+API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
@@ -39,9 +40,11 @@ class TestRunSession():
     self._started = None
     self._finished = None
     self._results = []
+    self._module_reports = []
     self._runtime_params = []
     self._device_repository = []
     self._total_tests = 0
+    self._report_url = None
 
     self._version = None
     self._load_version()
@@ -67,6 +70,15 @@ class TestRunSession():
     return self._finished
 
   def stop(self):
+    self.set_status('Stopping')
+    self.finish()
+
+  def finish(self):
+    # Set any in progress test results to Error
+    for test_result in self._results:
+      if test_result.result == 'In Progress':
+        test_result.result = 'Error'
+
     self._finished = datetime.datetime.now()
 
   def _get_default_config(self):
@@ -79,6 +91,7 @@ class TestRunSession():
       'startup_timeout': 60,
       'monitor_period': 30,
       'max_device_reports': 5,
+      'api_url': 'http://localhost',
       'api_port': 8000
     }
 
@@ -115,6 +128,9 @@ class TestRunSession():
 
       if LOG_LEVEL_KEY in config_file_json:
         self._config[LOG_LEVEL_KEY] = config_file_json.get(LOG_LEVEL_KEY)
+
+      if API_URL_KEY in config_file_json:
+        self._config[API_URL_KEY] = config_file_json.get(API_URL_KEY)
 
       if API_PORT_KEY in config_file_json:
         self._config[API_PORT_KEY] = config_file_json.get(API_PORT_KEY)
@@ -163,6 +179,9 @@ class TestRunSession():
   def get_startup_timeout(self):
     return self._config.get(STARTUP_TIMEOUT_KEY)
 
+  def get_api_url(self):
+    return self._config.get(API_URL_KEY)
+
   def get_api_port(self):
     return self._config.get(API_PORT_KEY)
 
@@ -172,6 +191,10 @@ class TestRunSession():
   def set_config(self, config_json):
     self._config.update(config_json)
     self._save_config()
+
+    # Update log level
+    LOGGER.debug(f'Setting log level to {config_json["log_level"]}')
+    logger.set_log_level(config_json['log_level'])
 
   def set_target_device(self, device):
     self._device = device
@@ -206,14 +229,43 @@ class TestRunSession():
   def get_test_results(self):
     return self._results
 
+  def get_module_reports(self):
+    return self._module_reports
+
   def get_report_tests(self):
+    """Returns the current test results in JSON-friendly format
+    (in Python dictionary)"""
+    test_results = []
+    for test_result in self._results:
+      test_results.append(test_result.to_dict())
+
     return {
       'total': self.get_total_tests(),
-      'results': self.get_test_results()
+      'results': test_results
     }
 
-  def add_test_result(self, test_result):
-    self._results.append(test_result)
+  def add_test_result(self, result):
+
+    updated = False
+
+    # Check if test has already been added
+    for test_result in self._results:
+
+      # result type is TestCase object
+      if test_result.name == result.name:
+
+        # Just update the result and description
+        test_result.result = result.result
+        test_result.description = result.description
+        test_result.recommendations = result.recommendations
+        updated = True
+
+    if not updated:
+      result.result = 'In Progress'
+      self._results.append(result)
+
+  def add_module_report(self, module_report):
+    self._module_reports.append(module_report)
 
   def get_all_reports(self):
 
@@ -231,9 +283,16 @@ class TestRunSession():
   def get_total_tests(self):
     return self._total_tests
 
+  def get_report_url(self):
+    return self._report_url
+
+  def set_report_url(self, url):
+    self._report_url = url
+
   def reset(self):
     self.set_status('Idle')
     self.set_target_device(None)
+    self._report_url = None
     self._total_tests = 0
     self._results = []
     self._started = None
@@ -241,20 +300,26 @@ class TestRunSession():
 
   def to_json(self):
 
-    # TODO: Add report URL
-
     results = {
       'total': self.get_total_tests(),
       'results': self.get_test_results()
     }
 
+    # Remove reports from device for session status
+    device = copy.deepcopy(self.get_target_device())
+    if device is not None:
+      device.reports = None
+
     session_json = {
       'status': self.get_status(),
-      'device': self.get_target_device(),
+      'device': device,
       'started': self.get_started(),
       'finished': self.get_finished(),
       'tests': results
     }
+
+    if self._report_url is not None:
+      session_json['report'] = self.get_report_url()
 
     return session_json
 

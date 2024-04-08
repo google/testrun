@@ -73,6 +73,16 @@ class NetworkOrchestrator:
     # Delete the runtime/network directory
     shutil.rmtree(os.path.join(os.getcwd(), NET_DIR), ignore_errors=True)
 
+    # Cleanup any old config files test files
+    conf_runtime_dir = os.path.join(RUNTIME_DIR,'conf')
+    shutil.rmtree(conf_runtime_dir, ignore_errors=True)
+    os.makedirs(conf_runtime_dir, exist_ok=True)
+
+    # Copy the system config file to the runtime directory
+    system_conf_runtime = os.path.join(conf_runtime_dir,'system.json')
+    with open(system_conf_runtime, 'w', encoding='utf-8') as f:
+      json.dump(self.get_session().get_config(), f, indent=2)
+
     # Get all components ready
     self.load_network_modules()
 
@@ -116,8 +126,6 @@ class NetworkOrchestrator:
     """Start the virtual testing network."""
     LOGGER.info('Starting network')
 
-    #self.build_network_modules()
-
     self.create_net()
     self.start_network_services()
 
@@ -139,6 +147,11 @@ class NetworkOrchestrator:
     """Stop the network orchestrator."""
     self.stop_validator(kill=kill)
     self.stop_network(kill=kill)
+
+    # Listener may not have been defined yet
+    if self.get_listener() is not None:
+      self.get_listener().stop_listener()
+      self.get_listener().reset()
 
   def stop_validator(self, kill=False):
     """Stop the network validator."""
@@ -185,6 +198,11 @@ class NetworkOrchestrator:
                            stop_filter=self._device_has_ip)
     wrpcap(os.path.join(device_runtime_dir, 'startup.pcap'), packet_capture)
 
+    # Copy the device config file to the runtime directory
+    runtime_device_conf = os.path.join(device_runtime_dir,'device_config.json')
+    with open(runtime_device_conf, 'w', encoding='utf-8') as f:
+      json.dump(self._session.get_target_device().to_config_json(), f, indent=2)
+
     if device.ip_addr is None:
       LOGGER.info(
           f'Timed out whilst waiting for {mac_addr} to obtain an IP address')
@@ -193,6 +211,8 @@ class NetworkOrchestrator:
     LOGGER.info(
         f'Device with mac addr {device.mac_addr} has obtained IP address '
         f'{device.ip_addr}')
+    #self._ovs.add_arp_inspection_filter(ip_address=device.ip_addr,
+    #  mac_address=device.mac_addr)
 
     self._start_device_monitor(device)
 
@@ -337,9 +357,14 @@ class NetworkOrchestrator:
     if 'CI' in os.environ:
       self._ci_post_network_create()
 
-    self._create_private_net()
+    # Private network not used, disable until
+    # a use case is determined
+    #self._create_private_net()
 
-    self._listener = Listener(self._session)
+    # Listener may have already been created. Only create if not
+    if self._listener is None:
+      self._listener = Listener(self._session)
+
     self.get_listener().register_callback(self._device_discovered,
                                           [NetworkEvent.DEVICE_DISCOVERED])
     self.get_listener().register_callback(self._dhcp_lease_ack,
@@ -456,6 +481,7 @@ class NetworkOrchestrator:
     network = 'host' if net_module.net_config.host else PRIVATE_DOCKER_NET
     LOGGER.debug(f"""Network: {network}, image name: {net_module.image_name},
                      container name: {net_module.container_name}""")
+
     try:
       client = docker.from_env()
       net_module.container = client.containers.run(
@@ -464,7 +490,10 @@ class NetworkOrchestrator:
         cap_add=['NET_ADMIN'],
         name=net_module.container_name,
         hostname=net_module.container_name,
-        network=PRIVATE_DOCKER_NET,
+        # Undetermined version of docker seems to have broken
+        # DNS configuration (/etc/resolv.conf)  Re-add when/if
+        # this network is utilized and DNS issue is resolved
+        #network=PRIVATE_DOCKER_NET,
         privileged=True,
         detach=True,
         mounts=net_module.mounts,
@@ -486,12 +515,12 @@ class NetworkOrchestrator:
       container = self._get_service_container(net_module)
       if container is not None:
         if kill:
-          LOGGER.debug('Killing container:' + net_module.container_name)
+          LOGGER.debug('Killing container: ' + net_module.container_name)
           container.kill()
         else:
-          LOGGER.debug('Stopping container:' + net_module.container_name)
+          LOGGER.debug('Stopping container: ' + net_module.container_name)
           container.stop()
-        LOGGER.debug('Container stopped:' + net_module.container_name)
+        LOGGER.debug('Container stopped: ' + net_module.container_name)
     except Exception as error:  # pylint: disable=W0703
       LOGGER.error('Container stop error')
       LOGGER.error(error)
@@ -660,6 +689,10 @@ class NetworkOrchestrator:
           LOGGER.error('Failed to add ' + net_module.name +
                        ' to internet bridge ' + DEVICE_BRIDGE + '. Exiting.')
           sys.exit(1)
+
+  def remove_arp_filters(self):
+    LOGGER.info('Removing ARP inspection filters')
+    self._ovs.delete_arp_inspection_filter()
 
   def restore_net(self):
 

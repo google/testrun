@@ -12,6 +12,8 @@ Before starting with Testrun, ensure you have the following hardware:
 - 2x USB Ethernet adapter (one may be a built-in Ethernet port)
 - Internet connection
 
+**NOTE: Running in a virtual machine? Checkout the virtual machine documentation [here](/docs/virtual_machine.md).**
+
 ### Software
 
 Ensure the following software is installed on your Ubuntu LTS PC:
@@ -49,9 +51,10 @@ However, to achieve a compliant test outcome, your device must be configured cor
    - Connect one USB Ethernet adapter to the internet source (e.g., router or switch) using an ethernet cable.
    - Connect the other USB Ethernet adapter directly to the IoT device you want to test using an ethernet cable.
 
-   **NOTE: The device under test should be powered off until prompted**
-
-   **NOTE: Both adapters should be disabled in the host system (IPv4, IPv6 and general). You can do this by going to Settings > Network** 
+  Some things to remember:
+  - The device under test should be powered off until prompted
+  - Both adapters should be disabled in the host system (IPv4, IPv6 and general). You can do this by going to Settings > Network
+  - Struggling to identify the correct interfaces? See [this guide](network/identify_interfaces.md).
 
 2. Start Testrun.
 

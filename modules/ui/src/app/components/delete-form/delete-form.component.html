@@ -19,10 +19,20 @@ limitations under the License.
 </p>
 
 <mat-dialog-actions align="end" class="delete-form-actions">
-  <button (click)="cancel()" class="cancel-button" mat-flat-button>
+  <button
+    (click)="cancel()"
+    class="cancel-button"
+    color="primary"
+    mat-button
+    type="button">
     Cancel
   </button>
-  <button (click)="confirm()" class="confirm-button" mat-flat-button>
+  <button
+    (click)="confirm()"
+    class="confirm-button"
+    color="primary"
+    mat-button
+    type="button">
     Confirm
   </button>
 </mat-dialog-actions>

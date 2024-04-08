@@ -35,6 +35,14 @@ class ProtocolModule(TestModule):
     result = None
     interface_name = 'veth0'
 
+    # If the ipv4 address wasn't resolved yet, try again
+    if self._device_ipv4_addr is None:
+      self._device_ipv4_addr = self._get_device_ipv4()
+
+    if self._device_ipv4_addr is None:
+      LOGGER.error('No device IP could be resolved')
+      return 'Error', 'Could not resolve device IP address'
+
     # Resolve the appropriate IP for BACnet comms
     local_address = self.get_local_ip(interface_name)
     if local_address:
@@ -43,6 +51,30 @@ class ProtocolModule(TestModule):
     else:
       result = None, 'Could not resolve test container IP for BACnet discovery'
     return result
+
+  def _protocol_bacnet_version(self):
+    """
+    Validates the BACnet version of the discovered device.
+    The `protocol_valid_bacnet` test must be enabled and successful before
+    this test can pass.
+    """
+    LOGGER.info('Running protocol.bacnet.version')
+    result_status = None
+    result_description = ''
+
+    if len(self._bacnet.devices) > 0:
+      for device in self._bacnet.devices:
+        LOGGER.info(f'Checking BACnet version for device: {device}')
+        if self._device_ipv4_addr in device[2]:
+          result_status, result_description = \
+            self._bacnet.validate_protocol_version( device[2], device[3])
+          break
+        else:
+          LOGGER.info('Device does not match expected IP address, skipping')
+    else:
+      result_description = 'No BACnet devices discovered.'
+    LOGGER.info(result_description)
+    return result_status, result_description
 
   def _protocol_valid_modbus(self, config):
     LOGGER.info('Running protocol.valid_modbus')

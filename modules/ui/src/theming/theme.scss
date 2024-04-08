@@ -50,7 +50,7 @@ $brand-light-theme-secondary: mat.define-light-theme(
   (
     color: (
       primary: $app-primary,
-      accent: $app-secondary,
+      accent: $app-primary,
       warn: $app-warn,
     ),
     typography: $app-typography,

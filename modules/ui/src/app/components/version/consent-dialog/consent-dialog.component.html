@@ -1,0 +1,116 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<section class="testrun-logo"></section>
+<section class="content-container">
+  <section class="consent-main-content">
+    <h2>Welcome to Testrun!</h2>
+    <p>
+      The application is ready to run the testing process for your devices. Here
+      is a list of links you could find valuable:
+    </p>
+    <ul>
+      <li>
+        <a
+          href="https://github.com/google/testrun#readme"
+          target="_blank"
+          class="message-link"
+          >FAQ page</a
+        >
+        on github
+      </li>
+      <li>
+        To file a bug go to
+        <a
+          href="https://github.com/google/testrun/issues/new/choose"
+          target="_blank"
+          class="message-link"
+          >github issues</a
+        >
+      </li>
+      <li>
+        Use the
+        <a
+          href="https://forms.gle/3meUBSRgozSTJxmN6"
+          target="_blank"
+          class="message-link"
+          >feedback form</a
+        >
+        to share you thoughts
+      </li>
+    </ul>
+  </section>
+
+  <section class="consent-update" *ngIf="data.update_available === true">
+    <app-callout [type]="CalloutType.Warning">
+      <span class="consent-update-title">Software is outdated!</span>
+      <p class="consent-update-content">
+        You are currently using an outdated software (<b>{{
+          data.installed_version
+        }}</b
+        >).
+        <br />
+        The latest version number is <b>{{ data.latest_version }}</b
+        >. Please consider to update or continue at your own risk.
+      </p>
+      <p class="download-link-container">
+        <a
+          href="{{ data.latest_version_url }}"
+          target="_blank"
+          class="download-link"
+          color="primary"
+          mat-button
+          type="button"
+          aria-label="Download new version">
+          Download
+        </a>
+      </p>
+    </app-callout>
+  </section>
+  <section>
+    <app-callout [type]="CalloutType.Info">
+      Testrun uses Google Analytics to learn about how our users use the
+      application. By installing and running Testrun, you understand and accept
+      the Terms of Service found
+      <a
+        href="https://policies.google.com/technologies/partner-sites"
+        target="_blank"
+        class="message-link"
+        aria-label="here on Google Privacy & Terms page"
+        >here</a
+      >.
+    </app-callout>
+  </section>
+</section>
+
+<mat-dialog-actions class="consent-actions">
+  <button
+    (click)="cancel()"
+    class="cancel-button"
+    color="primary"
+    mat-button
+    type="button">
+    Opt out Google Analytics
+  </button>
+  <button
+    (click)="confirm()"
+    class="confirm-button"
+    color="primary"
+    mat-raised-button
+    aria-label="OK and Proceed to Testrun"
+    type="button">
+    OK
+  </button>
+</mat-dialog-actions>

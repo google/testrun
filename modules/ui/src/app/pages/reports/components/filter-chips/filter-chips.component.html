@@ -1,0 +1,54 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<mat-chip-set aria-label="Filters" role="grid">
+  <ng-container *ngFor="let item of filters | keyvalue">
+    <mat-chip-row
+      tabindex="0"
+      class="filter-chip"
+      *ngIf="!isValueEmpty(item.value)"
+      (removed)="clearFilter(item.key)">
+      <ng-container *ngIf="item.key === 'deviceInfo'"
+        >Device contains "{{ item.value }}"</ng-container
+      >
+      <ng-container *ngIf="item.key === 'deviceFirmware'">
+        Firmware contains "{{ item.value }}"
+      </ng-container>
+      <ng-container
+        *ngIf="item.key !== 'deviceFirmware' && item.key !== 'deviceInfo'">
+        {{ item.value }}
+      </ng-container>
+      <button
+        class="filter-chip-remove"
+        [attr.aria-label]="'clear filter ' + item.value"
+        matChipRemove
+        [tabIndex]="0">
+        <mat-icon fontSet="material-icons-outlined">close</mat-icon>
+      </button>
+    </mat-chip-row>
+  </ng-container>
+  <mat-chip-row class="filter-chip-clear-all">
+    <a
+      class="clear-all"
+      type="button"
+      (click)="clearAllFilters()"
+      (keydown.enter)="clearAllFilters()"
+      (keydown.space)="clearAllFilters()"
+      aria-label="Clear all filters"
+      tabindex="0"
+      >Clear all filters</a
+    >
+  </mat-chip-row>
+</mat-chip-set>

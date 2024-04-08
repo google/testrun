@@ -32,21 +32,21 @@ def run_command(cmd, output=True):
   by any return code from the process other than zero."""
 
   success = False
-  process = subprocess.Popen(shlex.split(cmd),
+  with subprocess.Popen(shlex.split(cmd),
                              stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-  stdout, stderr = process.communicate()
+                             stderr=subprocess.PIPE) as process:
+    stdout, stderr = process.communicate()
 
-  if process.returncode != 0 and output:
-    err_msg = f'{stderr.strip()}. Code: {process.returncode}'
-    LOGGER.error('Command failed: ' + cmd)
-    LOGGER.error('Error: ' + err_msg)
-  else:
-    success = True
-  if output:
-    return stdout.strip().decode('utf-8'), stderr
-  else:
-    return success
+    if process.returncode != 0 and output:
+      err_msg = f'{stderr.strip()}. Code: {process.returncode}'
+      LOGGER.error('Command failed: ' + cmd)
+      LOGGER.error('Error: ' + err_msg)
+    else:
+      success = True
+    if output:
+      return stdout.strip().decode('utf-8'), stderr
+    else:
+      return success
 
 
 def interface_exists(interface):
@@ -71,7 +71,7 @@ def get_os_user():
   except OSError:
     # Handle the OSError exception
     LOGGER.error('An OS error occured whilst calling os.getlogin()')
-  except Exception:
+  except Exception: # pylint: disable=W0703
     # Catch any other unexpected exceptions
     LOGGER.error('An unknown exception occured whilst calling os.getlogin()')
   return user
@@ -103,7 +103,8 @@ def get_module_display_name(search):
     'dns': 'DNS',
     'connection': 'Connection',
     'nmap': 'Services',
-    'tls': 'TLS'
+    'tls': 'TLS',
+    'protocol': 'Protocol'
   }
 
   for module in modules.items():

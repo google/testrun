@@ -13,15 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TestRunService } from '../../services/test-run.service';
+import {
+  TestRunService,
+  UNAVAILABLE_VERSION,
+} from '../../services/test-run.service';
 import { Version } from '../../model/version';
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { UpdateDialogComponent } from './update-dialog/update-dialog.component';
+import { tap } from 'rxjs/internal/operators/tap';
 
+import { Observable } from 'rxjs/internal/Observable';
+import { Subject } from 'rxjs/internal/Subject';
+import { takeUntil } from 'rxjs/internal/operators/takeUntil';
+import { filter } from 'rxjs';
+import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+declare const gtag: Function;
 @Component({
   selector: 'app-version',
   standalone: true,
@@ -29,28 +46,63 @@ import { UpdateDialogComponent } from './update-dialog/update-dialog.component';
   templateUrl: './version.component.html',
   styleUrls: ['./version.component.scss'],
 })
-export class VersionComponent implements OnInit {
-  version$: BehaviorSubject<Version | null>;
+export class VersionComponent implements OnInit, OnDestroy {
+  @Input() consentShown!: boolean;
+  @Output() consentShownEvent = new EventEmitter<void>();
+  version$!: Observable<Version | null>;
+  private destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
     private testRunService: TestRunService,
     public dialog: MatDialog
-  ) {
-    this.version$ = testRunService.getVersion();
-  }
+  ) {}
 
   ngOnInit() {
     this.testRunService.fetchVersion();
+
+    this.version$ = this.testRunService.getVersion().pipe(
+      filter(version => version !== null),
+      tap(version => {
+        if (!this.consentShown) {
+          // @ts-expect-error null is filtered
+          this.openConsentDialog(version);
+          this.consentShownEvent.emit();
+        }
+      })
+    );
   }
 
-  openUpdateWindow() {
-    this.dialog.open(UpdateDialogComponent, {
-      ariaLabel: 'Update version',
-      data: this.version$.value,
+  getVersionButtonLabel(installedVersion: string): string {
+    return installedVersion === UNAVAILABLE_VERSION.installed_version
+      ? 'Version temporarily unavailable. Click to open the Welcome modal'
+      : `${installedVersion} New version is available. Click to update`;
+  }
+
+  openConsentDialog(version: Version) {
+    const dialogRef = this.dialog.open(ConsentDialogComponent, {
+      ariaLabel: 'Welcome to Testrun modal window',
+      data: version,
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'version-update-dialog',
+      panelClass: 'consent-dialog',
     });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((grant: boolean) => {
+        if (grant === null) {
+          return;
+        }
+        gtag('consent', 'update', {
+          analytics_storage: grant ? 'granted' : 'denied',
+        });
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next(true);
+    this.destroy$.unsubscribe();
   }
 }

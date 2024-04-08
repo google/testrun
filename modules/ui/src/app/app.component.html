@@ -14,16 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <app-bypass></app-bypass>
-<mat-drawer-container hasBackdrop="false" class="app-container" autosize>
+<mat-drawer-container
+  *ngIf="viewModel$ | async as vm"
+  [class.active-menu]="isMenuOpen | async"
+  hasBackdrop="false"
+  class="app-container"
+  autosize>
   <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
     <div class="app-sidebar" #navigation>
       <ng-container
         *ngTemplateOutlet="
           navButtonRoute;
           context: {
-            route: Routes.Testrun,
+            route: Routes.Testing,
             svgIcon: 'testrun_logo_small',
-            label: 'Testrun',
+            label: 'Testing',
             name: 'testrun'
           }
         ">
@@ -50,7 +55,9 @@ limitations under the License.
           }
         ">
       </ng-container>
-      <app-version></app-version>
+      <app-version
+        [consentShown]="vm.consentShown"
+        (consentShownEvent)="consentShown()"></app-version>
     </div>
   </mat-drawer>
 
@@ -64,7 +71,10 @@ limitations under the License.
         (keydown.tab)="skipToNavigation($event)">
         <mat-icon>menu</mat-icon>
       </button>
-      <a class="logo-link" routerLink="/runtime" aria-label="Testrun ui logo">
+      <a
+        class="logo-link"
+        routerLink="{{ Routes.Testing }}"
+        aria-label="Testrun ui logo">
         <mat-icon svgIcon="testrun_logo_color"></mat-icon>
         <h1 class="main-heading">Testrun</h1>
       </a>
@@ -73,34 +83,66 @@ limitations under the License.
         #toggleSettingsBtn
         class="app-toolbar-button app-toolbar-button-general-settings"
         mat-icon-button
-        aria-label="Connection settings"
-        (click)="openGeneralSettings()">
+        aria-label="System settings"
+        (click)="openGeneralSettings(true)">
         <mat-icon>tune</mat-icon>
       </button>
     </mat-toolbar>
     <div class="app-content-main" role="main" id="main">
+      <ng-container *ngIf="settingMissedError$ | async as error">
+        <app-callout [type]="CalloutType.Error" *ngIf="error.isSettingMissed">
+          <ng-container
+            *ngIf="
+              error.devicePortMissed && error.internetPortMissed;
+              else onePortMissed
+            ">
+            No ports are detected. Please define a valid ones using
+          </ng-container>
+          <ng-template #onePortMissed>
+            Selected port is missing! Please define a valid one using
+          </ng-template>
+          <a
+            (click)="openSetting()"
+            (keydown.enter)="openSetting()"
+            (keydown.space)="openSetting()"
+            aria-label="The System settings link opens the panel. No redirect to other pages."
+            tabindex="0"
+            role="link"
+            class="message-link"
+            >System settings</a
+          >
+          panel.
+        </app-callout>
+      </ng-container>
       <app-callout
         [type]="CalloutType.Info"
-        *ngIf="
-          (hasConnectionSetting$ | async) !== true && isConnectionSettingsLoaded
-        ">
-        Step 1: To perform a device test, please, select ports in Connection
-        settings.
+        *ngIf="(hasConnectionSetting$ | async) === false">
+        Step 1: To perform a device test, please, select ports in
+        <a
+          (click)="openSetting()"
+          (keydown.enter)="openSetting()"
+          (keydown.space)="openSetting()"
+          aria-label="The System settings link opens the panel. No redirect to other pages."
+          tabindex="0"
+          role="link"
+          class="message-link"
+          >System settings</a
+        >
+        panel.
       </app-callout>
       <app-callout
         [type]="CalloutType.Info"
         *ngIf="
-          (hasConnectionSetting$ | async) === true &&
-          !(devices$ | async)?.length &&
-          isDevicesLoaded
+          (hasConnectionSetting$ | async) === true && vm.hasDevices === false
         ">
         Step 2: To perform a device test please
         <a
           (click)="navigateToDeviceRepository()"
           (keydown.enter)="navigateToDeviceRepository()"
           (keydown.space)="navigateToDeviceRepository()"
+          aria-label="The Create a Device link redirects to the Devices page and opens the dialogue there."
           tabindex="0"
-          role="button"
+          role="link"
           class="message-link"
           >Create a Device</a
         >
@@ -110,23 +152,23 @@ limitations under the License.
         [type]="CalloutType.Info"
         *ngIf="
           (hasConnectionSetting$ | async) === true &&
-          (devices$ | async)?.length &&
+          vm.hasDevices &&
           (!(systemStatus$ | async)?.status ||
             (systemStatus$ | async)?.status === StatusOfTestrun.Idle) &&
-          isStatusLoaded &&
+          isStatusLoaded === true &&
           (isTestrunStarted$ | async) === false
         ">
-        Step 3: Once device is created navigate to
+        Step 3: Once device is created, you are able to
         <a
           (click)="navigateToRuntime()"
           (keydown.enter)="navigateToRuntime()"
           (keydown.space)="navigateToRuntime()"
+          aria-label="The start testing link redirects to the Testing page and opens the dialogue there."
           tabindex="0"
-          role="button"
+          role="link"
           class="message-link"
-          >Testrun</a
-        >
-        tab.
+          >start testing</a
+        >.
       </app-callout>
       <router-outlet></router-outlet>
     </div>
@@ -135,12 +177,11 @@ limitations under the License.
     #settingsDrawer
     mode="over"
     position="end"
+    autoFocus="#setting-panel-close-button"
     class="settings-drawer">
     <app-general-settings
-      [interfaces]="interfaces"
-      (closeSettingEvent)="closeSetting()"
-      (openSettingEvent)="openSetting()"
-      (reloadInterfacesEvent)="reloadInterfaces()">
+      #settings
+      (closeSettingEvent)="closeSetting(vm.hasDevices)">
     </app-general-settings>
   </mat-drawer>
 </mat-drawer-container>

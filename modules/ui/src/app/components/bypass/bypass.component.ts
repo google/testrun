@@ -16,6 +16,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { FocusManagerService } from '../../services/focus-manager.service';
 
 @Component({
   selector: 'app-bypass',
@@ -25,13 +26,9 @@ import { MatButtonModule } from '@angular/material/button';
   styleUrls: ['./bypass.component.scss'],
 })
 export class BypassComponent {
+  constructor(private readonly focusManagerService: FocusManagerService) {}
   skipToMainContent(event: Event) {
     event.preventDefault();
-    const firstControl: HTMLElement | null = window.document.querySelector(
-      '#main button:not(disabled), #main table'
-    );
-    if (firstControl) {
-      firstControl.focus();
-    }
+    this.focusManagerService.focusFirstElementInContainer();
   }
 }

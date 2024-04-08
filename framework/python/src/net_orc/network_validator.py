@@ -191,7 +191,7 @@ class NetworkValidator:
     except OSError:
       # Handle the OSError exception
       LOGGER.error('An OS error occurred while retrieving the login name.')
-    except Exception as error:
+    except Exception as error: # pylint: disable=W0703
       # Catch any other unexpected exceptions
       LOGGER.error('An exception occurred:', error)
     return user
@@ -240,7 +240,8 @@ class NetworkValidator:
 
     mac_addr = TR_CONTAINER_MAC_PREFIX + '10'
 
-    util.run_command('ip link set dev ' + container_intf + ' address ' + mac_addr)
+    util.run_command('ip link set dev ' + container_intf +
+                     ' address ' + mac_addr)
 
     # Add bridge interface to device bridge
     util.run_command('ovs-vsctl add-port ' + DEVICE_BRIDGE + ' ' + bridge_intf)

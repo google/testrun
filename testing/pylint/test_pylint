@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ERROR_LIMIT=175
+ERROR_LIMIT=0
 
 sudo cmd/install
 
 source venv/bin/activate
-sudo pip3 install pylint
+sudo pip3 install pylint==3.0.3
 
 files=$(find ./framework -path ./venv -prune -o -name '*.py' -print)
 
