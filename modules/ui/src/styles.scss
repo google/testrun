@@ -41,6 +41,15 @@ body {
   background: $dark-grey;
 }
 
+.button-start {
+  &:hover,
+  &:focus-visible {
+    .button-start-icon path {
+      fill: $white;
+    }
+  }
+}
+
 .app-sidebar-button-active .mat-icon path {
   fill: $white;
 }
