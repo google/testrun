@@ -366,7 +366,9 @@ class NetworkOrchestrator:
     if 'CI' in os.environ:
       self._ci_post_network_create()
 
-    self._create_private_net()
+    # Private network not used, disable until
+    # a use case is determined
+    #self._create_private_net()
 
     # Listener may have already been created. Only create if not
     if self._listener is None:
@@ -488,22 +490,27 @@ class NetworkOrchestrator:
     network = 'host' if net_module.net_config.host else PRIVATE_DOCKER_NET
     LOGGER.debug(f"""Network: {network}, image name: {net_module.image_name},
                      container name: {net_module.container_name}""")
+
     try:
       client = docker.from_env()
       net_module.container = client.containers.run(
-          net_module.image_name,
-          auto_remove=True,
-          cap_add=['NET_ADMIN'],
-          name=net_module.container_name,
-          hostname=net_module.container_name,
-          network=PRIVATE_DOCKER_NET,
-          privileged=True,
-          detach=True,
-          mounts=net_module.mounts,
-          environment={
-              'TZ': self.get_session().get_timezone(),
-              'HOST_USER': util.get_host_user()
-          })
+        net_module.image_name,
+        auto_remove=True,
+        cap_add=['NET_ADMIN'],
+        name=net_module.container_name,
+        hostname=net_module.container_name,
+        # Undetermined version of docker seems to have broken
+        # DNS configuration (/etc/resolv.conf)  Re-add when/if
+        # this network is utilized and DNS issue is resolved
+        #network=PRIVATE_DOCKER_NET,
+        privileged=True,
+        detach=True,
+        mounts=net_module.mounts,
+        environment={
+          'TZ': self.get_session().get_timezone(),
+          'HOST_USER': util.get_host_user()
+        }
+      )
     except docker.errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)
