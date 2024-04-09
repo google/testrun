@@ -23,7 +23,7 @@ from test_orc.test_case import TestCase
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
-TESTS_FIRST_PAGE = 12
+TESTS_FIRST_PAGE = 9
 TESTS_PER_PAGE = 20
 
 # Locate parent directory
@@ -412,7 +412,8 @@ class TestReport():
     mac = (json_data['device']['mac_addr']
            if 'mac_addr' in json_data['device'] else 'Undefined')
 
-    summary += '<div class="device-information">'
+    summary += '''<div class="device-information">
+      <div style="padding-right:0.1in;">'''
 
     summary += self.generate_device_summary_label('Manufacturer', manufacturer)
     summary += self.generate_device_summary_label('Model', model)
@@ -421,7 +422,7 @@ class TestReport():
                                                   mac,
                                                   trailing_space=False)
 
-    summary += '</div>'
+    summary += '</div></div>'
 
     # Add device configuration
     summary += '''
@@ -719,10 +720,10 @@ class TestReport():
 
     .device-information {
       padding-top: 0.2in;
-      padding-left: 0.3in;
+      padding-left: 0.2in;
       background-color: #F8F9FA;
       width: 250px;
-      height: 2.6in;
+      height: 100.4%;
     }
 
     /* Define the summary related css elements*/
@@ -733,6 +734,7 @@ class TestReport():
       margin-top: 19px;
       margin-bottom: 19px;
       background-color: #E8EAED;
+      padding-bottom: 20px;
     }
 
     .summary-item-label {
@@ -782,7 +784,7 @@ class TestReport():
       right: 0in;
       top: 0in;
       width: 2.6in;
-      height: var(--summary-height);
+      height: 100%;
     }
 
     .summary-box-compliant {
