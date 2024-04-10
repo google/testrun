@@ -34,7 +34,7 @@ import { SYSTEM_STOP } from '../services/test-run.service';
 import { finalize } from 'rxjs/operators';
 
 const DEFAULT_TIMEOUT_MS = 5000;
-const SYSTEM_STOP_TIMEOUT_MS = 30 * 1000;
+const SYSTEM_STOP_TIMEOUT_MS = 60 * 1000;
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
