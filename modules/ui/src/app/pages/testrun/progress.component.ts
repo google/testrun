@@ -82,6 +82,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.hasDevices$ = this.store.select(selectHasDevices);
+    this.testRunService.getSystemStatus();
 
     combineLatest([
       this.testRunService.isOpenStartTestrun$,
