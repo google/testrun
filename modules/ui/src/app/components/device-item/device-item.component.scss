@@ -92,7 +92,6 @@ $border-radius: 12px;
   }
 
   &:disabled {
-    pointer-events: none;
     opacity: 0.5;
   }
 }
@@ -166,14 +165,19 @@ $border-radius: 12px;
   background-color: mat.get-color-from-palette($color-primary, 50);
   justify-self: end;
   border-radius: 0 $border-radius $border-radius 0;
+  cursor: pointer;
 
-  &:hover,
-  &:focus-visible {
+  &:hover:not(::ng-deep .mdc-button:disabled),
+  &:focus-visible:not(::ng-deep .mdc-button:disabled) {
     background-color: mat.get-color-from-palette($color-primary, 600);
 
     .button-start-icon {
       color: $white;
     }
+  }
+
+  ::ng-deep &.mdc-button:disabled {
+    pointer-events: visible;
   }
 }
 

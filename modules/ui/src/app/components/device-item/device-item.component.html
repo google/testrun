@@ -40,6 +40,7 @@ limitations under the License.
     [tabIndex]="tabIndex"
     (click)="itemClick()"
     attr.aria-label="Edit device {{ label }}"
+    [title]="disabled ? 'Testrun is in progress' : null"
     class="button-edit"
     type="button">
     <div [attr.aria-label]="device.manufacturer" class="item-manufacturer">
@@ -59,6 +60,7 @@ limitations under the License.
   </button>
   <button
     [disabled]="disabled"
+    [title]="disabled ? 'Testrun is in progress' : null"
     (click)="startTestrunClick()"
     attr.aria-label="Start new testrun for device {{ label }}"
     class="button-start"
