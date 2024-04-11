@@ -17,7 +17,7 @@
 # Creates a package for Testrun
 
 MAKE_SRC_DIR=make
-TESTRUN_VER="1-2-1-alpha"
+TESTRUN_VER="1-2-1"
 
 # Delete existing make files
 rm -rf $MAKE_SRC_DIR/usr
