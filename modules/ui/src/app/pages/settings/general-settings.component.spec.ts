@@ -116,6 +116,47 @@ describe('GeneralSettingsComponent', () => {
     expect(mockLoaderService.setLoading).toHaveBeenCalledWith(true);
   });
 
+  describe('#settingsDisable', () => {
+    it('should disable setting form when get settingDisable as true ', () => {
+      spyOn(component.settingForm, 'disable');
+
+      component.settingsDisable = true;
+
+      expect(component.settingForm.disable).toHaveBeenCalled();
+    });
+
+    it('should enable setting form when get settingDisable as false ', () => {
+      spyOn(component.settingForm, 'enable');
+
+      component.settingsDisable = false;
+
+      expect(component.settingForm.enable).toHaveBeenCalled();
+    });
+
+    it('should disable "Save" button when get settingDisable as true', () => {
+      component.settingsDisable = true;
+
+      const saveBtn = compiled.querySelector(
+        '.save-button'
+      ) as HTMLButtonElement;
+
+      expect(saveBtn.disabled).toBeTrue();
+    });
+
+    it('should disable "Refresh" link when settingDisable', () => {
+      component.settingsDisable = true;
+
+      const refreshLink = compiled.querySelector(
+        '.message-link'
+      ) as HTMLAnchorElement;
+
+      refreshLink.click();
+
+      expect(refreshLink.hasAttribute('aria-disabled')).toBeTrue();
+      expect(mockLoaderService.setLoading).not.toHaveBeenCalled();
+    });
+  });
+
   describe('#closeSetting', () => {
     beforeEach(() => {
       component.ngOnInit();
@@ -151,32 +192,6 @@ describe('GeneralSettingsComponent', () => {
       component.closeSetting('Message');
 
       expect(mockSettingsStore.setDefaultFormValues).toHaveBeenCalled();
-    });
-
-    it('should disable setting form when get settingDisable as true ', () => {
-      spyOn(component.settingForm, 'disable');
-
-      component.settingsDisable = true;
-
-      expect(component.settingForm.disable).toHaveBeenCalled();
-    });
-
-    it('should enable setting form when get settingDisable as false ', () => {
-      spyOn(component.settingForm, 'enable');
-
-      component.settingsDisable = false;
-
-      expect(component.settingForm.enable).toHaveBeenCalled();
-    });
-
-    it('should disable "Save" button when get settingDisable as true', () => {
-      component.settingsDisable = true;
-
-      const saveBtn = compiled.querySelector(
-        '.save-button'
-      ) as HTMLButtonElement;
-
-      expect(saveBtn.disabled).toBeTrue();
     });
   });
 
