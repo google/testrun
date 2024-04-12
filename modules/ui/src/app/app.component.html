@@ -16,7 +16,7 @@ limitations under the License.
 <app-bypass></app-bypass>
 <mat-drawer-container
   *ngIf="viewModel$ | async as vm"
-  [class.active-menu]="isMenuOpen | async"
+  [class.active-menu]="vm.isMenuOpen"
   hasBackdrop="false"
   class="app-container"
   autosize>
@@ -92,7 +92,7 @@ limitations under the License.
       </app-shutdown-app>
     </mat-toolbar>
     <div class="app-content-main" role="main" id="main">
-      <ng-container *ngIf="settingMissedError$ | async as error">
+      <ng-container *ngIf="vm.settingMissedError as error">
         <app-callout [type]="CalloutType.Error" *ngIf="error.isSettingMissed">
           <ng-container
             *ngIf="
@@ -119,7 +119,7 @@ limitations under the License.
       </ng-container>
       <app-callout
         [type]="CalloutType.Info"
-        *ngIf="(hasConnectionSetting$ | async) === false">
+        *ngIf="vm.hasConnectionSettings === false">
         Step 1: To perform a device test, please, select ports in
         <a
           (click)="openSetting()"
@@ -135,9 +135,7 @@ limitations under the License.
       </app-callout>
       <app-callout
         [type]="CalloutType.Info"
-        *ngIf="
-          (hasConnectionSetting$ | async) === true && vm.hasDevices === false
-        ">
+        *ngIf="vm.hasConnectionSettings === true && vm.hasDevices === false">
         Step 2: To perform a device test please
         <a
           (click)="navigateToDeviceRepository()"
@@ -154,12 +152,12 @@ limitations under the License.
       <app-callout
         [type]="CalloutType.Info"
         *ngIf="
-          (hasConnectionSetting$ | async) === true &&
+          vm.hasConnectionSettings === true &&
           vm.hasDevices &&
-          (!(systemStatus$ | async)?.status ||
-            (systemStatus$ | async)?.status === StatusOfTestrun.Idle) &&
-          isStatusLoaded === true &&
-          (isTestrunStarted$ | async) === false
+          (!vm.systemStatus?.status ||
+            vm.systemStatus?.status === StatusOfTestrun.Idle) &&
+          vm.isStatusLoaded === true &&
+          vm.isTestrunStarted === false
         ">
         Step 3: Once device is created, you are able to
         <a

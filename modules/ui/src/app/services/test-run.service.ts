@@ -18,11 +18,10 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
 import { Device, TestModule } from '../model/device';
-import { catchError, map, of, ReplaySubject, retry } from 'rxjs';
+import { catchError, map, of, retry } from 'rxjs';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
 import {
   StatusOfTestResult,
-  StatusOfTestrun,
   StatusResultClassName,
   TestrunStatus,
 } from '../model/testrun-status';
@@ -75,23 +74,9 @@ export class TestRunService {
     },
   ];
 
-  private isOpenStartTestrunSub$ = new BehaviorSubject<boolean>(false);
-  public isOpenStartTestrun$ = this.isOpenStartTestrunSub$.asObservable();
-  private systemStatusSubject = new ReplaySubject<TestrunStatus>(1);
-  public systemStatus$ = this.systemStatusSubject.asObservable();
-  private isTestrunStartedSub$ = new BehaviorSubject<boolean>(false);
-  public isTestrunStarted$ = this.isTestrunStartedSub$.asObservable();
   private version = new BehaviorSubject<Version | null>(null);
 
   constructor(private http: HttpClient) {}
-
-  setIsOpenStartTestrun(isOpen: boolean): void {
-    this.isOpenStartTestrunSub$.next(isOpen);
-  }
-
-  setSystemStatus(status: TestrunStatus): void {
-    this.systemStatusSubject.next(status);
-  }
 
   fetchDevices(): Observable<Device[]> {
     return this.http.get<Device[]>(`${API_URL}/devices`);
@@ -111,22 +96,8 @@ export class TestRunService {
     return this.http.get<SystemInterfaces>(`${API_URL}/system/interfaces`);
   }
 
-  /**
-   * Gets system status.
-   * Status Cancelling exist only on FE. Every status except Cancelled
-   * should be overriden with Cancelling value during cancelling process
-   * @param isCancelling - indicates if status should be overridden with Cancelling value
-   */
-  getSystemStatus(isCancelling?: boolean): void {
-    this.http.get<TestrunStatus>(`${API_URL}/system/status`).subscribe(
-      (res: TestrunStatus) => {
-        if (isCancelling && res.status !== StatusOfTestrun.Cancelled) {
-          res.status = StatusOfTestrun.Cancelling;
-        }
-        this.setSystemStatus(res);
-      },
-      err => console.error('HTTP Error', err)
-    );
+  fetchSystemStatus() {
+    return this.http.get<TestrunStatus>(`${API_URL}/system/status`);
   }
 
   stopTestrun(): Observable<boolean> {
@@ -197,8 +168,6 @@ export class TestRunService {
   }
 
   startTestrun(device: Device): Observable<boolean> {
-    this.isTestrunStartedSub$.next(true);
-
     return this.http
       .post<TestrunStatus>(
         `${API_URL}/system/start`,
