@@ -98,7 +98,7 @@ limitations under the License.
           <mat-icon>tune</mat-icon>
         </button>
         <app-shutdown-app
-          [disable]="testrunInProgress((systemStatus$ | async)?.status)">
+          [disable]="isTestrunInProgress(vm.systemStatus?.status)">
         </app-shutdown-app>
       </mat-toolbar>
       <div class="app-content-main" role="main" id="main">
