@@ -18,7 +18,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProgressTableComponent } from './progress-table.component';
 
 import { IResult, StatusOfTestResult } from '../../../../model/testrun-status';
-import { of } from 'rxjs';
 import {
   TEST_DATA,
   TEST_DATA_RESULT,
@@ -44,7 +43,7 @@ describe('ProgressTableComponent', () => {
       });
       fixture = TestBed.createComponent(ProgressTableComponent);
       component = fixture.componentInstance;
-      component.dataSource$ = of(TEST_DATA.results);
+      component.dataSource = TEST_DATA.results;
     });
 
     it('should create', () => {
@@ -93,7 +92,7 @@ describe('ProgressTableComponent', () => {
 
     describe('with not dataSource$ data', () => {
       beforeEach(() => {
-        component.dataSource$ = of(undefined);
+        component.dataSource = undefined;
         fixture.detectChanges();
       });
 
@@ -106,7 +105,7 @@ describe('ProgressTableComponent', () => {
 
     describe('with dataSource$ data', () => {
       beforeEach(() => {
-        component.dataSource$ = of(TEST_DATA.results);
+        component.dataSource = TEST_DATA.results;
         fixture.detectChanges();
       });
 
@@ -132,7 +131,8 @@ describe('ProgressTableComponent', () => {
 
     describe('with recommendations', () => {
       beforeEach(() => {
-        component.dataSource$ = of(TEST_DATA_RESULT_WITH_RECOMMENDATIONS);
+        component.dataSource = TEST_DATA_RESULT_WITH_RECOMMENDATIONS;
+        component.stepsToResolveCount = 1;
         fixture.detectChanges();
       });
 

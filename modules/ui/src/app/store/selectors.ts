@@ -56,3 +56,18 @@ export const selectError = createSelector(
   selectAppState,
   (state: AppState) => state.appComponent.settingMissedError
 );
+
+export const selectSystemStatus = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.systemStatus
+);
+
+export const selectIsTestrunStarted = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.isTestrunStarted
+);
+
+export const selectIsOpenStartTestrun = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.isOpenStartTestrun
+);

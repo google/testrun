@@ -116,16 +116,8 @@ describe('ProgressInitiateFormComponent', () => {
 
     it('should close dialog', () => {
       spyOn(component.dialogRef, 'close');
-      component.cancel();
-      expect(component.dialogRef.close).toHaveBeenCalled();
-    });
-
-    it('should call setIsOpenAddDevice on cancel', () => {
-      component.cancel();
-
-      expect(testRunServiceMock.setIsOpenStartTestrun).toHaveBeenCalledWith(
-        false
-      );
+      component.cancel(false);
+      expect(component.dialogRef.close).toHaveBeenCalledWith(false);
     });
 
     it('should set devices$ value', () => {
@@ -212,15 +204,6 @@ describe('ProgressInitiateFormComponent', () => {
           component.startTestRun();
 
           expect(testRunServiceMock.fetchVersion).toHaveBeenCalled();
-        });
-
-        describe('when result is success', () => {
-          it('should call getSystemStatus', () => {
-            testRunServiceMock.startTestrun.and.returnValue(of(true));
-            component.startTestRun();
-
-            expect(testRunServiceMock.getSystemStatus).toHaveBeenCalled();
-          });
         });
       });
     });

@@ -22,10 +22,7 @@ import { Device, TestModule } from '../model/device';
 
 import { TestRunService, UNAVAILABLE_VERSION } from './test-run.service';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
-import {
-  MOCK_PROGRESS_DATA_CANCELLING,
-  MOCK_PROGRESS_DATA_IN_PROGRESS,
-} from '../mocks/progress.mock';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/progress.mock';
 import { StatusOfTestResult, TestrunStatus } from '../model/testrun-status';
 import { device } from '../mocks/device.mock';
 import { NEW_VERSION, VERSION } from '../mocks/version.mock';
@@ -155,30 +152,14 @@ describe('TestRunService', () => {
     req.flush(mockSystemInterfaces);
   });
 
-  describe('getSystemStatus', () => {
+  describe('fetchSystemStatus', () => {
     it('should get system status data with no changes', () => {
       const result = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
 
-      service.systemStatus$.subscribe(res => {
+      service.fetchSystemStatus().subscribe(res => {
         expect(res).toEqual(result);
       });
 
-      service.getSystemStatus();
-      const req = httpTestingController.expectOne(
-        'http://localhost:8000/system/status'
-      );
-      expect(req.request.method).toBe('GET');
-      req.flush(result);
-    });
-
-    it('should get cancelling data if status is cancelling', () => {
-      const result = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
-
-      service.systemStatus$.subscribe(res => {
-        expect(res).toEqual(MOCK_PROGRESS_DATA_CANCELLING);
-      });
-
-      service.getSystemStatus(true);
       const req = httpTestingController.expectOne(
         'http://localhost:8000/system/status'
       );
