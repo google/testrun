@@ -76,9 +76,8 @@ export class ProgressInitiateFormComponent
     return this.initiateForm.get('firmware') as AbstractControl;
   }
 
-  cancel(data?: string): void {
-    this.testRunService.setIsOpenStartTestrun(false);
-    this.dialogRef.close(data);
+  cancel(startTestrun: boolean): void {
+    this.dialogRef.close(startTestrun);
   }
 
   ngOnInit() {
@@ -141,8 +140,7 @@ export class ProgressInitiateFormComponent
         })
         .pipe(take(1))
         .subscribe(() => {
-          this.testRunService.getSystemStatus();
-          this.cancel('testrunStarted');
+          this.cancel(true);
         });
     }
   }
