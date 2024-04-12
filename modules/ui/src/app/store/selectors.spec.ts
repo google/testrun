@@ -22,7 +22,10 @@ import {
   selectHasDevices,
   selectInterfaces,
   selectIsOpenAddDevice,
+  selectIsOpenStartTestrun,
+  selectIsTestrunStarted,
   selectMenuOpened,
+  selectSystemStatus,
 } from './selectors';
 
 describe('Selectors', () => {
@@ -40,6 +43,9 @@ describe('Selectors', () => {
       devices: [],
       hasDevices: false,
       isOpenAddDevice: false,
+      isOpenStartTestrun: false,
+      systemStatus: null,
+      isTestrunStarted: false,
     },
   };
 
@@ -75,6 +81,21 @@ describe('Selectors', () => {
 
   it('should select isOpenAddDevice', () => {
     const result = selectIsOpenAddDevice.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select systemStatus', () => {
+    const result = selectSystemStatus.projector(initialState);
+    expect(result).toEqual(null);
+  });
+
+  it('should select isTestrunStarted', () => {
+    const result = selectIsTestrunStarted.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select isOpenStartTestrun', () => {
+    const result = selectIsOpenStartTestrun.projector(initialState);
     expect(result).toEqual(false);
   });
 });

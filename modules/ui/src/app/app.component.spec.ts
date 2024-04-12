@@ -32,7 +32,6 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
-import { of } from 'rxjs/internal/observable/of';
 import SpyObj = jasmine.SpyObj;
 import { BypassComponent } from './components/bypass/bypass.component';
 import { CalloutComponent } from './components/callout/callout.component';
@@ -56,7 +55,10 @@ import {
   selectHasConnectionSettings,
   selectHasDevices,
   selectInterfaces,
+  selectIsOpenStartTestrun,
+  selectIsTestrunStarted,
   selectMenuOpened,
+  selectSystemStatus,
 } from './store/selectors';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
 
@@ -97,9 +99,6 @@ describe('AppComponent', () => {
       'focusFirstElementInContainer',
     ]);
 
-    (mockService.systemStatus$ as unknown) = of({});
-    mockService.isTestrunStarted$ = of(true);
-
     TestBed.configureTestingModule({
       imports: [
         RouterTestingModule,
@@ -135,6 +134,9 @@ describe('AppComponent', () => {
             { selector: selectError, value: null },
             { selector: selectMenuOpened, value: false },
             { selector: selectHasDevices, value: false },
+            { selector: selectIsTestrunStarted, value: false },
+            { selector: selectSystemStatus, value: null },
+            { selector: selectIsOpenStartTestrun, value: false },
           ],
         }),
         { provide: FocusManagerService, useValue: mockFocusManagerService },
@@ -386,8 +388,7 @@ describe('AppComponent', () => {
   describe('Callout component visibility', () => {
     describe('with no connection settings', () => {
       beforeEach(() => {
-        component.hasConnectionSetting$ = of(false);
-        component.ngOnInit();
+        store.overrideSelector(selectHasConnectionSettings, false);
         fixture.detectChanges();
       });
 
@@ -426,11 +427,12 @@ describe('AppComponent', () => {
 
     describe('with system status as "Idle"', () => {
       beforeEach(() => {
-        component.hasConnectionSetting$ = of(true);
+        component.appStore.updateIsStatusLoaded(true);
+        store.overrideSelector(selectHasConnectionSettings, true);
         store.overrideSelector(selectHasDevices, true);
-        mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IDLE);
-        mockService.isTestrunStarted$ = of(false);
-        component.ngOnInit();
+        store.overrideSelector(selectSystemStatus, MOCK_PROGRESS_DATA_IDLE);
+        store.overrideSelector(selectIsTestrunStarted, false);
+
         fixture.detectChanges();
       });
 
@@ -504,7 +506,11 @@ describe('AppComponent', () => {
     describe('with devices setted but without systemStatus data', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
-        mockService.isTestrunStarted$ = of(false);
+        store.overrideSelector(selectIsTestrunStarted, false);
+        component.appStore.updateIsStatusLoaded(true);
+        store.overrideSelector(selectHasConnectionSettings, true);
+        store.overrideSelector(selectSystemStatus, null);
+
         fixture.detectChanges();
       });
 
@@ -544,7 +550,7 @@ describe('AppComponent', () => {
     describe('with devices setted, without systemStatus data, but run the tests ', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
-        mockService.isTestrunStarted$ = of(true);
+        store.overrideSelector(selectIsTestrunStarted, true);
         fixture.detectChanges();
       });
 
@@ -558,7 +564,10 @@ describe('AppComponent', () => {
     describe('with devices setted and systemStatus data', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
-        mockService.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+        store.overrideSelector(
+          selectSystemStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS
+        );
         fixture.detectChanges();
       });
 
@@ -572,12 +581,11 @@ describe('AppComponent', () => {
     describe('error', () => {
       describe('with settingMissedError with one port is missed', () => {
         beforeEach(() => {
-          component.settingMissedError$ = of({
+          store.overrideSelector(selectError, {
             isSettingMissed: true,
             devicePortMissed: true,
             internetPortMissed: false,
           });
-          component.ngOnInit();
           fixture.detectChanges();
         });
 
@@ -592,12 +600,11 @@ describe('AppComponent', () => {
 
       describe('with settingMissedError with two ports are missed', () => {
         beforeEach(() => {
-          component.settingMissedError$ = of({
+          store.overrideSelector(selectError, {
             isSettingMissed: true,
             devicePortMissed: true,
             internetPortMissed: true,
           });
-          component.ngOnInit();
           fixture.detectChanges();
         });
 
@@ -612,7 +619,7 @@ describe('AppComponent', () => {
 
       describe('with no settingMissedError', () => {
         beforeEach(() => {
-          component.settingMissedError$ = of(null);
+          store.overrideSelector(selectError, null);
           store.overrideSelector(selectHasDevices, true);
           fixture.detectChanges();
         });

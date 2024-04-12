@@ -17,31 +17,71 @@
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap } from 'rxjs/operators';
-import { selectHasDevices } from './store/selectors';
+import {
+  selectError,
+  selectHasConnectionSettings,
+  selectHasDevices,
+  selectInterfaces,
+  selectIsTestrunStarted,
+  selectMenuOpened,
+  selectSystemStatus,
+} from './store/selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from './store/state';
 import { TestRunService } from './services/test-run.service';
-import { exhaustMap } from 'rxjs';
+import { exhaustMap, Observable } from 'rxjs';
 import { Device } from './model/device';
-import { setDevices } from './store/actions';
+import {
+  setDevices,
+  setTestrunStatus,
+  setIsOpenStartTestrun,
+} from './store/actions';
+import { TestrunStatus } from './model/testrun-status';
+import { SettingMissedError, SystemInterfaces } from './model/setting';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export interface AppComponentState {
   consentShown: boolean;
+  isStatusLoaded: boolean;
+  isTestrunStarted: boolean;
+  systemStatus: TestrunStatus | null;
 }
 @Injectable()
 export class AppStore extends ComponentStore<AppComponentState> {
   private consentShown$ = this.select(state => state.consentShown);
+  private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
   private hasDevices$ = this.store.select(selectHasDevices);
+  private hasConnectionSetting$ = this.store.select(
+    selectHasConnectionSettings
+  );
+  private isMenuOpen$ = this.store.select(selectMenuOpened);
+  private interfaces$: Observable<SystemInterfaces> =
+    this.store.select(selectInterfaces);
+  private settingMissedError$: Observable<SettingMissedError | null> =
+    this.store.select(selectError);
+  private systemStatus$ = this.store.select(selectSystemStatus);
+  private isTestrunStarted$ = this.store.select(selectIsTestrunStarted);
 
   viewModel$ = this.select({
     consentShown: this.consentShown$,
     hasDevices: this.hasDevices$,
+    isTestrunStarted: this.isTestrunStarted$,
+    isStatusLoaded: this.isStatusLoaded$,
+    systemStatus: this.systemStatus$,
+    hasConnectionSettings: this.hasConnectionSetting$,
+    isMenuOpen: this.isMenuOpen$,
+    interfaces: this.interfaces$,
+    settingMissedError: this.settingMissedError$,
   });
 
   updateConsent = this.updater((state, consentShown: boolean) => ({
     ...state,
     consentShown,
+  }));
+
+  updateIsStatusLoaded = this.updater((state, isStatusLoaded: boolean) => ({
+    ...state,
+    isStatusLoaded,
   }));
 
   setContent = this.effect<void>(trigger$ => {
@@ -65,12 +105,38 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
+  getSystemStatus = this.effect(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap(() => {
+        return this.testRunService.fetchSystemStatus().pipe(
+          tap((res: TestrunStatus) => {
+            this.updateIsStatusLoaded(true);
+            this.store.dispatch(setTestrunStatus({ systemStatus: res }));
+          })
+        );
+      })
+    );
+  });
+
+  setIsOpenStartTestrun = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        this.store.dispatch(
+          setIsOpenStartTestrun({ isOpenStartTestrun: true })
+        );
+      })
+    );
+  });
+
   constructor(
     private store: Store<AppState>,
     private testRunService: TestRunService
   ) {
     super({
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,
+      isStatusLoaded: false,
+      isTestrunStarted: false,
+      systemStatus: null,
     });
   }
 }

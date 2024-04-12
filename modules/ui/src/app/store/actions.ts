@@ -22,6 +22,7 @@ import {
 } from '../model/setting';
 import { SystemInterfaces } from '../model/setting';
 import { Device } from '../model/device';
+import { TestrunStatus } from '../model/testrun-status';
 
 // App component
 export const toggleMenu = createAction('[App Component] Toggle Menu');
@@ -73,4 +74,19 @@ export const setHasDevices = createAction(
 export const setDevices = createAction(
   '[Shared] Set Devices',
   props<{ devices: Device[] }>()
+);
+
+export const setTestrunStatus = createAction(
+  '[Shared] Set Testrun Status',
+  props<{ systemStatus: TestrunStatus }>()
+);
+
+export const setIsOpenStartTestrun = createAction(
+  '[Shared] Set Is Open Start Testrun',
+  props<{ isOpenStartTestrun: boolean }>()
+);
+
+export const setIsTestrunStarted = createAction(
+  '[Shared] Set Testrun Started',
+  props<{ isTestrunStarted: boolean }>()
 );
