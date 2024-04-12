@@ -88,6 +88,10 @@ describe('TestrunStore', () => {
     spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
+  afterEach(() => {
+    mockService.fetchSystemStatus.calls.reset();
+  });
+
   it('should be created', () => {
     expect(testrunStore).toBeTruthy();
   });

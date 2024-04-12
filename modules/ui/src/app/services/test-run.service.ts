@@ -22,7 +22,6 @@ import { catchError, map, of, retry } from 'rxjs';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
 import {
   StatusOfTestResult,
-  StatusOfTestrun,
   StatusResultClassName,
   TestrunStatus,
 } from '../model/testrun-status';
@@ -81,8 +80,7 @@ export class TestRunService {
   private version = new BehaviorSubject<Version | null>(null);
 
   constructor(
-    private http: HttpClient,
-    private store: Store<AppState>
+    private http: HttpClient
   ) {}
 
   fetchDevices(): Observable<Device[]> {
