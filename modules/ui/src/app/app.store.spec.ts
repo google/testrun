@@ -18,11 +18,20 @@ import { of, skip, take } from 'rxjs';
 import { AppStore, CONSENT_SHOWN_KEY } from './app.store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from './store/state';
-import { selectHasDevices } from './store/selectors';
+import {
+  selectError,
+  selectHasConnectionSettings,
+  selectHasDevices,
+  selectInterfaces,
+  selectIsTestrunStarted,
+  selectMenuOpened,
+  selectSystemStatus,
+} from './store/selectors';
 import { TestRunService } from './services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { device } from './mocks/device.mock';
-import { setDevices } from './store/actions';
+import { setDevices, setTestrunStatus } from './store/actions';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/progress.mock';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -48,7 +57,7 @@ describe('AppStore', () => {
   let mockService: SpyObj<TestRunService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['fetchDevices']);
+    mockService = jasmine.createSpyObj(['fetchDevices', 'fetchSystemStatus']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -62,6 +71,13 @@ describe('AppStore', () => {
     appStore = TestBed.inject(AppStore);
 
     store.overrideSelector(selectHasDevices, true);
+    store.overrideSelector(selectHasConnectionSettings, true);
+    store.overrideSelector(selectMenuOpened, true);
+    store.overrideSelector(selectInterfaces, {});
+    store.overrideSelector(selectError, null);
+    store.overrideSelector(selectSystemStatus, MOCK_PROGRESS_DATA_IN_PROGRESS);
+    store.overrideSelector(selectIsTestrunStarted, false);
+
     spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
@@ -82,6 +98,15 @@ describe('AppStore', () => {
 
       appStore.updateConsent(true);
     });
+
+    it('should update isStatusLoaded', (done: DoneFn) => {
+      appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
+        expect(store.isStatusLoaded).toEqual(true);
+        done();
+      });
+
+      appStore.updateIsStatusLoaded(true);
+    });
   });
 
   describe('selectors', () => {
@@ -90,6 +115,13 @@ describe('AppStore', () => {
         expect(store).toEqual({
           consentShown: false,
           hasDevices: true,
+          isTestrunStarted: false,
+          isStatusLoaded: false,
+          systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
+          hasConnectionSettings: true,
+          isMenuOpen: true,
+          interfaces: {},
+          settingMissedError: null,
         });
         done();
       });
@@ -125,6 +157,31 @@ describe('AppStore', () => {
         appStore.getDevices();
 
         expect(store.dispatch).toHaveBeenCalledWith(setDevices({ devices }));
+      });
+    });
+
+    describe('getSystemStatus', () => {
+      const status = MOCK_PROGRESS_DATA_IN_PROGRESS;
+
+      beforeEach(() => {
+        mockService.fetchSystemStatus.and.returnValue(of(status));
+      });
+
+      it('should dispatch action setTestrunStatus', () => {
+        appStore.getSystemStatus();
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setTestrunStatus({ systemStatus: status })
+        );
+      });
+
+      it('should update store', done => {
+        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
+          expect(store.systemStatus).toEqual(status);
+          done();
+        });
+
+        appStore.getSystemStatus();
       });
     });
   });

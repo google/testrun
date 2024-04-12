@@ -64,6 +64,24 @@ export const sharedReducer = createReducer(
       ...state,
       devices,
     };
+  }),
+  on(Actions.setTestrunStatus, (state, { systemStatus }) => {
+    return {
+      ...state,
+      systemStatus,
+    };
+  }),
+  on(Actions.setIsOpenStartTestrun, (state, { isOpenStartTestrun }) => {
+    return {
+      ...state,
+      isOpenStartTestrun,
+    };
+  }),
+  on(Actions.setIsTestrunStarted, (state, { isTestrunStarted }) => {
+    return {
+      ...state,
+      isTestrunStarted,
+    };
   })
 );
 

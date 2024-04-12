@@ -17,15 +17,17 @@ import * as fromReducer from './reducers';
 import { initialAppComponentState, initialSharedState } from './state';
 import {
   fetchInterfacesSuccess,
-  setDevices,
   setHasConnectionSettings,
   setHasDevices,
   setIsOpenAddDevice,
+  setIsOpenStartTestrun,
+  setIsTestrunStarted,
+  setTestrunStatus,
   toggleMenu,
   updateError,
   updateFocusNavigation,
 } from './actions';
-import { device } from '../mocks/device.mock';
+import { MOCK_PROGRESS_DATA_CANCELLING } from '../mocks/progress.mock';
 
 describe('Reducer', () => {
   describe('unknown action', () => {
@@ -138,13 +140,41 @@ describe('Reducer', () => {
     });
   });
 
-  describe('setDevices action', () => {
+  describe('setTestrunStatus action', () => {
     it('should update state', () => {
       const initialState = initialSharedState;
-      const devices = [device, device];
-      const action = setDevices({ devices });
+      const action = setTestrunStatus({
+        systemStatus: MOCK_PROGRESS_DATA_CANCELLING,
+      });
       const state = fromReducer.sharedReducer(initialState, action);
-      const newState = { ...initialState, ...{ devices } };
+      const newState = {
+        ...initialState,
+        ...{ systemStatus: MOCK_PROGRESS_DATA_CANCELLING },
+      };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setIsOpenStartTestrun action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setIsOpenStartTestrun({ isOpenStartTestrun: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ isOpenStartTestrun: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setIsTestrunStarted action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setIsTestrunStarted({ isTestrunStarted: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ isTestrunStarted: true } };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);
