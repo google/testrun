@@ -127,6 +127,9 @@ class TestModule:
           # Result may be a string, e.g error
           elif result[0] == 'Error':
             test['result'] = result[0]
+          else:
+            LOGGER.error(f'Unknown result detected: {result[0]}')
+            test['result'] = 'Error'
 
           # Check that description is a string
           if isinstance(result[1], str):
