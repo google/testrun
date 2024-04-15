@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { TestrunStatus } from '../../model/testrun-status';
 import { CommonModule, DatePipe } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ReportActionComponent } from '../report-action/report-action.component';
 
 @Component({
@@ -23,11 +24,14 @@ import { ReportActionComponent } from '../report-action/report-action.component'
   templateUrl: './download-report.component.html',
   styleUrls: ['./download-report.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatTooltipModule],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DownloadReportComponent extends ReportActionComponent {
+  @Input() href: string | undefined;
+  @Input() title!: string;
+
   getReportTitle(data: TestrunStatus) {
     return `${data.device.manufacturer} ${data.device.model} ${
       data.device.firmware

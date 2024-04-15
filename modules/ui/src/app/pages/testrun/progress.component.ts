@@ -42,9 +42,11 @@ import { ProgressInitiateFormComponent } from './components/progress-initiate-fo
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { LoaderService } from '../../services/loader.service';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../../services/loaderConfig';
-import { Device } from '../../model/device';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
+import { Store } from '@ngrx/store';
+import { AppState } from '../../store/state';
+import { selectHasDevices } from '../../store/selectors';
 
 const EMPTY_RESULT = new Array(100).fill(null).map(() => ({}) as IResult);
 
@@ -61,7 +63,7 @@ const EMPTY_RESULT = new Array(100).fill(null).map(() => ({}) as IResult);
 export class ProgressComponent implements OnInit, OnDestroy {
   public systemStatus$!: Observable<TestrunStatus>;
   public dataSource$!: Observable<IResult[] | undefined>;
-  public devices$!: Observable<Device[] | null>;
+  public hasDevices$!: Observable<boolean>;
   public readonly StatusOfTestrun = StatusOfTestrun;
 
   private destroy$: Subject<boolean> = new Subject<boolean>();
@@ -74,11 +76,12 @@ export class ProgressComponent implements OnInit, OnDestroy {
     private readonly testRunService: TestRunService,
     private readonly loaderService: LoaderService,
     public dialog: MatDialog,
-    private readonly state: FocusManagerService
+    private readonly state: FocusManagerService,
+    private store: Store<AppState>
   ) {}
 
   ngOnInit(): void {
-    this.devices$ = this.testRunService.getDevices();
+    this.hasDevices$ = this.store.select(selectHasDevices);
 
     combineLatest([
       this.testRunService.isOpenStartTestrun$,
@@ -132,7 +135,8 @@ export class ProgressComponent implements OnInit, OnDestroy {
         const results = (res.tests as TestsData)?.results || [];
         if (
           res.status === StatusOfTestrun.Monitoring ||
-          res.status === StatusOfTestrun.WaitingForDevice
+          res.status === StatusOfTestrun.WaitingForDevice ||
+          (res.status === StatusOfTestrun.Cancelled && !results.length)
         ) {
           return EMPTY_RESULT;
         }

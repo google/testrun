@@ -20,42 +20,21 @@ import { TestRunService } from '../../services/test-run.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HistoryModule } from './history.module';
 import { of } from 'rxjs';
-import { TestrunStatus } from '../../model/testrun-status';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { ElementRef } from '@angular/core';
-import { FilterName, ReportFilters } from '../../model/filters';
+import { FilterName } from '../../model/filters';
 import SpyObj = jasmine.SpyObj;
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { MatSort } from '@angular/material/sort';
-
-const history = [
-  {
-    status: 'compliant',
-    device: {
-      manufacturer: 'Delta',
-      model: '03-DIN-SRC',
-      mac_addr: '01:02:03:04:05:06',
-      firmware: '1.2.2',
-    },
-    report: 'https://api.testrun.io/report.pdf',
-    started: '2023-06-23T10:11:00.123Z',
-    finished: '2023-06-23T10:17:10.123Z',
-  },
-  {
-    status: 'compliant',
-    device: {
-      manufacturer: 'Delta',
-      model: '03-DIN-SRC',
-      mac_addr: '01:02:03:04:05:07',
-      firmware: '1.2.3',
-    },
-    report: 'https://api.testrun.io/report.pdf',
-    started: '2023-07-23T10:11:00.123Z',
-    finished: '2023-07-23T10:17:10.123Z',
-  },
-] as TestrunStatus[];
+import { DATA_SOURCE_INITIAL_VALUE, ReportsStore } from './reports.store';
+import {
+  DATA_SOURCE_FOR_EMPTY_FILTERS,
+  DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY,
+  HISTORY,
+} from '../../mocks/reports.mock';
+import { MatTableDataSource } from '@angular/material/table';
+import { HistoryTestrun } from '../../model/testrun-status';
 
 describe('HistoryComponent', () => {
   let component: HistoryComponent;
@@ -63,12 +42,50 @@ describe('HistoryComponent', () => {
   let compiled: HTMLElement;
   let mockService: SpyObj<TestRunService>;
   let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
+  let mockReportsStore: SpyObj<ReportsStore>;
 
+  const getViewModel = (
+    dataSource: MatTableDataSource<HistoryTestrun>,
+    dataLoaded: boolean
+  ) => {
+    return of({
+      displayedColumns: [
+        'started',
+        'duration',
+        'deviceInfo',
+        'deviceFirmware',
+        'status',
+        'report',
+      ],
+      chips: ['chips'],
+      dataSource: dataSource,
+      filterOpened: false,
+      activeFilter: '',
+      filteredValues: {
+        deviceInfo: '',
+        deviceFirmware: '',
+        results: ['compliant'],
+        dateRange: '',
+      },
+      dataLoaded: dataLoaded,
+      selectedRow: null,
+      isFiltersEmpty: true,
+    });
+  };
   beforeEach(() => {
-    mockService = jasmine.createSpyObj([
-      'fetchHistory',
+    mockService = jasmine.createSpyObj(['getResultClass']);
+    mockReportsStore = jasmine.createSpyObj('ReportsStore', [
+      'deleteReport',
+      'setSelectedRow',
+      'setFilteredValues',
+      'setFilteredValuesDateRange',
+      'setFilteredValuesDeviceFirmware',
+      'setFilteredValuesDeviceInfo',
+      'setFilteredValuesResults',
+      'setActiveFiler',
+      'setFilterOpened',
+      'updateSort',
       'getHistory',
-      'getResultClass',
     ]);
     mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
 
@@ -76,22 +93,19 @@ describe('HistoryComponent', () => {
       imports: [HistoryModule, BrowserAnimationsModule],
       providers: [
         { provide: TestRunService, useValue: mockService },
+        { provide: ReportsStore, useValue: mockReportsStore },
         { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
       ],
       declarations: [HistoryComponent],
     });
+    TestBed.overrideProvider(ReportsStore, { useValue: mockReportsStore });
     fixture = TestBed.createComponent(HistoryComponent);
     component = fixture.componentInstance;
+    component.viewModel$ = getViewModel(DATA_SOURCE_INITIAL_VALUE, false);
     compiled = fixture.nativeElement as HTMLElement;
   });
 
   describe('Class tests', () => {
-    beforeEach(() => {
-      mockService.getHistory.and.returnValue(
-        new BehaviorSubject<TestrunStatus[] | null>(history)
-      );
-    });
-
     it('should create', () => {
       expect(component).toBeTruthy();
     });
@@ -100,7 +114,7 @@ describe('HistoryComponent', () => {
       it('should set dataSource data', () => {
         component.ngOnInit();
 
-        expect(component.dataSource.data).toBeTruthy();
+        expect(mockReportsStore.getHistory).toHaveBeenCalled();
       });
 
       it('should update sort', fakeAsync(() => {
@@ -108,14 +122,14 @@ describe('HistoryComponent', () => {
         component.sort = sort;
         component.ngOnInit();
 
-        expect(component.dataSource.sort).toBeTruthy();
+        expect(mockReportsStore.updateSort).toHaveBeenCalledWith(sort);
       }));
+    });
 
-      it('should update filter', fakeAsync(() => {
-        component.ngOnInit();
+    it('#sortData should call update sort', () => {
+      component.sortData({ active: '', direction: 'desc' });
 
-        expect(component.dataSource.filter).toBeTruthy();
-      }));
+      expect(mockReportsStore.updateSort).toHaveBeenCalled();
     });
 
     it('#sortData should call liveAnnouncer with sorted direction message', () => {
@@ -137,7 +151,7 @@ describe('HistoryComponent', () => {
     it('#getFormattedDateString should return string in the format "d MMM y H:mm"', () => {
       const expectedResult = '23 Jun 2023 10:11';
 
-      const result = component.getFormattedDateString(history[0].started);
+      const result = component.getFormattedDateString(HISTORY[0].started);
 
       expect(result).toEqual(expectedResult);
     });
@@ -146,25 +160,6 @@ describe('HistoryComponent', () => {
       const expectedResult = '';
 
       const result = component.getFormattedDateString(null);
-
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('#getDuration should return dates duration in minutes and seconds', () => {
-      const expectedResult = '06m 10s';
-
-      const result = component.getDuration(
-        history[0].started,
-        history[0].finished
-      );
-
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('#getDuration should return empty string if any of dates are not provided', () => {
-      const expectedResult = '';
-
-      const result = component.getDuration(history[0].started, null);
 
       expect(result).toEqual(expectedResult);
     });
@@ -179,7 +174,7 @@ describe('HistoryComponent', () => {
       } as MatDialogRef<typeof FilterDialogComponent>);
       fixture.detectChanges();
 
-      component.openFilter(event, '');
+      component.openFilter(event, '', false);
 
       expect(openSpy).toHaveBeenCalled();
       expect(openSpy).toHaveBeenCalledWith(FilterDialogComponent, {
@@ -203,14 +198,19 @@ describe('HistoryComponent', () => {
         stopPropagation: () => undefined,
       } as Event;
 
+      const mockFilterResults = ['compliant'];
+      const mockFilterDeviceInfo = 'mockDevice';
+      const mockFilterDeviceFirmware = 'mockFirmware';
+      const mockFilterDateRange = {
+        start: 'Wed Jun 21 2023 00:00:00',
+        end: 'Thu Jun 22 2023 00:00:00',
+      };
+
       const mockFilteredData = {
-        results: ['compliant'],
-        deviceInfo: 'mockDevice',
-        deviceFirmware: 'mockFirmware',
-        dateRange: {
-          start: 'Wed Jun 21 2023 00:00:00',
-          end: 'Thu Jun 22 2023 00:00:00',
-        },
+        results: mockFilterResults,
+        deviceInfo: mockFilterDeviceInfo,
+        deviceFirmware: mockFilterDeviceFirmware,
+        dateRange: mockFilterDateRange,
       };
 
       spyOn(component.dialog, 'open').and.returnValue({
@@ -218,28 +218,30 @@ describe('HistoryComponent', () => {
       } as MatDialogRef<typeof FilterDialogComponent>);
       fixture.detectChanges();
 
-      component.openFilter(event, FilterName.Started);
-      component.openFilter(event, FilterName.Results);
-      component.openFilter(event, FilterName.DeviceFirmware);
-      component.openFilter(event, FilterName.DeviceInfo);
-      expect(component.filteredValues as ReportFilters).toEqual(
-        mockFilteredData
+      component.openFilter(event, FilterName.Started, false);
+      component.openFilter(event, FilterName.Results, false);
+      component.openFilter(event, FilterName.DeviceFirmware, false);
+      component.openFilter(event, FilterName.DeviceInfo, false);
+      expect(mockReportsStore.setFilteredValuesResults).toHaveBeenCalledWith(
+        mockFilterResults
       );
-    });
-
-    it('should return true if filters has no values', () => {
-      component.filteredValues = {
-        deviceInfo: '',
-        deviceFirmware: '',
-        results: [],
-        dateRange: { start: '', end: '' },
-      };
-
-      expect(component.isFiltersEmpty()).toBeTrue();
+      expect(mockReportsStore.setFilteredValuesDeviceInfo).toHaveBeenCalledWith(
+        mockFilterDeviceInfo
+      );
+      expect(
+        mockReportsStore.setFilteredValuesDeviceFirmware
+      ).toHaveBeenCalledWith(mockFilterDeviceFirmware);
+      expect(mockReportsStore.setFilteredValuesDateRange).toHaveBeenCalledWith(
+        mockFilterDateRange
+      );
     });
 
     describe('#focusNextButton', () => {
       beforeEach(() => {
+        component.viewModel$ = getViewModel(
+          DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY,
+          true
+        );
         fixture.detectChanges();
       });
 
@@ -267,14 +269,21 @@ describe('HistoryComponent', () => {
         expect(buttonFocusSpy).toHaveBeenCalled();
       });
     });
+
+    it('#removeDevice should call delete report', () => {
+      const data = HISTORY[0];
+      component.removeDevice(data);
+      expect(mockReportsStore.deleteReport).toHaveBeenCalledWith({
+        mac_addr: data.device.mac_addr,
+        started: data.started,
+      });
+    });
   });
 
   describe('DOM tests', () => {
     describe('data is not fetched', () => {
       beforeEach(() => {
-        mockService.getHistory.and.returnValue(
-          new BehaviorSubject<TestrunStatus[] | null>(null)
-        );
+        component.viewModel$ = getViewModel(DATA_SOURCE_INITIAL_VALUE, false);
         component.ngOnInit();
       });
 
@@ -289,9 +298,7 @@ describe('HistoryComponent', () => {
 
     describe('with no devices', () => {
       beforeEach(() => {
-        mockService.getHistory.and.returnValue(
-          new BehaviorSubject<TestrunStatus[] | null>([])
-        );
+        component.viewModel$ = getViewModel(DATA_SOURCE_INITIAL_VALUE, true);
         component.ngOnInit();
         fixture.detectChanges();
       });
@@ -304,9 +311,11 @@ describe('HistoryComponent', () => {
 
     describe('with devices', () => {
       beforeEach(() => {
-        mockService.getHistory.and.returnValue(
-          new BehaviorSubject<TestrunStatus[] | null>(history)
+        component.viewModel$ = getViewModel(
+          DATA_SOURCE_INITIAL_VALUE_NOT_EMPTY,
+          true
         );
+
         mockService.getResultClass.and.returnValue({
           green: false,
           red: true,
@@ -329,18 +338,16 @@ describe('HistoryComponent', () => {
         expect(statusResultEl?.classList).toContain('red');
       });
 
-      it('should have report link', () => {
-        const link = compiled.querySelector(
-          '.download-report-link'
-        ) as HTMLAnchorElement;
+      it('should have report pdf link', () => {
+        const link = compiled.querySelector('app-download-report-pdf');
 
-        expect(link.href).toEqual('https://api.testrun.io/report.pdf');
-        expect(link.download).toEqual(
-          'delta_03-din-src_1.2.2_compliant_23_jun_2023_10:11'
-        );
-        expect(link.title).toEqual(
-          'Download report for Test Run # Delta 03-DIN-SRC 1.2.2 23 Jun 2023 10:11'
-        );
+        expect(link).toBeTruthy();
+      });
+
+      it('should have report zip link', () => {
+        const link = compiled.querySelector('app-download-report-zip');
+
+        expect(link).toBeTruthy();
       });
 
       it('should have filter chips', () => {
@@ -350,12 +357,16 @@ describe('HistoryComponent', () => {
       });
 
       it('should have empty state when no data satisfy filters', () => {
-        component.dataSource.filter = JSON.stringify({
+        const dataSource = DATA_SOURCE_FOR_EMPTY_FILTERS;
+        dataSource.filter = JSON.stringify({
           deviceInfo: 'some not existing data',
           deviceFirmware: 'some not existing data',
           results: [],
           dateRange: '',
         });
+
+        component.viewModel$ = getViewModel(dataSource, true);
+
         fixture.detectChanges();
         const emptyMessage = compiled.querySelector(
           '.results-content-filter-empty'
@@ -365,12 +376,11 @@ describe('HistoryComponent', () => {
       });
 
       it('should select row on row click', () => {
-        component.selectedRow = null;
         const row = window.document.querySelector('tbody tr') as HTMLElement;
 
         row.click();
 
-        expect(component.selectedRow).toBeTruthy();
+        expect(mockReportsStore.setSelectedRow).toHaveBeenCalled();
       });
     });
   });

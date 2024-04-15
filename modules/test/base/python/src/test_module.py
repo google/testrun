@@ -82,7 +82,7 @@ class TestModule:
 
     if self._config['config']['network']:
       self._device_ipv4_addr = self._get_device_ipv4()
-      LOGGER.info('Device IP Resolved: ' + str(self._device_ipv4_addr))
+      LOGGER.info('Resolved device IP: ' + str(self._device_ipv4_addr))
 
     tests = self._get_tests()
     for test in tests:
@@ -95,37 +95,59 @@ class TestModule:
         LOGGER.debug('Attempting to run test: ' + test['name'])
         # Resolve the correct python method by test name and run test
         if hasattr(self, test_method_name):
-          if 'config' in test:
-            result = getattr(self, test_method_name)(config=test['config'])
-          else:
-            result = getattr(self, test_method_name)()
+          try:
+            if 'config' in test:
+              result = getattr(self, test_method_name)(config=test['config'])
+            else:
+              result = getattr(self, test_method_name)()
+          except Exception as e:
+            LOGGER.error(f'An error occurred whilst running {test["name"]}')
+            LOGGER.error(e)
         else:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
-          result = None
       else:
         LOGGER.debug(f'Test {test["name"]} is disabled')
 
       if result is not None:
-        # Compliant or non-compliant
+        # Compliant or non-compliant as a boolean only
         if isinstance(result, bool):
           test['result'] = 'Compliant' if result else 'Non-Compliant'
           test['description'] = 'No description was provided for this test'
         else:
+          # Skipped result
           if result[0] is None:
             test['result'] = 'Skipped'
             if len(result) > 1:
               test['description'] = result[1]
             else:
               test['description'] = 'An error occured whilst running this test'
-          else:
+          # Compliant / Non-Compliant result
+          elif isinstance(result[0], bool):
             test['result'] = 'Compliant' if result[0] else 'Non-Compliant'
-          test['description'] = result[1]
+          # Result may be a string, e.g error
+          elif result[0] == 'Error':
+            test['result'] = result[0]
+          else:
+            LOGGER.error(f'Unknown result detected: {result[0]}')
+            test['result'] = 'Error'
+
+          # Check that description is a string
+          if isinstance(result[1], str):
+            test['description'] = result[1]
+          else:
+            test['description'] = 'No description was provided for this test'
       else:
-        test['result'] = 'Skipped'
         if 'enabled' in test and not test['enabled']:
+          test['result'] = 'Skipped'
           test['description'] = 'Test disabled'
         else:
+          test['result'] = 'Error'
           test['description'] = 'An error occured whilst running this test'
+
+      # Remove the steps to resolve if compliant already
+      if (test['result'] == 'Compliant' and
+          'recommendations' in test):
+        test.pop('recommendations')
 
       test['end'] = datetime.now().isoformat()
       duration = datetime.fromisoformat(test['end']) - datetime.fromisoformat(

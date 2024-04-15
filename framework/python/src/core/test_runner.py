@@ -67,13 +67,13 @@ class TestRunner:
 
 def parse_args():
   parser = argparse.ArgumentParser(
-      description="Test Run",
+      description="Testrun",
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument(
       "-f",
       "--config-file",
       default=None,
-      help="Define the configuration file for Test Run and Network Orchestrator"
+      help="Define the configuration file for Testrun and Network Orchestrator"
   )
   parser.add_argument(
       "--validate",

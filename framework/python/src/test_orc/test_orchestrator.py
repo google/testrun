@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Provides high level management of the test orchestrator."""
+import copy
 import os
 import json
 import re
@@ -24,17 +25,18 @@ from common import logger, util
 from common.testreport import TestReport
 from test_orc.module import TestModule
 from test_orc.test_case import TestCase
+import threading
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
-RUNTIME_DIR = "runtime/test"
+RUNTIME_DIR = "runtime"
+RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR,"test")
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
 LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
 SAVED_DEVICE_REPORTS = "report/{device_folder}/"
 LOCAL_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
-TESTRUN_DIR = "/usr/local/testrun"
 API_URL = "http://localhost:8000"
 
 
@@ -43,7 +45,10 @@ class TestOrchestrator:
 
   def __init__(self, session, net_orc):
     self._test_modules = []
+    self._container_logs = []
     self._session = session
+    self._api_url = (self._session.get_api_url() + ":" +
+                     str(self._session.get_api_port()))
     self._net_orc = net_orc
     self._test_in_progress = False
     self._path = os.path.dirname(
@@ -61,8 +66,8 @@ class TestOrchestrator:
 
     # Setup the output directory
     self._host_user = util.get_host_user()
-    os.makedirs(RUNTIME_DIR, exist_ok=True)
-    util.run_command(f"chown -R {self._host_user} {RUNTIME_DIR}")
+    os.makedirs(RUNTIME_TEST_DIR, exist_ok=True)
+    util.run_command(f"chown -R {self._host_user} {RUNTIME_TEST_DIR}")
 
     # Setup the root_certs folder
     os.makedirs(DEVICE_ROOT_CERTS, exist_ok=True)
@@ -88,7 +93,7 @@ class TestOrchestrator:
     test_modules = []
     for module in self._test_modules:
 
-      if module is None or not module.enable_container or not module.enabled:
+      if module is None or not module.enable_container:
         continue
 
       if not self._is_module_enabled(module, device):
@@ -102,11 +107,11 @@ class TestOrchestrator:
 
     LOGGER.info("All tests complete")
 
-    self._session.stop()
+    self._session.finish()
 
     # Do not carry on (generating a report) if Testrun has been stopped
     if self.get_session().get_status() != "In Progress":
-      return None
+      return "Cancelled"
 
     report = TestReport()
     report.from_json(self._generate_report())
@@ -133,21 +138,21 @@ class TestOrchestrator:
   def _write_reports(self, test_report):
 
     out_dir = os.path.join(
-        self._root_path, RUNTIME_DIR,
+        self._root_path, RUNTIME_TEST_DIR,
         self._session.get_target_device().mac_addr.replace(":", ""))
 
     LOGGER.debug(f"Writing reports to {out_dir}")
 
     # Write the json report
-    with open(os.path.join(out_dir,"report.json"),"w", encoding="utf-8") as f:
+    with open(os.path.join(out_dir, "report.json"), "w", encoding="utf-8") as f:
       json.dump(test_report.to_json(), f, indent=2)
 
     # Write the html report
-    with open(os.path.join(out_dir,"report.html"),"w", encoding="utf-8") as f:
+    with open(os.path.join(out_dir, "report.html"), "w", encoding="utf-8") as f:
       f.write(test_report.to_html())
 
     # Write the pdf report
-    with open(os.path.join(out_dir,"report.pdf"),"wb") as f:
+    with open(os.path.join(out_dir, "report.pdf"), "wb") as f:
       f.write(test_report.to_pdf().getvalue())
 
     util.run_command(f"chown -R {self._host_user} {out_dir}")
@@ -163,22 +168,16 @@ class TestOrchestrator:
     report["status"] = self._calculate_result()
     report["tests"] = self.get_session().get_report_tests()
     report["report"] = (
-      API_URL + "/" +
-      SAVED_DEVICE_REPORTS.replace("{device_folder}",
-      self.get_session().get_target_device().device_folder) +
-      self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S")
-    )
+        self._api_url + "/" + SAVED_DEVICE_REPORTS.replace(
+            "{device_folder}",
+            self.get_session().get_target_device().device_folder) +
+        self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S"))
 
     return report
 
   def _calculate_result(self):
     result = "Compliant"
     for test_result in self._session.get_test_results():
-      test_case = self.get_test_case(test_result["name"])
-      if test_case is None:
-        LOGGER.error("Error occured whilst loading information about " +
-                     f"test {test_result['name']}")
-        continue
       if (test_case.required_result.lower() == "required"
           and test_result["result"].lower() != "compliant"
           and ("enabled" in test_result 
@@ -237,18 +236,14 @@ class TestOrchestrator:
   def _timestamp_results(self, device):
 
     # Define the current device results directory
-    cur_results_dir = os.path.join(
-      self._root_path,
-      RUNTIME_DIR,
-      device.mac_addr.replace(":", "")
-    )
+    cur_results_dir = os.path.join(self._root_path, RUNTIME_TEST_DIR,
+                                   device.mac_addr.replace(":", ""))
 
     # Define the directory
     completed_results_dir = os.path.join(
-      self._root_path,
-      LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
-      self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S")
-    )
+        self._root_path,
+        LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
+        self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S"))
 
     # Copy the results to the timestamp directory
     # leave current copy in place for quick reference to
@@ -269,8 +264,7 @@ class TestOrchestrator:
       # The runtime directory to include in ZIP
       path_to_zip = os.path.join(
         self._root_path,
-        RUNTIME_DIR,
-        self._session.get_target_device().mac_addr.replace(":", ""))
+        RUNTIME_DIR)
 
       # Create ZIP file
       shutil.make_archive(zip_location, "zip", path_to_zip)
@@ -281,19 +275,25 @@ class TestOrchestrator:
                                if os.path.exists(zip_file)
                                else'creation failed'}''')
 
-    except Exception as error:
+    except Exception as error: # pylint: disable=W0703
       LOGGER.error(f"Failed to create zip file: {error}")
 
   def test_in_progress(self):
     return self._test_in_progress
 
   def _is_module_enabled(self, module, device):
+
+    # Enable module as fallback
     enabled = True
     if device.test_modules is not None:
       test_modules = device.test_modules
       if module.name in test_modules:
         if "enabled" in test_modules[module.name]:
           enabled = test_modules[module.name]["enabled"]
+      else:
+        # Module has not been specified in the device config
+        enabled = module.enabled
+
     return enabled
 
   def _run_test_module(self, module):
@@ -305,18 +305,31 @@ class TestOrchestrator:
 
     device = self._session.get_target_device()
 
-    LOGGER.info("Running test module " + module.name)
+    LOGGER.info(f"Running test module {module.name}")
+
+    # Get all tests to be executed and set to in progress
+    for test in module.tests:
+
+      test_copy = copy.deepcopy(test)
+      test_copy.result = "In Progress"
+
+      # We don't want steps to resolve for in progress tests
+      if hasattr(test_copy, "recommendations"):
+        test_copy.recommendations = None
+
+      self.get_session().add_test_result(test_copy)
 
     try:
 
-      device_test_dir = os.path.join(self._root_path, RUNTIME_DIR,
+      device_test_dir = os.path.join(self._root_path, RUNTIME_TEST_DIR,
                                      device.mac_addr.replace(":", ""))
 
-      root_certs_dir = os.path.join(self._root_path,DEVICE_ROOT_CERTS)
-
+      root_certs_dir = os.path.join(self._root_path, DEVICE_ROOT_CERTS)
 
       container_runtime_dir = os.path.join(device_test_dir, module.name)
       os.makedirs(container_runtime_dir, exist_ok=True)
+
+      container_log_file = os.path.join(container_runtime_dir, "module.log")
 
       network_runtime_dir = os.path.join(self._root_path, "runtime/network")
 
@@ -327,6 +340,9 @@ class TestOrchestrator:
       util.run_command(f"chown -R {self._host_user} {device_monitor_capture}")
 
       client = docker.from_env()
+
+      # if module.name == 'connection':
+      #   self._net_orc.remove_arp_filters()
 
       module.container = client.containers.run(
           module.image_name,
@@ -358,13 +374,13 @@ class TestOrchestrator:
                     read_only=True)
           ],
           environment={
-            "TZ": self.get_session().get_timezone(),
-            "HOST_USER": self._host_user,
-            "DEVICE_MAC": device.mac_addr,
-            "IPV4_ADDR": device.ip_addr,
-            "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
-            "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
-            "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
+              "TZ": self.get_session().get_timezone(),
+              "HOST_USER": self._host_user,
+              "DEVICE_MAC": device.mac_addr,
+              "IPV4_ADDR": device.ip_addr,
+              "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
+              "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
+              "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
           })
     except (docker.errors.APIError,
             docker.errors.ContainerError) as container_error:
@@ -381,19 +397,24 @@ class TestOrchestrator:
     test_module_timeout = time.time() + module.timeout
     status = self._get_module_status(module)
 
+    # Resolving container logs is blocking so we need to spawn a new thread
     log_stream = module.container.logs(stream=True, stdout=True, stderr=True)
+    log_thread = threading.Thread(target=self._get_container_logs,
+                                  args=(log_stream, ))
+    log_thread.daemon = True
+    log_thread.start()
+
     while (status == "running" and self._session.get_status() == "In Progress"):
       if time.time() > test_module_timeout:
         LOGGER.error("Module timeout exceeded, killing module: " + module.name)
-        self._stop_module(module=module,kill=True)
+        self._stop_module(module=module, kill=True)
         break
-      try:
-        line = next(log_stream).decode("utf-8").strip()
-        if re.search(LOG_REGEX, line):
-          print(line)
-      except Exception:  # pylint: disable=W0718
-        time.sleep(1)
       status = self._get_module_status(module)
+
+    # Save all container logs to file
+    with open(container_log_file, "w", encoding="utf-8") as f:
+      for line in self._container_logs:
+        f.write(line + "\n")
 
     # Check that Testrun has not been stopped whilst this module was running
     if self.get_session().get_status() == "Stopping":
@@ -406,30 +427,70 @@ class TestOrchestrator:
         self._root_path,
         "runtime/test/" + device.mac_addr.replace(":", "") + "/" + module.name)
     results_file = f"{container_runtime_dir}/{module.name}-result.json"
+
     try:
       with open(results_file, "r", encoding="utf-8-sig") as f:
         module_results_json = json.load(f)
         module_results = module_results_json["results"]
         for test_result in module_results:
-          self._session.add_test_result(test_result)
+
+          # Convert dict into TestCase object
+          test_case = TestCase(
+            name=test_result["name"],
+            description=test_result["description"],
+            expected_behavior=test_result["expected_behavior"],
+            required_result=test_result["required_result"],
+            result=test_result["result"])
+          test_case.result=test_result["result"]
+
+          if (test_case.result == "Non-Compliant" and
+              "recommendations" in test_result):
+            test_case.recommendations = test_result["recommendations"]
+          else:
+            test_case.recommendations = None
+
+          self._session.add_test_result(test_case)
+
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
       LOGGER.error(
         f"Error occurred whilst obtaining results for module {module.name}")
-
       LOGGER.error(results_error)
-    # Get report from the module
-    report_file = f"{container_runtime_dir}/{module.name}_report.md"
+
+    # Get the markdown report from the module if generated
+    markdown_file = f"{container_runtime_dir}/{module.name}_report.md"
     try:
-      with open(report_file, "r", encoding="utf-8") as f:
+      with open(markdown_file, "r", encoding="utf-8") as f:
         module_report = f.read()
         self._session.add_module_report(module_report)
-    except (FileNotFoundError, PermissionError) as report_error:
-      LOGGER.error(
-        f"Error occurred whilst obtaining report for module {module.name}")
-      LOGGER.error(report_error)
+    except (FileNotFoundError, PermissionError):
+      LOGGER.debug("Test module did not produce a markdown module report")
+
+    # Get the HTML report from the module if generated
+    html_file = f"{container_runtime_dir}/{module.name}_report.html"
+    try:
+      with open(html_file, "r", encoding="utf-8") as f:
+        module_report = f.read()
+        LOGGER.debug(f"Adding module report for module {module.name}")
+        self._session.add_module_report(module_report)
+    except (FileNotFoundError, PermissionError):
+      LOGGER.debug("Test module did not produce a html module report")
 
     LOGGER.info(f"Test module {module.name} has finished")
+
+  # Resolve all current log data in the containers log_stream
+  # this method is blocking so should be called in
+  # a thread or within a proper blocking context
+  def _get_container_logs(self, log_stream):
+    self._container_logs = []
+    for log_chunk in log_stream:
+      lines = log_chunk.decode("utf-8").splitlines()
+      # Process each line and strip blank space
+      processed_lines = [line.strip() for line in lines if line.strip()]
+      self._container_logs.extend(processed_lines)
+      for line in lines:
+        if re.search(LOG_REGEX, line):
+          print(line)
 
   def _get_module_status(self, module):
     container = self._get_module_container(module)
@@ -464,7 +525,14 @@ class TestOrchestrator:
     loaded_modules = "Loaded the following test modules: "
     test_modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
 
-    for module_dir in os.listdir(test_modules_dir):
+    module_dirs = os.listdir(test_modules_dir)
+    # Check if the directory protocol exists and move it to the beginning
+    # protocol should always be run first so BACnet binding doesn't get
+    # corrupted during DHCP changes in the conn module
+    if "protocol" in module_dirs:
+      module_dirs.insert(0, module_dirs.pop(module_dirs.index("protocol")))
+
+    for module_dir in module_dirs:
 
       if self._get_test_module(module_dir) is None:
         loaded_module = self._load_test_module(module_dir)
@@ -509,8 +577,11 @@ class TestOrchestrator:
             expected_behavior=test_case_json["expected_behavior"],
             required_result=test_case_json["required_result"]
           )
+
+          if "recommendations" in test_case_json:
+            test_case.recommendations = test_case_json["recommendations"]
           module.tests.append(test_case)
-        except Exception as error:
+        except Exception as error:  # pylint: disable=W0718
           LOGGER.error("Failed to load test case. See error for details")
           LOGGER.error(error)
 

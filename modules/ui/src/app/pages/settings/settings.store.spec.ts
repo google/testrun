@@ -312,16 +312,17 @@ describe('SettingsStore', () => {
           });
           settingsStore.setDefaultFormValues(form);
 
-          expect((form.get(FormKey.DEVICE) as FormControl).value).toEqual(
-            'value'
-          );
+          expect((form.get(FormKey.DEVICE) as FormControl).value).toEqual({
+            key: '',
+            value: undefined,
+          });
           expect((form.get(FormKey.INTERNET) as FormControl).value).toEqual({
             key: '',
             value: DEFAULT_INTERNET_OPTION[''],
           });
           expect((form.get(FormKey.LOG_LEVEL) as FormControl).value).toEqual({
             key: 'INFO',
-            value: '',
+            value: 'Normal events and issues',
           });
           expect(
             (form.get(FormKey.MONITOR_PERIOD) as FormControl).value

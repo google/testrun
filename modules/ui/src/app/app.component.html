@@ -15,6 +15,7 @@ limitations under the License.
 -->
 <app-bypass></app-bypass>
 <mat-drawer-container
+  *ngIf="viewModel$ | async as vm"
   [class.active-menu]="isMenuOpen | async"
   hasBackdrop="false"
   class="app-container"
@@ -25,9 +26,9 @@ limitations under the License.
         *ngTemplateOutlet="
           navButtonRoute;
           context: {
-            route: Routes.Testrun,
+            route: Routes.Testing,
             svgIcon: 'testrun_logo_small',
-            label: 'Testrun',
+            label: 'Testing',
             name: 'testrun'
           }
         ">
@@ -54,7 +55,9 @@ limitations under the License.
           }
         ">
       </ng-container>
-      <app-version></app-version>
+      <app-version
+        [consentShown]="vm.consentShown"
+        (consentShownEvent)="consentShown()"></app-version>
     </div>
   </mat-drawer>
 
@@ -70,7 +73,7 @@ limitations under the License.
       </button>
       <a
         class="logo-link"
-        routerLink="{{ Routes.Testrun }}"
+        routerLink="{{ Routes.Testing }}"
         aria-label="Testrun ui logo">
         <mat-icon svgIcon="testrun_logo_color"></mat-icon>
         <h1 class="main-heading">Testrun</h1>
@@ -80,26 +83,37 @@ limitations under the License.
         #toggleSettingsBtn
         class="app-toolbar-button app-toolbar-button-general-settings"
         mat-icon-button
-        aria-label="Connection settings"
+        aria-label="System settings"
         (click)="openGeneralSettings(true)">
         <mat-icon>tune</mat-icon>
       </button>
     </mat-toolbar>
     <div class="app-content-main" role="main" id="main">
-      <app-callout [type]="CalloutType.Error" *ngIf="(error$ | async) === true">
-        Selected port is missing! Please define a valid one using
-        <a
-          (click)="openSetting()"
-          (keydown.enter)="openSetting()"
-          (keydown.space)="openSetting()"
-          aria-label="The Connection settings link opens the panel. No redirect to other pages."
-          tabindex="0"
-          role="link"
-          class="message-link"
-          >Settings</a
-        >
-        panel.
-      </app-callout>
+      <ng-container *ngIf="settingMissedError$ | async as error">
+        <app-callout [type]="CalloutType.Error" *ngIf="error.isSettingMissed">
+          <ng-container
+            *ngIf="
+              error.devicePortMissed && error.internetPortMissed;
+              else onePortMissed
+            ">
+            No ports are detected. Please define a valid ones using
+          </ng-container>
+          <ng-template #onePortMissed>
+            Selected port is missing! Please define a valid one using
+          </ng-template>
+          <a
+            (click)="openSetting()"
+            (keydown.enter)="openSetting()"
+            (keydown.space)="openSetting()"
+            aria-label="The System settings link opens the panel. No redirect to other pages."
+            tabindex="0"
+            role="link"
+            class="message-link"
+            >System settings</a
+          >
+          panel.
+        </app-callout>
+      </ng-container>
       <app-callout
         [type]="CalloutType.Info"
         *ngIf="(hasConnectionSetting$ | async) === false">
@@ -108,18 +122,18 @@ limitations under the License.
           (click)="openSetting()"
           (keydown.enter)="openSetting()"
           (keydown.space)="openSetting()"
-          aria-label="The Connection settings link opens the panel. No redirect to other pages."
+          aria-label="The System settings link opens the panel. No redirect to other pages."
           tabindex="0"
           role="link"
           class="message-link"
-          >Connection settings</a
-        >.
+          >System settings</a
+        >
+        panel.
       </app-callout>
       <app-callout
         [type]="CalloutType.Info"
         *ngIf="
-          (hasConnectionSetting$ | async) === true &&
-          !(devices$ | async)?.length
+          (hasConnectionSetting$ | async) === true && vm.hasDevices === false
         ">
         Step 2: To perform a device test please
         <a
@@ -138,24 +152,23 @@ limitations under the License.
         [type]="CalloutType.Info"
         *ngIf="
           (hasConnectionSetting$ | async) === true &&
-          (devices$ | async)?.length &&
+          vm.hasDevices &&
           (!(systemStatus$ | async)?.status ||
             (systemStatus$ | async)?.status === StatusOfTestrun.Idle) &&
           isStatusLoaded === true &&
           (isTestrunStarted$ | async) === false
         ">
-        Step 3: Once device is created navigate to
+        Step 3: Once device is created, you are able to
         <a
           (click)="navigateToRuntime()"
           (keydown.enter)="navigateToRuntime()"
           (keydown.space)="navigateToRuntime()"
-          aria-label="The Testrun link redirects to the Testrun page and opens the dialogue there."
+          aria-label="The start testing link redirects to the Testing page and opens the dialogue there."
           tabindex="0"
           role="link"
           class="message-link"
-          >Testrun</a
-        >
-        tab.
+          >start testing</a
+        >.
       </app-callout>
       <router-outlet></router-outlet>
     </div>
@@ -164,8 +177,11 @@ limitations under the License.
     #settingsDrawer
     mode="over"
     position="end"
+    autoFocus="#setting-panel-close-button"
     class="settings-drawer">
-    <app-general-settings (closeSettingEvent)="closeSetting()">
+    <app-general-settings
+      #settings
+      (closeSettingEvent)="closeSetting(vm.hasDevices)">
     </app-general-settings>
   </mat-drawer>
 </mat-drawer-container>

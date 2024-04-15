@@ -22,13 +22,13 @@ import {
   Validators,
 } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+
 import { Device, TestModule } from '../../../../model/device';
-import { TestRunService } from '../../../../services/test-run.service';
 import { DeviceValidators } from './device.validators';
-import { catchError, of, Subject, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
-import { Observable } from 'rxjs/internal/Observable';
+import { DevicesStore } from '../../devices.store';
 
 const MAC_ADDRESS_PATTERN =
   '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
@@ -36,6 +36,8 @@ const MAC_ADDRESS_PATTERN =
 interface DialogData {
   title?: string;
   device?: Device;
+  devices: Device[];
+  testModules: TestModule[];
 }
 
 export enum FormAction {
@@ -52,6 +54,7 @@ export interface FormResponse {
   selector: 'app-device-form',
   templateUrl: './device-form.component.html',
   styleUrls: ['./device-form.component.scss'],
+  providers: [DevicesStore],
 })
 export class DeviceFormComponent
   extends EscapableDialogComponent
@@ -68,8 +71,8 @@ export class DeviceFormComponent
     public override dialogRef: MatDialogRef<DeviceFormComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private fb: FormBuilder,
-    private testRunService: TestRunService,
-    private deviceValidators: DeviceValidators
+    private deviceValidators: DeviceValidators,
+    private devicesStore: DevicesStore
   ) {
     super(dialogRef);
   }
@@ -92,7 +95,7 @@ export class DeviceFormComponent
 
   ngOnInit() {
     this.createDeviceForm();
-    this.testModules = this.testRunService.getTestModules();
+    this.testModules = this.data.testModules;
     if (this.data.device) {
       this.model.setValue(this.data.device.model);
       this.manufacturer.setValue(this.data.device.manufacturer);
@@ -110,7 +113,6 @@ export class DeviceFormComponent
   }
 
   cancel(): void {
-    this.testRunService.setIsOpenAddDevice(false);
     this.dialogRef.close();
   }
 
@@ -130,29 +132,24 @@ export class DeviceFormComponent
 
     const device = this.createDeviceFromForm();
 
-    this.updateDevice(device)
-      .pipe(
-        takeUntil(this.destroy$),
-        catchError(error => {
-          this.error$.next(error.error);
-          return of(null);
-        })
-      )
-      .subscribe((deviceSaved: boolean | null) => {
-        if (deviceSaved) {
-          this.dialogRef.close({
-            action: FormAction.Save,
-            device,
-          } as FormResponse);
-        }
-      });
+    this.updateDevice(device, () => {
+      this.dialogRef.close({
+        action: FormAction.Save,
+        device,
+      } as FormResponse);
+    });
   }
 
-  private updateDevice(device: Device): Observable<boolean> {
+  private updateDevice(device: Device, callback: () => void) {
     if (this.data.device) {
-      return this.testRunService.editDevice(device, this.data.device.mac_addr);
+      this.devicesStore.editDevice({
+        device,
+        mac_addr: this.data.device.mac_addr,
+        onSuccess: callback,
+      });
+    } else {
+      this.devicesStore.saveDevice({ device, onSuccess: callback });
     }
-    return this.testRunService.saveDevice(device);
   }
 
   private isAllTestsDisabled(): boolean {
@@ -202,7 +199,10 @@ export class DeviceFormComponent
         '',
         [
           Validators.pattern(MAC_ADDRESS_PATTERN),
-          this.deviceValidators.differentMACAddress(this.data.device),
+          this.deviceValidators.differentMACAddress(
+            this.data.devices,
+            this.data.device
+          ),
         ],
       ],
       test_modules: new FormArray([]),

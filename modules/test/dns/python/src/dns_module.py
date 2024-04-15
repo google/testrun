@@ -18,7 +18,7 @@ from test_module import TestModule
 import os
 
 LOG_NAME = 'test_dns'
-MODULE_REPORT_FILE_NAME='dns_report.md'
+MODULE_REPORT_FILE_NAME='dns_report.html'
 DNS_SERVER_CAPTURE_FILE = '/runtime/network/dns.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
@@ -52,50 +52,90 @@ class DNSModule(TestModule):
     # Extract DNS data from the pcap file
     dns_table_data = self.extract_dns_data()
 
+    html_content = '<h1>DNS Module</h1>'
+
     # Set the summary variables
     local_requests = sum(1 for row in dns_table_data
-                         if row['Destination'] == self._dns_server and row['Type'] == 'Query')
+                         if row['Destination'] ==
+                         self._dns_server and row['Type'] == 'Query')
     external_requests = sum(1 for row in dns_table_data
-                            if row['Destination'] != self._dns_server and row['Type'] == 'Query')
+                            if row['Destination'] !=
+                            self._dns_server and row['Type'] == 'Query')
 
     total_requests = sum(1 for row in dns_table_data
                             if row['Type'] == 'Query')
 
     total_responses = sum(1 for row in dns_table_data
                             if row['Type'] == 'Response')
-    #total_requests = len(dns_table_data)
 
-    # Find the maximum length of 'Destination' values
-    max_data_length = max(len(row['Data']) for row in dns_table_data) if len(dns_table_data)>0 else 8
+    # Add summary table
+    html_content += (f'''
+      <table class="module-summary">
+        <thead>
+          <tr>
+            <th>Requests to local DNS server</th>
+            <th>Requests to external DNS servers</th>
+            <th>Total DNS requests</th>
+            <th>Total DNS responses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{local_requests}</td>
+            <td>{external_requests}</td>
+            <td>{total_requests}</td>
+            <td>{total_responses}</td>   
+          </tr>
+      </table>
+                     ''')
 
-    table_content = ''
-    for row in dns_table_data:
-      table_content += f'''| {row['Source']: ^12} | {row['Destination']: ^13} | {row['Type']: ^9} | {row['Data']: ^{max_data_length}} |\r'''
+    if (total_requests + total_responses) > 0:
 
-    # Dynamically adjust the header width based on the longest 'Destination' content
-    header = f'''| {'Source': ^12} | {'Destination': ^{13}} | {'Type': ^9} | {'Data': ^{max_data_length}} |'''
-    header_line = f'''|{'-' * 14}|{'-' * 15}|{'-' * 11}|{'-' * (max_data_length + 2)}|'''
+      table_content = '''
+        <table class="module-data">
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Destination</th>
+              <th>Type</th>
+              <th>URL</th>
+            </tr>
+          </thead>
+          <tbody>'''
 
-    summary = '## Summary'
-    summary += f'''\n- Requests to local DNS server: {local_requests}'''
-    summary += f'''\n- Requests to external DNS servers: {external_requests}'''
-    summary += f'''\n- Total DNS requests: {total_requests}'''
-    summary += f'''\n- Total DNS responses: {total_responses}'''
+      for row in dns_table_data:
+        table_content += (f'''
+            <tr>
+              <td>{row['Source']}</td>
+              <td>{row['Destination']}</td>
+              <td>{row['Type']}</td>
+              <td>{row['Data']}</td>
+            </tr>''')
 
-    markdown_template = f'''# DNS Module
-    \r{header}\r{header_line}\r{table_content}\r{summary}
-    '''
+      table_content += '''
+            </tbody>
+          </table>
+                       '''
 
-    LOGGER.debug("Markdown Report:\n" + markdown_template)
+      html_content += table_content
+
+    else:
+      html_content += ('''
+        <div class="callout-container info">
+          <div class="icon"></div>
+          No DNS traffic detected from the device
+        </div>''')
+
+    LOGGER.debug('Module report:\n' + html_content)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
 
-    # Write the content to a file 
+    # Write the content to a file
     with open(report_path, 'w', encoding='utf-8') as file:
-      file.write(markdown_template)
+      file.write(html_content)
 
-    LOGGER.info('Module report generated at: ' + str(report_path))  
+    LOGGER.info('Module report generated at: ' + str(report_path))
 
     return report_path
 

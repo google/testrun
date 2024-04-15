@@ -37,6 +37,12 @@
   padding: 0;
   background: $white;
 
+  ::ng-deep .download-report-link {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+  }
+
   .toolbar-col-left {
     display: flex;
     flex-direction: column;
@@ -99,12 +105,9 @@
 
 .progress-table {
   overflow-y: auto;
-  flex: 1;
-  padding-top: 10px;
-  & ::ng-deep .loader {
-    width: 196px;
-    height: 196px;
-  }
+  margin: 10px 0;
+  border-radius: 4px;
+  border: 1px solid $lighter-grey;
 }
 
 .progress-table-progress-empty {

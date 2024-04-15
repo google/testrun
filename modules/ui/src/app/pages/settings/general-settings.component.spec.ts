@@ -135,7 +135,7 @@ describe('GeneralSettingsComponent', () => {
       component.closeSetting(mockMessage);
 
       expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-        `The ${mockMessage} finished. The connection setting panel is closed.`
+        `The ${mockMessage} finished. The system settings panel is closed.`
       );
     });
 
@@ -304,12 +304,14 @@ describe('GeneralSettingsComponent', () => {
     });
 
     it('should not have disabled "Save" button', () => {
-      component.deviceControl.setValue(
-        MOCK_SYSTEM_CONFIG_WITH_DATA?.network?.device_intf
-      );
-      component.internetControl.setValue(
-        MOCK_SYSTEM_CONFIG_WITH_DATA?.network?.internet_intf
-      );
+      component.deviceControl.setValue({
+        key: MOCK_SYSTEM_CONFIG_WITH_DATA?.network?.device_intf,
+        value: 'value',
+      });
+      component.internetControl.setValue({
+        key: MOCK_SYSTEM_CONFIG_WITH_DATA?.network?.internet_intf,
+        value: 'value',
+      });
       fixture.detectChanges();
 
       const saveBtn = compiled.querySelector(

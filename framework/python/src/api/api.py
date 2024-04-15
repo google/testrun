@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Provides Testrun data via REST API."""
-
 from fastapi import FastAPI, APIRouter, Response, Request, status
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +21,7 @@ from json import JSONDecodeError
 import os
 import psutil
 import requests
+import signal
 import threading
 import uvicorn
 from urllib.parse import urlparse
@@ -35,7 +35,7 @@ DEVICE_MAC_ADDR_KEY = "mac_addr"
 DEVICE_MANUFACTURER_KEY = "manufacturer"
 DEVICE_MODEL_KEY = "model"
 DEVICE_TEST_MODULES_KEY = "test_modules"
-DEVICES_PATH = "/usr/local/testrun/local/devices"
+DEVICES_PATH = "local/devices"
 DEFAULT_DEVICE_INTF = "enx123456789123"
 
 LATEST_RELEASE_CHECK = ("https://api.github.com/repos/google/" +
@@ -67,6 +67,9 @@ class Api:
                                methods=["POST"])
     self._router.add_api_route("/system/status",
                                self.get_status)
+    self._router.add_api_route("/system/shutdown",
+                               self.shutdown,
+                               methods=["POST"])
 
     self._router.add_api_route("/system/version",
                                self.get_version)
@@ -187,7 +190,8 @@ class Api:
       ]:
       LOGGER.debug("Testrun is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
-      return self._generate_msg(False, "Testrun is already running")
+      return self._generate_msg(False, "Testrun cannot be started " +
+                                "whilst a test is running on another device")
 
     # Check if requested device is known in the device repository
     if device is None:
@@ -243,6 +247,26 @@ class Api:
   async def get_status(self):
     return self._test_run.get_session().to_json()
 
+  def shutdown(self, response: Response):
+
+    LOGGER.debug("Received request to shutdown Testrun")
+
+    # Check that Testrun is not currently running
+    if (self._session.get_status() not in [
+            "Cancelled",
+            "Compliant",
+            "Non-Compliant",
+            "Idle"]):
+      LOGGER.debug("Unable to shutdown Testrun as Testrun is in progress")
+      response.status_code = 400
+      return self._generate_msg(
+        False,
+        "Unable to shutdown. A test is currently in progress."
+      )
+
+    self._test_run.shutdown()
+    os.kill(os.getpid(), signal.SIGTERM)
+
   async def get_version(self, response: Response):
     json_response = {}
 
@@ -265,7 +289,8 @@ class Api:
       if version_check.status_code != 200:
         response.status_code = 500
         LOGGER.error(version_check.content)
-        return self._generate_msg(False, "Failed to fetch latest version")
+        return self._generate_msg(False, "Failed to fetch latest version. " +
+                                  "Please, check the internet connection")
 
       # Extract version number from response, removing the leading 'v'
       latest_version_no = version_check.json()["name"].strip("v")
@@ -284,11 +309,12 @@ class Api:
         LOGGER.debug("The latest version is installed")
 
       return json_response
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       response.status_code = 500
       LOGGER.error("Failed to fetch latest version")
       LOGGER.debug(e)
-      return self._generate_msg(False, "Failed to fetch latest version")
+      return self._generate_msg(False, "Failed to fetch latest version. " +
+                                "Please, check the internet connection")
 
   async def get_reports(self, request: Request):
     LOGGER.debug("Received reports list request")
@@ -379,14 +405,13 @@ class Api:
       return self._generate_msg(True, "Successfully deleted the device")
 
     # TODO: Find specific exception to catch
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       LOGGER.error(e)
       response.status_code = 500
       return self._generate_msg(False, "An error occured whilst deleting " +
                                 "the device")
 
   async def save_device(self, request: Request, response: Response):
-
     LOGGER.debug("Received device post request")
 
     try:

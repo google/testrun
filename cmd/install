@@ -16,28 +16,52 @@
 
 echo Installing application dependencies
 
-TESTRUN_DIR=/usr/local/testrun
+# Collect command line arguments
+while getopts ":l" option; do
+   case $option in
+      l) # Install Testrun in local directory
+         TESTRUN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")"/.. && pwd)
+   esac
+done
+
+# Check if TESTRUN_DIR has been set, otherwise install in /usr/local/testrun
+if [[ -z "${TESTRUN_DIR}" ]]; then
+  TESTRUN_DIR=/usr/local/testrun
+else
+  TESTRUN_DIR="${TESTRUN_DIR}"
+fi
+
+echo Installing Testrun at $TESTRUN_DIR
+
+# Create the folder if it doesn't exist
+mkdir -p $TESTRUN_DIR
 cd $TESTRUN_DIR
 
+# Activate the Python virtual environment
 python3 -m venv venv
-
 source venv/bin/activate
 
+# Install Python dependencies in virtual environment
 pip3 install -r framework/requirements.txt
 
 # Copy the default configuration
 cp -n local/system.json.example local/system.json
 
-# Set file permissions
+# Set file permissions on system config
 # This does not work on GitHub actions
 if logname ; then
   USER_NAME=$(logname)
   sudo chown "$USER_NAME" local/system.json
 fi
 
+# Exit out of python virtual environment
 deactivate
 
 # Build docker images
 sudo cmd/build
+
+# Create local folders
+mkdir -p local/devices
+mkdir -p local/root_certs
 
 echo Finished installing Testrun

@@ -70,10 +70,6 @@
     white-space: nowrap;
   }
 
-  .table-cell-actions * {
-    margin: 0 4px;
-  }
-
   .filter-button {
     display: flex;
     width: 24px;
@@ -130,7 +126,7 @@
   color: #202124;
 }
 
-.download-report-icon,
+::ng-deep .download-report-icon,
 .delete-report-icon {
   color: $dark-grey;
 }
@@ -142,7 +138,7 @@
 .results-content-empty-message-img {
   width: 293px;
   height: 154px;
-  background-image: url(/src/assets/icons/desktop.svg);
+  background-image: url(/assets/icons/desktop.svg);
 }
 
 .results-content-filter-empty .results-content-empty-message-main {

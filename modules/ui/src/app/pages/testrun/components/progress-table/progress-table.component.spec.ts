@@ -16,10 +16,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProgressTableComponent } from './progress-table.component';
+
 import { IResult, StatusOfTestResult } from '../../../../model/testrun-status';
 import { of } from 'rxjs';
 import {
   TEST_DATA,
+  TEST_DATA_RESULT,
   TEST_DATA_RESULT_WITH_RECOMMENDATIONS,
 } from '../../../../mocks/progress.mock';
 import { TestRunService } from '../../../../services/test-run.service';
@@ -65,6 +67,12 @@ describe('ProgressTableComponent', () => {
         StatusOfTestResult.NonCompliant
       );
       expect(result).toEqual(expectedResult);
+    });
+
+    it('#trackTest should return name and status', () => {
+      expect(component.trackTest(1, TEST_DATA_RESULT[0])).toEqual(
+        'dns.network.hostname_resolutionCompliant'
+      );
     });
   });
 

@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TESTRUN_OUT=/tmp/testrun.log
-TESTRUN_DIR=/usr/local/testrun
+TESTRUN_OUT=testrun.log
 
 ifconfig
 
@@ -23,7 +22,7 @@ ifconfig
 sudo apt-get update
 sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils isc-dhcp-client
 
-pip3 install pytest
+pip3 install pytest==7.4.4
 
 # Setup device network
 sudo ip link add dev endev0a type veth peer name endev0b
@@ -38,12 +37,12 @@ sudo /usr/share/openvswitch/scripts/ovs-ctl start
 sudo docker build ./testing/docker/ci_baseline -t ci1 -f  ./testing/docker/ci_baseline/Dockerfile
 
 # Copy configuration to testrun
-sudo cp testing/baseline/system.json $TESTRUN_DIR/local/system.json
+sudo cp testing/baseline/system.json local/system.json
 
 # Copy device configs to testrun
-sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
+sudo cp -r testing/device_configs/* local/devices
 
-sudo testrun --single-intf --no-ui --validate > $TESTRUN_OUT 2>&1 & 
+sudo bin/testrun --single-intf --no-ui --validate > $TESTRUN_OUT 2>&1 & 
 TPID=$!
 
 # Time to wait for testrun to be ready

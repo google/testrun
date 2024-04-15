@@ -64,7 +64,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   }
 
   get isFormValues(): boolean {
-    return this.internetControl.value && this.deviceControl.value;
+    return this.internetControl?.value.value && this.deviceControl?.value.value;
   }
 
   get isFormError(): boolean {
@@ -90,12 +90,14 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   reloadSetting(): void {
     this.showLoading();
     this.getSystemInterfaces();
+    this.settingsStore.getSystemConfig();
+    this.setDefaultFormValues();
   }
   closeSetting(message: string): void {
     this.resetForm();
     this.closeSettingEvent.emit();
     this.liveAnnouncer.announce(
-      `The ${message} finished. The connection setting panel is closed.`
+      `The ${message} finished. The system settings panel is closed.`
     );
     this.setDefaultFormValues();
   }
@@ -165,7 +167,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
-  private getSystemInterfaces(): void {
+  getSystemInterfaces(): void {
     this.settingsStore.getInterfaces();
     this.hideLoading();
   }

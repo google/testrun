@@ -20,7 +20,7 @@ import {
   TestsData,
 } from '../model/testrun-status';
 
-const TEST_DATA_RESULT: IResult[] = [
+export const TEST_DATA_RESULT: IResult[] = [
   {
     name: 'dns.network.hostname_resolution',
     description: 'The device should resolve hostnames',
@@ -98,6 +98,9 @@ export const MOCK_PROGRESS_DATA_COMPLIANT: TestrunStatus =
 
 export const MOCK_PROGRESS_DATA_CANCELLED: TestrunStatus =
   PROGRESS_DATA_RESPONSE(StatusOfTestrun.Cancelled, null, TEST_DATA);
+
+export const MOCK_PROGRESS_DATA_CANCELLED_EMPTY: TestrunStatus =
+  PROGRESS_DATA_RESPONSE(StatusOfTestrun.Cancelled, null, []);
 
 export const MOCK_PROGRESS_DATA_MONITORING: TestrunStatus =
   PROGRESS_DATA_RESPONSE(StatusOfTestrun.Monitoring, null, TEST_DATA);

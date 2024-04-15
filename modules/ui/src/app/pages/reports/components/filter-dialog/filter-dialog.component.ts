@@ -31,11 +31,13 @@ import {
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import {
+  AbstractControl,
   FormArray,
   FormBuilder,
   FormControl,
   FormGroup,
   FormsModule,
+  NgModel,
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -57,6 +59,7 @@ import {
 } from '../../../../model/filters';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
 import { StatusOfTestResult } from '../../../../model/testrun-status';
+import { DeviceValidators } from '../../../devices/components/device-form/device.validators';
 
 interface DialogData {
   trigger: ElementRef;
@@ -95,8 +98,6 @@ export class FilterDialogComponent
 {
   resultList = [
     { value: StatusOfTestResult.Compliant, enabled: false },
-    { value: StatusOfTestResult.CompliantLimited, enabled: false },
-    { value: StatusOfTestResult.CompliantHigh, enabled: false },
     { value: StatusOfTestResult.NonCompliant, enabled: false },
   ];
   filterForm!: FormGroup;
@@ -118,13 +119,24 @@ export class FilterDialogComponent
   }
 
   @ViewChild(MatCalendar) calendar!: MatCalendar<Date>;
+  @ViewChild('startDate') startDate!: NgModel;
+  @ViewChild('endDate') endDate!: NgModel;
 
   constructor(
     public override dialogRef: MatDialogRef<FilterDialogComponent>,
+    private deviceValidators: DeviceValidators,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private fb: FormBuilder
   ) {
     super(dialogRef);
+  }
+
+  get deviceInfo() {
+    return this.filterForm.get('deviceInfo') as AbstractControl;
+  }
+
+  get deviceFirmware() {
+    return this.filterForm.get('deviceFirmware') as AbstractControl;
   }
 
   ngOnInit() {
@@ -149,8 +161,8 @@ export class FilterDialogComponent
   }
   private createFilterForm() {
     this.filterForm = this.fb.group({
-      deviceInfo: [''],
-      deviceFirmware: [''],
+      deviceInfo: ['', [this.deviceValidators.deviceStringFormat()]],
+      deviceFirmware: ['', [this.deviceValidators.deviceStringFormat()]],
       results: new FormArray(this.resultList.map(() => new FormControl(false))),
     });
   }
@@ -177,6 +189,14 @@ export class FilterDialogComponent
   }
 
   confirm(): void {
+    if (
+      this.filterForm?.invalid ||
+      this.startDate?.invalid ||
+      this.endDate?.invalid
+    ) {
+      return;
+    }
+
     const formData = this.filterForm.value;
     const results = this.resultList
       .filter((item, i) => {
