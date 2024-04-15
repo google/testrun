@@ -264,7 +264,8 @@ class Modbus():
 
       # Since we can't know what data types the device supports
       # we'll pass if any of the supported data types are succesfully read
-      compliant = holding_reg or input_reg or coils or discrete_inputs
+      compliant = (holding_reg is not None or input_reg is not None
+                   or coils is not None or discrete_inputs is not None)
     else:
       compliant = False
       details = 'Failed to establish Modbus connection to device'
