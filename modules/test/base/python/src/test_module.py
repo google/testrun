@@ -114,6 +114,7 @@ class TestModule:
           test['result'] = 'Compliant' if result else 'Non-Compliant'
           test['description'] = 'No description was provided for this test'
         else:
+          # TODO: This is assuming that result is an array but haven't checked
           # Skipped result
           if result[0] is None:
             test['result'] = 'Skipped'
@@ -121,12 +122,15 @@ class TestModule:
               test['description'] = result[1]
             else:
               test['description'] = 'An error occured whilst running this test'
+
           # Compliant / Non-Compliant result
           elif isinstance(result[0], bool):
             test['result'] = 'Compliant' if result[0] else 'Non-Compliant'
-          # Result may be a string, e.g error
-          elif result[0] == 'Error':
+          # Result may be a string, e.g Error, Feature Not Present
+          elif isinstance(result[0], str):
             test['result'] = result[0]
+          else:
+            test['result'] = 'Error'
 
           # Check that description is a string
           if isinstance(result[1], str):

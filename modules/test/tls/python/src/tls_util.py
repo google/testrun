@@ -54,13 +54,31 @@ class TLSUtil():
     self._dev_cert_file = 'device_cert.crt'
     self._root_certs_dir = root_certs_dir
 
+  def web_server_open(self, host, port=443):
+    server_open = False
+    try:
+
+      context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+      context.check_hostname = False
+      context.verify_mode = ssl.CERT_NONE
+
+      # Create an SSL/TLS socket
+      with socket.create_connection((host, port), timeout=5) as sock:
+        with context.wrap_socket(sock, server_hostname=host):
+          server_open = True
+
+    except Exception as e:
+      LOGGER.info('Failed to open TLS connection to device web server')
+      LOGGER.debug(e)
+
+    return server_open
+
   def get_public_certificate(self,
                              host,
                              port=443,
                              validate_cert=False,
                              tls_version='1.2'):
     try:
-      #context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
       context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
       context.check_hostname = False
       if not validate_cert:
@@ -318,32 +336,48 @@ class TLSUtil():
     return certificate
 
   def process_tls_server_results(self, tls_1_2_results, tls_1_3_results):
+
     results = ''
+
+    # Only TLS v1.3 is supported
     if tls_1_2_results[0] is None and tls_1_3_results[0] is not None:
-      # Validate only TLS 1.3 results
+
       description = 'TLS 1.3' + (' not' if not tls_1_3_results[0] else
-                                 '') + ' validated: ' + tls_1_3_results[1]
+                                 '') + ' compliant: ' + tls_1_3_results[1]
       results = tls_1_3_results[0], description
+
+    # Only TLS v1.2 is supported
     elif tls_1_3_results[0] is None and tls_1_2_results[0] is not None:
-      # Vaidate only TLS 1.2 results
       description = 'TLS 1.2' + (' not' if not tls_1_2_results[0] else
-                                 '') + ' validated: ' + tls_1_2_results[1]
+                                 '') + ' compliant: ' + tls_1_2_results[1]
       results = tls_1_2_results[0], description
+
+    # Both v1.2 and v1.3 are supported
     elif tls_1_3_results[0] is not None and tls_1_2_results[0] is not None:
-      # Validate both results
-      description = 'TLS 1.2' + (' not' if not tls_1_2_results[0] else
-                                 '') + ' validated: ' + tls_1_2_results[1]
-      description += '\nTLS 1.3' + (' not' if not tls_1_3_results[0] else
-                                    '') + ' validated: ' + tls_1_3_results[1]
+
+      # Check if both v1.2 and v1.3 are not compliant
+      # If so, we only need details on 1.2
+      if not tls_1_2_results[0] and not tls_1_3_results[0]:
+        description  = 'TLS 1.2 not compliant: ' + tls_1_2_results[1]
+      else:
+        description = 'TLS 1.2' + (' not' if not tls_1_2_results[0] else
+                                  '') + ' compliant: ' + tls_1_2_results[1]
+        description += '\nTLS 1.3' + (' not' if not tls_1_3_results[0] else
+                                    '') + ' compliant: ' + tls_1_3_results[1]
+
       results = tls_1_2_results[0] or tls_1_3_results[0], description
+
+    # Neither TLS v1.2 or v1.3 are supported
     else:
+      # Just provide info about TLS v1.2
       description = f'TLS 1.2 not validated: {tls_1_2_results[1]}'
-      description += f'\nTLS 1.3 not validated: {tls_1_3_results[1]}'
       results = None, description
     LOGGER.info('TLS server test results: ' + str(results))
     return results
 
   def validate_tls_server(self, host, tls_version):
+
+    # Obtain the web server certificate
     cert_pem = self.get_public_certificate(host,
                                            validate_cert=False,
                                            tls_version=tls_version)
@@ -372,7 +406,21 @@ class TLSUtil():
 
       # Check results
       cert_valid = tr_valid[0] and key_valid[0] and sig_valid[0]
-      test_details = tr_valid[1] + '\n' + key_valid[1] + '\n' + sig_valid[1]
+      test_details = ''
+
+      # Only include reasons for non-compliance
+      if not tr_valid[0]:
+        test_details = tr_valid[1] + '. '
+
+      if not key_valid[0]:
+        test_details += key_valid[1] + '. '
+
+      if not sig_valid[0]:
+        test_details += sig_valid[1] + '. '
+
+      if cert_valid:
+        test_details = 'Certificate meets all requirements'
+
       LOGGER.info('Certificate validated: ' + str(cert_valid))
       LOGGER.info('Test details:\n' + test_details)
       return cert_valid, test_details
@@ -550,13 +598,14 @@ class TLSUtil():
     non_tls_dst_ips = set()  # Store unique destination IPs
     for packet in packets:
       # Check if packet contains TCP layer
-        if 'tcp' in packet['_source']['layers']:
-          tcp_flags = packet['_source']['layers']['tcp.flags']
-          if 'A' not in tcp_flags and 'S' not in tcp_flags:
-            # Packet is not ACK or SYN
-            dst_ip = ipaddress.ip_address(packet['_source']['layers']['ip.dst'][0])
-            if not dst_ip in subnet_with_mask:
-              non_tls_dst_ips.add(str(dst_ip))
+      if 'tcp' in packet['_source']['layers']:
+        tcp_flags = packet['_source']['layers']['tcp.flags']
+        if 'A' not in tcp_flags and 'S' not in tcp_flags:
+          # Packet is not ACK or SYN
+          dst_ip = ipaddress.ip_address(
+            packet['_source']['layers']['ip.dst'][0])
+          if not dst_ip in subnet_with_mask:
+            non_tls_dst_ips.add(str(dst_ip))
     return non_tls_dst_ips
 
   # Check if the device has made any outbound connections that don't
