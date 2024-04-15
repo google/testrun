@@ -555,8 +555,8 @@ class Api:
       return False
 
     # Check length of strings
-    if len(json_obj.get(DEVICE_MANUFACTURER_KEY)) > 64 or len(
-      json_obj.get(DEVICE_MODEL_KEY)) > 64:
+    if len(json_obj.get(DEVICE_MANUFACTURER_KEY)) > 28 or len(
+      json_obj.get(DEVICE_MODEL_KEY)) > 28:
       return False
 
     disallowed_chars = ["/", "\\", "\'", "\"", ";"]

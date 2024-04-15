@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Store previous test run information."""
+"""Store previous Testrun information."""
 
 from datetime import datetime
 from weasyprint import HTML
@@ -23,7 +23,7 @@ from test_orc.test_case import TestCase
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
-TESTS_FIRST_PAGE = 9
+TESTS_FIRST_PAGE = 12
 TESTS_PER_PAGE = 20
 
 # Locate parent directory
