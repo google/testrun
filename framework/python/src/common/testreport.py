@@ -23,7 +23,7 @@ from test_orc.test_case import TestCase
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
-TESTS_FIRST_PAGE = 12
+TESTS_FIRST_PAGE = 10
 TESTS_PER_PAGE = 20
 
 # Locate parent directory
