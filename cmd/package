@@ -22,6 +22,9 @@ TESTRUN_VER="1-2-2-alpha"
 # Delete existing make files
 rm -rf $MAKE_SRC_DIR/usr
 
+# Delete existing make files
+rm -rf $MAKE_SRC_DIR/usr
+
 # Copy testrun script to /bin
 mkdir -p $MAKE_SRC_DIR/bin
 cp bin/testrun $MAKE_SRC_DIR/bin/testrun
