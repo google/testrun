@@ -323,6 +323,7 @@ describe('AppComponent', () => {
 
   describe('menu button', () => {
     beforeEach(() => {
+      mockFocusManagerService.focusFirstElementInContainer.calls.reset();
       store.overrideSelector(selectHasDevices, false);
       fixture.detectChanges();
     });
@@ -362,7 +363,9 @@ describe('AppComponent', () => {
 
       menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
 
-      expect(document.activeElement).toBe(document.body);
+      expect(
+        mockFocusManagerService.focusFirstElementInContainer
+      ).not.toHaveBeenCalled();
     });
   });
 

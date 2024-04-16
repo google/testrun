@@ -55,6 +55,7 @@ import {
 } from '../../store/selectors';
 import { TestrunStore } from './testrun.store';
 import { setTestrunStatus } from '../../store/actions';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ProgressComponent', () => {
   let component: ProgressComponent;
@@ -69,6 +70,7 @@ describe('ProgressComponent', () => {
       'isOpenStartTestrun$',
       'isTestrunStarted$',
       'fetchSystemStatus',
+      'getTestModules',
     ]);
 
   const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
@@ -116,6 +118,8 @@ describe('ProgressComponent', () => {
           MatToolbarModule,
           MatDialogModule,
           SpinnerComponent,
+          DownloadReportPdfComponent,
+          BrowserAnimationsModule,
         ],
       })
         .overrideComponent(ProgressComponent, {
@@ -235,6 +239,7 @@ describe('ProgressComponent', () => {
           MatToolbarModule,
           MatDialogModule,
           SpinnerComponent,
+          BrowserAnimationsModule,
         ],
       })
         .overrideComponent(ProgressComponent, {

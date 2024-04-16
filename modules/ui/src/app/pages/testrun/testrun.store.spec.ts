@@ -61,7 +61,10 @@ describe('TestrunStore', () => {
   );
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['stopTestrun', 'fetchSystemStatus']);
+    mockService = jasmine.createSpyObj('mockService', [
+      'stopTestrun',
+      'fetchSystemStatus',
+    ]);
 
     TestBed.configureTestingModule({
       providers: [
@@ -83,10 +86,6 @@ describe('TestrunStore', () => {
     testrunStore = TestBed.inject(TestrunStore);
     store = TestBed.inject(MockStore);
     spyOn(store, 'dispatch').and.callFake(() => {});
-  });
-
-  afterEach(() => {
-    mockService.fetchSystemStatus.calls.reset();
   });
 
   it('should be created', () => {
@@ -143,16 +142,20 @@ describe('TestrunStore', () => {
 
   describe('effects', () => {
     describe('getStatus', () => {
-      const status = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
       beforeEach(() => {
-        mockService.fetchSystemStatus.and.returnValue(of(status));
+        testrunStore.updateStartInterval(true);
+        mockService.fetchSystemStatus.and.returnValue(
+          of({ ...MOCK_PROGRESS_DATA_MONITORING })
+        );
       });
 
       it('should dispatch action setTestrunStatus', () => {
         testrunStore.getStatus();
 
         expect(store.dispatch).toHaveBeenCalledWith(
-          setTestrunStatus({ systemStatus: status })
+          setTestrunStatus({
+            systemStatus: { ...MOCK_PROGRESS_DATA_MONITORING },
+          })
         );
       });
 
@@ -166,18 +169,27 @@ describe('TestrunStore', () => {
       });
 
       describe('pullingSystemStatusData with available status "In Progress"', () => {
+        beforeEach(() => {
+          mockService.fetchSystemStatus.and.returnValue(
+            of({ ...MOCK_PROGRESS_DATA_IN_PROGRESS })
+          );
+          mockService.fetchSystemStatus.calls.reset();
+        });
+
         it('should call again getSystemStatus', fakeAsync(() => {
           testrunStore.updateStartInterval(false);
+          testrunStore.updateCancelling(false);
           store.overrideSelector(
             selectSystemStatus,
             MOCK_PROGRESS_DATA_IN_PROGRESS
           );
 
           testrunStore.getStatus();
+          expect(mockService.fetchSystemStatus).toHaveBeenCalled();
 
-          tick(7000);
+          tick(5000);
 
-          expect(mockService.fetchSystemStatus).toHaveBeenCalledTimes(1);
+          expect(mockService.fetchSystemStatus).toHaveBeenCalledTimes(2);
           discardPeriodicTasks();
         }));
       });
