@@ -178,9 +178,9 @@ class TestOrchestrator:
   def _calculate_result(self):
     result = "Compliant"
     for test_result in self._session.get_test_results():
-      if (test_case.required_result.lower() == "required"
+      if (test_result.required_result.lower() == "required"
           and test_result["result"].lower() != "compliant"
-          and ("enabled" in test_result 
+          and ("enabled" in test_result
           and not test_result["enabled"])):
         result = "Non-Compliant"
     return result
