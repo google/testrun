@@ -30,6 +30,7 @@ import { DeleteFormComponent } from '../../components/delete-form/delete-form.co
 import SpyObj = jasmine.SpyObj;
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { DevicesStore } from './devices.store';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
 
 describe('DeviceRepositoryComponent', () => {
   let component: DeviceRepositoryComponent;
@@ -50,7 +51,11 @@ describe('DeviceRepositoryComponent', () => {
     mockDevicesStore.testModules = MOCK_TEST_MODULES;
 
     await TestBed.configureTestingModule({
-      imports: [DeviceRepositoryModule, BrowserAnimationsModule],
+      imports: [
+        DeviceRepositoryModule,
+        BrowserAnimationsModule,
+        MatIconTestingModule,
+      ],
       providers: [
         { provide: DevicesStore, useValue: mockDevicesStore },
         { provide: FocusManagerService, useValue: stateServiceMock },
