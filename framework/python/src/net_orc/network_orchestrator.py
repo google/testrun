@@ -51,6 +51,7 @@ class NetworkOrchestrator:
 
     self._session = session
     self._monitor_in_progress = False
+    self._monitor_packets = []
     self._listener = None
     self._net_modules = []
 
@@ -239,6 +240,7 @@ class NetworkOrchestrator:
     """Start a timer until the steady state has been reached and
         callback the steady state method for this device."""
     self.get_session().set_status('Monitoring')
+    self._monitor_packets = []
     LOGGER.info(f'Monitoring device with mac addr {device.mac_addr} '
                 f'for {str(self._session.get_monitor_period())} seconds')
 
@@ -246,22 +248,24 @@ class NetworkOrchestrator:
                                       device.mac_addr.replace(':', ''))
 
     sniffer = AsyncSniffer(iface=self._session.get_device_interface(),
-                           timeout=self._session.get_monitor_period())
+                           timeout=self._session.get_monitor_period(),
+                           prn=self._monitor_packet_callback)
     sniffer.start()
 
     while sniffer.running:
       if not self._ip_ctrl.check_interface_status(
           self._session.get_device_interface()):
-        self._session.set_status('Cancelled')
         sniffer.stop()
+        self._session.set_status('Cancelled')
         LOGGER.error('Device interface disconnected, cancelling Testrun')
-
-    packet_capture = sniffer.results
-    wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'), packet_capture)
-
+    wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'),
+           self._monitor_packets)
     self._monitor_in_progress = False
     self.get_listener().call_callback(NetworkEvent.DEVICE_STABLE,
                                       device.mac_addr)
+
+  def _monitor_packet_callback(self, packet):
+    self._monitor_packets.append(packet)
 
   def _check_network_services(self):
     LOGGER.debug('Checking network modules...')
