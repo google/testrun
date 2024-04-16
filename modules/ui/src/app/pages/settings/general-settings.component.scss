@@ -130,3 +130,14 @@
   background-color: rgba(255, 255, 255, 0.7);
   z-index: 2;
 }
+
+.disabled {
+  .message-link {
+    cursor: default;
+    pointer-events: none;
+
+    &:focus-visible {
+      outline: none;
+    }
+  }
+}

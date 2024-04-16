@@ -58,9 +58,10 @@ limitations under the License.
           [options]="vm.internetOptions">
         </app-settings-dropdown>
       </ng-container>
-      <p class="message">
+      <p class="message" [ngClass]="{ disabled: settingsDisable }">
         If a port is missing from this list, you can
         <a
+          #reloadSettingLink
           (click)="reloadSetting()"
           (keydown.enter)="reloadSetting()"
           (keydown.space)="reloadSetting()"
