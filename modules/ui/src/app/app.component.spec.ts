@@ -355,6 +355,7 @@ describe('AppComponent', () => {
     });
 
     it('should not focus navigation button on tab press if menu button was not clicked', () => {
+      document.body.focus();
       focusNavigation = false;
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
