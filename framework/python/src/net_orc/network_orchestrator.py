@@ -258,7 +258,8 @@ class NetworkOrchestrator:
         sniffer.stop()
         self._session.set_status('Cancelled')
         LOGGER.error('Device interface disconnected, cancelling Testrun')
-    wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'), self._monitor_packets)
+    wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'),
+           self._monitor_packets)
     self._monitor_in_progress = False
     self.get_listener().call_callback(NetworkEvent.DEVICE_STABLE,
                                       device.mac_addr)
