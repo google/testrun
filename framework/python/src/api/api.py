@@ -47,7 +47,7 @@ class Api:
   def __init__(self, test_run):
 
     self._test_run = test_run
-    self._name = "TestRun API"
+    self._name = "Testrun API"
     self._router = APIRouter()
 
     self._session = self._test_run.get_session()
@@ -271,7 +271,7 @@ class Api:
 
     # Add defaults
     json_response = {}
-    json_response["installed_version"] = "v1.0"
+    json_response["installed_version"] = "v" + self._test_run.get_version()
     json_response["update_available"] = False
     json_response["latest_version"] = None
     json_response["latest_version_url"] = (

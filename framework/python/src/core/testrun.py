@@ -29,7 +29,7 @@ import sys
 import time
 from common import logger, util
 from common.device import Device
-from common.session import TestRunSession
+from common.session import TestrunSession
 from common.testreport import TestReport
 from api.api import Api
 from net_orc.listener import NetworkEvent
@@ -60,7 +60,9 @@ DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
-class TestRun:  # pylint: disable=too-few-public-methods
+VERSION = '1.2.2'
+
+class Testrun:  # pylint: disable=too-few-public-methods
   """Test Run controller.
 
   Creates an instance of the network orchestrator, test
@@ -87,7 +89,8 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._register_exits()
 
     # Create session
-    self._session = TestRunSession(config_file=self._config_file)
+    self._session = TestrunSession(config_file=self._config_file,
+                                   version=self.get_version())
 
     # Register runtime parameters
     if single_intf:
@@ -126,6 +129,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
       # Hold until API ends
       while True:
         time.sleep(1)
+
+  def get_version(self):
+    return VERSION
 
   def load_all_devices(self):
     self._session.clear_device_repository()

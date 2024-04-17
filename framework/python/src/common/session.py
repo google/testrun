@@ -31,10 +31,10 @@ MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
 LOGGER = logger.get_logger('session')
 
-class TestRunSession():
+class TestrunSession():
   """Represents the current session of Test Run."""
 
-  def __init__(self, config_file):
+  def __init__(self, config_file, version):
     self._status = 'Idle'
     self._device = None
     self._started = None
@@ -46,7 +46,7 @@ class TestRunSession():
     self._total_tests = 0
     self._report_url = None
 
-    self._version = None
+    self._version = version
     self._load_version()
 
     self._config_file = config_file
