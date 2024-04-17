@@ -17,13 +17,12 @@
 # TODO refactor fixtures to not trigger error
 # pylint: disable=redefined-outer-name
 
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 import copy
 import json
 import os
 from pathlib import Path
 import re
-import shutil
 import shutil
 import signal
 import subprocess
@@ -52,14 +51,14 @@ def pretty_print(dictionary: dict):
 
 def query_system_status() -> str:
   """Query system status from API and returns this"""
-  r = requests.get(f"{API}/system/status")
+  r = requests.get(f"{API}/system/status", timeout=5)
   response = json.loads(r.text)
   return response["status"]
 
 
 def query_test_count() -> int:
   """Queries status and returns number of test results"""
-  r = requests.get(f"{API}/system/status")
+  r = requests.get(f"{API}/system/status", timeout=5)
   response = json.loads(r.text)
   return len(response["tests"]["results"])
 
@@ -118,9 +117,8 @@ def testing_devices():
 
 
 @pytest.fixture
-def testrun(request):
+def testrun(request): # pylint: disable=W0613
   """ Start intstance of testrun """
-  test_name = request.node.originalname
   proc = subprocess.Popen(
       "bin/testrun",
       stdout=subprocess.PIPE,
@@ -131,13 +129,13 @@ def testrun(request):
 
   while True:
     try:
-      outs, errs = proc.communicate(timeout=1)
+      outs = proc.communicate(timeout=1)[0]
     except subprocess.TimeoutExpired as e:
       if e.output is not None:
         output = e.output.decode("utf-8")
         if re.search("API waiting for requests", output):
           break
-    except Exception as e:
+    except Exception:
       pytest.fail("testrun terminated")
 
   time.sleep(2)
@@ -146,7 +144,7 @@ def testrun(request):
 
   os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
   try:
-    outs, errs = proc.communicate(timeout=60)
+    outs = proc.communicate(timeout=60)[0]
   except Exception as e:
     print(e.output)
     os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
@@ -224,9 +222,9 @@ def local_get_devices():
   )
 
 
-def test_get_system_interfaces(testrun):
+def test_get_system_interfaces(testrun): # pylint: disable=W0613
   """Tests API system interfaces against actual local interfaces"""
-  r = requests.get(f"{API}/system/interfaces")
+  r = requests.get(f"{API}/system/interfaces", timeout=5)
   response = json.loads(r.text)
   local_interfaces = get_network_interfaces()
   assert set(response.keys()) == set(local_interfaces)
@@ -235,18 +233,18 @@ def test_get_system_interfaces(testrun):
   assert all([isinstance(x, str) for x in response])
 
 
-def test_modify_device(testing_devices, testrun):
+def test_modify_device(testing_devices, testrun): # pylint: disable=W0613
   with open(
       os.path.join(
           DEVICES_DIRECTORY, testing_devices[1]
-      )
+      ), encoding="utf-8"
   ) as f:
     local_device = json.load(f)
 
   mac_addr = local_device["mac_addr"]
   new_model = "Alphabet"
 
-  r = requests.get(f"{API}/devices")
+  r = requests.get(f"{API}/devices", timeout=5)
   all_devices = json.loads(r.text)
 
   api_device = next(x for x in all_devices if x["mac_addr"] == mac_addr)
@@ -271,11 +269,11 @@ def test_modify_device(testing_devices, testrun):
 
   # update device
   r = requests.post(f"{API}/device/edit",
-                    data=json.dumps(updated_device_payload))
+                    data=json.dumps(updated_device_payload), timeout=5)
 
   assert r.status_code == 200
 
-  r = requests.get(f"{API}/devices")
+  r = requests.get(f"{API}/devices", timeout=5)
   all_devices = json.loads(r.text)
   updated_device_api = next(x for x in all_devices if x["mac_addr"] == mac_addr)
 
@@ -283,7 +281,7 @@ def test_modify_device(testing_devices, testrun):
   assert updated_device_api["test_modules"] == new_test_modules
 
 
-def test_create_get_devices(empty_devices_dir, testrun):
+def test_create_get_devices(empty_devices_dir, testrun): # pylint: disable=W0613
   device_1 = {
       "manufacturer": "Google",
       "model": "First",
@@ -297,9 +295,8 @@ def test_create_get_devices(empty_devices_dir, testrun):
       },
   }
 
-  r = requests.post(f"{API}/device", data=json.dumps(device_1))
+  r = requests.post(f"{API}/device", data=json.dumps(device_1), timeout=5)
   print(r.text)
-  device1_response = r.text
   assert r.status_code == 201
   assert len(local_get_devices()) == 1
 
@@ -315,18 +312,19 @@ def test_create_get_devices(empty_devices_dir, testrun):
           "nmap": {"enabled": True},
       },
   }
-  r = requests.post(f"{API}/device", data=json.dumps(device_2))
-  device2_response = json.loads(r.text)
+  r = requests.post(f"{API}/device",
+                    data=json.dumps(device_2), timeout=5)
   assert r.status_code == 201
   assert len(local_get_devices()) == 2
 
   # Test that returned devices API endpoint matches expected structure
-  r = requests.get(f"{API}/devices")
+  r = requests.get(f"{API}/devices", timeout=5)
   all_devices = json.loads(r.text)
   pretty_print(all_devices)
 
   with open(
-      os.path.join(os.path.dirname(__file__), "mockito/get_devices.json")
+      os.path.join(os.path.dirname(__file__), "mockito/get_devices.json"),
+      encoding="utf-8"
   ) as f:
     mockito = json.load(f)
 
@@ -345,10 +343,10 @@ def test_create_get_devices(empty_devices_dir, testrun):
     )
 
 
-def test_get_system_config(testrun):
-  r = requests.get(f"{API}/system/config")
+def test_get_system_config(testrun): # pylint: disable=W0613
+  r = requests.get(f"{API}/system/config", timeout=5)
 
-  with open(SYSTEM_CONFIG_PATH) as f:
+  with open(SYSTEM_CONFIG_PATH, encoding="utf-8") as f:
     local_config = json.load(f)
 
   api_config = json.loads(r.text)
@@ -370,12 +368,13 @@ def test_get_system_config(testrun):
 
 # TODO change to invalid jsdon request
 @pytest.mark.skip()
-def test_invalid_path_get(testrun):
-  r = requests.get(f"{API}/blah/blah")
+def test_invalid_path_get(testrun): # pylint: disable=W0613
+  r = requests.get(f"{API}/blah/blah", timeout=5)
   response = json.loads(r.text)
   assert r.status_code == 404
   with open(
-      os.path.join(os.path.dirname(__file__), "mockito/invalid_request.json")
+      os.path.join(os.path.dirname(__file__), "mockito/invalid_request.json"),
+      encoding="utf-8"
   ) as f:
     mockito = json.load(f)
 
@@ -383,9 +382,10 @@ def test_invalid_path_get(testrun):
   assert set(dict_paths(mockito)) == set(dict_paths(response))
 
 
-def test_trigger_run(testing_devices, testrun):
+def test_trigger_run(testing_devices, testrun): # pylint: disable=W0613
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload))
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
+                    timeout=5)
   assert r.status_code == 200
 
   until_true(
@@ -405,7 +405,7 @@ def test_trigger_run(testing_devices, testrun):
   stop_test_device("x123")
 
   # Validate response
-  r = requests.get(f"{API}/system/status")
+  r = requests.get(f"{API}/system/status", timeout=5)
   response = json.loads(r.text)
   pretty_print(response)
 
@@ -419,7 +419,7 @@ def test_trigger_run(testing_devices, testrun):
   with open(
       os.path.join(
           os.path.dirname(__file__), "mockito/running_system_status.json"
-      )
+      ), encoding="utf-8"
   ) as f:
     mockito = json.load(f)
 
@@ -434,9 +434,10 @@ def test_trigger_run(testing_devices, testrun):
   # Validate a result
   assert results["baseline.compliant"]["result"] == "Compliant"
 
-def test_stop_running_test(testing_devices, testrun):
+def test_stop_running_test(testing_devices, testrun): # pylint: disable=W0613
   payload = {"device": {"mac_addr": ALL_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload))
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
+                    timeout=5)
   assert r.status_code == 200
 
   until_true(
@@ -456,13 +457,13 @@ def test_stop_running_test(testing_devices, testrun):
   stop_test_device("x12345")
 
   # Validate response
-  r = requests.post(f"{API}/system/stop")
+  r = requests.post(f"{API}/system/stop", timeout=5)
   response = json.loads(r.text)
   pretty_print(response)
   assert response == {"success": "Testrun stopped"}
   time.sleep(1)
   # Validate response
-  r = requests.get(f"{API}/system/status")
+  r = requests.get(f"{API}/system/status", timeout=5)
   response = json.loads(r.text)
   pretty_print(response)
 
@@ -474,17 +475,18 @@ def test_stop_running_test(testing_devices, testrun):
 
 
 @pytest.mark.skip()
-def test_stop_running_not_running(testrun):
+def test_stop_running_not_running(testrun): # pylint: disable=W0613
   # Validate response
-  r = requests.post(f"{API}/system/stop")
+  r = requests.post(f"{API}/system/stop", timeout=5)
   response = json.loads(r.text)
   pretty_print(response)
 
   assert False
 
-def test_multiple_runs(testing_devices, testrun):
+def test_multiple_runs(testing_devices, testrun): # pylint: disable=W0613
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload))
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
+                    timeout=10)
   assert r.status_code == 200
   print(r.text)
 
@@ -505,7 +507,7 @@ def test_multiple_runs(testing_devices, testrun):
   stop_test_device("x123")
 
   # Validate response
-  r = requests.get(f"{API}/system/status")
+  r = requests.get(f"{API}/system/status", timeout=5)
   response = json.loads(r.text)
   pretty_print(response)
 
@@ -516,7 +518,8 @@ def test_multiple_runs(testing_devices, testrun):
   assert len(results) == 3
 
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload))
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
+                    timeout=5)
   # assert r.status_code == 200
   # returns 409
   print(r.text)
@@ -539,9 +542,9 @@ def test_multiple_runs(testing_devices, testrun):
 
 #TODO uncomment when functionality is implemented
 @pytest.mark.skip()
-def test_create_invalid_chars(empty_devices_dir, testrun):
+def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W0613
   # local_delete_devices(ALL_DEVICES)
-  # We must start test run with no devices in local/devices for this test 
+  # We must start test run with no devices in local/devices for this test
   # to function as expected!
   assert len(local_get_devices()) == 0
 
@@ -559,6 +562,7 @@ def test_create_invalid_chars(empty_devices_dir, testrun):
       },
   }
 
-  r = requests.post(f"{API}/device", data=json.dumps(device_1))
+  r = requests.post(f"{API}/device", data=json.dumps(device_1),
+                    timeout=5)
   print(r.text)
   print(r.status_code)
