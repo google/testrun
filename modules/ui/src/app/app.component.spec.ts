@@ -93,6 +93,7 @@ describe('AppComponent', () => {
       'setIsOpenStartTestrun',
       'fetchDevices',
       'getTestModules',
+      'testrunInProgress',
     ]);
 
     mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
@@ -657,10 +658,8 @@ describe('AppComponent', () => {
   template: '<div></div>',
 })
 class FakeGeneralSettingsComponent {
-  @Input() interfaces = [];
-  @Input() hasConnectionSettings = false;
+  @Input() settingsDisable = false;
   @Output() closeSettingEvent = new EventEmitter<void>();
-  @Output() reloadInterfacesEvent = new EventEmitter<void>();
   getSystemInterfaces = () => {};
   getSystemConfig = () => {};
 }
