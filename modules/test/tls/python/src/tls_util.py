@@ -550,13 +550,14 @@ class TLSUtil():
     non_tls_dst_ips = set()  # Store unique destination IPs
     for packet in packets:
       # Check if packet contains TCP layer
-        if 'tcp' in packet['_source']['layers']:
-          tcp_flags = packet['_source']['layers']['tcp.flags']
-          if 'A' not in tcp_flags and 'S' not in tcp_flags:
-            # Packet is not ACK or SYN
-            dst_ip = ipaddress.ip_address(packet['_source']['layers']['ip.dst'][0])
-            if not dst_ip in subnet_with_mask:
-              non_tls_dst_ips.add(str(dst_ip))
+      if 'tcp' in packet['_source']['layers']:
+        tcp_flags = packet['_source']['layers']['tcp.flags']
+        if 'A' not in tcp_flags and 'S' not in tcp_flags:
+          # Packet is not ACK or SYN
+          dst_ip = ipaddress.ip_address(
+              packet['_source']['layers']['ip.dst'][0])
+          if not dst_ip in subnet_with_mask:
+            non_tls_dst_ips.add(str(dst_ip))
     return non_tls_dst_ips
 
   # Check if the device has made any outbound connections that don't

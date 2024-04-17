@@ -271,7 +271,7 @@ describe('TestRunService', () => {
     ];
 
     const statusesForGreyRes = [
-      StatusOfTestResult.Skipped,
+      StatusOfTestResult.NotPresent,
       StatusOfTestResult.NotStarted,
     ];
 
