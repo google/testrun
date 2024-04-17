@@ -79,7 +79,7 @@ describe('TestRunService', () => {
       },
       {
         displayName: 'Services',
-        name: 'nmap',
+        name: 'services',
         enabled: true,
       },
       {
@@ -271,7 +271,7 @@ describe('TestRunService', () => {
     ];
 
     const statusesForGreyRes = [
-      StatusOfTestResult.Skipped,
+      StatusOfTestResult.NotPresent,
       StatusOfTestResult.NotStarted,
     ];
 

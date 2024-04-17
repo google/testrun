@@ -43,9 +43,9 @@ class Device():
 
   def remove_report(self, timestamp: datetime):
     for report in self.reports:
-      if report.get_started() == timestamp:
+      if report.get_started().strftime('%Y-%m-%dT%H:%M:%S') == timestamp:
         self.reports.remove(report)
-        break
+        return
 
   def to_dict(self):
     """Returns the device as a python dictionary. This is used for the

@@ -67,6 +67,11 @@ describe('ProgressStatusCardComponent', () => {
         StatusOfTestrun.CompliantHigh,
       ];
 
+      const statusesForCompletedFailedClass = [
+        StatusOfTestrun.NonCompliant,
+        StatusOfTestrun.Error,
+      ];
+
       statusesForProgressClass.forEach(testCase => {
         it(`should have class "progress" if status "${testCase}"`, () => {
           const expectedResult = { ...availableClasses, progress: true };
@@ -90,15 +95,17 @@ describe('ProgressStatusCardComponent', () => {
         });
       });
 
-      it('should have class "completed-failed" if status "Non Compliant"', () => {
-        const expectedResult = {
-          ...availableClasses,
-          'completed-failed': true,
-        };
+      statusesForCompletedFailedClass.forEach(testCase => {
+        it(`should have class "completed-failed" if status "${testCase}"`, () => {
+          const expectedResult = {
+            ...availableClasses,
+            'completed-failed': true,
+          };
 
-        const result = component.getClass(StatusOfTestrun.NonCompliant);
+          const result = component.getClass(testCase);
 
-        expect(result).toEqual(expectedResult);
+          expect(result).toEqual(expectedResult);
+        });
       });
 
       it('should have class "canceled" if status "Cancelled"', () => {

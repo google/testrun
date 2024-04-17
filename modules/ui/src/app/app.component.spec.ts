@@ -58,6 +58,7 @@ import {
   selectInterfaces,
   selectMenuOpened,
 } from './store/selectors';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -111,6 +112,7 @@ describe('AppComponent', () => {
         MatSidenavModule,
         BypassComponent,
         CalloutComponent,
+        MatIconTestingModule,
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },

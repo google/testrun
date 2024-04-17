@@ -238,6 +238,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
       if report_folder == timestamp:
         shutil.rmtree(os.path.join(reports_folder, report_folder))
         device.remove_report(timestamp)
+        LOGGER.debug('Successfully deleted the report')
         return True
 
     return False
@@ -418,6 +419,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     # Do not continue testing if Testrun has cancelled during monitor phase
     if self.get_session().get_status() == 'Cancelled':
+      self._stop_network()
       return
 
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """ Test assertions for CI testing of tests """
 # Temporarily disabled because using Pytest fixtures
 # TODO refactor fixtures to not trigger error
@@ -28,6 +27,7 @@ from dataclasses import dataclass
 
 TEST_MATRIX = 'test_tests.json'
 RESULTS_PATH = '/tmp/results/*.json'
+
 
 #TODO add reason
 @dataclass(frozen=True)
@@ -73,19 +73,23 @@ def test_tests(results, test_matrix):
     actual = set(collect_actual_results(results[tester]))
     assert expected & actual == expected
 
+
 def test_list_tests(capsys, results, test_matrix):
-  all_tests = set(itertools.chain.from_iterable(
-      [collect_actual_results(results[x]) for x in results.keys()]))
+  all_tests = set(
+      itertools.chain.from_iterable(
+          [collect_actual_results(results[x]) for x in results.keys()]))
 
-  ci_pass = set([test
-    for testers in test_matrix.values()
-    for test, result in testers['expected_results'].items()
-    if result == 'Compliant'])
+  ci_pass = set([
+      test for testers in test_matrix.values()
+      for test, result in testers['expected_results'].items()
+      if result == 'Compliant'
+  ])
 
-  ci_fail = set([test
-    for testers in test_matrix.values()
-    for test, result in testers['expected_results'].items()
-    if result == 'Non-Compliant'])
+  ci_fail = set([
+      test for testers in test_matrix.values()
+      for test, result in testers['expected_results'].items()
+      if result == 'Non-Compliant'
+  ])
 
   with capsys.disabled():
     #TODO print matching the JSON schema for easy copy/paste
@@ -101,12 +105,15 @@ def test_list_tests(capsys, results, test_matrix):
     for tester in test_matrix.keys():
       print(f'\n{tester}:')
       print('  expected results:')
-      for test in collect_expected_results(test_matrix[tester]['expected_results']):
+      for test in collect_expected_results(
+          test_matrix[tester]['expected_results']):
         print(f'    {test.name}: {test.result}')
       print('  actual results:')
       for test in collect_actual_results(results[tester]):
         if test.name in test_matrix[tester]['expected_results']:
-          print(f'    {test.name}: {test.result} (exp: {test_matrix[tester]["expected_results"][test.name]})')
+          print(
+              f'    {test.name}: {test.result} (exp: {test_matrix[tester]["expected_results"][test.name]})'
+          )
         else:
           print(f'    {test.name}: {test.result}')
 
