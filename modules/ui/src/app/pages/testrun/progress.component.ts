@@ -33,6 +33,7 @@ import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../../services/loaderConfig';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { TestrunStore } from './testrun.store';
+import { TestRunService } from '../../services/test-run.service';
 
 @Component({
   selector: 'app-progress',
@@ -51,6 +52,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
   viewModel$ = this.testrunStore.viewModel$;
 
   constructor(
+    private readonly testRunService: TestRunService,
     public dialog: MatDialog,
     private readonly focusManagerService: FocusManagerService,
     public testrunStore: TestrunStore
@@ -70,12 +72,8 @@ export class ProgressComponent implements OnInit, OnDestroy {
       });
   }
 
-  testrunInProgress(status?: string): boolean {
-    return (
-      status === StatusOfTestrun.InProgress ||
-      status === StatusOfTestrun.WaitingForDevice ||
-      status === StatusOfTestrun.Monitoring
-    );
+  isTestrunInProgress(status?: string) {
+    return this.testRunService.testrunInProgress(status);
   }
 
   public openStopTestrunDialog(systemStatus: TestrunStatus) {

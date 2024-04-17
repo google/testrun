@@ -191,6 +191,11 @@ h2.title {
   --mdc-outlined-text-field-focus-label-text-color: #1a73e8;
 }
 
+.setting-field {
+  --mdc-outlined-text-field-disabled-outline-color: rgba(0, 0, 0, 0.38);
+  --mdc-outlined-text-field-disabled-label-text-color: rgba(0, 0, 0, 0.58);
+}
+
 body:has(.initiate-test-run-dialog)
   app-root
   app-spinner.connection-settings-spinner,

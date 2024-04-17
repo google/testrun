@@ -32,6 +32,7 @@ import {
 import { appFeatureKey } from './store/reducers';
 import { GeneralSettingsComponent } from './pages/settings/general-settings.component';
 import { AppStore } from './app.store';
+import { TestRunService } from './services/test-run.service';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
@@ -65,6 +66,7 @@ export class AppComponent {
     private store: Store<AppState>,
     private state: State<AppState>,
     private readonly focusManagerService: FocusManagerService,
+    private testRunService: TestRunService,
     public appStore: AppStore
   ) {
     this.appStore.getDevices();
@@ -146,5 +148,9 @@ export class AppComponent {
 
   consentShown() {
     this.appStore.setContent();
+  }
+
+  isTestrunInProgress(status?: string) {
+    return this.testRunService.testrunInProgress(status);
   }
 }

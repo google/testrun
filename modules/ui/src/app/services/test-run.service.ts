@@ -22,6 +22,7 @@ import { catchError, map, of, retry } from 'rxjs';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
 import {
   StatusOfTestResult,
+  StatusOfTestrun,
   StatusResultClassName,
   TestrunStatus,
 } from '../model/testrun-status';
@@ -159,6 +160,14 @@ export class TestRunService {
         result === StatusOfTestResult.NotPresent ||
         result === StatusOfTestResult.NotStarted,
     };
+  }
+
+  testrunInProgress(status?: string): boolean {
+    return (
+      status === StatusOfTestrun.InProgress ||
+      status === StatusOfTestrun.WaitingForDevice ||
+      status === StatusOfTestrun.Monitoring
+    );
   }
 
   startTestrun(device: Device): Observable<boolean> {
