@@ -25,6 +25,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from './state';
 import { selectMenuOpened } from './selectors';
 import { device } from '../mocks/device.mock';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/progress.mock';
 describe('Effects', () => {
   let actions$ = new Observable<Action>();
   let effects: AppEffects;
@@ -53,6 +54,18 @@ describe('Effects', () => {
     effects = TestBed.inject(AppEffects);
 
     store.refreshState();
+  });
+
+  it('onSetDevices$ should call setDeviceInProgress when testrun in progress', done => {
+    const status = MOCK_PROGRESS_DATA_IN_PROGRESS;
+    actions$ = of(actions.setTestrunStatus({ systemStatus: status }));
+
+    effects.onSetTestrunStatus$.subscribe(action => {
+      expect(action).toEqual(
+        actions.setDeviceInProgress({ device: status.device })
+      );
+      done();
+    });
   });
 
   it('onSetDevices$ should call setHasDevices', done => {
