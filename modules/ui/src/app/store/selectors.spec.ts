@@ -16,6 +16,7 @@
 
 import { AppState } from './state';
 import {
+  selectDeviceInProgress,
   selectDevices,
   selectError,
   selectHasConnectionSettings,
@@ -46,6 +47,7 @@ describe('Selectors', () => {
       isOpenStartTestrun: false,
       systemStatus: null,
       isTestrunStarted: false,
+      deviceInProgress: null,
     },
   };
 
@@ -97,5 +99,10 @@ describe('Selectors', () => {
   it('should select isOpenStartTestrun', () => {
     const result = selectIsOpenStartTestrun.projector(initialState);
     expect(result).toEqual(false);
+  });
+
+  it('should select deviceInProgress', () => {
+    const result = selectDeviceInProgress.projector(initialState);
+    expect(result).toEqual(null);
   });
 });

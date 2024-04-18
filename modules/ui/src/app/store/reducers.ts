@@ -82,6 +82,12 @@ export const sharedReducer = createReducer(
       ...state,
       isTestrunStarted,
     };
+  }),
+  on(Actions.setDeviceInProgress, (state, { device }) => {
+    return {
+      ...state,
+      deviceInProgress: device,
+    };
   })
 );
 
