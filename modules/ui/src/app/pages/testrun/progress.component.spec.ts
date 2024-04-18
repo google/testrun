@@ -39,7 +39,6 @@ import { Component, Input } from '@angular/core';
 import { IResult, TestrunStatus } from '../../model/testrun-status';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ProgressInitiateFormComponent } from './components/progress-initiate-form/progress-initiate-form.component';
-import { DownloadReportComponent } from '../../components/download-report/download-report.component';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { LoaderService } from '../../services/loader.service';
@@ -119,7 +118,6 @@ describe('ProgressComponent', () => {
           MatToolbarModule,
           MatDialogModule,
           SpinnerComponent,
-          DownloadReportPdfComponent,
           BrowserAnimationsModule,
         ],
       })
