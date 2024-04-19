@@ -46,7 +46,6 @@ import { IResult, TestrunStatus } from '../../model/testrun-status';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { ProgressInitiateFormComponent } from './components/progress-initiate-form/progress-initiate-form.component';
-import { DownloadReportComponent } from '../../components/download-report/download-report.component';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { LoaderService } from '../../services/loader.service';
@@ -54,7 +53,6 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../../store/state';
 import { selectDevices, selectHasDevices } from '../../store/selectors';
-import { DownloadReportPdfComponent } from '../../components/download-report-pdf/download-report-pdf.component';
 
 describe('ProgressComponent', () => {
   let component: ProgressComponent;
@@ -93,6 +91,7 @@ describe('ProgressComponent', () => {
           ProgressComponent,
           FakeProgressStatusCardComponent,
           FakeProgressTableComponent,
+          FakeDownloadOptionsComponent,
         ],
         providers: [
           { provide: TestRunService, useValue: testRunServiceMock },
@@ -114,7 +113,6 @@ describe('ProgressComponent', () => {
           MatToolbarModule,
           MatDialogModule,
           SpinnerComponent,
-          DownloadReportPdfComponent,
         ],
       })
         .overrideComponent(ProgressComponent, {
@@ -325,6 +323,7 @@ describe('ProgressComponent', () => {
           ProgressComponent,
           FakeProgressStatusCardComponent,
           FakeProgressTableComponent,
+          FakeDownloadOptionsComponent,
         ],
         providers: [
           { provide: TestRunService, useValue: testRunServiceMock },
@@ -345,9 +344,7 @@ describe('ProgressComponent', () => {
           MatIconModule,
           MatToolbarModule,
           MatDialogModule,
-          DownloadReportComponent,
           SpinnerComponent,
-          DownloadReportPdfComponent,
         ],
       })
         .overrideComponent(ProgressComponent, {
@@ -484,10 +481,10 @@ describe('ProgressComponent', () => {
         expect(startBtn.disabled).toBeTrue();
       });
 
-      it('should not have "Download Report" button', () => {
-        const reportBtn = compiled.querySelector('.report-button');
+      it('should not have "Download" options', () => {
+        const downloadComp = compiled.querySelector('app-download-options');
 
-        expect(reportBtn).toBeNull();
+        expect(downloadComp).toBeNull();
       });
     });
 
@@ -524,21 +521,10 @@ describe('ProgressComponent', () => {
         expect(startBtn.disabled).toBeFalse();
       });
 
-      it('should have "Download Report" button', () => {
-        const reportBtn = compiled.querySelector('.report-button');
+      it('should have "Download" options', () => {
+        const downloadComp = compiled.querySelector('app-download-options');
 
-        expect(reportBtn).not.toBeNull();
-      });
-
-      it('should have report link', () => {
-        const link = compiled.querySelector(
-          '.download-report-link'
-        ) as HTMLAnchorElement;
-
-        expect(link.href).toEqual('https://api.testrun.io/report.pdf');
-        expect(link.download).toEqual(
-          'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
-        );
+        expect(downloadComp).not.toBeNull();
       });
     });
 
@@ -557,10 +543,10 @@ describe('ProgressComponent', () => {
         expect(startBtn.disabled).toBeFalse();
       });
 
-      it('should not have "Download Report" button', () => {
-        const reportBtn = compiled.querySelector('.report-button');
+      it('should not have "Download" options', () => {
+        const downloadComp = compiled.querySelector('app-download-options');
 
-        expect(reportBtn).toBeNull();
+        expect(downloadComp).toBeNull();
       });
     });
 
@@ -644,4 +630,12 @@ class FakeProgressStatusCardComponent {
 })
 class FakeProgressTableComponent {
   @Input() dataSource$!: Observable<IResult[] | undefined>;
+}
+
+@Component({
+  selector: 'app-download-options',
+  template: '<div></div>',
+})
+class FakeDownloadOptionsComponent {
+  @Input() data!: TestrunStatus;
 }
