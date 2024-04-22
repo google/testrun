@@ -67,11 +67,12 @@ class ProtocolModule(TestModule):
         LOGGER.info(f'Checking BACnet version for device: {device}')
         if self._device_ipv4_addr in device[2]:
           result_status, result_description = \
-            self._bacnet.validate_protocol_version( device[2], device[3])
+            self._bacnet.validate_protocol_version(device[2], device[3])
           break
         else:
           LOGGER.info('Device does not match expected IP address, skipping')
     else:
+      result_status = 'Feature Not Present'
       result_description = 'No BACnet devices discovered.'
     LOGGER.info(result_description)
     return result_status, result_description

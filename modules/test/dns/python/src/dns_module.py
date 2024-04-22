@@ -213,7 +213,8 @@ class DNSModule(TestModule):
 
     if dns_packets_local or dns_packets_not_local:
       if dns_packets_not_local:
-        result = False, 'DNS traffic detected to non-DHCP provided server'
+        result = ('Feature Not Present',
+                  'DNS traffic detected to non-DHCP provided server')
       else:
         LOGGER.info('DNS traffic detected only to configured DHCP DNS server')
         result = True, 'DNS traffic detected only to DHCP provided server'

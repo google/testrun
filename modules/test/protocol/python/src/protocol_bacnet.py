@@ -70,7 +70,8 @@ class BACnet():
           result = True, 'Device IP matches discovered device'
           break
     else:
-      result = None, 'BACnet discovery could not resolve any devices'
+      result = ('Feature Not Present',
+        'BACnet discovery could not resolve any devices')
     if result is not None:
       LOGGER.info(result[1])
     return result

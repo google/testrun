@@ -272,11 +272,11 @@ class NTPModule(TestModule):
         result = False, ('Device sent NTP request to DHCP provided ' +
                          'server and non-DHCP provided server')
       elif ntp_to_remote:
-        result = False, 'Device sent NTP request to non-DHCP provided server'
+        result = 'Feature Not Present', 'Device sent NTP request to non-DHCP provided server'
       elif ntp_to_local:
         result = True, 'Device sent NTP request to DHCP provided server'
     else:
-      result = False, 'Device has not sent any NTP requests'
+      result = 'Feature Not Present', 'Device has not sent any NTP requests'
 
     LOGGER.info(result[1])
     return result
