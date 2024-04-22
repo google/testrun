@@ -48,6 +48,11 @@
   height: 100%;
 }
 
+.history-content {
+  container-type: inline-size;
+  container-name: history-content;
+}
+
 .history-content table {
   th {
     font-weight: 700;
@@ -92,6 +97,27 @@
 
   .filter-button.active .mat-icon {
     color: mat.get-color-from-palette($color-primary, 600);
+  }
+}
+
+@container history-content (width < 770px) {
+  th,
+  td {
+    padding: 0 8px;
+  }
+}
+
+@container history-content (width < 680px) {
+  th,
+  td {
+    padding: 0 4px;
+  }
+}
+
+@container history-content (width < 632px) {
+  th,
+  td {
+    padding: 0 2px;
   }
 }
 
