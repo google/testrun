@@ -68,7 +68,7 @@ describe('ShutdownAppModalComponent', () => {
     const title = compiled.querySelector('.modal-title') as HTMLElement;
     const content = compiled.querySelector('.modal-content') as HTMLElement;
 
-    expect(title.innerHTML.trim()).toEqual('title?');
+    expect(title.innerHTML.trim()).toEqual('title');
     expect(content.innerHTML.trim()).toEqual('content');
   });
 
