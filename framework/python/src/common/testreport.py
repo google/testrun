@@ -261,18 +261,20 @@ class TestReport():
             <tbody>
               <tr>
                 <td width="10%" class="steps-to-resolve index">{index}.</td>
-                <td class="steps-to-resolve"><span class="steps-to-resolve subtitle">Name</span><br>{test["name"]}</td>
+                <td width="32%" class="steps-to-resolve"><span class="steps-to-resolve subtitle">Name</span><br>{test["name"]}</td>
                 <td class="steps-to-resolve"><span class="steps-to-resolve subtitle">Description</span><br>{test["description"]}</td>
               </tr>
               <tr>
                 <td width="10%"></td>
-                <td colspan="2" class="steps-to-resolve">
+                <td colspan="2" class="steps-to-resolve" style="padding-bottom:20px;">
                   <span class="steps-to-resolve subtitle">Steps to resolve</span>
           '''
 
         step_number = 1
         for recommendation in test['recommendations']:
-          page += f'<br>{step_number}. {recommendation}'
+          page += f'''<br>
+            <span style="font-size: 14px">{
+                step_number}. {recommendation}</span>'''
           step_number += 1
 
         page += '</td></tbody></table>'
@@ -613,7 +615,7 @@ class TestReport():
       --header-width: 8.5in;
       --header-pos-x: 0in;
       --header-pos-y: 0in;
-      --summary-width: 8.5in;
+      --page-width: 8.5in;
       --summary-height: 2.8in;
       --vertical-line-height: calc(var(--summary-height)-.2in);
       --vertical-line-pos-x: 25%;
@@ -744,11 +746,13 @@ class TestReport():
     table.steps-to-resolve {
       background-color: #F8F9FA;
       margin-bottom: 30px;
+      width: var(--page-width);
     }
 
     td.steps-to-resolve {
       padding-left: 20px;
       padding-top: 20px;
+      padding-right: 15px;
       vertical-align: top;
     }
 
@@ -761,7 +765,7 @@ class TestReport():
     }
 
     .steps-to-resolve.index {
-      font-size: 30px;
+      font-size: 40px;
       padding-left: 30px;
     }
 
@@ -801,7 +805,7 @@ class TestReport():
     /* Define the summary related css elements*/
     .summary-content {
       position: relative;
-      width: var(--summary-width);
+      width: var(--page-width);
       height: var(--summary-height);
       margin-top: 19px;
       margin-bottom: 19px;
