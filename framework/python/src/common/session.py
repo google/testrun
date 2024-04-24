@@ -27,7 +27,6 @@ STARTUP_TIMEOUT_KEY = 'startup_timeout'
 LOG_LEVEL_KEY = 'log_level'
 API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
-MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
 LOGGER = logger.get_logger('session')
 
@@ -90,7 +89,6 @@ class TestRunSession():
       'log_level': 'INFO',
       'startup_timeout': 60,
       'monitor_period': 30,
-      'max_device_reports': 5,
       'api_url': 'http://localhost',
       'api_port': 8000
     }
@@ -134,10 +132,6 @@ class TestRunSession():
 
       if API_PORT_KEY in config_file_json:
         self._config[API_PORT_KEY] = config_file_json.get(API_PORT_KEY)
-
-      if MAX_DEVICE_REPORTS_KEY in config_file_json:
-        self._config[MAX_DEVICE_REPORTS_KEY] = config_file_json.get(
-          MAX_DEVICE_REPORTS_KEY)
 
       LOGGER.debug(self._config)
 
@@ -184,9 +178,6 @@ class TestRunSession():
 
   def get_api_port(self):
     return self._config.get(API_PORT_KEY)
-
-  def get_max_device_reports(self):
-    return self._config.get(MAX_DEVICE_REPORTS_KEY)
 
   def set_config(self, config_json):
     self._config.update(config_json)
