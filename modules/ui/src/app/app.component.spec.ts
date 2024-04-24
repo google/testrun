@@ -143,6 +143,7 @@ describe('AppComponent', () => {
         AppComponent,
         FakeGeneralSettingsComponent,
         FakeSpinnerComponent,
+        FakeShutdownAppComponent,
         FakeVersionComponent,
       ],
     });
@@ -656,6 +657,14 @@ class FakeGeneralSettingsComponent {
   template: '<div></div>',
 })
 class FakeSpinnerComponent {}
+
+@Component({
+  selector: 'app-shutdown-app',
+  template: '<div></div>',
+})
+class FakeShutdownAppComponent {
+  @Input() disable!: boolean;
+}
 
 @Component({
   selector: 'app-version',
