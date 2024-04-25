@@ -96,6 +96,15 @@ class Api:
                                self.edit_device,
                                methods=["POST"])
 
+    self._router.add_api_route("/system/config/certs",
+                               self.get_certs)
+    self._router.add_api_route("/system/config/certs",
+                               self.upload_cert,
+                               methods=["POST"])
+    self._router.add_api_route("/system/config/certs",
+                               self.delete_cert,
+                               methods=["DELETE"])
+
     # Allow all origins to access the API
     origins = ["*"]
 
@@ -517,7 +526,6 @@ class Api:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid JSON received")
 
-
   async def get_report(self, response: Response,
                        device_name, timestamp):
 
@@ -569,3 +577,12 @@ class Api:
         return False
 
     return True
+
+  def get_certs(self):
+    return []
+
+  def upload_cert(self, file):
+    return []
+
+  def delete_cert(self, request: Request):
+    return []

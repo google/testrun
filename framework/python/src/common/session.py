@@ -28,24 +28,45 @@ LOG_LEVEL_KEY = 'log_level'
 API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
+CERTS_PATH = 'local/root_certs'
 
 LOGGER = logger.get_logger('session')
 
 class TestRunSession():
   """Represents the current session of Test Run."""
 
-  def __init__(self, config_file):
+  def __init__(self, root_dir):
+    self._root_dir = root_dir
+
+    # Current status of Testrun
     self._status = 'Idle'
+
+    # Target test device
     self._device = None
+
+    # Start time of testing
     self._started = None
     self._finished = None
+
+    # Current testing results
     self._results = []
+
+    # All historical reports
     self._module_reports = []
+
+    # Parameters specified when starting Testrun
     self._runtime_params = []
+
+    # All device configurations
     self._device_repository = []
+
+    # Number of tests to be run this session
     self._total_tests = 0
+
+    # Direct url for PDF report
     self._report_url = None
 
+    # Version of Testrun installed
     self._version = None
     self._load_version()
 
@@ -53,6 +74,10 @@ class TestRunSession():
     self._config = self._get_default_config()
     self._load_config()
 
+    self._certs = []
+    self._load_certs()
+
+    # Fetch the timezone of the host system
     tz = util.run_command('cat /etc/timezone')
     # TODO: Check if timezone is fetched successfully
     self._timezone = tz[0]
@@ -325,3 +350,12 @@ class TestRunSession():
 
   def get_timezone(self):
     return self._timezone
+
+  def _load_certs(self):
+
+    LOGGER.debug(f'Loading certificates from {CERTS_PATH}')
+
+    for cert_file in os.listdir(CERTS_PATH)
+
+  def get_certs(self):
+    return self._certs
