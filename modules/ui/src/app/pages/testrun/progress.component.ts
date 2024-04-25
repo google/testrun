@@ -144,6 +144,10 @@ export class ProgressComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((startTestrun: boolean) => {
         if (startTestrun) {
+          // @ts-expect-error data layer is not null
+          window.dataLayer.push({
+            event: 'successful_testrun_initiation',
+          });
           this.testrunStore.setIsTestrunStarted(true);
           this.testrunStore.getStatus();
         }
