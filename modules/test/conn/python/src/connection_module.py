@@ -105,7 +105,12 @@ class ConnectionModule(TestModule):
 
       # Check MAC address matches IP address
       if (arp_packet.hwsrc == self._device_mac
-          and (arp_packet.psrc not in (self._device_ipv4_addr, '0.0.0.0'))):
+          and (arp_packet.psrc not in (
+            self._device_ipv4_addr,
+            '0.0.0.0'
+          )) and not arp_packet.psrc.startswith(
+            '169.254'
+          )):
         LOGGER.info(f'Bad ARP packet detected for MAC: {self._device_mac}')
         LOGGER.info(f'''ARP packet from IP {arp_packet.psrc}
                     does not match {self._device_ipv4_addr}''')
