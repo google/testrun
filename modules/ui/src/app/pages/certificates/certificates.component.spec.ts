@@ -7,7 +7,7 @@ import { certificate } from '../../mocks/certificate.mock';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import SpyObj = jasmine.SpyObj;
 
-fdescribe('CertificatesComponent', () => {
+describe('CertificatesComponent', () => {
   let component: CertificatesComponent;
   let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
   let fixture: ComponentFixture<CertificatesComponent>;

@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CertificateItemComponent } from './certificate-item.component';
 import { certificate } from '../../../mocks/certificate.mock';
 
-fdescribe('CertificateItemComponent', () => {
+describe('CertificateItemComponent', () => {
   let component: CertificateItemComponent;
   let fixture: ComponentFixture<CertificateItemComponent>;
   let compiled: HTMLElement;
