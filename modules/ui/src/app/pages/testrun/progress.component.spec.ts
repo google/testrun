@@ -85,7 +85,6 @@ describe('ProgressComponent', () => {
       // @ts-expect-error data layer should be defined
       window.dataLayer = window.dataLayer || [];
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
-
       TestBed.configureTestingModule({
         declarations: [
           ProgressComponent,
@@ -211,6 +210,8 @@ describe('ProgressComponent', () => {
     beforeEach(async () => {
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
       testRunServiceMock.testrunInProgress.and.returnValue(false);
+      // @ts-expect-error data layer should be defined
+      window.dataLayer = window.dataLayer || [];
 
       await TestBed.configureTestingModule({
         declarations: [
