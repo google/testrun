@@ -135,6 +135,12 @@ export class TestRunService {
       .pipe(map(() => true));
   }
 
+  shutdownTestrun(): Observable<boolean> {
+    return this.http
+      .post<{ success: string }>(`${API_URL}/system/shutdown`, {})
+      .pipe(map(() => true));
+  }
+
   getTestModules(): TestModule[] {
     return this.testModules;
   }
