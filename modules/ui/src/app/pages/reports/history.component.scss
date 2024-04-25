@@ -35,12 +35,10 @@
   overflow-y: auto;
   border-radius: 4px;
   border: 1px solid $lighter-grey;
-  height: -webkit-fit-content;
-  height: -moz-fit-content;
-  height: 100%;
-  max-height: -webkit-fill-available;
-  max-height: -moz-available;
-  max-height: stretch;
+  height: -webkit-max-content;
+  height: -moz-max-content;
+  height: max-content;
+  max-height: calc(100vh - 160px);
 }
 
 .history-content-empty,
