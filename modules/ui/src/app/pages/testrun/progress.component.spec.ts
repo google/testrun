@@ -82,6 +82,8 @@ describe('ProgressComponent', () => {
 
   describe('Class tests', () => {
     beforeEach(() => {
+      // @ts-expect-error data layer should be defined
+      window.dataLayer = window.dataLayer || [];
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
 
       TestBed.configureTestingModule({
