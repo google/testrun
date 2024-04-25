@@ -44,6 +44,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { AppEffects } from './store/effects';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { SettingsDropdownComponent } from './pages/settings/components/settings-dropdown/settings-dropdown.component';
+import { CertificatesComponent } from './pages/certificates/certificates.component';
 
 @NgModule({
   declarations: [AppComponent, GeneralSettingsComponent],
@@ -71,6 +72,7 @@ import { SettingsDropdownComponent } from './pages/settings/components/settings-
     EffectsModule.forRoot([AppEffects]),
     CdkTrapFocus,
     SettingsDropdownComponent,
+    CertificatesComponent,
   ],
   providers: [
     {

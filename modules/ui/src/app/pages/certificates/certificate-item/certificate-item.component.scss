@@ -1,0 +1,42 @@
+.certificate-item-container {
+  display: grid;
+  grid-template-columns: 24px minmax(200px, 1fr) 24px;
+  gap: 16px;
+  box-sizing: border-box;
+  height: 88px;
+  padding: 12px 0;
+  border-bottom: 1px solid #dadce0;
+}
+
+.certificate-item-icon {
+  color: #5f6368;
+}
+
+.certificate-item-delete {
+  padding: 0;
+  margin-left: -50%;
+  border-radius: 4px;
+  color: #5f6368;
+  & ::ng-deep .mat-mdc-button-persistent-ripple {
+    border-radius: 4px;
+  }
+}
+
+.certificate-item-information {
+  overflow: hidden;
+  p {
+    font-family: Roboto, sans-serif;
+    margin: 0;
+  }
+  .certificate-item-name {
+    font-size: 16px;
+    color: #3c4043;
+    height: 24px;
+  }
+  .certificate-item-organisation,
+  .certificate-item-expires {
+    font-size: 14px;
+    color: #5f6368;
+    height: 20px;
+  }
+}
