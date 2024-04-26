@@ -285,10 +285,10 @@ class TestReport():
         # we'll add it to this page, otherweise, we'll put it on the next
         # page. Also make sure that if there is less than 40 pixels
         # left after a data row, start a new page or the row will get cut off.
-        # Current row size is 40.667 so rounding to 41 padding,
-        # adjust if we update the "module-data tbody tr" element.
+        # Current row size is 42 # adjust if we update the 
+        # "module-data tbody tr" element.
         if content_size >= content_max_size or (
-          data_rows_active and content_max_size - content_size < 41):
+          data_rows_active and content_max_size - content_size < 42):
           # If in the middle of a table, close the table
           if data_rows_active:
             page_content += '</tbody></table>'
