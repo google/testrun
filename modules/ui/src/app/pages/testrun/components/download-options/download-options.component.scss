@@ -62,6 +62,27 @@ $option-height: 36px;
     > * {
     border-color: #000000de;
   }
+
+  &:has(.download-options-select[aria-expanded='true'])
+    ::ng-deep
+    .mat-mdc-text-field-wrapper.mdc-text-field--focused
+    .mdc-notched-outline
+    > * {
+    border: none;
+  }
+
+  ::ng-deep
+    .mat-mdc-text-field-wrapper.mdc-text-field--outlined:hover
+    .mdc-notched-outline
+    > * {
+    border: none;
+  }
+}
+
+.download-option {
+  ::ng-deep .mat-mdc-focus-indicator {
+    display: none;
+  }
 }
 
 .download-option {
