@@ -279,7 +279,7 @@ class TestReport():
         # Add appropriate content size for each data row
         # update if CSS changes for this element
         elif '<tr>' in line and data_rows_active:
-          content_size += 40.667
+          content_size += 42
 
         # If the current line is within the content size limit
         # we'll add it to this page, otherweise, we'll put it on the next
