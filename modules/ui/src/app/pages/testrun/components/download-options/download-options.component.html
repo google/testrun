@@ -17,7 +17,7 @@ limitations under the License.
   appearance="outline"
   *ngIf="data"
   class="download-options-field">
-  <mat-select placeholder="Download">
+  <mat-select placeholder="Download" class="download-options-select">
     <mat-option
       class="download-option pdf"
       (onSelectionChange)="onSelected($event, data, DownloadOption.PDF)">
