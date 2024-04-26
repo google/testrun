@@ -30,21 +30,21 @@ limitations under the License.
       </ng-container>
     </div>
   </ng-container>
-</ng-container>
-<ng-template #empty>
-  <div class="device-repository-content-empty">
-    <ng-container *ngTemplateOutlet="addDeviceButton"></ng-container>
-  </div>
-</ng-template>
+  <ng-template #empty>
+    <div class="device-repository-content-empty">
+      <ng-container *ngTemplateOutlet="addDeviceButton"></ng-container>
+    </div>
+  </ng-template>
 
-<ng-template #addDeviceButton>
-  <button
-    (click)="openDialog()"
-    aria-label="Add device"
-    class="device-add-button"
-    color="primary"
-    mat-flat-button>
-    <mat-icon>add</mat-icon>
-    Add device
-  </button>
-</ng-template>
+  <ng-template #addDeviceButton>
+    <button
+      (click)="openDialog(vm.devices)"
+      aria-label="Add device"
+      class="device-add-button"
+      color="primary"
+      mat-flat-button>
+      <mat-icon>add</mat-icon>
+      Add device
+    </button>
+  </ng-template>
+</ng-container>
