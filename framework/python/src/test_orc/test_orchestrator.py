@@ -190,32 +190,33 @@ class TestOrchestrator:
     else:
       max_device_reports = self._session.get_max_device_reports()
 
-    completed_results_dir = os.path.join(
-        self._root_path,
-        LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder))
+    if max_device_reports > 0:
+      completed_results_dir = os.path.join(
+          self._root_path,
+          LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder))
 
-    completed_tests = os.listdir(completed_results_dir)
-    cur_test_count = len(completed_tests)
-    if cur_test_count > max_device_reports:
-      LOGGER.debug("Current device has more than max tests results allowed: " +
-                   str(cur_test_count) + ">" + str(max_device_reports))
+      completed_tests = os.listdir(completed_results_dir)
+      cur_test_count = len(completed_tests)
+      if cur_test_count > max_device_reports:
+        LOGGER.debug("Current device has more than max tests results allowed: " +
+                     str(cur_test_count) + ">" + str(max_device_reports))
 
-      # Find and delete the oldest test
-      oldest_test = self._find_oldest_test(completed_results_dir)
-      if oldest_test is not None:
-        LOGGER.debug("Oldest test found, removing: " + str(oldest_test[1]))
-        shutil.rmtree(oldest_test[1], ignore_errors=True)
+        # Find and delete the oldest test
+        oldest_test = self._find_oldest_test(completed_results_dir)
+        if oldest_test is not None:
+          LOGGER.debug("Oldest test found, removing: " + str(oldest_test[1]))
+          shutil.rmtree(oldest_test[1], ignore_errors=True)
 
-        # Remove oldest test from session
-        oldest_timestamp = oldest_test[0]
-        self.get_session().get_target_device().remove_report(oldest_timestamp)
+          # Remove oldest test from session
+          oldest_timestamp = oldest_test[0]
+          self.get_session().get_target_device().remove_report(oldest_timestamp)
 
-        # Confirm the delete was succesful
-        new_test_count = len(os.listdir(completed_results_dir))
-        if (new_test_count != cur_test_count
-            and new_test_count > max_device_reports):
-          # Continue cleaning up until we're under the max
-          self._cleanup_old_test_results(device)
+          # Confirm the delete was succesful
+          new_test_count = len(os.listdir(completed_results_dir))
+          if (new_test_count != cur_test_count
+              and new_test_count > max_device_reports):
+            # Continue cleaning up until we're under the max
+            self._cleanup_old_test_results(device)
 
   def _find_oldest_test(self, completed_tests_dir):
     oldest_timestamp = None
