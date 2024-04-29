@@ -91,8 +91,12 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
     dialogRef
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(data => {
-        if (data === 'testrunStarted') {
+      .subscribe(testrunStarted => {
+        if (testrunStarted) {
+          // @ts-expect-error data layer is not null
+          window.dataLayer.push({
+            event: 'successful_testrun_initiation',
+          });
           this.route.navigate([Routes.Testing]);
         }
       });
