@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { of } from 'rxjs';
 import { Device } from '../../model/device';
 
@@ -31,17 +36,25 @@ import SpyObj = jasmine.SpyObj;
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { DevicesStore } from './devices.store';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { ProgressInitiateFormComponent } from '../testrun/components/progress-initiate-form/progress-initiate-form.component';
+import { Routes } from '../../model/routes';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { Component } from '@angular/core';
 
 describe('DeviceRepositoryComponent', () => {
   let component: DeviceRepositoryComponent;
   let fixture: ComponentFixture<DeviceRepositoryComponent>;
   let compiled: HTMLElement;
   let mockDevicesStore: SpyObj<DevicesStore>;
+  let router: Router;
 
   const stateServiceMock: jasmine.SpyObj<FocusManagerService> =
     jasmine.createSpyObj('stateServiceMock', ['focusFirstElementInContainer']);
 
   beforeEach(async () => {
+    // @ts-expect-error data layer should be defined
+    window.dataLayer = window.dataLayer || [];
     mockDevicesStore = jasmine.createSpyObj('DevicesStore', [
       'setIsOpenAddDevice',
       'selectDevice',
@@ -52,6 +65,9 @@ describe('DeviceRepositoryComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [
+        RouterTestingModule.withRoutes([
+          { path: 'testing', component: FakeProgressComponent },
+        ]),
         DeviceRepositoryModule,
         BrowserAnimationsModule,
         MatIconTestingModule,
@@ -60,13 +76,14 @@ describe('DeviceRepositoryComponent', () => {
         { provide: DevicesStore, useValue: mockDevicesStore },
         { provide: FocusManagerService, useValue: stateServiceMock },
       ],
-      declarations: [DeviceRepositoryComponent],
+      declarations: [DeviceRepositoryComponent, FakeProgressComponent],
     }).compileComponents();
 
     TestBed.overrideProvider(DevicesStore, { useValue: mockDevicesStore });
 
     fixture = TestBed.createComponent(DeviceRepositoryComponent);
     component = fixture.componentInstance;
+    router = TestBed.get(Router);
     compiled = fixture.nativeElement as HTMLElement;
   });
 
@@ -278,4 +295,39 @@ describe('DeviceRepositoryComponent', () => {
       expect(openDeviceDialogSpy).toHaveBeenCalledWith([device], device, true);
     });
   });
+
+  describe('#openStartTestrun', () => {
+    it('should open initiate test run modal', fakeAsync(() => {
+      const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+        afterClosed: () => of(true),
+      } as MatDialogRef<typeof ProgressInitiateFormComponent>);
+
+      fixture.ngZone?.run(() => {
+        component.openStartTestrun(device, [device]);
+
+        expect(openSpy).toHaveBeenCalledWith(ProgressInitiateFormComponent, {
+          ariaLabel: 'Initiate testrun',
+          data: {
+            devices: [device],
+            device: device,
+          },
+          autoFocus: true,
+          hasBackdrop: true,
+          disableClose: true,
+          panelClass: 'initiate-test-run-dialog',
+        });
+
+        tick();
+        expect(router.url).toBe(Routes.Testing);
+
+        openSpy.calls.reset();
+      });
+    }));
+  });
 });
+
+@Component({
+  selector: 'app-fake-progress-component',
+  template: '',
+})
+class FakeProgressComponent {}
