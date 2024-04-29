@@ -409,8 +409,6 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
       self.get_session().set_target_device(device)
 
-    self._set_status('In Progress')
-
     LOGGER.info(
         f'Discovered {device.manufacturer} {device.model} on the network. ' +
         'Waiting for device to obtain IP')
