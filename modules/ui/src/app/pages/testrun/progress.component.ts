@@ -161,6 +161,6 @@ export class ProgressComponent implements OnInit, OnDestroy {
   }
 
   resultIsEmpty(tests: TestsResponse | undefined) {
-    this.testrunStore.resultIsEmpty(tests);
+    return this.testrunStore.resultIsEmpty(tests);
   }
 }
