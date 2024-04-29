@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Store previous test run information."""
+"""Store previous Testrun information."""
 
 from datetime import datetime
 from weasyprint import HTML
@@ -23,7 +23,7 @@ from test_orc.test_case import TestCase
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
-TESTS_FIRST_PAGE = 12
+TESTS_FIRST_PAGE = 11
 TESTS_PER_PAGE = 20
 
 # Locate parent directory
@@ -329,16 +329,16 @@ class TestReport():
         # Add appropriate content size for each data row
         # update if CSS changes for this element
         elif '<tr>' in line and data_rows_active:
-          content_size += 40.667
+          content_size += 42
 
         # If the current line is within the content size limit
         # we'll add it to this page, otherweise, we'll put it on the next
         # page. Also make sure that if there is less than 40 pixels
         # left after a data row, start a new page or the row will get cut off.
-        # Current row size is 40.667 so rounding to 41 padding,
-        # adjust if we update the "module-data tbody tr" element.
+        # Current row size is 42 # adjust if we update the 
+        # "module-data tbody tr" element.
         if content_size >= content_max_size or (
-          data_rows_active and content_max_size - content_size < 41):
+          data_rows_active and content_max_size - content_size < 42):
           # If in the middle of a table, close the table
           if data_rows_active:
             page_content += '</tbody></table>'
@@ -463,7 +463,8 @@ class TestReport():
     mac = (json_data['device']['mac_addr']
            if 'mac_addr' in json_data['device'] else 'Undefined')
 
-    summary += '<div class="device-information">'
+    summary += '''<div class="device-information">
+      <div style="padding-right:0.1in;">'''
 
     summary += self.generate_device_summary_label('Manufacturer', manufacturer)
     summary += self.generate_device_summary_label('Model', model)
@@ -472,7 +473,7 @@ class TestReport():
                                                   mac,
                                                   trailing_space=False)
 
-    summary += '</div>'
+    summary += '</div></div>'
 
     # Add device configuration
     summary += '''
@@ -796,10 +797,10 @@ class TestReport():
 
     .device-information {
       padding-top: 0.2in;
-      padding-left: 0.3in;
+      padding-left: 0.2in;
       background-color: #F8F9FA;
       width: 250px;
-      height: 2.6in;
+      height: 100.4%;
     }
 
     /* Define the summary related css elements*/
@@ -810,6 +811,7 @@ class TestReport():
       margin-top: 19px;
       margin-bottom: 19px;
       background-color: #E8EAED;
+      padding-bottom: 20px;
     }
 
     .summary-item-label {
@@ -859,7 +861,7 @@ class TestReport():
       right: 0in;
       top: 0in;
       width: 2.6in;
-      height: var(--summary-height);
+      height: 100%;
     }
 
     .summary-box-compliant {

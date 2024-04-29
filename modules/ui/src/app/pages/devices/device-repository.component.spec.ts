@@ -136,7 +136,7 @@ describe('DeviceRepositoryComponent', () => {
           device: null,
           title: 'Create device',
           testModules: MOCK_TEST_MODULES,
-          devices: [],
+          devices: [device, device, device],
         },
         autoFocus: true,
         hasBackdrop: true,
