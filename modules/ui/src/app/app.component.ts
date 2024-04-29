@@ -54,7 +54,10 @@ export class AppComponent {
   private openedSettingFromToggleBtn = true;
 
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
+  @ViewChild('certDrawer') public certDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
+  @ViewChild('toggleCertificatesBtn')
+  public toggleCertificatesBtn!: HTMLButtonElement;
   @ViewChild('navigation') public navigation!: ElementRef;
   @ViewChild('settings') public settings!: GeneralSettingsComponent;
   viewModel$ = this.appStore.viewModel$;
@@ -71,6 +74,7 @@ export class AppComponent {
   ) {
     this.appStore.getDevices();
     this.appStore.getSystemStatus();
+    this.appStore.getCertificates();
     this.matIconRegistry.addSvgIcon(
       'devices',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_LOGO_URL)
@@ -105,6 +109,10 @@ export class AppComponent {
   navigateToRuntime(): void {
     this.route.navigate([Routes.Testing]);
     this.appStore.setIsOpenStartTestrun();
+  }
+
+  async closeCertificates(): Promise<void> {
+    await this.certDrawer.close();
   }
 
   async closeSetting(hasDevices: boolean): Promise<void> {
@@ -144,6 +152,10 @@ export class AppComponent {
     this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
     this.settings.getSystemInterfaces();
     await this.settingsDrawer.open();
+  }
+
+  async openCert() {
+    await this.certDrawer.open();
   }
 
   consentShown() {
