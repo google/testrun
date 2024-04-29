@@ -89,7 +89,7 @@ class TestrunSession():
       'log_level': 'INFO',
       'startup_timeout': 60,
       'monitor_period': 30,
-      'max_device_reports': 5,
+      'max_device_reports': 0,
       'api_url': 'http://localhost',
       'api_port': 8000
     }
