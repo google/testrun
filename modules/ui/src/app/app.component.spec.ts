@@ -61,6 +61,7 @@ import {
   selectSystemStatus,
 } from './store/selectors';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { CertificatesComponent } from './pages/certificates/certificates.component';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -94,6 +95,7 @@ describe('AppComponent', () => {
       'fetchDevices',
       'getTestModules',
       'testrunInProgress',
+      'fetchCertificates',
     ]);
 
     mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
@@ -113,6 +115,7 @@ describe('AppComponent', () => {
         BypassComponent,
         CalloutComponent,
         MatIconTestingModule,
+        CertificatesComponent,
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
@@ -648,6 +651,27 @@ describe('AppComponent', () => {
     await component.closeSetting(false);
 
     expect(spyToggle).toHaveBeenCalledTimes(0);
+  });
+
+  it('should render certificates button', () => {
+    const generalSettingsButton = compiled.querySelector(
+      '.app-toolbar-button-certificates'
+    );
+
+    expect(generalSettingsButton).toBeDefined();
+  });
+
+  it('should call settingsDrawer open on click settings button', () => {
+    fixture.detectChanges();
+
+    const settingsBtn = compiled.querySelector(
+      '.app-toolbar-button-certificates'
+    ) as HTMLButtonElement;
+    spyOn(component.certDrawer, 'open');
+
+    settingsBtn.click();
+
+    expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
   });
 });
 
