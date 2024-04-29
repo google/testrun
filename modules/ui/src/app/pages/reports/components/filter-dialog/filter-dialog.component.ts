@@ -162,7 +162,7 @@ export class FilterDialogComponent
   private createFilterForm() {
     this.filterForm = this.fb.group({
       deviceInfo: ['', [this.deviceValidators.deviceStringFormat()]],
-      deviceFirmware: ['', [this.deviceValidators.deviceStringFormat()]],
+      deviceFirmware: ['', [this.deviceValidators.firmwareStringFormat()]],
       results: new FormArray(this.resultList.map(() => new FormControl(false))),
     });
   }

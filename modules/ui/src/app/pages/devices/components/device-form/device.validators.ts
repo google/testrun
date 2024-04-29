@@ -23,15 +23,28 @@ import { Device } from '../../../../model/device';
  */
 export class DeviceValidators {
   readonly STRING_FORMAT_REGEXP = new RegExp(
+    "^([a-z0-9\\p{L}\\p{M}.',-_ ]{1,28})$",
+    'u'
+  );
+
+  readonly FIRMWARE_FORMAT_REGEXP = new RegExp(
     "^([a-z0-9\\p{L}\\p{M}.',-_ ]{1,64})$",
     'u'
   );
 
   public deviceStringFormat(): ValidatorFn {
+    return this.stringFormat(this.STRING_FORMAT_REGEXP);
+  }
+
+  public firmwareStringFormat(): ValidatorFn {
+    return this.stringFormat(this.FIRMWARE_FORMAT_REGEXP);
+  }
+
+  private stringFormat(regExp: RegExp): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value?.trim();
       if (value) {
-        const result = this.STRING_FORMAT_REGEXP.test(value);
+        const result = regExp.test(value);
         return !result ? { invalid_format: true } : null;
       }
       return null;
