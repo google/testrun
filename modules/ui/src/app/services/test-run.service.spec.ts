@@ -32,6 +32,8 @@ import { device } from '../mocks/device.mock';
 import { NEW_VERSION, VERSION } from '../mocks/version.mock';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../store/state';
+import { Certificate } from '../model/certificate';
+import { certificate } from '../mocks/certificate.mock';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -456,5 +458,21 @@ describe('TestRunService', () => {
       JSON.stringify({ mac_addr: '01:01:01:01:01:01', device })
     );
     req.flush(true);
+  });
+
+  it('fetchCertificates should return certificates', () => {
+    const certificates = [certificate] as Certificate[];
+
+    service.fetchCertificates().subscribe(res => {
+      expect(res).toEqual(certificates);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs/list'
+    );
+
+    expect(req.request.method).toBe('GET');
+
+    req.flush(certificates);
   });
 });

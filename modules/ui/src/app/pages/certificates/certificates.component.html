@@ -1,0 +1,45 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="certificates-drawer-header">
+  <h2 class="certificates-drawer-header-title">Certificates</h2>
+  <button
+    (click)="closeCertificates()"
+    aria-label="close"
+    id="setting-panel-close-button"
+    class="certificates-drawer-header-button"
+    mat-button>
+    <mat-icon class="close-button-icon" svgIcon="close"></mat-icon>
+  </button>
+</div>
+<div class="certificates-drawer-content">
+  <button mat-raised-button class="browse-files-button" color="primary">
+    Browse Files to Add CA certificate
+  </button>
+  <section class="content-certificates">
+    <app-certificate-item
+      *ngFor="let certificate of certificates"
+      [certificate]="certificate"></app-certificate-item>
+  </section>
+  <div class="certificates-drawer-footer">
+    <button
+      mat-raised-button
+      class="close-button"
+      color="primary"
+      (click)="closeCertificates()">
+      Close
+    </button>
+  </div>
+</div>
