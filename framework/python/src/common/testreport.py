@@ -283,6 +283,11 @@ class TestReport():
     page += self.generate_footer(self._cur_page)
     page += '</div>'  # Page end
     page += '<div style="break-after:page"></div>'
+
+    # Return empty content if no steps to resolve exist
+    if step_number == 1:
+      return ''
+
     return page
 
   def generate_module_pages(self, json_data):
