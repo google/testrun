@@ -192,8 +192,6 @@ class NTPModule(TestModule):
               'Timestamp': float(packet.time),
           })
 
-          print("Appending " + str(packet.time))
-
     # Filter unique entries based on 'Timestamp'
     # NTP Server will duplicate messages caught by
     # startup and monitor
@@ -205,7 +203,6 @@ class NTPModule(TestModule):
       if timestamp not in seen_timestamps:
         seen_timestamps.add(timestamp)
         filtered_unique_ntp_data.append(entry)
-        print("Adding packet " + str(timestamp))
 
     return filtered_unique_ntp_data
 
