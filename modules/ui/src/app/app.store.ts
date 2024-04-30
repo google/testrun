@@ -16,7 +16,7 @@
 
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
-import { tap } from 'rxjs/operators';
+import { tap, withLatestFrom } from 'rxjs/operators';
 import {
   selectError,
   selectHasConnectionSettings,
@@ -148,6 +148,26 @@ export class AppStore extends ComponentStore<AppComponentState> {
       })
     );
   });
+
+  deleteCertificate = this.effect<string>(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap((name: string) => {
+        return this.testRunService.deleteCertificate(name).pipe(
+          withLatestFrom(this.certificates$),
+          tap(([, current]) => {
+            this.removeCertificate(name, current);
+          })
+        );
+      })
+    );
+  });
+
+  private removeCertificate(name: string, current: Certificate[]) {
+    const certificates = current.filter(
+      certificate => certificate.name !== name
+    );
+    this.updateCertificates(certificates);
+  }
   constructor(
     private store: Store<AppState>,
     private testRunService: TestRunService

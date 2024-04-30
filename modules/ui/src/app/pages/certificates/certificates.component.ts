@@ -13,13 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+} from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { CertificateItemComponent } from './certificate-item/certificate-item.component';
 import { NgForOf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { Certificate } from '../../model/certificate';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { Subject, takeUntil } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-certificates',
@@ -28,14 +37,48 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
   templateUrl: './certificates.component.html',
   styleUrl: './certificates.component.scss',
 })
-export class CertificatesComponent {
+export class CertificatesComponent implements OnDestroy {
   @Input() certificates: Certificate[] = [];
   @Output() closeCertificatedEvent = new EventEmitter<void>();
+  @Output() deleteCertificateEvent = new EventEmitter<string>();
 
-  constructor(private liveAnnouncer: LiveAnnouncer) {}
+  private destroy$: Subject<boolean> = new Subject<boolean>();
+
+  constructor(
+    private liveAnnouncer: LiveAnnouncer,
+    public dialog: MatDialog
+  ) {}
+
+  ngOnDestroy() {
+    this.destroy$.next(true);
+    this.destroy$.unsubscribe();
+  }
 
   closeCertificates() {
     this.liveAnnouncer.announce('The certificates panel is closed.');
     this.closeCertificatedEvent.emit();
+  }
+
+  deleteCertificate(name: string) {
+    const dialogRef = this.dialog.open(DeleteFormComponent, {
+      ariaLabel: 'Delete certificate',
+      data: {
+        title: 'Delete certificate',
+        content: `You are about to delete a certificate ${name}. Are you sure?`,
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: 'delete-form-dialog',
+    });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(deleteCertificate => {
+        if (deleteCertificate) {
+          this.deleteCertificateEvent.emit(name);
+        }
+      });
   }
 }

@@ -32,7 +32,7 @@ import SpyObj = jasmine.SpyObj;
 import { device } from './mocks/device.mock';
 import { setDevices, setTestrunStatus } from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/progress.mock';
-import { certificate } from './mocks/certificate.mock';
+import { certificate, certificate2 } from './mocks/certificate.mock';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -62,6 +62,7 @@ describe('AppStore', () => {
       'fetchDevices',
       'fetchSystemStatus',
       'fetchCertificates',
+      'deleteCertificate',
     ]);
 
     TestBed.configureTestingModule({
@@ -214,6 +215,21 @@ describe('AppStore', () => {
         });
 
         appStore.getCertificates();
+      });
+    });
+
+    describe('deleteCertificate', () => {
+      it('should update store', done => {
+        mockService.deleteCertificate.and.returnValue(of(true));
+
+        appStore.updateCertificates([certificate, certificate2]);
+
+        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
+          expect(store.certificates).toEqual([certificate2]);
+          done();
+        });
+
+        appStore.deleteCertificate('iot.bms.google.com');
       });
     });
   });
