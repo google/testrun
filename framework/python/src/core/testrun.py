@@ -97,13 +97,17 @@ class TestRun:  # pylint: disable=too-few-public-methods
     if validate:
       self._session.add_runtime_param('validate')
 
-    self.load_all_devices()
-
     self._net_orc = net_orc.NetworkOrchestrator(
       session=self._session)
     self._test_orc = test_orc.TestOrchestrator(
       self._session,
       self._net_orc)
+
+    # Load device repository
+    self.load_all_devices()
+
+    # Load test modules
+    self._test_orc.start()
 
     if self._no_ui:
 
@@ -311,8 +315,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
     if self._net_only:
       LOGGER.info('Network only option configured, no tests will be run')
     else:
-      self._test_orc.start()
-
       self.get_net_orc().get_listener().register_callback(
           self._device_stable,
           [NetworkEvent.DEVICE_STABLE]
@@ -368,6 +370,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
   def get_net_orc(self):
     return self._net_orc
+
+  def get_test_orc(self):
+    return self._test_orc
 
   def _start_network(self):
     # Start the network orchestrator
