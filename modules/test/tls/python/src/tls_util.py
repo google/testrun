@@ -191,7 +191,6 @@ class TLSUtil():
         args = f'"{root_cert_path}" "{device_cert_path}"'
         command = f'{bin_file} {args}'
         response = util.run_command(command)
-        LOGGER.debug(response)
         if f'{device_cert_path}: OK' in str(response):
           LOGGER.info('Device signed by cert:' + root_cert)
           return True, root_cert_path
@@ -261,7 +260,6 @@ class TLSUtil():
     args = f'"{intermediate_cert_path}" "{combined_cert_path}"'
     command = f'{bin_file} {args}'
     response = util.run_command(command)
-    LOGGER.debug(response)
     return combined_cert_name + ': OK' in str(response)
 
   def get_ca_issuer(self, certificate):
@@ -412,7 +410,6 @@ class TLSUtil():
     args = f'"{capture_file}" {dst_ip} {dst_port}'
     command = f'{bin_file} {args}'
     response = util.run_command(command)
-    LOGGER.debug(response)
     ciphers = response[0].split('\n')
     return ciphers
 
@@ -423,7 +420,6 @@ class TLSUtil():
       args = f'"{capture_file}" {src_ip} {tls_version}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
-      LOGGER.debug(response)
       packets = response[0].strip()
       if len(packets) > 0:
         # Parse each packet and append key-value pairs to combined_results
@@ -438,7 +434,6 @@ class TLSUtil():
       args = f'"{capture_file}" {src_ip} {dst_ip} {tls_version}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
-      LOGGER.debug(response)
       if len(response) > 0:
         combined_results += response[0]
     return combined_results
@@ -451,7 +446,6 @@ class TLSUtil():
       args = f'"{capture_file}" {client_ip}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
-      LOGGER.debug(response)
       if len(response) > 0:
         packets = json.loads(response[0].strip())
         combined_packets.extend(packets)
@@ -480,7 +474,6 @@ class TLSUtil():
       args = f'"{capture_file}" {src_ip} {tls_version}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
-      LOGGER.debug(response)
       packets = response[0].strip()
       # Parse each packet and append key-value pairs to combined_results
       result = self.parse_packets(json.loads(packets), capture_file)

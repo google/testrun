@@ -43,8 +43,11 @@ def run_command(cmd, output=True):
       LOGGER.error('Error: ' + err_msg)
     else:
       success = True
+      LOGGER.debug('Command succeeded: ' + cmd)
     if output:
-      return stdout.strip().decode('utf-8'), stderr
+      out = stdout.strip().decode('utf-8')
+      LOGGER.debug('Command output: ' + out)
+      return out, stderr
     else:
       return success
 
