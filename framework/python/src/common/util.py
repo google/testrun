@@ -28,7 +28,7 @@ def run_command(cmd, output=True):
   By default, returns the standard output and error output
   If the caller sets optional output parameter to False,
   will only return a boolean result indicating if it was
-  succesful in running the command.  Failure is indicated
+  successful in running the command.  Failure is indicated
   by any return code from the process other than zero."""
 
   success = False
@@ -73,10 +73,10 @@ def get_os_user():
     user = os.getlogin()
   except OSError:
     # Handle the OSError exception
-    LOGGER.error('An OS error occured whilst calling os.getlogin()')
+    LOGGER.error('An OS error occurred whilst calling os.getlogin()')
   except Exception: # pylint: disable=W0703
     # Catch any other unexpected exceptions
-    LOGGER.error('An unknown exception occured whilst calling os.getlogin()')
+    LOGGER.error('An unknown exception occurred whilst calling os.getlogin()')
   return user
 
 def get_user():
