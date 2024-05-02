@@ -203,6 +203,13 @@ class NetworkOrchestrator:
     with open(runtime_device_conf, 'w', encoding='utf-8') as f:
       json.dump(self._session.get_target_device().to_config_json(), f, indent=2)
 
+    # Extract information about the physical connection
+    dev_int = self._session.get_device_interface()
+    response = util.run_command(f'ethtool {dev_int}')
+    eth_out_file = os.path.join(NET_DIR, 'ethtool_results.txt')
+    with open(eth_out_file, 'w', encoding='utf-8') as f:
+      f.write(response[0])
+
     if device.ip_addr is None:
       LOGGER.info(
           f'Timed out whilst waiting for {mac_addr} to obtain an IP address')

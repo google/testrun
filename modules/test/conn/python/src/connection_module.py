@@ -20,15 +20,17 @@ from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
 from dhcp2.client import Client as DHCPClient2
 from dhcp_util import DHCPUtil
+from port_stats_util import PortStatsUtil
 
 LOG_NAME = 'test_connection'
-LOGGER = None
 OUI_FILE = '/usr/local/etc/oui.txt'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 DHCP_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
+ETHTOOL_RESULTS_FILE = 'runtime/network/ethtool_results.txt'
 SLAAC_PREFIX = 'fd10:77be:4186'
 TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
+LOGGER = None
 
 # Should be at least twice as much as the max lease time
 # set in the DHCP server
@@ -38,10 +40,20 @@ LEASE_WAIT_TIME_DEFAULT = 60
 class ConnectionModule(TestModule):
   """Connection Test module"""
 
-  def __init__(self, module):
-    super().__init__(module_name=module, log_name=LOG_NAME)
+  def __init__(self, 
+               module,
+               log_dir=None,
+               conf_file=None,
+               results_dir=None,
+               ethtool_results_file=ETHTOOL_RESULTS_FILE):
+    super().__init__(module_name=module,
+                     log_name=LOG_NAME,
+                     log_dir=log_dir,
+                     conf_file=conf_file,
+                     results_dir=results_dir)
     global LOGGER
     LOGGER = self._get_logger()
+    self._port_stats = PortStatsUtil(logger=LOGGER,ethtool_results_file=ethtool_results_file)
     self.dhcp1_client = DHCPClient1()
     self.dhcp2_client = DHCPClient2()
     self._dhcp_util = DHCPUtil(self.dhcp1_client, self.dhcp2_client, LOGGER)
@@ -73,6 +85,20 @@ class ConnectionModule(TestModule):
 
     # response = self.dhcp1_client.set_dhcp_range('10.10.10.20','10.10.10.30')
     # print("Set Range: " + str(response))
+
+  def _connection_port_link(self):
+    LOGGER.info('Running connection.port_link')
+    return self._port_stats.connection_port_link_test()
+
+
+  def _connection_port_speed(self):
+    LOGGER.info('Running connection.port_speed')
+    return self._port_stats.connection_port_speed_test()
+
+  def _connection_port_duplex(self):
+    LOGGER.info('Running connection.port_duplex')
+    return self._port_stats.connection_port_duplex_test()
+
 
   def _connection_switch_arp_inspection(self):
     LOGGER.info('Running connection.switch.arp_inspection')
