@@ -21,18 +21,19 @@ MODULE = 'conn'
 # Define the file paths
 TEST_FILES_DIR = 'testing/unit/' + MODULE
 ETHTOOL_RESULTS_COMPLIANT_FILE = os.path.join(TEST_FILES_DIR, 'ethtool',
-                                    'ethtool_results_compliant.txt')
-ETHTOOL_RESULTS_NONCOMPLIANT_FILE = os.path.join(TEST_FILES_DIR, 'ethtool',
-                                    'ethtool_results_noncompliant.txt')
-ETHTOOL_RESULTS_NO_AUTO_FILE = os.path.join(TEST_FILES_DIR, 'ethtool',
-                                    'ethtool_results_no_autononegotiation.txt')
+                                              'ethtool_results_compliant.txt')
+ETHTOOL_RESULTS_NONCOMPLIANT_FILE = os.path.join(
+    TEST_FILES_DIR, 'ethtool', 'ethtool_results_noncompliant.txt')
+ETHTOOL_RESULTS_NO_AUTO_FILE = os.path.join(
+    TEST_FILES_DIR, 'ethtool', 'ethtool_results_no_autononegotiation.txt')
 
-ETHTOOL_PORT_STATS_PRE_FILE = os.path.join(TEST_FILES_DIR, 'ethtool',
-                                    'ethtool_port_stats_pre_monitor.txt')
-ETHTOOL_PORT_STATS_POST_FILE = os.path.join(TEST_FILES_DIR, 'ethtool',
-                                    'ethtool_port_stats_post_monitor.txt')
-ETHTOOL_PORT_STATS_POST_NONCOMPLIANT_FILE = os.path.join(TEST_FILES_DIR, 'ethtool',
-                                    'ethtool_port_stats_post_monitor_noncompliant.txt')
+ETHTOOL_PORT_STATS_PRE_FILE = os.path.join(
+    TEST_FILES_DIR, 'ethtool', 'ethtool_port_stats_pre_monitor.txt')
+ETHTOOL_PORT_STATS_POST_FILE = os.path.join(
+    TEST_FILES_DIR, 'ethtool', 'ethtool_port_stats_post_monitor.txt')
+ETHTOOL_PORT_STATS_POST_NONCOMPLIANT_FILE = os.path.join(
+    TEST_FILES_DIR, 'ethtool',
+    'ethtool_port_stats_post_monitor_noncompliant.txt')
 LOGGER = None
 
 
@@ -47,10 +48,11 @@ class ConnectionModuleTest(unittest.TestCase):
   # Test the port link status
   def connection_port_link_compliant_test(self):
     LOGGER.info('connection_port_link_compliant_test')
-    p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE,
-                               ethtool_port_stats_pre_file=ETHTOOL_PORT_STATS_PRE_FILE,
-                               ethtool_port_stats_post_file=ETHTOOL_PORT_STATS_POST_FILE)
+    p_stats = PortStatsUtil(
+        logger=LOGGER,
+        ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE,
+        ethtool_port_stats_pre_file=ETHTOOL_PORT_STATS_PRE_FILE,
+        ethtool_port_stats_post_file=ETHTOOL_PORT_STATS_POST_FILE)
     result = p_stats.connection_port_link_test()
     LOGGER.info(result)
     self.assertEqual(result[0], True)
@@ -58,8 +60,8 @@ class ConnectionModuleTest(unittest.TestCase):
   # Test the port duplex setting
   def connection_port_duplex_compliant_test(self):
     LOGGER.info('connection_port_duplex_compliant_test')
-    p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE)
+    p_stats = PortStatsUtil(
+        logger=LOGGER, ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE)
     result = p_stats.connection_port_duplex_test()
     LOGGER.info(result)
     self.assertEqual(result[0], True)
@@ -67,8 +69,8 @@ class ConnectionModuleTest(unittest.TestCase):
   # Test the port speed
   def connection_port_speed_compliant_test(self):
     LOGGER.info('connection_port_speed_compliant_test')
-    p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE)
+    p_stats = PortStatsUtil(
+        logger=LOGGER, ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE)
     result = p_stats.connection_port_speed_test()
     LOGGER.info(result)
     self.assertEqual(result[0], True)
@@ -76,10 +78,11 @@ class ConnectionModuleTest(unittest.TestCase):
   # Test the port link status non-compliant
   def connection_port_link_noncompliant_test(self):
     LOGGER.info('connection_port_link_noncompliant_test')
-    p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE,
-                               ethtool_port_stats_pre_file=ETHTOOL_PORT_STATS_PRE_FILE,
-                               ethtool_port_stats_post_file=ETHTOOL_PORT_STATS_POST_NONCOMPLIANT_FILE)
+    p_stats = PortStatsUtil(
+        logger=LOGGER,
+        ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE,
+        ethtool_port_stats_pre_file=ETHTOOL_PORT_STATS_PRE_FILE,
+        ethtool_port_stats_post_file=ETHTOOL_PORT_STATS_POST_NONCOMPLIANT_FILE)
     result = p_stats.connection_port_link_test()
     LOGGER.info(result)
     self.assertEqual(result[0], False)
@@ -87,8 +90,9 @@ class ConnectionModuleTest(unittest.TestCase):
   # Test the port duplex setting non-compliant
   def connection_port_duplex_noncompliant_test(self):
     LOGGER.info('connection_port_duplex_noncompliant_test')
-    p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_conn_stats_file=ETHTOOL_RESULTS_NONCOMPLIANT_FILE)
+    p_stats = PortStatsUtil(
+        logger=LOGGER,
+        ethtool_conn_stats_file=ETHTOOL_RESULTS_NONCOMPLIANT_FILE)
     result = p_stats.connection_port_duplex_test()
     LOGGER.info(result)
     self.assertEqual(result[0], False)
@@ -96,8 +100,9 @@ class ConnectionModuleTest(unittest.TestCase):
   # Test the port speed non-compliant
   def connection_port_speed_noncompliant_test(self):
     LOGGER.info('connection_port_speed_noncompliant_test')
-    p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_conn_stats_file=ETHTOOL_RESULTS_NONCOMPLIANT_FILE)
+    p_stats = PortStatsUtil(
+        logger=LOGGER,
+        ethtool_conn_stats_file=ETHTOOL_RESULTS_NONCOMPLIANT_FILE)
     result = p_stats.connection_port_speed_test()
     LOGGER.info(result)
     self.assertEqual(result[0], False)
@@ -105,11 +110,12 @@ class ConnectionModuleTest(unittest.TestCase):
   # Test the autonegotiation failure test
   def connection_port_speed_autonegotiation_fail_test(self):
     LOGGER.info('connection_port_speed_autonegotiation_fail_test')
-    p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_conn_stats_file=ETHTOOL_RESULTS_NO_AUTO_FILE)
+    p_stats = PortStatsUtil(
+        logger=LOGGER, ethtool_conn_stats_file=ETHTOOL_RESULTS_NO_AUTO_FILE)
     result = p_stats.connection_port_speed_test()
     LOGGER.info(result)
     self.assertEqual(result[0], False)
+
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
@@ -121,11 +127,13 @@ if __name__ == '__main__':
 
   # Non-compliant port stats tests
   suite.addTest(ConnectionModuleTest('connection_port_link_noncompliant_test'))
-  suite.addTest(ConnectionModuleTest('connection_port_duplex_noncompliant_test'))
+  suite.addTest(
+      ConnectionModuleTest('connection_port_duplex_noncompliant_test'))
   suite.addTest(ConnectionModuleTest('connection_port_speed_noncompliant_test'))
 
   # Autonegotiation off failure test
-  suite.addTest(ConnectionModuleTest('connection_port_speed_autonegotiation_fail_test'))
+  suite.addTest(
+      ConnectionModuleTest('connection_port_speed_autonegotiation_fail_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)

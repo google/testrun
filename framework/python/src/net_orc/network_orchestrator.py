@@ -231,7 +231,7 @@ class NetworkOrchestrator:
     else:
       LOGGER.error('Failed to generate connection stats')
 
-  def _get_port_stats(self,pre_monitor=True):
+  def _get_port_stats(self, pre_monitor=True):
     """ Extract information about the port statistics
     and store it to a file for the conn test module to access"""
     dev_int = self._session.get_device_interface()
@@ -527,23 +527,22 @@ class NetworkOrchestrator:
     try:
       client = docker.from_env()
       net_module.container = client.containers.run(
-        net_module.image_name,
-        auto_remove=True,
-        cap_add=['NET_ADMIN'],
-        name=net_module.container_name,
-        hostname=net_module.container_name,
-        # Undetermined version of docker seems to have broken
-        # DNS configuration (/etc/resolv.conf)  Re-add when/if
-        # this network is utilized and DNS issue is resolved
-        #network=PRIVATE_DOCKER_NET,
-        privileged=True,
-        detach=True,
-        mounts=net_module.mounts,
-        environment={
-          'TZ': self.get_session().get_timezone(),
-          'HOST_USER': util.get_host_user()
-        }
-      )
+          net_module.image_name,
+          auto_remove=True,
+          cap_add=['NET_ADMIN'],
+          name=net_module.container_name,
+          hostname=net_module.container_name,
+          # Undetermined version of docker seems to have broken
+          # DNS configuration (/etc/resolv.conf)  Re-add when/if
+          # this network is utilized and DNS issue is resolved
+          #network=PRIVATE_DOCKER_NET,
+          privileged=True,
+          detach=True,
+          mounts=net_module.mounts,
+          environment={
+              'TZ': self.get_session().get_timezone(),
+              'HOST_USER': util.get_host_user()
+          })
     except docker.errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)

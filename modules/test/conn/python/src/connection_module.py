@@ -39,11 +39,7 @@ LEASE_WAIT_TIME_DEFAULT = 60
 class ConnectionModule(TestModule):
   """Connection Test module"""
 
-  def __init__(self, 
-               module,
-               log_dir=None,
-               conf_file=None,
-               results_dir=None):
+  def __init__(self, module, log_dir=None, conf_file=None, results_dir=None):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
                      log_dir=log_dir,
@@ -88,7 +84,6 @@ class ConnectionModule(TestModule):
     LOGGER.info('Running connection.port_link')
     return self._port_stats.connection_port_link_test()
 
-
   def _connection_port_speed(self):
     LOGGER.info('Running connection.port_speed')
     return self._port_stats.connection_port_speed_test()
@@ -96,7 +91,6 @@ class ConnectionModule(TestModule):
   def _connection_port_duplex(self):
     LOGGER.info('Running connection.port_duplex')
     return self._port_stats.connection_port_duplex_test()
-
 
   def _connection_switch_arp_inspection(self):
     LOGGER.info('Running connection.switch.arp_inspection')

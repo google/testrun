@@ -15,6 +15,7 @@
 
 import os
 
+
 class PortStatsUtil():
   """Helper class for various tests concerning Port behavior"""
   ETHTOOL_CONN_STATS_FILE = 'runtime/network/ethtool_conn_stats.txt'
@@ -24,10 +25,11 @@ class PortStatsUtil():
   LOG_NAME = 'port_stats_util'
   LOGGER = None
 
-  def __init__(self, logger, 
-                ethtool_conn_stats_file=ETHTOOL_CONN_STATS_FILE,
-                ethtool_port_stats_pre_file=ETHTOOL_PORT_STATS_PRE_FILE,
-                ethtool_port_stats_post_file=ETHTOOL_PORT_STATS_POST_FILE):
+  def __init__(self,
+               logger,
+               ethtool_conn_stats_file=ETHTOOL_CONN_STATS_FILE,
+               ethtool_port_stats_pre_file=ETHTOOL_PORT_STATS_PRE_FILE,
+               ethtool_port_stats_post_file=ETHTOOL_PORT_STATS_POST_FILE):
     self.ethtool_conn_stats_file = ethtool_conn_stats_file
     self.ethtool_port_stats_pre_file = ethtool_port_stats_pre_file
     self.ethtool_port_stats_post_file = ethtool_port_stats_post_file
@@ -37,7 +39,8 @@ class PortStatsUtil():
 
   def is_autonegotiate(self):
     auto_negotiation = False
-    auto_negotiation_status = self._get_stat_option(stats=self.conn_stats,option='Auto-negotiation:')
+    auto_negotiation_status = self._get_stat_option(stats=self.conn_stats,
+                                                    option='Auto-negotiation:')
     if auto_negotiation_status is not None:
       auto_negotiation = 'on' in auto_negotiation_status
     return auto_negotiation
@@ -52,10 +55,14 @@ class PortStatsUtil():
       result = 'Error'
       description = 'Port stats not available'
     else:
-      tx_errors_pre = self._get_stat_option(stats=stats_pre,option='tx_errors:')
-      tx_errors_post = self._get_stat_option(stats=stats_post,option='tx_errors:')
-      rx_errors_pre = self._get_stat_option(stats=stats_pre,option='rx_errors:')
-      rx_errors_post = self._get_stat_option(stats=stats_post,option='rx_errors:')
+      tx_errors_pre = self._get_stat_option(stats=stats_pre,
+                                            option='tx_errors:')
+      tx_errors_post = self._get_stat_option(stats=stats_post,
+                                             option='tx_errors:')
+      rx_errors_pre = self._get_stat_option(stats=stats_pre,
+                                            option='rx_errors:')
+      rx_errors_post = self._get_stat_option(stats=stats_post,
+                                             option='rx_errors:')
       tx_errors = int(tx_errors_post) - int(tx_errors_pre)
       rx_errors = int(rx_errors_post) - int(rx_errors_pre)
       if tx_errors > 0 or rx_errors > 0:
@@ -77,7 +84,7 @@ class PortStatsUtil():
       result = False
       description = 'Interface not configured for auto-negotiation'
     else:
-      duplex = self._get_stat_option(stats=self.conn_stats,option='Duplex:')
+      duplex = self._get_stat_option(stats=self.conn_stats, option='Duplex:')
       if 'Full' in duplex:
         result = True
         description = 'Succesfully auto-negotiated full duplex'
@@ -98,7 +105,7 @@ class PortStatsUtil():
       result = False
       description = 'Interface not configured for auto-negotiation'
     else:
-      speed = self._get_stat_option(stats=self.conn_stats,option='Speed:')
+      speed = self._get_stat_option(stats=self.conn_stats, option='Speed:')
       if speed in ('100Mb/s', '1000Mb/s'):
         result = True
         description = 'Succesfully auto-negotiated speeds above 10 Mbps'

@@ -42,7 +42,7 @@ class IPControl:
       return success
 
   def check_interface_status(self, interface_name):
-    output = util.run_command(cmd=f'ip link show {interface_name}',output=True)
+    output = util.run_command(cmd=f'ip link show {interface_name}', output=True)
     if 'state DOWN ' in output[0]:
       return False
     else:
