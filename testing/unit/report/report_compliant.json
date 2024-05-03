@@ -1,0 +1,268 @@
+{
+  "device": {
+    "mac_addr": "aa:bb:cc:dd:ee:ff",
+    "manufacturer": "Testrun",
+    "model": "Faux",
+    "firmware": "1.0.0",
+    "test_modules": {
+      "connection": {
+        "enabled": true
+      },
+      "ntp": {
+        "enabled": true
+      },
+      "dns": {
+        "enabled": true
+      },
+      "services": {
+        "enabled": true
+      },
+      "tls": {
+        "enabled": true
+      },
+      "protocol": {
+        "enabled": true
+      }
+    }
+  },
+  "status": "Compliant",
+  "started": "2024-04-10 21:21:47",
+  "finished": "2024-04-10 21:35:43",
+  "tests": {
+    "total": 33,
+    "results": [
+      {
+        "name": "protocol.valid_bacnet",
+        "description": "Device IP matches discovered device",
+        "expected_behavior": "BACnet traffic can be seen on the network and packets are valid and not malformed",
+        "required_result": "Recommended",
+        "result": "Compliant"
+      },
+      {
+        "name": "protocol.bacnet.version",
+        "description": "BACnet protocol version detected: 1.15",
+        "expected_behavior": "The BACnet client implements an up to date version of BACnet",
+        "required_result": "Recommended",
+        "result": "Compliant"
+      },
+      {
+        "name": "protocol.valid_modbus",
+        "description": "Established connection to modbus port: 502\nHolding registers succesfully read: 0:5\nInput registers succesfully read: 0:5\nCoil registers succesfully read: 0:1\nDiscrete inputs succesfully read: 0:1",
+        "expected_behavior": "Any Modbus functionality works as expected and valid Modbus traffic can be observed",
+        "required_result": "Recommended",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.tls.v1_2_server",
+        "description": "TLS 1.2 validated: Certificate has a valid time range\nRSA key length passed: 2048 >= 2048\nDevice signed by cert:/testrun/root_certs/myrootca4132.pem\nTLS 1.3 validated: Certificate has a valid time range\nRSA key length passed: 2048 >= 2048\nDevice signed by cert:/testrun/root_certs/myrootca4132.pem",
+        "expected_behavior": "TLS 1.2 certificate is issued to the web browser client when accessed",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.tls.v1_2_client",
+        "description": "TLS 1.2 client connections valid",
+        "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.switch.arp_inspection",
+        "description": "Device uses ARP",
+        "expected_behavior": "Device continues to operate correctly when ARP inspection is enabled on the switch.  No functionality is lost with ARP inspection enabled.",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.switch.dhcp_snooping",
+        "description": "Device does not act as a DHCP server",
+        "expected_behavior": "Device continues to operate correctly when DHCP snooping is enabled on the switch.",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.dhcp_address",
+        "description": "Device responded to leased ip address",
+        "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.mac_address",
+        "description": "MAC address found: aa:bb:cc:dd:ee:ff",
+        "expected_behavior": "N/A",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.mac_oui",
+        "description": "OUI Manufacturer found: Texas Instruments",
+        "expected_behavior": "The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database.",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.private_address",
+        "description": "All subnets are supported",
+        "expected_behavior": "The device under test accepts IP addresses within all ranges specified in RFC 1918 and communicates using these addresses.  The Internet Assigned Numbers Authority (IANA) has reserved the following three blocks of the IP address space for private internets.  10.0.0.0 - 10.255.255.255.255 (10/8 prefix). 172.16.0.0 - 172.31.255.255 (172.16/12 prefix).  192.168.0.0 - 192.168.255.255 (192.168/16 prefix)",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.shared_address",
+        "description": "All subnets are supported",
+        "expected_behavior": "The device under test accepts IP addresses within the ranges specified in RFC 6598 and communicates using these addresses",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.single_ip",
+        "description": "Device is using a single IP address",
+        "expected_behavior": "The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible.",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.target_ping",
+        "description": "Device responds to ping",
+        "expected_behavior": "The device under test responds to an ICMP echo (ping) request.",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.ipaddr.ip_change",
+        "description": "Device has accepted an IP address change",
+        "expected_behavior": "If the lease expires before the client receiveds a DHCPACK, the client moves to INIT state, MUST immediately stop any other network processing and requires network initialization parameters as if the client were uninitialized.  If the client then receives a DHCPACK allocating the client its previous network addres, the client SHOULD continue network processing.  If the client is given a new network address, it MUST NOT continue using the previous network address and SHOULD notify the local users of the problem.",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.ipaddr.dhcp_failover",
+        "description": "Secondary DHCP server lease confirmed active in device",
+        "expected_behavior": "",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.ipv6_slaac",
+        "description": "Device has formed SLAAC address fd10:77be:4186:0:1a62:e4ff:fed7:430a",
+        "expected_behavior": "The device under test complies with RFC4862 and forms a valid IPv6 SLAAC address",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "connection.ipv6_ping",
+        "description": "Device responds to IPv6 ping on fd10:77be:4186:0:1a62:e4ff:fed7:430a",
+        "expected_behavior": "The device responds to the ping as per RFC4443",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "dns.network.hostname_resolution",
+        "description": "DNS traffic detected from device",
+        "expected_behavior": "The device sends DNS requests.",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "dns.network.from_dhcp",
+        "description": "DNS traffic detected only to DHCP provided server",
+        "expected_behavior": "The device sends DNS requests to the DNS server provided by the DHCP server",
+        "required_result": "Roadmap",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.services.ftp",
+        "description": "No FTP server found",
+        "expected_behavior": "There is no FTP service running on any port",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.ssh.version",
+        "description": "No SSH server found",
+        "expected_behavior": "SSH server is not running or server is SSHv2",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.services.telnet",
+        "description": "No telnet server found",
+        "expected_behavior": "There is no Telnet service running on any port",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.services.smtp",
+        "description": "No SMTP server found",
+        "expected_behavior": "There is no SMTP service running on any port",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.services.http",
+        "description": "No HTTP server found",
+        "expected_behavior": "Device is unreachable on port 80 (or any other port) and only responds to HTTPS requests on port 443 (or any other port if HTTP is used at all)",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.services.pop",
+        "description": "No POP server found",
+        "expected_behavior": "There is no POP service running on any port",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.services.imap",
+        "description": "No IMAP server found",
+        "expected_behavior": "There is no IMAP service running on any port",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.services.snmpv3",
+        "description": "No SNMP server found",
+        "expected_behavior": "Device is unreachable on port 161 (or any other port) and device is unreachable on port 162 (or any other port) unless SNMP is essential in which case it is SNMPv3 is used.",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.services.vnc",
+        "description": "No VNC server found",
+        "expected_behavior": "Device cannot be accessed / connected to via VNC on any port",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.services.tftp",
+        "description": "No TFTP server found",
+        "expected_behavior": "There is no TFTP service running on any port",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "ntp.network.ntp_server",
+        "description": "No NTP server found",
+        "expected_behavior": "The device does not respond to NTP requests when it's IP is set as the NTP server on another device",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "ntp.network.ntp_support",
+        "description": "Device sent NTPv4 packets.",
+        "expected_behavior": "The device sends an NTPv4 request to the configured NTP server.",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "ntp.network.ntp_dhcp",
+        "description": "Device sent NTP request to non-DHCP provided server",
+        "expected_behavior": "Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)",
+        "required_result": "Roadmap",
+        "result": "Non-Compliant"
+      }
+    ]
+  },
+  "report": "http://localhost:8000/report/Testrun Faux/2024-04-10T21:21:47"
+}
