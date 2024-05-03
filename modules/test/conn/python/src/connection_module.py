@@ -27,7 +27,6 @@ OUI_FILE = '/usr/local/etc/oui.txt'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 DHCP_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
-ETHTOOL_RESULTS_FILE = 'runtime/network/ethtool_results.txt'
 SLAAC_PREFIX = 'fd10:77be:4186'
 TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
 LOGGER = None
@@ -44,8 +43,7 @@ class ConnectionModule(TestModule):
                module,
                log_dir=None,
                conf_file=None,
-               results_dir=None,
-               ethtool_results_file=ETHTOOL_RESULTS_FILE):
+               results_dir=None):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
                      log_dir=log_dir,
@@ -53,7 +51,7 @@ class ConnectionModule(TestModule):
                      results_dir=results_dir)
     global LOGGER
     LOGGER = self._get_logger()
-    self._port_stats = PortStatsUtil(logger=LOGGER,ethtool_results_file=ethtool_results_file)
+    self._port_stats = PortStatsUtil(logger=LOGGER)
     self.dhcp1_client = DHCPClient1()
     self.dhcp2_client = DHCPClient2()
     self._dhcp_util = DHCPUtil(self.dhcp1_client, self.dhcp2_client, LOGGER)
