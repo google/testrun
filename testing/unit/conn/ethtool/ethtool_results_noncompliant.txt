@@ -17,12 +17,12 @@ Settings for enx123456789:
 	Link partner advertised pause frame use: Symmetric
 	Link partner advertised auto-negotiation: Yes
 	Link partner advertised FEC modes: Not reported
-	Speed: 100Mb/s
-	Duplex: Full
+	Speed: 10Mb/s
+	Duplex: Half
 	Port: MII
 	PHYAD: 32
 	Transceiver: internal
-	Auto-negotiation: off
+	Auto-negotiation: on
 	Supports Wake-on: pumbg
 	Wake-on: g
 	Current message level: 0x00007fff (32767)

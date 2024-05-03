@@ -26,6 +26,13 @@ ETHTOOL_RESULTS_NONCOMPLIANT_FILE = os.path.join(TEST_FILES_DIR, 'ethtool',
                                     'ethtool_results_noncompliant.txt')
 ETHTOOL_RESULTS_NO_AUTO_FILE = os.path.join(TEST_FILES_DIR, 'ethtool',
                                     'ethtool_results_no_autononegotiation.txt')
+
+ETHTOOL_PORT_STATS_PRE_FILE = os.path.join(TEST_FILES_DIR, 'ethtool',
+                                    'ethtool_port_stats_pre_monitor.txt')
+ETHTOOL_PORT_STATS_POST_FILE = os.path.join(TEST_FILES_DIR, 'ethtool',
+                                    'ethtool_port_stats_post_monitor.txt')
+ETHTOOL_PORT_STATS_POST_NONCOMPLIANT_FILE = os.path.join(TEST_FILES_DIR, 'ethtool',
+                                    'ethtool_port_stats_post_monitor_noncompliant.txt')
 LOGGER = None
 
 
@@ -41,9 +48,12 @@ class ConnectionModuleTest(unittest.TestCase):
   def connection_port_link_compliant_test(self):
     LOGGER.info('connection_port_link_compliant_test')
     p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE)
+                               ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE,
+                               ethtool_port_stats_pre_file=ETHTOOL_PORT_STATS_PRE_FILE,
+                               ethtool_port_stats_post_file=ETHTOOL_PORT_STATS_POST_FILE)
     result = p_stats.connection_port_link_test()
     LOGGER.info(result)
+    self.assertEqual(result[0], True)
 
   # Test the port duplex setting
   def connection_port_duplex_compliant_test(self):
@@ -67,9 +77,12 @@ class ConnectionModuleTest(unittest.TestCase):
   def connection_port_link_noncompliant_test(self):
     LOGGER.info('connection_port_link_noncompliant_test')
     p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_conn_stats_file=ETHTOOL_RESULTS_NONCOMPLIANT_FILE)
+                               ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE,
+                               ethtool_port_stats_pre_file=ETHTOOL_PORT_STATS_PRE_FILE,
+                               ethtool_port_stats_post_file=ETHTOOL_PORT_STATS_POST_NONCOMPLIANT_FILE)
     result = p_stats.connection_port_link_test()
     LOGGER.info(result)
+    self.assertEqual(result[0], False)
 
   # Test the port duplex setting non-compliant
   def connection_port_duplex_noncompliant_test(self):

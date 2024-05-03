@@ -237,8 +237,8 @@ class NetworkOrchestrator:
     dev_int = self._session.get_device_interface()
     port_stats = self._ip_ctrl.get_iface_port_stats(dev_int)
     if port_stats is not None:
-      prefix = 'pre_monitor' if pre_monitor else 'post_test'
-      eth_out_file = os.path.join(NET_DIR, f'{prefix}_ethtool_port_stats.txt')
+      suffix = 'pre_monitor' if pre_monitor else 'post_monitor'
+      eth_out_file = os.path.join(NET_DIR, f'ethtool_port_stats_{suffix}.txt')
       with open(eth_out_file, 'w', encoding='utf-8') as f:
         f.write(port_stats)
     else:
