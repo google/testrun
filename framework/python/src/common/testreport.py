@@ -268,7 +268,7 @@ class TestReport():
     for test in tests_with_recommendations:
 
       # Generate new page
-      if steps_so_far == 5 and (
+      if steps_so_far == 4 and (
         len(tests_with_recommendations) - (index-1) > 0):
 
         # Reset steps counter
@@ -281,7 +281,7 @@ class TestReport():
 
         # Render new header
         self._cur_page += 1
-        page = '<div class="page">'
+        page += '<div class="page">'
         page += self.generate_header(json_data, False)
 
       # Render test recommendations
@@ -307,7 +307,9 @@ class TestReport():
         step_number += 1
 
       page += '</td></tbody></table>'
+
       index += 1
+      steps_so_far += 1
 
     # Render final footer
     page += self.generate_footer(self._cur_page)
