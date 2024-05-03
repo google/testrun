@@ -38,7 +38,8 @@ LOGGER = None
 
 
 class ConnectionModuleTest(unittest.TestCase):
-  """Contains and runs all the unit tests concerning Connection module behaviors"""
+  """Contains and runs all the unit tests concerning Connection 
+  module behaviors"""
 
   @classmethod
   def setUpClass(cls):

@@ -15,15 +15,18 @@
 
 import os
 
+ETHTOOL_CONN_STATS_FILE = 'runtime/network/ethtool_conn_stats.txt'
+ETHTOOL_PORT_STATS_PRE_FILE = (
+    'runtime/network/ethtool_port_stats_pre_monitor.txt')
+ETHTOOL_PORT_STATS_POST_FILE = (
+    'runtime/network/ethtool_port_stats_post_monitor.txt')
+
+LOG_NAME = 'port_stats_util'
+LOGGER = None
+
 
 class PortStatsUtil():
   """Helper class for various tests concerning Port behavior"""
-  ETHTOOL_CONN_STATS_FILE = 'runtime/network/ethtool_conn_stats.txt'
-  ETHTOOL_PORT_STATS_PRE_FILE = 'runtime/network/ethtool_port_stats_pre_monitor.txt'
-  ETHTOOL_PORT_STATS_POST_FILE = 'runtime/network/ethtool_port_stats_post_monitor.txt'
-
-  LOG_NAME = 'port_stats_util'
-  LOGGER = None
 
   def __init__(self,
                logger,
@@ -128,7 +131,7 @@ class PortStatsUtil():
 
   def _read_stats_file(self, file):
     if os.path.isfile(file):
-      with open(file) as f:
+      with open(file, encoding='utf-8') as f:
         content = f.read()
       # Cleanup the results for easier processing
       lines = content.split('\n')
