@@ -244,49 +244,75 @@ class TestReport():
 
   def generate_steps_to_resolve(self, json_data):
 
+    steps_so_far = 0
+    tests_with_recommendations = []
+    index = 1
+
+    # Collect all tests with recommendations
+    for test in json_data['tests']['results']:
+      if 'recommendations' in test:
+        tests_with_recommendations.append(test)
+
+    # Check if test has recommendations
+    if len(tests_with_recommendations) == 0:
+      return ''
+
+    # Start new page
     self._cur_page += 1
     page = '<div class="page">'
     page += self.generate_header(json_data, False)
 
+    # Add title
     page += '<h1>Steps to Resolve</h1>'
 
-    index = 1
+    for test in tests_with_recommendations:
 
-    # Check if test has recommendations
-    for test in json_data['tests']['results']:
-      if 'recommendations' in test:
+      # Generate new page
+      if steps_so_far == 5 and (
+        len(tests_with_recommendations) - (index-1) > 0):
 
-        page += f'''
-          <table class="steps-to-resolve">
-            <tbody>
-              <tr>
-                <td width="10%" class="steps-to-resolve index">{index}.</td>
-                <td width="32%" class="steps-to-resolve"><span class="steps-to-resolve subtitle">Name</span><br>{test["name"]}</td>
-                <td class="steps-to-resolve"><span class="steps-to-resolve subtitle">Description</span><br>{test["description"]}</td>
-              </tr>
-              <tr>
-                <td width="10%"></td>
-                <td colspan="2" class="steps-to-resolve" style="padding-bottom:20px;">
-                  <span class="steps-to-resolve subtitle">Steps to resolve</span>
-          '''
+        # Reset steps counter
+        steps_so_far = 0
 
-        step_number = 1
-        for recommendation in test['recommendations']:
-          page += f'''<br>
-            <span style="font-size: 14px">{
-                step_number}. {recommendation}</span>'''
-          step_number += 1
+        # Render footer
+        page += self.generate_footer(self._cur_page)
+        page += '</div>'  # Page end
+        page += '<div style="break-after:page"></div>'
 
-        page += '</td></tbody></table>'
-        index += 1
+        # Render new header
+        self._cur_page += 1
+        page = '<div class="page">'
+        page += self.generate_header(json_data, False)
 
+      # Render test recommendations
+      page += f'''
+        <table class="steps-to-resolve">
+          <tbody>
+            <tr>
+              <td width="10%" class="steps-to-resolve index">{index}.</td>
+              <td width="32%" class="steps-to-resolve"><span class="steps-to-resolve subtitle">Name</span><br>{test["name"]}</td>
+              <td class="steps-to-resolve"><span class="steps-to-resolve subtitle">Description</span><br>{test["description"]}</td>
+            </tr>
+            <tr>
+              <td width="10%"></td>
+              <td colspan="2" class="steps-to-resolve" style="padding-bottom:20px;">
+                <span class="steps-to-resolve subtitle">Steps to resolve</span>
+        '''
+
+      step_number = 1
+      for recommendation in test['recommendations']:
+        page += f'''<br>
+          <span style="font-size: 14px">{
+              step_number}. {recommendation}</span>'''
+        step_number += 1
+
+      page += '</td></tbody></table>'
+      index += 1
+
+    # Render final footer
     page += self.generate_footer(self._cur_page)
     page += '</div>'  # Page end
     page += '<div style="break-after:page"></div>'
-
-    # Return empty content if no steps to resolve exist
-    if step_number == 1:
-      return ''
 
     return page
 
@@ -340,7 +366,7 @@ class TestReport():
         # we'll add it to this page, otherweise, we'll put it on the next
         # page. Also make sure that if there is less than 40 pixels
         # left after a data row, start a new page or the row will get cut off.
-        # Current row size is 42 # adjust if we update the 
+        # Current row size is 42 # adjust if we update the
         # "module-data tbody tr" element.
         if content_size >= content_max_size or (
           data_rows_active and content_max_size - content_size < 42):
