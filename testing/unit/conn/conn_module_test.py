@@ -41,7 +41,7 @@ class ConnectionModuleTest(unittest.TestCase):
   def connection_port_link_compliant_test(self):
     LOGGER.info('connection_port_link_compliant_test')
     p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_results_file=ETHTOOL_RESULTS_COMPLIANT_FILE)
+                               ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE)
     result = p_stats.connection_port_link_test()
     LOGGER.info(result)
 
@@ -49,7 +49,7 @@ class ConnectionModuleTest(unittest.TestCase):
   def connection_port_duplex_compliant_test(self):
     LOGGER.info('connection_port_duplex_compliant_test')
     p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_results_file=ETHTOOL_RESULTS_COMPLIANT_FILE)
+                               ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE)
     result = p_stats.connection_port_duplex_test()
     LOGGER.info(result)
     self.assertEqual(result[0], True)
@@ -58,7 +58,7 @@ class ConnectionModuleTest(unittest.TestCase):
   def connection_port_speed_compliant_test(self):
     LOGGER.info('connection_port_speed_compliant_test')
     p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_results_file=ETHTOOL_RESULTS_COMPLIANT_FILE)
+                               ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE)
     result = p_stats.connection_port_speed_test()
     LOGGER.info(result)
     self.assertEqual(result[0], True)
@@ -67,7 +67,7 @@ class ConnectionModuleTest(unittest.TestCase):
   def connection_port_link_noncompliant_test(self):
     LOGGER.info('connection_port_link_noncompliant_test')
     p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_results_file=ETHTOOL_RESULTS_NONCOMPLIANT_FILE)
+                               ethtool_conn_stats_file=ETHTOOL_RESULTS_NONCOMPLIANT_FILE)
     result = p_stats.connection_port_link_test()
     LOGGER.info(result)
 
@@ -75,7 +75,7 @@ class ConnectionModuleTest(unittest.TestCase):
   def connection_port_duplex_noncompliant_test(self):
     LOGGER.info('connection_port_duplex_noncompliant_test')
     p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_results_file=ETHTOOL_RESULTS_NONCOMPLIANT_FILE)
+                               ethtool_conn_stats_file=ETHTOOL_RESULTS_NONCOMPLIANT_FILE)
     result = p_stats.connection_port_duplex_test()
     LOGGER.info(result)
     self.assertEqual(result[0], False)
@@ -84,7 +84,7 @@ class ConnectionModuleTest(unittest.TestCase):
   def connection_port_speed_noncompliant_test(self):
     LOGGER.info('connection_port_speed_noncompliant_test')
     p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_results_file=ETHTOOL_RESULTS_NONCOMPLIANT_FILE)
+                               ethtool_conn_stats_file=ETHTOOL_RESULTS_NONCOMPLIANT_FILE)
     result = p_stats.connection_port_speed_test()
     LOGGER.info(result)
     self.assertEqual(result[0], False)
@@ -93,7 +93,7 @@ class ConnectionModuleTest(unittest.TestCase):
   def connection_port_speed_autonegotiation_fail_test(self):
     LOGGER.info('connection_port_speed_autonegotiation_fail_test')
     p_stats = PortStatsUtil(logger=LOGGER,
-                               ethtool_results_file=ETHTOOL_RESULTS_NO_AUTO_FILE)
+                               ethtool_conn_stats_file=ETHTOOL_RESULTS_NO_AUTO_FILE)
     result = p_stats.connection_port_speed_test()
     LOGGER.info(result)
     self.assertEqual(result[0], False)

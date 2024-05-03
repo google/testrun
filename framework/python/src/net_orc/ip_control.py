@@ -81,6 +81,22 @@ class IPControl:
         netns_links.append(interface_name.strip())
     return netns_links
 
+  def get_iface_connection_stats(self, iface):
+    """Extract information about the physical connection"""
+    response = util.run_command(f'ethtool {iface}')
+    if len(response[1]) == 0:
+      return response[0]
+    else:
+      return None
+
+  def get_iface_port_stats(self, iface):
+    """Extract information about packets connection"""
+    response = util.run_command(f'ethtool -S {iface}')
+    if len(response[1]) == 0:
+      return response[0]
+    else:
+      return None
+
   def get_namespaces(self):
     result = util.run_command('ip netns list')
     #Strip ID's from the namespace results

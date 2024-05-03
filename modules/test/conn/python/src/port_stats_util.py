@@ -16,20 +16,20 @@
 
 class PortStatsUtil():
   """Helper class for various tests concerning Port behavior"""
-  ETHTOOL_RESULTS_FILE = 'runtime/network/ethtool_results.txt'
+  ETHTOOL_CONN_STATS_FILE = 'runtime/network/ethtool_conn_stats.txt'
 
   LOG_NAME = 'port_stats_util'
   LOGGER = None
 
-  def __init__(self, logger, ethtool_results_file=ETHTOOL_RESULTS_FILE):
-    self.ethtool_results_file = ethtool_results_file
+  def __init__(self, logger, ethtool_conn_stats_file=ETHTOOL_CONN_STATS_FILE):
+    self.ethtool_conn_stats_file = ethtool_conn_stats_file
     global LOGGER
     LOGGER = logger
-    self.ethtool_results = self._read_ethtool_results_file()
+    self.conn_stats = self._read_ethtool_conn_stats_file()
 
   def is_autonegotiate(self):
     auto_negotiation = False
-    auto_negotiation_status = self._get_ethtool_option('Auto-negotiation:')
+    auto_negotiation_status = self._get_conn_stat_option('Auto-negotiation:')
     if auto_negotiation_status is not None:
       auto_negotiation = 'on' in auto_negotiation_status
     return auto_negotiation
@@ -47,7 +47,7 @@ class PortStatsUtil():
       result = False
       description = 'Interface not configured for auto-negotiation'
     else:
-      duplex = self._get_ethtool_option('Duplex:')
+      duplex = self._get_conn_stat_option('Duplex:')
       if 'Full' in duplex:
         result = True
         description = 'Succesfully auto-negotiated full duplex'
@@ -68,7 +68,7 @@ class PortStatsUtil():
       result = False
       description = 'Interface not configured for auto-negotiation'
     else:
-      speed = self._get_ethtool_option('Speed:')
+      speed = self._get_conn_stat_option('Speed:')
       if speed in ('100Mb/s', '1000Mb/s'):
         result = True
         description = 'Succesfully auto-negotiated speeds above 10 Mbps'
@@ -79,18 +79,18 @@ class PortStatsUtil():
         details = f'Speed negotiated: {speed}'
     return result, description, details
 
-  def _get_ethtool_option(self, option):
+  def _get_conn_stat_option(self, option):
     value = None
     """Extract the requested parameter from the ethtool result"""
-    for line in self.ethtool_results.split('\n'):
+    for line in self.conn_stats.split('\n'):
       #LOGGER.info(f'Checking option: {line}')
       if line.startswith(f'{option}'):
         value = line.split(':')[1].strip()
         break
     return value
 
-  def _read_ethtool_results_file(self):
-    with open(self.ethtool_results_file) as f:
+  def _read_ethtool_conn_stats_file(self):
+    with open(self.ethtool_conn_stats_file) as f:
       ethtool_results = f.read()
     #Cleanup the results for easier processing
     lines = ethtool_results.split('\n')

@@ -173,6 +173,7 @@ class NetworkOrchestrator:
         # Ignore discovered device
         return
 
+    self._get_port_stats(pre_monitor=True)
     self._monitor_in_progress = True
 
     LOGGER.debug(
@@ -203,12 +204,7 @@ class NetworkOrchestrator:
     with open(runtime_device_conf, 'w', encoding='utf-8') as f:
       json.dump(self._session.get_target_device().to_config_json(), f, indent=2)
 
-    # Extract information about the physical connection
-    dev_int = self._session.get_device_interface()
-    response = util.run_command(f'ethtool {dev_int}')
-    eth_out_file = os.path.join(NET_DIR, 'ethtool_results.txt')
-    with open(eth_out_file, 'w', encoding='utf-8') as f:
-      f.write(response[0])
+    self._get_conn_stats()
 
     if device.ip_addr is None:
       LOGGER.info(
@@ -222,6 +218,31 @@ class NetworkOrchestrator:
     #  mac_address=device.mac_addr)
 
     self._start_device_monitor(device)
+
+  def _get_conn_stats(self):
+    """ Extract information about the physical connection
+    and store it to a file for the conn test module to access"""
+    dev_int = self._session.get_device_interface()
+    conn_stats = self._ip_ctrl.get_iface_connection_stats(dev_int)
+    if conn_stats is not None:
+      eth_out_file = os.path.join(NET_DIR, 'ethtool_conn_stats.txt')
+      with open(eth_out_file, 'w', encoding='utf-8') as f:
+        f.write(conn_stats)
+    else:
+      LOGGER.error('Failed to generate connection stats')
+
+  def _get_port_stats(self,pre_monitor=True):
+    """ Extract information about the port statistics
+    and store it to a file for the conn test module to access"""
+    dev_int = self._session.get_device_interface()
+    port_stats = self._ip_ctrl.get_iface_port_stats(dev_int)
+    if port_stats is not None:
+      prefix = 'pre_monitor' if pre_monitor else 'post_test'
+      eth_out_file = os.path.join(NET_DIR, f'{prefix}_ethtool_port_stats.txt')
+      with open(eth_out_file, 'w', encoding='utf-8') as f:
+        f.write(port_stats)
+    else:
+      LOGGER.error('Failed to generate port stats')
 
   def monitor_in_progress(self):
     return self._monitor_in_progress
@@ -268,6 +289,7 @@ class NetworkOrchestrator:
     wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'),
            self._monitor_packets)
     self._monitor_in_progress = False
+    self._get_port_stats(pre_monitor=False)
     self.get_listener().call_callback(NetworkEvent.DEVICE_STABLE,
                                       device.mac_addr)
 
