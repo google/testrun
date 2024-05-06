@@ -36,10 +36,10 @@ export class NotificationService {
     private focusManagerService: FocusManagerService
   ) {}
 
-  notify(message: string, duration = 0) {
+  notify(message: string, duration = 0, panelClass = 'test-run-notification') {
     this.snackBarRef = this.snackBar.open(message, 'OK', {
       horizontalPosition: 'center',
-      panelClass: 'test-run-notification',
+      panelClass: panelClass,
       duration: duration,
       politeness: 'assertive',
     });

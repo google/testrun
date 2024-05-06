@@ -58,12 +58,7 @@ describe('AppStore', () => {
   let mockService: SpyObj<TestRunService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj([
-      'fetchDevices',
-      'fetchSystemStatus',
-      'fetchCertificates',
-      'deleteCertificate',
-    ]);
+    mockService = jasmine.createSpyObj(['fetchDevices', 'fetchSystemStatus']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -137,7 +132,6 @@ describe('AppStore', () => {
           isMenuOpen: true,
           interfaces: {},
           settingMissedError: null,
-          certificates: [],
         });
         done();
       });

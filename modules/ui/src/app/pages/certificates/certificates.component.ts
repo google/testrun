@@ -22,10 +22,11 @@ import {
 } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { CertificateItemComponent } from './certificate-item/certificate-item.component';
-import { NgForOf } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { Certificate } from '../../model/certificate';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { CertificateUploadButtonComponent } from './certificate-upload-button/certificate-upload-button.component';
+import { CertificatesStore } from './certificates.store';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
@@ -33,12 +34,19 @@ import { MatDialog } from '@angular/material/dialog';
 @Component({
   selector: 'app-certificates',
   standalone: true,
-  imports: [MatIcon, CertificateItemComponent, NgForOf, MatButtonModule],
+  imports: [
+    MatIcon,
+    CertificateItemComponent,
+    MatButtonModule,
+    CertificateUploadButtonComponent,
+    CommonModule,
+  ],
+  providers: [CertificatesStore, DatePipe],
   templateUrl: './certificates.component.html',
   styleUrl: './certificates.component.scss',
 })
 export class CertificatesComponent implements OnDestroy {
-  @Input() certificates: Certificate[] = [];
+  viewModel$ = this.store.viewModel$;
   @Output() closeCertificatedEvent = new EventEmitter<void>();
   @Output() deleteCertificateEvent = new EventEmitter<string>();
 
@@ -46,8 +54,11 @@ export class CertificatesComponent implements OnDestroy {
 
   constructor(
     private liveAnnouncer: LiveAnnouncer,
-    public dialog: MatDialog
-  ) {}
+    private store: CertificatesStore,
+    public dialog: MatDialog,
+  ) {
+    this.store.getCertificates();
+  }
 
   ngOnDestroy() {
     this.destroy$.next(true);
@@ -57,6 +68,10 @@ export class CertificatesComponent implements OnDestroy {
   closeCertificates() {
     this.liveAnnouncer.announce('The certificates panel is closed.');
     this.closeCertificatedEvent.emit();
+  }
+
+  uploadFile(file: File) {
+    this.store.uploadCertificate(file);
   }
 
   deleteCertificate(name: string) {

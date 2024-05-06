@@ -476,6 +476,20 @@ describe('TestRunService', () => {
     req.flush(certificates);
   });
 
+  it('uploadCertificates should upload certificate', () => {
+    service.uploadCertificate(new File([], 'test')).subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs/upload'
+    );
+
+    expect(req.request.method).toBe('POST');
+
+    req.flush(true);
+  });
+
   it('deleteCertificate should delete certificate', () => {
     service.deleteCertificate('test').subscribe(res => {
       expect(res).toEqual(true);

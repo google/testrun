@@ -13,34 +13,35 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="certificates-drawer-header">
-  <h2 class="certificates-drawer-header-title">Certificates</h2>
-  <button
-    (click)="closeCertificates()"
-    aria-label="close"
-    id="setting-panel-close-button"
-    class="certificates-drawer-header-button"
-    mat-button>
-    <mat-icon class="close-button-icon" svgIcon="close"></mat-icon>
-  </button>
-</div>
-<div class="certificates-drawer-content">
-  <button mat-raised-button class="browse-files-button" color="primary">
-    Browse Files to Add CA certificate
-  </button>
-  <section class="content-certificates">
-    <app-certificate-item
-      *ngFor="let certificate of certificates"
-      [certificate]="certificate"
-      (deleteButtonClicked)="deleteCertificate($event)"></app-certificate-item>
-  </section>
-  <div class="certificates-drawer-footer">
+<ng-container *ngIf="viewModel$ | async as vm">
+  <div class="certificates-drawer-header">
+    <h2 class="certificates-drawer-header-title">Certificates</h2>
     <button
-      mat-raised-button
-      class="close-button"
-      color="primary"
-      (click)="closeCertificates()">
-      Close
+      (click)="closeCertificates()"
+      aria-label="close"
+      id="setting-panel-close-button"
+      class="certificates-drawer-header-button"
+      mat-button>
+      <mat-icon class="close-button-icon" svgIcon="close"></mat-icon>
     </button>
   </div>
-</div>
+  <div class="certificates-drawer-content">
+    <app-certificate-upload-button
+      (fileChanged)="uploadFile($event)"></app-certificate-upload-button>
+    <section class="content-certificates">
+      <app-certificate-item
+        *ngFor="let certificate of vm.certificates"
+        [certificate]="certificate"
+        (deleteButtonClicked)="deleteCertificate($event)"></app-certificate-item>
+    </section>
+    <div class="certificates-drawer-footer">
+      <button
+        mat-raised-button
+        class="close-button"
+        color="primary"
+        (click)="closeCertificates()">
+        Close
+      </button>
+    </div>
+  </div>
+</ng-container>

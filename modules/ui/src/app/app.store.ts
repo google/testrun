@@ -16,7 +16,7 @@
 
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
-import { tap, withLatestFrom } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import {
   selectError,
   selectHasConnectionSettings,
@@ -52,7 +52,6 @@ export interface AppComponentState {
 export class AppStore extends ComponentStore<AppComponentState> {
   private consentShown$ = this.select(state => state.consentShown);
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
-  private certificates$ = this.select(state => state.certificates);
   private hasDevices$ = this.store.select(selectHasDevices);
   private hasConnectionSetting$ = this.store.select(
     selectHasConnectionSettings
@@ -75,7 +74,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
     isMenuOpen: this.isMenuOpen$,
     interfaces: this.interfaces$,
     settingMissedError: this.settingMissedError$,
-    certificates: this.certificates$,
   });
 
   updateConsent = this.updater((state, consentShown: boolean) => ({
@@ -86,11 +84,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
   updateIsStatusLoaded = this.updater((state, isStatusLoaded: boolean) => ({
     ...state,
     isStatusLoaded,
-  }));
-
-  updateCertificates = this.updater((state, certificates: Certificate[]) => ({
-    ...state,
-    certificates,
   }));
 
   setContent = this.effect<void>(trigger$ => {
@@ -137,18 +130,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  getCertificates = this.effect(trigger$ => {
-    return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunService.fetchCertificates().pipe(
-          tap((certificates: Certificate[]) => {
-            this.updateCertificates(certificates);
-          })
-        );
-      })
-    );
-  });
-
   deleteCertificate = this.effect<string>(trigger$ => {
     return trigger$.pipe(
       exhaustMap((name: string) => {
@@ -177,7 +158,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
       isStatusLoaded: false,
       isTestrunStarted: false,
       systemStatus: null,
-      certificates: [],
     });
   }
 }
