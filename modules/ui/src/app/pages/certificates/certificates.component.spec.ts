@@ -100,8 +100,8 @@ describe('CertificatesComponent', () => {
   });
 
   describe('Class tests', () => {
-    describe('#openStartTestrun', () => {
-      it('should open initiate test run modal', fakeAsync(() => {
+    describe('#deleteCertificate', () => {
+      it('should open delete certificate modal', fakeAsync(() => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(true),
         } as MatDialogRef<typeof DeleteFormComponent>);
