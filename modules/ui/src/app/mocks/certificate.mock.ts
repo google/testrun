@@ -20,3 +20,9 @@ export const certificate = {
   organisation: 'Google, Inc.',
   expires: '2024-09-01T09:00:12Z',
 } as Certificate;
+
+export const certificate2 = {
+  name: 'sensor.bms.google.com',
+  organisation: 'Google, Inc.',
+  expires: '2024-09-01T09:00:12Z',
+} as Certificate;

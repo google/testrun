@@ -222,4 +222,12 @@ export class TestRunService {
   fetchCertificates(): Observable<Certificate[]> {
     return this.http.get<Certificate[]>(`${API_URL}/system/config/certs/list`);
   }
+
+  deleteCertificate(name: string): Observable<boolean> {
+    return this.http
+      .delete<boolean>(`${API_URL}/system/config/certs/delete`, {
+        body: JSON.stringify({ name }),
+      })
+      .pipe(map(() => true));
+  }
 }

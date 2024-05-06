@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 
 import { CertificatesComponent } from './certificates.component';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
@@ -21,6 +21,9 @@ import { MatIcon } from '@angular/material/icon';
 import { certificate } from '../../mocks/certificate.mock';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import SpyObj = jasmine.SpyObj;
+import { of } from 'rxjs';
+import { MatDialogRef } from '@angular/material/dialog';
+import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 
 describe('CertificatesComponent', () => {
   let component: CertificatesComponent;
@@ -93,6 +96,32 @@ describe('CertificatesComponent', () => {
 
         expect(certificateList.length).toEqual(2);
       });
+    });
+  });
+
+  describe('Class tests', () => {
+    describe('#deleteCertificate', () => {
+      it('should open delete certificate modal', fakeAsync(() => {
+        const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+          afterClosed: () => of(true),
+        } as MatDialogRef<typeof DeleteFormComponent>);
+
+        component.deleteCertificate(certificate.name);
+
+        expect(openSpy).toHaveBeenCalledWith(DeleteFormComponent, {
+          ariaLabel: 'Delete certificate',
+          data: {
+            title: 'Delete certificate',
+            content: `You are about to delete a certificate iot.bms.google.com. Are you sure?`,
+          },
+          autoFocus: true,
+          hasBackdrop: true,
+          disableClose: true,
+          panelClass: 'delete-form-dialog',
+        });
+
+        openSpy.calls.reset();
+      }));
     });
   });
 });
