@@ -63,7 +63,6 @@ import {
 import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { CertificatesComponent } from './pages/certificates/certificates.component';
 import { of } from 'rxjs';
-import {certificate} from './mocks/certificate.mock';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -100,9 +99,7 @@ describe('AppComponent', () => {
       'fetchCertificates',
     ]);
 
-    mockService.fetchCertificates.and.returnValue(
-      of([])
-    );
+    mockService.fetchCertificates.and.returnValue(of([]));
     mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
       'focusFirstElementInContainer',
     ]);
