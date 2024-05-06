@@ -91,6 +91,19 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
     this.updateCertificates([certificate, ...certificates]);
   }
 
+  deleteCertificate = this.effect<string>(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap((name: string) => {
+        return this.testRunService.deleteCertificate(name).pipe(
+          withLatestFrom(this.certificates$),
+          tap(([, current]) => {
+            this.removeCertificate(name, current);
+          })
+        );
+      })
+    );
+  });
+
   private removeCertificate(name: string, current: Certificate[]) {
     const certificates = current.filter(
       certificate => certificate.name !== name

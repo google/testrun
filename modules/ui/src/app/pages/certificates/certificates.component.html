@@ -32,7 +32,9 @@ limitations under the License.
       <app-certificate-item
         *ngFor="let certificate of vm.certificates"
         [certificate]="certificate"
-        (deleteButtonClicked)="deleteCertificate($event)"></app-certificate-item>
+        (deleteButtonClicked)="
+          deleteCertificate($event)
+        "></app-certificate-item>
     </section>
     <div class="certificates-drawer-footer">
       <button

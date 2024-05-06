@@ -20,6 +20,7 @@ import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import {
   certificate,
+  certificate2,
   certificate_uploading,
 } from '../../mocks/certificate.mock';
 import { CertificatesStore } from './certificates.store';
@@ -37,6 +38,7 @@ describe('CertificatesStore', () => {
     mockService = jasmine.createSpyObj([
       'fetchCertificates',
       'uploadCertificate',
+      'deleteCertificate',
     ]);
 
     TestBed.configureTestingModule({
@@ -125,6 +127,21 @@ describe('CertificatesStore', () => {
           0,
           'certificate-notification'
         );
+      });
+    });
+
+    describe('deleteCertificate', () => {
+      it('should update store', done => {
+        mockService.deleteCertificate.and.returnValue(of(true));
+
+        certificateStore.updateCertificates([certificate, certificate2]);
+
+        certificateStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
+          expect(store.certificates).toEqual([certificate2]);
+          done();
+        });
+
+        certificateStore.deleteCertificate('iot.bms.google.com');
       });
     });
   });

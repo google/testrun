@@ -38,7 +38,6 @@ import {
 } from './store/actions';
 import { TestrunStatus } from './model/testrun-status';
 import { SettingMissedError, SystemInterfaces } from './model/setting';
-import { Certificate } from './model/certificate';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export interface AppComponentState {
@@ -46,7 +45,6 @@ export interface AppComponentState {
   isStatusLoaded: boolean;
   isTestrunStarted: boolean;
   systemStatus: TestrunStatus | null;
-  certificates: Certificate[];
 }
 @Injectable()
 export class AppStore extends ComponentStore<AppComponentState> {
@@ -130,25 +128,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  deleteCertificate = this.effect<string>(trigger$ => {
-    return trigger$.pipe(
-      exhaustMap((name: string) => {
-        return this.testRunService.deleteCertificate(name).pipe(
-          withLatestFrom(this.certificates$),
-          tap(([, current]) => {
-            this.removeCertificate(name, current);
-          })
-        );
-      })
-    );
-  });
-
-  private removeCertificate(name: string, current: Certificate[]) {
-    const certificates = current.filter(
-      certificate => certificate.name !== name
-    );
-    this.updateCertificates(certificates);
-  }
   constructor(
     private store: Store<AppState>,
     private testRunService: TestRunService

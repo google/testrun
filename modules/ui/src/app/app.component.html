@@ -206,8 +206,6 @@ limitations under the License.
     autoFocus="#setting-panel-close-button"
     class="settings-drawer">
     <app-certificates
-      [certificates]="vm.certificates"
-      (deleteCertificateEvent)="deleteCertificate($event)"
       (closeCertificatedEvent)="closeCertificates()"></app-certificates>
   </mat-drawer>
 </ng-container>

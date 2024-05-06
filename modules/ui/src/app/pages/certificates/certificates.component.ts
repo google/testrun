@@ -13,13 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  Output,
-} from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { CertificateItemComponent } from './certificate-item/certificate-item.component';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -48,14 +42,13 @@ import { MatDialog } from '@angular/material/dialog';
 export class CertificatesComponent implements OnDestroy {
   viewModel$ = this.store.viewModel$;
   @Output() closeCertificatedEvent = new EventEmitter<void>();
-  @Output() deleteCertificateEvent = new EventEmitter<string>();
 
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
     private liveAnnouncer: LiveAnnouncer,
     private store: CertificatesStore,
-    public dialog: MatDialog,
+    public dialog: MatDialog
   ) {
     this.store.getCertificates();
   }
@@ -92,7 +85,7 @@ export class CertificatesComponent implements OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(deleteCertificate => {
         if (deleteCertificate) {
-          this.deleteCertificateEvent.emit(name);
+          this.store.deleteCertificate(name);
         }
       });
   }

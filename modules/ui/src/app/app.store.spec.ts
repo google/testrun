@@ -32,7 +32,6 @@ import SpyObj = jasmine.SpyObj;
 import { device } from './mocks/device.mock';
 import { setDevices, setTestrunStatus } from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/progress.mock';
-import { certificate, certificate2 } from './mocks/certificate.mock';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -107,15 +106,6 @@ describe('AppStore', () => {
       });
 
       appStore.updateIsStatusLoaded(true);
-    });
-
-    it('should update certificates', (done: DoneFn) => {
-      appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-        expect(store.certificates).toEqual([certificate]);
-        done();
-      });
-
-      appStore.updateCertificates([certificate]);
     });
   });
 
@@ -192,38 +182,6 @@ describe('AppStore', () => {
         });
 
         appStore.getSystemStatus();
-      });
-    });
-
-    describe('fetchCertificates', () => {
-      const certificates = [certificate];
-
-      beforeEach(() => {
-        mockService.fetchCertificates.and.returnValue(of(certificates));
-      });
-
-      it('should update certificates', done => {
-        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-          expect(store.certificates).toEqual(certificates);
-          done();
-        });
-
-        appStore.getCertificates();
-      });
-    });
-
-    describe('deleteCertificate', () => {
-      it('should update store', done => {
-        mockService.deleteCertificate.and.returnValue(of(true));
-
-        appStore.updateCertificates([certificate, certificate2]);
-
-        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-          expect(store.certificates).toEqual([certificate2]);
-          done();
-        });
-
-        appStore.deleteCertificate('iot.bms.google.com');
       });
     });
   });

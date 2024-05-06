@@ -164,8 +164,4 @@ export class AppComponent {
   isTestrunInProgress(status?: string) {
     return this.testRunService.testrunInProgress(status);
   }
-
-  deleteCertificate(name: string) {
-    this.appStore.deleteCertificate(name);
-  }
 }

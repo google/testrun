@@ -35,8 +35,10 @@ describe('CertificatesComponent', () => {
   beforeEach(async () => {
     mockService = jasmine.createSpyObj([
       'fetchCertificates',
+      'deleteCertificate',
       'uploadCertificate',
     ]);
+    mockService.deleteCertificate.and.returnValue(of(true));
     mockService.fetchCertificates.and.returnValue(
       of([certificate, certificate])
     );
@@ -96,11 +98,6 @@ describe('CertificatesComponent', () => {
     });
 
     describe('with certificates', () => {
-      beforeEach(() => {
-        component.certificates = [certificate, certificate];
-        fixture.detectChanges();
-      });
-
       it('should have certificates list', () => {
         const certificateList = fixture.nativeElement.querySelectorAll(
           'app-certificate-item'
