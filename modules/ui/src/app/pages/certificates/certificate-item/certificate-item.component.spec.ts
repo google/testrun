@@ -45,12 +45,24 @@ describe('CertificateItemComponent', () => {
       expect(date?.textContent?.trim()).toEqual('01 Sep 2024');
     });
 
-    it('should have delete button', () => {
-      const deleteButton = fixture.nativeElement.querySelector(
-        '#main .test-button'
-      ) as HTMLButtonElement;
+    describe('delete button', () => {
+      let deleteButton: HTMLButtonElement;
+      beforeEach(() => {
+        deleteButton = fixture.nativeElement.querySelector(
+          '.certificate-item-delete'
+        ) as HTMLButtonElement;
+      });
 
-      expect(deleteButton).toBeDefined();
+      it('should be present', () => {
+        expect(deleteButton).toBeDefined();
+      });
+
+      it('should emit delete event on delete button clicked', () => {
+        const deleteSpy = spyOn(component.deleteButtonClicked, 'emit');
+        deleteButton.click();
+
+        expect(deleteSpy).toHaveBeenCalledWith('iot.bms.google.com');
+      });
     });
   });
 });

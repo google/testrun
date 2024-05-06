@@ -31,7 +31,8 @@ limitations under the License.
   <section class="content-certificates">
     <app-certificate-item
       *ngFor="let certificate of certificates"
-      [certificate]="certificate"></app-certificate-item>
+      [certificate]="certificate"
+      (deleteButtonClicked)="deleteCertificate($event)"></app-certificate-item>
   </section>
   <div class="certificates-drawer-footer">
     <button

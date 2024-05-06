@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Certificate } from '../../../model/certificate';
 import { MatIcon } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
@@ -13,4 +13,5 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class CertificateItemComponent {
   @Input() certificate!: Certificate;
+  @Output() deleteButtonClicked = new EventEmitter<string>();
 }

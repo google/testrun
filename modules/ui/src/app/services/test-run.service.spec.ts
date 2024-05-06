@@ -475,4 +475,18 @@ describe('TestRunService', () => {
 
     req.flush(certificates);
   });
+
+  it('deleteCertificate should delete certificate', () => {
+    service.deleteCertificate('test').subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs/delete'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.flush(true);
+  });
 });
