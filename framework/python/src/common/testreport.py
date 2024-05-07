@@ -96,13 +96,18 @@ class TestReport():
 
     test_results = []
     for test in self._results:
-      test_results.append({
+      test_dict = {
         'name': test.name,
         'description': test.description,
         'expected_behavior': test.expected_behavior,
         'required_result': test.required_result,
         'result': test.result
-      })
+      }
+
+      if test.recommendations is not None and len(test.recommendations) > 0:
+        test_dict['recommendations'] = test.recommendations
+
+      test_results.append(test_dict)
 
     report_json['tests'] = {'total': self._total_tests,
                             'results': test_results}
@@ -137,6 +142,8 @@ class TestReport():
         expected_behavior=test_result['expected_behavior'],
         required_result=test_result['required_result'],
         result=test_result['result'])
+      if 'recommendations' in test_result:
+        test_case.recommendations = test_result['recommendations']
       self.add_test(test_case)
 
   # Create a pdf file in memory and return the bytes
@@ -231,8 +238,84 @@ class TestReport():
       {module_report}
     </div>'''
     page += self.generate_footer(self._cur_page)
-    page += '</div>'  #Page end
+    page += '</div>'  # Page end
     page += '<div style="break-after:page"></div>'
+    return page
+
+  def generate_steps_to_resolve(self, json_data):
+
+    steps_so_far = 0
+    tests_with_recommendations = []
+    index = 1
+
+    # Collect all tests with recommendations
+    for test in json_data['tests']['results']:
+      if 'recommendations' in test:
+        tests_with_recommendations.append(test)
+
+    # Check if test has recommendations
+    if len(tests_with_recommendations) == 0:
+      return ''
+
+    # Start new page
+    self._cur_page += 1
+    page = '<div class="page">'
+    page += self.generate_header(json_data, False)
+
+    # Add title
+    page += '<h1>Steps to Resolve</h1>'
+
+    for test in tests_with_recommendations:
+
+      # Generate new page
+      if steps_so_far == 4 and (
+        len(tests_with_recommendations) - (index-1) > 0):
+
+        # Reset steps counter
+        steps_so_far = 0
+
+        # Render footer
+        page += self.generate_footer(self._cur_page)
+        page += '</div>'  # Page end
+        page += '<div style="break-after:page"></div>'
+
+        # Render new header
+        self._cur_page += 1
+        page += '<div class="page">'
+        page += self.generate_header(json_data, False)
+
+      # Render test recommendations
+      page += f'''
+        <table class="steps-to-resolve">
+          <tbody>
+            <tr>
+              <td width="10%" class="steps-to-resolve index">{index}.</td>
+              <td width="32%" class="steps-to-resolve"><span class="steps-to-resolve subtitle">Name</span><br>{test["name"]}</td>
+              <td class="steps-to-resolve"><span class="steps-to-resolve subtitle">Description</span><br>{test["description"]}</td>
+            </tr>
+            <tr>
+              <td width="10%"></td>
+              <td colspan="2" class="steps-to-resolve" style="padding-bottom:20px;">
+                <span class="steps-to-resolve subtitle">Steps to resolve</span>
+        '''
+
+      step_number = 1
+      for recommendation in test['recommendations']:
+        page += f'''<br>
+          <span style="font-size: 14px">{
+              step_number}. {recommendation}</span>'''
+        step_number += 1
+
+      page += '</td></tbody></table>'
+
+      index += 1
+      steps_so_far += 1
+
+    # Render final footer
+    page += self.generate_footer(self._cur_page)
+    page += '</div>'  # Page end
+    page += '<div style="break-after:page"></div>'
+
     return page
 
   def generate_module_pages(self, json_data):
@@ -248,7 +331,7 @@ class TestReport():
 
       # Reset values for each module report
       data_table_active = False
-      data_rows_active=False
+      data_rows_active = False
       page_content = ''
       content_size = 0
       content = module_reports.split('\n')
@@ -285,7 +368,7 @@ class TestReport():
         # we'll add it to this page, otherweise, we'll put it on the next
         # page. Also make sure that if there is less than 40 pixels
         # left after a data row, start a new page or the row will get cut off.
-        # Current row size is 42 # adjust if we update the 
+        # Current row size is 42 # adjust if we update the
         # "module-data tbody tr" element.
         if content_size >= content_max_size or (
           data_rows_active and content_max_size - content_size < 42):
@@ -311,6 +394,7 @@ class TestReport():
     body = f'''
     <body>
       {self.generate_pages(json_data)}
+      {self.generate_steps_to_resolve(json_data)}
       {self.generate_module_pages(json_data)}
     </body>
     '''
@@ -565,7 +649,7 @@ class TestReport():
       --header-width: 8.5in;
       --header-pos-x: 0in;
       --header-pos-y: 0in;
-      --summary-width: 8.5in;
+      --page-width: 8.5in;
       --summary-height: 2.8in;
       --vertical-line-height: calc(var(--summary-height)-.2in);
       --vertical-line-pos-x: 25%;
@@ -693,6 +777,32 @@ class TestReport():
       font-family: 'Roboto Mono', monospace;
     }
 
+    table.steps-to-resolve {
+      background-color: #F8F9FA;
+      margin-bottom: 30px;
+      width: var(--page-width);
+    }
+
+    td.steps-to-resolve {
+      padding-left: 20px;
+      padding-top: 20px;
+      padding-right: 15px;
+      vertical-align: top;
+    }
+
+    .steps-to-resolve.subtitle {
+      text-align: left;
+      padding-top: 15px;
+      font-weight: 500;
+      color: #5F6368;
+      font-size: 14px;
+    }
+
+    .steps-to-resolve.index {
+      font-size: 40px;
+      padding-left: 30px;
+    }
+
     .callout-container.info {
       background-color: #e8f0fe;
     }
@@ -729,7 +839,7 @@ class TestReport():
     /* Define the summary related css elements*/
     .summary-content {
       position: relative;
-      width: var(--summary-width);
+      width: var(--page-width);
       height: var(--summary-height);
       margin-top: 19px;
       margin-bottom: 19px;
