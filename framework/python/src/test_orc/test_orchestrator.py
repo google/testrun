@@ -160,6 +160,7 @@ class TestOrchestrator:
   def _generate_report(self):
 
     report = {}
+    report["mac_addr"] = self.get_session().get_target_device().mac_addr
     report["device"] = self.get_session().get_target_device().to_dict()
     report["started"] = self.get_session().get_started().strftime(
         "%Y-%m-%d %H:%M:%S")
@@ -198,7 +199,7 @@ class TestOrchestrator:
       completed_tests = os.listdir(completed_results_dir)
       cur_test_count = len(completed_tests)
       if cur_test_count > max_device_reports:
-        LOGGER.debug("Current device has more than max tests results allowed: " +
+        LOGGER.debug("Current device has more than max results allowed: " +
                      str(cur_test_count) + ">" + str(max_device_reports))
 
         # Find and delete the oldest test
