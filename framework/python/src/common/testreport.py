@@ -58,7 +58,7 @@ class TestReport():
     self._report_url = ''
     self._cur_page = 0
     # Placeholder until available in json report
-    self._version = 'v1.2.2-alpha'
+    self._version = 'v1.2.2'
 
   def get_mac_addr(self):
     return self._mac_addr
