@@ -48,6 +48,7 @@ class TestReport():
                finished=None,
                total_tests=0):
     self._device = {}
+    self._mac_addr = None
     self._status: str = status
     self._started = started
     self._finished = finished
@@ -58,6 +59,9 @@ class TestReport():
     self._cur_page = 0
     # Placeholder until available in json report
     self._version = 'v1.2.2-alpha'
+
+  def get_mac_addr(self):
+    return self._mac_addr
 
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
@@ -86,9 +90,14 @@ class TestReport():
 
   def get_report_url(self):
     return self._report_url
+  
+  def set_mac_addr(self, mac_addr):
+    self._mac_addr = mac_addr
 
   def to_json(self):
     report_json = {}
+
+    report_json['mac_addr'] = self._mac_addr
     report_json['device'] = self._device
     report_json['status'] = self._status
     report_json['started'] = self._started.strftime(DATE_TIME_FORMAT)
@@ -115,6 +124,7 @@ class TestReport():
     self._device['manufacturer'] = json_file['device']['manufacturer']
     self._device['model'] = json_file['device']['model']
 
+    # Firmware is not specified for non-UI devices
     if 'firmware' in json_file['device']:
       self._device['firmware'] = json_file['device']['firmware']
 
