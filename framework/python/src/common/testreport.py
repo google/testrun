@@ -63,6 +63,9 @@ class TestReport():
   def get_mac_addr(self):
     return self._mac_addr
 
+  def get_mac_addr(self):
+    return self._mac_addr
+
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
 
@@ -90,6 +93,9 @@ class TestReport():
 
   def get_report_url(self):
     return self._report_url
+  
+  def set_mac_addr(self, mac_addr):
+    self._mac_addr = mac_addr
 
   def set_mac_addr(self, mac_addr):
     self._mac_addr = mac_addr
