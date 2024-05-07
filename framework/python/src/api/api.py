@@ -47,7 +47,7 @@ class Api:
   def __init__(self, test_run):
 
     self._test_run = test_run
-    self._name = "TestRun API"
+    self._name = "Testrun API"
     self._router = APIRouter()
 
     self._session = self._test_run.get_session()
@@ -268,7 +268,14 @@ class Api:
     os.kill(os.getpid(), signal.SIGTERM)
 
   async def get_version(self, response: Response):
+
+    # Add defaults
     json_response = {}
+    json_response["installed_version"] = "v" + self._test_run.get_version()
+    json_response["update_available"] = False
+    json_response["latest_version"] = None
+    json_response["latest_version_url"] = (
+      "https://github.com/google/testrun/releases")
 
     # Obtain the current version
     current_version = self._session.get_version()
@@ -288,9 +295,9 @@ class Api:
       # Check OK response was received
       if version_check.status_code != 200:
         response.status_code = 500
-        LOGGER.error(version_check.content)
-        return self._generate_msg(False, "Failed to fetch latest version. " +
-                                  "Please, check the internet connection")
+        LOGGER.debug(version_check.content)
+        LOGGER.error("Failed to fetch latest version")
+        return json_response
 
       # Extract version number from response, removing the leading 'v'
       latest_version_no = version_check.json()["name"].strip("v")
@@ -313,8 +320,7 @@ class Api:
       response.status_code = 500
       LOGGER.error("Failed to fetch latest version")
       LOGGER.debug(e)
-      return self._generate_msg(False, "Failed to fetch latest version. " +
-                                "Please, check the internet connection")
+      return json_response
 
   async def get_reports(self, request: Request):
     LOGGER.debug("Received reports list request")
@@ -555,8 +561,8 @@ class Api:
       return False
 
     # Check length of strings
-    if len(json_obj.get(DEVICE_MANUFACTURER_KEY)) > 64 or len(
-      json_obj.get(DEVICE_MODEL_KEY)) > 64:
+    if len(json_obj.get(DEVICE_MANUFACTURER_KEY)) > 28 or len(
+      json_obj.get(DEVICE_MODEL_KEY)) > 28:
       return False
 
     disallowed_chars = ["/", "\\", "\'", "\"", ";"]
