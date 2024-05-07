@@ -93,7 +93,7 @@ class TestReport():
 
   def get_report_url(self):
     return self._report_url
-  
+
   def set_mac_addr(self, mac_addr):
     self._mac_addr = mac_addr
 
@@ -260,7 +260,7 @@ class TestReport():
 
   def generate_steps_to_resolve(self, json_data):
 
-    steps_so_far = 0
+    steps_so_far = 0    self._version = 'v1.2.2'
     tests_with_recommendations = []
     index = 1
 
