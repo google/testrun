@@ -197,6 +197,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     LOGGER.debug(f'Loading test reports for device {device.model}')
 
+    # Remove the existing reports in memory
+    device.clear_reports()
+
     # Locate reports folder
     reports_folder = os.path.join(root_dir,
                                   LOCAL_DEVICES_DIR,
@@ -223,6 +226,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
         report_json = json.load(report_json_file)
         test_report = TestReport()
         test_report.from_json(report_json)
+        test_report.set_mac_addr(device.mac_addr)
         device.add_report(test_report)
 
   def delete_report(self, device: Device, timestamp):
@@ -291,6 +295,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     with open(config_file_path, 'w+', encoding='utf-8') as config_file:
       config_file.writelines(json.dumps(device.to_config_json(), indent=4))
+
+    # Reload device reports
+    self._load_test_reports(device)
 
     return device.to_config_json()
 
