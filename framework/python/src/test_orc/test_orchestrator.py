@@ -198,7 +198,7 @@ class TestOrchestrator:
       completed_tests = os.listdir(completed_results_dir)
       cur_test_count = len(completed_tests)
       if cur_test_count > max_device_reports:
-        LOGGER.debug("Current device has more than max tests results allowed: " +
+        LOGGER.debug("Current device has more than max results allowed: " +
                      str(cur_test_count) + ">" + str(max_device_reports))
 
         # Find and delete the oldest test
