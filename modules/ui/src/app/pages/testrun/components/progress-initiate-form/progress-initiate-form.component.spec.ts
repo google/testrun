@@ -178,10 +178,27 @@ describe('ProgressInitiateFormComponent', () => {
         });
       });
 
+      it('should not start if no test selected', () => {
+        component.firmware.setValue('firmware');
+        component.selectedDevice = device;
+        fixture.detectChanges();
+        component.test_modules.setValue([false, false]);
+
+        component.startTestRun();
+        fixture.detectChanges();
+
+        const error = compiled.querySelector('mat-error');
+        expect(error?.innerHTML).toContain(
+          'At least one test has to be selected to start test run.'
+        );
+      });
+
       describe('when selectedDevice is present and firmware is filled', () => {
         beforeEach(() => {
           component.firmware.setValue('firmware');
           component.selectedDevice = device;
+          fixture.detectChanges();
+          component.test_modules.setValue([true, true]);
         });
 
         it('should call startTestRun with device', () => {
@@ -193,6 +210,9 @@ describe('ProgressInitiateFormComponent', () => {
             mac_addr: '00:1e:42:35:73:c4',
             firmware: 'firmware',
             test_modules: {
+              connection: {
+                enabled: true,
+              },
               dns: {
                 enabled: true,
               },
@@ -309,7 +329,7 @@ describe('ProgressInitiateFormComponent', () => {
         const tests = compiled.querySelectorAll('.device-form-test-modules p');
 
         expect(testsForm).toBeTruthy();
-        expect(tests[0].classList.contains('disabled')).toEqual(true);
+        expect(tests[0].classList.contains('disabled')).toEqual(false);
         expect(tests.length).toEqual(2);
       });
 
