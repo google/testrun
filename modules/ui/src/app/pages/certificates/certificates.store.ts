@@ -25,18 +25,28 @@ import { DatePipe } from '@angular/common';
 
 export interface AppComponentState {
   certificates: Certificate[];
+  selectedCertificate: string;
 }
 @Injectable()
 export class CertificatesStore extends ComponentStore<AppComponentState> {
   private certificates$ = this.select(state => state.certificates);
+  private selectedCertificate$ = this.select(
+    state => state.selectedCertificate
+  );
 
   viewModel$ = this.select({
     certificates: this.certificates$,
+    selectedCertificate: this.selectedCertificate$,
   });
 
   updateCertificates = this.updater((state, certificates: Certificate[]) => ({
     ...state,
     certificates,
+  }));
+
+  selectCertificate = this.updater((state, selectedCertificate: string) => ({
+    ...state,
+    selectedCertificate,
   }));
 
   getCertificates = this.effect(trigger$ => {
@@ -118,6 +128,7 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
   ) {
     super({
       certificates: [],
+      selectedCertificate: '',
     });
   }
 }

@@ -68,6 +68,16 @@ describe('CertificatesStore', () => {
 
       certificateStore.updateCertificates([certificate]);
     });
+
+    it('should update selectedCertificate', (done: DoneFn) => {
+      const certificate = 'test';
+      certificateStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
+        expect(store.selectedCertificate).toEqual(certificate);
+        done();
+      });
+
+      certificateStore.selectCertificate(certificate);
+    });
   });
 
   describe('selectors', () => {
@@ -75,6 +85,7 @@ describe('CertificatesStore', () => {
       certificateStore.viewModel$.pipe(take(1)).subscribe(store => {
         expect(store).toEqual({
           certificates: [],
+          selectedCertificate: '',
         });
         done();
       });

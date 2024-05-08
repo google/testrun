@@ -132,5 +132,33 @@ describe('CertificatesComponent', () => {
         openSpy.calls.reset();
       }));
     });
+
+    describe('#focusNextButton', () => {
+      it('should focus next active element if exist', () => {
+        const row = window.document.querySelector(
+          'app-certificate-item'
+        ) as HTMLElement;
+        row.classList.add('certificate-selected');
+        const nextButton = window.document.querySelector(
+          '.certificate-selected + app-certificate-item .certificate-item-delete'
+        ) as HTMLButtonElement;
+        const buttonFocusSpy = spyOn(nextButton, 'focus');
+
+        component.focusNextButton();
+
+        expect(buttonFocusSpy).toHaveBeenCalled();
+      });
+
+      it('should focus navigation button if next active element does not exist', () => {
+        const nextButton = window.document.querySelector(
+          '.certificates-drawer-content .close-button'
+        ) as HTMLButtonElement;
+        const buttonFocusSpy = spyOn(nextButton, 'focus');
+
+        component.focusNextButton();
+
+        expect(buttonFocusSpy).toHaveBeenCalled();
+      });
+    });
   });
 });
