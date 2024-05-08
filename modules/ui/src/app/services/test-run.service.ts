@@ -240,8 +240,4 @@ export class TestRunService {
       .post<boolean>(`${API_URL}/system/config/certs/upload`, formData)
       .pipe(map(() => true));
   }
-
-  fetchCertificates(): Observable<Certificate[]> {
-    return this.http.get<Certificate[]>(`${API_URL}/system/config/certs/list`);
-  }
 }

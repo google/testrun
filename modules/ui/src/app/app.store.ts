@@ -38,7 +38,6 @@ import {
 } from './store/actions';
 import { TestrunStatus } from './model/testrun-status';
 import { SettingMissedError, SystemInterfaces } from './model/setting';
-import { Certificate } from './model/certificate';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export interface AppComponentState {
@@ -46,13 +45,11 @@ export interface AppComponentState {
   isStatusLoaded: boolean;
   isTestrunStarted: boolean;
   systemStatus: TestrunStatus | null;
-  certificates: Certificate[];
 }
 @Injectable()
 export class AppStore extends ComponentStore<AppComponentState> {
   private consentShown$ = this.select(state => state.consentShown);
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
-  private certificates$ = this.select(state => state.certificates);
   private hasDevices$ = this.store.select(selectHasDevices);
   private hasConnectionSetting$ = this.store.select(
     selectHasConnectionSettings
@@ -75,7 +72,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
     isMenuOpen: this.isMenuOpen$,
     interfaces: this.interfaces$,
     settingMissedError: this.settingMissedError$,
-    certificates: this.certificates$,
   });
 
   updateConsent = this.updater((state, consentShown: boolean) => ({
@@ -86,11 +82,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
   updateIsStatusLoaded = this.updater((state, isStatusLoaded: boolean) => ({
     ...state,
     isStatusLoaded,
-  }));
-
-  updateCertificates = this.updater((state, certificates: Certificate[]) => ({
-    ...state,
-    certificates,
   }));
 
   setContent = this.effect<void>(trigger$ => {
@@ -137,17 +128,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  getCertificates = this.effect(trigger$ => {
-    return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunService.fetchCertificates().pipe(
-          tap((certificates: Certificate[]) => {
-            this.updateCertificates(certificates);
-          })
-        );
-      })
-    );
-  });
   constructor(
     private store: Store<AppState>,
     private testRunService: TestRunService
@@ -157,7 +137,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
       isStatusLoaded: false,
       isTestrunStarted: false,
       systemStatus: null,
-      certificates: [],
     });
   }
 }
