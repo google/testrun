@@ -31,6 +31,9 @@ limitations under the License.
     <section class="content-certificates">
       <app-certificate-item
         *ngFor="let certificate of vm.certificates"
+        [class.certificate-selected]="
+          certificate.name === vm.selectedCertificate
+        "
         [certificate]="certificate"
         (deleteButtonClicked)="
           deleteCertificate($event)

@@ -68,6 +68,8 @@ export class CertificatesComponent implements OnDestroy {
   }
 
   deleteCertificate(name: string) {
+    this.store.selectCertificate(name);
+
     const dialogRef = this.dialog.open(DeleteFormComponent, {
       ariaLabel: 'Delete certificate',
       data: {
@@ -86,7 +88,24 @@ export class CertificatesComponent implements OnDestroy {
       .subscribe(deleteCertificate => {
         if (deleteCertificate) {
           this.store.deleteCertificate(name);
+          this.focusNextButton();
         }
       });
+  }
+
+  focusNextButton() {
+    // Try to focus next interactive element, if exists
+    const next = window.document.querySelector(
+      '.certificate-selected + app-certificate-item .certificate-item-delete'
+    ) as HTMLButtonElement;
+    if (next) {
+      next.focus();
+    } else {
+      // If next interactive element doest not exist, close button will be focused
+      const menuButton = window.document.querySelector(
+        '.certificates-drawer-content .close-button'
+      ) as HTMLButtonElement;
+      menuButton?.focus();
+    }
   }
 }
