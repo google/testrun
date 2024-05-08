@@ -1,7 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CertificateItemComponent } from './certificate-item.component';
-import { certificate } from '../../../mocks/certificate.mock';
+import {
+  certificate,
+  certificate_uploading,
+} from '../../../mocks/certificate.mock';
 
 describe('CertificateItemComponent', () => {
   let component: CertificateItemComponent;
@@ -31,37 +34,60 @@ describe('CertificateItemComponent', () => {
       expect(name?.textContent?.trim()).toEqual('iot.bms.google.com');
     });
 
-    it('should have certificate organization', () => {
-      const organization = compiled.querySelector(
-        '.certificate-item-organisation'
-      );
+    describe('uploaded certificate', () => {
+      it('should have certificate organization', () => {
+        const organization = compiled.querySelector(
+          '.certificate-item-organisation'
+        );
 
-      expect(organization?.textContent?.trim()).toEqual('Google, Inc.');
+        expect(organization?.textContent?.trim()).toEqual('Google, Inc.');
+      });
+
+      it('should have certificate expire date', () => {
+        const date = compiled.querySelector('.certificate-item-expires');
+
+        expect(date?.textContent?.trim()).toEqual('01 Sep 2024');
+      });
+
+      describe('delete button', () => {
+        let deleteButton: HTMLButtonElement;
+        beforeEach(() => {
+          deleteButton = fixture.nativeElement.querySelector(
+            '.certificate-item-delete'
+          ) as HTMLButtonElement;
+        });
+
+        it('should be present', () => {
+          expect(deleteButton).toBeDefined();
+        });
+
+        it('should emit delete event on delete button clicked', () => {
+          const deleteSpy = spyOn(component.deleteButtonClicked, 'emit');
+          deleteButton.click();
+
+          expect(deleteSpy).toHaveBeenCalledWith('iot.bms.google.com');
+        });
+      });
     });
 
-    it('should have certificate expire date', () => {
-      const date = compiled.querySelector('.certificate-item-expires');
-
-      expect(date?.textContent?.trim()).toEqual('01 Sep 2024');
-    });
-
-    describe('delete button', () => {
-      let deleteButton: HTMLButtonElement;
+    describe('uploading certificate', () => {
       beforeEach(() => {
-        deleteButton = fixture.nativeElement.querySelector(
+        component.certificate = certificate_uploading;
+        fixture.detectChanges();
+      });
+
+      it('should have loader', () => {
+        const loader = compiled.querySelector('mat-progress-bar');
+
+        expect(loader).toBeDefined();
+      });
+
+      it('should have disabled delete button', () => {
+        const deleteButton = fixture.nativeElement.querySelector(
           '.certificate-item-delete'
         ) as HTMLButtonElement;
-      });
 
-      it('should be present', () => {
-        expect(deleteButton).toBeDefined();
-      });
-
-      it('should emit delete event on delete button clicked', () => {
-        const deleteSpy = spyOn(component.deleteButtonClicked, 'emit');
-        deleteButton.click();
-
-        expect(deleteSpy).toHaveBeenCalledWith('iot.bms.google.com');
+        expect(deleteButton.getAttribute('disabled')).toBeTruthy();
       });
     });
   });

@@ -230,4 +230,13 @@ export class TestRunService {
       })
       .pipe(map(() => true));
   }
+
+  uploadCertificate(file: File): Observable<boolean> {
+    const formData: FormData = new FormData();
+    formData.append('file', file, file.name);
+    formData.append('mode', 'file');
+    return this.http
+      .post<boolean>(`${API_URL}/system/config/certs/upload`, formData)
+      .pipe(map(() => true));
+  }
 }
