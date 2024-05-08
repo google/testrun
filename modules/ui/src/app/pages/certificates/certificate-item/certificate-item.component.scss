@@ -40,7 +40,8 @@
 
 .certificate-item-delete {
   padding: 0;
-  margin-left: -50%;
+  height: 24px;
+  width: 24px;
   border-radius: 4px;
   color: $grey-700;
   display: flex;
@@ -60,6 +61,9 @@
   p {
     font-family: $font-secondary, sans-serif;
     margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .certificate-item-name {
     font-size: 16px;
