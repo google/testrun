@@ -145,8 +145,10 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
       exhaustMap(({ mac_addr, started }) => {
         return this.testRunService.deleteReport(mac_addr, started || '').pipe(
           withLatestFrom(this.history$),
-          tap(([, current]) => {
-            this.removeReport(mac_addr, started, current);
+          tap(([remove, current]) => {
+            if (remove) {
+              this.removeReport(mac_addr, started, current);
+            }
           })
         );
       })
