@@ -432,6 +432,24 @@ describe('TestRunService', () => {
     req.flush({});
   });
 
+  it('deleteReport should return false when error happens', () => {
+    const apiUrl = 'http://localhost:8000/report';
+
+    service.deleteReport(device.mac_addr, '').subscribe(res => {
+      expect(res).toEqual(false);
+    });
+
+    const req = httpTestingController.expectOne(apiUrl);
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.body).toEqual(
+      JSON.stringify({
+        mac_addr: device.mac_addr,
+        timestamp: '',
+      })
+    );
+    req.error(new ErrorEvent(''));
+  });
+
   it('#saveDevice should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/device';
 
@@ -502,5 +520,19 @@ describe('TestRunService', () => {
     expect(req.request.method).toBe('DELETE');
 
     req.flush(true);
+  });
+
+  it('deleteCertificate should return false when error happens', () => {
+    service.deleteCertificate('test').subscribe(res => {
+      expect(res).toEqual(false);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs/delete'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.error(new ErrorEvent(''));
   });
 });

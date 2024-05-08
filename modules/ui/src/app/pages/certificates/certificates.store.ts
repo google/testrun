@@ -96,8 +96,10 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
       exhaustMap((name: string) => {
         return this.testRunService.deleteCertificate(name).pipe(
           withLatestFrom(this.certificates$),
-          tap(([, current]) => {
-            this.removeCertificate(name, current);
+          tap(([remove, current]) => {
+            if (remove) {
+              this.removeCertificate(name, current);
+            }
           })
         );
       })
