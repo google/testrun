@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  flush,
+  TestBed,
+} from '@angular/core/testing';
 
 import { CertificatesComponent } from './certificates.component';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
@@ -134,7 +139,7 @@ describe('CertificatesComponent', () => {
     });
 
     describe('#focusNextButton', () => {
-      it('should focus next active element if exist', () => {
+      it('should focus next active element if exist', fakeAsync(() => {
         const row = window.document.querySelector(
           'app-certificate-item'
         ) as HTMLElement;
@@ -147,9 +152,10 @@ describe('CertificatesComponent', () => {
         component.focusNextButton();
 
         expect(buttonFocusSpy).toHaveBeenCalled();
-      });
+        flush();
+      }));
 
-      it('should focus navigation button if next active element does not exist', () => {
+      it('should focus navigation button if next active element does not exist', fakeAsync(() => {
         const nextButton = window.document.querySelector(
           '.certificates-drawer-content .close-button'
         ) as HTMLButtonElement;
@@ -158,7 +164,8 @@ describe('CertificatesComponent', () => {
         component.focusNextButton();
 
         expect(buttonFocusSpy).toHaveBeenCalled();
-      });
+        flush();
+      }));
     });
   });
 });
