@@ -216,7 +216,10 @@ export class TestRunService {
       .delete<boolean>(`${API_URL}/report`, {
         body: JSON.stringify({ mac_addr, timestamp: started }),
       })
-      .pipe(map(() => true));
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
   }
 
   fetchCertificates(): Observable<Certificate[]> {
@@ -228,7 +231,10 @@ export class TestRunService {
       .delete<boolean>(`${API_URL}/system/config/certs/delete`, {
         body: JSON.stringify({ name }),
       })
-      .pipe(map(() => true));
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
   }
 
   uploadCertificate(file: File): Observable<boolean> {
