@@ -4,13 +4,19 @@
   >
   <div class="certificate-item-information">
     <p class="certificate-item-name">{{ certificate.name }}</p>
-    <p class="certificate-item-organisation">{{ certificate.organisation }}</p>
-    <p class="certificate-item-expires">
+    <p class="certificate-item-organisation" *ngIf="certificate.organisation">
+      {{ certificate.organisation }}
+    </p>
+    <p class="certificate-item-expires" *ngIf="certificate.expires">
       {{ certificate.expires | date: 'dd MMM yyyy' }}
     </p>
+    <mat-progress-bar
+      *ngIf="certificate.uploading"
+      mode="indeterminate"></mat-progress-bar>
   </div>
 
   <button
+    [disabled]="certificate.uploading"
     class="certificate-item-delete"
     mat-icon-button
     aria-label="Delete certificate"

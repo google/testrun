@@ -97,10 +97,9 @@ describe('AppComponent', () => {
       'getTestModules',
       'testrunInProgress',
       'fetchCertificates',
-      'deleteCertificate',
     ]);
 
-    mockService.deleteCertificate.and.returnValue(of(true));
+    mockService.fetchCertificates.and.returnValue(of([]));
     mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
       'focusFirstElementInContainer',
     ]);
@@ -677,12 +676,6 @@ describe('AppComponent', () => {
     settingsBtn.click();
 
     expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
-  });
-
-  it('should call delete certificate', () => {
-    component.deleteCertificate('name');
-
-    expect(mockService.deleteCertificate).toHaveBeenCalledWith('name');
   });
 });
 

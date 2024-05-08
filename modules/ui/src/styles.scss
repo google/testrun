@@ -272,3 +272,7 @@ body
     opacity: var(--mat-text-button-focus-state-layer-opacity);
   }
 }
+
+.certificate-notification .mat-mdc-snack-bar-label {
+  white-space: pre-line;
+}

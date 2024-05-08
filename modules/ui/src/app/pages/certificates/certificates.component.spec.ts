@@ -24,17 +24,31 @@ import SpyObj = jasmine.SpyObj;
 import { of } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { TestRunService } from '../../services/test-run.service';
 
 describe('CertificatesComponent', () => {
   let component: CertificatesComponent;
   let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
+  let mockService: SpyObj<TestRunService>;
   let fixture: ComponentFixture<CertificatesComponent>;
 
   beforeEach(async () => {
+    mockService = jasmine.createSpyObj([
+      'fetchCertificates',
+      'deleteCertificate',
+      'uploadCertificate',
+    ]);
+    mockService.deleteCertificate.and.returnValue(of(true));
+    mockService.fetchCertificates.and.returnValue(
+      of([certificate, certificate])
+    );
     mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
     await TestBed.configureTestingModule({
       imports: [CertificatesComponent, MatIconTestingModule, MatIcon],
-      providers: [{ provide: LiveAnnouncer, useValue: mockLiveAnnouncer }],
+      providers: [
+        { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
+        { provide: TestRunService, useValue: mockService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CertificatesComponent);
@@ -84,11 +98,6 @@ describe('CertificatesComponent', () => {
     });
 
     describe('with certificates', () => {
-      beforeEach(() => {
-        component.certificates = [certificate, certificate];
-        fixture.detectChanges();
-      });
-
       it('should have certificates list', () => {
         const certificateList = fixture.nativeElement.querySelectorAll(
           'app-certificate-item'

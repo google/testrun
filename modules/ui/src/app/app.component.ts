@@ -74,7 +74,6 @@ export class AppComponent {
   ) {
     this.appStore.getDevices();
     this.appStore.getSystemStatus();
-    this.appStore.getCertificates();
     this.matIconRegistry.addSvgIcon(
       'devices',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_LOGO_URL)
@@ -165,9 +164,5 @@ export class AppComponent {
 
   isTestrunInProgress(status?: string) {
     return this.testRunService.testrunInProgress(status);
-  }
-
-  deleteCertificate(name: string) {
-    this.appStore.deleteCertificate(name);
   }
 }

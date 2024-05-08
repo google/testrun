@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@use '@angular/material' as mat;
-@import '../../../../theming/colors';
-@import '../../../../theming/variables';
+@import 'src/theming/colors';
+@import 'src/theming/variables';
 
+:host {
+  ::ng-deep .mat-mdc-progress-bar {
+    --mdc-linear-progress-active-indicator-color: #1967d2;
+  }
+}
 :host:first-child .certificate-item-container {
   border-top: 1px solid $lighter-grey;
 }
@@ -44,6 +48,10 @@
   justify-content: center;
   & ::ng-deep .mat-mdc-button-persistent-ripple {
     border-radius: 4px;
+  }
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.6;
   }
 }
 
