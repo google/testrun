@@ -37,6 +37,7 @@ import { take } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../../../store/state';
 import { selectDevices } from '../../../../store/selectors';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 
 interface DialogData {
   device?: Device;
@@ -59,6 +60,9 @@ export class ProgressInitiateFormComponent
   prevDevice: Device | null = null;
   setFirmwareFocus = false;
   readonly DeviceView = DeviceView;
+  error$: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(
+    null
+  );
 
   constructor(
     public override dialogRef: MatDialogRef<ProgressInitiateFormComponent>,
@@ -74,6 +78,10 @@ export class ProgressInitiateFormComponent
 
   get firmware() {
     return this.initiateForm.get('firmware') as AbstractControl;
+  }
+
+  get test_modules() {
+    return this.initiateForm.controls['test_modules'] as FormArray;
   }
 
   cancel(startTestrun: boolean): void {
@@ -131,12 +139,29 @@ export class ProgressInitiateFormComponent
       return;
     }
 
+    if (this.isAllTestsDisabled()) {
+      this.error$.next(
+        'At least one test has to be selected to start test run.'
+      );
+      return;
+    }
+
+    const testModules: { [key: string]: { enabled: boolean } } = {};
+    this.initiateForm.value.test_modules.forEach(
+      (enabled: boolean, i: number) => {
+        testModules[this.testModules[i]?.name] = {
+          enabled: enabled,
+        };
+      }
+    );
+
     if (this.selectedDevice) {
       this.testRunService.fetchVersion();
       this.testRunService
         .startTestrun({
           ...this.selectedDevice,
           firmware: this.firmware.value.trim(),
+          test_modules: testModules,
         })
         .pipe(take(1))
         .subscribe(() => {
@@ -149,6 +174,12 @@ export class ProgressInitiateFormComponent
     this.initiateForm = this.fb.group({
       firmware: ['', [this.deviceValidators.firmwareStringFormat()]],
       test_modules: new FormArray([]),
+    });
+  }
+
+  private isAllTestsDisabled(): boolean {
+    return this.initiateForm.value.test_modules.every((enabled: boolean) => {
+      return !enabled;
     });
   }
 }

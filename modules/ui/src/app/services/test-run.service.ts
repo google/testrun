@@ -27,8 +27,6 @@ import {
   TestrunStatus,
 } from '../model/testrun-status';
 import { Version } from '../model/version';
-import { Store } from '@ngrx/store';
-import { AppState } from '../store/state';
 import { Certificate } from '../model/certificate';
 
 const API_URL = `http://${window.location.hostname}:8000`;
@@ -80,10 +78,7 @@ export class TestRunService {
 
   private version = new BehaviorSubject<Version | null>(null);
 
-  constructor(
-    private http: HttpClient,
-    private store: Store<AppState>
-  ) {}
+  constructor(private http: HttpClient) {}
 
   fetchDevices(): Observable<Device[]> {
     return this.http.get<Device[]>(`${API_URL}/devices`);
