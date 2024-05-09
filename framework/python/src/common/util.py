@@ -105,7 +105,7 @@ def get_module_display_name(search):
     'ntp': 'NTP',
     'dns': 'DNS',
     'connection': 'Connection',
-    'nmap': 'Services',
+    'services': 'Services',
     'tls': 'TLS',
     'protocol': 'Protocol'
   }
