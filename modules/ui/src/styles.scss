@@ -198,6 +198,10 @@ h2.title {
   --mdc-outlined-text-field-disabled-label-text-color: rgba(0, 0, 0, 0.58);
 }
 
+.snack-bar-info.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  max-width: 780px;
+}
+
 body:has(.initiate-test-run-dialog)
   app-root
   app-spinner.connection-settings-spinner,

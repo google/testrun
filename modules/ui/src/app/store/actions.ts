@@ -66,6 +66,16 @@ export const setIsOpenAddDevice = createAction(
   props<{ isOpenAddDevice: boolean }>()
 );
 
+export const setIsStopTestrun = createAction(
+  '[Shared] Set Is Stop Testrun',
+  props<{ isStopTestrun: boolean }>()
+);
+
+export const setIsOpenWaitSnackBar = createAction(
+  '[Shared] Set Is Open WaitSnackBar',
+  props<{ isOpenWaitSnackBar: boolean }>()
+);
+
 export const setHasDevices = createAction(
   '[Shared] Set Has Devices',
   props<{ hasDevices: boolean }>()
