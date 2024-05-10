@@ -48,6 +48,8 @@ export interface SharedState {
   isOpenAddDevice: boolean;
   // app, testrun
   isOpenStartTestrun: boolean;
+  isStopTestrun: boolean;
+  isOpenWaitSnackBar: boolean;
   deviceInProgress: Device | null;
 }
 
@@ -63,6 +65,8 @@ export const initialAppComponentState: AppComponentState = {
 export const initialSharedState: SharedState = {
   hasConnectionSettings: null,
   isOpenAddDevice: false,
+  isStopTestrun: false,
+  isOpenWaitSnackBar: false,
   hasDevices: false,
   devices: [],
   deviceInProgress: null,

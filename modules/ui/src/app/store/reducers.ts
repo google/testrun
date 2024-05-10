@@ -53,6 +53,18 @@ export const sharedReducer = createReducer(
       isOpenAddDevice,
     };
   }),
+  on(Actions.setIsStopTestrun, (state, { isStopTestrun }) => {
+    return {
+      ...state,
+      isStopTestrun,
+    };
+  }),
+  on(Actions.setIsOpenWaitSnackBar, (state, { isOpenWaitSnackBar }) => {
+    return {
+      ...state,
+      isOpenWaitSnackBar,
+    };
+  }),
   on(Actions.setHasDevices, (state, { hasDevices }) => {
     return {
       ...state,

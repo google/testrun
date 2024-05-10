@@ -17,13 +17,15 @@
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { TestRunService } from '../../services/test-run.service';
-import { exhaustMap, interval, Subject } from 'rxjs';
+import { exhaustMap, interval, Subject, take, timer } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { AppState } from '../../store/state';
 import { Store } from '@ngrx/store';
 import {
   selectHasDevices,
   selectIsOpenStartTestrun,
+  selectIsOpenWaitSnackBar,
+  selectIsStopTestrun,
   selectIsTestrunStarted,
   selectSystemStatus,
 } from '../../store/selectors';
@@ -42,8 +44,10 @@ import {
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { LoaderService } from '../../services/loader.service';
+import { NotificationService } from '../../services/notification.service';
 
 const EMPTY_RESULT = new Array(100).fill(null).map(() => ({}) as IResult);
+const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
 export interface TestrunComponentState {
   dataSource: IResult[] | undefined;
@@ -55,6 +59,7 @@ export interface TestrunComponentState {
 @Injectable()
 export class TestrunStore extends ComponentStore<TestrunComponentState> {
   private destroyInterval$: Subject<boolean> = new Subject<boolean>();
+  private destroyWaitDeviceInterval$: Subject<boolean> = new Subject<boolean>();
   private dataSource$ = this.select(state => state.dataSource);
   private isCancelling$ = this.select(state => state.isCancelling);
   private startInterval$ = this.select(state => state.startInterval);
@@ -64,6 +69,8 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   private hasDevices$ = this.store.select(selectHasDevices);
   private systemStatus$ = this.store.select(selectSystemStatus);
   isTestrunStarted$ = this.store.select(selectIsTestrunStarted);
+  isStopTestrun$ = this.store.select(selectIsStopTestrun);
+  isOpenWaitSnackBar$ = this.store.select(selectIsOpenWaitSnackBar);
   isOpenStartTestrun$ = this.store.select(selectIsOpenStartTestrun);
   viewModel$ = this.select({
     hasDevices: this.hasDevices$,
@@ -102,7 +109,11 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     return trigger$.pipe(
       exhaustMap(() => {
         return this.testRunService.fetchSystemStatus().pipe(
-          withLatestFrom(this.isCancelling$, this.startInterval$),
+          withLatestFrom(
+            this.isCancelling$,
+            this.startInterval$,
+            this.isOpenWaitSnackBar$
+          ),
           // change status if cancelling in process
           tap(([res, isCancelling]) => {
             if (isCancelling && res.status !== StatusOfTestrun.Cancelled) {
@@ -110,11 +121,23 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
             }
           }),
           // perform some additional actions
-          tap(([res, , startInterval]) => {
+          tap(([res, , startInterval, isOpenWaitSnackBar]) => {
             this.store.dispatch(setTestrunStatus({ systemStatus: res }));
 
             if (this.testrunInProgress(res.status) && !startInterval) {
               this.pullingSystemStatusData();
+            }
+            if (
+              res.status === StatusOfTestrun.WaitingForDevice &&
+              !isOpenWaitSnackBar
+            ) {
+              this.showSnackBar();
+            }
+            if (
+              res.status !== StatusOfTestrun.WaitingForDevice &&
+              isOpenWaitSnackBar
+            ) {
+              this.notificationService.dismissWithTimout();
             }
             if (
               res.status === StatusOfTestrun.WaitingForDevice ||
@@ -232,6 +255,22 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     this.loaderService.setLoading(true);
   }
 
+  private showSnackBar() {
+    timer(WAIT_TO_OPEN_SNACKBAR_MS)
+      .pipe(
+        take(1),
+        takeUntil(this.destroyWaitDeviceInterval$),
+        withLatestFrom(this.systemStatus$),
+        tap(([, systemStatus]) => {
+          if (systemStatus?.status === StatusOfTestrun.WaitingForDevice) {
+            this.notificationService.openSnackBar();
+            this.destroyWaitDeviceInterval$.next(true);
+          }
+        })
+      )
+      .subscribe();
+  }
+
   private pullingSystemStatusData(): void {
     this.updateStartInterval(true);
     interval(5000)
@@ -262,6 +301,7 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
 
   constructor(
     private testRunService: TestRunService,
+    private notificationService: NotificationService,
     private store: Store<AppState>,
     private readonly focusManagerService: FocusManagerService,
     private readonly loaderService: LoaderService

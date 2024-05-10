@@ -34,6 +34,7 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { TestrunStore } from './testrun.store';
 import { TestRunService } from '../../services/test-run.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-progress',
@@ -53,6 +54,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly testRunService: TestRunService,
+    private readonly notificationService: NotificationService,
     public dialog: MatDialog,
     private readonly focusManagerService: FocusManagerService,
     public testrunStore: TestrunStore
@@ -68,6 +70,15 @@ export class ProgressComponent implements OnInit, OnDestroy {
       .subscribe(([isOpenStartTestrun, isTestrunStarted]) => {
         if (isOpenStartTestrun && !isTestrunStarted) {
           this.openTestRunModal();
+        }
+      });
+
+    this.testrunStore.isStopTestrun$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isStop => {
+        if (isStop) {
+          this.stopTestrun();
+          this.notificationService.dismissSnackBar();
         }
       });
   }
@@ -125,6 +136,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.notificationService.dismissSnackBar();
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
     this.testrunStore.destroyInterval();

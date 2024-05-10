@@ -18,6 +18,7 @@ import {
   fakeAsync,
   flush,
   TestBed,
+  tick,
 } from '@angular/core/testing';
 
 import { CertificatesComponent } from './certificates.component';
@@ -30,12 +31,16 @@ import { of } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { TestRunService } from '../../services/test-run.service';
+import { NotificationService } from '../../services/notification.service';
 
 describe('CertificatesComponent', () => {
   let component: CertificatesComponent;
   let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
   let mockService: SpyObj<TestRunService>;
   let fixture: ComponentFixture<CertificatesComponent>;
+
+  const notificationServiceMock: jasmine.SpyObj<NotificationService> =
+    jasmine.createSpyObj(['notify']);
 
   beforeEach(async () => {
     mockService = jasmine.createSpyObj([
@@ -53,6 +58,7 @@ describe('CertificatesComponent', () => {
       providers: [
         { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
         { provide: TestRunService, useValue: mockService },
+        { provide: NotificationService, useValue: notificationServiceMock },
       ],
     }).compileComponents();
 
@@ -119,8 +125,10 @@ describe('CertificatesComponent', () => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(true),
         } as MatDialogRef<typeof DeleteFormComponent>);
+        tick();
 
         component.deleteCertificate(certificate.name);
+        tick();
 
         expect(openSpy).toHaveBeenCalledWith(DeleteFormComponent, {
           ariaLabel: 'Delete certificate',
