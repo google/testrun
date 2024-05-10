@@ -1,117 +1,17 @@
 {
-  "device": {
-    "mac_addr": "38:d1:35:01:17:fe",
-    "manufacturer": "EasyIO",
-    "model": "FS-32",
-    "test_modules": {
-      "connection": {
-        "enabled": false,
-        "tests": {
-          "connection.dhcp_address": {
-            "enabled": true
-          },
-          "connection.mac_address": {
-            "enabled": true
-          },
-          "connection.mac_oui": {
-            "enabled": true
-          },
-          "connection.private_address": {
-            "enabled": true
-          },
-          "connection.shared_address": {
-            "enabled": true
-          },
-          "connection.single_ip": {
-            "enabled": true
-          },
-          "connection.target_ping": {
-            "enabled": true
-          },
-          "connection.ipaddr.ip_change": {
-            "enabled": true
-          },
-          "connection.ipaddr.dhcp_failover": {
-            "enabled": true
-          },
-          "connection.ipv6_slaac": {
-            "enabled": true
-          },
-          "connection.ipv6_ping": {
-            "enabled": true
-          }
-        }
-      },
-      "nmap": {
-        "enabled": true
-      },
-      "baseline": {
-        "enabled": true
-      },
-      "dns": {
-        "enabled": true
-      },
-      "ntp": {
-        "enabled": true
-      },
-      "protocol": {
-        "enabled": true
-      },
-      "tls": {
-        "enabled": true
-      }
-    }
-  },
-  "status": "Non-Compliant",
-  "started": "2024-01-23 14:35:17",
-  "finished": "2024-01-23 14:39:20",
-  "tests": {
-    "total": 17,
-    "results": [
-      {
-        "name": "security.tls.v1_2_server",
-        "test_description": "Check the device web server TLS 1.2 & certificate is valid",
-        "expected_behavior": "TLS 1.2 certificate is issued to the web browser client when accessed",
-        "required_result": "Required",
-        "start": "2024-01-23T14:36:14.517381",
-        "result": "Compliant",
-        "description": "TLS 1.2 validated: Certificate has a valid time range\nRSA key length passed: 2048 >= 2048\nDevice signed by cert:BIOT_CA_Root.pem. \nTLS 1.3 validated: Certificate has a valid time range\nRSA key length passed: 2048 >= 2048\nDevice signed by cert:BIOT_CA_Root.pem. ",
-        "end": "2024-01-23T14:36:14.824597",
-        "duration": "0:00:00.307216"
-      },
-      {
-        "name": "security.tls.v1_2_client",
-        "test_description": "Device uses TLS with connection to an external service on port 443 (or any other port which could be running the webserver-HTTPS)",
-        "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers",
-        "required_result": "Required",
-        "start": "2024-01-23T14:36:14.824649",
-        "result": "Compliant",
-        "description": "Completed handshake detected from server: 173.194.195.206\n",
-        "end": "2024-01-23T14:36:17.035258",
-        "duration": "0:00:02.210609"
-      },
-      {
-        "name": "dns.network.hostname_resolution",
-        "test_description": "Verify the device sends DNS requests",
-        "expected_behavior": "The device sends DNS requests.",
-        "required_result": "Required",
-        "start": "2024-01-23T14:36:22.978454",
-        "result": "Compliant",
-        "description": "DNS traffic detected from device",
-        "end": "2024-01-23T14:36:23.017788",
-        "duration": "0:00:00.039334"
-      },
-      {
-        "name": "dns.network.from_dhcp",
-        "test_description": "Verify the device allows for a DNS server to be entered automatically",
-        "expected_behavior": "The device sends DNS requests to the DNS server provided by the DHCP server",
-        "required_result": "Roadmap",
-        "start": "2024-01-23T14:36:23.017821",
-        "result": "Compliant",
-        "description": "DNS traffic detected only to DHCP provided server",
-        "end": "2024-01-23T14:36:23.089265",
-        "duration": "0:00:00.071444"
-      },
+  "config": {
+    "meta": {
+      "name": "services",
+      "display_name": "Services",
+      "description": "Scan for open ports using nmap"
+    },
+    "network": true,
+    "docker": {
+      "depends_on": "base",
+      "enable_container": true,
+      "timeout": 600
+    },
+    "tests": [
       {
         "name": "security.services.ftp",
         "test_description": "Check FTP port 20/21 is disabled and FTP is not running on any port",
@@ -141,11 +41,10 @@
             }
           ]
         },
-        "start": "2024-01-23T14:39:11.952531",
-        "result": "Compliant",
-        "description": "No FTP server found",
-        "end": "2024-01-23T14:39:11.955139",
-        "duration": "0:00:00.002608"
+        "recommendations": [
+          "Disable the FTP server",
+          "Switch to a secure SFTP server"
+        ]
       },
       {
         "name": "security.ssh.version",
@@ -153,9 +52,7 @@
         "expected_behavior": "SSH server is not running or server is SSHv2",
         "required_result": "Required",
         "config": {
-          "services": [
-            "ssh"
-          ],
+          "services": ["ssh"],
           "ports": [
             {
               "number": 22,
@@ -164,16 +61,14 @@
           ],
           "version": "protocol 2.0"
         },
-        "start": "2024-01-23T14:39:11.955233",
-        "result": "Compliant",
-        "description": "SSH server found running 8.8 protocol 2.0",
-        "end": "2024-01-23T14:39:11.955797",
-        "duration": "0:00:00.000564"
+        "recommendations": [
+          "Upgrade the SSH server to at least protocol 2.0"
+        ]
       },
       {
         "name": "security.services.telnet",
         "test_description": "Check TELNET port 23 is disabled and TELNET is not running on any port",
-        "expected_behavior": "There is no FTP service running on any port",
+        "expected_behavior": "There is no Telnet service running on any port",
         "required_result": "Required",
         "config": {
           "services": [
@@ -190,16 +85,15 @@
             }
           ]
         },
-        "start": "2024-01-23T14:39:11.955850",
-        "result": "Compliant",
-        "description": "No telnet server found",
-        "end": "2024-01-23T14:39:11.956427",
-        "duration": "0:00:00.000577"
+        "recommendations": [
+          "Disable the Telnet server",
+          "Use SSH instead of Telnet if required"
+        ]
       },
       {
         "name": "security.services.smtp",
         "test_description": "Check SMTP ports 25, 465 and 587 are not enabled and SMTP is not running on any port.",
-        "expected_behavior": "There is no smtp service running on any port",
+        "expected_behavior": "There is no SMTP service running on any port",
         "required_result": "Required",
         "config": {
           "services": [
@@ -220,11 +114,9 @@
             }
           ]
         },
-        "start": "2024-01-23T14:39:11.956474",
-        "result": "Compliant",
-        "description": "No SMTP server found",
-        "end": "2024-01-23T14:39:11.957414",
-        "duration": "0:00:00.000940"
+        "recommendations": [
+          "Disable the SMTP server"
+        ]
       },
       {
         "name": "security.services.http",
@@ -256,16 +148,15 @@
             }
           ]
         },
-        "start": "2024-01-23T14:39:11.957432",
-        "result": "Compliant",
-        "description": "No HTTP server found",
-        "end": "2024-01-23T14:39:11.958301",
-        "duration": "0:00:00.000869"
+        "recommendations": [
+          "Disable all unsecure HTTP servers",
+          "Setup TLS on the web server"
+        ]
       },
       {
         "name": "security.services.pop",
         "test_description": "Check POP ports 109 and 110 are disabled and POP is not running on any port",
-        "expected_behavior": "There is no pop service running on any port",
+        "expected_behavior": "There is no POP service running on any port",
         "required_result": "Required",
         "config": {
           "services": [
@@ -300,16 +191,14 @@
             }
           ]
         },
-        "start": "2024-01-23T14:39:11.958319",
-        "result": "Compliant",
-        "description": "No POP server found",
-        "end": "2024-01-23T14:39:11.958837",
-        "duration": "0:00:00.000518"
+        "recommendations": [
+          "Disable the POP server"
+        ]
       },
       {
         "name": "security.services.imap",
         "test_description": "Check IMAP port 143 is disabled and IMAP is not running on any port",
-        "expected_behavior": "There is no imap service running on any port",
+        "expected_behavior": "There is no IMAP service running on any port",
         "required_result": "Required",
         "config": {
           "services": [
@@ -352,11 +241,9 @@
             }
           ]
         },
-        "start": "2024-01-23T14:39:11.958855",
-        "result": "Compliant",
-        "description": "No IMAP server found",
-        "end": "2024-01-23T14:39:11.959440",
-        "duration": "0:00:00.000585"
+        "recommendations": [
+          "Disable the IMAP server"
+        ]
       },
       {
         "name": "security.services.snmpv3",
@@ -378,16 +265,14 @@
             }
           ]
         },
-        "start": "2024-01-23T14:39:11.959458",
-        "result": "Compliant",
-        "description": "No SNMP server found",
-        "end": "2024-01-23T14:39:11.960023",
-        "duration": "0:00:00.000565"
+        "recommendations": [
+          "Disable the SNMP server"
+        ]
       },
       {
         "name": "security.services.vnc",
         "test_description": "Check VNC is disabled on any port",
-        "expected_behavior": "Device cannot be accessed /connected to via VNC on any port",
+        "expected_behavior": "Device cannot be accessed / connected to via VNC on any port",
         "required_result": "Required",
         "config": {
           "services": [
@@ -435,16 +320,14 @@
             }
           ]
         },
-        "start": "2024-01-23T14:39:11.960041",
-        "result": "Compliant",
-        "description": "No VNC server found",
-        "end": "2024-01-23T14:39:11.960568",
-        "duration": "0:00:00.000527"
+        "recommendations": [
+          "Disable the VNC server"
+        ]
       },
       {
         "name": "security.services.tftp",
         "test_description": "Check TFTP port 69 is disabled (UDP)",
-        "expected_behavior": "There is no tftp service running on any port",
+        "expected_behavior": "There is no TFTP service running on any port",
         "required_result": "Required",
         "config": {
           "services": [
@@ -470,16 +353,14 @@
             }
           ]
         },
-        "start": "2024-01-23T14:39:11.960607",
-        "result": "Compliant",
-        "description": "No TFTP server found",
-        "end": "2024-01-23T14:39:11.961168",
-        "duration": "0:00:00.000561"
+        "recommendations": [
+          "Disable the TFTP server"
+        ]
       },
       {
         "name": "ntp.network.ntp_server",
         "test_description": "Check NTP port 123 is disabled and the device is not operating as an NTP server",
-        "expected_behavior": "The device dos not respond to NTP requests when it's IP is set as the NTP server on another device",
+        "expected_behavior": "The device does not respond to NTP requests when it's IP is set as the NTP server on another device",
         "required_result": "Required",
         "config": {
           "services": [
@@ -492,35 +373,11 @@
             }
           ]
         },
-        "start": "2024-01-23T14:39:11.961185",
-        "result": "Compliant",
-        "description": "No NTP server found",
-        "end": "2024-01-23T14:39:11.961523",
-        "duration": "0:00:00.000338"
-      },
-      {
-        "name": "ntp.network.ntp_support",
-        "test_description": "Does the device request network time sync as client as per RFC 5905 - Network Time Protocol Version 4: Protocol and Algorithms Specification",
-        "expected_behavior": "The device sends an NTPv4 request to the configured NTP server.",
-        "required_result": "Required",
-        "start": "2024-01-23T14:39:17.837341",
-        "result": "Non-Compliant",
-        "description": "Device has not sent any NTP requests",
-        "end": "2024-01-23T14:39:18.695602",
-        "duration": "0:00:00.858261"
-      },
-      {
-        "name": "ntp.network.ntp_dhcp",
-        "test_description": "Accept NTP address over DHCP",
-        "expected_behavior": "Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)",
-        "required_result": "Roadmap",
-        "start": "2024-01-23T14:39:18.695663",
-        "result": "Non-Compliant",
-        "description": "Device has not sent any NTP requests",
-        "end": "2024-01-23T14:39:19.543005",
-        "duration": "0:00:00.847342"
+        "recommendations": [
+          "Disable the NTP server",
+          "Drop traffic entering port 123/udp"
+        ]
       }
     ]
-  },
-  "report": "http://localhost:8000/report/EasyIO_FS32/2024-01-23T14:35:17"
+  }
 }

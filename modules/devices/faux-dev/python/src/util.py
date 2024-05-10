@@ -16,15 +16,15 @@
 import subprocess
 import shlex
 
-# Runs a process at the os level
-# By default, returns the standard output and error output
-# If the caller sets optional output parameter to False,
-# will only return a boolean result indicating if it was
-# succesful in running the command.  Failure is indicated
-# by any return code from the process other than zero.
-
 
 def run_command(cmd, logger, output=True):
+  """Runs a process at the os level
+  By default, returns the standard output and error output
+  If the caller sets optional output parameter to False,
+  will only return a boolean result indicating if it was
+  successful in running the command.  Failure is indicated
+  by any return code from the process other than zero."""
+
   success = False
   process = subprocess.Popen(shlex.split(cmd),
                              stdout=subprocess.PIPE,
@@ -37,8 +37,10 @@ def run_command(cmd, logger, output=True):
     logger.error('Error: ' + err_msg)
   else:
     success = True
-
+    logger.debug('Command succeeded: ' + cmd)
   if output:
-    return success, stdout.strip().decode('utf-8')
+    out = stdout.strip().decode('utf-8')
+    logger.debug('Command output: ' + out)
+    return success, out
   else:
     return success, None

@@ -104,9 +104,8 @@ class ConnectionModule(TestModule):
       no_arp = False
 
       # Check MAC address matches IP address
-      if (arp_packet.hwsrc == self._device_mac and
-          (arp_packet.psrc != self._device_ipv4_addr
-           and arp_packet.psrc != '0.0.0.0')):
+      if (arp_packet.hwsrc == self._device_mac
+          and (arp_packet.psrc not in (self._device_ipv4_addr, '0.0.0.0'))):
         LOGGER.info(f'Bad ARP packet detected for MAC: {self._device_mac}')
         LOGGER.info(f'''ARP packet from IP {arp_packet.psrc}
                     does not match {self._device_ipv4_addr}''')
@@ -205,13 +204,11 @@ class ConnectionModule(TestModule):
     LOGGER.info('Inspecting: ' + str(len(packets)) + ' packets')
     for packet in packets:
       if DHCP in packet:
-        for option in packet[DHCP].options:
-          # message-type, option 3 = DHCPREQUEST
-          if self._get_dhcp_type(packet) == 3:
-            mac_address = packet[Ether].src
-            LOGGER.info('DHCPREQUEST detected MAC address: ' + mac_address)
-            if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
-              mac_addresses.add(mac_address.upper())
+        if self._get_dhcp_type(packet) == 3:
+          mac_address = packet[Ether].src
+          LOGGER.info('DHCPREQUEST detected MAC address: ' + mac_address)
+          if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
+            mac_addresses.add(mac_address.upper())
 
     # Check if the device mac address is in the list of DHCPREQUESTs
     result = self._device_mac.upper() in mac_addresses

@@ -240,7 +240,7 @@ describe('DeviceFormComponent', () => {
 
         expect(error).toBeTruthy();
         expect(modelError).toContain(
-          'The device model name must be a maximum of 64 characters. Only letters, numbers, and accented letters are permitted.'
+          'The device model name must be a maximum of 28 characters. Only letters, numbers, and accented letters are permitted.'
         );
       });
     });
@@ -283,7 +283,7 @@ describe('DeviceFormComponent', () => {
 
         expect(error).toBeTruthy();
         expect(manufacturerError).toContain(
-          'The manufacturer name must be a maximum of 64 characters. Only letters, numbers, and accented letters are permitted.'
+          'The manufacturer name must be a maximum of 28 characters. Only letters, numbers, and accented letters are permitted.'
         );
       });
     });

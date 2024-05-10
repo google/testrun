@@ -48,11 +48,11 @@ export const DEFAULT_INTERNET_OPTION = {
 };
 
 export const LOG_LEVELS = {
-  DEBUG: '',
-  INFO: '',
-  WARNING: '',
-  ERROR: '',
-  CRITICAL: '',
+  DEBUG: 'Every event will be logged',
+  INFO: 'Normal events and issues',
+  WARNING: 'Warnings, errors, critical issues',
+  ERROR: 'Errors and critical problems',
+  CRITICAL: 'Critical problems',
 };
 
 export const MONITORING_PERIOD = {

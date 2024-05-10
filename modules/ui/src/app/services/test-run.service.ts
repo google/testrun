@@ -60,7 +60,7 @@ export class TestRunService {
     },
     {
       displayName: 'Services',
-      name: 'nmap',
+      name: 'services',
       enabled: true,
     },
     {
@@ -118,19 +118,26 @@ export class TestRunService {
    * @param isCancelling - indicates if status should be overridden with Cancelling value
    */
   getSystemStatus(isCancelling?: boolean): void {
-    this.http
-      .get<TestrunStatus>(`${API_URL}/system/status`)
-      .subscribe((res: TestrunStatus) => {
+    this.http.get<TestrunStatus>(`${API_URL}/system/status`).subscribe(
+      (res: TestrunStatus) => {
         if (isCancelling && res.status !== StatusOfTestrun.Cancelled) {
           res.status = StatusOfTestrun.Cancelling;
         }
         this.setSystemStatus(res);
-      });
+      },
+      err => console.error('HTTP Error', err)
+    );
   }
 
   stopTestrun(): Observable<boolean> {
     return this.http
       .post<{ success: string }>(`${API_URL}${SYSTEM_STOP}`, {})
+      .pipe(map(() => true));
+  }
+
+  shutdownTestrun(): Observable<boolean> {
+    return this.http
+      .post<{ success: string }>(`${API_URL}/system/shutdown`, {})
       .pipe(map(() => true));
   }
 
@@ -184,7 +191,7 @@ export class TestRunService {
         result === StatusOfTestResult.Info ||
         result === StatusOfTestResult.InProgress,
       grey:
-        result === StatusOfTestResult.Skipped ||
+        result === StatusOfTestResult.NotPresent ||
         result === StatusOfTestResult.NotStarted,
     };
   }
