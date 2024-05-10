@@ -3,6 +3,7 @@ import { MatTableDataSource } from '@angular/material/table';
 
 export const HISTORY = [
   {
+    mac_addr: '01:02:03:04:05:06',
     status: 'compliant',
     device: {
       manufacturer: 'Delta',
@@ -16,6 +17,7 @@ export const HISTORY = [
   },
   {
     status: 'compliant',
+    mac_addr: '01:02:03:04:05:07',
     device: {
       manufacturer: 'Delta',
       model: '03-DIN-SRC',
@@ -30,6 +32,7 @@ export const HISTORY = [
 
 export const HISTORY_AFTER_REMOVE = [
   {
+    mac_addr: '01:02:03:04:05:06',
     status: 'compliant',
     device: {
       manufacturer: 'Delta',
@@ -49,6 +52,7 @@ export const HISTORY_AFTER_REMOVE = [
 export const FORMATTED_HISTORY = [
   {
     status: 'compliant',
+    mac_addr: '01:02:03:04:05:06',
     device: {
       manufacturer: 'Delta',
       model: '03-DIN-SRC',
@@ -64,6 +68,7 @@ export const FORMATTED_HISTORY = [
   },
   {
     status: 'compliant',
+    mac_addr: '01:02:03:04:05:07',
     device: {
       manufacturer: 'Delta',
       model: '03-DIN-SRC',

@@ -297,6 +297,7 @@ class TestrunSession():
     self.set_target_device(None)
     self._report_url = None
     self._total_tests = 0
+    self._module_reports = []
     self._results = []
     self._started = None
     self._finished = None
