@@ -18,6 +18,7 @@ import {
   fakeAsync,
   flush,
   TestBed,
+  tick,
 } from '@angular/core/testing';
 
 import { CertificatesComponent } from './certificates.component';
@@ -124,8 +125,10 @@ describe('CertificatesComponent', () => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(true),
         } as MatDialogRef<typeof DeleteFormComponent>);
+        tick();
 
         component.deleteCertificate(certificate.name);
+        tick();
 
         expect(openSpy).toHaveBeenCalledWith(DeleteFormComponent, {
           ariaLabel: 'Delete certificate',
