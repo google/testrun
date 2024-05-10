@@ -164,7 +164,7 @@ export class TestRunService {
         result === StatusOfTestResult.Info ||
         result === StatusOfTestResult.InProgress,
       grey:
-        result === StatusOfTestResult.NotPresent ||
+        result === StatusOfTestResult.NotDetected ||
         result === StatusOfTestResult.NotStarted,
     };
   }

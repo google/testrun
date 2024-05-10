@@ -324,10 +324,11 @@ class TestOrchestrator:
       device_test_dir = os.path.join(self._root_path, RUNTIME_TEST_DIR,
                                      device.mac_addr.replace(":", ""))
 
-      root_certs_dir = os.path.join(self._root_path, DEVICE_ROOT_CERTS)
-
       container_runtime_dir = os.path.join(device_test_dir, module.name)
       os.makedirs(container_runtime_dir, exist_ok=True)
+
+      config_file = os.path.join(self._root_path, "local/system.json")
+      root_certs_dir = os.path.join(self._root_path, "local/root_certs")
 
       container_log_file = os.path.join(container_runtime_dir, "module.log")
 
@@ -341,9 +342,6 @@ class TestOrchestrator:
 
       client = docker.from_env()
 
-      # if module.name == 'connection':
-      #   self._net_orc.remove_arp_filters()
-
       module.container = client.containers.run(
           module.image_name,
           auto_remove=True,
@@ -353,6 +351,14 @@ class TestOrchestrator:
           privileged=True,
           detach=True,
           mounts=[
+              Mount(target="/testrun/system.json",
+                    source=config_file,
+                    type="bind",
+                    read_only=True),
+              Mount(target="/testrun/root_certs",
+                    source=root_certs_dir,
+                    type="bind",
+                    read_only=True),
               Mount(target="/runtime/output",
                     source=container_runtime_dir,
                     type="bind"),
@@ -366,10 +372,6 @@ class TestOrchestrator:
                     read_only=True),
               Mount(target="/runtime/device/monitor.pcap",
                     source=device_monitor_capture,
-                    type="bind",
-                    read_only=True),
-              Mount(target="/testrun/root_certs",
-                    source=root_certs_dir,
                     type="bind",
                     read_only=True)
           ],
