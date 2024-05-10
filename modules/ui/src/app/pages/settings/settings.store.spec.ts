@@ -322,7 +322,7 @@ describe('SettingsStore', () => {
           });
           expect((form.get(FormKey.LOG_LEVEL) as FormControl).value).toEqual({
             key: 'INFO',
-            value: '',
+            value: 'Normal events and issues',
           });
           expect(
             (form.get(FormKey.MONITOR_PERIOD) as FormControl).value

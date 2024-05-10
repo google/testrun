@@ -26,21 +26,31 @@ CONF_FILE = '/testrun/conf/module_config.json'
 class TestModule:
   """An example test module."""
 
-  def __init__(self, module_name, log_name, log_dir=None,conf_file=CONF_FILE,results_dir=RESULTS_DIR):
+  def __init__(self,
+               module_name,
+               log_name,
+               log_dir=None,
+               conf_file=CONF_FILE,
+               results_dir=RESULTS_DIR):
     self._module_name = module_name
-    self._results_dir=results_dir if results_dir is not None else RESULTS_DIR
-    self._device_mac = os.environ.get('DEVICE_MAC','')
-    self._ipv4_addr = os.environ.get('IPV4_ADDR','')
-    self._ipv4_subnet = os.environ.get('IPV4_SUBNET','')
-    self._ipv6_subnet = os.environ.get('IPV6_SUBNET','')
-    self._add_logger(log_name=log_name, module_name=module_name, log_dir=log_dir)
-    self._config = self._read_config(conf_file=conf_file if conf_file is not None else CONF_FILE)
+    self._results_dir = results_dir if results_dir is not None else RESULTS_DIR
+    self._device_mac = os.environ.get('DEVICE_MAC', '')
+    self._ipv4_addr = os.environ.get('IPV4_ADDR', '')
+    self._ipv4_subnet = os.environ.get('IPV4_SUBNET', '')
+    self._ipv6_subnet = os.environ.get('IPV6_SUBNET', '')
+    self._add_logger(log_name=log_name,
+                     module_name=module_name,
+                     log_dir=log_dir)
+    self._config = self._read_config(
+        conf_file=conf_file if conf_file is not None else CONF_FILE)
     self._device_ipv4_addr = None
     self._device_ipv6_addr = None
 
   def _add_logger(self, log_name, module_name, log_dir=None):
     global LOGGER
-    LOGGER = logger.get_logger(log_name, module_name, log_dir=log_dir)
+    LOGGER = logger.get_logger(name=log_name,
+                               log_file=module_name,
+                               log_dir=log_dir)
 
   def generate_module_report(self):
     pass
@@ -100,7 +110,7 @@ class TestModule:
               result = getattr(self, test_method_name)(config=test['config'])
             else:
               result = getattr(self, test_method_name)()
-          except Exception as e:
+          except Exception as e:  # pylint: disable=W0718
             LOGGER.error(f'An error occurred whilst running {test["name"]}')
             LOGGER.error(e)
         else:
@@ -136,13 +146,16 @@ class TestModule:
             test['description'] = result[1]
           else:
             test['description'] = 'No description was provided for this test'
+
+          # Check if details were provided
+          if len(result)>2:
+            test['details'] = result[2]
       else:
         test['result'] = 'Error'
         test['description'] = 'An error occured whilst running this test'
 
       # Remove the steps to resolve if compliant already
-      if (test['result'] == 'Compliant' and
-          'recommendations' in test):
+      if (test['result'] == 'Compliant' and 'recommendations' in test):
         test.pop('recommendations')
 
       test['end'] = datetime.now().isoformat()
@@ -153,7 +166,7 @@ class TestModule:
     json_results = json.dumps({'results': tests}, indent=2)
     self._write_results(json_results)
 
-  def _read_config(self,conf_file=CONF_FILE):
+  def _read_config(self, conf_file=CONF_FILE):
     with open(conf_file, encoding='utf-8') as f:
       config = json.load(f)
     return config

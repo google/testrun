@@ -17,12 +17,12 @@ import argparse
 import signal
 import sys
 import logger
-from nmap_module import NmapModule
+from services_module import ServicesModule
 
-LOG_NAME = 'nmap_runner'
+LOG_NAME = 'services_runner'
 LOGGER = logger.get_logger(LOG_NAME)
 
-class NmapModuleRunner:
+class ServicesModuleRunner:
   """Run the NMAP module tests."""
 
   def __init__(self, module):
@@ -33,13 +33,13 @@ class NmapModuleRunner:
     signal.signal(signal.SIGQUIT, self._handler)
     self.add_logger(module)
 
-    LOGGER.info('Starting nmap module')
+    LOGGER.info('Starting services module')
 
-    self._test_module = NmapModule(module)
+    self._test_module = ServicesModule(module)
     self._test_module.run_tests()
     self._test_module.generate_module_report()
 
-    LOGGER.info('nmap test module finished')
+    LOGGER.info('Services module finished')
 
   def add_logger(self, module):
     global LOGGER
@@ -56,7 +56,7 @@ class NmapModuleRunner:
 
 def run():
   parser = argparse.ArgumentParser(
-      description='Nmap Module Help',
+      description='Services Module Help',
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
   parser.add_argument(
@@ -68,7 +68,7 @@ def run():
 
   # For some reason passing in the args from bash adds an extra
   # space before the argument so we'll just strip out extra space
-  NmapModuleRunner(args.module.strip())
+  ServicesModuleRunner(args.module.strip())
 
 
 if __name__ == '__main__':
