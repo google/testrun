@@ -69,7 +69,6 @@ const PROGRESS_DATA_RESPONSE = (
 ) => {
   return {
     status,
-    mac_addr: '01:02:03:04:05:06',
     device: {
       manufacturer: 'Delta',
       model: '03-DIN-CPU',

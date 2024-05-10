@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Services test module"""
+"""NMAP test module"""
 import time
 import util
 import json
@@ -20,14 +20,14 @@ import xmltodict
 from test_module import TestModule
 import os
 
-LOG_NAME = 'test_services'
-MODULE_REPORT_FILE_NAME = 'services_report.html'
-NMAP_SCAN_RESULTS_SCAN_FILE = 'services_scan_results.json'
+LOG_NAME = 'test_nmap'
+MODULE_REPORT_FILE_NAME = 'nmap_report.html'
+NMAP_SCAN_RESULTS_SCAN_FILE = 'nmap_scan_results.json'
 LOGGER = None
 
 
-class ServicesModule(TestModule):
-  """Services Test module"""
+class NmapModule(TestModule):
+  """NMAP Test module"""
 
   def __init__(self,
                module,
@@ -157,7 +157,7 @@ class ServicesModule(TestModule):
     return report_path
 
   def _run_nmap(self):
-    LOGGER.info('Running nmap')
+    LOGGER.info('Running nmap module')
 
     # Run the monitor method asynchronously to keep this method non-blocking
     self._tcp_scan_thread = threading.Thread(target=self._scan_tcp_ports)

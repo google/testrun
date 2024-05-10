@@ -188,7 +188,7 @@ class TLSUtil():
         # Create the file path
         root_cert_path = os.path.join(self._root_certs_dir, root_cert)
         LOGGER.info('Checking root cert: ' + str(root_cert_path))
-        args = f'"{root_cert_path}" "{device_cert_path}"'
+        args = f'{root_cert_path} {device_cert_path}'
         command = f'{bin_file} {args}'
         response = util.run_command(command)
         if f'{device_cert_path}: OK' in str(response):
@@ -257,7 +257,7 @@ class TLSUtil():
 
     # Use openssl script to validate the combined certificate
     # against the available trusted CA's
-    args = f'"{intermediate_cert_path}" "{combined_cert_path}"'
+    args = f'{intermediate_cert_path} {combined_cert_path}'
     command = f'{bin_file} {args}'
     response = util.run_command(command)
     return combined_cert_name + ': OK' in str(response)
@@ -407,7 +407,7 @@ class TLSUtil():
 
   def get_ciphers(self, capture_file, dst_ip, dst_port):
     bin_file = self._bin_dir + '/get_ciphers.sh'
-    args = f'"{capture_file}" {dst_ip} {dst_port}'
+    args = f'{capture_file} {dst_ip} {dst_port}'
     command = f'{bin_file} {args}'
     response = util.run_command(command)
     ciphers = response[0].split('\n')
@@ -417,7 +417,7 @@ class TLSUtil():
     combined_results = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_client_hello_packets.sh'
-      args = f'"{capture_file}" {src_ip} {tls_version}'
+      args = f'{capture_file} {src_ip} {tls_version}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
       packets = response[0].strip()
@@ -431,7 +431,7 @@ class TLSUtil():
     combined_results = ''
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_handshake_complete.sh'
-      args = f'"{capture_file}" {src_ip} {dst_ip} {tls_version}'
+      args = f'{capture_file} {src_ip} {dst_ip} {tls_version}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
       if len(response) > 0:
@@ -443,7 +443,7 @@ class TLSUtil():
     combined_packets = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_non_tls_client_connections.sh'
-      args = f'"{capture_file}" {client_ip}'
+      args = f'{capture_file} {client_ip}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
       if len(response) > 0:
@@ -456,7 +456,7 @@ class TLSUtil():
     combined_packets = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_tls_client_connections.sh'
-      args = f'"{capture_file}" {client_ip}'
+      args = f'{capture_file} {client_ip}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
       packets = json.loads(response[0].strip())
@@ -471,7 +471,7 @@ class TLSUtil():
     combined_results = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_tls_packets.sh'
-      args = f'"{capture_file}" {src_ip} {tls_version}'
+      args = f'{capture_file} {src_ip} {tls_version}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
       packets = response[0].strip()
@@ -549,15 +549,11 @@ class TLSUtil():
 
     non_tls_dst_ips = set()  # Store unique destination IPs
     for packet in packets:
-      # Check if packet contains TCP layer
-      if 'tcp' in packet['_source']['layers']:
-        tcp_flags = packet['_source']['layers']['tcp.flags']
-        if 'A' not in tcp_flags and 'S' not in tcp_flags:
-          # Packet is not ACK or SYN
-          dst_ip = ipaddress.ip_address(
-              packet['_source']['layers']['ip.dst'][0])
-          if not dst_ip in subnet_with_mask:
-            non_tls_dst_ips.add(str(dst_ip))
+      # Check if an IP address is within the specified subnet.
+      dst_ip = ipaddress.ip_address(packet['_source']['layers']['ip.dst'][0])
+      if not dst_ip in subnet_with_mask:
+        non_tls_dst_ips.add(str(dst_ip))
+
     return non_tls_dst_ips
 
   # Check if the device has made any outbound connections that don't

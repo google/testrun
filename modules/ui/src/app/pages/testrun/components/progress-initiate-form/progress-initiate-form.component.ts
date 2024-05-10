@@ -149,7 +149,7 @@ export class ProgressInitiateFormComponent
 
   private createInitiateForm() {
     this.initiateForm = this.fb.group({
-      firmware: ['', [this.deviceValidators.firmwareStringFormat()]],
+      firmware: ['', [this.deviceValidators.deviceStringFormat()]],
       test_modules: new FormArray([]),
     });
   }

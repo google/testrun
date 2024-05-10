@@ -109,8 +109,5 @@ If you encounter any issues or need assistance, consider the following:
 - Check the configuration settings.
 - Refer to the Testrun documentation or ask for assistance in the issues page: https://github.com/google/testrun/issues
 
-# Reviewing
-Once you have completed a test attempt, you may want to review the test report provided by Testrun. For more information about what Testrun looks for when testing, and what the output means, take a look at the testing documentation: [Testing](/docs/test/index.md).
-
 # Uninstall
-To uninstall Testrun, use the built-in dpkg uninstall command to remove Testrun correctly. For Testrun, this would be:  ```sudo apt-get remove testrun```. Note that this 
+To uninstall Testrun, use the built-in dpkg uninstall command to remove Testrun correctly. For Testrun, this would be:  ```sudo apt-get remove testrun```

@@ -31,27 +31,22 @@ import {
 import { NotificationService } from '../services/notification.service';
 
 import { SYSTEM_STOP } from '../services/test-run.service';
-import { finalize } from 'rxjs/operators';
 
 const DEFAULT_TIMEOUT_MS = 5000;
-const SYSTEM_STOP_TIMEOUT_MS = 60 * 1000;
+const SYSTEM_STOP_TIMEOUT_MS = 10000;
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-  private isTestrunStop = false;
   constructor(private notificationService: NotificationService) {}
+
   intercept(
     request: HttpRequest<unknown>,
     next: HttpHandler,
     timeoutMs = DEFAULT_TIMEOUT_MS
   ): Observable<HttpEvent<unknown>> {
-    const timeoutValue =
-      request.url.includes(SYSTEM_STOP) || this.isTestrunStop
-        ? SYSTEM_STOP_TIMEOUT_MS
-        : timeoutMs;
-    if (request.url.includes(SYSTEM_STOP)) {
-      this.isTestrunStop = true;
-    }
+    const timeoutValue = request.url.includes(SYSTEM_STOP)
+      ? SYSTEM_STOP_TIMEOUT_MS
+      : timeoutMs;
     return next.handle(request).pipe(
       timeout(timeoutValue),
       catchError((error: HttpErrorResponse | TimeoutError) => {
@@ -71,11 +66,6 @@ export class ErrorInterceptor implements HttpInterceptor {
           }
         }
         return throwError(error);
-      }),
-      finalize(() => {
-        if (request.url.includes(SYSTEM_STOP)) {
-          this.isTestrunStop = false;
-        }
       })
     );
   }

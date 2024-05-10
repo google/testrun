@@ -41,15 +41,6 @@ body {
   background: $dark-grey;
 }
 
-.button-start {
-  &:hover,
-  &:focus-visible {
-    .button-start-icon path {
-      fill: $white;
-    }
-  }
-}
-
 .app-sidebar-button-active .mat-icon path {
   fill: $white;
 }
@@ -107,7 +98,6 @@ mat-hint {
   .mdc-button__label {
     position: relative;
     left: -999px;
-    display: none;
   }
 }
 
@@ -115,7 +105,6 @@ mat-hint {
   .app-sidebar-button {
     .mdc-button__label {
       left: 8px;
-      display: inline;
     }
   }
 

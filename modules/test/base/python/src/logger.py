@@ -15,17 +15,19 @@
 """Sets up the logger to be used for the test modules."""
 import json
 import logging
+import os
 
 LOGGERS = {}
 _LOG_FORMAT = '%(asctime)s %(name)-8s %(levelname)-7s %(message)s'
 _DATE_FORMAT = '%b %02d %H:%M:%S'
 _DEFAULT_LEVEL = logging.INFO
-_CONF_FILE_NAME = 'testrun/system.json'
+_CONF_DIR = 'conf'
+_CONF_FILE_NAME = 'system.json'
 _LOG_DIR = '/runtime/output/'
 
 # Set log level
 try:
-  with open(_CONF_FILE_NAME,
+  with open(os.path.join(_CONF_DIR, _CONF_FILE_NAME),
             encoding='UTF-8') as config_json_file:
     system_conf_json = json.load(config_json_file)
 

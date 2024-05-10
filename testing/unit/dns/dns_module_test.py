@@ -22,19 +22,18 @@ MODULE = 'dns'
 
 # Define the directories
 TEST_FILES_DIR = 'testing/unit/' + MODULE
-OUTPUT_DIR = os.path.join(TEST_FILES_DIR, 'output/')
-REPORTS_DIR = os.path.join(TEST_FILES_DIR, 'reports/')
-CAPTURES_DIR = os.path.join(TEST_FILES_DIR, 'captures/')
+OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
+REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
+CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
 
-LOCAL_REPORT = os.path.join(REPORTS_DIR, 'dns_report_local.html')
-LOCAL_REPORT_NO_DNS = os.path.join(REPORTS_DIR, 'dns_report_local_no_dns.html')
+LOCAL_REPORT = os.path.join(REPORTS_DIR,'dns_report_local.html')
+LOCAL_REPORT_NO_DNS = os.path.join(REPORTS_DIR,'dns_report_local_no_dns.html')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 # Define the capture files to be used for the test
-DNS_SERVER_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'dns.pcap')
-STARTUP_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'startup.pcap')
-MONITOR_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'monitor.pcap')
-
+DNS_SERVER_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'dns.pcap')
+STARTUP_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'startup.pcap')
+MONITOR_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'monitor.pcap')
 
 class TLSModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""
@@ -50,9 +49,9 @@ class TLSModuleTest(unittest.TestCase):
                            log_dir=OUTPUT_DIR,
                            conf_file=CONF_FILE,
                            results_dir=OUTPUT_DIR,
-                           dns_server_capture_file=DNS_SERVER_CAPTURE_FILE,
-                           startup_capture_file=STARTUP_CAPTURE_FILE,
-                           monitor_capture_file=MONITOR_CAPTURE_FILE)
+                           DNS_SERVER_CAPTURE_FILE=DNS_SERVER_CAPTURE_FILE,
+                           STARTUP_CAPTURE_FILE=STARTUP_CAPTURE_FILE,
+                           MONITOR_CAPTURE_FILE=MONITOR_CAPTURE_FILE)
 
     report_out_path = dns_module.generate_module_report()
 
@@ -62,7 +61,7 @@ class TLSModuleTest(unittest.TestCase):
       formatted_report = self.add_formatting(report_out)
 
     # Write back the new formatted_report value
-    out_report_path = os.path.join(OUTPUT_DIR, 'dns_report_with_dns.html')
+    out_report_path = os.path.join(OUTPUT_DIR,'dns_report_with_dns.html')
     with open(out_report_path, 'w', encoding='utf-8') as file:
       file.write(formatted_report)
 
@@ -106,9 +105,9 @@ class TLSModuleTest(unittest.TestCase):
                            log_dir=OUTPUT_DIR,
                            conf_file=CONF_FILE,
                            results_dir=OUTPUT_DIR,
-                           dns_server_capture_file=dns_server_cap_file,
-                           startup_capture_file=startup_cap_file,
-                           monitor_capture_file=monitor_cap_file)
+                           DNS_SERVER_CAPTURE_FILE=dns_server_cap_file,
+                           STARTUP_CAPTURE_FILE=startup_cap_file,
+                           MONITOR_CAPTURE_FILE=monitor_cap_file)
 
     report_out_path = dns_module.generate_module_report()
 
@@ -118,7 +117,7 @@ class TLSModuleTest(unittest.TestCase):
       formatted_report = self.add_formatting(report_out)
 
     # Write back the new formatted_report value
-    out_report_path = os.path.join(OUTPUT_DIR, 'dns_report_no_dns.html')
+    out_report_path = os.path.join(OUTPUT_DIR,'dns_report_no_dns.html')
     with open(out_report_path, 'w', encoding='utf-8') as file:
       file.write(formatted_report)
 
@@ -128,7 +127,8 @@ class TLSModuleTest(unittest.TestCase):
 
     self.assertEqual(report_out, report_local)
 
-  def add_formatting(self, body):
+
+  def add_formatting(self,body):
     return f'''
     <!DOCTYPE html>
     <html lang="en">
@@ -137,7 +137,6 @@ class TLSModuleTest(unittest.TestCase):
       {body}
     </body>
     </html'''
-
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()

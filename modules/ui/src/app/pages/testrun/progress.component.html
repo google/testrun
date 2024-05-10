@@ -42,9 +42,15 @@ limitations under the License.
             mat-flat-button>
             Stop
           </button>
-          <app-download-options
-            *ngIf="data.report"
-            [data]="data"></app-download-options>
+          <app-download-report-pdf *ngIf="data.report" [data]="data">
+            <button
+              tabindex="-1"
+              class="report-button"
+              aria-label="Download testrun report"
+              mat-flat-button>
+              Download Report
+            </button>
+          </app-download-report-pdf>
         </div>
       </div>
       <app-progress-status-card [systemStatus$]="systemStatus$">

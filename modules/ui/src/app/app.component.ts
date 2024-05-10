@@ -44,7 +44,6 @@ import { GeneralSettingsComponent } from './pages/settings/general-settings.comp
 import { AppStore } from './app.store';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
-const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
 const TESTRUN_LOGO_URL = '/assets/icons/testrun_logo_small.svg';
 const TESTRUN_LOGO_COLOR_URL = '/assets/icons/testrun_logo_color.svg';
@@ -94,10 +93,6 @@ export class AppComponent implements OnInit {
     this.matIconRegistry.addSvgIcon(
       'devices',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_LOGO_URL)
-    );
-    this.matIconRegistry.addSvgIcon(
-      'device_run',
-      this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_RUN_URL)
     );
     this.matIconRegistry.addSvgIcon(
       'reports',
@@ -177,13 +172,5 @@ export class AppComponent implements OnInit {
 
   consentShown() {
     this.appStore.setContent();
-  }
-
-  testrunInProgress(status?: string): boolean {
-    return (
-      status === StatusOfTestrun.InProgress ||
-      status === StatusOfTestrun.WaitingForDevice ||
-      status === StatusOfTestrun.Monitoring
-    );
   }
 }

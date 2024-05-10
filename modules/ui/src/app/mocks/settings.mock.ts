@@ -53,7 +53,7 @@ export const MOCK_INTERFACE_VALUE: SystemInterfaces = {
 };
 export const MOCK_LOG_VALUE: SystemInterfaces = {
   key: 'DEBUG',
-  value: 'Every event will be logged',
+  value: '',
 };
 
 export const MOCK_PERIOD_VALUE: SystemInterfaces = {

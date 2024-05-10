@@ -58,7 +58,6 @@ import {
   selectInterfaces,
   selectMenuOpened,
 } from './store/selectors';
-import { MatIconTestingModule } from '@angular/material/icon/testing';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -112,7 +111,6 @@ describe('AppComponent', () => {
         MatSidenavModule,
         BypassComponent,
         CalloutComponent,
-        MatIconTestingModule,
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
@@ -143,7 +141,6 @@ describe('AppComponent', () => {
         AppComponent,
         FakeGeneralSettingsComponent,
         FakeSpinnerComponent,
-        FakeShutdownAppComponent,
         FakeVersionComponent,
       ],
     });
@@ -657,14 +654,6 @@ class FakeGeneralSettingsComponent {
   template: '<div></div>',
 })
 class FakeSpinnerComponent {}
-
-@Component({
-  selector: 'app-shutdown-app',
-  template: '<div></div>',
-})
-class FakeShutdownAppComponent {
-  @Input() disable!: boolean;
-}
 
 @Component({
   selector: 'app-version',

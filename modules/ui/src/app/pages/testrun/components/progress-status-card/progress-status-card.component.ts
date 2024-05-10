@@ -46,9 +46,7 @@ export class ProgressStatusCardComponent {
         status === StatusOfTestrun.CompliantLimited ||
         status === StatusOfTestrun.CompliantHigh ||
         status === StatusOfTestrun.SmartReady,
-      'completed-failed':
-        status === StatusOfTestrun.NonCompliant ||
-        status === StatusOfTestrun.Error,
+      'completed-failed': status === StatusOfTestrun.NonCompliant,
       canceled:
         status === StatusOfTestrun.Cancelled ||
         status === StatusOfTestrun.Cancelling,

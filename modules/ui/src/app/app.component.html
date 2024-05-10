@@ -87,9 +87,6 @@ limitations under the License.
         (click)="openGeneralSettings(true)">
         <mat-icon>tune</mat-icon>
       </button>
-      <app-shutdown-app
-        [disable]="testrunInProgress((systemStatus$ | async)?.status)">
-      </app-shutdown-app>
     </mat-toolbar>
     <div class="app-content-main" role="main" id="main">
       <ng-container *ngIf="settingMissedError$ | async as error">

@@ -23,26 +23,23 @@ import time
 import netifaces
 import ssl
 import http.client
-import shutil
-import logging
 
 MODULE = 'tls'
 # Define the file paths
 TEST_FILES_DIR = 'testing/unit/' + MODULE
-OUTPUT_DIR = os.path.join(TEST_FILES_DIR, 'output/')
-REPORTS_DIR = os.path.join(TEST_FILES_DIR, 'reports/')
-CAPTURES_DIR = os.path.join(TEST_FILES_DIR, 'captures/')
-CERT_DIR = os.path.join(TEST_FILES_DIR, 'certs/')
-ROOT_CERTS_DIR = os.path.join(TEST_FILES_DIR, 'root_certs')
+OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
+REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
+CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
+CERT_DIR = os.path.join(TEST_FILES_DIR,'certs/')
+ROOT_CERTS_DIR = os.path.join(TEST_FILES_DIR,'root_certs')
 
-LOCAL_REPORT = os.path.join(REPORTS_DIR, 'tls_report_local.md')
-LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR, 'tls_report_ext_local.md')
-LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR, 'tls_report_no_cert_local.md')
+LOCAL_REPORT = os.path.join(REPORTS_DIR,'tls_report_local.md')
+LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR,'tls_report_ext_local.md')
+LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR,'tls_report_no_cert_local.md')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 TLS_UTIL = None
 PACKET_CAPTURE = None
-
 
 class TLSModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning TLS behaviors"""
@@ -151,7 +148,7 @@ class TLSModuleTest(unittest.TestCase):
     tls_1_2_results = True, success_message
     tls_1_3_results = True, success_message
     expected = True, (f'TLS 1.2 validated: {success_message}\n'
-                      f'TLS 1.3 validated: {success_message}')
+      f'TLS 1.3 validated: {success_message}')
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results)
     self.assertEqual(result, expected)
@@ -174,10 +171,11 @@ class TLSModuleTest(unittest.TestCase):
                                                  tls_1_3_results)
     self.assertEqual(result, expected)
 
+
     # TLS 1.2 Fail and TLS 1.2 Fail
     tls_1_3_results = False, fail_message
     expected = False, (f'TLS 1.2 not validated: {fail_message}\n'
-                       f'TLS 1.3 not validated: {fail_message}')
+                      f'TLS 1.3 not validated: {fail_message}')
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results)
     self.assertEqual(result, expected)
@@ -303,7 +301,7 @@ class TLSModuleTest(unittest.TestCase):
   def tls_module_report_test(self):
     print('\ntls_module_report_test')
     os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
-    pcap_file = os.path.join(CAPTURES_DIR, 'tls.pcap')
+    pcap_file = os.path.join(CAPTURES_DIR,'tls.pcap')
     tls = TLSModule(module=MODULE,
                     log_dir=OUTPUT_DIR,
                     conf_file=CONF_FILE,
@@ -325,7 +323,7 @@ class TLSModuleTest(unittest.TestCase):
   def tls_module_report_ext_test(self):
     print('\ntls_module_report_ext_test')
     os.environ['DEVICE_MAC'] = '28:29:86:27:d6:05'
-    pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
+    pcap_file = os.path.join(CAPTURES_DIR,'tls_ext.pcap')
     tls = TLSModule(module=MODULE,
                     log_dir=OUTPUT_DIR,
                     conf_file=CONF_FILE,
@@ -338,7 +336,7 @@ class TLSModuleTest(unittest.TestCase):
   def tls_module_report_no_cert_test(self):
     print('\ntls_module_report_no_cert_test')
     os.environ['DEVICE_MAC'] = ''
-    pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
+    pcap_file = os.path.join(CAPTURES_DIR,'tls_ext.pcap')
     tls = TLSModule(module=MODULE,
                     log_dir=OUTPUT_DIR,
                     conf_file=CONF_FILE,
@@ -445,40 +443,15 @@ class TLSModuleTest(unittest.TestCase):
 
   def tls_module_trusted_ca_cert_chain_test(self):
     print('\ntls_module_trusted_ca_cert_chain_test')
-    cert_path = os.path.join(CERT_DIR, '_.google.com.crt')
+    cert_path = os.path.join(CERT_DIR,'_.google.com.crt')
     cert_valid = TLS_UTIL.validate_cert_chain(device_cert_path=cert_path)
     self.assertEqual(cert_valid, True)
 
   def tls_module_local_ca_cert_test(self):
     print('\ntls_module_trusted_ca_cert_chain_test')
-    cert_path = os.path.join(CERT_DIR, 'device_cert_local.crt')
-    cert_valid = TLS_UTIL.validate_local_ca_signature(
-        device_cert_path=cert_path)
-    self.assertEqual(cert_valid[0], True)
-
-  def tls_module_ca_cert_spaces_test(self):
-    print('\tls_module_ca_cert_spaces_test')
-    # Make a tmp folder to make a differnt CA directory
-    tmp_dir = os.path.join(TEST_FILES_DIR,'tmp')
-    if os.path.exists(tmp_dir):
-      shutil.rmtree(tmp_dir)
-    os.makedirs(tmp_dir, exist_ok=True)
-    # Move and rename the TestRun CA root with spaces
-    ca_file = os.path.join(ROOT_CERTS_DIR,'Testrun_CA_Root.crt')
-    ca_file_with_spaces = os.path.join(tmp_dir,'Testrun CA Root.crt')
-    shutil.copy(ca_file,ca_file_with_spaces)
-
     cert_path = os.path.join(CERT_DIR,'device_cert_local.crt')
-    log = logger.get_logger('unit_test_' + MODULE)
-    log.setLevel(logging.DEBUG)
-    tls_util = TLSUtil(log,
-                       bin_dir='modules/test/tls/bin',
-                       cert_out_dir=OUTPUT_DIR,
-                       root_certs_dir=tmp_dir)
-
-    cert_valid = tls_util.validate_local_ca_signature(device_cert_path=cert_path)
+    cert_valid = TLS_UTIL.validate_local_ca_signature(device_cert_path=cert_path)
     self.assertEqual(cert_valid[0], True)
-
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
@@ -512,10 +485,9 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
   suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
 
-  # Test signature validation methods
+  # Test signature validation  methods
   suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
   suite.addTest(TLSModuleTest('tls_module_local_ca_cert_test'))
-  suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)

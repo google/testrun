@@ -67,11 +67,6 @@ describe('ProgressStatusCardComponent', () => {
         StatusOfTestrun.CompliantHigh,
       ];
 
-      const statusesForCompletedFailedClass = [
-        StatusOfTestrun.NonCompliant,
-        StatusOfTestrun.Error,
-      ];
-
       statusesForProgressClass.forEach(testCase => {
         it(`should have class "progress" if status "${testCase}"`, () => {
           const expectedResult = { ...availableClasses, progress: true };
@@ -95,17 +90,15 @@ describe('ProgressStatusCardComponent', () => {
         });
       });
 
-      statusesForCompletedFailedClass.forEach(testCase => {
-        it(`should have class "completed-failed" if status "${testCase}"`, () => {
-          const expectedResult = {
-            ...availableClasses,
-            'completed-failed': true,
-          };
+      it('should have class "completed-failed" if status "Non Compliant"', () => {
+        const expectedResult = {
+          ...availableClasses,
+          'completed-failed': true,
+        };
 
-          const result = component.getClass(testCase);
+        const result = component.getClass(StatusOfTestrun.NonCompliant);
 
-          expect(result).toEqual(expectedResult);
-        });
+        expect(result).toEqual(expectedResult);
       });
 
       it('should have class "canceled" if status "Cancelled"', () => {
@@ -315,24 +308,6 @@ describe('ProgressStatusCardComponent', () => {
 
         expect(progressCardStatusText).not.toBeNull();
         expect(progressCardStatusText?.textContent).toEqual('In Progress');
-      });
-    });
-
-    describe('with available systemStatus$ data, as "In Progress" and finish date', () => {
-      beforeEach(() => {
-        component.systemStatus$ = of({
-          ...MOCK_PROGRESS_DATA_IN_PROGRESS,
-          finished: '2023-06-22T09:26:00.123Z',
-        });
-        fixture.detectChanges();
-      });
-
-      it('should not have progress card result', () => {
-        const progressCardResultEl = compiled.querySelector(
-          '.progress-card-result-text span'
-        );
-
-        expect(progressCardResultEl).toBeNull();
       });
     });
 

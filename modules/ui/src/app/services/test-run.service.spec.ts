@@ -79,7 +79,7 @@ describe('TestRunService', () => {
       },
       {
         displayName: 'Services',
-        name: 'services',
+        name: 'nmap',
         enabled: true,
       },
       {
@@ -200,19 +200,6 @@ describe('TestRunService', () => {
     req.flush({});
   });
 
-  it('#shutdownTestrun should have necessary request data', () => {
-    const apiUrl = 'http://localhost:8000/system/shutdown';
-
-    service.shutdownTestrun().subscribe(res => {
-      expect(res).toEqual(true);
-    });
-
-    const req = httpTestingController.expectOne(apiUrl);
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({});
-    req.flush({});
-  });
-
   describe('#startTestRun', () => {
     it('should have necessary request data', () => {
       const apiUrl = 'http://localhost:8000/system/start';
@@ -284,7 +271,7 @@ describe('TestRunService', () => {
     ];
 
     const statusesForGreyRes = [
-      StatusOfTestResult.NotPresent,
+      StatusOfTestResult.Skipped,
       StatusOfTestResult.NotStarted,
     ];
 

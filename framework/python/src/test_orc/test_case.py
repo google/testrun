@@ -28,21 +28,10 @@ class TestCase:  # pylint: disable=too-few-public-methods,too-many-instance-attr
   recommendations: list = field(default_factory=lambda: [])
 
   def to_dict(self):
-
-    if self.recommendations is not None and len(self.recommendations) > 0:
-      return {
-        "name": self.name,
-        "description": self.description,
-        "expected_behavior": self.expected_behavior,
-        "required_result": self.required_result,
-        "result": self.result,
-        "recommendations": self.recommendations
-      }
-
     return {
-        "name": self.name,
-        "description": self.description,
-        "expected_behavior": self.expected_behavior,
-        "required_result": self.required_result,
-        "result": self.result
-      }
+      "name": self.name,
+      "description": self.description,
+      "expected_behavior": self.expected_behavior,
+      "required_result": self.required_result,
+      "result": self.result
+    }

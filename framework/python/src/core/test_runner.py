@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Wrapper for the Testrun that simplifies
+"""Wrapper for the TestRun that simplifies
 virtual testing procedure by allowing direct calling
 from the command line.
 
@@ -22,7 +22,7 @@ E.g sudo cmd/start
 
 import argparse
 import sys
-from testrun import Testrun
+from testrun import TestRun
 from common import logger
 import signal
 
@@ -39,7 +39,7 @@ class TestRunner:
                single_intf=False,
                no_ui=False):
     self._register_exits()
-    self.test_run = Testrun(config_file=config_file,
+    self.test_run = TestRun(config_file=config_file,
                             validate=validate,
                             net_only=net_only,
                             single_intf=single_intf,

@@ -142,7 +142,7 @@ class NetworkService(pb2_grpc.NetworkModule):
     """
     LOGGER.info('Get DHCP range called')
     try:
-      pool = self._get_dhcp_config().get_subnets()[0].pools[0]
+      pool = self._get_dhcp_config()._subnets[0].pools[0]
       return pb2.DHCPRange(code=200, start=pool.range_start, end=pool.range_end)
     except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to get DHCP range: ' + str(e)

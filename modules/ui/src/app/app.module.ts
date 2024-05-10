@@ -44,8 +44,6 @@ import { EffectsModule } from '@ngrx/effects';
 import { AppEffects } from './store/effects';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { SettingsDropdownComponent } from './pages/settings/components/settings-dropdown/settings-dropdown.component';
-import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
-import { WindowProvider } from './providers/window.provider';
 
 @NgModule({
   declarations: [AppComponent, GeneralSettingsComponent],
@@ -73,10 +71,8 @@ import { WindowProvider } from './providers/window.provider';
     EffectsModule.forRoot([AppEffects]),
     CdkTrapFocus,
     SettingsDropdownComponent,
-    ShutdownAppComponent,
   ],
   providers: [
-    WindowProvider,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: ErrorInterceptor,

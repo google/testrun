@@ -33,17 +33,17 @@ class DNSModule(TestModule):
                log_dir=None,
                conf_file=None,
                results_dir=None,
-               dns_server_capture_file=DNS_SERVER_CAPTURE_FILE,
-               startup_capture_file=STARTUP_CAPTURE_FILE,
-               monitor_capture_file=MONITOR_CAPTURE_FILE):
+               DNS_SERVER_CAPTURE_FILE=DNS_SERVER_CAPTURE_FILE,
+               STARTUP_CAPTURE_FILE=STARTUP_CAPTURE_FILE,
+               MONITOR_CAPTURE_FILE=MONITOR_CAPTURE_FILE):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
                      log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
-    self.dns_server_capture_file=dns_server_capture_file
-    self.startup_capture_file=startup_capture_file
-    self.monitor_capture_file=monitor_capture_file
+    self.dns_server_capture_file=DNS_SERVER_CAPTURE_FILE
+    self.startup_capture_file=STARTUP_CAPTURE_FILE
+    self.monitor_capture_file=MONITOR_CAPTURE_FILE
     self._dns_server = '10.10.10.4'
     global LOGGER
     LOGGER = self._get_logger()

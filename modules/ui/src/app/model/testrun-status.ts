@@ -16,7 +16,6 @@
 import { Device } from './device';
 
 export interface TestrunStatus {
-  mac_addr: string;
   status: string;
   device: IDevice;
   started: string | null;
@@ -62,7 +61,6 @@ export enum StatusOfTestrun {
   SmartReady = 'Smart Ready', // used for Completed
   Idle = 'Idle',
   Monitoring = 'Monitoring',
-  Error = 'Error',
 }
 
 export enum StatusOfTestResult {
@@ -71,7 +69,7 @@ export enum StatusOfTestResult {
   CompliantHigh = 'Compliant (High)',
   SmartReady = 'Smart Ready',
   NonCompliant = 'Non-Compliant', // device does not support feature but feature is required
-  NotPresent = 'Feature Not Present',
+  Skipped = 'Skipped',
   NotStarted = 'Not Started',
   InProgress = 'In Progress',
   Error = 'Error', // test failed to run

@@ -15,9 +15,9 @@
 # limitations under the License.
 
 
-CAPTURE_FILE="$1"
-SRC_IP="$2"
-TLS_VERSION="$3"
+CAPTURE_FILE=$1
+SRC_IP=$2
+TLS_VERSION=$3
 
 TSHARK_OUTPUT="-T json -e ip.src -e tcp.dstport -e ip.dst"
 # Handshakes will still report TLS version 1 even for TLS 1.2 connections
@@ -34,7 +34,7 @@ elif [ $TLS_VERSION == '1.3' ];then
 	TSHARK_FILTER="$TSHARK_FILTER and ssl.record.version==0x0304"
 fi
 
-response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT $TSHARK_FILTER)
+response=$(tshark -r $CAPTURE_FILE $TSHARK_OUTPUT $TSHARK_FILTER)
 
 echo "$response"
   	

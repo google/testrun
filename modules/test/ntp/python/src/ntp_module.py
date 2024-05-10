@@ -157,10 +157,9 @@ class NTPModule(TestModule):
   def extract_ntp_data(self):
     ntp_data = []
 
-    # Read the pcap files
-    packets = (rdpcap(self.startup_capture_file) +
-      rdpcap(self.monitor_capture_file) +
-      rdpcap(self.ntp_server_capture_file))
+    # Read the pcap file
+    packets = rdpcap(self.ntp_server_capture_file) + rdpcap(
+        self.startup_capture_file) + rdpcap(self.monitor_capture_file)
 
     # Iterate through NTP packets
     for packet in packets:
