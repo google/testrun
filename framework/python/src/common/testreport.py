@@ -824,7 +824,7 @@ class TestReport():
       color: #5F6368;
       font-size: 14px;
     }
-
+  
     .steps-to-resolve-index {
       font-size: 40px;
       position: absolute;
