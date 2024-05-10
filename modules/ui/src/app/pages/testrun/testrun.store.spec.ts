@@ -28,6 +28,8 @@ import {
   selectHasConnectionSettings,
   selectHasDevices,
   selectIsOpenStartTestrun,
+  selectIsOpenWaitSnackBar,
+  selectIsStopTestrun,
   selectIsTestrunStarted,
   selectSystemStatus,
 } from '../../store/selectors';
@@ -50,6 +52,7 @@ import {
   TEST_DATA_TABLE_RESULT,
 } from '../../mocks/progress.mock';
 import { LoaderService } from '../../services/loader.service';
+import { NotificationService } from '../../services/notification.service';
 
 describe('TestrunStore', () => {
   let testrunStore: TestrunStore;
@@ -59,6 +62,11 @@ describe('TestrunStore', () => {
     'loaderServiceMock',
     ['setLoading', 'getLoading']
   );
+  const notificationServiceMock: jasmine.SpyObj<NotificationService> =
+    jasmine.createSpyObj('NotificationService', [
+      'dismissWithTimout',
+      'openSnackBar',
+    ]);
 
   beforeEach(() => {
     mockService = jasmine.createSpyObj('mockService', [
@@ -71,6 +79,7 @@ describe('TestrunStore', () => {
         TestrunStore,
         { provide: TestRunService, useValue: mockService },
         { provide: LoaderService, useValue: loaderServiceMock },
+        { provide: NotificationService, useValue: notificationServiceMock },
         provideMockStore({
           selectors: [
             { selector: selectHasDevices, value: false },
@@ -78,6 +87,8 @@ describe('TestrunStore', () => {
             { selector: selectIsTestrunStarted, value: true },
             { selector: selectHasConnectionSettings, value: true },
             { selector: selectIsOpenStartTestrun, value: false },
+            { selector: selectIsOpenWaitSnackBar, value: false },
+            { selector: selectIsStopTestrun, value: false },
           ],
         }),
       ],

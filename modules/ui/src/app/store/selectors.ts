@@ -72,6 +72,16 @@ export const selectIsTestrunStarted = createSelector(
   (state: AppState) => state.shared.isTestrunStarted
 );
 
+export const selectIsStopTestrun = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.isStopTestrun
+);
+
+export const selectIsOpenWaitSnackBar = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.isOpenWaitSnackBar
+);
+
 export const selectIsOpenStartTestrun = createSelector(
   selectAppState,
   (state: AppState) => state.shared.isOpenStartTestrun
