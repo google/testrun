@@ -144,7 +144,7 @@ class TestrunSession():
     version_cmd = util.run_command(
       'dpkg-query --showformat=\'${Version}\' --show testrun')
     # index 1 of response is the stderr byte stream so if
-    # it has any data in it, there was an error and we 
+    # it has any data in it, there was an error and we
     # did not resolve the version and we'll use the fallback
     if len(version_cmd[1]) == 0:
       version = version_cmd[0]
@@ -297,6 +297,7 @@ class TestrunSession():
     self.set_target_device(None)
     self._report_url = None
     self._total_tests = 0
+    self._module_reports = []
     self._results = []
     self._started = None
     self._finished = None

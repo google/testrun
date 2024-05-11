@@ -111,8 +111,10 @@ def test_list_tests(capsys, results, test_matrix):
       print('  actual results:')
       for test in collect_actual_results(results[tester]):
         if test.name in test_matrix[tester]['expected_results']:
-          print(f'''    {test.name}: {test.result} 
-                (exp: {test_matrix[tester]["expected_results"][test.name]})''')
+          print(
+              f'''    {test.name}: {test.result} (exp: {test_matrix[
+                tester]["expected_results"][test.name]})'''
+          )
         else:
           print(f'    {test.name}: {test.result}')
 

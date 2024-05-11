@@ -172,6 +172,7 @@ export class AppComponent implements OnInit {
   async openGeneralSettings(openSettingFromToggleBtn: boolean) {
     this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
     this.settings.getSystemInterfaces();
+    this.settings.getSystemConfig();
     await this.settingsDrawer.open();
   }
 

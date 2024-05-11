@@ -164,7 +164,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
 
   removeDevice(data: TestrunStatus) {
     this.store.deleteReport({
-      mac_addr: data.device.mac_addr,
+      mac_addr: data.mac_addr,
       started: data.started,
     });
     this.focusNextButton();

@@ -334,7 +334,7 @@ class Api:
     for report in reports:
       # report URL is currently hard coded as localhost so we can
       # replace that to fix the IP dynamically from the requester
-      report["report"] = report["report"].replace("localhost",server_ip)
+      report["report"] = report["report"].replace("localhost", server_ip)
     return reports
 
   async def delete_report(self, request: Request, response: Response):

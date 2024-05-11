@@ -41,6 +41,9 @@ class Device():
   def get_reports(self):
     return self.reports
 
+  def clear_reports(self):
+    self.reports = []
+
   def remove_report(self, timestamp: datetime):
     for report in self.reports:
       if report.get_started().strftime('%Y-%m-%dT%H:%M:%S') == timestamp:
