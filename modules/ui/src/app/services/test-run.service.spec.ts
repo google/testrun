@@ -20,7 +20,7 @@ import {
 import { getTestBed, TestBed } from '@angular/core/testing';
 import { Device, TestModule } from '../model/device';
 
-import { TestRunService } from './test-run.service';
+import { TestRunService, UNAVAILABLE_VERSION } from './test-run.service';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
 import {
   MOCK_PROGRESS_DATA_CANCELLING,
@@ -79,7 +79,7 @@ describe('TestRunService', () => {
       },
       {
         displayName: 'Services',
-        name: 'nmap',
+        name: 'services',
         enabled: true,
       },
       {
@@ -200,6 +200,19 @@ describe('TestRunService', () => {
     req.flush({});
   });
 
+  it('#shutdownTestrun should have necessary request data', () => {
+    const apiUrl = 'http://localhost:8000/system/shutdown';
+
+    service.shutdownTestrun().subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(apiUrl);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush({});
+  });
+
   describe('#startTestRun', () => {
     it('should have necessary request data', () => {
       const apiUrl = 'http://localhost:8000/system/start';
@@ -271,7 +284,7 @@ describe('TestRunService', () => {
     ];
 
     const statusesForGreyRes = [
-      StatusOfTestResult.Skipped,
+      StatusOfTestResult.NotDetected,
       StatusOfTestResult.NotStarted,
     ];
 
@@ -329,35 +342,52 @@ describe('TestRunService', () => {
     req.flush({});
   });
 
-  it('fetchVersion should get system version', () => {
-    const version = VERSION;
+  describe('#fetchVersion', () => {
+    it('should get system version', () => {
+      const version = VERSION;
 
-    service.fetchVersion();
-    const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/version'
-    );
-    expect(req.request.method).toBe('GET');
-    req.flush(version);
+      service.fetchVersion();
+      const req = httpTestingController.expectOne(
+        'http://localhost:8000/system/version'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(version);
 
-    service.getVersion().subscribe(res => {
-      expect(res).toEqual(version);
+      service.getVersion().subscribe(res => {
+        expect(res).toEqual(version);
+      });
     });
-  });
 
-  it('fetchVersion should return old version when error happens', () => {
-    const version = NEW_VERSION;
-    const mockErrorResponse = { status: 500, statusText: 'Error' };
-    const data = 'Invalid request parameters';
-    service.getVersion().next(version);
-    service.fetchVersion();
-    const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/version'
-    );
-    expect(req.request.method).toBe('GET');
-    req.flush(data, mockErrorResponse);
+    it('should return old version when error happens', () => {
+      const version = NEW_VERSION;
+      const mockErrorResponse = { status: 500, statusText: 'Error' };
+      const data = 'Invalid request parameters';
+      service.getVersion().next(version);
+      service.fetchVersion();
+      const req = httpTestingController.expectOne(
+        'http://localhost:8000/system/version'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(data, mockErrorResponse);
 
-    service.getVersion().subscribe(res => {
-      expect(res).toEqual(version);
+      service.getVersion().subscribe(res => {
+        expect(res).toEqual(version);
+      });
+    });
+
+    it('should return default version when error happens and there is no previous version', () => {
+      const mockErrorResponse = { status: 500, statusText: 'Error' };
+      const data = 'Invalid request parameters';
+      service.fetchVersion();
+      const req = httpTestingController.expectOne(
+        'http://localhost:8000/system/version'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(data, mockErrorResponse);
+
+      service.getVersion().subscribe(res => {
+        expect(res).toEqual(UNAVAILABLE_VERSION);
+      });
     });
   });
 

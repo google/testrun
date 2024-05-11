@@ -54,5 +54,5 @@ export const selectDevices = createSelector(
 
 export const selectError = createSelector(
   selectAppState,
-  (state: AppState) => state.appComponent.error
+  (state: AppState) => state.appComponent.settingMissedError
 );

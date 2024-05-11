@@ -129,6 +129,50 @@ describe('FilterDialogComponent', () => {
     closeSpy.calls.reset();
   });
 
+  it('should not close dialog with invalid date on "confirm" click', () => {
+    fixture.detectChanges();
+    component.filterForm.get('deviceInfo')?.setValue('as&@3$');
+    const closeSpy = spyOn(component.dialogRef, 'close');
+    const confirmButton = compiled.querySelector(
+      '.confirm-button'
+    ) as HTMLButtonElement;
+
+    confirmButton?.click();
+
+    expect(closeSpy).not.toHaveBeenCalled();
+
+    closeSpy.calls.reset();
+  });
+
+  it('should have "invalid_format" error if field does not satisfy validation rules', () => {
+    [
+      'very long value very long value very long value very long value very long value very long value very long',
+      'as&@3$',
+    ].forEach(value => {
+      component.data = {
+        trigger: mockClientRest,
+        filter: FilterName.DeviceFirmware,
+      };
+      fixture.detectChanges();
+
+      const firmware: HTMLInputElement = compiled.querySelector(
+        '.firmware-input'
+      ) as HTMLInputElement;
+      firmware.value = value;
+      firmware.dispatchEvent(new Event('input'));
+      component.deviceFirmware.markAsTouched();
+      fixture.detectChanges();
+
+      const firmwareError = compiled.querySelector('mat-error')?.innerHTML;
+      const error = component.deviceFirmware.hasError('invalid_format');
+
+      expect(error).toBeTruthy();
+      expect(firmwareError).toContain(
+        'The firmware name must be a maximum of 64 characters. Only letters, numbers, and accented letters are permitted.'
+      );
+    });
+  });
+
   describe('date filter', () => {
     beforeEach(() => {
       component.data = {

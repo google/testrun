@@ -58,6 +58,7 @@ import {
   selectInterfaces,
   selectMenuOpened,
 } from './store/selectors';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -111,6 +112,7 @@ describe('AppComponent', () => {
         MatSidenavModule,
         BypassComponent,
         CalloutComponent,
+        MatIconTestingModule,
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
@@ -141,6 +143,7 @@ describe('AppComponent', () => {
         AppComponent,
         FakeGeneralSettingsComponent,
         FakeSpinnerComponent,
+        FakeShutdownAppComponent,
         FakeVersionComponent,
       ],
     });
@@ -284,14 +287,16 @@ describe('AppComponent', () => {
     });
   }));
 
-  it('should update interfaces', () => {
+  it('should update interfaces and config', () => {
     fixture.detectChanges();
 
     spyOn(component.settings, 'getSystemInterfaces');
+    spyOn(component.settings, 'getSystemConfig');
 
     component.openGeneralSettings(false);
 
     expect(component.settings.getSystemInterfaces).toHaveBeenCalled();
+    expect(component.settings.getSystemConfig).toHaveBeenCalled();
   });
 
   it('should call settingsDrawer open on openSetting', fakeAsync(() => {
@@ -568,12 +573,17 @@ describe('AppComponent', () => {
     });
 
     describe('error', () => {
-      describe('with error', () => {
+      describe('with settingMissedError with one port is missed', () => {
         beforeEach(() => {
-          component.error$ = of(true);
+          component.settingMissedError$ = of({
+            isSettingMissed: true,
+            devicePortMissed: true,
+            internetPortMissed: false,
+          });
           component.ngOnInit();
           fixture.detectChanges();
         });
+
         it('should have callout component', () => {
           const callout = compiled.querySelector('app-callout');
           const calloutContent = callout?.innerHTML.trim();
@@ -583,9 +593,29 @@ describe('AppComponent', () => {
         });
       });
 
-      describe('with no error', () => {
+      describe('with settingMissedError with two ports are missed', () => {
         beforeEach(() => {
-          component.error$ = of(false);
+          component.settingMissedError$ = of({
+            isSettingMissed: true,
+            devicePortMissed: true,
+            internetPortMissed: true,
+          });
+          component.ngOnInit();
+          fixture.detectChanges();
+        });
+
+        it('should have callout component', () => {
+          const callout = compiled.querySelector('app-callout');
+          const calloutContent = callout?.innerHTML.trim();
+
+          expect(callout).toBeTruthy();
+          expect(calloutContent).toContain('No ports are detected.');
+        });
+      });
+
+      describe('with no settingMissedError', () => {
+        beforeEach(() => {
+          component.settingMissedError$ = of(null);
           store.overrideSelector(selectHasDevices, true);
           fixture.detectChanges();
         });
@@ -622,6 +652,7 @@ class FakeGeneralSettingsComponent {
   @Output() closeSettingEvent = new EventEmitter<void>();
   @Output() reloadInterfacesEvent = new EventEmitter<void>();
   getSystemInterfaces = () => {};
+  getSystemConfig = () => {};
 }
 
 @Component({
@@ -629,6 +660,14 @@ class FakeGeneralSettingsComponent {
   template: '<div></div>',
 })
 class FakeSpinnerComponent {}
+
+@Component({
+  selector: 'app-shutdown-app',
+  template: '<div></div>',
+})
+class FakeShutdownAppComponent {
+  @Input() disable!: boolean;
+}
 
 @Component({
   selector: 'app-version',

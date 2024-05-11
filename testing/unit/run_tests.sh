@@ -20,7 +20,7 @@
 # Move into the root directory of test-run
 pushd ../../ >/dev/null 2>&1
 
-echo "Root Dir: $PWD"
+echo "Root dir: $PWD"
 
 # Add the framework sources
 PYTHONPATH="$PWD/framework/python/src:$PWD/framework/python/src/common"
@@ -31,6 +31,7 @@ PYTHONPATH="$PYTHONPATH:$PWD/modules/test/tls/python/src"
 PYTHONPATH="$PYTHONPATH:$PWD/modules/test/dns/python/src"
 PYTHONPATH="$PYTHONPATH:$PWD/modules/test/nmap/python/src"
 PYTHONPATH="$PYTHONPATH:$PWD/modules/test/ntp/python/src"
+
 # Set the python path with all sources
 export PYTHONPATH
 

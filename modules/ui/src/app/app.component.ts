@@ -39,11 +39,12 @@ import {
   updateFocusNavigation,
 } from './store/actions';
 import { appFeatureKey } from './store/reducers';
-import { SystemInterfaces } from './model/setting';
+import { SettingMissedError, SystemInterfaces } from './model/setting';
 import { GeneralSettingsComponent } from './pages/settings/general-settings.component';
 import { AppStore } from './app.store';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
+const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
 const TESTRUN_LOGO_URL = '/assets/icons/testrun_logo_small.svg';
 const TESTRUN_LOGO_COLOR_URL = '/assets/icons/testrun_logo_color.svg';
@@ -65,12 +66,12 @@ export class AppComponent implements OnInit {
     selectHasConnectionSettings
   );
   isStatusLoaded = false;
-  isConnectionSettingsLoaded = false;
   private openedSettingFromToggleBtn = true;
   isMenuOpen: Observable<boolean> = this.store.select(selectMenuOpened);
   interfaces: Observable<SystemInterfaces> =
     this.store.select(selectInterfaces);
-  error$: Observable<boolean> = this.store.select(selectError);
+  settingMissedError$: Observable<SettingMissedError | null> =
+    this.store.select(selectError);
 
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
@@ -93,6 +94,10 @@ export class AppComponent implements OnInit {
     this.matIconRegistry.addSvgIcon(
       'devices',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_LOGO_URL)
+    );
+    this.matIconRegistry.addSvgIcon(
+      'device_run',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_RUN_URL)
     );
     this.matIconRegistry.addSvgIcon(
       'reports',
@@ -167,10 +172,19 @@ export class AppComponent implements OnInit {
   async openGeneralSettings(openSettingFromToggleBtn: boolean) {
     this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
     this.settings.getSystemInterfaces();
+    this.settings.getSystemConfig();
     await this.settingsDrawer.open();
   }
 
   consentShown() {
     this.appStore.setContent();
+  }
+
+  testrunInProgress(status?: string): boolean {
+    return (
+      status === StatusOfTestrun.InProgress ||
+      status === StatusOfTestrun.WaitingForDevice ||
+      status === StatusOfTestrun.Monitoring
+    );
   }
 }

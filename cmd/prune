@@ -36,4 +36,6 @@ fi
 # Remove docker networks
 echo Removing docker networks
 sudo docker network rm endev0 > /dev/null
-sudo docker network rm tr-private-net > /dev/null
+# Private network not used, add cleanup
+# back in if/when implemented
+#sudo docker network rm tr-private-net > /dev/null

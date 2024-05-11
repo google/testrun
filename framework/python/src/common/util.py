@@ -28,7 +28,7 @@ def run_command(cmd, output=True):
   By default, returns the standard output and error output
   If the caller sets optional output parameter to False,
   will only return a boolean result indicating if it was
-  succesful in running the command.  Failure is indicated
+  successful in running the command.  Failure is indicated
   by any return code from the process other than zero."""
 
   success = False
@@ -43,8 +43,11 @@ def run_command(cmd, output=True):
       LOGGER.error('Error: ' + err_msg)
     else:
       success = True
+      LOGGER.debug('Command succeeded: ' + cmd)
     if output:
-      return stdout.strip().decode('utf-8'), stderr
+      out = stdout.strip().decode('utf-8')
+      LOGGER.debug('Command output: ' + out)
+      return out, stderr
     else:
       return success
 
@@ -70,10 +73,10 @@ def get_os_user():
     user = os.getlogin()
   except OSError:
     # Handle the OSError exception
-    LOGGER.error('An OS error occured whilst calling os.getlogin()')
-  except Exception:
+    LOGGER.error('An OS error occurred whilst calling os.getlogin()')
+  except Exception: # pylint: disable=W0703
     # Catch any other unexpected exceptions
-    LOGGER.error('An unknown exception occured whilst calling os.getlogin()')
+    LOGGER.error('An unknown exception occurred whilst calling os.getlogin()')
   return user
 
 def get_user():
@@ -102,7 +105,7 @@ def get_module_display_name(search):
     'ntp': 'NTP',
     'dns': 'DNS',
     'connection': 'Connection',
-    'nmap': 'Services',
+    'services': 'Services',
     'tls': 'TLS',
     'protocol': 'Protocol'
   }

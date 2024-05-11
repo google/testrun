@@ -40,16 +40,15 @@ export class ProgressStatusCardComponent {
     canceled: boolean;
   } {
     return {
-      progress:
-        status === StatusOfTestrun.InProgress ||
-        status === StatusOfTestrun.WaitingForDevice ||
-        status === StatusOfTestrun.Monitoring,
+      progress: this.isProgressStatus(status),
       'completed-success':
         status === StatusOfTestrun.Compliant ||
         status === StatusOfTestrun.CompliantLimited ||
         status === StatusOfTestrun.CompliantHigh ||
         status === StatusOfTestrun.SmartReady,
-      'completed-failed': status === StatusOfTestrun.NonCompliant,
+      'completed-failed':
+        status === StatusOfTestrun.NonCompliant ||
+        status === StatusOfTestrun.Error,
       canceled:
         status === StatusOfTestrun.Cancelled ||
         status === StatusOfTestrun.Cancelling,
@@ -80,13 +79,21 @@ export class ProgressStatusCardComponent {
   }
 
   public getTestStatus(data: TestrunStatus): string {
-    if (data.finished) {
-      return 'Complete';
-    } else if (data.status === StatusOfTestrun.Cancelled) {
+    if (data.status === StatusOfTestrun.Cancelled) {
       return 'Incomplete';
+    } else if (data.finished && !this.isProgressStatus(data.status)) {
+      return 'Complete';
     } else {
       return data.status;
     }
+  }
+
+  private isProgressStatus(status: string): boolean {
+    return (
+      status === StatusOfTestrun.Monitoring ||
+      status === StatusOfTestrun.InProgress ||
+      status === StatusOfTestrun.WaitingForDevice
+    );
   }
 
   public getProgressValue(data: TestrunStatus): number {

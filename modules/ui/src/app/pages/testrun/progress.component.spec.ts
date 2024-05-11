@@ -27,6 +27,7 @@ import { of } from 'rxjs';
 import {
   EMPTY_RESULT,
   MOCK_PROGRESS_DATA_CANCELLED,
+  MOCK_PROGRESS_DATA_CANCELLED_EMPTY,
   MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_COMPLIANT,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
@@ -45,7 +46,6 @@ import { IResult, TestrunStatus } from '../../model/testrun-status';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { ProgressInitiateFormComponent } from './components/progress-initiate-form/progress-initiate-form.component';
-import { DownloadReportComponent } from '../../components/download-report/download-report.component';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { LoaderService } from '../../services/loader.service';
@@ -91,6 +91,7 @@ describe('ProgressComponent', () => {
           ProgressComponent,
           FakeProgressStatusCardComponent,
           FakeProgressTableComponent,
+          FakeDownloadOptionsComponent,
         ],
         providers: [
           { provide: TestRunService, useValue: testRunServiceMock },
@@ -112,7 +113,6 @@ describe('ProgressComponent', () => {
           MatToolbarModule,
           MatDialogModule,
           SpinnerComponent,
-          DownloadReportComponent,
         ],
       })
         .overrideComponent(ProgressComponent, {
@@ -239,6 +239,19 @@ describe('ProgressComponent', () => {
             expect(res).toEqual(expectedResult);
           });
         });
+
+        it('should set value with empty values for status "Cancelled" and empty result', () => {
+          const expectedResult = EMPTY_RESULT;
+
+          testRunServiceMock.systemStatus$ = of(
+            MOCK_PROGRESS_DATA_CANCELLED_EMPTY
+          );
+          component.ngOnInit();
+
+          component.dataSource$.subscribe(res => {
+            expect(res).toEqual(expectedResult);
+          });
+        });
       });
 
       it('should call focusFirstElementInContainer when testrun stops after cancelling', () => {
@@ -310,6 +323,7 @@ describe('ProgressComponent', () => {
           ProgressComponent,
           FakeProgressStatusCardComponent,
           FakeProgressTableComponent,
+          FakeDownloadOptionsComponent,
         ],
         providers: [
           { provide: TestRunService, useValue: testRunServiceMock },
@@ -330,7 +344,6 @@ describe('ProgressComponent', () => {
           MatIconModule,
           MatToolbarModule,
           MatDialogModule,
-          DownloadReportComponent,
           SpinnerComponent,
         ],
       })
@@ -468,10 +481,10 @@ describe('ProgressComponent', () => {
         expect(startBtn.disabled).toBeTrue();
       });
 
-      it('should not have "Download Report" button', () => {
-        const reportBtn = compiled.querySelector('.report-button');
+      it('should not have "Download" options', () => {
+        const downloadComp = compiled.querySelector('app-download-options');
 
-        expect(reportBtn).toBeNull();
+        expect(downloadComp).toBeNull();
       });
     });
 
@@ -508,24 +521,10 @@ describe('ProgressComponent', () => {
         expect(startBtn.disabled).toBeFalse();
       });
 
-      it('should have "Download Report" button', () => {
-        const reportBtn = compiled.querySelector('.report-button');
+      it('should have "Download" options', () => {
+        const downloadComp = compiled.querySelector('app-download-options');
 
-        expect(reportBtn).not.toBeNull();
-      });
-
-      it('should have report link', () => {
-        const link = compiled.querySelector(
-          '.download-report-link'
-        ) as HTMLAnchorElement;
-
-        expect(link.href).toEqual('https://api.testrun.io/report.pdf');
-        expect(link.download).toEqual(
-          'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
-        );
-        expect(link.title).toEqual(
-          'Download report for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
-        );
+        expect(downloadComp).not.toBeNull();
       });
     });
 
@@ -544,10 +543,10 @@ describe('ProgressComponent', () => {
         expect(startBtn.disabled).toBeFalse();
       });
 
-      it('should not have "Download Report" button', () => {
-        const reportBtn = compiled.querySelector('.report-button');
+      it('should not have "Download" options', () => {
+        const downloadComp = compiled.querySelector('app-download-options');
 
-        expect(reportBtn).toBeNull();
+        expect(downloadComp).toBeNull();
       });
     });
 
@@ -631,4 +630,12 @@ class FakeProgressStatusCardComponent {
 })
 class FakeProgressTableComponent {
   @Input() dataSource$!: Observable<IResult[] | undefined>;
+}
+
+@Component({
+  selector: 'app-download-options',
+  template: '<div></div>',
+})
+class FakeDownloadOptionsComponent {
+  @Input() data!: TestrunStatus;
 }

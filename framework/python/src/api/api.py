@@ -21,6 +21,7 @@ from json import JSONDecodeError
 import os
 import psutil
 import requests
+import signal
 import threading
 import uvicorn
 from urllib.parse import urlparse
@@ -46,7 +47,7 @@ class Api:
   def __init__(self, test_run):
 
     self._test_run = test_run
-    self._name = "TestRun API"
+    self._name = "Testrun API"
     self._router = APIRouter()
 
     self._session = self._test_run.get_session()
@@ -66,6 +67,9 @@ class Api:
                                methods=["POST"])
     self._router.add_api_route("/system/status",
                                self.get_status)
+    self._router.add_api_route("/system/shutdown",
+                               self.shutdown,
+                               methods=["POST"])
 
     self._router.add_api_route("/system/version",
                                self.get_version)
@@ -243,8 +247,35 @@ class Api:
   async def get_status(self):
     return self._test_run.get_session().to_json()
 
+  def shutdown(self, response: Response):
+
+    LOGGER.debug("Received request to shutdown Testrun")
+
+    # Check that Testrun is not currently running
+    if (self._session.get_status() not in [
+            "Cancelled",
+            "Compliant",
+            "Non-Compliant",
+            "Idle"]):
+      LOGGER.debug("Unable to shutdown Testrun as Testrun is in progress")
+      response.status_code = 400
+      return self._generate_msg(
+        False,
+        "Unable to shutdown. A test is currently in progress."
+      )
+
+    self._test_run.shutdown()
+    os.kill(os.getpid(), signal.SIGTERM)
+
   async def get_version(self, response: Response):
+
+    # Add defaults
     json_response = {}
+    json_response["installed_version"] = "v" + self._test_run.get_version()
+    json_response["update_available"] = False
+    json_response["latest_version"] = None
+    json_response["latest_version_url"] = (
+      "https://github.com/google/testrun/releases")
 
     # Obtain the current version
     current_version = self._session.get_version()
@@ -264,8 +295,9 @@ class Api:
       # Check OK response was received
       if version_check.status_code != 200:
         response.status_code = 500
-        LOGGER.error(version_check.content)
-        return self._generate_msg(False, "Failed to fetch latest version")
+        LOGGER.debug(version_check.content)
+        LOGGER.error("Failed to fetch latest version")
+        return json_response
 
       # Extract version number from response, removing the leading 'v'
       latest_version_no = version_check.json()["name"].strip("v")
@@ -284,11 +316,11 @@ class Api:
         LOGGER.debug("The latest version is installed")
 
       return json_response
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       response.status_code = 500
       LOGGER.error("Failed to fetch latest version")
       LOGGER.debug(e)
-      return self._generate_msg(False, "Failed to fetch latest version")
+      return json_response
 
   async def get_reports(self, request: Request):
     LOGGER.debug("Received reports list request")
@@ -302,7 +334,7 @@ class Api:
     for report in reports:
       # report URL is currently hard coded as localhost so we can
       # replace that to fix the IP dynamically from the requester
-      report["report"] = report["report"].replace("localhost",server_ip)
+      report["report"] = report["report"].replace("localhost", server_ip)
     return reports
 
   async def delete_report(self, request: Request, response: Response):
@@ -379,7 +411,7 @@ class Api:
       return self._generate_msg(True, "Successfully deleted the device")
 
     # TODO: Find specific exception to catch
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       LOGGER.error(e)
       response.status_code = 500
       return self._generate_msg(False, "An error occured whilst deleting " +
@@ -529,8 +561,8 @@ class Api:
       return False
 
     # Check length of strings
-    if len(json_obj.get(DEVICE_MANUFACTURER_KEY)) > 64 or len(
-      json_obj.get(DEVICE_MODEL_KEY)) > 64:
+    if len(json_obj.get(DEVICE_MANUFACTURER_KEY)) > 28 or len(
+      json_obj.get(DEVICE_MODEL_KEY)) > 28:
       return False
 
     disallowed_chars = ["/", "\\", "\'", "\"", ";"]

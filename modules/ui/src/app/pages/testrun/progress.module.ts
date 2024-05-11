@@ -34,6 +34,7 @@ import { DeviceTestsComponent } from '../../components/device-tests/device-tests
 import { DownloadReportComponent } from '../../components/download-report/download-report.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { CalloutComponent } from '../../components/callout/callout.component';
+import { DownloadOptionsComponent } from './components/download-options/download-options.component';
 
 @NgModule({
   declarations: [
@@ -58,6 +59,7 @@ import { CalloutComponent } from '../../components/callout/callout.component';
     DownloadReportComponent,
     SpinnerComponent,
     CalloutComponent,
+    DownloadOptionsComponent,
   ],
 })
 export class ProgressModule {}

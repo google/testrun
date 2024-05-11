@@ -16,23 +16,25 @@ from dns_module import DNSModule
 import unittest
 from scapy.all import rdpcap, DNS, wrpcap
 import os
+from testreport import TestReport
 
 MODULE = 'dns'
 
 # Define the directories
 TEST_FILES_DIR = 'testing/unit/' + MODULE
-OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
-REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
-CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
+OUTPUT_DIR = os.path.join(TEST_FILES_DIR, 'output/')
+REPORTS_DIR = os.path.join(TEST_FILES_DIR, 'reports/')
+CAPTURES_DIR = os.path.join(TEST_FILES_DIR, 'captures/')
 
-LOCAL_REPORT = os.path.join(REPORTS_DIR,'dns_report_local.md')
-LOCAL_REPORT_NO_DNS = os.path.join(REPORTS_DIR,'dns_report_local_no_dns.md')
+LOCAL_REPORT = os.path.join(REPORTS_DIR, 'dns_report_local.html')
+LOCAL_REPORT_NO_DNS = os.path.join(REPORTS_DIR, 'dns_report_local_no_dns.html')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 # Define the capture files to be used for the test
-DNS_SERVER_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'dns.pcap')
-STARTUP_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'startup.pcap')
-MONITOR_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'monitor.pcap')
+DNS_SERVER_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'dns.pcap')
+STARTUP_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'startup.pcap')
+MONITOR_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'monitor.pcap')
+
 
 class TLSModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""
@@ -41,7 +43,6 @@ class TLSModuleTest(unittest.TestCase):
   def setUpClass(cls):
     # Create the output directories and ignore errors if it already exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    # os.makedirs(TEMP_DIR, exist_ok=True)
 
   # Test the module report generation
   def dns_module_report_test(self):
@@ -49,15 +50,21 @@ class TLSModuleTest(unittest.TestCase):
                            log_dir=OUTPUT_DIR,
                            conf_file=CONF_FILE,
                            results_dir=OUTPUT_DIR,
-                           DNS_SERVER_CAPTURE_FILE=DNS_SERVER_CAPTURE_FILE,
-                           STARTUP_CAPTURE_FILE=STARTUP_CAPTURE_FILE,
-                           MONITOR_CAPTURE_FILE=MONITOR_CAPTURE_FILE)
+                           dns_server_capture_file=DNS_SERVER_CAPTURE_FILE,
+                           startup_capture_file=STARTUP_CAPTURE_FILE,
+                           monitor_capture_file=MONITOR_CAPTURE_FILE)
 
     report_out_path = dns_module.generate_module_report()
 
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
+      formatted_report = self.add_formatting(report_out)
+
+    # Write back the new formatted_report value
+    out_report_path = os.path.join(OUTPUT_DIR, 'dns_report_with_dns.html')
+    with open(out_report_path, 'w', encoding='utf-8') as file:
+      file.write(formatted_report)
 
     # Read the local good report
     with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
@@ -99,21 +106,37 @@ class TLSModuleTest(unittest.TestCase):
                            log_dir=OUTPUT_DIR,
                            conf_file=CONF_FILE,
                            results_dir=OUTPUT_DIR,
-                           DNS_SERVER_CAPTURE_FILE=dns_server_cap_file,
-                           STARTUP_CAPTURE_FILE=startup_cap_file,
-                           MONITOR_CAPTURE_FILE=monitor_cap_file)
+                           dns_server_capture_file=dns_server_cap_file,
+                           startup_capture_file=startup_cap_file,
+                           monitor_capture_file=monitor_cap_file)
 
     report_out_path = dns_module.generate_module_report()
 
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
+      formatted_report = self.add_formatting(report_out)
+
+    # Write back the new formatted_report value
+    out_report_path = os.path.join(OUTPUT_DIR, 'dns_report_no_dns.html')
+    with open(out_report_path, 'w', encoding='utf-8') as file:
+      file.write(formatted_report)
 
     # Read the local good report
     with open(LOCAL_REPORT_NO_DNS, 'r', encoding='utf-8') as file:
       report_local = file.read()
 
     self.assertEqual(report_out, report_local)
+
+  def add_formatting(self, body):
+    return f'''
+    <!DOCTYPE html>
+    <html lang="en">
+    {TestReport().generate_head()}
+    <body>
+      {body}
+    </body>
+    </html'''
 
 
 if __name__ == '__main__':

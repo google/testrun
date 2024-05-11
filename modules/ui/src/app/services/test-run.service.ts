@@ -31,6 +31,13 @@ import { Version } from '../model/version';
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
 
+export const UNAVAILABLE_VERSION = {
+  installed_version: 'v?.?',
+  update_available: false,
+  latest_version: 'v?.?',
+  latest_version_url: '',
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -53,7 +60,7 @@ export class TestRunService {
     },
     {
       displayName: 'Services',
-      name: 'nmap',
+      name: 'services',
       enabled: true,
     },
     {
@@ -111,19 +118,26 @@ export class TestRunService {
    * @param isCancelling - indicates if status should be overridden with Cancelling value
    */
   getSystemStatus(isCancelling?: boolean): void {
-    this.http
-      .get<TestrunStatus>(`${API_URL}/system/status`)
-      .subscribe((res: TestrunStatus) => {
+    this.http.get<TestrunStatus>(`${API_URL}/system/status`).subscribe(
+      (res: TestrunStatus) => {
         if (isCancelling && res.status !== StatusOfTestrun.Cancelled) {
           res.status = StatusOfTestrun.Cancelling;
         }
         this.setSystemStatus(res);
-      });
+      },
+      err => console.error('HTTP Error', err)
+    );
   }
 
   stopTestrun(): Observable<boolean> {
     return this.http
       .post<{ success: string }>(`${API_URL}${SYSTEM_STOP}`, {})
+      .pipe(map(() => true));
+  }
+
+  shutdownTestrun(): Observable<boolean> {
+    return this.http
+      .post<{ success: string }>(`${API_URL}/system/shutdown`, {})
       .pipe(map(() => true));
   }
 
@@ -177,7 +191,7 @@ export class TestRunService {
         result === StatusOfTestResult.Info ||
         result === StatusOfTestResult.InProgress,
       grey:
-        result === StatusOfTestResult.Skipped ||
+        result === StatusOfTestResult.NotDetected ||
         result === StatusOfTestResult.NotStarted,
     };
   }
@@ -202,7 +216,10 @@ export class TestRunService {
       .get<Version>(`${API_URL}/system/version`)
       .pipe(
         catchError(() => {
-          return of(this.version.value);
+          const previousVersion = this.version.value?.installed_version
+            ? this.version.value
+            : UNAVAILABLE_VERSION;
+          return of(previousVersion);
         })
       )
       .subscribe(version => {

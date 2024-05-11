@@ -163,6 +163,29 @@ describe('ProgressInitiateFormComponent', () => {
         ).toEqual(true);
       });
 
+      it('should have "invalid_format" error when field does not meet validation rules', () => {
+        [
+          'very long value very long value very long value very long value very long value very long value very long value',
+          '!as&@3$',
+        ].forEach(value => {
+          const firmware: HTMLInputElement = compiled.querySelector(
+            '.firmware-input'
+          ) as HTMLInputElement;
+          firmware.value = value;
+          firmware.dispatchEvent(new Event('input'));
+          component.firmware.markAsTouched();
+          fixture.detectChanges();
+
+          const firmwareError = compiled.querySelector('mat-error')?.innerHTML;
+          const error = component.firmware.hasError('invalid_format');
+
+          expect(error).toBeTruthy();
+          expect(firmwareError).toContain(
+            'The firmware value must be a maximum of 64 characters. Only letters, numbers, and accented letters are permitted.'
+          );
+        });
+      });
+
       describe('when selectedDevice is present and firmware is filled', () => {
         beforeEach(() => {
           component.firmware.setValue('firmware');

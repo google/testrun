@@ -221,6 +221,29 @@ describe('DeviceFormComponent', () => {
         expect(errors).toBeNull();
       });
     });
+
+    it('should have "invalid_format" error when field does not satisfy validation rules', () => {
+      [
+        'very long value very long value very long value very long value very long value very long value very long value',
+        'as&@3$',
+      ].forEach(value => {
+        const model: HTMLInputElement = compiled.querySelector(
+          '.device-form-model'
+        ) as HTMLInputElement;
+        model.value = value;
+        model.dispatchEvent(new Event('input'));
+        component.model.markAsTouched();
+        fixture.detectChanges();
+
+        const modelError = compiled.querySelector('mat-error')?.innerHTML;
+        const error = component.model.hasError('invalid_format');
+
+        expect(error).toBeTruthy();
+        expect(modelError).toContain(
+          'The device model name must be a maximum of 28 characters. Only letters, numbers, and accented letters are permitted.'
+        );
+      });
+    });
   });
 
   describe('device manufacturer', () => {
@@ -238,6 +261,30 @@ describe('DeviceFormComponent', () => {
 
         expect(uiValue).toEqual(formValue);
         expect(errors).toBeNull();
+      });
+    });
+
+    it('should have "invalid_format" error when field does not satisfy validation', () => {
+      [
+        'very long value very long value very long value very long value very long value very long value very long value',
+        'as&@3$',
+      ].forEach(value => {
+        const manufacturer: HTMLInputElement = compiled.querySelector(
+          '.device-form-manufacturer'
+        ) as HTMLInputElement;
+        manufacturer.value = value;
+        manufacturer.dispatchEvent(new Event('input'));
+        component.manufacturer.markAsTouched();
+        fixture.detectChanges();
+
+        const manufacturerError =
+          compiled.querySelector('mat-error')?.innerHTML;
+        const error = component.manufacturer.hasError('invalid_format');
+
+        expect(error).toBeTruthy();
+        expect(manufacturerError).toContain(
+          'The manufacturer name must be a maximum of 28 characters. Only letters, numbers, and accented letters are permitted.'
+        );
       });
     });
   });

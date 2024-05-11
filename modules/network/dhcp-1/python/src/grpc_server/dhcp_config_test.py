@@ -61,14 +61,14 @@ class DHCPConfigTest(unittest.TestCase):
   def test_disable_failover(self):
     DHCP_CONFIG.disable_failover()
     print('Test Disable Config:\n' + str(DHCP_CONFIG))
-    config_lines = str(DHCP_CONFIG._peer).split('\n')
+    config_lines = str(DHCP_CONFIG.get_peer()).split('\n')
     for line in config_lines:
       self.assertTrue(line.startswith('#'))
 
   def test_enable_failover(self):
     DHCP_CONFIG.enable_failover()
     print('Test Enable Config:\n' + str(DHCP_CONFIG))
-    config_lines = str(DHCP_CONFIG._peer).split('\n')
+    config_lines = str(DHCP_CONFIG.get_peer()).split('\n')
     for line in config_lines:
       self.assertFalse(line.startswith('#'))
 

@@ -27,11 +27,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { DeleteFormComponent } from '../../../../components/delete-form/delete-form.component';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { Subject } from 'rxjs';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-delete-report',
   standalone: true,
-  imports: [CommonModule, MatButtonModule],
+  imports: [CommonModule, MatButtonModule, MatTooltipModule],
   templateUrl: './delete-report.component.html',
   styleUrls: ['./delete-report.component.scss'],
   providers: [DatePipe],

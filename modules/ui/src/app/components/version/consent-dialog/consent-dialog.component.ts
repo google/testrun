@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import { Component, Inject } from '@angular/core';
-import { EscapableDialogComponent } from '../../escapable-dialog/escapable-dialog.component';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -35,14 +34,12 @@ type DialogData = Version;
   templateUrl: './consent-dialog.component.html',
   styleUrl: './consent-dialog.component.scss',
 })
-export class ConsentDialogComponent extends EscapableDialogComponent {
+export class ConsentDialogComponent {
   public readonly CalloutType = CalloutType;
   constructor(
-    public override dialogRef: MatDialogRef<ConsentDialogComponent>,
+    public dialogRef: MatDialogRef<ConsentDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData
-  ) {
-    super(dialogRef);
-  }
+  ) {}
 
   confirm() {
     this.dialogRef.close(true);
@@ -50,9 +47,5 @@ export class ConsentDialogComponent extends EscapableDialogComponent {
 
   cancel() {
     this.dialogRef.close(false);
-  }
-
-  cancelOnDownload() {
-    this.dialogRef.close();
   }
 }

@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CAPTURE_FILE=$1
-SRC_IP=$2
+CAPTURE_FILE="$1"
+SRC_IP="$2"
 
 TSHARK_OUTPUT="-T json -e ip.src -e tcp.dstport -e ip.dst"
 TSHARK_FILTER="ip.src == $SRC_IP and tls"
 
-response=$(tshark -r $CAPTURE_FILE $TSHARK_OUTPUT $TSHARK_FILTER)
+response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT $TSHARK_FILTER)
 
 echo "$response"
   	

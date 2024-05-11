@@ -87,22 +87,36 @@ limitations under the License.
         (click)="openGeneralSettings(true)">
         <mat-icon>tune</mat-icon>
       </button>
+      <app-shutdown-app
+        [disable]="testrunInProgress((systemStatus$ | async)?.status)">
+      </app-shutdown-app>
     </mat-toolbar>
     <div class="app-content-main" role="main" id="main">
-      <app-callout [type]="CalloutType.Error" *ngIf="(error$ | async) === true">
-        Selected port is missing! Please define a valid one using
-        <a
-          (click)="openSetting()"
-          (keydown.enter)="openSetting()"
-          (keydown.space)="openSetting()"
-          aria-label="The System settings link opens the panel. No redirect to other pages."
-          tabindex="0"
-          role="link"
-          class="message-link"
-          >System settings</a
-        >
-        panel.
-      </app-callout>
+      <ng-container *ngIf="settingMissedError$ | async as error">
+        <app-callout [type]="CalloutType.Error" *ngIf="error.isSettingMissed">
+          <ng-container
+            *ngIf="
+              error.devicePortMissed && error.internetPortMissed;
+              else onePortMissed
+            ">
+            No ports are detected. Please define a valid ones using
+          </ng-container>
+          <ng-template #onePortMissed>
+            Selected port is missing! Please define a valid one using
+          </ng-template>
+          <a
+            (click)="openSetting()"
+            (keydown.enter)="openSetting()"
+            (keydown.space)="openSetting()"
+            aria-label="The System settings link opens the panel. No redirect to other pages."
+            tabindex="0"
+            role="link"
+            class="message-link"
+            >System settings</a
+          >
+          panel.
+        </app-callout>
+      </ng-container>
       <app-callout
         [type]="CalloutType.Info"
         *ngIf="(hasConnectionSetting$ | async) === false">
@@ -166,6 +180,7 @@ limitations under the License.
     #settingsDrawer
     mode="over"
     position="end"
+    autoFocus="#setting-panel-close-button"
     class="settings-drawer">
     <app-general-settings
       #settings

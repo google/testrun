@@ -541,7 +541,7 @@ def test_multiple_runs(testing_devices, testrun):
 @pytest.mark.skip()
 def test_create_invalid_chars(empty_devices_dir, testrun):
   # local_delete_devices(ALL_DEVICES)
-  # We must start test run with no devices in local/devices for this test 
+  # We must start test run with no devices in local/devices for this test
   # to function as expected!
   assert len(local_get_devices()) == 0
 

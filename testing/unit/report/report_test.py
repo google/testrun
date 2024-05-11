@@ -21,8 +21,9 @@ MODULE = 'report'
 
 # Define the file paths
 UNIT_TEST_DIR = 'testing/unit/'
-TEST_FILES_DIR = os.path.join('testing/unit',MODULE)
-OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
+TEST_FILES_DIR = os.path.join('testing/unit', MODULE)
+OUTPUT_DIR = os.path.join(TEST_FILES_DIR, 'output/')
+
 
 class ReportTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""
@@ -32,33 +33,38 @@ class ReportTest(unittest.TestCase):
     # Create the output directories and ignore errors if it already exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-  def report_test(self):
+  def create_report(self, results_file_path):
     report = TestReport()
-
     # Load the json report data
-    with open(os.path.join(TEST_FILES_DIR, 'report.json'),
-              'r',
-              encoding='utf-8') as file:
+    with open(results_file_path, 'r', encoding='utf-8') as file:
       report_json = json.loads(file.read())
     report.from_json(report_json)
-
-    # Load all module markdown reports
+    # Load all module html reports
     reports_md = []
-    reports_md.append(self.get_module_md_report('dns'))
-    reports_md.append(self.get_module_md_report('nmap'))
-    reports_md.append(self.get_module_md_report('ntp'))
+    #reports_md.append(self.get_module_html_report('tls'))
+    reports_md.append(self.get_module_html_report('dns'))
+    reports_md.append(self.get_module_html_report('nmap'))
+    reports_md.append(self.get_module_html_report('ntp'))
     report.add_module_reports(reports_md)
 
-    # Generate the report
-    with open(os.path.join(OUTPUT_DIR, 'report.html'), 'w',
-              encoding='utf-8') as file:
+    # Save report to file
+    file_name = os.path.splitext(os.path.basename(results_file_path))[0]
+    report_out_file = os.path.join(OUTPUT_DIR, file_name + '.html')
+    with open(report_out_file, 'w', encoding='utf-8') as file:
       file.write(report.to_html())
 
-  def get_module_md_report(self, module):
+  def report_compliant_test(self):
+    self.create_report(os.path.join(TEST_FILES_DIR, 'report_compliant.json'))
+
+  def report_noncompliant_test(self):
+    self.create_report(os.path.join(TEST_FILES_DIR, 'report_noncompliant.json'))
+
+  def get_module_html_report(self, module):
     # Combine the path components using os.path.join
-    report_file = os.path.join(UNIT_TEST_DIR,
-      os.path.join(module,
-        os.path.join('reports',module+'_report_local.md')))
+    report_file = os.path.join(
+        UNIT_TEST_DIR,
+        os.path.join(module,
+                     os.path.join('reports', module + '_report_local.html')))
 
     with open(report_file, 'r', encoding='utf-8') as file:
       report = file.read()
@@ -67,7 +73,8 @@ class ReportTest(unittest.TestCase):
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
-  suite.addTest(ReportTest('report_test'))
+  suite.addTest(ReportTest('report_compliant_test'))
+  suite.addTest(ReportTest('report_noncompliant_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)
