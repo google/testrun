@@ -136,7 +136,7 @@ class TestModule:
           # Compliant / Non-Compliant result
           elif isinstance(result[0], bool):
             test['result'] = 'Compliant' if result[0] else 'Non-Compliant'
-          # Result may be a string, e.g Error, Feature Not Present
+          # Result may be a string, e.g Error, Feature Not Detected
           elif isinstance(result[0], str):
             test['result'] = result[0]
           else:
