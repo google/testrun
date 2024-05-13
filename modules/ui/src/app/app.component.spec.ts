@@ -287,14 +287,16 @@ describe('AppComponent', () => {
     });
   }));
 
-  it('should update interfaces', () => {
+  it('should update interfaces and config', () => {
     fixture.detectChanges();
 
     spyOn(component.settings, 'getSystemInterfaces');
+    spyOn(component.settings, 'getSystemConfig');
 
     component.openGeneralSettings(false);
 
     expect(component.settings.getSystemInterfaces).toHaveBeenCalled();
+    expect(component.settings.getSystemConfig).toHaveBeenCalled();
   });
 
   it('should call settingsDrawer open on openSetting', fakeAsync(() => {
@@ -650,6 +652,7 @@ class FakeGeneralSettingsComponent {
   @Output() closeSettingEvent = new EventEmitter<void>();
   @Output() reloadInterfacesEvent = new EventEmitter<void>();
   getSystemInterfaces = () => {};
+  getSystemConfig = () => {};
 }
 
 @Component({

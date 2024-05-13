@@ -476,7 +476,8 @@ class TLSModuleTest(unittest.TestCase):
                        cert_out_dir=OUTPUT_DIR,
                        root_certs_dir=tmp_dir)
 
-    cert_valid = tls_util.validate_local_ca_signature(device_cert_path=cert_path)
+    cert_valid = tls_util.validate_local_ca_signature(
+      device_cert_path=cert_path)
     self.assertEqual(cert_valid[0], True)
 
 

@@ -296,27 +296,28 @@ class TestReport():
 
       # Render test recommendations
       page += f'''
-        <table class="steps-to-resolve">
-          <tbody>
-            <tr>
-              <td width="10%" class="steps-to-resolve index">{index}.</td>
-              <td width="32%" class="steps-to-resolve"><span class="steps-to-resolve subtitle">Name</span><br>{test["name"]}</td>
-              <td class="steps-to-resolve"><span class="steps-to-resolve subtitle">Description</span><br>{test["description"]}</td>
-            </tr>
-            <tr>
-              <td width="10%"></td>
-              <td colspan="2" class="steps-to-resolve" style="padding-bottom:20px;">
-                <span class="steps-to-resolve subtitle">Steps to resolve</span>
+        <div class="steps-to-resolve">
+          <div class="steps-to-resolve-row">
+            <span class="steps-to-resolve-index">{index}. </span>
+            <div class="steps-to-resolve-test-name">
+              <span class="steps-to-resolve subtitle">Name</span><br>{test["name"]}
+            </div>
+            <div class="steps-to-resolve-description">
+              <span class="steps-to-resolve subtitle">Description</span><br>{test["description"]}
+            </div>
+          </div>
+          <div class="steps-to-resolve-row" style="margin-left: 70px;">
+            <span class="steps-to-resolve subtitle">Steps to resolve</span>
         '''
 
       step_number = 1
       for recommendation in test['recommendations']:
-        page += f'''<br>
-          <span style="font-size: 14px">{
+        page += f'''
+        <br><span style="font-size: 14px">{
               step_number}. {recommendation}</span>'''
         step_number += 1
 
-      page += '</td></tbody></table>'
+      page += '</div></div>'
 
       index += 1
       steps_so_far += 1
@@ -585,6 +586,11 @@ class TestReport():
     return summary
 
   def generate_device_module_label(self, module, enabled):
+
+    # Do not render deleted modules
+    if module == 'nmap':
+      return ''
+
     label = '<div class="summary-device-module-label">'
     if enabled:
       label += '<span style="color:#34a853">✔ </span>'
@@ -787,17 +793,28 @@ class TestReport():
       font-family: 'Roboto Mono', monospace;
     }
 
-    table.steps-to-resolve {
+    div.steps-to-resolve {
       background-color: #F8F9FA;
       margin-bottom: 30px;
-      width: var(--page-width);
+      width: 756px;
+      padding: 20px 30px;
+      vertical-align: top;
     }
 
-    td.steps-to-resolve {
-      padding-left: 20px;
-      padding-top: 20px;
-      padding-right: 15px;
+    .steps-to-resolve-row {
       vertical-align: top;
+    }
+
+    .steps-to-resolve-test-name {
+      display: inline-block;
+      margin-left: 70px;
+      margin-bottom: 20px;
+      width: 250px;
+      vertical-align: top;
+    }
+
+    .steps-to-resolve-description {
+      display: inline-block;
     }
 
     .steps-to-resolve.subtitle {
@@ -807,10 +824,10 @@ class TestReport():
       color: #5F6368;
       font-size: 14px;
     }
-
-    .steps-to-resolve.index {
+  
+    .steps-to-resolve-index {
       font-size: 40px;
-      padding-left: 30px;
+      position: absolute;
     }
 
     .callout-container.info {
