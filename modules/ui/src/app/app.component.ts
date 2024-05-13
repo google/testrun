@@ -88,7 +88,7 @@ export class AppComponent {
       this.domSanitizer.bypassSecurityTrustResourceUrl(REPORTS_LOGO_URL)
     );
     this.matIconRegistry.addSvgIcon(
-      'risk_assessments',
+      'risk_assessment',
       this.domSanitizer.bypassSecurityTrustResourceUrl(RISK_ASSESSMENT_LOGO_URL)
     );
     this.matIconRegistry.addSvgIcon(

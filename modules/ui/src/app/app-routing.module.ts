@@ -43,7 +43,7 @@ const routes: Routes = [
       import('./pages/risk-assessment/risk-assessment.module').then(
         m => m.RiskAssessmentModule
       ),
-    title: 'Testrun - Risk Assessments',
+    title: 'Testrun - Risk Assessment',
   },
   {
     path: '',
