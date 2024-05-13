@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Provides Testrun data via REST API."""
-from fastapi import FastAPI, APIRouter, Response, Request, status
+from fastapi import (FastAPI,
+                     File,
+                     Form,
+                     APIRouter,
+                     Response,
+                     Request,
+                     status,
+                     UploadFile)
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
@@ -579,10 +586,67 @@ class Api:
     return True
 
   def get_certs(self):
-    return []
+    LOGGER.debug("Received certs list request")
 
-  def upload_cert(self, file):
-    return []
+    # Reload certs
+    self._session.load_certs()
+
+    return self._session.get_certs()
+
+  async def upload_cert(self,
+                  file: UploadFile,
+                  response: Response):
+
+    filename = file.filename
+    content_type = file.content_type
+
+    LOGGER.debug("Received request to upload certificate")
+    LOGGER.debug(f"Filename: {filename}, content type: {content_type}")
+
+    if content_type not in [
+      "application/x-pem-file",
+      "application/x-x509-ca-cert"
+    ]:
+      response.status_code = 400
+      return self._generate_msg(
+        False,
+        "Failed to upload certificate. Is it in the correct format?"
+      )
+
+    if len(filename) > 24:
+      response.status_code = 400
+      return self._generate_msg(
+        False,
+        "Invalid filename. Maximum file name length is 24 characters."
+      )
+
+    # Check if file already exists
+    if not self._session.check_cert_file_name(
+      filename
+    ):
+      response.status_code = 409
+      return self._generate_msg(
+        False,
+        "A certificate with that file name already exists."
+      )
+
+    # Get file contents
+    contents = await file.read()
+
+    # Pass to session to check and write
+    cert_obj = self._session.upload_cert(filename,
+                                         contents)
+
+    # Return error if something went wrong
+    if cert_obj is None:
+      return self._generate_msg(
+        False,
+        "Failed to upload certificate. Is it in the correct format?"
+      )
+
+    response.status_code = 201
+
+    return cert_obj
 
   def delete_cert(self, request: Request):
     return []

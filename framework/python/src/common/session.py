@@ -19,6 +19,11 @@ import json
 import os
 from common import util, logger
 
+# Certificate dependencies
+from cryptography import x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.backends import default_backend
+
 NETWORK_KEY = 'network'
 DEVICE_INTF_KEY = 'device_intf'
 INTERNET_INTF_KEY = 'internet_intf'
@@ -29,6 +34,7 @@ API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 CERTS_PATH = 'local/root_certs'
+CONFIG_FILE_PATH = 'local/system.json'
 
 LOGGER = logger.get_logger('session')
 
@@ -70,12 +76,12 @@ class TestRunSession():
     self._version = None
     self._load_version()
 
-    self._config_file = config_file
+    self._config_file = os.path.join(root_dir, CONFIG_FILE_PATH)
     self._config = self._get_default_config()
     self._load_config()
 
     self._certs = []
-    self._load_certs()
+    self.load_certs()
 
     # Fetch the timezone of the host system
     tz = util.run_command('cat /etc/timezone')
@@ -351,11 +357,82 @@ class TestRunSession():
   def get_timezone(self):
     return self._timezone
 
-  def _load_certs(self):
+  def upload_cert(self, filename, content):
+
+    try:
+      # Parse bytes into x509 object
+      cert = x509.load_pem_x509_certificate(content, default_backend())
+
+      # Extract required properties
+      common_name = cert.subject.get_attributes_for_oid(
+        NameOID.COMMON_NAME)[0].value
+      issuer = cert.issuer.get_attributes_for_oid(
+        NameOID.ORGANIZATION_NAME)[0].value
+
+      # Craft python dictionary with values
+      cert_obj = {
+        'name': common_name,
+        'organisation': issuer,
+        'expires': cert.not_valid_after_utc
+      }
+
+      with open(os.path.join(CERTS_PATH, filename), 'wb') as f:
+        f.write(content)
+
+      util.run_command(f'chown -R {util.get_host_user()} {CERTS_PATH}')
+
+      return cert_obj
+
+    except Exception as e:
+      LOGGER.error('An error occured whilst parsing a certificate')
+      LOGGER.debug(e)
+      return None
+
+  def check_cert_file_name(self, name):
+
+    if os.path.exists(os.path.join(CERTS_PATH, name)):
+      return False
+
+    return True
+
+  def load_certs(self):
 
     LOGGER.debug(f'Loading certificates from {CERTS_PATH}')
 
-    for cert_file in os.listdir(CERTS_PATH)
+    self._certs = []
+
+    for cert_file in os.listdir(CERTS_PATH):
+      LOGGER.debug(f'Loading certificate {cert_file}')
+      try:
+
+        # Open certificate file
+        with open(
+          os.path.join(
+            CERTS_PATH, cert_file), 'rb',) as f:
+
+          # Parse bytes into x509 object
+          cert = x509.load_pem_x509_certificate(f.read(), default_backend())
+
+          # Extract required properties
+          common_name = cert.subject.get_attributes_for_oid(
+            NameOID.COMMON_NAME)[0].value
+          issuer = cert.issuer.get_attributes_for_oid(
+            NameOID.ORGANIZATION_NAME)[0].value
+
+          # Craft python dictionary with values
+          cert_obj = {
+            'name': common_name,
+            'organisation': issuer,
+            'expires': cert.not_valid_after_utc
+          }
+
+          # Add certificate to list
+          self._certs.append(cert_obj)
+
+          LOGGER.debug(f'Successfully loaded {cert_file}')
+      except Exception as e:
+        LOGGER.error(f'An error occurred whilst loading {cert_file}')
+        LOGGER.debug(e)
 
   def get_certs(self):
     return self._certs
