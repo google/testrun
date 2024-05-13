@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
-export enum Routes {
-  Devices = '/devices',
-  Testing = '/testing',
-  Reports = '/reports',
-  RiskAssessment = '/risk-assessment',
-}
+import { RiskAssessmentRoutingModule } from './risk-assessment-routing.module';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { RiskAssessmentComponent } from './risk-assessment.component';
+
+@NgModule({
+  declarations: [RiskAssessmentComponent],
+  imports: [CommonModule, RiskAssessmentRoutingModule, MatToolbarModule],
+})
+export class RiskAssessmentModule {}

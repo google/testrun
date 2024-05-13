@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
-export enum Routes {
-  Devices = '/devices',
-  Testing = '/testing',
-  Reports = '/reports',
-  RiskAssessment = '/risk-assessment',
-}
+@Component({
+  selector: 'app-risk-assessment',
+  templateUrl: './risk-assessment.component.html',
+  styleUrl: './risk-assessment.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class RiskAssessmentComponent {}

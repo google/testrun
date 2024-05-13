@@ -38,6 +38,14 @@ const routes: Routes = [
     title: 'Testrun - Reports',
   },
   {
+    path: 'risk-assessment',
+    loadChildren: () =>
+      import('./pages/risk-assessment/risk-assessment.module').then(
+        m => m.RiskAssessmentModule
+      ),
+    title: 'Testrun - Risk Assessments',
+  },
+  {
     path: '',
     redirectTo: 'devices',
     pathMatch: 'full',
