@@ -60,7 +60,8 @@ DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
-VERSION = '1.2.2'
+# Does not need to be updated all the time, just a fallback
+VERSION = '1.3-alpha'
 
 class Testrun:  # pylint: disable=too-few-public-methods
   """Test Run controller.

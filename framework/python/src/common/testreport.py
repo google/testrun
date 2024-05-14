@@ -57,8 +57,7 @@ class TestReport():
     self._module_reports = []
     self._report_url = ''
     self._cur_page = 0
-    # Placeholder until available in json report
-    self._version = 'v1.2.2'
+    self._version = None
 
   def get_mac_addr(self):
     return self._mac_addr
@@ -90,12 +89,16 @@ class TestReport():
 
   def get_report_url(self):
     return self._report_url
-  
+
   def set_mac_addr(self, mac_addr):
     self._mac_addr = mac_addr
 
   def to_json(self):
     report_json = {}
+
+    report_json['testrun'] = {
+      'version': self._version
+    }
 
     report_json['mac_addr'] = self._mac_addr
     report_json['device'] = self._device
@@ -124,6 +127,12 @@ class TestReport():
     return report_json
 
   def from_json(self, json_file):
+
+    # Version added in v1.3-alpha
+    if 'testrun' in json_file and 'version' in json_file['testrun']:
+      self._version = json_file['testrun']['version']
+    else:
+      self._version = '1.3-alpha'
 
     self._device['mac_addr'] = json_file['device']['mac_addr']
     self._device['manufacturer'] = json_file['device']['manufacturer']

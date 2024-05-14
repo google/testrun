@@ -17,7 +17,13 @@
 # Creates a package for Testrun
 
 MAKE_SRC_DIR=make
-TESTRUN_VER="1-2-2"
+MAKE_CONTROL_DIR=make/DEBIAN/control
+
+# Edit the version in make/DEBIAN/control
+version=$(grep -R "Version: " $MAKE_CONTROL_DIR | awk '{print $2}')
+
+# Replace invalid characters
+version="${version//./_}"
 
 # Delete existing make files
 rm -rf $MAKE_SRC_DIR/usr
@@ -60,7 +66,7 @@ cp -r {framework,modules} $MAKE_SRC_DIR/usr/local/testrun
 dpkg-deb --build --root-owner-group make
 
 # Rename the .deb file
-mv make.deb testrun_${TESTRUN_VER}_amd64.deb
+mv make.deb testrun_${version}_amd64.deb
 
 # Echo package version
-echo Created installation package at testrun_${TESTRUN_VER}_amd64.deb
+echo Created installation package at testrun_${version}_amd64.deb
