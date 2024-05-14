@@ -55,6 +55,17 @@ limitations under the License.
             }
           ">
         </ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            navButtonRoute;
+            context: {
+              route: Routes.RiskAssessment,
+              svgIcon: 'risk_assessment',
+              label: 'Risk Assessment',
+              name: 'risk-assessment'
+            }
+          ">
+        </ng-container>
         <app-version
           [consentShown]="vm.consentShown"
           (consentShownEvent)="consentShown()"></app-version>

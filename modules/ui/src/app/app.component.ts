@@ -37,6 +37,7 @@ import { TestRunService } from './services/test-run.service';
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
+const RISK_ASSESSMENT_LOGO_URL = '/assets/icons/risk-assessment.svg';
 const TESTRUN_LOGO_URL = '/assets/icons/testrun_logo_small.svg';
 const TESTRUN_LOGO_COLOR_URL = '/assets/icons/testrun_logo_color.svg';
 const CLOSE_URL = '/assets/icons/close.svg';
@@ -85,6 +86,10 @@ export class AppComponent {
     this.matIconRegistry.addSvgIcon(
       'reports',
       this.domSanitizer.bypassSecurityTrustResourceUrl(REPORTS_LOGO_URL)
+    );
+    this.matIconRegistry.addSvgIcon(
+      'risk_assessment',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(RISK_ASSESSMENT_LOGO_URL)
     );
     this.matIconRegistry.addSvgIcon(
       'testrun_logo_small',

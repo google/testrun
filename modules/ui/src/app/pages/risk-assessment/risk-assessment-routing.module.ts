@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { RiskAssessmentComponent } from './risk-assessment.component';
 
-export enum Routes {
-  Devices = '/devices',
-  Testing = '/testing',
-  Reports = '/reports',
-  RiskAssessment = '/risk-assessment',
-}
+const routes: Routes = [{ path: '', component: RiskAssessmentComponent }];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
+})
+export class RiskAssessmentRoutingModule {}

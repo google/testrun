@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@import 'src/theming/colors';
 
-export enum Routes {
-  Devices = '/devices',
-  Testing = '/testing',
-  Reports = '/reports',
-  RiskAssessment = '/risk-assessment',
+.risk-assessment-toolbar {
+  height: 74px;
+  padding: 24px 0 8px 32px;
+  background: $white;
 }
