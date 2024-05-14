@@ -15,10 +15,13 @@
  */
 import {
   Component,
+  ElementRef,
   EventEmitter,
+  Input,
   OnDestroy,
   OnInit,
   Output,
+  ViewChild,
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Subject, takeUntil, tap } from 'rxjs';
@@ -38,7 +41,17 @@ import { LoaderService } from '../../services/loader.service';
   providers: [SettingsStore],
 })
 export class GeneralSettingsComponent implements OnInit, OnDestroy {
+  @ViewChild('reloadSettingLink') public reloadSettingLink!: ElementRef;
   @Output() closeSettingEvent = new EventEmitter<void>();
+
+  private isSettingsDisable = false;
+  get settingsDisable(): boolean {
+    return this.isSettingsDisable;
+  }
+  @Input() set settingsDisable(value: boolean) {
+    this.isSettingsDisable = value;
+    value ? this.disableSettings() : this.enableSettings();
+  }
   public readonly CalloutType = CalloutType;
   public readonly EventType = EventType;
   public readonly FormKey = FormKey;
@@ -88,6 +101,9 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   }
 
   reloadSetting(): void {
+    if (this.settingsDisable) {
+      return;
+    }
     this.showLoading();
     this.getSystemInterfaces();
     this.settingsStore.getSystemConfig();
@@ -109,6 +125,16 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     } else {
       this.createSystemConfig();
     }
+  }
+
+  private disableSettings(): void {
+    this.settingForm?.disable();
+    this.reloadSettingLink?.nativeElement.setAttribute('aria-disabled', 'true');
+  }
+
+  private enableSettings(): void {
+    this.settingForm?.enable();
+    this.reloadSettingLink?.nativeElement.removeAttribute('aria-disabled');
   }
 
   private createSettingForm() {
