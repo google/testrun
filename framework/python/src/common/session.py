@@ -373,7 +373,8 @@ class TestRunSession():
       cert_obj = {
         'name': common_name,
         'organisation': issuer,
-        'expires': cert.not_valid_after_utc
+        'expires': cert.not_valid_after_utc,
+        'filename': filename
       }
 
       with open(os.path.join(CERTS_PATH, filename), 'wb') as f:
@@ -423,7 +424,8 @@ class TestRunSession():
           cert_obj = {
             'name': common_name,
             'organisation': issuer,
-            'expires': cert.not_valid_after_utc
+            'expires': cert.not_valid_after_utc,
+            'filename': cert_file
           }
 
           # Add certificate to list
@@ -433,6 +435,19 @@ class TestRunSession():
       except Exception as e:
         LOGGER.error(f'An error occurred whilst loading {cert_file}')
         LOGGER.debug(e)
+
+  def delete_cert(self, filename):
+
+    LOGGER.debug(f'Deleting certificate {filename}')
+
+    try:
+      cert_file = os.path.join(CERTS_PATH, filename)
+      os.remove(cert_file)
+      return True
+    except Exception as e:
+      LOGGER.error('An error occurred whilst deleting the certificate')
+      LOGGER.debug(e)
+      return False
 
   def get_certs(self):
     return self._certs

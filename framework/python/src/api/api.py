@@ -648,5 +648,30 @@ class Api:
 
     return cert_obj
 
-  def delete_cert(self, request: Request):
-    return []
+  async def delete_cert(self, request: Request, response: Response):
+
+    LOGGER.debug("Received delete certificate request")
+
+    try:
+      req_raw = (await request.body()).decode("UTF-8")
+      req_json = json.loads(req_raw)
+
+      if "name" not in req_json:
+        response.status_code = 400
+        return self._generate_msg(False, "Received a bad request")
+
+      common_name = req_json.get("name")
+
+      for cert in self._session.get_certs():
+        if cert["name"] == common_name:
+          self._session.delete_cert(cert["filename"])
+          return self._generate_msg(True, "Successfully delete the certificate")
+
+      response.status_code = 404
+      return self._generate_msg(
+        False,
+        "A certificate with that name could not be found")
+
+    except Exception as e:
+      LOGGER.error("An error occurred whilst deleting a certificate")
+      LOGGER.debug(e)
