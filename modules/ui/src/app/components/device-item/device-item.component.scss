@@ -90,6 +90,11 @@ $border-radius: 12px;
       width: 24px;
     }
   }
+
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
 }
 
 .item-manufacturer {
@@ -169,6 +174,10 @@ $border-radius: 12px;
     .button-start-icon {
       color: $white;
     }
+  }
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
   }
 }
 

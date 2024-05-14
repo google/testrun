@@ -26,7 +26,10 @@ limitations under the License.
           (startTestrunClicked)="openStartTestrun($event, vm.devices)"
           [deviceView]="DeviceView.WithActions"
           [class.device-item-selected]="device === vm.selectedDevice"
-          [device]="device"></app-device-item>
+          [device]="device"
+          [disabled]="
+            device?.mac_addr === vm.deviceInProgress?.mac_addr
+          "></app-device-item>
       </ng-container>
     </div>
   </ng-container>

@@ -18,6 +18,8 @@ import { Device, DeviceView } from '../../model/device';
 
 import { DeviceItemComponent } from './device-item.component';
 import { DeviceRepositoryModule } from '../../pages/devices/device-repository.module';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('DeviceItemComponent', () => {
   let component: DeviceItemComponent;
@@ -26,7 +28,12 @@ describe('DeviceItemComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [DeviceRepositoryModule, DeviceItemComponent],
+      imports: [
+        DeviceRepositoryModule,
+        DeviceItemComponent,
+        MatIconTestingModule,
+        BrowserAnimationsModule,
+      ],
     });
     fixture = TestBed.createComponent(DeviceItemComponent);
     component = fixture.componentInstance;
@@ -101,6 +108,28 @@ describe('DeviceItemComponent', () => {
       editBtn.click();
 
       expect(clickSpy).toHaveBeenCalledWith(component.device);
+    });
+
+    it('should disable buttons if disable set to true', () => {
+      component.disabled = true;
+      fixture.detectChanges();
+
+      const startBtn = compiled.querySelector('.button-start') as HTMLElement;
+      const editBtn = compiled.querySelector('.button-edit') as HTMLElement;
+
+      expect(editBtn.getAttribute('disabled')).not.toBeNull();
+      expect(startBtn.getAttribute('disabled')).toBeTruthy();
+    });
+
+    it('should not disable buttons if disable set to false', () => {
+      component.disabled = false;
+      fixture.detectChanges();
+
+      const startBtn = compiled.querySelector('.button-start') as HTMLElement;
+      const editBtn = compiled.querySelector('.button-edit') as HTMLElement;
+
+      expect(editBtn.getAttribute('disabled')).toBeNull();
+      expect(startBtn.getAttribute('disabled')).toBeFalsy();
     });
   });
 });

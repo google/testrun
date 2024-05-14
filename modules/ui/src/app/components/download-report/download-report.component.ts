@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { TestrunStatus } from '../../model/testrun-status';
+import { StatusOfTestrun, TestrunStatus } from '../../model/testrun-status';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ReportActionComponent } from '../report-action/report-action.component';
@@ -30,6 +30,7 @@ import { ReportActionComponent } from '../report-action/report-action.component'
 })
 export class DownloadReportComponent extends ReportActionComponent {
   @Input() href: string | undefined;
+  @Input() class!: string;
   @Input() title!: string;
 
   getReportTitle(data: TestrunStatus) {
@@ -38,5 +39,15 @@ export class DownloadReportComponent extends ReportActionComponent {
     } ${data.status} ${this.getFormattedDateString(data.started)}`
       .replace(/ /g, '_')
       .toLowerCase();
+  }
+
+  getClass(data: TestrunStatus) {
+    if (data.status === StatusOfTestrun.Compliant) {
+      return `${this.class}-compliant`;
+    }
+    if (data.status === StatusOfTestrun.NonCompliant) {
+      return `${this.class}-non-compliant`;
+    }
+    return this.class;
   }
 }

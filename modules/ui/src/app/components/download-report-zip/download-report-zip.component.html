@@ -15,6 +15,7 @@ limitations under the License.
 -->
 <app-download-report
   *ngIf="data"
+  class="download-report-link-zip"
   [data]="data"
   [href]="getZipLink(data)"
   title="Download zip file for Testrun # {{ getTestRunId(data) }}">
