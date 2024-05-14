@@ -1,0 +1,37 @@
+version: 2
+updates:
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - "jboddey"
+      - "jhughesbiot"
+    commit-message:
+      prefix: "[pip] "
+    labels:
+      - "dependencies"
+
+  - package-ecosystem: "github-actions"
+    directory: ".github/workflows"
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - "jboddey"
+    commit-message:
+      prefix: "[GitHub Actions] "
+    labels:
+      - "dependencies"
+
+  - package-ecosystem: "npm"
+    directory: "modules/ui"
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - "sofyakurilova"
+      - "OlgaMardvilko"
+    commit-message:
+      prefix: "[npm] "
+    labels:
+      - "dependencies"

@@ -1,5 +1,5 @@
 name: Testrun test suite
-permissions: {}
+permissions: read-all
 
 on:
   pull_request:
