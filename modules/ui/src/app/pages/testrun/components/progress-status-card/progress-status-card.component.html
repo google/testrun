@@ -59,13 +59,24 @@ limitations under the License.
       ></ng-container>
     </div>
     <ng-container *ngIf="data.finished">
-      <ng-container
-        *ngTemplateOutlet="
-          Finished;
-          context: {
-            data: data
-          }
-        "></ng-container>
+      <ng-container *ngIf="data.status !== StatusOfTestrun.InProgress">
+        <ng-container
+          *ngTemplateOutlet="
+            Finished;
+            context: {
+              data: data
+            }
+          "></ng-container>
+      </ng-container>
+      <ng-container *ngIf="data.status === StatusOfTestrun.InProgress">
+        <ng-container
+          *ngTemplateOutlet="
+            InProgress;
+            context: {
+              data: data
+            }
+          "></ng-container
+      ></ng-container>
     </ng-container>
   </div>
 </ng-container>

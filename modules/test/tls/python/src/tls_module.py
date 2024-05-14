@@ -119,7 +119,8 @@ class TLSModule(TestModule):
   #     # cert_table = (f'| Property | Value |\n'
   #     #               f'|---|---|\n'
   #     #               f"| {'Version':<17} | {version_value:^25} |\n"
-  #     #               f"| {'Signature Alg.':<17} | {signature_alg_value:^25} |\n"
+  #     #               f"| {'Signature Alg.':<17} | 
+  #                         {signature_alg_value:^25} |\n"
   #     #               f"| {'Validity from':<17} | {not_before:^25} |\n"
   #     #               f"| {'Valid to':<17} | {not_after:^25} |")
 
@@ -234,8 +235,18 @@ class TLSModule(TestModule):
           self._device_ipv4_addr, tls_version='1.2')
       tls_1_3_results = self._tls_util.validate_tls_server(
           self._device_ipv4_addr, tls_version='1.3')
-      return self._tls_util.process_tls_server_results(tls_1_2_results,
+      results = self._tls_util.process_tls_server_results(tls_1_2_results,
                                                        tls_1_3_results)
+      # Determine results and return proper messaging and details
+      description = ''
+      if results[0] is None:
+        description = 'TLS 1.2 certificate could not be validated'
+      elif results[0]:
+        description = 'TLS 1.2 certificate is valid'
+      else:
+        description = 'TLS 1.2 certificate is invalid'
+      return results[0], description,results[1]
+
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'
@@ -245,8 +256,18 @@ class TLSModule(TestModule):
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      return self._tls_util.validate_tls_server(self._device_ipv4_addr,
+      results = self._tls_util.validate_tls_server(self._device_ipv4_addr,
                                                 tls_version='1.3')
+      # Determine results and return proper messaging and details
+      description = ''
+      if results[0] is None:
+        description = 'TLS 1.3 certificate could not be validated'
+      elif results[0]:
+        description = 'TLS 1.3 certificate is valid'
+      else:
+        description = 'TLS 1.3 certificate is invalid'
+      return results[0], description,results[1]
+
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'
@@ -256,7 +277,16 @@ class TLSModule(TestModule):
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      return self._validate_tls_client(self._device_ipv4_addr, '1.2')
+      results = self._validate_tls_client(self._device_ipv4_addr, '1.2')
+      # Determine results and return proper messaging and details
+      description = ''
+      if results[0] is None:
+        description = 'No outbound connections were found'
+      elif results[0]:
+        description = 'TLS 1.2 client connections valid'
+      else:
+        description = 'TLS 1.2 client connections invalid'
+      return results[0], description,  results[1]
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'
@@ -266,7 +296,16 @@ class TLSModule(TestModule):
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      return self._validate_tls_client(self._device_ipv4_addr, '1.3')
+      results = self._validate_tls_client(self._device_ipv4_addr, '1.3')
+      # Determine results and return proper messaging and details
+      description = ''
+      if results[0] is None:
+        description = 'No outbound connections were found'
+      elif results[0]:
+        description = 'TLS 1.3 client connections valid'
+      else:
+        description = 'TLS 1.3 client connections invalid'
+      return results[0], description,  results[1]
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'

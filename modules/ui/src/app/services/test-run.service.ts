@@ -112,6 +112,12 @@ export class TestRunService {
       .pipe(map(() => true));
   }
 
+  shutdownTestrun(): Observable<boolean> {
+    return this.http
+      .post<{ success: string }>(`${API_URL}/system/shutdown`, {})
+      .pipe(map(() => true));
+  }
+
   getTestModules(): TestModule[] {
     return this.testModules;
   }
@@ -162,7 +168,7 @@ export class TestRunService {
         result === StatusOfTestResult.Info ||
         result === StatusOfTestResult.InProgress,
       grey:
-        result === StatusOfTestResult.NotPresent ||
+        result === StatusOfTestResult.NotDetected ||
         result === StatusOfTestResult.NotStarted,
     };
   }

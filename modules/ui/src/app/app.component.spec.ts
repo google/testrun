@@ -146,6 +146,7 @@ describe('AppComponent', () => {
         AppComponent,
         FakeGeneralSettingsComponent,
         FakeSpinnerComponent,
+        FakeShutdownAppComponent,
         FakeVersionComponent,
       ],
     });
@@ -289,14 +290,16 @@ describe('AppComponent', () => {
     });
   }));
 
-  it('should update interfaces', () => {
+  it('should update interfaces and config', () => {
     fixture.detectChanges();
 
     spyOn(component.settings, 'getSystemInterfaces');
+    spyOn(component.settings, 'getSystemConfig');
 
     component.openGeneralSettings(false);
 
     expect(component.settings.getSystemInterfaces).toHaveBeenCalled();
+    expect(component.settings.getSystemConfig).toHaveBeenCalled();
   });
 
   it('should call settingsDrawer open on openSetting', fakeAsync(() => {
@@ -658,6 +661,7 @@ class FakeGeneralSettingsComponent {
   @Input() settingsDisable = false;
   @Output() closeSettingEvent = new EventEmitter<void>();
   getSystemInterfaces = () => {};
+  getSystemConfig = () => {};
 }
 
 @Component({
@@ -665,6 +669,14 @@ class FakeGeneralSettingsComponent {
   template: '<div></div>',
 })
 class FakeSpinnerComponent {}
+
+@Component({
+  selector: 'app-shutdown-app',
+  template: '<div></div>',
+})
+class FakeShutdownAppComponent {
+  @Input() disable!: boolean;
+}
 
 @Component({
   selector: 'app-version',

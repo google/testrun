@@ -317,6 +317,24 @@ describe('ProgressStatusCardComponent', () => {
       });
     });
 
+    describe('with available systemStatus$ data, as "In Progress" and finish date', () => {
+      beforeEach(() => {
+        component.systemStatus$ = of({
+          ...MOCK_PROGRESS_DATA_IN_PROGRESS,
+          finished: '2023-06-22T09:26:00.123Z',
+        });
+        fixture.detectChanges();
+      });
+
+      it('should not have progress card result', () => {
+        const progressCardResultEl = compiled.querySelector(
+          '.progress-card-result-text span'
+        );
+
+        expect(progressCardResultEl).toBeNull();
+      });
+    });
+
     describe('with available systemStatus$ data, as Waiting for Device', () => {
       beforeEach(() => {
         component.systemStatus = MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE;

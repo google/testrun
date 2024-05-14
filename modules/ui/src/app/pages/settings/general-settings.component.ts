@@ -198,6 +198,10 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     this.hideLoading();
   }
 
+  getSystemConfig(): void {
+    this.settingsStore.getSystemConfig();
+  }
+
   private showLoading() {
     this.loaderService.setLoading(true);
   }

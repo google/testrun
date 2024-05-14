@@ -38,13 +38,12 @@ CONFIG_FILE_PATH = 'local/system.json'
 
 LOGGER = logger.get_logger('session')
 
-class TestRunSession():
+class TestrunSession():
   """Represents the current session of Test Run."""
 
-  def __init__(self, root_dir):
-    self._root_dir = root_dir
-
-    # Current status of Testrun
+  def __init__(self, root_dir, version):
+   
+   # Current status of Testrun
     self._status = 'Idle'
 
     # Target test device
@@ -72,9 +71,7 @@ class TestRunSession():
     # Direct url for PDF report
     self._report_url = None
 
-    # Version of Testrun installed
-    self._version = None
-    self._load_version()
+    self._load_version(default_version=version)
 
     self._config_file = os.path.join(root_dir, CONFIG_FILE_PATH)
     self._config = self._get_default_config()
@@ -121,7 +118,7 @@ class TestRunSession():
       'log_level': 'INFO',
       'startup_timeout': 60,
       'monitor_period': 30,
-      'max_device_reports': 5,
+      'max_device_reports': 0,
       'api_url': 'http://localhost',
       'api_port': 8000
     }
@@ -172,14 +169,18 @@ class TestRunSession():
 
       LOGGER.debug(self._config)
 
-  def _load_version(self):
+  def _load_version(self, default_version):
     version_cmd = util.run_command(
       'dpkg-query --showformat=\'${Version}\' --show testrun')
-
-    if version_cmd:
+    # index 1 of response is the stderr byte stream so if
+    # it has any data in it, there was an error and we
+    # did not resolve the version and we'll use the fallback
+    if len(version_cmd[1]) == 0:
       version = version_cmd[0]
-      LOGGER.info(f'Running Testrun version {version}')
-    self._version = version
+      self._version = version
+    else:
+      self._version = default_version
+    LOGGER.info(f'Running Testrun version {self._version}')
 
   def get_version(self):
     return self._version
@@ -325,6 +326,7 @@ class TestRunSession():
     self.set_target_device(None)
     self._report_url = None
     self._total_tests = 0
+    self._module_reports = []
     self._results = []
     self._started = None
     self._finished = None

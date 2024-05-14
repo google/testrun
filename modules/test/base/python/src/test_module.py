@@ -146,6 +146,10 @@ class TestModule:
             test['description'] = result[1]
           else:
             test['description'] = 'No description was provided for this test'
+
+          # Check if details were provided
+          if len(result)>2:
+            test['details'] = result[2]
       else:
         test['result'] = 'Error'
         test['description'] = 'An error occured whilst running this test'
