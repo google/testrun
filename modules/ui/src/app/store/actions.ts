@@ -22,6 +22,7 @@ import {
 } from '../model/setting';
 import { SystemInterfaces } from '../model/setting';
 import { Device } from '../model/device';
+import { TestrunStatus } from '../model/testrun-status';
 
 // App component
 export const toggleMenu = createAction('[App Component] Toggle Menu');
@@ -65,6 +66,16 @@ export const setIsOpenAddDevice = createAction(
   props<{ isOpenAddDevice: boolean }>()
 );
 
+export const setIsStopTestrun = createAction(
+  '[Shared] Set Is Stop Testrun',
+  props<{ isStopTestrun: boolean }>()
+);
+
+export const setIsOpenWaitSnackBar = createAction(
+  '[Shared] Set Is Open WaitSnackBar',
+  props<{ isOpenWaitSnackBar: boolean }>()
+);
+
 export const setHasDevices = createAction(
   '[Shared] Set Has Devices',
   props<{ hasDevices: boolean }>()
@@ -73,4 +84,24 @@ export const setHasDevices = createAction(
 export const setDevices = createAction(
   '[Shared] Set Devices',
   props<{ devices: Device[] }>()
+);
+
+export const setTestrunStatus = createAction(
+  '[Shared] Set Testrun Status',
+  props<{ systemStatus: TestrunStatus }>()
+);
+
+export const setIsOpenStartTestrun = createAction(
+  '[Shared] Set Is Open Start Testrun',
+  props<{ isOpenStartTestrun: boolean }>()
+);
+
+export const setIsTestrunStarted = createAction(
+  '[Shared] Set Testrun Started',
+  props<{ isTestrunStarted: boolean }>()
+);
+
+export const setDeviceInProgress = createAction(
+  '[Shared] Set Device In Progress',
+  props<{ device: Device | null }>()
 );

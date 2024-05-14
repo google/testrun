@@ -158,7 +158,7 @@ mat-hint {
   }
 }
 
-h2.title {
+.mat-toolbar h2.title {
   margin: 0;
   font-size: 32px;
   font-style: normal;
@@ -191,6 +191,15 @@ h2.title {
 
 .mat-mdc-form-field {
   --mdc-outlined-text-field-focus-label-text-color: #1a73e8;
+}
+
+.setting-field {
+  --mdc-outlined-text-field-disabled-outline-color: rgba(0, 0, 0, 0.38);
+  --mdc-outlined-text-field-disabled-label-text-color: rgba(0, 0, 0, 0.58);
+}
+
+.snack-bar-info.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  max-width: 780px;
 }
 
 body:has(.initiate-test-run-dialog)
@@ -266,4 +275,8 @@ body
     .mat-mdc-button-persistent-ripple::before {
     opacity: var(--mat-text-button-focus-state-layer-opacity);
   }
+}
+
+.certificate-notification .mat-mdc-snack-bar-label {
+  white-space: pre-line;
 }

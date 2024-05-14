@@ -95,6 +95,9 @@ class Api:
     self._router.add_api_route("/device/edit",
                                self.edit_device,
                                methods=["POST"])
+    
+    self._router.add_api_route("/system/modules",
+                               self.get_test_modules)
 
     # Allow all origins to access the API
     origins = ["*"]
@@ -551,6 +554,20 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Test results could not be found")
 
+  async def get_test_modules(self):
+
+    LOGGER.debug("Received request to list test modules")
+
+    test_modules = []
+
+    for test_module in self._get_test_run().get_test_orc().get_test_modules():
+
+      # Only add module if it is an actual, enabled test module
+      if (test_module.enabled and test_module.enable_container):
+        test_modules.append(test_module.display_name)
+
+    return test_modules
+
   def _validate_device_json(self, json_obj):
 
     # Check all required properties are present
@@ -575,3 +592,6 @@ class Api:
         return False
 
     return True
+
+  def _get_test_run(self):
+    return self._test_run

@@ -13,74 +13,92 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container *ngIf="systemStatus$ | async as data; else empty">
-  <ng-container
-    *ngIf="
-      testrunInProgress(data.status) ||
-      data.status === StatusOfTestrun.Cancelled ||
-      data.status === StatusOfTestrun.Cancelling ||
-      data.finished
-    ">
-    <mat-toolbar class="progress-toolbar">
-      <div class="toolbar-col-left">
-        <div class="toolbar-row top">
-          <ng-container
-            *ngTemplateOutlet="startNewTestrunButton"></ng-container>
-        </div>
-        <div class="toolbar-row bottom">
-          <h2 class="title progress-title">
-            {{ data.device.manufacturer }} {{ data.device.model }} v{{
-              data.device.firmware
-            }}
-          </h2>
-          <button
-            *ngIf="testrunInProgress(data.status)"
-            (click)="openStopTestrunDialog()"
-            class="stop-button"
-            aria-label="Stop testrun"
-            color="warn"
-            mat-flat-button>
-            Stop
-          </button>
-          <app-download-options
-            *ngIf="data.report"
-            [data]="data"></app-download-options>
-        </div>
-      </div>
-      <app-progress-status-card [systemStatus$]="systemStatus$">
-      </app-progress-status-card>
-    </mat-toolbar>
-    <section
-      class="progress-table"
-      [class.progress-table-progress-empty]="
-        testrunInProgress(data.status) && resultIsEmpty(data.tests)
+<ng-container *ngIf="viewModel$ | async as vm">
+  <ng-container *ngIf="vm.systemStatus as data; else empty">
+    <ng-container
+      *ngIf="
+        isTestrunInProgress(data.status) ||
+        data.status === StatusOfTestrun.Cancelled ||
+        data.status === StatusOfTestrun.Cancelling ||
+        data.finished
       ">
-      <app-progress-table [dataSource$]="dataSource$"></app-progress-table>
-      <app-spinner></app-spinner>
-    </section>
+      <mat-toolbar class="progress-toolbar">
+        <div class="toolbar-col-left">
+          <div class="toolbar-row top">
+            <ng-container
+              *ngTemplateOutlet="
+                startNewTestrunButton;
+                context: {
+                  hasDevices: vm.hasDevices,
+                  systemStatus: vm.systemStatus
+                }
+              "></ng-container>
+          </div>
+          <div class="toolbar-row bottom">
+            <h2 class="title progress-title">
+              {{ data.device.manufacturer }} {{ data.device.model }} v{{
+                data.device.firmware
+              }}
+            </h2>
+            <button
+              *ngIf="isTestrunInProgress(data.status)"
+              (click)="openStopTestrunDialog(vm.systemStatus)"
+              class="stop-button"
+              aria-label="Stop testrun"
+              color="warn"
+              mat-flat-button>
+              Stop
+            </button>
+            <app-download-options
+              *ngIf="data.report"
+              [data]="data"></app-download-options>
+          </div>
+        </div>
+        <app-progress-status-card [systemStatus]="vm.systemStatus">
+        </app-progress-status-card>
+      </mat-toolbar>
+      <section
+        class="progress-table"
+        [class.progress-table-progress-empty]="
+          isTestrunInProgress(data.status) && resultIsEmpty(data.tests)
+        ">
+        <app-progress-table
+          [dataSource]="vm.dataSource"
+          [stepsToResolveCount]="vm.stepsToResolveCount"></app-progress-table>
+        <app-spinner></app-spinner>
+      </section>
+    </ng-container>
+    <ng-container *ngIf="!data.started">
+      <ng-container *ngTemplateOutlet="empty"></ng-container>
+    </ng-container>
   </ng-container>
-  <ng-container *ngIf="!data.started">
-    <ng-container *ngTemplateOutlet="empty"></ng-container>
-  </ng-container>
+
+  <ng-template #empty>
+    <div class="progress-content-empty">
+      <ng-container
+        *ngTemplateOutlet="
+          startNewTestrunButton;
+          context: {
+            hasDevices: vm.hasDevices
+          }
+        "></ng-container>
+    </div>
+  </ng-template>
+
+  <ng-template
+    #startNewTestrunButton
+    let-hasDevices="hasDevices"
+    let-systemStatus="systemStatus">
+    <button
+      class="start-button"
+      aria-label="Start new testrun"
+      color="primary"
+      [disabled]="
+        hasDevices === false || isTestrunInProgress(systemStatus?.status)
+      "
+      (click)="openTestRunModal()"
+      mat-flat-button>
+      Start New Testrun
+    </button>
+  </ng-template>
 </ng-container>
-
-<ng-template #empty>
-  <div class="progress-content-empty">
-    <ng-container *ngTemplateOutlet="startNewTestrunButton"></ng-container>
-  </div>
-</ng-template>
-
-<ng-template #startNewTestrunButton>
-  <button
-    class="start-button"
-    aria-label="Start new testrun"
-    color="primary"
-    [disabled]="
-      (hasDevices$ | async) === false ||
-      testrunInProgress((systemStatus$ | async)?.status)
-    "
-    (click)="openTestRunModal()"
-    mat-flat-button>
-    Start New Testrun
-  </button>
-</ng-template>

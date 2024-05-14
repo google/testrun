@@ -24,6 +24,7 @@ import { AppState } from './state';
 import { TestRunService } from '../services/test-run.service';
 import { filter, combineLatest } from 'rxjs';
 import { selectMenuOpened } from './selectors';
+import { StatusOfTestrun } from '../model/testrun-status';
 
 @Injectable()
 export class AppEffects {
@@ -91,6 +92,22 @@ export class AppEffects {
       ofType(AppActions.setDevices),
       map(({ devices }) =>
         AppActions.setHasDevices({ hasDevices: devices.length > 0 })
+      )
+    );
+  });
+
+  onSetTestrunStatus$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setTestrunStatus),
+      map(({ systemStatus }) =>
+        AppActions.setDeviceInProgress({
+          device:
+            systemStatus.status === StatusOfTestrun.Monitoring ||
+            systemStatus.status === StatusOfTestrun.InProgress ||
+            systemStatus.status === StatusOfTestrun.WaitingForDevice
+              ? systemStatus.device
+              : null,
+        })
       )
     );
   });

@@ -68,6 +68,11 @@ export class VersionComponent implements OnInit, OnDestroy {
           this.openConsentDialog(version);
           this.consentShownEvent.emit();
         }
+        // @ts-expect-error data layer is not null
+        window.dataLayer.push({
+          event: 'testrun_version',
+          testrunVersion: version?.installed_version,
+        });
       })
     );
   }

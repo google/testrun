@@ -22,13 +22,18 @@ import { Device, TestModule } from '../model/device';
 
 import { TestRunService, UNAVAILABLE_VERSION } from './test-run.service';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/progress.mock';
 import {
-  MOCK_PROGRESS_DATA_CANCELLING,
-  MOCK_PROGRESS_DATA_IN_PROGRESS,
-} from '../mocks/progress.mock';
-import { StatusOfTestResult, TestrunStatus } from '../model/testrun-status';
+  StatusOfTestResult,
+  StatusOfTestrun,
+  TestrunStatus,
+} from '../model/testrun-status';
 import { device } from '../mocks/device.mock';
 import { NEW_VERSION, VERSION } from '../mocks/version.mock';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { AppState } from '../store/state';
+import { Certificate } from '../model/certificate';
+import { certificate } from '../mocks/certificate.mock';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -41,15 +46,18 @@ describe('TestRunService', () => {
   let injector: TestBed;
   let httpTestingController: HttpTestingController;
   let service: TestRunService;
+  let store: MockStore<AppState>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [TestRunService],
+      providers: [TestRunService, provideMockStore({})],
     });
     injector = getTestBed();
     httpTestingController = injector.get(HttpTestingController);
     service = injector.get(TestRunService);
+    store = TestBed.inject(MockStore);
+    spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
   afterEach(() => {
@@ -155,30 +163,14 @@ describe('TestRunService', () => {
     req.flush(mockSystemInterfaces);
   });
 
-  describe('getSystemStatus', () => {
+  describe('fetchSystemStatus', () => {
     it('should get system status data with no changes', () => {
       const result = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
 
-      service.systemStatus$.subscribe(res => {
+      service.fetchSystemStatus().subscribe(res => {
         expect(res).toEqual(result);
       });
 
-      service.getSystemStatus();
-      const req = httpTestingController.expectOne(
-        'http://localhost:8000/system/status'
-      );
-      expect(req.request.method).toBe('GET');
-      req.flush(result);
-    });
-
-    it('should get cancelling data if status is cancelling', () => {
-      const result = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
-
-      service.systemStatus$.subscribe(res => {
-        expect(res).toEqual(MOCK_PROGRESS_DATA_CANCELLING);
-      });
-
-      service.getSystemStatus(true);
       const req = httpTestingController.expectOne(
         'http://localhost:8000/system/status'
       );
@@ -329,6 +321,37 @@ describe('TestRunService', () => {
     });
   });
 
+  describe('#testrunInProgress', () => {
+    const resultsInProgress = [
+      StatusOfTestrun.InProgress,
+      StatusOfTestrun.WaitingForDevice,
+      StatusOfTestrun.Monitoring,
+    ];
+
+    const resultsNotInProgress = [
+      StatusOfTestrun.Idle,
+      StatusOfTestrun.Cancelled,
+      StatusOfTestrun.Compliant,
+      StatusOfTestrun.NonCompliant,
+    ];
+
+    resultsInProgress.forEach(testCase => {
+      it(`should return true if testrun result is "${testCase}"`, () => {
+        const result = service.testrunInProgress(testCase);
+
+        expect(result).toBeTrue();
+      });
+    });
+
+    resultsNotInProgress.forEach(testCase => {
+      it(`should return false if testrun result is "${testCase}"`, () => {
+        const result = service.testrunInProgress(testCase);
+
+        expect(result).toBeFalse();
+      });
+    });
+  });
+
   it('deleteDevice should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/device';
 
@@ -409,6 +432,24 @@ describe('TestRunService', () => {
     req.flush({});
   });
 
+  it('deleteReport should return false when error happens', () => {
+    const apiUrl = 'http://localhost:8000/report';
+
+    service.deleteReport(device.mac_addr, '').subscribe(res => {
+      expect(res).toEqual(false);
+    });
+
+    const req = httpTestingController.expectOne(apiUrl);
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.body).toEqual(
+      JSON.stringify({
+        mac_addr: device.mac_addr,
+        timestamp: '',
+      })
+    );
+    req.error(new ErrorEvent(''));
+  });
+
   it('#saveDevice should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/device';
 
@@ -435,5 +476,63 @@ describe('TestRunService', () => {
       JSON.stringify({ mac_addr: '01:01:01:01:01:01', device })
     );
     req.flush(true);
+  });
+
+  it('fetchCertificates should return certificates', () => {
+    const certificates = [certificate] as Certificate[];
+
+    service.fetchCertificates().subscribe(res => {
+      expect(res).toEqual(certificates);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs/list'
+    );
+
+    expect(req.request.method).toBe('GET');
+
+    req.flush(certificates);
+  });
+
+  it('uploadCertificates should upload certificate', () => {
+    service.uploadCertificate(new File([], 'test')).subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs/upload'
+    );
+
+    expect(req.request.method).toBe('POST');
+
+    req.flush(true);
+  });
+
+  it('deleteCertificate should delete certificate', () => {
+    service.deleteCertificate('test').subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs/delete'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.flush(true);
+  });
+
+  it('deleteCertificate should return false when error happens', () => {
+    service.deleteCertificate('test').subscribe(res => {
+      expect(res).toEqual(false);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs/delete'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.error(new ErrorEvent(''));
   });
 });

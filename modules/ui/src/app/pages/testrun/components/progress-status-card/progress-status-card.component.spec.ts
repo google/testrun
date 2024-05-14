@@ -28,7 +28,6 @@ import {
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
 } from '../../../../mocks/progress.mock';
 import { ProgressModule } from '../../progress.module';
-import { of } from 'rxjs';
 
 describe('ProgressStatusCardComponent', () => {
   let component: ProgressStatusCardComponent;
@@ -228,7 +227,7 @@ describe('ProgressStatusCardComponent', () => {
 
     describe('with not systemStatus$ data', () => {
       beforeEach(() => {
-        (component.systemStatus$ as unknown) = of(null);
+        (component.systemStatus as unknown) = null;
         fixture.detectChanges();
       });
 
@@ -241,7 +240,7 @@ describe('ProgressStatusCardComponent', () => {
 
     describe('with available systemStatus$ data, as Cancelled', () => {
       beforeEach(() => {
-        component.systemStatus$ = of(MOCK_PROGRESS_DATA_CANCELLED);
+        component.systemStatus = MOCK_PROGRESS_DATA_CANCELLED;
         fixture.detectChanges();
       });
 
@@ -284,7 +283,7 @@ describe('ProgressStatusCardComponent', () => {
 
     describe('with available systemStatus$ data, as "In Progress"', () => {
       beforeEach(() => {
-        component.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+        component.systemStatus = MOCK_PROGRESS_DATA_IN_PROGRESS;
         fixture.detectChanges();
       });
 
@@ -320,10 +319,10 @@ describe('ProgressStatusCardComponent', () => {
 
     describe('with available systemStatus$ data, as "In Progress" and finish date', () => {
       beforeEach(() => {
-        component.systemStatus$ = of({
+        component.systemStatus = {
           ...MOCK_PROGRESS_DATA_IN_PROGRESS,
           finished: '2023-06-22T09:26:00.123Z',
-        });
+        };
         fixture.detectChanges();
       });
 
@@ -338,7 +337,7 @@ describe('ProgressStatusCardComponent', () => {
 
     describe('with available systemStatus$ data, as Waiting for Device', () => {
       beforeEach(() => {
-        component.systemStatus$ = of(MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE);
+        component.systemStatus = MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE;
         fixture.detectChanges();
       });
 
@@ -379,7 +378,7 @@ describe('ProgressStatusCardComponent', () => {
 
     describe('with available systemStatus$ data, as Monitoring', () => {
       beforeEach(() => {
-        component.systemStatus$ = of(MOCK_PROGRESS_DATA_MONITORING);
+        component.systemStatus = MOCK_PROGRESS_DATA_MONITORING;
         fixture.detectChanges();
       });
 
