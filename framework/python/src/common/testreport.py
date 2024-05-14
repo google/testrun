@@ -263,7 +263,7 @@ class TestReport():
 
   def generate_steps_to_resolve(self, json_data):
 
-    steps_so_far = 0    self._version = 'v1.2.2'
+    steps_so_far = 0
     tests_with_recommendations = []
     index = 1
 
