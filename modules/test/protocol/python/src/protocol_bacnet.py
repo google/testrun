@@ -61,8 +61,8 @@ class BACnet():
     self.discover(local_ip + '/24')
     LOGGER.info('BACnet devices found: ' + str(len(self.devices)))
     if len(self.devices) > 0:
-      result = ('Feature Not Detected',
-                'Device did not respond to BACnet discovery')
+      result = (False,
+                'BACnet device was found but was not device under test')
       for device in self.devices:
         address = device[2]
         LOGGER.info('Checking device: ' + str(device))
