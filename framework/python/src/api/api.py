@@ -443,7 +443,15 @@ class Api:
         device.device_folder = device.manufacturer + " " + device.model
         device.test_modules = device_json.get(DEVICE_TEST_MODULES_KEY)
 
-        self._test_run.create_device(device)
+        device_folder = self._test_run.create_device(device)
+
+        # Failed to create device folder
+        if device_folder is None:
+          response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+          return self._generate_msg(
+            False,
+            "An error occurred whilst creating the device")
+
         response.status_code = status.HTTP_201_CREATED
 
       else:
@@ -516,7 +524,14 @@ class Api:
       device.model = device_json.get(DEVICE_MODEL_KEY)
       device.test_modules = device_json.get(DEVICE_TEST_MODULES_KEY)
 
-      self._test_run.save_device(device, device_json)
+      edit_response = self._test_run.save_device(device, device_json)
+      if edit_response is None:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        return self._generate_msg(
+          False,
+          "An error occurred whilst updating the device"
+        )
+
       response.status_code = status.HTTP_200_OK
 
       return device.to_config_json()

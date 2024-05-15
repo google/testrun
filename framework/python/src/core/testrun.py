@@ -258,8 +258,13 @@ class Testrun:  # pylint: disable=too-few-public-methods
                                       LOCAL_DEVICES_DIR,
                                       device.device_folder)
 
-    # Create the directory
-    os.makedirs(device_folder_path)
+    try:
+      # Create the directory
+      os.makedirs(device_folder_path)
+    except OSError as e:
+      LOGGER.error('An error occurred when creating a device folder')
+      LOGGER.debug(e)
+      return None
 
     config_file_path = os.path.join(device_folder_path,
                                     DEVICE_CONFIG)
@@ -293,8 +298,12 @@ class Testrun:  # pylint: disable=too-few-public-methods
                                       device.device_folder,
                                       DEVICE_CONFIG)
 
-    with open(config_file_path, 'w+', encoding='utf-8') as config_file:
-      config_file.writelines(json.dumps(device.to_config_json(), indent=4))
+    try:
+      with open(config_file_path, 'w+', encoding='utf-8') as config_file:
+        config_file.writelines(json.dumps(device.to_config_json(), indent=4))
+    except IOError as e:
+      LOGGER.error('An error occurred whilst editing the device')
+      LOGGER.debug(e)
 
     # Reload device reports
     self._load_test_reports(device)
