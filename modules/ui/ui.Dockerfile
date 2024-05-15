@@ -22,8 +22,12 @@ RUN npm run build
 
 FROM nginx@sha256:4c0fdaa8b6341bfdeca5f18f7837462c80cff90527ee35ef185571e1c327beac
 
+# Copy configuration
+COPY /modules/ui/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy application
 COPY --from=build /modules/ui/dist/ /usr/share/nginx/html
 
-EXPOSE 8080
+EXPOSE 443
 
 CMD ["nginx", "-g", "daemon off;"]

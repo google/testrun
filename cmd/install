@@ -63,5 +63,36 @@ sudo cmd/build
 # Create local folders
 mkdir -p local/devices
 mkdir -p local/root_certs
+mkdir -p local/ui/certs
+
+# Add hosts entry
+HOST="127.0.0.1 testrun.io"
+grep -qxF "$HOST" /etc/hosts || echo $HOST | sudo tee -a /etc/hosts
+
+# Prepare for certificate generation
+UI_CERTS_DIR=local/ui/certs
+CA_NAME=testrun.ca
+CRT_NAME=testrun
+
+# Generate CA certificate
+openssl genrsa -aes256 -out $UI_CERTS_DIR/$CA_NAME.key -passout pass:supersecurepassword 4096
+
+openssl req -x509 -new -nodes -key $UI_CERTS_DIR/$CA_NAME.key -passin pass:supersecurepassword -sha256 -days 1826 -out $UI_CERTS_DIR/$CA_NAME.crt -subj "/C=US/O=Google/CN=Testrun CA"
+
+# Trust CA certificate
+mkdir -p /usr/local/share/ca-certificates/
+cp $UI_CERTS_DIR/$CA_NAME.pem /usr/local/share/ca-certificates/$CA_NAME.pem
+
+# Create signing config file
+echo 'subjectAltName = DNS:testrun.io' >> $UI_CERTS_DIR/$CRT_NAME.ext
+
+# Create signing request
+openssl req -new -nodes -out $UI_CERTS_DIR/$CRT_NAME.csr -newkey rsa:4096 -keyout $UI_CERTS_DIR/$CRT_NAME.key -subj "/C=US/O=Google/CN=Testrun"
+
+# Complete signing
+openssl x509 -req -in $UI_CERTS_DIR/$CRT_NAME.csr -CA $UI_CERTS_DIR/$CA_NAME.crt -CAkey $UI_CERTS_DIR/$CA_NAME.key -passin pass:supersecurepassword -CAcreateserial -out $UI_CERTS_DIR/$CRT_NAME.signed.crt -days 500 -sha256 -extfile $UI_CERTS_DIR/$CRT_NAME.ext
+
+# Update trusted Ca certificates
+update-ca-certificates
 
 echo Finished installing Testrun

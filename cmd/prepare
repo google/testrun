@@ -20,6 +20,6 @@
 echo Installing system dependencies
 
 # Install system dependencies
-sudo apt-get update && sudo apt-get install openvswitch-common openvswitch-switch python3 libpangocairo-1.0-0 ethtool
+sudo apt-get update && sudo apt-get install openvswitch-common openvswitch-switch python3 libpangocairo-1.0-0 ethtool openssl
 
 echo Finished installing system dependencies

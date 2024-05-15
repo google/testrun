@@ -36,7 +36,8 @@ from net_orc.listener import NetworkEvent
 from net_orc import network_orchestrator as net_orc
 from test_orc import test_orchestrator as test_orc
 
-from docker.errors import ImageNotFound
+from docker.errors import ImageNotFound, APIError
+from docker.types import Mount
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -49,6 +50,8 @@ LOGGER = logger.get_logger('test_run')
 
 DEFAULT_CONFIG_FILE = 'local/system.json'
 EXAMPLE_CONFIG_FILE = 'local/system.json.example'
+
+LOCAL_CERTS_DIR = 'local/ui/certs'
 
 LOCAL_DEVICES_DIR = 'local/devices'
 RESOURCE_DEVICES_DIR = 'resources/devices'
@@ -454,6 +457,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     client = docker.from_env()
 
+    certs_folder = os.path.join(root_dir,
+                                LOCAL_CERTS_DIR)
+
     try:
       client.containers.run(
             image='test-run/ui',
@@ -462,17 +468,23 @@ class Testrun:  # pylint: disable=too-few-public-methods
             hostname='testrun.io',
             detach=True,
             ports={
-              '80': 8080
-            }
+              '443': 443
+            },
+            mounts=[
+              Mount(target='/certs',
+                    source=certs_folder,
+                    type='bind',
+                    read_only=True)
+            ]
       )
-    except ImageNotFound as ie:
+    except (APIError, ImageNotFound) as ie:
       LOGGER.error('An error occured whilst starting the UI. ' +
                    'Please investigate and try again.')
       LOGGER.error(ie)
       sys.exit(1)
 
     # TODO: Make port configurable
-    LOGGER.info('User interface is ready on http://localhost:8080')
+    LOGGER.info('User interface is ready on https://testrun.io')
 
   def _stop_ui(self):
     LOGGER.info('Stopping user interface')
