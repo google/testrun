@@ -34,7 +34,7 @@ const routes: Routes = [
   {
     path: 'reports',
     loadChildren: () =>
-      import('./pages/reports/history.module').then(m => m.HistoryModule),
+      import('./pages/reports/reports.module').then(m => m.ReportsModule),
     title: 'Testrun - Reports',
   },
   {
