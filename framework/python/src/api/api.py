@@ -613,14 +613,14 @@ class Api:
       "application/x-pem-file",
       "application/x-x509-ca-cert"
     ]:
-      response.status_code = 400
+      response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(
         False,
         "Failed to upload certificate. Is it in the correct format?"
       )
 
     if len(filename) > 24:
-      response.status_code = 400
+      response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(
         False,
         "Invalid filename. Maximum file name length is 24 characters."
@@ -630,7 +630,7 @@ class Api:
     if not self._session.check_cert_file_name(
       filename
     ):
-      response.status_code = 409
+      response.status_code = status.HTTP_409_CONFLICT
       return self._generate_msg(
         False,
         "A certificate with that file name already exists."
@@ -650,7 +650,7 @@ class Api:
         "Failed to upload certificate. Is it in the correct format?"
       )
 
-    response.status_code = 201
+    response.status_code = status.HTTP_201_CREATED
 
     return cert_obj
 
@@ -663,7 +663,7 @@ class Api:
       req_json = json.loads(req_raw)
 
       if "name" not in req_json:
-        response.status_code = 400
+        response.status_code = status.HTTP_400_BAD_REQUEST
         return self._generate_msg(False, "Received a bad request")
 
       common_name = req_json.get("name")
@@ -673,7 +673,7 @@ class Api:
           self._session.delete_cert(cert["filename"])
           return self._generate_msg(True, "Successfully delete the certificate")
 
-      response.status_code = 404
+      response.status_code = status.HTTP_404_NOT_FOUND
       return self._generate_msg(
         False,
         "A certificate with that name could not be found")
