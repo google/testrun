@@ -26,9 +26,7 @@ const routes: Routes = [
   {
     path: 'devices',
     loadChildren: () =>
-      import('./pages/devices/device-repository.module').then(
-        m => m.DeviceRepositoryModule
-      ),
+      import('./pages/devices/devices.module').then(m => m.DevicesModule),
     title: 'Testrun - Devices',
   },
   {

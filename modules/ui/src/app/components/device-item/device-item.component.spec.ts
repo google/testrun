@@ -17,7 +17,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Device, DeviceView } from '../../model/device';
 
 import { DeviceItemComponent } from './device-item.component';
-import { DeviceRepositoryModule } from '../../pages/devices/device-repository.module';
+import { DevicesModule } from '../../pages/devices/devices.module';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -29,7 +29,7 @@ describe('DeviceItemComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
-        DeviceRepositoryModule,
+        DevicesModule,
         DeviceItemComponent,
         MatIconTestingModule,
         BrowserAnimationsModule,
