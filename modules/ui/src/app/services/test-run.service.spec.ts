@@ -486,7 +486,7 @@ describe('TestRunService', () => {
     });
 
     const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/config/certs/list'
+      'http://localhost:8000/system/config/certs'
     );
 
     expect(req.request.method).toBe('GET');
@@ -500,7 +500,7 @@ describe('TestRunService', () => {
     });
 
     const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/config/certs/upload'
+      'http://localhost:8000/system/config/certs'
     );
 
     expect(req.request.method).toBe('POST');
@@ -514,7 +514,7 @@ describe('TestRunService', () => {
     });
 
     const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/config/certs/delete'
+      'http://localhost:8000/system/config/certs'
     );
 
     expect(req.request.method).toBe('DELETE');
@@ -528,7 +528,7 @@ describe('TestRunService', () => {
     });
 
     const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/config/certs/delete'
+      'http://localhost:8000/system/config/certs'
     );
 
     expect(req.request.method).toBe('DELETE');

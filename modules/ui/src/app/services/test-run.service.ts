@@ -218,12 +218,12 @@ export class TestRunService {
   }
 
   fetchCertificates(): Observable<Certificate[]> {
-    return this.http.get<Certificate[]>(`${API_URL}/system/config/certs/list`);
+    return this.http.get<Certificate[]>(`${API_URL}/system/config/certs`);
   }
 
   deleteCertificate(name: string): Observable<boolean> {
     return this.http
-      .delete<boolean>(`${API_URL}/system/config/certs/delete`, {
+      .delete<boolean>(`${API_URL}/system/config/certs`, {
         body: JSON.stringify({ name }),
       })
       .pipe(
@@ -237,7 +237,7 @@ export class TestRunService {
     formData.append('file', file, file.name);
     formData.append('mode', 'file');
     return this.http
-      .post<boolean>(`${API_URL}/system/config/certs/upload`, formData)
+      .post<boolean>(`${API_URL}/system/config/certs`, formData)
       .pipe(map(() => true));
   }
 }
