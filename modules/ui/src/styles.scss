@@ -116,11 +116,18 @@ mat-hint {
     .mdc-button__label {
       left: 8px;
       display: inline;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
     }
   }
 
   .app-sidebar-button-active .mat-icon path {
     fill: $grey-800;
+  }
+
+  app-version {
+    width: auto !important;
   }
 }
 
