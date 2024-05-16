@@ -107,7 +107,7 @@ mat-hint {
   .mdc-button__label {
     position: relative;
     left: -999px;
-    display: none;
+    overflow: hidden;
   }
 }
 
