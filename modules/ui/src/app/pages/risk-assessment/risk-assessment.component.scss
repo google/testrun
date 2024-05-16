@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @import 'src/theming/colors';
+@import 'src/theming/variables';
 
 .risk-assessment-container,
 .risk-assessment-content {
@@ -38,7 +39,7 @@
 }
 
 .profiles-drawer {
-  width: 320px;
+  width: $profiles-drawer-width;
   box-shadow: none;
   border-left: 1px solid $light-grey;
 }
