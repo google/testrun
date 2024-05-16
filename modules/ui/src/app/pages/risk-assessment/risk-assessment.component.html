@@ -13,6 +13,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<mat-toolbar class="risk-assessment-toolbar">
-  <h2 class="title">Risk assessment</h2>
-</mat-toolbar>
+
+<mat-drawer-container
+  class="risk-assessment-container"
+  *ngIf="viewModel$ | async as vm">
+  <mat-drawer-content class="risk-assessment-content">
+    <mat-toolbar class="risk-assessment-toolbar">
+      <h2 class="title">Risk assessment</h2>
+    </mat-toolbar>
+    <div class="main-content"></div>
+  </mat-drawer-content>
+  <mat-drawer
+    mode="side"
+    opened
+    position="end"
+    class="profiles-drawer"
+    *ngIf="vm.profiles.length">
+    <div class="profiles-drawer-header">
+      <h2 class="profiles-drawer-header-title">Saved profiles</h2>
+    </div>
+    <div class="profiles-drawer-content">
+      <app-profile-item *ngFor="let profile of vm.profiles" [profile]="profile">
+      </app-profile-item>
+    </div>
+  </mat-drawer>
+</mat-drawer-container>

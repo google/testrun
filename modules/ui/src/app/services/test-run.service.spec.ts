@@ -34,6 +34,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../store/state';
 import { Certificate } from '../model/certificate';
 import { certificate } from '../mocks/certificate.mock';
+import { PROFILE_MOCK } from '../mocks/profile.mock';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -476,6 +477,20 @@ describe('TestRunService', () => {
       JSON.stringify({ mac_addr: '01:01:01:01:01:01', device })
     );
     req.flush(true);
+  });
+
+  it('fetchProfiles should return profiles', () => {
+    service.fetchProfiles().subscribe(res => {
+      expect(res).toEqual([PROFILE_MOCK]);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/profiles'
+    );
+
+    expect(req.request.method).toBe('GET');
+
+    req.flush([PROFILE_MOCK]);
   });
 
   it('fetchCertificates should return certificates', () => {

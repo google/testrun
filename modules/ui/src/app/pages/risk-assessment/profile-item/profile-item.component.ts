@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,23 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { NgModule } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Profile } from '../../../model/profile';
+import { MatIcon } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 
-import { RiskAssessmentRoutingModule } from './risk-assessment-routing.module';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { RiskAssessmentComponent } from './risk-assessment.component';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { ProfileItemComponent } from './profile-item/profile-item.component';
-
-@NgModule({
-  declarations: [RiskAssessmentComponent],
-  imports: [
-    CommonModule,
-    RiskAssessmentRoutingModule,
-    MatToolbarModule,
-    MatSidenavModule,
-    ProfileItemComponent,
-  ],
+@Component({
+  selector: 'app-profile-item',
+  standalone: true,
+  imports: [MatIcon, MatButtonModule, CommonModule],
+  templateUrl: './profile-item.component.html',
+  styleUrl: './profile-item.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RiskAssessmentModule {}
+export class ProfileItemComponent {
+  @Input() profile!: Profile;
+}
