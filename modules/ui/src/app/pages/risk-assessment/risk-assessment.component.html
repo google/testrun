@@ -13,16 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
-<mat-drawer-container
-  class="risk-assessment-container"
-  *ngIf="viewModel$ | async as vm">
-  <mat-drawer-content class="risk-assessment-content">
-    <mat-toolbar class="risk-assessment-toolbar">
-      <h2 class="title">Risk assessment</h2>
-    </mat-toolbar>
-    <div class="main-content"></div>
-  </mat-drawer-content>
+<ng-container *ngIf="viewModel$ | async as vm">
+  <mat-drawer-container class="risk-assessment-container">
+    <mat-drawer-content class="risk-assessment-content">
+      <mat-toolbar class="risk-assessment-toolbar">
+        <h2 class="title">Risk assessment</h2>
+      </mat-toolbar>
+      <div class="main-content"></div>
+    </mat-drawer-content>
+  </mat-drawer-container>
   <mat-drawer
     mode="side"
     opened
@@ -37,4 +36,4 @@ limitations under the License.
       </app-profile-item>
     </div>
   </mat-drawer>
-</mat-drawer-container>
+</ng-container>
