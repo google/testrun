@@ -13,19 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RiskAssessmentStore } from './risk-assessment.store';
 
-@Component({
-  selector: 'app-risk-assessment',
-  templateUrl: './risk-assessment.component.html',
-  styleUrl: './risk-assessment.component.scss',
-  providers: [RiskAssessmentStore],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class RiskAssessmentComponent {
-  viewModel$ = this.store.viewModel$;
-  constructor(private store: RiskAssessmentStore) {
-    this.store.getProfiles();
-  }
-}
+import { Profile } from '../model/profile';
+
+export const PROFILE_MOCK: Profile = {
+  name: 'Profile name',
+  sections: [],
+};
