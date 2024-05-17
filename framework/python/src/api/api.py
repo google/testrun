@@ -204,6 +204,7 @@ class Api:
         "A device with that MAC address could not be found")
 
     device.firmware = body_json["device"]["firmware"]
+    device.test_modules = body_json["device"]["test_modules"]
 
     # Check if config has been updated (device interface not default)
     if (self._test_run.get_session().get_device_interface()
