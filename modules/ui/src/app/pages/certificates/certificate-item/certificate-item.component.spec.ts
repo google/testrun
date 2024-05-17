@@ -114,7 +114,7 @@ describe('CertificateItemComponent', () => {
         expect(loader).toBeNull();
       });
 
-      it('should have disabled delete button', () => {
+      it('should not have disabled delete button', () => {
         const deleteButton = fixture.nativeElement.querySelector(
           '.certificate-item-delete'
         ) as HTMLButtonElement;
