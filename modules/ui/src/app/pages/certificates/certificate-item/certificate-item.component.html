@@ -11,16 +11,22 @@
       {{ certificate.expires | date: 'dd MMM yyyy' }}
     </p>
     <mat-progress-bar
-      *ngIf="certificate.uploading"
+      *ngIf="certificate.uploading && certificate.errors?.length === 0"
       mode="indeterminate"></mat-progress-bar>
   </div>
-
   <button
-    [disabled]="certificate.uploading"
+    [disabled]="certificate.uploading && certificate.errors?.length === 0"
     class="certificate-item-delete"
     mat-icon-button
     attr.aria-label="Delete {{ certificate.name }} certificate"
     (click)="deleteButtonClicked.emit(certificate.name)">
     <mat-icon fontSet="material-symbols-outlined"> delete </mat-icon>
   </button>
+  <app-callout
+    [type]="CalloutType.ErrorOutline"
+    *ngIf="certificate.errors && certificate.errors.length > 0">
+    <span *ngFor="let error of certificate.errors" class="error-message-text">{{
+      error
+    }}</span>
+  </app-callout>
 </div>

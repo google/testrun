@@ -21,15 +21,33 @@
     --mdc-linear-progress-active-indicator-color: #1967d2;
   }
 }
+
 :host:first-child .certificate-item-container {
   border-top: 1px solid $lighter-grey;
 }
+
+:host app-callout {
+  grid-column: span 3;
+  ::ng-deep .callout-container {
+    background-color: $red-50;
+  }
+  ::ng-deep .callout-container.error_outline .callout-context {
+    font-weight: normal;
+  }
+  ::ng-deep .callout-container.error_outline .callout-icon {
+    color: $red-700;
+  }
+}
+
+.error-message-text {
+  display: inline-block;
+}
+
 .certificate-item-container {
   display: grid;
   grid-template-columns: 24px minmax(200px, 1fr) 24px;
   gap: 16px;
   box-sizing: border-box;
-  height: 88px;
   padding: 12px 0;
   border-bottom: 1px solid $lighter-grey;
 }

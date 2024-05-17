@@ -5,16 +5,27 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { CalloutComponent } from '../../../components/callout/callout.component';
+import { MatError } from '@angular/material/form-field';
+import { CalloutType } from '../../../model/callout-type';
 
 @Component({
   selector: 'app-certificate-item',
   standalone: true,
-  imports: [MatIcon, MatButtonModule, MatProgressBarModule, CommonModule],
+  imports: [
+    MatIcon,
+    MatButtonModule,
+    MatProgressBarModule,
+    CommonModule,
+    CalloutComponent,
+    MatError,
+  ],
   providers: [provideAnimations()],
   templateUrl: './certificate-item.component.html',
   styleUrl: './certificate-item.component.scss',
 })
 export class CertificateItemComponent {
+  public readonly CalloutType = CalloutType;
   @Input() certificate!: Certificate;
-  @Output() deleteButtonClicked = new EventEmitter<string>();
+  @Output() deleteButtonClicked = new EventEmitter<Certificate>();
 }

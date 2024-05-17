@@ -32,6 +32,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { TestRunService } from '../../services/test-run.service';
 import { NotificationService } from '../../services/notification.service';
+import { FILE, INVALID_FILE } from '../../mocks/certificate.mock';
 
 describe('CertificatesComponent', () => {
   let component: CertificatesComponent;
@@ -43,11 +44,12 @@ describe('CertificatesComponent', () => {
     jasmine.createSpyObj(['notify']);
 
   beforeEach(async () => {
-    mockService = jasmine.createSpyObj([
+    mockService = jasmine.createSpyObj('mockService', [
       'fetchCertificates',
       'deleteCertificate',
       'uploadCertificate',
     ]);
+    mockService.uploadCertificate.and.returnValue(of(true));
     mockService.deleteCertificate.and.returnValue(of(true));
     mockService.fetchCertificates.and.returnValue(
       of([certificate, certificate])
@@ -65,6 +67,7 @@ describe('CertificatesComponent', () => {
     fixture = TestBed.createComponent(CertificatesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    mockService.uploadCertificate.calls.reset();
   });
 
   it('should create', () => {
@@ -127,7 +130,7 @@ describe('CertificatesComponent', () => {
         } as MatDialogRef<typeof DeleteFormComponent>);
         tick();
 
-        component.deleteCertificate(certificate.name);
+        component.deleteCertificate(certificate);
         tick();
 
         expect(openSpy).toHaveBeenCalledWith(DeleteFormComponent, {
@@ -174,6 +177,20 @@ describe('CertificatesComponent', () => {
         expect(buttonFocusSpy).toHaveBeenCalled();
         flush();
       }));
+    });
+
+    describe('#uploadFile', () => {
+      it('should not call uploadCertificate if file has errors', () => {
+        component.uploadFile(INVALID_FILE);
+
+        expect(mockService.uploadCertificate).not.toHaveBeenCalled();
+      });
+
+      it('should call uploadCertificate if there is no errors', () => {
+        component.uploadFile(FILE);
+
+        expect(mockService.uploadCertificate).toHaveBeenCalled();
+      });
     });
   });
 });

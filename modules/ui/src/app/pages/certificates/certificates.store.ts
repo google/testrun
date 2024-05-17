@@ -16,12 +16,13 @@
 
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
-import { tap, withLatestFrom } from 'rxjs/operators';
-import { catchError, EMPTY, exhaustMap, throwError } from 'rxjs';
+import { switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { catchError, EMPTY, exhaustMap, of, throwError } from 'rxjs';
 import { Certificate } from '../../model/certificate';
 import { TestRunService } from '../../services/test-run.service';
 import { NotificationService } from '../../services/notification.service';
 import { DatePipe } from '@angular/common';
+import { getValidationErrors } from './certificate.validator';
 
 export interface AppComponentState {
   certificates: Certificate[];
@@ -64,8 +65,14 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
   uploadCertificate = this.effect<File>(trigger$ => {
     return trigger$.pipe(
       withLatestFrom(this.certificates$),
-      tap(([file, certificates]) => {
-        this.addCertificate(file.name, certificates);
+      switchMap(res => {
+        const [file, certificates] = res;
+        const errors = getValidationErrors(file);
+        this.addCertificate(file.name, certificates, errors);
+        if (errors.length > 0) {
+          return EMPTY;
+        }
+        return of(res);
       }),
       exhaustMap(([file, certificates]) => {
         return this.testRunService.uploadCertificate(file).pipe(
@@ -88,7 +95,6 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
             );
           }),
           catchError(() => {
-            this.removeCertificate(file.name, certificates);
             return EMPTY;
           })
         );
@@ -96,20 +102,31 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  addCertificate(name: string, certificates: Certificate[]) {
-    const certificate = { name, uploading: true } as Certificate;
+  addCertificate(
+    name: string,
+    certificates: Certificate[],
+    errors: string[] = []
+  ) {
+    const certificate = { name, uploading: true, errors } as Certificate;
     this.updateCertificates([certificate, ...certificates]);
   }
 
-  deleteCertificate = this.effect<string>(trigger$ => {
+  deleteCertificate = this.effect<Certificate>(trigger$ => {
     return trigger$.pipe(
-      exhaustMap((name: string) => {
-        return this.testRunService.deleteCertificate(name).pipe(
-          withLatestFrom(this.certificates$),
-          tap(([remove, current]) => {
+      withLatestFrom(this.certificates$),
+      exhaustMap(([certificate, current]) => {
+        if (certificate.uploading) {
+          this.removeCertificate(certificate.name, current);
+          return EMPTY;
+        }
+        return this.testRunService.deleteCertificate(certificate.name).pipe(
+          tap(remove => {
             if (remove) {
-              this.removeCertificate(name, current);
+              this.removeCertificate(certificate.name, current);
             }
+          }),
+          catchError(() => {
+            return EMPTY;
           })
         );
       })
