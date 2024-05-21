@@ -37,6 +37,7 @@ import { TestRunService } from './services/test-run.service';
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
 const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
+const RISK_ASSESSMENT_LOGO_URL = '/assets/icons/risk-assessment.svg';
 const TESTRUN_LOGO_URL = '/assets/icons/testrun_logo_small.svg';
 const TESTRUN_LOGO_COLOR_URL = '/assets/icons/testrun_logo_color.svg';
 const CLOSE_URL = '/assets/icons/close.svg';
@@ -54,7 +55,10 @@ export class AppComponent {
   private openedSettingFromToggleBtn = true;
 
   @ViewChild('settingsDrawer') public settingsDrawer!: MatDrawer;
+  @ViewChild('certDrawer') public certDrawer!: MatDrawer;
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
+  @ViewChild('toggleCertificatesBtn')
+  public toggleCertificatesBtn!: HTMLButtonElement;
   @ViewChild('navigation') public navigation!: ElementRef;
   @ViewChild('settings') public settings!: GeneralSettingsComponent;
   viewModel$ = this.appStore.viewModel$;
@@ -84,6 +88,10 @@ export class AppComponent {
       this.domSanitizer.bypassSecurityTrustResourceUrl(REPORTS_LOGO_URL)
     );
     this.matIconRegistry.addSvgIcon(
+      'risk_assessment',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(RISK_ASSESSMENT_LOGO_URL)
+    );
+    this.matIconRegistry.addSvgIcon(
       'testrun_logo_small',
       this.domSanitizer.bypassSecurityTrustResourceUrl(TESTRUN_LOGO_URL)
     );
@@ -105,6 +113,10 @@ export class AppComponent {
   navigateToRuntime(): void {
     this.route.navigate([Routes.Testing]);
     this.appStore.setIsOpenStartTestrun();
+  }
+
+  async closeCertificates(): Promise<void> {
+    await this.certDrawer.close();
   }
 
   async closeSetting(hasDevices: boolean): Promise<void> {
@@ -147,11 +159,15 @@ export class AppComponent {
     await this.settingsDrawer.open();
   }
 
+  async openCert() {
+    await this.certDrawer.open();
+  }
+
   consentShown() {
     this.appStore.setContent();
   }
 
-  isTestrunInProgress(status?: string) {
+  isTestrunInProgress(status?: string | null) {
     return this.testRunService.testrunInProgress(status);
   }
 }

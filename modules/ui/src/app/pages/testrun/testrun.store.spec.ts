@@ -15,12 +15,7 @@
  */
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
-import {
-  discardPeriodicTasks,
-  fakeAsync,
-  TestBed,
-  tick,
-} from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../../store/state';
 import { skip, take, of } from 'rxjs';
@@ -28,12 +23,13 @@ import {
   selectHasConnectionSettings,
   selectHasDevices,
   selectIsOpenStartTestrun,
-  selectIsTestrunStarted,
+  selectIsOpenWaitSnackBar,
+  selectIsStopTestrun,
   selectSystemStatus,
 } from '../../store/selectors';
 import {
+  fetchSystemStatus,
   setIsOpenStartTestrun,
-  setIsTestrunStarted,
   setTestrunStatus,
 } from '../../store/actions';
 import { TestrunStore } from './testrun.store';
@@ -50,6 +46,7 @@ import {
   TEST_DATA_TABLE_RESULT,
 } from '../../mocks/progress.mock';
 import { LoaderService } from '../../services/loader.service';
+import { NotificationService } from '../../services/notification.service';
 
 describe('TestrunStore', () => {
   let testrunStore: TestrunStore;
@@ -59,25 +56,29 @@ describe('TestrunStore', () => {
     'loaderServiceMock',
     ['setLoading', 'getLoading']
   );
+  const notificationServiceMock: jasmine.SpyObj<NotificationService> =
+    jasmine.createSpyObj('NotificationService', [
+      'dismissWithTimout',
+      'openSnackBar',
+    ]);
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj('mockService', [
-      'stopTestrun',
-      'fetchSystemStatus',
-    ]);
+    mockService = jasmine.createSpyObj('mockService', ['stopTestrun']);
 
     TestBed.configureTestingModule({
       providers: [
         TestrunStore,
         { provide: TestRunService, useValue: mockService },
         { provide: LoaderService, useValue: loaderServiceMock },
+        { provide: NotificationService, useValue: notificationServiceMock },
         provideMockStore({
           selectors: [
             { selector: selectHasDevices, value: false },
             { selector: selectSystemStatus, value: null },
-            { selector: selectIsTestrunStarted, value: true },
             { selector: selectHasConnectionSettings, value: true },
             { selector: selectIsOpenStartTestrun, value: false },
+            { selector: selectIsOpenWaitSnackBar, value: false },
+            { selector: selectIsStopTestrun, value: false },
           ],
         }),
       ],
@@ -98,10 +99,8 @@ describe('TestrunStore', () => {
         expect(store).toEqual({
           hasDevices: false,
           systemStatus: null,
-          dataSource: undefined,
+          dataSource: [],
           stepsToResolveCount: 0,
-          isCancelling: false,
-          startInterval: false,
         });
         done();
       });
@@ -120,88 +119,27 @@ describe('TestrunStore', () => {
 
       testrunStore.setDataSource(dataSource);
     });
-
-    it('should update isCancelling', (done: DoneFn) => {
-      testrunStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-        expect(store.isCancelling).toEqual(true);
-        done();
-      });
-
-      testrunStore.updateCancelling(true);
-    });
-
-    it('should update startInterval', (done: DoneFn) => {
-      testrunStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-        expect(store.startInterval).toEqual(true);
-        done();
-      });
-
-      testrunStore.updateStartInterval(true);
-    });
   });
 
   describe('effects', () => {
+    describe('getSystemStatus', () => {
+      it('should dispatch fetchSystemStatus', () => {
+        testrunStore.getSystemStatus();
+
+        expect(store.dispatch).toHaveBeenCalledWith(fetchSystemStatus());
+      });
+    });
+
     describe('getStatus', () => {
-      beforeEach(() => {
-        testrunStore.updateStartInterval(true);
-        mockService.fetchSystemStatus.and.returnValue(
-          of({ ...MOCK_PROGRESS_DATA_MONITORING })
-        );
-      });
-
-      it('should dispatch action setTestrunStatus', () => {
-        testrunStore.getStatus();
-
-        expect(store.dispatch).toHaveBeenCalledWith(
-          setTestrunStatus({
-            systemStatus: { ...MOCK_PROGRESS_DATA_MONITORING },
-          })
-        );
-      });
-
-      it('should change status to Cancelling if cancelling', () => {
-        testrunStore.updateCancelling(true);
-        testrunStore.getStatus();
-
-        expect(store.dispatch).toHaveBeenCalledWith(
-          setTestrunStatus({ systemStatus: MOCK_PROGRESS_DATA_CANCELLING })
-        );
-      });
-
-      describe('pullingSystemStatusData with available status "In Progress"', () => {
-        beforeEach(() => {
-          mockService.fetchSystemStatus.and.returnValue(
-            of({ ...MOCK_PROGRESS_DATA_IN_PROGRESS })
-          );
-          mockService.fetchSystemStatus.calls.reset();
-        });
-
-        it('should call again getSystemStatus', fakeAsync(() => {
-          testrunStore.updateStartInterval(false);
-          testrunStore.updateCancelling(false);
-          store.overrideSelector(
-            selectSystemStatus,
-            MOCK_PROGRESS_DATA_IN_PROGRESS
-          );
-
-          testrunStore.getStatus();
-          expect(mockService.fetchSystemStatus).toHaveBeenCalled();
-
-          tick(5000);
-
-          expect(mockService.fetchSystemStatus).toHaveBeenCalledTimes(2);
-          discardPeriodicTasks();
-        }));
-      });
-
       describe('dataSource', () => {
         it('should set value with empty values if result length < total for status "In Progress"', done => {
           const expectedResult = TEST_DATA_TABLE_RESULT;
 
-          mockService.fetchSystemStatus.and.returnValue(
-            of(MOCK_PROGRESS_DATA_IN_PROGRESS)
+          store.overrideSelector(
+            selectSystemStatus,
+            MOCK_PROGRESS_DATA_IN_PROGRESS
           );
-          testrunStore.getStatus();
+          store.refreshState();
 
           testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
             expect(store.dataSource).toEqual(expectedResult);
@@ -212,10 +150,11 @@ describe('TestrunStore', () => {
         it('should set value with empty values for status "Monitoring"', done => {
           const expectedResult = EMPTY_RESULT;
 
-          mockService.fetchSystemStatus.and.returnValue(
-            of(MOCK_PROGRESS_DATA_MONITORING)
+          store.overrideSelector(
+            selectSystemStatus,
+            MOCK_PROGRESS_DATA_MONITORING
           );
-          testrunStore.getStatus();
+          store.refreshState();
 
           testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
             expect(store.dataSource).toEqual(expectedResult);
@@ -226,10 +165,11 @@ describe('TestrunStore', () => {
         it('should set value with empty values for status "Waiting for Device"', done => {
           const expectedResult = EMPTY_RESULT;
 
-          mockService.fetchSystemStatus.and.returnValue(
-            of(MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE)
+          store.overrideSelector(
+            selectSystemStatus,
+            MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
           );
-          testrunStore.getStatus();
+          store.refreshState();
 
           testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
             expect(store.dataSource).toEqual(expectedResult);
@@ -240,10 +180,11 @@ describe('TestrunStore', () => {
         it('should set value with empty values for status "Cancelled" and empty result', done => {
           const expectedResult = EMPTY_RESULT;
 
-          mockService.fetchSystemStatus.and.returnValue(
-            of(MOCK_PROGRESS_DATA_CANCELLED_EMPTY)
+          store.overrideSelector(
+            selectSystemStatus,
+            MOCK_PROGRESS_DATA_CANCELLED_EMPTY
           );
-          testrunStore.getStatus();
+          store.refreshState();
 
           testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
             expect(store.dataSource).toEqual(expectedResult);
@@ -253,19 +194,21 @@ describe('TestrunStore', () => {
 
         describe('hideLoading', () => {
           it('should called if testrun is finished', () => {
-            mockService.fetchSystemStatus.and.returnValue(
-              of(MOCK_PROGRESS_DATA_COMPLIANT)
+            store.overrideSelector(
+              selectSystemStatus,
+              MOCK_PROGRESS_DATA_COMPLIANT
             );
-            testrunStore.getStatus();
+            store.refreshState();
 
             expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(false);
           });
 
           it('should called if testrun is in progress and have some test finished', () => {
-            mockService.fetchSystemStatus.and.returnValue(
-              of(MOCK_PROGRESS_DATA_IN_PROGRESS)
+            store.overrideSelector(
+              selectSystemStatus,
+              MOCK_PROGRESS_DATA_IN_PROGRESS
             );
-            testrunStore.getStatus();
+            store.refreshState();
 
             expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(false);
           });
@@ -273,19 +216,21 @@ describe('TestrunStore', () => {
 
         describe('showLoading', () => {
           it('should be called if testrun is monitoring', () => {
-            mockService.fetchSystemStatus.and.returnValue(
-              of(MOCK_PROGRESS_DATA_MONITORING)
+            store.overrideSelector(
+              selectSystemStatus,
+              MOCK_PROGRESS_DATA_MONITORING
             );
-            testrunStore.getStatus();
+            store.refreshState();
 
             expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(true);
           });
 
           it('should be called if testrun is in progress and have some test finished', () => {
-            mockService.fetchSystemStatus.and.returnValue(
-              of(MOCK_PROGRESS_DATA_IN_PROGRESS_EMPTY)
+            store.overrideSelector(
+              selectSystemStatus,
+              MOCK_PROGRESS_DATA_IN_PROGRESS_EMPTY
             );
-            testrunStore.getStatus();
+            store.refreshState();
 
             expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(true);
           });
@@ -302,6 +247,7 @@ describe('TestrunStore', () => {
         testrunStore.stopTestrun();
 
         expect(mockService.stopTestrun).toHaveBeenCalled();
+        expect(store.dispatch).toHaveBeenCalledWith(fetchSystemStatus());
       });
     });
 
@@ -315,23 +261,21 @@ describe('TestrunStore', () => {
       });
     });
 
-    describe('setIsTestrunStarted', () => {
-      it('should dispatch action setIsTestrunStarted', () => {
-        testrunStore.setIsTestrunStarted(true);
+    describe('setCancellingStatus', () => {
+      it('should dispatch setTestrunStatus', () => {
+        store.overrideSelector(
+          selectSystemStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS
+        );
+        store.refreshState();
+
+        testrunStore.setCancellingStatus();
 
         expect(store.dispatch).toHaveBeenCalledWith(
-          setIsTestrunStarted({ isTestrunStarted: true })
+          setTestrunStatus({
+            systemStatus: { ...MOCK_PROGRESS_DATA_CANCELLING },
+          })
         );
-      });
-    });
-
-    describe('setCancellingStatus', () => {
-      it('should update state', done => {
-        testrunStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-          expect(store.isCancelling).toEqual(true);
-          done();
-        });
-        testrunStore.setCancellingStatus();
       });
     });
   });

@@ -31,9 +31,9 @@ import { DeleteFormComponent } from '../../components/delete-form/delete-form.co
 import { LoaderService } from '../../services/loader.service';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../../services/loaderConfig';
 import { FocusManagerService } from '../../services/focus-manager.service';
-import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { TestrunStore } from './testrun.store';
 import { TestRunService } from '../../services/test-run.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-progress',
@@ -53,21 +53,27 @@ export class ProgressComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly testRunService: TestRunService,
+    private readonly notificationService: NotificationService,
     public dialog: MatDialog,
     private readonly focusManagerService: FocusManagerService,
     public testrunStore: TestrunStore
   ) {}
 
   ngOnInit(): void {
-    this.testrunStore.getStatus();
-    combineLatest([
-      this.testrunStore.isOpenStartTestrun$,
-      this.testrunStore.isTestrunStarted$,
-    ])
+    this.testrunStore.isOpenStartTestrun$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([isOpenStartTestrun, isTestrunStarted]) => {
-        if (isOpenStartTestrun && !isTestrunStarted) {
+      .subscribe(isOpenStartTestrun => {
+        if (isOpenStartTestrun) {
           this.openTestRunModal();
+        }
+      });
+
+    this.testrunStore.isStopTestrun$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isStop => {
+        if (isStop) {
+          this.stopTestrun();
+          this.notificationService.dismissSnackBar();
         }
       });
   }
@@ -125,9 +131,9 @@ export class ProgressComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.notificationService.dismissSnackBar();
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
-    this.testrunStore.destroyInterval();
   }
 
   openTestRunModal(): void {
@@ -148,8 +154,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
           window.dataLayer.push({
             event: 'successful_testrun_initiation',
           });
-          this.testrunStore.setIsTestrunStarted(true);
-          this.testrunStore.getStatus();
+          this.testrunStore.getSystemStatus();
         }
         this.testrunStore.setIsOpenStartTestrun(false);
         timer(10)
@@ -161,6 +166,6 @@ export class ProgressComponent implements OnInit, OnDestroy {
   }
 
   resultIsEmpty(tests: TestsResponse | undefined) {
-    this.testrunStore.resultIsEmpty(tests);
+    return this.testrunStore.resultIsEmpty(tests);
   }
 }

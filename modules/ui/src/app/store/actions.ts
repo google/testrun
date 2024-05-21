@@ -66,6 +66,16 @@ export const setIsOpenAddDevice = createAction(
   props<{ isOpenAddDevice: boolean }>()
 );
 
+export const setIsStopTestrun = createAction(
+  '[Shared] Set Is Stop Testrun',
+  props<{ isStopTestrun: boolean }>()
+);
+
+export const setIsOpenWaitSnackBar = createAction(
+  '[Shared] Set Is Open WaitSnackBar',
+  props<{ isOpenWaitSnackBar: boolean }>()
+);
+
 export const setHasDevices = createAction(
   '[Shared] Set Has Devices',
   props<{ hasDevices: boolean }>()
@@ -86,12 +96,21 @@ export const setIsOpenStartTestrun = createAction(
   props<{ isOpenStartTestrun: boolean }>()
 );
 
-export const setIsTestrunStarted = createAction(
-  '[Shared] Set Testrun Started',
-  props<{ isTestrunStarted: boolean }>()
-);
-
 export const setDeviceInProgress = createAction(
   '[Shared] Set Device In Progress',
   props<{ device: Device | null }>()
 );
+
+export const fetchSystemStatus = createAction('[Shared] Fetch system status');
+
+export const fetchSystemStatusSuccess = createAction(
+  '[Shared] Fetch system status success',
+  props<{ systemStatus: TestrunStatus }>()
+);
+
+export const setStatus = createAction(
+  '[Shared] Set Status',
+  props<{ status: string }>()
+);
+
+export const stopInterval = createAction('[Shared] Stop Interval');

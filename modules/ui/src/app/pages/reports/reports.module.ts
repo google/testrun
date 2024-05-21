@@ -15,8 +15,8 @@
  */
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { HistoryComponent } from './history.component';
-import { HistoryRoutingModule } from './history-routing.module';
+import { ReportsComponent } from './reportscomponent';
+import { ReportsRoutingModule } from './reports-routing.module';
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -29,10 +29,10 @@ import { DownloadReportZipComponent } from '../../components/download-report-zip
 import { DownloadReportPdfComponent } from '../../components/download-report-pdf/download-report-pdf.component';
 
 @NgModule({
-  declarations: [HistoryComponent],
+  declarations: [ReportsComponent],
   imports: [
     CommonModule,
-    HistoryRoutingModule,
+    ReportsRoutingModule,
     MatTableModule,
     MatIconModule,
     MatToolbarModule,
@@ -46,4 +46,4 @@ import { DownloadReportPdfComponent } from '../../components/download-report-pdf
   ],
   providers: [DatePipe],
 })
-export class HistoryModule {}
+export class ReportsModule {}

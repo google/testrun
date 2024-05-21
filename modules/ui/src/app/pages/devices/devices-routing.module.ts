@@ -13,34 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import 'src/theming/colors';
-@import 'src/theming/variables';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { DevicesComponent } from './devices.component';
 
-:host {
-  overflow: hidden;
-  flex-direction: column;
-  display: flex;
-}
+const routes: Routes = [{ path: '', component: DevicesComponent }];
 
-.device-repository-content-empty {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.device-repository-toolbar {
-  padding-left: 32px;
-  gap: 16px;
-  background: $white;
-  height: 72px;
-}
-
-.device-repository-content {
-  align-content: start;
-  padding: 24px 32px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, $device-item-width);
-  gap: 16px;
-  overflow-y: auto;
-}
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
+})
+export class DevicesRoutingModule {}

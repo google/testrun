@@ -36,14 +36,17 @@ MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 
+PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
+PROFILES_DIR = 'local/profiles'
+
 LOGGER = logger.get_logger('session')
 
 class TestrunSession():
   """Represents the current session of Test Run."""
 
   def __init__(self, root_dir, version):
-   
-   # Current status of Testrun
+    self._root_dir = root_dir
+
     self._status = 'Idle'
 
     # Target test device
@@ -71,11 +74,18 @@ class TestrunSession():
     # Direct url for PDF report
     self._report_url = None
 
-    self._load_version(default_version=version)
+    # Profiles
+    self._profiles = []
+    self._profile_format_json = None
 
+    # System configuration
     self._config_file = os.path.join(root_dir, CONFIG_FILE_PATH)
     self._config = self._get_default_config()
+
+    # Loading methods
+    self._load_version(default_version=version)
     self._load_config()
+    self._load_profiles()
 
     self._certs = []
     self.load_certs()
@@ -320,6 +330,24 @@ class TestrunSession():
 
   def set_report_url(self, url):
     self._report_url = url
+
+  def _load_profiles(self):
+
+    # Load format of questionnaire
+    LOGGER.debug('Loading risk assessment format')
+
+    try:
+      with open(os.path.join(
+        self._root_dir, PROFILE_FORMAT_PATH
+      ), encoding='utf-8') as profile_format_file:
+        self._profile_format_json = json.load(profile_format_file)
+    except (IOError, ValueError) as e:
+      LOGGER.error(
+        'An error occurred whilst loading the risk assessment format')
+      LOGGER.debug(e)
+
+  def get_profiles_format(self):
+    return self._profile_format_json
 
   def reset(self):
     self.set_status('Idle')

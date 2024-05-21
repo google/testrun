@@ -49,12 +49,14 @@ import {
   selectDevices,
   selectHasDevices,
   selectIsOpenStartTestrun,
-  selectIsTestrunStarted,
+  selectIsOpenWaitSnackBar,
+  selectIsStopTestrun,
   selectSystemStatus,
 } from '../../store/selectors';
 import { TestrunStore } from './testrun.store';
 import { setTestrunStatus } from '../../store/actions';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NotificationService } from '../../services/notification.service';
 
 describe('ProgressComponent', () => {
   let component: ProgressComponent;
@@ -77,6 +79,13 @@ describe('ProgressComponent', () => {
     ['setLoading', 'getLoading']
   );
 
+  const notificationServiceMock: jasmine.SpyObj<NotificationService> =
+    jasmine.createSpyObj('NotificationService', [
+      'dismissWithTimout',
+      'dismissSnackBar',
+      'openSnackBar',
+    ]);
+
   const stateServiceMock: jasmine.SpyObj<FocusManagerService> =
     jasmine.createSpyObj('stateServiceMock', ['focusFirstElementInContainer']);
 
@@ -97,6 +106,7 @@ describe('ProgressComponent', () => {
           { provide: TestRunService, useValue: testRunServiceMock },
           { provide: FocusManagerService, useValue: stateServiceMock },
           { provide: LoaderService, useValue: loaderServiceMock },
+          { provide: NotificationService, useValue: notificationServiceMock },
           {
             provide: MatDialogRef,
             useValue: {},
@@ -105,7 +115,8 @@ describe('ProgressComponent', () => {
             selectors: [
               { selector: selectHasDevices, value: false },
               { selector: selectIsOpenStartTestrun, value: false },
-              { selector: selectIsTestrunStarted, value: false },
+              { selector: selectIsOpenWaitSnackBar, value: false },
+              { selector: selectIsStopTestrun, value: false },
               {
                 selector: selectSystemStatus,
                 value: MOCK_PROGRESS_DATA_IN_PROGRESS,
@@ -195,15 +206,6 @@ describe('ProgressComponent', () => {
 
       expect(stopTestrunSpy).toHaveBeenCalled();
     });
-
-    describe('#ngOnInit', () => {
-      it('should get systemStatus value', () => {
-        const spyOpenSetting = spyOn(component.testrunStore, 'getStatus');
-        component.ngOnInit();
-
-        expect(spyOpenSetting).toHaveBeenCalled();
-      });
-    });
   });
 
   describe('DOM tests', () => {
@@ -225,6 +227,7 @@ describe('ProgressComponent', () => {
           { provide: TestRunService, useValue: testRunServiceMock },
           { provide: FocusManagerService, useValue: stateServiceMock },
           { provide: LoaderService, useValue: loaderServiceMock },
+          { provide: NotificationService, useValue: notificationServiceMock },
           {
             provide: MatDialogRef,
             useValue: {},
@@ -233,6 +236,8 @@ describe('ProgressComponent', () => {
             selectors: [
               { selector: selectHasDevices, value: false },
               { selector: selectDevices, value: [] },
+              { selector: selectIsOpenWaitSnackBar, value: false },
+              { selector: selectIsStopTestrun, value: false },
             ],
           }),
         ],

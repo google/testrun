@@ -2,7 +2,7 @@
   "manufacturer": "Manufacturer X",
   "model": "Device X",
   "mac_addr": "aa:bb:cc:dd:ee:ff",
-  "max_device_tests":5,
+  "max_device_tests": 0,
   "test_modules": {
     "dns": {
       "enabled": true
@@ -16,7 +16,7 @@
     "baseline": {
       "enabled": false
     },
-    "nmap": {
+    "services": {
       "enabled": true
     },
     "tls": {

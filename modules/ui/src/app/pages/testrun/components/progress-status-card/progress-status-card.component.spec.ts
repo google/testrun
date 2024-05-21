@@ -319,10 +319,10 @@ describe('ProgressStatusCardComponent', () => {
 
     describe('with available systemStatus$ data, as "In Progress" and finish date', () => {
       beforeEach(() => {
-        component.systemStatus$ = of({
+        component.systemStatus = {
           ...MOCK_PROGRESS_DATA_IN_PROGRESS,
           finished: '2023-06-22T09:26:00.123Z',
-        });
+        };
         fixture.detectChanges();
       });
 

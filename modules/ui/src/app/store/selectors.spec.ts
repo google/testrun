@@ -24,8 +24,10 @@ import {
   selectInterfaces,
   selectIsOpenAddDevice,
   selectIsOpenStartTestrun,
-  selectIsTestrunStarted,
+  selectIsOpenWaitSnackBar,
+  selectIsStopTestrun,
   selectMenuOpened,
+  selectStatus,
   selectSystemStatus,
 } from './selectors';
 
@@ -44,10 +46,12 @@ describe('Selectors', () => {
       devices: [],
       hasDevices: false,
       isOpenAddDevice: false,
+      isStopTestrun: false,
+      isOpenWaitSnackBar: false,
       isOpenStartTestrun: false,
       systemStatus: null,
-      isTestrunStarted: false,
       deviceInProgress: null,
+      status: null,
     },
   };
 
@@ -91,18 +95,28 @@ describe('Selectors', () => {
     expect(result).toEqual(null);
   });
 
-  it('should select isTestrunStarted', () => {
-    const result = selectIsTestrunStarted.projector(initialState);
-    expect(result).toEqual(false);
-  });
-
   it('should select isOpenStartTestrun', () => {
     const result = selectIsOpenStartTestrun.projector(initialState);
     expect(result).toEqual(false);
   });
 
+  it('should select isStopTestrun', () => {
+    const result = selectIsStopTestrun.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select isOpenWaitSnackBar', () => {
+    const result = selectIsOpenWaitSnackBar.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
   it('should select deviceInProgress', () => {
     const result = selectDeviceInProgress.projector(initialState);
+    expect(result).toEqual(null);
+  });
+
+  it('should select status', () => {
+    const result = selectStatus.projector(initialState);
     expect(result).toEqual(null);
   });
 });

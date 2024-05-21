@@ -32,6 +32,9 @@ import { device } from '../mocks/device.mock';
 import { NEW_VERSION, VERSION } from '../mocks/version.mock';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../store/state';
+import { Certificate } from '../model/certificate';
+import { certificate } from '../mocks/certificate.mock';
+import { PROFILE_MOCK } from '../mocks/profile.mock';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -430,6 +433,24 @@ describe('TestRunService', () => {
     req.flush({});
   });
 
+  it('deleteReport should return false when error happens', () => {
+    const apiUrl = 'http://localhost:8000/report';
+
+    service.deleteReport(device.mac_addr, '').subscribe(res => {
+      expect(res).toEqual(false);
+    });
+
+    const req = httpTestingController.expectOne(apiUrl);
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.body).toEqual(
+      JSON.stringify({
+        mac_addr: device.mac_addr,
+        timestamp: '',
+      })
+    );
+    req.error(new ErrorEvent(''));
+  });
+
   it('#saveDevice should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/device';
 
@@ -456,5 +477,105 @@ describe('TestRunService', () => {
       JSON.stringify({ mac_addr: '01:01:01:01:01:01', device })
     );
     req.flush(true);
+  });
+
+  it('fetchProfiles should return profiles', () => {
+    service.fetchProfiles().subscribe(res => {
+      expect(res).toEqual([PROFILE_MOCK]);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/profiles'
+    );
+
+    expect(req.request.method).toBe('GET');
+
+    req.flush([PROFILE_MOCK]);
+  });
+
+  it('deleteProfile should delete profile', () => {
+    service.deleteProfile('test').subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/profiles'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.flush(true);
+  });
+
+  it('deleteProfile should return false when error happens', () => {
+    service.deleteProfile('test').subscribe(res => {
+      expect(res).toEqual(false);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/profiles'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.error(new ErrorEvent(''));
+  });
+
+  it('fetchCertificates should return certificates', () => {
+    const certificates = [certificate] as Certificate[];
+
+    service.fetchCertificates().subscribe(res => {
+      expect(res).toEqual(certificates);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs'
+    );
+
+    expect(req.request.method).toBe('GET');
+
+    req.flush(certificates);
+  });
+
+  it('uploadCertificates should upload certificate', () => {
+    service.uploadCertificate(new File([], 'test')).subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs'
+    );
+
+    expect(req.request.method).toBe('POST');
+
+    req.flush(true);
+  });
+
+  it('deleteCertificate should delete certificate', () => {
+    service.deleteCertificate('test').subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.flush(true);
+  });
+
+  it('deleteCertificate should return false when error happens', () => {
+    service.deleteCertificate('test').subscribe(res => {
+      expect(res).toEqual(false);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.error(new ErrorEvent(''));
   });
 });

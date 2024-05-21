@@ -46,6 +46,8 @@ import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { SettingsDropdownComponent } from './pages/settings/components/settings-dropdown/settings-dropdown.component';
 import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
 import { WindowProvider } from './providers/window.provider';
+import { CertificatesComponent } from './pages/certificates/certificates.component';
+import { LOADER_TIMEOUT_CONFIG_TOKEN } from './services/loaderConfig';
 
 @NgModule({
   declarations: [AppComponent, GeneralSettingsComponent],
@@ -74,6 +76,7 @@ import { WindowProvider } from './providers/window.provider';
     CdkTrapFocus,
     SettingsDropdownComponent,
     ShutdownAppComponent,
+    CertificatesComponent,
   ],
   providers: [
     WindowProvider,
@@ -87,6 +90,7 @@ import { WindowProvider } from './providers/window.provider';
       useClass: LoadingInterceptor,
       multi: true,
     },
+    { provide: LOADER_TIMEOUT_CONFIG_TOKEN, useValue: 1000 },
   ],
   bootstrap: [AppComponent],
 })

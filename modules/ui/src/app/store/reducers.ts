@@ -53,6 +53,18 @@ export const sharedReducer = createReducer(
       isOpenAddDevice,
     };
   }),
+  on(Actions.setIsStopTestrun, (state, { isStopTestrun }) => {
+    return {
+      ...state,
+      isStopTestrun,
+    };
+  }),
+  on(Actions.setIsOpenWaitSnackBar, (state, { isOpenWaitSnackBar }) => {
+    return {
+      ...state,
+      isOpenWaitSnackBar,
+    };
+  }),
   on(Actions.setHasDevices, (state, { hasDevices }) => {
     return {
       ...state,
@@ -77,16 +89,16 @@ export const sharedReducer = createReducer(
       isOpenStartTestrun,
     };
   }),
-  on(Actions.setIsTestrunStarted, (state, { isTestrunStarted }) => {
-    return {
-      ...state,
-      isTestrunStarted,
-    };
-  }),
   on(Actions.setDeviceInProgress, (state, { device }) => {
     return {
       ...state,
       deviceInProgress: device,
+    };
+  }),
+  on(Actions.setStatus, (state, { status }) => {
+    return {
+      ...state,
+      status,
     };
   })
 );

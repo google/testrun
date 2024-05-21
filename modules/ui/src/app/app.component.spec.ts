@@ -56,11 +56,21 @@ import {
   selectHasDevices,
   selectInterfaces,
   selectIsOpenStartTestrun,
-  selectIsTestrunStarted,
+  selectIsOpenWaitSnackBar,
   selectMenuOpened,
+  selectStatus,
   selectSystemStatus,
 } from './store/selectors';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { CertificatesComponent } from './pages/certificates/certificates.component';
+import { of } from 'rxjs';
+import { WINDOW } from './providers/window.provider';
+
+const windowMock = {
+  location: {
+    href: '',
+  },
+};
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -94,8 +104,10 @@ describe('AppComponent', () => {
       'fetchDevices',
       'getTestModules',
       'testrunInProgress',
+      'fetchCertificates',
     ]);
 
+    mockService.fetchCertificates.and.returnValue(of([]));
     mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
       'focusFirstElementInContainer',
     ]);
@@ -113,6 +125,7 @@ describe('AppComponent', () => {
         BypassComponent,
         CalloutComponent,
         MatIconTestingModule,
+        CertificatesComponent,
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
@@ -135,12 +148,13 @@ describe('AppComponent', () => {
             { selector: selectError, value: null },
             { selector: selectMenuOpened, value: false },
             { selector: selectHasDevices, value: false },
-            { selector: selectIsTestrunStarted, value: false },
-            { selector: selectSystemStatus, value: null },
+            { selector: selectStatus, value: null },
             { selector: selectIsOpenStartTestrun, value: false },
+            { selector: selectIsOpenWaitSnackBar, value: false },
           ],
         }),
         { provide: FocusManagerService, useValue: mockFocusManagerService },
+        { provide: WINDOW, useValue: windowMock },
       ],
       declarations: [
         AppComponent,
@@ -438,7 +452,6 @@ describe('AppComponent', () => {
         store.overrideSelector(selectHasConnectionSettings, true);
         store.overrideSelector(selectHasDevices, true);
         store.overrideSelector(selectSystemStatus, MOCK_PROGRESS_DATA_IDLE);
-        store.overrideSelector(selectIsTestrunStarted, false);
 
         fixture.detectChanges();
       });
@@ -513,7 +526,6 @@ describe('AppComponent', () => {
     describe('with devices setted but without systemStatus data', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
-        store.overrideSelector(selectIsTestrunStarted, false);
         component.appStore.updateIsStatusLoaded(true);
         store.overrideSelector(selectHasConnectionSettings, true);
         store.overrideSelector(selectSystemStatus, null);
@@ -557,7 +569,6 @@ describe('AppComponent', () => {
     describe('with devices setted, without systemStatus data, but run the tests ', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
-        store.overrideSelector(selectIsTestrunStarted, true);
         fixture.detectChanges();
       });
 
@@ -650,6 +661,27 @@ describe('AppComponent', () => {
     await component.closeSetting(false);
 
     expect(spyToggle).toHaveBeenCalledTimes(0);
+  });
+
+  it('should render certificates button', () => {
+    const generalSettingsButton = compiled.querySelector(
+      '.app-toolbar-button-certificates'
+    );
+
+    expect(generalSettingsButton).toBeDefined();
+  });
+
+  it('should call settingsDrawer open on click settings button', () => {
+    fixture.detectChanges();
+
+    const settingsBtn = compiled.querySelector(
+      '.app-toolbar-button-certificates'
+    ) as HTMLButtonElement;
+    spyOn(component.certDrawer, 'open');
+
+    settingsBtn.click();
+
+    expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
   });
 });
 

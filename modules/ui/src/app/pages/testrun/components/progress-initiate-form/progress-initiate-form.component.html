@@ -60,10 +60,12 @@ limitations under the License.
       <app-device-tests
         [deviceForm]="initiateForm"
         [deviceTestModules]="selectedDevice.test_modules"
-        [disabled]="true"
         [testModules]="testModules">
       </app-device-tests>
     </ng-container>
+    <mat-error *ngIf="error$ | async">
+      <span>{{ error$ | async }}</span>
+    </mat-error>
   </section>
 
   <mat-dialog-actions class="progress-initiate-form-actions">
