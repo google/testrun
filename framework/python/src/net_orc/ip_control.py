@@ -44,10 +44,8 @@ class IPControl:
   def check_interface_status(self, interface_name):
     output = util.run_command(cmd=f'ip link show {interface_name}', output=True)
     if 'state DOWN ' in output[0]:
-      LOGGER.debug('Device interface is down')
       return False
     else:
-      LOGGER.debug('Device interface is up')
       return True
 
   def delete_link(self, interface_name):
