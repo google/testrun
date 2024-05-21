@@ -20,14 +20,19 @@ import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RiskAssessmentStore } from './risk-assessment.store';
-import { PROFILE_MOCK } from '../../mocks/profile.mock';
+import { PROFILE_MOCK, PROFILE_MOCK_2 } from '../../mocks/profile.mock';
+import { FocusManagerService } from '../../services/focus-manager.service';
 
 describe('RiskAssessmentStore', () => {
   let riskAssessmentStore: RiskAssessmentStore;
   let mockService: SpyObj<TestRunService>;
+  let mockFocusManagerService: SpyObj<FocusManagerService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['fetchProfiles']);
+    mockService = jasmine.createSpyObj(['fetchProfiles', 'deleteProfile']);
+    mockFocusManagerService = jasmine.createSpyObj([
+      'focusFirstElementInContainer',
+    ]);
 
     TestBed.configureTestingModule({
       imports: [NoopAnimationsModule],
@@ -35,6 +40,7 @@ describe('RiskAssessmentStore', () => {
         RiskAssessmentStore,
         provideMockStore({}),
         { provide: TestRunService, useValue: mockService },
+        { provide: FocusManagerService, useValue: mockFocusManagerService },
       ],
     });
 
@@ -82,6 +88,71 @@ describe('RiskAssessmentStore', () => {
           });
 
         riskAssessmentStore.getProfiles();
+      });
+    });
+
+    describe('deleteProfile', () => {
+      it('should update store profiles', done => {
+        mockService.deleteProfile.and.returnValue(of(true));
+
+        riskAssessmentStore.updateProfiles([PROFILE_MOCK, PROFILE_MOCK_2]);
+
+        riskAssessmentStore.viewModel$
+          .pipe(skip(1), take(1))
+          .subscribe(store => {
+            expect(store.profiles).toEqual([PROFILE_MOCK_2]);
+            done();
+          });
+
+        riskAssessmentStore.deleteProfile(PROFILE_MOCK.name);
+      });
+    });
+
+    describe('setFocus', () => {
+      const mockNextItem = document.createElement('div') as HTMLElement;
+      const mockFirstItem = document.createElement('section') as HTMLElement;
+      const mockNullEL = window.document.querySelector(`.mock`) as HTMLElement;
+
+      it('should set focus to the next profile item when available', () => {
+        const mockData = {
+          nextItem: mockNextItem,
+          firstItem: mockFirstItem,
+        };
+        riskAssessmentStore.updateProfiles([PROFILE_MOCK, PROFILE_MOCK_2]);
+
+        riskAssessmentStore.setFocus(mockData);
+
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalledWith(mockNextItem);
+      });
+
+      it('should set focus to the first profile item when available and no next item', () => {
+        const mockData = {
+          nextItem: mockNullEL,
+          firstItem: mockFirstItem,
+        };
+        riskAssessmentStore.updateProfiles([PROFILE_MOCK, PROFILE_MOCK_2]);
+
+        riskAssessmentStore.setFocus(mockData);
+
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalledWith(mockFirstItem);
+      });
+
+      it('should set focus to the first element in the main when no items', () => {
+        const mockData = {
+          nextItem: mockNullEL,
+          firstItem: mockFirstItem,
+        };
+        riskAssessmentStore.updateProfiles([PROFILE_MOCK]);
+
+        riskAssessmentStore.setFocus(mockData);
+
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalledWith();
       });
     });
   });
