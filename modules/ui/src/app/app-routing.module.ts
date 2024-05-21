@@ -26,15 +26,13 @@ const routes: Routes = [
   {
     path: 'devices',
     loadChildren: () =>
-      import('./pages/devices/device-repository.module').then(
-        m => m.DeviceRepositoryModule
-      ),
+      import('./pages/devices/devices.module').then(m => m.DevicesModule),
     title: 'Testrun - Devices',
   },
   {
     path: 'reports',
     loadChildren: () =>
-      import('./pages/reports/history.module').then(m => m.HistoryModule),
+      import('./pages/reports/reports.module').then(m => m.ReportsModule),
     title: 'Testrun - Reports',
   },
   {

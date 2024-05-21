@@ -61,6 +61,10 @@ describe('CertificateItemComponent', () => {
           expect(deleteButton).toBeDefined();
         });
 
+        it('should have certificate name as part of aria-label', () => {
+          expect(deleteButton?.ariaLabel?.trim()).toContain(certificate.name);
+        });
+
         it('should emit delete event on delete button clicked', () => {
           const deleteSpy = spyOn(component.deleteButtonClicked, 'emit');
           deleteButton.click();

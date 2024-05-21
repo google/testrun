@@ -95,9 +95,13 @@ class Api:
     self._router.add_api_route("/device/edit",
                                self.edit_device,
                                methods=["POST"])
-    
+
     self._router.add_api_route("/system/modules",
                                self.get_test_modules)
+
+    # Profiles
+    self._router.add_api_route("/profiles/format",
+                               self._get_profiles_format)
 
     # Allow all origins to access the API
     origins = ["*"]
@@ -129,6 +133,9 @@ class Api:
 
   def stop(self):
     LOGGER.info("Stopping API")
+
+  def get_session(self):
+    return self._session
 
   async def get_sys_interfaces(self):
     addrs = psutil.net_if_addrs()
@@ -204,6 +211,7 @@ class Api:
         "A device with that MAC address could not be found")
 
     device.firmware = body_json["device"]["firmware"]
+    device.test_modules = body_json["device"]["test_modules"]
 
     # Check if config has been updated (device interface not default)
     if (self._test_run.get_session().get_device_interface()
@@ -526,7 +534,6 @@ class Api:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid JSON received")
 
-
   async def get_report(self, response: Response,
                        device_name, timestamp):
 
@@ -595,3 +602,15 @@ class Api:
 
   def _get_test_run(self):
     return self._test_run
+
+  # Profiles
+  def _get_profiles_format(self, response: Response):
+
+    # Check if Testrun was able to load the format originally
+    if self.get_session().get_profiles_format() is None:
+      response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+      return self._generate_msg(
+        False,
+        "Testrun could not load the risk assessment format")
+
+    return self.get_session().get_profiles_format()

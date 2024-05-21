@@ -29,12 +29,17 @@ API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
+PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
+PROFILES_DIR = 'local/profiles'
+
 LOGGER = logger.get_logger('session')
 
 class TestrunSession():
   """Represents the current session of Test Run."""
 
-  def __init__(self, config_file):
+  def __init__(self, root_dir, config_file):
+    self._root_dir = root_dir
+
     self._status = 'Idle'
     self._device = None
     self._started = None
@@ -46,11 +51,21 @@ class TestrunSession():
     self._total_tests = 0
     self._report_url = None
 
+    # Version
     self._load_version()
 
+    # Profiles
+    self._profiles = []
+    self._profile_format_json = None
+
+    # System configuration
     self._config_file = config_file
     self._config = self._get_default_config()
+
+    # Loading methods
+    self._load_version(default_version=version)
     self._load_config()
+    self._load_profiles()
 
     tz = util.run_command('cat /etc/timezone')
     # TODO: Check if timezone is fetched successfully
@@ -292,6 +307,24 @@ class TestrunSession():
 
   def set_report_url(self, url):
     self._report_url = url
+
+  def _load_profiles(self):
+
+    # Load format of questionnaire
+    LOGGER.debug('Loading risk assessment format')
+
+    try:
+      with open(os.path.join(
+        self._root_dir, PROFILE_FORMAT_PATH
+      ), encoding='utf-8') as profile_format_file:
+        self._profile_format_json = json.load(profile_format_file)
+    except (IOError, ValueError) as e:
+      LOGGER.error(
+        'An error occurred whilst loading the risk assessment format')
+      LOGGER.debug(e)
+
+  def get_profiles_format(self):
+    return self._profile_format_json
 
   def reset(self):
     self.set_status('Idle')

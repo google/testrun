@@ -22,8 +22,8 @@ import {
 import { of } from 'rxjs';
 import { Device } from '../../model/device';
 
-import { DeviceRepositoryComponent } from './device-repository.component';
-import { DeviceRepositoryModule } from './device-repository.module';
+import { DevicesComponent } from './devices.component';
+import { DevicesModule } from './devices.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   DeviceFormComponent,
@@ -42,9 +42,9 @@ import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
 
-describe('DeviceRepositoryComponent', () => {
-  let component: DeviceRepositoryComponent;
-  let fixture: ComponentFixture<DeviceRepositoryComponent>;
+describe('DevicesComponent', () => {
+  let component: DevicesComponent;
+  let fixture: ComponentFixture<DevicesComponent>;
   let compiled: HTMLElement;
   let mockDevicesStore: SpyObj<DevicesStore>;
   let router: Router;
@@ -68,7 +68,7 @@ describe('DeviceRepositoryComponent', () => {
         RouterTestingModule.withRoutes([
           { path: 'testing', component: FakeProgressComponent },
         ]),
-        DeviceRepositoryModule,
+        DevicesModule,
         BrowserAnimationsModule,
         MatIconTestingModule,
       ],
@@ -76,12 +76,12 @@ describe('DeviceRepositoryComponent', () => {
         { provide: DevicesStore, useValue: mockDevicesStore },
         { provide: FocusManagerService, useValue: stateServiceMock },
       ],
-      declarations: [DeviceRepositoryComponent, FakeProgressComponent],
+      declarations: [DevicesComponent, FakeProgressComponent],
     }).compileComponents();
 
     TestBed.overrideProvider(DevicesStore, { useValue: mockDevicesStore });
 
-    fixture = TestBed.createComponent(DeviceRepositoryComponent);
+    fixture = TestBed.createComponent(DevicesComponent);
     component = fixture.componentInstance;
     router = TestBed.get(Router);
     compiled = fixture.nativeElement as HTMLElement;

@@ -13,7 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-$device-item-width: 352px;
-$profiles-drawer-width: 320px;
 
-$font-secondary: 'Roboto';
+import { Profile } from '../model/profile';
+
+export const PROFILE_MOCK: Profile = {
+  name: 'Profile name',
+  sections: [],
+};
+
+export const PROFILE_MOCK_2: Profile = {
+  name: 'Second profile name',
+  sections: [],
+};

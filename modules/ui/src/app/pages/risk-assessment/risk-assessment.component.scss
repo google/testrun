@@ -14,9 +14,49 @@
  * limitations under the License.
  */
 @import 'src/theming/colors';
+@import 'src/theming/variables';
+
+.risk-assessment-container,
+.risk-assessment-content {
+  height: 100%;
+  background-color: $white;
+}
+
+.risk-assessment-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
 .risk-assessment-toolbar {
   height: 74px;
   padding: 24px 0 8px 32px;
   background: $white;
+}
+
+.main-content {
+  padding: 16px 32px;
+}
+
+.profiles-drawer {
+  width: $profiles-drawer-width;
+  box-shadow: none;
+  border-left: 1px solid $light-grey;
+}
+
+.profiles-drawer-header {
+  padding: 12px 12px 16px 24px;
+}
+
+.profiles-drawer-header-title {
+  margin: 0;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 28px;
+  color: $dark-grey;
+}
+
+.profiles-drawer-content {
+  padding: 0 16px;
 }

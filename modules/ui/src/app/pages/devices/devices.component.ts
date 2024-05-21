@@ -39,11 +39,11 @@ import { DevicesStore } from './devices.store';
 
 @Component({
   selector: 'app-device-repository',
-  templateUrl: './device-repository.component.html',
-  styleUrls: ['./device-repository.component.scss'],
+  templateUrl: './devices.component.html',
+  styleUrls: ['./devices.component.scss'],
   providers: [DevicesStore],
 })
-export class DeviceRepositoryComponent implements OnInit, OnDestroy {
+export class DevicesComponent implements OnInit, OnDestroy {
   readonly DeviceView = DeviceView;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   viewModel$ = this.devicesStore.viewModel$;

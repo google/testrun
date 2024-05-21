@@ -15,10 +15,10 @@
  */
 import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 
-import { HistoryComponent } from './history.component';
+import { ReportsComponent } from './reportscomponent';
 import { TestRunService } from '../../services/test-run.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HistoryModule } from './history.module';
+import { ReportsModule } from './reports.module';
 import { of } from 'rxjs';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -36,9 +36,9 @@ import {
 import { MatTableDataSource } from '@angular/material/table';
 import { HistoryTestrun } from '../../model/testrun-status';
 
-describe('HistoryComponent', () => {
-  let component: HistoryComponent;
-  let fixture: ComponentFixture<HistoryComponent>;
+describe('ReportsComponent', () => {
+  let component: ReportsComponent;
+  let fixture: ComponentFixture<ReportsComponent>;
   let compiled: HTMLElement;
   let mockService: SpyObj<TestRunService>;
   let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
@@ -90,16 +90,16 @@ describe('HistoryComponent', () => {
     mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
 
     TestBed.configureTestingModule({
-      imports: [HistoryModule, BrowserAnimationsModule],
+      imports: [ReportsModule, BrowserAnimationsModule],
       providers: [
         { provide: TestRunService, useValue: mockService },
         { provide: ReportsStore, useValue: mockReportsStore },
         { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
       ],
-      declarations: [HistoryComponent],
+      declarations: [ReportsComponent],
     });
     TestBed.overrideProvider(ReportsStore, { useValue: mockReportsStore });
-    fixture = TestBed.createComponent(HistoryComponent);
+    fixture = TestBed.createComponent(ReportsComponent);
     component = fixture.componentInstance;
     component.viewModel$ = getViewModel(DATA_SOURCE_INITIAL_VALUE, false);
     compiled = fixture.nativeElement as HTMLElement;

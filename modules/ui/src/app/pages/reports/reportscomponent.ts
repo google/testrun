@@ -38,11 +38,11 @@ import { ReportsStore } from './reports.store';
 
 @Component({
   selector: 'app-history',
-  templateUrl: './history.component.html',
-  styleUrls: ['./history.component.scss'],
+  templateUrl: './reports.component.html',
+  styleUrls: ['./reports.component.scss'],
   providers: [ReportsStore],
 })
-export class HistoryComponent implements OnInit, OnDestroy {
+export class ReportsComponent implements OnInit, OnDestroy {
   public readonly FilterName = FilterName;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   @ViewChild(MatSort, { static: false }) sort!: MatSort;
