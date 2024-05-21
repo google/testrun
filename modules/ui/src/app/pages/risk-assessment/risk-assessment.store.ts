@@ -16,10 +16,11 @@
 
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
-import { tap } from 'rxjs/operators';
+import { tap, withLatestFrom } from 'rxjs/operators';
 import { exhaustMap } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
 import { Profile } from '../../model/profile';
+import { FocusManagerService } from '../../services/focus-manager.service';
 
 export interface AppComponentState {
   profiles: Profile[];
@@ -48,7 +49,48 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
       })
     );
   });
-  constructor(private testRunService: TestRunService) {
+
+  deleteProfile = this.effect<string>(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap((name: string) => {
+        return this.testRunService.deleteProfile(name).pipe(
+          withLatestFrom(this.profiles$),
+          tap(([remove, current]) => {
+            if (remove) {
+              this.removeProfile(name, current);
+            }
+          })
+        );
+      })
+    );
+  });
+
+  setFocus = this.effect<{ nextItem: HTMLElement; firstItem: HTMLElement }>(
+    trigger$ => {
+      return trigger$.pipe(
+        withLatestFrom(this.profiles$),
+        tap(([{ nextItem, firstItem }, profiles]) => {
+          if (nextItem) {
+            this.focusManagerService.focusFirstElementInContainer(nextItem);
+          } else if (profiles.length > 1) {
+            this.focusManagerService.focusFirstElementInContainer(firstItem);
+          } else {
+            this.focusManagerService.focusFirstElementInContainer();
+          }
+        })
+      );
+    }
+  );
+
+  private removeProfile(name: string, current: Profile[]): void {
+    const profiles = current.filter(profile => profile.name !== name);
+    this.updateProfiles(profiles);
+  }
+
+  constructor(
+    private testRunService: TestRunService,
+    private focusManagerService: FocusManagerService
+  ) {
     super({
       profiles: [],
     });

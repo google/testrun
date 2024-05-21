@@ -222,6 +222,17 @@ export class TestRunService {
     return this.http.get<Profile[]>(`${API_URL}/profiles`);
   }
 
+  deleteProfile(name: string): Observable<boolean> {
+    return this.http
+      .delete<boolean>(`${API_URL}/profiles`, {
+        body: JSON.stringify({ name }),
+      })
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
+  }
+
   fetchCertificates(): Observable<Certificate[]> {
     return this.http.get<Certificate[]>(`${API_URL}/system/config/certs`);
   }
