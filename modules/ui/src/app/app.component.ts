@@ -167,7 +167,7 @@ export class AppComponent {
     this.appStore.setContent();
   }
 
-  isTestrunInProgress(status?: string) {
+  isTestrunInProgress(status?: string | null) {
     return this.testRunService.testrunInProgress(status);
   }
 }
