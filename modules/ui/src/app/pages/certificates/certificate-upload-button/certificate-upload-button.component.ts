@@ -11,8 +11,8 @@ import { MatButtonModule } from '@angular/material/button';
 export class CertificateUploadButtonComponent {
   @Output() fileChanged = new EventEmitter<File>();
   fileChange(event: Event) {
-    const fileList = (event.target as HTMLInputElement).files;
-
+    const input = event.target as HTMLInputElement;
+    const fileList = input.files;
     if (fileList && fileList.length < 1) {
       return;
     }
@@ -21,5 +21,7 @@ export class CertificateUploadButtonComponent {
     const file: File = fileList[0];
 
     this.fileChanged.emit(file);
+    input.value = '';
+    input.dispatchEvent(new Event('change'));
   }
 }

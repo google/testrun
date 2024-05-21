@@ -22,6 +22,8 @@ import {
   certificate,
   certificate2,
   certificate_uploading,
+  FILE,
+  INVALID_FILE,
 } from '../../mocks/certificate.mock';
 import { CertificatesStore } from './certificates.store';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -111,33 +113,51 @@ describe('CertificatesStore', () => {
     });
 
     describe('uploadCertificate', () => {
-      const uploadingCertificate = certificate_uploading;
-
       beforeEach(() => {
         mockService.uploadCertificate.and.returnValue(of(true));
         mockService.fetchCertificates.and.returnValue(of([certificate]));
       });
 
-      it('should update certificates', done => {
-        certificateStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-          expect(store.certificates).toContain(uploadingCertificate);
+      describe('with valid certificate file', () => {
+        it('should update certificates', done => {
+          const uploadingCertificate = certificate_uploading;
+
+          certificateStore.viewModel$
+            .pipe(skip(1), take(1))
+            .subscribe(store => {
+              expect(store.certificates).toContain(uploadingCertificate);
+            });
+
+          certificateStore.viewModel$
+            .pipe(skip(2), take(1))
+            .subscribe(store => {
+              expect(store.certificates).toEqual([certificate]);
+              done();
+            });
+
+          certificateStore.uploadCertificate(FILE);
         });
 
-        certificateStore.viewModel$.pipe(skip(2), take(1)).subscribe(store => {
-          expect(store.certificates).toEqual([certificate]);
-          done();
+        it('should notify', () => {
+          certificateStore.uploadCertificate(FILE);
+          expect(notificationServiceMock.notify).toHaveBeenCalledWith(
+            'Certificate successfully added.\niot.bms.google.com by Google, Inc. valid until 01 Sep 2024',
+            0,
+            'certificate-notification'
+          );
         });
-
-        certificateStore.uploadCertificate(new File([], 'test'));
       });
 
-      it('should notify', () => {
-        certificateStore.uploadCertificate(new File([], 'test'));
-        expect(notificationServiceMock.notify).toHaveBeenCalledWith(
-          'Certificate successfully added.\niot.bms.google.com by Google, Inc. valid until 01 Sep 2024',
-          0,
-          'certificate-notification'
-        );
+      describe('with invalid certificate file', () => {
+        it('should notify about errors', () => {
+          certificateStore.uploadCertificate(INVALID_FILE);
+
+          expect(notificationServiceMock.notify).toHaveBeenCalledWith(
+            'The file name should be alphanumeric, symbols  -_. are allowed.\nFile extension must be .cert, .crt, .pem, .cer.\nMax name length is 24 characters.\nFile size should be a max of 4KB',
+            0,
+            'certificate-notification'
+          );
+        });
       });
     });
 
@@ -152,7 +172,7 @@ describe('CertificatesStore', () => {
           done();
         });
 
-        certificateStore.deleteCertificate('iot.bms.google.com');
+        certificateStore.deleteCertificate(certificate.name);
       });
     });
   });
