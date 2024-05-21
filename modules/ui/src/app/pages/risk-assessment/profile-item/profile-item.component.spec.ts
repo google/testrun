@@ -44,4 +44,15 @@ describe('ProfileItemComponent', () => {
 
     expect(name?.textContent?.trim()).toEqual('Profile name');
   });
+
+  it('should emit delete event on delete button clicked', () => {
+    const deleteSpy = spyOn(component.deleteButtonClicked, 'emit');
+    const deleteButton = fixture.nativeElement.querySelector(
+      '.profile-item-button.delete'
+    ) as HTMLButtonElement;
+
+    deleteButton.click();
+
+    expect(deleteSpy).toHaveBeenCalledWith('Profile name');
+  });
 });

@@ -493,6 +493,34 @@ describe('TestRunService', () => {
     req.flush([PROFILE_MOCK]);
   });
 
+  it('deleteProfile should delete profile', () => {
+    service.deleteProfile('test').subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/profiles'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.flush(true);
+  });
+
+  it('deleteProfile should return false when error happens', () => {
+    service.deleteProfile('test').subscribe(res => {
+      expect(res).toEqual(false);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/profiles'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.error(new ErrorEvent(''));
+  });
+
   it('fetchCertificates should return certificates', () => {
     const certificates = [certificate] as Certificate[];
 

@@ -22,9 +22,10 @@ limitations under the License.
     <mat-icon fontSet="material-symbols-outlined"> content_copy </mat-icon>
   </button>
   <button
-    class="profile-item-button"
+    class="profile-item-button delete"
     mat-icon-button
-    aria-label="Delete profile">
+    aria-label="Delete profile"
+    (click)="deleteButtonClicked.emit(profile.name)">
     <mat-icon fontSet="material-symbols-outlined"> delete </mat-icon>
   </button>
 </div>
