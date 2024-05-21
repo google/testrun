@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { CalloutComponent } from '../../../components/callout/callout.component';
 import { MatError } from '@angular/material/form-field';
 
 @Component({
@@ -16,7 +15,6 @@ import { MatError } from '@angular/material/form-field';
     MatButtonModule,
     MatProgressBarModule,
     CommonModule,
-    CalloutComponent,
     MatError,
   ],
   providers: [provideAnimations()],

@@ -72,12 +72,6 @@ describe('CertificateItemComponent', () => {
           expect(deleteSpy).toHaveBeenCalledWith(certificate.name);
         });
       });
-
-      it('should not display errors', () => {
-        const errors = fixture.nativeElement.querySelectorAll('app-callout');
-
-        expect(errors.length).toEqual(0);
-      });
     });
 
     describe('uploading certificate', () => {

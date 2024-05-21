@@ -26,23 +26,6 @@
   border-top: 1px solid $lighter-grey;
 }
 
-:host app-callout {
-  grid-column: span 3;
-  ::ng-deep .callout-container {
-    background-color: $red-50;
-  }
-  ::ng-deep .callout-container.error_outline .callout-context {
-    font-weight: normal;
-  }
-  ::ng-deep .callout-container.error_outline .callout-icon {
-    color: $red-700;
-  }
-}
-
-.error-message-text {
-  display: inline-block;
-}
-
 .certificate-item-container {
   display: grid;
   grid-template-columns: 24px minmax(200px, 1fr) 24px;
