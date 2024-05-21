@@ -19,7 +19,7 @@
     [disabled]="certificate.uploading"
     class="certificate-item-delete"
     mat-icon-button
-    aria-label="Delete certificate"
+    attr.aria-label="Delete {{ certificate.name }} certificate"
     (click)="deleteButtonClicked.emit(certificate.name)">
     <mat-icon fontSet="material-symbols-outlined"> delete </mat-icon>
   </button>
