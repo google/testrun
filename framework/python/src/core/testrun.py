@@ -60,9 +60,6 @@ DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
-# Does not need to be updated all the time, just a fallback
-VERSION = '1.3-alpha'
-
 class Testrun:  # pylint: disable=too-few-public-methods
   """Test Run controller.
 
@@ -90,8 +87,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     self._register_exits()
 
     # Create session
-    self._session = TestrunSession(config_file=self._config_file,
-                                   version=self.get_version())
+    self._session = TestrunSession(config_file=self._config_file)
 
     # Register runtime parameters
     if single_intf:
@@ -136,7 +132,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
         time.sleep(1)
 
   def get_version(self):
-    return VERSION
+    return self.get_session().get_version()
 
   def load_all_devices(self):
     self._session.clear_device_repository()

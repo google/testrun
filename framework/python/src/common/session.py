@@ -34,7 +34,7 @@ LOGGER = logger.get_logger('session')
 class TestrunSession():
   """Represents the current session of Test Run."""
 
-  def __init__(self, config_file, version):
+  def __init__(self, config_file):
     self._status = 'Idle'
     self._device = None
     self._started = None
@@ -46,7 +46,7 @@ class TestrunSession():
     self._total_tests = 0
     self._report_url = None
 
-    self._load_version(default_version=version)
+    self._load_version()
 
     self._config_file = config_file
     self._config = self._get_default_config()
@@ -140,7 +140,7 @@ class TestrunSession():
 
       LOGGER.debug(self._config)
 
-  def _load_version(self, default_version):
+  def _load_version(self):
     version_cmd = util.run_command(
       'dpkg-query --showformat=\'${Version}\' --show testrun')
     # index 1 of response is the stderr byte stream so if
@@ -149,9 +149,10 @@ class TestrunSession():
     if len(version_cmd[1]) == 0:
       version = version_cmd[0]
       self._version = version
+      LOGGER.info(f'Running Testrun version {self._version}')
     else:
-      self._version = default_version
-    LOGGER.info(f'Running Testrun version {self._version}')
+      self._version = '?'
+      LOGGER.error('An error occurred when resolving the version of Testrun')
 
   def get_version(self):
     return self._version

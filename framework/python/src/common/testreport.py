@@ -61,9 +61,6 @@ class TestReport():
   def get_mac_addr(self):
     return self._mac_addr
 
-  def get_mac_addr(self):
-    return self._mac_addr
-
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
 
@@ -91,12 +88,6 @@ class TestReport():
 
   def get_report_url(self):
     return self._report_url
-
-  def set_mac_addr(self, mac_addr):
-    self._mac_addr = mac_addr
-
-  def set_mac_addr(self, mac_addr):
-    self._mac_addr = mac_addr
 
   def set_mac_addr(self, mac_addr):
     self._mac_addr = mac_addr
@@ -140,7 +131,7 @@ class TestReport():
     if 'testrun' in json_file and 'version' in json_file['testrun']:
       self._version = json_file['testrun']['version']
     else:
-      self._version = '1.3-alpha'
+      self._version = 'Unknown'
 
     self._device['mac_addr'] = json_file['device']['mac_addr']
     self._device['manufacturer'] = json_file['device']['manufacturer']
