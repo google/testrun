@@ -22,33 +22,22 @@ export const certificate = {
 } as Certificate;
 
 export const certificate_uploading = {
-  name: 'name',
+  name: 'name.cert',
   uploading: true,
-  errors: [],
-} as Certificate;
-
-export const certificate_uploading_with_errors = {
-  name: 'some very long strange name with symbols!?',
-  uploading: true,
-  errors: [
-    'The file name should be alphanumeric, symbols  -_. are allowed.',
-    'Max name length is 24 characters.',
-    'File size should be a max of 4KB',
-  ],
 } as Certificate;
 
 export const certificate2 = {
-  name: 'sensor.bms.google.com',
+  name: 'sensor.bms.google.com.cert',
   organisation: 'Google, Inc.',
   expires: '2024-09-01T09:00:12Z',
 } as Certificate;
 
 export const INVALID_FILE = {
-  name: 'some very long strange name with symbols!?',
+  name: 'some very long strange name with symbols!?.jpg',
   size: 7000,
 } as File;
 
 export const FILE = {
-  name: 'name',
+  name: 'name.cert',
   size: 3000,
 } as File;

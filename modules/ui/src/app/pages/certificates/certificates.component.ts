@@ -24,7 +24,6 @@ import { CertificatesStore } from './certificates.store';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
-import { Certificate } from '../../model/certificate';
 import { FILE_NAME_LENGTH } from './certificate.validator';
 
 @Component({
@@ -69,14 +68,14 @@ export class CertificatesComponent implements OnDestroy {
     this.store.uploadCertificate(file);
   }
 
-  deleteCertificate(certificate: Certificate) {
-    this.store.selectCertificate(certificate.name);
+  deleteCertificate(certificate: string) {
+    this.store.selectCertificate(certificate);
 
     const dialogRef = this.dialog.open(DeleteFormComponent, {
       ariaLabel: 'Delete certificate',
       data: {
         title: 'Delete certificate',
-        content: `You are about to delete a certificate ${this.getShortCertificateName(certificate.name)}. Are you sure?`,
+        content: `You are about to delete a certificate ${this.getShortCertificateName(certificate)}. Are you sure?`,
       },
       autoFocus: true,
       hasBackdrop: true,

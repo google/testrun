@@ -4,7 +4,6 @@ import { CertificateItemComponent } from './certificate-item.component';
 import {
   certificate,
   certificate_uploading,
-  certificate_uploading_with_errors,
 } from '../../../mocks/certificate.mock';
 
 describe('CertificateItemComponent', () => {
@@ -70,7 +69,7 @@ describe('CertificateItemComponent', () => {
           const deleteSpy = spyOn(component.deleteButtonClicked, 'emit');
           deleteButton.click();
 
-          expect(deleteSpy).toHaveBeenCalledWith(certificate);
+          expect(deleteSpy).toHaveBeenCalledWith(certificate.name);
         });
       });
 
@@ -99,34 +98,6 @@ describe('CertificateItemComponent', () => {
         ) as HTMLButtonElement;
 
         expect(deleteButton.getAttribute('disabled')).toBeTruthy();
-      });
-    });
-
-    describe('uploading certificate with errors', () => {
-      beforeEach(() => {
-        component.certificate = certificate_uploading_with_errors;
-        fixture.detectChanges();
-      });
-
-      it('should not have loader', () => {
-        const loader = compiled.querySelector('mat-progress-bar');
-
-        expect(loader).toBeNull();
-      });
-
-      it('should not have disabled delete button', () => {
-        const deleteButton = fixture.nativeElement.querySelector(
-          '.certificate-item-delete'
-        ) as HTMLButtonElement;
-
-        expect(deleteButton.getAttribute('disabled')).toBeFalsy();
-      });
-
-      it('should have errors', () => {
-        const errors =
-          fixture.nativeElement.querySelectorAll('app-callout span');
-
-        expect(errors.length).toEqual(3);
       });
     });
   });

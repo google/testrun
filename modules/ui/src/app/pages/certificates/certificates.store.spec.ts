@@ -22,7 +22,6 @@ import {
   certificate,
   certificate2,
   certificate_uploading,
-  certificate_uploading_with_errors,
   FILE,
   INVALID_FILE,
 } from '../../mocks/certificate.mock';
@@ -150,17 +149,14 @@ describe('CertificatesStore', () => {
       });
 
       describe('with invalid certificate file', () => {
-        it('should update certificates', done => {
-          const uploadingCertificate = certificate_uploading_with_errors;
-
-          certificateStore.viewModel$
-            .pipe(skip(1), take(1))
-            .subscribe(store => {
-              expect(store.certificates).toContain(uploadingCertificate);
-              done();
-            });
-
+        it('should notify about errors', () => {
           certificateStore.uploadCertificate(INVALID_FILE);
+
+          expect(notificationServiceMock.notify).toHaveBeenCalledWith(
+            'The file name should be alphanumeric, symbols  -_. are allowed.\nFile extension must be .cert, .crt, .pem, .cer.\nMax name length is 24 characters.\nFile size should be a max of 4KB',
+            0,
+            'certificate-notification'
+          );
         });
       });
     });
@@ -176,21 +172,7 @@ describe('CertificatesStore', () => {
           done();
         });
 
-        certificateStore.deleteCertificate(certificate);
-      });
-
-      it('should update store with no request to server when certificate is uploading', done => {
-        certificateStore.updateCertificates([
-          certificate_uploading,
-          certificate2,
-        ]);
-
-        certificateStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-          expect(store.certificates).toEqual([certificate2]);
-          done();
-        });
-
-        certificateStore.deleteCertificate(certificate_uploading);
+        certificateStore.deleteCertificate(certificate.name);
       });
     });
   });

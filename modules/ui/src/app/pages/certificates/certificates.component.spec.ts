@@ -130,7 +130,7 @@ describe('CertificatesComponent', () => {
         } as MatDialogRef<typeof DeleteFormComponent>);
         tick();
 
-        component.deleteCertificate(certificate);
+        component.deleteCertificate(certificate.name);
         tick();
 
         expect(openSpy).toHaveBeenCalledWith(DeleteFormComponent, {

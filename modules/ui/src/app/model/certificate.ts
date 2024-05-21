@@ -18,5 +18,4 @@ export interface Certificate {
   organisation?: string;
   expires?: string;
   uploading?: boolean;
-  errors?: string[];
 }
