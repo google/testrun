@@ -61,9 +61,9 @@ export class ProgressComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    combineLatest([this.testrunStore.isOpenStartTestrun$])
+    this.testrunStore.isOpenStartTestrun$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([isOpenStartTestrun]) => {
+      .subscribe(isOpenStartTestrun => {
         if (isOpenStartTestrun) {
           this.openTestRunModal();
         }
