@@ -31,7 +31,6 @@ import { DeleteFormComponent } from '../../components/delete-form/delete-form.co
 import { LoaderService } from '../../services/loader.service';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../../services/loaderConfig';
 import { FocusManagerService } from '../../services/focus-manager.service';
-import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { TestrunStore } from './testrun.store';
 import { TestRunService } from '../../services/test-run.service';
 import { NotificationService } from '../../services/notification.service';
