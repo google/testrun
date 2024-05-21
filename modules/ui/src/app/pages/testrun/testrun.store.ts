@@ -17,7 +17,7 @@
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { TestRunService } from '../../services/test-run.service';
-import { exhaustMap, interval, Subject, take, timer } from 'rxjs';
+import { exhaustMap, Subject, take, timer } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { AppState } from '../../store/state';
 import { Store } from '@ngrx/store';
@@ -26,13 +26,13 @@ import {
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectIsStopTestrun,
-  selectIsTestrunStarted,
   selectSystemStatus,
 } from '../../store/selectors';
 import {
+  fetchSystemStatus,
   setIsOpenStartTestrun,
-  setIsTestrunStarted,
   setTestrunStatus,
+  stopInterval,
 } from '../../store/actions';
 import {
   IResult,
@@ -51,24 +51,18 @@ const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
 export interface TestrunComponentState {
   dataSource: IResult[] | undefined;
-  isCancelling: boolean;
-  startInterval: boolean;
   stepsToResolveCount: number;
 }
 
 @Injectable()
 export class TestrunStore extends ComponentStore<TestrunComponentState> {
-  private destroyInterval$: Subject<boolean> = new Subject<boolean>();
   private destroyWaitDeviceInterval$: Subject<boolean> = new Subject<boolean>();
   private dataSource$ = this.select(state => state.dataSource);
-  private isCancelling$ = this.select(state => state.isCancelling);
-  private startInterval$ = this.select(state => state.startInterval);
   private stepsToResolveCount$ = this.select(
     state => state.stepsToResolveCount
   );
   private hasDevices$ = this.store.select(selectHasDevices);
   private systemStatus$ = this.store.select(selectSystemStatus);
-  isTestrunStarted$ = this.store.select(selectIsTestrunStarted);
   isStopTestrun$ = this.store.select(selectIsStopTestrun);
   isOpenWaitSnackBar$ = this.store.select(selectIsOpenWaitSnackBar);
   isOpenStartTestrun$ = this.store.select(selectIsOpenStartTestrun);
@@ -77,8 +71,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     systemStatus: this.systemStatus$,
     dataSource: this.dataSource$,
     stepsToResolveCount: this.stepsToResolveCount$,
-    isCancelling: this.isCancelling$,
-    startInterval: this.startInterval$,
   });
 
   setDataSource = this.updater((state, dataSource: IResult[] | undefined) => {
@@ -91,114 +83,91 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     };
   });
 
-  updateCancelling = this.updater((state, isCancelling: boolean) => {
-    return {
-      ...state,
-      isCancelling,
-    };
-  });
-
-  updateStartInterval = this.updater((state, startInterval: boolean) => {
-    return {
-      ...state,
-      startInterval,
-    };
-  });
-
-  getStatus = this.effect(trigger$ => {
+  getSystemStatus = this.effect(trigger$ => {
     return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunService.fetchSystemStatus().pipe(
-          withLatestFrom(
-            this.isCancelling$,
-            this.startInterval$,
-            this.isOpenWaitSnackBar$
-          ),
-          // change status if cancelling in process
-          tap(([res, isCancelling]) => {
-            if (isCancelling && res.status !== StatusOfTestrun.Cancelled) {
-              res.status = StatusOfTestrun.Cancelling;
-            }
-          }),
-          // perform some additional actions
-          tap(([res, , startInterval, isOpenWaitSnackBar]) => {
-            this.store.dispatch(setTestrunStatus({ systemStatus: res }));
+      tap(() => {
+        this.store.dispatch(fetchSystemStatus());
+      })
+    );
+  });
 
-            if (this.testrunInProgress(res.status) && !startInterval) {
-              this.pullingSystemStatusData();
-            }
-            if (
-              res.status === StatusOfTestrun.WaitingForDevice &&
-              !isOpenWaitSnackBar
-            ) {
-              this.showSnackBar();
-            }
-            if (
-              res.status !== StatusOfTestrun.WaitingForDevice &&
-              isOpenWaitSnackBar
-            ) {
-              this.notificationService.dismissWithTimout();
-            }
-            if (
-              res.status === StatusOfTestrun.WaitingForDevice ||
-              res.status === StatusOfTestrun.Monitoring ||
-              (res.status === StatusOfTestrun.InProgress &&
-                this.resultIsEmpty(res.tests))
-            ) {
-              this.showLoading();
-            }
-            if (
-              res.status === StatusOfTestrun.InProgress &&
-              !this.resultIsEmpty(res.tests)
-            ) {
-              this.hideLoading();
-            }
-            if (
-              !this.testrunInProgress(res.status) &&
-              res.status !== StatusOfTestrun.Cancelling
-            ) {
-              this.updateCancelling(false);
-              this.destroyInterval$.next(true);
-              this.updateStartInterval(false);
-              this.hideLoading();
-            }
-          }),
-          // update data source
-          tap(([res]) => {
-            const results = (res.tests as TestsData)?.results || [];
-            if (
-              res.status === StatusOfTestrun.Monitoring ||
-              res.status === StatusOfTestrun.WaitingForDevice ||
-              (res.status === StatusOfTestrun.Cancelled && !results.length)
-            ) {
-              this.setDataSource(EMPTY_RESULT);
-              return;
-            }
+  getStatus = this.effect(() => {
+    return this.systemStatus$.pipe(
+      withLatestFrom(this.isOpenWaitSnackBar$),
+      tap(([res, isOpenWaitSnackBar]) => {
+        if (
+          res?.status === StatusOfTestrun.WaitingForDevice &&
+          !isOpenWaitSnackBar
+        ) {
+          this.showSnackBar();
+        }
+        if (
+          res?.status !== StatusOfTestrun.WaitingForDevice &&
+          isOpenWaitSnackBar
+        ) {
+          this.notificationService.dismissWithTimout();
+        }
+      }),
+      // perform some additional actions
+      tap(([res]) => {
+        if (
+          res?.status === StatusOfTestrun.WaitingForDevice ||
+          res?.status === StatusOfTestrun.Monitoring ||
+          (res?.status === StatusOfTestrun.InProgress &&
+            this.resultIsEmpty(res.tests))
+        ) {
+          this.showLoading();
+        }
+        if (
+          (res?.status === StatusOfTestrun.InProgress &&
+            !this.resultIsEmpty(res.tests)) ||
+          (!this.testrunInProgress(res?.status) &&
+            res?.status !== StatusOfTestrun.Cancelling)
+        ) {
+          this.hideLoading();
+        }
+      }),
+      // update data source
+      tap(([res]) => {
+        const results = (res?.tests as TestsData)?.results || [];
+        if (
+          res?.status === StatusOfTestrun.Monitoring ||
+          res?.status === StatusOfTestrun.WaitingForDevice ||
+          (res?.status === StatusOfTestrun.Cancelled && !results.length)
+        ) {
+          this.setDataSource(EMPTY_RESULT);
+          return;
+        }
 
-            const total = (res.tests as TestsData)?.total || 100;
-            if (
-              res.status === StatusOfTestrun.InProgress &&
-              results.length < total
-            ) {
-              this.setDataSource([
-                ...results,
-                ...new Array(total - results.length)
-                  .fill(null)
-                  .map(() => ({}) as IResult),
-              ]);
-              return;
-            }
+        const total = (res?.tests as TestsData)?.total || 100;
+        if (
+          res?.status === StatusOfTestrun.InProgress &&
+          results.length < total
+        ) {
+          this.setDataSource([
+            ...results,
+            ...new Array(total - results.length)
+              .fill(null)
+              .map(() => ({}) as IResult),
+          ]);
+          return;
+        }
 
-            this.setDataSource(results);
-          })
-        );
+        this.setDataSource(results);
       })
     );
   });
   stopTestrun = this.effect(trigger$ => {
     return trigger$.pipe(
       exhaustMap(() => {
-        return this.testRunService.stopTestrun();
+        this.store.dispatch(stopInterval());
+        return this.testRunService.stopTestrun().pipe(
+          tap(stopped => {
+            if (stopped) {
+              this.getSystemStatus();
+            }
+          })
+        );
       })
     );
   });
@@ -211,28 +180,10 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     );
   });
 
-  setIsTestrunStarted = this.effect<boolean>(trigger$ => {
-    return trigger$.pipe(
-      tap(isTestrunStarted => {
-        this.store.dispatch(setIsTestrunStarted({ isTestrunStarted }));
-      })
-    );
-  });
-
-  destroyInterval = this.effect(trigger$ => {
-    return trigger$.pipe(
-      tap(() => {
-        this.destroyInterval$.next(true);
-        this.destroyInterval$.unsubscribe();
-      })
-    );
-  });
-
   setCancellingStatus = this.effect(trigger$ => {
     return trigger$.pipe(
       withLatestFrom(this.systemStatus$),
       tap(([, systemStatus]) => {
-        this.updateCancelling(true);
         if (systemStatus) {
           this.store.dispatch(
             setTestrunStatus({
@@ -271,16 +222,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
       .subscribe();
   }
 
-  private pullingSystemStatusData(): void {
-    this.updateStartInterval(true);
-    interval(5000)
-      .pipe(
-        takeUntil(this.destroyInterval$),
-        tap(() => this.getStatus())
-      )
-      .subscribe();
-  }
-
   private getCancellingStatus(systemStatus: TestrunStatus): TestrunStatus {
     const status = Object.assign({}, systemStatus);
     status.status = StatusOfTestrun.Cancelling;
@@ -307,8 +248,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     private readonly loaderService: LoaderService
   ) {
     super({
-      isCancelling: false,
-      startInterval: false,
       dataSource: undefined,
       stepsToResolveCount: 0,
     });

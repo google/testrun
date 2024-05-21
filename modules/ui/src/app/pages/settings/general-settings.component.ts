@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import {
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   EventEmitter,
@@ -39,6 +40,7 @@ import { LoaderService } from '../../services/loader.service';
   styleUrls: ['./general-settings.component.scss'],
   hostDirectives: [CdkTrapFocus],
   providers: [SettingsStore],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GeneralSettingsComponent implements OnInit, OnDestroy {
   @ViewChild('reloadSettingLink') public reloadSettingLink!: ElementRef;

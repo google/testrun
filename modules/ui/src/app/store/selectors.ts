@@ -64,12 +64,9 @@ export const selectError = createSelector(
 
 export const selectSystemStatus = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.systemStatus
-);
-
-export const selectIsTestrunStarted = createSelector(
-  selectAppState,
-  (state: AppState) => state.shared.isTestrunStarted
+  (state: AppState) => {
+    return state.shared.systemStatus;
+  }
 );
 
 export const selectIsStopTestrun = createSelector(
@@ -85,4 +82,9 @@ export const selectIsOpenWaitSnackBar = createSelector(
 export const selectIsOpenStartTestrun = createSelector(
   selectAppState,
   (state: AppState) => state.shared.isOpenStartTestrun
+);
+
+export const selectStatus = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.status
 );

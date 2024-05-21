@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap } from 'rxjs/operators';
 import {
@@ -22,28 +22,29 @@ import {
   selectHasConnectionSettings,
   selectHasDevices,
   selectInterfaces,
-  selectIsTestrunStarted,
   selectMenuOpened,
-  selectSystemStatus,
+  selectStatus,
 } from './store/selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from './store/state';
 import { TestRunService } from './services/test-run.service';
-import { exhaustMap, Observable } from 'rxjs';
+import { exhaustMap, Observable, skip } from 'rxjs';
 import { Device } from './model/device';
 import {
   setDevices,
-  setTestrunStatus,
   setIsOpenStartTestrun,
+  fetchSystemStatus,
 } from './store/actions';
 import { TestrunStatus } from './model/testrun-status';
 import { SettingMissedError, SystemInterfaces } from './model/setting';
+import { NotificationService } from './services/notification.service';
+import { Routes } from './model/routes';
+import { WINDOW } from './providers/window.provider';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export interface AppComponentState {
   consentShown: boolean;
   isStatusLoaded: boolean;
-  isTestrunStarted: boolean;
   systemStatus: TestrunStatus | null;
 }
 @Injectable()
@@ -59,13 +60,11 @@ export class AppStore extends ComponentStore<AppComponentState> {
     this.store.select(selectInterfaces);
   private settingMissedError$: Observable<SettingMissedError | null> =
     this.store.select(selectError);
-  private systemStatus$ = this.store.select(selectSystemStatus);
-  private isTestrunStarted$ = this.store.select(selectIsTestrunStarted);
+  systemStatus$: Observable<string | null> = this.store.select(selectStatus);
 
   viewModel$ = this.select({
     consentShown: this.consentShown$,
     hasDevices: this.hasDevices$,
-    isTestrunStarted: this.isTestrunStarted$,
     isStatusLoaded: this.isStatusLoaded$,
     systemStatus: this.systemStatus$,
     hasConnectionSettings: this.hasConnectionSetting$,
@@ -105,15 +104,22 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
+  statusLoaded = this.effect(() => {
+    return this.systemStatus$.pipe(
+      skip(1),
+      tap(status => {
+        this.updateIsStatusLoaded(true);
+        if (!this.window.location.href.includes(Routes.Testing)) {
+          this.notification.notify(`Test run is ${status}`);
+        }
+      })
+    );
+  });
+
   getSystemStatus = this.effect(trigger$ => {
     return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunService.fetchSystemStatus().pipe(
-          tap((res: TestrunStatus) => {
-            this.updateIsStatusLoaded(true);
-            this.store.dispatch(setTestrunStatus({ systemStatus: res }));
-          })
-        );
+      tap(() => {
+        this.store.dispatch(fetchSystemStatus());
       })
     );
   });
@@ -130,12 +136,13 @@ export class AppStore extends ComponentStore<AppComponentState> {
 
   constructor(
     private store: Store<AppState>,
-    private testRunService: TestRunService
+    private testRunService: TestRunService,
+    private notification: NotificationService,
+    @Inject(WINDOW) private window: Window
   ) {
     super({
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,
       isStatusLoaded: false,
-      isTestrunStarted: false,
       systemStatus: null,
     });
   }
