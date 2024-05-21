@@ -61,14 +61,10 @@ export class ProgressComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.testrunStore.getStatus();
-    combineLatest([
-      this.testrunStore.isOpenStartTestrun$,
-      this.testrunStore.isTestrunStarted$,
-    ])
+    combineLatest([this.testrunStore.isOpenStartTestrun$])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([isOpenStartTestrun, isTestrunStarted]) => {
-        if (isOpenStartTestrun && !isTestrunStarted) {
+      .subscribe(([isOpenStartTestrun]) => {
+        if (isOpenStartTestrun) {
           this.openTestRunModal();
         }
       });
@@ -139,7 +135,6 @@ export class ProgressComponent implements OnInit, OnDestroy {
     this.notificationService.dismissSnackBar();
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
-    this.testrunStore.destroyInterval();
   }
 
   openTestRunModal(): void {
@@ -160,8 +155,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
           window.dataLayer.push({
             event: 'successful_testrun_initiation',
           });
-          this.testrunStore.setIsTestrunStarted(true);
-          this.testrunStore.getStatus();
+          this.testrunStore.getSystemStatus();
         }
         this.testrunStore.setIsOpenStartTestrun(false);
         timer(10)
