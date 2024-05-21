@@ -16,12 +16,13 @@
 
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
-import { tap, withLatestFrom } from 'rxjs/operators';
-import { catchError, EMPTY, exhaustMap, throwError } from 'rxjs';
+import { switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { catchError, EMPTY, exhaustMap, of, throwError } from 'rxjs';
 import { Certificate } from '../../model/certificate';
 import { TestRunService } from '../../services/test-run.service';
 import { NotificationService } from '../../services/notification.service';
 import { DatePipe } from '@angular/common';
+import { getValidationErrors } from './certificate.validator';
 
 export interface AppComponentState {
   certificates: Certificate[];
@@ -64,7 +65,17 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
   uploadCertificate = this.effect<File>(trigger$ => {
     return trigger$.pipe(
       withLatestFrom(this.certificates$),
-      tap(([file, certificates]) => {
+      switchMap(res => {
+        const [file] = res;
+        const errors = getValidationErrors(file);
+        if (errors.length > 0) {
+          this.notify(errors.join('\n'));
+          return EMPTY;
+        }
+        return of(res);
+      }),
+      tap(res => {
+        const [file, certificates] = res;
         this.addCertificate(file.name, certificates);
       }),
       exhaustMap(([file, certificates]) => {
@@ -81,14 +92,11 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
                 !certificates.some(cert => cert.name === certificate.name)
             )[0];
             this.updateCertificates(newCertificates);
-            this.notificationService.notify(
-              `Certificate successfully added.\n${uploadedCertificate.name} by ${uploadedCertificate.organisation} valid until ${this.datePipe.transform(uploadedCertificate.expires, 'dd MMM yyyy')}`,
-              0,
-              'certificate-notification'
+            this.notify(
+              `Certificate successfully added.\n${uploadedCertificate.name} by ${uploadedCertificate.organisation} valid until ${this.datePipe.transform(uploadedCertificate.expires, 'dd MMM yyyy')}`
             );
           }),
           catchError(() => {
-            this.removeCertificate(file.name, certificates);
             return EMPTY;
           })
         );
@@ -103,18 +111,25 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
 
   deleteCertificate = this.effect<string>(trigger$ => {
     return trigger$.pipe(
-      exhaustMap((name: string) => {
-        return this.testRunService.deleteCertificate(name).pipe(
-          withLatestFrom(this.certificates$),
-          tap(([remove, current]) => {
+      withLatestFrom(this.certificates$),
+      exhaustMap(([certificate, current]) => {
+        return this.testRunService.deleteCertificate(certificate).pipe(
+          tap(remove => {
             if (remove) {
-              this.removeCertificate(name, current);
+              this.removeCertificate(certificate, current);
             }
+          }),
+          catchError(() => {
+            return EMPTY;
           })
         );
       })
     );
   });
+
+  private notify(message: string) {
+    this.notificationService.notify(message, 0, 'certificate-notification');
+  }
 
   private removeCertificate(name: string, current: Certificate[]) {
     const certificates = current.filter(

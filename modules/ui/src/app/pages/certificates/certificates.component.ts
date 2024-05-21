@@ -24,6 +24,7 @@ import { CertificatesStore } from './certificates.store';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
+import { FILE_NAME_LENGTH } from './certificate.validator';
 
 @Component({
   selector: 'app-certificates',
@@ -67,14 +68,14 @@ export class CertificatesComponent implements OnDestroy {
     this.store.uploadCertificate(file);
   }
 
-  deleteCertificate(name: string) {
-    this.store.selectCertificate(name);
+  deleteCertificate(certificate: string) {
+    this.store.selectCertificate(certificate);
 
     const dialogRef = this.dialog.open(DeleteFormComponent, {
       ariaLabel: 'Delete certificate',
       data: {
         title: 'Delete certificate',
-        content: `You are about to delete a certificate ${name}. Are you sure?`,
+        content: `You are about to delete a certificate ${this.getShortCertificateName(certificate)}. Are you sure?`,
       },
       autoFocus: true,
       hasBackdrop: true,
@@ -87,7 +88,7 @@ export class CertificatesComponent implements OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(deleteCertificate => {
         if (deleteCertificate) {
-          this.store.deleteCertificate(name);
+          this.store.deleteCertificate(certificate);
           this.focusNextButton();
         }
       });
@@ -107,5 +108,11 @@ export class CertificatesComponent implements OnDestroy {
       ) as HTMLButtonElement;
       menuButton?.focus();
     }
+  }
+
+  private getShortCertificateName(name: string) {
+    return name.length <= FILE_NAME_LENGTH
+      ? name
+      : `${name.substring(0, FILE_NAME_LENGTH)}...`;
   }
 }
