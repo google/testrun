@@ -22,7 +22,7 @@ export const certificate = {
 } as Certificate;
 
 export const certificate_uploading = {
-  name: 'name.cert',
+  name: 'valid name ._-.cert',
   uploading: true,
 } as Certificate;
 
@@ -38,6 +38,6 @@ export const INVALID_FILE = {
 } as File;
 
 export const FILE = {
-  name: 'name.cert',
+  name: 'valid name ._-.cert',
   size: 3000,
 } as File;
