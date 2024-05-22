@@ -144,7 +144,7 @@ describe('CertificatesStore', () => {
             'Certificate successfully added.\niot.bms.google.com by Google, Inc. valid until 01 Sep 2024',
             0,
             'certificate-notification',
-            10
+            10000
           );
         });
       });
@@ -157,7 +157,7 @@ describe('CertificatesStore', () => {
             'The file name should be alphanumeric, symbols  -_. are allowed.\nFile extension must be .cert, .crt, .pem, .cer.\nMax name length is 24 characters.\nFile size should be a max of 4KB',
             0,
             'certificate-notification',
-            10
+            19000
           );
         });
       });
