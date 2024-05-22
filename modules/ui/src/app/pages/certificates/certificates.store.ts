@@ -128,7 +128,7 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
   });
 
   private notify(message: string) {
-    this.notificationService.notify(message, 0, 'certificate-notification');
+    this.notificationService.notify(message, 0, 'certificate-notification', 10);
   }
 
   private removeCertificate(name: string, current: Certificate[]) {
