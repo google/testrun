@@ -28,6 +28,8 @@ export interface AppComponentState {
   certificates: Certificate[];
   selectedCertificate: string;
 }
+
+const SYMBOLS_PER_SECOND = 9.5;
 @Injectable()
 export class CertificatesStore extends ComponentStore<AppComponentState> {
   private certificates$ = this.select(state => state.certificates);
@@ -128,7 +130,12 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
   });
 
   private notify(message: string) {
-    this.notificationService.notify(message, 0, 'certificate-notification', 10);
+    this.notificationService.notify(
+      message,
+      0,
+      'certificate-notification',
+      Math.ceil(message.length / SYMBOLS_PER_SECOND) * 1000
+    );
   }
 
   private removeCertificate(name: string, current: Certificate[]) {
