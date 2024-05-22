@@ -1,6 +1,6 @@
 const FILE_SIZE = 4;
 export const FILE_NAME_LENGTH = 24;
-const FILE_NAME_REGEXP = new RegExp('^[\\w.-]{1,24}$', 'u');
+const FILE_NAME_REGEXP = new RegExp('^[\\w .-]{1,24}$', 'u');
 const FILE_EXT_REGEXP = new RegExp('(\\.cert|\\.crt|\\.pem|\\.cer)$', 'i');
 
 export const getValidationErrors = (file: File): string[] => {
