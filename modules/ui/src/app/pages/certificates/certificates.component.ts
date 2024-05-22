@@ -18,7 +18,7 @@ import { MatIcon } from '@angular/material/icon';
 import { CertificateItemComponent } from './certificate-item/certificate-item.component';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { CdkTrapFocus, LiveAnnouncer } from '@angular/cdk/a11y';
 import { CertificateUploadButtonComponent } from './certificate-upload-button/certificate-upload-button.component';
 import { CertificatesStore } from './certificates.store';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
@@ -37,6 +37,7 @@ import { FILE_NAME_LENGTH } from './certificate.validator';
     CommonModule,
   ],
   providers: [CertificatesStore, DatePipe],
+  hostDirectives: [CdkTrapFocus],
   templateUrl: './certificates.component.html',
   styleUrl: './certificates.component.scss',
 })
