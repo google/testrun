@@ -143,7 +143,8 @@ describe('CertificatesStore', () => {
           expect(notificationServiceMock.notify).toHaveBeenCalledWith(
             'Certificate successfully added.\niot.bms.google.com by Google, Inc. valid until 01 Sep 2024',
             0,
-            'certificate-notification'
+            'certificate-notification',
+            10000
           );
         });
       });
@@ -155,7 +156,8 @@ describe('CertificatesStore', () => {
           expect(notificationServiceMock.notify).toHaveBeenCalledWith(
             'The file name should be alphanumeric, symbols  -_. are allowed.\nFile extension must be .cert, .crt, .pem, .cer.\nMax name length is 24 characters.\nFile size should be a max of 4KB',
             0,
-            'certificate-notification'
+            'certificate-notification',
+            19000
           );
         });
       });
