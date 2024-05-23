@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import { Profile } from '../../../model/profile';
 import { MatIcon } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,4 +35,5 @@ import { CommonModule } from '@angular/common';
 })
 export class ProfileItemComponent {
   @Input() profile!: Profile;
+  @Output() deleteButtonClicked = new EventEmitter<string>();
 }

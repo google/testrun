@@ -23,15 +23,24 @@ import {
   selectHasConnectionSettings,
   selectHasDevices,
   selectInterfaces,
-  selectIsTestrunStarted,
   selectMenuOpened,
-  selectSystemStatus,
+  selectStatus,
 } from './store/selectors';
 import { TestRunService } from './services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { device } from './mocks/device.mock';
-import { setDevices, setTestrunStatus } from './store/actions';
+import { fetchSystemStatus, setDevices } from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/progress.mock';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NotificationService } from './services/notification.service';
+import { WINDOW } from './providers/window.provider';
+import { Routes } from './model/routes';
+
+const windowMock = {
+  location: {
+    href: '',
+  },
+};
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -55,16 +64,25 @@ describe('AppStore', () => {
   let appStore: AppStore;
   let store: MockStore<AppState>;
   let mockService: SpyObj<TestRunService>;
+  let mockNotificationService: SpyObj<NotificationService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['fetchDevices', 'fetchSystemStatus']);
+    mockService = jasmine.createSpyObj('mockService', ['fetchDevices']);
+    mockNotificationService = jasmine.createSpyObj('mockNotificationService', [
+      'notify',
+    ]);
 
     TestBed.configureTestingModule({
       providers: [
         AppStore,
-        provideMockStore({}),
+        provideMockStore({
+          selectors: [{ selector: selectStatus, value: null }],
+        }),
         { provide: TestRunService, useValue: mockService },
+        { provide: NotificationService, useValue: mockNotificationService },
+        { provide: WINDOW, useValue: windowMock },
       ],
+      imports: [BrowserAnimationsModule],
     });
 
     store = TestBed.inject(MockStore);
@@ -75,8 +93,7 @@ describe('AppStore', () => {
     store.overrideSelector(selectMenuOpened, true);
     store.overrideSelector(selectInterfaces, {});
     store.overrideSelector(selectError, null);
-    store.overrideSelector(selectSystemStatus, MOCK_PROGRESS_DATA_IN_PROGRESS);
-    store.overrideSelector(selectIsTestrunStarted, false);
+    store.overrideSelector(selectStatus, null);
 
     spyOn(store, 'dispatch').and.callFake(() => {});
   });
@@ -115,9 +132,8 @@ describe('AppStore', () => {
         expect(store).toEqual({
           consentShown: false,
           hasDevices: true,
-          isTestrunStarted: false,
           isStatusLoaded: false,
-          systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
+          systemStatus: null,
           hasConnectionSettings: true,
           isMenuOpen: true,
           interfaces: {},
@@ -161,27 +177,47 @@ describe('AppStore', () => {
     });
 
     describe('getSystemStatus', () => {
-      const status = MOCK_PROGRESS_DATA_IN_PROGRESS;
-
-      beforeEach(() => {
-        mockService.fetchSystemStatus.and.returnValue(of(status));
-      });
-
-      it('should dispatch action setTestrunStatus', () => {
+      it('should dispatch fetchSystemStatus', () => {
         appStore.getSystemStatus();
 
-        expect(store.dispatch).toHaveBeenCalledWith(
-          setTestrunStatus({ systemStatus: status })
-        );
+        expect(store.dispatch).toHaveBeenCalledWith(fetchSystemStatus());
       });
+    });
 
+    describe('statusLoaded', () => {
       it('should update store', done => {
         appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-          expect(store.systemStatus).toEqual(status);
+          expect(store.isStatusLoaded).toEqual(true);
           done();
         });
 
-        appStore.getSystemStatus();
+        store.overrideSelector(
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
+        );
+        store.refreshState();
+      });
+
+      it('should notify when url is not "/testing"', () => {
+        windowMock.location.href = 'localhost:8080';
+        store.overrideSelector(
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
+        );
+        store.refreshState();
+
+        expect(mockNotificationService.notify).toHaveBeenCalled();
+      });
+
+      it('should not notify when url is "/testing"', () => {
+        windowMock.location.href = 'localhost:8080/' + Routes.Testing;
+        store.overrideSelector(
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
+        );
+        store.refreshState();
+
+        expect(mockNotificationService.notify).toHaveBeenCalledTimes(0);
       });
     });
   });

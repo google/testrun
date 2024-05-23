@@ -25,7 +25,7 @@ import {
   setIsOpenStartTestrun,
   setIsOpenWaitSnackBar,
   setIsStopTestrun,
-  setIsTestrunStarted,
+  setStatus,
   setTestrunStatus,
   toggleMenu,
   updateError,
@@ -227,12 +227,17 @@ describe('Reducer', () => {
     });
   });
 
-  describe('setIsTestrunStarted action', () => {
+  describe('setStatus action', () => {
     it('should update state', () => {
       const initialState = initialSharedState;
-      const action = setIsTestrunStarted({ isTestrunStarted: true });
+      const action = setStatus({
+        status: MOCK_PROGRESS_DATA_CANCELLING.status,
+      });
       const state = fromReducer.sharedReducer(initialState, action);
-      const newState = { ...initialState, ...{ isTestrunStarted: true } };
+      const newState = {
+        ...initialState,
+        ...{ status: MOCK_PROGRESS_DATA_CANCELLING.status },
+      };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);

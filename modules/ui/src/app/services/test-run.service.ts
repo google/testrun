@@ -106,7 +106,10 @@ export class TestRunService {
   stopTestrun(): Observable<boolean> {
     return this.http
       .post<{ success: string }>(`${API_URL}${SYSTEM_STOP}`, {})
-      .pipe(map(() => true));
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
   }
 
   shutdownTestrun(): Observable<boolean> {
@@ -170,7 +173,7 @@ export class TestRunService {
     };
   }
 
-  testrunInProgress(status?: string): boolean {
+  testrunInProgress(status?: string | null): boolean {
     return (
       status === StatusOfTestrun.InProgress ||
       status === StatusOfTestrun.WaitingForDevice ||
@@ -220,6 +223,17 @@ export class TestRunService {
 
   fetchProfiles(): Observable<Profile[]> {
     return this.http.get<Profile[]>(`${API_URL}/profiles`);
+  }
+
+  deleteProfile(name: string): Observable<boolean> {
+    return this.http
+      .delete<boolean>(`${API_URL}/profiles`, {
+        body: JSON.stringify({ name }),
+      })
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
   }
 
   fetchCertificates(): Observable<Certificate[]> {

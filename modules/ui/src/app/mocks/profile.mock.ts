@@ -20,3 +20,8 @@ export const PROFILE_MOCK: Profile = {
   name: 'Profile name',
   sections: [],
 };
+
+export const PROFILE_MOCK_2: Profile = {
+  name: 'Second profile name',
+  sections: [],
+};

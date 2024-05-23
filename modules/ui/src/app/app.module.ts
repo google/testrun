@@ -47,6 +47,7 @@ import { SettingsDropdownComponent } from './pages/settings/components/settings-
 import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
 import { WindowProvider } from './providers/window.provider';
 import { CertificatesComponent } from './pages/certificates/certificates.component';
+import { LOADER_TIMEOUT_CONFIG_TOKEN } from './services/loaderConfig';
 
 @NgModule({
   declarations: [AppComponent, GeneralSettingsComponent],
@@ -89,6 +90,7 @@ import { CertificatesComponent } from './pages/certificates/certificates.compone
       useClass: LoadingInterceptor,
       multi: true,
     },
+    { provide: LOADER_TIMEOUT_CONFIG_TOKEN, useValue: 1000 },
   ],
   bootstrap: [AppComponent],
 })

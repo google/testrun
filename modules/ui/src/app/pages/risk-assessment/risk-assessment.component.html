@@ -32,7 +32,11 @@ limitations under the License.
       <h2 class="profiles-drawer-header-title">Saved profiles</h2>
     </div>
     <div class="profiles-drawer-content">
-      <app-profile-item *ngFor="let profile of vm.profiles" [profile]="profile">
+      <app-profile-item
+        *ngFor="let profile of vm.profiles; let i = index"
+        [profile]="profile"
+        class="profile-item-{{ i }}"
+        (deleteButtonClicked)="deleteProfile($event, i)">
       </app-profile-item>
     </div>
   </mat-drawer>

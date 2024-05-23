@@ -18,13 +18,17 @@ limitations under the License.
     rule
   </mat-icon>
   <p class="profile-item-name">{{ profile.name }}</p>
-  <button class="profile-item-button" mat-icon-button aria-label="Copy profile">
+  <button
+    class="profile-item-button copy"
+    mat-icon-button
+    attr.aria-label="Copy {{ profile.name }}">
     <mat-icon fontSet="material-symbols-outlined"> content_copy </mat-icon>
   </button>
   <button
-    class="profile-item-button"
+    class="profile-item-button delete"
     mat-icon-button
-    aria-label="Delete profile">
+    attr.aria-label="Delete {{ profile.name }}"
+    (click)="deleteButtonClicked.emit(profile.name)">
     <mat-icon fontSet="material-symbols-outlined"> delete </mat-icon>
   </button>
 </div>

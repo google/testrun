@@ -51,7 +51,6 @@ import {
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectIsStopTestrun,
-  selectIsTestrunStarted,
   selectSystemStatus,
 } from '../../store/selectors';
 import { TestrunStore } from './testrun.store';
@@ -116,7 +115,6 @@ describe('ProgressComponent', () => {
             selectors: [
               { selector: selectHasDevices, value: false },
               { selector: selectIsOpenStartTestrun, value: false },
-              { selector: selectIsTestrunStarted, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
               { selector: selectIsStopTestrun, value: false },
               {
@@ -207,15 +205,6 @@ describe('ProgressComponent', () => {
       component.openStopTestrunDialog(MOCK_PROGRESS_DATA_CANCELLING);
 
       expect(stopTestrunSpy).toHaveBeenCalled();
-    });
-
-    describe('#ngOnInit', () => {
-      it('should get systemStatus value', () => {
-        const spyOpenSetting = spyOn(component.testrunStore, 'getStatus');
-        component.ngOnInit();
-
-        expect(spyOpenSetting).toHaveBeenCalled();
-      });
     });
   });
 
