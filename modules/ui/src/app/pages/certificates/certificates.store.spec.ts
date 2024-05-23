@@ -154,10 +154,10 @@ describe('CertificatesStore', () => {
           certificateStore.uploadCertificate(INVALID_FILE);
 
           expect(notificationServiceMock.notify).toHaveBeenCalledWith(
-            'The file name should be alphanumeric, symbols  -_. are allowed.\nFile extension must be .cert, .crt, .pem, .cer.\nMax name length is 24 characters.\nFile size should be a max of 4KB',
+            'File "some very long strange n..." is not added.\nThe file name should be alphanumeric, symbols  -_. are allowed.\nFile extension must be .cert, .crt, .pem, .cer.\nMax name length is 24 characters.\nFile size should be a max of 4KB',
             0,
             'certificate-notification',
-            19000
+            24000
           );
         });
       });
