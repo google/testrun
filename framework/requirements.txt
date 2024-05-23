@@ -25,4 +25,4 @@ pytest-timeout==2.2.0
 markdown==3.5.2
 
 # Requirements for the session
-cryptography==42.0.4
+cryptography==42.0.7
