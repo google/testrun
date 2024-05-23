@@ -93,6 +93,7 @@ describe('AppStore', () => {
     store.overrideSelector(selectMenuOpened, true);
     store.overrideSelector(selectInterfaces, {});
     store.overrideSelector(selectError, null);
+    store.overrideSelector(selectStatus, null);
 
     spyOn(store, 'dispatch').and.callFake(() => {});
   });
