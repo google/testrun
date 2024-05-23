@@ -149,6 +149,7 @@ describe('AppComponent', () => {
             { selector: selectMenuOpened, value: false },
             { selector: selectHasDevices, value: false },
             { selector: selectStatus, value: null },
+            { selector: selectSystemStatus, value: null },
             { selector: selectIsOpenStartTestrun, value: false },
             { selector: selectIsOpenWaitSnackBar, value: false },
           ],
