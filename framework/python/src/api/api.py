@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Provides Testrun data via REST API."""
-from fastapi import FastAPI, APIRouter, Response, Request, status
+from fastapi import (FastAPI,
+                     File,
+                     Form,
+                     APIRouter,
+                     Response,
+                     Request,
+                     status,
+                     UploadFile)
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
@@ -96,12 +103,14 @@ class Api:
                                self.edit_device,
                                methods=["POST"])
 
-    self._router.add_api_route("/system/modules",
-                               self.get_test_modules)
-
-    # Profiles
-    self._router.add_api_route("/profiles/format",
-                               self._get_profiles_format)
+    self._router.add_api_route("/system/config/certs",
+                               self.get_certs)
+    self._router.add_api_route("/system/config/certs",
+                               self.upload_cert,
+                               methods=["POST"])
+    self._router.add_api_route("/system/config/certs",
+                               self.delete_cert,
+                               methods=["DELETE"])
 
     # Allow all origins to access the API
     origins = ["*"]
@@ -133,9 +142,6 @@ class Api:
 
   def stop(self):
     LOGGER.info("Stopping API")
-
-  def get_session(self):
-    return self._session
 
   async def get_sys_interfaces(self):
     addrs = psutil.net_if_addrs()
@@ -211,7 +217,6 @@ class Api:
         "A device with that MAC address could not be found")
 
     device.firmware = body_json["device"]["firmware"]
-    device.test_modules = body_json["device"]["test_modules"]
 
     # Check if config has been updated (device interface not default)
     if (self._test_run.get_session().get_device_interface()
@@ -561,20 +566,6 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Test results could not be found")
 
-  async def get_test_modules(self):
-
-    LOGGER.debug("Received request to list test modules")
-
-    test_modules = []
-
-    for test_module in self._get_test_run().get_test_orc().get_test_modules():
-
-      # Only add module if it is an actual, enabled test module
-      if (test_module.enabled and test_module.enable_container):
-        test_modules.append(test_module.display_name)
-
-    return test_modules
-
   def _validate_device_json(self, json_obj):
 
     # Check all required properties are present
@@ -600,17 +591,93 @@ class Api:
 
     return True
 
-  def _get_test_run(self):
-    return self._test_run
+  def get_certs(self):
+    LOGGER.debug("Received certs list request")
 
-  # Profiles
-  def _get_profiles_format(self, response: Response):
+    # Reload certs
+    self._session.load_certs()
 
-    # Check if Testrun was able to load the format originally
-    if self.get_session().get_profiles_format() is None:
-      response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    return self._session.get_certs()
+
+  async def upload_cert(self,
+                  file: UploadFile,
+                  response: Response):
+
+    filename = file.filename
+    content_type = file.content_type
+
+    LOGGER.debug("Received request to upload certificate")
+    LOGGER.debug(f"Filename: {filename}, content type: {content_type}")
+
+    if content_type not in [
+      "application/x-pem-file",
+      "application/x-x509-ca-cert"
+    ]:
+      response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(
         False,
-        "Testrun could not load the risk assessment format")
+        "Failed to upload certificate. Is it in the correct format?"
+      )
 
-    return self.get_session().get_profiles_format()
+    if len(filename) > 24:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(
+        False,
+        "Invalid filename. Maximum file name length is 24 characters."
+      )
+
+    # Check if file already exists
+    if not self._session.check_cert_file_name(
+      filename
+    ):
+      response.status_code = status.HTTP_409_CONFLICT
+      return self._generate_msg(
+        False,
+        "A certificate with that file name already exists."
+      )
+
+    # Get file contents
+    contents = await file.read()
+
+    # Pass to session to check and write
+    cert_obj = self._session.upload_cert(filename,
+                                         contents)
+
+    # Return error if something went wrong
+    if cert_obj is None:
+      return self._generate_msg(
+        False,
+        "Failed to upload certificate. Is it in the correct format?"
+      )
+
+    response.status_code = status.HTTP_201_CREATED
+
+    return cert_obj
+
+  async def delete_cert(self, request: Request, response: Response):
+
+    LOGGER.debug("Received delete certificate request")
+
+    try:
+      req_raw = (await request.body()).decode("UTF-8")
+      req_json = json.loads(req_raw)
+
+      if "name" not in req_json:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(False, "Received a bad request")
+
+      common_name = req_json.get("name")
+
+      for cert in self._session.get_certs():
+        if cert["name"] == common_name:
+          self._session.delete_cert(cert["filename"])
+          return self._generate_msg(True, "Successfully delete the certificate")
+
+      response.status_code = status.HTTP_404_NOT_FOUND
+      return self._generate_msg(
+        False,
+        "A certificate with that name could not be found")
+
+    except Exception as e:
+      LOGGER.error("An error occurred whilst deleting a certificate")
+      LOGGER.debug(e)
