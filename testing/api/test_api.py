@@ -236,11 +236,7 @@ def test_get_system_interfaces(testrun):
 
 
 def test_modify_device(testing_devices, testrun):
-  with open(
-      os.path.join(
-          DEVICES_DIRECTORY, testing_devices[1]
-      )
-  ) as f:
+  with open(testing_devices[1], encoding="utf-8") as f:
     local_device = json.load(f)
 
   mac_addr = local_device["mac_addr"]
