@@ -22,7 +22,7 @@ import { Certificate } from '../../model/certificate';
 import { TestRunService } from '../../services/test-run.service';
 import { NotificationService } from '../../services/notification.service';
 import { DatePipe } from '@angular/common';
-import { getValidationErrors } from './certificate.validator';
+import { FILE_NAME_LENGTH, getValidationErrors } from './certificate.validator';
 
 export interface AppComponentState {
   certificates: Certificate[];
@@ -71,6 +71,9 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
         const [file] = res;
         const errors = getValidationErrors(file);
         if (errors.length > 0) {
+          errors.unshift(
+            `File "${this.getShortCertificateName(file.name)}" is not added.`
+          );
           this.notify(errors.join('\n'));
           return EMPTY;
         }
@@ -128,6 +131,12 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
       })
     );
   });
+
+  getShortCertificateName(name: string) {
+    return name.length <= FILE_NAME_LENGTH
+      ? name
+      : `${name.substring(0, FILE_NAME_LENGTH)}...`;
+  }
 
   private notify(message: string) {
     this.notificationService.notify(
