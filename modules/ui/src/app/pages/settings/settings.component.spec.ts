@@ -15,7 +15,7 @@
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GeneralSettingsComponent } from './general-settings.component';
+import { SettingsComponent } from './settings.component';
 import { of } from 'rxjs';
 import { MatRadioModule } from '@angular/material/radio';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -39,8 +39,8 @@ import {
 import { SettingsDropdownComponent } from './components/settings-dropdown/settings-dropdown.component';
 
 describe('GeneralSettingsComponent', () => {
-  let component: GeneralSettingsComponent;
-  let fixture: ComponentFixture<GeneralSettingsComponent>;
+  let component: SettingsComponent;
+  let fixture: ComponentFixture<SettingsComponent>;
   let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
   let compiled: HTMLElement;
   let mockLoaderService: SpyObj<LoaderService>;
@@ -60,7 +60,7 @@ describe('GeneralSettingsComponent', () => {
 
     await TestBed.configureTestingModule({
       declarations: [
-        GeneralSettingsComponent,
+        SettingsComponent,
         FakeSpinnerComponent,
         FakeCalloutComponent,
       ],
@@ -86,7 +86,7 @@ describe('GeneralSettingsComponent', () => {
 
     TestBed.overrideProvider(SettingsStore, { useValue: mockSettingsStore });
 
-    fixture = TestBed.createComponent(GeneralSettingsComponent);
+    fixture = TestBed.createComponent(SettingsComponent);
 
     component = fixture.componentInstance;
     component.viewModel$ = of({

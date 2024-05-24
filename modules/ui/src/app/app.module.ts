@@ -26,7 +26,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { GeneralSettingsComponent } from './pages/settings/general-settings.component';
+import { SettingsComponent } from './pages/settings/settings.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -50,7 +50,7 @@ import { CertificatesComponent } from './pages/certificates/certificates.compone
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from './services/loaderConfig';
 
 @NgModule({
-  declarations: [AppComponent, GeneralSettingsComponent],
+  declarations: [AppComponent, SettingsComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,

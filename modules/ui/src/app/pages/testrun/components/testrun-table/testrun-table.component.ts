@@ -30,12 +30,12 @@ import { CalloutType } from '../../../../model/callout-type';
 import { TestRunService } from '../../../../services/test-run.service';
 
 @Component({
-  selector: 'app-progress-table',
-  templateUrl: './progress-table.component.html',
-  styleUrls: ['./progress-table.component.scss'],
+  selector: 'app-testrun-table',
+  templateUrl: './testrun-table.component.html',
+  styleUrls: ['./testrun-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProgressTableComponent {
+export class TestrunTableComponent {
   @ViewChild(MatAccordion) accordion!: MatAccordion;
   @ViewChildren(MatExpansionPanel) panels!: QueryList<MatExpansionPanel>;
   public readonly CalloutType = CalloutType;

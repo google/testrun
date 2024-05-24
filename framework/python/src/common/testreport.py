@@ -58,9 +58,6 @@ class TestReport():
     self._report_url = ''
     self._cur_page = 0
 
-  def get_mac_addr(self):
-    return self._mac_addr
-
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
 
