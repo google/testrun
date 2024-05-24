@@ -58,7 +58,7 @@ import { setTestrunStatus } from '../../store/actions';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from '../../services/notification.service';
 
-describe('ProgressComponent', () => {
+describe('TestrunComponent', () => {
   let component: TestrunComponent;
   let fixture: ComponentFixture<TestrunComponent>;
   let compiled: HTMLElement;
@@ -526,7 +526,7 @@ describe('ProgressComponent', () => {
 });
 
 @Component({
-  selector: 'app-progress-status-card',
+  selector: 'app-testrun-status-card',
   template: '<div></div>',
 })
 class FakeProgressStatusCardComponent {
@@ -534,7 +534,7 @@ class FakeProgressStatusCardComponent {
 }
 
 @Component({
-  selector: 'app-progress-table',
+  selector: 'app-testrun-table',
   template: '<div></div>',
 })
 class FakeProgressTableComponent {
