@@ -23,6 +23,7 @@ import {
   selectHasConnectionSettings,
   selectHasDevices,
   selectInterfaces,
+  selectIsOpenWaitSnackBar,
   selectMenuOpened,
   selectStatus,
 } from './store/selectors';
@@ -76,7 +77,10 @@ describe('AppStore', () => {
       providers: [
         AppStore,
         provideMockStore({
-          selectors: [{ selector: selectStatus, value: null }],
+          selectors: [
+            { selector: selectStatus, value: null },
+            { selector: selectIsOpenWaitSnackBar, value: false },
+          ],
         }),
         { provide: TestRunService, useValue: mockService },
         { provide: NotificationService, useValue: mockNotificationService },
