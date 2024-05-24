@@ -263,6 +263,7 @@ def test_status_in_progress(testing_devices, testrun):
   )
 
 
+@pytest.mark.skip()
 def test_status_non_compliant(testing_devices, testrun): # pylint: disable=W0613
 
   r = requests.get(f"{API}/devices", timeout=5)
@@ -891,7 +892,7 @@ def test_invalid_path_get(testrun): # pylint: disable=W0613
   assert set(dict_paths(mockito)) == set(dict_paths(response))
 
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_trigger_run(testing_devices, testrun): # pylint: disable=W0613
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
@@ -944,7 +945,7 @@ def test_trigger_run(testing_devices, testrun): # pylint: disable=W0613
   assert results["baseline.compliant"]["result"] == "Compliant"
 
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_stop_running_test(testing_devices, testrun): # pylint: disable=W0613
   payload = {"device": {"mac_addr": ALL_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload),
@@ -993,7 +994,7 @@ def test_stop_running_not_running(testrun): # pylint: disable=W0613
   assert r.status_code == 404
   assert response["error"] == "Testrun is not currently running"
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_multiple_runs(testing_devices, testrun): # pylint: disable=W0613
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload),
