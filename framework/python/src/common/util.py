@@ -46,7 +46,8 @@ def run_command(cmd, output=True):
       LOGGER.debug('Command succeeded: ' + cmd)
     if output:
       out = stdout.strip().decode('utf-8')
-      LOGGER.debug('Command output: ' + out)
+      if out is not None and len(out) != 0:
+        LOGGER.debug('Command output: ' + out)
       return out, stderr
     else:
       return success
@@ -105,7 +106,7 @@ def get_module_display_name(search):
     'ntp': 'NTP',
     'dns': 'DNS',
     'connection': 'Connection',
-    'nmap': 'Services',
+    'services': 'Services',
     'tls': 'TLS',
     'protocol': 'Protocol'
   }

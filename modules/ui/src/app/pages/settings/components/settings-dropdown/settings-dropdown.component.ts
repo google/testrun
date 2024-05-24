@@ -3,7 +3,6 @@ import {
   Component,
   inject,
   Input,
-  OnDestroy,
   OnInit,
 } from '@angular/core';
 import {
@@ -38,7 +37,7 @@ import { KeyValuePipe, NgForOf, NgIf } from '@angular/common';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SettingsDropdownComponent implements OnInit, OnDestroy {
+export class SettingsDropdownComponent implements OnInit {
   @Input() key = '';
   @Input({ required: true }) controlName = '';
   @Input() groupLabel = '';
@@ -54,9 +53,6 @@ export class SettingsDropdownComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.parentFormGroup.addControl(this.controlName, new FormControl(''));
     this.parentFormGroup.addControl(this.controlName, new FormControl(''));
-  }
-  ngOnDestroy() {
-    this.parentFormGroup.removeControl(this.controlName);
   }
 
   get control(): FormControl {

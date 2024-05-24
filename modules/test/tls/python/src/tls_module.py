@@ -119,7 +119,8 @@ class TLSModule(TestModule):
   #     # cert_table = (f'| Property | Value |\n'
   #     #               f'|---|---|\n'
   #     #               f"| {'Version':<17} | {version_value:^25} |\n"
-  #     #               f"| {'Signature Alg.':<17} | {signature_alg_value:^25} |\n"
+  #     #               f"| {'Signature Alg.':<17} |
+  #                         {signature_alg_value:^25} |\n"
   #     #               f"| {'Validity from':<17} | {not_before:^25} |\n"
   #     #               f"| {'Valid to':<17} | {not_after:^25} |")
 

@@ -1,0 +1,113 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<form [formGroup]="initiateForm" class="progress-initiate-form">
+  <span class="progress-initiate-form-title">Start New Testrun</span>
+
+  <section
+    *ngIf="devices$ | async as devices"
+    class="progress-initiate-form-content">
+    <ng-container *ngIf="selectedDevice === null">
+      <ng-container *ngFor="let device of devices">
+        <app-device-item
+          [deviceView]="DeviceView.Basic"
+          [class.device-item-focused]="device === prevDevice"
+          (itemClicked)="deviceSelected(device)"
+          [device]="device"></app-device-item>
+      </ng-container>
+    </ng-container>
+    <app-device-item
+      *ngIf="selectedDevice !== null"
+      [deviceView]="DeviceView.Basic"
+      [tabIndex]="-1"
+      [device]="selectedDevice"></app-device-item>
+    <mat-form-field
+      [class.hidden]="selectedDevice === null"
+      appearance="outline">
+      <mat-label>Firmware</mat-label>
+      <input
+        class="firmware-input"
+        formControlName="firmware"
+        matInput
+        #firmwareInput />
+      <mat-hint>Please enter device firmware</mat-hint>
+      <mat-error
+        *ngIf="firmware.hasError('invalid_format')"
+        role="alert"
+        aria-live="assertive">
+        <span
+          >Please, check. The firmware value must be a maximum of 64 characters.
+          Only letters, numbers, and accented letters are permitted.</span
+        >
+      </mat-error>
+      <mat-error *ngIf="firmware.errors?.['required']">
+        <span>Firmware is <strong>required</strong></span>
+      </mat-error>
+    </mat-form-field>
+    <ng-container *ngIf="selectedDevice !== null">
+      <app-device-tests
+        [deviceForm]="initiateForm"
+        [deviceTestModules]="selectedDevice.test_modules"
+        [testModules]="testModules">
+      </app-device-tests>
+    </ng-container>
+    <mat-error *ngIf="error$ | async">
+      <span>{{ error$ | async }}</span>
+    </mat-error>
+  </section>
+
+  <mat-dialog-actions class="progress-initiate-form-actions">
+    <button
+      (click)="changeDevice()"
+      [disabled]="selectedDevice === null"
+      class="progress-initiate-form-actions-change-device"
+      color="primary"
+      mat-button
+      type="button">
+      Change Device
+    </button>
+    <button (click)="cancel(false)" color="primary" mat-button type="button">
+      Cancel
+    </button>
+    <button
+      (click)="startTestRun()"
+      [disabled]="selectedDevice === null"
+      class="progress-initiate-form-actions-start"
+      color="primary"
+      mat-flat-button
+      type="button">
+      Start Testrun
+    </button>
+  </mat-dialog-actions>
+
+  <app-spinner></app-spinner>
+</form>
+
+<ng-template #selectFirmware>
+  <ng-container *ngIf="selectedDevice !== null">
+    <app-device-item [device]="selectedDevice"></app-device-item>
+    <mat-form-field appearance="outline">
+      <mat-label>Firmware</mat-label>
+      <input
+        class="device-form-manufacturer"
+        formControlName="firmware"
+        matInput />
+      <mat-hint>Please enter device firmware</mat-hint>
+      <mat-error *ngIf="firmware.errors?.['required']">
+        <span>Firmware is <strong>required</strong></span>
+      </mat-error>
+    </mat-form-field>
+  </ng-container>
+</ng-template>

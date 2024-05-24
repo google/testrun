@@ -17,15 +17,22 @@ import * as fromReducer from './reducers';
 import { initialAppComponentState, initialSharedState } from './state';
 import {
   fetchInterfacesSuccess,
+  setDeviceInProgress,
   setDevices,
   setHasConnectionSettings,
   setHasDevices,
   setIsOpenAddDevice,
+  setIsOpenStartTestrun,
+  setIsOpenWaitSnackBar,
+  setIsStopTestrun,
+  setStatus,
+  setTestrunStatus,
   toggleMenu,
   updateError,
   updateFocusNavigation,
 } from './actions';
 import { device } from '../mocks/device.mock';
+import { MOCK_PROGRESS_DATA_CANCELLING } from '../mocks/testrun.mock';
 
 describe('Reducer', () => {
   describe('unknown action', () => {
@@ -126,6 +133,30 @@ describe('Reducer', () => {
     });
   });
 
+  describe('setIsStopTestrun action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setIsStopTestrun({ isStopTestrun: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ isStopTestrun: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setIsOpenWaitSnackBar action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setIsOpenWaitSnackBar({ isOpenWaitSnackBar: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ isOpenWaitSnackBar: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
   describe('setHasDevices action', () => {
     it('should update state', () => {
       const initialState = initialSharedState;
@@ -145,6 +176,68 @@ describe('Reducer', () => {
       const action = setDevices({ devices });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ devices } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setDeviceInProgress action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const deviceInProgress = device;
+      const action = setDeviceInProgress({ device: deviceInProgress });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = {
+        ...initialState,
+        ...{ deviceInProgress: deviceInProgress },
+      };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setTestrunStatus action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setTestrunStatus({
+        systemStatus: MOCK_PROGRESS_DATA_CANCELLING,
+      });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = {
+        ...initialState,
+        ...{ systemStatus: MOCK_PROGRESS_DATA_CANCELLING },
+      };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setIsOpenStartTestrun action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setIsOpenStartTestrun({ isOpenStartTestrun: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ isOpenStartTestrun: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setStatus action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setStatus({
+        status: MOCK_PROGRESS_DATA_CANCELLING.status,
+      });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = {
+        ...initialState,
+        ...{ status: MOCK_PROGRESS_DATA_CANCELLING.status },
+      };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);

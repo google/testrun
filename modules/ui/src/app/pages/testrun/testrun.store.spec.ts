@@ -1,0 +1,273 @@
+/*
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import { TestRunService } from '../../services/test-run.service';
+import SpyObj = jasmine.SpyObj;
+import { TestBed } from '@angular/core/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { AppState } from '../../store/state';
+import { skip, take, of } from 'rxjs';
+import {
+  selectHasConnectionSettings,
+  selectHasDevices,
+  selectIsOpenStartTestrun,
+  selectIsStopTestrun,
+  selectSystemStatus,
+} from '../../store/selectors';
+import {
+  fetchSystemStatus,
+  setIsOpenStartTestrun,
+  setTestrunStatus,
+} from '../../store/actions';
+import { TestrunStore } from './testrun.store';
+import {
+  EMPTY_RESULT,
+  MOCK_PROGRESS_DATA_CANCELLED_EMPTY,
+  MOCK_PROGRESS_DATA_CANCELLING,
+  MOCK_PROGRESS_DATA_COMPLIANT,
+  MOCK_PROGRESS_DATA_IN_PROGRESS,
+  MOCK_PROGRESS_DATA_IN_PROGRESS_EMPTY,
+  MOCK_PROGRESS_DATA_MONITORING,
+  MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
+  TEST_DATA_RESULT_WITH_RECOMMENDATIONS,
+  TEST_DATA_TABLE_RESULT,
+} from '../../mocks/testrun.mock';
+import { LoaderService } from '../../services/loader.service';
+
+describe('TestrunStore', () => {
+  let testrunStore: TestrunStore;
+  let mockService: SpyObj<TestRunService>;
+  let store: MockStore<AppState>;
+  const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
+    'loaderServiceMock',
+    ['setLoading', 'getLoading']
+  );
+
+  beforeEach(() => {
+    mockService = jasmine.createSpyObj('mockService', ['stopTestrun']);
+
+    TestBed.configureTestingModule({
+      providers: [
+        TestrunStore,
+        { provide: TestRunService, useValue: mockService },
+        { provide: LoaderService, useValue: loaderServiceMock },
+        provideMockStore({
+          selectors: [
+            { selector: selectHasDevices, value: false },
+            { selector: selectSystemStatus, value: null },
+            { selector: selectHasConnectionSettings, value: true },
+            { selector: selectIsOpenStartTestrun, value: false },
+            { selector: selectIsStopTestrun, value: false },
+          ],
+        }),
+      ],
+    });
+
+    testrunStore = TestBed.inject(TestrunStore);
+    store = TestBed.inject(MockStore);
+    spyOn(store, 'dispatch').and.callFake(() => {});
+  });
+
+  it('should be created', () => {
+    expect(testrunStore).toBeTruthy();
+  });
+
+  describe('selectors', () => {
+    it('should select state', done => {
+      testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
+        expect(store).toEqual({
+          hasDevices: false,
+          systemStatus: null,
+          dataSource: [],
+          stepsToResolveCount: 0,
+        });
+        done();
+      });
+    });
+  });
+
+  describe('updaters', () => {
+    it('should update dataSource and stepsToResolveCount', (done: DoneFn) => {
+      const dataSource = [...TEST_DATA_RESULT_WITH_RECOMMENDATIONS];
+
+      testrunStore.viewModel$.pipe(skip(2), take(1)).subscribe(store => {
+        expect(store.dataSource).toEqual(dataSource);
+        expect(store.stepsToResolveCount).toEqual(1);
+        done();
+      });
+
+      testrunStore.setDataSource(dataSource);
+    });
+  });
+
+  describe('effects', () => {
+    describe('getSystemStatus', () => {
+      it('should dispatch fetchSystemStatus', () => {
+        testrunStore.getSystemStatus();
+
+        expect(store.dispatch).toHaveBeenCalledWith(fetchSystemStatus());
+      });
+    });
+
+    describe('getStatus', () => {
+      describe('dataSource', () => {
+        it('should set value with empty values if result length < total for status "In Progress"', done => {
+          const expectedResult = TEST_DATA_TABLE_RESULT;
+
+          store.overrideSelector(
+            selectSystemStatus,
+            MOCK_PROGRESS_DATA_IN_PROGRESS
+          );
+          store.refreshState();
+
+          testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
+            expect(store.dataSource).toEqual(expectedResult);
+            done();
+          });
+        });
+
+        it('should set value with empty values for status "Monitoring"', done => {
+          const expectedResult = EMPTY_RESULT;
+
+          store.overrideSelector(
+            selectSystemStatus,
+            MOCK_PROGRESS_DATA_MONITORING
+          );
+          store.refreshState();
+
+          testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
+            expect(store.dataSource).toEqual(expectedResult);
+            done();
+          });
+        });
+
+        it('should set value with empty values for status "Waiting for Device"', done => {
+          const expectedResult = EMPTY_RESULT;
+
+          store.overrideSelector(
+            selectSystemStatus,
+            MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
+          );
+          store.refreshState();
+
+          testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
+            expect(store.dataSource).toEqual(expectedResult);
+            done();
+          });
+        });
+
+        it('should set value with empty values for status "Cancelled" and empty result', done => {
+          const expectedResult = EMPTY_RESULT;
+
+          store.overrideSelector(
+            selectSystemStatus,
+            MOCK_PROGRESS_DATA_CANCELLED_EMPTY
+          );
+          store.refreshState();
+
+          testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
+            expect(store.dataSource).toEqual(expectedResult);
+            done();
+          });
+        });
+
+        describe('hideLoading', () => {
+          it('should called if testrun is finished', () => {
+            store.overrideSelector(
+              selectSystemStatus,
+              MOCK_PROGRESS_DATA_COMPLIANT
+            );
+            store.refreshState();
+
+            expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(false);
+          });
+
+          it('should called if testrun is in progress and have some test finished', () => {
+            store.overrideSelector(
+              selectSystemStatus,
+              MOCK_PROGRESS_DATA_IN_PROGRESS
+            );
+            store.refreshState();
+
+            expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(false);
+          });
+        });
+
+        describe('showLoading', () => {
+          it('should be called if testrun is monitoring', () => {
+            store.overrideSelector(
+              selectSystemStatus,
+              MOCK_PROGRESS_DATA_MONITORING
+            );
+            store.refreshState();
+
+            expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(true);
+          });
+
+          it('should be called if testrun is in progress and have some test finished', () => {
+            store.overrideSelector(
+              selectSystemStatus,
+              MOCK_PROGRESS_DATA_IN_PROGRESS_EMPTY
+            );
+            store.refreshState();
+
+            expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(true);
+          });
+        });
+      });
+    });
+
+    describe('stopTestrun', () => {
+      beforeEach(() => {
+        mockService.stopTestrun.and.returnValue(of(true));
+      });
+
+      it('should call stopTestrun', () => {
+        testrunStore.stopTestrun();
+
+        expect(mockService.stopTestrun).toHaveBeenCalled();
+        expect(store.dispatch).toHaveBeenCalledWith(fetchSystemStatus());
+      });
+    });
+
+    describe('setIsOpenStartTestrun', () => {
+      it('should dispatch action setIsOpenStartTestrun', () => {
+        testrunStore.setIsOpenStartTestrun(true);
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setIsOpenStartTestrun({ isOpenStartTestrun: true })
+        );
+      });
+    });
+
+    describe('setCancellingStatus', () => {
+      it('should dispatch setTestrunStatus', () => {
+        store.overrideSelector(
+          selectSystemStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS
+        );
+        store.refreshState();
+
+        testrunStore.setCancellingStatus();
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setTestrunStatus({
+            systemStatus: { ...MOCK_PROGRESS_DATA_CANCELLING },
+          })
+        );
+      });
+    });
+  });
+});

@@ -48,6 +48,7 @@ class TestReport():
                finished=None,
                total_tests=0):
     self._device = {}
+    self._mac_addr = None
     self._status: str = status
     self._started = started
     self._finished = finished
@@ -57,7 +58,10 @@ class TestReport():
     self._report_url = ''
     self._cur_page = 0
     # Placeholder until available in json report
-    self._version = 'v1.2.2-alpha'
+    self._version = 'v1.3-alpha'
+
+  def get_mac_addr(self):
+    return self._mac_addr
 
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
@@ -87,8 +91,13 @@ class TestReport():
   def get_report_url(self):
     return self._report_url
 
+  def set_mac_addr(self, mac_addr):
+    self._mac_addr = mac_addr
+
   def to_json(self):
     report_json = {}
+
+    report_json['mac_addr'] = self._mac_addr
     report_json['device'] = self._device
     report_json['status'] = self._status
     report_json['started'] = self._started.strftime(DATE_TIME_FORMAT)
@@ -120,6 +129,7 @@ class TestReport():
     self._device['manufacturer'] = json_file['device']['manufacturer']
     self._device['model'] = json_file['device']['model']
 
+    # Firmware is not specified for non-UI devices
     if 'firmware' in json_file['device']:
       self._device['firmware'] = json_file['device']['firmware']
 
@@ -286,27 +296,28 @@ class TestReport():
 
       # Render test recommendations
       page += f'''
-        <table class="steps-to-resolve">
-          <tbody>
-            <tr>
-              <td width="10%" class="steps-to-resolve index">{index}.</td>
-              <td width="32%" class="steps-to-resolve"><span class="steps-to-resolve subtitle">Name</span><br>{test["name"]}</td>
-              <td class="steps-to-resolve"><span class="steps-to-resolve subtitle">Description</span><br>{test["description"]}</td>
-            </tr>
-            <tr>
-              <td width="10%"></td>
-              <td colspan="2" class="steps-to-resolve" style="padding-bottom:20px;">
-                <span class="steps-to-resolve subtitle">Steps to resolve</span>
+        <div class="steps-to-resolve">
+          <div class="steps-to-resolve-row">
+            <span class="steps-to-resolve-index">{index}. </span>
+            <div class="steps-to-resolve-test-name">
+              <span class="steps-to-resolve subtitle">Name</span><br>{test["name"]}
+            </div>
+            <div class="steps-to-resolve-description">
+              <span class="steps-to-resolve subtitle">Description</span><br>{test["description"]}
+            </div>
+          </div>
+          <div class="steps-to-resolve-row" style="margin-left: 70px;">
+            <span class="steps-to-resolve subtitle">Steps to resolve</span>
         '''
 
       step_number = 1
       for recommendation in test['recommendations']:
-        page += f'''<br>
-          <span style="font-size: 14px">{
+        page += f'''
+        <br><span style="font-size: 14px">{
               step_number}. {recommendation}</span>'''
         step_number += 1
 
-      page += '</td></tbody></table>'
+      page += '</div></div>'
 
       index += 1
       steps_so_far += 1
@@ -575,6 +586,11 @@ class TestReport():
     return summary
 
   def generate_device_module_label(self, module, enabled):
+
+    # Do not render deleted modules
+    if module == 'nmap':
+      return ''
+
     label = '<div class="summary-device-module-label">'
     if enabled:
       label += '<span style="color:#34a853">✔ </span>'
@@ -777,17 +793,28 @@ class TestReport():
       font-family: 'Roboto Mono', monospace;
     }
 
-    table.steps-to-resolve {
+    div.steps-to-resolve {
       background-color: #F8F9FA;
       margin-bottom: 30px;
-      width: var(--page-width);
+      width: 756px;
+      padding: 20px 30px;
+      vertical-align: top;
     }
 
-    td.steps-to-resolve {
-      padding-left: 20px;
-      padding-top: 20px;
-      padding-right: 15px;
+    .steps-to-resolve-row {
       vertical-align: top;
+    }
+
+    .steps-to-resolve-test-name {
+      display: inline-block;
+      margin-left: 70px;
+      margin-bottom: 20px;
+      width: 250px;
+      vertical-align: top;
+    }
+
+    .steps-to-resolve-description {
+      display: inline-block;
     }
 
     .steps-to-resolve.subtitle {
@@ -797,10 +824,10 @@ class TestReport():
       color: #5F6368;
       font-size: 14px;
     }
-
-    .steps-to-resolve.index {
+  
+    .steps-to-resolve-index {
       font-size: 40px;
-      padding-left: 30px;
+      position: absolute;
     }
 
     .callout-container.info {
