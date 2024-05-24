@@ -43,7 +43,7 @@ import {
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
   TEST_DATA_RESULT_WITH_RECOMMENDATIONS,
   TEST_DATA_TABLE_RESULT,
-} from '../../mocks/progress.mock';
+} from '../../mocks/testrun.mock';
 import { LoaderService } from '../../services/loader.service';
 
 describe('TestrunStore', () => {

@@ -32,7 +32,7 @@ import {
   updateFocusNavigation,
 } from './actions';
 import { device } from '../mocks/device.mock';
-import { MOCK_PROGRESS_DATA_CANCELLING } from '../mocks/progress.mock';
+import { MOCK_PROGRESS_DATA_CANCELLING } from '../mocks/testrun.mock';
 
 describe('Reducer', () => {
   describe('unknown action', () => {
