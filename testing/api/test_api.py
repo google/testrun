@@ -679,9 +679,7 @@ def test_create_device_invalid_request(empty_devices_dir, testrun):
 
 def test_device_edit_device(testing_devices, testrun): # pylint: disable=W0613
   with open(
-      os.path.join(
-          DEVICES_DIRECTORY, testing_devices[1]
-      ), encoding="utf-8"
+      testing_devices[1], encoding="utf-8"
   ) as f:
     local_device = json.load(f)
 
