@@ -639,9 +639,12 @@ class Api:
     # Get file contents
     contents = await file.read()
 
-    # Pass to session to check and write
-    cert_obj = self._session.upload_cert(filename,
-                                         contents)
+    try:
+      # Pass to session to check and write
+      cert_obj = self._session.upload_cert(filename,
+                                          contents)
+    except IOError:
+      LOGGER.error("An error occurred whilst uploading the certificate")
 
     # Return error if something went wrong
     if cert_obj is None:
