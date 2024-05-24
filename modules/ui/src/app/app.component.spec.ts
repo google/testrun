@@ -38,7 +38,7 @@ import { CalloutComponent } from './components/callout/callout.component';
 import {
   MOCK_PROGRESS_DATA_IDLE,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
-} from './mocks/progress.mock';
+} from './mocks/testrun.mock';
 import { Routes } from './model/routes';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { State } from '@ngrx/store';
