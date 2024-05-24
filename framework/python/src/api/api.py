@@ -617,6 +617,7 @@ class Api:
 
     return self.get_session().get_profiles_format()
 
+  # Certificates
   def get_certs(self):
     LOGGER.debug("Received certs list request")
 
@@ -707,3 +708,10 @@ class Api:
     except Exception as e:
       LOGGER.error("An error occurred whilst deleting a certificate")
       LOGGER.debug(e)
+
+  def get_test_modules(self):
+    modules = []
+    for module in self._test_run.get_test_orc().get_test_modules():
+      if module.enabled and module.enable_container:
+        modules.append(module.display_name)
+    return modules

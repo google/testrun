@@ -86,7 +86,7 @@ class TestrunSession():
     self._config = self._get_default_config()
 
     # Loading methods
-    self._load_version(default_version=version)
+    self._load_version()
     self._load_config()
     self._load_profiles()
 
@@ -182,7 +182,7 @@ class TestrunSession():
 
       LOGGER.debug(self._config)
 
-  def _load_version(self, default_version):
+  def _load_version(self):
     version_cmd = util.run_command(
       'dpkg-query --showformat=\'${Version}\' --show testrun')
     # index 1 of response is the stderr byte stream so if
@@ -192,7 +192,7 @@ class TestrunSession():
       version = version_cmd[0]
       self._version = version
     else:
-      self._version = default_version
+      self._version = '?'
     LOGGER.info(f'Running Testrun version {self._version}')
 
   def get_version(self):
