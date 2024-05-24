@@ -20,7 +20,7 @@ import {
   MOCK_PROGRESS_DATA_CANCELLED,
   MOCK_PROGRESS_DATA_COMPLIANT,
   MOCK_PROGRESS_DATA_NON_COMPLIANT,
-} from '../../mocks/progress.mock';
+} from '../../mocks/testrun.mock';
 
 describe('DownloadReportComponent', () => {
   let component: DownloadReportComponent;

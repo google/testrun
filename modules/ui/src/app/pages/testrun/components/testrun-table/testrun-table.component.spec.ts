@@ -15,14 +15,14 @@
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProgressTableComponent } from './progress-table.component';
+import { TestrunTableComponent } from './testrun-table.component';
 
 import { IResult, StatusOfTestResult } from '../../../../model/testrun-status';
 import {
   TEST_DATA,
   TEST_DATA_RESULT,
   TEST_DATA_RESULT_WITH_RECOMMENDATIONS,
-} from '../../../../mocks/progress.mock';
+} from '../../../../mocks/testrun.mock';
 import { TestRunService } from '../../../../services/test-run.service';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { Component, Input } from '@angular/core';
@@ -30,18 +30,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ProgressTableComponent', () => {
-  let component: ProgressTableComponent;
-  let fixture: ComponentFixture<ProgressTableComponent>;
+  let component: TestrunTableComponent;
+  let fixture: ComponentFixture<TestrunTableComponent>;
 
   const testRunServiceMock = jasmine.createSpyObj(['getResultClass']);
 
   describe('Class tests', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
-        declarations: [ProgressTableComponent],
+        declarations: [TestrunTableComponent],
         providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
       });
-      fixture = TestBed.createComponent(ProgressTableComponent);
+      fixture = TestBed.createComponent(TestrunTableComponent);
       component = fixture.componentInstance;
       component.dataSource = TEST_DATA.results;
     });
@@ -80,12 +80,12 @@ describe('ProgressTableComponent', () => {
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        declarations: [ProgressTableComponent, FakeCalloutComponent],
+        declarations: [TestrunTableComponent, FakeCalloutComponent],
         providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
         imports: [BrowserAnimationsModule, MatExpansionModule, MatIconModule],
       }).compileComponents();
 
-      fixture = TestBed.createComponent(ProgressTableComponent);
+      fixture = TestBed.createComponent(TestrunTableComponent);
       component = fixture.componentInstance;
       compiled = fixture.nativeElement as HTMLElement;
     });

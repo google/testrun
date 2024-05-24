@@ -21,11 +21,11 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatExpansionModule } from '@angular/material/expansion';
 
-import { ProgressRoutingModule } from './progress-routing.module';
-import { ProgressComponent } from './progress.component';
-import { ProgressStatusCardComponent } from './components/progress-status-card/progress-status-card.component';
-import { ProgressTableComponent } from './components/progress-table/progress-table.component';
-import { ProgressInitiateFormComponent } from './components/progress-initiate-form/progress-initiate-form.component';
+import { TestrunRoutingModule } from './testrun-routing.module';
+import { TestrunComponent } from './testrun.component';
+import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
+import { TestrunTableComponent } from './components/testrun-table/testrun-table.component';
+import { TestrunInitiateFormComponent } from './components/testrun-initiate-form/testrun-initiate-form.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { DeviceItemComponent } from '../../components/device-item/device-item.component';
 import { MatInputModule } from '@angular/material/input';
@@ -38,14 +38,14 @@ import { DownloadOptionsComponent } from './components/download-options/download
 
 @NgModule({
   declarations: [
-    ProgressComponent,
-    ProgressStatusCardComponent,
-    ProgressTableComponent,
-    ProgressInitiateFormComponent,
+    TestrunComponent,
+    TestrunStatusCardComponent,
+    TestrunTableComponent,
+    TestrunInitiateFormComponent,
   ],
   imports: [
     CommonModule,
-    ProgressRoutingModule,
+    TestrunRoutingModule,
     MatButtonModule,
     MatIconModule,
     MatToolbarModule,
@@ -62,4 +62,4 @@ import { DownloadOptionsComponent } from './components/download-options/download
     DownloadOptionsComponent,
   ],
 })
-export class ProgressModule {}
+export class TestrunModule {}
