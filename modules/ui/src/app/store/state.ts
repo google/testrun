@@ -39,9 +39,8 @@ export interface SharedState {
   //used in app, devices, testrun
   hasDevices: boolean;
   //app, testrun
+  status: string | null;
   systemStatus: TestrunStatus | null;
-  //app, testrun
-  isTestrunStarted: boolean;
   //app, settings
   hasConnectionSettings: boolean | null;
   // app, devices
@@ -72,5 +71,5 @@ export const initialSharedState: SharedState = {
   deviceInProgress: null,
   isOpenStartTestrun: false,
   systemStatus: null,
-  isTestrunStarted: false,
+  status: null,
 };

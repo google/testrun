@@ -16,65 +16,42 @@
 @import 'src/theming/colors';
 @import 'src/theming/variables';
 
-:host {
-  ::ng-deep .mat-mdc-progress-bar {
-    --mdc-linear-progress-active-indicator-color: #1967d2;
-  }
-}
-
-:host:first-child .certificate-item-container {
-  border-top: 1px solid $lighter-grey;
-}
-
-.certificate-item-container {
+.profile-item-container {
   display: grid;
-  grid-template-columns: 24px minmax(200px, 1fr) 24px;
+  grid-template-columns: 24px minmax(160px, 1fr) 24px 24px;
   gap: 16px;
   box-sizing: border-box;
+  height: 68px;
   padding: 12px 0;
   border-bottom: 1px solid $lighter-grey;
+  align-items: center;
 }
 
-.certificate-item-icon {
+.profile-item-icon {
   color: $grey-700;
 }
 
-.certificate-item-delete {
+.profile-item-name {
+  margin: 0;
+  font-family: $font-secondary, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 16px;
+  color: $grey-800;
+  height: 24px;
+}
+
+.profile-item-button {
   padding: 0;
   height: 24px;
   width: 24px;
   border-radius: 4px;
   color: $grey-700;
   display: flex;
-  align-items: start;
+  align-items: flex-start;
   justify-content: center;
   & ::ng-deep .mat-mdc-button-persistent-ripple {
     border-radius: 4px;
-  }
-  &:disabled {
-    pointer-events: none;
-    opacity: 0.6;
-  }
-}
-
-.certificate-item-information {
-  overflow: hidden;
-  p {
-    font-family: $font-secondary, sans-serif;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .certificate-item-name {
-    font-size: 16px;
-    color: $grey-800;
-    height: 24px;
-  }
-  .certificate-item-organisation,
-  .certificate-item-expires {
-    font-size: 14px;
-    color: $grey-700;
-    height: 20px;
   }
 }

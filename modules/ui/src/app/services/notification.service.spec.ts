@@ -63,7 +63,7 @@ describe('NotificationService', () => {
 
       expect(openSpy).toHaveBeenCalledWith('something good happened', 'OK', {
         horizontalPosition: 'center',
-        panelClass: 'test-run-notification',
+        panelClass: ['test-run-notification'],
         duration: 0,
         politeness: 'assertive',
       });
@@ -79,7 +79,7 @@ describe('NotificationService', () => {
 
       expect(openSpy).toHaveBeenCalledWith('something good happened', 'OK', {
         horizontalPosition: 'center',
-        panelClass: 'test-run-notification',
+        panelClass: ['test-run-notification'],
         duration: 15000,
         politeness: 'assertive',
       });

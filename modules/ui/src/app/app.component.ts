@@ -30,7 +30,7 @@ import {
   updateFocusNavigation,
 } from './store/actions';
 import { appFeatureKey } from './store/reducers';
-import { GeneralSettingsComponent } from './pages/settings/general-settings.component';
+import { SettingsComponent } from './pages/settings/settings.component';
 import { AppStore } from './app.store';
 import { TestRunService } from './services/test-run.service';
 
@@ -60,7 +60,7 @@ export class AppComponent {
   @ViewChild('toggleCertificatesBtn')
   public toggleCertificatesBtn!: HTMLButtonElement;
   @ViewChild('navigation') public navigation!: ElementRef;
-  @ViewChild('settings') public settings!: GeneralSettingsComponent;
+  @ViewChild('settings') public settings!: SettingsComponent;
   viewModel$ = this.appStore.viewModel$;
 
   constructor(
@@ -167,7 +167,7 @@ export class AppComponent {
     this.appStore.setContent();
   }
 
-  isTestrunInProgress(status?: string) {
+  isTestrunInProgress(status?: string | null) {
     return this.testRunService.testrunInProgress(status);
   }
 }

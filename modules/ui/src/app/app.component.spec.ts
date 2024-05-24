@@ -38,7 +38,7 @@ import { CalloutComponent } from './components/callout/callout.component';
 import {
   MOCK_PROGRESS_DATA_IDLE,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
-} from './mocks/progress.mock';
+} from './mocks/testrun.mock';
 import { Routes } from './model/routes';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { State } from '@ngrx/store';
@@ -56,13 +56,21 @@ import {
   selectHasDevices,
   selectInterfaces,
   selectIsOpenStartTestrun,
-  selectIsTestrunStarted,
+  selectIsOpenWaitSnackBar,
   selectMenuOpened,
+  selectStatus,
   selectSystemStatus,
 } from './store/selectors';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { CertificatesComponent } from './pages/certificates/certificates.component';
 import { of } from 'rxjs';
+import { WINDOW } from './providers/window.provider';
+
+const windowMock = {
+  location: {
+    href: '',
+  },
+};
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -140,12 +148,14 @@ describe('AppComponent', () => {
             { selector: selectError, value: null },
             { selector: selectMenuOpened, value: false },
             { selector: selectHasDevices, value: false },
-            { selector: selectIsTestrunStarted, value: false },
+            { selector: selectStatus, value: null },
             { selector: selectSystemStatus, value: null },
             { selector: selectIsOpenStartTestrun, value: false },
+            { selector: selectIsOpenWaitSnackBar, value: false },
           ],
         }),
         { provide: FocusManagerService, useValue: mockFocusManagerService },
+        { provide: WINDOW, useValue: windowMock },
       ],
       declarations: [
         AppComponent,
@@ -443,7 +453,6 @@ describe('AppComponent', () => {
         store.overrideSelector(selectHasConnectionSettings, true);
         store.overrideSelector(selectHasDevices, true);
         store.overrideSelector(selectSystemStatus, MOCK_PROGRESS_DATA_IDLE);
-        store.overrideSelector(selectIsTestrunStarted, false);
 
         fixture.detectChanges();
       });
@@ -518,7 +527,6 @@ describe('AppComponent', () => {
     describe('with devices setted but without systemStatus data', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
-        store.overrideSelector(selectIsTestrunStarted, false);
         component.appStore.updateIsStatusLoaded(true);
         store.overrideSelector(selectHasConnectionSettings, true);
         store.overrideSelector(selectSystemStatus, null);
@@ -562,7 +570,6 @@ describe('AppComponent', () => {
     describe('with devices setted, without systemStatus data, but run the tests ', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
-        store.overrideSelector(selectIsTestrunStarted, true);
         fixture.detectChanges();
       });
 
@@ -680,7 +687,7 @@ describe('AppComponent', () => {
 });
 
 @Component({
-  selector: 'app-general-settings',
+  selector: 'app-settings',
   template: '<div></div>',
 })
 class FakeGeneralSettingsComponent {

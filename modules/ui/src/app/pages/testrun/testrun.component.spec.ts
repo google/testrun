@@ -20,7 +20,7 @@ import {
   tick,
 } from '@angular/core/testing';
 
-import { ProgressComponent } from './progress.component';
+import { TestrunComponent } from './testrun.component';
 import { TestRunService } from '../../services/test-run.service';
 import { of } from 'rxjs';
 import {
@@ -31,14 +31,14 @@ import {
   MOCK_PROGRESS_DATA_MONITORING,
   MOCK_PROGRESS_DATA_NOT_STARTED,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
-} from '../../mocks/progress.mock';
+} from '../../mocks/testrun.mock';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Component, Input } from '@angular/core';
 import { IResult, TestrunStatus } from '../../model/testrun-status';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { ProgressInitiateFormComponent } from './components/progress-initiate-form/progress-initiate-form.component';
+import { TestrunInitiateFormComponent } from './components/testrun-initiate-form/testrun-initiate-form.component';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { LoaderService } from '../../services/loader.service';
@@ -51,7 +51,6 @@ import {
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectIsStopTestrun,
-  selectIsTestrunStarted,
   selectSystemStatus,
 } from '../../store/selectors';
 import { TestrunStore } from './testrun.store';
@@ -59,9 +58,9 @@ import { setTestrunStatus } from '../../store/actions';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from '../../services/notification.service';
 
-describe('ProgressComponent', () => {
-  let component: ProgressComponent;
-  let fixture: ComponentFixture<ProgressComponent>;
+describe('TestrunComponent', () => {
+  let component: TestrunComponent;
+  let fixture: ComponentFixture<TestrunComponent>;
   let compiled: HTMLElement;
   let store: MockStore<AppState>;
 
@@ -97,7 +96,7 @@ describe('ProgressComponent', () => {
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
       TestBed.configureTestingModule({
         declarations: [
-          ProgressComponent,
+          TestrunComponent,
           FakeProgressStatusCardComponent,
           FakeProgressTableComponent,
           FakeDownloadOptionsComponent,
@@ -116,7 +115,6 @@ describe('ProgressComponent', () => {
             selectors: [
               { selector: selectHasDevices, value: false },
               { selector: selectIsOpenStartTestrun, value: false },
-              { selector: selectIsTestrunStarted, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
               { selector: selectIsStopTestrun, value: false },
               {
@@ -135,7 +133,7 @@ describe('ProgressComponent', () => {
           BrowserAnimationsModule,
         ],
       })
-        .overrideComponent(ProgressComponent, {
+        .overrideComponent(TestrunComponent, {
           set: {
             providers: [
               { provide: LoaderService, useValue: loaderServiceMock },
@@ -148,7 +146,7 @@ describe('ProgressComponent', () => {
         of(MOCK_PROGRESS_DATA_IN_PROGRESS)
       );
       store = TestBed.inject(MockStore);
-      fixture = TestBed.createComponent(ProgressComponent);
+      fixture = TestBed.createComponent(TestrunComponent);
       spyOn(store, 'dispatch').and.callFake(() => {});
       component = fixture.componentInstance;
     });
@@ -208,15 +206,6 @@ describe('ProgressComponent', () => {
 
       expect(stopTestrunSpy).toHaveBeenCalled();
     });
-
-    describe('#ngOnInit', () => {
-      it('should get systemStatus value', () => {
-        const spyOpenSetting = spyOn(component.testrunStore, 'getStatus');
-        component.ngOnInit();
-
-        expect(spyOpenSetting).toHaveBeenCalled();
-      });
-    });
   });
 
   describe('DOM tests', () => {
@@ -228,7 +217,7 @@ describe('ProgressComponent', () => {
 
       await TestBed.configureTestingModule({
         declarations: [
-          ProgressComponent,
+          TestrunComponent,
           FakeProgressStatusCardComponent,
           FakeProgressTableComponent,
           FakeDownloadOptionsComponent,
@@ -261,7 +250,7 @@ describe('ProgressComponent', () => {
           BrowserAnimationsModule,
         ],
       })
-        .overrideComponent(ProgressComponent, {
+        .overrideComponent(TestrunComponent, {
           set: {
             providers: [
               { provide: LoaderService, useValue: loaderServiceMock },
@@ -271,7 +260,7 @@ describe('ProgressComponent', () => {
         .compileComponents();
 
       store = TestBed.inject(MockStore);
-      fixture = TestBed.createComponent(ProgressComponent);
+      fixture = TestBed.createComponent(TestrunComponent);
       compiled = fixture.nativeElement as HTMLElement;
       testRunServiceMock.fetchSystemStatus.and.returnValue(
         of(MOCK_PROGRESS_DATA_IN_PROGRESS)
@@ -323,14 +312,14 @@ describe('ProgressComponent', () => {
       it('should open initiate test run modal when start button clicked', fakeAsync(() => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(true),
-        } as MatDialogRef<typeof ProgressInitiateFormComponent>);
+        } as MatDialogRef<typeof TestrunInitiateFormComponent>);
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
         startBtn.click();
 
         expect(openSpy).toHaveBeenCalled();
-        expect(openSpy).toHaveBeenCalledWith(ProgressInitiateFormComponent, {
+        expect(openSpy).toHaveBeenCalledWith(TestrunInitiateFormComponent, {
           ariaLabel: 'Initiate testrun',
           autoFocus: true,
           hasBackdrop: true,
@@ -537,7 +526,7 @@ describe('ProgressComponent', () => {
 });
 
 @Component({
-  selector: 'app-progress-status-card',
+  selector: 'app-testrun-status-card',
   template: '<div></div>',
 })
 class FakeProgressStatusCardComponent {
@@ -545,7 +534,7 @@ class FakeProgressStatusCardComponent {
 }
 
 @Component({
-  selector: 'app-progress-table',
+  selector: 'app-testrun-table',
   template: '<div></div>',
 })
 class FakeProgressTableComponent {

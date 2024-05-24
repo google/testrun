@@ -18,7 +18,7 @@ import { MatIcon } from '@angular/material/icon';
 import { CertificateItemComponent } from './certificate-item/certificate-item.component';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { CdkTrapFocus, LiveAnnouncer } from '@angular/cdk/a11y';
 import { CertificateUploadButtonComponent } from './certificate-upload-button/certificate-upload-button.component';
 import { CertificatesStore } from './certificates.store';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
@@ -36,6 +36,7 @@ import { MatDialog } from '@angular/material/dialog';
     CommonModule,
   ],
   providers: [CertificatesStore, DatePipe],
+  hostDirectives: [CdkTrapFocus],
   templateUrl: './certificates.component.html',
   styleUrl: './certificates.component.scss',
 })
@@ -67,14 +68,14 @@ export class CertificatesComponent implements OnDestroy {
     this.store.uploadCertificate(file);
   }
 
-  deleteCertificate(name: string) {
-    this.store.selectCertificate(name);
+  deleteCertificate(certificate: string) {
+    this.store.selectCertificate(certificate);
 
     const dialogRef = this.dialog.open(DeleteFormComponent, {
       ariaLabel: 'Delete certificate',
       data: {
         title: 'Delete certificate',
-        content: `You are about to delete a certificate ${name}. Are you sure?`,
+        content: `You are about to delete a certificate ${this.store.getShortCertificateName(certificate)}. Are you sure?`,
       },
       autoFocus: true,
       hasBackdrop: true,
@@ -87,7 +88,7 @@ export class CertificatesComponent implements OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(deleteCertificate => {
         if (deleteCertificate) {
-          this.store.deleteCertificate(name);
+          this.store.deleteCertificate(certificate);
           this.focusNextButton();
         }
       });

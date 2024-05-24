@@ -45,17 +45,21 @@ export class NotificationService {
     private focusManagerService: FocusManagerService
   ) {}
 
-  notify(message: string, duration = 0, panelClass = 'test-run-notification') {
+  notify(message: string, duration = 0, panelClass = '', timeout = TIMEOUT_MS) {
+    const panelClasses = ['test-run-notification'];
+    if (panelClass) {
+      panelClasses.push(panelClass);
+    }
     this.snackBarRef = this.snackBar.open(message, 'OK', {
       horizontalPosition: 'center',
-      panelClass: panelClass,
+      panelClass: panelClasses,
       duration: duration,
       politeness: 'assertive',
     });
 
     this.snackBarRef
       .afterOpened()
-      .pipe(take(1), delay(TIMEOUT_MS))
+      .pipe(take(1), delay(timeout))
       .subscribe(() => this.setFocusToActionButton());
 
     this.snackBarRef

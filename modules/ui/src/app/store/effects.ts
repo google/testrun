@@ -14,20 +14,38 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { map, withLatestFrom } from 'rxjs/operators';
+import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
 import * as AppActions from './actions';
 import { AppState } from './state';
 import { TestRunService } from '../services/test-run.service';
-import { filter, combineLatest } from 'rxjs';
-import { selectMenuOpened } from './selectors';
-import { StatusOfTestrun } from '../model/testrun-status';
+import { filter, combineLatest, interval, Subject, timer, take } from 'rxjs';
+import {
+  selectIsOpenWaitSnackBar,
+  selectMenuOpened,
+  selectSystemStatus,
+} from './selectors';
+import { IResult, StatusOfTestrun, TestsData } from '../model/testrun-status';
+import {
+  fetchSystemStatus,
+  setStatus,
+  setTestrunStatus,
+  stopInterval,
+} from './actions';
+import { takeUntil } from 'rxjs/internal/operators/takeUntil';
+import { NotificationService } from '../services/notification.service';
+
+const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
 @Injectable()
 export class AppEffects {
+  private startInterval = false;
+  private destroyInterval$: Subject<boolean> = new Subject<boolean>();
+  private destroyWaitDeviceInterval$: Subject<boolean> = new Subject<boolean>();
+
   checkInterfacesInConfig$ = createEffect(() =>
     combineLatest([
       this.actions$.pipe(ofType(AppActions.fetchInterfacesSuccess)),
@@ -99,22 +117,137 @@ export class AppEffects {
   onSetTestrunStatus$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(AppActions.setTestrunStatus),
-      map(({ systemStatus }) =>
-        AppActions.setDeviceInProgress({
-          device:
-            systemStatus.status === StatusOfTestrun.Monitoring ||
-            systemStatus.status === StatusOfTestrun.InProgress ||
-            systemStatus.status === StatusOfTestrun.WaitingForDevice
-              ? systemStatus.device
-              : null,
-        })
+      map(({ systemStatus }) => {
+        return AppActions.setDeviceInProgress({
+          device: this.testrunService.testrunInProgress(systemStatus?.status)
+            ? systemStatus.device
+            : null,
+        });
+      })
+    );
+  });
+
+  onFetchSystemStatus$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchSystemStatus),
+      switchMap(() =>
+        this.testrunService.fetchSystemStatus().pipe(
+          map(systemStatus => {
+            return AppActions.fetchSystemStatusSuccess({ systemStatus });
+          })
+        )
       )
     );
   });
 
+  onStopInterval$ = createEffect(
+    () => {
+      return this.actions$.pipe(
+        ofType(AppActions.stopInterval),
+        tap(() => {
+          this.startInterval = false;
+          this.destroyInterval$.next(true);
+        })
+      );
+    },
+    { dispatch: false }
+  );
+
+  onFetchSystemStatusSuccess$ = createEffect(
+    () => {
+      return this.actions$.pipe(
+        ofType(AppActions.fetchSystemStatusSuccess),
+        tap(({ systemStatus }) => {
+          if (
+            this.testrunService.testrunInProgress(systemStatus.status) &&
+            !this.startInterval
+          ) {
+            this.pullingSystemStatusData();
+          } else if (
+            !this.testrunService.testrunInProgress(systemStatus.status)
+          ) {
+            this.store.dispatch(stopInterval());
+          }
+        }),
+        withLatestFrom(
+          this.store.select(selectIsOpenWaitSnackBar),
+          this.store.select(selectSystemStatus)
+        ),
+        tap(([{ systemStatus }, isOpenWaitSnackBar]) => {
+          if (
+            systemStatus?.status === StatusOfTestrun.WaitingForDevice &&
+            !isOpenWaitSnackBar
+          ) {
+            this.showSnackBar();
+          }
+          if (
+            systemStatus?.status !== StatusOfTestrun.WaitingForDevice &&
+            isOpenWaitSnackBar
+          ) {
+            this.notificationService.dismissWithTimout();
+          }
+        }),
+        tap(([{ systemStatus }, , status]) => {
+          // for app - requires only status
+          if (systemStatus.status !== status?.status) {
+            this.ngZone.run(() => {
+              this.store.dispatch(setStatus({ status: systemStatus.status }));
+              this.store.dispatch(
+                setTestrunStatus({ systemStatus: systemStatus })
+              );
+            });
+          } else if (
+            systemStatus.finished !== status?.finished ||
+            (systemStatus.tests as TestsData)?.results?.length !==
+              (status?.tests as TestsData)?.results?.length ||
+            (systemStatus.tests as IResult[])?.length !==
+              (status?.tests as IResult[])?.length
+          ) {
+            this.ngZone.run(() => {
+              this.store.dispatch(
+                setTestrunStatus({ systemStatus: systemStatus })
+              );
+            });
+          }
+        })
+      );
+    },
+    { dispatch: false }
+  );
+
+  private showSnackBar() {
+    timer(WAIT_TO_OPEN_SNACKBAR_MS)
+      .pipe(
+        take(1),
+        takeUntil(this.destroyWaitDeviceInterval$),
+        withLatestFrom(this.store.select(selectSystemStatus)),
+        tap(([, systemStatus]) => {
+          if (systemStatus?.status === StatusOfTestrun.WaitingForDevice) {
+            this.notificationService.openSnackBar();
+            this.destroyWaitDeviceInterval$.next(true);
+          }
+        })
+      )
+      .subscribe();
+  }
+
+  private pullingSystemStatusData(): void {
+    this.ngZone.runOutsideAngular(() => {
+      this.startInterval = true;
+      interval(5000)
+        .pipe(
+          takeUntil(this.destroyInterval$),
+          tap(() => this.store.dispatch(fetchSystemStatus()))
+        )
+        .subscribe();
+    });
+  }
+
   constructor(
     private actions$: Actions,
     private testrunService: TestRunService,
-    private store: Store<AppState>
+    private store: Store<AppState>,
+    private ngZone: NgZone,
+    private notificationService: NotificationService
   ) {}
 }

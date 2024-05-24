@@ -34,16 +34,16 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
 import { timer } from 'rxjs/internal/observable/timer';
-import { ProgressInitiateFormComponent } from '../testrun/components/progress-initiate-form/progress-initiate-form.component';
+import { TestrunInitiateFormComponent } from '../testrun/components/testrun-initiate-form/testrun-initiate-form.component';
 import { DevicesStore } from './devices.store';
 
 @Component({
   selector: 'app-device-repository',
-  templateUrl: './device-repository.component.html',
-  styleUrls: ['./device-repository.component.scss'],
+  templateUrl: './devices.component.html',
+  styleUrls: ['./devices.component.scss'],
   providers: [DevicesStore],
 })
-export class DeviceRepositoryComponent implements OnInit, OnDestroy {
+export class DevicesComponent implements OnInit, OnDestroy {
   readonly DeviceView = DeviceView;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   viewModel$ = this.devicesStore.viewModel$;
@@ -76,7 +76,7 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
   }
 
   openStartTestrun(selectedDevice: Device, devices: Device[]): void {
-    const dialogRef = this.dialog.open(ProgressInitiateFormComponent, {
+    const dialogRef = this.dialog.open(TestrunInitiateFormComponent, {
       ariaLabel: 'Initiate testrun',
       data: {
         devices,

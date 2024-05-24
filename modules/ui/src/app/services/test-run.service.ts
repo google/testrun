@@ -28,6 +28,7 @@ import {
 } from '../model/testrun-status';
 import { Version } from '../model/version';
 import { Certificate } from '../model/certificate';
+import { Profile } from '../model/profile';
 
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
@@ -105,7 +106,10 @@ export class TestRunService {
   stopTestrun(): Observable<boolean> {
     return this.http
       .post<{ success: string }>(`${API_URL}${SYSTEM_STOP}`, {})
-      .pipe(map(() => true));
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
   }
 
   shutdownTestrun(): Observable<boolean> {
@@ -169,7 +173,7 @@ export class TestRunService {
     };
   }
 
-  testrunInProgress(status?: string): boolean {
+  testrunInProgress(status?: string | null): boolean {
     return (
       status === StatusOfTestrun.InProgress ||
       status === StatusOfTestrun.WaitingForDevice ||
@@ -217,13 +221,28 @@ export class TestRunService {
       );
   }
 
+  fetchProfiles(): Observable<Profile[]> {
+    return this.http.get<Profile[]>(`${API_URL}/profiles`);
+  }
+
+  deleteProfile(name: string): Observable<boolean> {
+    return this.http
+      .delete<boolean>(`${API_URL}/profiles`, {
+        body: JSON.stringify({ name }),
+      })
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
+  }
+
   fetchCertificates(): Observable<Certificate[]> {
-    return this.http.get<Certificate[]>(`${API_URL}/system/config/certs/list`);
+    return this.http.get<Certificate[]>(`${API_URL}/system/config/certs`);
   }
 
   deleteCertificate(name: string): Observable<boolean> {
     return this.http
-      .delete<boolean>(`${API_URL}/system/config/certs/delete`, {
+      .delete<boolean>(`${API_URL}/system/config/certs`, {
         body: JSON.stringify({ name }),
       })
       .pipe(
@@ -235,9 +254,8 @@ export class TestRunService {
   uploadCertificate(file: File): Observable<boolean> {
     const formData: FormData = new FormData();
     formData.append('file', file, file.name);
-    formData.append('mode', 'file');
     return this.http
-      .post<boolean>(`${API_URL}/system/config/certs/upload`, formData)
+      .post<boolean>(`${API_URL}/system/config/certs`, formData)
       .pipe(map(() => true));
   }
 }

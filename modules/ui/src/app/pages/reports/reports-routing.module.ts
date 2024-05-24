@@ -14,22 +14,13 @@
  * limitations under the License.
  */
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { RouterModule, Routes } from '@angular/router';
+import { ReportsComponent } from './reportscomponent';
 
-import { RiskAssessmentRoutingModule } from './risk-assessment-routing.module';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { RiskAssessmentComponent } from './risk-assessment.component';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { ProfileItemComponent } from './profile-item/profile-item.component';
+const routes: Routes = [{ path: '', component: ReportsComponent }];
 
 @NgModule({
-  declarations: [RiskAssessmentComponent],
-  imports: [
-    CommonModule,
-    RiskAssessmentRoutingModule,
-    MatToolbarModule,
-    MatSidenavModule,
-    ProfileItemComponent,
-  ],
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class RiskAssessmentModule {}
+export class ReportsRoutingModule {}

@@ -54,17 +54,17 @@ limitations under the License.
               [data]="data"></app-download-options>
           </div>
         </div>
-        <app-progress-status-card [systemStatus]="vm.systemStatus">
-        </app-progress-status-card>
+        <app-testrun-status-card [systemStatus]="vm.systemStatus">
+        </app-testrun-status-card>
       </mat-toolbar>
       <section
         class="progress-table"
         [class.progress-table-progress-empty]="
           isTestrunInProgress(data.status) && resultIsEmpty(data.tests)
         ">
-        <app-progress-table
+        <app-testrun-table
           [dataSource]="vm.dataSource"
-          [stepsToResolveCount]="vm.stepsToResolveCount"></app-progress-table>
+          [stepsToResolveCount]="vm.stepsToResolveCount"></app-testrun-table>
         <app-spinner></app-spinner>
       </section>
     </ng-container>

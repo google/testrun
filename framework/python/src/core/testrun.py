@@ -63,7 +63,7 @@ DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
-VERSION = '1.2.2'
+VERSION = '1.3'
 
 class Testrun:  # pylint: disable=too-few-public-methods
   """Test Run controller.
@@ -92,7 +92,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     self._register_exits()
 
     # Create session
-    self._session = TestrunSession(config_file=self._config_file,
+    self._session = TestrunSession(root_dir=root_dir,
                                    version=self.get_version())
 
     # Register runtime parameters

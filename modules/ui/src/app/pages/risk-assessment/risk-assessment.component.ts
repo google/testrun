@@ -13,12 +13,66 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { RiskAssessmentStore } from './risk-assessment.store';
+import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { Subject, takeUntil } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-risk-assessment',
   templateUrl: './risk-assessment.component.html',
   styleUrl: './risk-assessment.component.scss',
+  providers: [RiskAssessmentStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RiskAssessmentComponent {}
+export class RiskAssessmentComponent implements OnDestroy {
+  viewModel$ = this.store.viewModel$;
+  private destroy$: Subject<boolean> = new Subject<boolean>();
+  constructor(
+    private store: RiskAssessmentStore,
+    public dialog: MatDialog
+  ) {
+    this.store.getProfiles();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next(true);
+    this.destroy$.unsubscribe();
+  }
+
+  deleteProfile(profileName: string, index: number): void {
+    const dialogRef = this.dialog.open(DeleteFormComponent, {
+      ariaLabel: 'Delete risk profile',
+      data: {
+        title: 'Delete risk profile',
+        content: `You are about to delete ${profileName}. Are you sure?`,
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: 'delete-form-dialog',
+    });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(deleteProfile => {
+        if (deleteProfile) {
+          this.store.deleteProfile(profileName);
+          this.setFocus(index);
+        }
+      });
+  }
+
+  private setFocus(index: number): void {
+    const nextItem = window.document.querySelector(
+      `.profile-item-${index + 1}`
+    ) as HTMLElement;
+    const firstItem = window.document.querySelector(
+      `.profile-item-0`
+    ) as HTMLElement;
+
+    this.store.setFocus({ nextItem, firstItem });
+  }
+}

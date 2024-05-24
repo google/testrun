@@ -61,11 +61,15 @@ describe('CertificateItemComponent', () => {
           expect(deleteButton).toBeDefined();
         });
 
+        it('should have certificate name as part of aria-label', () => {
+          expect(deleteButton?.ariaLabel?.trim()).toContain(certificate.name);
+        });
+
         it('should emit delete event on delete button clicked', () => {
           const deleteSpy = spyOn(component.deleteButtonClicked, 'emit');
           deleteButton.click();
 
-          expect(deleteSpy).toHaveBeenCalledWith('iot.bms.google.com');
+          expect(deleteSpy).toHaveBeenCalledWith(certificate.name);
         });
       });
     });
@@ -79,7 +83,7 @@ describe('CertificateItemComponent', () => {
       it('should have loader', () => {
         const loader = compiled.querySelector('mat-progress-bar');
 
-        expect(loader).toBeDefined();
+        expect(loader).not.toBeNull();
       });
 
       it('should have disabled delete button', () => {

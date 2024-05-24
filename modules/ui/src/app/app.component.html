@@ -108,8 +108,7 @@ limitations under the License.
           (click)="openGeneralSettings(true)">
           <mat-icon>tune</mat-icon>
         </button>
-        <app-shutdown-app
-          [disable]="isTestrunInProgress(vm.systemStatus?.status)">
+        <app-shutdown-app [disable]="isTestrunInProgress(vm.systemStatus)">
         </app-shutdown-app>
       </mat-toolbar>
       <div class="app-content-main" role="main" id="main">
@@ -175,10 +174,8 @@ limitations under the License.
           *ngIf="
             vm.hasConnectionSettings === true &&
             vm.hasDevices &&
-            (!vm.systemStatus?.status ||
-              vm.systemStatus?.status === StatusOfTestrun.Idle) &&
-            vm.isStatusLoaded === true &&
-            vm.isTestrunStarted === false
+            (!vm.systemStatus || vm.systemStatus === StatusOfTestrun.Idle) &&
+            vm.isStatusLoaded === true
           ">
           Step 3: Once device is created, you are able to
           <a
@@ -203,11 +200,11 @@ limitations under the License.
     position="end"
     autoFocus="#setting-panel-close-button"
     class="settings-drawer">
-    <app-general-settings
+    <app-settings
       #settings
-      [settingsDisable]="isTestrunInProgress(vm.systemStatus?.status)"
+      [settingsDisable]="isTestrunInProgress(vm.systemStatus)"
       (closeSettingEvent)="closeSetting(vm.hasDevices)">
-    </app-general-settings>
+    </app-settings>
   </mat-drawer>
 
   <mat-drawer

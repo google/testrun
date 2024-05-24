@@ -22,7 +22,7 @@ import { Device, TestModule } from '../model/device';
 
 import { TestRunService, UNAVAILABLE_VERSION } from './test-run.service';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
-import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/progress.mock';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/testrun.mock';
 import {
   StatusOfTestResult,
   StatusOfTestrun,
@@ -34,6 +34,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../store/state';
 import { Certificate } from '../model/certificate';
 import { certificate } from '../mocks/certificate.mock';
+import { PROFILE_MOCK } from '../mocks/profile.mock';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -478,6 +479,48 @@ describe('TestRunService', () => {
     req.flush(true);
   });
 
+  it('fetchProfiles should return profiles', () => {
+    service.fetchProfiles().subscribe(res => {
+      expect(res).toEqual([PROFILE_MOCK]);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/profiles'
+    );
+
+    expect(req.request.method).toBe('GET');
+
+    req.flush([PROFILE_MOCK]);
+  });
+
+  it('deleteProfile should delete profile', () => {
+    service.deleteProfile('test').subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/profiles'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.flush(true);
+  });
+
+  it('deleteProfile should return false when error happens', () => {
+    service.deleteProfile('test').subscribe(res => {
+      expect(res).toEqual(false);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/profiles'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.error(new ErrorEvent(''));
+  });
+
   it('fetchCertificates should return certificates', () => {
     const certificates = [certificate] as Certificate[];
 
@@ -486,7 +529,7 @@ describe('TestRunService', () => {
     });
 
     const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/config/certs/list'
+      'http://localhost:8000/system/config/certs'
     );
 
     expect(req.request.method).toBe('GET');
@@ -500,7 +543,7 @@ describe('TestRunService', () => {
     });
 
     const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/config/certs/upload'
+      'http://localhost:8000/system/config/certs'
     );
 
     expect(req.request.method).toBe('POST');
@@ -514,7 +557,7 @@ describe('TestRunService', () => {
     });
 
     const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/config/certs/delete'
+      'http://localhost:8000/system/config/certs'
     );
 
     expect(req.request.method).toBe('DELETE');
@@ -528,7 +571,7 @@ describe('TestRunService', () => {
     });
 
     const req = httpTestingController.expectOne(
-      'http://localhost:8000/system/config/certs/delete'
+      'http://localhost:8000/system/config/certs'
     );
 
     expect(req.request.method).toBe('DELETE');
