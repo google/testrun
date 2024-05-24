@@ -19,15 +19,24 @@ import {
   DownloadOption,
   DownloadOptionsComponent,
 } from './download-options.component';
-import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../../../mocks/progress.mock';
+import {
+  MOCK_PROGRESS_DATA_CANCELLED,
+  MOCK_PROGRESS_DATA_COMPLIANT,
+  MOCK_PROGRESS_DATA_NON_COMPLIANT,
+} from '../../../../mocks/progress.mock';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatOptionSelectionChange } from '@angular/material/core';
 
+interface GAEvent {
+  event: string;
+}
 describe('DownloadOptionsComponent', () => {
   let component: DownloadOptionsComponent;
   let fixture: ComponentFixture<DownloadOptionsComponent>;
 
   beforeEach(async () => {
+    // @ts-expect-error data layer should be defined
+    window.dataLayer = window.dataLayer || [];
     await TestBed.configureTestingModule({
       imports: [DownloadOptionsComponent, NoopAnimationsModule],
     }).compileComponents();
@@ -74,5 +83,79 @@ describe('DownloadOptionsComponent', () => {
     );
 
     expect(spyGetZipLink).toHaveBeenCalled();
+  });
+
+  describe('#sendGAEvent', () => {
+    it('should send download_report_pdf when type is pdf', () => {
+      component.sendGAEvent(MOCK_PROGRESS_DATA_CANCELLED, DownloadOption.PDF);
+
+      expect(
+        // @ts-expect-error data layer should be defined
+        window.dataLayer.some(
+          (item: GAEvent) => item.event === 'download_report_pdf'
+        )
+      ).toBeTruthy();
+    });
+
+    it('should send download_report_pdf_compliant when type is pdf and status is compliant', () => {
+      component.sendGAEvent(MOCK_PROGRESS_DATA_COMPLIANT, DownloadOption.PDF);
+
+      expect(
+        // @ts-expect-error data layer should be defined
+        window.dataLayer.some(
+          (item: GAEvent) => item.event === 'download_report_pdf_compliant'
+        )
+      ).toBeTruthy();
+    });
+
+    it('should send download_report_pdf_non_compliant when type is pdf and status is not compliant', () => {
+      component.sendGAEvent(
+        MOCK_PROGRESS_DATA_NON_COMPLIANT,
+        DownloadOption.PDF
+      );
+
+      expect(
+        // @ts-expect-error data layer should be defined
+        window.dataLayer.some(
+          (item: GAEvent) => item.event === 'download_report_pdf_non_compliant'
+        )
+      ).toBeTruthy();
+    });
+
+    it('should send download_report_zip when type is zip', () => {
+      component.sendGAEvent(MOCK_PROGRESS_DATA_CANCELLED, DownloadOption.ZIP);
+
+      expect(
+        // @ts-expect-error data layer should be defined
+        window.dataLayer.some(
+          (item: GAEvent) => item.event === 'download_report_zip'
+        )
+      ).toBeTruthy();
+    });
+
+    it('should send download_report_zip_compliant when type is pdf and status is compliant', () => {
+      component.sendGAEvent(MOCK_PROGRESS_DATA_COMPLIANT, DownloadOption.ZIP);
+
+      expect(
+        // @ts-expect-error data layer should be defined
+        window.dataLayer.some(
+          (item: GAEvent) => item.event === 'download_report_zip_compliant'
+        )
+      ).toBeTruthy();
+    });
+
+    it('should send download_report_zip_non_compliant when type is zip and status is not compliant', () => {
+      component.sendGAEvent(
+        MOCK_PROGRESS_DATA_NON_COMPLIANT,
+        DownloadOption.ZIP
+      );
+
+      expect(
+        // @ts-expect-error data layer should be defined
+        window.dataLayer.some(
+          (item: GAEvent) => item.event === 'download_report_zip_non_compliant'
+        )
+      ).toBeTruthy();
+    });
   });
 });

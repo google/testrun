@@ -22,7 +22,11 @@ import { tap, withLatestFrom } from 'rxjs/operators';
 import { Device } from '../../model/device';
 import { AppState } from '../../store/state';
 import { Store } from '@ngrx/store';
-import { selectDevices, selectIsOpenAddDevice } from '../../store/selectors';
+import {
+  selectDeviceInProgress,
+  selectDevices,
+  selectIsOpenAddDevice,
+} from '../../store/selectors';
 import { setDevices, setIsOpenAddDevice } from '../../store/actions';
 
 export interface DevicesComponentState {
@@ -34,12 +38,14 @@ export interface DevicesComponentState {
 export class DevicesStore extends ComponentStore<DevicesComponentState> {
   devices$ = this.store.select(selectDevices);
   isOpenAddDevice$ = this.store.select(selectIsOpenAddDevice);
+  private deviceInProgress$ = this.store.select(selectDeviceInProgress);
   private selectedDevice$ = this.select(state => state.selectedDevice);
 
   testModules = this.testRunService.getTestModules();
   viewModel$ = this.select({
     devices: this.devices$,
     selectedDevice: this.selectedDevice$,
+    deviceInProgress: this.deviceInProgress$,
   });
 
   selectDevice = this.updater((state, device: Device | null) => ({

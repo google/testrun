@@ -19,7 +19,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { TestrunStatus } from '../../../../model/testrun-status';
+import {
+  StatusOfTestrun,
+  TestrunStatus,
+} from '../../../../model/testrun-status';
 import { MatOptionSelectionChange } from '@angular/material/core';
 
 export enum DownloadOption {
@@ -53,6 +56,7 @@ export class DownloadOptionsComponent {
   ) {
     if (event.isUserInput) {
       this.createLink(data, type);
+      this.sendGAEvent(data, type);
     }
   }
 
@@ -82,5 +86,18 @@ export class DownloadOptionsComponent {
 
   getFormattedDateString(date: string | null) {
     return date ? this.datePipe.transform(date, 'd MMM y H:mm') : '';
+  }
+
+  sendGAEvent(data: TestrunStatus, type: string) {
+    let event = `download_report_${type === DownloadOption.PDF ? 'pdf' : 'zip'}`;
+    if (data.status === StatusOfTestrun.Compliant) {
+      event += '_compliant';
+    } else if (data.status === StatusOfTestrun.NonCompliant) {
+      event += '_non_compliant';
+    }
+    // @ts-expect-error data layer is not null
+    window.dataLayer.push({
+      event: event,
+    });
   }
 }

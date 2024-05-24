@@ -39,11 +39,11 @@ import { DevicesStore } from './devices.store';
 
 @Component({
   selector: 'app-device-repository',
-  templateUrl: './device-repository.component.html',
-  styleUrls: ['./device-repository.component.scss'],
+  templateUrl: './devices.component.html',
+  styleUrls: ['./devices.component.scss'],
   providers: [DevicesStore],
 })
-export class DeviceRepositoryComponent implements OnInit, OnDestroy {
+export class DevicesComponent implements OnInit, OnDestroy {
   readonly DeviceView = DeviceView;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   viewModel$ = this.devicesStore.viewModel$;
@@ -91,8 +91,12 @@ export class DeviceRepositoryComponent implements OnInit, OnDestroy {
     dialogRef
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(data => {
-        if (data === 'testrunStarted') {
+      .subscribe(testrunStarted => {
+        if (testrunStarted) {
+          // @ts-expect-error data layer is not null
+          window.dataLayer.push({
+            event: 'successful_testrun_initiation',
+          });
           this.route.navigate([Routes.Testing]);
         }
       });

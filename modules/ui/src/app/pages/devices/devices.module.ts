@@ -26,8 +26,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { DeviceFormComponent } from './components/device-form/device-form.component';
 
-import { DeviceRepositoryRoutingModule } from './device-repository-routing.module';
-import { DeviceRepositoryComponent } from './device-repository.component';
+import { DevicesRoutingModule } from './devices-routing.module';
+import { DevicesComponent } from './devices.component';
 import { DeviceItemComponent } from '../../components/device-item/device-item.component';
 import { DeviceTestsComponent } from '../../components/device-tests/device-tests.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
@@ -35,10 +35,10 @@ import { DeleteFormComponent } from '../../components/delete-form/delete-form.co
 import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 
 @NgModule({
-  declarations: [DeviceRepositoryComponent, DeviceFormComponent],
+  declarations: [DevicesComponent, DeviceFormComponent],
   imports: [
     CommonModule,
-    DeviceRepositoryRoutingModule,
+    DevicesRoutingModule,
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
@@ -57,4 +57,4 @@ import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
   ],
   providers: [provideNgxMask()],
 })
-export class DeviceRepositoryModule {}
+export class DevicesModule {}

@@ -14,96 +14,133 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <app-bypass></app-bypass>
-<mat-drawer-container
-  *ngIf="viewModel$ | async as vm"
-  [class.active-menu]="isMenuOpen | async"
-  hasBackdrop="false"
-  class="app-container"
-  autosize>
-  <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
-    <div class="app-sidebar" #navigation>
-      <ng-container
-        *ngTemplateOutlet="
-          navButtonRoute;
-          context: {
-            route: Routes.Testing,
-            svgIcon: 'testrun_logo_small',
-            label: 'Testing',
-            name: 'testrun'
-          }
-        ">
-      </ng-container>
-      <ng-container
-        *ngTemplateOutlet="
-          navButtonRoute;
-          context: {
-            route: Routes.Devices,
-            svgIcon: 'devices',
-            label: 'Devices',
-            name: 'devices'
-          }
-        ">
-      </ng-container>
-      <ng-container
-        *ngTemplateOutlet="
-          navButtonRoute;
-          context: {
-            route: Routes.Reports,
-            svgIcon: 'reports',
-            label: 'Reports',
-            name: 'reports'
-          }
-        ">
-      </ng-container>
-      <app-version
-        [consentShown]="vm.consentShown"
-        (consentShownEvent)="consentShown()"></app-version>
-    </div>
-  </mat-drawer>
+<ng-container *ngIf="viewModel$ | async as vm">
+  <mat-drawer-container
+    [class.active-menu]="vm.isMenuOpen"
+    hasBackdrop="false"
+    class="app-container"
+    autosize>
+    <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
+      <div class="app-sidebar" #navigation>
+        <ng-container
+          *ngTemplateOutlet="
+            navButtonRoute;
+            context: {
+              route: Routes.Testing,
+              svgIcon: 'testrun_logo_small',
+              label: 'Testing',
+              name: 'testrun'
+            }
+          ">
+        </ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            navButtonRoute;
+            context: {
+              route: Routes.Devices,
+              svgIcon: 'devices',
+              label: 'Devices',
+              name: 'devices'
+            }
+          ">
+        </ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            navButtonRoute;
+            context: {
+              route: Routes.Reports,
+              svgIcon: 'reports',
+              label: 'Reports',
+              name: 'reports'
+            }
+          ">
+        </ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            navButtonRoute;
+            context: {
+              route: Routes.RiskAssessment,
+              svgIcon: 'risk_assessment',
+              label: 'Risk Assessment',
+              name: 'risk-assessment'
+            }
+          ">
+        </ng-container>
+        <app-version
+          [consentShown]="vm.consentShown"
+          (consentShownEvent)="consentShown()"></app-version>
+      </div>
+    </mat-drawer>
 
-  <mat-drawer-content class="app-content" role="region">
-    <mat-toolbar class="app-toolbar">
-      <button
-        mat-button
-        class="app-toolbar-button app-toolbar-button-menu"
-        aria-label="Menu"
-        (click)="toggleMenu($event)"
-        (keydown.tab)="skipToNavigation($event)">
-        <mat-icon>menu</mat-icon>
-      </button>
-      <a
-        class="logo-link"
-        routerLink="{{ Routes.Testing }}"
-        aria-label="Testrun ui logo">
-        <mat-icon svgIcon="testrun_logo_color"></mat-icon>
-        <h1 class="main-heading">Testrun</h1>
-      </a>
-      <span class="spacer"></span>
-      <button
-        #toggleSettingsBtn
-        class="app-toolbar-button app-toolbar-button-general-settings"
-        mat-icon-button
-        aria-label="System settings"
-        (click)="openGeneralSettings(true)">
-        <mat-icon>tune</mat-icon>
-      </button>
-      <app-shutdown-app
-        [disable]="testrunInProgress((systemStatus$ | async)?.status)">
-      </app-shutdown-app>
-    </mat-toolbar>
-    <div class="app-content-main" role="main" id="main">
-      <ng-container *ngIf="settingMissedError$ | async as error">
-        <app-callout [type]="CalloutType.Error" *ngIf="error.isSettingMissed">
-          <ng-container
-            *ngIf="
-              error.devicePortMissed && error.internetPortMissed;
-              else onePortMissed
-            ">
-            No ports are detected. Please define a valid ones using
-          </ng-container>
-          <ng-template #onePortMissed>
-            Selected port is missing! Please define a valid one using
-          </ng-template>
+    <mat-drawer-content class="app-content" role="region">
+      <mat-toolbar class="app-toolbar">
+        <button
+          mat-button
+          class="app-toolbar-button app-toolbar-button-menu"
+          aria-label="Menu"
+          (click)="toggleMenu($event)"
+          (keydown.tab)="skipToNavigation($event)">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <a
+          class="logo-link"
+          routerLink="{{ Routes.Testing }}"
+          aria-label="Testrun ui logo">
+          <mat-icon svgIcon="testrun_logo_color"></mat-icon>
+          <h1 class="main-heading">Testrun</h1>
+        </a>
+        <span class="spacer"></span>
+        <button
+          #toggleCertificatesBtn
+          class="app-toolbar-button app-toolbar-button-certificates"
+          mat-icon-button
+          aria-label="Certificates"
+          (click)="openCert()">
+          <mat-icon fontSet="material-symbols-outlined"
+            >workspace_premium</mat-icon
+          >
+        </button>
+        <button
+          #toggleSettingsBtn
+          class="app-toolbar-button app-toolbar-button-general-settings"
+          mat-icon-button
+          aria-label="System settings"
+          (click)="openGeneralSettings(true)">
+          <mat-icon>tune</mat-icon>
+        </button>
+        <app-shutdown-app [disable]="isTestrunInProgress(vm.systemStatus)">
+        </app-shutdown-app>
+      </mat-toolbar>
+      <div class="app-content-main" role="main" id="main">
+        <ng-container *ngIf="vm.settingMissedError as error">
+          <app-callout [type]="CalloutType.Error" *ngIf="error.isSettingMissed">
+            <ng-container
+              *ngIf="
+                error.devicePortMissed && error.internetPortMissed;
+                else onePortMissed
+              ">
+              No ports are detected. Please define a valid ones using
+            </ng-container>
+            <ng-template #onePortMissed>
+              Selected port is missing! Please define a valid one using
+            </ng-template>
+            <a
+              (click)="openSetting()"
+              (keydown.enter)="openSetting()"
+              (keydown.space)="openSetting()"
+              aria-label="The System settings link opens the panel. No redirect to other pages."
+              tabindex="0"
+              role="link"
+              class="message-link"
+              >System settings</a
+            >
+            panel.
+          </app-callout>
+        </ng-container>
+        <app-callout
+          [type]="CalloutType.Info"
+          *ngIf="vm.hasConnectionSettings === false">
+          Step 1: To perform a device test, please, select ports in
           <a
             (click)="openSetting()"
             (keydown.enter)="openSetting()"
@@ -116,66 +153,47 @@ limitations under the License.
           >
           panel.
         </app-callout>
-      </ng-container>
-      <app-callout
-        [type]="CalloutType.Info"
-        *ngIf="(hasConnectionSetting$ | async) === false">
-        Step 1: To perform a device test, please, select ports in
-        <a
-          (click)="openSetting()"
-          (keydown.enter)="openSetting()"
-          (keydown.space)="openSetting()"
-          aria-label="The System settings link opens the panel. No redirect to other pages."
-          tabindex="0"
-          role="link"
-          class="message-link"
-          >System settings</a
-        >
-        panel.
-      </app-callout>
-      <app-callout
-        [type]="CalloutType.Info"
-        *ngIf="
-          (hasConnectionSetting$ | async) === true && vm.hasDevices === false
-        ">
-        Step 2: To perform a device test please
-        <a
-          (click)="navigateToDeviceRepository()"
-          (keydown.enter)="navigateToDeviceRepository()"
-          (keydown.space)="navigateToDeviceRepository()"
-          aria-label="The Create a Device link redirects to the Devices page and opens the dialogue there."
-          tabindex="0"
-          role="link"
-          class="message-link"
-          >Create a Device</a
-        >
-        first.
-      </app-callout>
-      <app-callout
-        [type]="CalloutType.Info"
-        *ngIf="
-          (hasConnectionSetting$ | async) === true &&
-          vm.hasDevices &&
-          (!(systemStatus$ | async)?.status ||
-            (systemStatus$ | async)?.status === StatusOfTestrun.Idle) &&
-          isStatusLoaded === true &&
-          (isTestrunStarted$ | async) === false
-        ">
-        Step 3: Once device is created, you are able to
-        <a
-          (click)="navigateToRuntime()"
-          (keydown.enter)="navigateToRuntime()"
-          (keydown.space)="navigateToRuntime()"
-          aria-label="The start testing link redirects to the Testing page and opens the dialogue there."
-          tabindex="0"
-          role="link"
-          class="message-link"
-          >start testing</a
-        >.
-      </app-callout>
-      <router-outlet></router-outlet>
-    </div>
-  </mat-drawer-content>
+        <app-callout
+          [type]="CalloutType.Info"
+          *ngIf="vm.hasConnectionSettings === true && vm.hasDevices === false">
+          Step 2: To perform a device test please
+          <a
+            (click)="navigateToDeviceRepository()"
+            (keydown.enter)="navigateToDeviceRepository()"
+            (keydown.space)="navigateToDeviceRepository()"
+            aria-label="The Create a Device link redirects to the Devices page and opens the dialogue there."
+            tabindex="0"
+            role="link"
+            class="message-link"
+            >Create a Device</a
+          >
+          first.
+        </app-callout>
+        <app-callout
+          [type]="CalloutType.Info"
+          *ngIf="
+            vm.hasConnectionSettings === true &&
+            vm.hasDevices &&
+            (!vm.systemStatus || vm.systemStatus === StatusOfTestrun.Idle) &&
+            vm.isStatusLoaded === true
+          ">
+          Step 3: Once device is created, you are able to
+          <a
+            (click)="navigateToRuntime()"
+            (keydown.enter)="navigateToRuntime()"
+            (keydown.space)="navigateToRuntime()"
+            aria-label="The start testing link redirects to the Testing page and opens the dialogue there."
+            tabindex="0"
+            role="link"
+            class="message-link"
+            >start testing</a
+          >.
+        </app-callout>
+        <router-outlet></router-outlet>
+      </div>
+    </mat-drawer-content>
+  </mat-drawer-container>
+
   <mat-drawer
     #settingsDrawer
     mode="over"
@@ -184,10 +202,21 @@ limitations under the License.
     class="settings-drawer">
     <app-general-settings
       #settings
+      [settingsDisable]="isTestrunInProgress(vm.systemStatus)"
       (closeSettingEvent)="closeSetting(vm.hasDevices)">
     </app-general-settings>
   </mat-drawer>
-</mat-drawer-container>
+
+  <mat-drawer
+    #certDrawer
+    mode="over"
+    position="end"
+    autoFocus="#setting-panel-close-button"
+    class="settings-drawer">
+    <app-certificates
+      (closeCertificatedEvent)="closeCertificates()"></app-certificates>
+  </mat-drawer>
+</ng-container>
 
 <ng-template
   #navButtonRoute
