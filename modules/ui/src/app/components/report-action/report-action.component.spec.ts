@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ReportActionComponent } from './report-action.component';
-import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/progress.mock';
+import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
 
 describe('ReportActionComponent', () => {
   let component: ReportActionComponent;

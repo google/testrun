@@ -19,7 +19,7 @@ import { DeleteReportComponent } from './delete-report.component';
 import { of } from 'rxjs';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { DeleteFormComponent } from '../../../../components/delete-form/delete-form.component';
-import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../../../mocks/progress.mock';
+import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../../../mocks/testrun.mock';
 
 describe('DeleteReportComponent', () => {
   let compiled: HTMLElement;

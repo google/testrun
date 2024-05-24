@@ -26,7 +26,7 @@ import {
 } from '../../model/testrun-status';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
-import { ProgressInitiateFormComponent } from './components/progress-initiate-form/progress-initiate-form.component';
+import { TestrunInitiateFormComponent } from './components/testrun-initiate-form/testrun-initiate-form.component';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { LoaderService } from '../../services/loader.service';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../../services/loaderConfig';
@@ -37,8 +37,8 @@ import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-progress',
-  templateUrl: './progress.component.html',
-  styleUrls: ['./progress.component.scss'],
+  templateUrl: './testrun.component.html',
+  styleUrls: ['./testrun.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     LoaderService,
@@ -46,7 +46,7 @@ import { NotificationService } from '../../services/notification.service';
     TestrunStore,
   ],
 })
-export class ProgressComponent implements OnInit, OnDestroy {
+export class TestrunComponent implements OnInit, OnDestroy {
   public readonly StatusOfTestrun = StatusOfTestrun;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   viewModel$ = this.testrunStore.viewModel$;
@@ -136,7 +136,7 @@ export class ProgressComponent implements OnInit, OnDestroy {
   }
 
   openTestRunModal(): void {
-    const dialogRef = this.dialog.open(ProgressInitiateFormComponent, {
+    const dialogRef = this.dialog.open(TestrunInitiateFormComponent, {
       ariaLabel: 'Initiate testrun',
       autoFocus: true,
       hasBackdrop: true,

@@ -20,7 +20,7 @@ const routes: Routes = [
   {
     path: 'testing',
     loadChildren: () =>
-      import('./pages/testrun/progress.module').then(m => m.ProgressModule),
+      import('./pages/testrun/testrun.module').then(m => m.TestrunModule),
     title: 'Testrun',
   },
   {

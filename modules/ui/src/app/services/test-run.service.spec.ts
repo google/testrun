@@ -22,7 +22,7 @@ import { Device, TestModule } from '../model/device';
 
 import { TestRunService, UNAVAILABLE_VERSION } from './test-run.service';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
-import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/progress.mock';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/testrun.mock';
 import {
   StatusOfTestResult,
   StatusOfTestrun,

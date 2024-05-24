@@ -44,11 +44,11 @@ interface DialogData {
 }
 
 @Component({
-  selector: 'app-progress-initiate-form',
-  templateUrl: './progress-initiate-form.component.html',
-  styleUrls: ['./progress-initiate-form.component.scss'],
+  selector: 'app-testrun-initiate-form',
+  templateUrl: './testrun-initiate-form.component.html',
+  styleUrls: ['./testrun-initiate-form.component.scss'],
 })
-export class ProgressInitiateFormComponent
+export class TestrunInitiateFormComponent
   extends EscapableDialogComponent
   implements OnInit, AfterViewChecked
 {
@@ -65,7 +65,7 @@ export class ProgressInitiateFormComponent
   );
 
   constructor(
-    public override dialogRef: MatDialogRef<ProgressInitiateFormComponent>,
+    public override dialogRef: MatDialogRef<TestrunInitiateFormComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private readonly testRunService: TestRunService,
     private fb: FormBuilder,

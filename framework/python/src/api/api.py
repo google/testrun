@@ -253,8 +253,14 @@ class Api:
   def _start_test_run(self):
     self._test_run.start()
 
-  async def stop_test_run(self):
-    LOGGER.debug("Received stop command. Stopping Testrun")
+  async def stop_test_run(self, response: Response):
+    LOGGER.debug("Received stop command")
+
+    # Check if Testrun is running
+    if (self._test_run.get_session().get_status() not in
+        ["In Progress", "Waiting for Device", "Monitoring"]):
+      response.status_code = 404
+      return self._generate_msg(False, "Testrun is not currently running")
 
     self._test_run.stop()
 
