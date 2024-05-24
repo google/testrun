@@ -131,7 +131,6 @@ export class ProgressComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.notificationService.dismissSnackBar();
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
   }

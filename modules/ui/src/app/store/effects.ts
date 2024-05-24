@@ -22,9 +22,13 @@ import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import * as AppActions from './actions';
 import { AppState } from './state';
 import { TestRunService } from '../services/test-run.service';
-import { filter, combineLatest, interval, Subject } from 'rxjs';
-import { selectMenuOpened, selectSystemStatus } from './selectors';
-import { IResult, TestsData } from '../model/testrun-status';
+import { filter, combineLatest, interval, Subject, timer, take } from 'rxjs';
+import {
+  selectIsOpenWaitSnackBar,
+  selectMenuOpened,
+  selectSystemStatus,
+} from './selectors';
+import { IResult, StatusOfTestrun, TestsData } from '../model/testrun-status';
 import {
   fetchSystemStatus,
   setStatus,
@@ -32,11 +36,15 @@ import {
   stopInterval,
 } from './actions';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
+import { NotificationService } from '../services/notification.service';
+
+const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
 @Injectable()
 export class AppEffects {
   private startInterval = false;
   private destroyInterval$: Subject<boolean> = new Subject<boolean>();
+  private destroyWaitDeviceInterval$: Subject<boolean> = new Subject<boolean>();
 
   checkInterfacesInConfig$ = createEffect(() =>
     combineLatest([
@@ -161,8 +169,25 @@ export class AppEffects {
             this.store.dispatch(stopInterval());
           }
         }),
-        withLatestFrom(this.store.select(selectSystemStatus)),
-        tap(([{ systemStatus }, status]) => {
+        withLatestFrom(
+          this.store.select(selectIsOpenWaitSnackBar),
+          this.store.select(selectSystemStatus)
+        ),
+        tap(([{ systemStatus }, isOpenWaitSnackBar]) => {
+          if (
+            systemStatus?.status === StatusOfTestrun.WaitingForDevice &&
+            !isOpenWaitSnackBar
+          ) {
+            this.showSnackBar();
+          }
+          if (
+            systemStatus?.status !== StatusOfTestrun.WaitingForDevice &&
+            isOpenWaitSnackBar
+          ) {
+            this.notificationService.dismissWithTimout();
+          }
+        }),
+        tap(([{ systemStatus }, , status]) => {
           // for app - requires only status
           if (systemStatus.status !== status?.status) {
             this.ngZone.run(() => {
@@ -190,6 +215,22 @@ export class AppEffects {
     { dispatch: false }
   );
 
+  private showSnackBar() {
+    timer(WAIT_TO_OPEN_SNACKBAR_MS)
+      .pipe(
+        take(1),
+        takeUntil(this.destroyWaitDeviceInterval$),
+        withLatestFrom(this.store.select(selectSystemStatus)),
+        tap(([, systemStatus]) => {
+          if (systemStatus?.status === StatusOfTestrun.WaitingForDevice) {
+            this.notificationService.openSnackBar();
+            this.destroyWaitDeviceInterval$.next(true);
+          }
+        })
+      )
+      .subscribe();
+  }
+
   private pullingSystemStatusData(): void {
     this.ngZone.runOutsideAngular(() => {
       this.startInterval = true;
@@ -206,6 +247,7 @@ export class AppEffects {
     private actions$: Actions,
     private testrunService: TestRunService,
     private store: Store<AppState>,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private notificationService: NotificationService
   ) {}
 }

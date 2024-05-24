@@ -28,16 +28,30 @@ import { Action } from '@ngrx/store';
 import * as actions from './actions';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from './state';
-import { selectMenuOpened, selectSystemStatus } from './selectors';
+import {
+  selectIsOpenWaitSnackBar,
+  selectMenuOpened,
+  selectSystemStatus,
+} from './selectors';
 import { device } from '../mocks/device.mock';
-import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/progress.mock';
+import {
+  MOCK_PROGRESS_DATA_IN_PROGRESS,
+  MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
+} from '../mocks/progress.mock';
 import { fetchSystemStatus, setStatus, setTestrunStatus } from './actions';
+import { NotificationService } from '../services/notification.service';
 describe('Effects', () => {
   let actions$ = new Observable<Action>();
   let effects: AppEffects;
   let testRunServiceMock: SpyObj<TestRunService>;
   let store: MockStore<AppState>;
   let dispatchSpy: jasmine.Spy;
+  const notificationServiceMock: jasmine.SpyObj<NotificationService> =
+    jasmine.createSpyObj('notificationServiceMock', [
+      'dismissWithTimout',
+      'openSnackBar',
+    ]);
+
   beforeEach(() => {
     testRunServiceMock = jasmine.createSpyObj('testRunServiceMock', [
       'getSystemInterfaces',
@@ -56,6 +70,7 @@ describe('Effects', () => {
       providers: [
         AppEffects,
         { provide: TestRunService, useValue: testRunServiceMock },
+        { provide: NotificationService, useValue: notificationServiceMock },
         provideMockActions(() => actions$),
         provideMockStore({}),
       ],
@@ -239,6 +254,7 @@ describe('Effects', () => {
 
   describe('onFetchSystemStatusSuccess$', () => {
     beforeEach(() => {
+      store.overrideSelector(selectIsOpenWaitSnackBar, false);
       store.overrideSelector(selectSystemStatus, null);
     });
 
@@ -275,6 +291,53 @@ describe('Effects', () => {
           done();
         });
       });
+
+      it('should dispatch status and systemStatus', done => {
+        store.overrideSelector(selectIsOpenWaitSnackBar, true);
+        store.refreshState();
+
+        effects.onFetchSystemStatusSuccess$.subscribe(() => {
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            setStatus({ status: MOCK_PROGRESS_DATA_IN_PROGRESS.status })
+          );
+
+          expect(notificationServiceMock.dismissWithTimout).toHaveBeenCalled();
+          done();
+        });
+      });
+    });
+
+    describe('with status "waiting for device"', () => {
+      beforeEach(() => {
+        store.overrideSelector(
+          selectSystemStatus,
+          MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
+        );
+        testRunServiceMock.testrunInProgress.and.returnValue(true);
+        actions$ = of(
+          actions.fetchSystemStatusSuccess({
+            systemStatus: MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
+          })
+        );
+      });
+
+      it('should call fetchSystemStatus for status "waiting for device"', fakeAsync(() => {
+        effects.onFetchSystemStatusSuccess$.subscribe(() => {
+          tick(5000);
+
+          expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
+          discardPeriodicTasks();
+        });
+      }));
+
+      it('should open snackbar when waiting for device is too long', fakeAsync(() => {
+        effects.onFetchSystemStatusSuccess$.subscribe(() => {
+          tick(60000);
+
+          expect(notificationServiceMock.openSnackBar).toHaveBeenCalled();
+          discardPeriodicTasks();
+        });
+      }));
     });
   });
 });
