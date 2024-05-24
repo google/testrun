@@ -258,7 +258,7 @@ describe('Effects', () => {
       store.overrideSelector(selectSystemStatus, null);
     });
 
-    xdescribe('with status "in progress"', () => {
+    describe('with status "in progress"', () => {
       beforeEach(() => {
         store.overrideSelector(selectSystemStatus, null);
         testRunServiceMock.testrunInProgress.and.returnValue(true);
