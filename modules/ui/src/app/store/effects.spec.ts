@@ -37,7 +37,7 @@ import { device } from '../mocks/device.mock';
 import {
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
-} from '../mocks/progress.mock';
+} from '../mocks/testrun.mock';
 import { fetchSystemStatus, setStatus, setTestrunStatus } from './actions';
 import { NotificationService } from '../services/notification.service';
 describe('Effects', () => {
