@@ -15,7 +15,7 @@
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProgressStatusCardComponent } from './progress-status-card.component';
+import { TestrunStatusCardComponent } from './testrun-status-card.component';
 import {
   StatusOfTestrun,
   TestrunStatus,
@@ -26,19 +26,19 @@ import {
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_MONITORING,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
-} from '../../../../mocks/progress.mock';
-import { ProgressModule } from '../../progress.module';
+} from '../../../../mocks/testrun.mock';
+import { TestrunModule } from '../../testrun.module';
 
 describe('ProgressStatusCardComponent', () => {
-  let component: ProgressStatusCardComponent;
-  let fixture: ComponentFixture<ProgressStatusCardComponent>;
+  let component: TestrunStatusCardComponent;
+  let fixture: ComponentFixture<TestrunStatusCardComponent>;
 
   describe('Class tests', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
-        declarations: [ProgressStatusCardComponent],
+        declarations: [TestrunStatusCardComponent],
       });
-      fixture = TestBed.createComponent(ProgressStatusCardComponent);
+      fixture = TestBed.createComponent(TestrunStatusCardComponent);
       component = fixture.componentInstance;
     });
 
@@ -216,11 +216,11 @@ describe('ProgressStatusCardComponent', () => {
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        declarations: [ProgressStatusCardComponent],
-        imports: [ProgressModule],
+        declarations: [TestrunStatusCardComponent],
+        imports: [TestrunModule],
       }).compileComponents();
 
-      fixture = TestBed.createComponent(ProgressStatusCardComponent);
+      fixture = TestBed.createComponent(TestrunStatusCardComponent);
       compiled = fixture.nativeElement as HTMLElement;
       component = fixture.componentInstance;
     });

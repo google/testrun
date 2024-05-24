@@ -90,7 +90,7 @@ class TestReport():
 
   def get_report_url(self):
     return self._report_url
-  
+
   def set_mac_addr(self, mac_addr):
     self._mac_addr = mac_addr
 

@@ -22,12 +22,12 @@ import {
 } from '../../../../model/testrun-status';
 
 @Component({
-  selector: 'app-progress-status-card',
-  templateUrl: './progress-status-card.component.html',
-  styleUrls: ['./progress-status-card.component.scss'],
+  selector: 'app-testrun-status-card',
+  templateUrl: './testrun-status-card.component.html',
+  styleUrls: ['./testrun-status-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProgressStatusCardComponent {
+export class TestrunStatusCardComponent {
   @Input() systemStatus!: TestrunStatus;
 
   public readonly StatusOfTestrun = StatusOfTestrun;

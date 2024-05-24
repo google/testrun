@@ -34,7 +34,7 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
 import { timer } from 'rxjs/internal/observable/timer';
-import { ProgressInitiateFormComponent } from '../testrun/components/progress-initiate-form/progress-initiate-form.component';
+import { TestrunInitiateFormComponent } from '../testrun/components/testrun-initiate-form/testrun-initiate-form.component';
 import { DevicesStore } from './devices.store';
 
 @Component({
@@ -76,7 +76,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
   }
 
   openStartTestrun(selectedDevice: Device, devices: Device[]): void {
-    const dialogRef = this.dialog.open(ProgressInitiateFormComponent, {
+    const dialogRef = this.dialog.open(TestrunInitiateFormComponent, {
       ariaLabel: 'Initiate testrun',
       data: {
         devices,

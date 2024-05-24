@@ -23,7 +23,7 @@ import {
   MOCK_PROGRESS_DATA_CANCELLED,
   MOCK_PROGRESS_DATA_COMPLIANT,
   MOCK_PROGRESS_DATA_NON_COMPLIANT,
-} from '../../../../mocks/progress.mock';
+} from '../../../../mocks/testrun.mock';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatOptionSelectionChange } from '@angular/material/core';
 
