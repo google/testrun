@@ -15,7 +15,6 @@
  */
 import {
   ComponentFixture,
-  discardPeriodicTasks,
   fakeAsync,
   TestBed,
   tick,
@@ -25,35 +24,39 @@ import { ProgressComponent } from './progress.component';
 import { TestRunService } from '../../services/test-run.service';
 import { of } from 'rxjs';
 import {
-  EMPTY_RESULT,
   MOCK_PROGRESS_DATA_CANCELLED,
   MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_COMPLIANT,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
-  MOCK_PROGRESS_DATA_IN_PROGRESS_EMPTY,
   MOCK_PROGRESS_DATA_MONITORING,
   MOCK_PROGRESS_DATA_NOT_STARTED,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
-  TEST_DATA_TABLE_RESULT,
 } from '../../mocks/progress.mock';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Component, Input } from '@angular/core';
-import { Observable } from 'rxjs/internal/Observable';
 import { IResult, TestrunStatus } from '../../model/testrun-status';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { ProgressInitiateFormComponent } from './components/progress-initiate-form/progress-initiate-form.component';
-import { DownloadReportComponent } from '../../components/download-report/download-report.component';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { LoaderService } from '../../services/loader.service';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../../store/state';
-import { selectDevices, selectHasDevices } from '../../store/selectors';
-import { DownloadReportPdfComponent } from '../../components/download-report-pdf/download-report-pdf.component';
+import {
+  selectDevices,
+  selectHasDevices,
+  selectIsOpenStartTestrun,
+  selectIsOpenWaitSnackBar,
+  selectIsStopTestrun,
+  selectSystemStatus,
+} from '../../store/selectors';
+import { TestrunStore } from './testrun.store';
+import { setTestrunStatus } from '../../store/actions';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NotificationService } from '../../services/notification.service';
 
 describe('ProgressComponent', () => {
   let component: ProgressComponent;
@@ -63,47 +66,61 @@ describe('ProgressComponent', () => {
 
   const testRunServiceMock: jasmine.SpyObj<TestRunService> =
     jasmine.createSpyObj([
-      'getSystemStatus',
-      'setSystemStatus',
-      'systemStatus$',
       'stopTestrun',
       'getDevices',
       'isOpenStartTestrun$',
       'isTestrunStarted$',
+      'fetchSystemStatus',
+      'getTestModules',
+      'testrunInProgress',
     ]);
 
   const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
     ['setLoading', 'getLoading']
   );
 
+  const notificationServiceMock: jasmine.SpyObj<NotificationService> =
+    jasmine.createSpyObj('NotificationService', [
+      'dismissWithTimout',
+      'dismissSnackBar',
+      'openSnackBar',
+    ]);
+
   const stateServiceMock: jasmine.SpyObj<FocusManagerService> =
     jasmine.createSpyObj('stateServiceMock', ['focusFirstElementInContainer']);
 
-  testRunServiceMock.isOpenStartTestrun$ = new BehaviorSubject(false);
-  testRunServiceMock.isTestrunStarted$ = new BehaviorSubject(false);
-
   describe('Class tests', () => {
     beforeEach(() => {
-      testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+      // @ts-expect-error data layer should be defined
+      window.dataLayer = window.dataLayer || [];
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
-
       TestBed.configureTestingModule({
         declarations: [
           ProgressComponent,
           FakeProgressStatusCardComponent,
           FakeProgressTableComponent,
+          FakeDownloadOptionsComponent,
         ],
         providers: [
+          TestrunStore,
           { provide: TestRunService, useValue: testRunServiceMock },
           { provide: FocusManagerService, useValue: stateServiceMock },
+          { provide: LoaderService, useValue: loaderServiceMock },
+          { provide: NotificationService, useValue: notificationServiceMock },
           {
             provide: MatDialogRef,
             useValue: {},
           },
           provideMockStore({
             selectors: [
-              { selector: selectDevices, value: [] },
               { selector: selectHasDevices, value: false },
+              { selector: selectIsOpenStartTestrun, value: false },
+              { selector: selectIsOpenWaitSnackBar, value: false },
+              { selector: selectIsStopTestrun, value: false },
+              {
+                selector: selectSystemStatus,
+                value: MOCK_PROGRESS_DATA_IN_PROGRESS,
+              },
             ],
           }),
         ],
@@ -113,7 +130,7 @@ describe('ProgressComponent', () => {
           MatToolbarModule,
           MatDialogModule,
           SpinnerComponent,
-          DownloadReportPdfComponent,
+          BrowserAnimationsModule,
         ],
       })
         .overrideComponent(ProgressComponent, {
@@ -125,13 +142,13 @@ describe('ProgressComponent', () => {
         })
         .compileComponents();
 
+      testRunServiceMock.fetchSystemStatus.and.returnValue(
+        of(MOCK_PROGRESS_DATA_IN_PROGRESS)
+      );
       store = TestBed.inject(MockStore);
       fixture = TestBed.createComponent(ProgressComponent);
+      spyOn(store, 'dispatch').and.callFake(() => {});
       component = fixture.componentInstance;
-    });
-
-    afterEach(() => {
-      testRunServiceMock.getSystemStatus.calls.reset();
     });
 
     it('should create', () => {
@@ -140,7 +157,7 @@ describe('ProgressComponent', () => {
 
     describe('openTestRunModal on first flow', () => {
       beforeEach(() => {
-        testRunServiceMock.isOpenStartTestrun$ = new BehaviorSubject(true);
+        store.overrideSelector(selectIsOpenStartTestrun, true);
         component.ngOnInit();
       });
 
@@ -167,12 +184,14 @@ describe('ProgressComponent', () => {
       });
 
       it('should update system status to Cancelling', () => {
-        component.currentStatus = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
-
+        store.overrideSelector(
+          selectSystemStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS
+        );
         component.stopTestrun();
 
-        expect(testRunServiceMock.setSystemStatus).toHaveBeenCalledWith(
-          MOCK_PROGRESS_DATA_CANCELLING
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setTestrunStatus({ systemStatus: MOCK_PROGRESS_DATA_CANCELLING })
         );
       });
     });
@@ -183,138 +202,32 @@ describe('ProgressComponent', () => {
         afterClosed: () => of(true),
       } as MatDialogRef<typeof DeleteFormComponent>);
 
-      component.openStopTestrunDialog();
+      component.openStopTestrunDialog(MOCK_PROGRESS_DATA_CANCELLING);
 
       expect(stopTestrunSpy).toHaveBeenCalled();
-    });
-
-    describe('#ngOnInit', () => {
-      it('should set systemStatus$ value', () => {
-        component.ngOnInit();
-
-        component.systemStatus$.subscribe(res => {
-          expect(res).toEqual(MOCK_PROGRESS_DATA_IN_PROGRESS);
-        });
-      });
-
-      it('should set hasDevices$ value', () => {
-        component.ngOnInit();
-
-        component.hasDevices$.subscribe(res => {
-          expect(res).toEqual(false);
-        });
-      });
-
-      describe('dataSource$', () => {
-        it('should set value with empty values if result length < total for status "In Progress"', () => {
-          const expectedResult = TEST_DATA_TABLE_RESULT;
-
-          testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
-          component.ngOnInit();
-
-          component.dataSource$.subscribe(res => {
-            expect(res).toEqual(expectedResult);
-          });
-        });
-
-        it('should set value with empty values for status "Monitoring"', () => {
-          const expectedResult = EMPTY_RESULT;
-
-          testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_MONITORING);
-          component.ngOnInit();
-
-          component.dataSource$.subscribe(res => {
-            expect(res).toEqual(expectedResult);
-          });
-        });
-
-        it('should set value with empty values for status "Waiting for Device"', () => {
-          const expectedResult = EMPTY_RESULT;
-
-          testRunServiceMock.systemStatus$ = of(
-            MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
-          );
-          component.ngOnInit();
-
-          component.dataSource$.subscribe(res => {
-            expect(res).toEqual(expectedResult);
-          });
-        });
-      });
-
-      it('should call focusFirstElementInContainer when testrun stops after cancelling', () => {
-        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_COMPLIANT);
-        component.isCancelling = true;
-
-        component.ngOnInit();
-        fixture.detectChanges();
-
-        expect(
-          stateServiceMock.focusFirstElementInContainer
-        ).toHaveBeenCalled();
-      });
-
-      describe('hideLoading', () => {
-        it('should called if testrun is finished', () => {
-          testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_COMPLIANT);
-
-          component.ngOnInit();
-
-          component.systemStatus$.subscribe(() => {
-            expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(false);
-          });
-        });
-
-        it('should called if testrun is in progress and have some test finished', () => {
-          testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
-
-          component.ngOnInit();
-
-          component.systemStatus$.subscribe(() => {
-            expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(false);
-          });
-        });
-      });
-
-      describe('showLoading', () => {
-        it('should be called if testrun is monitoring', () => {
-          testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_MONITORING);
-
-          component.ngOnInit();
-
-          component.systemStatus$.subscribe(() => {
-            expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(true);
-          });
-        });
-
-        it('should be called if testrun is in progress and have some test finished', () => {
-          testRunServiceMock.systemStatus$ = of(
-            MOCK_PROGRESS_DATA_IN_PROGRESS_EMPTY
-          );
-
-          component.ngOnInit();
-
-          component.systemStatus$.subscribe(() => {
-            expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(true);
-          });
-        });
-      });
     });
   });
 
   describe('DOM tests', () => {
     beforeEach(async () => {
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
+      testRunServiceMock.testrunInProgress.and.returnValue(false);
+      // @ts-expect-error data layer should be defined
+      window.dataLayer = window.dataLayer || [];
 
       await TestBed.configureTestingModule({
         declarations: [
           ProgressComponent,
           FakeProgressStatusCardComponent,
           FakeProgressTableComponent,
+          FakeDownloadOptionsComponent,
         ],
         providers: [
+          TestrunStore,
           { provide: TestRunService, useValue: testRunServiceMock },
           { provide: FocusManagerService, useValue: stateServiceMock },
+          { provide: LoaderService, useValue: loaderServiceMock },
+          { provide: NotificationService, useValue: notificationServiceMock },
           {
             provide: MatDialogRef,
             useValue: {},
@@ -323,6 +236,8 @@ describe('ProgressComponent', () => {
             selectors: [
               { selector: selectHasDevices, value: false },
               { selector: selectDevices, value: [] },
+              { selector: selectIsOpenWaitSnackBar, value: false },
+              { selector: selectIsStopTestrun, value: false },
             ],
           }),
         ],
@@ -331,9 +246,8 @@ describe('ProgressComponent', () => {
           MatIconModule,
           MatToolbarModule,
           MatDialogModule,
-          DownloadReportComponent,
           SpinnerComponent,
-          DownloadReportPdfComponent,
+          BrowserAnimationsModule,
         ],
       })
         .overrideComponent(ProgressComponent, {
@@ -348,16 +262,15 @@ describe('ProgressComponent', () => {
       store = TestBed.inject(MockStore);
       fixture = TestBed.createComponent(ProgressComponent);
       compiled = fixture.nativeElement as HTMLElement;
+      testRunServiceMock.fetchSystemStatus.and.returnValue(
+        of(MOCK_PROGRESS_DATA_IN_PROGRESS)
+      );
       component = fixture.componentInstance;
-    });
-
-    afterEach(() => {
-      testRunServiceMock.getSystemStatus.calls.reset();
     });
 
     describe('with not devices$ data', () => {
       beforeEach(() => {
-        (testRunServiceMock.systemStatus$ as unknown) = of(null);
+        store.overrideSelector(selectSystemStatus, null);
         store.overrideSelector(selectHasDevices, false);
         fixture.detectChanges();
       });
@@ -373,7 +286,7 @@ describe('ProgressComponent', () => {
 
     describe('with not systemStatus$ data', () => {
       beforeEach(() => {
-        (testRunServiceMock.systemStatus$ as unknown) = of(null);
+        store.overrideSelector(selectSystemStatus, null);
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
@@ -424,7 +337,11 @@ describe('ProgressComponent', () => {
 
     describe('with available systemStatus$ data, status "In Progress"', () => {
       beforeEach(() => {
-        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
+        store.overrideSelector(
+          selectSystemStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS
+        );
+        testRunServiceMock.testrunInProgress.and.returnValue(true);
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
@@ -470,28 +387,19 @@ describe('ProgressComponent', () => {
         expect(startBtn.disabled).toBeTrue();
       });
 
-      it('should not have "Download Report" button', () => {
-        const reportBtn = compiled.querySelector('.report-button');
+      it('should not have "Download" options', () => {
+        const downloadComp = compiled.querySelector('app-download-options');
 
-        expect(reportBtn).toBeNull();
+        expect(downloadComp).toBeNull();
       });
-    });
-
-    describe('pullingSystemStatusData with available status "In Progress"', () => {
-      it('should call again getSystemStatus)', fakeAsync(() => {
-        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_IN_PROGRESS);
-        store.overrideSelector(selectHasDevices, true);
-        fixture.detectChanges();
-        tick(5000);
-
-        expect(testRunServiceMock.getSystemStatus).toHaveBeenCalledTimes(1);
-        discardPeriodicTasks();
-      }));
     });
 
     describe('with available systemStatus$ data, as Completed', () => {
       beforeEach(() => {
-        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_COMPLIANT);
+        store.overrideSelector(
+          selectSystemStatus,
+          MOCK_PROGRESS_DATA_COMPLIANT
+        );
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
@@ -510,30 +418,19 @@ describe('ProgressComponent', () => {
         expect(startBtn.disabled).toBeFalse();
       });
 
-      it('should have "Download Report" button', () => {
-        const reportBtn = compiled.querySelector('.report-button');
+      it('should have "Download" options', () => {
+        const downloadComp = compiled.querySelector('app-download-options');
 
-        expect(reportBtn).not.toBeNull();
-      });
-
-      it('should have report link', () => {
-        const link = compiled.querySelector(
-          '.download-report-link'
-        ) as HTMLAnchorElement;
-
-        expect(link.href).toEqual('https://api.testrun.io/report.pdf');
-        expect(link.download).toEqual(
-          'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
-        );
-        expect(link.title).toEqual(
-          'Download pdf for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
-        );
+        expect(downloadComp).not.toBeNull();
       });
     });
 
     describe('with available systemStatus$ data, as Cancelled', () => {
       beforeEach(() => {
-        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_CANCELLED);
+        store.overrideSelector(
+          selectSystemStatus,
+          MOCK_PROGRESS_DATA_CANCELLED
+        );
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
@@ -546,18 +443,20 @@ describe('ProgressComponent', () => {
         expect(startBtn.disabled).toBeFalse();
       });
 
-      it('should not have "Download Report" button', () => {
-        const reportBtn = compiled.querySelector('.report-button');
+      it('should not have "Download" options', () => {
+        const downloadComp = compiled.querySelector('app-download-options');
 
-        expect(reportBtn).toBeNull();
+        expect(downloadComp).toBeNull();
       });
     });
 
     describe('with available systemStatus$ data, as Waiting for Device', () => {
       beforeEach(() => {
-        testRunServiceMock.systemStatus$ = of(
+        store.overrideSelector(
+          selectSystemStatus,
           MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
         );
+        testRunServiceMock.testrunInProgress.and.returnValue(true);
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
@@ -579,7 +478,11 @@ describe('ProgressComponent', () => {
 
     describe('with available systemStatus$ data, as Monitoring', () => {
       beforeEach(() => {
-        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_MONITORING);
+        store.overrideSelector(
+          selectSystemStatus,
+          MOCK_PROGRESS_DATA_MONITORING
+        );
+        testRunServiceMock.testrunInProgress.and.returnValue(true);
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
@@ -601,7 +504,10 @@ describe('ProgressComponent', () => {
 
     describe('with available systemStatus$ data, when Testrun not started on Idle status', () => {
       beforeEach(() => {
-        testRunServiceMock.systemStatus$ = of(MOCK_PROGRESS_DATA_NOT_STARTED);
+        store.overrideSelector(
+          selectSystemStatus,
+          MOCK_PROGRESS_DATA_NOT_STARTED
+        );
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
@@ -624,7 +530,7 @@ describe('ProgressComponent', () => {
   template: '<div></div>',
 })
 class FakeProgressStatusCardComponent {
-  @Input() systemStatus$!: Observable<TestrunStatus>;
+  @Input() systemStatus!: TestrunStatus;
 }
 
 @Component({
@@ -632,5 +538,14 @@ class FakeProgressStatusCardComponent {
   template: '<div></div>',
 })
 class FakeProgressTableComponent {
-  @Input() dataSource$!: Observable<IResult[] | undefined>;
+  @Input() dataSource!: IResult[] | undefined;
+  @Input() stepsToResolveCount!: number;
+}
+
+@Component({
+  selector: 'app-download-options',
+  template: '<div></div>',
+})
+class FakeDownloadOptionsComponent {
+  @Input() data!: TestrunStatus;
 }

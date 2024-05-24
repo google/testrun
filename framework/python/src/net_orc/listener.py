@@ -44,7 +44,17 @@ class Listener:
 
   def start_listener(self):
     """Start sniffing packets on the device interface."""
+
+    # Don't start the listener if it is already running
+    if self._sniffer.running:
+      LOGGER.debug('Listener was already running')
+      return
+
     self._sniffer.start()
+
+  def reset(self):
+    self._callbacks = []
+    self._discovered_devices = []
 
   def stop_listener(self):
     """Stop sniffing packets on the device interface."""

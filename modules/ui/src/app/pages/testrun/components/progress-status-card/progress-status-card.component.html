@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container *ngIf="systemStatus$ | async as data">
+<ng-container *ngIf="systemStatus as data">
   <div
     class="progress-card"
     [ngClass]="getClass(data.status)"
@@ -59,13 +59,24 @@ limitations under the License.
       ></ng-container>
     </div>
     <ng-container *ngIf="data.finished">
-      <ng-container
-        *ngTemplateOutlet="
-          Finished;
-          context: {
-            data: data
-          }
-        "></ng-container>
+      <ng-container *ngIf="data.status !== StatusOfTestrun.InProgress">
+        <ng-container
+          *ngTemplateOutlet="
+            Finished;
+            context: {
+              data: data
+            }
+          "></ng-container>
+      </ng-container>
+      <ng-container *ngIf="data.status === StatusOfTestrun.InProgress">
+        <ng-container
+          *ngTemplateOutlet="
+            InProgress;
+            context: {
+              data: data
+            }
+          "></ng-container
+      ></ng-container>
     </ng-container>
   </div>
 </ng-container>

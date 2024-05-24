@@ -25,38 +25,6 @@ jobs:
       - name: Run baseline tests
         shell: bash {0}
         run: testing/baseline/test_baseline
-    
-  # testrun_tests:
-  #   permissions: {}
-  #   name:  Tests
-  #   runs-on: ubuntu-20.04
-  #   needs: testrun_baseline
-  #   timeout-minutes: 45
-  #   steps:
-  #     - name: Checkout source
-  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-  #     - name: Install dependencies
-  #       shell: bash {0}
-  #       run: cmd/prepare
-  #     - name: Package Testrun  
-  #       shell: bash {0}
-  #       run: cmd/package
-  #     - name: Install Testrun
-  #       shell: bash {0}
-  #       run: sudo dpkg -i testrun*.deb
-  #     - name: Run tests
-  #       shell: bash {0}
-  #       run: testing/tests/test_tests
-  #     - name: Archive runtime results
-  #       if: ${{ always() }}
-  #       run: sudo tar --exclude-vcs -czf runtime.tgz /usr/local/testrun/runtime/
-  #     - name: Upload runtime results
-  #       uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
-  #       if: ${{ always() }}
-  #       with:
-  #         if-no-files-found: error
-  #         name: runtime_tests_${{ github.run_id }}
-  #         path: runtime.tgz
 
   testrun_api:
     permissions: {}
@@ -99,23 +67,6 @@ jobs:
         shell: bash {0}
         run: testing/pylint/test_pylint
 
-  testrun_package:
-    permissions: {}
-    name: Package
-    runs-on: ubuntu-22.04
-    timeout-minutes: 5
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - name: Package Testrun
-        shell: bash {0}
-        run: cmd/package
-      - name: Archive package
-        uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
-        with:
-          name: testrun_installer
-          path: testrun*.deb
-
   testrun_ui:
     permissions: {}
     name: UI
@@ -125,7 +76,7 @@ jobs:
     - name: Install Node
       uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
       with:
-        node-version: 18.13.0
+        node-version: 18.18.0
     - name: Install Chromium Browser
       run: sudo apt install chromium-browser
     - name: Install dependencies
@@ -148,7 +99,7 @@ jobs:
     - name: Install Node
       uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
       with:
-        node-version: 18.13.0
+        node-version: 18.18.0
     - name: Install dependencies
       run: npm install && npm ci
       working-directory: ./modules/ui

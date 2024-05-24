@@ -14,6 +14,36 @@
     },
     "tests": [
       {
+        "name": "connection.port_link",
+        "test_description": "The network switch port connected to the device has an active link without errors",
+        "expected_behavior": "When the etherent cable is connected to the port, the device triggers the port to its enabled \"Link UP\" (LEDs illuminate on device and switch ports if present) state, and the switch shows no errors with the LEDs and when interrogated with a \"show interface\" command on most network switches.",
+        "required_result": "Required"
+      },
+      {
+        "name": "connection.port_speed",
+        "test_description": "The network switch port connected to the device has auto-negotiated a speed that is 10 Mbps or higher",
+        "expected_behavior": "When the ethernet cable is connected to the port, the device autonegotiates a speed that can be checked with the \"show interface\" command on most network switches.  The output of this command must also show that the \"configured speed\" is set to \"auto\".",
+        "required_result": "Required"
+      },
+      {
+        "name": "connection.port_duplex",
+        "test_description": "The network switch port connected to the device has auto-negotiated full-duplex",
+        "expected_behavior": "When the ethernet cable is connected to the port, the device autonegotiates a full-duplex connection.",
+        "required_result": "Required"
+      },
+      {
+        "name": "connection.switch.arp_inspection",
+        "test_description": "The device implements ARP correctly as per RFC826",
+        "expected_behavior": "Device continues to operate correctly when ARP inspection is enabled on the switch.  No functionality is lost with ARP inspection enabled.",
+        "required_result": "Required"
+      },
+      {
+        "name": "connection.switch.dhcp_snooping",
+        "test_description": "The device operates as a DHCP client and operates correctly when DHCP snooping is enabled on a switch.",
+        "expected_behavior": "Device continues to operate correctly when DHCP snooping is enabled on the switch.",
+        "required_result": "Required"
+      },
+      {
         "name": "connection.dhcp_address",
         "test_description": "The device under test has received an IP address from the DHCP server and responds to an ICMP echo (ping) request",
         "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.",
@@ -34,7 +64,7 @@
       },
       {
         "name": "connection.mac_oui",
-        "test_description": "The device under test hs a MAC address prefix that is registered against a known manufacturer.",
+        "test_description": "The device under test has a MAC address prefix that is registered against a known manufacturer.",
         "expected_behavior": "The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database.",
         "required_result": "Required",
         "recommendations": [

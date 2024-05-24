@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Observable } from 'rxjs/internal/Observable';
 import {
   IResult,
   StatusOfTestrun,
@@ -29,7 +28,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgressStatusCardComponent {
-  @Input() systemStatus$!: Observable<TestrunStatus>;
+  @Input() systemStatus!: TestrunStatus;
 
   public readonly StatusOfTestrun = StatusOfTestrun;
 
@@ -46,7 +45,9 @@ export class ProgressStatusCardComponent {
         status === StatusOfTestrun.CompliantLimited ||
         status === StatusOfTestrun.CompliantHigh ||
         status === StatusOfTestrun.SmartReady,
-      'completed-failed': status === StatusOfTestrun.NonCompliant,
+      'completed-failed':
+        status === StatusOfTestrun.NonCompliant ||
+        status === StatusOfTestrun.Error,
       canceled:
         status === StatusOfTestrun.Cancelled ||
         status === StatusOfTestrun.Cancelling,

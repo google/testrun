@@ -15,11 +15,11 @@ limitations under the License.
 -->
 <ng-container *ngIf="data">
   <a
-    class="download-report-link"
+    class="download-report-link {{ getClass(data) }}"
     [download]="getReportTitle(data)"
     [href]="href"
     target="_blank"
-    [title]="title">
+    [matTooltip]="title">
     <ng-content></ng-content>
   </a>
 </ng-container>

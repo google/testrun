@@ -14,21 +14,17 @@
 """Baseline test module"""
 from test_module import TestModule
 from tls_util import TLSUtil
-import os
 import pyshark
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, dsa, ec
 
 LOG_NAME = 'test_tls'
-MODULE_REPORT_FILE_NAME = 'tls_report.md'
+MODULE_REPORT_FILE_NAME = 'tls_report.html'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 TLS_CAPTURE_FILE = '/runtime/output/tls.pcap'
-
+GATEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
 LOGGER = None
-
 
 class TLSModule(TestModule):
   """An example testing module."""
@@ -53,119 +49,147 @@ class TLSModule(TestModule):
     LOGGER = self._get_logger()
     self._tls_util = TLSUtil(LOGGER)
 
-  def generate_module_report(self):
-    summary = '## Summary'
+  # def generate_module_report(self):
 
-    summary_header = (f'''| {'#': ^5} '''
-              f'''| {'Expiry': ^{25}} '''
-              f'''| {'Length': ^{8}} '''
-              f'''| {'Type': ^{6}} '''
-              f'''| {'Port No.': ^{10}} '''
-              f'''| {'Signed by': ^{11}} | ''')
-    summary_header_line = (f'''|{'-' * 7}'''
-                           f'''|{'-' * 27}'''
-                           f'''|{'-' * 10}'''
-                           f'''|{'-' * 8}'''
-                           f'''|{'-' * 12}'''
-                           f'''|{'-' * 13}|''')
-    summary_table = f'{summary_header}\n{summary_header_line}'
+  # html_content = '<h1>TLS Module</h1>'
 
-    # List of capture files to scan
-    pcap_files = [
-        self.startup_capture_file, self.monitor_capture_file,
-        self.tls_capture_file
-    ]
-    certificates = self.extract_certificates_from_pcap(pcap_files,
-                                                       self._device_mac)
-    if len(certificates)>0:
-      cert_tables = []
-      for cert_num, ((ip_address, port), cert) in enumerate(certificates.items()):
-        # Extract certificate data
-        not_valid_before = cert.not_valid_before
-        not_valid_after = cert.not_valid_after
-        version_value = f'{cert.version.value + 1} ({hex(cert.version.value)})'
-        signature_alg_value = cert.signature_algorithm_oid._name  # pylint: disable=W0212
-        not_before = str(not_valid_before)
-        not_after = str(not_valid_after)
-        public_key = cert.public_key()
-        signed_by = 'None'
-        if isinstance(public_key, rsa.RSAPublicKey):
-            public_key_type = "RSA"
-        elif isinstance(public_key, dsa.DSAPublicKey):
-            public_key_type = "DSA"
-        elif isinstance(public_key, ec.EllipticCurvePublicKey):
-            public_key_type = "EC"
-        else:
-            public_key_type = "Unknown"
-        # Calculate certificate length
-        cert_length = len(cert.public_bytes(encoding=serialization.Encoding.DER))
-        # Generate the Certificate table
-        cert_table = (f'| Property | Value |\n'
-                      f'|---|---|\n'
-                      f"| {'Version':<17} | {version_value:^25} |\n"
-                      f"| {'Signature Alg.':<17} | {signature_alg_value:^25} |\n"
-                      f"| {'Validity from':<17} | {not_before:^25} |\n"
-                      f"| {'Valid to':<17} | {not_after:^25} |")
+  # # List of capture files to scan
+  # pcap_files = [
+  #     self.startup_capture_file, self.monitor_capture_file,
+  #     self.tls_capture_file
+  # ]
+  # certificates = self.extract_certificates_from_pcap(pcap_files,
+  #                                                    self._device_mac)
+  # if len(certificates) > 0:
 
-        # Generate the Subject table
-        subj_table = ('| Distinguished Name | Value |\n'
-                      '|---|---|')
-        for val in cert.subject.rdns:
-          dn = val.rfc4514_string().split('=')
-          subj_table += f'\n| {dn[0]} | {dn[1]}'
+  #   # Add summary table
+  #   summary_table = '''
+  #     <table class="module-summary">
+  #       <thead>
+  #         <tr>
+  #           <th>Expiry</th>
+  #           <th>Length</th>
+  #           <th>Type</th>
+  #           <th>Port number</th>
+  #           <th>Signed by</th>
+  #         </tr>
+  #       </thead>
+  #       <tbody>
+  #     '''
 
-        # Generate the Issuer table
-        iss_table = ('| Distinguished Name | Value |\n'
-                     '|---|---|')
-        for val in cert.issuer.rdns:
-          dn = val.rfc4514_string().split('=')
-          iss_table += f'\n| {dn[0]} | {dn[1]}'
-          if 'CN' in dn[0]:
-            signed_by = dn[1]
+  #   # table_content = '''
+  #   #   <table class="module-data">
+  #   #     <thead>
+  #   #       <tr>
+  #   #         <th>Expiry</th>
+  #   #         <th>Length</th>
+  #   #         <th>Type</th>
+  #   #         <th>Port number</th>
+  #   #         <th>Signed by</th>
+  #   #       </tr>
+  #   #     </thead>
+  #   #     <tbody>'''
 
-        ext_table = None
-        if cert.extensions:
-          ext_table = ('| Extension | Value |\n'
-                       '|---|---|')
-          for extension in cert.extensions:
-            for extension_value in extension.value:
-              ext_table += f'\n| {extension.oid._name} | {extension_value.value}'  # pylint: disable=W0212
-        cert_table = f'### Certificate\n{cert_table}'
-        cert_table += f'\n\n### Subject\n{subj_table}'
-        cert_table += f'\n\n### Issuer\n{iss_table}'
-        if ext_table is not None:
-          cert_table += f'\n\n### Extensions\n{ext_table}'
-        cert_tables.append(cert_table)
-        summary_table_row = (f'''| {cert_num+1: ^5} '''
-                             f'''| {not_after: ^25} '''
-                             f'''| {cert_length: ^8} '''
-                             f'''| {public_key_type: ^6} '''
-                             f'''| {port: ^10} '''
-                             f'''| {signed_by: ^11} |''')
-        summary_table+=f'\n{summary_table_row}'
+  #   cert_tables = []
+  #   for cert_num, ((ip_address, port), cert) in enumerate(
+  #       certificates.items()):
 
-      markdown_template = '# TLS Module\n' + '\n'.join(
-          '\n' + tables for tables in cert_tables)
+  #     # Extract certificate data
+  #     not_valid_before = cert.not_valid_before
+  #     not_valid_after = cert.not_valid_after
+  #     version_value = f'{cert.version.value + 1} ({hex(cert.version.value)})'
+  #     signature_alg_value = cert.signature_algorithm_oid._name  # pylint: disable=W0212
+  #     not_before = str(not_valid_before)
+  #     not_after = str(not_valid_after)
+  #     public_key = cert.public_key()
+  #     signed_by = 'None'
+  #     if isinstance(public_key, rsa.RSAPublicKey):
+  #       public_key_type = 'RSA'
+  #     elif isinstance(public_key, dsa.DSAPublicKey):
+  #       public_key_type = 'DSA'
+  #     elif isinstance(public_key, ec.EllipticCurvePublicKey):
+  #       public_key_type = 'EC'
+  #     else:
+  #       public_key_type = 'Unknown'
+  #     # Calculate certificate length
+  #     cert_length = len(cert.public_bytes(
+  #       encoding=serialization.Encoding.DER))
 
-      # summary = f'## Summary\n\n{summary_table}'
-      # markdown_template += f'\n\n{summary}'
-    else:
-      markdown_template = (f'''# TLS Module\n'''
-        f'''\n- No device certificates detected\n''')
-      
-    summary = f'## Summary\n\n{summary_table}'
-    markdown_template += f'\n\n{summary}'
-    LOGGER.debug('Markdown Report:\n' + markdown_template)
+  #     # Generate the Certificate table
+  #     # cert_table = (f'| Property | Value |\n'
+  #     #               f'|---|---|\n'
+  #     #               f"| {'Version':<17} | {version_value:^25} |\n"
+  #     #               f"| {'Signature Alg.':<17} | 
+  #                         {signature_alg_value:^25} |\n"
+  #     #               f"| {'Validity from':<17} | {not_before:^25} |\n"
+  #     #               f"| {'Valid to':<17} | {not_after:^25} |")
 
-    # Use os.path.join to create the complete file path
-    report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
+  #     # Generate the Subject table
+  #     subj_table = ('| Distinguished Name | Value |\n'
+  #                   '|---|---|')
+  #     for val in cert.subject.rdns:
+  #       dn = val.rfc4514_string().split('=')
+  #       subj_table += f'\n| {dn[0]} | {dn[1]}'
 
-    # Write the content to a file
-    with open(report_path, 'w', encoding='utf-8') as file:
-      file.write(markdown_template)
+  #     # Generate the Issuer table
+  #     iss_table = ('| Distinguished Name | Value |\n'
+  #                  '|---|---|')
+  #     for val in cert.issuer.rdns:
+  #       dn = val.rfc4514_string().split('=')
+  #       iss_table += f'\n| {dn[0]} | {dn[1]}'
+  #       if 'CN' in dn[0]:
+  #         signed_by = dn[1]
 
-    LOGGER.info('Module report generated at: ' + str(report_path))
-    return report_path
+  #     ext_table = None
+  #     # if cert.extensions:
+  #     #   ext_table = ('| Extension | Value |\n'
+  #     #                '|---|---|')
+  #     #   for extension in cert.extensions:
+  #     #     for extension_value in extension.value:
+  #     #       ext_table += f'''\n| {extension.oid._name} |
+  #     #       {extension_value.value}'''  # pylint: disable=W0212
+  #     # cert_table = f'### Certificate\n{cert_table}'
+  #     # cert_table += f'\n\n### Subject\n{subj_table}'
+  #     # cert_table += f'\n\n### Issuer\n{iss_table}'
+  #     # if ext_table is not None:
+  #     #   cert_table += f'\n\n### Extensions\n{ext_table}'
+  #     # cert_tables.append(cert_table)
+
+  #     summary_table += f'''
+  #           <tr>
+  #             <td>{not_after}</td>
+  #             <td>{cert_length}</td>
+  #             <td>{public_key_type}</td>
+  #             <td>{port}</td>
+  #             <td>{signed_by}</td>
+  #           </tr>
+  #         '''
+
+  #   summary_table += '''
+  #       </tbody>
+  #     </table>
+  #   '''
+
+  #   html_content += summary_table
+
+  # else:
+  #   html_content += ('''
+  #     <div class="callout-container info">
+  #       <div class="icon"></div>
+  #       No TLS certificates found on the device
+  #     </div>''')
+
+  # LOGGER.debug('Module report:\n' + html_content)
+
+  # # Use os.path.join to create the complete file path
+  # report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
+
+  # # Write the content to a file
+  # with open(report_path, 'w', encoding='utf-8') as file:
+  #   file.write(html_content)
+
+  # LOGGER.info('Module report generated at: ' + str(report_path))
+  # return report_path
 
   def extract_certificates_from_pcap(self, pcap_files, mac_address):
     # Initialize a list to store packets
@@ -211,49 +235,87 @@ class TLSModule(TestModule):
           self._device_ipv4_addr, tls_version='1.2')
       tls_1_3_results = self._tls_util.validate_tls_server(
           self._device_ipv4_addr, tls_version='1.3')
-      return self._tls_util.process_tls_server_results(tls_1_2_results,
+      results = self._tls_util.process_tls_server_results(tls_1_2_results,
                                                        tls_1_3_results)
+      # Determine results and return proper messaging and details
+      description = ''
+      if results[0] is None:
+        description = 'TLS 1.2 certificate could not be validated'
+      elif results[0]:
+        description = 'TLS 1.2 certificate is valid'
+      else:
+        description = 'TLS 1.2 certificate is invalid'
+      return results[0], description,results[1]
+
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
-      return None, 'Could not resolve device IP address'
+      return 'Error', 'Could not resolve device IP address'
 
   def _security_tls_v1_3_server(self):
     LOGGER.info('Running security.tls.v1_3_server')
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      return self._tls_util.validate_tls_server(self._device_ipv4_addr,
+      results = self._tls_util.validate_tls_server(self._device_ipv4_addr,
                                                 tls_version='1.3')
+      # Determine results and return proper messaging and details
+      description = ''
+      if results[0] is None:
+        description = 'TLS 1.3 certificate could not be validated'
+      elif results[0]:
+        description = 'TLS 1.3 certificate is valid'
+      else:
+        description = 'TLS 1.3 certificate is invalid'
+      return results[0], description,results[1]
+
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
-      return None, 'Could not resolve device IP address'
+      return 'Error', 'Could not resolve device IP address'
 
   def _security_tls_v1_2_client(self):
     LOGGER.info('Running security.tls.v1_2_client')
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      return self._validate_tls_client(self._device_ipv4_addr, '1.2')
+      results = self._validate_tls_client(self._device_ipv4_addr, '1.2')
+      # Determine results and return proper messaging and details
+      description = ''
+      if results[0] is None:
+        description = 'No outbound connections were found'
+      elif results[0]:
+        description = 'TLS 1.2 client connections valid'
+      else:
+        description = 'TLS 1.2 client connections invalid'
+      return results[0], description,  results[1]
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
-      return None, 'Could not resolve device IP address'
+      return 'Error', 'Could not resolve device IP address'
 
   def _security_tls_v1_3_client(self):
     LOGGER.info('Running security.tls.v1_3_client')
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      return self._validate_tls_client(self._device_ipv4_addr, '1.3')
+      results = self._validate_tls_client(self._device_ipv4_addr, '1.3')
+      # Determine results and return proper messaging and details
+      description = ''
+      if results[0] is None:
+        description = 'No outbound connections were found'
+      elif results[0]:
+        description = 'TLS 1.3 client connections valid'
+      else:
+        description = 'TLS 1.3 client connections invalid'
+      return results[0], description,  results[1]
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
-      return None, 'Could not resolve device IP address'
+      return 'Error', 'Could not resolve device IP address'
 
   def _validate_tls_client(self, client_ip, tls_version):
     client_results = self._tls_util.validate_tls_client(
         client_ip=client_ip,
         tls_version=tls_version,
         capture_files=[
-            MONITOR_CAPTURE_FILE, STARTUP_CAPTURE_FILE, GATEWAY_CAPTURE_FILE
+            MONITOR_CAPTURE_FILE, STARTUP_CAPTURE_FILE, TLS_CAPTURE_FILE
         ])
 
     # Generate results based on the state

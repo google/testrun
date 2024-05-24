@@ -15,8 +15,9 @@ limitations under the License.
 -->
 <app-download-report
   *ngIf="data"
+  class="download-report-link-pdf"
   [data]="data"
   [href]="data.report"
-  title="Download pdf for Test Run # {{ getTestRunId(data) }}">
+  title="Download pdf for Testrun # {{ getTestRunId(data) }}">
   <ng-content></ng-content>
 </app-download-report>

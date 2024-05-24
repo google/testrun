@@ -16,7 +16,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DownloadReportComponent } from './download-report.component';
-import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/progress.mock';
+import {
+  MOCK_PROGRESS_DATA_CANCELLED,
+  MOCK_PROGRESS_DATA_COMPLIANT,
+  MOCK_PROGRESS_DATA_NON_COMPLIANT,
+} from '../../mocks/progress.mock';
 
 describe('DownloadReportComponent', () => {
   let component: DownloadReportComponent;
@@ -42,6 +46,36 @@ describe('DownloadReportComponent', () => {
       const result = component.getReportTitle(MOCK_PROGRESS_DATA_COMPLIANT);
 
       expect(result).toEqual(expectedResult);
+    });
+
+    describe('#getClass', () => {
+      beforeEach(() => {
+        component.class = 'class';
+      });
+
+      it('should return class with -compliant if status is Compliant', () => {
+        const expectedResult = 'class-compliant';
+
+        const result = component.getClass(MOCK_PROGRESS_DATA_COMPLIANT);
+
+        expect(result).toEqual(expectedResult);
+      });
+
+      it('should return class with -non-compliant if status is Non Compliant', () => {
+        const expectedResult = 'class-non-compliant';
+
+        const result = component.getClass(MOCK_PROGRESS_DATA_NON_COMPLIANT);
+
+        expect(result).toEqual(expectedResult);
+      });
+
+      it('should return class if status is not Compliant and Non-compliant', () => {
+        const expectedResult = 'class';
+
+        const result = component.getClass(MOCK_PROGRESS_DATA_CANCELLED);
+
+        expect(result).toEqual(expectedResult);
+      });
     });
   });
 
@@ -76,7 +110,7 @@ describe('DownloadReportComponent', () => {
       beforeEach(() => {
         component.data = MOCK_PROGRESS_DATA_COMPLIANT;
         component.title =
-          'Download pdf for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20';
+          'Download pdf for Testrun # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20';
         component.href = MOCK_PROGRESS_DATA_COMPLIANT.report;
 
         fixture.detectChanges();
@@ -93,9 +127,6 @@ describe('DownloadReportComponent', () => {
         );
         expect(downloadReportLink.download).toEqual(
           'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
-        );
-        expect(downloadReportLink.title).toEqual(
-          'Download pdf for Test Run # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
         );
       });
     });

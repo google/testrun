@@ -23,30 +23,43 @@ import {
 import { FocusManagerService } from './focus-manager.service';
 import { delay } from 'rxjs/internal/operators/delay';
 import { take } from 'rxjs/internal/operators/take';
+import { SnackBarComponent } from '../components/snack-bar/snack-bar.component';
+import { timer } from 'rxjs';
+import { setIsOpenWaitSnackBar } from '../store/actions';
+import { Store } from '@ngrx/store';
+import { AppState } from '../store/state';
 
 const TIMEOUT_MS = 8000;
+const WAIT_DISMISS_TIMEOUT_MS = 5000;
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService {
   private snackBarRef!: MatSnackBarRef<TextOnlySnackBar>;
+  public snackBarCompRef!: MatSnackBarRef<SnackBarComponent>;
+
   constructor(
     public snackBar: MatSnackBar,
+    private store: Store<AppState>,
     private focusManagerService: FocusManagerService
   ) {}
 
-  notify(message: string, duration = 0) {
+  notify(message: string, duration = 0, panelClass = '', timeout = TIMEOUT_MS) {
+    const panelClasses = ['test-run-notification'];
+    if (panelClass) {
+      panelClasses.push(panelClass);
+    }
     this.snackBarRef = this.snackBar.open(message, 'OK', {
       horizontalPosition: 'center',
-      panelClass: 'test-run-notification',
+      panelClass: panelClasses,
       duration: duration,
       politeness: 'assertive',
     });
 
     this.snackBarRef
       .afterOpened()
-      .pipe(take(1), delay(TIMEOUT_MS))
+      .pipe(take(1), delay(timeout))
       .subscribe(() => this.setFocusToActionButton());
 
     this.snackBarRef
@@ -57,10 +70,39 @@ export class NotificationService {
   dismiss() {
     this.snackBar.dismiss();
   }
+  openSnackBar() {
+    this.snackBarCompRef = this.snackBar.openFromComponent(SnackBarComponent, {
+      duration: 0,
+      panelClass: 'snack-bar-info',
+    });
+
+    this.store.dispatch(setIsOpenWaitSnackBar({ isOpenWaitSnackBar: true }));
+
+    this.snackBarCompRef
+      .afterOpened()
+      .pipe(take(1), delay(TIMEOUT_MS))
+      .subscribe(() => this.setFocusToActionButton());
+
+    this.snackBarCompRef
+      .afterDismissed()
+      .pipe(take(1))
+      .subscribe(() => this.focusManagerService.focusFirstElementInContainer());
+  }
+
+  dismissSnackBar() {
+    this.snackBarCompRef?.dismiss();
+    this.store.dispatch(setIsOpenWaitSnackBar({ isOpenWaitSnackBar: false }));
+  }
+
+  dismissWithTimout() {
+    timer(WAIT_DISMISS_TIMEOUT_MS)
+      .pipe(take(1))
+      .subscribe(() => this.dismissSnackBar());
+  }
 
   private setFocusToActionButton(): void {
     const btn = document.querySelector(
-      '.test-run-notification button'
+      '.test-run-notification button, .snack-bar-info button'
     ) as HTMLButtonElement;
     btn?.focus();
   }

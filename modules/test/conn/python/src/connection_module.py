@@ -15,20 +15,21 @@
 import util
 import time
 import traceback
-from scapy.all import rdpcap, DHCP, Ether, IPv6, ICMPv6ND_NS
+from scapy.all import rdpcap, DHCP, ARP, Ether, IPv6, ICMPv6ND_NS
 from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
 from dhcp2.client import Client as DHCPClient2
 from dhcp_util import DHCPUtil
+from port_stats_util import PortStatsUtil
 
 LOG_NAME = 'test_connection'
-LOGGER = None
 OUI_FILE = '/usr/local/etc/oui.txt'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 DHCP_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
 SLAAC_PREFIX = 'fd10:77be:4186'
 TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
+LOGGER = None
 
 # Should be at least twice as much as the max lease time
 # set in the DHCP server
@@ -38,10 +39,15 @@ LEASE_WAIT_TIME_DEFAULT = 60
 class ConnectionModule(TestModule):
   """Connection Test module"""
 
-  def __init__(self, module):
-    super().__init__(module_name=module, log_name=LOG_NAME)
+  def __init__(self, module, log_dir=None, conf_file=None, results_dir=None):
+    super().__init__(module_name=module,
+                     log_name=LOG_NAME,
+                     log_dir=log_dir,
+                     conf_file=conf_file,
+                     results_dir=results_dir)
     global LOGGER
     LOGGER = self._get_logger()
+    self._port_stats = PortStatsUtil(logger=LOGGER)
     self.dhcp1_client = DHCPClient1()
     self.dhcp2_client = DHCPClient2()
     self._dhcp_util = DHCPUtil(self.dhcp1_client, self.dhcp2_client, LOGGER)
@@ -73,6 +79,83 @@ class ConnectionModule(TestModule):
 
     # response = self.dhcp1_client.set_dhcp_range('10.10.10.20','10.10.10.30')
     # print("Set Range: " + str(response))
+
+  def _connection_port_link(self):
+    LOGGER.info('Running connection.port_link')
+    return self._port_stats.connection_port_link_test()
+
+  def _connection_port_speed(self):
+    LOGGER.info('Running connection.port_speed')
+    return self._port_stats.connection_port_speed_test()
+
+  def _connection_port_duplex(self):
+    LOGGER.info('Running connection.port_duplex')
+    return self._port_stats.connection_port_duplex_test()
+
+  def _connection_switch_arp_inspection(self):
+    LOGGER.info('Running connection.switch.arp_inspection')
+
+    # If the ipv4 address wasn't resolved yet, try again
+    if self._device_ipv4_addr is None:
+      self._device_ipv4_addr = self._get_device_ipv4()
+
+    if self._device_ipv4_addr is None:
+      LOGGER.error('No device IP could be resolved')
+      return 'Error', 'Could not resolve device IP address'
+
+    no_arp = True
+
+    # Read all the pcap files
+    packets = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
+    for packet in packets:
+
+      # We are not interested in packets unless they are ARP packets
+      if not ARP in packet:
+        continue
+
+      # We are only interested in packets from the device
+      if packet.src != self._device_mac:
+        continue
+
+      # Get the ARP packet
+      arp_packet = packet[ARP]
+      no_arp = False
+
+      # Check MAC address matches IP address
+      if (arp_packet.hwsrc == self._device_mac
+          and (arp_packet.psrc not in (self._device_ipv4_addr, '0.0.0.0'))):
+        LOGGER.info(f'Bad ARP packet detected for MAC: {self._device_mac}')
+        LOGGER.info(f'''ARP packet from IP {arp_packet.psrc}
+                    does not match {self._device_ipv4_addr}''')
+        return False, 'Device is sending false ARP response'
+
+    if no_arp:
+      return None, 'No ARP packets from the device found'
+
+    return True, 'Device uses ARP'
+
+  def _connection_switch_dhcp_snooping(self):
+    LOGGER.info('Running connection.switch.dhcp_snooping')
+
+    disallowed_dhcp_types = [2, 4, 5, 6, 9, 10, 12, 13, 15, 17]
+
+    # Read all the pcap files
+    packets = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
+    for packet in packets:
+
+      # We are not interested in packets unless they are DHCP packets
+      if not DHCP in packet:
+        continue
+
+      # We are only interested in packets from the device
+      if packet.src != self._device_mac:
+        continue
+
+      dhcp_type = self._get_dhcp_type(packet)
+      if dhcp_type in disallowed_dhcp_types:
+        return False, 'Device has sent disallowed DHCP message'
+
+    return True, 'Device does not act as a DHCP server'
 
   def _connection_private_address(self, config):
     LOGGER.info('Running connection.private_address')
@@ -139,13 +222,11 @@ class ConnectionModule(TestModule):
     LOGGER.info('Inspecting: ' + str(len(packets)) + ' packets')
     for packet in packets:
       if DHCP in packet:
-        for option in packet[DHCP].options:
-          # message-type, option 3 = DHCPREQUEST
-          if 'message-type' in option and option[1] == 3:
-            mac_address = packet[Ether].src
-            LOGGER.info('DHCPREQUEST detected MAC address: ' + mac_address)
-            if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
-              mac_addresses.add(mac_address.upper())
+        if self._get_dhcp_type(packet) == 3:
+          mac_address = packet[Ether].src
+          LOGGER.info('DHCPREQUEST detected MAC address: ' + mac_address)
+          if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
+            mac_addresses.add(mac_address.upper())
 
     # Check if the device mac address is in the list of DHCPREQUESTs
     result = self._device_mac.upper() in mac_addresses
@@ -160,6 +241,11 @@ class ConnectionModule(TestModule):
     else:
       return result, 'Device is using multiple IP addresses'
 
+  def _get_dhcp_type(self, packet):
+    for option in packet[DHCP].options:
+      if 'message-type' in option:
+        return option[1]
+
   def _connection_target_ping(self):
     LOGGER.info('Running connection.target_ping')
 
@@ -169,7 +255,7 @@ class ConnectionModule(TestModule):
 
     if self._device_ipv4_addr is None:
       LOGGER.error('No device IP could be resolved')
-      return False, 'Could not resolve device IP'
+      return 'Error', 'Could not resolve device IP address'
     else:
       if self._ping(self._device_ipv4_addr):
         return True, 'Device responds to ping'
@@ -488,6 +574,7 @@ class ConnectionModule(TestModule):
 
     except Exception as e:  # pylint: disable=W0718
       LOGGER.error('Failed to restore DHCP server configuration: ' + str(e))
+      LOGGER.error(traceback.format_exc())
 
     return final_result, final_result_details
 

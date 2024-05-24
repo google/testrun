@@ -37,8 +37,21 @@ limitations under the License.
       [class.hidden]="selectedDevice === null"
       appearance="outline">
       <mat-label>Firmware</mat-label>
-      <input formControlName="firmware" matInput #firmwareInput />
+      <input
+        class="firmware-input"
+        formControlName="firmware"
+        matInput
+        #firmwareInput />
       <mat-hint>Please enter device firmware</mat-hint>
+      <mat-error
+        *ngIf="firmware.hasError('invalid_format')"
+        role="alert"
+        aria-live="assertive">
+        <span
+          >Please, check. The firmware value must be a maximum of 64 characters.
+          Only letters, numbers, and accented letters are permitted.</span
+        >
+      </mat-error>
       <mat-error *ngIf="firmware.errors?.['required']">
         <span>Firmware is <strong>required</strong></span>
       </mat-error>
@@ -47,10 +60,12 @@ limitations under the License.
       <app-device-tests
         [deviceForm]="initiateForm"
         [deviceTestModules]="selectedDevice.test_modules"
-        [disabled]="true"
         [testModules]="testModules">
       </app-device-tests>
     </ng-container>
+    <mat-error *ngIf="error$ | async">
+      <span>{{ error$ | async }}</span>
+    </mat-error>
   </section>
 
   <mat-dialog-actions class="progress-initiate-form-actions">
@@ -63,7 +78,7 @@ limitations under the License.
       type="button">
       Change Device
     </button>
-    <button (click)="cancel()" color="primary" mat-button type="button">
+    <button (click)="cancel(false)" color="primary" mat-button type="button">
       Cancel
     </button>
     <button

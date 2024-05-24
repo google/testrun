@@ -69,6 +69,7 @@ const PROGRESS_DATA_RESPONSE = (
 ) => {
   return {
     status,
+    mac_addr: '01:02:03:04:05:06',
     device: {
       manufacturer: 'Delta',
       model: '03-DIN-CPU',
@@ -96,8 +97,19 @@ export const MOCK_PROGRESS_DATA_COMPLIANT: TestrunStatus =
     'https://api.testrun.io/report.pdf'
   );
 
+export const MOCK_PROGRESS_DATA_NON_COMPLIANT: TestrunStatus =
+  PROGRESS_DATA_RESPONSE(
+    StatusOfTestrun.NonCompliant,
+    '2023-06-22T09:20:00.123Z',
+    TEST_DATA_RESULT,
+    'https://api.testrun.io/report.pdf'
+  );
+
 export const MOCK_PROGRESS_DATA_CANCELLED: TestrunStatus =
   PROGRESS_DATA_RESPONSE(StatusOfTestrun.Cancelled, null, TEST_DATA);
+
+export const MOCK_PROGRESS_DATA_CANCELLED_EMPTY: TestrunStatus =
+  PROGRESS_DATA_RESPONSE(StatusOfTestrun.Cancelled, null, []);
 
 export const MOCK_PROGRESS_DATA_MONITORING: TestrunStatus =
   PROGRESS_DATA_RESPONSE(StatusOfTestrun.Monitoring, null, TEST_DATA);

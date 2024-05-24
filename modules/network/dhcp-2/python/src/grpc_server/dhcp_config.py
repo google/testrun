@@ -58,6 +58,12 @@ class DHCPConfig:
     for subnet in self._subnets:
       subnet.enable_peer()
 
+  def get_peer(self):
+    return self._peer
+
+  def get_subnets(self):
+    return self._subnets
+
   def get_reserved_host(self, hw_addr):
     for host in self._reserved_hosts:
       if hw_addr == host.hw_addr:

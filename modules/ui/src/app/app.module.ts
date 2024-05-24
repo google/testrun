@@ -44,6 +44,10 @@ import { EffectsModule } from '@ngrx/effects';
 import { AppEffects } from './store/effects';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { SettingsDropdownComponent } from './pages/settings/components/settings-dropdown/settings-dropdown.component';
+import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
+import { WindowProvider } from './providers/window.provider';
+import { CertificatesComponent } from './pages/certificates/certificates.component';
+import { LOADER_TIMEOUT_CONFIG_TOKEN } from './services/loaderConfig';
 
 @NgModule({
   declarations: [AppComponent, GeneralSettingsComponent],
@@ -71,8 +75,11 @@ import { SettingsDropdownComponent } from './pages/settings/components/settings-
     EffectsModule.forRoot([AppEffects]),
     CdkTrapFocus,
     SettingsDropdownComponent,
+    ShutdownAppComponent,
+    CertificatesComponent,
   ],
   providers: [
+    WindowProvider,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: ErrorInterceptor,
@@ -83,6 +90,7 @@ import { SettingsDropdownComponent } from './pages/settings/components/settings-
       useClass: LoadingInterceptor,
       multi: true,
     },
+    { provide: LOADER_TIMEOUT_CONFIG_TOKEN, useValue: 1000 },
   ],
   bootstrap: [AppComponent],
 })

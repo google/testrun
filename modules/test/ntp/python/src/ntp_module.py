@@ -18,7 +18,7 @@ from datetime import datetime
 import os
 
 LOG_NAME = 'test_ntp'
-MODULE_REPORT_FILE_NAME = 'ntp_report.md'
+MODULE_REPORT_FILE_NAME = 'ntp_report.html'
 NTP_SERVER_CAPTURE_FILE = '/runtime/network/ntp.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
@@ -54,23 +54,7 @@ class NTPModule(TestModule):
     # Extract NTP data from the pcap file
     ntp_table_data = self.extract_ntp_data()
 
-    table_content = ''
-    for row in ntp_table_data:
-      # Timestamp of the NTP packet
-      dt_object = datetime.utcfromtimestamp(row['Timestamp'])
-
-      # Extract milliseconds from the fractional part of the timestamp
-      milliseconds = int((row['Timestamp'] % 1) * 1000)
-
-      # Format the datetime object with milliseconds
-      formatted_time = dt_object.strftime(
-          '%b %d, %Y %H:%M:%S.') + f'{milliseconds:03d}'
-
-      table_content += (f'''| {row['Source']: ^17} '''
-                        f'''| {row['Destination']: ^17} '''
-                        f'''| {row['Type']: ^8} '''
-                        f'''| {row['Version']: ^9} '''
-                        f'''| {formatted_time: ^{27}} |\n''')
+    html_content = '<h1>NTP Module</h1>'
 
     # Set the summary variables
     local_requests = sum(
@@ -85,40 +69,86 @@ class NTPModule(TestModule):
     total_responses = sum(1 for row in ntp_table_data
                           if row['Type'] == 'Server')
 
-    summary = '## Summary'
-    summary += f'''\n- Requests to local NTP servers: {local_requests}'''
-    summary += f'''\n- Requests to external NTP servers: {external_requests}'''
-    summary += f'''\n- Total NTP requests: {total_requests}'''
-    summary += f'''\n- Total NTP responses: {total_responses}'''
+    # Add summary table
+    html_content += (f'''
+      <table class="module-summary">
+        <thead>
+          <tr>
+            <th>Requests to local NTP server</th>
+            <th>Requests to external NTP servers</th>
+            <th>Total NTP requests</th>
+            <th>Total NTP responses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{local_requests}</td>
+            <td>{external_requests}</td>
+            <td>{total_requests}</td>
+            <td>{total_responses}</td>   
+          </tr>
+        </tbody>
+      </table>
+      ''')
 
     if total_requests + total_responses > 0:
 
-      header = (f'''| {'Source': ^17} '''
-                f'''| {'Destination': ^17} '''
-                f'''| {'Type': ^8} '''
-                f'''| {'Version': ^9} '''
-                f'''| {'Timestamp': ^27} |''')
-      header_line = (f'''|{'-' * 19}|{'-' * 19}|{'-' * 10}'''
-                     f'''|{'-' * 11}'''
-                     f'''|{'-' * 29}|''')
+      table_content = '''
+        <table class="module-data">
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Destination</th>
+              <th>Type</th>
+              <th>Version</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>'''
 
-      markdown_template = (
-          f'''# NTP Module\n'''
-          f'''\n{header}\n{header_line}\n{table_content}\n{summary}''')
+      for row in ntp_table_data:
+
+        # Timestamp of the NTP packet
+        dt_object = datetime.utcfromtimestamp(row['Timestamp'])
+
+        # Extract milliseconds from the fractional part of the timestamp
+        milliseconds = int((row['Timestamp'] % 1) * 1000)
+
+        # Format the datetime object with milliseconds
+        formatted_time = dt_object.strftime(
+            '%b %d, %Y %H:%M:%S.') + f'{milliseconds:03d}'
+
+        table_content += (f'''
+            <tr>
+              <td>{row['Source']}</td>
+              <td>{row['Destination']}</td>
+              <td>{row['Type']}</td>
+              <td>{row['Version']}</td>
+              <td>{formatted_time}</td>
+            </tr>''')
+
+      table_content += '''
+            </tbody>
+          </table>
+                       '''
+
+      html_content += table_content
 
     else:
-      markdown_template = (f'''# NTP Module\n'''
-                           f'''\n- No NTP traffic detected\n'''
-                           f'''\n{summary}''')
+      html_content += ('''
+        <div class="callout-container info">
+          <div class="icon"></div>
+          No NTP traffic detected from the device
+        </div>''')
 
-    LOGGER.debug('Markdown Report:\n' + markdown_template)
+    LOGGER.debug('Module report:\n' + html_content)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
 
     # Write the content to a file
     with open(report_path, 'w', encoding='utf-8') as file:
-      file.write(markdown_template)
+      file.write(html_content)
 
     LOGGER.info('Module report generated at: ' + str(report_path))
 
@@ -127,9 +157,10 @@ class NTPModule(TestModule):
   def extract_ntp_data(self):
     ntp_data = []
 
-    # Read the pcap file
-    packets = rdpcap(self.ntp_server_capture_file) + rdpcap(
-        self.startup_capture_file) + rdpcap(self.monitor_capture_file)
+    # Read the pcap files
+    packets = (rdpcap(self.startup_capture_file) +
+      rdpcap(self.monitor_capture_file) +
+      rdpcap(self.ntp_server_capture_file))
 
     # Iterate through NTP packets
     for packet in packets:

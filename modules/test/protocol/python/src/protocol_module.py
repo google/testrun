@@ -35,6 +35,14 @@ class ProtocolModule(TestModule):
     result = None
     interface_name = 'veth0'
 
+    # If the ipv4 address wasn't resolved yet, try again
+    if self._device_ipv4_addr is None:
+      self._device_ipv4_addr = self._get_device_ipv4()
+
+    if self._device_ipv4_addr is None:
+      LOGGER.error('No device IP could be resolved')
+      return 'Error', 'Could not resolve device IP address'
+
     # Resolve the appropriate IP for BACnet comms
     local_address = self.get_local_ip(interface_name)
     if local_address:
@@ -72,7 +80,16 @@ class ProtocolModule(TestModule):
     LOGGER.info('Running protocol.valid_modbus')
     # Extract basic device connection information
     modbus = Modbus(log=LOGGER, device_ip=self._device_ipv4_addr, config=config)
-    return modbus.validate_device()
+    results = modbus.validate_device()
+    # Determine results and return proper messaging and details
+    description = ''
+    if results[0] is None:
+      description = 'No modbus connection could be made'
+    elif results[0]:
+      description = 'Valid modbus communication detected'
+    else:
+      description = 'Failed to confirm valid modbus communication'
+    return results[0], description,  results[1]
 
   def get_local_ip(self, interface_name):
     try:

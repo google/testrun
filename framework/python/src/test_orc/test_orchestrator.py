@@ -29,7 +29,8 @@ import threading
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
-RUNTIME_DIR = "runtime/test"
+RUNTIME_DIR = "runtime"
+RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR,"test")
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
 LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
@@ -65,8 +66,8 @@ class TestOrchestrator:
 
     # Setup the output directory
     self._host_user = util.get_host_user()
-    os.makedirs(RUNTIME_DIR, exist_ok=True)
-    util.run_command(f"chown -R {self._host_user} {RUNTIME_DIR}")
+    os.makedirs(RUNTIME_TEST_DIR, exist_ok=True)
+    util.run_command(f"chown -R {self._host_user} {RUNTIME_TEST_DIR}")
 
     # Setup the root_certs folder
     os.makedirs(DEVICE_ROOT_CERTS, exist_ok=True)
@@ -106,11 +107,11 @@ class TestOrchestrator:
 
     LOGGER.info("All tests complete")
 
-    self._session.stop()
+    self._session.finish()
 
     # Do not carry on (generating a report) if Testrun has been stopped
     if self.get_session().get_status() != "In Progress":
-      return None
+      return "Cancelled"
 
     report = TestReport()
     report.from_json(self._generate_report())
@@ -137,7 +138,7 @@ class TestOrchestrator:
   def _write_reports(self, test_report):
 
     out_dir = os.path.join(
-        self._root_path, RUNTIME_DIR,
+        self._root_path, RUNTIME_TEST_DIR,
         self._session.get_target_device().mac_addr.replace(":", ""))
 
     LOGGER.debug(f"Writing reports to {out_dir}")
@@ -159,6 +160,7 @@ class TestOrchestrator:
   def _generate_report(self):
 
     report = {}
+    report["mac_addr"] = self.get_session().get_target_device().mac_addr
     report["device"] = self.get_session().get_target_device().to_dict()
     report["started"] = self.get_session().get_started().strftime(
         "%Y-%m-%d %H:%M:%S")
@@ -189,32 +191,33 @@ class TestOrchestrator:
     else:
       max_device_reports = self._session.get_max_device_reports()
 
-    completed_results_dir = os.path.join(
-        self._root_path,
-        LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder))
+    if max_device_reports > 0:
+      completed_results_dir = os.path.join(
+          self._root_path,
+          LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder))
 
-    completed_tests = os.listdir(completed_results_dir)
-    cur_test_count = len(completed_tests)
-    if cur_test_count > max_device_reports:
-      LOGGER.debug("Current device has more than max tests results allowed: " +
-                   str(cur_test_count) + ">" + str(max_device_reports))
+      completed_tests = os.listdir(completed_results_dir)
+      cur_test_count = len(completed_tests)
+      if cur_test_count > max_device_reports:
+        LOGGER.debug("Current device has more than max results allowed: " +
+                     str(cur_test_count) + ">" + str(max_device_reports))
 
-      # Find and delete the oldest test
-      oldest_test = self._find_oldest_test(completed_results_dir)
-      if oldest_test is not None:
-        LOGGER.debug("Oldest test found, removing: " + str(oldest_test[1]))
-        shutil.rmtree(oldest_test[1], ignore_errors=True)
+        # Find and delete the oldest test
+        oldest_test = self._find_oldest_test(completed_results_dir)
+        if oldest_test is not None:
+          LOGGER.debug("Oldest test found, removing: " + str(oldest_test[1]))
+          shutil.rmtree(oldest_test[1], ignore_errors=True)
 
-        # Remove oldest test from session
-        oldest_timestamp = oldest_test[0]
-        self.get_session().get_target_device().remove_report(oldest_timestamp)
+          # Remove oldest test from session
+          oldest_timestamp = oldest_test[0]
+          self.get_session().get_target_device().remove_report(oldest_timestamp)
 
-        # Confirm the delete was succesful
-        new_test_count = len(os.listdir(completed_results_dir))
-        if (new_test_count != cur_test_count
-            and new_test_count > max_device_reports):
-          # Continue cleaning up until we're under the max
-          self._cleanup_old_test_results(device)
+          # Confirm the delete was succesful
+          new_test_count = len(os.listdir(completed_results_dir))
+          if (new_test_count != cur_test_count
+              and new_test_count > max_device_reports):
+            # Continue cleaning up until we're under the max
+            self._cleanup_old_test_results(device)
 
   def _find_oldest_test(self, completed_tests_dir):
     oldest_timestamp = None
@@ -233,7 +236,7 @@ class TestOrchestrator:
   def _timestamp_results(self, device):
 
     # Define the current device results directory
-    cur_results_dir = os.path.join(self._root_path, RUNTIME_DIR,
+    cur_results_dir = os.path.join(self._root_path, RUNTIME_TEST_DIR,
                                    device.mac_addr.replace(":", ""))
 
     # Define the directory
@@ -261,8 +264,7 @@ class TestOrchestrator:
       # The runtime directory to include in ZIP
       path_to_zip = os.path.join(
         self._root_path,
-        RUNTIME_DIR,
-        self._session.get_target_device().mac_addr.replace(":", ""))
+        RUNTIME_DIR)
 
       # Create ZIP file
       shutil.make_archive(zip_location, "zip", path_to_zip)
@@ -273,7 +275,7 @@ class TestOrchestrator:
                                if os.path.exists(zip_file)
                                else'creation failed'}''')
 
-    except Exception as error:
+    except Exception as error: # pylint: disable=W0703
       LOGGER.error(f"Failed to create zip file: {error}")
 
   def test_in_progress(self):
@@ -319,13 +321,14 @@ class TestOrchestrator:
 
     try:
 
-      device_test_dir = os.path.join(self._root_path, RUNTIME_DIR,
+      device_test_dir = os.path.join(self._root_path, RUNTIME_TEST_DIR,
                                      device.mac_addr.replace(":", ""))
-
-      root_certs_dir = os.path.join(self._root_path, DEVICE_ROOT_CERTS)
 
       container_runtime_dir = os.path.join(device_test_dir, module.name)
       os.makedirs(container_runtime_dir, exist_ok=True)
+
+      config_file = os.path.join(self._root_path, "local/system.json")
+      root_certs_dir = os.path.join(self._root_path, "local/root_certs")
 
       container_log_file = os.path.join(container_runtime_dir, "module.log")
 
@@ -348,6 +351,14 @@ class TestOrchestrator:
           privileged=True,
           detach=True,
           mounts=[
+              Mount(target="/testrun/system.json",
+                    source=config_file,
+                    type="bind",
+                    read_only=True),
+              Mount(target="/testrun/root_certs",
+                    source=root_certs_dir,
+                    type="bind",
+                    read_only=True),
               Mount(target="/runtime/output",
                     source=container_runtime_dir,
                     type="bind"),
@@ -361,10 +372,6 @@ class TestOrchestrator:
                     read_only=True),
               Mount(target="/runtime/device/monitor.pcap",
                     source=device_monitor_capture,
-                    type="bind",
-                    read_only=True),
-              Mount(target="/testrun/root_certs",
-                    source=root_certs_dir,
                     type="bind",
                     read_only=True)
           ],
@@ -452,16 +459,24 @@ class TestOrchestrator:
         f"Error occurred whilst obtaining results for module {module.name}")
       LOGGER.error(results_error)
 
-    # Get report from the module
-    report_file = f"{container_runtime_dir}/{module.name}_report.md"
+    # Get the markdown report from the module if generated
+    markdown_file = f"{container_runtime_dir}/{module.name}_report.md"
     try:
-      with open(report_file, "r", encoding="utf-8") as f:
+      with open(markdown_file, "r", encoding="utf-8") as f:
         module_report = f.read()
         self._session.add_module_report(module_report)
-    except (FileNotFoundError, PermissionError) as report_error:
-      LOGGER.error(
-        f"Error occurred whilst obtaining report for module {module.name}")
-      LOGGER.error(report_error)
+    except (FileNotFoundError, PermissionError):
+      LOGGER.debug("Test module did not produce a markdown module report")
+
+    # Get the HTML report from the module if generated
+    html_file = f"{container_runtime_dir}/{module.name}_report.html"
+    try:
+      with open(html_file, "r", encoding="utf-8") as f:
+        module_report = f.read()
+        LOGGER.debug(f"Adding module report for module {module.name}")
+        self._session.add_module_report(module_report)
+    except (FileNotFoundError, PermissionError):
+      LOGGER.debug("Test module did not produce a html module report")
 
     LOGGER.info(f"Test module {module.name} has finished")
 
@@ -516,8 +531,8 @@ class TestOrchestrator:
     # Check if the directory protocol exists and move it to the beginning
     # protocol should always be run first so BACnet binding doesn't get
     # corrupted during DHCP changes in the conn module
-    if 'protocol' in module_dirs:
-      module_dirs.insert(0, module_dirs.pop(module_dirs.index('protocol')))
+    if "protocol" in module_dirs:
+      module_dirs.insert(0, module_dirs.pop(module_dirs.index("protocol")))
 
     for module_dir in module_dirs:
 

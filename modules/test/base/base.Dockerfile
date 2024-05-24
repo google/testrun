@@ -50,8 +50,12 @@ ARG CONTAINER_PROTO_DIR=testrun/python/src/grpc_server/proto
 COPY $NET_MODULE_DIR/dhcp-1/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/dhcp1/
 COPY $NET_MODULE_DIR/dhcp-2/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/dhcp2/
 
+# Copy the cached version of oui.txt incase the download fails
+RUN mkdir -p /usr/local/etc
+COPY $MODULE_DIR/usr/local/etc/oui.txt /usr/local/etc/oui.txt
+
 # Update the oui.txt file from ieee
-RUN wget https://standards-oui.ieee.org/oui/oui.txt -P /usr/local/etc/
+RUN wget https://standards-oui.ieee.org/oui.txt -O /usr/local/etc/oui.txt || echo "Unable to update the MAC OUI database"
 
 # Start the test module
 ENTRYPOINT [ "/testrun/bin/start" ]

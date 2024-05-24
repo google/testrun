@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Provides Testrun data via REST API."""
-from fastapi import FastAPI, APIRouter, Response, Request, status
+from fastapi import (FastAPI,
+                     File,
+                     Form,
+                     APIRouter,
+                     Response,
+                     Request,
+                     status,
+                     UploadFile)
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
@@ -21,6 +28,7 @@ from json import JSONDecodeError
 import os
 import psutil
 import requests
+import signal
 import threading
 import uvicorn
 from urllib.parse import urlparse
@@ -46,7 +54,7 @@ class Api:
   def __init__(self, test_run):
 
     self._test_run = test_run
-    self._name = "TestRun API"
+    self._name = "Testrun API"
     self._router = APIRouter()
 
     self._session = self._test_run.get_session()
@@ -66,6 +74,9 @@ class Api:
                                methods=["POST"])
     self._router.add_api_route("/system/status",
                                self.get_status)
+    self._router.add_api_route("/system/shutdown",
+                               self.shutdown,
+                               methods=["POST"])
 
     self._router.add_api_route("/system/version",
                                self.get_version)
@@ -91,6 +102,15 @@ class Api:
     self._router.add_api_route("/device/edit",
                                self.edit_device,
                                methods=["POST"])
+
+    self._router.add_api_route("/system/config/certs",
+                               self.get_certs)
+    self._router.add_api_route("/system/config/certs",
+                               self.upload_cert,
+                               methods=["POST"])
+    self._router.add_api_route("/system/config/certs",
+                               self.delete_cert,
+                               methods=["DELETE"])
 
     # Allow all origins to access the API
     origins = ["*"]
@@ -249,8 +269,35 @@ class Api:
   async def get_status(self):
     return self._test_run.get_session().to_json()
 
+  def shutdown(self, response: Response):
+
+    LOGGER.debug("Received request to shutdown Testrun")
+
+    # Check that Testrun is not currently running
+    if (self._session.get_status() not in [
+            "Cancelled",
+            "Compliant",
+            "Non-Compliant",
+            "Idle"]):
+      LOGGER.debug("Unable to shutdown Testrun as Testrun is in progress")
+      response.status_code = 400
+      return self._generate_msg(
+        False,
+        "Unable to shutdown. A test is currently in progress."
+      )
+
+    self._test_run.shutdown()
+    os.kill(os.getpid(), signal.SIGTERM)
+
   async def get_version(self, response: Response):
+
+    # Add defaults
     json_response = {}
+    json_response["installed_version"] = "v" + self._test_run.get_version()
+    json_response["update_available"] = False
+    json_response["latest_version"] = None
+    json_response["latest_version_url"] = (
+      "https://github.com/google/testrun/releases")
 
     # Obtain the current version
     current_version = self._session.get_version()
@@ -270,8 +317,9 @@ class Api:
       # Check OK response was received
       if version_check.status_code != 200:
         response.status_code = 500
-        LOGGER.error(version_check.content)
-        return self._generate_msg(False, "Failed to fetch latest version")
+        LOGGER.debug(version_check.content)
+        LOGGER.error("Failed to fetch latest version")
+        return json_response
 
       # Extract version number from response, removing the leading 'v'
       latest_version_no = version_check.json()["name"].strip("v")
@@ -290,11 +338,11 @@ class Api:
         LOGGER.debug("The latest version is installed")
 
       return json_response
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       response.status_code = 500
       LOGGER.error("Failed to fetch latest version")
       LOGGER.debug(e)
-      return self._generate_msg(False, "Failed to fetch latest version")
+      return json_response
 
   async def get_reports(self, request: Request):
     LOGGER.debug("Received reports list request")
@@ -308,7 +356,7 @@ class Api:
     for report in reports:
       # report URL is currently hard coded as localhost so we can
       # replace that to fix the IP dynamically from the requester
-      report["report"] = report["report"].replace("localhost",server_ip)
+      report["report"] = report["report"].replace("localhost", server_ip)
     return reports
 
   async def delete_report(self, request: Request, response: Response):
@@ -385,7 +433,7 @@ class Api:
       return self._generate_msg(True, "Successfully deleted the device")
 
     # TODO: Find specific exception to catch
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       LOGGER.error(e)
       response.status_code = 500
       return self._generate_msg(False, "An error occured whilst deleting " +
@@ -497,7 +545,6 @@ class Api:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid JSON received")
 
-
   async def get_report(self, response: Response,
                        device_name, timestamp):
 
@@ -535,8 +582,8 @@ class Api:
       return False
 
     # Check length of strings
-    if len(json_obj.get(DEVICE_MANUFACTURER_KEY)) > 64 or len(
-      json_obj.get(DEVICE_MODEL_KEY)) > 64:
+    if len(json_obj.get(DEVICE_MANUFACTURER_KEY)) > 28 or len(
+      json_obj.get(DEVICE_MODEL_KEY)) > 28:
       return False
 
     disallowed_chars = ["/", "\\", "\'", "\"", ";"]
@@ -549,3 +596,94 @@ class Api:
         return False
 
     return True
+
+  def get_certs(self):
+    LOGGER.debug("Received certs list request")
+
+    # Reload certs
+    self._session.load_certs()
+
+    return self._session.get_certs()
+
+  async def upload_cert(self,
+                  file: UploadFile,
+                  response: Response):
+
+    filename = file.filename
+    content_type = file.content_type
+
+    LOGGER.debug("Received request to upload certificate")
+    LOGGER.debug(f"Filename: {filename}, content type: {content_type}")
+
+    if content_type not in [
+      "application/x-pem-file",
+      "application/x-x509-ca-cert"
+    ]:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(
+        False,
+        "Failed to upload certificate. Is it in the correct format?"
+      )
+
+    if len(filename) > 24:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(
+        False,
+        "Invalid filename. Maximum file name length is 24 characters."
+      )
+
+    # Check if file already exists
+    if not self._session.check_cert_file_name(
+      filename
+    ):
+      response.status_code = status.HTTP_409_CONFLICT
+      return self._generate_msg(
+        False,
+        "A certificate with that file name already exists."
+      )
+
+    # Get file contents
+    contents = await file.read()
+
+    # Pass to session to check and write
+    cert_obj = self._session.upload_cert(filename,
+                                         contents)
+
+    # Return error if something went wrong
+    if cert_obj is None:
+      return self._generate_msg(
+        False,
+        "Failed to upload certificate. Is it in the correct format?"
+      )
+
+    response.status_code = status.HTTP_201_CREATED
+
+    return cert_obj
+
+  async def delete_cert(self, request: Request, response: Response):
+
+    LOGGER.debug("Received delete certificate request")
+
+    try:
+      req_raw = (await request.body()).decode("UTF-8")
+      req_json = json.loads(req_raw)
+
+      if "name" not in req_json:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(False, "Received a bad request")
+
+      common_name = req_json.get("name")
+
+      for cert in self._session.get_certs():
+        if cert["name"] == common_name:
+          self._session.delete_cert(cert["filename"])
+          return self._generate_msg(True, "Successfully delete the certificate")
+
+      response.status_code = status.HTTP_404_NOT_FOUND
+      return self._generate_msg(
+        False,
+        "A certificate with that name could not be found")
+
+    except Exception as e:
+      LOGGER.error("An error occurred whilst deleting a certificate")
+      LOGGER.debug(e)

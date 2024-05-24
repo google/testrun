@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container *ngIf="dataSource$ | async as dataSource">
+<ng-container *ngIf="dataSource">
   <mat-accordion displayMode="flat" multi class="tests-container" tabindex="0">
     <section class="tests-header-row">
       <span class="tests-header-cell">Name</span>
@@ -21,7 +21,7 @@ limitations under the License.
       <span class="tests-header-cell">Result</span>
       <span class="tests-header-cell expander-button-cell">
         <button
-          *ngIf="stepsToResolve?.length"
+          *ngIf="stepsToResolveCount"
           mat-icon-button
           class="expander-button"
           [attr.aria-label]="getAriaLabel()"

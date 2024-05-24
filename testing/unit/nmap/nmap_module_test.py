@@ -16,16 +16,19 @@ from nmap_module import NmapModule
 import unittest
 import os
 import shutil
+from testreport import TestReport
 
 MODULE = 'nmap'
 
 # Define the file paths
 TEST_FILES_DIR = 'testing/unit/' + MODULE
-OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
-REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
-RESULTS_DIR = os.path.join(TEST_FILES_DIR,'results/')
+OUTPUT_DIR = os.path.join(TEST_FILES_DIR, 'output/')
+REPORTS_DIR = os.path.join(TEST_FILES_DIR, 'reports/')
+RESULTS_DIR = os.path.join(TEST_FILES_DIR, 'results/')
 
-LOCAL_REPORT = os.path.join(REPORTS_DIR,'nmap_report_local.md')
+LOCAL_REPORT = os.path.join(REPORTS_DIR, 'nmap_report_local.html')
+LOCAL_REPORT_ALL_CLOSED = os.path.join(REPORTS_DIR,
+                                       'nmap_report_all_closed_local.html')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 
@@ -40,8 +43,9 @@ class NMAPTest(unittest.TestCase):
   # Test the module report generation
   def nmap_module_ports_open_report_test(self):
     # Move test scan into expected folder
-    src_scan_results_path = os.path.join(RESULTS_DIR,'ports_open_scan_result.json')
-    dst_scan_results_path = os.path.join(OUTPUT_DIR,'nmap_scan_results.json')
+    src_scan_results_path = os.path.join(RESULTS_DIR,
+                                         'ports_open_scan_result.json')
+    dst_scan_results_path = os.path.join(OUTPUT_DIR, 'nmap_scan_results.json')
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
     nmap_module = NmapModule(module=MODULE,
@@ -56,19 +60,24 @@ class NMAPTest(unittest.TestCase):
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
+      formatted_report = self.add_formatting(report_out)
+
+    # Write back the new formatted_report value
+    out_report_path = os.path.join(OUTPUT_DIR, 'nmap_report_ports_open.html')
+    with open(out_report_path, 'w', encoding='utf-8') as file:
+      file.write(formatted_report)
 
     # Read the local good report
-
-    local_report = os.path.join(REPORTS_DIR,'ports_open_report.md')
-    with open(local_report, 'r', encoding='utf-8') as file:
+    with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
       report_local = file.read()
 
     self.assertEqual(report_out, report_local)
 
     # Test the module report generation with all ports closed
   def nmap_module_report_all_closed_test(self):
-    src_scan_results_path = os.path.join(RESULTS_DIR,'all_closed_scan_result.json')
-    dst_scan_results_path = os.path.join(OUTPUT_DIR,'nmap_scan_results.json')
+    src_scan_results_path = os.path.join(RESULTS_DIR,
+                                         'all_closed_scan_result.json')
+    dst_scan_results_path = os.path.join(OUTPUT_DIR, 'nmap_scan_results.json')
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
     nmap_module = NmapModule(module=MODULE,
@@ -83,13 +92,28 @@ class NMAPTest(unittest.TestCase):
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
+      formatted_report = self.add_formatting(report_out)
+
+    # Write back the new formatted_report value
+    out_report_path = os.path.join(OUTPUT_DIR, 'nmap_report_all_closed.html')
+    with open(out_report_path, 'w', encoding='utf-8') as file:
+      file.write(formatted_report)
 
     # Read the local good report
-    local_report = os.path.join(REPORTS_DIR,'all_closed_report.md')
-    with open(local_report, 'r', encoding='utf-8') as file:
+    with open(LOCAL_REPORT_ALL_CLOSED, 'r', encoding='utf-8') as file:
       report_local = file.read()
 
     self.assertEqual(report_out, report_local)
+
+  def add_formatting(self, body):
+    return f'''
+    <!DOCTYPE html>
+    <html lang="en">
+    {TestReport().generate_head()}
+    <body>
+      {body}
+    </body>
+    </html'''
 
 
 if __name__ == '__main__':

@@ -16,7 +16,7 @@
 from common import logger
 from chronyd import ChronydServer
 import time
-
+LOGGER = None
 LOG_NAME = 'ntp_server'
 
 class NTPServer:

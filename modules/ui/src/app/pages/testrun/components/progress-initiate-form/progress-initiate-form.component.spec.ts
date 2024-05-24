@@ -116,16 +116,8 @@ describe('ProgressInitiateFormComponent', () => {
 
     it('should close dialog', () => {
       spyOn(component.dialogRef, 'close');
-      component.cancel();
-      expect(component.dialogRef.close).toHaveBeenCalled();
-    });
-
-    it('should call setIsOpenAddDevice on cancel', () => {
-      component.cancel();
-
-      expect(testRunServiceMock.setIsOpenStartTestrun).toHaveBeenCalledWith(
-        false
-      );
+      component.cancel(false);
+      expect(component.dialogRef.close).toHaveBeenCalledWith(false);
     });
 
     it('should set devices$ value', () => {
@@ -163,10 +155,50 @@ describe('ProgressInitiateFormComponent', () => {
         ).toEqual(true);
       });
 
+      it('should have "invalid_format" error when field does not meet validation rules', () => {
+        [
+          'very long value very long value very long value very long value very long value very long value very long value',
+          '!as&@3$',
+        ].forEach(value => {
+          const firmware: HTMLInputElement = compiled.querySelector(
+            '.firmware-input'
+          ) as HTMLInputElement;
+          firmware.value = value;
+          firmware.dispatchEvent(new Event('input'));
+          component.firmware.markAsTouched();
+          fixture.detectChanges();
+
+          const firmwareError = compiled.querySelector('mat-error')?.innerHTML;
+          const error = component.firmware.hasError('invalid_format');
+
+          expect(error).toBeTruthy();
+          expect(firmwareError).toContain(
+            'The firmware value must be a maximum of 64 characters. Only letters, numbers, and accented letters are permitted.'
+          );
+        });
+      });
+
+      it('should not start if no test selected', () => {
+        component.firmware.setValue('firmware');
+        component.selectedDevice = device;
+        fixture.detectChanges();
+        component.test_modules.setValue([false, false]);
+
+        component.startTestRun();
+        fixture.detectChanges();
+
+        const error = compiled.querySelector('mat-error');
+        expect(error?.innerHTML).toContain(
+          'At least one test has to be selected to start test run.'
+        );
+      });
+
       describe('when selectedDevice is present and firmware is filled', () => {
         beforeEach(() => {
           component.firmware.setValue('firmware');
           component.selectedDevice = device;
+          fixture.detectChanges();
+          component.test_modules.setValue([true, true]);
         });
 
         it('should call startTestRun with device', () => {
@@ -178,6 +210,9 @@ describe('ProgressInitiateFormComponent', () => {
             mac_addr: '00:1e:42:35:73:c4',
             firmware: 'firmware',
             test_modules: {
+              connection: {
+                enabled: true,
+              },
               dns: {
                 enabled: true,
               },
@@ -189,15 +224,6 @@ describe('ProgressInitiateFormComponent', () => {
           component.startTestRun();
 
           expect(testRunServiceMock.fetchVersion).toHaveBeenCalled();
-        });
-
-        describe('when result is success', () => {
-          it('should call getSystemStatus', () => {
-            testRunServiceMock.startTestrun.and.returnValue(of(true));
-            component.startTestRun();
-
-            expect(testRunServiceMock.getSystemStatus).toHaveBeenCalled();
-          });
         });
       });
     });
@@ -303,7 +329,7 @@ describe('ProgressInitiateFormComponent', () => {
         const tests = compiled.querySelectorAll('.device-form-test-modules p');
 
         expect(testsForm).toBeTruthy();
-        expect(tests[0].classList.contains('disabled')).toEqual(true);
+        expect(tests[0].classList.contains('disabled')).toEqual(false);
         expect(tests.length).toEqual(2);
       });
 

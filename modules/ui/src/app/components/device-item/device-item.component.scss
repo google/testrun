@@ -87,7 +87,13 @@ $border-radius: 12px;
 
     .item-manufacturer-icon {
       visibility: visible;
+      width: 24px;
     }
+  }
+
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
   }
 }
 
@@ -115,6 +121,7 @@ $border-radius: 12px;
 
   .item-manufacturer-icon {
     display: flex;
+    width: 0;
     visibility: hidden;
     font-size: 20px;
     align-items: center;
@@ -123,7 +130,7 @@ $border-radius: 12px;
 }
 
 .item-name {
-  padding: 0 16px;
+  padding: 0 2px 0 16px;
   grid-area: name;
   justify-self: start;
   color: $grey-800;
@@ -131,10 +138,13 @@ $border-radius: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: 20px;
-  max-width: 100%;
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: -webkit-fill-available;
+  max-width: -moz-available;
+  text-align: left;
 }
 
 .item-mac-address {
@@ -165,13 +175,16 @@ $border-radius: 12px;
       color: $white;
     }
   }
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
 }
 
 .button-start-icon {
   margin: 0;
-  width: 24px;
+  width: 30px;
   height: 24px;
-  font-size: 24px;
 }
 
 .device-item {
