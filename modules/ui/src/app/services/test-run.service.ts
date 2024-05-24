@@ -254,7 +254,6 @@ export class TestRunService {
   uploadCertificate(file: File): Observable<boolean> {
     const formData: FormData = new FormData();
     formData.append('file', file, file.name);
-    formData.append('mode', 'file');
     return this.http
       .post<boolean>(`${API_URL}/system/config/certs`, formData)
       .pipe(map(() => true));
