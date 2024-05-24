@@ -36,7 +36,7 @@ import SpyObj = jasmine.SpyObj;
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { DevicesStore } from './devices.store';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { ProgressInitiateFormComponent } from '../testrun/components/progress-initiate-form/progress-initiate-form.component';
+import { TestrunInitiateFormComponent } from '../testrun/components/testrun-initiate-form/testrun-initiate-form.component';
 import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -300,12 +300,12 @@ describe('DevicesComponent', () => {
     it('should open initiate test run modal', fakeAsync(() => {
       const openSpy = spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
-      } as MatDialogRef<typeof ProgressInitiateFormComponent>);
+      } as MatDialogRef<typeof TestrunInitiateFormComponent>);
 
       fixture.ngZone?.run(() => {
         component.openStartTestrun(device, [device]);
 
-        expect(openSpy).toHaveBeenCalledWith(ProgressInitiateFormComponent, {
+        expect(openSpy).toHaveBeenCalledWith(TestrunInitiateFormComponent, {
           ariaLabel: 'Initiate testrun',
           data: {
             devices: [device],

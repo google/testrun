@@ -15,7 +15,7 @@
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProgressInitiateFormComponent } from './progress-initiate-form.component';
+import { TestrunInitiateFormComponent } from './testrun-initiate-form.component';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -31,14 +31,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DeviceTestsComponent } from '../../../../components/device-tests/device-tests.component';
 import { device } from '../../../../mocks/device.mock';
 import { of } from 'rxjs';
-import { MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE } from '../../../../mocks/progress.mock';
+import { MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE } from '../../../../mocks/testrun.mock';
 import { SpinnerComponent } from '../../../../components/spinner/spinner.component';
 import { provideMockStore } from '@ngrx/store/testing';
 import { selectDevices } from '../../../../store/selectors';
 
 describe('ProgressInitiateFormComponent', () => {
-  let component: ProgressInitiateFormComponent;
-  let fixture: ComponentFixture<ProgressInitiateFormComponent>;
+  let component: TestrunInitiateFormComponent;
+  let fixture: ComponentFixture<TestrunInitiateFormComponent>;
   let compiled: HTMLElement;
 
   const testRunServiceMock = jasmine.createSpyObj([
@@ -71,7 +71,7 @@ describe('ProgressInitiateFormComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ProgressInitiateFormComponent],
+      declarations: [TestrunInitiateFormComponent],
       providers: [
         { provide: TestRunService, useValue: testRunServiceMock },
         {
@@ -96,7 +96,7 @@ describe('ProgressInitiateFormComponent', () => {
         SpinnerComponent,
       ],
     });
-    fixture = TestBed.createComponent(ProgressInitiateFormComponent);
+    fixture = TestBed.createComponent(TestrunInitiateFormComponent);
     component = fixture.componentInstance;
     compiled = fixture.nativeElement as HTMLElement;
   });

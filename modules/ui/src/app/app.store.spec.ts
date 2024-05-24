@@ -23,6 +23,7 @@ import {
   selectHasConnectionSettings,
   selectHasDevices,
   selectInterfaces,
+  selectIsOpenWaitSnackBar,
   selectMenuOpened,
   selectStatus,
 } from './store/selectors';
@@ -30,7 +31,7 @@ import { TestRunService } from './services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { device } from './mocks/device.mock';
 import { fetchSystemStatus, setDevices } from './store/actions';
-import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/progress.mock';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from './services/notification.service';
 import { WINDOW } from './providers/window.provider';
@@ -76,7 +77,10 @@ describe('AppStore', () => {
       providers: [
         AppStore,
         provideMockStore({
-          selectors: [{ selector: selectStatus, value: null }],
+          selectors: [
+            { selector: selectStatus, value: null },
+            { selector: selectIsOpenWaitSnackBar, value: false },
+          ],
         }),
         { provide: TestRunService, useValue: mockService },
         { provide: NotificationService, useValue: mockNotificationService },
