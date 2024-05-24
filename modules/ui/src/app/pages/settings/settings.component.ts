@@ -35,14 +35,14 @@ import { SettingsStore } from './settings.store';
 import { LoaderService } from '../../services/loader.service';
 
 @Component({
-  selector: 'app-general-settings',
-  templateUrl: './general-settings.component.html',
-  styleUrls: ['./general-settings.component.scss'],
+  selector: 'app-settings',
+  templateUrl: './settings.component.html',
+  styleUrls: ['./settings.component.scss'],
   hostDirectives: [CdkTrapFocus],
   providers: [SettingsStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GeneralSettingsComponent implements OnInit, OnDestroy {
+export class SettingsComponent implements OnInit, OnDestroy {
   @ViewChild('reloadSettingLink') public reloadSettingLink!: ElementRef;
   @Output() closeSettingEvent = new EventEmitter<void>();
 
