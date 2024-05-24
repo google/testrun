@@ -687,7 +687,7 @@ describe('AppComponent', () => {
 });
 
 @Component({
-  selector: 'app-general-settings',
+  selector: 'app-settings',
   template: '<div></div>',
 })
 class FakeGeneralSettingsComponent {
