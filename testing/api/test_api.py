@@ -41,7 +41,6 @@ SYSTEM_CONFIG_PATH = "local/system.json"
 BASELINE_MAC_ADDR = "02:42:aa:00:01:01"
 ALL_MAC_ADDR = "02:42:aa:00:00:01"
 
-
 def pretty_print(dictionary: dict):
   """ Pretty print dictionary """
   print(json.dumps(dictionary, indent=4))
@@ -242,7 +241,7 @@ def test_status_idle(testrun):
   )
 
 def test_status_in_progress(testing_devices, testrun):
- 
+
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
   assert r.status_code == 200
@@ -266,7 +265,12 @@ def test_status_non_compliant(testing_devices, testrun): # pylint: disable=W0613
 
   r = requests.get(f"{API}/devices", timeout=5)
   all_devices = json.loads(r.text)
-  payload = {"device": {"mac_addr": all_devices[0]["mac_addr"], "firmware": "asd"}}
+  payload = {
+    "device": {
+      "mac_addr": all_devices[0]["mac_addr"],
+      "firmware": "asd"
+    }
+  }
   r = requests.post(f"{API}/system/start", data=json.dumps(payload),
                     timeout=10)
   assert r.status_code == 200
@@ -372,7 +376,6 @@ def test_delete_device_success(empty_devices_dir, testrun):
 
   # Check device has been created
   assert r.status_code == 201
-  # Check 
   assert len(local_get_devices()) == 1
 
   device_2 = {
@@ -445,7 +448,6 @@ def test_delete_device_not_found(empty_devices_dir, testrun):
 
   # Check device has been created
   assert r.status_code == 201
-  # Check 
   assert len(local_get_devices()) == 1
 
   # Test that device_1 deletes
@@ -477,11 +479,9 @@ def test_delete_device_no_mac(empty_devices_dir, testrun):
   # Send create device request
   r = requests.post(f"{API}/device", data=json.dumps(device_1))
   print(r.text)
-  device1_response = r.text
 
   # Check device has been created
   assert r.status_code == 201
-  # Check 
   assert len(local_get_devices()) == 1
 
   device_1.pop("mac_addr")
@@ -493,7 +493,7 @@ def test_delete_device_no_mac(empty_devices_dir, testrun):
 
 
 def test_delete_device_testrun_running(testing_devices, testrun):
- 
+
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
   assert r.status_code == 200
@@ -553,7 +553,7 @@ def test_start_testrun_already_in_progress(testing_devices, testrun):
   )
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
   assert r.status_code == 409
-  
+
 def test_start_system_not_configured_correctly(empty_devices_dir, testrun):
   device_1 = {
       "manufacturer": "Google",
@@ -571,7 +571,6 @@ def test_start_system_not_configured_correctly(empty_devices_dir, testrun):
   # Send create device request
   r = requests.post(f"{API}/device", data=json.dumps(device_1))
   print(r.text)
-  device1_response = r.text
 
   payload = {"device": {"mac_addr": None, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
@@ -595,7 +594,6 @@ def test_start_device_not_found(empty_devices_dir, testrun):
   # Send create device request
   r = requests.post(f"{API}/device", data=json.dumps(device_1))
   print(r.text)
-  device1_response = r.text
 
   r = requests.delete(f"{API}/device/",data=json.dumps(device_1))
   assert r.status_code == 200
@@ -622,7 +620,6 @@ def test_start_missing_device_information(empty_devices_dir, testrun):
   # Send create device request
   r = requests.post(f"{API}/device", data=json.dumps(device_1))
   print(r.text)
-  device1_response = r.text
 
   payload = {}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
@@ -666,18 +663,6 @@ def test_create_device_invalid_json(empty_devices_dir, testrun):
 
 
 def test_create_device_invalid_request(empty_devices_dir, testrun):
-  device_1 = {
-      "manufacturer": "Google",
-      "model": "First",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
 
   r = requests.post(f"{API}/device", data=None,
                     timeout=5)
@@ -688,7 +673,7 @@ def test_create_device_invalid_request(empty_devices_dir, testrun):
 def test_device_edit_device(testing_devices, testrun): # pylint: disable=W0613
   with open(
       os.path.join(
-          TESTRUN_DIR, DEVICES_DIRECTORY, testing_devices[1]
+          DEVICES_DIRECTORY, testing_devices[1]
       ), encoding="utf-8"
   ) as f:
     local_device = json.load(f)
@@ -789,8 +774,6 @@ def test_device_edit_device_incorrect_json_format(empty_devices_dir, testrun):
   assert r.status_code == 201
   assert len(local_get_devices()) == 1
 
-  updated_device = copy.deepcopy(device_1)
-
   updated_device_payload = {}
 
 
@@ -858,14 +841,14 @@ def test_system_latest_version(testrun):
   r = requests.get(f"{API}/system/version", timeout=5)
   assert r.status_code == 200
   updated_system_version = json.loads(r.text)["update_available"]
-  assert updated_system_version == False
+  assert updated_system_version is False
 
 #@pytest.mark.skip()
 def test_get_system_config(testrun): # pylint: disable=W0613
   r = requests.get(f"{API}/system/config", timeout=5)
 
   with open(
-    os.path.join(TESTRUN_DIR, SYSTEM_CONFIG_PATH),
+    SYSTEM_CONFIG_PATH,
     encoding="utf-8"
   ) as f:
     local_config = json.load(f)
