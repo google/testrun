@@ -63,9 +63,6 @@ class TestReport():
   def get_mac_addr(self):
     return self._mac_addr
 
-  def get_mac_addr(self):
-    return self._mac_addr
-
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
 
@@ -94,12 +91,6 @@ class TestReport():
   def get_report_url(self):
     return self._report_url
   
-  def set_mac_addr(self, mac_addr):
-    self._mac_addr = mac_addr
-
-  def set_mac_addr(self, mac_addr):
-    self._mac_addr = mac_addr
-
   def set_mac_addr(self, mac_addr):
     self._mac_addr = mac_addr
 
@@ -432,9 +423,9 @@ class TestReport():
 
   def generate_results(self, json_data, page_num):
 
-    result_list = '''
+    result_list = f'''
       <div class="result-list">
-        <h3>Results List</h3>
+        <h3>Results List <small>({len(self._results)}/{self._total_tests})</small></h3>
         <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
           <div class="result-list-header-label" style="left: .1in">Name</div>
           <div class="result-list-header-label" style="left: 2.8in">Description</div>
