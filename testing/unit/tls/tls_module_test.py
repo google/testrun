@@ -300,6 +300,19 @@ class TLSModuleTest(unittest.TestCase):
     print(str(test_results))
     self.assertFalse(test_results[0])
 
+  # Scan a known capture without u unsupported TLS traffic to
+  # generate a fail result
+  def security_tls_client_allowed_protocols_test(self):
+    print('\nsecurity_tls_client_allowed_protocols_test')
+    capture_file = os.path.join(CAPTURES_DIR, 'monitor_with_quic.pcap')
+
+    # Run the client test
+    test_results = TLS_UTIL.validate_tls_client(client_ip='10.10.10.15',
+                                                tls_version='1.2',
+                                                capture_files=[capture_file])
+    print(str(test_results))
+    self.assertTrue(test_results[0])
+
   def tls_module_report_test(self):
     print('\ntls_module_report_test')
     os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
@@ -517,6 +530,8 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
   suite.addTest(TLSModuleTest('tls_module_local_ca_cert_test'))
   suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
+
+  suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)

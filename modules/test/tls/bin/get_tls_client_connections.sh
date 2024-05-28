@@ -16,9 +16,17 @@
 
 CAPTURE_FILE="$1"
 SRC_IP="$2"
+PROTOCOL=$3
 
 TSHARK_OUTPUT="-T json -e ip.src -e tcp.dstport -e ip.dst"
 TSHARK_FILTER="ip.src == $SRC_IP and tls"
+
+# Add a protocol filter if defined	
+if [ ! -n "$PROTOCOL" ];then
+	TSHARK_FILTER="$TSHARK_FILTER and $PROTOCOL"
+fi
+
+echo "$TSHARK_FIlTER"
 
 response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT $TSHARK_FILTER)
 
