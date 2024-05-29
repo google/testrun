@@ -102,6 +102,7 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
             );
           }),
           catchError(() => {
+            this.removeCertificate(file.name, certificates);
             return EMPTY;
           })
         );
