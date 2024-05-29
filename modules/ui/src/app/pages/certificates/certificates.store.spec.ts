@@ -161,6 +161,24 @@ describe('CertificatesStore', () => {
           );
         });
       });
+
+      it('should not upload certificates if error happens', done => {
+        mockService.uploadCertificate.and.returnValue(of(false));
+        mockService.fetchCertificates.and.returnValue(of([]));
+
+        const uploadingCertificate = certificate_uploading;
+
+        certificateStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
+          expect(store.certificates).toContain(uploadingCertificate);
+        });
+
+        certificateStore.viewModel$.pipe(skip(2), take(1)).subscribe(store => {
+          expect(store.certificates).not.toContain(certificate);
+          done();
+        });
+
+        certificateStore.uploadCertificate(FILE);
+      });
     });
 
     describe('deleteCertificate', () => {
