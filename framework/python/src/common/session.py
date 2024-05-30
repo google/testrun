@@ -87,7 +87,7 @@ class TestrunSession():
     self._config = self._get_default_config()
 
     # Loading methods
-    self._load_version(default_version=version)
+    self._load_version()
     self._load_config()
     self._load_profiles()
 
@@ -192,10 +192,15 @@ class TestrunSession():
     if len(version_cmd[1]) == 0:
       version = version_cmd[0]
       self._version = version
-      LOGGER.info(f'Running Testrun version {self._version}')
     else:
-      self._version = '?'
-      LOGGER.error('An error occurred when resolving the version of Testrun')
+      LOGGER.debug('Failed getting the version from dpkg-query')
+      # Try getting the version from the make control file
+      try:
+        version = util.run_command('$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
+      except Exception as e:
+        LOGGER.debug('Failed getting the version from make control file')
+        LOGGER.error(e)
+        self._version = 'Unknown'
 
   def get_version(self):
     return self._version
