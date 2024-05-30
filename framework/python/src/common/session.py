@@ -40,6 +40,9 @@ CONFIG_FILE_PATH = 'local/system.json'
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
 PROFILES_DIR = 'local/profiles'
 
+PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
+PROFILES_DIR = 'local/profiles'
+
 LOGGER = logger.get_logger('session')
 
 class TestrunSession():
