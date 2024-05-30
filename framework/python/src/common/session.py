@@ -192,7 +192,7 @@ class TestrunSession():
       version = version_cmd[0]
       self._version = version
     else:
-      self._version = '?'
+      self._version = 'Unknown'
     LOGGER.info(f'Running Testrun version {self._version}')
 
   def get_version(self):
