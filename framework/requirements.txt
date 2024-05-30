@@ -26,3 +26,4 @@ markdown==3.5.2
 
 # Requirements for the session
 cryptography==42.0.7
+pytz==2024.1
