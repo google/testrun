@@ -22,11 +22,9 @@ import threading
 import time
 import netifaces
 import ssl
-import http.client
 import shutil
 import logging
 import socket
-import requests
 
 MODULE = 'tls'
 # Define the file paths
@@ -42,7 +40,7 @@ LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR, 'tls_report_ext_local.md')
 LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR, 'tls_report_no_cert_local.md')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
-INTERNET_IFACE='eth0'
+INTERNET_IFACE = 'eth0'
 
 TLS_UTIL = None
 PACKET_CAPTURE = None
@@ -352,6 +350,16 @@ class TLSModuleTest(unittest.TestCase):
                     tls_capture_file=pcap_file)
     report_out_path = tls.generate_module_report()
 
+    # Read the generated report
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
+
+    # Read the local good report
+    with open(LOCAL_REPORT_EXT, 'r', encoding='utf-8') as file:
+      report_local = file.read()
+
+    self.assertEqual(report_out, report_local)
+
   def tls_module_report_no_cert_test(self):
     print('\ntls_module_report_no_cert_test')
     os.environ['DEVICE_MAC'] = ''
@@ -403,35 +411,35 @@ class TLSModuleTest(unittest.TestCase):
       context.verify_mode = ssl.CERT_NONE
 
       if disable_valid_ciphers:
-          # Create a list of ciphers that do not use ECDH or ECDSA
-          ciphers_str = [
-              'TLS_AES_256_GCM_SHA384', 'TLS_CHACHA20_POLY1305_SHA256',
-              'TLS_AES_128_GCM_SHA256', 'AES256-GCM-SHA384',
-              'PSK-AES256-GCM-SHA384', 'PSK-CHACHA20-POLY1305',
-              'RSA-PSK-AES128-GCM-SHA256', 'DHE-PSK-AES128-GCM-SHA256',
-              'AES128-GCM-SHA256', 'PSK-AES128-GCM-SHA256', 'AES256-SHA256',
-              'AES128-SHA'
-          ]
-          context.set_ciphers(':'.join(ciphers_str))
+        # Create a list of ciphers that do not use ECDH or ECDSA
+        ciphers_str = [
+            'TLS_AES_256_GCM_SHA384', 'TLS_CHACHA20_POLY1305_SHA256',
+            'TLS_AES_128_GCM_SHA256', 'AES256-GCM-SHA384',
+            'PSK-AES256-GCM-SHA384', 'PSK-CHACHA20-POLY1305',
+            'RSA-PSK-AES128-GCM-SHA256', 'DHE-PSK-AES128-GCM-SHA256',
+            'AES128-GCM-SHA256', 'PSK-AES128-GCM-SHA256', 'AES256-SHA256',
+            'AES128-SHA'
+        ]
+        context.set_ciphers(':'.join(ciphers_str))
 
       # Disable specific TLS versions based on the input
       if tls_version != '1.1':
-          context.options |= ssl.OP_NO_TLSv1  # Disable TLS 1.0
-          context.options |= ssl.OP_NO_TLSv1_1  # Disable TLS 1.1
+        context.options |= ssl.OP_NO_TLSv1  # Disable TLS 1.0
+        context.options |= ssl.OP_NO_TLSv1_1  # Disable TLS 1.1
       else:
-          context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
-          context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
+        context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
+        context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
 
       if tls_version == '1.3':
-          context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
+        context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
       elif tls_version == '1.2':
-          context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
+        context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
 
       # Create an SSL/TLS socket
       with socket.create_connection((hostname, port), timeout=10) as sock:
         with context.wrap_socket(sock, server_hostname=hostname) as secure_sock:
           # Get the server's certificate in PEM format
-          cert_pem = ssl.DER_cert_to_PEM_cert(secure_sock.getpeercert(True))
+          ssl.DER_cert_to_PEM_cert(secure_sock.getpeercert(True))
 
     except ConnectionRefusedError:
       print(f'Connection to {hostname}:{port} was refused.')
@@ -441,7 +449,6 @@ class TLSModuleTest(unittest.TestCase):
       print(f'SSL error occurred: {e}')
     except socket.timeout:
       print('Socket timeout error')
-
 
   def start_capture(self, timeout):
     global PACKET_CAPTURE
@@ -480,16 +487,16 @@ class TLSModuleTest(unittest.TestCase):
   def tls_module_ca_cert_spaces_test(self):
     print('\tls_module_ca_cert_spaces_test')
     # Make a tmp folder to make a differnt CA directory
-    tmp_dir = os.path.join(TEST_FILES_DIR,'tmp')
+    tmp_dir = os.path.join(TEST_FILES_DIR, 'tmp')
     if os.path.exists(tmp_dir):
       shutil.rmtree(tmp_dir)
     os.makedirs(tmp_dir, exist_ok=True)
     # Move and rename the TestRun CA root with spaces
-    ca_file = os.path.join(ROOT_CERTS_DIR,'Testrun_CA_Root.crt')
-    ca_file_with_spaces = os.path.join(tmp_dir,'Testrun CA Root.crt')
-    shutil.copy(ca_file,ca_file_with_spaces)
+    ca_file = os.path.join(ROOT_CERTS_DIR, 'Testrun_CA_Root.crt')
+    ca_file_with_spaces = os.path.join(tmp_dir, 'Testrun CA Root.crt')
+    shutil.copy(ca_file, ca_file_with_spaces)
 
-    cert_path = os.path.join(CERT_DIR,'device_cert_local.crt')
+    cert_path = os.path.join(CERT_DIR, 'device_cert_local.crt')
     log = logger.get_logger('unit_test_' + MODULE)
     log.setLevel(logging.DEBUG)
     tls_util = TLSUtil(log,
@@ -498,7 +505,7 @@ class TLSModuleTest(unittest.TestCase):
                        root_certs_dir=tmp_dir)
 
     cert_valid = tls_util.validate_local_ca_signature(
-      device_cert_path=cert_path)
+        device_cert_path=cert_path)
     self.assertEqual(cert_valid[0], True)
 
 

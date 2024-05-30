@@ -38,7 +38,7 @@ PRIVATE_SUBNETS = [
     ipaddress.ip_network('192.168.0.0/16')
 ]
 #Define the allowed protocols as tshark filters
-DEFAULT_ALLOWED_PROTOCOLS=['quic']
+DEFAULT_ALLOWED_PROTOCOLS = ['quic']
 
 
 class TLSUtil():
@@ -49,14 +49,15 @@ class TLSUtil():
                bin_dir=DEFAULT_BIN_DIR,
                cert_out_dir=DEFAULT_CERTS_OUT_DIR,
                root_certs_dir=DEFAULT_ROOT_CERTS_DIR,
-               allowed_protocols=DEFAULT_ALLOWED_PROTOCOLS):
+               allowed_protocols=None):
     global LOGGER
     LOGGER = logger
     self._bin_dir = bin_dir
     self._cert_out_dir = cert_out_dir
     self._dev_cert_file = 'device_cert.crt'
     self._root_certs_dir = root_certs_dir
-    self._allowed_protocols = allowed_protocols
+    if allowed_protocols is None:
+      self._allowed_protocols = DEFAULT_ALLOWED_PROTOCOLS
 
   def get_public_certificate(self,
                              host,
@@ -456,14 +457,16 @@ class TLSUtil():
     return combined_packets
 
   # Resolve all connections from the device that use TLS
-  def get_tls_client_connection_packetes(self, client_ip, capture_files, protocol=None):
+  def get_tls_client_connection_packetes(self,
+                                         client_ip,
+                                         capture_files,
+                                         protocol=None):
     combined_packets = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_tls_client_connections.sh'
       args = f'"{capture_file}" {client_ip}'
       if protocol is not None:
         args += f' {protocol}'
-      LOGGER.info("conn pacets args: " + str(args))      
       command = f'{bin_file} {args}'
       response = util.run_command(command)
       packets = json.loads(response[0].strip())
@@ -511,10 +514,13 @@ class TLSUtil():
       hello_packets.append(hello_packet)
     return hello_packets
 
-  def process_hello_packets(self, hello_packets, allowed_protocol_client_ips, tls_version='1.2'):
+  def process_hello_packets(self,
+                            hello_packets,
+                            allowed_protocol_client_ips,
+                            tls_version='1.2'):
     # Validate the ciphers only for tls 1.2
     client_hello_results = {'valid': [], 'invalid': []}
-    
+
     if tls_version == '1.2':
       for packet in hello_packets:
         if packet['dst_ip'] not in str(client_hello_results['valid']):
@@ -536,10 +542,12 @@ class TLSUtil():
               if packet['dst_ip'] not in str(client_hello_results['invalid']):
                 client_hello_results['invalid'].append(packet)
             else:
-              LOGGER.info('Allowing protocol connection, cipher check failure ignored.')
+              LOGGER.info(
+                  'Allowing protocol connection, cipher check failure ignored.')
               protocol_name = allowed_protocol_client_ips[packet['dst_ip']]
-              packet['protocol_details'] = f'\nAllowing {protocol_name} traffic to {packet["dst_ip"]}'
-              client_hello_results['valid'].append(packet)              
+              packet['protocol_details'] = (
+                  f'\nAllowing {protocol_name} traffic to {packet["dst_ip"]}')
+              client_hello_results['valid'].append(packet)
     else:
       # No cipher check for TLS 1.3
       client_hello_results['valid'] = hello_packets
@@ -626,12 +634,13 @@ class TLSUtil():
 
   # Check if the device has made any outbound connections that use any
   # allowed protocols that do not fit into a direct TLS packet inspection
-  def get_allowed_protocol_client_connection_ips(self, client_ip, capture_files):
+  def get_allowed_protocol_client_connection_ips(self, client_ip,
+                                                 capture_files):
     LOGGER.info('Checking client for TLS Protocol client connections')
     tls_dst_ips = {}  # Store unique destination IPs with the protocol name
     for protocol in self._allowed_protocols:
       packets = self.get_tls_client_connection_packetes(
-        client_ip=client_ip, capture_files=capture_files, protocol=protocol)
+          client_ip=client_ip, capture_files=capture_files, protocol=protocol)
 
       for packet in packets:
         dst_ip = ipaddress.ip_address(packet['_source']['layers']['ip.dst'][0])
@@ -653,11 +662,13 @@ class TLSUtil():
 
     # Resolve allowed protocol connections that require
     # additional consideration beyond packet inspection
-    allowed_protocol_client_ips = self.get_allowed_protocol_client_connection_ips(client_ip,capture_files)
+    allowed_protocol_client_ips = (
+        self.get_allowed_protocol_client_connection_ips(client_ip,
+                                                        capture_files))
 
     LOGGER.info(f'Protocol IPS: {allowed_protocol_client_ips}')
-    client_hello_results = self.process_hello_packets(hello_packets, allowed_protocol_client_ips,
-                                                      tls_version)
+    client_hello_results = self.process_hello_packets(
+        hello_packets, allowed_protocol_client_ips, tls_version)
 
     handshakes = {'complete': [], 'incomplete': []}
     for packet in client_hello_results['valid']:
@@ -699,7 +710,7 @@ class TLSUtil():
           tls_client_details += 'Incomplete handshake detected from server: '
           tls_client_details += result + '.'
           hello_result = client_hello_results[result]
-          if 'protocol_details' in  hello_result:
+          if 'protocol_details' in hello_result:
             tls_client_details += hello_result['protocol_details']
           tls_client_details += '\n'
       if len(handshakes['complete']) > 0:
@@ -712,7 +723,7 @@ class TLSUtil():
           tls_client_details += result + '.'
           for packet in client_hello_results['valid']:
             if result in packet['dst_ip']:
-              if 'protocol_details' in  packet:
+              if 'protocol_details' in packet:
                 tls_client_details += packet['protocol_details']
           tls_client_details += '\n'
     else:
