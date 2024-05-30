@@ -118,7 +118,9 @@ class Api:
 
     # Profiles
     self._router.add_api_route("/profiles/format",
-                               self._get_profiles_format)
+                               self.get_profiles_format)
+    self._router.add_api_route("/profiles",
+                               self.get_profiles)
 
     # Allow all origins to access the API
     origins = ["*"]
@@ -612,7 +614,7 @@ class Api:
     return self._test_run
 
   # Profiles
-  def _get_profiles_format(self, response: Response):
+  def get_profiles_format(self, response: Response):
 
     # Check if Testrun was able to load the format originally
     if self.get_session().get_profiles_format() is None:
@@ -622,6 +624,9 @@ class Api:
         "Testrun could not load the risk assessment format")
 
     return self.get_session().get_profiles_format()
+
+  def get_profiles(self):
+    return self._generate_msg(True, "profiles")
 
   # Certificates
   def get_certs(self):

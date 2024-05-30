@@ -37,10 +37,7 @@ CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
-PROFILES_DIR = 'local/profiles'
-
-PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
-PROFILES_DIR = 'local/profiles'
+PROFILES_DIR = 'local/risk_profiles'
 
 LOGGER = logger.get_logger('session')
 
@@ -347,6 +344,18 @@ class TestrunSession():
     except (IOError, ValueError) as e:
       LOGGER.error(
         'An error occurred whilst loading the risk assessment format')
+      LOGGER.debug(e)
+    
+    # Load existing profiles
+    LOGGER.debug('Loading risk profiles')
+
+    try:
+      for risk_profile_file in os.listdir(os.path.join(
+        self._root_dir, PROFILES_DIR
+      )):
+        LOGGER.debug('Discovered profile {risk_profile_file}')
+    except Exception as e:
+      LOGGER.error('An error occurred whilst loading risk profiles')
       LOGGER.debug(e)
 
   def get_profiles_format(self):
