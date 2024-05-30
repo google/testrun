@@ -15,6 +15,7 @@
 """Track testing status."""
 import copy
 import datetime
+import pytz
 import json
 import os
 from common import util, logger
@@ -393,6 +394,8 @@ class TestrunSession():
 
   def upload_cert(self, filename, content):
 
+    now = datetime.datetime.now(pytz.utc)
+
     try:
       # Parse bytes into x509 object
       cert = x509.load_pem_x509_certificate(content, default_backend())
@@ -403,9 +406,14 @@ class TestrunSession():
       issuer = cert.issuer.get_attributes_for_oid(
         NameOID.ORGANIZATION_NAME)[0].value
 
+      status = 'Valid'
+      if now > cert.not_valid_after_utc:
+        status = 'Expired'
+
       # Craft python dictionary with values
       cert_obj = {
         'name': common_name,
+        'status': status,
         'organisation': issuer,
         'expires': cert.not_valid_after_utc,
         'filename': filename
@@ -434,6 +442,8 @@ class TestrunSession():
 
     LOGGER.debug(f'Loading certificates from {CERTS_PATH}')
 
+    now = datetime.datetime.now(pytz.utc)
+
     self._certs = []
 
     for cert_file in os.listdir(CERTS_PATH):
@@ -454,9 +464,14 @@ class TestrunSession():
           issuer = cert.issuer.get_attributes_for_oid(
             NameOID.ORGANIZATION_NAME)[0].value
 
+          status = 'Valid'
+          if now > cert.not_valid_after_utc:
+            status = 'Expired'
+
           # Craft python dictionary with values
           cert_obj = {
             'name': common_name,
+            'status': status,
             'organisation': issuer,
             'expires': cert.not_valid_after_utc,
             'filename': cert_file
