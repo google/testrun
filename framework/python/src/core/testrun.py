@@ -89,8 +89,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     self._register_exits()
 
     # Create session
-    self._session = TestrunSession(root_dir=root_dir,
-                                   version=self.get_version())
+    self._session = TestrunSession(root_dir=root_dir)
 
     # Register runtime parameters
     if single_intf:
