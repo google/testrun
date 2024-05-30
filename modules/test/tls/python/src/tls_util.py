@@ -461,7 +461,7 @@ class TLSUtil():
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_tls_client_connections.sh'
       args = f'"{capture_file}" {client_ip}'
-      if args is not None:
+      if protocol is not None:
         args += f' {protocol}'
       LOGGER.info("conn pacets args: " + str(args))      
       command = f'{bin_file} {args}'

@@ -1,7 +1,7 @@
 # Image name: test-run/ntp-test
 FROM ubuntu@sha256:e6173d4dc55e76b87c4af8db8821b1feae4146dd47341e4d431118c7dd060a74
 
-RUN apt-get update
+RUN apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y
 
 # Set DEBIAN_FRONTEND to noninteractive mode
 ENV DEBIAN_FRONTEND=noninteractive
@@ -35,6 +35,7 @@ RUN dos2unix /testrun/testing/unit/*
 
 # Make sure all the bin files are executable
 RUN chmod u+x /testrun/modules/test/tls/bin/*
+RUN chmod u+x /testrun/testing/unit/run_tests.sh
 
 WORKDIR /testrun/testing/unit/
 
