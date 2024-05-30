@@ -78,6 +78,9 @@ class TestrunSession():
     # Direct url for PDF report
     self._report_url = None
 
+    # Version
+    self._load_version()
+
     # Profiles
     self._profiles = []
     self._profile_format_json = None
@@ -193,8 +196,14 @@ class TestrunSession():
       version = version_cmd[0]
       self._version = version
     else:
-      self._version = 'Unknown'
-    LOGGER.info(f'Running Testrun version {self._version}')
+      LOGGER.debug('Failed getting the version from dpkg-query')
+      # Try getting the version from the make control file
+      try:
+        version = util.run_command('$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
+      except Exception as e:
+        LOGGER.debug('Failed getting the version from make control file')
+        LOGGER.error(e)
+        self._version = 'Unknown'
 
   def get_version(self):
     return self._version
