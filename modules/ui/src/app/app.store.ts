@@ -107,11 +107,8 @@ export class AppStore extends ComponentStore<AppComponentState> {
   statusLoaded = this.effect(() => {
     return this.systemStatus$.pipe(
       skip(1),
-      tap(status => {
+      tap(() => {
         this.updateIsStatusLoaded(true);
-        if (!this.window.location.href.includes(Routes.Testing)) {
-          this.notification.notify(`Test run is ${status}`);
-        }
       })
     );
   });
