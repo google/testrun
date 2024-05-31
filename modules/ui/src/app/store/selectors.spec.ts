@@ -25,7 +25,6 @@ import {
   selectIsOpenAddDevice,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
-  selectIsStopTestrun,
   selectMenuOpened,
   selectStatus,
   selectSystemStatus,
@@ -97,11 +96,6 @@ describe('Selectors', () => {
 
   it('should select isOpenStartTestrun', () => {
     const result = selectIsOpenStartTestrun.projector(initialState);
-    expect(result).toEqual(false);
-  });
-
-  it('should select isStopTestrun', () => {
-    const result = selectIsStopTestrun.projector(initialState);
     expect(result).toEqual(false);
   });
 

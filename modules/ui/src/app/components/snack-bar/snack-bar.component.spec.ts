@@ -61,9 +61,7 @@ describe('SnackBarComponent', () => {
 
     actionBtnStop.click();
 
-    expect(store.dispatch).toHaveBeenCalledWith(
-      setIsStopTestrun({ isStopTestrun: true })
-    );
+    expect(store.dispatch).toHaveBeenCalledWith(setIsStopTestrun());
   });
 
   it('should dispatch setIsOpenWaitSnackBar action', () => {
