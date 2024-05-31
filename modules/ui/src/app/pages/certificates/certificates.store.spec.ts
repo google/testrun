@@ -142,8 +142,8 @@ describe('CertificatesStore', () => {
           const container = document.createElement('DIV');
           container.classList.add('certificates-drawer-content');
           document.querySelector('body')?.appendChild(container);
-
           certificateStore.uploadCertificate(FILE);
+
           expect(notificationServiceMock.notify).toHaveBeenCalledWith(
             'Certificate successfully added.\niot.bms.google.com by Google, Inc. valid until 01 Sep 2024',
             0,
@@ -156,6 +156,9 @@ describe('CertificatesStore', () => {
 
       describe('with invalid certificate file', () => {
         it('should notify about errors', () => {
+          const container = document.createElement('DIV');
+          container.classList.add('certificates-drawer-content');
+          document.querySelector('body')?.appendChild(container);
           certificateStore.uploadCertificate(INVALID_FILE);
 
           expect(notificationServiceMock.notify).toHaveBeenCalledWith(
@@ -163,7 +166,7 @@ describe('CertificatesStore', () => {
             0,
             'certificate-notification',
             24000,
-            null
+            container
           );
         });
       });
