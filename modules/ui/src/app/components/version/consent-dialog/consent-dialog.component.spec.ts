@@ -47,6 +47,7 @@ describe('ConsentDialogComponent', () => {
     fixture = TestBed.createComponent(ConsentDialogComponent);
     component = fixture.componentInstance;
     component.data = NEW_VERSION;
+    component.optOut = false;
     fixture.detectChanges();
     compiled = fixture.nativeElement as HTMLElement;
   });
@@ -55,20 +56,22 @@ describe('ConsentDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should close dialog on "cancel" click', () => {
+  it('should close dialog with false when checkbox unchecked on "confirm" click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
-    const closeButton = compiled.querySelector(
-      '.cancel-button'
+    const confirmButton = compiled.querySelector(
+      '.confirm-button'
     ) as HTMLButtonElement;
 
-    closeButton?.click();
+    confirmButton?.click();
 
     expect(closeSpy).toHaveBeenCalledWith(false);
 
     closeSpy.calls.reset();
   });
 
-  it('should close dialog on "confirm" click', () => {
+  it('should close dialog with true when checkbox unchecked on "confirm" click', () => {
+    component.optOut = true;
+    fixture.detectChanges();
     const closeSpy = spyOn(component.dialogRef, 'close');
     const confirmButton = compiled.querySelector(
       '.confirm-button'
