@@ -197,7 +197,8 @@ class TestrunSession():
       LOGGER.debug('Failed getting the version from dpkg-query')
       # Try getting the version from the make control file
       try:
-        version = util.run_command('$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
+        version = util.run_command(
+          '$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
       except Exception as e:
         LOGGER.debug('Failed getting the version from make control file')
         LOGGER.error(e)
@@ -356,7 +357,7 @@ class TestrunSession():
       LOGGER.error(
         'An error occurred whilst loading the risk assessment format')
       LOGGER.debug(e)
-    
+
     # Load existing profiles
     LOGGER.debug('Loading risk profiles')
 
@@ -379,7 +380,7 @@ class TestrunSession():
 
   def get_profiles_format(self):
     return self._profile_format_json
-  
+
   def get_profiles(self):
     return self._profiles
 

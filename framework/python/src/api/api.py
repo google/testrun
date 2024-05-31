@@ -13,8 +13,6 @@
 # limitations under the License.
 """Provides Testrun data via REST API."""
 from fastapi import (FastAPI,
-                     File,
-                     Form,
                      APIRouter,
                      Response,
                      Request,

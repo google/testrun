@@ -13,25 +13,19 @@
 # limitations under the License.
 """Stores additional information about a device's risk"""
 
+
 class RiskProfile():
 
-    def __init__(self):
-        self.name = 'Unknown profile'
-        self.status = 'Draft'
-        self.created = None
-        self.version = None
-        self.questions = []
+  def __init__(self, json_data):
+    self.name = json_data['name']
+    self.status = json_data['status']
+    self.created = json_data['created']
+    self.version = json_data['version']
+    self.questions = json_data['questions']
 
-    def __init__(self, json_data):
-        self.name = json_data['name']
-        self.status = json_data['status']
-        self.created = json_data['created']
-        self.version = json_data['version']
-        self.questions = json_data['questions']
-        
-        # Check the profile has not expired
-        self.check_status()
-    
-    def check_status(self):
-        self.status = 'Valid'
-        return self.status
+    # Check the profile has not expired
+    self.check_status()
+
+  def check_status(self):
+    self.status = 'Valid'
+    return self.status
