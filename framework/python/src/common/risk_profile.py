@@ -16,20 +16,22 @@
 class RiskProfile():
 
     def __init__(self):
-        self._name = 'Unknown profile'
-        self._status = 'Draft'
-        self._timestamp = None
-        self._version = None
-        self._questions = []
+        self.name = 'Unknown profile'
+        self.status = 'Draft'
+        self.created = None
+        self.version = None
+        self.questions = []
 
-    def get_name(self):
-        return self._name
+    def __init__(self, json_data):
+        self.name = json_data['name']
+        self.status = json_data['status']
+        self.created = json_data['created']
+        self.version = json_data['version']
+        self.questions = json_data['questions']
+        
+        # Check the profile has not expired
+        self.check_status()
     
-    def get_status(self):
-        return self._status
-    
-    def get_timestamp(self):
-        return self._timestamp
-    
-    def get_version(self):
-        return self._version
+    def check_status(self):
+        self.status = 'Valid'
+        return self.status

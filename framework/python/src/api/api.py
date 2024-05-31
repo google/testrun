@@ -626,7 +626,7 @@ class Api:
     return self.get_session().get_profiles_format()
 
   def get_profiles(self):
-    return self._generate_msg(True, "profiles")
+    return self.get_session().get_profiles()
 
   # Certificates
   def get_certs(self):
