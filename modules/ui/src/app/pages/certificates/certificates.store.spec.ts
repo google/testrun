@@ -139,12 +139,17 @@ describe('CertificatesStore', () => {
         });
 
         it('should notify', () => {
+          const container = document.createElement('DIV');
+          container.classList.add('certificates-drawer-content');
+          document.querySelector('body')?.appendChild(container);
+
           certificateStore.uploadCertificate(FILE);
           expect(notificationServiceMock.notify).toHaveBeenCalledWith(
             'Certificate successfully added.\niot.bms.google.com by Google, Inc. valid until 01 Sep 2024',
             0,
             'certificate-notification',
-            10000
+            10000,
+            container
           );
         });
       });
@@ -157,7 +162,8 @@ describe('CertificatesStore', () => {
             'File "some very long strange n..." is not added.\nThe file name should be alphanumeric, symbols  -_. are allowed.\nFile extension must be .cert, .crt, .pem, .cer.\nMax name length is 24 characters.\nFile size should be a max of 4KB',
             0,
             'certificate-notification',
-            24000
+            24000,
+            null
           );
         });
       });
