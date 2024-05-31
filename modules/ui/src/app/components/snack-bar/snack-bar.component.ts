@@ -48,6 +48,7 @@ export class SnackBarComponent {
   }
 
   stop(): void {
-    this.store.dispatch(setIsStopTestrun({ isStopTestrun: true }));
+    this.store.dispatch(setIsStopTestrun());
+    this.wait();
   }
 }
