@@ -16,22 +16,19 @@
 
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
-import { TestRunService } from '../../services/test-run.service';
-import { exhaustMap } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { AppState } from '../../store/state';
 import { Store } from '@ngrx/store';
 import {
   selectHasDevices,
   selectIsOpenStartTestrun,
-  selectIsStopTestrun,
   selectSystemStatus,
 } from '../../store/selectors';
 import {
   fetchSystemStatus,
   setIsOpenStartTestrun,
+  setIsStopTestrun,
   setTestrunStatus,
-  stopInterval,
 } from '../../store/actions';
 import {
   IResult,
@@ -58,7 +55,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   );
   private hasDevices$ = this.store.select(selectHasDevices);
   private systemStatus$ = this.store.select(selectSystemStatus);
-  isStopTestrun$ = this.store.select(selectIsStopTestrun);
   isOpenStartTestrun$ = this.store.select(selectIsOpenStartTestrun);
   viewModel$ = this.select({
     hasDevices: this.hasDevices$,
@@ -138,15 +134,8 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   });
   stopTestrun = this.effect(trigger$ => {
     return trigger$.pipe(
-      exhaustMap(() => {
-        this.store.dispatch(stopInterval());
-        return this.testRunService.stopTestrun().pipe(
-          tap(stopped => {
-            if (stopped) {
-              this.getSystemStatus();
-            }
-          })
-        );
+      tap(() => {
+        this.store.dispatch(setIsStopTestrun());
       })
     );
   });
@@ -204,7 +193,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   }
 
   constructor(
-    private testRunService: TestRunService,
     private store: Store<AppState>,
     private readonly focusManagerService: FocusManagerService,
     private readonly loaderService: LoaderService

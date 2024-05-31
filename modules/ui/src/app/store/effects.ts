@@ -140,6 +140,25 @@ export class AppEffects {
     );
   });
 
+  onStopTestrun$ = createEffect(
+    () => {
+      return this.actions$.pipe(
+        ofType(AppActions.setIsStopTestrun),
+        switchMap(() => {
+          this.store.dispatch(stopInterval());
+          return this.testrunService.stopTestrun().pipe(
+            map(stopped => {
+              if (stopped) {
+                this.store.dispatch(fetchSystemStatus());
+              }
+            })
+          );
+        })
+      );
+    },
+    { dispatch: false }
+  );
+
   onStopInterval$ = createEffect(
     () => {
       return this.actions$.pipe(

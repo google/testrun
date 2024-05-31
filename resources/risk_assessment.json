@@ -14,7 +14,7 @@
   },
   {
     "question": "How will this device be used at Google?",
-    "type": "text",
+    "type": "text-long",
     "validation": {
       "max": "128",
       "required": true
@@ -22,7 +22,7 @@
   },
   {
     "question": "What is the email of the device owner(s)?",
-    "type": "text",
+    "type": "email-multiple",
     "validation": {
       "required": true,
       "max": "128"
