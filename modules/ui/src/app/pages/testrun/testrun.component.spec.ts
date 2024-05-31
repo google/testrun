@@ -50,7 +50,6 @@ import {
   selectHasDevices,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
-  selectIsStopTestrun,
   selectSystemStatus,
 } from '../../store/selectors';
 import { TestrunStore } from './testrun.store';
@@ -116,7 +115,6 @@ describe('TestrunComponent', () => {
               { selector: selectHasDevices, value: false },
               { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
-              { selector: selectIsStopTestrun, value: false },
               {
                 selector: selectSystemStatus,
                 value: MOCK_PROGRESS_DATA_IN_PROGRESS,
@@ -171,12 +169,6 @@ describe('TestrunComponent', () => {
     });
 
     describe('#stopTestrun', () => {
-      it('should call service method stopTestrun', () => {
-        component.stopTestrun();
-
-        expect(testRunServiceMock.stopTestrun).toHaveBeenCalled();
-      });
-
       it('should show loader', () => {
         component.stopTestrun();
 
@@ -237,7 +229,6 @@ describe('TestrunComponent', () => {
               { selector: selectHasDevices, value: false },
               { selector: selectDevices, value: [] },
               { selector: selectIsOpenWaitSnackBar, value: false },
-              { selector: selectIsStopTestrun, value: false },
             ],
           }),
         ],

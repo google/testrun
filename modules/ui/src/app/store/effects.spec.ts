@@ -59,6 +59,7 @@ describe('Effects', () => {
       'createSystemConfig',
       'fetchSystemStatus',
       'testrunInProgress',
+      'stopTestrun',
     ]);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of({}));
     testRunServiceMock.getSystemConfig.and.returnValue(of({}));
@@ -338,6 +339,22 @@ describe('Effects', () => {
           discardPeriodicTasks();
         });
       }));
+    });
+  });
+
+  describe('onStopTestrun$ should call stopTestrun', () => {
+    beforeEach(() => {
+      testRunServiceMock.stopTestrun.and.returnValue(of(true));
+    });
+
+    it('should call stopTestrun', done => {
+      actions$ = of(actions.setIsStopTestrun());
+
+      effects.onStopTestrun$.subscribe(() => {
+        expect(testRunServiceMock.stopTestrun).toHaveBeenCalled();
+        expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
+        done();
+      });
     });
   });
 });

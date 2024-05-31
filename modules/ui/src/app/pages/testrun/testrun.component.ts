@@ -67,15 +67,6 @@ export class TestrunComponent implements OnInit, OnDestroy {
           this.openTestRunModal();
         }
       });
-
-    this.testrunStore.isStopTestrun$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(isStop => {
-        if (isStop) {
-          this.stopTestrun();
-          this.notificationService.dismissSnackBar();
-        }
-      });
   }
 
   isTestrunInProgress(status?: string) {
