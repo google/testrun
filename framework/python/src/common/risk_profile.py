@@ -13,6 +13,9 @@
 # limitations under the License.
 """Stores additional information about a device's risk"""
 
+from datetime import datetime
+
+SECONDS_IN_YEAR = 31536000
 
 class RiskProfile():
 
@@ -27,5 +30,15 @@ class RiskProfile():
     self.check_status()
 
   def check_status(self):
-    self.status = 'Valid'
+    if self.status == 'Valid':
+
+      # Check expiry
+      created_date = datetime.strptime(
+        self.created, "%Y-%m-%d %H:%M:%S").timestamp()
+
+      today = datetime.now().timestamp()
+
+      if created_date < (today - SECONDS_IN_YEAR):
+        self.status = 'Expired'
+
     return self.status
