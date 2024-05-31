@@ -46,7 +46,13 @@ export class NotificationService {
     private zone: NgZone
   ) {}
 
-  notify(message: string, duration = 0, panelClass = '', timeout = TIMEOUT_MS) {
+  notify(
+    message: string,
+    duration = 0,
+    panelClass = '',
+    timeout = TIMEOUT_MS,
+    container?: Document | Element | null
+  ) {
     const panelClasses = ['test-run-notification'];
     if (panelClass) {
       panelClasses.push(panelClass);
@@ -66,7 +72,9 @@ export class NotificationService {
     this.snackBarRef
       .afterDismissed()
       .pipe(take(1))
-      .subscribe(() => this.focusManagerService.focusFirstElementInContainer());
+      .subscribe(() =>
+        this.focusManagerService.focusFirstElementInContainer(container)
+      );
   }
   dismiss() {
     this.snackBar.dismiss();
