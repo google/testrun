@@ -34,8 +34,6 @@ import { fetchSystemStatus, setDevices } from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from './services/notification.service';
-import { WINDOW } from './providers/window.provider';
-import { Routes } from './model/routes';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
