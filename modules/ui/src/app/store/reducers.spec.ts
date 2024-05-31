@@ -24,7 +24,6 @@ import {
   setIsOpenAddDevice,
   setIsOpenStartTestrun,
   setIsOpenWaitSnackBar,
-  setIsStopTestrun,
   setStatus,
   setTestrunStatus,
   toggleMenu,
@@ -127,18 +126,6 @@ describe('Reducer', () => {
       const action = setIsOpenAddDevice({ isOpenAddDevice: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ isOpenAddDevice: true } };
-
-      expect(state).toEqual(newState);
-      expect(state).not.toBe(initialState);
-    });
-  });
-
-  describe('setIsStopTestrun action', () => {
-    it('should update state', () => {
-      const initialState = initialSharedState;
-      const action = setIsStopTestrun({ isStopTestrun: true });
-      const state = fromReducer.sharedReducer(initialState, action);
-      const newState = { ...initialState, ...{ isStopTestrun: true } };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);
