@@ -144,7 +144,8 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
       message,
       0,
       'certificate-notification',
-      Math.ceil(message.length / SYMBOLS_PER_SECOND) * 1000
+      Math.ceil(message.length / SYMBOLS_PER_SECOND) * 1000,
+      window.document.querySelector('.certificates-drawer-content')
     );
   }
 
