@@ -51,7 +51,8 @@ export class ConsentDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {}
 
-  confirm(confirm: boolean) {
-    this.dialogRef.close(confirm);
+  confirm(optOut: boolean) {
+    // dialog should be closed with opposite value to grant or deny access to GA
+    this.dialogRef.close(!optOut);
   }
 }
