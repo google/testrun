@@ -21,9 +21,11 @@ import {
   setDevices,
   setHasConnectionSettings,
   setHasDevices,
+  setHasRiskProfiles,
   setIsOpenAddDevice,
   setIsOpenStartTestrun,
   setIsOpenWaitSnackBar,
+  setRiskProfiles,
   setStatus,
   setTestrunStatus,
   toggleMenu,
@@ -32,6 +34,7 @@ import {
 } from './actions';
 import { device } from '../mocks/device.mock';
 import { MOCK_PROGRESS_DATA_CANCELLING } from '../mocks/testrun.mock';
+import { PROFILE_MOCK } from '../mocks/profile.mock';
 
 describe('Reducer', () => {
   describe('unknown action', () => {
@@ -163,6 +166,31 @@ describe('Reducer', () => {
       const action = setDevices({ devices });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ devices } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setHasRiskProfiles action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setHasRiskProfiles({ hasRiskProfiles: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ hasRiskProfiles: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setRiskProfiles action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const riskProfiles = [PROFILE_MOCK];
+      const action = setRiskProfiles({ riskProfiles });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ riskProfiles } };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);

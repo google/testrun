@@ -57,6 +57,16 @@ export const selectDeviceInProgress = createSelector(
   (state: AppState) => state.shared.deviceInProgress
 );
 
+export const selectHasRiskProfiles = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.hasRiskProfiles
+);
+
+export const selectRiskProfiles = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.riskProfiles
+);
+
 export const selectError = createSelector(
   selectAppState,
   (state: AppState) => state.appComponent.settingMissedError

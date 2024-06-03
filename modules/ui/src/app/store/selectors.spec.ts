@@ -21,11 +21,13 @@ import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasRiskProfiles,
   selectInterfaces,
   selectIsOpenAddDevice,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
+  selectRiskProfiles,
   selectStatus,
   selectSystemStatus,
 } from './selectors';
@@ -45,6 +47,8 @@ describe('Selectors', () => {
       devices: [],
       hasDevices: false,
       isOpenAddDevice: false,
+      riskProfiles: [],
+      hasRiskProfiles: false,
       isStopTestrun: false,
       isOpenWaitSnackBar: false,
       isOpenStartTestrun: false,
@@ -81,6 +85,16 @@ describe('Selectors', () => {
 
   it('should select hasDevices', () => {
     const result = selectHasDevices.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select riskProfiles', () => {
+    const result = selectRiskProfiles.projector(initialState);
+    expect(result).toEqual([]);
+  });
+
+  it('should select hasRiskProfiles', () => {
+    const result = selectHasRiskProfiles.projector(initialState);
     expect(result).toEqual(false);
   });
 

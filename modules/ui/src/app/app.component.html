@@ -189,6 +189,28 @@ limitations under the License.
             >start testing</a
           >.
         </app-callout>
+        <app-callout
+          role="alert"
+          aria-live="assertive"
+          [type]="CalloutType.Check"
+          *ngIf="
+            vm.hasConnectionSettings === true &&
+            vm.hasDevices === true &&
+            vm.hasRiskProfiles === false &&
+            isTestrunInProgress(vm.systemStatus)
+          ">
+          Congratulations, the device is under test now! Do not forget to fill
+          <a
+            (click)="navigateToRiskAssessment()"
+            (keydown.enter)="navigateToRiskAssessment()"
+            (keydown.space)="navigateToRiskAssessment()"
+            aria-label="The Risk Assessment questionnaire link redirects to the Risk Assessment page."
+            tabindex="0"
+            role="link"
+            class="message-link"
+            >Risk Assessment questionnaire</a
+          >. It is required to complete verification process.
+        </app-callout>
         <router-outlet></router-outlet>
       </div>
     </mat-drawer-content>
