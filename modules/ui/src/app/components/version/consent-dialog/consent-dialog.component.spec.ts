@@ -56,7 +56,7 @@ describe('ConsentDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should close dialog with false when checkbox unchecked on "confirm" click', () => {
+  it('should close dialog with true when checkbox unchecked on "confirm" click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
     const confirmButton = compiled.querySelector(
       '.confirm-button'
@@ -64,12 +64,12 @@ describe('ConsentDialogComponent', () => {
 
     confirmButton?.click();
 
-    expect(closeSpy).toHaveBeenCalledWith(false);
+    expect(closeSpy).toHaveBeenCalledWith(true);
 
     closeSpy.calls.reset();
   });
 
-  it('should close dialog with true when checkbox unchecked on "confirm" click', () => {
+  it('should close dialog with false when checkbox unchecked on "confirm" click', () => {
     component.optOut = true;
     fixture.detectChanges();
     const closeSpy = spyOn(component.dialogRef, 'close');
@@ -79,7 +79,7 @@ describe('ConsentDialogComponent', () => {
 
     confirmButton?.click();
 
-    expect(closeSpy).toHaveBeenCalledWith(true);
+    expect(closeSpy).toHaveBeenCalledWith(false);
 
     closeSpy.calls.reset();
   });
