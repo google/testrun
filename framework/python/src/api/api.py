@@ -681,6 +681,7 @@ class Api:
 
     # Return error if something went wrong
     if cert_obj is None:
+      response.status_code = 500
       return self._generate_msg(
         False,
         "Failed to upload certificate. Is it in the correct format?"
