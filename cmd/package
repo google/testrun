@@ -52,8 +52,9 @@ cp -r resources $MAKE_SRC_DIR/usr/local/testrun/
 mkdir -p $MAKE_SRC_DIR/usr/local/testrun/local
 cp local/system.json.example $MAKE_SRC_DIR/usr/local/testrun/local/system.json.example
 
-# Create device repository
+# Create device repository and risk profiles database
 mkdir -p $MAKE_SRC_DIR/usr/local/testrun/local/devices
+mkdir -p $MAKE_SRC_DIR/usr/local/testrun/local/risk_profiles
 
 # Copy root_certs folder
 mkdir -p local/root_certs
