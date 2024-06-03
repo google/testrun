@@ -24,28 +24,35 @@ import { MatButtonModule } from '@angular/material/button';
 import { CalloutComponent } from '../../callout/callout.component';
 import { CalloutType } from '../../../model/callout-type';
 import { NgIf } from '@angular/common';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { FormsModule } from '@angular/forms';
 
 type DialogData = Version;
 
 @Component({
   selector: 'app-consent-dialog',
   standalone: true,
-  imports: [MatDialogModule, MatButtonModule, CalloutComponent, NgIf],
+  imports: [
+    MatDialogModule,
+    MatButtonModule,
+    CalloutComponent,
+    NgIf,
+    MatCheckbox,
+    FormsModule,
+  ],
   templateUrl: './consent-dialog.component.html',
   styleUrl: './consent-dialog.component.scss',
 })
 export class ConsentDialogComponent {
   public readonly CalloutType = CalloutType;
+  optOut = false;
   constructor(
     public dialogRef: MatDialogRef<ConsentDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {}
 
-  confirm() {
-    this.dialogRef.close(true);
-  }
-
-  cancel() {
-    this.dialogRef.close(false);
+  confirm(optOut: boolean) {
+    // dialog should be closed with opposite value to grant or deny access to GA
+    this.dialogRef.close(!optOut);
   }
 }
