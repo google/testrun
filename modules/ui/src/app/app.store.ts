@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap } from 'rxjs/operators';
 import {
@@ -37,9 +37,6 @@ import {
 } from './store/actions';
 import { TestrunStatus } from './model/testrun-status';
 import { SettingMissedError, SystemInterfaces } from './model/setting';
-import { NotificationService } from './services/notification.service';
-import { Routes } from './model/routes';
-import { WINDOW } from './providers/window.provider';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export interface AppComponentState {
@@ -107,11 +104,8 @@ export class AppStore extends ComponentStore<AppComponentState> {
   statusLoaded = this.effect(() => {
     return this.systemStatus$.pipe(
       skip(1),
-      tap(status => {
+      tap(() => {
         this.updateIsStatusLoaded(true);
-        if (!this.window.location.href.includes(Routes.Testing)) {
-          this.notification.notify(`Test run is ${status}`);
-        }
       })
     );
   });
@@ -136,9 +130,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
 
   constructor(
     private store: Store<AppState>,
-    private testRunService: TestRunService,
-    private notification: NotificationService,
-    @Inject(WINDOW) private window: Window
+    private testRunService: TestRunService
   ) {
     super({
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,

@@ -24,7 +24,6 @@ import {
   setIsOpenAddDevice,
   setIsOpenStartTestrun,
   setIsOpenWaitSnackBar,
-  setIsStopTestrun,
   setStatus,
   setTestrunStatus,
   toggleMenu,
@@ -32,7 +31,7 @@ import {
   updateFocusNavigation,
 } from './actions';
 import { device } from '../mocks/device.mock';
-import { MOCK_PROGRESS_DATA_CANCELLING } from '../mocks/progress.mock';
+import { MOCK_PROGRESS_DATA_CANCELLING } from '../mocks/testrun.mock';
 
 describe('Reducer', () => {
   describe('unknown action', () => {
@@ -127,18 +126,6 @@ describe('Reducer', () => {
       const action = setIsOpenAddDevice({ isOpenAddDevice: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ isOpenAddDevice: true } };
-
-      expect(state).toEqual(newState);
-      expect(state).not.toBe(initialState);
-    });
-  });
-
-  describe('setIsStopTestrun action', () => {
-    it('should update state', () => {
-      const initialState = initialSharedState;
-      const action = setIsStopTestrun({ isStopTestrun: true });
-      const state = fromReducer.sharedReducer(initialState, action);
-      const newState = { ...initialState, ...{ isStopTestrun: true } };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);

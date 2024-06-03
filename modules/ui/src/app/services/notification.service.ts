@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import {
   MatSnackBar,
   MatSnackBarRef,
@@ -42,10 +42,17 @@ export class NotificationService {
   constructor(
     public snackBar: MatSnackBar,
     private store: Store<AppState>,
-    private focusManagerService: FocusManagerService
+    private focusManagerService: FocusManagerService,
+    private zone: NgZone
   ) {}
 
-  notify(message: string, duration = 0, panelClass = '', timeout = TIMEOUT_MS) {
+  notify(
+    message: string,
+    duration = 0,
+    panelClass = '',
+    timeout = TIMEOUT_MS,
+    container?: Document | Element | null
+  ) {
     const panelClasses = ['test-run-notification'];
     if (panelClass) {
       panelClasses.push(panelClass);
@@ -65,15 +72,22 @@ export class NotificationService {
     this.snackBarRef
       .afterDismissed()
       .pipe(take(1))
-      .subscribe(() => this.focusManagerService.focusFirstElementInContainer());
+      .subscribe(() =>
+        this.focusManagerService.focusFirstElementInContainer(container)
+      );
   }
   dismiss() {
     this.snackBar.dismiss();
   }
   openSnackBar() {
-    this.snackBarCompRef = this.snackBar.openFromComponent(SnackBarComponent, {
-      duration: 0,
-      panelClass: 'snack-bar-info',
+    this.zone.run(() => {
+      this.snackBarCompRef = this.snackBar.openFromComponent(
+        SnackBarComponent,
+        {
+          duration: 0,
+          panelClass: 'snack-bar-info',
+        }
+      );
     });
 
     this.store.dispatch(setIsOpenWaitSnackBar({ isOpenWaitSnackBar: true }));

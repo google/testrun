@@ -160,6 +160,10 @@ class TestOrchestrator:
   def _generate_report(self):
 
     report = {}
+    report["testrun"] = {
+      "version": self.get_session().get_version()
+    }
+
     report["mac_addr"] = self.get_session().get_target_device().mac_addr
     report["device"] = self.get_session().get_target_device().to_dict()
     report["started"] = self.get_session().get_started().strftime(

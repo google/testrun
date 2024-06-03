@@ -31,17 +31,9 @@ import { TestRunService } from './services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { device } from './mocks/device.mock';
 import { fetchSystemStatus, setDevices } from './store/actions';
-import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/progress.mock';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from './services/notification.service';
-import { WINDOW } from './providers/window.provider';
-import { Routes } from './model/routes';
-
-const windowMock = {
-  location: {
-    href: '',
-  },
-};
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -84,7 +76,6 @@ describe('AppStore', () => {
         }),
         { provide: TestRunService, useValue: mockService },
         { provide: NotificationService, useValue: mockNotificationService },
-        { provide: WINDOW, useValue: windowMock },
       ],
       imports: [BrowserAnimationsModule],
     });
@@ -200,28 +191,6 @@ describe('AppStore', () => {
           MOCK_PROGRESS_DATA_IN_PROGRESS.status
         );
         store.refreshState();
-      });
-
-      it('should notify when url is not "/testing"', () => {
-        windowMock.location.href = 'localhost:8080';
-        store.overrideSelector(
-          selectStatus,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.status
-        );
-        store.refreshState();
-
-        expect(mockNotificationService.notify).toHaveBeenCalled();
-      });
-
-      it('should not notify when url is "/testing"', () => {
-        windowMock.location.href = 'localhost:8080/' + Routes.Testing;
-        store.overrideSelector(
-          selectStatus,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.status
-        );
-        store.refreshState();
-
-        expect(mockNotificationService.notify).toHaveBeenCalledTimes(0);
       });
     });
   });

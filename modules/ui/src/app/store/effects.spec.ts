@@ -37,7 +37,7 @@ import { device } from '../mocks/device.mock';
 import {
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
-} from '../mocks/progress.mock';
+} from '../mocks/testrun.mock';
 import { fetchSystemStatus, setStatus, setTestrunStatus } from './actions';
 import { NotificationService } from '../services/notification.service';
 describe('Effects', () => {
@@ -59,6 +59,7 @@ describe('Effects', () => {
       'createSystemConfig',
       'fetchSystemStatus',
       'testrunInProgress',
+      'stopTestrun',
     ]);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of({}));
     testRunServiceMock.getSystemConfig.and.returnValue(of({}));
@@ -338,6 +339,22 @@ describe('Effects', () => {
           discardPeriodicTasks();
         });
       }));
+    });
+  });
+
+  describe('onStopTestrun$ should call stopTestrun', () => {
+    beforeEach(() => {
+      testRunServiceMock.stopTestrun.and.returnValue(of(true));
+    });
+
+    it('should call stopTestrun', done => {
+      actions$ = of(actions.setIsStopTestrun());
+
+      effects.onStopTestrun$.subscribe(() => {
+        expect(testRunServiceMock.stopTestrun).toHaveBeenCalled();
+        expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
+        done();
+      });
     });
   });
 });

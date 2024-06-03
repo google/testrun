@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { TestRunService } from '../../services/test-run.service';
-import SpyObj = jasmine.SpyObj;
 import { TestBed } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../../store/state';
-import { skip, take, of } from 'rxjs';
+import { skip, take } from 'rxjs';
 import {
   selectHasConnectionSettings,
   selectHasDevices,
   selectIsOpenStartTestrun,
-  selectIsStopTestrun,
   selectSystemStatus,
 } from '../../store/selectors';
 import {
   fetchSystemStatus,
   setIsOpenStartTestrun,
+  setIsStopTestrun,
   setTestrunStatus,
 } from '../../store/actions';
 import { TestrunStore } from './testrun.store';
@@ -43,12 +41,11 @@ import {
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
   TEST_DATA_RESULT_WITH_RECOMMENDATIONS,
   TEST_DATA_TABLE_RESULT,
-} from '../../mocks/progress.mock';
+} from '../../mocks/testrun.mock';
 import { LoaderService } from '../../services/loader.service';
 
 describe('TestrunStore', () => {
   let testrunStore: TestrunStore;
-  let mockService: SpyObj<TestRunService>;
   let store: MockStore<AppState>;
   const loaderServiceMock: jasmine.SpyObj<LoaderService> = jasmine.createSpyObj(
     'loaderServiceMock',
@@ -56,12 +53,9 @@ describe('TestrunStore', () => {
   );
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj('mockService', ['stopTestrun']);
-
     TestBed.configureTestingModule({
       providers: [
         TestrunStore,
-        { provide: TestRunService, useValue: mockService },
         { provide: LoaderService, useValue: loaderServiceMock },
         provideMockStore({
           selectors: [
@@ -69,7 +63,6 @@ describe('TestrunStore', () => {
             { selector: selectSystemStatus, value: null },
             { selector: selectHasConnectionSettings, value: true },
             { selector: selectIsOpenStartTestrun, value: false },
-            { selector: selectIsStopTestrun, value: false },
           ],
         }),
       ],
@@ -230,15 +223,10 @@ describe('TestrunStore', () => {
     });
 
     describe('stopTestrun', () => {
-      beforeEach(() => {
-        mockService.stopTestrun.and.returnValue(of(true));
-      });
-
-      it('should call stopTestrun', () => {
+      it('should dispatch stopTestrun', () => {
         testrunStore.stopTestrun();
 
-        expect(mockService.stopTestrun).toHaveBeenCalled();
-        expect(store.dispatch).toHaveBeenCalledWith(fetchSystemStatus());
+        expect(store.dispatch).toHaveBeenCalledWith(setIsStopTestrun());
       });
     });
 
