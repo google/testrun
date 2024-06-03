@@ -33,6 +33,7 @@ import { appFeatureKey } from './store/reducers';
 import { SettingsComponent } from './pages/settings/settings.component';
 import { AppStore } from './app.store';
 import { TestRunService } from './services/test-run.service';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
@@ -71,7 +72,8 @@ export class AppComponent {
     private state: State<AppState>,
     private readonly focusManagerService: FocusManagerService,
     private testRunService: TestRunService,
-    public appStore: AppStore
+    public appStore: AppStore,
+    private liveAnnouncer: LiveAnnouncer
   ) {
     this.appStore.getDevices();
     this.appStore.getSystemStatus();
@@ -157,10 +159,12 @@ export class AppComponent {
     this.settings.getSystemInterfaces();
     this.settings.getSystemConfig();
     await this.settingsDrawer.open();
+    await this.liveAnnouncer.announce('The settings panel is opened');
   }
 
   async openCert() {
     await this.certDrawer.open();
+    this.liveAnnouncer.announce('The certificates panel is opened');
   }
 
   consentShown() {
