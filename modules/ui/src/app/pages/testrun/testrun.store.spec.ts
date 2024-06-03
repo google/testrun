@@ -25,6 +25,7 @@ import {
 } from '../../store/selectors';
 import {
   fetchSystemStatus,
+  fetchSystemStatusSuccess,
   setIsOpenStartTestrun,
   setIsStopTestrun,
   setTestrunStatus,
@@ -253,6 +254,18 @@ describe('TestrunStore', () => {
         expect(store.dispatch).toHaveBeenCalledWith(
           setTestrunStatus({
             systemStatus: { ...MOCK_PROGRESS_DATA_CANCELLING },
+          })
+        );
+      });
+    });
+
+    describe('setStatus', () => {
+      it('should dispatch action fetchSystemStatusSuccess', () => {
+        testrunStore.setStatus(MOCK_PROGRESS_DATA_IN_PROGRESS);
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          fetchSystemStatusSuccess({
+            systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
           })
         );
       });

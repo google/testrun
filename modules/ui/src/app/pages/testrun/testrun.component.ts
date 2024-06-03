@@ -138,13 +138,13 @@ export class TestrunComponent implements OnInit, OnDestroy {
     dialogRef
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((startTestrun: boolean) => {
-        if (startTestrun) {
+      .subscribe((status: TestrunStatus) => {
+        if (status) {
           // @ts-expect-error data layer is not null
           window.dataLayer.push({
             event: 'successful_testrun_initiation',
           });
-          this.testrunStore.getSystemStatus();
+          this.testrunStore.setStatus(status);
         }
         this.testrunStore.setIsOpenStartTestrun(false);
         timer(10)
