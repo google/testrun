@@ -471,15 +471,13 @@ describe('AppComponent', () => {
 
     describe('with systemStatus data IN Progress and without riskProfiles', () => {
       beforeEach(() => {
-        mockService.testrunInProgress.and.returnValue(true);
         store.overrideSelector(selectHasConnectionSettings, true);
         store.overrideSelector(selectHasDevices, true);
         store.overrideSelector(selectHasRiskProfiles, false);
         store.overrideSelector(
-          selectSystemStatus,
-          MOCK_PROGRESS_DATA_IN_PROGRESS
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
         );
-
         fixture.detectChanges();
       });
 

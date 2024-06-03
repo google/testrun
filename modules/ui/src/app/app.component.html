@@ -197,7 +197,7 @@ limitations under the License.
             vm.hasConnectionSettings === true &&
             vm.hasDevices === true &&
             vm.hasRiskProfiles === false &&
-            isTestrunInProgress(vm.systemStatus)
+            vm.systemStatus === StatusOfTestrun.InProgress
           ">
           Congratulations, the device is under test now! Do not forget to fill
           <a
