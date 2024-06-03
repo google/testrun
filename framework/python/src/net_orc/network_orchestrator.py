@@ -538,6 +538,7 @@ class NetworkOrchestrator:
           # DNS configuration (/etc/resolv.conf)  Re-add when/if
           # this network is utilized and DNS issue is resolved
           #network=PRIVATE_DOCKER_NET,
+          network_mode="none",
           privileged=True,
           detach=True,
           mounts=net_module.mounts,
