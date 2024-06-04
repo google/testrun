@@ -76,6 +76,7 @@ export class AppComponent {
     private liveAnnouncer: LiveAnnouncer
   ) {
     this.appStore.getDevices();
+    this.appStore.getRiskProfiles();
     this.appStore.getSystemStatus();
     this.matIconRegistry.addSvgIcon(
       'devices',
@@ -115,6 +116,10 @@ export class AppComponent {
   navigateToRuntime(): void {
     this.route.navigate([Routes.Testing]);
     this.appStore.setIsOpenStartTestrun();
+  }
+
+  navigateToRiskAssessment(): void {
+    this.route.navigate([Routes.RiskAssessment]);
   }
 
   async closeCertificates(): Promise<void> {

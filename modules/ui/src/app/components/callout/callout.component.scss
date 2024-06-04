@@ -22,7 +22,8 @@
 }
 
 :host:has(.callout-container.info),
-:host:has(.callout-container.error) {
+:host:has(.callout-container.error),
+:host:has(.callout-container.check_circle) {
   position: absolute;
 }
 
@@ -69,6 +70,15 @@
 
   .callout-icon {
     color: $red-700;
+  }
+}
+
+.callout-container.check_circle {
+  margin: 24px 32px;
+  background-color: $green-50;
+
+  .callout-icon {
+    color: $green-800;
   }
 }
 

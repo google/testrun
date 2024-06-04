@@ -32,9 +32,7 @@ export class RiskAssessmentComponent implements OnDestroy {
   constructor(
     private store: RiskAssessmentStore,
     public dialog: MatDialog
-  ) {
-    this.store.getProfiles();
-  }
+  ) {}
 
   ngOnDestroy() {
     this.destroy$.next(true);
