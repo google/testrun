@@ -33,12 +33,14 @@ import { Profile } from '../../model/profile';
 import { MatDialogRef } from '@angular/material/dialog';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { FocusManagerService } from '../../services/focus-manager.service';
+import { RiskAssessmentStore } from './risk-assessment.store';
 
 describe('RiskAssessmentComponent', () => {
   let component: RiskAssessmentComponent;
   let fixture: ComponentFixture<RiskAssessmentComponent>;
   let mockService: SpyObj<TestRunService>;
   let mockFocusManagerService: SpyObj<FocusManagerService>;
+  let mockRiskAssessmentStore: SpyObj<RiskAssessmentStore>;
   let compiled: HTMLElement;
 
   beforeEach(async () => {
@@ -49,14 +51,24 @@ describe('RiskAssessmentComponent', () => {
       'focusFirstElementInContainer',
     ]);
 
+    mockRiskAssessmentStore = jasmine.createSpyObj('RiskAssessmentStore', [
+      'deleteProfile',
+      'setFocus',
+    ]);
+
     await TestBed.configureTestingModule({
       declarations: [RiskAssessmentComponent, FakeProfileItemComponent],
       imports: [MatToolbarModule, MatSidenavModule, BrowserAnimationsModule],
       providers: [
         { provide: TestRunService, useValue: mockService },
         { provide: FocusManagerService, useValue: mockFocusManagerService },
+        { provide: RiskAssessmentStore, useValue: mockRiskAssessmentStore },
       ],
     }).compileComponents();
+
+    TestBed.overrideProvider(RiskAssessmentStore, {
+      useValue: mockRiskAssessmentStore,
+    });
 
     fixture = TestBed.createComponent(RiskAssessmentComponent);
     component = fixture.componentInstance;
@@ -69,6 +81,10 @@ describe('RiskAssessmentComponent', () => {
 
   describe('with no data', () => {
     beforeEach(() => {
+      component.viewModel$ = of({
+        profiles: [] as Profile[],
+      });
+      mockRiskAssessmentStore.profiles$ = of([]);
       fixture.detectChanges();
     });
 

@@ -114,6 +114,17 @@ export class AppEffects {
     );
   });
 
+  onSetRiskProfiles$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setRiskProfiles),
+      map(({ riskProfiles }) =>
+        AppActions.setHasRiskProfiles({
+          hasRiskProfiles: riskProfiles.length > 0,
+        })
+      )
+    );
+  });
+
   onSetTestrunStatus$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(AppActions.setTestrunStatus),

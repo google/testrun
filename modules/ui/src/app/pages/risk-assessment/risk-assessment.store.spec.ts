@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 import { TestBed } from '@angular/core/testing';
-import { of, skip, take } from 'rxjs';
-import { provideMockStore } from '@ngrx/store/testing';
+import { of, take } from 'rxjs';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { PROFILE_MOCK, PROFILE_MOCK_2 } from '../../mocks/profile.mock';
 import { FocusManagerService } from '../../services/focus-manager.service';
+import { AppState } from '../../store/state';
+import { selectRiskProfiles } from '../../store/selectors';
+import { setRiskProfiles } from '../../store/actions';
 
 describe('RiskAssessmentStore', () => {
   let riskAssessmentStore: RiskAssessmentStore;
+  let store: MockStore<AppState>;
   let mockService: SpyObj<TestRunService>;
   let mockFocusManagerService: SpyObj<FocusManagerService>;
 
@@ -38,35 +42,34 @@ describe('RiskAssessmentStore', () => {
       imports: [NoopAnimationsModule],
       providers: [
         RiskAssessmentStore,
-        provideMockStore({}),
+        provideMockStore({
+          selectors: [
+            {
+              selector: selectRiskProfiles,
+              value: [PROFILE_MOCK, PROFILE_MOCK_2],
+            },
+          ],
+        }),
         { provide: TestRunService, useValue: mockService },
         { provide: FocusManagerService, useValue: mockFocusManagerService },
       ],
     });
 
+    store = TestBed.inject(MockStore);
     riskAssessmentStore = TestBed.inject(RiskAssessmentStore);
+
+    spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
   it('should be created', () => {
     expect(riskAssessmentStore).toBeTruthy();
   });
 
-  describe('updaters', () => {
-    it('should update profiles', (done: DoneFn) => {
-      riskAssessmentStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-        expect(store.profiles).toEqual([PROFILE_MOCK]);
-        done();
-      });
-
-      riskAssessmentStore.updateProfiles([PROFILE_MOCK]);
-    });
-  });
-
   describe('selectors', () => {
     it('should select state', done => {
       riskAssessmentStore.viewModel$.pipe(take(1)).subscribe(store => {
         expect(store).toEqual({
-          profiles: [],
+          profiles: [PROFILE_MOCK, PROFILE_MOCK_2],
         });
         done();
       });
@@ -74,37 +77,15 @@ describe('RiskAssessmentStore', () => {
   });
 
   describe('effects', () => {
-    describe('getProfiles', () => {
-      beforeEach(() => {
-        mockService.fetchProfiles.and.returnValue(of([PROFILE_MOCK]));
-      });
-
-      it('should update profiles', done => {
-        riskAssessmentStore.viewModel$
-          .pipe(skip(1), take(1))
-          .subscribe(store => {
-            expect(store.profiles).toEqual([PROFILE_MOCK]);
-            done();
-          });
-
-        riskAssessmentStore.getProfiles();
-      });
-    });
-
     describe('deleteProfile', () => {
-      it('should update store profiles', done => {
+      it('should dispatch setRiskProfiles', () => {
         mockService.deleteProfile.and.returnValue(of(true));
 
-        riskAssessmentStore.updateProfiles([PROFILE_MOCK, PROFILE_MOCK_2]);
-
-        riskAssessmentStore.viewModel$
-          .pipe(skip(1), take(1))
-          .subscribe(store => {
-            expect(store.profiles).toEqual([PROFILE_MOCK_2]);
-            done();
-          });
-
         riskAssessmentStore.deleteProfile(PROFILE_MOCK.name);
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setRiskProfiles({ riskProfiles: [PROFILE_MOCK_2] })
+        );
       });
     });
 
@@ -118,7 +99,6 @@ describe('RiskAssessmentStore', () => {
           nextItem: mockNextItem,
           firstItem: mockFirstItem,
         };
-        riskAssessmentStore.updateProfiles([PROFILE_MOCK, PROFILE_MOCK_2]);
 
         riskAssessmentStore.setFocus(mockData);
 
@@ -132,7 +112,6 @@ describe('RiskAssessmentStore', () => {
           nextItem: mockNullEL,
           firstItem: mockFirstItem,
         };
-        riskAssessmentStore.updateProfiles([PROFILE_MOCK, PROFILE_MOCK_2]);
 
         riskAssessmentStore.setFocus(mockData);
 
@@ -146,7 +125,9 @@ describe('RiskAssessmentStore', () => {
           nextItem: mockNullEL,
           firstItem: mockFirstItem,
         };
-        riskAssessmentStore.updateProfiles([PROFILE_MOCK]);
+
+        store.overrideSelector(selectRiskProfiles, [PROFILE_MOCK]);
+        store.refreshState();
 
         riskAssessmentStore.setFocus(mockData);
 
