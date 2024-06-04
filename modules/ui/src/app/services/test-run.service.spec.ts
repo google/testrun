@@ -211,13 +211,13 @@ describe('TestRunService', () => {
       const apiUrl = 'http://localhost:8000/system/start';
 
       service.startTestrun(device).subscribe(res => {
-        expect(res).toEqual(true);
+        expect(res).toEqual(MOCK_PROGRESS_DATA_IN_PROGRESS);
       });
 
       const req = httpTestingController.expectOne(apiUrl);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(JSON.stringify({ device }));
-      req.flush({});
+      req.flush(MOCK_PROGRESS_DATA_IN_PROGRESS);
     });
   });
 

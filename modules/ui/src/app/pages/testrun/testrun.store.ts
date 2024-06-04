@@ -26,6 +26,7 @@ import {
 } from '../../store/selectors';
 import {
   fetchSystemStatus,
+  fetchSystemStatusSuccess,
   setIsOpenStartTestrun,
   setIsStopTestrun,
   setTestrunStatus,
@@ -174,6 +175,17 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     this.loaderService.setLoading(true);
   }
 
+  setStatus = this.effect<TestrunStatus>(status$ => {
+    return status$.pipe(
+      tap(status => {
+        this.store.dispatch(
+          fetchSystemStatusSuccess({
+            systemStatus: status,
+          })
+        );
+      })
+    );
+  });
   private getCancellingStatus(systemStatus: TestrunStatus): TestrunStatus {
     const status = Object.assign({}, systemStatus);
     status.status = StatusOfTestrun.Cancelling;
