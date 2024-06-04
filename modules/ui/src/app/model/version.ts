@@ -20,3 +20,8 @@ export interface Version {
   latest_version: string;
   latest_version_url: string;
 }
+
+export interface ConsentDialogResult {
+  grant: boolean;
+  isNavigateToRiskAssessment?: boolean;
+}
