@@ -38,6 +38,7 @@ import { Store } from '@ngrx/store';
 import { AppState } from '../../../../store/state';
 import { selectDevices } from '../../../../store/selectors';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { TestrunStatus } from '../../../../model/testrun-status';
 
 interface DialogData {
   device?: Device;
@@ -84,8 +85,8 @@ export class TestrunInitiateFormComponent
     return this.initiateForm.controls['test_modules'] as FormArray;
   }
 
-  cancel(startTestrun: boolean): void {
-    this.dialogRef.close(startTestrun);
+  cancel(status: TestrunStatus | null): void {
+    this.dialogRef.close(status);
   }
 
   ngOnInit() {
@@ -164,8 +165,8 @@ export class TestrunInitiateFormComponent
           test_modules: testModules,
         })
         .pipe(take(1))
-        .subscribe(() => {
-          this.cancel(true);
+        .subscribe(status => {
+          this.cancel(status);
         });
     }
   }
