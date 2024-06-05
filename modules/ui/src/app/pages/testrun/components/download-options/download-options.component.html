@@ -29,15 +29,18 @@ limitations under the License.
       </mat-icon>
       <span>{{ DownloadOption.PDF }}</span>
     </mat-option>
-    <mat-option
-      class="download-option"
-      (onSelectionChange)="onSelected($event, data, DownloadOption.ZIP)">
-      <mat-icon
-        class="download-report-icon"
-        fontSet="material-symbols-outlined">
-        archive
-      </mat-icon>
-      <span>{{ DownloadOption.ZIP }}</span>
+    <mat-option class="download-option zip">
+      <app-download-report-zip
+        [url]="data.report"
+        [hasProfiles]="hasProfiles"
+        [profiles]="profiles">
+        <mat-icon
+          class="download-report-icon"
+          fontSet="material-symbols-outlined">
+          archive
+        </mat-icon>
+        <span>{{ DownloadOption.ZIP }}</span>
+      </app-download-report-zip>
     </mat-option>
   </mat-select>
 </mat-form-field>

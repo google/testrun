@@ -88,4 +88,8 @@ $option-height: 36px;
 .download-option {
   min-height: 32px;
   color: $grey-800;
+  &.zip app-download-report-zip {
+    display: flex;
+    align-items: center;
+  }
 }

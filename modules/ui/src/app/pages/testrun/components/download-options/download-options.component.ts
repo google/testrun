@@ -24,6 +24,8 @@ import {
   TestrunStatus,
 } from '../../../../model/testrun-status';
 import { MatOptionSelectionChange } from '@angular/material/core';
+import { DownloadReportZipComponent } from '../../../../components/download-report-zip/download-report-zip.component';
+import { Profile } from '../../../../model/profile';
 
 export enum DownloadOption {
   PDF = 'PDF Report',
@@ -40,11 +42,14 @@ export enum DownloadOption {
     MatIconModule,
     MatFormFieldModule,
     MatSelectModule,
+    DownloadReportZipComponent,
   ],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DownloadOptionsComponent {
+  @Input() hasProfiles: boolean = false;
+  @Input() profiles: Profile[] = [];
   @Input() data!: TestrunStatus;
   DownloadOption = DownloadOption;
   constructor(private datePipe: DatePipe) {}

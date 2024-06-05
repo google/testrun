@@ -48,8 +48,10 @@ import { AppState } from '../../store/state';
 import {
   selectDevices,
   selectHasDevices,
+  selectHasRiskProfiles,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
+  selectRiskProfiles,
   selectSystemStatus,
 } from '../../store/selectors';
 import { TestrunStore } from './testrun.store';
@@ -59,6 +61,7 @@ import {
 } from '../../store/actions';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from '../../services/notification.service';
+import { Profile } from '../../model/profile';
 
 describe('TestrunComponent', () => {
   let component: TestrunComponent;
@@ -118,6 +121,8 @@ describe('TestrunComponent', () => {
               { selector: selectHasDevices, value: false },
               { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
+              { selector: selectHasRiskProfiles, value: false },
+              { selector: selectRiskProfiles, value: [] },
               {
                 selector: selectSystemStatus,
                 value: MOCK_PROGRESS_DATA_IN_PROGRESS,
@@ -547,4 +552,6 @@ class FakeProgressTableComponent {
 })
 class FakeDownloadOptionsComponent {
   @Input() data!: TestrunStatus;
+  @Input() hasProfiles!: boolean;
+  @Input() profiles!: Profile[];
 }
