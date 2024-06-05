@@ -256,4 +256,8 @@ export class TestRunService {
       .post<boolean>(`${API_URL}/system/config/certs`, formData)
       .pipe(map(() => true));
   }
+
+  downloadZip(url: string, profile: string) {
+    return this.http.post(url, JSON.stringify({ profile }));
+  }
 }

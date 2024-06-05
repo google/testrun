@@ -26,6 +26,7 @@ import {
 } from '../../../../mocks/testrun.mock';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatOptionSelectionChange } from '@angular/material/core';
+import { TestRunService } from '../../../../services/test-run.service';
 
 interface GAEvent {
   event: string;
@@ -33,12 +34,15 @@ interface GAEvent {
 describe('DownloadOptionsComponent', () => {
   let component: DownloadOptionsComponent;
   let fixture: ComponentFixture<DownloadOptionsComponent>;
+  const testrunServiceMock: jasmine.SpyObj<TestRunService> =
+    jasmine.createSpyObj('testrunServiceMock', ['downloadZip']);
 
   beforeEach(async () => {
     // @ts-expect-error data layer should be defined
     window.dataLayer = window.dataLayer || [];
     await TestBed.configureTestingModule({
       imports: [DownloadOptionsComponent, NoopAnimationsModule],
+      providers: [{ provide: TestRunService, useValue: testrunServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DownloadOptionsComponent);
@@ -49,6 +53,14 @@ describe('DownloadOptionsComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should have download zip component', () => {
+    const downloadReportZipComponent = fixture.nativeElement.querySelector(
+      'app-download-report-zip'
+    );
+
+    expect(downloadReportZipComponent).toBeDefined();
   });
 
   it('#onSelected should call getReportTitle', () => {
