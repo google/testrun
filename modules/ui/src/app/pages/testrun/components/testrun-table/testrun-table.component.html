@@ -1,0 +1,80 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<ng-container *ngIf="dataSource">
+  <mat-accordion displayMode="flat" multi class="tests-container" tabindex="0">
+    <section class="tests-header-row">
+      <span class="tests-header-cell">Name</span>
+      <span class="tests-header-cell">Description</span>
+      <span class="tests-header-cell">Result</span>
+      <span class="tests-header-cell expander-button-cell">
+        <button
+          *ngIf="stepsToResolveCount"
+          mat-icon-button
+          class="expander-button"
+          [attr.aria-label]="getAriaLabel()"
+          (click)="isAllCollapsed ? accordion.openAll() : accordion.closeAll()">
+          <mat-icon fontSet="material-icons-outlined">
+            {{ isAllCollapsed ? 'keyboard_arrow_down' : 'keyboard_arrow_up' }}
+          </mat-icon>
+        </button>
+      </span>
+    </section>
+
+    <ng-container *ngFor="let item of dataSource; trackBy: trackTest">
+      <mat-expansion-panel
+        *ngIf="item.recommendations; else simpleRow"
+        [expanded]="true"
+        (afterCollapse)="checkAllCollapsed()"
+        (afterExpand)="checkAllCollapsed()"
+        class="expansion-panel-row tests-row">
+        <mat-expansion-panel-header class="expansion-panel-header">
+          <ng-container
+            *ngTemplateOutlet="
+              ItemData;
+              context: { item: item }
+            "></ng-container>
+        </mat-expansion-panel-header>
+        <div class="expansion-panel-content cel-description">
+          <app-callout [type]="CalloutType.ErrorOutline">
+            Steps to resolve
+            <ul class="cel-description-list">
+              <li *ngFor="let point of item.recommendations">{{ point }}</li>
+            </ul>
+          </app-callout>
+        </div>
+      </mat-expansion-panel>
+      <ng-template #simpleRow>
+        <div class="tests-item-row tests-row">
+          <ng-container
+            *ngTemplateOutlet="
+              ItemData;
+              context: { item: item }
+            "></ng-container>
+        </div>
+      </ng-template>
+    </ng-container>
+  </mat-accordion>
+</ng-container>
+
+<ng-template #ItemData let-item="item">
+  <span class="tests-item-cell">{{ item.name }}</span>
+  <span class="tests-item-cell">{{ item.description }}</span>
+  <span class="tests-item-cell tests-item-cell-result">
+    <span class="cell-result-text" [ngClass]="getResultClass(item.result)">
+      <span>{{ item.result }}</span>
+    </span>
+  </span>
+</ng-template>

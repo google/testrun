@@ -29,7 +29,7 @@ import sys
 import time
 from common import logger, util
 from common.device import Device
-from common.session import TestRunSession
+from common.session import TestrunSession
 from common.testreport import TestReport
 from api.api import Api
 from net_orc.listener import NetworkEvent
@@ -60,7 +60,7 @@ DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
-class TestRun:  # pylint: disable=too-few-public-methods
+class Testrun:  # pylint: disable=too-few-public-methods
   """Test Run controller.
 
   Creates an instance of the network orchestrator, test
@@ -87,7 +87,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
     self._register_exits()
 
     # Create session
-    self._session = TestRunSession(config_file=self._config_file)
+    self._session = TestrunSession(root_dir=root_dir)
 
     # Register runtime parameters
     if single_intf:
@@ -97,13 +97,17 @@ class TestRun:  # pylint: disable=too-few-public-methods
     if validate:
       self._session.add_runtime_param('validate')
 
-    self.load_all_devices()
-
     self._net_orc = net_orc.NetworkOrchestrator(
       session=self._session)
     self._test_orc = test_orc.TestOrchestrator(
       self._session,
       self._net_orc)
+
+    # Load device repository
+    self.load_all_devices()
+
+    # Load test modules
+    self._test_orc.start()
 
     if self._no_ui:
 
@@ -126,6 +130,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
       # Hold until API ends
       while True:
         time.sleep(1)
+
+  def get_version(self):
+    return self.get_session().get_version()
 
   def load_all_devices(self):
     self._session.clear_device_repository()
@@ -187,6 +194,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
 
     LOGGER.debug(f'Loading test reports for device {device.model}')
 
+    # Remove the existing reports in memory
+    device.clear_reports()
+
     # Locate reports folder
     reports_folder = os.path.join(root_dir,
                                   LOCAL_DEVICES_DIR,
@@ -213,6 +223,7 @@ class TestRun:  # pylint: disable=too-few-public-methods
         report_json = json.load(report_json_file)
         test_report = TestReport()
         test_report.from_json(report_json)
+        test_report.set_mac_addr(device.mac_addr)
         device.add_report(test_report)
 
   def delete_report(self, device: Device, timestamp):
@@ -282,6 +293,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
     with open(config_file_path, 'w+', encoding='utf-8') as config_file:
       config_file.writelines(json.dumps(device.to_config_json(), indent=4))
 
+    # Reload device reports
+    self._load_test_reports(device)
+
     return device.to_config_json()
 
   def delete_device(self, device: Device):
@@ -311,8 +325,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
     if self._net_only:
       LOGGER.info('Network only option configured, no tests will be run')
     else:
-      self._test_orc.start()
-
       self.get_net_orc().get_listener().register_callback(
           self._device_stable,
           [NetworkEvent.DEVICE_STABLE]
@@ -369,6 +381,9 @@ class TestRun:  # pylint: disable=too-few-public-methods
   def get_net_orc(self):
     return self._net_orc
 
+  def get_test_orc(self):
+    return self._test_orc
+
   def _start_network(self):
     # Start the network orchestrator
     if not self.get_net_orc().start():
@@ -402,8 +417,6 @@ class TestRun:  # pylint: disable=too-few-public-methods
         return
 
       self.get_session().set_target_device(device)
-
-    self._set_status('In Progress')
 
     LOGGER.info(
         f'Discovered {device.manufacturer} {device.model} on the network. ' +

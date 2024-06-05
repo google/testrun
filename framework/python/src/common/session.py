@@ -15,9 +15,16 @@
 """Track testing status."""
 import copy
 import datetime
+import pytz
 import json
 import os
 from common import util, logger
+from common.risk_profile import RiskProfile
+
+# Certificate dependencies
+from cryptography import x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.backends import default_backend
 
 NETWORK_KEY = 'network'
 DEVICE_INTF_KEY = 'device_intf'
@@ -28,31 +35,67 @@ LOG_LEVEL_KEY = 'log_level'
 API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
+CERTS_PATH = 'local/root_certs'
+CONFIG_FILE_PATH = 'local/system.json'
+
+PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
+PROFILES_DIR = 'local/risk_profiles'
 
 LOGGER = logger.get_logger('session')
 
-class TestRunSession():
+class TestrunSession():
   """Represents the current session of Test Run."""
 
-  def __init__(self, config_file):
+  def __init__(self, root_dir):
+    self._root_dir = root_dir
+
     self._status = 'Idle'
+
+    # Target test device
     self._device = None
+
+    # Start time of testing
     self._started = None
     self._finished = None
+
+    # Current testing results
     self._results = []
+
+    # All historical reports
     self._module_reports = []
+
+    # Parameters specified when starting Testrun
     self._runtime_params = []
+
+    # All device configurations
     self._device_repository = []
+
+    # Number of tests to be run this session
     self._total_tests = 0
+
+    # Direct url for PDF report
     self._report_url = None
 
-    self._version = None
+    # Version
     self._load_version()
 
-    self._config_file = config_file
-    self._config = self._get_default_config()
-    self._load_config()
+    # Profiles
+    self._profiles = []
+    self._profile_format_json = None
 
+    # System configuration
+    self._config_file = os.path.join(root_dir, CONFIG_FILE_PATH)
+    self._config = self._get_default_config()
+
+    # Loading methods
+    self._load_version()
+    self._load_config()
+    self._load_profiles()
+
+    self._certs = []
+    self.load_certs()
+
+    # Fetch the timezone of the host system
     tz = util.run_command('cat /etc/timezone')
     # TODO: Check if timezone is fetched successfully
     self._timezone = tz[0]
@@ -90,7 +133,7 @@ class TestRunSession():
       'log_level': 'INFO',
       'startup_timeout': 60,
       'monitor_period': 30,
-      'max_device_reports': 5,
+      'max_device_reports': 0,
       'api_url': 'http://localhost',
       'api_port': 8000
     }
@@ -144,11 +187,22 @@ class TestRunSession():
   def _load_version(self):
     version_cmd = util.run_command(
       'dpkg-query --showformat=\'${Version}\' --show testrun')
-
-    if version_cmd:
+    # index 1 of response is the stderr byte stream so if
+    # it has any data in it, there was an error and we
+    # did not resolve the version and we'll use the fallback
+    if len(version_cmd[1]) == 0:
       version = version_cmd[0]
-      LOGGER.info(f'Running Testrun version {version}')
-    self._version = version
+      self._version = version
+    else:
+      LOGGER.debug('Failed getting the version from dpkg-query')
+      # Try getting the version from the make control file
+      try:
+        version = util.run_command(
+          '$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
+      except Exception as e:
+        LOGGER.debug('Failed getting the version from make control file')
+        LOGGER.error(e)
+        self._version = 'Unknown'
 
   def get_version(self):
     return self._version
@@ -289,11 +343,53 @@ class TestRunSession():
   def set_report_url(self, url):
     self._report_url = url
 
+  def _load_profiles(self):
+
+    # Load format of questionnaire
+    LOGGER.debug('Loading risk assessment format')
+
+    try:
+      with open(os.path.join(
+        self._root_dir, PROFILE_FORMAT_PATH
+      ), encoding='utf-8') as profile_format_file:
+        self._profile_format_json = json.load(profile_format_file)
+    except (IOError, ValueError) as e:
+      LOGGER.error(
+        'An error occurred whilst loading the risk assessment format')
+      LOGGER.debug(e)
+
+    # Load existing profiles
+    LOGGER.debug('Loading risk profiles')
+
+    try:
+      for risk_profile_file in os.listdir(os.path.join(
+        self._root_dir, PROFILES_DIR
+      )):
+        LOGGER.debug(f'Discovered profile {risk_profile_file}')
+
+        with open(os.path.join(
+          self._root_dir, PROFILES_DIR, risk_profile_file
+        ), encoding='utf-8') as f:
+          json_data = json.load(f)
+          risk_profile = RiskProfile(json_data)
+          self._profiles.append(risk_profile)
+
+    except Exception as e:
+      LOGGER.error('An error occurred whilst loading risk profiles')
+      LOGGER.debug(e)
+
+  def get_profiles_format(self):
+    return self._profile_format_json
+
+  def get_profiles(self):
+    return self._profiles
+
   def reset(self):
     self.set_status('Idle')
     self.set_target_device(None)
     self._report_url = None
     self._total_tests = 0
+    self._module_reports = []
     self._results = []
     self._started = None
     self._finished = None
@@ -325,3 +421,112 @@ class TestRunSession():
 
   def get_timezone(self):
     return self._timezone
+
+  def upload_cert(self, filename, content):
+
+    now = datetime.datetime.now(pytz.utc)
+
+    try:
+      # Parse bytes into x509 object
+      cert = x509.load_pem_x509_certificate(content, default_backend())
+
+      # Extract required properties
+      common_name = cert.subject.get_attributes_for_oid(
+        NameOID.COMMON_NAME)[0].value
+      issuer = cert.issuer.get_attributes_for_oid(
+        NameOID.ORGANIZATION_NAME)[0].value
+
+      status = 'Valid'
+      if now > cert.not_valid_after_utc:
+        status = 'Expired'
+
+      # Craft python dictionary with values
+      cert_obj = {
+        'name': common_name,
+        'status': status,
+        'organisation': issuer,
+        'expires': cert.not_valid_after_utc,
+        'filename': filename
+      }
+
+      with open(os.path.join(CERTS_PATH, filename), 'wb') as f:
+        f.write(content)
+
+      util.run_command(f'chown -R {util.get_host_user()} {CERTS_PATH}')
+
+      return cert_obj
+
+    except Exception as e:
+      LOGGER.error('An error occured whilst parsing a certificate')
+      LOGGER.debug(e)
+      return None
+
+  def check_cert_file_name(self, name):
+
+    if os.path.exists(os.path.join(CERTS_PATH, name)):
+      return False
+
+    return True
+
+  def load_certs(self):
+
+    LOGGER.debug(f'Loading certificates from {CERTS_PATH}')
+
+    now = datetime.datetime.now(pytz.utc)
+
+    self._certs = []
+
+    for cert_file in os.listdir(CERTS_PATH):
+      LOGGER.debug(f'Loading certificate {cert_file}')
+      try:
+
+        # Open certificate file
+        with open(
+          os.path.join(
+            CERTS_PATH, cert_file), 'rb',) as f:
+
+          # Parse bytes into x509 object
+          cert = x509.load_pem_x509_certificate(f.read(), default_backend())
+
+          # Extract required properties
+          common_name = cert.subject.get_attributes_for_oid(
+            NameOID.COMMON_NAME)[0].value
+          issuer = cert.issuer.get_attributes_for_oid(
+            NameOID.ORGANIZATION_NAME)[0].value
+
+          status = 'Valid'
+          if now > cert.not_valid_after_utc:
+            status = 'Expired'
+
+          # Craft python dictionary with values
+          cert_obj = {
+            'name': common_name,
+            'status': status,
+            'organisation': issuer,
+            'expires': cert.not_valid_after_utc,
+            'filename': cert_file
+          }
+
+          # Add certificate to list
+          self._certs.append(cert_obj)
+
+          LOGGER.debug(f'Successfully loaded {cert_file}')
+      except Exception as e:
+        LOGGER.error(f'An error occurred whilst loading {cert_file}')
+        LOGGER.debug(e)
+
+  def delete_cert(self, filename):
+
+    LOGGER.debug(f'Deleting certificate {filename}')
+
+    try:
+      cert_file = os.path.join(CERTS_PATH, filename)
+      os.remove(cert_file)
+      return True
+    except Exception as e:
+      LOGGER.error('An error occurred whilst deleting the certificate')
+      LOGGER.debug(e)
+      return False
+
+  def get_certs(self):
+    return self._certs

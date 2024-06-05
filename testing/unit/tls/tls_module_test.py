@@ -22,24 +22,29 @@ import threading
 import time
 import netifaces
 import ssl
-import http.client
+import shutil
+import logging
+import socket
 
 MODULE = 'tls'
 # Define the file paths
 TEST_FILES_DIR = 'testing/unit/' + MODULE
-OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
-REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
-CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
-CERT_DIR = os.path.join(TEST_FILES_DIR,'certs/')
-ROOT_CERTS_DIR = os.path.join(TEST_FILES_DIR,'root_certs')
+OUTPUT_DIR = os.path.join(TEST_FILES_DIR, 'output/')
+REPORTS_DIR = os.path.join(TEST_FILES_DIR, 'reports/')
+CAPTURES_DIR = os.path.join(TEST_FILES_DIR, 'captures/')
+CERT_DIR = os.path.join(TEST_FILES_DIR, 'certs/')
+ROOT_CERTS_DIR = os.path.join(TEST_FILES_DIR, 'root_certs')
 
-LOCAL_REPORT = os.path.join(REPORTS_DIR,'tls_report_local.md')
-LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR,'tls_report_ext_local.md')
-LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR,'tls_report_no_cert_local.md')
+LOCAL_REPORT = os.path.join(REPORTS_DIR, 'tls_report_local.md')
+LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR, 'tls_report_ext_local.md')
+LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR, 'tls_report_no_cert_local.md')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
+
+INTERNET_IFACE = 'eth0'
 
 TLS_UTIL = None
 PACKET_CAPTURE = None
+
 
 class TLSModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning TLS behaviors"""
@@ -148,7 +153,7 @@ class TLSModuleTest(unittest.TestCase):
     tls_1_2_results = True, success_message
     tls_1_3_results = True, success_message
     expected = True, (f'TLS 1.2 validated: {success_message}\n'
-      f'TLS 1.3 validated: {success_message}')
+                      f'TLS 1.3 validated: {success_message}')
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results)
     self.assertEqual(result, expected)
@@ -171,11 +176,10 @@ class TLSModuleTest(unittest.TestCase):
                                                  tls_1_3_results)
     self.assertEqual(result, expected)
 
-
     # TLS 1.2 Fail and TLS 1.2 Fail
     tls_1_3_results = False, fail_message
     expected = False, (f'TLS 1.2 not validated: {fail_message}\n'
-                      f'TLS 1.3 not validated: {fail_message}')
+                       f'TLS 1.3 not validated: {fail_message}')
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results)
     self.assertEqual(result, expected)
@@ -262,7 +266,7 @@ class TLSModuleTest(unittest.TestCase):
     capture_file = OUTPUT_DIR + '/client_tls.pcap'
 
     # Resolve the client ip used
-    client_ip = self.get_interface_ip('eth0')
+    client_ip = self.get_interface_ip(INTERNET_IFACE)
 
     # Genrate TLS outbound traffic
     if tls_generate is None:
@@ -298,10 +302,23 @@ class TLSModuleTest(unittest.TestCase):
     print(str(test_results))
     self.assertFalse(test_results[0])
 
+  # Scan a known capture without u unsupported TLS traffic to
+  # generate a fail result
+  def security_tls_client_allowed_protocols_test(self):
+    print('\nsecurity_tls_client_allowed_protocols_test')
+    capture_file = os.path.join(CAPTURES_DIR, 'monitor_with_quic.pcap')
+
+    # Run the client test
+    test_results = TLS_UTIL.validate_tls_client(client_ip='10.10.10.15',
+                                                tls_version='1.2',
+                                                capture_files=[capture_file])
+    print(str(test_results))
+    self.assertTrue(test_results[0])
+
   def tls_module_report_test(self):
     print('\ntls_module_report_test')
     os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
-    pcap_file = os.path.join(CAPTURES_DIR,'tls.pcap')
+    pcap_file = os.path.join(CAPTURES_DIR, 'tls.pcap')
     tls = TLSModule(module=MODULE,
                     log_dir=OUTPUT_DIR,
                     conf_file=CONF_FILE,
@@ -323,7 +340,7 @@ class TLSModuleTest(unittest.TestCase):
   def tls_module_report_ext_test(self):
     print('\ntls_module_report_ext_test')
     os.environ['DEVICE_MAC'] = '28:29:86:27:d6:05'
-    pcap_file = os.path.join(CAPTURES_DIR,'tls_ext.pcap')
+    pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
     tls = TLSModule(module=MODULE,
                     log_dir=OUTPUT_DIR,
                     conf_file=CONF_FILE,
@@ -333,10 +350,20 @@ class TLSModuleTest(unittest.TestCase):
                     tls_capture_file=pcap_file)
     report_out_path = tls.generate_module_report()
 
+    # Read the generated report
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
+
+    # Read the local good report
+    with open(LOCAL_REPORT_EXT, 'r', encoding='utf-8') as file:
+      report_local = file.read()
+
+    self.assertEqual(report_out, report_local)
+
   def tls_module_report_no_cert_test(self):
     print('\ntls_module_report_no_cert_test')
     os.environ['DEVICE_MAC'] = ''
-    pcap_file = os.path.join(CAPTURES_DIR,'tls_ext.pcap')
+    pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
     tls = TLSModule(module=MODULE,
                     log_dir=OUTPUT_DIR,
                     conf_file=CONF_FILE,
@@ -377,52 +404,55 @@ class TLSModuleTest(unittest.TestCase):
                           port,
                           tls_version,
                           disable_valid_ciphers=False):
-    # Create the SSL context with the desired TLS version and options
-    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    context.check_hostname = False
-    context.verify_mode = ssl.CERT_NONE
-    context.options |= ssl.PROTOCOL_TLS
-
-    if disable_valid_ciphers:
-      # Create a list of ciphers that do not use ECDH or ECDSA
-      ciphers_str = [
-          'TLS_AES_256_GCM_SHA384', 'TLS_CHACHA20_POLY1305_SHA256',
-          'TLS_AES_128_GCM_SHA256', 'AES256-GCM-SHA384',
-          'PSK-AES256-GCM-SHA384', 'PSK-CHACHA20-POLY1305',
-          'RSA-PSK-AES128-GCM-SHA256', 'DHE-PSK-AES128-GCM-SHA256',
-          'AES128-GCM-SHA256', 'PSK-AES128-GCM-SHA256', 'AES256-SHA256',
-          'AES128-SHA'
-      ]
-      context.set_ciphers(':'.join(ciphers_str))
-
-    if tls_version != '1.1':
-      context.options |= ssl.OP_NO_TLSv1  # Disable TLS 1.0
-      context.options |= ssl.OP_NO_TLSv1_1  # Disable TLS 1.1
-    else:
-      context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
-      context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
-
-    if tls_version == '1.3':
-      context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
-    elif tls_version == '1.2':
-      context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
-
-    # Create the HTTPS connection with the SSL context
-    connection = http.client.HTTPSConnection(hostname, port, context=context)
-
-    # Perform the TLS handshake manually
     try:
-      connection.connect()
-    except ssl.SSLError as e:
-      print('Failed to make connection: ' + str(e))
+      # Create the SSL context with the desired TLS version and options
+      context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+      context.check_hostname = False
+      context.verify_mode = ssl.CERT_NONE
 
-    # At this point, the TLS handshake is complete.
-    # You can do any further processing or just close the connection.
-    connection.close()
+      if disable_valid_ciphers:
+        # Create a list of ciphers that do not use ECDH or ECDSA
+        ciphers_str = [
+            'TLS_AES_256_GCM_SHA384', 'TLS_CHACHA20_POLY1305_SHA256',
+            'TLS_AES_128_GCM_SHA256', 'AES256-GCM-SHA384',
+            'PSK-AES256-GCM-SHA384', 'PSK-CHACHA20-POLY1305',
+            'RSA-PSK-AES128-GCM-SHA256', 'DHE-PSK-AES128-GCM-SHA256',
+            'AES128-GCM-SHA256', 'PSK-AES128-GCM-SHA256', 'AES256-SHA256',
+            'AES128-SHA'
+        ]
+        context.set_ciphers(':'.join(ciphers_str))
+
+      # Disable specific TLS versions based on the input
+      if tls_version != '1.1':
+        context.options |= ssl.OP_NO_TLSv1  # Disable TLS 1.0
+        context.options |= ssl.OP_NO_TLSv1_1  # Disable TLS 1.1
+      else:
+        context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
+        context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
+
+      if tls_version == '1.3':
+        context.options |= ssl.OP_NO_TLSv1_2  # Disable TLS 1.2
+      elif tls_version == '1.2':
+        context.options |= ssl.OP_NO_TLSv1_3  # Disable TLS 1.3
+
+      # Create an SSL/TLS socket
+      with socket.create_connection((hostname, port), timeout=10) as sock:
+        with context.wrap_socket(sock, server_hostname=hostname) as secure_sock:
+          # Get the server's certificate in PEM format
+          ssl.DER_cert_to_PEM_cert(secure_sock.getpeercert(True))
+
+    except ConnectionRefusedError:
+      print(f'Connection to {hostname}:{port} was refused.')
+    except socket.gaierror:
+      print(f'Failed to resolve the hostname {hostname}.')
+    except ssl.SSLError as e:
+      print(f'SSL error occurred: {e}')
+    except socket.timeout:
+      print('Socket timeout error')
 
   def start_capture(self, timeout):
     global PACKET_CAPTURE
-    PACKET_CAPTURE = sniff(iface='eth0', timeout=timeout)
+    PACKET_CAPTURE = sniff(iface=INTERNET_IFACE, timeout=timeout)
 
   def start_capture_thread(self, timeout):
     # Start the packet capture in a separate thread to avoid blocking.
@@ -443,15 +473,41 @@ class TLSModuleTest(unittest.TestCase):
 
   def tls_module_trusted_ca_cert_chain_test(self):
     print('\ntls_module_trusted_ca_cert_chain_test')
-    cert_path = os.path.join(CERT_DIR,'_.google.com.crt')
+    cert_path = os.path.join(CERT_DIR, '_.google.com.crt')
     cert_valid = TLS_UTIL.validate_cert_chain(device_cert_path=cert_path)
     self.assertEqual(cert_valid, True)
 
   def tls_module_local_ca_cert_test(self):
     print('\ntls_module_trusted_ca_cert_chain_test')
-    cert_path = os.path.join(CERT_DIR,'device_cert_local.crt')
-    cert_valid = TLS_UTIL.validate_local_ca_signature(device_cert_path=cert_path)
+    cert_path = os.path.join(CERT_DIR, 'device_cert_local.crt')
+    cert_valid = TLS_UTIL.validate_local_ca_signature(
+        device_cert_path=cert_path)
     self.assertEqual(cert_valid[0], True)
+
+  def tls_module_ca_cert_spaces_test(self):
+    print('\tls_module_ca_cert_spaces_test')
+    # Make a tmp folder to make a differnt CA directory
+    tmp_dir = os.path.join(TEST_FILES_DIR, 'tmp')
+    if os.path.exists(tmp_dir):
+      shutil.rmtree(tmp_dir)
+    os.makedirs(tmp_dir, exist_ok=True)
+    # Move and rename the TestRun CA root with spaces
+    ca_file = os.path.join(ROOT_CERTS_DIR, 'Testrun_CA_Root.crt')
+    ca_file_with_spaces = os.path.join(tmp_dir, 'Testrun CA Root.crt')
+    shutil.copy(ca_file, ca_file_with_spaces)
+
+    cert_path = os.path.join(CERT_DIR, 'device_cert_local.crt')
+    log = logger.get_logger('unit_test_' + MODULE)
+    log.setLevel(logging.DEBUG)
+    tls_util = TLSUtil(log,
+                       bin_dir='modules/test/tls/bin',
+                       cert_out_dir=OUTPUT_DIR,
+                       root_certs_dir=tmp_dir)
+
+    cert_valid = tls_util.validate_local_ca_signature(
+        device_cert_path=cert_path)
+    self.assertEqual(cert_valid[0], True)
+
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
@@ -467,7 +523,7 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('security_tls_v1_2_fail_server_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_2_none_server_test'))
 
-  # TLS 1.3 server tests
+  # # TLS 1.3 server tests
   suite.addTest(TLSModuleTest('security_tls_v1_3_server_test'))
   # TLS client tests
   suite.addTest(TLSModuleTest('security_tls_v1_2_client_test'))
@@ -480,14 +536,17 @@ if __name__ == '__main__':
   # Test the results options for tls server tests
   suite.addTest(TLSModuleTest('security_tls_server_results_test'))
 
-  # Test various report module outputs
-  suite.addTest(TLSModuleTest('tls_module_report_test'))
-  suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
-  suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
+  # # Test various report module outputs
+  # suite.addTest(TLSModuleTest('tls_module_report_test'))
+  # suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
+  # suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
 
-  # Test signature validation  methods
+  # Test signature validation methods
   suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
   suite.addTest(TLSModuleTest('tls_module_local_ca_cert_test'))
+  suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
+
+  suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)

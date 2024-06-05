@@ -53,6 +53,12 @@ export const sharedReducer = createReducer(
       isOpenAddDevice,
     };
   }),
+  on(Actions.setIsOpenWaitSnackBar, (state, { isOpenWaitSnackBar }) => {
+    return {
+      ...state,
+      isOpenWaitSnackBar,
+    };
+  }),
   on(Actions.setHasDevices, (state, { hasDevices }) => {
     return {
       ...state,
@@ -63,6 +69,42 @@ export const sharedReducer = createReducer(
     return {
       ...state,
       devices,
+    };
+  }),
+  on(Actions.setHasRiskProfiles, (state, { hasRiskProfiles }) => {
+    return {
+      ...state,
+      hasRiskProfiles,
+    };
+  }),
+  on(Actions.setRiskProfiles, (state, { riskProfiles }) => {
+    return {
+      ...state,
+      riskProfiles,
+    };
+  }),
+  on(Actions.setTestrunStatus, (state, { systemStatus }) => {
+    return {
+      ...state,
+      systemStatus,
+    };
+  }),
+  on(Actions.setIsOpenStartTestrun, (state, { isOpenStartTestrun }) => {
+    return {
+      ...state,
+      isOpenStartTestrun,
+    };
+  }),
+  on(Actions.setDeviceInProgress, (state, { device }) => {
+    return {
+      ...state,
+      deviceInProgress: device,
+    };
+  }),
+  on(Actions.setStatus, (state, { status }) => {
+    return {
+      ...state,
+      status,
     };
   })
 );

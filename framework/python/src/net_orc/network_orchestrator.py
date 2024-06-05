@@ -51,6 +51,7 @@ class NetworkOrchestrator:
 
     self._session = session
     self._monitor_in_progress = False
+    self._monitor_packets = []
     self._listener = None
     self._net_modules = []
 
@@ -172,6 +173,7 @@ class NetworkOrchestrator:
         # Ignore discovered device
         return
 
+    self._get_port_stats(pre_monitor=True)
     self._monitor_in_progress = True
 
     LOGGER.debug(
@@ -202,6 +204,8 @@ class NetworkOrchestrator:
     with open(runtime_device_conf, 'w', encoding='utf-8') as f:
       json.dump(self._session.get_target_device().to_config_json(), f, indent=2)
 
+    self._get_conn_stats()
+
     if device.ip_addr is None:
       LOGGER.info(
           f'Timed out whilst waiting for {mac_addr} to obtain an IP address')
@@ -214,6 +218,31 @@ class NetworkOrchestrator:
     #  mac_address=device.mac_addr)
 
     self._start_device_monitor(device)
+
+  def _get_conn_stats(self):
+    """ Extract information about the physical connection
+    and store it to a file for the conn test module to access"""
+    dev_int = self._session.get_device_interface()
+    conn_stats = self._ip_ctrl.get_iface_connection_stats(dev_int)
+    if conn_stats is not None:
+      eth_out_file = os.path.join(NET_DIR, 'ethtool_conn_stats.txt')
+      with open(eth_out_file, 'w', encoding='utf-8') as f:
+        f.write(conn_stats)
+    else:
+      LOGGER.error('Failed to generate connection stats')
+
+  def _get_port_stats(self, pre_monitor=True):
+    """ Extract information about the port statistics
+    and store it to a file for the conn test module to access"""
+    dev_int = self._session.get_device_interface()
+    port_stats = self._ip_ctrl.get_iface_port_stats(dev_int)
+    if port_stats is not None:
+      suffix = 'pre_monitor' if pre_monitor else 'post_monitor'
+      eth_out_file = os.path.join(NET_DIR, f'ethtool_port_stats_{suffix}.txt')
+      with open(eth_out_file, 'w', encoding='utf-8') as f:
+        f.write(port_stats)
+    else:
+      LOGGER.error('Failed to generate port stats')
 
   def monitor_in_progress(self):
     return self._monitor_in_progress
@@ -239,6 +268,7 @@ class NetworkOrchestrator:
     """Start a timer until the steady state has been reached and
         callback the steady state method for this device."""
     self.get_session().set_status('Monitoring')
+    self._monitor_packets = []
     LOGGER.info(f'Monitoring device with mac addr {device.mac_addr} '
                 f'for {str(self._session.get_monitor_period())} seconds')
 
@@ -246,22 +276,27 @@ class NetworkOrchestrator:
                                       device.mac_addr.replace(':', ''))
 
     sniffer = AsyncSniffer(iface=self._session.get_device_interface(),
-                           timeout=self._session.get_monitor_period())
+                           timeout=self._session.get_monitor_period(),
+                           prn=self._monitor_packet_callback)
     sniffer.start()
 
     while sniffer.running:
       if not self._ip_ctrl.check_interface_status(
           self._session.get_device_interface()):
-        self._session.set_status('Cancelled')
         sniffer.stop()
+        self._session.set_status('Cancelled')
         LOGGER.error('Device interface disconnected, cancelling Testrun')
 
-    packet_capture = sniffer.results
-    wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'), packet_capture)
-
+    LOGGER.debug('Writing packets to monitor.pcap')
+    wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'),
+           self._monitor_packets)
     self._monitor_in_progress = False
+    self._get_port_stats(pre_monitor=False)
     self.get_listener().call_callback(NetworkEvent.DEVICE_STABLE,
                                       device.mac_addr)
+
+  def _monitor_packet_callback(self, packet):
+    self._monitor_packets.append(packet)
 
   def _check_network_services(self):
     LOGGER.debug('Checking network modules...')
@@ -494,23 +529,23 @@ class NetworkOrchestrator:
     try:
       client = docker.from_env()
       net_module.container = client.containers.run(
-        net_module.image_name,
-        auto_remove=True,
-        cap_add=['NET_ADMIN'],
-        name=net_module.container_name,
-        hostname=net_module.container_name,
-        # Undetermined version of docker seems to have broken
-        # DNS configuration (/etc/resolv.conf)  Re-add when/if
-        # this network is utilized and DNS issue is resolved
-        #network=PRIVATE_DOCKER_NET,
-        privileged=True,
-        detach=True,
-        mounts=net_module.mounts,
-        environment={
-          'TZ': self.get_session().get_timezone(),
-          'HOST_USER': util.get_host_user()
-        }
-      )
+          net_module.image_name,
+          auto_remove=True,
+          cap_add=['NET_ADMIN'],
+          name=net_module.container_name,
+          hostname=net_module.container_name,
+          # Undetermined version of docker seems to have broken
+          # DNS configuration (/etc/resolv.conf)  Re-add when/if
+          # this network is utilized and DNS issue is resolved
+          #network=PRIVATE_DOCKER_NET,
+          network_mode="none",
+          privileged=True,
+          detach=True,
+          mounts=net_module.mounts,
+          environment={
+              'TZ': self.get_session().get_timezone(),
+              'HOST_USER': util.get_host_user()
+          })
     except docker.errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)

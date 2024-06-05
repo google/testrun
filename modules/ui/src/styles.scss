@@ -15,6 +15,7 @@
  */
 @use '@angular/material' as mat;
 @import './theming/theme';
+@import 'src/theming/variables';
 
 html,
 body {
@@ -107,6 +108,7 @@ mat-hint {
   .mdc-button__label {
     position: relative;
     left: -999px;
+    overflow: hidden;
   }
 }
 
@@ -114,11 +116,19 @@ mat-hint {
   .app-sidebar-button {
     .mdc-button__label {
       left: 8px;
+      display: inline;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
     }
   }
 
   .app-sidebar-button-active .mat-icon path {
     fill: $grey-800;
+  }
+
+  app-version {
+    width: auto !important;
   }
 }
 
@@ -156,7 +166,7 @@ mat-hint {
   }
 }
 
-h2.title {
+.mat-toolbar h2.title {
   margin: 0;
   font-size: 32px;
   font-style: normal;
@@ -191,6 +201,15 @@ h2.title {
   --mdc-outlined-text-field-focus-label-text-color: #1a73e8;
 }
 
+.setting-field {
+  --mdc-outlined-text-field-disabled-outline-color: rgba(0, 0, 0, 0.38);
+  --mdc-outlined-text-field-disabled-label-text-color: rgba(0, 0, 0, 0.58);
+}
+
+.snack-bar-info.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  max-width: 780px;
+}
+
 body:has(.initiate-test-run-dialog)
   app-root
   app-spinner.connection-settings-spinner,
@@ -217,6 +236,23 @@ body
   #main:has(app-callout .info):not(:has(app-callout .error))
   app-progress:not(:has(.progress-content-empty)),
 body
+  #main:has(app-callout .info):not(:has(app-callout .error))
+  app-risk-assessment
+  .risk-assessment-container,
+body
+  #main:has(app-callout .check_circle):not(:has(app-callout .error))
+  app-device-repository:not(:has(.device-repository-content-empty)),
+body
+  #main:has(app-callout .check_circle):not(:has(app-callout .error))
+  app-history:not(:has(.results-content-empty)),
+body
+  #main:has(app-callout .check_circle):not(:has(app-callout .error))
+  app-progress:not(:has(.progress-content-empty)),
+body
+  #main:has(app-callout .check_circle):not(:has(app-callout .error))
+  app-risk-assessment
+  .risk-assessment-container,
+body
   #main:has(app-callout .error):not(:has(app-callout .info))
   app-device-repository:not(:has(.device-repository-content-empty)),
 body
@@ -224,7 +260,11 @@ body
   app-history:not(:has(.results-content-empty)),
 body
   #main:has(app-callout .error):not(:has(app-callout .info))
-  app-progress:not(:has(.progress-content-empty)) {
+  app-progress:not(:has(.progress-content-empty)),
+body
+  #main:has(app-callout .error):not(:has(app-callout .info))
+  app-risk-assessment
+  .risk-assessment-container {
   margin-top: 96px;
 }
 
@@ -236,8 +276,32 @@ body
   app-history:not(:has(.results-content-empty)),
 body
   #main:has(app-callout .info):has(app-callout .error)
-  app-progress:not(:has(.progress-content-empty)) {
+  app-progress:not(:has(.progress-content-empty)),
+body
+  #main:has(app-callout .info):has(app-callout .error)
+  app-risk-assessment
+  .risk-assessment-container {
   margin-top: 156px;
+}
+
+body
+  #main:has(app-callout .check_circle):has(app-callout .error)
+  app-device-repository:not(:has(.device-repository-content-empty)),
+body
+  #main:has(app-callout .check_circle):has(app-callout .error)
+  app-history:not(:has(.results-content-empty)),
+body
+  #main:has(app-callout .check_circle):has(app-callout .error)
+  app-progress:not(:has(.progress-content-empty)),
+body
+  #main:has(app-callout .check_circle):has(app-callout .error)
+  app-risk-assessment
+  .risk-assessment-container {
+  margin-top: 156px;
+}
+
+body:has(app-risk-assessment .profiles-drawer) #main app-callout {
+  width: calc(100% - $profiles-drawer-width);
 }
 
 .text-nowrap {
@@ -264,4 +328,8 @@ body
     .mat-mdc-button-persistent-ripple::before {
     opacity: var(--mat-text-button-focus-state-layer-opacity);
   }
+}
+
+.certificate-notification .mat-mdc-snack-bar-label {
+  white-space: pre-line;
 }

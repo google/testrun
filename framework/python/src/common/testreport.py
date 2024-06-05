@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Store previous test run information."""
+"""Store previous Testrun information."""
 
 from datetime import datetime
 from weasyprint import HTML
@@ -23,7 +23,7 @@ from test_orc.test_case import TestCase
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
-TESTS_FIRST_PAGE = 12
+TESTS_FIRST_PAGE = 11
 TESTS_PER_PAGE = 20
 
 # Locate parent directory
@@ -48,6 +48,7 @@ class TestReport():
                finished=None,
                total_tests=0):
     self._device = {}
+    self._mac_addr = None
     self._status: str = status
     self._started = started
     self._finished = finished
@@ -56,8 +57,6 @@ class TestReport():
     self._module_reports = []
     self._report_url = ''
     self._cur_page = 0
-    # Placeholder until available in json report
-    self._version = 'v1.2.2-alpha'
 
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
@@ -87,8 +86,17 @@ class TestReport():
   def get_report_url(self):
     return self._report_url
 
+  def set_mac_addr(self, mac_addr):
+    self._mac_addr = mac_addr
+
   def to_json(self):
     report_json = {}
+
+    report_json['testrun'] = {
+      'version': self._version
+    }
+
+    report_json['mac_addr'] = self._mac_addr
     report_json['device'] = self._device
     report_json['status'] = self._status
     report_json['started'] = self._started.strftime(DATE_TIME_FORMAT)
@@ -96,13 +104,18 @@ class TestReport():
 
     test_results = []
     for test in self._results:
-      test_results.append({
+      test_dict = {
         'name': test.name,
         'description': test.description,
         'expected_behavior': test.expected_behavior,
         'required_result': test.required_result,
         'result': test.result
-      })
+      }
+
+      if test.recommendations is not None and len(test.recommendations) > 0:
+        test_dict['recommendations'] = test.recommendations
+
+      test_results.append(test_dict)
 
     report_json['tests'] = {'total': self._total_tests,
                             'results': test_results}
@@ -111,10 +124,17 @@ class TestReport():
 
   def from_json(self, json_file):
 
+    # Version added in v1.3-alpha
+    if 'testrun' in json_file and 'version' in json_file['testrun']:
+      self._version = json_file['testrun']['version']
+    else:
+      self._version = 'Unknown'
+
     self._device['mac_addr'] = json_file['device']['mac_addr']
     self._device['manufacturer'] = json_file['device']['manufacturer']
     self._device['model'] = json_file['device']['model']
 
+    # Firmware is not specified for non-UI devices
     if 'firmware' in json_file['device']:
       self._device['firmware'] = json_file['device']['firmware']
 
@@ -137,6 +157,8 @@ class TestReport():
         expected_behavior=test_result['expected_behavior'],
         required_result=test_result['required_result'],
         result=test_result['result'])
+      if 'recommendations' in test_result:
+        test_case.recommendations = test_result['recommendations']
       self.add_test(test_case)
 
   # Create a pdf file in memory and return the bytes
@@ -231,8 +253,85 @@ class TestReport():
       {module_report}
     </div>'''
     page += self.generate_footer(self._cur_page)
-    page += '</div>'  #Page end
+    page += '</div>'  # Page end
     page += '<div style="break-after:page"></div>'
+    return page
+
+  def generate_steps_to_resolve(self, json_data):
+
+    steps_so_far = 0
+    tests_with_recommendations = []
+    index = 1
+
+    # Collect all tests with recommendations
+    for test in json_data['tests']['results']:
+      if 'recommendations' in test:
+        tests_with_recommendations.append(test)
+
+    # Check if test has recommendations
+    if len(tests_with_recommendations) == 0:
+      return ''
+
+    # Start new page
+    self._cur_page += 1
+    page = '<div class="page">'
+    page += self.generate_header(json_data, False)
+
+    # Add title
+    page += '<h1>Steps to Resolve</h1>'
+
+    for test in tests_with_recommendations:
+
+      # Generate new page
+      if steps_so_far == 4 and (
+        len(tests_with_recommendations) - (index-1) > 0):
+
+        # Reset steps counter
+        steps_so_far = 0
+
+        # Render footer
+        page += self.generate_footer(self._cur_page)
+        page += '</div>'  # Page end
+        page += '<div style="break-after:page"></div>'
+
+        # Render new header
+        self._cur_page += 1
+        page += '<div class="page">'
+        page += self.generate_header(json_data, False)
+
+      # Render test recommendations
+      page += f'''
+        <div class="steps-to-resolve">
+          <div class="steps-to-resolve-row">
+            <span class="steps-to-resolve-index">{index}. </span>
+            <div class="steps-to-resolve-test-name">
+              <span class="steps-to-resolve subtitle">Name</span><br>{test["name"]}
+            </div>
+            <div class="steps-to-resolve-description">
+              <span class="steps-to-resolve subtitle">Description</span><br>{test["description"]}
+            </div>
+          </div>
+          <div class="steps-to-resolve-row" style="margin-left: 70px;">
+            <span class="steps-to-resolve subtitle">Steps to resolve</span>
+        '''
+
+      step_number = 1
+      for recommendation in test['recommendations']:
+        page += f'''
+        <br><span style="font-size: 14px">{
+              step_number}. {recommendation}</span>'''
+        step_number += 1
+
+      page += '</div></div>'
+
+      index += 1
+      steps_so_far += 1
+
+    # Render final footer
+    page += self.generate_footer(self._cur_page)
+    page += '</div>'  # Page end
+    page += '<div style="break-after:page"></div>'
+
     return page
 
   def generate_module_pages(self, json_data):
@@ -248,7 +347,7 @@ class TestReport():
 
       # Reset values for each module report
       data_table_active = False
-      data_rows_active=False
+      data_rows_active = False
       page_content = ''
       content_size = 0
       content = module_reports.split('\n')
@@ -279,16 +378,16 @@ class TestReport():
         # Add appropriate content size for each data row
         # update if CSS changes for this element
         elif '<tr>' in line and data_rows_active:
-          content_size += 40.667
+          content_size += 42
 
         # If the current line is within the content size limit
         # we'll add it to this page, otherweise, we'll put it on the next
         # page. Also make sure that if there is less than 40 pixels
         # left after a data row, start a new page or the row will get cut off.
-        # Current row size is 40.667 so rounding to 41 padding,
-        # adjust if we update the "module-data tbody tr" element.
+        # Current row size is 42 # adjust if we update the
+        # "module-data tbody tr" element.
         if content_size >= content_max_size or (
-          data_rows_active and content_max_size - content_size < 41):
+          data_rows_active and content_max_size - content_size < 42):
           # If in the middle of a table, close the table
           if data_rows_active:
             page_content += '</tbody></table>'
@@ -311,6 +410,7 @@ class TestReport():
     body = f'''
     <body>
       {self.generate_pages(json_data)}
+      {self.generate_steps_to_resolve(json_data)}
       {self.generate_module_pages(json_data)}
     </body>
     '''
@@ -328,9 +428,14 @@ class TestReport():
 
   def generate_results(self, json_data, page_num):
 
-    result_list = '''
+    successful_tests = 0
+    for test in self._results:
+      if test['result'] != 'Error':
+        successful_tests += 1
+
+    result_list = f'''
       <div class="result-list">
-        <h3>Results List</h3>
+        <h3>Results List <small>({len(successful_tests)}/{self._total_tests})</small></h3>
         <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
           <div class="result-list-header-label" style="left: .1in">Name</div>
           <div class="result-list-header-label" style="left: 2.8in">Description</div>
@@ -412,7 +517,8 @@ class TestReport():
     mac = (json_data['device']['mac_addr']
            if 'mac_addr' in json_data['device'] else 'Undefined')
 
-    summary += '<div class="device-information">'
+    summary += '''<div class="device-information">
+      <div style="padding-right:0.1in;">'''
 
     summary += self.generate_device_summary_label('Manufacturer', manufacturer)
     summary += self.generate_device_summary_label('Model', model)
@@ -421,7 +527,7 @@ class TestReport():
                                                   mac,
                                                   trailing_space=False)
 
-    summary += '</div>'
+    summary += '</div></div>'
 
     # Add device configuration
     summary += '''
@@ -490,6 +596,11 @@ class TestReport():
     return summary
 
   def generate_device_module_label(self, module, enabled):
+
+    # Do not render deleted modules
+    if module == 'nmap':
+      return ''
+
     label = '<div class="summary-device-module-label">'
     if enabled:
       label += '<span style="color:#34a853">✔ </span>'
@@ -564,7 +675,7 @@ class TestReport():
       --header-width: 8.5in;
       --header-pos-x: 0in;
       --header-pos-y: 0in;
-      --summary-width: 8.5in;
+      --page-width: 8.5in;
       --summary-height: 2.8in;
       --vertical-line-height: calc(var(--summary-height)-.2in);
       --vertical-line-pos-x: 25%;
@@ -692,6 +803,43 @@ class TestReport():
       font-family: 'Roboto Mono', monospace;
     }
 
+    div.steps-to-resolve {
+      background-color: #F8F9FA;
+      margin-bottom: 30px;
+      width: 756px;
+      padding: 20px 30px;
+      vertical-align: top;
+    }
+
+    .steps-to-resolve-row {
+      vertical-align: top;
+    }
+
+    .steps-to-resolve-test-name {
+      display: inline-block;
+      margin-left: 70px;
+      margin-bottom: 20px;
+      width: 250px;
+      vertical-align: top;
+    }
+
+    .steps-to-resolve-description {
+      display: inline-block;
+    }
+
+    .steps-to-resolve.subtitle {
+      text-align: left;
+      padding-top: 15px;
+      font-weight: 500;
+      color: #5F6368;
+      font-size: 14px;
+    }
+  
+    .steps-to-resolve-index {
+      font-size: 40px;
+      position: absolute;
+    }
+
     .callout-container.info {
       background-color: #e8f0fe;
     }
@@ -719,20 +867,21 @@ class TestReport():
 
     .device-information {
       padding-top: 0.2in;
-      padding-left: 0.3in;
+      padding-left: 0.2in;
       background-color: #F8F9FA;
       width: 250px;
-      height: 2.6in;
+      height: 100.4%;
     }
 
     /* Define the summary related css elements*/
     .summary-content {
       position: relative;
-      width: var(--summary-width);
+      width: var(--page-width);
       height: var(--summary-height);
       margin-top: 19px;
       margin-bottom: 19px;
       background-color: #E8EAED;
+      padding-bottom: 20px;
     }
 
     .summary-item-label {
@@ -782,7 +931,7 @@ class TestReport():
       right: 0in;
       top: 0in;
       width: 2.6in;
-      height: var(--summary-height);
+      height: 100%;
     }
 
     .summary-box-compliant {

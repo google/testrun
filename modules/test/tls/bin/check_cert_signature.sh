@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ROOT_CERT=$1
-DEVICE_CERT=$2
+ROOT_CERT="$1"
+DEVICE_CERT="$2"
 
 echo "ROOT: $ROOT_CERT"
 echo "DEVICE_CERT: $DEVICE_CERT"
 
-response=$(openssl verify -CAfile $ROOT_CERT $DEVICE_CERT)
+response=$(openssl verify -CAfile "$ROOT_CERT" "$DEVICE_CERT")
 
 echo "$response"

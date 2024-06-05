@@ -22,8 +22,17 @@ import { tap, withLatestFrom } from 'rxjs/operators';
 import { Device } from '../../model/device';
 import { AppState } from '../../store/state';
 import { Store } from '@ngrx/store';
-import { selectDevices, selectIsOpenAddDevice } from '../../store/selectors';
-import { setDevices, setIsOpenAddDevice } from '../../store/actions';
+import {
+  selectDeviceInProgress,
+  selectDevices,
+  selectIsOpenAddDevice,
+} from '../../store/selectors';
+import {
+  fetchSystemStatusSuccess,
+  setDevices,
+  setIsOpenAddDevice,
+} from '../../store/actions';
+import { TestrunStatus } from '../../model/testrun-status';
 
 export interface DevicesComponentState {
   devices: Device[];
@@ -34,12 +43,14 @@ export interface DevicesComponentState {
 export class DevicesStore extends ComponentStore<DevicesComponentState> {
   devices$ = this.store.select(selectDevices);
   isOpenAddDevice$ = this.store.select(selectIsOpenAddDevice);
+  private deviceInProgress$ = this.store.select(selectDeviceInProgress);
   private selectedDevice$ = this.select(state => state.selectedDevice);
 
   testModules = this.testRunService.getTestModules();
   viewModel$ = this.select({
     devices: this.devices$,
     selectedDevice: this.selectedDevice$,
+    deviceInProgress: this.deviceInProgress$,
   });
 
   selectDevice = this.updater((state, device: Device | null) => ({
@@ -105,6 +116,19 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
       )
     );
   });
+
+  setStatus = this.effect<TestrunStatus>(status$ => {
+    return status$.pipe(
+      tap(status => {
+        this.store.dispatch(
+          fetchSystemStatusSuccess({
+            systemStatus: status,
+          })
+        );
+      })
+    );
+  });
+
   private addDevice(device: Device, devices: Device[]): void {
     this.updateDevices(devices.concat([device]));
   }

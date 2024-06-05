@@ -16,13 +16,20 @@
 
 import { AppState } from './state';
 import {
+  selectDeviceInProgress,
   selectDevices,
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasRiskProfiles,
   selectInterfaces,
   selectIsOpenAddDevice,
+  selectIsOpenStartTestrun,
+  selectIsOpenWaitSnackBar,
   selectMenuOpened,
+  selectRiskProfiles,
+  selectStatus,
+  selectSystemStatus,
 } from './selectors';
 
 describe('Selectors', () => {
@@ -40,6 +47,14 @@ describe('Selectors', () => {
       devices: [],
       hasDevices: false,
       isOpenAddDevice: false,
+      riskProfiles: [],
+      hasRiskProfiles: false,
+      isStopTestrun: false,
+      isOpenWaitSnackBar: false,
+      isOpenStartTestrun: false,
+      systemStatus: null,
+      deviceInProgress: null,
+      status: null,
     },
   };
 
@@ -73,8 +88,43 @@ describe('Selectors', () => {
     expect(result).toEqual(false);
   });
 
+  it('should select riskProfiles', () => {
+    const result = selectRiskProfiles.projector(initialState);
+    expect(result).toEqual([]);
+  });
+
+  it('should select hasRiskProfiles', () => {
+    const result = selectHasRiskProfiles.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
   it('should select isOpenAddDevice', () => {
     const result = selectIsOpenAddDevice.projector(initialState);
     expect(result).toEqual(false);
+  });
+
+  it('should select systemStatus', () => {
+    const result = selectSystemStatus.projector(initialState);
+    expect(result).toEqual(null);
+  });
+
+  it('should select isOpenStartTestrun', () => {
+    const result = selectIsOpenStartTestrun.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select isOpenWaitSnackBar', () => {
+    const result = selectIsOpenWaitSnackBar.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select deviceInProgress', () => {
+    const result = selectDeviceInProgress.projector(initialState);
+    expect(result).toEqual(null);
+  });
+
+  it('should select status', () => {
+    const result = selectStatus.projector(initialState);
+    expect(result).toEqual(null);
   });
 });

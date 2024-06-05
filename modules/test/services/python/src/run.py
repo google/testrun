@@ -39,7 +39,7 @@ class ServicesModuleRunner:
     self._test_module.run_tests()
     self._test_module.generate_module_report()
 
-    LOGGER.info('services test module finished')
+    LOGGER.info('Services module finished')
 
   def add_logger(self, module):
     global LOGGER

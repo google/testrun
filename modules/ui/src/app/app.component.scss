@@ -102,6 +102,7 @@ $nav-open-btn-width: 210px;
   width: $nav-close-btn-width;
   display: flex;
   justify-content: flex-start;
+  padding-inline: 8px;
 }
 
 .app-sidebar-button:first-child {
@@ -195,7 +196,7 @@ $nav-open-btn-width: 210px;
   border-left: 1px solid $light-grey;
 }
 
-.app-toolbar-button-general-settings {
+.app-toolbar-button.app-toolbar-button-certificates {
   margin-left: 72px;
 }
 

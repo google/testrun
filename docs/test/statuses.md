@@ -9,7 +9,7 @@ Testrun will output the result and description of each automated test. The test 
 | Error | An error occured whilst running the test | Create a bug report requesting additional support to diagnose the issue |
 | Skipped | The test has not been executed because a linked test did not produce a compliant result | You may implement the functionality (not required) |
 
-## Test requirement
+## Test Requirement
 Testrun also determines whether each test is required for the device to receive an overall compliant result. These rules are:
 
 | Name | Description |

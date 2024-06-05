@@ -47,13 +47,6 @@ pip3 install -r framework/requirements.txt
 # Copy the default configuration
 cp -n local/system.json.example local/system.json
 
-# Set file permissions on system config
-# This does not work on GitHub actions
-if logname ; then
-  USER_NAME=$(logname)
-  sudo chown "$USER_NAME" local/system.json
-fi
-
 # Exit out of python virtual environment
 deactivate
 
@@ -63,5 +56,13 @@ sudo cmd/build
 # Create local folders
 mkdir -p local/devices
 mkdir -p local/root_certs
+mkdir -p local/risk_profiles
+
+# Set file permissions on local
+# This does not work on GitHub actions
+if logname ; then
+  USER_NAME=$(logname)
+  sudo chown -R "$USER_NAME" local
+fi
 
 echo Finished installing Testrun
