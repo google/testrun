@@ -212,17 +212,14 @@ class DNSModule(TestModule):
 
     if dns_packets_local or dns_packets_not_local:
       if dns_packets_not_local:
-        # Feature Not Detected
-        result = ('Feature Not Detected',
-                  'DNS traffic detected to non-DHCP provided server')
+        description = 'DNS traffic detected to non-DHCP provided server'
       else:
         LOGGER.info('DNS traffic detected only to configured DHCP DNS server')
-        result = True, 'DNS traffic detected only to DHCP provided server'
+        description = 'DNS traffic detected only to DHCP provided server'
     else:
-      # Feature Not Detected
       LOGGER.info('No DNS traffic detected from the device')
-      result = 'Feature Not Detected', 'No DNS traffic detected from the device'
-    return result
+      description = 'No DNS traffic detected from the device'
+    return 'Informational', description
 
   def _dns_network_hostname_resolution(self):
     LOGGER.info('Running dns.network.hostname_resolution')
