@@ -430,7 +430,7 @@ class TestReport():
 
     successful_tests = 0
     for test in self._results:
-      if test['result'] != 'Error':
+      if test.result != 'Error':
         successful_tests += 1
 
     result_list = f'''
