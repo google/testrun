@@ -181,13 +181,11 @@ export class TestRunService {
     );
   }
 
-  startTestrun(device: Device): Observable<boolean> {
-    return this.http
-      .post<TestrunStatus>(
-        `${API_URL}/system/start`,
-        JSON.stringify({ device })
-      )
-      .pipe(map(() => true));
+  startTestrun(device: Device): Observable<TestrunStatus> {
+    return this.http.post<TestrunStatus>(
+      `${API_URL}/system/start`,
+      JSON.stringify({ device })
+    );
   }
 
   getVersion(): BehaviorSubject<Version | null> {

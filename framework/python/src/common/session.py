@@ -19,6 +19,7 @@ import pytz
 import json
 import os
 from common import util, logger
+from common.risk_profile import RiskProfile
 
 # Certificate dependencies
 from cryptography import x509
@@ -38,10 +39,7 @@ CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
-PROFILES_DIR = 'local/profiles'
-
-PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
-PROFILES_DIR = 'local/profiles'
+PROFILES_DIR = 'local/risk_profiles'
 
 LOGGER = logger.get_logger('session')
 
@@ -199,7 +197,8 @@ class TestrunSession():
       LOGGER.debug('Failed getting the version from dpkg-query')
       # Try getting the version from the make control file
       try:
-        version = util.run_command('$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
+        version = util.run_command(
+          '$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
       except Exception as e:
         LOGGER.debug('Failed getting the version from make control file')
         LOGGER.error(e)
@@ -359,8 +358,31 @@ class TestrunSession():
         'An error occurred whilst loading the risk assessment format')
       LOGGER.debug(e)
 
+    # Load existing profiles
+    LOGGER.debug('Loading risk profiles')
+
+    try:
+      for risk_profile_file in os.listdir(os.path.join(
+        self._root_dir, PROFILES_DIR
+      )):
+        LOGGER.debug(f'Discovered profile {risk_profile_file}')
+
+        with open(os.path.join(
+          self._root_dir, PROFILES_DIR, risk_profile_file
+        ), encoding='utf-8') as f:
+          json_data = json.load(f)
+          risk_profile = RiskProfile(json_data)
+          self._profiles.append(risk_profile)
+
+    except Exception as e:
+      LOGGER.error('An error occurred whilst loading risk profiles')
+      LOGGER.debug(e)
+
   def get_profiles_format(self):
     return self._profile_format_json
+
+  def get_profiles(self):
+    return self._profiles
 
   def reset(self):
     self.set_status('Idle')

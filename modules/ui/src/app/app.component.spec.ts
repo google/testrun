@@ -54,6 +54,7 @@ import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasRiskProfiles,
   selectInterfaces,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
@@ -65,6 +66,7 @@ import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { CertificatesComponent } from './pages/certificates/certificates.component';
 import { of } from 'rxjs';
 import { WINDOW } from './providers/window.provider';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 const windowMock = {
   location: {
@@ -81,6 +83,7 @@ describe('AppComponent', () => {
   let store: MockStore<AppState>;
   let focusNavigation = true;
   let mockFocusManagerService: SpyObj<FocusManagerService>;
+  let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
 
   const enterKeyEvent = new KeyboardEvent('keydown', {
     key: 'Enter',
@@ -104,6 +107,7 @@ describe('AppComponent', () => {
       'fetchDevices',
       'getTestModules',
       'testrunInProgress',
+      'fetchProfiles',
       'fetchCertificates',
     ]);
 
@@ -111,6 +115,7 @@ describe('AppComponent', () => {
     mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
       'focusFirstElementInContainer',
     ]);
+    mockLiveAnnouncer = jasmine.createSpyObj('mockLiveAnnouncer', ['announce']);
 
     TestBed.configureTestingModule({
       imports: [
@@ -129,6 +134,7 @@ describe('AppComponent', () => {
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
+        { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
         {
           provide: State,
           useValue: {
@@ -148,6 +154,7 @@ describe('AppComponent', () => {
             { selector: selectError, value: null },
             { selector: selectMenuOpened, value: false },
             { selector: selectHasDevices, value: false },
+            { selector: selectHasRiskProfiles, value: false },
             { selector: selectStatus, value: null },
             { selector: selectSystemStatus, value: null },
             { selector: selectIsOpenStartTestrun, value: false },
@@ -327,6 +334,21 @@ describe('AppComponent', () => {
     expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
   }));
 
+  it('should announce settingsDrawer open on openSetting', fakeAsync(() => {
+    fixture.detectChanges();
+
+    spyOn(component.settingsDrawer, 'open').and.returnValue(
+      Promise.resolve('open')
+    );
+
+    component.openSetting();
+    tick();
+
+    expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+      'The settings panel is opened'
+    );
+  }));
+
   it('should call settingsDrawer open on click settings button', () => {
     fixture.detectChanges();
 
@@ -463,6 +485,38 @@ describe('AppComponent', () => {
 
         expect(callout).toBeTruthy();
         expect(calloutContent).toContain('Step 3');
+      });
+    });
+
+    describe('with systemStatus data IN Progress and without riskProfiles', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasConnectionSettings, true);
+        store.overrideSelector(selectHasDevices, true);
+        store.overrideSelector(selectHasRiskProfiles, false);
+        store.overrideSelector(
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
+        );
+        fixture.detectChanges();
+      });
+
+      it('should have callout component with "Congratulations" text', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutContent = callout?.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutContent).toContain('Congratulations');
+      });
+
+      it('should have callout component with "Risk Assessment" link', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutLinkEl = compiled.querySelector(
+          '.message-link'
+        ) as HTMLAnchorElement;
+        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutLinkContent).toContain('Risk Assessment');
       });
     });
 
@@ -672,7 +726,7 @@ describe('AppComponent', () => {
     expect(generalSettingsButton).toBeDefined();
   });
 
-  it('should call settingsDrawer open on click settings button', () => {
+  it('should call certificates open on click certificates button', () => {
     fixture.detectChanges();
 
     const settingsBtn = compiled.querySelector(
@@ -684,6 +738,21 @@ describe('AppComponent', () => {
 
     expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
   });
+
+  it('should announce certificatesDrawer open on openCert', fakeAsync(() => {
+    fixture.detectChanges();
+
+    spyOn(component.certDrawer, 'open').and.returnValue(
+      Promise.resolve('open')
+    );
+
+    component.openCert();
+    tick();
+
+    expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+      'The certificates panel is opened'
+    );
+  }));
 });
 
 @Component({

@@ -24,9 +24,14 @@ import {
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { device, updated_device } from '../../mocks/device.mock';
-import { setDevices, setIsOpenAddDevice } from '../../store/actions';
+import {
+  fetchSystemStatusSuccess,
+  setDevices,
+  setIsOpenAddDevice,
+} from '../../store/actions';
 import { selectDevices, selectIsOpenAddDevice } from '../../store/selectors';
 import { DevicesStore } from './devices.store';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../../mocks/testrun.mock';
 
 describe('DevicesStore', () => {
   let devicesStore: DevicesStore;
@@ -180,6 +185,18 @@ describe('DevicesStore', () => {
 
         expect(store.dispatch).toHaveBeenCalledWith(
           setIsOpenAddDevice({ isOpenAddDevice: true })
+        );
+      });
+    });
+
+    describe('setStatus', () => {
+      it('should dispatch action fetchSystemStatusSuccess', () => {
+        devicesStore.setStatus(MOCK_PROGRESS_DATA_IN_PROGRESS);
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          fetchSystemStatusSuccess({
+            systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
+          })
         );
       });
     });

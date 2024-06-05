@@ -96,16 +96,11 @@ limitations under the License.
 </section>
 
 <mat-dialog-actions class="consent-actions">
-  <button
-    (click)="cancel()"
-    class="cancel-button"
-    color="primary"
-    mat-button
-    type="button">
+  <mat-checkbox [(ngModel)]="optOut" class="consent-actions-opt-out">
     Opt out Google Analytics
-  </button>
+  </mat-checkbox>
   <button
-    (click)="confirm()"
+    (click)="confirm(optOut)"
     class="confirm-button"
     color="primary"
     mat-raised-button

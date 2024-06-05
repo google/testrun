@@ -40,6 +40,8 @@ import {
 } from '../mocks/testrun.mock';
 import { fetchSystemStatus, setStatus, setTestrunStatus } from './actions';
 import { NotificationService } from '../services/notification.service';
+import { PROFILE_MOCK } from '../mocks/profile.mock';
+
 describe('Effects', () => {
   let actions$ = new Observable<Action>();
   let effects: AppEffects;
@@ -106,6 +108,17 @@ describe('Effects', () => {
 
     effects.onSetDevices$.subscribe(action => {
       expect(action).toEqual(actions.setHasDevices({ hasDevices: true }));
+      done();
+    });
+  });
+
+  it('onSetRiskProfiles$ should call setHasRiskProfiles', done => {
+    actions$ = of(actions.setRiskProfiles({ riskProfiles: [PROFILE_MOCK] }));
+
+    effects.onSetRiskProfiles$.subscribe(action => {
+      expect(action).toEqual(
+        actions.setHasRiskProfiles({ hasRiskProfiles: true })
+      );
       done();
     });
   });

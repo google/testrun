@@ -83,3 +83,7 @@
   min-height: 30px;
   justify-content: space-between;
 }
+
+.consent-actions-opt-out ::ng-deep label {
+  font-weight: 500;
+}
