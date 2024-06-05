@@ -19,7 +19,7 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { Version } from '../../../model/version';
+import { ConsentDialogResult, Version } from '../../../model/version';
 import { MatButtonModule } from '@angular/material/button';
 import { CalloutComponent } from '../../callout/callout.component';
 import { CalloutType } from '../../../model/callout-type';
@@ -27,7 +27,10 @@ import { NgIf } from '@angular/common';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
 
-type DialogData = Version;
+type DialogData = {
+  version: Version;
+  hasRiskProfiles: boolean;
+};
 
 @Component({
   selector: 'app-consent-dialog',
@@ -51,8 +54,12 @@ export class ConsentDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {}
 
-  confirm(optOut: boolean) {
+  confirm(optOut: boolean, isNavigateToRiskAssessment?: boolean) {
     // dialog should be closed with opposite value to grant or deny access to GA
-    this.dialogRef.close(!optOut);
+    const dialogResult: ConsentDialogResult = {
+      grant: !optOut,
+      isNavigateToRiskAssessment,
+    };
+    this.dialogRef.close(dialogResult);
   }
 }
