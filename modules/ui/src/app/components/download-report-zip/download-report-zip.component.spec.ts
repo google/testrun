@@ -13,75 +13,153 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
 import { DownloadReportZipComponent } from './download-report-zip.component';
-import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
+import { of } from 'rxjs';
+import { MatDialogRef } from '@angular/material/dialog';
+import { DownloadZipModalComponent } from '../download-zip-modal/download-zip-modal.component';
+import { Router } from '@angular/router';
+import { TestRunService } from '../../services/test-run.service';
+import { Routes } from '../../model/routes';
+import { RouterTestingModule } from '@angular/router/testing';
+import { Component } from '@angular/core';
 
-describe('DownloadReportComponent', () => {
+describe('DownloadReportZipComponent', () => {
   let component: DownloadReportZipComponent;
   let fixture: ComponentFixture<DownloadReportZipComponent>;
+  let compiled: HTMLElement;
+  let router: Router;
+
+  const testrunServiceMock: jasmine.SpyObj<TestRunService> =
+    jasmine.createSpyObj('testrunServiceMock', ['downloadZip']);
+  testrunServiceMock.downloadZip.and.returnValue(of(true));
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        RouterTestingModule.withRoutes([
+          { path: 'risk-assessment', component: FakeRiskAssessmentComponent },
+        ]),
+        DownloadReportZipComponent,
+      ],
+      providers: [{ provide: TestRunService, useValue: testrunServiceMock }],
+    }).compileComponents();
+    fixture = TestBed.createComponent(DownloadReportZipComponent);
+    router = TestBed.get(Router);
+    compiled = fixture.nativeElement as HTMLElement;
+    component = fixture.componentInstance;
+    component.url = 'localhost:8080';
+  });
 
   describe('Class tests', () => {
-    beforeEach(() => {
-      TestBed.configureTestingModule({
-        imports: [DownloadReportZipComponent],
-      });
-      fixture = TestBed.createComponent(DownloadReportZipComponent);
-      component = fixture.componentInstance;
-    });
-
     it('should create', () => {
       expect(component).toBeTruthy();
+    });
+
+    describe('#onClick', () => {
+      beforeEach(() => {
+        testrunServiceMock.downloadZip.calls.reset();
+      });
+
+      it('should call service if profile is a string', fakeAsync(() => {
+        const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+          afterClosed: () => of(''),
+        } as MatDialogRef<typeof DownloadZipModalComponent>);
+
+        component.onClick();
+
+        expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
+          ariaLabel: 'Download zip',
+          data: {
+            hasProfiles: false,
+            profiles: [],
+          },
+          autoFocus: true,
+          hasBackdrop: true,
+          disableClose: true,
+          panelClass: 'initiate-test-run-dialog',
+        });
+
+        tick();
+
+        expect(testrunServiceMock.downloadZip).toHaveBeenCalled();
+        openSpy.calls.reset();
+      }));
+
+      it('should navigate to risk profiles page if profile is null', fakeAsync(() => {
+        const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+          afterClosed: () => of(null),
+        } as MatDialogRef<typeof DownloadZipModalComponent>);
+
+        fixture.ngZone?.run(() => {
+          component.onClick();
+
+          expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
+            ariaLabel: 'Download zip',
+            data: {
+              hasProfiles: false,
+              profiles: [],
+            },
+            autoFocus: true,
+            hasBackdrop: true,
+            disableClose: true,
+            panelClass: 'initiate-test-run-dialog',
+          });
+
+          tick();
+
+          expect(router.url).toBe(Routes.RiskAssessment);
+          openSpy.calls.reset();
+        });
+      }));
+
+      it('should do nothing if profile is undefined', fakeAsync(() => {
+        const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+          afterClosed: () => of(undefined),
+        } as MatDialogRef<typeof DownloadZipModalComponent>);
+
+        component.onClick();
+
+        expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
+          ariaLabel: 'Download zip',
+          data: {
+            hasProfiles: false,
+            profiles: [],
+          },
+          autoFocus: true,
+          hasBackdrop: true,
+          disableClose: true,
+          panelClass: 'initiate-test-run-dialog',
+        });
+
+        tick();
+
+        expect(testrunServiceMock.downloadZip).not.toHaveBeenCalled();
+        openSpy.calls.reset();
+      }));
     });
   });
 
   describe('DOM tests', () => {
-    let compiled: HTMLElement;
+    it('should open risk profiles modal on click', () => {
+      const openSpy = spyOn(component.dialog, 'open');
+      compiled.click();
 
-    beforeEach(async () => {
-      await TestBed.configureTestingModule({
-        imports: [DownloadReportZipComponent],
-      }).compileComponents();
-      fixture = TestBed.createComponent(DownloadReportZipComponent);
-      compiled = fixture.nativeElement as HTMLElement;
-      component = fixture.componentInstance;
-    });
+      expect(openSpy).toHaveBeenCalled();
 
-    describe('with not data provided', () => {
-      beforeEach(() => {
-        (component.data as unknown) = null;
-        fixture.detectChanges();
-      });
-
-      it('should not have content', () => {
-        const downloadReportLink = compiled.querySelector(
-          '.download-report-link'
-        );
-
-        expect(downloadReportLink).toBeNull();
-      });
-    });
-
-    describe('with data provided', () => {
-      beforeEach(() => {
-        component.data = MOCK_PROGRESS_DATA_COMPLIANT;
-        fixture.detectChanges();
-      });
-
-      it('should have download report link', () => {
-        const downloadReportLink = compiled.querySelector(
-          '.download-report-link'
-        ) as HTMLAnchorElement;
-
-        expect(downloadReportLink).not.toBeNull();
-        expect(downloadReportLink.href).toEqual(
-          'https://api.testrun.io/export.pdf'
-        );
-        expect(downloadReportLink.download).toEqual(
-          'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20'
-        );
-      });
+      openSpy.calls.reset();
     });
   });
 });
+
+@Component({
+  selector: 'app-fake-risk-assessment-component',
+  template: '',
+})
+class FakeRiskAssessmentComponent {}

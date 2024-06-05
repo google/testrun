@@ -51,7 +51,9 @@ limitations under the License.
             </button>
             <app-download-options
               *ngIf="data.report"
-              [data]="data"></app-download-options>
+              [data]="data"
+              [profiles]="vm.profiles"
+              [hasProfiles]="vm.hasProfiles"></app-download-options>
           </div>
         </div>
         <app-testrun-status-card [systemStatus]="vm.systemStatus">
