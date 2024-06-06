@@ -129,10 +129,11 @@ export class AppEffects {
     return this.actions$.pipe(
       ofType(AppActions.setTestrunStatus),
       map(({ systemStatus }) => {
+        const isInProgressDevice =
+          this.testrunService.testrunInProgress(systemStatus?.status) ||
+          systemStatus.status === StatusOfTestrun.Cancelling;
         return AppActions.setDeviceInProgress({
-          device: this.testrunService.testrunInProgress(systemStatus?.status)
-            ? systemStatus.device
-            : null,
+          device: isInProgressDevice ? systemStatus.device : null,
         });
       })
     );
