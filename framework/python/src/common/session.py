@@ -406,7 +406,7 @@ class TestrunSession():
     # Check all questions are present
     for format_q in self.get_profiles_format():
       if self._get_profile_question(profile_json, format_q.get('question')) is None:
-        print('Missing question: ' + format_q.get('question'))
+        LOGGER.error('Missing question: ' + format_q.get('question'))
         return False
 
     return True
@@ -415,7 +415,7 @@ class TestrunSession():
 
     for q in profile_json.get('questions'):
       if question.lower() == q.get('question').lower():
-        return question
+        return q
 
     return None
 
@@ -444,16 +444,15 @@ class TestrunSession():
 
           # Check answer is present
           if 'answer' not in profile_question:
-            print(profile_question)
-            print("Missing answer for question: " + question.get('question'))
+            LOGGER.error("Missing answer for question: " + question.get('question'))
             all_questions_answered = False
 
         else:
-          print("Missing question: " + question.get('question'))
+          LOGGER.error("Missing question: " + question.get('question'))
           all_questions_answered = False
 
       if not all_questions_answered:
-        print('Not all questions answered')
+        LOGGER.error('Not all questions answered')
         return None
 
     else:
@@ -500,6 +499,24 @@ class TestrunSession():
         profile.status = 'Expired'
 
     return profile.status
+  
+  def delete_profile(self, profile):
+
+    try:
+      profile_name = profile.name
+      file_name = profile_name + '.json'
+
+      profile_path = os.path.join(PROFILES_DIR, file_name)
+
+      os.remove(profile_path)
+      self._profiles.remove(profile)
+
+      return True
+
+    except Exception as e:
+      LOGGER.error('An error occurred whilst deleting a profile')
+      LOGGER.debug(e)
+      return False
 
   def reset(self):
     self.set_status('Idle')
