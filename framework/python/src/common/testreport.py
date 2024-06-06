@@ -429,8 +429,8 @@ class TestReport():
   def generate_results(self, json_data, page_num):
 
     successful_tests = 0
-    for test in self._results:
-      if test.result != 'Error':
+    for test in json_data['tests']['results']:
+      if test['result'] != 'Error':
         successful_tests += 1
 
     result_list = f'''
