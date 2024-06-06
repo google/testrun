@@ -18,8 +18,11 @@ import datetime
 import pytz
 import json
 import os
+import glob
 from common import util, logger
 from common.risk_profile import RiskProfile
+from common.test_plan import TestPlan
+
 
 # Certificate dependencies
 from cryptography import x509
@@ -40,6 +43,9 @@ CONFIG_FILE_PATH = 'local/system.json'
 
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
 PROFILES_DIR = 'local/risk_profiles'
+
+TEST_PLAN_DIR = 'resources/test_plans'
+DEFAULT_TEST_PLAN='4.5'
 
 LOGGER = logger.get_logger('session')
 
@@ -94,6 +100,10 @@ class TestrunSession():
 
     self._certs = []
     self.load_certs()
+
+    self._test_plans = []
+    self._test_plan_version = DEFAULT_TEST_PLAN
+    self._load_test_plans()
 
     # Fetch the timezone of the host system
     tz = util.run_command('cat /etc/timezone')
@@ -343,6 +353,16 @@ class TestrunSession():
   def set_report_url(self, url):
     self._report_url = url
 
+  def set_test_plan_version(self,version):
+    self._test_plan_version=version
+
+  def get_test_plan(self):
+    for test_plan in self._test_plans:
+      if self._test_plan_version == test_plan.version:
+        return test_plan
+    return None
+
+
   def _load_profiles(self):
 
     # Load format of questionnaire
@@ -376,6 +396,26 @@ class TestrunSession():
 
     except Exception as e:
       LOGGER.error('An error occurred whilst loading risk profiles')
+      LOGGER.debug(e)
+
+  def _load_test_plans(self):
+
+    # Load format of questionnaire
+    LOGGER.debug('Loading test plans')
+
+    # Resolve all the test plan files
+    test_plan_search = os.path.join(TEST_PLAN_DIR,'test_plan*.json')
+    test_plan_files = glob.glob(test_plan_search)
+
+    try:
+      for test_plan_file in test_plan_files:
+        with open(test_plan_file,encoding='utf-8') as f:
+          json_data = json.load(f)
+          test_plan = TestPlan(json_data);
+          LOGGER.debug(f'Teset plan {test_plan.version} loaded')
+          self._test_plans.append(test_plan)
+    except Exception as e:
+      LOGGER.error('An error occurred whilst loading test plans')
       LOGGER.debug(e)
 
   def get_profiles_format(self):
