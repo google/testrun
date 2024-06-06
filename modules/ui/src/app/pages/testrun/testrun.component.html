@@ -96,7 +96,9 @@ limitations under the License.
       aria-label="Start new testrun"
       color="primary"
       [disabled]="
-        hasDevices === false || isTestrunInProgress(systemStatus?.status)
+        hasDevices === false ||
+        isTestrunInProgress(systemStatus?.status) ||
+        systemStatus?.status === StatusOfTestrun.Cancelling
       "
       (click)="openTestRunModal()"
       mat-flat-button>
