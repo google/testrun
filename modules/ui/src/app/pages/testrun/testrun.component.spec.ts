@@ -480,6 +480,25 @@ describe('TestrunComponent', () => {
       });
     });
 
+    describe('with available systemStatus$ data, as Cancelling', () => {
+      beforeEach(() => {
+        store.overrideSelector(
+          selectSystemStatus,
+          MOCK_PROGRESS_DATA_CANCELLING
+        );
+        store.overrideSelector(selectHasDevices, true);
+        fixture.detectChanges();
+      });
+
+      it('should have disabled "Start" button', () => {
+        const startBtn = compiled.querySelector(
+          '.start-button'
+        ) as HTMLButtonElement;
+
+        expect(startBtn.disabled).toBeTrue();
+      });
+    });
+
     describe('with available systemStatus$ data, as Monitoring', () => {
       beforeEach(() => {
         store.overrideSelector(
