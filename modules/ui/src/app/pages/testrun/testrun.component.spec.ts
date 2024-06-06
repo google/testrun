@@ -486,7 +486,6 @@ describe('TestrunComponent', () => {
           selectSystemStatus,
           MOCK_PROGRESS_DATA_CANCELLING
         );
-        // testRunServiceMock.testrunInProgress.and.returnValue(true);
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
       });
