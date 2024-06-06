@@ -435,7 +435,7 @@ class TestReport():
 
     result_list = f'''
       <div class="result-list">
-        <h3>Results List <small>({len(successful_tests)}/{self._total_tests})</small></h3>
+        <h3>Results List <small>({successful_tests}/{self._total_tests})</small></h3>
         <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
           <div class="result-list-header-label" style="left: .1in">Name</div>
           <div class="result-list-header-label" style="left: 2.8in">Description</div>
