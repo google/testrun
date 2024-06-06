@@ -137,8 +137,8 @@ export class AppComponent {
     });
   }
 
-  async openSetting(): Promise<void> {
-    return await this.openGeneralSettings(false);
+  async openSetting(isSettingsDisabled: boolean): Promise<void> {
+    return await this.openGeneralSettings(false, isSettingsDisabled);
   }
 
   public toggleMenu(event: MouseEvent) {
@@ -159,17 +159,21 @@ export class AppComponent {
     }
   }
 
-  async openGeneralSettings(openSettingFromToggleBtn: boolean) {
+  async openGeneralSettings(
+    openSettingFromToggleBtn: boolean,
+    isSettingsDisabled: boolean
+  ) {
     this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
     this.settings.getSystemInterfaces();
     this.settings.getSystemConfig();
     await this.settingsDrawer.open();
-    await this.liveAnnouncer.announce('The settings panel is opened');
+    if (isSettingsDisabled) {
+      await this.liveAnnouncer.announce('The settings panel is disabled');
+    }
   }
 
   async openCert() {
     await this.certDrawer.open();
-    this.liveAnnouncer.announce('The certificates panel is opened');
   }
 
   consentShown() {
