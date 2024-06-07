@@ -48,7 +48,6 @@ export class DownloadReportZipComponent implements OnDestroy {
   @HostListener('keydown.enter', ['$event'])
   @HostListener('keydown.space', ['$event'])
   onClick() {
-    console.log('123');
     const dialogRef = this.dialog.open(DownloadZipModalComponent, {
       ariaLabel: 'Download zip',
       data: {

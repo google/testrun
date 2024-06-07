@@ -73,10 +73,6 @@ export class DownloadOptionsComponent {
   }
 
   onZipSelected(event: MatOptionSelectionChange) {
-    console.log(event);
-    /*    console.log(event);
-    event.preventDefault();
-    event.stopPropagation();*/
     if (event.isUserInput) {
       const uploadCertificatesButton = document.querySelector(
         '#downloadReportZip'
