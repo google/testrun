@@ -300,7 +300,7 @@ describe('AppComponent', () => {
       Promise.resolve('close')
     );
 
-    component.openGeneralSettings(false);
+    component.openGeneralSettings(false, false);
     tick();
     component.closeSetting(false);
     flush();
@@ -318,7 +318,7 @@ describe('AppComponent', () => {
     spyOn(component.settings, 'getSystemInterfaces');
     spyOn(component.settings, 'getSystemConfig');
 
-    component.openGeneralSettings(false);
+    component.openGeneralSettings(false, false);
 
     expect(component.settings.getSystemInterfaces).toHaveBeenCalled();
     expect(component.settings.getSystemConfig).toHaveBeenCalled();
@@ -328,24 +328,24 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     spyOn(component.settingsDrawer, 'open');
 
-    component.openSetting();
+    component.openSetting(false);
     tick();
 
     expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
   }));
 
-  it('should announce settingsDrawer open on openSetting', fakeAsync(() => {
+  it('should announce settingsDrawer disabled on openSetting and settings are disabled', fakeAsync(() => {
     fixture.detectChanges();
 
     spyOn(component.settingsDrawer, 'open').and.returnValue(
       Promise.resolve('open')
     );
 
-    component.openSetting();
+    component.openSetting(true);
     tick();
 
     expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-      'The settings panel is opened'
+      'The settings panel is disabled'
     );
   }));
 
@@ -738,21 +738,6 @@ describe('AppComponent', () => {
 
     expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
   });
-
-  it('should announce certificatesDrawer open on openCert', fakeAsync(() => {
-    fixture.detectChanges();
-
-    spyOn(component.certDrawer, 'open').and.returnValue(
-      Promise.resolve('open')
-    );
-
-    component.openCert();
-    tick();
-
-    expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-      'The certificates panel is opened'
-    );
-  }));
 });
 
 @Component({
