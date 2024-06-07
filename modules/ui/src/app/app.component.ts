@@ -108,6 +108,10 @@ export class AppComponent {
     );
   }
 
+  get isRiskAssessmentRoute(): boolean {
+    return this.route.url === Routes.RiskAssessment;
+  }
+
   navigateToDeviceRepository(): void {
     this.route.navigate([Routes.Devices]);
     this.store.dispatch(setIsOpenAddDevice({ isOpenAddDevice: true }));

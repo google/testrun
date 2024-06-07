@@ -70,6 +70,8 @@ describe('ReportsComponent', () => {
       dataLoaded: dataLoaded,
       selectedRow: null,
       isFiltersEmpty: true,
+      hasProfiles: false,
+      profiles: [],
     });
   };
   beforeEach(() => {

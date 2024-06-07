@@ -242,6 +242,8 @@ class Api:
       return self._generate_msg(False,"Configured interfaces are not " +
                                 "ready for use. Ensure required interfaces " +
                                 "are connected.")
+    
+    device.test_modules = body_json["device"]["test_modules"]
 
     LOGGER.info("Starting Testrun with device target " +
                 f"{device.manufacturer} {device.model} with " +

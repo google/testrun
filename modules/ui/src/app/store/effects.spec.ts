@@ -35,6 +35,7 @@ import {
 } from './selectors';
 import { device } from '../mocks/device.mock';
 import {
+  MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
 } from '../mocks/testrun.mock';
@@ -93,6 +94,19 @@ describe('Effects', () => {
   it('onSetDevices$ should call setDeviceInProgress when testrun in progress', done => {
     testRunServiceMock.testrunInProgress.and.returnValue(true);
     const status = MOCK_PROGRESS_DATA_IN_PROGRESS;
+    actions$ = of(actions.setTestrunStatus({ systemStatus: status }));
+
+    effects.onSetTestrunStatus$.subscribe(action => {
+      expect(action).toEqual(
+        actions.setDeviceInProgress({ device: status.device })
+      );
+      done();
+    });
+  });
+
+  it('onSetTestrunStatus$ should setDeviceInProgress when testrun cancelling', done => {
+    testRunServiceMock.testrunInProgress.and.returnValue(false);
+    const status = MOCK_PROGRESS_DATA_CANCELLING;
     actions$ = of(actions.setTestrunStatus({ systemStatus: status }));
 
     effects.onSetTestrunStatus$.subscribe(action => {

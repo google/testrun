@@ -13,23 +13,82 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { TestrunStatus } from '../../model/testrun-status';
-import { CommonModule, DatePipe } from '@angular/common';
-import { DownloadReportComponent } from '../download-report/download-report.component';
-import { MatIcon } from '@angular/material/icon';
-import { ReportActionComponent } from '../report-action/report-action.component';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  Input,
+  OnDestroy,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Profile } from '../../model/profile';
+import { MatDialog } from '@angular/material/dialog';
+import { Subject, takeUntil } from 'rxjs';
+import { Routes } from '../../model/routes';
+import { DownloadZipModalComponent } from '../download-zip-modal/download-zip-modal.component';
+import { TestRunService } from '../../services/test-run.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-download-report-zip',
   templateUrl: './download-report-zip.component.html',
+  styleUrl: './download-report-zip.component.scss',
   standalone: true,
-  imports: [CommonModule, DownloadReportComponent, MatIcon],
-  providers: [DatePipe],
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DownloadReportZipComponent extends ReportActionComponent {
-  getZipLink(data: TestrunStatus) {
-    return data.report?.replace('report', 'export');
+export class DownloadReportZipComponent implements OnDestroy {
+  private destroy$: Subject<boolean> = new Subject<boolean>();
+  @Input() hasProfiles: boolean = false;
+  @Input() profiles: Profile[] = [];
+  @Input() url: string | null | undefined = null;
+
+  @HostListener('click', ['$event.target'])
+  onClick() {
+    const dialogRef = this.dialog.open(DownloadZipModalComponent, {
+      ariaLabel: 'Download zip',
+      data: {
+        hasProfiles: this.hasProfiles,
+        profiles: this.profiles,
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: 'initiate-test-run-dialog',
+    });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(profile => {
+        if (profile === undefined) {
+          return;
+        }
+        if (profile === null) {
+          this.route.navigate([Routes.RiskAssessment]);
+        }
+
+        if (this.url != null) {
+          this.testrunService
+            .downloadZip(this.getZipLink(this.url), profile)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe();
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next(true);
+    this.destroy$.unsubscribe();
+  }
+
+  constructor(
+    public dialog: MatDialog,
+    private testrunService: TestRunService,
+    private route: Router
+  ) {}
+
+  private getZipLink(reportURL: string): string {
+    return reportURL.replace('report', 'export');
   }
 }
