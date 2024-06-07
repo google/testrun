@@ -13,8 +13,6 @@
 # limitations under the License.
 """Provides Testrun data via REST API."""
 from fastapi import (FastAPI,
-                     File,
-                     Form,
                      APIRouter,
                      Response,
                      Request,
@@ -103,6 +101,10 @@ class Api:
                                self.edit_device,
                                methods=["POST"])
 
+    # Load modules
+    self._router.add_api_route("/system/modules",
+                               self.get_test_modules)
+
     self._router.add_api_route("/system/config/certs",
                                self.get_certs)
     self._router.add_api_route("/system/config/certs",
@@ -111,6 +113,12 @@ class Api:
     self._router.add_api_route("/system/config/certs",
                                self.delete_cert,
                                methods=["DELETE"])
+
+    # Profiles
+    self._router.add_api_route("/profiles/format",
+                               self.get_profiles_format)
+    self._router.add_api_route("/profiles",
+                               self.get_profiles)
 
     # Allow all origins to access the API
     origins = ["*"]
@@ -142,6 +150,9 @@ class Api:
 
   def stop(self):
     LOGGER.info("Stopping API")
+
+  def get_session(self):
+    return self._session
 
   async def get_sys_interfaces(self):
     addrs = psutil.net_if_addrs()
@@ -231,6 +242,8 @@ class Api:
       return self._generate_msg(False,"Configured interfaces are not " +
                                 "ready for use. Ensure required interfaces " +
                                 "are connected.")
+    
+    device.test_modules = body_json["device"]["test_modules"]
 
     LOGGER.info("Starting Testrun with device target " +
                 f"{device.manufacturer} {device.model} with " +
@@ -597,6 +610,25 @@ class Api:
 
     return True
 
+  def _get_test_run(self):
+    return self._test_run
+
+  # Profiles
+  def get_profiles_format(self, response: Response):
+
+    # Check if Testrun was able to load the format originally
+    if self.get_session().get_profiles_format() is None:
+      response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+      return self._generate_msg(
+        False,
+        "Testrun could not load the risk assessment format")
+
+    return self.get_session().get_profiles_format()
+
+  def get_profiles(self):
+    return self.get_session().get_profiles()
+
+  # Certificates
   def get_certs(self):
     LOGGER.debug("Received certs list request")
 
@@ -645,12 +677,16 @@ class Api:
     # Get file contents
     contents = await file.read()
 
-    # Pass to session to check and write
-    cert_obj = self._session.upload_cert(filename,
-                                         contents)
+    try:
+      # Pass to session to check and write
+      cert_obj = self._session.upload_cert(filename,
+                                          contents)
+    except IOError:
+      LOGGER.error("An error occurred whilst uploading the certificate")
 
     # Return error if something went wrong
     if cert_obj is None:
+      response.status_code = 500
       return self._generate_msg(
         False,
         "Failed to upload certificate. Is it in the correct format?"
@@ -687,3 +723,10 @@ class Api:
     except Exception as e:
       LOGGER.error("An error occurred whilst deleting a certificate")
       LOGGER.debug(e)
+
+  def get_test_modules(self):
+    modules = []
+    for module in self._test_run.get_test_orc().get_test_modules():
+      if module.enabled and module.enable_container:
+        modules.append(module.display_name)
+    return modules

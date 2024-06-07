@@ -15,9 +15,11 @@
 """Track testing status."""
 import copy
 import datetime
+import pytz
 import json
 import os
 from common import util, logger
+from common.risk_profile import RiskProfile
 
 # Certificate dependencies
 from cryptography import x509
@@ -37,14 +39,14 @@ CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
-PROFILES_DIR = 'local/profiles'
+PROFILES_DIR = 'local/risk_profiles'
 
 LOGGER = logger.get_logger('session')
 
 class TestrunSession():
   """Represents the current session of Test Run."""
 
-  def __init__(self, root_dir, version):
+  def __init__(self, root_dir):
     self._root_dir = root_dir
 
     self._status = 'Idle'
@@ -74,6 +76,9 @@ class TestrunSession():
     # Direct url for PDF report
     self._report_url = None
 
+    # Version
+    self._load_version()
+
     # Profiles
     self._profiles = []
     self._profile_format_json = None
@@ -83,7 +88,7 @@ class TestrunSession():
     self._config = self._get_default_config()
 
     # Loading methods
-    self._load_version(default_version=version)
+    self._load_version()
     self._load_config()
     self._load_profiles()
 
@@ -179,7 +184,7 @@ class TestrunSession():
 
       LOGGER.debug(self._config)
 
-  def _load_version(self, default_version):
+  def _load_version(self):
     version_cmd = util.run_command(
       'dpkg-query --showformat=\'${Version}\' --show testrun')
     # index 1 of response is the stderr byte stream so if
@@ -189,8 +194,15 @@ class TestrunSession():
       version = version_cmd[0]
       self._version = version
     else:
-      self._version = default_version
-    LOGGER.info(f'Running Testrun version {self._version}')
+      LOGGER.debug('Failed getting the version from dpkg-query')
+      # Try getting the version from the make control file
+      try:
+        version = util.run_command(
+          '$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
+      except Exception as e:
+        LOGGER.debug('Failed getting the version from make control file')
+        LOGGER.error(e)
+        self._version = 'Unknown'
 
   def get_version(self):
     return self._version
@@ -346,8 +358,31 @@ class TestrunSession():
         'An error occurred whilst loading the risk assessment format')
       LOGGER.debug(e)
 
+    # Load existing profiles
+    LOGGER.debug('Loading risk profiles')
+
+    try:
+      for risk_profile_file in os.listdir(os.path.join(
+        self._root_dir, PROFILES_DIR
+      )):
+        LOGGER.debug(f'Discovered profile {risk_profile_file}')
+
+        with open(os.path.join(
+          self._root_dir, PROFILES_DIR, risk_profile_file
+        ), encoding='utf-8') as f:
+          json_data = json.load(f)
+          risk_profile = RiskProfile(json_data)
+          self._profiles.append(risk_profile)
+
+    except Exception as e:
+      LOGGER.error('An error occurred whilst loading risk profiles')
+      LOGGER.debug(e)
+
   def get_profiles_format(self):
     return self._profile_format_json
+
+  def get_profiles(self):
+    return self._profiles
 
   def reset(self):
     self.set_status('Idle')
@@ -389,6 +424,8 @@ class TestrunSession():
 
   def upload_cert(self, filename, content):
 
+    now = datetime.datetime.now(pytz.utc)
+
     try:
       # Parse bytes into x509 object
       cert = x509.load_pem_x509_certificate(content, default_backend())
@@ -399,9 +436,14 @@ class TestrunSession():
       issuer = cert.issuer.get_attributes_for_oid(
         NameOID.ORGANIZATION_NAME)[0].value
 
+      status = 'Valid'
+      if now > cert.not_valid_after_utc:
+        status = 'Expired'
+
       # Craft python dictionary with values
       cert_obj = {
         'name': common_name,
+        'status': status,
         'organisation': issuer,
         'expires': cert.not_valid_after_utc,
         'filename': filename
@@ -430,6 +472,8 @@ class TestrunSession():
 
     LOGGER.debug(f'Loading certificates from {CERTS_PATH}')
 
+    now = datetime.datetime.now(pytz.utc)
+
     self._certs = []
 
     for cert_file in os.listdir(CERTS_PATH):
@@ -450,9 +494,14 @@ class TestrunSession():
           issuer = cert.issuer.get_attributes_for_oid(
             NameOID.ORGANIZATION_NAME)[0].value
 
+          status = 'Valid'
+          if now > cert.not_valid_after_utc:
+            status = 'Expired'
+
           # Craft python dictionary with values
           cert_obj = {
             'name': common_name,
+            'status': status,
             'organisation': issuer,
             'expires': cert.not_valid_after_utc,
             'filename': cert_file

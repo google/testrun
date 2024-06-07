@@ -13,13 +13,4 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<app-download-report
-  *ngIf="data"
-  class="download-report-link-zip"
-  [data]="data"
-  [href]="getZipLink(data)"
-  title="Download zip file for Testrun # {{ getTestRunId(data) }}">
-  <mat-icon class="download-report-icon" fontSet="material-symbols-outlined">
-    archive
-  </mat-icon>
-</app-download-report>
+<ng-content></ng-content>

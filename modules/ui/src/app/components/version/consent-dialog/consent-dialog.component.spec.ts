@@ -46,7 +46,8 @@ describe('ConsentDialogComponent', () => {
     });
     fixture = TestBed.createComponent(ConsentDialogComponent);
     component = fixture.componentInstance;
-    component.data = NEW_VERSION;
+    component.data = { version: NEW_VERSION, hasRiskProfiles: false };
+    component.optOut = false;
     fixture.detectChanges();
     compiled = fixture.nativeElement as HTMLElement;
   });
@@ -55,28 +56,32 @@ describe('ConsentDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should close dialog on "cancel" click', () => {
-    const closeSpy = spyOn(component.dialogRef, 'close');
-    const closeButton = compiled.querySelector(
-      '.cancel-button'
-    ) as HTMLButtonElement;
-
-    closeButton?.click();
-
-    expect(closeSpy).toHaveBeenCalledWith(false);
-
-    closeSpy.calls.reset();
-  });
-
-  it('should close dialog on "confirm" click', () => {
+  it('should close dialog with grant as true when checkbox unchecked on "confirm" click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
     const confirmButton = compiled.querySelector(
       '.confirm-button'
     ) as HTMLButtonElement;
+    const dialogRes = { grant: true, isNavigateToRiskAssessment: undefined };
 
     confirmButton?.click();
 
-    expect(closeSpy).toHaveBeenCalledWith(true);
+    expect(closeSpy).toHaveBeenCalledWith(dialogRes);
+
+    closeSpy.calls.reset();
+  });
+
+  it('should close dialog with grant as false when checkbox unchecked on "confirm" click', () => {
+    component.optOut = true;
+    fixture.detectChanges();
+    const closeSpy = spyOn(component.dialogRef, 'close');
+    const confirmButton = compiled.querySelector(
+      '.confirm-button'
+    ) as HTMLButtonElement;
+    const dialogRes = { grant: false, isNavigateToRiskAssessment: undefined };
+
+    confirmButton?.click();
+
+    expect(closeSpy).toHaveBeenCalledWith(dialogRes);
 
     closeSpy.calls.reset();
   });
@@ -94,13 +99,13 @@ describe('ConsentDialogComponent', () => {
 
   describe('with new version available', () => {
     beforeEach(() => {
-      component.data = NEW_VERSION;
+      component.data = { version: NEW_VERSION, hasRiskProfiles: false };
       fixture.detectChanges();
     });
 
-    it('should has content', () => {
+    it('should has consent content', () => {
       const content = compiled.querySelector(
-        '.consent-update-content'
+        '.section-content.consent'
       ) as HTMLElement;
 
       const innerContent = content.innerHTML.trim();
@@ -117,13 +122,60 @@ describe('ConsentDialogComponent', () => {
 
   describe('with no new version available', () => {
     beforeEach(() => {
-      component.data = VERSION;
+      component.data = { version: VERSION, hasRiskProfiles: false };
       fixture.detectChanges();
     });
 
-    it('should has content', () => {
+    it('should not has consent content', () => {
       const content = compiled.querySelector(
-        '.consent-update-content'
+        '.section-content.consent'
+      ) as HTMLElement;
+
+      expect(content).toBeNull();
+    });
+  });
+
+  describe('with no risk assessment profiles', () => {
+    beforeEach(() => {
+      component.data = { version: VERSION, hasRiskProfiles: false };
+      fixture.detectChanges();
+    });
+
+    it('should has risk-assessment content', () => {
+      const content = compiled.querySelector(
+        '.section-content.risk-assessment'
+      ) as HTMLElement;
+
+      const innerContent = content.innerHTML.trim();
+      expect(innerContent).toContain(
+        'Now you can answer a short questionnaire'
+      );
+    });
+
+    it('should close dialog with isNavigateToRiskAssessment as true when click "confirm"', () => {
+      const closeSpy = spyOn(component.dialogRef, 'close');
+      const riskAssessmentBtn = compiled.querySelector(
+        '.risk-assessment-button'
+      ) as HTMLButtonElement;
+      const dialogRes = { grant: true, isNavigateToRiskAssessment: true };
+
+      riskAssessmentBtn?.click();
+
+      expect(closeSpy).toHaveBeenCalledWith(dialogRes);
+
+      closeSpy.calls.reset();
+    });
+  });
+
+  describe('with risk assessment profiles', () => {
+    beforeEach(() => {
+      component.data = { version: VERSION, hasRiskProfiles: true };
+      fixture.detectChanges();
+    });
+
+    it('should not has risk-assessment content', () => {
+      const content = compiled.querySelector(
+        '.section-content.risk-assessment'
       ) as HTMLElement;
 
       expect(content).toBeNull();

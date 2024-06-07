@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap } from 'rxjs/operators';
 import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasRiskProfiles,
   selectInterfaces,
   selectMenuOpened,
   selectStatus,
@@ -34,12 +35,11 @@ import {
   setDevices,
   setIsOpenStartTestrun,
   fetchSystemStatus,
+  setRiskProfiles,
 } from './store/actions';
 import { TestrunStatus } from './model/testrun-status';
+import { Profile } from './model/profile';
 import { SettingMissedError, SystemInterfaces } from './model/setting';
-import { NotificationService } from './services/notification.service';
-import { Routes } from './model/routes';
-import { WINDOW } from './providers/window.provider';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export interface AppComponentState {
@@ -52,6 +52,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
   private consentShown$ = this.select(state => state.consentShown);
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
   private hasDevices$ = this.store.select(selectHasDevices);
+  private hasRiskProfiles$ = this.store.select(selectHasRiskProfiles);
   private hasConnectionSetting$ = this.store.select(
     selectHasConnectionSettings
   );
@@ -65,6 +66,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
   viewModel$ = this.select({
     consentShown: this.consentShown$,
     hasDevices: this.hasDevices$,
+    hasRiskProfiles: this.hasRiskProfiles$,
     isStatusLoaded: this.isStatusLoaded$,
     systemStatus: this.systemStatus$,
     hasConnectionSettings: this.hasConnectionSetting$,
@@ -104,14 +106,23 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
+  getRiskProfiles = this.effect(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap(() => {
+        return this.testRunService.fetchProfiles().pipe(
+          tap((riskProfiles: Profile[]) => {
+            this.store.dispatch(setRiskProfiles({ riskProfiles }));
+          })
+        );
+      })
+    );
+  });
+
   statusLoaded = this.effect(() => {
     return this.systemStatus$.pipe(
       skip(1),
-      tap(status => {
+      tap(() => {
         this.updateIsStatusLoaded(true);
-        if (!this.window.location.href.includes(Routes.Testing)) {
-          this.notification.notify(`Test run is ${status}`);
-        }
       })
     );
   });
@@ -136,9 +147,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
 
   constructor(
     private store: Store<AppState>,
-    private testRunService: TestRunService,
-    private notification: NotificationService,
-    @Inject(WINDOW) private window: Window
+    private testRunService: TestRunService
   ) {
     super({
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,

@@ -21,12 +21,13 @@ import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasRiskProfiles,
   selectInterfaces,
   selectIsOpenAddDevice,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
-  selectIsStopTestrun,
   selectMenuOpened,
+  selectRiskProfiles,
   selectStatus,
   selectSystemStatus,
 } from './selectors';
@@ -46,6 +47,8 @@ describe('Selectors', () => {
       devices: [],
       hasDevices: false,
       isOpenAddDevice: false,
+      riskProfiles: [],
+      hasRiskProfiles: false,
       isStopTestrun: false,
       isOpenWaitSnackBar: false,
       isOpenStartTestrun: false,
@@ -85,6 +88,16 @@ describe('Selectors', () => {
     expect(result).toEqual(false);
   });
 
+  it('should select riskProfiles', () => {
+    const result = selectRiskProfiles.projector(initialState);
+    expect(result).toEqual([]);
+  });
+
+  it('should select hasRiskProfiles', () => {
+    const result = selectHasRiskProfiles.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
   it('should select isOpenAddDevice', () => {
     const result = selectIsOpenAddDevice.projector(initialState);
     expect(result).toEqual(false);
@@ -97,11 +110,6 @@ describe('Selectors', () => {
 
   it('should select isOpenStartTestrun', () => {
     const result = selectIsOpenStartTestrun.projector(initialState);
-    expect(result).toEqual(false);
-  });
-
-  it('should select isStopTestrun', () => {
-    const result = selectIsStopTestrun.projector(initialState);
     expect(result).toEqual(false);
   });
 

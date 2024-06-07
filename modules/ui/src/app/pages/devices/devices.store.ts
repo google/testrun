@@ -27,7 +27,12 @@ import {
   selectDevices,
   selectIsOpenAddDevice,
 } from '../../store/selectors';
-import { setDevices, setIsOpenAddDevice } from '../../store/actions';
+import {
+  fetchSystemStatusSuccess,
+  setDevices,
+  setIsOpenAddDevice,
+} from '../../store/actions';
+import { TestrunStatus } from '../../model/testrun-status';
 
 export interface DevicesComponentState {
   devices: Device[];
@@ -111,6 +116,19 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
       )
     );
   });
+
+  setStatus = this.effect<TestrunStatus>(status$ => {
+    return status$.pipe(
+      tap(status => {
+        this.store.dispatch(
+          fetchSystemStatusSuccess({
+            systemStatus: status,
+          })
+        );
+      })
+    );
+  });
+
   private addDevice(device: Device, devices: Device[]): void {
     this.updateDevices(devices.concat([device]));
   }

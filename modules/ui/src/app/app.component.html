@@ -68,7 +68,11 @@ limitations under the License.
         </ng-container>
         <app-version
           [consentShown]="vm.consentShown"
-          (consentShownEvent)="consentShown()"></app-version>
+          [hasRiskProfiles]="vm.hasRiskProfiles"
+          (consentShownEvent)="consentShown()"
+          (navigateToRiskAssessmentEvent)="
+            navigateToRiskAssessment()
+          "></app-version>
       </div>
     </mat-drawer>
 
@@ -188,6 +192,29 @@ limitations under the License.
             class="message-link"
             >start testing</a
           >.
+        </app-callout>
+        <app-callout
+          role="alert"
+          aria-live="assertive"
+          [type]="CalloutType.Check"
+          *ngIf="
+            vm.hasConnectionSettings === true &&
+            vm.hasDevices === true &&
+            vm.hasRiskProfiles === false &&
+            vm.systemStatus === StatusOfTestrun.InProgress &&
+            isRiskAssessmentRoute === false
+          ">
+          Congratulations, the device is under test now! Do not forget to fill
+          <a
+            (click)="navigateToRiskAssessment()"
+            (keydown.enter)="navigateToRiskAssessment()"
+            (keydown.space)="navigateToRiskAssessment()"
+            aria-label="The Risk Assessment questionnaire link redirects to the Risk Assessment page."
+            tabindex="0"
+            role="link"
+            class="message-link"
+            >Risk Assessment questionnaire</a
+          >. It is required to complete verification process.
         </app-callout>
         <router-outlet></router-outlet>
       </div>

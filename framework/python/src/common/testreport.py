@@ -57,11 +57,6 @@ class TestReport():
     self._module_reports = []
     self._report_url = ''
     self._cur_page = 0
-    # Placeholder until available in json report
-    self._version = 'v1.3-alpha'
-
-  def get_mac_addr(self):
-    return self._mac_addr
 
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
@@ -97,6 +92,10 @@ class TestReport():
   def to_json(self):
     report_json = {}
 
+    report_json['testrun'] = {
+      'version': self._version
+    }
+
     report_json['mac_addr'] = self._mac_addr
     report_json['device'] = self._device
     report_json['status'] = self._status
@@ -124,6 +123,12 @@ class TestReport():
     return report_json
 
   def from_json(self, json_file):
+
+    # Version added in v1.3-alpha
+    if 'testrun' in json_file and 'version' in json_file['testrun']:
+      self._version = json_file['testrun']['version']
+    else:
+      self._version = 'Unknown'
 
     self._device['mac_addr'] = json_file['device']['mac_addr']
     self._device['manufacturer'] = json_file['device']['manufacturer']
@@ -423,9 +428,14 @@ class TestReport():
 
   def generate_results(self, json_data, page_num):
 
-    result_list = '''
+    successful_tests = 0
+    for test in json_data['tests']['results']:
+      if test['result'] != 'Error':
+        successful_tests += 1
+
+    result_list = f'''
       <div class="result-list">
-        <h3>Results List</h3>
+        <h3>Results List <small>({successful_tests}/{self._total_tests})</small></h3>
         <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
           <div class="result-list-header-label" style="left: .1in">Name</div>
           <div class="result-list-header-label" style="left: 2.8in">Description</div>

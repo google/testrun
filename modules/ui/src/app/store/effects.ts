@@ -114,14 +114,26 @@ export class AppEffects {
     );
   });
 
+  onSetRiskProfiles$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setRiskProfiles),
+      map(({ riskProfiles }) =>
+        AppActions.setHasRiskProfiles({
+          hasRiskProfiles: riskProfiles.length > 0,
+        })
+      )
+    );
+  });
+
   onSetTestrunStatus$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(AppActions.setTestrunStatus),
       map(({ systemStatus }) => {
+        const isInProgressDevice =
+          this.testrunService.testrunInProgress(systemStatus?.status) ||
+          systemStatus.status === StatusOfTestrun.Cancelling;
         return AppActions.setDeviceInProgress({
-          device: this.testrunService.testrunInProgress(systemStatus?.status)
-            ? systemStatus.device
-            : null,
+          device: isInProgressDevice ? systemStatus.device : null,
         });
       })
     );
@@ -139,6 +151,25 @@ export class AppEffects {
       )
     );
   });
+
+  onStopTestrun$ = createEffect(
+    () => {
+      return this.actions$.pipe(
+        ofType(AppActions.setIsStopTestrun),
+        switchMap(() => {
+          this.store.dispatch(stopInterval());
+          return this.testrunService.stopTestrun().pipe(
+            map(stopped => {
+              if (stopped) {
+                this.store.dispatch(fetchSystemStatus());
+              }
+            })
+          );
+        })
+      );
+    },
+    { dispatch: false }
+  );
 
   onStopInterval$ = createEffect(
     () => {

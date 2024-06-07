@@ -22,6 +22,7 @@ import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasRiskProfiles,
   selectInterfaces,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
@@ -30,18 +31,15 @@ import {
 import { TestRunService } from './services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { device } from './mocks/device.mock';
-import { fetchSystemStatus, setDevices } from './store/actions';
+import {
+  fetchSystemStatus,
+  setDevices,
+  setRiskProfiles,
+} from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
+import { PROFILE_MOCK } from './mocks/profile.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from './services/notification.service';
-import { WINDOW } from './providers/window.provider';
-import { Routes } from './model/routes';
-
-const windowMock = {
-  location: {
-    href: '',
-  },
-};
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -68,7 +66,10 @@ describe('AppStore', () => {
   let mockNotificationService: SpyObj<NotificationService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj('mockService', ['fetchDevices']);
+    mockService = jasmine.createSpyObj('mockService', [
+      'fetchDevices',
+      'fetchProfiles',
+    ]);
     mockNotificationService = jasmine.createSpyObj('mockNotificationService', [
       'notify',
     ]);
@@ -84,7 +85,6 @@ describe('AppStore', () => {
         }),
         { provide: TestRunService, useValue: mockService },
         { provide: NotificationService, useValue: mockNotificationService },
-        { provide: WINDOW, useValue: windowMock },
       ],
       imports: [BrowserAnimationsModule],
     });
@@ -93,6 +93,7 @@ describe('AppStore', () => {
     appStore = TestBed.inject(AppStore);
 
     store.overrideSelector(selectHasDevices, true);
+    store.overrideSelector(selectHasRiskProfiles, false);
     store.overrideSelector(selectHasConnectionSettings, true);
     store.overrideSelector(selectMenuOpened, true);
     store.overrideSelector(selectInterfaces, {});
@@ -136,6 +137,7 @@ describe('AppStore', () => {
         expect(store).toEqual({
           consentShown: false,
           hasDevices: true,
+          hasRiskProfiles: false,
           isStatusLoaded: false,
           systemStatus: null,
           hasConnectionSettings: true,
@@ -180,6 +182,22 @@ describe('AppStore', () => {
       });
     });
 
+    describe('fetchProfiles', () => {
+      const riskProfiles = [PROFILE_MOCK];
+
+      beforeEach(() => {
+        mockService.fetchProfiles.and.returnValue(of(riskProfiles));
+      });
+
+      it('should dispatch action setRiskProfiles', () => {
+        appStore.getRiskProfiles();
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setRiskProfiles({ riskProfiles })
+        );
+      });
+    });
+
     describe('getSystemStatus', () => {
       it('should dispatch fetchSystemStatus', () => {
         appStore.getSystemStatus();
@@ -200,28 +218,6 @@ describe('AppStore', () => {
           MOCK_PROGRESS_DATA_IN_PROGRESS.status
         );
         store.refreshState();
-      });
-
-      it('should notify when url is not "/testing"', () => {
-        windowMock.location.href = 'localhost:8080';
-        store.overrideSelector(
-          selectStatus,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.status
-        );
-        store.refreshState();
-
-        expect(mockNotificationService.notify).toHaveBeenCalled();
-      });
-
-      it('should not notify when url is "/testing"', () => {
-        windowMock.location.href = 'localhost:8080/' + Routes.Testing;
-        store.overrideSelector(
-          selectStatus,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.status
-        );
-        store.refreshState();
-
-        expect(mockNotificationService.notify).toHaveBeenCalledTimes(0);
       });
     });
   });

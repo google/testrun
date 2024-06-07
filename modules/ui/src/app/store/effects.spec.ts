@@ -35,11 +35,14 @@ import {
 } from './selectors';
 import { device } from '../mocks/device.mock';
 import {
+  MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
 } from '../mocks/testrun.mock';
 import { fetchSystemStatus, setStatus, setTestrunStatus } from './actions';
 import { NotificationService } from '../services/notification.service';
+import { PROFILE_MOCK } from '../mocks/profile.mock';
+
 describe('Effects', () => {
   let actions$ = new Observable<Action>();
   let effects: AppEffects;
@@ -59,6 +62,7 @@ describe('Effects', () => {
       'createSystemConfig',
       'fetchSystemStatus',
       'testrunInProgress',
+      'stopTestrun',
     ]);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of({}));
     testRunServiceMock.getSystemConfig.and.returnValue(of({}));
@@ -100,11 +104,35 @@ describe('Effects', () => {
     });
   });
 
+  it('onSetTestrunStatus$ should setDeviceInProgress when testrun cancelling', done => {
+    testRunServiceMock.testrunInProgress.and.returnValue(false);
+    const status = MOCK_PROGRESS_DATA_CANCELLING;
+    actions$ = of(actions.setTestrunStatus({ systemStatus: status }));
+
+    effects.onSetTestrunStatus$.subscribe(action => {
+      expect(action).toEqual(
+        actions.setDeviceInProgress({ device: status.device })
+      );
+      done();
+    });
+  });
+
   it('onSetDevices$ should call setHasDevices', done => {
     actions$ = of(actions.setDevices({ devices: [device] }));
 
     effects.onSetDevices$.subscribe(action => {
       expect(action).toEqual(actions.setHasDevices({ hasDevices: true }));
+      done();
+    });
+  });
+
+  it('onSetRiskProfiles$ should call setHasRiskProfiles', done => {
+    actions$ = of(actions.setRiskProfiles({ riskProfiles: [PROFILE_MOCK] }));
+
+    effects.onSetRiskProfiles$.subscribe(action => {
+      expect(action).toEqual(
+        actions.setHasRiskProfiles({ hasRiskProfiles: true })
+      );
       done();
     });
   });
@@ -338,6 +366,22 @@ describe('Effects', () => {
           discardPeriodicTasks();
         });
       }));
+    });
+  });
+
+  describe('onStopTestrun$ should call stopTestrun', () => {
+    beforeEach(() => {
+      testRunServiceMock.stopTestrun.and.returnValue(of(true));
+    });
+
+    it('should call stopTestrun', done => {
+      actions$ = of(actions.setIsStopTestrun());
+
+      effects.onStopTestrun$.subscribe(() => {
+        expect(testRunServiceMock.stopTestrun).toHaveBeenCalled();
+        expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
+        done();
+      });
     });
   });
 });

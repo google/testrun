@@ -67,15 +67,6 @@ export class TestrunComponent implements OnInit, OnDestroy {
           this.openTestRunModal();
         }
       });
-
-    this.testrunStore.isStopTestrun$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(isStop => {
-        if (isStop) {
-          this.stopTestrun();
-          this.notificationService.dismissSnackBar();
-        }
-      });
   }
 
   isTestrunInProgress(status?: string) {
@@ -147,13 +138,13 @@ export class TestrunComponent implements OnInit, OnDestroy {
     dialogRef
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((startTestrun: boolean) => {
-        if (startTestrun) {
+      .subscribe((status: TestrunStatus) => {
+        if (status) {
           // @ts-expect-error data layer is not null
           window.dataLayer.push({
             event: 'successful_testrun_initiation',
           });
-          this.testrunStore.getSystemStatus();
+          this.testrunStore.setStatus(status);
         }
         this.testrunStore.setIsOpenStartTestrun(false);
         timer(10)

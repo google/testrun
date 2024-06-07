@@ -16,22 +16,22 @@
 
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
-import { TestRunService } from '../../services/test-run.service';
-import { exhaustMap } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { AppState } from '../../store/state';
 import { Store } from '@ngrx/store';
 import {
   selectHasDevices,
+  selectHasRiskProfiles,
   selectIsOpenStartTestrun,
-  selectIsStopTestrun,
+  selectRiskProfiles,
   selectSystemStatus,
 } from '../../store/selectors';
 import {
   fetchSystemStatus,
+  fetchSystemStatusSuccess,
   setIsOpenStartTestrun,
+  setIsStopTestrun,
   setTestrunStatus,
-  stopInterval,
 } from '../../store/actions';
 import {
   IResult,
@@ -57,14 +57,17 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     state => state.stepsToResolveCount
   );
   private hasDevices$ = this.store.select(selectHasDevices);
+  private profiles$ = this.store.select(selectRiskProfiles);
+  private hasProfiles$ = this.store.select(selectHasRiskProfiles);
   private systemStatus$ = this.store.select(selectSystemStatus);
-  isStopTestrun$ = this.store.select(selectIsStopTestrun);
   isOpenStartTestrun$ = this.store.select(selectIsOpenStartTestrun);
   viewModel$ = this.select({
     hasDevices: this.hasDevices$,
     systemStatus: this.systemStatus$,
     dataSource: this.dataSource$,
     stepsToResolveCount: this.stepsToResolveCount$,
+    hasProfiles: this.hasProfiles$,
+    profiles: this.profiles$,
   });
 
   setDataSource = this.updater((state, dataSource: IResult[] | undefined) => {
@@ -138,15 +141,8 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   });
   stopTestrun = this.effect(trigger$ => {
     return trigger$.pipe(
-      exhaustMap(() => {
-        this.store.dispatch(stopInterval());
-        return this.testRunService.stopTestrun().pipe(
-          tap(stopped => {
-            if (stopped) {
-              this.getSystemStatus();
-            }
-          })
-        );
+      tap(() => {
+        this.store.dispatch(setIsStopTestrun());
       })
     );
   });
@@ -185,6 +181,17 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     this.loaderService.setLoading(true);
   }
 
+  setStatus = this.effect<TestrunStatus>(status$ => {
+    return status$.pipe(
+      tap(status => {
+        this.store.dispatch(
+          fetchSystemStatusSuccess({
+            systemStatus: status,
+          })
+        );
+      })
+    );
+  });
   private getCancellingStatus(systemStatus: TestrunStatus): TestrunStatus {
     const status = Object.assign({}, systemStatus);
     status.status = StatusOfTestrun.Cancelling;
@@ -204,7 +211,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   }
 
   constructor(
-    private testRunService: TestRunService,
     private store: Store<AppState>,
     private readonly focusManagerService: FocusManagerService,
     private readonly loaderService: LoaderService
