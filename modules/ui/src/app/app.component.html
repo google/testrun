@@ -109,7 +109,9 @@ limitations under the License.
           class="app-toolbar-button app-toolbar-button-general-settings"
           mat-icon-button
           aria-label="System settings"
-          (click)="openGeneralSettings(true)">
+          (click)="
+            openGeneralSettings(true, isTestrunInProgress(vm.systemStatus))
+          ">
           <mat-icon>tune</mat-icon>
         </button>
         <app-shutdown-app [disable]="isTestrunInProgress(vm.systemStatus)">
@@ -129,9 +131,13 @@ limitations under the License.
               Selected port is missing! Please define a valid one using
             </ng-template>
             <a
-              (click)="openSetting()"
-              (keydown.enter)="openSetting()"
-              (keydown.space)="openSetting()"
+              (click)="openSetting(isTestrunInProgress(vm.systemStatus))"
+              (keydown.enter)="
+                openSetting(isTestrunInProgress(vm.systemStatus))
+              "
+              (keydown.space)="
+                openSetting(isTestrunInProgress(vm.systemStatus))
+              "
               aria-label="The System settings link opens the panel. No redirect to other pages."
               tabindex="0"
               role="link"
@@ -146,9 +152,9 @@ limitations under the License.
           *ngIf="vm.hasConnectionSettings === false">
           Step 1: To perform a device test, please, select ports in
           <a
-            (click)="openSetting()"
-            (keydown.enter)="openSetting()"
-            (keydown.space)="openSetting()"
+            (click)="openSetting(isTestrunInProgress(vm.systemStatus))"
+            (keydown.enter)="openSetting(isTestrunInProgress(vm.systemStatus))"
+            (keydown.space)="openSetting(isTestrunInProgress(vm.systemStatus))"
             aria-label="The System settings link opens the panel. No redirect to other pages."
             tabindex="0"
             role="link"
