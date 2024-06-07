@@ -211,6 +211,7 @@ class Api:
 
     # Check Testrun is not already running
     if self._test_run.get_session().get_status() in [
+        "Validating Network",
         "In Progress",
         "Waiting for Device",
         "Monitoring"
