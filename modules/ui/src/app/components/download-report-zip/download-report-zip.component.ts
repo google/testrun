@@ -16,6 +16,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  HostBinding,
   HostListener,
   Input,
   OnDestroy,
@@ -44,7 +45,10 @@ export class DownloadReportZipComponent implements OnDestroy {
   @Input() url: string | null | undefined = null;
 
   @HostListener('click', ['$event.target'])
+  @HostListener('keydown.enter', ['$event'])
+  @HostListener('keydown.space', ['$event'])
   onClick() {
+    console.log('123');
     const dialogRef = this.dialog.open(DownloadZipModalComponent, {
       ariaLabel: 'Download zip',
       data: {
@@ -76,6 +80,9 @@ export class DownloadReportZipComponent implements OnDestroy {
         }
       });
   }
+
+  @HostBinding('tabIndex')
+  readonly tabIndex = 0;
 
   ngOnDestroy() {
     this.destroy$.next(true);

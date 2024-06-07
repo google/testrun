@@ -155,11 +155,13 @@ limitations under the License.
                 [url]="data.report"
                 [hasProfiles]="vm.hasProfiles"
                 [profiles]="vm.profiles">
-                <mat-icon
-                  class="download-report-icon"
-                  fontSet="material-symbols-outlined">
-                  archive
-                </mat-icon>
+                <span class="download-report-zip-icon-container">
+                  <mat-icon
+                    class="download-report-icon"
+                    fontSet="material-symbols-outlined">
+                    archive
+                  </mat-icon>
+                </span>
               </app-download-report-zip>
               <app-delete-report
                 *ngIf="data?.device"

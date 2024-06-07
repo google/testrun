@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -48,6 +54,7 @@ export enum DownloadOption {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DownloadOptionsComponent {
+  @ViewChild('downloadReportZip') downloadReportZip!: ElementRef;
   @Input() hasProfiles: boolean = false;
   @Input() profiles: Profile[] = [];
   @Input() data!: TestrunStatus;
@@ -62,6 +69,19 @@ export class DownloadOptionsComponent {
     if (event.isUserInput) {
       this.createLink(data, type);
       this.sendGAEvent(data, type);
+    }
+  }
+
+  onZipSelected(event: MatOptionSelectionChange) {
+    console.log(event);
+    /*    console.log(event);
+    event.preventDefault();
+    event.stopPropagation();*/
+    if (event.isUserInput) {
+      const uploadCertificatesButton = document.querySelector(
+        '#downloadReportZip'
+      ) as HTMLElement;
+      uploadCertificatesButton.dispatchEvent(new MouseEvent('click'));
     }
   }
 
