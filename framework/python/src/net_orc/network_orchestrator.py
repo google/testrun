@@ -132,6 +132,7 @@ class NetworkOrchestrator:
     if 'validate' in self._session.get_runtime_params():
       # Start the validator after network is ready
       self.validator.start()
+      self.validator.stop()
 
     # Get network ready (via Network orchestrator)
     LOGGER.debug('Network is ready')
