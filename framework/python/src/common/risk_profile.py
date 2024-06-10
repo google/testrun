@@ -16,6 +16,7 @@
 from datetime import datetime
 
 class RiskProfile():
+  """Python representation of a risk profile"""
 
   def __init__(self, json_data):
     self.name = json_data['name']
