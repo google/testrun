@@ -463,6 +463,8 @@ class TestReport():
       result_class = 'result-test-result-compliant'
     elif result['result'] == 'Error':
       result_class = 'result-test-result-error'
+    elif result['result'] == 'Feature Not Detected':
+      result_class = 'result-test-result-feature-not-detected'
     else:
       result_class = 'result-test-result-skipped'
 
@@ -1012,6 +1014,12 @@ class TestReport():
       background-color: #FCE8E6;
       color: #C5221F;
       left: 7.3in;
+    }
+
+    .result-test-result-feature-not-detected {
+      background-color: #dadce0;
+      color: #8d5c00;
+      left: 6.92in;
     }
 
     .result-test-result-non-compliant {
