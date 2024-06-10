@@ -135,6 +135,8 @@ def testrun(request): # pylint: disable=W0613
         output = e.output.decode("utf-8")
         if re.search("API waiting for requests", output):
           break
+    except Exception:
+      pytest.fail("testrun terminated")
 
   time.sleep(2)
 
@@ -848,7 +850,6 @@ def test_system_latest_version(testrun):
   updated_system_version = json.loads(r.text)["update_available"]
   assert updated_system_version is False
 
-#@pytest.mark.skip()
 def test_get_system_config(testrun): # pylint: disable=W0613
   r = requests.get(f"{API}/system/config", timeout=5)
 
@@ -875,7 +876,6 @@ def test_get_system_config(testrun): # pylint: disable=W0613
   )
 
 
-#@pytest.mark.skip()
 def test_invalid_path_get(testrun): # pylint: disable=W0613
   r = requests.get(f"{API}/blah/blah", timeout=5)
   response = json.loads(r.text)
@@ -967,7 +967,7 @@ def test_stop_running_test(testing_devices, testrun): # pylint: disable=W0613
   stop_test_device("x12345")
 
   # Validate response
-  r = requests.post(f"{API}/system/stop", timeout=20)
+  r = requests.post(f"{API}/system/stop", timeout=5)
   response = json.loads(r.text)
   pretty_print(response)
   assert response == {"success": "Testrun stopped"}
@@ -981,7 +981,6 @@ def test_stop_running_test(testing_devices, testrun): # pylint: disable=W0613
   assert response["status"] == "Cancelled"
 
 
-#@pytest.mark.skip()
 def test_stop_running_not_running(testrun): # pylint: disable=W0613
   # Validate response
   r = requests.post(f"{API}/system/stop",
@@ -1049,6 +1048,7 @@ def test_multiple_runs(testing_devices, testrun): # pylint: disable=W0613
   )
 
   stop_test_device("x123")
+
 
 def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W0613
   # local_delete_devices(ALL_DEVICES)
