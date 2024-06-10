@@ -67,8 +67,17 @@ if [[ $i -eq $WAITING ]]; then
     exit 1
 fi
 
+# # Load Test Container
+# sudo docker run --network=endev0 --cap-add=NET_ADMIN -v /tmp:/out --privileged ci1 
+
 # Load Test Container
-sudo docker run --network=endev0 --cap-add=NET_ADMIN -v /tmp:/out --privileged ci1 
+container_id=$(sudo docker run -d --network=endev0 --cap-add=NET_ADMIN -v /tmp:/out --privileged ci1)
+
+# Resolve the MAC address of the test container
+mac_address=$(sudo docker exec $container_id cat /sys/class/net/eth0/address)
+
+# Update the JSON file with the new MAC address
+sed -i "s/\"mac_addr\": \"[^\"]*\"/\"mac_addr\": \"$mac_address\"/" ./testing/device_configs/only_baseline/device_config.json
 
 echo "Done baseline test"
 
