@@ -256,6 +256,12 @@ class TestrunSession():
 
   def get_target_device(self):
     return self._device
+  
+  def get_device_by_name(self, device_name):
+    for device in self._device_repository:
+      if device.device_folder.lower() == device_name.lower():
+        return device
+    return None
 
   def get_device_repository(self):
     return self._device_repository
