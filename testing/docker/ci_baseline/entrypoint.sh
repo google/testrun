@@ -37,6 +37,13 @@ if [ -f $PID_FILE ]; then
     kill -9 $(cat $PID_FILE) || true
     rm -f $PID_FILE
 fi
+
+# Set MAC address to match the only_baseline 
+# device_config in testing folder
+desired_mac="02:42:aa:00:01:01" 
+ip link set dev eth0 address $desired_mac
+
+
 dhclient -v eth0
 
 echo "{}" > $OUT
