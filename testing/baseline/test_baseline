@@ -88,8 +88,7 @@ updated_config=$(jq --arg mac_addr_runtime "$mac_address_runtime" '.mac_addr = $
 new_json=$(jq -n --argjson device "$updated_config" --arg mac_addr "$mac_addr_conf" '{"device": $device, "mac_addr": $mac_addr}')
 
 # Send an API request to testrun to update the device with the runtime MAC
-curl -X POST -H "Content-Type: application/json" -d "$new_json" http://localhost:8000
-
+curl -X POST -H "Content-Type: application/json" -d "$new_json" http://localhost:8000/device/edit
 
 echo "Done baseline test"
 
