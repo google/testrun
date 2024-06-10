@@ -119,6 +119,12 @@ class Api:
                                self.get_profiles_format)
     self._router.add_api_route("/profiles",
                                self.get_profiles)
+    self._router.add_api_route("/profiles",
+                               self.update_profile,
+                               methods=["POST"])
+    self._router.add_api_route("/profiles",
+                               self.delete_profile,
+                               methods=["DELETE"])
 
     # Allow all origins to access the API
     origins = ["*"]
@@ -380,7 +386,12 @@ class Api:
       response.status_code = 400
       return self._generate_msg(False, "Invalid request received")
 
-    body_json = json.loads(body_raw)
+    try:
+      body_json = json.loads(body_raw)
+    except JSONDecodeError as e:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False,
+                                "Invalid request received")
 
     if "mac_addr" not in body_json or "timestamp" not in body_json:
       response.status_code = 400
@@ -627,6 +638,91 @@ class Api:
 
   def get_profiles(self):
     return self.get_session().get_profiles()
+
+  async def update_profile(self, request: Request, response: Response):
+
+    LOGGER.debug("Received profile update request")
+
+    try:
+      req_raw = (await request.body()).decode("UTF-8")
+      req_json = json.loads(req_raw)
+    except JSONDecodeError as e:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False,
+                                "Invalid request received")
+
+    # Check that profile is valid
+    valid_profile = self.get_session().validate_profile(req_json)
+    if not valid_profile:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False, "Invalid profile request received")
+    
+    profile_name = req_json.get("name")
+    
+    # Check if profile exists
+    profile = self.get_session().get_profile(profile_name)
+
+    if profile is None:
+      # Create new profile
+      profile = self.get_session().update_profile(req_json)
+
+      if profile is not None:
+        response.status_code = status.HTTP_201_CREATED
+        return self._generate_msg(True, "Successfully created a new profile")
+      LOGGER.error("An error occurred whilst creating a new profile")
+
+    else:
+      # Update existing profile
+      profile = self.get_session().update_profile(req_json)
+      
+      if profile is not None:
+        response.status_code = status.HTTP_200_OK
+        return self._generate_msg(True, "Successfully updated that profile")
+      LOGGER.error("An error occurred whilst updating a profile")
+
+    response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    return self._generate_msg(False, "An error occurred whilst creating or updating a profile")
+  
+  async def delete_profile(self, request: Request, response: Response):
+
+    LOGGER.debug("Received profile delete request")
+
+    try:
+      req_raw = (await request.body()).decode("UTF-8")
+      req_json = json.loads(req_raw)
+    except JSONDecodeError as e:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False,
+                                "Invalid request received")
+
+    # Check name included in request
+    if 'name' not in req_json:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False,
+                                "Invalid request received")
+    
+    # Get profile name
+    profile_name = req_json.get("name")
+
+    # Fetch profile
+    profile = self.get_session().get_profile(profile_name)
+
+    # Check if profile exists
+    if profile is None:
+      response.status_code = status.HTTP_404_NOT_FOUND
+      return self._generate_msg(False,
+                                "A profile with that name could not be found")
+    
+    # Attempt to delete the profile
+    success = self.get_session().delete_profile(profile)
+
+    if not success:
+      response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+      return self._generate_msg(False,
+                                "An error occurred whilst deleting that profile")
+    
+    return self._generate_msg(True,
+                              "Successfully deleted that profile")
 
   # Certificates
   def get_certs(self):
