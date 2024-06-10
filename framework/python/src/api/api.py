@@ -745,7 +745,8 @@ class Api:
 
     if content_type not in [
       "application/x-pem-file",
-      "application/x-x509-ca-cert"
+      "application/x-x509-ca-cert",
+      "application/pkix-cert"
     ]:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(
