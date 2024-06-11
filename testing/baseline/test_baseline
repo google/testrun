@@ -70,29 +70,6 @@ fi
 # Start test container
 sudo docker run --network=endev0 --cap-add=NET_ADMIN -v /tmp:/out --privileged ci1
 
-# # Resolve the Baseline device config file
-# config_file="./testing/device_configs/only_baseline/device_config.json"
-
-# # Read the JSON file into a variable
-# device_config=$(<"$config_file")
-
-# # Read the mac_addr key from the Baseline device config
-# mac_addr_conf=$(jq -r '.mac_addr' <<< "$device_config")
-
-# # Resolve the MAC address of the test container
-# container_id=$(sudo docker run -d --network=endev0 --cap-add=NET_ADMIN -v /tmp:/out --privileged ci1)
-# mac_address_runtime=$(sudo docker exec $container_id cat /sys/class/net/eth0/address)
-
-# # Update the Baseline device config file with the new MAC address
-# updated_config=$(jq --arg mac_addr_runtime "$mac_address_runtime" '.mac_addr = $mac_addr_runtime' <<< "$device_config")
-
-# # Create a new JSON object with the key "device" and the updated JSON content as its value,
-# # and a new "mac_addr" key with the original mac_addr_conf value
-# new_json=$(jq -n --argjson device "$updated_config" --arg mac_addr "$mac_addr_conf" '{"device": $device, "mac_addr": $mac_addr}')
-
-# # Send an API request to testrun to update the device with the runtime MAC
-# curl -X POST -H "Content-Type: application/json" -d "$new_json" http://localhost:8000/device/edit
-
 echo "Done baseline test"
 
 more $TESTRUN_OUT

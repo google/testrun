@@ -109,9 +109,6 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # Load test modules
     self._test_orc.start()
 
-    self._api = Api(self)
-    self._api.start()
-
     if self._no_ui:
 
       # Check Testrun is able to start
@@ -126,6 +123,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
       # Start UI container
       self.start_ui()
+
+      self._api = Api(self)
+      self._api.start()
 
       # Hold until API ends
       while True:
