@@ -21,6 +21,18 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { RiskAssessmentComponent } from './risk-assessment.component';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { ProfileItemComponent } from './profile-item/profile-item.component';
+import { MatButtonModule } from '@angular/material/button';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import {
+  MAT_FORM_FIELD_DEFAULT_OPTIONS,
+  MatFormFieldDefaultOptions,
+} from '@angular/material/form-field';
+import { ProfileFormComponent } from './profile-form/profile-form.component';
+
+const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
+  hideRequiredMarker: true,
+};
 
 @NgModule({
   declarations: [RiskAssessmentComponent],
@@ -28,8 +40,18 @@ import { ProfileItemComponent } from './profile-item/profile-item.component';
     CommonModule,
     RiskAssessmentRoutingModule,
     MatToolbarModule,
+    MatButtonModule,
+    ReactiveFormsModule,
+    MatInputModule,
     MatSidenavModule,
+    ProfileFormComponent,
     ProfileItemComponent,
+  ],
+  providers: [
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: matFormFieldDefaultOptions,
+    },
   ],
 })
 export class RiskAssessmentModule {}
