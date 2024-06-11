@@ -57,7 +57,11 @@ describe('RiskAssessmentComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      declarations: [RiskAssessmentComponent, FakeProfileItemComponent],
+      declarations: [
+        RiskAssessmentComponent,
+        FakeProfileItemComponent,
+        FakeProfileFormComponent,
+      ],
       imports: [MatToolbarModule, MatSidenavModule, BrowserAnimationsModule],
       providers: [
         { provide: TestRunService, useValue: mockService },
@@ -88,14 +92,31 @@ describe('RiskAssessmentComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should have toolbar with title', () => {
+    it('should have "New Risk Assessment" button', () => {
+      const newRiskAssessmentBtn = compiled.querySelector(
+        '.risk-assessment-add-button'
+      );
+
+      expect(newRiskAssessmentBtn).not.toBeNull();
+    });
+
+    it('should have title and profile form when "New Risk Assessment" button is clicked', () => {
+      const newRiskAssessmentBtn = compiled.querySelector(
+        '.risk-assessment-add-button'
+      ) as HTMLButtonElement;
+
+      newRiskAssessmentBtn.click();
+      fixture.detectChanges();
+
       const toolbarEl = compiled.querySelector('.risk-assessment-toolbar');
       const title = compiled.querySelector('h2.title');
       const titleContent = title?.innerHTML.trim();
+      const profileForm = compiled.querySelectorAll('app-profile-form');
 
       expect(toolbarEl).not.toBeNull();
       expect(title).toBeTruthy();
       expect(titleContent).toContain('Risk assessment');
+      expect(profileForm).toBeTruthy();
     });
 
     it('should not have profiles drawer', () => {
@@ -159,4 +180,12 @@ describe('RiskAssessmentComponent', () => {
 })
 class FakeProfileItemComponent {
   @Input() profile!: Profile;
+}
+
+@Component({
+  selector: 'app-profile-form',
+  template: '<div></div>',
+})
+class FakeProfileFormComponent {
+  @Input() profiles!: Profile[];
 }

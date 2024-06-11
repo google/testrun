@@ -1,0 +1,54 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<form [formGroup]="profileForm" class="profile-form">
+  <div class="field-container">
+    <p class="field-label">Profile name *</p>
+    <mat-form-field appearance="outline" class="name-field">
+      <mat-label>Specify risk assessment profile name</mat-label>
+      <input class="form-name" formControlName="name" matInput />
+      <mat-error
+        *ngIf="nameControl.hasError('invalid_format')"
+        role="alert"
+        aria-live="assertive">
+        <span
+          >Please, check. The Profile name must be a maximum of 28 characters.
+          Only letters, numbers, and accented letters are permitted.</span
+        >
+      </mat-error>
+      <mat-error *ngIf="nameControl.hasError('required')">
+        <span>The Profile name is required</span>
+      </mat-error>
+      <mat-error *ngIf="nameControl.hasError('has_same_profile_name')">
+        <span
+          >This Profile name is already used for another Risk Assessment
+          profile</span
+        >
+      </mat-error>
+    </mat-form-field>
+  </div>
+</form>
+<div class="form-actions">
+  <button mat-flat-button color="primary" class="save-profile-button">
+    Save Profile
+  </button>
+  <button mat-flat-button class="save-draft-button">Save Draft</button>
+  <button
+    mat-flat-button
+    class="discard-button"
+    [disabled]="profileForm.pristine">
+    Discard
+  </button>
+</div>
