@@ -248,7 +248,7 @@ class Api:
       return self._generate_msg(False,"Configured interfaces are not " +
                                 "ready for use. Ensure required interfaces " +
                                 "are connected.")
-    
+
     device.test_modules = body_json["device"]["test_modules"]
 
     LOGGER.info("Starting Testrun with device target " +
@@ -389,6 +389,8 @@ class Api:
     try:
       body_json = json.loads(body_raw)
     except JSONDecodeError as e:
+      LOGGER.error("An error occurred whilst decoding JSON")
+      LOGGER.debug(e)
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False,
                                 "Invalid request received")
@@ -647,6 +649,8 @@ class Api:
       req_raw = (await request.body()).decode("UTF-8")
       req_json = json.loads(req_raw)
     except JSONDecodeError as e:
+      LOGGER.error("An error occurred whilst decoding JSON")
+      LOGGER.debug(e)
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False,
                                 "Invalid request received")
@@ -656,9 +660,9 @@ class Api:
     if not valid_profile:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid profile request received")
-    
+
     profile_name = req_json.get("name")
-    
+
     # Check if profile exists
     profile = self.get_session().get_profile(profile_name)
 
@@ -674,15 +678,17 @@ class Api:
     else:
       # Update existing profile
       profile = self.get_session().update_profile(req_json)
-      
+
       if profile is not None:
         response.status_code = status.HTTP_200_OK
         return self._generate_msg(True, "Successfully updated that profile")
       LOGGER.error("An error occurred whilst updating a profile")
 
     response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-    return self._generate_msg(False, "An error occurred whilst creating or updating a profile")
-  
+    return self._generate_msg(
+      False,
+      "An error occurred whilst creating or updating a profile")
+
   async def delete_profile(self, request: Request, response: Response):
 
     LOGGER.debug("Received profile delete request")
@@ -691,16 +697,18 @@ class Api:
       req_raw = (await request.body()).decode("UTF-8")
       req_json = json.loads(req_raw)
     except JSONDecodeError as e:
+      LOGGER.error("An error occurred whilst decoding JSON")
+      LOGGER.debug(e)
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False,
                                 "Invalid request received")
 
     # Check name included in request
-    if 'name' not in req_json:
+    if "name" not in req_json:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False,
                                 "Invalid request received")
-    
+
     # Get profile name
     profile_name = req_json.get("name")
 
@@ -712,15 +720,16 @@ class Api:
       response.status_code = status.HTTP_404_NOT_FOUND
       return self._generate_msg(False,
                                 "A profile with that name could not be found")
-    
+
     # Attempt to delete the profile
     success = self.get_session().delete_profile(profile)
 
     if not success:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-      return self._generate_msg(False,
-                                "An error occurred whilst deleting that profile")
-    
+      return self._generate_msg(
+        False,
+        "An error occurred whilst deleting that profile")
+
     return self._generate_msg(True,
                               "Successfully deleted that profile")
 
