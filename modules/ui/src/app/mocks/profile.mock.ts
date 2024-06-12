@@ -15,6 +15,7 @@
  */
 
 import { Profile } from '../model/profile';
+import { FormControlType, ProfileFormat } from '../model/profile';
 
 export const PROFILE_MOCK: Profile = {
   name: 'Profile name',
@@ -25,3 +26,46 @@ export const PROFILE_MOCK_2: Profile = {
   name: 'Second profile name',
   sections: [],
 };
+
+export const PROFILE_FORM: ProfileFormat[] = [
+  {
+    question: 'Email',
+    type: FormControlType.TEXT,
+    validation: {
+      required: true,
+    },
+  },
+  {
+    question: 'What type of device do you need reviewed?',
+    type: FormControlType.TEXT,
+    validation: {
+      required: true,
+    },
+    description: 'This tells us about the device',
+  },
+  {
+    question:
+      'Has this device already been through a criticality assessment with testrun?',
+    type: FormControlType.SELECT,
+    options: [],
+    validation: {
+      max: '128',
+      required: true,
+    },
+  },
+  {
+    question: 'What features does the device have?',
+    description:
+      'This tells us about the data your device will collectThis tells us about the data your device will collect',
+    type: FormControlType.SELECT_MULTIPLE,
+    options: ['Wi-fi', 'Bluetooth', 'ZigBee / Z-Wave / Thread / Matter'],
+    validation: {
+      required: true,
+    },
+  },
+  {
+    question: 'Comments',
+    type: FormControlType.TEXT,
+    description: 'Please enter any comments here',
+  },
+];

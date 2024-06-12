@@ -16,7 +16,7 @@ limitations under the License.
 <form [formGroup]="profileForm" class="profile-form">
   <div class="field-container">
     <p class="field-label">Profile name *</p>
-    <mat-form-field appearance="outline" class="name-field">
+    <mat-form-field appearance="outline" floatLabel="always" class="name-field">
       <mat-label>Specify risk assessment profile name</mat-label>
       <input class="form-name" formControlName="name" matInput />
       <mat-error
@@ -38,6 +38,22 @@ limitations under the License.
         >
       </mat-error>
     </mat-form-field>
+
+    <ng-container *ngFor="let control of profileFormat; index as i">
+      <ng-container
+        *ngTemplateOutlet="
+          formField;
+          context: {
+            label: control.question,
+            type: control.type,
+            formControlName: i,
+            formGroup: profileForm,
+            required: control.validation?.required,
+            options: control.options,
+            description: control.description
+          }
+        "></ng-container>
+    </ng-container>
   </div>
 </form>
 <div class="form-actions">
@@ -52,3 +68,185 @@ limitations under the License.
     Discard
   </button>
 </div>
+
+<ng-template
+  #formField
+  let-type="type"
+  let-label="label"
+  let-required="required"
+  let-description="description"
+  let-options="options"
+  let-formControlName="formControlName">
+  <label class="field-label" for="{{ formControlName }}-group"
+    >{{ label }} <span *ngIf="required">*</span></label
+  >
+  <ng-container [ngSwitch]="type">
+    <ng-container *ngSwitchCase="FormControlType.TEXT">
+      <ng-container
+        *ngTemplateOutlet="
+          text;
+          context: {
+            formControlName: formControlName,
+            description: description
+          }
+        "></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="FormControlType.TEXTAREA">
+      <ng-container
+        *ngTemplateOutlet="
+          textarea;
+          context: {
+            formControlName: formControlName,
+            description: description
+          }
+        "></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="FormControlType.EMAIL_MULTIPLE">
+      <ng-container
+        *ngTemplateOutlet="
+          emailMultiple;
+          context: {
+            formControlName: formControlName,
+            description: description
+          }
+        "></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="FormControlType.SELECT">
+      <ng-container
+        *ngTemplateOutlet="
+          select;
+          context: {
+            formControlName: formControlName,
+            options: options,
+            description: description,
+            label: label,
+          }
+        "></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="FormControlType.SELECT_MULTIPLE">
+      <ng-container
+        *ngTemplateOutlet="
+          selectMultiple;
+          context: {
+            formControlName: formControlName,
+            options: options,
+            description: description
+          }
+        "></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchDefault>
+      <ng-container
+        *ngTemplateOutlet="
+          text;
+          context: {
+            formControlName: formControlName,
+            description: description
+          }
+        "></ng-container>
+    </ng-container>
+  </ng-container>
+</ng-template>
+
+<ng-template
+  #text
+  let-formControlName="formControlName"
+  let-description="description">
+  <mat-form-field
+    appearance="outline"
+    floatLabel="always"
+    class="risk-assessment-form-field"
+    [formGroup]="profileForm">
+    <input
+      matInput
+      id="{{ formControlName }}-group"
+      [formControlName]="formControlName" />
+    <mat-hint *ngIf="description">{{ description }}</mat-hint>
+  </mat-form-field>
+</ng-template>
+
+<ng-template
+  #textarea
+  let-formControlName="formControlName"
+  let-description="description">
+  <mat-form-field
+    appearance="outline"
+    floatLabel="always"
+    class="risk-assessment-form-field"
+    [formGroup]="profileForm">
+    <input
+      matInput
+      id="{{ formControlName }}-group"
+      [formControlName]="formControlName" />
+    <mat-hint *ngIf="description">{{ description }}</mat-hint>
+  </mat-form-field>
+</ng-template>
+
+<ng-template
+  #emailMultiple
+  let-formControlName="formControlName"
+  let-description="description">
+  <mat-form-field
+    appearance="outline"
+    floatLabel="always"
+    class="risk-assessment-form-field"
+    [formGroup]="profileForm">
+    <input
+      matInput
+      id="{{ formControlName }}-group"
+      [formControlName]="formControlName" />
+    <mat-hint *ngIf="description">{{ description }}</mat-hint>
+  </mat-form-field>
+</ng-template>
+
+<ng-template
+  #selectMultiple
+  let-formControlName="formControlName"
+  let-options="options"
+  let-description="description">
+  <section
+    class="field-select-multiple"
+    [formGroup]="getFormGroup(formControlName)">
+    <p
+      *ngFor="let option of options; let i = index"
+      class="field-select-checkbox">
+      <mat-checkbox [formControlName]="i">
+        {{ option }}
+      </mat-checkbox>
+    </p>
+    <mat-hint *ngIf="description" class="field-hint">{{
+      description
+    }}</mat-hint>
+  </section>
+</ng-template>
+
+<ng-template
+  #select
+  let-formControlName="formControlName"
+  let-label="label"
+  let-options="options"
+  let-description="description">
+  <mat-form-field
+    appearance="outline"
+    floatLabel="always"
+    class="risk-assessment-form-field"
+    [formGroup]="profileForm">
+    <mat-select
+      aria-label="{{label}}"
+      id="{{ formControlName }}-group"
+      [formControlName]="formControlName">
+      <mat-option
+        *ngFor="let option of options; let i = index"
+        [value]="option">
+        {{ option }}
+      </mat-option>
+    </mat-select>
+    <mat-hint *ngIf="description" class="field-hint">{{
+      description
+    }}</mat-hint>
+  </mat-form-field>
+</ng-template>
