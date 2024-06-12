@@ -375,7 +375,6 @@ class TestrunSession():
           risk_profile = RiskProfile(json_data)
           risk_profile.status = self.check_profile_status(risk_profile)
           self._profiles.append(risk_profile)
-          
 
     except Exception as e:
       LOGGER.error('An error occurred whilst loading risk profiles')
@@ -386,13 +385,13 @@ class TestrunSession():
 
   def get_profiles(self):
     return self._profiles
-  
+
   def get_profile(self, name):
     for profile in self._profiles:
       if profile.name.lower() == name.lower():
         return profile
     return None
-   
+
   def validate_profile(self, profile_json):
 
     # Check name field is present
@@ -405,8 +404,10 @@ class TestrunSession():
 
     # Check all questions are present
     for format_q in self.get_profiles_format():
-      if self._get_profile_question(profile_json, format_q.get('question')) is None:
-        LOGGER.error('Missing question: ' + format_q.get('question'))
+      if self._get_profile_question(
+        profile_json, format_q.get('question')) is None:
+        LOGGER.error(
+          'Missing question: ' + format_q.get('question'))
         return False
 
     return True
@@ -444,11 +445,12 @@ class TestrunSession():
 
           # Check answer is present
           if 'answer' not in profile_question:
-            LOGGER.error("Missing answer for question: " + question.get('question'))
+            LOGGER.error(
+              'Missing answer for question: ' + question.get('question'))
             all_questions_answered = False
 
         else:
-          LOGGER.error("Missing question: " + question.get('question'))
+          LOGGER.error('Missing question: ' + question.get('question'))
           all_questions_answered = False
 
       if not all_questions_answered:
@@ -481,9 +483,11 @@ class TestrunSession():
       risk_profile.questions = profile_json.get('questions')
 
     # Write file to disk
-    with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'), 'w') as f:
+    with open(os.path.join(
+      PROFILES_DIR, risk_profile.name + '.json'), 'w',
+      encoding='utf-8') as f:
       f.write(json.dumps(risk_profile.to_json()))
-    
+
     return risk_profile
 
   def check_profile_status(self, profile):
@@ -499,7 +503,7 @@ class TestrunSession():
         profile.status = 'Expired'
 
     return profile.status
-  
+
   def delete_profile(self, profile):
 
     try:

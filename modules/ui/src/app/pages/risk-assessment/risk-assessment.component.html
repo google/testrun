@@ -14,14 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <ng-container *ngIf="viewModel$ | async as vm">
-  <mat-drawer-container class="risk-assessment-container">
-    <mat-drawer-content class="risk-assessment-content">
-      <mat-toolbar class="risk-assessment-toolbar">
-        <h2 class="title">Risk assessment</h2>
-      </mat-toolbar>
-      <div class="main-content"></div>
-    </mat-drawer-content>
-  </mat-drawer-container>
+  <ng-container *ngIf="isOpenProfileForm; else empty">
+    <mat-drawer-container class="risk-assessment-container">
+      <mat-drawer-content class="risk-assessment-content">
+        <mat-toolbar class="risk-assessment-toolbar">
+          <h2 class="title">Risk assessment</h2>
+        </mat-toolbar>
+        <div class="main-content">
+          <app-profile-form [profiles]="vm.profiles"></app-profile-form>
+        </div>
+      </mat-drawer-content>
+    </mat-drawer-container>
+  </ng-container>
   <mat-drawer
     mode="side"
     opened
@@ -40,4 +44,17 @@ limitations under the License.
       </app-profile-item>
     </div>
   </mat-drawer>
+
+  <ng-template #empty>
+    <div class="risk-assessment-content-empty">
+      <button
+        (click)="openForm()"
+        aria-label="Add New Risk Assessment"
+        class="risk-assessment-add-button"
+        color="primary"
+        mat-flat-button>
+        New Risk Assessment
+      </button>
+    </div>
+  </ng-template>
 </ng-container>
