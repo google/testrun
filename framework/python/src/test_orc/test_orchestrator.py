@@ -259,53 +259,44 @@ class TestOrchestrator:
                    timestamp,
                    profile):
 
-    # try:
-    LOGGER.debug("Archiving test results")
+    try:
+      LOGGER.debug("Archiving test results")
 
-    src_path = os.path.join(LOCAL_DEVICE_REPORTS.replace(
-      "{device_folder}",
-      device.device_folder),
-      timestamp)
+      src_path = os.path.join(LOCAL_DEVICE_REPORTS.replace(
+        "{device_folder}",
+        device.device_folder),
+        timestamp)
 
-    print("src path = " + src_path)
+      # Define where to save the zip file
+      zip_location = os.path.join(LOCAL_DEVICE_REPORTS.replace(
+        "{device_folder}", device.device_folder), timestamp
+      )
 
-    # Define where to save the zip file
-    zip_location = os.path.join(LOCAL_DEVICE_REPORTS.replace(
-      "{device_folder}", device.device_folder), timestamp
-    )
+      # Include profile if specified
+      if profile is not None:
+        LOGGER.debug(
+          f"Copying profile {profile.name} to results directory")
+        shutil.copy(profile.get_file_path(),
+                    os.path.join(
+                      src_path,
+                      "profile.json"))
 
-    print("zip location = " + zip_location)
+      # Create ZIP file
+      if not os.path.exists(zip_location + ".zip"):
+        shutil.make_archive(zip_location, "zip", src_path)
 
-    # Include profile if specified
-    if profile is not None:
-      LOGGER.debug(
-        f"Copying profile {profile.name} to results directory")
-      print("Copying from " + profile.get_file_path())
-      print("Copying to " + os.path.join(src_path, "profile.json"))
-      shutil.copy(profile.get_file_path(),
-                  os.path.join(
-                    src_path,
-                    "profile.json"))
-      print("Done copying")
+      # Check that the ZIP was successfully created
+      zip_file = zip_location + ".zip"
+      LOGGER.info(f'''Archive {'created at ' + zip_file
+                                if os.path.exists(zip_file)
+                                else'creation failed'}''')
 
-    # Create ZIP file
-    if not os.path.exists(zip_location + ".zip"):
-      print("Making zip file")
-      shutil.make_archive(zip_location, "zip", src_path)
-      print("Finished making zip file")
+      return zip_file
 
-    # Check that the ZIP was successfully created
-    zip_file = zip_location + ".zip"
-    LOGGER.info(f'''Archive {'created at ' + zip_file
-                              if os.path.exists(zip_file)
-                              else'creation failed'}''')
-
-    return zip_file
-
-    # except Exception as error: # pylint: disable=W0703
-    #   LOGGER.error("Failed to create zip file")
-    #   LOGGER.debug(error)
-    #   return None
+    except Exception as error: # pylint: disable=W0703
+      LOGGER.error("Failed to create zip file")
+      LOGGER.debug(error)
+      return None
 
   def test_in_progress(self):
     return self._test_in_progress
