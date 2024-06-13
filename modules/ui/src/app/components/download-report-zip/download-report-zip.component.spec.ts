@@ -72,7 +72,7 @@ describe('DownloadReportZipComponent', () => {
           afterClosed: () => of(''),
         } as MatDialogRef<typeof DownloadZipModalComponent>);
 
-        component.onClick();
+        component.onClick(new Event('click'));
 
         expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
           ariaLabel: 'Download zip',
@@ -98,7 +98,7 @@ describe('DownloadReportZipComponent', () => {
         } as MatDialogRef<typeof DownloadZipModalComponent>);
 
         fixture.ngZone?.run(() => {
-          component.onClick();
+          component.onClick(new Event('click'));
 
           expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
             ariaLabel: 'Download zip',
@@ -124,7 +124,7 @@ describe('DownloadReportZipComponent', () => {
           afterClosed: () => of(undefined),
         } as MatDialogRef<typeof DownloadZipModalComponent>);
 
-        component.onClick();
+        component.onClick(new Event('click'));
 
         expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
           ariaLabel: 'Download zip',
