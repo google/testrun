@@ -43,7 +43,7 @@ class RiskProfile():
       'questions': self.questions
     }
     return json
-  
+
   def get_file_path(self):
     return os.path.join(PROFILES_PATH,
                         self.name + '.json')

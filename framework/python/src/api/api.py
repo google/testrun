@@ -587,7 +587,6 @@ class Api:
   async def get_results(self, request: Request,
                         response: Response,
                         device_name, timestamp):
-    
     LOGGER.debug("Received get results " +
                  f"request for {device_name} / {timestamp}")
 
@@ -604,13 +603,14 @@ class Api:
 
         if profile is None:
           response.status_code = status.HTTP_404_NOT_FOUND
-          return self._generate_msg(False,
-                                    "A profile with that name could not be found")
+          return self._generate_msg(
+            False,
+            "A profile with that name could not be found")
 
-    except JSONDecodeError as e:
+    except JSONDecodeError:
       # Profile not specified
       pass
-    
+
     # Check if device exists
     device = self.get_session().get_device_by_name(device_name)
     if device is None:
@@ -629,7 +629,7 @@ class Api:
       return self._generate_msg(
         False,
         "An error occurred whilst archiving test results")
-    
+
     if os.path.isfile(file_path):
       return FileResponse(file_path)
     else:
