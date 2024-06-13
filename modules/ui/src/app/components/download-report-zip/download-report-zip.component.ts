@@ -20,8 +20,9 @@ import {
   HostListener,
   Input,
   OnDestroy,
+  OnInit,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Profile } from '../../model/profile';
 import { MatDialog } from '@angular/material/dialog';
 import { Subject, takeUntil } from 'rxjs';
@@ -29,16 +30,22 @@ import { Routes } from '../../model/routes';
 import { DownloadZipModalComponent } from '../download-zip-modal/download-zip-modal.component';
 import { TestRunService } from '../../services/test-run.service';
 import { Router } from '@angular/router';
+import { ReportActionComponent } from '../report-action/report-action.component';
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-download-report-zip',
   templateUrl: './download-report-zip.component.html',
   styleUrl: './download-report-zip.component.scss',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatTooltipModule],
+  providers: [DatePipe, MatTooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DownloadReportZipComponent implements OnDestroy {
+export class DownloadReportZipComponent
+  extends ReportActionComponent
+  implements OnDestroy, OnInit
+{
   private destroy$: Subject<boolean> = new Subject<boolean>();
   @Input() hasProfiles: boolean = false;
   @Input() profiles: Profile[] = [];
@@ -86,16 +93,34 @@ export class DownloadReportZipComponent implements OnDestroy {
   @HostBinding('tabIndex')
   readonly tabIndex = 0;
 
+  @HostListener('mouseenter') onMouseEnter(): void {
+    this.tooltip.show();
+  }
+
+  @HostListener('mouseleave') onMouseLeave(): void {
+    this.tooltip.hide();
+  }
+
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
   }
 
+  ngOnInit() {
+    if (this.data) {
+      this.tooltip.message = `Download zip for Testrun # ${this.getTestRunId(this.data)}`;
+    }
+  }
+
   constructor(
+    datePipe: DatePipe,
     public dialog: MatDialog,
     private testrunService: TestRunService,
-    private route: Router
-  ) {}
+    private route: Router,
+    public tooltip: MatTooltip
+  ) {
+    super(datePipe);
+  }
 
   private getZipLink(reportURL: string): string {
     return reportURL.replace('report', 'export');
