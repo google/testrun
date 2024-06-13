@@ -71,6 +71,18 @@ export const sharedReducer = createReducer(
       devices,
     };
   }),
+  on(Actions.setHasRiskProfiles, (state, { hasRiskProfiles }) => {
+    return {
+      ...state,
+      hasRiskProfiles,
+    };
+  }),
+  on(Actions.setRiskProfiles, (state, { riskProfiles }) => {
+    return {
+      ...state,
+      riskProfiles,
+    };
+  }),
   on(Actions.setTestrunStatus, (state, { systemStatus }) => {
     return {
       ...state,

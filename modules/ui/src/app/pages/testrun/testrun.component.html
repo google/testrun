@@ -51,7 +51,9 @@ limitations under the License.
             </button>
             <app-download-options
               *ngIf="data.report"
-              [data]="data"></app-download-options>
+              [data]="data"
+              [profiles]="vm.profiles"
+              [hasProfiles]="vm.hasProfiles"></app-download-options>
           </div>
         </div>
         <app-testrun-status-card [systemStatus]="vm.systemStatus">
@@ -94,7 +96,9 @@ limitations under the License.
       aria-label="Start new testrun"
       color="primary"
       [disabled]="
-        hasDevices === false || isTestrunInProgress(systemStatus?.status)
+        hasDevices === false ||
+        isTestrunInProgress(systemStatus?.status) ||
+        systemStatus?.status === StatusOfTestrun.Cancelling
       "
       (click)="openTestRunModal()"
       mat-flat-button>

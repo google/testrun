@@ -106,7 +106,7 @@ def test_list_tests(capsys, results, test_matrix):
       print(f'\n{tester}:')
       print('  expected results:')
       for test in collect_expected_results(
-          test_matrix[tester]['expected_results']):
+        test_matrix[tester]['expected_results']):
         print(f'    {test.name}: {test.result}')
       print('  actual results:')
       for test in collect_actual_results(results[tester]):

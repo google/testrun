@@ -54,6 +54,7 @@ import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasRiskProfiles,
   selectInterfaces,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
@@ -106,6 +107,7 @@ describe('AppComponent', () => {
       'fetchDevices',
       'getTestModules',
       'testrunInProgress',
+      'fetchProfiles',
       'fetchCertificates',
     ]);
 
@@ -152,6 +154,7 @@ describe('AppComponent', () => {
             { selector: selectError, value: null },
             { selector: selectMenuOpened, value: false },
             { selector: selectHasDevices, value: false },
+            { selector: selectHasRiskProfiles, value: false },
             { selector: selectStatus, value: null },
             { selector: selectSystemStatus, value: null },
             { selector: selectIsOpenStartTestrun, value: false },
@@ -297,7 +300,7 @@ describe('AppComponent', () => {
       Promise.resolve('close')
     );
 
-    component.openGeneralSettings(false);
+    component.openGeneralSettings(false, false);
     tick();
     component.closeSetting(false);
     flush();
@@ -315,7 +318,7 @@ describe('AppComponent', () => {
     spyOn(component.settings, 'getSystemInterfaces');
     spyOn(component.settings, 'getSystemConfig');
 
-    component.openGeneralSettings(false);
+    component.openGeneralSettings(false, false);
 
     expect(component.settings.getSystemInterfaces).toHaveBeenCalled();
     expect(component.settings.getSystemConfig).toHaveBeenCalled();
@@ -325,24 +328,24 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     spyOn(component.settingsDrawer, 'open');
 
-    component.openSetting();
+    component.openSetting(false);
     tick();
 
     expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
   }));
 
-  it('should announce settingsDrawer open on openSetting', fakeAsync(() => {
+  it('should announce settingsDrawer disabled on openSetting and settings are disabled', fakeAsync(() => {
     fixture.detectChanges();
 
     spyOn(component.settingsDrawer, 'open').and.returnValue(
       Promise.resolve('open')
     );
 
-    component.openSetting();
+    component.openSetting(true);
     tick();
 
     expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-      'The settings panel is opened'
+      'The settings panel is disabled'
     );
   }));
 
@@ -482,6 +485,38 @@ describe('AppComponent', () => {
 
         expect(callout).toBeTruthy();
         expect(calloutContent).toContain('Step 3');
+      });
+    });
+
+    describe('with systemStatus data IN Progress and without riskProfiles', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasConnectionSettings, true);
+        store.overrideSelector(selectHasDevices, true);
+        store.overrideSelector(selectHasRiskProfiles, false);
+        store.overrideSelector(
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
+        );
+        fixture.detectChanges();
+      });
+
+      it('should have callout component with "Congratulations" text', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutContent = callout?.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutContent).toContain('Congratulations');
+      });
+
+      it('should have callout component with "Risk Assessment" link', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutLinkEl = compiled.querySelector(
+          '.message-link'
+        ) as HTMLAnchorElement;
+        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutLinkContent).toContain('Risk Assessment');
       });
     });
 
@@ -703,21 +738,6 @@ describe('AppComponent', () => {
 
     expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
   });
-
-  it('should announce certificatesDrawer open on openCert', fakeAsync(() => {
-    fixture.detectChanges();
-
-    spyOn(component.certDrawer, 'open').and.returnValue(
-      Promise.resolve('open')
-    );
-
-    component.openCert();
-    tick();
-
-    expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-      'The certificates panel is opened'
-    );
-  }));
 });
 
 @Component({
@@ -751,5 +771,7 @@ class FakeShutdownAppComponent {
 })
 class FakeVersionComponent {
   @Input() consentShown!: boolean;
+  @Input() hasRiskProfiles!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
+  @Output() navigateToRiskAssessmentEvent = new EventEmitter<void>();
 }

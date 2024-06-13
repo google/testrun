@@ -21,6 +21,7 @@ import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasRiskProfiles,
   selectInterfaces,
   selectMenuOpened,
   selectStatus,
@@ -34,8 +35,10 @@ import {
   setDevices,
   setIsOpenStartTestrun,
   fetchSystemStatus,
+  setRiskProfiles,
 } from './store/actions';
 import { TestrunStatus } from './model/testrun-status';
+import { Profile } from './model/profile';
 import { SettingMissedError, SystemInterfaces } from './model/setting';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
@@ -49,6 +52,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
   private consentShown$ = this.select(state => state.consentShown);
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
   private hasDevices$ = this.store.select(selectHasDevices);
+  private hasRiskProfiles$ = this.store.select(selectHasRiskProfiles);
   private hasConnectionSetting$ = this.store.select(
     selectHasConnectionSettings
   );
@@ -62,6 +66,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
   viewModel$ = this.select({
     consentShown: this.consentShown$,
     hasDevices: this.hasDevices$,
+    hasRiskProfiles: this.hasRiskProfiles$,
     isStatusLoaded: this.isStatusLoaded$,
     systemStatus: this.systemStatus$,
     hasConnectionSettings: this.hasConnectionSetting$,
@@ -95,6 +100,18 @@ export class AppStore extends ComponentStore<AppComponentState> {
         return this.testRunService.fetchDevices().pipe(
           tap((devices: Device[]) => {
             this.store.dispatch(setDevices({ devices }));
+          })
+        );
+      })
+    );
+  });
+
+  getRiskProfiles = this.effect(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap(() => {
+        return this.testRunService.fetchProfiles().pipe(
+          tap((riskProfiles: Profile[]) => {
+            this.store.dispatch(setRiskProfiles({ riskProfiles }));
           })
         );
       })

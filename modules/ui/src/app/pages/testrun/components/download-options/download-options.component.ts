@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -24,6 +30,8 @@ import {
   TestrunStatus,
 } from '../../../../model/testrun-status';
 import { MatOptionSelectionChange } from '@angular/material/core';
+import { DownloadReportZipComponent } from '../../../../components/download-report-zip/download-report-zip.component';
+import { Profile } from '../../../../model/profile';
 
 export enum DownloadOption {
   PDF = 'PDF Report',
@@ -40,11 +48,15 @@ export enum DownloadOption {
     MatIconModule,
     MatFormFieldModule,
     MatSelectModule,
+    DownloadReportZipComponent,
   ],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DownloadOptionsComponent {
+  @ViewChild('downloadReportZip') downloadReportZip!: ElementRef;
+  @Input() hasProfiles: boolean = false;
+  @Input() profiles: Profile[] = [];
   @Input() data!: TestrunStatus;
   DownloadOption = DownloadOption;
   constructor(private datePipe: DatePipe) {}
@@ -57,6 +69,15 @@ export class DownloadOptionsComponent {
     if (event.isUserInput) {
       this.createLink(data, type);
       this.sendGAEvent(data, type);
+    }
+  }
+
+  onZipSelected(event: MatOptionSelectionChange) {
+    if (event.isUserInput) {
+      const uploadCertificatesButton = document.querySelector(
+        '#downloadReportZip'
+      ) as HTMLElement;
+      uploadCertificatesButton.dispatchEvent(new MouseEvent('click'));
     }
   }
 

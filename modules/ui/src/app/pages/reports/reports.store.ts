@@ -8,6 +8,12 @@ import { catchError, EMPTY, exhaustMap } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { DatePipe } from '@angular/common';
 import { MatSort } from '@angular/material/sort';
+import {
+  selectHasRiskProfiles,
+  selectRiskProfiles,
+} from '../../store/selectors';
+import { Store } from '@ngrx/store';
+import { AppState } from '../../store/state';
 
 export interface ReportsComponentState {
   displayedColumns: string[];
@@ -38,7 +44,8 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
   private selectedRow$ = this.select(state => state.selectedRow);
   private isFiltersEmpty$ = this.select(state => state.isFiltersEmpty);
   private history$ = this.select(state => state.history);
-
+  private profiles$ = this.store.select(selectRiskProfiles);
+  private hasProfiles$ = this.store.select(selectHasRiskProfiles);
   viewModel$ = this.select({
     displayedColumns: this.displayedColumns$,
     chips: this.chips$,
@@ -49,6 +56,8 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     dataLoaded: this.dataLoaded$,
     selectedRow: this.selectedRow$,
     isFiltersEmpty: this.isFiltersEmpty$,
+    hasProfiles: this.hasProfiles$,
+    profiles: this.profiles$,
   });
 
   setDataSource = this.updater((state, reports: TestrunStatus[]) => {
@@ -358,6 +367,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     });
   }
   constructor(
+    private store: Store<AppState>,
     private testRunService: TestRunService,
     private datePipe: DatePipe
   ) {

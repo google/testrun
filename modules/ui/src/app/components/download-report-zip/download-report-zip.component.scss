@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,15 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-export interface Version {
-  installed_version: string;
-  update_available: boolean;
-  latest_version: string;
-  latest_version_url: string;
-}
-
-export interface ConsentDialogResult {
-  grant: boolean;
-  isNavigateToRiskAssessment?: boolean;
+:host {
+  cursor: pointer;
 }

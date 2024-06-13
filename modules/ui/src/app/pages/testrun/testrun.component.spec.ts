@@ -48,14 +48,20 @@ import { AppState } from '../../store/state';
 import {
   selectDevices,
   selectHasDevices,
+  selectHasRiskProfiles,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
+  selectRiskProfiles,
   selectSystemStatus,
 } from '../../store/selectors';
 import { TestrunStore } from './testrun.store';
-import { setTestrunStatus } from '../../store/actions';
+import {
+  fetchSystemStatusSuccess,
+  setTestrunStatus,
+} from '../../store/actions';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from '../../services/notification.service';
+import { Profile } from '../../model/profile';
 
 describe('TestrunComponent', () => {
   let component: TestrunComponent;
@@ -115,6 +121,8 @@ describe('TestrunComponent', () => {
               { selector: selectHasDevices, value: false },
               { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
+              { selector: selectHasRiskProfiles, value: false },
+              { selector: selectRiskProfiles, value: [] },
               {
                 selector: selectSystemStatus,
                 value: MOCK_PROGRESS_DATA_IN_PROGRESS,
@@ -256,6 +264,7 @@ describe('TestrunComponent', () => {
       testRunServiceMock.fetchSystemStatus.and.returnValue(
         of(MOCK_PROGRESS_DATA_IN_PROGRESS)
       );
+      spyOn(store, 'dispatch').and.callFake(() => {});
       component = fixture.componentInstance;
     });
 
@@ -302,14 +311,13 @@ describe('TestrunComponent', () => {
 
       it('should open initiate test run modal when start button clicked', fakeAsync(() => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
-          afterClosed: () => of(true),
+          afterClosed: () => of(MOCK_PROGRESS_DATA_IN_PROGRESS),
         } as MatDialogRef<typeof TestrunInitiateFormComponent>);
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
         startBtn.click();
 
-        expect(openSpy).toHaveBeenCalled();
         expect(openSpy).toHaveBeenCalledWith(TestrunInitiateFormComponent, {
           ariaLabel: 'Initiate testrun',
           autoFocus: true,
@@ -317,6 +325,11 @@ describe('TestrunComponent', () => {
           disableClose: true,
           panelClass: 'initiate-test-run-dialog',
         });
+        expect(store.dispatch).toHaveBeenCalledWith(
+          fetchSystemStatusSuccess({
+            systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
+          })
+        );
         tick(10);
         expect(
           stateServiceMock.focusFirstElementInContainer
@@ -467,6 +480,25 @@ describe('TestrunComponent', () => {
       });
     });
 
+    describe('with available systemStatus$ data, as Cancelling', () => {
+      beforeEach(() => {
+        store.overrideSelector(
+          selectSystemStatus,
+          MOCK_PROGRESS_DATA_CANCELLING
+        );
+        store.overrideSelector(selectHasDevices, true);
+        fixture.detectChanges();
+      });
+
+      it('should have disabled "Start" button', () => {
+        const startBtn = compiled.querySelector(
+          '.start-button'
+        ) as HTMLButtonElement;
+
+        expect(startBtn.disabled).toBeTrue();
+      });
+    });
+
     describe('with available systemStatus$ data, as Monitoring', () => {
       beforeEach(() => {
         store.overrideSelector(
@@ -539,4 +571,6 @@ class FakeProgressTableComponent {
 })
 class FakeDownloadOptionsComponent {
   @Input() data!: TestrunStatus;
+  @Input() hasProfiles!: boolean;
+  @Input() profiles!: Profile[];
 }

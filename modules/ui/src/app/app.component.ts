@@ -76,6 +76,7 @@ export class AppComponent {
     private liveAnnouncer: LiveAnnouncer
   ) {
     this.appStore.getDevices();
+    this.appStore.getRiskProfiles();
     this.appStore.getSystemStatus();
     this.matIconRegistry.addSvgIcon(
       'devices',
@@ -107,6 +108,10 @@ export class AppComponent {
     );
   }
 
+  get isRiskAssessmentRoute(): boolean {
+    return this.route.url === Routes.RiskAssessment;
+  }
+
   navigateToDeviceRepository(): void {
     this.route.navigate([Routes.Devices]);
     this.store.dispatch(setIsOpenAddDevice({ isOpenAddDevice: true }));
@@ -115,6 +120,10 @@ export class AppComponent {
   navigateToRuntime(): void {
     this.route.navigate([Routes.Testing]);
     this.appStore.setIsOpenStartTestrun();
+  }
+
+  navigateToRiskAssessment(): void {
+    this.route.navigate([Routes.RiskAssessment]);
   }
 
   async closeCertificates(): Promise<void> {
@@ -132,8 +141,8 @@ export class AppComponent {
     });
   }
 
-  async openSetting(): Promise<void> {
-    return await this.openGeneralSettings(false);
+  async openSetting(isSettingsDisabled: boolean): Promise<void> {
+    return await this.openGeneralSettings(false, isSettingsDisabled);
   }
 
   public toggleMenu(event: MouseEvent) {
@@ -154,17 +163,21 @@ export class AppComponent {
     }
   }
 
-  async openGeneralSettings(openSettingFromToggleBtn: boolean) {
+  async openGeneralSettings(
+    openSettingFromToggleBtn: boolean,
+    isSettingsDisabled: boolean
+  ) {
     this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
     this.settings.getSystemInterfaces();
     this.settings.getSystemConfig();
     await this.settingsDrawer.open();
-    await this.liveAnnouncer.announce('The settings panel is opened');
+    if (isSettingsDisabled) {
+      await this.liveAnnouncer.announce('The settings panel is disabled');
+    }
   }
 
   async openCert() {
     await this.certDrawer.open();
-    this.liveAnnouncer.announce('The certificates panel is opened');
   }
 
   consentShown() {

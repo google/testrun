@@ -91,8 +91,9 @@ export class DevicesComponent implements OnInit, OnDestroy {
     dialogRef
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(testrunStarted => {
-        if (testrunStarted) {
+      .subscribe(status => {
+        if (status) {
+          this.devicesStore.setStatus(status);
           // @ts-expect-error data layer is not null
           window.dataLayer.push({
             event: 'successful_testrun_initiation',

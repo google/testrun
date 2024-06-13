@@ -23,6 +23,7 @@ import {
 import { SystemInterfaces } from '../model/setting';
 import { Device } from '../model/device';
 import { TestrunStatus } from '../model/testrun-status';
+import { Profile } from '../model/profile';
 
 // App component
 export const toggleMenu = createAction('[App Component] Toggle Menu');
@@ -81,6 +82,16 @@ export const setHasDevices = createAction(
 export const setDevices = createAction(
   '[Shared] Set Devices',
   props<{ devices: Device[] }>()
+);
+
+export const setHasRiskProfiles = createAction(
+  '[Shared] Set Has Risk Profiles',
+  props<{ hasRiskProfiles: boolean }>()
+);
+
+export const setRiskProfiles = createAction(
+  '[Shared] Set Risk Profiles',
+  props<{ riskProfiles: Profile[] }>()
 );
 
 export const setTestrunStatus = createAction(

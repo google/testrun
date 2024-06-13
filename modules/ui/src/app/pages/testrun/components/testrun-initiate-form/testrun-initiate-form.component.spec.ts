@@ -116,8 +116,9 @@ describe('ProgressInitiateFormComponent', () => {
 
     it('should close dialog', () => {
       spyOn(component.dialogRef, 'close');
-      component.cancel(false);
-      expect(component.dialogRef.close).toHaveBeenCalledWith(false);
+      component.cancel(null);
+
+      expect(component.dialogRef.close).toHaveBeenCalledWith(null);
     });
 
     it('should set devices$ value', () => {
