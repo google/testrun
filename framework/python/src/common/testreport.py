@@ -429,13 +429,13 @@ class TestReport():
   def generate_results(self, json_data, page_num):
 
     successful_tests = 0
-    for test in self._results:
+    for test in json_data['tests']['results']:
       if test['result'] != 'Error':
         successful_tests += 1
 
     result_list = f'''
       <div class="result-list">
-        <h3>Results List <small>({len(successful_tests)}/{self._total_tests})</small></h3>
+        <h3>Results List <small>({(successful_tests)}/{self._total_tests})</small></h3>
         <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
           <div class="result-list-header-label" style="left: .1in">Name</div>
           <div class="result-list-header-label" style="left: 2.8in">Description</div>
