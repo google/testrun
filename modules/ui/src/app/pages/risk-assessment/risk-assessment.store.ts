@@ -21,33 +21,20 @@ import { exhaustMap } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
 import { Profile } from '../../model/profile';
 import { FocusManagerService } from '../../services/focus-manager.service';
+import { Store } from '@ngrx/store';
+import { AppState } from '../../store/state';
+import { selectRiskProfiles } from '../../store/selectors';
+import { setRiskProfiles } from '../../store/actions';
 
 export interface AppComponentState {
   profiles: Profile[];
 }
 @Injectable()
 export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
-  private profiles$ = this.select(state => state.profiles);
+  profiles$ = this.store.select(selectRiskProfiles);
 
   viewModel$ = this.select({
     profiles: this.profiles$,
-  });
-
-  updateProfiles = this.updater((state, profiles: Profile[]) => ({
-    ...state,
-    profiles,
-  }));
-
-  getProfiles = this.effect(trigger$ => {
-    return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunService.fetchProfiles().pipe(
-          tap((profiles: Profile[]) => {
-            this.updateProfiles(profiles);
-          })
-        );
-      })
-    );
   });
 
   deleteProfile = this.effect<string>(trigger$ => {
@@ -87,8 +74,13 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     this.updateProfiles(profiles);
   }
 
+  private updateProfiles(riskProfiles: Profile[]): void {
+    this.store.dispatch(setRiskProfiles({ riskProfiles }));
+  }
+
   constructor(
     private testRunService: TestRunService,
+    private store: Store<AppState>,
     private focusManagerService: FocusManagerService
   ) {
     super({

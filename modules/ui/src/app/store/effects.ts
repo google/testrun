@@ -114,14 +114,26 @@ export class AppEffects {
     );
   });
 
+  onSetRiskProfiles$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setRiskProfiles),
+      map(({ riskProfiles }) =>
+        AppActions.setHasRiskProfiles({
+          hasRiskProfiles: riskProfiles.length > 0,
+        })
+      )
+    );
+  });
+
   onSetTestrunStatus$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(AppActions.setTestrunStatus),
       map(({ systemStatus }) => {
+        const isInProgressDevice =
+          this.testrunService.testrunInProgress(systemStatus?.status) ||
+          systemStatus.status === StatusOfTestrun.Cancelling;
         return AppActions.setDeviceInProgress({
-          device: this.testrunService.testrunInProgress(systemStatus?.status)
-            ? systemStatus.device
-            : null,
+          device: isInProgressDevice ? systemStatus.device : null,
         });
       })
     );

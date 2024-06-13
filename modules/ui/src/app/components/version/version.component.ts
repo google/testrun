@@ -26,7 +26,7 @@ import {
   TestRunService,
   UNAVAILABLE_VERSION,
 } from '../../services/test-run.service';
-import { Version } from '../../model/version';
+import { ConsentDialogResult, Version } from '../../model/version';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { tap } from 'rxjs/internal/operators/tap';
@@ -48,7 +48,9 @@ declare const gtag: Function;
 })
 export class VersionComponent implements OnInit, OnDestroy {
   @Input() consentShown!: boolean;
+  @Input() hasRiskProfiles!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
+  @Output() navigateToRiskAssessmentEvent = new EventEmitter<void>();
   version$!: Observable<Version | null>;
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -84,9 +86,10 @@ export class VersionComponent implements OnInit, OnDestroy {
   }
 
   openConsentDialog(version: Version) {
+    const dialogData = { version, hasRiskProfiles: this.hasRiskProfiles };
     const dialogRef = this.dialog.open(ConsentDialogComponent, {
       ariaLabel: 'Welcome to Testrun modal window',
-      data: version,
+      data: dialogData,
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
@@ -96,13 +99,17 @@ export class VersionComponent implements OnInit, OnDestroy {
     dialogRef
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((grant: boolean) => {
-        if (grant === null) {
+      .subscribe((dialogResult: ConsentDialogResult) => {
+        if (dialogResult.grant === null) {
           return;
         }
         gtag('consent', 'update', {
-          analytics_storage: grant ? 'granted' : 'denied',
+          analytics_storage: dialogResult.grant ? 'granted' : 'denied',
         });
+
+        if (dialogResult.isNavigateToRiskAssessment) {
+          this.navigateToRiskAssessmentEvent.emit();
+        }
       });
   }
 

@@ -267,7 +267,7 @@ class Modbus():
       compliant = (holding_reg is not None or input_reg is not None
                    or coils is not None or discrete_inputs is not None)
     else:
-      compliant = False
+      compliant = None
       details = 'Failed to establish Modbus connection to device'
     result = compliant, details
     return result

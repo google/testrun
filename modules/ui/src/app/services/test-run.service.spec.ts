@@ -211,13 +211,13 @@ describe('TestRunService', () => {
       const apiUrl = 'http://localhost:8000/system/start';
 
       service.startTestrun(device).subscribe(res => {
-        expect(res).toEqual(true);
+        expect(res).toEqual(MOCK_PROGRESS_DATA_IN_PROGRESS);
       });
 
       const req = httpTestingController.expectOne(apiUrl);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(JSON.stringify({ device }));
-      req.flush({});
+      req.flush(MOCK_PROGRESS_DATA_IN_PROGRESS);
     });
   });
 
@@ -577,5 +577,17 @@ describe('TestRunService', () => {
     expect(req.request.method).toBe('DELETE');
 
     req.error(new ErrorEvent(''));
+  });
+
+  it('downloadZip should have necessary request data', () => {
+    service.downloadZip('localhost:8080/export/test', '').subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne('localhost:8080/export/test');
+
+    expect(req.request.method).toBe('POST');
+
+    req.flush(true);
   });
 });

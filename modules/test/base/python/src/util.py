@@ -28,20 +28,20 @@ def run_command(cmd, output=True):
   by any return code from the process other than zero."""
 
   success = False
-  process = subprocess.Popen(shlex.split(cmd),
+  with subprocess.Popen(shlex.split(cmd),
                              stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-  stdout, stderr = process.communicate()
-  if process.returncode != 0 and output:
-    err_msg = f'{stderr.strip()}. Code: {process.returncode}'
-    LOGGER.error('Command Failed: ' + cmd)
-    LOGGER.error('Error: ' + err_msg)
-  else:
-    success = True
-    LOGGER.debug('Command succeeded: ' + cmd)
-  if output:
-    out = stdout.strip().decode('utf-8')
-    LOGGER.debug('Command output: ' + out)
-    return out, stderr
-  else:
-    return success
+                             stderr=subprocess.PIPE) as process:
+    stdout, stderr = process.communicate()
+    if process.returncode != 0 and output:
+      err_msg = f'{stderr.strip()}. Code: {process.returncode}'
+      LOGGER.error('Command Failed: ' + cmd)
+      LOGGER.error('Error: ' + err_msg)
+    else:
+      success = True
+      LOGGER.debug('Command succeeded: ' + cmd)
+    if output:
+      out = stdout.strip().decode('utf-8')
+      LOGGER.debug('Command output: ' + out)
+      return out, stderr
+    else:
+      return success

@@ -16,6 +16,7 @@
 import { TestrunStatus } from '../model/testrun-status';
 import { SettingMissedError, SystemInterfaces } from '../model/setting';
 import { Device } from '../model/device';
+import { Profile } from '../model/profile';
 
 export interface AppState {
   appComponent: AppComponentState;
@@ -38,6 +39,9 @@ export interface SharedState {
   devices: Device[];
   //used in app, devices, testrun
   hasDevices: boolean;
+  //app, risk-assessment, testrun, reports
+  riskProfiles: Profile[];
+  hasRiskProfiles: boolean;
   //app, testrun
   status: string | null;
   systemStatus: TestrunStatus | null;
@@ -69,6 +73,8 @@ export const initialSharedState: SharedState = {
   hasDevices: false,
   devices: [],
   deviceInProgress: null,
+  riskProfiles: [],
+  hasRiskProfiles: false,
   isOpenStartTestrun: false,
   systemStatus: null,
   status: null,

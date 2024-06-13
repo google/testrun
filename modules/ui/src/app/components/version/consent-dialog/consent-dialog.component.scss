@@ -30,6 +30,11 @@
 :host ::ng-deep .callout-container {
   margin: 0 !important;
   align-items: start !important;
+
+  &.check_circle,
+  &.warning_amber {
+    padding-top: 16px;
+  }
 }
 
 .content-container {
@@ -66,11 +71,11 @@
   }
 }
 
-.consent-update {
-  .consent-update-title {
+.section-container {
+  .section-title {
     font-size: 18px;
   }
-  .download-link-container {
+  .section-action-container {
     text-align: end;
     margin-bottom: 0;
   }

@@ -181,13 +181,11 @@ export class TestRunService {
     );
   }
 
-  startTestrun(device: Device): Observable<boolean> {
-    return this.http
-      .post<TestrunStatus>(
-        `${API_URL}/system/start`,
-        JSON.stringify({ device })
-      )
-      .pipe(map(() => true));
+  startTestrun(device: Device): Observable<TestrunStatus> {
+    return this.http.post<TestrunStatus>(
+      `${API_URL}/system/start`,
+      JSON.stringify({ device })
+    );
   }
 
   getVersion(): BehaviorSubject<Version | null> {
@@ -257,5 +255,9 @@ export class TestRunService {
     return this.http
       .post<boolean>(`${API_URL}/system/config/certs`, formData)
       .pipe(map(() => true));
+  }
+
+  downloadZip(url: string, profile: string) {
+    return this.http.post(url, JSON.stringify({ profile }));
   }
 }

@@ -41,6 +41,7 @@ import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../../mocks/testrun.mock';
 
 describe('DevicesComponent', () => {
   let component: DevicesComponent;
@@ -59,6 +60,7 @@ describe('DevicesComponent', () => {
       'setIsOpenAddDevice',
       'selectDevice',
       'deleteDevice',
+      'setStatus',
     ]);
 
     mockDevicesStore.testModules = MOCK_TEST_MODULES;
@@ -299,7 +301,7 @@ describe('DevicesComponent', () => {
   describe('#openStartTestrun', () => {
     it('should open initiate test run modal', fakeAsync(() => {
       const openSpy = spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of(true),
+        afterClosed: () => of(MOCK_PROGRESS_DATA_IN_PROGRESS),
       } as MatDialogRef<typeof TestrunInitiateFormComponent>);
 
       fixture.ngZone?.run(() => {
@@ -319,6 +321,9 @@ describe('DevicesComponent', () => {
 
         tick();
         expect(router.url).toBe(Routes.Testing);
+        expect(mockDevicesStore.setStatus).toHaveBeenCalledWith(
+          MOCK_PROGRESS_DATA_IN_PROGRESS
+        );
 
         openSpy.calls.reset();
       });

@@ -50,7 +50,6 @@ class TLSModule(TestModule):
     self._tls_util = TLSUtil(LOGGER)
 
   # def generate_module_report(self):
-
   # html_content = '<h1>TLS Module</h1>'
 
   # # List of capture files to scan
@@ -307,7 +306,7 @@ class TLSModule(TestModule):
         description = 'TLS 1.3 client connections invalid'
       return results[0], description,  results[1]
     else:
-      LOGGER.error('Could not resolve device IP address. Skipping')
+      LOGGER.error('Could not resolve device IP address')
       return 'Error', 'Could not resolve device IP address'
 
   def _validate_tls_client(self, client_ip, tls_version):
@@ -320,9 +319,9 @@ class TLSModule(TestModule):
 
     # Generate results based on the state
     result_message = 'No outbound connections were found.'
-    result_state = None
+    result_state = 'Feature Not Detected'
 
-    # If any of the packetes detect failed client comms, fail the test
+    # If any of the packets detect failed client comms, fail the test
     if not client_results[0] and client_results[0] is not None:
       result_state = False
       result_message = client_results[1]
