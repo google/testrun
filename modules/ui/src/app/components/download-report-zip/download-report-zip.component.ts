@@ -44,10 +44,13 @@ export class DownloadReportZipComponent implements OnDestroy {
   @Input() profiles: Profile[] = [];
   @Input() url: string | null | undefined = null;
 
-  @HostListener('click', ['$event.target'])
+  @HostListener('click', ['$event'])
   @HostListener('keydown.enter', ['$event'])
   @HostListener('keydown.space', ['$event'])
-  onClick() {
+  onClick(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+
     const dialogRef = this.dialog.open(DownloadZipModalComponent, {
       ariaLabel: 'Download zip',
       data: {
