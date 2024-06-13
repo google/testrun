@@ -122,7 +122,7 @@ limitations under the License.
             formControlName: formControlName,
             options: options,
             description: description,
-            label: label,
+            label: label
           }
         "></ng-container>
     </ng-container>
@@ -236,7 +236,7 @@ limitations under the License.
     class="risk-assessment-form-field"
     [formGroup]="profileForm">
     <mat-select
-      aria-label="{{label}}"
+      aria-label="{{ label }}"
       id="{{ formControlName }}-group"
       [formControlName]="formControlName">
       <mat-option

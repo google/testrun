@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use '@angular/material' as mat;
 @import 'src/theming/colors';
 @import 'src/theming/variables';
 
@@ -59,9 +60,18 @@
 }
 
 .field-select-multiple {
-  .field-select-checkbox:first-of-type {
-    margin-top: 0;
-  }  .field-select-checkbox:last-of-type {
-    margin-bottom: 8px;
+  .field-select-checkbox {
+    &:has(::ng-deep .mat-mdc-checkbox-checked) {
+      background: mat.get-color-from-palette($color-primary, 50);
+    }
+    ::ng-deep .mdc-checkbox__ripple {
+      display: none;
+    }
+    &:first-of-type {
+      margin-top: 0;
+    }
+    &:last-of-type {
+      margin-bottom: 8px;
+    }
   }
 }

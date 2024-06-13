@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -33,7 +38,6 @@ import { Profile } from '../../../model/profile';
 import { ProfileValidators } from './profile.validators';
 import { MatError } from '@angular/material/form-field';
 
-import { PROFILE_FORM } from '../../../mocks/profile.mock';
 import { FormControlType, ProfileFormat } from '../../../model/profile';
 
 @Component({
@@ -62,9 +66,7 @@ export class ProfileFormComponent implements OnInit {
     private deviceValidators: DeviceValidators,
     private profileValidators: ProfileValidators,
     private fb: FormBuilder
-  ) {
-
-  }
+  ) {}
 
   ngOnInit() {
     this.profileForm = this.createProfileForm(this.profileFormat);
