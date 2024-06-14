@@ -30,14 +30,14 @@ export const PROFILE_MOCK_2: Profile = {
 export const PROFILE_FORM: ProfileFormat[] = [
   {
     question: 'Email',
-    type: FormControlType.TEXT,
+    type: FormControlType.EMAIL_MULTIPLE,
     validation: {
       required: true,
     },
   },
   {
     question: 'What type of device do you need reviewed?',
-    type: FormControlType.TEXT,
+    type: FormControlType.TEXTAREA,
     validation: {
       required: true,
     },

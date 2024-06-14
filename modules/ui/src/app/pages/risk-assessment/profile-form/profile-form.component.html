@@ -15,8 +15,12 @@ limitations under the License.
 -->
 <form [formGroup]="profileForm" class="profile-form">
   <div class="field-container">
+    <!-- TODO move profile name to json (in scope of validation) -->
     <p class="field-label">Profile name *</p>
-    <mat-form-field appearance="outline" floatLabel="always" class="name-field">
+    <mat-form-field
+      appearance="outline"
+      floatLabel="always"
+      class="name-field profile-form-field">
       <mat-label>Specify risk assessment profile name</mat-label>
       <input class="form-name" formControlName="name" matInput />
       <mat-error
@@ -159,7 +163,7 @@ limitations under the License.
   <mat-form-field
     appearance="outline"
     floatLabel="always"
-    class="risk-assessment-form-field"
+    class="profile-form-field"
     [formGroup]="profileForm">
     <input
       matInput
@@ -176,7 +180,7 @@ limitations under the License.
   <mat-form-field
     appearance="outline"
     floatLabel="always"
-    class="risk-assessment-form-field"
+    class="profile-form-field"
     [formGroup]="profileForm">
     <input
       matInput
@@ -193,7 +197,7 @@ limitations under the License.
   <mat-form-field
     appearance="outline"
     floatLabel="always"
-    class="risk-assessment-form-field"
+    class="profile-form-field"
     [formGroup]="profileForm">
     <input
       matInput
@@ -209,7 +213,7 @@ limitations under the License.
   let-options="options"
   let-description="description">
   <section
-    class="field-select-multiple"
+    class="field-select-multiple profile-form-field"
     [formGroup]="getFormGroup(formControlName)">
     <p
       *ngFor="let option of options; let i = index"
@@ -233,7 +237,7 @@ limitations under the License.
   <mat-form-field
     appearance="outline"
     floatLabel="always"
-    class="risk-assessment-form-field"
+    class="profile-form-field"
     [formGroup]="profileForm">
     <mat-select
       aria-label="{{ label }}"
