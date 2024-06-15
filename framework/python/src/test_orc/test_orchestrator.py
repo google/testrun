@@ -183,8 +183,13 @@ class TestOrchestrator:
   def _calculate_result(self):
     result = "Compliant"
     for test_result in self._session.get_test_results():
+      # Check Required tests
       if (test_result.required_result.lower() == "required"
           and test_result.result.lower() != "compliant"):
+        result = "Non-Compliant"
+      # Check Required if Applicable tests
+      elif (test_result.required_result.lower() == "required if applicable"
+            and test_result.result.lower() == "non-compliant"):
         result = "Non-Compliant"
     return result
 

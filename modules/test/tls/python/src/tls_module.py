@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Baseline test module"""
+"""TLS test module"""
 from test_module import TestModule
 from tls_util import TLSUtil
 import pyshark
@@ -27,7 +27,7 @@ GATEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
 LOGGER = None
 
 class TLSModule(TestModule):
-  """An example testing module."""
+  """The TLS testing module."""
 
   def __init__(self,
                module,
@@ -268,7 +268,7 @@ class TLSModule(TestModule):
       return results[0], description,results[1]
 
     else:
-      LOGGER.error('Could not resolve device IP address. Skipping')
+      LOGGER.error('Could not resolve device IP address')
       return 'Error', 'Could not resolve device IP address'
 
   def _security_tls_v1_2_client(self):
