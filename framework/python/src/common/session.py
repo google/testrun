@@ -372,8 +372,7 @@ class TestrunSession():
           self._root_dir, PROFILES_DIR, risk_profile_file
         ), encoding='utf-8') as f:
           json_data = json.load(f)
-          risk_profile = RiskProfile(json_data)
-          risk_profile.status = self.check_profile_status(risk_profile)
+          risk_profile = RiskProfile.load(json_data)
           self._profiles.append(risk_profile)
 
     except Exception as e:
@@ -392,73 +391,12 @@ class TestrunSession():
         return profile
     return None
 
-  def validate_profile(self, profile_json):
-
-    # Check name field is present
-    if 'name' not in profile_json:
-      return False
-
-    # Check questions field is present
-    if 'questions' not in profile_json:
-      return False
-
-    # Check all questions are present
-    for format_q in self.get_profiles_format():
-      if self._get_profile_question(
-        profile_json, format_q.get('question')) is None:
-        LOGGER.error(
-          'Missing question: ' + format_q.get('question'))
-        return False
-
-    return True
-
-  def _get_profile_question(self, profile_json, question):
-
-    for q in profile_json.get('questions'):
-      if question.lower() == q.get('question').lower():
-        return q
-
-    return None
-
   def update_profile(self, profile_json):
 
     profile_name = profile_json['name']
 
     # Add version, timestamp and status
     profile_json['version'] = self.get_version()
-    profile_json['created'] = datetime.datetime.now().strftime('%Y-%m-%d')
-
-    if 'status' in profile_json and profile_json.get('status') == 'Valid':
-      # Attempting to submit a risk profile, we need to check it
-
-      # Check all questions have been answered
-      all_questions_answered = True
-
-      for question in self.get_profiles_format():
-
-        # Check question is present
-        profile_question = self._get_profile_question(
-          profile_json, question.get('question')
-        )
-
-        if profile_question is not None:
-
-          # Check answer is present
-          if 'answer' not in profile_question:
-            LOGGER.error(
-              'Missing answer for question: ' + question.get('question'))
-            all_questions_answered = False
-
-        else:
-          LOGGER.error('Missing question: ' + question.get('question'))
-          all_questions_answered = False
-
-      if not all_questions_answered:
-        LOGGER.error('Not all questions answered')
-        return None
-
-    else:
-      profile_json['status'] = 'Draft'
 
     risk_profile = self.get_profile(profile_name)
 
@@ -470,17 +408,17 @@ class TestrunSession():
 
     else:
 
+      risk_profile.update(profile_json)
       # Check if name has changed
       if 'rename' in profile_json:
-        new_name = profile_json.get('rename')
-
         # Delete the original file
         os.remove(os.path.join(PROFILES_DIR, risk_profile.name + '.json'))
 
-        risk_profile.name = new_name
+      # Find the index of the risk_profile to replace
+      index_to_replace = next((index for (index, d) in enumerate(self._profiles) if d['name'] == profile_name), None)
 
-      # Update questions and answers
-      risk_profile.questions = profile_json.get('questions')
+      if index_to_replace is not None:
+        self._profiles[index_to_replace] = risk_profile
 
     # Write file to disk
     with open(os.path.join(
@@ -489,20 +427,6 @@ class TestrunSession():
       f.write(json.dumps(risk_profile.to_json()))
 
     return risk_profile
-
-  def check_profile_status(self, profile):
-
-    if profile.status == 'Valid':
-
-      # Check expiry
-      created_date = profile.created.timestamp()
-
-      today = datetime.datetime.now().timestamp()
-
-      if created_date < (today - SECONDS_IN_YEAR):
-        profile.status = 'Expired'
-
-    return profile.status
 
   def delete_profile(self, profile):
 
