@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o xtrace
+#set -o xtrace
 ip a
 TEST_DIR=/tmp/results
 TESTRUN_DIR=/usr/local/testrun
@@ -41,7 +41,7 @@ sudo docker network create -d macvlan -o parent=endev0b endev0
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 # Build Test Container
-sudo docker build ./testing/docker/ci_test_device1 -t ci_test_device1 -f  ./testing/docker/ci_test_device1/Dockerfile
+sudo docker build ./testing/docker/test_device_4 -t test_device_4 -f  ./testing/docker/test_device_4/Dockerfile
 
 # Copy configuration to testrun
 sudo cp testing/tests/system.json $TESTRUN_DIR/local/system.json
@@ -49,90 +49,187 @@ sudo cp testing/tests/system.json $TESTRUN_DIR/local/system.json
 # Copy device configs to testrun
 sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
 
-TESTERS=$(jq -r 'keys[]' $MATRIX)
-for tester in $TESTERS; do
-  if [ -n $1 ] && [ $1 != $tester ]; then
-    continue
+testrun_log=$TEST_DIR/test_device_4_testrun.log
+device_log=$TEST_DIR/test_device_4_device.log
+
+# Start Testrun
+touch $testrun_log
+
+sudo timeout 900 testrun --single-intf --no-ui > $testrun_log 2>&1 &
+TPID=$!
+
+# Time to wait for testrun to be ready
+WAITING=700
+
+# Wait until Testrun is 'Waiting for Devices'
+for i in `seq 1 $WAITING`; do
+
+  tail -1 $testrun_log
+  if [[ -n $(fgrep "Waiting for devices on the network" $testrun_log) ]]; then
+    break
   fi
-  testrun_log=$TEST_DIR/${tester}_testrun.log
-  device_log=$TEST_DIR/${tester}_device.log
 
-  image=$(jq -r .$tester.image $MATRIX)
-  ethmac=$(jq -r .$tester.ethmac $MATRIX)
-  args=$(jq -r .$tester.args $MATRIX)
-
-  touch $testrun_log
-  sudo timeout 900 testrun --single-intf --no-ui > $testrun_log 2>&1 &
-  TPID=$!
-
-  # Time to wait for testrun to be ready
-  WAITING=700
-
-  for i in `seq 1 $WAITING`; do
-    tail -1 $testrun_log
-      if [[ -n $(fgrep "Waiting for devices on the network" $testrun_log) ]]; then
-          break
-      fi
-
-      if [[ ! -d /proc/$TPID ]]; then
-          cat $testrun_log
-          echo "Error encountered starting test run"
-          exit 1
-      fi
-    
-      sleep 1
-  done
-
-  if [[ $i -eq $WAITING ]]; then
+  # Check if Testrun process has exited
+  if [[ ! -d /proc/$TPID ]]; then
       cat $testrun_log
-      echo "Failed after waiting $WAITING seconds for testrun to start"
+      echo "Error encountered starting test run"
       exit 1
   fi
 
-  # helps unclean exits when running locally
-  sudo docker stop $tester && sudo docker rm $tester
-  
-  # Load Test Container
-  sudo docker run -d \
-    --network=endev0 \
-    --mac-address=$ethmac \
-    --cap-add=NET_ADMIN \
-    -v /tmp:/out \
-    --privileged \
-    --name=$tester \
-    ci_test_device1 $args
-  
-  WAITING=600
-  for i in `seq 1 $WAITING`; do
-    tail -1 $testrun_log
-      if [[ -n $(fgrep "All tests complete" $testrun_log) ]]; then
-          sleep 10
-          sudo kill -9 $TPID
-      fi
-  
-      if [[ ! -d /proc/$TPID ]]; then
-          break
-      fi
-    
-      sleep 1
-    done
-
-
-  # Following line indicates that tests are completed but wait till it exits
-  # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
-  # Change this line! - LOGGER.info(f"""Completed running test modules on device
-  #          with mac addr {device.mac_addr}""")
-
-  #more runtime/network/*.log | cat 
-  sudo docker logs $tester | cat 
-  sudo docker kill $tester && sudo docker rm $tester
-
-  cp $TESTRUN_DIR/runtime/test/${ethmac//:/}/report.json $TEST_DIR/$tester.json
-  more $TEST_DIR/$tester.json | cat 
-  more $testrun_log | cat 
+  sleep 1
 
 done
 
+# Testrun failed to startup within timeout
+if [[ $i -eq $WAITING ]]; then
+    cat $testrun_log
+    echo "Failed after waiting $WAITING seconds for testrun to start"
+    exit 1
+fi
+
+# Helps unclean exits when running locally
+sudo docker stop test_device_4 && sudo docker rm test_device_4
+
+# Load Test Container
+sudo docker run -d \
+  --network=endev0 \
+  --mac-address="60:70:6c:00:00:04" \
+  --cap-add=NET_ADMIN \
+  -v /tmp:/out \
+  --privileged \
+  --rm \
+  --name=test_device_4 \
+  test_device_4
+
+WAITING=600
+
+
+for i in `seq 1 $WAITING`; do
+  tail -1 $testrun_log
+  if [[ -n $(fgrep "All tests complete" $testrun_log) ]]; then
+    sleep 10
+    sudo kill -9 $TPID
+  fi
+
+  if [[ ! -d /proc/$TPID ]]; then
+    break
+  fi
+
+  sleep 1
+done
+
+# Following line indicates that tests are completed but wait till it exits
+# Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
+
+# more runtime/network/*.log | cat 
+# sudo docker logs test_device_4 | cat
+
+# Stop the test device now that we don't need it
+sudo docker kill test_device_4
+
+cp $TESTRUN_DIR/runtime/test/60706c000004/report.json $TEST_DIR/test_device_4.json
+more $TEST_DIR/test_device_4.json | cat
+
+more $testrun_log | cat
+
+
+
+#################################################################################################################
+
+# Build Test Container
+sudo docker build ./testing/docker/test_device_5 -t test_device_5 -f  ./testing/docker/test_device_5/Dockerfile
+
+# Copy configuration to testrun
+sudo cp testing/tests/system.json $TESTRUN_DIR/local/system.json
+
+# Copy device configs to testrun
+sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
+
+testrun_log=$TEST_DIR/test_device_5_testrun.log
+device_log=$TEST_DIR/test_device_5_device.log
+
+# Start Testrun
+touch $testrun_log
+
+sudo timeout 900 testrun --single-intf --no-ui > $testrun_log 2>&1 &
+TPID=$!
+
+# Time to wait for testrun to be ready
+WAITING=700
+
+# Wait until Testrun is 'Waiting for Devices'
+for i in `seq 1 $WAITING`; do
+
+  tail -1 $testrun_log
+  if [[ -n $(fgrep "Waiting for devices on the network" $testrun_log) ]]; then
+    break
+  fi
+
+  # Check if Testrun process has exited
+  if [[ ! -d /proc/$TPID ]]; then
+      cat $testrun_log
+      echo "Error encountered starting test run"
+      exit 1
+  fi
+
+  sleep 1
+
+done
+
+# Testrun failed to startup within timeout
+if [[ $i -eq $WAITING ]]; then
+    cat $testrun_log
+    echo "Failed after waiting $WAITING seconds for testrun to start"
+    exit 1
+fi
+
+# Helps unclean exits when running locally
+sudo docker stop test_device_5 && sudo docker rm test_device_5
+
+# Load Test Container
+sudo docker run -d \
+  --network=endev0 \
+  --mac-address="02:42:aa:00:00:05" \
+  --cap-add=NET_ADMIN \
+  -v /tmp:/out \
+  --privileged \
+  --rm \
+  --name=test_device_5 \
+  test_device_5
+
+WAITING=600
+
+
+for i in `seq 1 $WAITING`; do
+  tail -1 $testrun_log
+  if [[ -n $(fgrep "All tests complete" $testrun_log) ]]; then
+    sleep 10
+    sudo kill -9 $TPID
+  fi
+
+  if [[ ! -d /proc/$TPID ]]; then
+    break
+  fi
+
+  sleep 1
+done
+
+# Following line indicates that tests are completed but wait till it exits
+# Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
+
+# more runtime/network/*.log | cat 
+# sudo docker logs test_device_5 | cat
+
+# Stop the test device now that we don't need it
+sudo docker kill test_device_5
+
+cp $TESTRUN_DIR/runtime/test/0242aa000005/report.json $TEST_DIR/test_device_5.json
+more $TEST_DIR/test_device_5.json | cat
+
+more $testrun_log | cat
+
+# Use pytest to verify results
 pytest -v testing/tests/test_tests.py
+
 
 exit $?
