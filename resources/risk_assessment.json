@@ -53,6 +53,7 @@
     }
   },
   {
+    "category": "Data Collection",
     "question": "Are any of the following statements true about your device?",
     "description": "This tells us about the data your device will collect",
     "type": "select-multiple",
@@ -67,6 +68,7 @@
     }
   },
   {
+    "category": "Data Transmission",
     "question": "Which of the following statements are true about this device?",
     "description": "This tells us about the types of data that are transmitted from this device and how the transmission is performed from a technical standpoint.",
     "type": "select-multiple",
@@ -84,6 +86,7 @@
     }
   },
   {
+    "category": "Data Transmission",
     "question": "Does the network protocol assure server-to-client identity verification?",
     "type": "select",
     "options": [
@@ -96,6 +99,7 @@
     }
   },
   {
+    "category": "Remote Operation",
     "question": "Click the statements that best describe the characteristics of this device.",
     "description": "This tells us about how this device is managed remotely.",
     "type": "select-multiple",
@@ -112,6 +116,7 @@
     }
   },
   {
+    "category": "Operating Environment",
     "question": "Are any of the following statements true about this device?",
     "description": "This informs us about what other systems and processes this device is a part of.",
     "type": "select-multiple",
