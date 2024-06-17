@@ -28,6 +28,7 @@ import { MatDialog } from '@angular/material/dialog';
 })
 export class RiskAssessmentComponent implements OnDestroy {
   viewModel$ = this.store.viewModel$;
+  isOpenProfileForm = false;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   constructor(
     private store: RiskAssessmentStore,
@@ -37,6 +38,10 @@ export class RiskAssessmentComponent implements OnDestroy {
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
+  }
+
+  openForm(): void {
+    this.isOpenProfileForm = true;
   }
 
   deleteProfile(profileName: string, index: number): void {

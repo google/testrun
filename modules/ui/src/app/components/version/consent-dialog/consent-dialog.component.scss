@@ -30,6 +30,11 @@
 :host ::ng-deep .callout-container {
   margin: 0 !important;
   align-items: start !important;
+
+  &.check_circle,
+  &.warning_amber {
+    padding-top: 16px;
+  }
 }
 
 .content-container {

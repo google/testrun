@@ -578,4 +578,16 @@ describe('TestRunService', () => {
 
     req.error(new ErrorEvent(''));
   });
+
+  it('downloadZip should have necessary request data', () => {
+    service.downloadZip('localhost:8080/export/test', '').subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne('localhost:8080/export/test');
+
+    expect(req.request.method).toBe('POST');
+
+    req.flush(true);
+  });
 });

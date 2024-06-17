@@ -15,30 +15,28 @@
 
 from datetime import datetime
 
-SECONDS_IN_YEAR = 31536000
-
 class RiskProfile():
+  """Python representation of a risk profile"""
 
   def __init__(self, json_data):
     self.name = json_data['name']
-    self.status = json_data['status']
-    self.created = json_data['created']
+
+    if 'status' in json_data:
+      self.status = json_data['status']
+    else:
+      self.status = 'Draft'
+
+    self.created = datetime.strptime(json_data['created'],
+                                     '%Y-%m-%d')
     self.version = json_data['version']
     self.questions = json_data['questions']
 
-    # Check the profile has not expired
-    self.check_status()
-
-  def check_status(self):
-    if self.status == 'Valid':
-
-      # Check expiry
-      created_date = datetime.strptime(
-        self.created, "%Y-%m-%d %H:%M:%S").timestamp()
-
-      today = datetime.now().timestamp()
-
-      if created_date < (today - SECONDS_IN_YEAR):
-        self.status = 'Expired'
-
-    return self.status
+  def to_json(self):
+    json = {
+      'name': self.name,
+      'version': self.version,
+      'created': self.created.strftime('%Y-%m-%d'),
+      'status': self.status,
+      'questions': self.questions
+    }
+    return json

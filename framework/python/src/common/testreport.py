@@ -429,13 +429,13 @@ class TestReport():
   def generate_results(self, json_data, page_num):
 
     successful_tests = 0
-    for test in self._results:
+    for test in json_data['tests']['results']:
       if test['result'] != 'Error':
         successful_tests += 1
 
     result_list = f'''
       <div class="result-list">
-        <h3>Results List <small>({len(successful_tests)}/{self._total_tests})</small></h3>
+        <h3>Results List <small>({successful_tests}/{self._total_tests})</small></h3>
         <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
           <div class="result-list-header-label" style="left: .1in">Name</div>
           <div class="result-list-header-label" style="left: 2.8in">Description</div>
@@ -463,6 +463,8 @@ class TestReport():
       result_class = 'result-test-result-compliant'
     elif result['result'] == 'Error':
       result_class = 'result-test-result-error'
+    elif result['result'] == 'Feature Not Detected':
+      result_class = 'result-test-result-feature-not-detected'
     else:
       result_class = 'result-test-result-skipped'
 
@@ -1012,6 +1014,12 @@ class TestReport():
       background-color: #FCE8E6;
       color: #C5221F;
       left: 7.3in;
+    }
+
+    .result-test-result-feature-not-detected {
+      background-color: #dadce0;
+      color: #8d5c00;
+      left: 6.92in;
     }
 
     .result-test-result-non-compliant {
