@@ -17,7 +17,6 @@
 #set -o xtrace
 ip a
 TEST_DIR=/tmp/results
-TESTRUN_DIR=/usr/local/testrun
 MATRIX=testing/tests/test_tests.json
 
 rm -rf $TEST_DIR/
@@ -44,10 +43,10 @@ sudo /usr/share/openvswitch/scripts/ovs-ctl start
 sudo docker build ./testing/docker/test_device_4 -t test_device_4 -f  ./testing/docker/test_device_4/Dockerfile
 
 # Copy configuration to testrun
-sudo cp testing/tests/system.json $TESTRUN_DIR/local/system.json
+sudo cp testing/tests/system.json local/system.json
 
 # Copy device configs to testrun
-sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
+sudo cp -r testing/device_configs/* local/devices
 
 testrun_log=$TEST_DIR/test_device_4_testrun.log
 device_log=$TEST_DIR/test_device_4_device.log
@@ -127,8 +126,8 @@ done
 # Stop the test device now that we don't need it
 sudo docker kill test_device_4
 
-cp $TESTRUN_DIR/runtime/test/60706c000004/report.json $TEST_DIR/test_device_4.json
-more $TEST_DIR/test_device_4.json | cat
+cp runtime/test/60706c000004/report.json $TEST_DIR/test_device_4.json
+more test_device_4.json | cat
 
 more $testrun_log | cat
 
@@ -140,10 +139,10 @@ more $testrun_log | cat
 sudo docker build ./testing/docker/test_device_5 -t test_device_5 -f  ./testing/docker/test_device_5/Dockerfile
 
 # Copy configuration to testrun
-sudo cp testing/tests/system.json $TESTRUN_DIR/local/system.json
+sudo cp testing/tests/system.json local/system.json
 
 # Copy device configs to testrun
-sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
+sudo cp -r testing/device_configs/* local/devices
 
 testrun_log=$TEST_DIR/test_device_5_testrun.log
 device_log=$TEST_DIR/test_device_5_device.log
@@ -223,7 +222,7 @@ done
 # Stop the test device now that we don't need it
 sudo docker kill test_device_5
 
-cp $TESTRUN_DIR/runtime/test/0242aa000005/report.json $TEST_DIR/test_device_5.json
+cp runtime/test/0242aa000005/report.json $TEST_DIR/test_device_5.json
 more $TEST_DIR/test_device_5.json | cat
 
 more $testrun_log | cat
