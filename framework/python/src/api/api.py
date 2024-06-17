@@ -584,13 +584,52 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Report could not be found")
 
-  async def get_results(self, response: Response,
-                       device_name, timestamp):
-
-    file_path = os.path.join(DEVICES_PATH, device_name, "reports",
-                             timestamp, "results.zip")
+  async def get_results(self, request: Request,
+                        response: Response,
+                        device_name, timestamp):
     LOGGER.debug("Received get results " +
                  f"request for {device_name} / {timestamp}")
+
+    profile = None
+
+    try:
+      req_raw = (await request.body()).decode("UTF-8")
+      req_json = json.loads(req_raw)
+
+      # Check if profile has been specified
+      if "profile" in req_json:
+        profile_name = req_json.get("profile")
+        profile = self.get_session().get_profile(profile_name)
+
+        if profile is None:
+          response.status_code = status.HTTP_404_NOT_FOUND
+          return self._generate_msg(
+            False,
+            "A profile with that name could not be found")
+
+    except JSONDecodeError:
+      # Profile not specified
+      pass
+
+    # Check if device exists
+    device = self.get_session().get_device_by_name(device_name)
+    if device is None:
+      response.status_code = status.HTTP_404_NOT_FOUND
+      return self._generate_msg(False,
+                                "A device with that name could not be found")
+
+    file_path = self._get_test_run().get_test_orc().zip_results(
+      device,
+      timestamp,
+      profile
+    )
+
+    if file_path is None:
+      response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+      return self._generate_msg(
+        False,
+        "An error occurred whilst archiving test results")
+
     if os.path.isfile(file_path):
       return FileResponse(file_path)
     else:
