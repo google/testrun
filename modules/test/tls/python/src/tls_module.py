@@ -279,15 +279,17 @@ class TLSModule(TestModule):
       results = self._validate_tls_client(self._device_ipv4_addr, '1.2')
       # Determine results and return proper messaging and details
       description = ''
+      result = None
       if results[0] is None:
         description = 'No outbound connections were found'
-        return 'Feature Not Detected', description
+        result = 'Feature Not Detected'
       elif results[0]:
         description = 'TLS 1.2 client connections valid'
-        return True, description
+        result = 'True'
       else:
         description = 'TLS 1.2 client connections invalid'
-        return False, description
+        result = 'False'
+      return result, description,  results[1]
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'
