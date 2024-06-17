@@ -41,7 +41,7 @@ jobs:
       - name: Install Testrun
         shell: bash {0}
         timeout-minutes: 10
-        run: TESTRUN_DIR=. cmd/install
+        run: cmd/install -l
       - name: Run tests
         shell: bash {0}
         run: testing/tests/test_tests
