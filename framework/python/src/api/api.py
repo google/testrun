@@ -87,7 +87,8 @@ class Api:
     self._router.add_api_route("/report/{device_name}/{timestamp}",
                                self.get_report)
     self._router.add_api_route("/export/{device_name}/{timestamp}",
-                               self.get_results)
+                               self.get_results,
+                               methods=["POST"])
 
     self._router.add_api_route("/devices",
                                self.get_devices)
