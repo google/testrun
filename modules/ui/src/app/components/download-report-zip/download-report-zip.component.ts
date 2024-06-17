@@ -82,10 +82,7 @@ export class DownloadReportZipComponent
         }
 
         if (this.url != null) {
-          this.testrunService
-            .downloadZip(this.getZipLink(this.url), profile)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe();
+          this.testrunService.downloadZip(this.getZipLink(this.url), profile);
         }
       });
   }

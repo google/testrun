@@ -39,7 +39,6 @@ describe('DownloadReportZipComponent', () => {
 
   const testrunServiceMock: jasmine.SpyObj<TestRunService> =
     jasmine.createSpyObj('testrunServiceMock', ['downloadZip']);
-  testrunServiceMock.downloadZip.and.returnValue(of(true));
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
