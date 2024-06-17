@@ -109,6 +109,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # Load test modules
     self._test_orc.start()
 
+    # Start websockets server
+    self.start_ws()
+
     if self._no_ui:
 
       # Check Testrun is able to start
@@ -359,6 +362,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     LOGGER.info('Shutting down Testrun')
     self.stop()
     self._stop_ui()
+    self._stop_ws()
 
   def _exit_handler(self, signum, arg):  # pylint: disable=unused-argument
     LOGGER.debug('Exit signal received: ' + str(signum))
@@ -476,6 +480,41 @@ class Testrun:  # pylint: disable=too-few-public-methods
     client = docker.from_env()
     try:
       container = client.containers.get('tr-ui')
+      if container is not None:
+        container.kill()
+    except docker.errors.NotFound:
+      return
+
+  def start_ws(self):
+
+    self._stop_ws()
+
+    LOGGER.info('Starting WS server')
+
+    client = docker.from_env()
+
+    try:
+      client.containers.run(
+            image='testrun/ws',
+            auto_remove=True,
+            name='tr-ws',
+            detach=True,
+            ports={
+              '9001': 9001,
+              '1883': 1883
+            }
+      )
+    except ImageNotFound as ie:
+      LOGGER.error('An error occured whilst starting the websockets server. ' +
+                   'Please investigate and try again.')
+      LOGGER.error(ie)
+      sys.exit(1)
+
+  def _stop_ws(self):
+    LOGGER.info('Stopping websockets server')
+    client = docker.from_env()
+    try:
+      container = client.containers.get('tr-ws')
       if container is not None:
         container.kill()
     except docker.errors.NotFound:
