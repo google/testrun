@@ -79,6 +79,7 @@ class RiskProfileTest(unittest.TestCase):
     with open(risk_profile_path, 'r', encoding='utf-8') as file:
       risk_profile_json = json.loads(file.read())
 
+
 # Create the RiskProfile object from the json file
     risk_profile = RiskProfile(risk_profile_json, self.profile_format)
 
