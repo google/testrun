@@ -283,8 +283,4 @@ export class TestRunService {
   fetchProfilesFormat(): Observable<ProfileFormat[]> {
     return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
   }
-
-  fetchProfilesFormat(): Observable<ProfileFormat[]> {
-    return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
-  }
 }
