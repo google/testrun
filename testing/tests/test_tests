@@ -151,7 +151,7 @@ device_log=$TEST_DIR/test_device_5_device.log
 # Start Testrun
 touch $testrun_log
 
-sudo timeout 900 testrun --single-intf --no-ui > $testrun_log 2>&1 &
+sudo timeout 900 bin/testrun --single-intf --no-ui > $testrun_log 2>&1 &
 TPID=$!
 
 # Time to wait for testrun to be ready
