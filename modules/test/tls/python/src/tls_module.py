@@ -281,11 +281,13 @@ class TLSModule(TestModule):
       description = ''
       if results[0] is None:
         description = 'No outbound connections were found'
+        return 'Feature Not Detected', description
       elif results[0]:
         description = 'TLS 1.2 client connections valid'
+        return True, description
       else:
         description = 'TLS 1.2 client connections invalid'
-      return results[0], description,  results[1]
+        return False, description
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'
