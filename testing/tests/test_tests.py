@@ -22,11 +22,9 @@ import os
 from pathlib import Path
 import pytest
 import glob
-from pathlib import Path
-from dataclasses import dataclass
 
-TEST_MATRIX = 'test_tests.json'
-RESULTS_PATH = '/tmp/results/*.json'
+TEST_MATRIX = "test_tests.json"
+RESULTS_PATH = "/tmp/results/*.json"
 
 
 def collect_expected_results(expected_results):
@@ -41,15 +39,15 @@ def collect_actual_results(results_dict):
   """ Yields results from an already loaded testrun results file """
   collected_actual_results = {}
   # "module"."results".[list]."result"
-  for test in results_dict.get('tests', {}).get('results', []):
-    collected_actual_results.update({test['name']: test['result']})
+  for test in results_dict.get("tests", {}).get("results", []):
+    collected_actual_results.update({test["name"]: test["result"]})
   return collected_actual_results
 
 
 @pytest.fixture
 def test_matrix():
   basedir = os.path.dirname(os.path.abspath(__file__))
-  with open(os.path.join(basedir, TEST_MATRIX), encoding='utf-8') as f:
+  with open(os.path.join(basedir, TEST_MATRIX), encoding="utf-8") as f:
     return json.load(f)
 
 
@@ -57,7 +55,7 @@ def test_matrix():
 def results():
   results = {}
   for file in [Path(x) for x in glob.glob(RESULTS_PATH)]:
-    with open(file, encoding='utf-8') as f:
+    with open(file, encoding="utf-8") as f:
       results[file.stem] = json.load(f)
   return results
 
@@ -67,15 +65,17 @@ class Test:
   @pytest.mark.skip()
   def tester1(results, test_matrix):
     ''' Gathers expected and actual results and returns them as dictionaries'''
-    expected_result = collect_expected_results(test_matrix["tester4"]["expected_results"]) 
-    actual_result = collect_actual_results(results["test_device_4"]) 
+    expected_result = collect_expected_results(
+      test_matrix["tester4"]["expected_results"]) 
+    actual_result = collect_actual_results(results["test_device_4"])
     return expected_result, actual_result
   @staticmethod
   @pytest.mark.skip()
   def tester2(results, test_matrix):
     ''' Gathers expected and actual results and returns them as dictionaries'''
-    expected_result = collect_expected_results(test_matrix["tester5"]["expected_results"]) 
-    actual_result = collect_actual_results(results["test_device_5"]) 
+    expected_result = collect_expected_results(
+      test_matrix["tester5"]["expected_results"]) 
+    actual_result = collect_actual_results(results["test_device_5"])
     return expected_result, actual_result
 
 @pytest.fixture
@@ -123,7 +123,7 @@ def test_security_services_http_compliant(test, results, test_matrix):
   module = "security.services.http"
   expected, actual = test.tester1(results, test_matrix)
   assert expected[module] == actual[module] == "Compliant"
-  
+
 
 def test_security_services_telnet_compliant(test, results, test_matrix):
   module = "security.services.telnet"
@@ -141,7 +141,7 @@ def test_security_services_vnc_compliant(test, results, test_matrix):
   module = "security.services.vnc"
   expected, actual = test.tester1(results, test_matrix)
   assert expected[module] == actual[module] == "Compliant"
-  
+
 
 def test_ntp_network_ntp_support_compliant(test, results, test_matrix):
   module = "ntp.network.ntp_support"
@@ -201,7 +201,7 @@ def test_connection_single_ip_compliant(test, results, test_matrix):
 #   module = "connection.shared_address"
 #   expected, actual = test.tester1(results, test_matrix)
 #   assert expected[module] == actual[module] == "Compliant"
-  
+
 
 # def test_connection_ipaddr_ip_change_compliant(test, results, test_matrix):
 #   module = "connection.ipaddr.ip_change"
@@ -209,7 +209,8 @@ def test_connection_single_ip_compliant(test, results, test_matrix):
 #   assert expected[module] == actual[module] == "Compliant"
 
 
-# def test_connection_ipaddr_dhcp_failover_compliant(test, results, test_matrix):
+# def test_connection_ipaddr_dhcp_failover_compliant(
+# test, results, test_matrix):
 #   module = "connection.ipaddr.dhcp_failover"
 #   expected, actual = test.tester1(results, test_matrix)
 #   assert expected[module] == actual[module] == "Compliant"
@@ -249,7 +250,7 @@ def test_dns_network_hostname_resolution_compliant(test, results, test_matrix):
 #   module = "protocol.valid_modbus"
 #   expected, actual = test.tester1(results, test_matrix)
 #   assert expected[module] == actual[module] == "Compliant"
-  
+
 
 # def test_security_tls_v1_2_server_compliant(test, results, test_matrix):
 #   module = "security.tls.v1_2_server"
@@ -263,7 +264,7 @@ def test_dns_network_hostname_resolution_compliant(test, results, test_matrix):
 #   assert expected[module] == actual[module] == "Compliant"
 
 
-######################################################################################################
+######################################################################
 
 
 # def test_security_services_ftp_non_compliant(test, results, test_matrix):
@@ -386,13 +387,15 @@ def test_connection_target_ping_non_compliant(test, results, test_matrix):
 #   assert expected[module] == actual[module] == "Non-Compliant"
 
 
-# def test_connection_ipaddr_ip_change_non_compliant(test, results, test_matrix):
+# def test_connection_ipaddr_ip_change_non_compliant(
+# test, results, test_matrix):
 #   module = "connection.ipaddr.ip_change"
 #   expected, actual = test.tester2(results, test_matrix)
 #   assert expected[module] == actual[module] == "Non-Compliant"
 
 
-# def test_connection_ipaddr_dhcp_failover_non_compliant(test, results, test_matrix):
+# def test_connection_ipaddr_dhcp_failover_non_compliant(
+# test, results, test_matrix):
 #   module = "connection.ipaddr.dhcp_failover"
 #   expected, actual = test.tester2(results, test_matrix)
 #   assert expected[module] == actual[module] == "Non-Compliant"
@@ -410,7 +413,8 @@ def test_connection_ipv6_ping_non_compliant(test, results, test_matrix):
   assert expected[module] == actual[module] == "Non-Compliant"
 
 
-def test_dns_network_hostname_resolution_non_compliant(test, results, test_matrix):
+def test_dns_network_hostname_resolution_non_compliant(
+    test, results, test_matrix):
   module = "dns.network.hostname_resolution"
   expected, actual = test.tester2(results, test_matrix)
   assert expected[module] == actual[module] == "Non-Compliant"

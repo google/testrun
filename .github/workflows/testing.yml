@@ -7,6 +7,7 @@ on:
     - cron: '0 13 * * *'
 
 jobs:
+
   testrun_baseline:
     permissions: {}
     name:  Baseline
@@ -25,6 +26,25 @@ jobs:
       - name: Run baseline tests
         shell: bash {0}
         run: testing/baseline/test_baseline
+
+  testrun_tests:
+    permissions: {}
+    name:  Tests
+    runs-on: ubuntu-20.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Install dependencies
+        shell: bash {0}
+        run: cmd/prepare
+      - name: Install Testrun
+        shell: bash {0}
+        timeout-minutes: 10
+        run: TESTRUN_DIR=. cmd/install
+      - name: Run tests
+        shell: bash {0}
+        run: testing/tests/test_tests
 
   testrun_api:
     permissions: {}
