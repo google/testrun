@@ -1,0 +1,144 @@
+{
+  "name": "Primary profile",
+  "version": "v1.3",
+  "created": "2024-06-17 09:33:09.527835",
+  "status": "Draft",
+  "questions": [
+    {
+      "question": "What type of device is this?",
+      "type": "select",
+      "options": [
+        "IoT Sensor",
+        "IoT Controller",
+        "Smart Device",
+        "Something else"
+      ],
+      "answer": "IoT Sensor",
+      "validation": {
+        "required": true
+      }
+    },
+    {
+      "question": "How will this device be used at Google?",
+      "type": "text-long",
+      "answer": "Installed in a building",
+      "validation": {
+        "max": "128",
+        "required": true
+      }
+    },
+    {
+      "question": "What is the email of the device owner(s)?",
+      "type": "email-multiple",
+      "answer": "boddey@google.com, cmeredith@google.com",
+      "validation": {
+        "required": true,
+        "max": "128"
+      }
+    },
+    {
+      "question": "Is this device going to be managed by Google or a third party?",
+      "type": "select",
+      "options": [
+        "Google",
+        "Third Party"
+      ],
+      "answer": "Google",
+      "validation": {
+        "required": true
+      }
+    },
+    {
+      "question": "Will the third-party device administrator be able to grant access to authorized Google personnel upon request?",
+      "type": "select",
+      "options": [
+        "Yes",
+        "No",
+        "N/A"
+      ],
+      "default": "N/A",
+      "answer": "Yes",
+      "validation": {
+        "required": true
+      }
+    },
+    {
+      "category": "Data Transmission",
+      "question": "Which of the following statements are true about this device?",
+      "description": "This tells us about the types of data that are transmitted from this device and how the transmission is performed from a technical standpoint.",
+      "type": "select-multiple",
+      "answer": [
+        0,
+        1,
+        5
+      ],
+      "options": [
+        "PII/PHI, confidential business data, or crown jewel data is transmitted to a destination outside Alphabet's ownership",
+        "Data transmission occurs across less-trusted networks (e.g. the internet).",
+        "A failure in data transmission would likely have a substantial negative impact (https://www.rra.rocks/docs/standard_levels#levels-definitions)",
+        "A confidentiality breach during transmission would have a substantial negative impact",
+        "The device encrypts data during transmission",
+        "The device network protocol is well-established and currently used by Google"
+      ],
+      "validation": {
+        "required": true
+      }
+    },
+    {
+      "category": "Data Transmission",
+      "question": "Does the network protocol assure server-to-client identity verification?",
+      "type": "select",
+      "answer": "Yes",
+      "options": [
+        "Yes",
+        "No",
+        "I don't know"
+      ],
+      "validation": {
+        "required": true
+      }
+    },
+    {
+      "category": "Remote Operation",
+      "question": "Click the statements that best describe the characteristics of this device.",
+      "description": "This tells us about how this device is managed remotely.",
+      "type": "select-multiple",
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "options": [
+        "PII/PHI, or confidential business data is accessible from the device without authentication",
+        "Unrecoverable actions (e.g. disk wipe) can be performed remotely",
+        "Authentication is required for remote access",
+        "The management interface is accessible from the public internet",
+        "Static credentials are used for administration"
+      ],
+      "validation": {
+        "required": true
+      }
+    },
+    {
+      "category": "Operating Environment",
+      "question": "Are any of the following statements true about this device?",
+      "description": "This informs us about what other systems and processes this device is a part of.",
+      "type": "select-multiple",
+      "answer": [
+        2,
+        3
+      ],
+      "options": [
+        "The device monitors an environment for active risks to human life.",
+        "The device is used to convey people, or critical property.",
+        "The device controls robotics in human-accessible spaces.",
+        "The device controls physical access systems.",
+        "The device is involved in processes required by regulations, or compliance. (ex. privacy, security, safety regulations)",
+        "The device's failure would cause faults in other high-criticality processes."
+      ],
+      "validation": {
+        "required": true
+      }
+    }
+  ]
+}
