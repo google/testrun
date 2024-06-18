@@ -14,16 +14,56 @@
  * limitations under the License.
  */
 import { Injectable } from '@angular/core';
-import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import {
+  AbstractControl,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { Profile } from '../../../model/profile';
+
 @Injectable({ providedIn: 'root' })
 export class ProfileValidators {
+  readonly MULTIPLE_EMAIL_FORMAT_REGEXP = new RegExp(
+    '^(([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)(\\s*;\\s*|\\s*$))*$',
+    'i'
+  );
+
+  readonly STRING_FORMAT_REGEXP = new RegExp('^[^"\\\\]*$', 'u');
+
   public differentProfileName(profiles: Profile[]): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value?.trim();
       if (value && profiles.length) {
         const isSameProfileName = this.hasSameProfileName(value, profiles);
         return isSameProfileName ? { has_same_profile_name: true } : null;
+      }
+      return null;
+    };
+  }
+
+  public multiSelectRequired(g: FormGroup) {
+    if (Object.values(g.value).every(value => value === false)) {
+      return { required: true };
+    }
+    return null;
+  }
+
+  public emailStringFormat(maxLength: number = 128): ValidatorFn {
+    return this.stringFormat(this.MULTIPLE_EMAIL_FORMAT_REGEXP, maxLength);
+  }
+
+  public textFormat(maxLength: number = 128): ValidatorFn {
+    return this.stringFormat(this.STRING_FORMAT_REGEXP, maxLength);
+  }
+
+  private stringFormat(regExp: RegExp, maxLength: number = 28): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value?.trim();
+      if (value) {
+        if (value.length > maxLength) return { invalid_format: true };
+        const result = regExp.test(value);
+        return !result ? { invalid_format: true } : null;
       }
       return null;
     };

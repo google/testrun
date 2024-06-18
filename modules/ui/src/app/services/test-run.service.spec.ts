@@ -616,4 +616,20 @@ describe('TestRunService', () => {
       req.flush(result);
     });
   });
+
+  describe('fetchProfilesFormat', () => {
+    it('should get system status data with no changes', () => {
+      const result = { ...PROFILE_FORM };
+
+      service.fetchProfilesFormat().subscribe(res => {
+        expect(res).toEqual(result);
+      });
+
+      const req = httpTestingController.expectOne(
+        'http://localhost:8000/profiles/format'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(result);
+    });
+  });
 });
