@@ -17,7 +17,7 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { getTestBed, TestBed } from '@angular/core/testing';
+import { fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
 import { Device, TestModule } from '../model/device';
 
 import { TestRunService, UNAVAILABLE_VERSION } from './test-run.service';
@@ -579,17 +579,27 @@ describe('TestRunService', () => {
     req.error(new ErrorEvent(''));
   });
 
-  it('downloadZip should have necessary request data', () => {
-    service.downloadZip('localhost:8080/export/test', '').subscribe(res => {
-      expect(res).toEqual(true);
-    });
+  it('downloadZip should download zip', fakeAsync(() => {
+    // create spy object with a click() method
+    const spyObj = jasmine.createSpyObj('a', ['click', 'dispatchEvent']);
+    spyOn(document, 'createElement').and.returnValue(spyObj);
 
+    service.downloadZip('localhost:8080/export/test', '');
     const req = httpTestingController.expectOne('localhost:8080/export/test');
+    req.flush(new Blob());
+    tick();
 
     expect(req.request.method).toBe('POST');
 
-    req.flush(true);
-  });
+    expect(document.createElement).toHaveBeenCalledTimes(1);
+    expect(document.createElement).toHaveBeenCalledWith('a');
+
+    expect(spyObj.href).toBeDefined();
+    expect(spyObj.target).toBe('_blank');
+    expect(spyObj.download).toBe('report.zip');
+    expect(spyObj.dispatchEvent).toHaveBeenCalledTimes(1);
+    expect(spyObj.dispatchEvent).toHaveBeenCalledWith(new MouseEvent('click'));
+  }));
 
   describe('fetchProfilesFormat', () => {
     it('should get system status data with no changes', () => {
