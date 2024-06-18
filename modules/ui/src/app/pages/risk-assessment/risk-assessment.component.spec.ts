@@ -29,7 +29,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { PROFILE_MOCK } from '../../mocks/profile.mock';
 import { of } from 'rxjs';
 import { Component, Input } from '@angular/core';
-import { Profile } from '../../model/profile';
+import { Profile, ProfileFormat } from '../../model/profile';
 import { MatDialogRef } from '@angular/material/dialog';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { FocusManagerService } from '../../services/focus-manager.service';
@@ -54,6 +54,7 @@ describe('RiskAssessmentComponent', () => {
     mockRiskAssessmentStore = jasmine.createSpyObj('RiskAssessmentStore', [
       'deleteProfile',
       'setFocus',
+      'getProfilesFormat',
     ]);
 
     await TestBed.configureTestingModule({
@@ -87,6 +88,7 @@ describe('RiskAssessmentComponent', () => {
     beforeEach(() => {
       component.viewModel$ = of({
         profiles: [] as Profile[],
+        profileFormat: [],
       });
       mockRiskAssessmentStore.profiles$ = of([]);
       fixture.detectChanges();
@@ -130,6 +132,7 @@ describe('RiskAssessmentComponent', () => {
     beforeEach(() => {
       component.viewModel$ = of({
         profiles: [PROFILE_MOCK, PROFILE_MOCK],
+        profileFormat: [],
       });
       fixture.detectChanges();
     });
@@ -188,4 +191,5 @@ class FakeProfileItemComponent {
 })
 class FakeProfileFormComponent {
   @Input() profiles!: Profile[];
+  @Input() profileFormat!: ProfileFormat[];
 }

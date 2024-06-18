@@ -28,7 +28,7 @@ import {
 } from '../model/testrun-status';
 import { Version } from '../model/version';
 import { Certificate } from '../model/certificate';
-import { Profile } from '../model/profile';
+import { Profile, ProfileFormat } from '../model/profile';
 
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
@@ -259,5 +259,9 @@ export class TestRunService {
 
   downloadZip(url: string, profile: string) {
     return this.http.post(url, JSON.stringify({ profile }));
+  }
+
+  fetchProfilesFormat(): Observable<ProfileFormat[]> {
+    return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
   }
 }
