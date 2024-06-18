@@ -33,20 +33,21 @@ class RiskProfile():
     if profile_json is None or profile_format is None:
       return
     self.name = profile_json['name']
-    self.created = datetime.now()
+    self.created = datetime.now().strftime('%Y-%m-%d')
     self.version = profile_json['version']
     self.questions = profile_json['questions']
     self.status = None
     self.categories = None
+    self.risk = None
     self._validate(profile_json, profile_format)
     self._update_categories()
+    self._update_risk()
 
   # Load a profile without modifying the created date
   # but still validate the profile
   def load(self, profile_json, profile_format):
     self.name = profile_json['name']
-    self.created = datetime.strptime(profile_json['created'],
-                                     '%Y-%m-%d %H:%M:%S')
+    self.created = profile_json['created']
     self.version = profile_json['version']
     self.questions = profile_json['questions']
     self.status = None
@@ -54,6 +55,7 @@ class RiskProfile():
 
     self._validate(profile_json, profile_format)
     self._update_categories()
+    self._update_risk()
     return self
 
   def update(self, profile_json, profile_format):
@@ -88,6 +90,17 @@ class RiskProfile():
           self._get_category_status(REMOTE_OPERATION_CATEGORY))
       self.categories.append(
           self._get_category_status(OPERATING_ENVIRONMENT_CATEGORY))
+
+  def _update_risk(self):
+    if self.status == 'Valid':
+      risk = 'Limited'
+      for category in self.categories:
+        if 'status' in category and category['status'] == 'High':
+          risk = 'High'
+    else:
+      # Remove risk
+      risk = None
+    self.risk = risk
 
   def _check_answer(self, question):
     status = 'Limited'
@@ -152,7 +165,8 @@ class RiskProfile():
 
   def _expired(self):
     # Check expiry
-    created_date = self.created.timestamp()
+    created_date = datetime.strptime(
+      self.created, '%Y-%m-%d').timestamp()
     today = datetime.now().timestamp()
     return created_date < (today - SECONDS_IN_YEAR)
 
@@ -160,7 +174,7 @@ class RiskProfile():
     json_dict = {
         'name': self.name,
         'version': self.version,
-        'created': str(self.created),
+        'created': self.created,
         'status': self.status,
         'questions': self.questions
     }

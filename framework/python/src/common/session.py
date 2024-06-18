@@ -378,7 +378,10 @@ class TestrunSession():
           self._root_dir, PROFILES_DIR, risk_profile_file
         ), encoding='utf-8') as f:
           json_data = json.load(f)
-          risk_profile = RiskProfile.load(json_data)
+          risk_profile = RiskProfile()
+          risk_profile = risk_profile.load(
+            profile_json=json_data,
+            profile_format=self.get_profiles_format())
           self._profiles.append(risk_profile)
 
     except Exception as e:
@@ -409,12 +412,13 @@ class TestrunSession():
     if risk_profile is None:
 
       # Create a new risk profile
-      risk_profile = RiskProfile(profile_json)
+      risk_profile = RiskProfile(profile_json=profile_json,
+                                 profile_format=self.get_profiles_format())
       self._profiles.append(risk_profile)
 
     else:
 
-      risk_profile.update(profile_json)
+      risk_profile.update(profile_json, self.get_profiles_format())
       # Check if name has changed
       if 'rename' in profile_json:
         # Delete the original file
@@ -423,7 +427,7 @@ class TestrunSession():
       # Find the index of the risk_profile to replace
       index_to_replace = next(
         (index for (index, d) in enumerate(
-          self._profiles) if d['name'] == profile_name), None)
+          self._profiles) if d.name == profile_name), None)
 
       if index_to_replace is not None:
         self._profiles[index_to_replace] = risk_profile
@@ -434,7 +438,7 @@ class TestrunSession():
         PROFILES_DIR,
         risk_profile.name + '.json'
       ), 'w', encoding='utf-8') as f:
-      f.write(json.dumps(risk_profile.to_json()))
+      f.write(risk_profile.to_json())
 
     return risk_profile
 
