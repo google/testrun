@@ -415,7 +415,9 @@ class TestrunSession():
         os.remove(os.path.join(PROFILES_DIR, risk_profile.name + '.json'))
 
       # Find the index of the risk_profile to replace
-      index_to_replace = next((index for (index, d) in enumerate(self._profiles) if d['name'] == profile_name), None)
+      index_to_replace = next(
+        (index for (index, d) in enumerate(
+          self._profiles) if d['name'] == profile_name), None)
 
       if index_to_replace is not None:
         self._profiles[index_to_replace] = risk_profile

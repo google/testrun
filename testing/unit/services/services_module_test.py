@@ -45,7 +45,8 @@ class NMAPTest(unittest.TestCase):
     # Move test scan into expected folder
     src_scan_results_path = os.path.join(RESULTS_DIR,
                                          'ports_open_scan_result.json')
-    dst_scan_results_path = os.path.join(OUTPUT_DIR, 'services_scan_results.json')
+    dst_scan_results_path = os.path.join(
+      OUTPUT_DIR, 'services_scan_results.json')
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
     nmap_module = ServicesModule(module=MODULE,
@@ -77,7 +78,8 @@ class NMAPTest(unittest.TestCase):
   def nmap_module_report_all_closed_test(self):
     src_scan_results_path = os.path.join(RESULTS_DIR,
                                          'all_closed_scan_result.json')
-    dst_scan_results_path = os.path.join(OUTPUT_DIR, 'services_scan_results.json')
+    dst_scan_results_path = os.path.join(
+      OUTPUT_DIR, 'services_scan_results.json')
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
     nmap_module = ServicesModule(module=MODULE,
