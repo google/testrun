@@ -40,6 +40,7 @@ export const PROFILE_FORM: ProfileFormat[] = [
     type: FormControlType.TEXTAREA,
     validation: {
       required: true,
+      max: '28',
     },
     description: 'This tells us about the device',
   },
@@ -47,9 +48,8 @@ export const PROFILE_FORM: ProfileFormat[] = [
     question:
       'Has this device already been through a criticality assessment with testrun?',
     type: FormControlType.SELECT,
-    options: [],
+    options: ['1', '2', '3'],
     validation: {
-      max: '128',
       required: true,
     },
   },
@@ -67,5 +67,9 @@ export const PROFILE_FORM: ProfileFormat[] = [
     question: 'Comments',
     type: FormControlType.TEXT,
     description: 'Please enter any comments here',
+    validation: {
+      max: '28',
+      required: true,
+    },
   },
 ];

@@ -34,6 +34,9 @@
     &:first-child {
       padding-top: 0;
     }
+    &:has(+ .field-select-multiple.ng-invalid.ng-dirty) {
+      color: mat.get-color-from-palette($color-warn, 700);
+    }
   }
   mat-form-field {
     width: 100%;
