@@ -257,6 +257,12 @@ class TestrunSession():
   def get_target_device(self):
     return self._device
 
+  def get_device_by_name(self, device_name):
+    for device in self._device_repository:
+      if device.device_folder.lower() == device_name.lower():
+        return device
+    return None
+
   def get_device_repository(self):
     return self._device_repository
 
@@ -423,9 +429,11 @@ class TestrunSession():
         self._profiles[index_to_replace] = risk_profile
 
     # Write file to disk
-    with open(os.path.join(
-      PROFILES_DIR, risk_profile.name + '.json'), 'w',
-      encoding='utf-8') as f:
+    with open(
+      os.path.join(
+        PROFILES_DIR,
+        risk_profile.name + '.json'
+      ), 'w', encoding='utf-8') as f:
       f.write(json.dumps(risk_profile.to_json()))
 
     return risk_profile
