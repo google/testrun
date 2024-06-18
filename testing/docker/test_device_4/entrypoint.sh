@@ -14,6 +14,10 @@ function wout(){
     jq "$key+=\"$value\"" $OUT | sponge $OUT
 }
 
+# Block inbound NTP requests
+iptables -A INPUT -p udp --dport 123 -j DROP
+iptables -A OUTPUT -p udp --sport 123 -j DROP
+
 
 # Sets where the NTP packets are sent from
 ip addr add 10.10.10.14/24 dev $INTF
