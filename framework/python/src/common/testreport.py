@@ -1017,9 +1017,14 @@ class TestReport():
     }
 
     .result-test-result-feature-not-detected {
-      background-color: #dadce0;
-      color: #8d5c00;
+      background-color: #e3e3e3;
       left: 6.92in;
+    }
+
+    .result-test-result-informational {
+      background-color: #d9f0ff;
+      color: #0b5c8d;
+      left: 7.08in;
     }
 
     .result-test-result-non-compliant {
@@ -1047,7 +1052,7 @@ class TestReport():
     .result-test-result-skipped {
       background-color: #e3e3e3;
       color: #393939;
-      left: 7.22in;
+      left: 7.24in;
     }
 
     /* CSS for the footer */
