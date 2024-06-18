@@ -34,7 +34,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../store/state';
 import { Certificate } from '../model/certificate';
 import { certificate } from '../mocks/certificate.mock';
-import { PROFILE_MOCK } from '../mocks/profile.mock';
+import { PROFILE_FORM, PROFILE_MOCK } from '../mocks/profile.mock';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -589,5 +589,21 @@ describe('TestRunService', () => {
     expect(req.request.method).toBe('POST');
 
     req.flush(true);
+  });
+
+  describe('fetchProfilesFormat', () => {
+    it('should get system status data with no changes', () => {
+      const result = { ...PROFILE_FORM };
+
+      service.fetchProfilesFormat().subscribe(res => {
+        expect(res).toEqual(result);
+      });
+
+      const req = httpTestingController.expectOne(
+        'http://localhost:8000/profiles/format'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(result);
+    });
   });
 });
