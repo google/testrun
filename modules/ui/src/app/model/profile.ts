@@ -28,3 +28,35 @@ export interface Profile {
   name: string;
   sections: ProfileSection[];
 }
+
+export interface ProfileRequestBody {
+  name: string;
+  questions: Question[];
+}
+
+export interface Question {
+  question?: string;
+  answer?: string | number[];
+}
+
+export enum FormControlType {
+  SELECT = 'select',
+  TEXTAREA = 'text-long',
+  EMAIL_MULTIPLE = 'email-multiple',
+  SELECT_MULTIPLE = 'select-multiple',
+  TEXT = 'text',
+}
+
+export interface Validation {
+  required?: boolean;
+  max?: string;
+}
+
+export interface ProfileFormat {
+  question: string;
+  type: FormControlType;
+  description?: string;
+  options?: string[];
+  default?: string;
+  validation?: Validation;
+}

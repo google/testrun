@@ -14,6 +14,9 @@
 """Stores additional information about a device's risk"""
 
 from datetime import datetime
+import os
+
+PROFILES_PATH = 'local/risk_profiles'
 
 class RiskProfile():
   """Python representation of a risk profile"""
@@ -40,3 +43,7 @@ class RiskProfile():
       'questions': self.questions
     }
     return json
+
+  def get_file_path(self):
+    return os.path.join(PROFILES_PATH,
+                        self.name + '.json')

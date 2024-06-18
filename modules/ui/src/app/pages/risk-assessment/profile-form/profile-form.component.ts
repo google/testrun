@@ -20,19 +20,28 @@ import {
   OnInit,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatError, MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
   FormBuilder,
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
+  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { DeviceValidators } from '../../devices/components/device-form/device.validators';
-import { Profile } from '../../../model/profile';
+import {
+  FormControlType,
+  Profile,
+  ProfileFormat,
+  Validation,
+} from '../../../model/profile';
 import { ProfileValidators } from './profile.validators';
-import { MatError } from '@angular/material/form-field';
 
 @Component({
   selector: 'app-profile-form',
@@ -43,13 +52,18 @@ import { MatError } from '@angular/material/form-field';
     ReactiveFormsModule,
     MatInputModule,
     MatError,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatCheckboxModule,
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileFormComponent implements OnInit {
-  profileForm!: FormGroup;
+  public readonly FormControlType = FormControlType;
+  @Input() profileFormat!: ProfileFormat[];
+  profileForm: FormGroup = this.fb.group({});
   @Input() profiles!: Profile[];
   constructor(
     private deviceValidators: DeviceValidators,
@@ -57,24 +71,73 @@ export class ProfileFormComponent implements OnInit {
     private fb: FormBuilder
   ) {}
 
-  get nameControl() {
-    return this.profileForm.get('name') as AbstractControl;
-  }
-
   ngOnInit() {
-    this.createProfileForm();
+    this.profileForm = this.createProfileForm(this.profileFormat);
   }
 
-  createProfileForm() {
-    this.profileForm = this.fb.group({
-      name: [
-        '',
-        [
-          Validators.required,
-          this.deviceValidators.deviceStringFormat(),
-          this.profileValidators.differentProfileName(this.profiles),
-        ],
-      ],
+  get nameControl() {
+    return this.getControl('name');
+  }
+
+  getControl(name: string | number) {
+    return this.profileForm.get(name.toString()) as AbstractControl;
+  }
+
+  createProfileForm(questions: ProfileFormat[]): FormGroup {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const group: any = {};
+
+    group['name'] = new FormControl('', [
+      Validators.required,
+      this.deviceValidators.deviceStringFormat(),
+      this.profileValidators.differentProfileName(this.profiles),
+    ]);
+
+    questions.forEach((question, index) => {
+      const validators = this.getValidators(question.type, question.validation);
+      if (question.type === FormControlType.SELECT_MULTIPLE) {
+        group[index] = this.getMultiSelectGroup(question);
+      } else {
+        group[index] = new FormControl(question.default || '', validators);
+      }
     });
+    return new FormGroup(group);
+  }
+
+  getValidators(type: FormControlType, validation?: Validation): ValidatorFn[] {
+    const validators: ValidatorFn[] = [];
+    if (validation) {
+      if (validation.required) {
+        validators.push(Validators.required);
+      }
+      if (type === FormControlType.EMAIL_MULTIPLE) {
+        validators.push(
+          this.profileValidators.emailStringFormat(Number(validation.max))
+        );
+      }
+      if (type === FormControlType.TEXT || type === FormControlType.TEXTAREA) {
+        validators.push(
+          this.profileValidators.textFormat(Number(validation.max))
+        );
+      }
+    }
+    return validators;
+  }
+
+  getMultiSelectGroup(question: ProfileFormat): FormGroup {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const group: any = {};
+    question.options?.forEach((option, index) => {
+      group[index] = false;
+    });
+    return this.fb.group(group, {
+      validators: question.validation?.required
+        ? [this.profileValidators.multiSelectRequired]
+        : [],
+    });
+  }
+
+  getFormGroup(name: string): FormGroup {
+    return this.profileForm?.controls[name] as FormGroup;
   }
 }
