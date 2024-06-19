@@ -292,5 +292,38 @@ describe('ProfileFormComponent', () => {
         });
       }
     });
+
+    describe('Draft button', () => {
+      it('should be enabled when valid profile name is present', () => {
+        const name: HTMLInputElement = compiled.querySelector(
+          '.form-name'
+        ) as HTMLInputElement;
+        name.value = 'name';
+        name.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+        const draftButton = compiled.querySelector(
+          '.save-draft-button'
+        ) as HTMLButtonElement;
+
+        expect(draftButton.disabled).toBeFalse();
+      });
+    });
+
+    describe('Save button', () => {
+      it('should be enabled when required fields are present', () => {
+        component.nameControl.setValue('test');
+        component.getControl('0').setValue('test@test.test');
+        component.getControl('1').setValue('test');
+        component.getControl('2').setValue('test');
+        component.getControl('3').setValue({ 0: true, 1: true, 2: true });
+        component.getControl('4').setValue('test');
+        fixture.detectChanges();
+        const saveButton = compiled.querySelector(
+          '.save-profile-button'
+        ) as HTMLButtonElement;
+
+        expect(saveButton.disabled).toBeFalse();
+      });
+    });
   });
 });
