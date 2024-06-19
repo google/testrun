@@ -42,6 +42,15 @@ export class ProfileValidators {
     };
   }
 
+  public textRequired(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value.trim()) {
+        return { required: true };
+      }
+      return null;
+    };
+  }
+
   public multiSelectRequired(g: FormGroup) {
     if (Object.values(g.value).every(value => value === false)) {
       return { required: true };

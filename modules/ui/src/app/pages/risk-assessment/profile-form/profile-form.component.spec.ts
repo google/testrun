@@ -101,16 +101,18 @@ describe('ProfileFormComponent', () => {
         const name: HTMLInputElement = compiled.querySelector(
           '.form-name'
         ) as HTMLInputElement;
-        name.value = '';
-        name.dispatchEvent(new Event('input'));
-        component.nameControl.markAsTouched();
-        fixture.detectChanges();
+        ['', '     '].forEach(value => {
+          name.value = value;
+          name.dispatchEvent(new Event('input'));
+          component.nameControl.markAsTouched();
+          fixture.detectChanges();
 
-        const nameError = compiled.querySelector('mat-error')?.innerHTML;
-        const error = component.nameControl.hasError('required');
+          const nameError = compiled.querySelector('mat-error')?.innerHTML;
+          const error = component.nameControl.hasError('required');
 
-        expect(error).toBeTruthy();
-        expect(nameError).toContain('The Profile name is required');
+          expect(error).toBeTruthy();
+          expect(nameError).toContain('The Profile name is required');
+        });
       });
 
       it('should have "required" error when field is not filled', () => {
@@ -211,15 +213,17 @@ describe('ProfileFormComponent', () => {
             const input: HTMLInputElement = fields[uiIndex].querySelector(
               'input'
             ) as HTMLInputElement;
-            input.value = '';
-            input.dispatchEvent(new Event('input'));
-            component.getControl(index).markAsTouched();
-            fixture.detectChanges();
+            ['', '     '].forEach(value => {
+              input.value = value;
+              input.dispatchEvent(new Event('input'));
+              component.getControl(index).markAsTouched();
+              fixture.detectChanges();
 
-            const error =
-              fields[uiIndex].querySelector('mat-error')?.textContent;
+              const error =
+                fields[uiIndex].querySelector('mat-error')?.textContent;
 
-            expect(error).toContain('The field is required');
+              expect(error).toContain('The field is required');
+            });
           });
 
           it('should have "invalid_format" error when field does not satisfy validation rules', () => {
@@ -257,15 +261,17 @@ describe('ProfileFormComponent', () => {
             const input: HTMLInputElement = fields[uiIndex].querySelector(
               'input'
             ) as HTMLInputElement;
-            input.value = '';
-            input.dispatchEvent(new Event('input'));
-            component.getControl(index).markAsTouched();
-            fixture.detectChanges();
+            ['', '       '].forEach(value => {
+              input.value = value;
+              input.dispatchEvent(new Event('input'));
+              component.getControl(index).markAsTouched();
+              fixture.detectChanges();
 
-            const error =
-              fields[uiIndex].querySelector('mat-error')?.textContent;
+              const error =
+                fields[uiIndex].querySelector('mat-error')?.textContent;
 
-            expect(error).toContain('The field is required');
+              expect(error).toContain('The field is required');
+            });
           });
 
           it('should have "invalid_format" error when field does not satisfy validation rules', () => {

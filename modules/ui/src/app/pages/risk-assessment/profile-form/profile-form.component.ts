@@ -31,7 +31,6 @@ import {
   FormGroup,
   ReactiveFormsModule,
   ValidatorFn,
-  Validators,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { DeviceValidators } from '../../devices/components/device-form/device.validators';
@@ -88,7 +87,7 @@ export class ProfileFormComponent implements OnInit {
     const group: any = {};
 
     group['name'] = new FormControl('', [
-      Validators.required,
+      this.profileValidators.textRequired(),
       this.deviceValidators.deviceStringFormat(),
       this.profileValidators.differentProfileName(this.profiles),
     ]);
@@ -108,7 +107,7 @@ export class ProfileFormComponent implements OnInit {
     const validators: ValidatorFn[] = [];
     if (validation) {
       if (validation.required) {
-        validators.push(Validators.required);
+        validators.push(this.profileValidators.textRequired());
       }
       if (type === FormControlType.EMAIL_MULTIPLE) {
         validators.push(
