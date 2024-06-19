@@ -257,6 +257,12 @@ class TestrunSession():
   def get_target_device(self):
     return self._device
 
+  def get_device_by_name(self, device_name):
+    for device in self._device_repository:
+      if device.device_folder.lower() == device_name.lower():
+        return device
+    return None
+
   def get_device_repository(self):
     return self._device_repository
 
@@ -374,7 +380,7 @@ class TestrunSession():
           json_data = json.load(f)
           risk_profile = RiskProfile(json_data)
           risk_profile.status = self.check_profile_status(risk_profile)
-          self._profiles.append(risk_profile)
+          self._profiles.append(risk_profile)    
 
     except Exception as e:
       LOGGER.error('An error occurred whilst loading risk profiles')
@@ -406,8 +412,7 @@ class TestrunSession():
     for format_q in self.get_profiles_format():
       if self._get_profile_question(
         profile_json, format_q.get('question')) is None:
-        LOGGER.error(
-          'Missing question: ' + format_q.get('question'))
+        LOGGER.error('Missing question: ' + format_q.get('question'))
         return False
 
     return True
@@ -483,9 +488,11 @@ class TestrunSession():
       risk_profile.questions = profile_json.get('questions')
 
     # Write file to disk
-    with open(os.path.join(
-      PROFILES_DIR, risk_profile.name + '.json'), 'w',
-      encoding='utf-8') as f:
+    with open(
+      os.path.join(
+        PROFILES_DIR,
+        risk_profile.name + '.json'
+      ), 'w', encoding='utf-8') as f:
       f.write(json.dumps(risk_profile.to_json()))
 
     return risk_profile
