@@ -285,10 +285,10 @@ class TLSModule(TestModule):
         result = 'Feature Not Detected'
       elif results[0]:
         description = 'TLS 1.2 client connections valid'
-        result = 'True'
+        result = True
       else:
         description = 'TLS 1.2 client connections invalid'
-        result = 'False'
+        result = False
       return result, description,  results[1]
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
