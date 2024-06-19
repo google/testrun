@@ -96,7 +96,6 @@ sudo docker run -d \
   --cap-add=NET_ADMIN \
   -v /tmp:/out \
   --privileged \
-  --rm \
   --name=test_device_4 \
   test_device_4
 
@@ -121,7 +120,7 @@ done
 # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
 
 # more runtime/network/*.log | cat 
-# sudo docker logs test_device_4 | cat
+sudo docker logs test_device_4 >& $device_log
 
 # Stop the test device now that we don't need it
 sudo docker kill test_device_4
@@ -192,7 +191,6 @@ sudo docker run -d \
   --cap-add=NET_ADMIN \
   -v /tmp:/out \
   --privileged \
-  --rm \
   --name=test_device_5 \
   test_device_5
 
@@ -217,7 +215,7 @@ done
 # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
 
 # more runtime/network/*.log | cat 
-# sudo docker logs test_device_5 | cat
+sudo docker logs test_device_5 >& $device_log
 
 # Stop the test device now that we don't need it
 sudo docker kill test_device_5
