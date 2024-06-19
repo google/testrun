@@ -76,10 +76,10 @@ def parse_args():
       help="Define the configuration file for Testrun and Network Orchestrator"
   )
   parser.add_argument(
-      "--validate",
+      "--no-validate",
       default=False,
       action="store_true",
-      help="Turn on the validation of the network after network boot")
+      help="Turn off the validation of the network after network boot")
   parser.add_argument("-net",
                       "--net-only",
                       action="store_true",
@@ -98,7 +98,7 @@ def parse_args():
 if __name__ == "__main__":
   args = parse_args()
   runner = TestRunner(config_file=args.config_file,
-                      validate=args.validate,
+                      validate=not args.no_validate,
                       net_only=args.net_only,
                       single_intf=args.single_intf,
                       no_ui=args.no_ui)
