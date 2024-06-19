@@ -21,6 +21,7 @@ import shlex
 import typing as t
 from common import logger
 import netifaces
+import docker
 
 LOGGER = logger.get_logger('util')
 
@@ -163,3 +164,19 @@ def diff_dicts(d1: t.Dict[t.Any, t.Any], d2: t.Dict[t.Any, t.Any]) -> t.Dict:
     if items_added:
       diff['items_added'] = items_added
   return diff
+
+
+def get_docker_host_by_name(container_name: str) -> str:
+  """_summary_
+
+  Args:
+      container_name (str): container name
+
+  Returns:
+      str: container ip
+  """
+  client = docker.DockerClient()
+  container = client.containers.get(container_name)
+  if not container.attrs['State']['Running']:
+    raise Exception(f"Container {container_name} is not running")
+  return container.attrs['NetworkSettings']['IPAddress']
