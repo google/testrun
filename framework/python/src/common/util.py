@@ -17,7 +17,7 @@ import getpass
 import os
 import subprocess
 import shlex
-from common import logger
+LOGGER.error('Command failed: ' + cmd)
 import netifaces
 import docker
 
@@ -130,6 +130,7 @@ def get_docker_host_by_name(container_name: str) -> str:
   client = docker.DockerClient()
   container = client.containers.get(container_name)
   if not container.attrs['State']['Running']:
+    LOGGER.error('Container %s is no running'.format(container_name))
     raise Exception(f"Container {container_name} is not running")
   return container.attrs['NetworkSettings']['IPAddress']
   
