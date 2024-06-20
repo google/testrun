@@ -74,3 +74,24 @@ export const PROFILE_FORM: ProfileFormat[] = [
     },
   },
 ];
+
+export const NEW_PROFILE_MOCK = {
+  name: 'test',
+  questions: [
+    { question: 'Email', answer: 'test@test.test' },
+    {
+      question: 'What type of device do you need reviewed?',
+      answer: 'test',
+    },
+    {
+      question:
+        'Has this device already been through a criticality assessment with testrun?',
+      answer: 'test',
+    },
+    {
+      question: 'What features does the device have?',
+      answer: [0, 1, 2],
+    },
+    { question: 'Comments', answer: 'test' },
+  ],
+};

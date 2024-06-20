@@ -60,3 +60,13 @@ export interface ProfileFormat {
   default?: string;
   validation?: Validation;
 }
+
+export interface ProfileRequestBody {
+  name: string;
+  questions: Question[];
+}
+
+export interface Question {
+  question?: string;
+  answer?: string | number[];
+}

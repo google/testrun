@@ -18,6 +18,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProfileFormComponent } from './profile-form.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
+  NEW_PROFILE_MOCK,
   PROFILE_FORM,
   PROFILE_MOCK,
   PROFILE_MOCK_2,
@@ -307,7 +308,7 @@ describe('ProfileFormComponent', () => {
     });
 
     describe('Save button', () => {
-      it('should be enabled when required fields are present', () => {
+      beforeEach(() => {
         component.nameControl.setValue('test');
         component.getControl('0').setValue('a@test.te;b@test.te, c@test.te');
         component.getControl('1').setValue('test');
@@ -315,11 +316,24 @@ describe('ProfileFormComponent', () => {
         component.getControl('3').setValue({ 0: true, 1: true, 2: true });
         component.getControl('4').setValue('test');
         fixture.detectChanges();
+      });
+
+      it('should be enabled when required fields are present', () => {
         const saveButton = compiled.querySelector(
           '.save-profile-button'
         ) as HTMLButtonElement;
 
         expect(saveButton.disabled).toBeFalse();
+      });
+
+      it('should emit new profile', () => {
+        const emitSpy = spyOn(component.saveProfile, 'emit');
+        const saveButton = compiled.querySelector(
+          '.save-profile-button'
+        ) as HTMLButtonElement;
+        saveButton.click();
+
+        expect(emitSpy).toHaveBeenCalledWith(NEW_PROFILE_MOCK);
       });
     });
   });

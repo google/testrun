@@ -60,6 +60,7 @@ describe('RiskAssessmentComponent', () => {
       'deleteProfile',
       'setFocus',
       'getProfilesFormat',
+      'saveProfile',
     ]);
 
     await TestBed.configureTestingModule({
@@ -199,6 +200,17 @@ describe('RiskAssessmentComponent', () => {
         expect(
           mockFocusManagerService.focusFirstElementInContainer
         ).toHaveBeenCalled();
+      });
+    });
+
+    describe('#saveProfile', () => {
+      it('should call store saveProfile', () => {
+        component.saveProfile({ name: 'test', questions: [] });
+
+        expect(mockRiskAssessmentStore.saveProfile).toHaveBeenCalledWith({
+          name: 'test',
+          questions: [],
+        });
       });
     });
   });

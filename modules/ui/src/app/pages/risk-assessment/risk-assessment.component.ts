@@ -25,6 +25,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { ProfileRequestBody } from '../../model/profile';
 
 @Component({
   selector: 'app-risk-assessment',
@@ -81,6 +82,10 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
           this.setFocus(index);
         }
       });
+  }
+
+  saveProfile(profile: ProfileRequestBody): void {
+    this.store.saveProfile(profile);
   }
 
   private setFocus(index: number): void {

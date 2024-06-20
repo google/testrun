@@ -23,7 +23,8 @@ limitations under the License.
         <div class="main-content">
           <app-profile-form
             [profiles]="vm.profiles"
-            [profileFormat]="vm.profileFormat"></app-profile-form>
+            [profileFormat]="vm.profileFormat"
+            (saveProfile)="saveProfile($event)"></app-profile-form>
         </div>
       </mat-drawer-content>
     </mat-drawer-container>
