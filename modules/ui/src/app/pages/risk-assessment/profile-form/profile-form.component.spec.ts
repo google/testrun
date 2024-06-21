@@ -337,4 +337,13 @@ describe('ProfileFormComponent', () => {
       });
     });
   });
+
+  describe('Class tests', () => {
+    it('should reset form on save', () => {
+      const spyOnReset = spyOn(component.profileForm, 'reset');
+      component.onSaveClick();
+
+      expect(spyOnReset).toHaveBeenCalled();
+    });
+  });
 });

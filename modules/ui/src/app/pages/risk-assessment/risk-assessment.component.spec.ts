@@ -212,6 +212,12 @@ describe('RiskAssessmentComponent', () => {
           questions: [],
         });
       });
+
+      it('should close the form', () => {
+        component.saveProfile({ name: 'test', questions: [] });
+
+        expect(component.isOpenProfileForm).toBeFalse();
+      });
     });
   });
 });

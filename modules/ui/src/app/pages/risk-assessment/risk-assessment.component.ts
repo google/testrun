@@ -86,6 +86,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
 
   saveProfile(profile: ProfileRequestBody): void {
     this.store.saveProfile(profile);
+    this.isOpenProfileForm = false;
   }
 
   private setFocus(index: number): void {

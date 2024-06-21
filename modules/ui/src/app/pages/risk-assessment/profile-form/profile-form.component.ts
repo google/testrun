@@ -153,6 +153,7 @@ export class ProfileFormComponent implements OnInit {
       this.profileFormat,
       this.profileForm
     );
+    this.profileForm.reset();
     this.saveProfile.emit(response);
   }
 
@@ -161,7 +162,7 @@ export class ProfileFormComponent implements OnInit {
     profileForm: FormGroup
   ): ProfileRequestBody {
     const request: ProfileRequestBody = {
-      name: this.nameControl.value.trim(),
+      name: this.nameControl.value?.trim(),
       questions: [],
     };
     const questions: Question[] = [];
@@ -180,7 +181,7 @@ export class ProfileFormComponent implements OnInit {
         });
         question.answer = answer;
       } else {
-        question.answer = profileForm.value[index].trim();
+        question.answer = profileForm.value[index]?.trim();
       }
       questions.push(question);
     });
