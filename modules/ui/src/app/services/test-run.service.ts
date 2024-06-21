@@ -28,7 +28,7 @@ import {
 } from '../model/testrun-status';
 import { Version } from '../model/version';
 import { Certificate } from '../model/certificate';
-import { Profile } from '../model/profile';
+import { Profile, ProfileFormat } from '../model/profile';
 
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
@@ -258,6 +258,29 @@ export class TestRunService {
   }
 
   downloadZip(url: string, profile: string) {
-    return this.http.post(url, JSON.stringify({ profile }));
+    this.http
+      .post(url, JSON.stringify({ profile }), {
+        responseType: 'blob',
+        observe: 'response',
+      })
+      .subscribe(response => {
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let fileName = contentDisposition?.split(';')[1].trim().split('=')[1];
+        fileName = fileName?.replace(/"/g, '');
+
+        const blob = new Blob([response.body as BlobPart], {
+          type: 'application/zip',
+        });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.target = '_blank';
+        link.download = fileName ?? 'report.zip';
+        link.dispatchEvent(new MouseEvent('click'));
+      });
+  }
+
+  fetchProfilesFormat(): Observable<ProfileFormat[]> {
+    return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
   }
 }
