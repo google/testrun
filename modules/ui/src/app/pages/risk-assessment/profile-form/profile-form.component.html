@@ -15,7 +15,6 @@ limitations under the License.
 -->
 <form [formGroup]="profileForm" class="profile-form">
   <div class="field-container">
-    <!-- TODO move profile name to json (in scope of validation) -->
     <p class="field-label">Profile name *</p>
     <mat-form-field
       appearance="outline"
@@ -61,15 +60,15 @@ limitations under the License.
   </div>
 </form>
 <div class="form-actions">
-  <button mat-flat-button color="primary" class="save-profile-button">
-    Save Profile
-  </button>
-  <button mat-flat-button class="save-draft-button">Save Draft</button>
   <button
     mat-flat-button
-    class="discard-button"
-    [disabled]="profileForm.pristine">
-    Discard
+    color="primary"
+    class="save-profile-button"
+    [disabled]="!profileForm.valid">
+    Save Profile
+  </button>
+  <button mat-button class="save-draft-button" [disabled]="!nameControl.valid">
+    Save Draft
   </button>
 </div>
 
@@ -170,6 +169,15 @@ limitations under the License.
       id="{{ formControlName }}-group"
       [formControlName]="formControlName" />
     <mat-hint *ngIf="description">{{ description }}</mat-hint>
+    <mat-error
+      *ngIf="getControl(formControlName).hasError('invalid_format')"
+      role="alert"
+      aria-live="assertive">
+      <span>Please, check. “ and \ are not allowed.</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
   </mat-form-field>
 </ng-template>
 
@@ -187,6 +195,15 @@ limitations under the License.
       id="{{ formControlName }}-group"
       [formControlName]="formControlName" />
     <mat-hint *ngIf="description">{{ description }}</mat-hint>
+    <mat-error
+      *ngIf="getControl(formControlName).hasError('invalid_format')"
+      role="alert"
+      aria-live="assertive">
+      <span>Please, check. “ and \ are not allowed.</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
   </mat-form-field>
 </ng-template>
 
@@ -204,6 +221,15 @@ limitations under the License.
       id="{{ formControlName }}-group"
       [formControlName]="formControlName" />
     <mat-hint *ngIf="description">{{ description }}</mat-hint>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('invalid_format')">
+      <span
+        >Please, check the email address. Valid e-mail can contain only latin
+        letters, numbers, &#64; and . (dot).</span
+      >
+    </mat-error>
   </mat-form-field>
 </ng-template>
 
@@ -252,5 +278,8 @@ limitations under the License.
     <mat-hint *ngIf="description" class="field-hint">{{
       description
     }}</mat-hint>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
   </mat-form-field>
 </ng-template>

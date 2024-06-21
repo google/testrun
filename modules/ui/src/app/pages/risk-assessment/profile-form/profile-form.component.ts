@@ -20,25 +20,27 @@ import {
   OnInit,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatError, MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
-  FormControl,
   FormBuilder,
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
-  Validators,
+  ValidatorFn,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { DeviceValidators } from '../../devices/components/device-form/device.validators';
-import { Profile } from '../../../model/profile';
+import {
+  FormControlType,
+  Profile,
+  ProfileFormat,
+  Validation,
+} from '../../../model/profile';
 import { ProfileValidators } from './profile.validators';
-import { MatError } from '@angular/material/form-field';
-
-import { FormControlType, ProfileFormat } from '../../../model/profile';
 
 @Component({
   selector: 'app-profile-form',
@@ -73,7 +75,11 @@ export class ProfileFormComponent implements OnInit {
   }
 
   get nameControl() {
-    return this.profileForm.get('name') as AbstractControl;
+    return this.getControl('name');
+  }
+
+  getControl(name: string | number) {
+    return this.profileForm.get(name.toString()) as AbstractControl;
   }
 
   createProfileForm(questions: ProfileFormat[]): FormGroup {
@@ -81,19 +87,40 @@ export class ProfileFormComponent implements OnInit {
     const group: any = {};
 
     group['name'] = new FormControl('', [
-      Validators.required,
+      this.profileValidators.textRequired(),
       this.deviceValidators.deviceStringFormat(),
       this.profileValidators.differentProfileName(this.profiles),
     ]);
 
     questions.forEach((question, index) => {
+      const validators = this.getValidators(question.type, question.validation);
       if (question.type === FormControlType.SELECT_MULTIPLE) {
         group[index] = this.getMultiSelectGroup(question);
       } else {
-        group[index] = new FormControl(question.default || '');
+        group[index] = new FormControl(question.default || '', validators);
       }
     });
     return new FormGroup(group);
+  }
+
+  getValidators(type: FormControlType, validation?: Validation): ValidatorFn[] {
+    const validators: ValidatorFn[] = [];
+    if (validation) {
+      if (validation.required) {
+        validators.push(this.profileValidators.textRequired());
+      }
+      if (type === FormControlType.EMAIL_MULTIPLE) {
+        validators.push(
+          this.profileValidators.emailStringFormat(Number(validation.max))
+        );
+      }
+      if (type === FormControlType.TEXT || type === FormControlType.TEXTAREA) {
+        validators.push(
+          this.profileValidators.textFormat(Number(validation.max))
+        );
+      }
+    }
+    return validators;
   }
 
   getMultiSelectGroup(question: ProfileFormat): FormGroup {
@@ -102,7 +129,11 @@ export class ProfileFormComponent implements OnInit {
     question.options?.forEach((option, index) => {
       group[index] = false;
     });
-    return this.fb.group(group);
+    return this.fb.group(group, {
+      validators: question.validation?.required
+        ? [this.profileValidators.multiSelectRequired]
+        : [],
+    });
   }
 
   getFormGroup(name: string): FormGroup {

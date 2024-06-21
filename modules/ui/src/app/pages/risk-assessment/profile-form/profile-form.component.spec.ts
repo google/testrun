@@ -101,16 +101,18 @@ describe('ProfileFormComponent', () => {
         const name: HTMLInputElement = compiled.querySelector(
           '.form-name'
         ) as HTMLInputElement;
-        name.value = '';
-        name.dispatchEvent(new Event('input'));
-        component.nameControl.markAsTouched();
-        fixture.detectChanges();
+        ['', '     '].forEach(value => {
+          name.value = value;
+          name.dispatchEvent(new Event('input'));
+          component.nameControl.markAsTouched();
+          fixture.detectChanges();
 
-        const nameError = compiled.querySelector('mat-error')?.innerHTML;
-        const error = component.nameControl.hasError('required');
+          const nameError = compiled.querySelector('mat-error')?.innerHTML;
+          const error = component.nameControl.hasError('required');
 
-        expect(error).toBeTruthy();
-        expect(nameError).toContain('The Profile name is required');
+          expect(error).toBeTruthy();
+          expect(nameError).toContain('The Profile name is required');
+        });
       });
 
       it('should have "required" error when field is not filled', () => {
@@ -173,12 +175,161 @@ describe('ProfileFormComponent', () => {
       });
 
       if (item.type === FormControlType.SELECT) {
-        it(`should have default value if provided`, () => {
-          const fields = compiled.querySelectorAll('.profile-form-field');
-          const select = fields[uiIndex].querySelector('mat-select');
-          expect(select?.textContent?.trim()).toEqual(item.default || '');
+        describe('select', () => {
+          it(`should have default value if provided`, () => {
+            const fields = compiled.querySelectorAll('.profile-form-field');
+            const select = fields[uiIndex].querySelector('mat-select');
+            expect(select?.textContent?.trim()).toEqual(item.default || '');
+          });
+
+          it('should have "required" error when field is not filled', () => {
+            const fields = compiled.querySelectorAll('.profile-form-field');
+            const select = fields[uiIndex].querySelector(
+              'mat-select'
+            ) as HTMLElement;
+
+            select.focus();
+            select.blur();
+
+            component.getControl(index).markAsTouched();
+            fixture.detectChanges();
+
+            const error = fields[uiIndex].querySelector('mat-error')?.innerHTML;
+
+            expect(error).toContain('The field is required');
+          });
         });
       }
+
+      if (
+        (item.type === FormControlType.TEXT ||
+          item.type === FormControlType.TEXTAREA) &&
+        item.validation?.required
+      ) {
+        describe('text or text-long', () => {
+          it('should have "required" error when field is not filled', () => {
+            const fields = compiled.querySelectorAll('.profile-form-field');
+            const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
+            const input: HTMLInputElement = fields[uiIndex].querySelector(
+              'input'
+            ) as HTMLInputElement;
+            ['', '     '].forEach(value => {
+              input.value = value;
+              input.dispatchEvent(new Event('input'));
+              component.getControl(index).markAsTouched();
+              fixture.detectChanges();
+
+              const error =
+                fields[uiIndex].querySelector('mat-error')?.textContent;
+
+              expect(error).toContain('The field is required');
+            });
+          });
+
+          it('should have "invalid_format" error when field does not satisfy validation rules', () => {
+            [
+              'very long value very long value very long value very long value very long value very long value very long value very long value very long value very long value',
+              'as\\\\\\\\\\""""""""',
+            ].forEach(value => {
+              const fields = compiled.querySelectorAll('.profile-form-field');
+              const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
+              const input: HTMLInputElement = fields[uiIndex].querySelector(
+                'input'
+              ) as HTMLInputElement;
+              input.value = value;
+              input.dispatchEvent(new Event('input'));
+              component.getControl(index).markAsTouched();
+              fixture.detectChanges();
+
+              const error = compiled.querySelector('mat-error')?.textContent;
+              expect(error).toContain(
+                'Please, check. “ and \\ are not allowed.'
+              );
+            });
+          });
+        });
+      }
+
+      if (
+        item.type === FormControlType.EMAIL_MULTIPLE &&
+        item.validation?.required
+      ) {
+        describe('text or text-long', () => {
+          it('should have "required" error when field is not filled', () => {
+            const fields = compiled.querySelectorAll('.profile-form-field');
+            const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
+            const input: HTMLInputElement = fields[uiIndex].querySelector(
+              'input'
+            ) as HTMLInputElement;
+            ['', '       '].forEach(value => {
+              input.value = value;
+              input.dispatchEvent(new Event('input'));
+              component.getControl(index).markAsTouched();
+              fixture.detectChanges();
+
+              const error =
+                fields[uiIndex].querySelector('mat-error')?.textContent;
+
+              expect(error).toContain('The field is required');
+            });
+          });
+
+          it('should have "invalid_format" error when field does not satisfy validation rules', () => {
+            [
+              'very long value very long value very long value very long value very long value very long value very long value very long value very long value very long value',
+              'as\\\\\\\\\\""""""""',
+            ].forEach(value => {
+              const fields = compiled.querySelectorAll('.profile-form-field');
+              const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
+              const input: HTMLInputElement = fields[uiIndex].querySelector(
+                'input'
+              ) as HTMLInputElement;
+              input.value = value;
+              input.dispatchEvent(new Event('input'));
+              component.getControl(index).markAsTouched();
+              fixture.detectChanges();
+
+              const error = compiled.querySelector('mat-error')?.textContent;
+              expect(error).toContain(
+                'Please, check the email address. Valid e-mail can contain only latin letters, numbers, @ and . (dot).'
+              );
+            });
+          });
+        });
+      }
+    });
+
+    describe('Draft button', () => {
+      it('should be enabled when valid profile name is present', () => {
+        const name: HTMLInputElement = compiled.querySelector(
+          '.form-name'
+        ) as HTMLInputElement;
+        name.value = 'name';
+        name.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+        const draftButton = compiled.querySelector(
+          '.save-draft-button'
+        ) as HTMLButtonElement;
+
+        expect(draftButton.disabled).toBeFalse();
+      });
+    });
+
+    describe('Save button', () => {
+      it('should be enabled when required fields are present', () => {
+        component.nameControl.setValue('test');
+        component.getControl('0').setValue('test@test.test');
+        component.getControl('1').setValue('test');
+        component.getControl('2').setValue('test');
+        component.getControl('3').setValue({ 0: true, 1: true, 2: true });
+        component.getControl('4').setValue('test');
+        fixture.detectChanges();
+        const saveButton = compiled.querySelector(
+          '.save-profile-button'
+        ) as HTMLButtonElement;
+
+        expect(saveButton.disabled).toBeFalse();
+      });
     });
   });
 });

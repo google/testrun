@@ -34,6 +34,9 @@
     &:first-child {
       padding-top: 0;
     }
+    &:has(+ .field-select-multiple.ng-invalid.ng-dirty) {
+      color: mat.get-color-from-palette($color-warn, 700);
+    }
   }
   mat-form-field {
     width: 100%;
@@ -54,8 +57,7 @@
   padding: 8px 24px 24px 24px;
 }
 
-.save-draft-button,
-.discard-button {
+.save-draft-button:not(.mat-mdc-button-disabled) {
   color: $primary;
 }
 
