@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The overall control of the Test Run application.
+"""The overall control of the Testrun application.
 
 This file provides the integration between all of the
 Test Run components, such as net_orc, test_orc and test_ui.
@@ -61,7 +61,7 @@ DEVICE_TEST_MODULES = 'test_modules'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
 class Testrun:  # pylint: disable=too-few-public-methods
-  """Test Run controller.
+  """Testrun controller.
 
   Creates an instance of the network orchestrator, test
   orchestrator and user interface.
@@ -519,3 +519,4 @@ class Testrun:  # pylint: disable=too-few-public-methods
         container.kill()
     except docker.errors.NotFound:
       return
+

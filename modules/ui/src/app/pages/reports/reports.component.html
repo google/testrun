@@ -152,6 +152,7 @@ limitations under the License.
               </app-download-report-pdf>
               <app-download-report-zip
                 *ngIf="data?.device"
+                [data]="data"
                 [url]="data.report"
                 [hasProfiles]="vm.hasProfiles"
                 [profiles]="vm.profiles">
