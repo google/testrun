@@ -76,6 +76,7 @@ export const PROFILE_FORM: ProfileFormat[] = [
 ];
 
 export const NEW_PROFILE_MOCK = {
+  status: 'Valid',
   name: 'test',
   questions: [
     { question: 'Email', answer: 'test@test.test' },

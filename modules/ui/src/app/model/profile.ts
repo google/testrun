@@ -32,6 +32,7 @@ export interface Profile {
 export interface ProfileRequestBody {
   name: string;
   questions: Question[];
+  status?: string;
 }
 
 export interface Question {

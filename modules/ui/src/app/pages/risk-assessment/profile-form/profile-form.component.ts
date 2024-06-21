@@ -67,6 +67,7 @@ import { ProfileValidators } from './profile.validators';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileFormComponent implements OnInit {
+  private readonly VALID_STATUS = 'Valid';
   public readonly FormControlType = FormControlType;
   @Input() profileFormat!: ProfileFormat[];
   profileForm: FormGroup = this.fb.group({});
@@ -151,7 +152,8 @@ export class ProfileFormComponent implements OnInit {
   onSaveClick() {
     const response = this.buildResponseFromForm(
       this.profileFormat,
-      this.profileForm
+      this.profileForm,
+      true
     );
     this.profileForm.reset();
     this.saveProfile.emit(response);
@@ -159,7 +161,8 @@ export class ProfileFormComponent implements OnInit {
 
   buildResponseFromForm(
     initialQuestions: ProfileFormat[],
-    profileForm: FormGroup
+    profileForm: FormGroup,
+    isValid?: boolean
   ): ProfileRequestBody {
     const request: ProfileRequestBody = {
       name: this.nameControl.value?.trim(),
@@ -188,6 +191,9 @@ export class ProfileFormComponent implements OnInit {
 
     request.questions = questions;
 
+    if (isValid) {
+      request.status = this.VALID_STATUS;
+    }
     return request;
   }
 }
