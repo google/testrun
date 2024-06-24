@@ -23,6 +23,8 @@ import { RiskAssessmentStore } from './risk-assessment.store';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
+import { FocusManagerService } from '../../services/focus-manager.service';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-risk-assessment',
@@ -37,7 +39,9 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   private destroy$: Subject<boolean> = new Subject<boolean>();
   constructor(
     private store: RiskAssessmentStore,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private focusManagerService: FocusManagerService,
+    private liveAnnouncer: LiveAnnouncer
   ) {}
 
   ngOnInit() {
@@ -49,8 +53,10 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
-  openForm(): void {
+  async openForm() {
     this.isOpenProfileForm = true;
+    await this.liveAnnouncer.announce('Risk assessment questionnaire');
+    this.focusManagerService.focusFirstElementInContainer();
   }
 
   deleteProfile(profileName: string, index: number): void {
