@@ -53,7 +53,7 @@ class RiskProfileTest(unittest.TestCase):
     with open(output_file, 'w', encoding='utf-8') as file:
       file.write(risk_profile.to_json(pretty=True))
 
-    self.assertEqual(risk_profile.status, 'Valid')
+    self.assertEqual(risk_profile.risk, 'High')
 
   def risk_profile_limited_test(self):
     # Read the risk profile json file
@@ -70,7 +70,7 @@ class RiskProfileTest(unittest.TestCase):
     with open(output_file, 'w', encoding='utf-8') as file:
       file.write(risk_profile.to_json(pretty=True))
 
-    self.assertEqual(risk_profile.status, 'Valid')
+    self.assertEqual(risk_profile.risk, 'Limited')
 
   def risk_profile_rename_test(self):
     # Read the risk profile json file
@@ -80,7 +80,7 @@ class RiskProfileTest(unittest.TestCase):
       risk_profile_json = json.loads(file.read())
 
 
-# Create the RiskProfile object from the json file
+    # Create the RiskProfile object from the json file
     risk_profile = RiskProfile(risk_profile_json, self.profile_format)
 
     # Rename the profile
