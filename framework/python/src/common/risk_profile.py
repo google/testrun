@@ -13,17 +13,11 @@
 # limitations under the License.
 """Stores additional information about a device's risk"""
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from common import logger
 import json
 
 LOGGER = logger.get_logger('risk_profile')
-SECONDS_IN_YEAR = 31536000
-
-DATA_COLLECTION_CATEGORY = 'Data Collection'
-DATA_TRANSMISSION_CATEGORY = 'Data Transmission'
-REMOTE_OPERATION_CATEGORY = 'Remote Operation'
-OPERATING_ENVIRONMENT_CATEGORY = 'Operating Environment'
-
 
 class RiskProfile():
   """Python representation of a risk profile"""
@@ -224,10 +218,14 @@ class RiskProfile():
     return all_questions_answered and all_questions_present
 
   def _expired(self):
-    # Check expiry
-    created_date = self.created.timestamp()
-    today = datetime.now().timestamp()
-    return created_date < (today - SECONDS_IN_YEAR)
+    # Calculate the date one year after the creation date
+    expiry_date = self.created + relativedelta(years=1)
+
+    # Normalize the current date and time to midnight
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Check if the current date and time is past the expiry date
+    return today > expiry_date
 
   def to_json(self, pretty=False):
     json_dict = {
