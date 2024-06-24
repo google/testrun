@@ -25,7 +25,7 @@ import { Profile } from '../../../model/profile';
 @Injectable({ providedIn: 'root' })
 export class ProfileValidators {
   readonly MULTIPLE_EMAIL_FORMAT_REGEXP = new RegExp(
-    '^(([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)(\\s*;\\s*|\\s*$))*$',
+    '^(([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)(\\s*(;|,)\\s*|\\s*$))*$',
     'i'
   );
 
@@ -58,19 +58,18 @@ export class ProfileValidators {
     return null;
   }
 
-  public emailStringFormat(maxLength: number = 128): ValidatorFn {
-    return this.stringFormat(this.MULTIPLE_EMAIL_FORMAT_REGEXP, maxLength);
+  public emailStringFormat(): ValidatorFn {
+    return this.stringFormat(this.MULTIPLE_EMAIL_FORMAT_REGEXP);
   }
 
-  public textFormat(maxLength: number = 128): ValidatorFn {
-    return this.stringFormat(this.STRING_FORMAT_REGEXP, maxLength);
+  public textFormat(): ValidatorFn {
+    return this.stringFormat(this.STRING_FORMAT_REGEXP);
   }
 
-  private stringFormat(regExp: RegExp, maxLength: number = 28): ValidatorFn {
+  private stringFormat(regExp: RegExp): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value?.trim();
       if (value) {
-        if (value.length > maxLength) return { invalid_format: true };
         const result = regExp.test(value);
         return !result ? { invalid_format: true } : null;
       }

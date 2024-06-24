@@ -178,6 +178,13 @@ limitations under the License.
     <mat-error *ngIf="getControl(formControlName).hasError('required')">
       <span>The field is required</span>
     </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('maxlength')">
+      <span
+        >The field must be a maximum of
+        {{ getControl(formControlName).getError('maxlength').requiredLength }}
+        characters.</span
+      >
+    </mat-error>
   </mat-form-field>
 </ng-template>
 
@@ -190,10 +197,12 @@ limitations under the License.
     floatLabel="always"
     class="profile-form-field"
     [formGroup]="profileForm">
-    <input
+    <textarea
       matInput
+      cdkTextareaAutosize
+      #autosize="cdkTextareaAutosize"
       id="{{ formControlName }}-group"
-      [formControlName]="formControlName" />
+      [formControlName]="formControlName"></textarea>
     <mat-hint *ngIf="description">{{ description }}</mat-hint>
     <mat-error
       *ngIf="getControl(formControlName).hasError('invalid_format')"
@@ -203,6 +212,13 @@ limitations under the License.
     </mat-error>
     <mat-error *ngIf="getControl(formControlName).hasError('required')">
       <span>The field is required</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('maxlength')">
+      <span
+        >The field must be a maximum of
+        {{ getControl(formControlName).getError('maxlength').requiredLength }}
+        characters.</span
+      >
     </mat-error>
   </mat-form-field>
 </ng-template>
@@ -228,6 +244,13 @@ limitations under the License.
       <span
         >Please, check the email address. Valid e-mail can contain only latin
         letters, numbers, &#64; and . (dot).</span
+      >
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('maxlength')">
+      <span
+        >The field must be a maximum of
+        {{ getControl(formControlName).getError('maxlength').requiredLength }}
+        characters.</span
       >
     </mat-error>
   </mat-form-field>
