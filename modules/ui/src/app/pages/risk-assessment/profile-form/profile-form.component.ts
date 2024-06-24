@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { TextFieldModule } from '@angular/cdk/text-field';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -31,6 +32,7 @@ import {
   FormGroup,
   ReactiveFormsModule,
   ValidatorFn,
+  Validators,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { DeviceValidators } from '../../devices/components/device-form/device.validators';
@@ -54,6 +56,7 @@ import { ProfileValidators } from './profile.validators';
     MatFormFieldModule,
     MatSelectModule,
     MatCheckboxModule,
+    TextFieldModule,
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss',
@@ -109,15 +112,14 @@ export class ProfileFormComponent implements OnInit {
       if (validation.required) {
         validators.push(this.profileValidators.textRequired());
       }
+      if (validation.max) {
+        validators.push(Validators.maxLength(Number(validation.max)));
+      }
       if (type === FormControlType.EMAIL_MULTIPLE) {
-        validators.push(
-          this.profileValidators.emailStringFormat(Number(validation.max))
-        );
+        validators.push(this.profileValidators.emailStringFormat());
       }
       if (type === FormControlType.TEXT || type === FormControlType.TEXTAREA) {
-        validators.push(
-          this.profileValidators.textFormat(Number(validation.max))
-        );
+        validators.push(this.profileValidators.textFormat());
       }
     }
     return validators;
