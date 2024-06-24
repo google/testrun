@@ -38,7 +38,6 @@ class RiskProfile():
     self.version = profile_json['version']
     self.questions = profile_json['questions']
     self.status = None
-    self.categories = None
     self.risk = None
 
     self._validate(profile_json, profile_format)
@@ -53,7 +52,6 @@ class RiskProfile():
     self.version = profile_json['version']
     self.questions = profile_json['questions']
     self.status = None
-    self.categories = None
 
     self._validate(profile_json, profile_format)
     self._update_risk(profile_format)
@@ -240,7 +238,5 @@ class RiskProfile():
         'risk': self.risk,
         'questions': self.questions
     }
-    if self.categories is not None:
-      json_dict['categories'] = self.categories
     indent = 2 if pretty else None
     return json.dumps(json_dict, indent=indent)
