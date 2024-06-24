@@ -146,6 +146,9 @@ describe('ProfileFormComponent', () => {
         } else if (item.type === FormControlType.SELECT_MULTIPLE) {
           const select = fields[uiIndex].querySelector('mat-checkbox');
           expect(select).toBeTruthy();
+        } else if (item.type === FormControlType.TEXTAREA) {
+          const input = fields[uiIndex]?.querySelector('textarea');
+          expect(input).toBeTruthy();
         } else {
           const input = fields[uiIndex]?.querySelector('input');
           expect(input).toBeTruthy();
@@ -202,99 +205,87 @@ describe('ProfileFormComponent', () => {
       }
 
       if (
-        (item.type === FormControlType.TEXT ||
-          item.type === FormControlType.TEXTAREA) &&
-        item.validation?.required
+        item.type === FormControlType.TEXT ||
+        item.type === FormControlType.TEXTAREA ||
+        item.type === FormControlType.EMAIL_MULTIPLE
       ) {
-        describe('text or text-long', () => {
-          it('should have "required" error when field is not filled', () => {
+        describe('text or text-long or email-multiple', () => {
+          if (item.validation?.required) {
+            it('should have "required" error when field is not filled', () => {
+              const fields = compiled.querySelectorAll('.profile-form-field');
+              const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
+              const input = fields[uiIndex].querySelector(
+                '.mat-mdc-input-element'
+              ) as HTMLInputElement;
+              ['', '     '].forEach(value => {
+                input.value = value;
+                input.dispatchEvent(new Event('input'));
+                component.getControl(index).markAsTouched();
+                fixture.detectChanges();
+                const errors = fields[uiIndex].querySelectorAll('mat-error');
+                let hasError = false;
+                errors.forEach(error => {
+                  if (error.textContent === 'The field is required') {
+                    hasError = true;
+                  }
+                });
+
+                expect(hasError).toBeTrue();
+              });
+            });
+          }
+
+          it('should have "invalid_format" error when field does not satisfy validation rules', () => {
             const fields = compiled.querySelectorAll('.profile-form-field');
             const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
             const input: HTMLInputElement = fields[uiIndex].querySelector(
-              'input'
+              '.mat-mdc-input-element'
             ) as HTMLInputElement;
-            ['', '     '].forEach(value => {
-              input.value = value;
-              input.dispatchEvent(new Event('input'));
-              component.getControl(index).markAsTouched();
-              fixture.detectChanges();
-
-              const error =
-                fields[uiIndex].querySelector('mat-error')?.textContent;
-
-              expect(error).toContain('The field is required');
+            input.value = 'as\\\\\\\\\\""""""""';
+            input.dispatchEvent(new Event('input'));
+            component.getControl(index).markAsTouched();
+            fixture.detectChanges();
+            const result =
+              item.type === FormControlType.EMAIL_MULTIPLE
+                ? 'Please, check the email address. Valid e-mail can contain only latin letters, numbers, @ and . (dot).'
+                : 'Please, check. “ and \\ are not allowed.';
+            const errors = fields[uiIndex].querySelectorAll('mat-error');
+            let hasError = false;
+            errors.forEach(error => {
+              if (error.textContent === result) {
+                hasError = true;
+              }
             });
+
+            expect(hasError).toBeTrue();
           });
 
-          it('should have "invalid_format" error when field does not satisfy validation rules', () => {
-            [
-              'very long value very long value very long value very long value very long value very long value very long value very long value very long value very long value',
-              'as\\\\\\\\\\""""""""',
-            ].forEach(value => {
+          if (item.validation?.max) {
+            it('should have "maxlength" error when field is exceeding max length', () => {
               const fields = compiled.querySelectorAll('.profile-form-field');
               const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
               const input: HTMLInputElement = fields[uiIndex].querySelector(
-                'input'
+                '.mat-mdc-input-element'
               ) as HTMLInputElement;
-              input.value = value;
+              input.value =
+                'very long value very long value very long value very long value very long value very long value very long value very long value very long value very long value';
               input.dispatchEvent(new Event('input'));
               component.getControl(index).markAsTouched();
               fixture.detectChanges();
 
-              const error = compiled.querySelector('mat-error')?.textContent;
-              expect(error).toContain(
-                'Please, check. “ and \\ are not allowed.'
-              );
+              const errors = fields[uiIndex].querySelectorAll('mat-error');
+              let hasError = false;
+              errors.forEach(error => {
+                if (
+                  error.textContent ===
+                  `The field must be a maximum of ${item.validation?.max} characters.`
+                ) {
+                  hasError = true;
+                }
+              });
+              expect(hasError).toBeTrue();
             });
-          });
-        });
-      }
-
-      if (
-        item.type === FormControlType.EMAIL_MULTIPLE &&
-        item.validation?.required
-      ) {
-        describe('text or text-long', () => {
-          it('should have "required" error when field is not filled', () => {
-            const fields = compiled.querySelectorAll('.profile-form-field');
-            const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
-            const input: HTMLInputElement = fields[uiIndex].querySelector(
-              'input'
-            ) as HTMLInputElement;
-            ['', '       '].forEach(value => {
-              input.value = value;
-              input.dispatchEvent(new Event('input'));
-              component.getControl(index).markAsTouched();
-              fixture.detectChanges();
-
-              const error =
-                fields[uiIndex].querySelector('mat-error')?.textContent;
-
-              expect(error).toContain('The field is required');
-            });
-          });
-
-          it('should have "invalid_format" error when field does not satisfy validation rules', () => {
-            [
-              'very long value very long value very long value very long value very long value very long value very long value very long value very long value very long value',
-              'as\\\\\\\\\\""""""""',
-            ].forEach(value => {
-              const fields = compiled.querySelectorAll('.profile-form-field');
-              const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
-              const input: HTMLInputElement = fields[uiIndex].querySelector(
-                'input'
-              ) as HTMLInputElement;
-              input.value = value;
-              input.dispatchEvent(new Event('input'));
-              component.getControl(index).markAsTouched();
-              fixture.detectChanges();
-
-              const error = compiled.querySelector('mat-error')?.textContent;
-              expect(error).toContain(
-                'Please, check the email address. Valid e-mail can contain only latin letters, numbers, @ and . (dot).'
-              );
-            });
-          });
+          }
         });
       }
     });
@@ -318,7 +309,7 @@ describe('ProfileFormComponent', () => {
     describe('Save button', () => {
       it('should be enabled when required fields are present', () => {
         component.nameControl.setValue('test');
-        component.getControl('0').setValue('test@test.test');
+        component.getControl('0').setValue('a@test.te;b@test.te, c@test.te');
         component.getControl('1').setValue('test');
         component.getControl('2').setValue('test');
         component.getControl('3').setValue({ 0: true, 1: true, 2: true });

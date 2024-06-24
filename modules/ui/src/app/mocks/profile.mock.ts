@@ -33,6 +33,7 @@ export const PROFILE_FORM: ProfileFormat[] = [
     type: FormControlType.EMAIL_MULTIPLE,
     validation: {
       required: true,
+      max: '30',
     },
   },
   {
