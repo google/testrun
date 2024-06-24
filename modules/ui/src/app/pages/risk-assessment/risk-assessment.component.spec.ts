@@ -34,6 +34,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { RiskAssessmentStore } from './risk-assessment.store';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 describe('RiskAssessmentComponent', () => {
   let component: RiskAssessmentComponent;
@@ -41,13 +42,17 @@ describe('RiskAssessmentComponent', () => {
   let mockService: SpyObj<TestRunService>;
   let mockFocusManagerService: SpyObj<FocusManagerService>;
   let mockRiskAssessmentStore: SpyObj<RiskAssessmentStore>;
+
+  const mockLiveAnnouncer: SpyObj<LiveAnnouncer> = jasmine.createSpyObj([
+    'announce',
+  ]);
   let compiled: HTMLElement;
 
   beforeEach(async () => {
     mockService = jasmine.createSpyObj(['fetchProfiles', 'deleteProfile']);
     mockService.deleteProfile.and.returnValue(of(true));
 
-    mockFocusManagerService = jasmine.createSpyObj([
+    mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
       'focusFirstElementInContainer',
     ]);
 
@@ -68,6 +73,7 @@ describe('RiskAssessmentComponent', () => {
         { provide: TestRunService, useValue: mockService },
         { provide: FocusManagerService, useValue: mockFocusManagerService },
         { provide: RiskAssessmentStore, useValue: mockRiskAssessmentStore },
+        { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
       ],
     }).compileComponents();
 
@@ -173,6 +179,27 @@ describe('RiskAssessmentComponent', () => {
 
         openSpy.calls.reset();
       }));
+    });
+
+    describe('#openForm', () => {
+      it('should open the form', () => {
+        component.openForm();
+        expect(component.isOpenProfileForm).toBeTrue();
+      });
+
+      it('should announce', () => {
+        component.openForm();
+        expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+          'Risk assessment questionnaire'
+        );
+      });
+
+      it('should focus first element in container', async () => {
+        await component.openForm();
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalled();
+      });
     });
   });
 });
