@@ -88,6 +88,8 @@ class TestrunSession():
     self._config_file = os.path.join(root_dir, CONFIG_FILE_PATH)
     self._config = self._get_default_config()
 
+    # System network interfaces
+    self._ifaces = {}
     # Loading methods
     self._load_version()
     self._load_config()
@@ -380,7 +382,7 @@ class TestrunSession():
           json_data = json.load(f)
           risk_profile = RiskProfile(json_data)
           risk_profile.status = self.check_profile_status(risk_profile)
-          self._profiles.append(risk_profile)    
+          self._profiles.append(risk_profile)
 
     except Exception as e:
       LOGGER.error('An error occurred whilst loading risk profiles')
@@ -538,6 +540,7 @@ class TestrunSession():
     self._results = []
     self._started = None
     self._finished = None
+    self._ifaces = util.get_sys_interfaces()
 
   def to_json(self):
 
