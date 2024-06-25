@@ -29,4 +29,4 @@ cryptography==42.0.7
 pytz==2024.1
 
 # Requirements for the risk profile
-python-dateutil=2.9.0
+python-dateutil==2.9.0
