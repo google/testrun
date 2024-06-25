@@ -165,6 +165,10 @@
         "risk": "High"
       },
       {
+        "text": "The device network protocol is well-established and currently used by Google",
+        "risk": "High"
+      },
+      {
         "text": "None of the above",
         "risk": "Limited"
       }
