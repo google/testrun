@@ -20,7 +20,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { FocusManagerService } from '../../services/focus-manager.service';
@@ -61,16 +61,16 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   }
 
   deleteProfile(profileName: string, index: number): void {
-    const dialogRef = this.dialog.open(DeleteFormComponent, {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Delete risk profile',
       data: {
-        title: 'Delete risk profile',
+        title: 'Delete risk profile?',
         content: `You are about to delete ${profileName}. Are you sure?`,
       },
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'delete-form-dialog',
+      panelClass: 'simple-dialog',
     });
 
     dialogRef

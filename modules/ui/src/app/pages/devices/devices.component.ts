@@ -28,7 +28,7 @@ import {
   FormResponse,
 } from './components/device-form/device-form.component';
 import { Subject, takeUntil } from 'rxjs';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Routes } from '../../model/routes';
@@ -150,10 +150,10 @@ export class DevicesComponent implements OnInit, OnDestroy {
   }
 
   openDeleteDialog(devices: Device[], device: Device) {
-    const dialogRef = this.dialog.open(DeleteFormComponent, {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Delete device',
       data: {
-        title: 'Delete device',
+        title: 'Delete device?',
         content: `You are about to delete ${
           device.manufacturer + ' ' + device.model
         }. Are you sure?`,
@@ -162,7 +162,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'delete-form-dialog',
+      panelClass: 'simple-dialog',
     });
 
     dialogRef

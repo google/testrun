@@ -31,7 +31,7 @@ import { DevicesComponent } from './devices.component';
 import { DeviceItemComponent } from '../../components/device-item/device-item.component';
 import { DeviceTestsComponent } from '../../components/device-tests/device-tests.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 
 @NgModule({
@@ -51,7 +51,7 @@ import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
     DeviceItemComponent,
     DeviceTestsComponent,
     SpinnerComponent,
-    DeleteFormComponent,
+    SimpleDialogComponent,
     NgxMaskDirective,
     NgxMaskPipe,
   ],

@@ -31,7 +31,7 @@ import { of } from 'rxjs';
 import { Component, Input } from '@angular/core';
 import { Profile, ProfileFormat } from '../../model/profile';
 import { MatDialogRef } from '@angular/material/dialog';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
@@ -160,22 +160,22 @@ describe('RiskAssessmentComponent', () => {
       it('should open delete profile modal', fakeAsync(() => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(true),
-        } as MatDialogRef<typeof DeleteFormComponent>);
+        } as MatDialogRef<typeof SimpleDialogComponent>);
         tick();
 
         component.deleteProfile(PROFILE_MOCK.name, 0);
         tick();
 
-        expect(openSpy).toHaveBeenCalledWith(DeleteFormComponent, {
+        expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
           ariaLabel: 'Delete risk profile',
           data: {
-            title: 'Delete risk profile',
+            title: 'Delete risk profile?',
             content: `You are about to delete ${PROFILE_MOCK.name}. Are you sure?`,
           },
           autoFocus: true,
           hasBackdrop: true,
           disableClose: true,
-          panelClass: 'delete-form-dialog',
+          panelClass: 'simple-dialog',
         });
 
         openSpy.calls.reset();
