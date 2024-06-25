@@ -173,9 +173,23 @@ describe('DownloadReportZipComponent', () => {
         expect(spyOnShow).toHaveBeenCalled();
       });
 
+      it('should be shown on focusin', () => {
+        const spyOnShow = spyOn(component.tooltip, 'show');
+        fixture.nativeElement.dispatchEvent(new Event('focusin'));
+
+        expect(spyOnShow).toHaveBeenCalled();
+      });
+
       it('should be hidden on mouseleave', () => {
         const spyOnHide = spyOn(component.tooltip, 'hide');
         fixture.nativeElement.dispatchEvent(new Event('mouseleave'));
+
+        expect(spyOnHide).toHaveBeenCalled();
+      });
+
+      it('should be hidden on focusout', () => {
+        const spyOnHide = spyOn(component.tooltip, 'hide');
+        fixture.nativeElement.dispatchEvent(new Event('focusout'));
 
         expect(spyOnHide).toHaveBeenCalled();
       });
