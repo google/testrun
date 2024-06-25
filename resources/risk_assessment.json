@@ -149,10 +149,6 @@
         "risk": "High"
       },
       {
-        "text": "PII/PHI, confidential business data, or crown jewel data is transmitted to a destination outside Alphabet's ownership",
-        "risk": "High"
-      },
-      {
         "text": "Data transmission occurs across less-trusted networks (e.g. the internet).",
         "risk": "High"
       },
@@ -165,11 +161,7 @@
         "risk": "High"
       },
       {
-        "text": "The device encrypts data during transmission",
-        "risk": "High"
-      },
-      {
-        "text": "The device network protocol is well-established and currently used by Google",
+        "text": "The device does not encrypt data during transmission",
         "risk": "High"
       },
       {
@@ -218,7 +210,7 @@
         "risk": "High"
       },
       {
-        "text": "Authentication is required for remote access",
+        "text": "Authentication is not required for remote access",
         "risk": "High"
       },
       {
