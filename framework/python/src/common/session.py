@@ -93,6 +93,8 @@ class TestrunSession():
     self._config_file = os.path.join(root_dir, CONFIG_FILE_PATH)
     self._config = self._get_default_config()
 
+    # System network interfaces
+    self._ifaces = {}
     # Loading methods
     self._load_version()
     self._load_config()
@@ -565,6 +567,7 @@ class TestrunSession():
     self._results = []
     self._started = None
     self._finished = None
+    self._ifaces = util.get_sys_interfaces()
 
   def to_json(self):
 
