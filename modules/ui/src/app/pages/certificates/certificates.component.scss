@@ -46,11 +46,16 @@
     margin: 4px;
     padding: 8px !important;
     box-sizing: content-box;
+    line-height: normal !important;
 
     .close-button-icon {
       width: 24px;
       height: 24px;
       margin: 0;
+    }
+
+    ::ng-deep * {
+      line-height: inherit !important;
     }
   }
 }

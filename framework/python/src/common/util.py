@@ -17,8 +17,9 @@ import getpass
 import os
 import subprocess
 import shlex
-from common import logger
 import netifaces
+import docker
+from common import logger
 
 LOGGER = logger.get_logger('util')
 
@@ -115,3 +116,21 @@ def get_module_display_name(search):
       return module[1]
 
   return 'Unknown'
+
+
+def get_docker_host_by_name(container_name: str) -> str:
+  """ get running docker container ip address by 
+
+  Args:
+      container_name (str): container name
+
+  Returns:
+      str: container ip
+  """
+  client = docker.DockerClient()
+  container = client.containers.get(container_name)
+  if not container.attrs['State']['Running']:
+    LOGGER.error(f'Container {container_name} is no running')
+    raise Exception(f'Container {container_name} is not running')
+  return container.attrs['NetworkSettings']['IPAddress']
+  

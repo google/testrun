@@ -21,7 +21,9 @@ limitations under the License.
           <h2 class="title">Risk assessment</h2>
         </mat-toolbar>
         <div class="main-content">
-          <app-profile-form [profiles]="vm.profiles"></app-profile-form>
+          <app-profile-form
+            [profiles]="vm.profiles"
+            [profileFormat]="vm.profileFormat"></app-profile-form>
         </div>
       </mat-drawer-content>
     </mat-drawer-container>

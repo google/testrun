@@ -21,6 +21,7 @@ import shutil
 import subprocess
 import sys
 import docker
+import time
 from docker.types import Mount
 from common import logger, util
 from net_orc.listener import Listener
@@ -281,6 +282,7 @@ class NetworkOrchestrator:
     sniffer.start()
 
     while sniffer.running:
+      time.sleep(1)
       if not self._ip_ctrl.check_interface_status(
           self._session.get_device_interface()):
         sniffer.stop()

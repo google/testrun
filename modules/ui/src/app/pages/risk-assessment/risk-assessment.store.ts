@@ -19,7 +19,7 @@ import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { exhaustMap } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
-import { Profile } from '../../model/profile';
+import { Profile, ProfileFormat } from '../../model/profile';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
@@ -28,14 +28,24 @@ import { setRiskProfiles } from '../../store/actions';
 
 export interface AppComponentState {
   profiles: Profile[];
+  profileFormat: ProfileFormat[];
 }
 @Injectable()
 export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
   profiles$ = this.store.select(selectRiskProfiles);
+  profileFormat$ = this.select(state => state.profileFormat);
 
   viewModel$ = this.select({
     profiles: this.profiles$,
+    profileFormat: this.profileFormat$,
   });
+
+  updateProfileFormat = this.updater(
+    (state, profileFormat: ProfileFormat[]) => ({
+      ...state,
+      profileFormat,
+    })
+  );
 
   deleteProfile = this.effect<string>(trigger$ => {
     return trigger$.pipe(
@@ -69,6 +79,18 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     }
   );
 
+  getProfilesFormat = this.effect(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap(() => {
+        return this.testRunService.fetchProfilesFormat().pipe(
+          tap((profileFormat: ProfileFormat[]) => {
+            this.updateProfileFormat(profileFormat);
+          })
+        );
+      })
+    );
+  });
+
   private removeProfile(name: string, current: Profile[]): void {
     const profiles = current.filter(profile => profile.name !== name);
     this.updateProfiles(profiles);
@@ -85,6 +107,7 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
   ) {
     super({
       profiles: [],
+      profileFormat: [],
     });
   }
 }

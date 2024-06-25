@@ -426,7 +426,7 @@ def test_delete_device_success(empty_devices_dir, testrun): # pylint: disable=W0
   print(mockito)
 
   # Validate structure
-  assert all([isinstance(x, dict) for x in all_devices])
+  assert all(isinstance(x, dict) for x in all_devices)
 
   # TOOO uncomment when is done
   # assert set(dict_paths(mockito[0])) == set(dict_paths(all_devices[0]))

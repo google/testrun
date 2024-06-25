@@ -29,6 +29,7 @@ import { TestRunService } from '../../services/test-run.service';
 import { Routes } from '../../model/routes';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
+import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
 
 describe('DownloadReportZipComponent', () => {
   let component: DownloadReportZipComponent;
@@ -38,7 +39,6 @@ describe('DownloadReportZipComponent', () => {
 
   const testrunServiceMock: jasmine.SpyObj<TestRunService> =
     jasmine.createSpyObj('testrunServiceMock', ['downloadZip']);
-  testrunServiceMock.downloadZip.and.returnValue(of(true));
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -55,6 +55,7 @@ describe('DownloadReportZipComponent', () => {
     compiled = fixture.nativeElement as HTMLElement;
     component = fixture.componentInstance;
     component.url = 'localhost:8080';
+    component.data = MOCK_PROGRESS_DATA_COMPLIANT;
   });
 
   describe('Class tests', () => {
@@ -72,7 +73,7 @@ describe('DownloadReportZipComponent', () => {
           afterClosed: () => of(''),
         } as MatDialogRef<typeof DownloadZipModalComponent>);
 
-        component.onClick();
+        component.onClick(new Event('click'));
 
         expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
           ariaLabel: 'Download zip',
@@ -98,7 +99,7 @@ describe('DownloadReportZipComponent', () => {
         } as MatDialogRef<typeof DownloadZipModalComponent>);
 
         fixture.ngZone?.run(() => {
-          component.onClick();
+          component.onClick(new Event('click'));
 
           expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
             ariaLabel: 'Download zip',
@@ -124,7 +125,7 @@ describe('DownloadReportZipComponent', () => {
           afterClosed: () => of(undefined),
         } as MatDialogRef<typeof DownloadZipModalComponent>);
 
-        component.onClick();
+        component.onClick(new Event('click'));
 
         expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
           ariaLabel: 'Download zip',
@@ -144,6 +145,14 @@ describe('DownloadReportZipComponent', () => {
         openSpy.calls.reset();
       }));
     });
+
+    it('should have title', () => {
+      component.ngOnInit();
+
+      expect(component.tooltip.message).toEqual(
+        'Download zip for Testrun # Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20'
+      );
+    });
   });
 
   describe('DOM tests', () => {
@@ -154,6 +163,22 @@ describe('DownloadReportZipComponent', () => {
       expect(openSpy).toHaveBeenCalled();
 
       openSpy.calls.reset();
+    });
+
+    describe('tooltip', () => {
+      it('should be shown on mouseenter', () => {
+        const spyOnShow = spyOn(component.tooltip, 'show');
+        fixture.nativeElement.dispatchEvent(new Event('mouseenter'));
+
+        expect(spyOnShow).toHaveBeenCalled();
+      });
+
+      it('should be hidden on mouseleave', () => {
+        const spyOnHide = spyOn(component.tooltip, 'hide');
+        fixture.nativeElement.dispatchEvent(new Event('mouseleave'));
+
+        expect(spyOnHide).toHaveBeenCalled();
+      });
     });
   });
 });

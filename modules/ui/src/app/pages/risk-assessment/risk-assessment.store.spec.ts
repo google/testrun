@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 import { TestBed } from '@angular/core/testing';
-import { of, take } from 'rxjs';
+import { of, skip, take } from 'rxjs';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RiskAssessmentStore } from './risk-assessment.store';
-import { PROFILE_MOCK, PROFILE_MOCK_2 } from '../../mocks/profile.mock';
+import {
+  PROFILE_FORM,
+  PROFILE_MOCK,
+  PROFILE_MOCK_2,
+} from '../../mocks/profile.mock';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
@@ -33,7 +37,11 @@ describe('RiskAssessmentStore', () => {
   let mockFocusManagerService: SpyObj<FocusManagerService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['fetchProfiles', 'deleteProfile']);
+    mockService = jasmine.createSpyObj([
+      'fetchProfiles',
+      'deleteProfile',
+      'fetchProfilesFormat',
+    ]);
     mockFocusManagerService = jasmine.createSpyObj([
       'focusFirstElementInContainer',
     ]);
@@ -65,11 +73,23 @@ describe('RiskAssessmentStore', () => {
     expect(riskAssessmentStore).toBeTruthy();
   });
 
+  describe('updaters', () => {
+    it('should update activeFiler', (done: DoneFn) => {
+      riskAssessmentStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
+        expect(store.profileFormat).toEqual(PROFILE_FORM);
+        done();
+      });
+
+      riskAssessmentStore.updateProfileFormat(PROFILE_FORM);
+    });
+  });
+
   describe('selectors', () => {
     it('should select state', done => {
       riskAssessmentStore.viewModel$.pipe(take(1)).subscribe(store => {
         expect(store).toEqual({
           profiles: [PROFILE_MOCK, PROFILE_MOCK_2],
+          profileFormat: [],
         });
         done();
       });
@@ -134,6 +154,21 @@ describe('RiskAssessmentStore', () => {
         expect(
           mockFocusManagerService.focusFirstElementInContainer
         ).toHaveBeenCalledWith();
+      });
+    });
+
+    describe('getProfilesFormat', () => {
+      it('should update store', done => {
+        mockService.fetchProfilesFormat.and.returnValue(of(PROFILE_FORM));
+
+        riskAssessmentStore.viewModel$
+          .pipe(skip(1), take(1))
+          .subscribe(store => {
+            expect(store.profileFormat).toEqual(PROFILE_FORM);
+            done();
+          });
+
+        riskAssessmentStore.getProfilesFormat();
       });
     });
   });

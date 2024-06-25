@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
 import { Subject, takeUntil } from 'rxjs';
@@ -26,7 +31,7 @@ import { MatDialog } from '@angular/material/dialog';
   providers: [RiskAssessmentStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RiskAssessmentComponent implements OnDestroy {
+export class RiskAssessmentComponent implements OnInit, OnDestroy {
   viewModel$ = this.store.viewModel$;
   isOpenProfileForm = false;
   private destroy$: Subject<boolean> = new Subject<boolean>();
@@ -34,6 +39,10 @@ export class RiskAssessmentComponent implements OnDestroy {
     private store: RiskAssessmentStore,
     public dialog: MatDialog
   ) {}
+
+  ngOnInit() {
+    this.store.getProfilesFormat();
+  }
 
   ngOnDestroy() {
     this.destroy$.next(true);
