@@ -15,7 +15,13 @@
  */
 export interface Certificate {
   name: string;
+  status?: string;
   organisation?: string;
   expires?: string;
   uploading?: boolean;
+}
+
+export enum CertificateStatus {
+  Valid = 'Valid',
+  Expired = 'Expired',
 }
