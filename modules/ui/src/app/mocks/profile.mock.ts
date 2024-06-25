@@ -79,7 +79,7 @@ export const NEW_PROFILE_MOCK = {
   status: 'Valid',
   name: 'test',
   questions: [
-    { question: 'Email', answer: 'test@test.test' },
+    { question: 'Email', answer: 'a@test.te;b@test.te, c@test.te' },
     {
       question: 'What type of device do you need reviewed?',
       answer: 'test',
