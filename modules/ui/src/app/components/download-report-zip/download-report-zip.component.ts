@@ -90,11 +90,15 @@ export class DownloadReportZipComponent
   @HostBinding('tabIndex')
   readonly tabIndex = 0;
 
-  @HostListener('mouseenter') onMouseEnter(): void {
+  @HostListener('mouseenter')
+  @HostListener('focusin', ['$event'])
+  onEvent(): void {
     this.tooltip.show();
   }
 
-  @HostListener('mouseleave') onMouseLeave(): void {
+  @HostListener('mouseleave')
+  @HostListener('focusout', ['$event'])
+  outEvent(): void {
     this.tooltip.hide();
   }
 
