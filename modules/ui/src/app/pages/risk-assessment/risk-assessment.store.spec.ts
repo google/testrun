@@ -21,6 +21,7 @@ import SpyObj = jasmine.SpyObj;
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import {
+  NEW_PROFILE_MOCK,
   PROFILE_FORM,
   PROFILE_MOCK,
   PROFILE_MOCK_2,
@@ -28,7 +29,7 @@ import {
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
-import { setRiskProfiles } from '../../store/actions';
+import { fetchRiskProfiles, setRiskProfiles } from '../../store/actions';
 
 describe('RiskAssessmentStore', () => {
   let riskAssessmentStore: RiskAssessmentStore;
@@ -41,7 +42,9 @@ describe('RiskAssessmentStore', () => {
       'fetchProfiles',
       'deleteProfile',
       'fetchProfilesFormat',
+      'saveProfile',
     ]);
+    mockService.saveProfile.and.returnValue(of(true));
     mockFocusManagerService = jasmine.createSpyObj([
       'focusFirstElementInContainer',
     ]);
@@ -169,6 +172,14 @@ describe('RiskAssessmentStore', () => {
           });
 
         riskAssessmentStore.getProfilesFormat();
+      });
+    });
+
+    describe('saveProfile', () => {
+      it('should dispatch fetchRiskProfiles', () => {
+        riskAssessmentStore.saveProfile(NEW_PROFILE_MOCK);
+
+        expect(store.dispatch).toHaveBeenCalledWith(fetchRiskProfiles());
       });
     });
   });

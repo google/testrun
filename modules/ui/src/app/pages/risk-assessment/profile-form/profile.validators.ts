@@ -44,7 +44,7 @@ export class ProfileValidators {
 
   public textRequired(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      if (!control.value.trim()) {
+      if (!control.value?.trim()) {
         return { required: true };
       }
       return null;
@@ -82,7 +82,7 @@ export class ProfileValidators {
     profiles: Profile[]
   ): boolean {
     return (
-      profiles.some(profile => profile.name === profileName.trim()) || false
+      profiles.some(profile => profile.name === profileName?.trim()) || false
     );
   }
 }
