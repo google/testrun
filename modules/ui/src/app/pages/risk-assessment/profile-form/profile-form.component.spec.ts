@@ -22,6 +22,7 @@ import {
   PROFILE_FORM,
   PROFILE_MOCK,
   PROFILE_MOCK_2,
+  RENAME_PROFILE_MOCK,
 } from '../../../mocks/profile.mock';
 import { FormControlType } from '../../../model/profile';
 
@@ -49,6 +50,11 @@ describe('ProfileFormComponent', () => {
   });
 
   describe('DOM tests', () => {
+    beforeEach(() => {
+      component.selectedProfile = null;
+      fixture.detectChanges();
+    });
+
     describe('Profile name input', () => {
       it('should be present', () => {
         const name: HTMLInputElement = compiled.querySelector(
@@ -116,13 +122,15 @@ describe('ProfileFormComponent', () => {
         });
       });
 
-      it('should have "required" error when field is not filled', () => {
+      it('should have different profile name error when profile with name is exist', () => {
         const name: HTMLInputElement = compiled.querySelector(
           '.form-name'
         ) as HTMLInputElement;
-        name.value = 'Profile name';
+        name.value = 'Primary profile';
         name.dispatchEvent(new Event('input'));
         component.nameControl.markAsTouched();
+
+        fixture.detectChanges();
         fixture.detectChanges();
 
         const nameError = compiled.querySelector('mat-error')?.innerHTML;
@@ -188,14 +196,10 @@ describe('ProfileFormComponent', () => {
 
           it('should have "required" error when field is not filled', () => {
             const fields = compiled.querySelectorAll('.profile-form-field');
-            const select = fields[uiIndex].querySelector(
-              'mat-select'
-            ) as HTMLElement;
 
-            select.focus();
-            select.blur();
-
+            component.getControl(index).setValue('');
             component.getControl(index).markAsTouched();
+
             fixture.detectChanges();
 
             const error = fields[uiIndex].querySelector('mat-error')?.innerHTML;
@@ -309,12 +313,7 @@ describe('ProfileFormComponent', () => {
 
     describe('Save button', () => {
       beforeEach(() => {
-        component.nameControl.setValue('test');
-        component.getControl('0').setValue('a@test.te;b@test.te, c@test.te');
-        component.getControl('1').setValue('test');
-        component.getControl('2').setValue('test');
-        component.getControl('3').setValue({ 0: true, 1: true, 2: true });
-        component.getControl('4').setValue('test');
+        fillForm(component);
         fixture.detectChanges();
       });
 
@@ -333,17 +332,53 @@ describe('ProfileFormComponent', () => {
         ) as HTMLButtonElement;
         saveButton.click();
 
-        expect(emitSpy).toHaveBeenCalledWith(NEW_PROFILE_MOCK);
+        expect(emitSpy).toHaveBeenCalledWith({
+          ...NEW_PROFILE_MOCK,
+        });
       });
     });
   });
 
   describe('Class tests', () => {
-    it('should reset form on save', () => {
-      const spyOnReset = spyOn(component.profileForm, 'reset');
-      component.onSaveClick();
+    describe('with profile', () => {
+      beforeEach(() => {
+        component.selectedProfile = PROFILE_MOCK;
+        fixture.detectChanges();
+      });
 
-      expect(spyOnReset).toHaveBeenCalled();
+      it('save profile should have rename field', () => {
+        const emitSpy = spyOn(component.saveProfile, 'emit');
+        fillForm(component);
+        component.onSaveClick();
+
+        expect(emitSpy).toHaveBeenCalledWith(RENAME_PROFILE_MOCK);
+      });
+    });
+
+    describe('with no profile', () => {
+      beforeEach(() => {
+        component.selectedProfile = null;
+        fixture.detectChanges();
+      });
+
+      it('save profile should not have rename field', () => {
+        const emitSpy = spyOn(component.saveProfile, 'emit');
+        fillForm(component);
+        component.onSaveClick();
+
+        expect(emitSpy).toHaveBeenCalledWith(NEW_PROFILE_MOCK);
+      });
     });
   });
+
+  function fillForm(component: ProfileFormComponent) {
+    component.nameControl.setValue('New profile');
+    component.getControl('0').setValue('a@test.te;b@test.te, c@test.te');
+    component.getControl('1').setValue('test');
+    component.getControl('2').setValue('test');
+    component.getControl('3').setValue({ 0: true, 1: true, 2: true });
+    component.getControl('4').setValue('test');
+    component.profileForm.markAsDirty();
+    fixture.detectChanges();
+  }
 });

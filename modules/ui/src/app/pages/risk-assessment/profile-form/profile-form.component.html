@@ -65,11 +65,18 @@ limitations under the License.
     mat-flat-button
     color="primary"
     class="save-profile-button"
-    [disabled]="!profileForm.valid"
+    [disabled]="
+      !profileForm.valid || (profileForm.valid && profileForm.pristine)
+    "
     (click)="onSaveClick()">
     Save Profile
   </button>
-  <button mat-button class="save-draft-button" [disabled]="!nameControl.valid">
+  <button
+    mat-button
+    class="save-draft-button"
+    [disabled]="
+      !nameControl.valid || (profileForm.valid && profileForm.pristine)
+    ">
     Save Draft
   </button>
 </div>
@@ -202,7 +209,7 @@ limitations under the License.
     <textarea
       matInput
       cdkTextareaAutosize
-      #autosize="cdkTextareaAutosize"
+      #autosizee="cdkTextareaAutosize"
       id="{{ formControlName }}-group"
       [formControlName]="formControlName"></textarea>
     <mat-hint *ngIf="description">{{ description }}</mat-hint>

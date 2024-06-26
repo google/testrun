@@ -17,7 +17,14 @@ limitations under the License.
   <mat-icon class="profile-item-icon" fontSet="material-symbols-outlined">
     rule
   </mat-icon>
-  <p class="profile-item-name">{{ profile.name }}</p>
+  <p
+    class="profile-item-name"
+    role="button"
+    tabindex="0"
+    (click)="profileClicked.emit(profile)"
+    (keydown.enter)="profileClicked.emit(profile)">
+    {{ profile.name }}
+  </p>
   <button
     class="profile-item-button copy"
     mat-icon-button

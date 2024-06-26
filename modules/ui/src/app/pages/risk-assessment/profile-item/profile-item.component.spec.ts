@@ -67,4 +67,15 @@ describe('ProfileItemComponent', () => {
 
     expect(deleteSpy).toHaveBeenCalledWith(PROFILE_MOCK.name);
   });
+
+  it('should emit click event on profile name clicked', () => {
+    const profileClickedSpy = spyOn(component.profileClicked, 'emit');
+    const profileName = fixture.nativeElement.querySelector(
+      '.profile-item-name'
+    ) as HTMLElement;
+
+    profileName.click();
+
+    expect(profileClickedSpy).toHaveBeenCalledWith(PROFILE_MOCK);
+  });
 });

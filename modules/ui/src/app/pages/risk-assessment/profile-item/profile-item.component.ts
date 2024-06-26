@@ -36,4 +36,5 @@ import { CommonModule } from '@angular/common';
 export class ProfileItemComponent {
   @Input() profile!: Profile;
   @Output() deleteButtonClicked = new EventEmitter<string>();
+  @Output() profileClicked = new EventEmitter<Profile>();
 }
