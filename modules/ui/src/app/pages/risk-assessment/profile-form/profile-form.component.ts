@@ -17,8 +17,10 @@ import { TextFieldModule } from '@angular/cdk/text-field';
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
   OnInit,
+  Output,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatError, MatFormFieldModule } from '@angular/material/form-field';
@@ -40,6 +42,8 @@ import {
   FormControlType,
   Profile,
   ProfileFormat,
+  ProfileRequestBody,
+  Question,
   Validation,
 } from '../../../model/profile';
 import { ProfileValidators } from './profile.validators';
@@ -63,10 +67,13 @@ import { ProfileValidators } from './profile.validators';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileFormComponent implements OnInit {
+  private readonly VALID_STATUS = 'Valid';
   public readonly FormControlType = FormControlType;
   @Input() profileFormat!: ProfileFormat[];
   profileForm: FormGroup = this.fb.group({});
   @Input() profiles!: Profile[];
+  @Output() saveProfile = new EventEmitter<ProfileRequestBody>();
+
   constructor(
     private deviceValidators: DeviceValidators,
     private profileValidators: ProfileValidators,
@@ -140,5 +147,53 @@ export class ProfileFormComponent implements OnInit {
 
   getFormGroup(name: string): FormGroup {
     return this.profileForm?.controls[name] as FormGroup;
+  }
+
+  onSaveClick() {
+    const response = this.buildResponseFromForm(
+      this.profileFormat,
+      this.profileForm,
+      true
+    );
+    this.profileForm.reset();
+    this.saveProfile.emit(response);
+  }
+
+  buildResponseFromForm(
+    initialQuestions: ProfileFormat[],
+    profileForm: FormGroup,
+    isValid?: boolean
+  ): ProfileRequestBody {
+    const request: ProfileRequestBody = {
+      name: this.nameControl.value?.trim(),
+      questions: [],
+    };
+    const questions: Question[] = [];
+
+    initialQuestions.forEach((initialQuestion, index) => {
+      const question: Question = {};
+      question.question = initialQuestion.question;
+
+      if (initialQuestion.type === FormControlType.SELECT_MULTIPLE) {
+        const answer: number[] = [];
+        initialQuestion.options?.forEach((_, idx) => {
+          const value = profileForm.value[index][idx];
+          if (value) {
+            answer.push(idx);
+          }
+        });
+        question.answer = answer;
+      } else {
+        question.answer = profileForm.value[index]?.trim();
+      }
+      questions.push(question);
+    });
+
+    request.questions = questions;
+
+    if (isValid) {
+      request.status = this.VALID_STATUS;
+    }
+    return request;
   }
 }

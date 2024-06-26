@@ -32,6 +32,7 @@ export interface Profile {
 export interface ProfileRequestBody {
   name: string;
   questions: Question[];
+  status?: string;
 }
 
 export interface Question {
@@ -59,4 +60,14 @@ export interface ProfileFormat {
   options?: string[];
   default?: string;
   validation?: Validation;
+}
+
+export interface ProfileRequestBody {
+  name: string;
+  questions: Question[];
+}
+
+export interface Question {
+  question?: string;
+  answer?: string | number[];
 }

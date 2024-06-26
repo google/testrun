@@ -254,7 +254,7 @@ describe('ProgressInitiateFormComponent', () => {
       });
     });
 
-    it('should focus element on focusButton ', function () {
+    it('should focus element on focusButton ', () => {
       const deviceButton = compiled.querySelector(
         'app-device-item button'
       ) as HTMLButtonElement;

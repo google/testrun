@@ -35,10 +35,9 @@ import {
   setDevices,
   setIsOpenStartTestrun,
   fetchSystemStatus,
-  setRiskProfiles,
+  fetchRiskProfiles,
 } from './store/actions';
 import { TestrunStatus } from './model/testrun-status';
-import { Profile } from './model/profile';
 import { SettingMissedError, SystemInterfaces } from './model/setting';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
@@ -108,12 +107,8 @@ export class AppStore extends ComponentStore<AppComponentState> {
 
   getRiskProfiles = this.effect(trigger$ => {
     return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunService.fetchProfiles().pipe(
-          tap((riskProfiles: Profile[]) => {
-            this.store.dispatch(setRiskProfiles({ riskProfiles }));
-          })
-        );
+      tap(() => {
+        this.store.dispatch(fetchRiskProfiles());
       })
     );
   });
