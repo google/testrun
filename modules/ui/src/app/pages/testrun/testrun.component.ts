@@ -27,7 +27,7 @@ import {
 import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { TestrunInitiateFormComponent } from './components/testrun-initiate-form/testrun-initiate-form.component';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { LoaderService } from '../../services/loader.service';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../../services/loaderConfig';
 import { FocusManagerService } from '../../services/focus-manager.service';
@@ -74,17 +74,17 @@ export class TestrunComponent implements OnInit, OnDestroy {
   }
 
   public openStopTestrunDialog(systemStatus: TestrunStatus) {
-    const dialogRef = this.dialog.open(DeleteFormComponent, {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: `Stop testrun ${this.getTestRunName(systemStatus)}`,
       data: {
-        title: `Stop testrun ${this.getTestRunName(systemStatus)}`,
+        title: `Stop testrun ${this.getTestRunName(systemStatus)}?`,
         content:
           'Are you sure you would like to stop testrun without a report generation?',
       },
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'delete-form-dialog',
+      panelClass: 'simple-dialog',
     });
 
     dialogRef

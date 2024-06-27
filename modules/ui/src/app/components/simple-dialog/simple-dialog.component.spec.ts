@@ -15,7 +15,7 @@
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DeleteFormComponent } from './delete-form.component';
+import { SimpleDialogComponent } from './simple-dialog.component';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -25,13 +25,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { of } from 'rxjs';
 
 describe('DeleteFormComponent', () => {
-  let component: DeleteFormComponent;
-  let fixture: ComponentFixture<DeleteFormComponent>;
+  let component: SimpleDialogComponent;
+  let fixture: ComponentFixture<SimpleDialogComponent>;
   let compiled: HTMLElement;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [DeleteFormComponent, MatDialogModule, MatButtonModule],
+      imports: [SimpleDialogComponent, MatDialogModule, MatButtonModule],
       providers: [
         {
           provide: MatDialogRef,
@@ -43,10 +43,10 @@ describe('DeleteFormComponent', () => {
         { provide: MAT_DIALOG_DATA, useValue: {} },
       ],
     });
-    fixture = TestBed.createComponent(DeleteFormComponent);
+    fixture = TestBed.createComponent(SimpleDialogComponent);
     component = fixture.componentInstance;
     component.data = {
-      title: 'title',
+      title: 'title?',
       content: 'content',
     };
     compiled = fixture.nativeElement as HTMLElement;
@@ -58,14 +58,14 @@ describe('DeleteFormComponent', () => {
   });
 
   it('should has title', () => {
-    const title = compiled.querySelector('.delete-form-title') as HTMLElement;
+    const title = compiled.querySelector('.simple-dialog-title') as HTMLElement;
 
     expect(title.innerHTML).toEqual('title?');
   });
 
   it('should has content', () => {
     const content = compiled.querySelector(
-      '.delete-form-content'
+      '.simple-dialog-content'
     ) as HTMLElement;
 
     expect(content.innerHTML.trim()).toEqual('content');

@@ -283,4 +283,13 @@ export class TestRunService {
   fetchProfilesFormat(): Observable<ProfileFormat[]> {
     return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
   }
+
+  saveProfile(profile: Profile): Observable<boolean> {
+    return this.http
+      .post<boolean>(`${API_URL}/profiles`, JSON.stringify(profile))
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
+  }
 }

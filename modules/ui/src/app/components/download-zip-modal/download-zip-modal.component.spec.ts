@@ -58,7 +58,9 @@ describe('DownloadZipModalComponent', () => {
         'mat-select'
       ) as HTMLElement;
 
-      expect(select.getAttribute('ng-reflect-value')).toEqual('Profile name');
+      expect(select.getAttribute('ng-reflect-value')).toEqual(
+        'Primary profile'
+      );
     });
 
     it('should close with null on redirect button click', async () => {
@@ -95,7 +97,7 @@ describe('DownloadZipModalComponent', () => {
 
       downloadButton.click();
 
-      expect(closeSpy).toHaveBeenCalledWith('Profile name');
+      expect(closeSpy).toHaveBeenCalledWith('Primary profile');
 
       closeSpy.calls.reset();
     });

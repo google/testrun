@@ -63,6 +63,7 @@ describe('Effects', () => {
       'fetchSystemStatus',
       'testrunInProgress',
       'stopTestrun',
+      'fetchProfiles',
     ]);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of({}));
     testRunServiceMock.getSystemConfig.and.returnValue(of({}));
@@ -70,6 +71,8 @@ describe('Effects', () => {
     testRunServiceMock.fetchSystemStatus.and.returnValue(
       of(MOCK_PROGRESS_DATA_IN_PROGRESS)
     );
+    testRunServiceMock.fetchProfiles.and.returnValue(of([]));
+
     TestBed.configureTestingModule({
       providers: [
         AppEffects,
@@ -382,6 +385,19 @@ describe('Effects', () => {
         expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
         done();
       });
+    });
+  });
+
+  it('onFetchSystemStatus$ should call onFetchSystemStatusSuccess on success', done => {
+    actions$ = of(actions.fetchRiskProfiles());
+
+    effects.onFetchRiskProfiles$.subscribe(action => {
+      expect(action).toEqual(
+        actions.setRiskProfiles({
+          riskProfiles: [],
+        })
+      );
+      done();
     });
   });
 });

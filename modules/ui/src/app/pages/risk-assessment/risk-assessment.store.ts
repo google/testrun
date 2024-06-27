@@ -24,9 +24,10 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
-import { setRiskProfiles } from '../../store/actions';
+import { fetchRiskProfiles, setRiskProfiles } from '../../store/actions';
 
 export interface AppComponentState {
+  selectedProfile: Profile | null;
   profiles: Profile[];
   profileFormat: ProfileFormat[];
 }
@@ -34,16 +35,24 @@ export interface AppComponentState {
 export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
   profiles$ = this.store.select(selectRiskProfiles);
   profileFormat$ = this.select(state => state.profileFormat);
+  selectedProfile$ = this.select(state => state.selectedProfile);
 
   viewModel$ = this.select({
     profiles: this.profiles$,
     profileFormat: this.profileFormat$,
+    selectedProfile: this.selectedProfile$,
   });
 
   updateProfileFormat = this.updater(
     (state, profileFormat: ProfileFormat[]) => ({
       ...state,
       profileFormat,
+    })
+  );
+  updateSelectedProfile = this.updater(
+    (state, selectedProfile: Profile | null) => ({
+      ...state,
+      selectedProfile,
     })
   );
 
@@ -91,6 +100,20 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     );
   });
 
+  saveProfile = this.effect<Profile>(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap((name: Profile) => {
+        return this.testRunService.saveProfile(name).pipe(
+          tap(saved => {
+            if (saved) {
+              this.store.dispatch(fetchRiskProfiles());
+            }
+          })
+        );
+      })
+    );
+  });
+
   private removeProfile(name: string, current: Profile[]): void {
     const profiles = current.filter(profile => profile.name !== name);
     this.updateProfiles(profiles);
@@ -108,6 +131,7 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     super({
       profiles: [],
       profileFormat: [],
+      selectedProfile: null,
     });
   }
 }

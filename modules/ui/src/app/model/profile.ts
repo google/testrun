@@ -13,25 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-interface ProfileResponse {
-  question: string;
-  type: string;
-  options: string[];
-}
-
-interface ProfileSection {
-  name: string;
-  responses: ProfileResponse[];
-}
-
 export interface Profile {
   name: string;
-  sections: ProfileSection[];
-}
-
-export interface ProfileRequestBody {
-  name: string;
   questions: Question[];
+  status?: ProfileStatus;
+  rename?: string;
 }
 
 export interface Question {
@@ -59,4 +45,14 @@ export interface ProfileFormat {
   options?: string[];
   default?: string;
   validation?: Validation;
+}
+
+export interface Question {
+  question?: string;
+  answer?: string | number[];
+}
+
+export enum ProfileStatus {
+  VALID = 'Valid',
+  DRAFT = 'Draft',
 }

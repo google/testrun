@@ -20,9 +20,13 @@ import {
   OnInit,
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
+import { FocusManagerService } from '../../services/focus-manager.service';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { Profile } from '../../model/profile';
+import { Observable } from 'rxjs/internal/Observable';
 
 @Component({
   selector: 'app-risk-assessment',
@@ -37,7 +41,9 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   private destroy$: Subject<boolean> = new Subject<boolean>();
   constructor(
     private store: RiskAssessmentStore,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private focusManagerService: FocusManagerService,
+    private liveAnnouncer: LiveAnnouncer
   ) {}
 
   ngOnInit() {
@@ -49,21 +55,24 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
-  openForm(): void {
+  async openForm(profile: Profile | null = null) {
     this.isOpenProfileForm = true;
+    this.store.updateSelectedProfile(profile);
+    await this.liveAnnouncer.announce('Risk assessment questionnaire');
+    this.focusManagerService.focusFirstElementInContainer();
   }
 
   deleteProfile(profileName: string, index: number): void {
-    const dialogRef = this.dialog.open(DeleteFormComponent, {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Delete risk profile',
       data: {
-        title: 'Delete risk profile',
+        title: 'Delete risk profile?',
         content: `You are about to delete ${profileName}. Are you sure?`,
       },
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'delete-form-dialog',
+      panelClass: 'simple-dialog',
     });
 
     dialogRef
@@ -77,6 +86,25 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       });
   }
 
+  saveProfileClicked(profile: Profile, selectedProfile: Profile | null): void {
+    if (!selectedProfile) {
+      this.saveProfile(profile);
+    } else {
+      this.openSaveDialog(selectedProfile.name)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(saveProfile => {
+          if (saveProfile) {
+            this.saveProfile(profile);
+          }
+        });
+    }
+  }
+
+  private saveProfile(profile: Profile) {
+    this.store.saveProfile(profile);
+    this.isOpenProfileForm = false;
+  }
+
   private setFocus(index: number): void {
     const nextItem = window.document.querySelector(
       `.profile-item-${index + 1}`
@@ -86,5 +114,21 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     ) as HTMLElement;
 
     this.store.setFocus({ nextItem, firstItem });
+  }
+
+  private openSaveDialog(profileName: string): Observable<boolean> {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
+      ariaLabel: 'Save changes',
+      data: {
+        title: 'Save changes',
+        content: `You are about to save changes in ${profileName}. Are you sure?`,
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: 'simple-dialog',
+    });
+
+    return dialogRef?.afterClosed();
   }
 }
