@@ -134,3 +134,32 @@ def get_sys_interfaces() -> t.Dict[str, t.Dict[str, str]]:
     ifaces[key] = nic[0].address
 
   return ifaces
+
+
+def diff_dicts(d1: t.Dict[t.Any, t.Any], d2: t.Dict[t.Any, t.Any]) -> t.Dict:
+  """Compares two dictionaries by keys
+
+  Args:
+      d1 (t.Dict[t.Any, t.Any]): first dict to compare
+      d2 (t.Dict[t.Any, t.Any]): second dict to compare
+
+  Returns:
+      t.Dict[t.Any, t.Any]: Returns an empty dictionary
+      if the compared dictionaries are equal,
+      otherwise returns a dictionary that contains
+      the removed items(if available)
+      and the added items(if available).
+  """
+  diff = {}
+  if d1 != d2:
+    s1 = set(d1)
+    s2 = set(d2)
+    keys_removed = s1 - s2
+    keys_added = s2 - s1
+    items_removed = {k:d1[k] for k in keys_removed}
+    items_added = {k:d2[k] for k in keys_added}
+    if items_removed:
+      diff['items_removed'] = items_removed
+    if items_added:
+      diff['items_added'] = items_added
+  return diff
