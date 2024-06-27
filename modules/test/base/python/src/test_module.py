@@ -50,7 +50,7 @@ class TestModule:
     global LOGGER
     LOGGER = logger.get_logger(name=log_name,
                                log_file=module_name,
-                               log_dir=log_dir)
+                               log_dir=log_dir) # pylint: disable=E1123
 
   def generate_module_report(self):
     pass

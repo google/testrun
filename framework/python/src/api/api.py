@@ -679,7 +679,10 @@ class Api:
     return self.get_session().get_profiles_format()
 
   def get_profiles(self):
-    return self.get_session().get_profiles()
+    profiles = []
+    for profile in self.get_session().get_profiles():
+      profiles.append(json.loads(profile.to_json()))
+    return profiles
 
   async def update_profile(self, request: Request, response: Response):
 
@@ -694,12 +697,6 @@ class Api:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False,
                                 "Invalid request received")
-
-    # Check that profile is valid
-    valid_profile = self.get_session().validate_profile(req_json)
-    if not valid_profile:
-      response.status_code = status.HTTP_400_BAD_REQUEST
-      return self._generate_msg(False, "Invalid profile request received")
 
     profile_name = req_json.get("name")
 

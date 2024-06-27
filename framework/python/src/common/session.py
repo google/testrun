@@ -82,7 +82,11 @@ class TestrunSession():
 
     # Profiles
     self._profiles = []
+    # Profile format that is passed to the frontend
+    # (excluding internal properties)
     self._profile_format_json = None
+    # Profile format used for internal validation
+    self._profile_format = None
 
     # System configuration
     self._config_file = os.path.join(root_dir, CONFIG_FILE_PATH)
@@ -359,32 +363,60 @@ class TestrunSession():
       with open(os.path.join(
         self._root_dir, PROFILE_FORMAT_PATH
       ), encoding='utf-8') as profile_format_file:
-        self._profile_format_json = json.load(profile_format_file)
+
+        format_json = json.load(profile_format_file)
+
+        # Save original profile format for internal validation
+        self._profile_format = format_json
+
     except (IOError, ValueError) as e:
       LOGGER.error(
         'An error occurred whilst loading the risk assessment format')
       LOGGER.debug(e)
 
+    profile_format_array = []
+
+    # Remove internal properties
+    for question_obj in format_json:
+      new_obj = {}
+      for key in question_obj:
+        if key == 'options':
+          options = []
+          for option in question_obj[key]:
+            if isinstance(option, str):
+              options.append(option)
+            else:
+              options.append(option['text'])
+          new_obj['options'] = options
+        else:
+          new_obj[key] = question_obj[key]
+
+      profile_format_array.append(new_obj)
+
+    self._profile_format_json = profile_format_array
+
     # Load existing profiles
     LOGGER.debug('Loading risk profiles')
 
-    try:
-      for risk_profile_file in os.listdir(os.path.join(
-        self._root_dir, PROFILES_DIR
-      )):
-        LOGGER.debug(f'Discovered profile {risk_profile_file}')
+    #try:
+    for risk_profile_file in os.listdir(os.path.join(
+      self._root_dir, PROFILES_DIR
+    )):
+      LOGGER.debug(f'Discovered profile {risk_profile_file}')
 
-        with open(os.path.join(
-          self._root_dir, PROFILES_DIR, risk_profile_file
-        ), encoding='utf-8') as f:
-          json_data = json.load(f)
-          risk_profile = RiskProfile(json_data)
-          risk_profile.status = self.check_profile_status(risk_profile)
-          self._profiles.append(risk_profile)    
+      with open(os.path.join(
+        self._root_dir, PROFILES_DIR, risk_profile_file
+      ), encoding='utf-8') as f:
+        json_data = json.load(f)
+        risk_profile = RiskProfile()
+        risk_profile = risk_profile.load(
+          profile_json=json_data,
+          profile_format=self._profile_format)
+        self._profiles.append(risk_profile)
 
-    except Exception as e:
-      LOGGER.error('An error occurred whilst loading risk profiles')
-      LOGGER.debug(e)
+    # except Exception as e:
+    #   LOGGER.error('An error occurred whilst loading risk profiles')
+    #   LOGGER.debug(e)
 
   def get_profiles_format(self):
     return self._profile_format_json
@@ -398,94 +430,37 @@ class TestrunSession():
         return profile
     return None
 
-  def validate_profile(self, profile_json):
-
-    # Check name field is present
-    if 'name' not in profile_json:
-      return False
-
-    # Check questions field is present
-    if 'questions' not in profile_json:
-      return False
-
-    # Check all questions are present
-    for format_q in self.get_profiles_format():
-      if self._get_profile_question(
-        profile_json, format_q.get('question')) is None:
-        LOGGER.error('Missing question: ' + format_q.get('question'))
-        return False
-
-    return True
-
-  def _get_profile_question(self, profile_json, question):
-
-    for q in profile_json.get('questions'):
-      if question.lower() == q.get('question').lower():
-        return q
-
-    return None
-
   def update_profile(self, profile_json):
 
     profile_name = profile_json['name']
 
     # Add version, timestamp and status
     profile_json['version'] = self.get_version()
-    profile_json['created'] = datetime.datetime.now().strftime('%Y-%m-%d')
-
-    if 'status' in profile_json and profile_json.get('status') == 'Valid':
-      # Attempting to submit a risk profile, we need to check it
-
-      # Check all questions have been answered
-      all_questions_answered = True
-
-      for question in self.get_profiles_format():
-
-        # Check question is present
-        profile_question = self._get_profile_question(
-          profile_json, question.get('question')
-        )
-
-        if profile_question is not None:
-
-          # Check answer is present
-          if 'answer' not in profile_question:
-            LOGGER.error(
-              'Missing answer for question: ' + question.get('question'))
-            all_questions_answered = False
-
-        else:
-          LOGGER.error('Missing question: ' + question.get('question'))
-          all_questions_answered = False
-
-      if not all_questions_answered:
-        LOGGER.error('Not all questions answered')
-        return None
-
-    else:
-      profile_json['status'] = 'Draft'
 
     risk_profile = self.get_profile(profile_name)
 
     if risk_profile is None:
 
       # Create a new risk profile
-      risk_profile = RiskProfile(profile_json)
+      risk_profile = RiskProfile(profile_json=profile_json,
+                                 profile_format=self._profile_format)
       self._profiles.append(risk_profile)
 
     else:
 
+      risk_profile.update(profile_json, self._profile_format)
       # Check if name has changed
       if 'rename' in profile_json:
-        new_name = profile_json.get('rename')
-
         # Delete the original file
         os.remove(os.path.join(PROFILES_DIR, risk_profile.name + '.json'))
 
-        risk_profile.name = new_name
+      # Find the index of the risk_profile to replace
+      index_to_replace = next(
+        (index for (index, d) in enumerate(
+          self._profiles) if d.name == profile_name), None)
 
-      # Update questions and answers
-      risk_profile.questions = profile_json.get('questions')
+      if index_to_replace is not None:
+        self._profiles[index_to_replace] = risk_profile
 
     # Write file to disk
     with open(
@@ -493,23 +468,9 @@ class TestrunSession():
         PROFILES_DIR,
         risk_profile.name + '.json'
       ), 'w', encoding='utf-8') as f:
-      f.write(json.dumps(risk_profile.to_json()))
+      f.write(risk_profile.to_json())
 
     return risk_profile
-
-  def check_profile_status(self, profile):
-
-    if profile.status == 'Valid':
-
-      # Check expiry
-      created_date = profile.created.timestamp()
-
-      today = datetime.datetime.now().timestamp()
-
-      if created_date < (today - SECONDS_IN_YEAR):
-        profile.status = 'Expired'
-
-    return profile.status
 
   def delete_profile(self, profile):
 
