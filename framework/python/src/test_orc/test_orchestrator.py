@@ -286,6 +286,9 @@ class TestOrchestrator:
                       src_path,
                       "profile.json"))
 
+        with open(os.path.join(src_path, "profile.pdf"), "wb") as f:
+          f.write(profile.to_pdf(device).getvalue())
+
       # Create ZIP file
       if not os.path.exists(zip_location + ".zip"):
         shutil.make_archive(zip_location, "zip", src_path)

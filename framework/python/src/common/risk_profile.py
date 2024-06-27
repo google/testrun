@@ -14,6 +14,9 @@
 """Stores additional information about a device's risk"""
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from weasyprint import HTML
+from io import BytesIO
+import base64
 from common import logger
 import json
 
@@ -244,3 +247,28 @@ class RiskProfile():
     }
     indent = 2 if pretty else None
     return json.dumps(json_dict, indent=indent)
+
+  def to_html(self, device):
+
+    print(device.firmware)
+
+    json_data = self.to_json()
+    return f'''
+    <!DOCTYPE html>
+    <html lang="en">
+    
+    <body>
+      
+    </body>
+    </html>
+    '''
+
+  def to_pdf(self, device):
+
+    # Resolve the data as html first
+    html = self.to_html(device)
+
+    # Convert HTML to PDF in memory using weasyprint
+    pdf_bytes = BytesIO()
+    HTML(string=html).write_pdf(pdf_bytes)
+    return pdf_bytes
