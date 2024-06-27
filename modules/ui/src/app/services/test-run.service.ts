@@ -28,7 +28,12 @@ import {
 } from '../model/testrun-status';
 import { Version } from '../model/version';
 import { Certificate } from '../model/certificate';
-import { Profile, ProfileFormat } from '../model/profile';
+import {
+  Profile,
+  ProfileFormat,
+  ProfileRisk,
+  RiskResultClassName,
+} from '../model/profile';
 
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
@@ -170,6 +175,13 @@ export class TestRunService {
       grey:
         result === StatusOfTestResult.NotDetected ||
         result === StatusOfTestResult.NotStarted,
+    };
+  }
+
+  getRiskClass(riskResult: string): RiskResultClassName {
+    return {
+      red: riskResult === ProfileRisk.HIGH,
+      cyan: riskResult === ProfileRisk.LIMITED,
     };
   }
 
