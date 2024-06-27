@@ -82,7 +82,12 @@ class TestrunSession():
 
     # Profiles
     self._profiles = []
+
+    # Profile format that is passed to the frontend
     self._profile_format_json = None
+
+    # Profile format used for internal validation
+    self._profile_format = None
 
     # System configuration
     self._config_file = os.path.join(root_dir, CONFIG_FILE_PATH)
@@ -156,7 +161,7 @@ class TestrunSession():
       # Network interfaces
       if (NETWORK_KEY in config_file_json
           and DEVICE_INTF_KEY in config_file_json.get(NETWORK_KEY)
-          and INTERNET_INTF_KEY in config_file_json.get(NETWORK_KEY)):
+              and INTERNET_INTF_KEY in config_file_json.get(NETWORK_KEY)):
         self._config[NETWORK_KEY][DEVICE_INTF_KEY] = config_file_json.get(
             NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
         self._config[NETWORK_KEY][INTERNET_INTF_KEY] = config_file_json.get(
@@ -353,26 +358,52 @@ class TestrunSession():
     LOGGER.debug('Loading risk assessment format')
 
     try:
-      with open(os.path.join(self._root_dir, PROFILE_FORMAT_PATH),
-                encoding='utf-8') as profile_format_file:
-        self._profile_format_json = json.load(profile_format_file)
+      with open(os.path.join(
+        self._root_dir, PROFILE_FORMAT_PATH
+      ), encoding='utf-8') as profile_format_file:
+        format_json = json.load(profile_format_file)
+        # Save original profile format for internal validation
+        self._profile_format = format_json
     except (IOError, ValueError) as e:
       LOGGER.error(
           'An error occurred whilst loading the risk assessment format')
       LOGGER.debug(e)
+
+    profile_format_array = []
+
+    # Remove internal properties
+    for question_obj in format_json:
+      new_obj = {}
+      for key in question_obj:
+        if key == 'options':
+          options = []
+          for option in question_obj[key]:
+            if isinstance(option, str):
+              options.append(option)
+            else:
+              options.append(option['text'])
+          new_obj['options'] = options
+        else:
+          new_obj[key] = question_obj[key]
+      profile_format_array.append(new_obj)
+    self._profile_format_json = profile_format_array
 
     # Load existing profiles
     LOGGER.debug('Loading risk profiles')
 
     try:
       for risk_profile_file in os.listdir(
-          os.path.join(self._root_dir, PROFILES_DIR)):
+              os.path.join(self._root_dir, PROFILES_DIR)):
         LOGGER.debug(f'Discovered profile {risk_profile_file}')
 
         with open(os.path.join(self._root_dir, PROFILES_DIR, risk_profile_file),
                   encoding='utf-8') as f:
           json_data = json.load(f)
-          risk_profile = RiskProfile(json_data)
+          risk_profile = RiskProfile()
+          risk_profile.load(
+            profile_json=json_data,
+            profile_format=self._profile_format
+          )
           risk_profile.status = self.check_profile_status(risk_profile)
           self._profiles.append(risk_profile)
 
@@ -463,7 +494,9 @@ class TestrunSession():
     if risk_profile is None:
 
       # Create a new risk profile
-      risk_profile = RiskProfile(profile_json)
+      risk_profile = RiskProfile(
+        profile_json=profile_json,
+        profile_format=self._profile_format)
       self._profiles.append(risk_profile)
 
     else:
