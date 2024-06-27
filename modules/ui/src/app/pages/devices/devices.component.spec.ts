@@ -31,7 +31,7 @@ import {
 } from './components/device-form/device-form.component';
 import { MatDialogRef } from '@angular/material/dialog';
 import { device, MOCK_TEST_MODULES } from '../../mocks/device.mock';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import SpyObj = jasmine.SpyObj;
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { DevicesStore } from './devices.store';
@@ -276,7 +276,7 @@ describe('DevicesComponent', () => {
     it('should delete device when dialog return true', () => {
       spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
-      } as MatDialogRef<typeof DeleteFormComponent>);
+      } as MatDialogRef<typeof SimpleDialogComponent>);
 
       component.openDeleteDialog([device], device);
 
@@ -290,7 +290,7 @@ describe('DevicesComponent', () => {
       const openDeviceDialogSpy = spyOn(component, 'openDialog');
       spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(null),
-      } as MatDialogRef<typeof DeleteFormComponent>);
+      } as MatDialogRef<typeof SimpleDialogComponent>);
 
       component.openDeleteDialog([device], device);
 

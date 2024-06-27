@@ -28,7 +28,7 @@ import {
 } from '../model/testrun-status';
 import { Version } from '../model/version';
 import { Certificate } from '../model/certificate';
-import { Profile, ProfileFormat, ProfileRequestBody } from '../model/profile';
+import { Profile, ProfileFormat } from '../model/profile';
 
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
@@ -284,7 +284,7 @@ export class TestRunService {
     return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
   }
 
-  saveProfile(profile: ProfileRequestBody): Observable<boolean> {
+  saveProfile(profile: Profile): Observable<boolean> {
     return this.http
       .post<boolean>(`${API_URL}/profiles`, JSON.stringify(profile))
       .pipe(
