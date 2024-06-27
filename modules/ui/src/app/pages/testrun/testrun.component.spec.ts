@@ -39,7 +39,7 @@ import { Component, Input } from '@angular/core';
 import { IResult, TestrunStatus } from '../../model/testrun-status';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { TestrunInitiateFormComponent } from './components/testrun-initiate-form/testrun-initiate-form.component';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { LoaderService } from '../../services/loader.service';
 import { FocusManagerService } from '../../services/focus-manager.service';
@@ -200,7 +200,7 @@ describe('TestrunComponent', () => {
       const stopTestrunSpy = spyOn(component, 'stopTestrun');
       spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
-      } as MatDialogRef<typeof DeleteFormComponent>);
+      } as MatDialogRef<typeof SimpleDialogComponent>);
 
       component.openStopTestrunDialog(MOCK_PROGRESS_DATA_CANCELLING);
 

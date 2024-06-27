@@ -28,15 +28,15 @@ interface DialogData {
 }
 
 @Component({
-  selector: 'app-delete-form',
-  templateUrl: './delete-form.component.html',
-  styleUrls: ['./delete-form.component.scss'],
+  selector: 'app-simple-dialog',
+  templateUrl: './simple-dialog.component.html',
+  styleUrls: ['./simple-dialog.component.scss'],
   standalone: true,
   imports: [MatDialogModule, MatButtonModule],
 })
-export class DeleteFormComponent extends EscapableDialogComponent {
+export class SimpleDialogComponent extends EscapableDialogComponent {
   constructor(
-    public override dialogRef: MatDialogRef<DeleteFormComponent>,
+    public override dialogRef: MatDialogRef<SimpleDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {
     super(dialogRef);
