@@ -62,7 +62,11 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.focusManagerService.focusFirstElementInContainer();
   }
 
-  deleteProfile(profileName: string, index: number): void {
+  deleteProfile(
+    profileName: string,
+    index: number,
+    selectedProfile: Profile | null
+  ): void {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Delete risk profile',
       data: {
@@ -81,6 +85,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       .subscribe(deleteProfile => {
         if (deleteProfile) {
           this.store.deleteProfile(profileName);
+          this.closeFormAfterDelete(profileName, selectedProfile);
           this.setFocus(index);
         }
       });
@@ -97,6 +102,13 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
             this.saveProfile(profile);
           }
         });
+    }
+  }
+
+  private closeFormAfterDelete(name: string, selectedProfile: Profile | null) {
+    if (selectedProfile?.name === name) {
+      this.isOpenProfileForm = false;
+      this.store.updateSelectedProfile(null);
     }
   }
 
