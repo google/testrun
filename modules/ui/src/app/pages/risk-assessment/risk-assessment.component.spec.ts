@@ -166,7 +166,7 @@ describe('RiskAssessmentComponent', () => {
         } as MatDialogRef<typeof SimpleDialogComponent>);
         tick();
 
-        component.deleteProfile(PROFILE_MOCK.name, 0);
+        component.deleteProfile(PROFILE_MOCK.name, 0, null);
         tick();
 
         expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
@@ -182,6 +182,21 @@ describe('RiskAssessmentComponent', () => {
         });
 
         openSpy.calls.reset();
+      }));
+
+      it('should close form and set selected profile to null if selected profile was deleted', fakeAsync(() => {
+        spyOn(component.dialog, 'open').and.returnValue({
+          afterClosed: () => of(true),
+        } as MatDialogRef<typeof SimpleDialogComponent>);
+        tick();
+
+        component.deleteProfile(PROFILE_MOCK.name, 0, PROFILE_MOCK);
+        tick();
+
+        expect(
+          mockRiskAssessmentStore.updateSelectedProfile
+        ).toHaveBeenCalledWith(null);
+        expect(component.isOpenProfileForm).toBeFalse();
       }));
     });
 

@@ -46,7 +46,7 @@ limitations under the License.
         *ngFor="let profile of vm.profiles; let i = index"
         [profile]="profile"
         class="profile-item-{{ i }}"
-        (deleteButtonClicked)="deleteProfile($event, i)"
+        (deleteButtonClicked)="deleteProfile($event, i, vm.selectedProfile)"
         (profileClicked)="openForm($event)">
       </app-profile-item>
     </div>
