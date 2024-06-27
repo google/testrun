@@ -679,7 +679,10 @@ class Api:
     return self.get_session().get_profiles_format()
 
   def get_profiles(self):
-    return self.get_session().get_profiles()
+    profiles = []
+    for profile in self.get_session().get_profiles():
+      profiles.append(json.loads(profile.to_json()))
+    return profiles
 
   async def update_profile(self, request: Request, response: Response):
 

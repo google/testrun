@@ -3,10 +3,170 @@
     "question": "What type of device is this?",
     "type": "select",
     "options": [
-      "IoT Sensor",
-      "IoT Controller",
-      "Smart Device",
-      "Something else"
+      {
+        "text": "Building Automation Gateway",
+        "risk": "High"
+      },
+      {
+        "text": "IoT Gateway",
+        "risk": "High"
+      },      
+      {
+        "text": "Controller - AHU",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - Boiler",
+        "risk": "High"
+      },
+      {
+        "text": "Controller - Chiller",
+        "risk": "High"
+      },
+      {
+        "text": "Controller - FCU",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - Pump",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - CRAC",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - VAV",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - VRF",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - Multiple",
+        "risk": "High"
+      },
+      {
+        "text": "Controller - Other",
+        "risk": "High"
+      },
+      {
+        "text": "Controller - Lighting",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - Blinds/Facades",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - Lifts/Elevators",
+        "risk": "High"
+      },
+      {
+        "text": "Controller - UPS",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Air Quality",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Vibration",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Humidity",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Water",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Occupancy",
+        "risk": "High"
+      },
+      {
+        "text": "Sensor - Volume",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Weight",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Weather",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Steam",
+        "risk": "High"
+      },
+      {
+        "text": "Sensor - Air Flow",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Lighting",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Other",
+        "risk": "High"
+      },
+      {
+        "text": "Sensor - Air Quality",
+        "risk": "Limited"
+      },
+      {
+        "text": "Monitoring - Fire System",
+        "risk": "Limited"
+      },
+      {
+        "text": "Monitoring - Emergency Lighting",
+        "risk": "Limited"
+      },
+      {
+        "text": "Monitoring - Other",
+        "risk": "High"
+      },
+      {
+        "text": "Monitoring - UPS",
+        "risk": "Limited"
+      },
+      {
+        "text": "Meter - Water",
+        "risk": "Limited"
+      },
+      {
+        "text": "Meter - Gas",
+        "risk": "Limited"
+      },
+      {
+        "text": "Meter - Electricity",
+        "risk": "Limited"
+      },
+      {
+        "text": "Meter - Other",
+        "risk": "High"
+      },
+      {
+        "text": "Other",
+        "risk": "High"
+      },
+      {
+        "text": "Data - Storage",
+        "risk": "High"
+      },
+      {
+        "text": "Data - Processing",
+        "risk": "High"
+      },
+      {
+        "text": "Tablet",
+        "risk": "Limited"
+      }
     ],
     "validation": {
       "required": true
@@ -14,26 +174,26 @@
   },
   {
     "question": "How will this device be used at Google?",
+    "description": "Desribe your use case. Add links to user journey diagrams and TDD if available.",
     "type": "text-long",
     "validation": {
-      "max": "128",
+      "max": "512",
       "required": true
     }
   },
   {
-    "question": "What is the email of the device owner(s)?",
-    "type": "email-multiple",
-    "validation": {
-      "required": true,
-      "max": "128"
-    }
-  },
-  {
     "question": "Is this device going to be managed by Google or a third party?",
+    "description": "A manufacturer or supplier is considered third party in this case",
     "type": "select",
     "options": [
-      "Google",
-      "Third Party"
+      {
+        "text": "Google",
+        "risk": "Limited"
+      },
+      {
+        "text": "Third Party",
+        "risk": "High"
+      }
     ],
     "validation": {
       "required": true
@@ -43,9 +203,15 @@
     "question": "Will the third-party device administrator be able to grant access to authorized Google personnel upon request?",
     "type": "select",
     "options": [
-      "Yes",
-      "No",
-      "N/A"
+      {
+        "text": "Yes"
+      },
+      {
+        "text": "No"
+      },
+      {
+        "text": "N/A"
+      }
     ],
     "default": "N/A",
     "validation": {
@@ -58,10 +224,22 @@
     "description": "This tells us about the data your device will collect",
     "type": "select-multiple",
     "options": [
-      "The device collects any Personal Identifiable Information (PII) or Personal Health Information (PHI)",
-      "The device collects intellectual property and trade secrets, sensitive business data, critical infrastructure data, identity assets",
-      "The device stream confidential business data in real-time (seconds)?",
-      "None of the above"
+      {
+        "text": "The device collects any Personal Identifiable Information (PII) or Personal Health Information (PHI)",
+        "risk": "High"
+      },
+      {
+        "text": "The device collects intellectual property and trade secrets, sensitive business data, critical infrastructure data, identity assets",
+        "risk": "High"
+      },
+      {
+        "text": "The device streams confidential business data in real-time (seconds)?",
+        "risk": "High"
+      },
+      {
+        "text": "None of the above",
+        "risk": "Limited"
+      }
     ],
     "validation": {
       "required": true
@@ -73,13 +251,30 @@
     "description": "This tells us about the types of data that are transmitted from this device and how the transmission is performed from a technical standpoint.",
     "type": "select-multiple",
     "options": [
-      "PII/PHI, confidential business data, or crown jewel data is transmitted to a destination outside Alphabet's ownership",
-      "Data transmission occurs across less-trusted networks (e.g. the internet).",
-      "A failure in data transmission would likely have a substantial negative impact (https://www.rra.rocks/docs/standard_levels#levels-definitions)",
-      "A confidentiality breach during transmission would have a substantial negative impact",
-      "The device encrypts data during transmission",
-      "The device network protocol is well-established and currently used by Google",
-      "None of the above"
+      {
+        "text": "PII/PHI, confidential business data, or crown jewel data is transmitted to a destination outside Alphabet's ownership",
+        "risk": "High"
+      },
+      {
+        "text": "Data transmission occurs across less-trusted networks (e.g. the internet).",
+        "risk": "High"
+      },
+      {
+        "text": "A failure in data transmission would likely have a substantial negative impact (https://www.rra.rocks/docs/standard_levels#levels-definitions)",
+        "risk": "High"
+      },
+      {
+        "text": "A confidentiality breach during transmission would have a substantial negative impact",
+        "risk": "High"
+      },
+      {
+        "text": "The device does not encrypt data during transmission",
+        "risk": "High"
+      },
+      {
+        "text": "None of the above",
+        "risk": "Limited"
+      }
     ],
     "validation": {
       "required": true
@@ -90,9 +285,19 @@
     "question": "Does the network protocol assure server-to-client identity verification?",
     "type": "select",
     "options": [
-      "Yes",
-      "No",
-      "I don't know"
+      {
+        "text": "Yes",
+        "risk": "Limited"
+      },
+      {
+        "text": "No",
+        "risk": "High"
+      },
+      {
+        "text": "I don't know",
+        "risk": "High"
+      }
+      
     ],
     "validation": {
       "required": true
@@ -104,12 +309,30 @@
     "description": "This tells us about how this device is managed remotely.",
     "type": "select-multiple",
     "options": [
-      "PII/PHI, or confidential business data is accessible from the device without authentication",
-      "Unrecoverable actions (e.g. disk wipe) can be performed remotely",
-      "Authentication is required for remote access",
-      "The management interface is accessible from the public internet",
-      "Static credentials are used for administration",
-      "None of the above"
+      {
+        "text": "PII/PHI, or confidential business data is accessible from the device without authentication",
+        "risk": "High"
+      },
+      {
+        "text": "Unrecoverable actions (e.g. disk wipe) can be performed remotely",
+        "risk": "High"
+      },
+      {
+        "text": "Authentication is not required for remote access",
+        "risk": "High"
+      },
+      {
+        "text": "The management interface is accessible from the public internet",
+        "risk": "High"
+      },
+      {
+        "text": "Static credentials are used for administration",
+        "risk": "High"
+      },
+      {
+        "text": "None of the above",
+        "risk": "Limited"
+      }
     ],
     "validation": {
       "required": true
@@ -121,13 +344,34 @@
     "description": "This informs us about what other systems and processes this device is a part of.",
     "type": "select-multiple",
     "options": [
-      "The device monitors an environment for active risks to human life.",
-      "The device is used to convey people, or critical property.",
-      "The device controls robotics in human-accessible spaces.",
-      "The device controls physical access systems.",
-      "The device is involved in processes required by regulations, or compliance. (ex. privacy, security, safety regulations)",
-      "The device's failure would cause faults in other high-criticality processes.",
-      "None of the above"
+      {
+        "text": "The device monitors an environment for active risks to human life.",
+        "risk": "High"
+      },
+      {
+        "text": "The device is used to convey people, or critical property.",
+        "risk": "High"
+      },
+      {
+        "text": "The device controls robotics in human-accessible spaces.",
+        "risk": "High"
+      },
+      {
+        "text": "The device controls physical access systems.",
+        "risk": "High"
+      },
+      {
+        "text": "The device is involved in processes required by regulations, or compliance. (ex. privacy, security, safety regulations)",
+        "risk": "High"
+      },
+      {
+        "text": "The device's failure would cause faults in other high-criticality processes.",
+        "risk": "High"
+      },
+      {
+        "text": "None of the above",
+        "risk": "Limited"
+      }
     ],
     "validation": {
       "required": true

@@ -12,53 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Stores additional information about a device's risk"""
-#import datetime
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from common import logger
 import json
 
 LOGGER = logger.get_logger('risk_profile')
-SECONDS_IN_YEAR = 31536000
-
-DATA_COLLECTION_CATEGORY = 'Data Collection'
-DATA_TRANSMISSION_CATEGORY = 'Data Transmission'
-REMOTE_OPERATION_CATEGORY = 'Remote Operation'
-OPERATING_ENVIRONMENT_CATEGORY = 'Operating Environment'
-
 
 class RiskProfile():
   """Python representation of a risk profile"""
 
   def __init__(self, profile_json=None, profile_format=None):
+
     if profile_json is None or profile_format is None:
       return
+
     self.name = profile_json['name']
-    self.created = datetime.now().strftime('%Y-%m-%d')
+    self.created = datetime.now()
     self.version = profile_json['version']
     self.questions = profile_json['questions']
     self.status = None
-    self.categories = None
     self.risk = None
+
     self._validate(profile_json, profile_format)
-    self._update_categories()
-    self._update_risk()
+    self._update_risk(profile_format)
 
   # Load a profile without modifying the created date
   # but still validate the profile
   def load(self, profile_json, profile_format):
     self.name = profile_json['name']
-    self.created = profile_json['created']
+    self.created = datetime.strptime(
+      profile_json['created'], '%Y-%m-%d')
     self.version = profile_json['version']
     self.questions = profile_json['questions']
     self.status = None
-    self.categories = None
 
     self._validate(profile_json, profile_format)
-    self._update_categories()
-    self._update_risk()
+    self._update_risk(profile_format)
+
     return self
 
   def update(self, profile_json, profile_format):
+
     # Construct a new profile from json data
     new_profile = RiskProfile(profile_json, profile_format)
 
@@ -71,7 +66,6 @@ class RiskProfile():
     self.created = new_profile.created
     self.questions = new_profile.questions
     self.status = new_profile.status
-    self.categories = new_profile.categories
 
   def _validate(self, profile_json, profile_format):
     if self._valid(profile_json, profile_format):
@@ -79,28 +73,89 @@ class RiskProfile():
     else:
       self.status = 'Draft'
 
-  def _update_categories(self):
-    if self.status == 'Valid':
-      self.categories = []
-      self.categories.append(
-          self._get_category_status(DATA_COLLECTION_CATEGORY))
-      self.categories.append(
-          self._get_category_status(DATA_TRANSMISSION_CATEGORY))
-      self.categories.append(
-          self._get_category_status(REMOTE_OPERATION_CATEGORY))
-      self.categories.append(
-          self._get_category_status(OPERATING_ENVIRONMENT_CATEGORY))
+  def _update_risk(self, profile_format):
 
-  def _update_risk(self):
     if self.status == 'Valid':
+
+      # Default risk = Limited
       risk = 'Limited'
-      for category in self.categories:
-        if 'status' in category and category['status'] == 'High':
+
+      # Check each question in profile
+      for question in self.questions:
+        question_text = question['question']
+
+        # Fetch the risk levels from the profile format
+        format_q = self._get_format_question(
+          question_text, profile_format)
+
+        if format_q is None:
+          # This occurs when a question found in a current profile
+          # has been removed from the format (format change)
+          continue
+
+        # We only want to check the select or select-multiple
+        # questions for now
+        if format_q['type'] in ['select', 'select-multiple']:
+          answer = question['answer']
+
+          question_risk = 'Limited'
+
+          # The answer is a single string (select)
+          if isinstance(answer, str):
+
+            format_option = self._get_format_question_option(
+              format_q, answer)
+
+            # Format options may just be a list of strings with
+            # no risk attached
+            if format_option is None:
+              continue
+
+            if 'risk' in format_option and format_option['risk'] == 'High':
+              question_risk = format_option['risk']
+
+          # A list of indexes is the answer (select-multiple)
+          elif isinstance(answer, list):
+
+            format_options = format_q['options']
+
+            for index in answer:
+              option = self._get_option_from_index(format_options, index)
+
+              if option is None:
+                LOGGER.error('Answer had an invalid index for question: ' +
+                             format_q['question'])
+                continue
+
+              if 'risk' in option and option['risk'] == 'High':
+                question_risk = 'High'
+
+          question['risk'] = question_risk
+
+      for question in self.questions:
+        if 'risk' in question and question['risk'] == 'High':
           risk = 'High'
+
+      self.risk = risk
+
     else:
       # Remove risk
       risk = None
     self.risk = risk
+
+  def _get_format_question(self, question, profile_format):
+    for q in profile_format:
+      if q['question'] == question:
+        return q
+    return None
+
+  def _get_option_from_index(self, options, index):
+    i = 0
+    for option in options:
+      if i == index:
+        return option
+      i+=1
+    return None
 
   def _check_answer(self, question):
     status = 'Limited'
@@ -114,19 +169,24 @@ class RiskProfile():
           status = 'High'
     return status
 
-  def _get_category_status(self, category):
-    status = 'Limited'
-    for question in self.questions:
-      if 'category' in question and question['category'] == category:
-        if question['validation']['required']:
-          status = 'High' if self._check_answer(question) == 'High' else status
-    return {'name': category, 'status': status}
-
   def _get_profile_question(self, profile_json, question):
 
     for q in profile_json['questions']:
       if question.lower() == q['question'].lower():
         return q
+
+    return None
+
+  def _get_format_question_option(self, question_obj, answer):
+
+    for option in question_obj['options']:
+
+      # Ignore just string lists
+      if isinstance(option, str):
+        continue
+
+      if option['text'] == answer:
+        return option
 
     return None
 
@@ -164,21 +224,23 @@ class RiskProfile():
     return all_questions_answered and all_questions_present
 
   def _expired(self):
-    # Check expiry
-    created_date = datetime.strptime(
-      self.created, '%Y-%m-%d').timestamp()
-    today = datetime.now().timestamp()
-    return created_date < (today - SECONDS_IN_YEAR)
+    # Calculate the date one year after the creation date
+    expiry_date = self.created + relativedelta(years=1)
+
+    # Normalize the current date and time to midnight
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Check if the current date and time is past the expiry date
+    return today > expiry_date
 
   def to_json(self, pretty=False):
     json_dict = {
         'name': self.name,
         'version': self.version,
-        'created': self.created,
+        'created': self.created.strftime('%Y-%m-%d'),
         'status': self.status,
+        'risk': self.risk,
         'questions': self.questions
     }
-    if self.categories is not None:
-      json_dict['categories'] = self.categories
     indent = 2 if pretty else None
     return json.dumps(json_dict, indent=indent)
