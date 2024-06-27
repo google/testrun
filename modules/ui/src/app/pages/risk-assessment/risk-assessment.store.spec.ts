@@ -85,6 +85,15 @@ describe('RiskAssessmentStore', () => {
 
       riskAssessmentStore.updateProfileFormat(PROFILE_FORM);
     });
+
+    it('should update selected profile', (done: DoneFn) => {
+      riskAssessmentStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
+        expect(store.selectedProfile).toEqual(PROFILE_MOCK);
+        done();
+      });
+
+      riskAssessmentStore.updateSelectedProfile(PROFILE_MOCK);
+    });
   });
 
   describe('selectors', () => {
@@ -93,6 +102,7 @@ describe('RiskAssessmentStore', () => {
         expect(store).toEqual({
           profiles: [PROFILE_MOCK, PROFILE_MOCK_2],
           profileFormat: [],
+          selectedProfile: null,
         });
         done();
       });

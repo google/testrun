@@ -13,14 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { TextFieldModule } from '@angular/cdk/text-field';
+import { CdkTextareaAutosize, TextFieldModule } from '@angular/cdk/text-field';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  inject,
+  Injector,
   Input,
   OnInit,
   Output,
+  QueryList,
+  ViewChildren,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatError, MatFormFieldModule } from '@angular/material/form-field';
@@ -42,7 +47,7 @@ import {
   FormControlType,
   Profile,
   ProfileFormat,
-  ProfileRequestBody,
+  ProfileStatus,
   Question,
   Validation,
 } from '../../../model/profile';
@@ -67,21 +72,55 @@ import { ProfileValidators } from './profile.validators';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileFormComponent implements OnInit {
-  private readonly VALID_STATUS = 'Valid';
+  private profile: Profile | null = null;
+  private injector = inject(Injector);
   public readonly FormControlType = FormControlType;
-  @Input() profileFormat!: ProfileFormat[];
+  public readonly ProfileStatus = ProfileStatus;
   profileForm: FormGroup = this.fb.group({});
+  @ViewChildren(CdkTextareaAutosize)
+  autosize!: QueryList<CdkTextareaAutosize>;
+  @Input() profileFormat!: ProfileFormat[];
   @Input() profiles!: Profile[];
-  @Output() saveProfile = new EventEmitter<ProfileRequestBody>();
+  @Input()
+  set selectedProfile(profile: Profile | null) {
+    this.profile = profile;
+    if (profile && this.nameControl) {
+      this.profileForm = this.createProfileForm(this.profileFormat);
+      this.fillProfileForm(this.profileFormat, profile);
+    }
+  }
+  get selectedProfile() {
+    return this.profile;
+  }
 
+  @Output() saveProfile = new EventEmitter<Profile>();
   constructor(
     private deviceValidators: DeviceValidators,
     private profileValidators: ProfileValidators,
     private fb: FormBuilder
   ) {}
-
   ngOnInit() {
     this.profileForm = this.createProfileForm(this.profileFormat);
+    if (this.selectedProfile) {
+      this.fillProfileForm(this.profileFormat, this.selectedProfile);
+    }
+  }
+
+  get isDraftDisabled(): boolean {
+    return (
+      !this.nameControl.valid ||
+      this.fieldsHasError ||
+      (this.profileForm.valid && this.profileForm.pristine)
+    );
+  }
+
+  private get fieldsHasError(): boolean {
+    return this.profileFormat.some((field, index) => {
+      return (
+        this.getControl(index).hasError('invalid_format') ||
+        this.getControl(index).hasError('maxlength')
+      );
+    });
   }
 
   get nameControl() {
@@ -99,14 +138,17 @@ export class ProfileFormComponent implements OnInit {
     group['name'] = new FormControl('', [
       this.profileValidators.textRequired(),
       this.deviceValidators.deviceStringFormat(),
-      this.profileValidators.differentProfileName(this.profiles),
+      this.profileValidators.differentProfileName(this.profiles, this.profile),
     ]);
 
     questions.forEach((question, index) => {
-      const validators = this.getValidators(question.type, question.validation);
       if (question.type === FormControlType.SELECT_MULTIPLE) {
         group[index] = this.getMultiSelectGroup(question);
       } else {
+        const validators = this.getValidators(
+          question.type,
+          question.validation
+        );
         group[index] = new FormControl(question.default || '', validators);
       }
     });
@@ -145,29 +187,54 @@ export class ProfileFormComponent implements OnInit {
     });
   }
 
-  getFormGroup(name: string): FormGroup {
+  getFormGroup(name: string | number): FormGroup {
     return this.profileForm?.controls[name] as FormGroup;
   }
 
-  onSaveClick() {
+  fillProfileForm(profileFormat: ProfileFormat[], profile: Profile): void {
+    this.nameControl.setValue(profile.name);
+    profileFormat.forEach((question, index) => {
+      if (question.type === FormControlType.SELECT_MULTIPLE) {
+        question.options?.forEach((item, idx) => {
+          if ((profile.questions[index].answer as number[])?.includes(idx)) {
+            this.getFormGroup(index).controls[idx].setValue(true);
+          } else {
+            this.getFormGroup(index).controls[idx].setValue(false);
+          }
+        });
+      } else {
+        this.getControl(index).setValue(profile.questions[index].answer);
+      }
+    });
+    this.triggerResize();
+  }
+
+  onSaveClick(status: ProfileStatus) {
     const response = this.buildResponseFromForm(
       this.profileFormat,
       this.profileForm,
-      true
+      status,
+      this.selectedProfile
     );
-    this.profileForm.reset();
     this.saveProfile.emit(response);
   }
 
   buildResponseFromForm(
     initialQuestions: ProfileFormat[],
     profileForm: FormGroup,
-    isValid?: boolean
-  ): ProfileRequestBody {
-    const request: ProfileRequestBody = {
-      name: this.nameControl.value?.trim(),
+    status: ProfileStatus,
+    profile: Profile | null
+  ): Profile {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const request: any = {
       questions: [],
     };
+    if (profile) {
+      request.name = profile.name;
+      request.rename = this.nameControl.value?.trim();
+    } else {
+      request.name = this.nameControl.value?.trim();
+    }
     const questions: Question[] = [];
 
     initialQuestions.forEach((initialQuestion, index) => {
@@ -188,12 +255,20 @@ export class ProfileFormComponent implements OnInit {
       }
       questions.push(question);
     });
-
     request.questions = questions;
-
-    if (isValid) {
-      request.status = this.VALID_STATUS;
-    }
+    request.status = status;
     return request;
+  }
+
+  private triggerResize() {
+    // Wait for content to render, then trigger textarea resize.
+    afterNextRender(
+      () => {
+        this.autosize?.forEach(item => item.resizeToFitContent(true));
+      },
+      {
+        injector: this.injector,
+      }
+    );
   }
 }

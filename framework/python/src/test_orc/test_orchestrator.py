@@ -123,7 +123,7 @@ class TestOrchestrator:
     self.get_session().set_report_url(report.get_report_url())
 
     # Move testing output from runtime to local device folder
-    timestamp_dir = self._timestamp_results(device)
+    self._timestamp_results(device)
 
     LOGGER.debug("Cleaning old test results...")
     self._cleanup_old_test_results(device)

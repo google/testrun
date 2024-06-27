@@ -31,6 +31,10 @@
   color: $grey-700;
 }
 
+.profile-item-info {
+  cursor: pointer;
+}
+
 .profile-item-name {
   margin: 0;
   font-family: $font-secondary, sans-serif;

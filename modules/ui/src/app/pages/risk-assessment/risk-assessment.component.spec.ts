@@ -26,12 +26,12 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { PROFILE_MOCK } from '../../mocks/profile.mock';
+import { NEW_PROFILE_MOCK, PROFILE_MOCK } from '../../mocks/profile.mock';
 import { of } from 'rxjs';
 import { Component, Input } from '@angular/core';
 import { Profile, ProfileFormat } from '../../model/profile';
 import { MatDialogRef } from '@angular/material/dialog';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
@@ -61,6 +61,7 @@ describe('RiskAssessmentComponent', () => {
       'setFocus',
       'getProfilesFormat',
       'saveProfile',
+      'updateSelectedProfile',
     ]);
 
     await TestBed.configureTestingModule({
@@ -96,6 +97,7 @@ describe('RiskAssessmentComponent', () => {
       component.viewModel$ = of({
         profiles: [] as Profile[],
         profileFormat: [],
+        selectedProfile: null,
       });
       mockRiskAssessmentStore.profiles$ = of([]);
       fixture.detectChanges();
@@ -140,6 +142,7 @@ describe('RiskAssessmentComponent', () => {
       component.viewModel$ = of({
         profiles: [PROFILE_MOCK, PROFILE_MOCK],
         profileFormat: [],
+        selectedProfile: null,
       });
       fixture.detectChanges();
     });
@@ -160,25 +163,40 @@ describe('RiskAssessmentComponent', () => {
       it('should open delete profile modal', fakeAsync(() => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(true),
-        } as MatDialogRef<typeof DeleteFormComponent>);
+        } as MatDialogRef<typeof SimpleDialogComponent>);
         tick();
 
-        component.deleteProfile(PROFILE_MOCK.name, 0);
+        component.deleteProfile(PROFILE_MOCK.name, 0, null);
         tick();
 
-        expect(openSpy).toHaveBeenCalledWith(DeleteFormComponent, {
+        expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
           ariaLabel: 'Delete risk profile',
           data: {
-            title: 'Delete risk profile',
+            title: 'Delete risk profile?',
             content: `You are about to delete ${PROFILE_MOCK.name}. Are you sure?`,
           },
           autoFocus: true,
           hasBackdrop: true,
           disableClose: true,
-          panelClass: 'delete-form-dialog',
+          panelClass: 'simple-dialog',
         });
 
         openSpy.calls.reset();
+      }));
+
+      it('should close form and set selected profile to null if selected profile was deleted', fakeAsync(() => {
+        spyOn(component.dialog, 'open').and.returnValue({
+          afterClosed: () => of(true),
+        } as MatDialogRef<typeof SimpleDialogComponent>);
+        tick();
+
+        component.deleteProfile(PROFILE_MOCK.name, 0, PROFILE_MOCK);
+        tick();
+
+        expect(
+          mockRiskAssessmentStore.updateSelectedProfile
+        ).toHaveBeenCalledWith(null);
+        expect(component.isOpenProfileForm).toBeFalse();
       }));
     });
 
@@ -204,19 +222,70 @@ describe('RiskAssessmentComponent', () => {
     });
 
     describe('#saveProfile', () => {
-      it('should call store saveProfile', () => {
-        component.saveProfile({ name: 'test', questions: [] });
+      describe('with no profile selected', () => {
+        beforeEach(() => {
+          component.saveProfileClicked({ name: 'test', questions: [] }, null);
+        });
 
-        expect(mockRiskAssessmentStore.saveProfile).toHaveBeenCalledWith({
-          name: 'test',
-          questions: [],
+        it('should call store saveProfile when it is new profile', () => {
+          expect(mockRiskAssessmentStore.saveProfile).toHaveBeenCalledWith({
+            name: 'test',
+            questions: [],
+          });
+        });
+
+        it('should close the form', () => {
+          expect(component.isOpenProfileForm).toBeFalse();
         });
       });
 
-      it('should close the form', () => {
-        component.saveProfile({ name: 'test', questions: [] });
+      describe('with profile selected', () => {
+        it('should open save profile modal', fakeAsync(() => {
+          const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+            afterClosed: () => of(true),
+          } as MatDialogRef<typeof SimpleDialogComponent>);
 
-        expect(component.isOpenProfileForm).toBeFalse();
+          component.saveProfileClicked(NEW_PROFILE_MOCK, PROFILE_MOCK);
+
+          expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
+            ariaLabel: 'Save changes',
+            data: {
+              title: 'Save changes',
+              content: `You are about to save changes in Primary profile. Are you sure?`,
+            },
+            autoFocus: true,
+            hasBackdrop: true,
+            disableClose: true,
+            panelClass: 'simple-dialog',
+          });
+
+          openSpy.calls.reset();
+        }));
+
+        it('should call store saveProfile', fakeAsync(() => {
+          spyOn(component.dialog, 'open').and.returnValue({
+            afterClosed: () => of(true),
+          } as MatDialogRef<typeof SimpleDialogComponent>);
+
+          component.saveProfileClicked(NEW_PROFILE_MOCK, PROFILE_MOCK);
+
+          tick();
+
+          expect(mockRiskAssessmentStore.saveProfile).toHaveBeenCalledWith(
+            NEW_PROFILE_MOCK
+          );
+        }));
+
+        it('should close the form', fakeAsync(() => {
+          spyOn(component.dialog, 'open').and.returnValue({
+            afterClosed: () => of(true),
+          } as MatDialogRef<typeof SimpleDialogComponent>);
+
+          component.saveProfileClicked(NEW_PROFILE_MOCK, PROFILE_MOCK);
+          tick();
+
+          expect(component.isOpenProfileForm).toBeFalse();
+        }));
       });
     });
   });
@@ -236,5 +305,6 @@ class FakeProfileItemComponent {
 })
 class FakeProfileFormComponent {
   @Input() profiles!: Profile[];
+  @Input() selectedProfile!: Profile;
   @Input() profileFormat!: ProfileFormat[];
 }

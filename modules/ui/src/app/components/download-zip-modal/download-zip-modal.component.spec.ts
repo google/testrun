@@ -5,10 +5,13 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { PROFILE_MOCK, PROFILE_MOCK_2 } from '../../mocks/profile.mock';
 import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { TestRunService } from '../../services/test-run.service';
 
 describe('DownloadZipModalComponent', () => {
   let component: DownloadZipModalComponent;
   let fixture: ComponentFixture<DownloadZipModalComponent>;
+
+  const testRunServiceMock = jasmine.createSpyObj(['getRiskClass']);
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -28,6 +31,7 @@ describe('DownloadZipModalComponent', () => {
             profiles: [PROFILE_MOCK_2, PROFILE_MOCK],
           },
         },
+        { provide: TestRunService, useValue: testRunServiceMock },
       ],
     });
   });
@@ -58,7 +62,9 @@ describe('DownloadZipModalComponent', () => {
         'mat-select'
       ) as HTMLElement;
 
-      expect(select.getAttribute('ng-reflect-value')).toEqual('Profile name');
+      expect(select.getAttribute('ng-reflect-value')).toEqual(
+        'Primary profile'
+      );
     });
 
     it('should close with null on redirect button click', async () => {
@@ -95,13 +101,27 @@ describe('DownloadZipModalComponent', () => {
 
       downloadButton.click();
 
-      expect(closeSpy).toHaveBeenCalledWith('Profile name');
+      expect(closeSpy).toHaveBeenCalledWith('Primary profile');
 
       closeSpy.calls.reset();
     });
 
     it('should have sorted profiles', async () => {
       expect(component.profiles).toEqual([PROFILE_MOCK, PROFILE_MOCK_2]);
+    });
+
+    it('#getRiskClass should call the service method getRiskClass"', () => {
+      const expectedResult = {
+        red: true,
+        cyan: false,
+      };
+
+      testRunServiceMock.getRiskClass.and.returnValue(expectedResult);
+
+      const result = component.getRiskClass('High');
+
+      expect(testRunServiceMock.getRiskClass).toHaveBeenCalledWith('High');
+      expect(result).toEqual(expectedResult);
     });
   });
 

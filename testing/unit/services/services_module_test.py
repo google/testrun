@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module run all the DNS related unit tests"""
-from nmap_module import NmapModule
+from services_module import ServicesModule
 import unittest
 import os
 import shutil
 from testreport import TestReport
 
-MODULE = 'nmap'
+MODULE = 'services'
 
 # Define the file paths
 TEST_FILES_DIR = 'testing/unit/' + MODULE
@@ -45,10 +45,11 @@ class NMAPTest(unittest.TestCase):
     # Move test scan into expected folder
     src_scan_results_path = os.path.join(RESULTS_DIR,
                                          'ports_open_scan_result.json')
-    dst_scan_results_path = os.path.join(OUTPUT_DIR, 'nmap_scan_results.json')
+    dst_scan_results_path = os.path.join(
+      OUTPUT_DIR, 'services_scan_results.json')
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
-    nmap_module = NmapModule(module=MODULE,
+    nmap_module = ServicesModule(module=MODULE,
                              log_dir=OUTPUT_DIR,
                              conf_file=CONF_FILE,
                              results_dir=OUTPUT_DIR,
@@ -77,10 +78,11 @@ class NMAPTest(unittest.TestCase):
   def nmap_module_report_all_closed_test(self):
     src_scan_results_path = os.path.join(RESULTS_DIR,
                                          'all_closed_scan_result.json')
-    dst_scan_results_path = os.path.join(OUTPUT_DIR, 'nmap_scan_results.json')
+    dst_scan_results_path = os.path.join(
+      OUTPUT_DIR, 'services_scan_results.json')
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
-    nmap_module = NmapModule(module=MODULE,
+    nmap_module = ServicesModule(module=MODULE,
                              log_dir=OUTPUT_DIR,
                              conf_file=CONF_FILE,
                              results_dir=OUTPUT_DIR,

@@ -17,7 +17,22 @@ limitations under the License.
   <mat-icon class="profile-item-icon" fontSet="material-symbols-outlined">
     rule
   </mat-icon>
-  <p class="profile-item-name">{{ profile.name }}</p>
+  <div
+    class="profile-item-info"
+    role="button"
+    tabindex="0"
+    (click)="profileClicked.emit(profile)"
+    (keydown.enter)="profileClicked.emit(profile)">
+    <p
+      *ngIf="profile.risk"
+      class="profile-item-risk"
+      [ngClass]="getRiskClass(profile.risk)">
+      {{ profile.risk }} risk
+    </p>
+    <p class="profile-item-name">
+      {{ profile.name }}
+    </p>
+  </div>
   <button
     class="profile-item-button copy"
     mat-icon-button
