@@ -715,3 +715,20 @@ class TestrunSession():
 
   def get_certs(self):
     return self._certs
+
+
+  def detect_network_adapters_change(self) -> dict:
+    adapters = {}
+    ifaces_new = util.get_sys_interfaces()
+
+    #difference between stored and newly received network interfaces
+    diff = util.diff_dicts(self._ifaces, ifaces_new)
+    if diff:
+      if 'items_added' in diff:
+        adapters['adapters_added'] = diff['items_added']
+      if 'items_removed' in diff:
+        adapters['adapters_removed'] = diff['items_removed']
+      # save new network interfaces to session
+      self._ifaces = ifaces_new
+    return adapters
+
