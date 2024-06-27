@@ -19,6 +19,9 @@ from io import BytesIO
 import base64
 from common import logger
 import json
+import os
+
+PROFILES_PATH = 'local/risk_profiles'
 
 LOGGER = logger.get_logger('risk_profile')
 
@@ -69,6 +72,10 @@ class RiskProfile():
     self.created = new_profile.created
     self.questions = new_profile.questions
     self.status = new_profile.status
+
+  def get_file_path(self):
+    return os.path.join(PROFILES_PATH,
+                        self.name + '.json')
 
   def _validate(self, profile_json, profile_format):
     if self._valid(profile_json, profile_format):
@@ -232,7 +239,7 @@ class RiskProfile():
 
     # Normalize the current date and time to midnight
     today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    
+
     # Check if the current date and time is past the expiry date
     return today > expiry_date
 

@@ -448,19 +448,14 @@ class TestrunSession():
 
     else:
 
+      old_name = risk_profile.name
+
       risk_profile.update(profile_json, self._profile_format)
       # Check if name has changed
       if 'rename' in profile_json:
+
         # Delete the original file
-        os.remove(os.path.join(PROFILES_DIR, risk_profile.name + '.json'))
-
-      # Find the index of the risk_profile to replace
-      index_to_replace = next(
-        (index for (index, d) in enumerate(
-          self._profiles) if d.name == profile_name), None)
-
-      if index_to_replace is not None:
-        self._profiles[index_to_replace] = risk_profile
+        os.remove(os.path.join(PROFILES_DIR, old_name + '.json'))
 
     # Write file to disk
     with open(

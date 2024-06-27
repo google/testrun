@@ -336,9 +336,9 @@ class Api:
 
       # Check OK response was received
       if version_check.status_code != 200:
-        response.status_code = 500
         LOGGER.debug(version_check.content)
         LOGGER.error("Failed to fetch latest version")
+        response.status_code = 200
         return json_response
 
       # Extract version number from response, removing the leading 'v'
@@ -359,7 +359,7 @@ class Api:
 
       return json_response
     except Exception as e: # pylint: disable=W0703
-      response.status_code = 500
+      response.status_code = 200
       LOGGER.error("Failed to fetch latest version")
       LOGGER.debug(e)
       return json_response
