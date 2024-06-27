@@ -3,56 +3,170 @@
     "question": "What type of device is this?",
     "type": "select",
     "options": [
-      "Analytics - Energy Modeling",
-      "Analytics - HVAC Optimization",
-      "Analytics - Load Disaggregation",
-      "Analytics - Occupancy",
-      "Analytics - Personal Profile",
-      "Analytics - Time Management",
-      "Analytics - Other",
-      "Building Automation Gateway",
-      "IoT Gateway",
-      "Controller - AHU",
-      "Controller - Boiler",
-      "Controller - Chiller",
-      "Controller - FCU",
-      "Controller - Pump",
-      "Controller - CRAC",
-      "Controller - VAV",
-      "Controller - VRF",
-      "Controller - Multiple",
-      "Controller - Other",
-      "Controller - Lighting",
-      "Controller - Blinds/Facades",
-      "Controller - Lifts/Elevators",
-      "Controller - UPS",
-      "Sensor - Air Quality",
-      "Sensor - Vibration",
-      "Sensor - Humidity",
-      "Sensor - Water",
-      "Sensor - Occupancy",
-      "Sensor - Volume",
-      "Sensor - Weight",
-      "Sensor - Weather",
-      "Sensor - Steam",
-      "Sensor - Air Flow",
-      "Sensor - Lighting",
-      "Sensor - Other",
-      "Sensor - Air Quality",
-      "Monitoring - Fire System",
-      "Monitoring - Emergency Lighting",
-      "Monitoring - Other",
-      "Monitoring - UPS",
-      "Meter - Water",
-      "Meter - Gas",
-      "Meter - Electricity",
-      "Meter - Other",
-      "Camera",
-      "Badge Reader",
-      "Other",
-      "Data - Storage",
-      "Data - Processing",
-      "Touch Panel"
+      {
+        "text": "Building Automation Gateway",
+        "risk": "High"
+      },
+      {
+        "text": "IoT Gateway",
+        "risk": "High"
+      },      
+      {
+        "text": "Controller - AHU",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - Boiler",
+        "risk": "High"
+      },
+      {
+        "text": "Controller - Chiller",
+        "risk": "High"
+      },
+      {
+        "text": "Controller - FCU",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - Pump",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - CRAC",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - VAV",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - VRF",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - Multiple",
+        "risk": "High"
+      },
+      {
+        "text": "Controller - Other",
+        "risk": "High"
+      },
+      {
+        "text": "Controller - Lighting",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - Blinds/Facades",
+        "risk": "Limited"
+      },
+      {
+        "text": "Controller - Lifts/Elevators",
+        "risk": "High"
+      },
+      {
+        "text": "Controller - UPS",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Air Quality",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Vibration",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Humidity",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Water",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Occupancy",
+        "risk": "High"
+      },
+      {
+        "text": "Sensor - Volume",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Weight",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Weather",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Steam",
+        "risk": "High"
+      },
+      {
+        "text": "Sensor - Air Flow",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Lighting",
+        "risk": "Limited"
+      },
+      {
+        "text": "Sensor - Other",
+        "risk": "High"
+      },
+      {
+        "text": "Sensor - Air Quality",
+        "risk": "Limited"
+      },
+      {
+        "text": "Monitoring - Fire System",
+        "risk": "Limited"
+      },
+      {
+        "text": "Monitoring - Emergency Lighting",
+        "risk": "Limited"
+      },
+      {
+        "text": "Monitoring - Other",
+        "risk": "High"
+      },
+      {
+        "text": "Monitoring - UPS",
+        "risk": "Limited"
+      },
+      {
+        "text": "Meter - Water",
+        "risk": "Limited"
+      },
+      {
+        "text": "Meter - Gas",
+        "risk": "Limited"
+      },
+      {
+        "text": "Meter - Electricity",
+        "risk": "Limited"
+      },
+      {
+        "text": "Meter - Other",
+        "risk": "High"
+      },
+      {
+        "text": "Other",
+        "risk": "High"
+      },
+      {
+        "text": "Data - Storage",
+        "risk": "High"
+      },
+      {
+        "text": "Data - Processing",
+        "risk": "High"
+      },
+      {
+        "text": "Tablet",
+        "risk": "Limited"
+      }
     ],
     "validation": {
       "required": true
@@ -68,24 +182,17 @@
     }
   },
   {
-    "question": "What is the email of the device owner(s)?",
-    "description": "The device owner is the person or group responsible for the device",
-    "type": "email-multiple",
-    "validation": {
-      "required": true,
-      "max": "128"
-    }
-  },
-  {
     "question": "Is this device going to be managed by Google or a third party?",
     "description": "A manufacturer or supplier is considered third party in this case",
     "type": "select",
     "options": [
       {
-        "text": "Google"
+        "text": "Google",
+        "risk": "Limited"
       },
       {
-        "text": "Third Party"
+        "text": "Third Party",
+        "risk": "High"
       }
     ],
     "validation": {
@@ -165,10 +272,6 @@
         "risk": "High"
       },
       {
-        "text": "The device network protocol is well-established and currently used by Google",
-        "risk": "High"
-      },
-      {
         "text": "None of the above",
         "risk": "Limited"
       }
@@ -191,7 +294,8 @@
         "risk": "High"
       },
       {
-        "text": "I don't know"
+        "text": "I don't know",
+        "risk": "High"
       }
       
     ],

@@ -88,6 +88,11 @@ class RiskProfile():
         format_q = self._get_format_question(
           question_text, profile_format)
 
+        if format_q is None:
+          # This occurs when a question found in a current profile
+          # has been removed from the format (format change)
+          continue
+
         # We only want to check the select or select-multiple
         # questions for now
         if format_q['type'] in ['select', 'select-multiple']:
@@ -118,7 +123,8 @@ class RiskProfile():
               option = self._get_option_from_index(format_options, index)
 
               if option is None:
-                LOGGER.error('Answer had an invalid index')
+                LOGGER.error('Answer had an invalid index for question: ' +
+                             format_q['question'])
                 continue
 
               if 'risk' in option and option['risk'] == 'High':
