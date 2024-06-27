@@ -121,6 +121,27 @@ export const NEW_PROFILE_MOCK = {
   ],
 };
 
+export const NEW_PROFILE_MOCK_DRAFT = {
+  status: ProfileStatus.DRAFT,
+  name: 'New profile',
+  questions: [
+    { question: 'Email', answer: '' },
+    {
+      question: 'What type of device do you need reviewed?',
+      answer: '',
+    },
+    {
+      question: 'Are any of the following statements true about your device?',
+      answer: '',
+    },
+    {
+      question: 'What features does the device have?',
+      answer: [],
+    },
+    { question: 'Comments', answer: '' },
+  ],
+};
+
 export const RENAME_PROFILE_MOCK = {
   ...NEW_PROFILE_MOCK,
   name: 'Primary profile',
