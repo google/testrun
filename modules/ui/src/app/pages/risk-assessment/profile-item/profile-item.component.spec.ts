@@ -17,15 +17,19 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProfileItemComponent } from './profile-item.component';
 import { PROFILE_MOCK } from '../../../mocks/profile.mock';
+import { TestRunService } from '../../../services/test-run.service';
 
 describe('ProfileItemComponent', () => {
   let component: ProfileItemComponent;
   let fixture: ComponentFixture<ProfileItemComponent>;
   let compiled: HTMLElement;
 
+  const testRunServiceMock = jasmine.createSpyObj(['getRiskClass']);
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProfileItemComponent],
+      providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfileItemComponent);

@@ -39,6 +39,7 @@ import {
   PROFILE_FORM,
   PROFILE_MOCK,
 } from '../mocks/profile.mock';
+import { ProfileRisk } from '../model/profile';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -323,6 +324,30 @@ describe('TestRunService', () => {
 
         expect(result).toEqual(expectedResult);
       });
+    });
+  });
+
+  describe('#getRiskClass', () => {
+    it('should return "red" class as true if risk result is "High"', () => {
+      const expectedResult = {
+        red: true,
+        cyan: false,
+      };
+
+      const result = service.getRiskClass(ProfileRisk.HIGH);
+
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should return "cyan" class as true if risk result is "Limited"', () => {
+      const expectedResult = {
+        red: false,
+        cyan: true,
+      };
+
+      const result = service.getRiskClass(ProfileRisk.LIMITED);
+
+      expect(result).toEqual(expectedResult);
     });
   });
 

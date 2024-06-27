@@ -15,6 +15,7 @@
  */
 export interface Profile {
   name: string;
+  risk?: string;
   questions: Question[];
   status?: ProfileStatus;
   rename?: string;
@@ -52,7 +53,17 @@ export interface Question {
   answer?: string | number[];
 }
 
+export enum ProfileRisk {
+  HIGH = 'High',
+  LIMITED = 'Limited',
+}
+
 export enum ProfileStatus {
   VALID = 'Valid',
   DRAFT = 'Draft',
+}
+
+export interface RiskResultClassName {
+  red: boolean;
+  cyan: boolean;
 }
