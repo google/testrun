@@ -14,44 +14,44 @@
 
 """Session methods tests"""
 
-import pytest
 from unittest.mock import patch
 from common import session
 
+
 class MockUtil:
   """mock util functions"""
-  @staticmethod
-  def get_sys_interfaces():
-    return {
-            'eth0': '00:1A:2B:3C:4D:5E',
-            'eth1': '66:77:88:99:AA:BB'
-          }
 
   @staticmethod
-  def diff_dicts(d1, d2): # pylint: disable=W0613
+  def get_sys_interfaces():
+    return {"eth0": "00:1A:2B:3C:4D:5E", "eth1": "66:77:88:99:AA:BB"}
+
+  @staticmethod
+  def diff_dicts(d1, d2):  # pylint: disable=W0613
     return {
-            'items_added': {'eth1': '66:77:88:99:AA:BB'},
-            'items_removed': {'eth2': '00:1B:2C:3D:4E:5F'}
-          }
+        "items_added": {"eth1": "66:77:88:99:AA:BB"},
+        "items_removed": {"eth2": "00:1B:2C:3D:4E:5F"},
+    }
 
 
 class TestrunSessionMock(session.TestrunSession):
-  def __init__(self):
-    self._ifaces = {'eth0': '00:1A:2B:3C:4D:5E', 'eth2': '66:77:88:99:AA:BB'}
+  def __init__(self):  # pylint: disable=W0231
+    self._ifaces = {"eth0": "00:1A:2B:3C:4D:5E", "eth2": "66:77:88:99:AA:BB"}
 
 
 util = MockUtil()
 
 
-@patch('common.util.get_sys_interfaces', side_effect=util.get_sys_interfaces)
-@patch('common.util.diff_dicts', side_effect=util.diff_dicts)
-def test_detect_network_adapters_change(mock_get_sys_interfaces, mock_diff_dicts):
+@patch("common.util.get_sys_interfaces", side_effect=util.get_sys_interfaces)
+@patch("common.util.diff_dicts", side_effect=util.diff_dicts)
+def test_detect_network_adapters_change(
+  mock_get_sys_interfaces,  # pylint: disable=W0613
+  mock_diff_dicts,  # pylint: disable=W0613
+):
   testrun_session = TestrunSessionMock()
 
   # Test added and removed
   result = testrun_session.detect_network_adapters_change()
   assert result == {
-            'adapters_added': {'eth1': '66:77:88:99:AA:BB'},
-            'adapters_removed': {'eth2': '00:1B:2C:3D:4E:5F'}
-          }
- 
+      "adapters_added": {"eth1": "66:77:88:99:AA:BB"},
+      "adapters_removed": {"eth2": "00:1B:2C:3D:4E:5F"},
+  }
