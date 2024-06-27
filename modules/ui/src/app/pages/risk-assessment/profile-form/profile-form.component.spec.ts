@@ -19,12 +19,13 @@ import { ProfileFormComponent } from './profile-form.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   NEW_PROFILE_MOCK,
+  NEW_PROFILE_MOCK_DRAFT,
   PROFILE_FORM,
   PROFILE_MOCK,
   PROFILE_MOCK_2,
   RENAME_PROFILE_MOCK,
 } from '../../../mocks/profile.mock';
-import { FormControlType } from '../../../model/profile';
+import { FormControlType, ProfileStatus } from '../../../model/profile';
 
 describe('ProfileFormComponent', () => {
   let component: ProfileFormComponent;
@@ -296,18 +297,50 @@ describe('ProfileFormComponent', () => {
     });
 
     describe('Draft button', () => {
-      it('should be enabled when valid profile name is present', () => {
-        const name: HTMLInputElement = compiled.querySelector(
-          '.form-name'
-        ) as HTMLInputElement;
-        name.value = 'name';
-        name.dispatchEvent(new Event('input'));
+      it('should be disabled when profile name is empty', () => {
+        component.nameControl.setValue('');
+        fixture.detectChanges();
+        const draftButton = compiled.querySelector(
+          '.save-draft-button'
+        ) as HTMLButtonElement;
+
+        expect(draftButton.disabled).toBeTrue();
+      });
+
+      it('should be disabled when profile name is not empty but other fields in wrong format', () => {
+        component.nameControl.setValue('New profile');
+        component.getControl('0').setValue('test');
+        fixture.detectChanges();
+        const draftButton = compiled.querySelector(
+          '.save-draft-button'
+        ) as HTMLButtonElement;
+
+        expect(draftButton.disabled).toBeTrue();
+      });
+
+      it('should be enabled when profile name is not empty; other fields are empty or in correct format', () => {
+        component.nameControl.setValue('New profile');
+        component.getControl('0').setValue('a@test.te;b@test.te, c@test.te');
         fixture.detectChanges();
         const draftButton = compiled.querySelector(
           '.save-draft-button'
         ) as HTMLButtonElement;
 
         expect(draftButton.disabled).toBeFalse();
+      });
+
+      it('should emit new profile in draft status', () => {
+        component.nameControl.setValue('New profile');
+        fixture.detectChanges();
+        const emitSpy = spyOn(component.saveProfile, 'emit');
+        const draftButton = compiled.querySelector(
+          '.save-draft-button'
+        ) as HTMLButtonElement;
+        draftButton.click();
+
+        expect(emitSpy).toHaveBeenCalledWith({
+          ...NEW_PROFILE_MOCK_DRAFT,
+        });
       });
     });
 
@@ -349,7 +382,7 @@ describe('ProfileFormComponent', () => {
       it('save profile should have rename field', () => {
         const emitSpy = spyOn(component.saveProfile, 'emit');
         fillForm(component);
-        component.onSaveClick();
+        component.onSaveClick(ProfileStatus.VALID);
 
         expect(emitSpy).toHaveBeenCalledWith(RENAME_PROFILE_MOCK);
       });
@@ -364,7 +397,7 @@ describe('ProfileFormComponent', () => {
       it('save profile should not have rename field', () => {
         const emitSpy = spyOn(component.saveProfile, 'emit');
         fillForm(component);
-        component.onSaveClick();
+        component.onSaveClick(ProfileStatus.VALID);
 
         expect(emitSpy).toHaveBeenCalledWith(NEW_PROFILE_MOCK);
       });

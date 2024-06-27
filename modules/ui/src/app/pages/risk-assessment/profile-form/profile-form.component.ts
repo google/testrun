@@ -75,6 +75,7 @@ export class ProfileFormComponent implements OnInit {
   private profile: Profile | null = null;
   private injector = inject(Injector);
   public readonly FormControlType = FormControlType;
+  public readonly ProfileStatus = ProfileStatus;
   profileForm: FormGroup = this.fb.group({});
   @ViewChildren(CdkTextareaAutosize)
   autosize!: QueryList<CdkTextareaAutosize>;
@@ -103,6 +104,23 @@ export class ProfileFormComponent implements OnInit {
     if (this.selectedProfile) {
       this.fillProfileForm(this.profileFormat, this.selectedProfile);
     }
+  }
+
+  get isDraftDisabled(): boolean {
+    return (
+      !this.nameControl.valid ||
+      this.fieldsHasError ||
+      (this.profileForm.valid && this.profileForm.pristine)
+    );
+  }
+
+  private get fieldsHasError(): boolean {
+    return this.profileFormat.some((field, index) => {
+      return (
+        this.getControl(index).hasError('invalid_format') ||
+        this.getControl(index).hasError('maxlength')
+      );
+    });
   }
 
   get nameControl() {
@@ -191,11 +209,11 @@ export class ProfileFormComponent implements OnInit {
     this.triggerResize();
   }
 
-  onSaveClick() {
+  onSaveClick(status: ProfileStatus) {
     const response = this.buildResponseFromForm(
       this.profileFormat,
       this.profileForm,
-      ProfileStatus.VALID,
+      status,
       this.selectedProfile
     );
     this.saveProfile.emit(response);
