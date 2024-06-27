@@ -76,7 +76,7 @@ export class ProfileFormComponent implements OnInit {
   private injector = inject(Injector);
   public readonly FormControlType = FormControlType;
   profileForm: FormGroup = this.fb.group({});
-  @ViewChildren('cdkTextareaAutosize')
+  @ViewChildren(CdkTextareaAutosize)
   autosize!: QueryList<CdkTextareaAutosize>;
   @Input() profileFormat!: ProfileFormat[];
   @Input() profiles!: Profile[];
