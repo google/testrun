@@ -39,3 +39,22 @@ def test_get_sys_interfaces(mock_net_if_addrs):
   result = util.get_sys_interfaces()
   # Assert the result
   assert result == expected
+
+
+def test_diff_dicts():
+  d1 = {'a': 1, 'b': 2}
+  d2 = {'a': 1, 'b': 2}
+  #Assert equal dicts
+  assert not util.diff_dicts(d1, d2)
+  d2 = {'a': 1, 'c': 3}
+  expected = {'items_removed': {'b': 2},'items_added': {'c': 3}}
+  #Assert items added adn removed
+  assert util.diff_dicts(d1, d2) == expected
+  d1 = {'a': 1}
+  d2 = {'b': 2}
+  expected = {
+      'items_removed': {'a': 1},
+      'items_added': {'b': 2}
+  }
+  #Assert completely different dicts
+  assert util.diff_dicts(d1, d2) == expected
