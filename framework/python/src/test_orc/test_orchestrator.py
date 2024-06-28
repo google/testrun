@@ -277,6 +277,10 @@ class TestOrchestrator:
         "{device_folder}", device.device_folder), timestamp
       )
 
+      # Delete ZIP if it already exists
+      if os.path.exists(zip_location + ".zip"):
+        os.remove(zip_location + ".zip")
+
       # Include profile if specified
       if profile is not None:
         LOGGER.debug(
@@ -289,9 +293,11 @@ class TestOrchestrator:
         with open(os.path.join(src_path, "profile.pdf"), "wb") as f:
           f.write(profile.to_pdf(device).getvalue())
 
-      # Create ZIP file
-      if not os.path.exists(zip_location + ".zip"):
-        shutil.make_archive(zip_location, "zip", src_path)
+        with open(os.path.join(src_path, "profile.html"), "w") as fp:
+          fp.write(profile.to_html(device))
+
+      # Create ZIP archive
+      shutil.make_archive(zip_location, "zip", src_path)
 
       # Check that the ZIP was successfully created
       zip_file = zip_location + ".zip"
