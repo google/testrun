@@ -18,12 +18,18 @@
 
 $profile-draft-icon-size: 22px;
 
+:host.selected {
+  .profile-item-container {
+    background-color: $grey-100;
+  }
+}
+
 .profile-item-container {
   display: grid;
   grid-template-columns: 24px minmax(160px, 1fr) 24px 24px;
   gap: 16px;
   box-sizing: border-box;
-  padding: 12px 0;
+  padding: 12px 16px;
   border-bottom: 1px solid $lighter-grey;
   align-items: center;
 }
