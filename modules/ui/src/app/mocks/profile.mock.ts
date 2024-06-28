@@ -24,6 +24,7 @@ import {
 export const PROFILE_MOCK: Profile = {
   name: 'Primary profile',
   status: ProfileStatus.VALID,
+  created: '2024-05-23 12:38:26',
   questions: [
     {
       question: 'What is the email of the device owner(s)?',
