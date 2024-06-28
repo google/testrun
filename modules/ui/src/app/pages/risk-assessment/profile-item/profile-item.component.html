@@ -14,9 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="profile-item-container">
-  <mat-icon class="profile-item-icon" fontSet="material-symbols-outlined">
-    rule
+  <mat-icon
+    *ngIf="profile.status === ProfileStatus.VALID"
+    class="profile-item-icon"
+    fontSet="material-symbols-outlined">
+    check_circle
   </mat-icon>
+  <mat-icon
+    *ngIf="profile.status === ProfileStatus.DRAFT"
+    svgIcon="draft"
+    class="profile-draft-icon"></mat-icon>
   <div
     class="profile-item-info"
     role="button"
@@ -31,6 +38,9 @@ limitations under the License.
     </p>
     <p class="profile-item-name">
       {{ profile.name }}
+    </p>
+    <p class="profile-item-created">
+      {{ profile.created | date: 'dd MMM yyyy' }}
     </p>
   </div>
   <button

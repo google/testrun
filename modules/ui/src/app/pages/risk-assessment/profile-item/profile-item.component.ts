@@ -20,7 +20,11 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { Profile, RiskResultClassName } from '../../../model/profile';
+import {
+  Profile,
+  ProfileStatus,
+  RiskResultClassName,
+} from '../../../model/profile';
 import { MatIcon } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
@@ -35,6 +39,7 @@ import { TestRunService } from '../../../services/test-run.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileItemComponent {
+  public readonly ProfileStatus = ProfileStatus;
   @Input() profile!: Profile;
   @Output() deleteButtonClicked = new EventEmitter<string>();
   @Output() profileClicked = new EventEmitter<Profile>();
