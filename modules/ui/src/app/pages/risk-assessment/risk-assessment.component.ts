@@ -59,7 +59,8 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.isOpenProfileForm = true;
     this.store.updateSelectedProfile(profile);
     await this.liveAnnouncer.announce('Risk assessment questionnaire');
-    this.focusManagerService.focusFirstElementInContainer();
+    const profileForm = window.document.querySelector('app-profile-form');
+    this.focusManagerService.focusFirstElementInContainer(profileForm);
   }
 
   deleteProfile(
