@@ -34,5 +34,5 @@ python-dateutil==2.9.0
 # Requirements for MQTT client
 paho-mqtt==2.1.0
 
-#Requirements for backgrounf tasks
+#Requirements for background tasks
 APScheduler==3.10.4
