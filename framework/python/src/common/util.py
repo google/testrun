@@ -18,9 +18,10 @@ import os
 import psutil
 import subprocess
 import shlex
+import netifaces
+import docker
 import typing as t
 from common import logger
-import netifaces
 
 LOGGER = logger.get_logger('util')
 
@@ -118,6 +119,23 @@ def get_module_display_name(search):
 
   return 'Unknown'
 
+
+def get_docker_host_by_name(container_name: str) -> str:
+  """ get running docker container ip address by 
+
+  Args:
+      container_name (str): container name
+
+  Returns:
+      str: container ip
+  """
+  client = docker.DockerClient()
+  container = client.containers.get(container_name)
+  if not container.attrs['State']['Running']:
+    LOGGER.error(f'Container {container_name} is no running')
+    raise Exception(f'Container {container_name} is not running')
+  return container.attrs['NetworkSettings']['IPAddress']
+  
 
 def get_sys_interfaces() -> t.Dict[str, t.Dict[str, str]]:
   """ Retrieves all Ethernet network interfaces from the host system
