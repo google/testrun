@@ -31,7 +31,7 @@ import threading
 import uvicorn
 from urllib.parse import urlparse
 
-from common import logger
+from common import logger, tasks
 from common.device import Device
 
 LOGGER = logger.get_logger("api")
@@ -130,7 +130,12 @@ class Api:
     # Allow all origins to access the API
     origins = ["*"]
 
-    self._app = FastAPI()
+    # Scheduler for background periodic tasks
+    self._scheduler = tasks.PeriodicTasks(
+        self._test_run.get_session(),
+        self._test_run.get_mqtt_client())
+
+    self._app = FastAPI(lifespan=self._scheduler.start)
     self._app.include_router(self._router)
     self._app.add_middleware(
       CORSMiddleware,
@@ -876,3 +881,5 @@ class Api:
       if module.enabled and module.enable_container:
         modules.append(module.display_name)
     return modules
+
+
