@@ -17,7 +17,7 @@
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
-import { exhaustMap } from 'rxjs';
+import { delay, exhaustMap } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
 import { Profile, ProfileFormat } from '../../model/profile';
 import { FocusManagerService } from '../../services/focus-manager.service';
@@ -87,6 +87,37 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
       );
     }
   );
+
+  setFocusOnCreateButton = this.effect(trigger$ => {
+    return trigger$.pipe(
+      delay(10),
+      tap(() => {
+        this.focusManagerService.focusFirstElementInContainer(
+          window.document.querySelector('.risk-assessment-content-empty')
+        );
+      })
+    );
+  });
+
+  setFocusOnSelectedProfile = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        this.focusManagerService.focusFirstElementInContainer(
+          window.document.querySelector('.profiles-drawer-content .selected')
+        );
+      })
+    );
+  });
+
+  setFocusOnProfileForm = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        this.focusManagerService.focusFirstElementInContainer(
+          window.document.querySelector('app-profile-form')
+        );
+      })
+    );
+  });
 
   getProfilesFormat = this.effect(trigger$ => {
     return trigger$.pipe(

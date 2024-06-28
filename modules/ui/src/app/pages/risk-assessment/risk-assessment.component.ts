@@ -23,7 +23,6 @@ import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
-import { FocusManagerService } from '../../services/focus-manager.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Profile } from '../../model/profile';
 import { Observable } from 'rxjs/internal/Observable';
@@ -42,7 +41,6 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   constructor(
     private store: RiskAssessmentStore,
     public dialog: MatDialog,
-    private focusManagerService: FocusManagerService,
     private liveAnnouncer: LiveAnnouncer
   ) {}
 
@@ -59,8 +57,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.isOpenProfileForm = true;
     this.store.updateSelectedProfile(profile);
     await this.liveAnnouncer.announce('Risk assessment questionnaire');
-    const profileForm = window.document.querySelector('app-profile-form');
-    this.focusManagerService.focusFirstElementInContainer(profileForm);
+    this.store.setFocusOnProfileForm();
   }
 
   deleteProfile(
@@ -95,16 +92,22 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   saveProfileClicked(profile: Profile, selectedProfile: Profile | null): void {
     if (!selectedProfile) {
       this.saveProfile(profile);
+      this.store.setFocusOnCreateButton();
     } else {
       this.openSaveDialog(selectedProfile.name)
         .pipe(takeUntil(this.destroy$))
         .subscribe(saveProfile => {
           if (saveProfile) {
             this.saveProfile(profile);
+            this.store.setFocusOnSelectedProfile();
           }
         });
     }
   }
+
+  trackByIndex = (index: number): number => {
+    return index;
+  };
 
   private closeFormAfterDelete(name: string, selectedProfile: Profile | null) {
     if (selectedProfile?.name === name) {
