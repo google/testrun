@@ -19,6 +19,7 @@ export interface Profile {
   questions: Question[];
   status?: ProfileStatus;
   rename?: string;
+  created?: string;
 }
 
 export interface Question {
