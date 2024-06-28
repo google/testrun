@@ -30,3 +30,6 @@ pytz==2024.1
 
 # Requirements for MQTT client
 paho-mqtt==2.1.0
+
+#Requirements for backgrounf tasks
+APScheduler==3.10.4
