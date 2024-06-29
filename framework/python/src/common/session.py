@@ -519,6 +519,8 @@ class TestrunSession():
           risk_profile.created = datetime.datetime.now()
           # Update risk
           risk_profile.update_risk(self._profile_format)
+        else:
+          risk_profile.risk = None
 
       # Update questions and answers
       risk_profile.questions = profile_json.get('questions')
