@@ -38,7 +38,7 @@ class RiskProfile():
     self.risk = None
 
     self._validate(profile_json, profile_format)
-    self._update_risk(profile_format)
+    self.update_risk(profile_format)
 
   # Load a profile without modifying the created date
   # but still validate the profile
@@ -51,7 +51,7 @@ class RiskProfile():
     self.status = None
 
     self._validate(profile_json, profile_format)
-    self._update_risk(profile_format)
+    self.update_risk(profile_format)
 
     return self
 
@@ -76,11 +76,17 @@ class RiskProfile():
 
   def _validate(self, profile_json, profile_format):
     if self._valid(profile_json, profile_format):
-      self.status = 'Expired' if self._expired() else 'Valid'
+      if self._expired():
+        self.status = 'Expired'
+      # User only wants to save a draft
+      elif 'status' in profile_json and profile_json['status'] == 'Draft':
+        self.status = 'Draft'
+      else:
+        self.status = 'Valid'
     else:
       self.status = 'Draft'
 
-  def _update_risk(self, profile_format):
+  def update_risk(self, profile_format):
 
     if self.status == 'Valid':
 
@@ -224,6 +230,19 @@ class RiskProfile():
           LOGGER.error('Missing answer for question: ' +
                        profile_question.get('question'))
           all_questions_answered = False
+
+        answer = profile_question.get('answer')
+
+        # Check if a multi-select answer has been completed
+        if isinstance(answer, list):
+          if len(answer) == 0:
+            all_questions_answered = False
+
+        # Check if string answer has a length greater than 0
+        elif isinstance(answer, str):
+          if required and len(answer) == 0:
+            all_questions_answered = False
+
       elif required:
         LOGGER.error('Missing question: ' + format_question.get('question'))
         all_questions_present = False

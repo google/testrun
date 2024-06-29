@@ -391,25 +391,25 @@ class TestrunSession():
     # Load existing profiles
     LOGGER.debug('Loading risk profiles')
 
-    try:
-      for risk_profile_file in os.listdir(
-              os.path.join(self._root_dir, PROFILES_DIR)):
-        LOGGER.debug(f'Discovered profile {risk_profile_file}')
+    #try:
+    for risk_profile_file in os.listdir(
+            os.path.join(self._root_dir, PROFILES_DIR)):
+      LOGGER.debug(f'Discovered profile {risk_profile_file}')
 
-        with open(os.path.join(self._root_dir, PROFILES_DIR, risk_profile_file),
-                  encoding='utf-8') as f:
-          json_data = json.load(f)
-          risk_profile = RiskProfile()
-          risk_profile.load(
-            profile_json=json_data,
-            profile_format=self._profile_format
-          )
-          risk_profile.status = self.check_profile_status(risk_profile)
-          self._profiles.append(risk_profile)
+      with open(os.path.join(self._root_dir, PROFILES_DIR, risk_profile_file),
+                encoding='utf-8') as f:
+        json_data = json.load(f)
+        risk_profile = RiskProfile()
+        risk_profile.load(
+          profile_json=json_data,
+          profile_format=self._profile_format
+        )
+        risk_profile.status = self.check_profile_status(risk_profile)
+        self._profiles.append(risk_profile)
 
-    except Exception as e:
-      LOGGER.error('An error occurred whilst loading risk profiles')
-      LOGGER.debug(e)
+    #except Exception as e:
+    #  LOGGER.error('An error occurred whilst loading risk profiles')
+    #  LOGGER.debug(e)
 
   def get_profiles_format(self):
     return self._profile_format_json
@@ -510,6 +510,16 @@ class TestrunSession():
 
         risk_profile.name = new_name
 
+      # Update status
+      if 'status' in profile_json:
+        risk_profile.status = profile_json['status']
+
+        if risk_profile.status == 'Valid':
+          # Update created date
+          risk_profile.created = datetime.datetime.now()
+          # Update risk
+          risk_profile.update_risk(self._profile_format)
+
       # Update questions and answers
       risk_profile.questions = profile_json.get('questions')
 
@@ -517,7 +527,7 @@ class TestrunSession():
     with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'),
               'w',
               encoding='utf-8') as f:
-      f.write(json.dumps(risk_profile.to_json()))
+      f.write(risk_profile.to_json())
 
     return risk_profile
 
