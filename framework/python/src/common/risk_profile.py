@@ -109,8 +109,8 @@ class RiskProfile():
         # We only want to check the select or select-multiple
         # questions for now
         if format_q['type'] in ['select', 'select-multiple']:
-          answer = question['answer']
 
+          answer = question['answer']
           question_risk = 'Limited'
 
           # The answer is a single string (select)
@@ -149,11 +149,10 @@ class RiskProfile():
         if 'risk' in question and question['risk'] == 'High':
           risk = 'High'
 
-      self.risk = risk
-
     else:
       # Remove risk
       risk = None
+
     self.risk = risk
 
   def _get_format_question(self, question, profile_format):

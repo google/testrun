@@ -510,6 +510,9 @@ class TestrunSession():
 
         risk_profile.name = new_name
 
+      # Update questions and answers
+      risk_profile.questions = profile_json.get('questions')
+
       # Update status
       if 'status' in profile_json:
         risk_profile.status = profile_json['status']
@@ -521,9 +524,6 @@ class TestrunSession():
           risk_profile.update_risk(self._profile_format)
         else:
           risk_profile.risk = None
-
-      # Update questions and answers
-      risk_profile.questions = profile_json.get('questions')
 
     # Write file to disk
     with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'),
