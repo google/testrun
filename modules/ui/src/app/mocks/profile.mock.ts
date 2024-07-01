@@ -54,6 +54,11 @@ export const PROFILE_MOCK_2: Profile = {
   questions: [],
 };
 
+export const PROFILE_MOCK_3: Profile = {
+  name: 'Third profile name',
+  questions: [],
+};
+
 export const PROFILE_FORM: ProfileFormat[] = [
   {
     question: 'Email',
