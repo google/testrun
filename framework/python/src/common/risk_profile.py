@@ -52,8 +52,6 @@ class RiskProfile():
     self.questions = profile_json['questions']
     self.status = None
     self.risk = None
-
-    self._profile_format = profile_format
     self._device = None
 
     self._validate(profile_json, profile_format)
