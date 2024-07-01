@@ -118,11 +118,7 @@ export class ProfileFormComponent implements OnInit {
   }
 
   get isDraftDisabled(): boolean {
-    return (
-      !this.nameControl.valid ||
-      this.fieldsHasError ||
-      (this.profileForm.valid && this.profileForm.pristine)
-    );
+    return !this.nameControl.valid || this.fieldsHasError;
   }
 
   private get fieldsHasError(): boolean {
