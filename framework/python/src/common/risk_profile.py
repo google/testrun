@@ -569,6 +569,8 @@ class RiskProfile():
       margin-bottom: 8px;
       background-color: #F8F9FA;
       display: flex;
+      align-items: stretch;
+      overflow: hidden;
     }
 
     .risk-question-no {
@@ -577,7 +579,6 @@ class RiskProfile():
       display: inline-block;
       vertical-align: top;
       position: relative;
-      height: 100%;
     }
 
     .risk-question {
@@ -595,6 +596,7 @@ class RiskProfile():
       display: inline-block;
       width: 340px;
       position: relative;
+      height: 100%;
     }
 
     ul {
