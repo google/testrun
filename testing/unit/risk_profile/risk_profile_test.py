@@ -35,7 +35,9 @@ class RiskProfileTest(unittest.TestCase):
   def setUpClass(cls):
     # Create the output directories and ignore errors if it already exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    with open('resources/risk_assessment.json', 'r', encoding='utf-8') as file:
+    with open(os.path.join('resources',
+                           'risk_assessment.json'),
+                           'r', encoding='utf-8') as file:
       cls.profile_format = json.loads(file.read())
 
   def risk_profile_high_test(self):

@@ -49,7 +49,7 @@ python3 -u $PWD/testing/unit/tls/tls_module_test.py
 # Run the DNS Module Unit Tests
 python3 -u $PWD/testing/unit/dns/dns_module_test.py
 
-# Run the NMAP Module Unit Tests
+# Run the Services Module Unit Tests
 python3 -u $PWD/testing/unit/services/services_module_test.py
 
 # Run the NTP Module Unit Tests
