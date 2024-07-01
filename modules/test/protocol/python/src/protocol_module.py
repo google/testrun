@@ -47,8 +47,8 @@ class ProtocolModule(TestModule):
     # Resolve the appropriate IP for BACnet comms
     local_address = self.get_local_ip(interface_name)
     if local_address:
-      result = self._bacnet.validate_device(local_address,
-                                            self._device_ipv4_addr)
+      self._bacnet.discover(local_address + '/24')
+      result = self._bacnet.validate_device()
       if result[0]:
         self._supports_bacnet = True
     else:
