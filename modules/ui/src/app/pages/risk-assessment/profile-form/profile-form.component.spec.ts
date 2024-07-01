@@ -23,6 +23,7 @@ import {
   PROFILE_FORM,
   PROFILE_MOCK,
   PROFILE_MOCK_2,
+  PROFILE_MOCK_3,
   RENAME_PROFILE_MOCK,
 } from '../../../mocks/profile.mock';
 import { FormControlType, ProfileStatus } from '../../../model/profile';
@@ -40,7 +41,7 @@ describe('ProfileFormComponent', () => {
     fixture = TestBed.createComponent(ProfileFormComponent);
     component = fixture.componentInstance;
     component.profileFormat = PROFILE_FORM;
-    component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2];
+    component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, PROFILE_MOCK_3];
     compiled = fixture.nativeElement as HTMLElement;
 
     fixture.detectChanges();
@@ -385,6 +386,34 @@ describe('ProfileFormComponent', () => {
         component.onSaveClick(ProfileStatus.VALID);
 
         expect(emitSpy).toHaveBeenCalledWith(RENAME_PROFILE_MOCK);
+      });
+
+      it('should not have an error when uses the name of removed profile', () => {
+        component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, PROFILE_MOCK_3];
+        component.nameControl.setValue('Third profile name');
+
+        expect(
+          component.nameControl.hasError('has_same_profile_name')
+        ).toBeTrue();
+
+        component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2];
+        expect(
+          component.nameControl.hasError('has_same_profile_name')
+        ).toBeFalse();
+      });
+
+      it('should have an error when uses the name of added profile', () => {
+        component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2];
+        component.nameControl.setValue('Third profile name');
+
+        expect(
+          component.nameControl.hasError('has_same_profile_name')
+        ).toBeFalse();
+
+        component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, PROFILE_MOCK_3];
+        expect(
+          component.nameControl.hasError('has_same_profile_name')
+        ).toBeTrue();
       });
     });
 
