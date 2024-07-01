@@ -37,6 +37,7 @@ import {
 } from './actions';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { NotificationService } from '../services/notification.service';
+import { Profile } from '../model/profile';
 
 const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
@@ -245,6 +246,19 @@ export class AppEffects {
     },
     { dispatch: false }
   );
+
+  onFetchRiskProfiles$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchRiskProfiles),
+      switchMap(() =>
+        this.testrunService.fetchProfiles().pipe(
+          map((riskProfiles: Profile[]) => {
+            return AppActions.setRiskProfiles({ riskProfiles });
+          })
+        )
+      )
+    );
+  });
 
   private showSnackBar() {
     timer(WAIT_TO_OPEN_SNACKBAR_MS)

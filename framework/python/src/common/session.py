@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Track testing status."""
 import copy
 import datetime
@@ -43,6 +42,7 @@ PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
 PROFILES_DIR = 'local/risk_profiles'
 
 LOGGER = logger.get_logger('session')
+
 
 class TestrunSession():
   """Represents the current session of Test Run."""
@@ -82,7 +82,12 @@ class TestrunSession():
 
     # Profiles
     self._profiles = []
+
+    # Profile format that is passed to the frontend
     self._profile_format_json = None
+
+    # Profile format used for internal validation
+    self._profile_format = None
 
     # System configuration
     self._config_file = os.path.join(root_dir, CONFIG_FILE_PATH)
@@ -129,16 +134,16 @@ class TestrunSession():
 
   def _get_default_config(self):
     return {
-      'network': {
-        'device_intf': '',
-        'internet_intf': ''
-      },
-      'log_level': 'INFO',
-      'startup_timeout': 60,
-      'monitor_period': 30,
-      'max_device_reports': 0,
-      'api_url': 'http://localhost',
-      'api_port': 8000
+        'network': {
+            'device_intf': '',
+            'internet_intf': ''
+        },
+        'log_level': 'INFO',
+        'startup_timeout': 60,
+        'monitor_period': 30,
+        'max_device_reports': 0,
+        'api_url': 'http://localhost',
+        'api_port': 8000
     }
 
   def get_config(self):
@@ -158,19 +163,19 @@ class TestrunSession():
       # Network interfaces
       if (NETWORK_KEY in config_file_json
           and DEVICE_INTF_KEY in config_file_json.get(NETWORK_KEY)
-          and INTERNET_INTF_KEY in config_file_json.get(NETWORK_KEY)):
+              and INTERNET_INTF_KEY in config_file_json.get(NETWORK_KEY)):
         self._config[NETWORK_KEY][DEVICE_INTF_KEY] = config_file_json.get(
-          NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
+            NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
         self._config[NETWORK_KEY][INTERNET_INTF_KEY] = config_file_json.get(
-          NETWORK_KEY, {}).get(INTERNET_INTF_KEY)
+            NETWORK_KEY, {}).get(INTERNET_INTF_KEY)
 
       if STARTUP_TIMEOUT_KEY in config_file_json:
         self._config[STARTUP_TIMEOUT_KEY] = config_file_json.get(
-          STARTUP_TIMEOUT_KEY)
+            STARTUP_TIMEOUT_KEY)
 
       if MONITOR_PERIOD_KEY in config_file_json:
         self._config[MONITOR_PERIOD_KEY] = config_file_json.get(
-          MONITOR_PERIOD_KEY)
+            MONITOR_PERIOD_KEY)
 
       if LOG_LEVEL_KEY in config_file_json:
         self._config[LOG_LEVEL_KEY] = config_file_json.get(LOG_LEVEL_KEY)
@@ -183,13 +188,13 @@ class TestrunSession():
 
       if MAX_DEVICE_REPORTS_KEY in config_file_json:
         self._config[MAX_DEVICE_REPORTS_KEY] = config_file_json.get(
-          MAX_DEVICE_REPORTS_KEY)
+            MAX_DEVICE_REPORTS_KEY)
 
       LOGGER.debug(self._config)
 
   def _load_version(self):
     version_cmd = util.run_command(
-      'dpkg-query --showformat=\'${Version}\' --show testrun')
+        'dpkg-query --showformat=\'${Version}\' --show testrun')
     # index 1 of response is the stderr byte stream so if
     # it has any data in it, there was an error and we
     # did not resolve the version and we'll use the fallback
@@ -201,7 +206,7 @@ class TestrunSession():
       # Try getting the version from the make control file
       try:
         version = util.run_command(
-          '$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
+            '$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
       except Exception as e:
         LOGGER.debug('Failed getting the version from make control file')
         LOGGER.error(e)
@@ -302,10 +307,7 @@ class TestrunSession():
     for test_result in self._results:
       test_results.append(test_result.to_dict())
 
-    return {
-      'total': self.get_total_tests(),
-      'results': test_results
-    }
+    return {'total': self.get_total_tests(), 'results': test_results}
 
   def add_test_result(self, result):
 
@@ -361,26 +363,49 @@ class TestrunSession():
       with open(os.path.join(
         self._root_dir, PROFILE_FORMAT_PATH
       ), encoding='utf-8') as profile_format_file:
-        self._profile_format_json = json.load(profile_format_file)
+        format_json = json.load(profile_format_file)
+        # Save original profile format for internal validation
+        self._profile_format = format_json
     except (IOError, ValueError) as e:
       LOGGER.error(
-        'An error occurred whilst loading the risk assessment format')
+          'An error occurred whilst loading the risk assessment format')
       LOGGER.debug(e)
+
+    profile_format_array = []
+
+    # Remove internal properties
+    for question_obj in format_json:
+      new_obj = {}
+      for key in question_obj:
+        if key == 'options':
+          options = []
+          for option in question_obj[key]:
+            if isinstance(option, str):
+              options.append(option)
+            else:
+              options.append(option['text'])
+          new_obj['options'] = options
+        else:
+          new_obj[key] = question_obj[key]
+      profile_format_array.append(new_obj)
+    self._profile_format_json = profile_format_array
 
     # Load existing profiles
     LOGGER.debug('Loading risk profiles')
 
     try:
-      for risk_profile_file in os.listdir(os.path.join(
-        self._root_dir, PROFILES_DIR
-      )):
+      for risk_profile_file in os.listdir(
+              os.path.join(self._root_dir, PROFILES_DIR)):
         LOGGER.debug(f'Discovered profile {risk_profile_file}')
 
-        with open(os.path.join(
-          self._root_dir, PROFILES_DIR, risk_profile_file
-        ), encoding='utf-8') as f:
+        with open(os.path.join(self._root_dir, PROFILES_DIR, risk_profile_file),
+                  encoding='utf-8') as f:
           json_data = json.load(f)
-          risk_profile = RiskProfile(json_data)
+          risk_profile = RiskProfile()
+          risk_profile.load(
+            profile_json=json_data,
+            profile_format=self._profile_format
+          )
           risk_profile.status = self.check_profile_status(risk_profile)
           self._profiles.append(risk_profile)
 
@@ -412,8 +437,8 @@ class TestrunSession():
 
     # Check all questions are present
     for format_q in self.get_profiles_format():
-      if self._get_profile_question(
-        profile_json, format_q.get('question')) is None:
+      if self._get_profile_question(profile_json,
+                                    format_q.get('question')) is None:
         LOGGER.error('Missing question: ' + format_q.get('question'))
         return False
 
@@ -444,16 +469,15 @@ class TestrunSession():
       for question in self.get_profiles_format():
 
         # Check question is present
-        profile_question = self._get_profile_question(
-          profile_json, question.get('question')
-        )
+        profile_question = self._get_profile_question(profile_json,
+                                                      question.get('question'))
 
         if profile_question is not None:
 
           # Check answer is present
           if 'answer' not in profile_question:
-            LOGGER.error(
-              'Missing answer for question: ' + question.get('question'))
+            LOGGER.error('Missing answer for question: ' +
+                         question.get('question'))
             all_questions_answered = False
 
         else:
@@ -472,7 +496,9 @@ class TestrunSession():
     if risk_profile is None:
 
       # Create a new risk profile
-      risk_profile = RiskProfile(profile_json)
+      risk_profile = RiskProfile(
+        profile_json=profile_json,
+        profile_format=self._profile_format)
       self._profiles.append(risk_profile)
 
     else:
@@ -490,11 +516,9 @@ class TestrunSession():
       risk_profile.questions = profile_json.get('questions')
 
     # Write file to disk
-    with open(
-      os.path.join(
-        PROFILES_DIR,
-        risk_profile.name + '.json'
-      ), 'w', encoding='utf-8') as f:
+    with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'),
+              'w',
+              encoding='utf-8') as f:
       f.write(json.dumps(risk_profile.to_json()))
 
     return risk_profile
@@ -545,8 +569,8 @@ class TestrunSession():
   def to_json(self):
 
     results = {
-      'total': self.get_total_tests(),
-      'results': self.get_test_results()
+        'total': self.get_total_tests(),
+        'results': self.get_test_results()
     }
 
     # Remove reports from device for session status
@@ -555,11 +579,11 @@ class TestrunSession():
       device.reports = None
 
     session_json = {
-      'status': self.get_status(),
-      'device': device,
-      'started': self.get_started(),
-      'finished': self.get_finished(),
-      'tests': results
+        'status': self.get_status(),
+        'device': device,
+        'started': self.get_started(),
+        'finished': self.get_finished(),
+        'tests': results
     }
 
     if self._report_url is not None:
@@ -580,9 +604,15 @@ class TestrunSession():
 
       # Extract required properties
       common_name = cert.subject.get_attributes_for_oid(
-        NameOID.COMMON_NAME)[0].value
+          NameOID.COMMON_NAME)[0].value
+
+      # Check if any existing certificates have the same common name
+      for cur_cert in self._certs:
+        if common_name == cur_cert['name']:
+          raise ValueError('A certificate with that name already exists')
+
       issuer = cert.issuer.get_attributes_for_oid(
-        NameOID.ORGANIZATION_NAME)[0].value
+          NameOID.ORGANIZATION_NAME)[0].value
 
       status = 'Valid'
       if now > cert.not_valid_after_utc:
@@ -590,11 +620,11 @@ class TestrunSession():
 
       # Craft python dictionary with values
       cert_obj = {
-        'name': common_name,
-        'status': status,
-        'organisation': issuer,
-        'expires': cert.not_valid_after_utc,
-        'filename': filename
+          'name': common_name,
+          'status': status,
+          'organisation': issuer,
+          'expires': cert.not_valid_after_utc,
+          'filename': filename
       }
 
       with open(os.path.join(CERTS_PATH, filename), 'wb') as f:
@@ -604,6 +634,9 @@ class TestrunSession():
 
       return cert_obj
 
+    except ValueError as e:
+      LOGGER.error(e)
+      raise
     except Exception as e:
       LOGGER.error('An error occured whilst parsing a certificate')
       LOGGER.debug(e)
@@ -630,17 +663,18 @@ class TestrunSession():
 
         # Open certificate file
         with open(
-          os.path.join(
-            CERTS_PATH, cert_file), 'rb',) as f:
+            os.path.join(CERTS_PATH, cert_file),
+            'rb',
+        ) as f:
 
           # Parse bytes into x509 object
           cert = x509.load_pem_x509_certificate(f.read(), default_backend())
 
           # Extract required properties
           common_name = cert.subject.get_attributes_for_oid(
-            NameOID.COMMON_NAME)[0].value
+              NameOID.COMMON_NAME)[0].value
           issuer = cert.issuer.get_attributes_for_oid(
-            NameOID.ORGANIZATION_NAME)[0].value
+              NameOID.ORGANIZATION_NAME)[0].value
 
           status = 'Valid'
           if now > cert.not_valid_after_utc:
@@ -648,11 +682,11 @@ class TestrunSession():
 
           # Craft python dictionary with values
           cert_obj = {
-            'name': common_name,
-            'status': status,
-            'organisation': issuer,
-            'expires': cert.not_valid_after_utc,
-            'filename': cert_file
+              'name': common_name,
+              'status': status,
+              'organisation': issuer,
+              'expires': cert.not_valid_after_utc,
+              'filename': cert_file
           }
 
           # Add certificate to list

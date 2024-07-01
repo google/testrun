@@ -151,14 +151,23 @@ class DNSModule(TestModule):
       if DNS in packet and packet.haslayer(IP):
         source_ip = packet[IP].src
         destination_ip = packet[IP].dst
-         # 'qr' field indicates query (0) or response (1)
-        dns_type = 'Query' if packet[DNS].qr == 0 else 'Response'
+        dns_layer = packet[DNS]
+         
+        # 'qr' field indicates query (0) or response (1)
+        dns_type = 'Query' if dns_layer.qr == 0 else 'Response'
+
+        # Check for the presence of DNS query name
+        if hasattr(dns_layer, 'qd') and dns_layer.qd is not None:
+            qname = dns_layer.qd.qname.decode() if dns_layer.qd.qname else 'N/A'
+        else:
+            qname = 'N/A'
+
         dns_data.append({
             'Timestamp': float(packet.time),  # Timestamp of the DNS packet
             'Source': source_ip,
             'Destination': destination_ip,
             'Type': dns_type,
-            'Data': str(packet[DNS].qd.qname, 'utf-8')[:-1] 
+            'Data': qname[:-1]
         })
 
     # Filter unique entries based on 'Timestamp'

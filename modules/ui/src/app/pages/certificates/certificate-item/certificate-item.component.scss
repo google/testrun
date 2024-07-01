@@ -78,3 +78,17 @@
     min-height: 20px;
   }
 }
+
+.certificate-expired {
+  .certificate-item-icon {
+    color: $red-700;
+  }
+  .certificate-item-name {
+    color: $red-800;
+  }
+
+  .certificate-item-organisation,
+  .certificate-item-expires {
+    color: $red-700;
+  }
+}

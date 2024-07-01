@@ -23,13 +23,13 @@
   gap: 10px;
 }
 
-.delete-form-title {
+.simple-dialog-title {
   color: #202124;
   font-size: 18px;
   line-height: 24px;
 }
 
-.delete-form-content {
+.simple-dialog-content {
   font-family: Roboto, sans-serif;
   font-size: 14px;
   line-height: 20px;
@@ -37,7 +37,7 @@
   color: $grey-800;
 }
 
-.delete-form-actions {
+.simple-dialog-actions {
   padding: 0;
   min-height: 30px;
 }
