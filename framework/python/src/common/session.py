@@ -408,8 +408,8 @@ class TestrunSession():
           self._profiles.append(risk_profile)
 
     except Exception as e:
-     LOGGER.error('An error occurred whilst loading risk profiles')
-     LOGGER.debug(e)
+      LOGGER.error('An error occurred whilst loading risk profiles')
+      LOGGER.debug(e)
 
   def get_profiles_format(self):
     return self._profile_format_json
