@@ -34,7 +34,12 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../store/state';
 import { Certificate } from '../model/certificate';
 import { certificate } from '../mocks/certificate.mock';
-import { PROFILE_FORM, PROFILE_MOCK } from '../mocks/profile.mock';
+import {
+  NEW_PROFILE_MOCK,
+  PROFILE_FORM,
+  PROFILE_MOCK,
+} from '../mocks/profile.mock';
+import { ProfileRisk } from '../model/profile';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -319,6 +324,30 @@ describe('TestRunService', () => {
 
         expect(result).toEqual(expectedResult);
       });
+    });
+  });
+
+  describe('#getRiskClass', () => {
+    it('should return "red" class as true if risk result is "High"', () => {
+      const expectedResult = {
+        red: true,
+        cyan: false,
+      };
+
+      const result = service.getRiskClass(ProfileRisk.HIGH);
+
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should return "cyan" class as true if risk result is "Limited"', () => {
+      const expectedResult = {
+        red: false,
+        cyan: true,
+      };
+
+      const result = service.getRiskClass(ProfileRisk.LIMITED);
+
+      expect(result).toEqual(expectedResult);
     });
   });
 
@@ -617,19 +646,33 @@ describe('TestRunService', () => {
     });
   });
 
-  describe('fetchProfilesFormat', () => {
-    it('should get system status data with no changes', () => {
-      const result = { ...PROFILE_FORM };
+  describe('#saveProfile ', () => {
+    it('should have necessary request data', () => {
+      const apiUrl = 'http://localhost:8000/profiles';
 
-      service.fetchProfilesFormat().subscribe(res => {
-        expect(res).toEqual(result);
+      service.saveProfile(NEW_PROFILE_MOCK).subscribe(res => {
+        expect(res).toEqual(true);
       });
 
-      const req = httpTestingController.expectOne(
-        'http://localhost:8000/profiles/format'
-      );
-      expect(req.request.method).toBe('GET');
-      req.flush(result);
+      const req = httpTestingController.expectOne(apiUrl);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(JSON.stringify(NEW_PROFILE_MOCK));
+      req.flush(true);
+    });
+
+    it('should return false if error happens', () => {
+      const mockErrorResponse = { status: 500, statusText: 'Error' };
+      const data = 'Invalid request parameters';
+      const apiUrl = 'http://localhost:8000/profiles';
+
+      service.saveProfile(NEW_PROFILE_MOCK).subscribe(res => {
+        expect(res).toEqual(false);
+      });
+
+      const req = httpTestingController.expectOne(apiUrl);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(JSON.stringify(NEW_PROFILE_MOCK));
+      req.flush(data, mockErrorResponse);
     });
   });
 });

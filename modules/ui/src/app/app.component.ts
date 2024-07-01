@@ -42,6 +42,7 @@ const RISK_ASSESSMENT_LOGO_URL = '/assets/icons/risk-assessment.svg';
 const TESTRUN_LOGO_URL = '/assets/icons/testrun_logo_small.svg';
 const TESTRUN_LOGO_COLOR_URL = '/assets/icons/testrun_logo_color.svg';
 const CLOSE_URL = '/assets/icons/close.svg';
+const DRAFT_URL = '/assets/icons/draft.svg';
 
 @Component({
   selector: 'app-root',
@@ -105,6 +106,10 @@ export class AppComponent {
     this.matIconRegistry.addSvgIcon(
       'close',
       this.domSanitizer.bypassSecurityTrustResourceUrl(CLOSE_URL)
+    );
+    this.matIconRegistry.addSvgIcon(
+      'draft',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(DRAFT_URL)
     );
   }
 

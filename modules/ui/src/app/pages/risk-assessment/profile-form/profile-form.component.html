@@ -22,6 +22,7 @@ limitations under the License.
       class="name-field profile-form-field">
       <mat-label>Specify risk assessment profile name</mat-label>
       <input class="form-name" formControlName="name" matInput />
+      <mat-hint>Required for saving a profile</mat-hint>
       <mat-error
         *ngIf="nameControl.hasError('invalid_format')"
         role="alert"
@@ -64,10 +65,17 @@ limitations under the License.
     mat-flat-button
     color="primary"
     class="save-profile-button"
-    [disabled]="!profileForm.valid">
+    [disabled]="
+      !profileForm.valid || (profileForm.valid && profileForm.pristine)
+    "
+    (click)="onSaveClick(ProfileStatus.VALID)">
     Save Profile
   </button>
-  <button mat-button class="save-draft-button" [disabled]="!nameControl.valid">
+  <button
+    mat-button
+    class="save-draft-button"
+    [disabled]="isDraftDisabled"
+    (click)="onSaveClick(ProfileStatus.DRAFT)">
     Save Draft
   </button>
 </div>
@@ -200,7 +208,6 @@ limitations under the License.
     <textarea
       matInput
       cdkTextareaAutosize
-      #autosize="cdkTextareaAutosize"
       id="{{ formControlName }}-group"
       [formControlName]="formControlName"></textarea>
     <mat-hint *ngIf="description">{{ description }}</mat-hint>

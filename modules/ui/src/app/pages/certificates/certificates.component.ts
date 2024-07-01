@@ -21,7 +21,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { CdkTrapFocus, LiveAnnouncer } from '@angular/cdk/a11y';
 import { CertificateUploadButtonComponent } from './certificate-upload-button/certificate-upload-button.component';
 import { CertificatesStore } from './certificates.store';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -71,16 +71,16 @@ export class CertificatesComponent implements OnDestroy {
   deleteCertificate(certificate: string) {
     this.store.selectCertificate(certificate);
 
-    const dialogRef = this.dialog.open(DeleteFormComponent, {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Delete certificate',
       data: {
-        title: 'Delete certificate',
+        title: 'Delete certificate?',
         content: `You are about to delete a certificate ${this.store.getShortCertificateName(certificate)}. Are you sure?`,
       },
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'delete-form-dialog',
+      panelClass: 'simple-dialog',
     });
 
     dialogRef

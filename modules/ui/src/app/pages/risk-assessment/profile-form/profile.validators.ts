@@ -31,10 +31,13 @@ export class ProfileValidators {
 
   readonly STRING_FORMAT_REGEXP = new RegExp('^[^"\\\\]*$', 'u');
 
-  public differentProfileName(profiles: Profile[]): ValidatorFn {
+  public differentProfileName(
+    profiles: Profile[],
+    profile: Profile | null
+  ): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value?.trim();
-      if (value && profiles.length) {
+      if (value && profiles.length && (!profile || profile?.name !== value)) {
         const isSameProfileName = this.hasSameProfileName(value, profiles);
         return isSameProfileName ? { has_same_profile_name: true } : null;
       }
@@ -44,7 +47,7 @@ export class ProfileValidators {
 
   public textRequired(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      if (!control.value.trim()) {
+      if (!control.value?.trim()) {
         return { required: true };
       }
       return null;
@@ -82,7 +85,7 @@ export class ProfileValidators {
     profiles: Profile[]
   ): boolean {
     return (
-      profiles.some(profile => profile.name === profileName.trim()) || false
+      profiles.some(profile => profile.name === profileName?.trim()) || false
     );
   }
 }

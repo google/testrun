@@ -18,11 +18,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProfileFormComponent } from './profile-form.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
+  NEW_PROFILE_MOCK,
+  NEW_PROFILE_MOCK_DRAFT,
   PROFILE_FORM,
   PROFILE_MOCK,
   PROFILE_MOCK_2,
+  RENAME_PROFILE_MOCK,
 } from '../../../mocks/profile.mock';
-import { FormControlType } from '../../../model/profile';
+import { FormControlType, ProfileStatus } from '../../../model/profile';
 
 describe('ProfileFormComponent', () => {
   let component: ProfileFormComponent;
@@ -48,6 +51,11 @@ describe('ProfileFormComponent', () => {
   });
 
   describe('DOM tests', () => {
+    beforeEach(() => {
+      component.selectedProfile = null;
+      fixture.detectChanges();
+    });
+
     describe('Profile name input', () => {
       it('should be present', () => {
         const name: HTMLInputElement = compiled.querySelector(
@@ -115,13 +123,15 @@ describe('ProfileFormComponent', () => {
         });
       });
 
-      it('should have "required" error when field is not filled', () => {
+      it('should have different profile name error when profile with name is exist', () => {
         const name: HTMLInputElement = compiled.querySelector(
           '.form-name'
         ) as HTMLInputElement;
-        name.value = 'Profile name';
+        name.value = 'Primary profile';
         name.dispatchEvent(new Event('input'));
         component.nameControl.markAsTouched();
+
+        fixture.detectChanges();
         fixture.detectChanges();
 
         const nameError = compiled.querySelector('mat-error')?.innerHTML;
@@ -187,14 +197,10 @@ describe('ProfileFormComponent', () => {
 
           it('should have "required" error when field is not filled', () => {
             const fields = compiled.querySelectorAll('.profile-form-field');
-            const select = fields[uiIndex].querySelector(
-              'mat-select'
-            ) as HTMLElement;
 
-            select.focus();
-            select.blur();
-
+            component.getControl(index).setValue('');
             component.getControl(index).markAsTouched();
+
             fixture.detectChanges();
 
             const error = fields[uiIndex].querySelector('mat-error')?.innerHTML;
@@ -291,12 +297,30 @@ describe('ProfileFormComponent', () => {
     });
 
     describe('Draft button', () => {
-      it('should be enabled when valid profile name is present', () => {
-        const name: HTMLInputElement = compiled.querySelector(
-          '.form-name'
-        ) as HTMLInputElement;
-        name.value = 'name';
-        name.dispatchEvent(new Event('input'));
+      it('should be disabled when profile name is empty', () => {
+        component.nameControl.setValue('');
+        fixture.detectChanges();
+        const draftButton = compiled.querySelector(
+          '.save-draft-button'
+        ) as HTMLButtonElement;
+
+        expect(draftButton.disabled).toBeTrue();
+      });
+
+      it('should be disabled when profile name is not empty but other fields in wrong format', () => {
+        component.nameControl.setValue('New profile');
+        component.getControl('0').setValue('test');
+        fixture.detectChanges();
+        const draftButton = compiled.querySelector(
+          '.save-draft-button'
+        ) as HTMLButtonElement;
+
+        expect(draftButton.disabled).toBeTrue();
+      });
+
+      it('should be enabled when profile name is not empty; other fields are empty or in correct format', () => {
+        component.nameControl.setValue('New profile');
+        component.getControl('0').setValue('a@test.te;b@test.te, c@test.te');
         fixture.detectChanges();
         const draftButton = compiled.querySelector(
           '.save-draft-button'
@@ -304,23 +328,90 @@ describe('ProfileFormComponent', () => {
 
         expect(draftButton.disabled).toBeFalse();
       });
+
+      it('should emit new profile in draft status', () => {
+        component.nameControl.setValue('New profile');
+        fixture.detectChanges();
+        const emitSpy = spyOn(component.saveProfile, 'emit');
+        const draftButton = compiled.querySelector(
+          '.save-draft-button'
+        ) as HTMLButtonElement;
+        draftButton.click();
+
+        expect(emitSpy).toHaveBeenCalledWith({
+          ...NEW_PROFILE_MOCK_DRAFT,
+        });
+      });
     });
 
     describe('Save button', () => {
-      it('should be enabled when required fields are present', () => {
-        component.nameControl.setValue('test');
-        component.getControl('0').setValue('a@test.te;b@test.te, c@test.te');
-        component.getControl('1').setValue('test');
-        component.getControl('2').setValue('test');
-        component.getControl('3').setValue({ 0: true, 1: true, 2: true });
-        component.getControl('4').setValue('test');
+      beforeEach(() => {
+        fillForm(component);
         fixture.detectChanges();
+      });
+
+      it('should be enabled when required fields are present', () => {
         const saveButton = compiled.querySelector(
           '.save-profile-button'
         ) as HTMLButtonElement;
 
         expect(saveButton.disabled).toBeFalse();
       });
+
+      it('should emit new profile', () => {
+        const emitSpy = spyOn(component.saveProfile, 'emit');
+        const saveButton = compiled.querySelector(
+          '.save-profile-button'
+        ) as HTMLButtonElement;
+        saveButton.click();
+
+        expect(emitSpy).toHaveBeenCalledWith({
+          ...NEW_PROFILE_MOCK,
+        });
+      });
     });
   });
+
+  describe('Class tests', () => {
+    describe('with profile', () => {
+      beforeEach(() => {
+        component.selectedProfile = PROFILE_MOCK;
+        fixture.detectChanges();
+      });
+
+      it('save profile should have rename field', () => {
+        const emitSpy = spyOn(component.saveProfile, 'emit');
+        fillForm(component);
+        component.onSaveClick(ProfileStatus.VALID);
+
+        expect(emitSpy).toHaveBeenCalledWith(RENAME_PROFILE_MOCK);
+      });
+    });
+
+    describe('with no profile', () => {
+      beforeEach(() => {
+        component.selectedProfile = null;
+        fixture.detectChanges();
+      });
+
+      it('save profile should not have rename field', () => {
+        const emitSpy = spyOn(component.saveProfile, 'emit');
+        fillForm(component);
+        component.onSaveClick(ProfileStatus.VALID);
+
+        expect(emitSpy).toHaveBeenCalledWith(NEW_PROFILE_MOCK);
+      });
+    });
+  });
+
+  function fillForm(component: ProfileFormComponent) {
+    component.nameControl.setValue('New profile');
+    component.getControl('0').setValue('a@test.te;b@test.te, c@test.te');
+    component.getControl('1').setValue('test');
+    component.getControl('2').setValue('test');
+    component.getControl('3').setValue({ 0: true, 1: true, 2: true });
+    component.getControl('4').setValue('test');
+    component.profileForm.markAsDirty();
+    fixture.detectChanges();
+  }
 });

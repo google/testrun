@@ -32,12 +32,11 @@ import { TestRunService } from './services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { device } from './mocks/device.mock';
 import {
+  fetchRiskProfiles,
   fetchSystemStatus,
   setDevices,
-  setRiskProfiles,
 } from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
-import { PROFILE_MOCK } from './mocks/profile.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from './services/notification.service';
 
@@ -66,10 +65,7 @@ describe('AppStore', () => {
   let mockNotificationService: SpyObj<NotificationService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj('mockService', [
-      'fetchDevices',
-      'fetchProfiles',
-    ]);
+    mockService = jasmine.createSpyObj('mockService', ['fetchDevices']);
     mockNotificationService = jasmine.createSpyObj('mockNotificationService', [
       'notify',
     ]);
@@ -183,18 +179,10 @@ describe('AppStore', () => {
     });
 
     describe('fetchProfiles', () => {
-      const riskProfiles = [PROFILE_MOCK];
-
-      beforeEach(() => {
-        mockService.fetchProfiles.and.returnValue(of(riskProfiles));
-      });
-
-      it('should dispatch action setRiskProfiles', () => {
+      it('should dispatch action fetchRiskProfiles', () => {
         appStore.getRiskProfiles();
 
-        expect(store.dispatch).toHaveBeenCalledWith(
-          setRiskProfiles({ riskProfiles })
-        );
+        expect(store.dispatch).toHaveBeenCalledWith(fetchRiskProfiles());
       });
     });
 
