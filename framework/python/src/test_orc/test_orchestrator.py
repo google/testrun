@@ -152,6 +152,10 @@ class TestOrchestrator:
     with open(os.path.join(out_dir, "report.pdf"), "wb") as f:
       f.write(test_report.to_pdf().getvalue())
 
+    # Copy the testrun log to runtime dir
+    shutil.copy(os.path.join(self._root_path, "testrun.log"),
+                os.path.join(out_dir, "testrun.log"))
+
     util.run_command(f"chown -R {self._host_user} {out_dir}")
 
   def _generate_report(self):

@@ -244,6 +244,7 @@ class NTPModule(TestModule):
 
   def _ntp_network_ntp_dhcp(self):
     LOGGER.info('Running ntp.network.ntp_dhcp')
+    
     packet_capture = (rdpcap(STARTUP_CAPTURE_FILE) +
                       rdpcap(MONITOR_CAPTURE_FILE) +
                       rdpcap(NTP_SERVER_CAPTURE_FILE))

@@ -112,7 +112,7 @@ class TestModule:
               result = getattr(self, test_method_name)()
           except Exception as e:  # pylint: disable=W0718
             LOGGER.error(f'An error occurred whilst running {test["name"]}')
-            LOGGER.error(e)
+            LOGGER.exception(e)
         else:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
       else:
