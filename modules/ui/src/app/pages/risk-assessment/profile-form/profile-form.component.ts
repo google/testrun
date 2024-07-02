@@ -231,7 +231,17 @@ export class ProfileFormComponent implements OnInit {
     this.saveProfile.emit(response);
   }
 
-  buildResponseFromForm(
+  public markSectionAsDirty(
+    optionIndex: number,
+    optionLength: number,
+    formControlName: string
+  ) {
+    if (optionIndex === optionLength - 1) {
+      this.getControl(formControlName).markAsDirty();
+    }
+  }
+
+  private buildResponseFromForm(
     initialQuestions: ProfileFormat[],
     profileForm: FormGroup,
     status: ProfileStatus,
