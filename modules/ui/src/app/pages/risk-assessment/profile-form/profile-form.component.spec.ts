@@ -211,6 +211,23 @@ describe('ProfileFormComponent', () => {
         });
       }
 
+      if (item.type === FormControlType.SELECT_MULTIPLE) {
+        describe('select multiple', () => {
+          it(`should mark form group as dirty while tab navigation`, () => {
+            const fields = compiled.querySelectorAll('.profile-form-field');
+            const checkbox = fields[uiIndex].querySelector(
+              '.field-select-checkbox:last-of-type mat-checkbox'
+            );
+            checkbox?.dispatchEvent(
+              new KeyboardEvent('keydown', { key: 'Tab' })
+            );
+            fixture.detectChanges();
+
+            expect(component.getControl(index).dirty).toBeTrue();
+          });
+        });
+      }
+
       if (
         item.type === FormControlType.TEXT ||
         item.type === FormControlType.TEXTAREA ||
