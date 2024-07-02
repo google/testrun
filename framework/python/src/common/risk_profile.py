@@ -70,7 +70,7 @@ class RiskProfile():
     self.questions = new_profile.questions
     self.status = new_profile.status
 
-    self.update_risk(profile_format=profile_format)
+    self.risk = new_profile.risk
 
   def get_file_path(self):
     return os.path.join(PROFILES_PATH,
