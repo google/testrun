@@ -71,7 +71,7 @@ class ProtocolModuleTest(unittest.TestCase):
   def bacnet_protocol_validate_device_test(self):
     LOGGER.info(f'Running { inspect.currentframe().f_code.co_name}')
     # Load bacnet devices to simulate a discovery
-    bac_dev = ('TestDevice', 'Testrun', '10.10.10.14', '1761001')
+    bac_dev = ('TestDevice', 'Testrun', '10.10.10.14', 1761001)
     BACNET.devices = [bac_dev]
     result = BACNET.validate_device()
     LOGGER.info(f'Test Result: {result}')
@@ -82,7 +82,7 @@ class ProtocolModuleTest(unittest.TestCase):
   def bacnet_protocol_validate_device_fail_test(self):
     LOGGER.info(f'Running { inspect.currentframe().f_code.co_name}')
     # Load bacnet devices to simulate a discovery
-    bac_dev = ('TestDevice', 'Testrun', '10.10.10.14', '1761001')
+    bac_dev = ('TestDevice', 'Testrun', '10.10.10.14', 1761001)
     BACNET.devices = [bac_dev]
     # Change the MAC address to a different device than expected
     BACNET.device_hw_addr = HW_ADDR_BAD
