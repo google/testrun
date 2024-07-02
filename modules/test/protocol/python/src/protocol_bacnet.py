@@ -90,9 +90,8 @@ class BACnet():
         result = 'Feature Not Detected'
         description = 'BACnet device could not be discovered'
       LOGGER.info(description)
-    except Exception as e:
-      LOGGER.error('Error occured when validaing device', e)
-      LOGGER.error('Error occured when validting device', exc_info=True)
+    except Exception: # pylint: disable=W0718
+      LOGGER.error('Error occured when validating device', exc_info=True)
     return result, description
 
 
@@ -105,7 +104,7 @@ class BACnet():
           f'{device_ip} device {device_id} protocolRevision')
       protocol_version = f'{version}.{revision}'
       result = True
-      result_description = (f'Device uses BACnet version {protocol_version}')
+      result_description = f'Device uses BACnet version {protocol_version}'
     except (UnknownPropertyError, ReadPropertyException,
             NoResponseFromController, DeviceNotConnected) as e:
       result = False
@@ -122,7 +121,6 @@ class BACnet():
       packets = self.get_bacnet_packets(capture_file, object_id)
       valid = None
       for packet in packets:
-        packet_obj_id = packet['_source']['layers']['bacapp.instance_number']
         if object_id in packet['_source']['layers']['bacapp.instance_number']:
           if device_hw_addr.lower() in packet['_source']['layers']['eth.src']:
             LOGGER.debug('BACnet detected from device')
@@ -137,8 +135,7 @@ class BACnet():
             LOGGER.debug(f'From: {src} To: {dst} Expected: {device_hw_addr}')
             valid = False
       return valid
-    except Exception as e:
-      LOGGER.error(e)
+    except Exception: # pylint: disable=W0718
       LOGGER.error('Error occured when validating source', exc_info=True)
       return False
 

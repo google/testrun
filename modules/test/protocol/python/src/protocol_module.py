@@ -35,28 +35,23 @@ class ProtocolModule(TestModule):
     LOGGER.info('Running protocol.valid_bacnet')
     result = None
     interface_name = 'veth0'
-    try:
+    # If the ipv4 address wasn't resolved yet, try again
+    if self._device_ipv4_addr is None:
+      self._device_ipv4_addr = self._get_device_ipv4()
 
-      # If the ipv4 address wasn't resolved yet, try again
-      if self._device_ipv4_addr is None:
-        self._device_ipv4_addr = self._get_device_ipv4()
+    if self._device_ipv4_addr is None:
+      LOGGER.error('No device IP could be resolved')
+      return 'Error', 'Could not resolve device IP address'
 
-      if self._device_ipv4_addr is None:
-        LOGGER.error('No device IP could be resolved')
-        return 'Error', 'Could not resolve device IP address'
-
-      # Resolve the appropriate IP for BACnet comms
-      local_address = self.get_local_ip(interface_name)
-      if local_address:
-        self._bacnet.discover(local_address + '/24')
-        result = self._bacnet.validate_device()
-        if result[0]:
-          self._supports_bacnet = True
-      else:
-        result = 'Error', 'Failed to perform BACnet discovery'
-    except Exception as e:
-      LOGGER.error('Error occured when validaing bacnet', e)
-      LOGGER.error('Error occured when validting bacnet', exc_info=True)
+    # Resolve the appropriate IP for BACnet comms
+    local_address = self.get_local_ip(interface_name)
+    if local_address:
+      self._bacnet.discover(local_address + '/24')
+      result = self._bacnet.validate_device()
+      if result[0]:
+        self._supports_bacnet = True
+    else:
+      result = 'Error', 'Failed to perform BACnet discovery'
     return result
 
   def _protocol_bacnet_version(self):
