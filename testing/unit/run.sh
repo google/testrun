@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-sudo docker run --rm -it --name unit-test test-run/unit-test /bin/bash ./run_tests.sh
+sudo docker run --rm -it --name unit-test testrun/unit-test /bin/bash ./run_tests.sh

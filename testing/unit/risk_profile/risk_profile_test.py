@@ -128,6 +128,36 @@ class RiskProfileTest(unittest.TestCase):
 
     self.assertEqual(risk_profile.status, 'Expired')
 
+  def risk_profile_update_risk_test(self):
+    # Read the risk profile json file
+    risk_profile_path = os.path.join(PROFILE_DIR,
+                                     'risk_profile_valid_high.json')
+    with open(risk_profile_path, 'r', encoding='utf-8') as file:
+      risk_profile_json = json.loads(file.read())
+
+    # Load the initial risk profile
+    risk_profile = RiskProfile().load(risk_profile_json, self.profile_format)
+
+    # Check risk profile risk is high
+    self.assertEqual(risk_profile.risk, 'High')
+
+    # Load updated risk profile path
+    risk_profile_path = os.path.join(PROFILE_DIR,
+                                     'risk_profile_valid_limited.json')
+
+    # Read the JSON for the updated profile
+    with open(risk_profile_path, 'r', encoding='utf-8') as file:
+      risk_profile_json = json.loads(file.read())
+
+    # Update the risk profile
+    risk_profile.update(risk_profile_json, self.profile_format)
+
+    # Refresh the risk
+    risk_profile.update_risk(self.profile_format)
+
+    # Risk should now be limited after update
+    self.assertEqual(risk_profile.risk, 'Limited')
+
 if __name__ == '__main__':
   suite = unittest.TestSuite()
 
@@ -136,6 +166,7 @@ if __name__ == '__main__':
   suite.addTest(RiskProfileTest('risk_profile_rename_test'))
   suite.addTest(RiskProfileTest('risk_profile_draft_test'))
   suite.addTest(RiskProfileTest('risk_profile_expired_test'))
+  suite.addTest(RiskProfileTest('risk_profile_update_risk_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)
