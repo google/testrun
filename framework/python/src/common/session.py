@@ -502,7 +502,7 @@ class TestrunSession():
     else:
 
       # Update the profile
-      risk_profile.update(profile_json)
+      risk_profile.update(profile_json, profile_format=self._profile_format)
 
       # Check if name has changed
       if 'rename' in profile_json:

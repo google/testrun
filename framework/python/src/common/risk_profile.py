@@ -70,6 +70,8 @@ class RiskProfile():
     self.questions = new_profile.questions
     self.status = new_profile.status
 
+    self.update_risk(profile_format=profile_format)
+
   def get_file_path(self):
     return os.path.join(PROFILES_PATH,
                         self.name + '.json')
