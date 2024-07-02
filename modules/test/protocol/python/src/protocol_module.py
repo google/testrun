@@ -29,13 +29,12 @@ class ProtocolModule(TestModule):
     super().__init__(module_name=module, log_name=LOG_NAME)
     global LOGGER
     LOGGER = self._get_logger()
-    self._bacnet = BACnet(LOGGER)
+    self._bacnet = BACnet(log=LOGGER,device_hw_addr=self._device_mac)
 
   def _protocol_valid_bacnet(self):
     LOGGER.info('Running protocol.valid_bacnet')
     result = None
     interface_name = 'veth0'
-
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is None:
       self._device_ipv4_addr = self._get_device_ipv4()
@@ -47,8 +46,8 @@ class ProtocolModule(TestModule):
     # Resolve the appropriate IP for BACnet comms
     local_address = self.get_local_ip(interface_name)
     if local_address:
-      result = self._bacnet.validate_device(local_address,
-                                            self._device_ipv4_addr)
+      self._bacnet.discover(local_address + '/24')
+      result = self._bacnet.validate_device()
       if result[0]:
         self._supports_bacnet = True
     else:
