@@ -22,20 +22,30 @@ import {
   TextOnlySnackBar,
 } from '@angular/material/snack-bar';
 import { of } from 'rxjs/internal/observable/of';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { AppState } from '../store/state';
+import { SnackBarComponent } from '../components/snack-bar/snack-bar.component';
 
 describe('NotificationService', () => {
   let service: NotificationService;
+  let store: MockStore<AppState>;
 
   const mockMatSnackBar = {
     open: () => ({}),
     dismiss: () => ({}),
+    openFromComponent: () => ({}),
   };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [{ provide: MatSnackBar, useValue: mockMatSnackBar }],
+      providers: [
+        { provide: MatSnackBar, useValue: mockMatSnackBar },
+        provideMockStore({}),
+      ],
     });
     service = TestBed.inject(NotificationService);
+    store = TestBed.inject(MockStore);
+    spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
   it('should be created', () => {
@@ -53,7 +63,7 @@ describe('NotificationService', () => {
 
       expect(openSpy).toHaveBeenCalledWith('something good happened', 'OK', {
         horizontalPosition: 'center',
-        panelClass: 'test-run-notification',
+        panelClass: ['test-run-notification'],
         duration: 0,
         politeness: 'assertive',
       });
@@ -69,9 +79,28 @@ describe('NotificationService', () => {
 
       expect(openSpy).toHaveBeenCalledWith('something good happened', 'OK', {
         horizontalPosition: 'center',
-        panelClass: 'test-run-notification',
+        panelClass: ['test-run-notification'],
         duration: 15000,
         politeness: 'assertive',
+      });
+    });
+  });
+
+  describe('openSnackBar', () => {
+    it('should open snackbar fromComponent', () => {
+      const openSpy = spyOn(
+        service.snackBar,
+        'openFromComponent'
+      ).and.returnValues({
+        afterOpened: () => of(void 0),
+        afterDismissed: () => of({ dismissedByAction: true }),
+      } as MatSnackBarRef<SnackBarComponent>);
+
+      service.openSnackBar();
+
+      expect(openSpy).toHaveBeenCalledWith(SnackBarComponent, {
+        duration: 0,
+        panelClass: 'snack-bar-info',
       });
     });
   });

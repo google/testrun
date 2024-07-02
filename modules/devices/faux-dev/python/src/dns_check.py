@@ -102,16 +102,16 @@ class DNSValidator:
 
     LOGGER.debug('tcpdump command: ' + command)
 
-    process = subprocess.Popen(command,
+    with subprocess.Popen(command,
                                universal_newlines=True,
                                shell=True,
                                stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    text = str(process.stdout.read()).rstrip()
+                               stderr=subprocess.PIPE) as process:
+      text = str(process.stdout.read()).rstrip()
 
-    LOGGER.debug('tcpdump response: ' + text)
+      LOGGER.debug('tcpdump response: ' + text)
 
-    if text:
-      return text.split('\n')
+      if text:
+        return text.split('\n')
 
     return []

@@ -25,6 +25,7 @@ Ensure the following software is installed on your Ubuntu LTS PC:
    - Openvswitch Switch
    - Build Essential
    - Net Tools
+   - Ethtool
 
 ### Device
 Any device with an ethernet connection, and support for IPv4 DHCP can be tested.

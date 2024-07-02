@@ -15,7 +15,10 @@
 
 import BAC0
 import logging
-from BAC0.core.io.IOExceptions import UnknownPropertyError, ReadPropertyException, NoResponseFromController, DeviceNotConnected
+from BAC0.core.io.IOExceptions import (UnknownPropertyError,
+                                       ReadPropertyException,
+                                       NoResponseFromController,
+                                       DeviceNotConnected)
 
 LOGGER = None
 BAC0_LOG = '/root/.BAC0/BAC0.log'
@@ -54,23 +57,21 @@ class BACnet():
 
   # Check if the device being tested is in the discovered devices list
   def validate_device(self, local_ip, device_ip):
-    result = None
     LOGGER.info('Validating BACnet device: ' + device_ip)
     self.discover(local_ip + '/24')
-    LOGGER.info('BACnet Devices Found: ' + str(len(self.devices)))
+    LOGGER.info('BACnet devices found: ' + str(len(self.devices)))
     if len(self.devices) > 0:
-      # Load a fail result initially and pass only
-      # if we can validate it's the right device responding
-      result = False, ('Could not confirm discovered BACnet device is the ' +
-                       'same as device being tested')
+      result = (False,
+                'BACnet device was found but was not device under test')
       for device in self.devices:
         address = device[2]
         LOGGER.info('Checking device: ' + str(device))
         if device_ip in address:
-          result = True, 'Device IP matches discovered device'
+          result = True, 'BACnet device discovered'
           break
     else:
-      result = None, 'BACnet discovery could not resolve any devices'
+      result = ('Feature Not Detected',
+        'BACnet device could not be discovered')
     if result is not None:
       LOGGER.info(result[1])
     return result
@@ -85,7 +86,7 @@ class BACnet():
       protocol_version = f'{version}.{revision}'
       result = True
       result_description = (
-          f'BACnet protocol version detected: {protocol_version}')
+          f'Device uses BACnet version {protocol_version}')
     except (UnknownPropertyError, ReadPropertyException,
             NoResponseFromController, DeviceNotConnected) as e:
       result = False

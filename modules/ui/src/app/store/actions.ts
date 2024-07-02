@@ -22,6 +22,8 @@ import {
 } from '../model/setting';
 import { SystemInterfaces } from '../model/setting';
 import { Device } from '../model/device';
+import { TestrunStatus } from '../model/testrun-status';
+import { Profile } from '../model/profile';
 
 // App component
 export const toggleMenu = createAction('[App Component] Toggle Menu');
@@ -65,6 +67,13 @@ export const setIsOpenAddDevice = createAction(
   props<{ isOpenAddDevice: boolean }>()
 );
 
+export const setIsStopTestrun = createAction('[Shared] Set Is Stop Testrun');
+
+export const setIsOpenWaitSnackBar = createAction(
+  '[Shared] Set Is Open WaitSnackBar',
+  props<{ isOpenWaitSnackBar: boolean }>()
+);
+
 export const setHasDevices = createAction(
   '[Shared] Set Has Devices',
   props<{ hasDevices: boolean }>()
@@ -74,3 +83,44 @@ export const setDevices = createAction(
   '[Shared] Set Devices',
   props<{ devices: Device[] }>()
 );
+
+export const setHasRiskProfiles = createAction(
+  '[Shared] Set Has Risk Profiles',
+  props<{ hasRiskProfiles: boolean }>()
+);
+
+export const setRiskProfiles = createAction(
+  '[Shared] Set Risk Profiles',
+  props<{ riskProfiles: Profile[] }>()
+);
+
+export const setTestrunStatus = createAction(
+  '[Shared] Set Testrun Status',
+  props<{ systemStatus: TestrunStatus }>()
+);
+
+export const setIsOpenStartTestrun = createAction(
+  '[Shared] Set Is Open Start Testrun',
+  props<{ isOpenStartTestrun: boolean }>()
+);
+
+export const setDeviceInProgress = createAction(
+  '[Shared] Set Device In Progress',
+  props<{ device: Device | null }>()
+);
+
+export const fetchSystemStatus = createAction('[Shared] Fetch system status');
+
+export const fetchSystemStatusSuccess = createAction(
+  '[Shared] Fetch system status success',
+  props<{ systemStatus: TestrunStatus }>()
+);
+
+export const setStatus = createAction(
+  '[Shared] Set Status',
+  props<{ status: string }>()
+);
+
+export const stopInterval = createAction('[Shared] Stop Interval');
+
+export const fetchRiskProfiles = createAction('[Shared] Fetch risk profiles');

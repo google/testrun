@@ -12,7 +12,6 @@ export class FocusManagerService {
     const dialogOpened = window.document.querySelector('.mdc-dialog--open');
     const parentElem = dialogOpened ? dialogOpened : container;
     const firstInteractiveElem = this.findFirstInteractiveElem(parentElem);
-
     if (firstInteractiveElem) {
       firstInteractiveElem.focus();
     }
@@ -22,7 +21,7 @@ export class FocusManagerService {
     parentEl: Document | Element | null
   ): HTMLElement | undefined | null {
     return parentEl?.querySelector(
-      'button:not([disabled="true"]):not([tabindex="-1"]), a:not([disabled="true"]), input:not([disabled="true"]), table'
+      'button:not([disabled="true"]):not([tabindex="-1"]), a:not([disabled="true"]), input:not([disabled="true"]), table, [tabindex="0"]'
     );
   }
 }

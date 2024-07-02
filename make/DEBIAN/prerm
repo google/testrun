@@ -30,5 +30,5 @@ docker_images=$(sudo docker images --filter=reference="test-run/*" -q)
 if [ -z "$docker_images" ]; then
   echo No docker images to delete
 else
-  sudo docker rmi $docker_images > /dev/null
+  sudo docker rmi -f $docker_images > /dev/null
 fi

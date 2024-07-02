@@ -57,9 +57,11 @@ def test_assigned_ipv4_address(container_data):
 def test_ntp_server_reachable(container_data):
   assert not 'no servers' in container_data['ntp_offset']
 
+@pytest.mark.skip(reason='requires internet')
 def test_dns_server_reachable(container_data):
   assert not 'no servers' in container_data['dns_response']
 
+@pytest.mark.skip(reason='requires internet')
 def test_dns_server_resolves(container_data):
   assert re.match(r'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}',
     container_data['dns_response'])

@@ -208,7 +208,6 @@ class NTPModule(TestModule):
 
   def _ntp_network_ntp_support(self):
     LOGGER.info('Running ntp.network.ntp_support')
-    result = None
     packet_capture = (rdpcap(STARTUP_CAPTURE_FILE) +
                       rdpcap(MONITOR_CAPTURE_FILE) +
                       rdpcap(NTP_SERVER_CAPTURE_FILE))
@@ -245,7 +244,6 @@ class NTPModule(TestModule):
 
   def _ntp_network_ntp_dhcp(self):
     LOGGER.info('Running ntp.network.ntp_dhcp')
-    result = None
     packet_capture = (rdpcap(STARTUP_CAPTURE_FILE) +
                       rdpcap(MONITOR_CAPTURE_FILE) +
                       rdpcap(NTP_SERVER_CAPTURE_FILE))
@@ -273,11 +271,12 @@ class NTPModule(TestModule):
         result = False, ('Device sent NTP request to DHCP provided ' +
                          'server and non-DHCP provided server')
       elif ntp_to_remote:
-        result = False, 'Device sent NTP request to non-DHCP provided server'
+        result = ('Feature Not Detected',
+          'Device sent NTP request to non-DHCP provided server')
       elif ntp_to_local:
         result = True, 'Device sent NTP request to DHCP provided server'
     else:
-      result = False, 'Device has not sent any NTP requests'
+      result = 'Feature Not Detected', 'Device has not sent any NTP requests'
 
     LOGGER.info(result[1])
     return result

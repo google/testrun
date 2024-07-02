@@ -26,12 +26,13 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { GeneralSettingsComponent } from './pages/settings/general-settings.component';
+import { SettingsComponent } from './pages/settings/settings.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { LoadingInterceptor } from './interceptors/loading.interceptor';
 import { SpinnerComponent } from './components/spinner/spinner.component';
@@ -46,9 +47,11 @@ import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { SettingsDropdownComponent } from './pages/settings/components/settings-dropdown/settings-dropdown.component';
 import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
 import { WindowProvider } from './providers/window.provider';
+import { CertificatesComponent } from './pages/certificates/certificates.component';
+import { LOADER_TIMEOUT_CONFIG_TOKEN } from './services/loaderConfig';
 
 @NgModule({
-  declarations: [AppComponent, GeneralSettingsComponent],
+  declarations: [AppComponent, SettingsComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
@@ -61,6 +64,7 @@ import { WindowProvider } from './providers/window.provider';
     MatRadioModule,
     MatInputModule,
     MatSelectModule,
+    MatTooltipModule,
     HttpClientModule,
     ReactiveFormsModule,
     MatFormFieldModule,
@@ -74,6 +78,7 @@ import { WindowProvider } from './providers/window.provider';
     CdkTrapFocus,
     SettingsDropdownComponent,
     ShutdownAppComponent,
+    CertificatesComponent,
   ],
   providers: [
     WindowProvider,
@@ -87,6 +92,7 @@ import { WindowProvider } from './providers/window.provider';
       useClass: LoadingInterceptor,
       multi: true,
     },
+    { provide: LOADER_TIMEOUT_CONFIG_TOKEN, useValue: 1000 },
   ],
   bootstrap: [AppComponent],
 })

@@ -79,20 +79,20 @@ def test_list_tests(capsys, results, test_matrix):
       itertools.chain.from_iterable(
           [collect_actual_results(results[x]) for x in results.keys()]))
 
-  ci_pass = set([
+  ci_pass = set(
       test for testers in test_matrix.values()
       for test, result in testers['expected_results'].items()
       if result == 'Compliant'
-  ])
+  )
 
-  ci_fail = set([
+  ci_fail = set(
       test for testers in test_matrix.values()
       for test, result in testers['expected_results'].items()
       if result == 'Non-Compliant'
-  ])
+  )
 
   with capsys.disabled():
-    #TODO print matching the JSON schema for easy copy/paste
+    # TODO: print matching the JSON schema for easy copy/paste
     print('============')
     print('============')
     print('tests seen:')
@@ -106,7 +106,7 @@ def test_list_tests(capsys, results, test_matrix):
       print(f'\n{tester}:')
       print('  expected results:')
       for test in collect_expected_results(
-          test_matrix[tester]['expected_results']):
+        test_matrix[tester]['expected_results']):
         print(f'    {test.name}: {test.result}')
       print('  actual results:')
       for test in collect_actual_results(results[tester]):

@@ -16,7 +16,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DownloadReportPdfComponent } from './download-report-pdf.component';
-import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/progress.mock';
+import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
 
 describe('DownloadReportComponent', () => {
   let component: DownloadReportPdfComponent;

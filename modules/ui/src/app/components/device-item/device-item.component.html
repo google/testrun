@@ -36,6 +36,7 @@ limitations under the License.
   *ngIf="deviceView === DeviceView.WithActions"
   class="device-item-with-actions">
   <button
+    [disabled]="disabled"
     [tabIndex]="tabIndex"
     (click)="itemClick()"
     attr.aria-label="Edit device {{ label }}"
@@ -57,8 +58,10 @@ limitations under the License.
     </div>
   </button>
   <button
+    [disabled]="disabled"
     (click)="startTestrunClick()"
     attr.aria-label="Start new testrun for device {{ label }}"
+    matTooltip="Test device"
     class="button-start"
     mat-flat-button>
     <mat-icon class="button-start-icon" [svgIcon]="'device_run'"></mat-icon>

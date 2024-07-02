@@ -38,6 +38,8 @@ describe('VersionComponent', () => {
   const versionBehaviorSubject$ = new BehaviorSubject<Version | null>(null);
 
   beforeEach(() => {
+    // @ts-expect-error data layer should be defined
+    window.dataLayer = window.dataLayer || [];
     mockService = jasmine.createSpyObj(['getVersion', 'fetchVersion']);
     mockService.getVersion.and.returnValue(versionBehaviorSubject$);
     TestBed.configureTestingModule({

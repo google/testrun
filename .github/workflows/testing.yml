@@ -30,7 +30,7 @@ jobs:
     permissions: {}
     name:  API
     runs-on: ubuntu-20.04
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - name: Checkout source
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -76,7 +76,7 @@ jobs:
     - name: Install Node
       uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
       with:
-        node-version: 18.13.0
+        node-version: 18.18.0
     - name: Install Chromium Browser
       run: sudo apt install chromium-browser
     - name: Install dependencies
@@ -99,7 +99,7 @@ jobs:
     - name: Install Node
       uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
       with:
-        node-version: 18.13.0
+        node-version: 18.18.0
     - name: Install dependencies
       run: npm install && npm ci
       working-directory: ./modules/ui

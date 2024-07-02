@@ -31,8 +31,8 @@ sudo docker network create -d macvlan -o parent=endev0b endev0
 # Start OVS
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
-# Build Test Container
-sudo docker build ./testing/docker/ci_test_device1 -t ci_test_device1 -f  ./testing/docker/ci_test_device1/Dockerfile
+# Build test container
+sudo docker build ./testing/docker/ci_test_device1 -t test-run/ci_device_1 -f  ./testing/docker/ci_test_device1/Dockerfile
 
 sudo chown -R $USER local
 

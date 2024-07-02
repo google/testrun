@@ -28,11 +28,12 @@ import { ShutdownAppModalComponent } from '../shutdown-app-modal/shutdown-app-mo
 import { Subject, takeUntil } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
 import { WINDOW } from '../../providers/window.provider';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-shutdown-app',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIcon],
+  imports: [CommonModule, MatButtonModule, MatIcon, MatTooltipModule],
   templateUrl: './shutdown-app.component.html',
   styleUrl: './shutdown-app.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

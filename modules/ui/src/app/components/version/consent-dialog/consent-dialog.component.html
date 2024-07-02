@@ -53,21 +53,23 @@ limitations under the License.
     </ul>
   </section>
 
-  <section class="consent-update" *ngIf="data.update_available === true">
+  <section
+    class="section-container"
+    *ngIf="data.version.update_available === true">
     <app-callout [type]="CalloutType.Warning">
-      <span class="consent-update-title">Software is outdated!</span>
-      <p class="consent-update-content">
+      <span class="section-title">Software is outdated!</span>
+      <p class="section-content consent">
         You are currently using an outdated software (<b>{{
-          data.installed_version
+          data.version.installed_version
         }}</b
         >).
         <br />
-        The latest version number is <b>{{ data.latest_version }}</b
+        The latest version number is <b>{{ data.version.latest_version }}</b
         >. Please consider to update or continue at your own risk.
       </p>
-      <p class="download-link-container">
+      <p class="section-action-container">
         <a
-          href="{{ data.latest_version_url }}"
+          href="{{ data.version.latest_version_url }}"
           target="_blank"
           class="download-link"
           color="primary"
@@ -76,6 +78,27 @@ limitations under the License.
           aria-label="Download new version">
           Download
         </a>
+      </p>
+    </app-callout>
+  </section>
+  <section class="section-container" *ngIf="data.hasRiskProfiles === false">
+    <app-callout [type]="CalloutType.Check">
+      <span class="section-title">Risk Assessment feature added!</span>
+      <p class="section-content risk-assessment">
+        Now you can answer a short questionnaire, create a security profile and
+        attach it to the Testrun result to complete a device verification. Also,
+        it will speed up the process a lot!
+      </p>
+      <p class="section-action-container">
+        <button
+          (click)="confirm(optOut, true)"
+          class="risk-assessment-button"
+          color="primary"
+          mat-button
+          aria-label="Go to Risk Assessment page"
+          type="button">
+          Go to Risk Assessment
+        </button>
       </p>
     </app-callout>
   </section>
@@ -96,16 +119,11 @@ limitations under the License.
 </section>
 
 <mat-dialog-actions class="consent-actions">
+  <mat-checkbox [(ngModel)]="optOut" class="consent-actions-opt-out">
+    Opt out from Google Analytics
+  </mat-checkbox>
   <button
-    (click)="cancel()"
-    class="cancel-button"
-    color="primary"
-    mat-button
-    type="button">
-    Opt out Google Analytics
-  </button>
-  <button
-    (click)="confirm()"
+    (click)="confirm(optOut)"
     class="confirm-button"
     color="primary"
     mat-raised-button
