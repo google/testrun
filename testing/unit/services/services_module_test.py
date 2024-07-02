@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module run all the DNS related unit tests"""
+"""Module run all the services related unit tests"""
 from services_module import ServicesModule
 import unittest
 import os
@@ -26,13 +26,13 @@ OUTPUT_DIR = os.path.join(TEST_FILES_DIR, 'output/')
 REPORTS_DIR = os.path.join(TEST_FILES_DIR, 'reports/')
 RESULTS_DIR = os.path.join(TEST_FILES_DIR, 'results/')
 
-LOCAL_REPORT = os.path.join(REPORTS_DIR, 'nmap_report_local.html')
+LOCAL_REPORT = os.path.join(REPORTS_DIR, 'services_report_local.html')
 LOCAL_REPORT_ALL_CLOSED = os.path.join(REPORTS_DIR,
-                                       'nmap_report_all_closed_local.html')
+                                       'services_report_all_closed_local.html')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 
-class NMAPTest(unittest.TestCase):
+class ServicesTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""
 
   @classmethod
@@ -41,7 +41,7 @@ class NMAPTest(unittest.TestCase):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
   # Test the module report generation
-  def nmap_module_ports_open_report_test(self):
+  def services_module_ports_open_report_test(self):
     # Move test scan into expected folder
     src_scan_results_path = os.path.join(RESULTS_DIR,
                                          'ports_open_scan_result.json')
@@ -49,14 +49,14 @@ class NMAPTest(unittest.TestCase):
       OUTPUT_DIR, 'services_scan_results.json')
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
-    nmap_module = ServicesModule(module=MODULE,
+    services_module = ServicesModule(module=MODULE,
                              log_dir=OUTPUT_DIR,
                              conf_file=CONF_FILE,
                              results_dir=OUTPUT_DIR,
                              run=False,
                              nmap_scan_results_path=OUTPUT_DIR)
 
-    report_out_path = nmap_module.generate_module_report()
+    report_out_path = services_module.generate_module_report()
 
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
@@ -64,7 +64,8 @@ class NMAPTest(unittest.TestCase):
       formatted_report = self.add_formatting(report_out)
 
     # Write back the new formatted_report value
-    out_report_path = os.path.join(OUTPUT_DIR, 'nmap_report_ports_open.html')
+    out_report_path = os.path.join(
+      OUTPUT_DIR, 'services_report_ports_open.html')
     with open(out_report_path, 'w', encoding='utf-8') as file:
       file.write(formatted_report)
 
@@ -75,21 +76,21 @@ class NMAPTest(unittest.TestCase):
     self.assertEqual(report_out, report_local)
 
     # Test the module report generation with all ports closed
-  def nmap_module_report_all_closed_test(self):
+  def services_module_report_all_closed_test(self):
     src_scan_results_path = os.path.join(RESULTS_DIR,
                                          'all_closed_scan_result.json')
     dst_scan_results_path = os.path.join(
       OUTPUT_DIR, 'services_scan_results.json')
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
-    nmap_module = ServicesModule(module=MODULE,
+    services_module = ServicesModule(module=MODULE,
                              log_dir=OUTPUT_DIR,
                              conf_file=CONF_FILE,
                              results_dir=OUTPUT_DIR,
                              run=False,
                              nmap_scan_results_path=OUTPUT_DIR)
 
-    report_out_path = nmap_module.generate_module_report()
+    report_out_path = services_module.generate_module_report()
 
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
@@ -97,7 +98,8 @@ class NMAPTest(unittest.TestCase):
       formatted_report = self.add_formatting(report_out)
 
     # Write back the new formatted_report value
-    out_report_path = os.path.join(OUTPUT_DIR, 'nmap_report_all_closed.html')
+    out_report_path = os.path.join(
+      OUTPUT_DIR, 'services_report_all_closed.html')
     with open(out_report_path, 'w', encoding='utf-8') as file:
       file.write(formatted_report)
 
@@ -121,8 +123,8 @@ class NMAPTest(unittest.TestCase):
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   # Module report test
-  suite.addTest(NMAPTest('nmap_module_ports_open_report_test'))
-  suite.addTest(NMAPTest('nmap_module_report_all_closed_test'))
+  suite.addTest(ServicesTest('services_module_ports_open_report_test'))
+  suite.addTest(ServicesTest('services_module_report_all_closed_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)

@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-docker build -f testing/unit/unit_test.Dockerfile -t test-run/unit-test .
+sudo docker build -f testing/unit/unit_test.Dockerfile -t testrun/unit-test .

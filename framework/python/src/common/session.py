@@ -513,11 +513,23 @@ class TestrunSession():
       # Update questions and answers
       risk_profile.questions = profile_json.get('questions')
 
+      # Update status
+      if 'status' in profile_json:
+        risk_profile.status = profile_json['status']
+
+        if risk_profile.status == 'Valid':
+          # Update created date
+          risk_profile.created = datetime.datetime.now()
+          # Update risk
+          risk_profile.update_risk(self._profile_format)
+        else:
+          risk_profile.risk = None
+
     # Write file to disk
     with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'),
               'w',
               encoding='utf-8') as f:
-      f.write(json.dumps(risk_profile.to_json()))
+      f.write(risk_profile.to_json())
 
     return risk_profile
 

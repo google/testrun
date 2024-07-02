@@ -43,7 +43,7 @@ class ReportTest(unittest.TestCase):
     reports_md = []
     #reports_md.append(self.get_module_html_report('tls'))
     reports_md.append(self.get_module_html_report('dns'))
-    reports_md.append(self.get_module_html_report('nmap'))
+    reports_md.append(self.get_module_html_report('services'))
     reports_md.append(self.get_module_html_report('ntp'))
     report.add_module_reports(reports_md)
 
