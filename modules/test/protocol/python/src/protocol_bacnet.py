@@ -68,29 +68,33 @@ class BACnet():
     with open(BAC0_LOG, 'r', encoding='utf-8') as f:
       bac0_log = f.read()
     LOGGER.info('BAC0 Log:\n' + bac0_log)
-
     self.devices = self.bacnet.devices
+    LOGGER.info('BACnet devices found: ' + str(len(self.devices)))
 
   # Check if the device being tested is in the discovered devices list
   # discover needs to be called before this method is invoked
   def validate_device(self):
-    LOGGER.info('BACnet devices found: ' + str(len(self.devices)))
     result = None
     description = ''
-    if len(self.devices) > 0:
-      result = True
-      for device in self.devices:
-        object_id = device[3]  # BACnet Object ID
-        LOGGER.info('Checking device: ' + str(device))
-        result &= self.validate_bacnet_source(
-            object_id=object_id, device_hw_addr=self.device_hw_addr)
-      description = ('BACnet device discovered' if result else
-                     'BACnet device was found but was not device under test')
-    else:
-      result = 'Feature Not Detected'
-      description = 'BACnet device could not be discovered'
-    LOGGER.info(description)
+    try:
+      if len(self.devices) > 0:
+        result = True
+        for device in self.devices:
+          object_id = str(device[3])  # BACnet Object ID
+          LOGGER.info('Checking device: ' + str(device))
+          result &= self.validate_bacnet_source(
+              object_id=object_id, device_hw_addr=self.device_hw_addr)
+        description = ('BACnet device discovered' if result else
+                       'BACnet device was found but was not device under test')
+      else:
+        result = 'Feature Not Detected'
+        description = 'BACnet device could not be discovered'
+      LOGGER.info(description)
+    except Exception as e:
+      LOGGER.error('Error occured when validaing device', e)
+      LOGGER.error('Error occured when validting device', exc_info=True)
     return result, description
+
 
   def validate_protocol_version(self, device_ip, device_id):
     LOGGER.info(f'Resolving protocol version for BACnet device: {device_id}')
@@ -112,25 +116,31 @@ class BACnet():
   # Validate that all traffic to/from BACnet device from
   # discovered object id matches the MAC address of the device
   def validate_bacnet_source(self, object_id, device_hw_addr):
-    capture_file = os.path.join(self._captures_dir, self._capture_file)
-    packets = self.get_bacnet_packets(capture_file, object_id)
-    valid = None
-    for packet in packets:
-      if object_id in packet['_source']['layers']['bacapp.instance_number']:
-        LOGGER.debug(f'BACnet traffic for instance number: {object_id}')
-        if device_hw_addr.lower() in packet['_source']['layers']['eth.src']:
-          LOGGER.debug('BACnet detected from device')
-          valid = True if valid is None else valid and True
-        elif device_hw_addr.lower() in packet['_source']['layers']['eth.dst']:
-          LOGGER.debug('BACnet detected to device')
-          valid = valid = True if valid is None else valid and True
-        else:
-          LOGGER.debug('BACnet detected for wrong MAC address')
-          src = packet['_source']['layers']['eth.src'][0]
-          dst = packet['_source']['layers']['eth.dst'][0]
-          LOGGER.debug(f'From: {src} To: {dst} Expected: {device_hw_addr}')
-          valid = False
-    return valid
+    try:
+      LOGGER.info(f'Checking BACnet traffic for object id {object_id}')
+      capture_file = os.path.join(self._captures_dir, self._capture_file)
+      packets = self.get_bacnet_packets(capture_file, object_id)
+      valid = None
+      for packet in packets:
+        packet_obj_id = packet['_source']['layers']['bacapp.instance_number']
+        if object_id in packet['_source']['layers']['bacapp.instance_number']:
+          if device_hw_addr.lower() in packet['_source']['layers']['eth.src']:
+            LOGGER.debug('BACnet detected from device')
+            valid = True if valid is None else valid and True
+          elif device_hw_addr.lower() in packet['_source']['layers']['eth.dst']:
+            LOGGER.debug('BACnet detected to device')
+            valid = valid = True if valid is None else valid and True
+          else:
+            LOGGER.debug('BACnet detected for wrong MAC address')
+            src = packet['_source']['layers']['eth.src'][0]
+            dst = packet['_source']['layers']['eth.dst'][0]
+            LOGGER.debug(f'From: {src} To: {dst} Expected: {device_hw_addr}')
+            valid = False
+      return valid
+    except Exception as e:
+      LOGGER.error(e)
+      LOGGER.error('Error occured when validating source', exc_info=True)
+      return False
 
   def get_bacnet_packets(self, capture_file, object_id):
     bin_file = self._bin_dir + '/get_bacnet_packets.sh'
