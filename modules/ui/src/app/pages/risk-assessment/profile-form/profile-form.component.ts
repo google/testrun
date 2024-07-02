@@ -73,19 +73,30 @@ import { ProfileValidators } from './profile.validators';
 })
 export class ProfileFormComponent implements OnInit {
   private profile: Profile | null = null;
+  private profileList!: Profile[];
   private injector = inject(Injector);
+  private nameValidator!: ValidatorFn;
   public readonly FormControlType = FormControlType;
   public readonly ProfileStatus = ProfileStatus;
   profileForm: FormGroup = this.fb.group({});
   @ViewChildren(CdkTextareaAutosize)
   autosize!: QueryList<CdkTextareaAutosize>;
   @Input() profileFormat!: ProfileFormat[];
-  @Input() profiles!: Profile[];
+  @Input()
+  set profiles(profiles: Profile[]) {
+    this.profileList = profiles;
+    if (this.nameControl) {
+      this.updateNameValidator();
+    }
+  }
+  get profiles() {
+    return this.profileList;
+  }
   @Input()
   set selectedProfile(profile: Profile | null) {
     this.profile = profile;
     if (profile && this.nameControl) {
-      this.profileForm = this.createProfileForm(this.profileFormat);
+      this.updateNameValidator();
       this.fillProfileForm(this.profileFormat, profile);
     }
   }
@@ -107,11 +118,7 @@ export class ProfileFormComponent implements OnInit {
   }
 
   get isDraftDisabled(): boolean {
-    return (
-      !this.nameControl.valid ||
-      this.fieldsHasError ||
-      (this.profileForm.valid && this.profileForm.pristine)
-    );
+    return !this.nameControl.valid || this.fieldsHasError;
   }
 
   private get fieldsHasError(): boolean {
@@ -135,10 +142,15 @@ export class ProfileFormComponent implements OnInit {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const group: any = {};
 
+    this.nameValidator = this.profileValidators.differentProfileName(
+      this.profiles,
+      this.profile
+    );
+
     group['name'] = new FormControl('', [
       this.profileValidators.textRequired(),
       this.deviceValidators.deviceStringFormat(),
-      this.profileValidators.differentProfileName(this.profiles, this.profile),
+      this.nameValidator,
     ]);
 
     questions.forEach((question, index) => {
@@ -219,7 +231,17 @@ export class ProfileFormComponent implements OnInit {
     this.saveProfile.emit(response);
   }
 
-  buildResponseFromForm(
+  public markSectionAsDirty(
+    optionIndex: number,
+    optionLength: number,
+    formControlName: string
+  ) {
+    if (optionIndex === optionLength - 1) {
+      this.getControl(formControlName).markAsDirty();
+    }
+  }
+
+  private buildResponseFromForm(
     initialQuestions: ProfileFormat[],
     profileForm: FormGroup,
     status: ProfileStatus,
@@ -270,5 +292,15 @@ export class ProfileFormComponent implements OnInit {
         injector: this.injector,
       }
     );
+  }
+
+  private updateNameValidator() {
+    this.nameControl.removeValidators([this.nameValidator]);
+    this.nameValidator = this.profileValidators.differentProfileName(
+      this.profileList,
+      this.profile
+    );
+    this.nameControl.addValidators(this.nameValidator);
+    this.nameControl.updateValueAndValidity();
   }
 }

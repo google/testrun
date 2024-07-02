@@ -17,7 +17,7 @@
 # This script should be run from within the unit_test directory.  If
 # it is run outside this directory, paths will not be resolved correctly.
 
-# Move into the root directory of testrun
+# Move into the root directory of test-run
 pushd ../../ >/dev/null 2>&1
 
 echo "Root dir: $PWD"
@@ -32,6 +32,8 @@ PYTHONPATH="$PYTHONPATH:$PWD/modules/test/tls/python/src"
 PYTHONPATH="$PYTHONPATH:$PWD/modules/test/dns/python/src"
 PYTHONPATH="$PYTHONPATH:$PWD/modules/test/services/python/src"
 PYTHONPATH="$PYTHONPATH:$PWD/modules/test/ntp/python/src"
+PYTHONPATH="$PYTHONPATH:$PWD/modules/test/protocol/python/src"
+
 
 # Set the python path with all sources
 export PYTHONPATH
@@ -49,16 +51,19 @@ python3 -u $PWD/testing/unit/tls/tls_module_test.py
 # Run the DNS Module Unit Tests
 python3 -u $PWD/testing/unit/dns/dns_module_test.py
 
-# Run the Services Module Unit Tests
+# Run the NMAP Module Unit Tests
 python3 -u $PWD/testing/unit/services/services_module_test.py
 
-# Run the NTP Module Unit Tests - This is currently broken
-# python3 -u $PWD/testing/unit/ntp/ntp_module_test.py
+# Run the NTP Module Unit Tests
+python3 -u $PWD/testing/unit/ntp/ntp_module_test.py
 
 # Run the Report Unit Tests
- python3 -u $PWD/testing/unit/report/report_test.py
+python3 -u $PWD/testing/unit/report/report_test.py
 
 # Run the RiskProfile Unit Tests
 python3 -u $PWD/testing/unit/risk_profile/risk_profile_test.py
+
+# Run the RiskProfile Unit Tests
+python3 -u $PWD/testing/unit/protocol/protocol_module_test.py
 
 popd >/dev/null 2>&1

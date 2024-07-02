@@ -65,9 +65,7 @@ limitations under the License.
     mat-flat-button
     color="primary"
     class="save-profile-button"
-    [disabled]="
-      !profileForm.valid || (profileForm.valid && profileForm.pristine)
-    "
+    [disabled]="!profileForm.valid"
     (click)="onSaveClick(ProfileStatus.VALID)">
     Save Profile
   </button>
@@ -274,7 +272,9 @@ limitations under the License.
     <p
       *ngFor="let option of options; let i = index"
       class="field-select-checkbox">
-      <mat-checkbox [formControlName]="i">
+      <mat-checkbox
+        [formControlName]="i"
+        (keydown.tab)="markSectionAsDirty(i, options.length, formControlName)">
         {{ option }}
       </mat-checkbox>
     </p>
