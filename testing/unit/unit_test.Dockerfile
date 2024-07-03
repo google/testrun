@@ -9,9 +9,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG MODULE_DIR=modules/test
 ARG UNIT_TEST_DIR=testing/unit
 ARG FRAMEWORK_DIR=framework
+ARG RESOURCES_DIR=resources
 
 # Install common software
-RUN apt-get install -yq net-tools iputils-ping tzdata tcpdump iproute2 jq python3 python3-pip dos2unix nmap wget --fix-missing
+RUN apt-get install -yq net-tools iputils-ping tzdata tcpdump iproute2 jq python3 python3-pip dos2unix nmap wget libpangocairo-1.0-0 --fix-missing
 
 # Install framework python modules
 COPY $FRAMEWORK_DIR/ /testrun/$FRAMEWORK_DIR
@@ -19,6 +20,9 @@ COPY $FRAMEWORK_DIR/ /testrun/$FRAMEWORK_DIR
 # Load all the test modules
 COPY $MODULE_DIR/ /testrun/$MODULE_DIR
 COPY $UNIT_TEST_DIR /testrun/$UNIT_TEST_DIR
+
+# Copy resources folder
+COPY $RESOURCES_DIR /testrun/resources
 
 # Install required software for TLS module
 RUN apt-get update && apt-get install -y tshark
@@ -29,6 +33,9 @@ RUN pip3 install -r /testrun/framework/requirements.txt
 # Install all python requirements for the TLS module
 RUN pip3 install -r /testrun/modules/test/tls/python/requirements.txt
 
+# Install all python requirements for the services module
+RUN pip3 install -r /testrun/modules/test/services/python/requirements.txt
+
 # Remove incorrect line endings
 RUN dos2unix /testrun/modules/test/tls/bin/*
 RUN dos2unix /testrun/testing/unit/*
@@ -38,5 +45,3 @@ RUN chmod u+x /testrun/modules/test/tls/bin/*
 RUN chmod u+x /testrun/testing/unit/run_tests.sh
 
 WORKDIR /testrun/testing/unit/
-
-#ENTRYPOINT [ "./run_tests.sh" ]
