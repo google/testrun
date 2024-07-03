@@ -36,8 +36,11 @@ limitations under the License.
             [ngClass]="getRiskClass(profile.risk)">
             {{ profile.risk }} risk
           </span>
-          <span>
+          <span class="profile-item-name">
             {{ profile.name }}
+          </span>
+          <span class="profile-item-created">
+            {{ profile.created | date: 'dd MMM yyyy' }}
           </span>
         </div>
       </mat-option>

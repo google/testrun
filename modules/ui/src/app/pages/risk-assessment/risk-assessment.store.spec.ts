@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of, skip, take } from 'rxjs';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TestRunService } from '../../services/test-run.service';
@@ -69,6 +69,7 @@ describe('RiskAssessmentStore', () => {
     store = TestBed.inject(MockStore);
     riskAssessmentStore = TestBed.inject(RiskAssessmentStore);
 
+    mockFocusManagerService.focusFirstElementInContainer.calls.reset();
     spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
@@ -167,6 +168,49 @@ describe('RiskAssessmentStore', () => {
         expect(
           mockFocusManagerService.focusFirstElementInContainer
         ).toHaveBeenCalledWith();
+      });
+    });
+
+    describe('setFocusOnCreateButton', () => {
+      const container = document.createElement('div') as HTMLElement;
+      container.classList.add('risk-assessment-content-empty');
+      document.querySelector('body')?.appendChild(container);
+
+      it('should call focusFirstElementInContainer', fakeAsync(() => {
+        riskAssessmentStore.setFocusOnCreateButton();
+
+        tick(11);
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalledWith(container);
+      }));
+    });
+
+    describe('setFocusOnSelectedProfile', () => {
+      const container = document.createElement('div') as HTMLElement;
+      container.classList.add('profiles-drawer-content');
+      const inner = document.createElement('div') as HTMLElement;
+      inner.classList.add('selected');
+      container.appendChild(inner);
+      document.querySelector('body')?.appendChild(container);
+
+      it('should call focusFirstElementInContainer', () => {
+        riskAssessmentStore.setFocusOnSelectedProfile();
+
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalledWith(inner);
+      });
+    });
+
+    describe('setFocusOnProfileForm', () => {
+      const profileForm = window.document.querySelector('app-profile-form');
+      it('should call focusFirstElementInContainer', () => {
+        riskAssessmentStore.setFocusOnProfileForm();
+
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalledWith(profileForm);
       });
     });
 

@@ -90,6 +90,7 @@ describe('DownloadReportZipComponent', () => {
         tick();
 
         expect(testrunServiceMock.downloadZip).toHaveBeenCalled();
+        expect(router.url).not.toBe(Routes.RiskAssessment);
         openSpy.calls.reset();
       }));
 

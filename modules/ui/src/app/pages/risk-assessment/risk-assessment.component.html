@@ -43,9 +43,14 @@ limitations under the License.
     </div>
     <div class="profiles-drawer-content">
       <app-profile-item
-        *ngFor="let profile of vm.profiles; let i = index"
+        *ngFor="
+          let profile of vm.profiles;
+          let i = index;
+          trackBy: trackByIndex
+        "
         [profile]="profile"
         class="profile-item-{{ i }}"
+        [ngClass]="{ selected: profile.name === vm.selectedProfile?.name }"
         (deleteButtonClicked)="deleteProfile($event, i, vm.selectedProfile)"
         (profileClicked)="openForm($event)">
       </app-profile-item>

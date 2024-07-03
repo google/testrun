@@ -24,6 +24,7 @@ import {
 export const PROFILE_MOCK: Profile = {
   name: 'Primary profile',
   status: ProfileStatus.VALID,
+  created: '2024-05-23 12:38:26',
   questions: [
     {
       question: 'What is the email of the device owner(s)?',
@@ -49,7 +50,14 @@ export const PROFILE_MOCK: Profile = {
 };
 
 export const PROFILE_MOCK_2: Profile = {
+  status: ProfileStatus.VALID,
   name: 'Second profile name',
+  questions: [],
+};
+
+export const PROFILE_MOCK_3: Profile = {
+  status: ProfileStatus.DRAFT,
+  name: 'Third profile name',
   questions: [],
 };
 

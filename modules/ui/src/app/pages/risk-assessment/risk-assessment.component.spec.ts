@@ -32,7 +32,6 @@ import { Component, Input } from '@angular/core';
 import { Profile, ProfileFormat } from '../../model/profile';
 import { MatDialogRef } from '@angular/material/dialog';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
-import { FocusManagerService } from '../../services/focus-manager.service';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 
@@ -40,7 +39,6 @@ describe('RiskAssessmentComponent', () => {
   let component: RiskAssessmentComponent;
   let fixture: ComponentFixture<RiskAssessmentComponent>;
   let mockService: SpyObj<TestRunService>;
-  let mockFocusManagerService: SpyObj<FocusManagerService>;
   let mockRiskAssessmentStore: SpyObj<RiskAssessmentStore>;
 
   const mockLiveAnnouncer: SpyObj<LiveAnnouncer> = jasmine.createSpyObj([
@@ -52,16 +50,15 @@ describe('RiskAssessmentComponent', () => {
     mockService = jasmine.createSpyObj(['fetchProfiles', 'deleteProfile']);
     mockService.deleteProfile.and.returnValue(of(true));
 
-    mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
-      'focusFirstElementInContainer',
-    ]);
-
     mockRiskAssessmentStore = jasmine.createSpyObj('RiskAssessmentStore', [
       'deleteProfile',
       'setFocus',
       'getProfilesFormat',
       'saveProfile',
       'updateSelectedProfile',
+      'setFocusOnCreateButton',
+      'setFocusOnSelectedProfile',
+      'setFocusOnProfileForm',
     ]);
 
     await TestBed.configureTestingModule({
@@ -73,7 +70,6 @@ describe('RiskAssessmentComponent', () => {
       imports: [MatToolbarModule, MatSidenavModule, BrowserAnimationsModule],
       providers: [
         { provide: TestRunService, useValue: mockService },
-        { provide: FocusManagerService, useValue: mockFocusManagerService },
         { provide: RiskAssessmentStore, useValue: mockRiskAssessmentStore },
         { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
       ],
@@ -213,10 +209,10 @@ describe('RiskAssessmentComponent', () => {
         );
       });
 
-      it('should focus first element in container', async () => {
+      it('should focus first element in profile form', async () => {
         await component.openForm();
         expect(
-          mockFocusManagerService.focusFirstElementInContainer
+          mockRiskAssessmentStore.setFocusOnProfileForm
         ).toHaveBeenCalled();
       });
     });

@@ -49,16 +49,18 @@ describe('ProfileItemComponent', () => {
     expect(name?.textContent?.trim()).toEqual(PROFILE_MOCK.name);
   });
 
+  it('should have create date', () => {
+    const date = compiled.querySelector('.profile-item-created');
+
+    expect(date?.textContent?.trim()).toEqual('23 May 2024');
+  });
+
   it('should have profile name as part of buttons aria-label', () => {
     const deleteButton = fixture.nativeElement.querySelector(
       '.profile-item-button.delete'
     );
-    const copyButton = fixture.nativeElement.querySelector(
-      '.profile-item-button.copy'
-    );
 
     expect(deleteButton?.ariaLabel?.trim()).toContain(PROFILE_MOCK.name);
-    expect(copyButton?.ariaLabel?.trim()).toContain(PROFILE_MOCK.name);
   });
 
   it('should emit delete event on delete button clicked', () => {
