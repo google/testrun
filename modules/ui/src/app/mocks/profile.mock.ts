@@ -50,7 +50,14 @@ export const PROFILE_MOCK: Profile = {
 };
 
 export const PROFILE_MOCK_2: Profile = {
+  status: ProfileStatus.VALID,
   name: 'Second profile name',
+  questions: [],
+};
+
+export const PROFILE_MOCK_3: Profile = {
+  status: ProfileStatus.DRAFT,
+  name: 'Third profile name',
   questions: [],
 };
 

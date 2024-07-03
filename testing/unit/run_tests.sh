@@ -32,6 +32,8 @@ PYTHONPATH="$PYTHONPATH:$PWD/modules/test/tls/python/src"
 PYTHONPATH="$PYTHONPATH:$PWD/modules/test/dns/python/src"
 PYTHONPATH="$PYTHONPATH:$PWD/modules/test/services/python/src"
 PYTHONPATH="$PYTHONPATH:$PWD/modules/test/ntp/python/src"
+PYTHONPATH="$PYTHONPATH:$PWD/modules/test/protocol/python/src"
+
 
 # Set the python path with all sources
 export PYTHONPATH
@@ -60,5 +62,8 @@ python3 -u $PWD/testing/unit/report/report_test.py
 
 # Run the RiskProfile Unit Tests
 python3 -u $PWD/testing/unit/risk_profile/risk_profile_test.py
+
+# Run the RiskProfile Unit Tests
+python3 -u $PWD/testing/unit/protocol/protocol_module_test.py
 
 popd >/dev/null 2>&1
