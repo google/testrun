@@ -242,8 +242,7 @@ class TestOrchestrator:
   def _timestamp_results(self, device):
 
     # Define the current device results directory
-    cur_results_dir = os.path.join(self._root_path, RUNTIME_TEST_DIR,
-                                   device.mac_addr.replace(":", ""))
+    cur_results_dir = os.path.join(self._root_path, RUNTIME_DIR)
 
     # Define the directory
     completed_results_dir = os.path.join(
@@ -273,9 +272,7 @@ class TestOrchestrator:
         timestamp)
 
       # Define where to save the zip file
-      zip_location = os.path.join(LOCAL_DEVICE_REPORTS.replace(
-        "{device_folder}", device.device_folder), timestamp
-      )
+      zip_location = os.path.join('/tmp/testrun',timestamp)
 
       # Include profile if specified
       if profile is not None:
