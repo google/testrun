@@ -79,9 +79,7 @@ export class DownloadReportZipComponent
         }
         if (profile === null) {
           this.route.navigate([Routes.RiskAssessment]);
-        }
-
-        if (this.url != null) {
+        } else if (this.url != null) {
           this.testrunService.downloadZip(this.getZipLink(this.url), profile);
         }
       });
