@@ -15,6 +15,12 @@
 # Image name: test-run/protocol-test
 FROM test-run/base-test:latest
 
+# Set DEBIAN_FRONTEND to noninteractive mode
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install required software
+RUN apt-get update && apt-get install -y tshark
+
 ARG MODULE_NAME=protocol
 ARG MODULE_DIR=modules/test/$MODULE_NAME
 
@@ -26,6 +32,9 @@ RUN pip3 install -r /testrun/python/requirements.txt
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf
+
+# Copy over all binary files
+COPY $MODULE_DIR/bin /testrun/bin
 
 # Copy over all binary files
 COPY $MODULE_DIR/bin /testrun/bin

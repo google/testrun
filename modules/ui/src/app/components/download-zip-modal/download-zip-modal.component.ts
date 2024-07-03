@@ -6,7 +6,11 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { EscapableDialogComponent } from '../escapable-dialog/escapable-dialog.component';
-import { Profile, RiskResultClassName } from '../../model/profile';
+import {
+  Profile,
+  ProfileStatus,
+  RiskResultClassName,
+} from '../../model/profile';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule, NgForOf, NgIf } from '@angular/common';
 import { MatFormField } from '@angular/material/form-field';
@@ -47,7 +51,9 @@ export class DownloadZipModalComponent extends EscapableDialogComponent {
   ) {
     super(dialogRef);
     if (data.hasProfiles) {
-      this.profiles = [...data.profiles] as Profile[];
+      this.profiles = data.profiles.filter(
+        profile => profile.status === ProfileStatus.VALID
+      );
       this.profiles.sort((a, b) =>
         a.name.toLowerCase().localeCompare(b.name.toLowerCase())
       );
