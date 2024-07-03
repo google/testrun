@@ -103,6 +103,13 @@ class TestOrchestrator:
       self.get_session().add_total_tests(len(module.tests))
 
     for module in test_modules:
+      # TODO: add device ping check
+      if not self._net_orc._ip_ctrl.check_interface_status(
+        self._session.get_device_interface()):
+        self._session.set_status("Cancelled")
+        LOGGER.Error("Device was disconnected")
+        break
+
       self._run_test_module(module)
 
     LOGGER.info("All tests complete")
