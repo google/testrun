@@ -2,7 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DownloadZipModalComponent } from './download-zip-modal.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { PROFILE_MOCK, PROFILE_MOCK_2 } from '../../mocks/profile.mock';
+import {
+  PROFILE_MOCK,
+  PROFILE_MOCK_2,
+  PROFILE_MOCK_3,
+} from '../../mocks/profile.mock';
 import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TestRunService } from '../../services/test-run.service';
@@ -41,7 +45,7 @@ describe('DownloadZipModalComponent', () => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
         useValue: {
           hasProfiles: true,
-          profiles: [PROFILE_MOCK_2, PROFILE_MOCK],
+          profiles: [PROFILE_MOCK_2, PROFILE_MOCK, PROFILE_MOCK_3],
         },
       });
 
@@ -106,7 +110,7 @@ describe('DownloadZipModalComponent', () => {
       closeSpy.calls.reset();
     });
 
-    it('should have sorted profiles', async () => {
+    it('should have filtered and sorted profiles', async () => {
       expect(component.profiles).toEqual([PROFILE_MOCK, PROFILE_MOCK_2]);
     });
 
