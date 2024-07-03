@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of, skip, take } from 'rxjs';
 import { AppStore, CONSENT_SHOWN_KEY } from './app.store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -39,6 +39,7 @@ import {
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from './services/notification.service';
+import { FocusManagerService } from './services/focus-manager.service';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -63,12 +64,14 @@ describe('AppStore', () => {
   let store: MockStore<AppState>;
   let mockService: SpyObj<TestRunService>;
   let mockNotificationService: SpyObj<NotificationService>;
+  let mockFocusManagerService: SpyObj<FocusManagerService>;
 
   beforeEach(() => {
     mockService = jasmine.createSpyObj('mockService', ['fetchDevices']);
     mockNotificationService = jasmine.createSpyObj('mockNotificationService', [
       'notify',
     ]);
+    mockFocusManagerService = jasmine.createSpyObj(['focusTitle']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -81,6 +84,7 @@ describe('AppStore', () => {
         }),
         { provide: TestRunService, useValue: mockService },
         { provide: NotificationService, useValue: mockNotificationService },
+        { provide: FocusManagerService, useValue: mockFocusManagerService },
       ],
       imports: [BrowserAnimationsModule],
     });
@@ -207,6 +211,16 @@ describe('AppStore', () => {
         );
         store.refreshState();
       });
+    });
+
+    describe('setFocusOnPage', () => {
+      it('should call focusTitle', fakeAsync(() => {
+        appStore.setFocusOnPage();
+
+        tick(101);
+
+        expect(mockFocusManagerService.focusTitle).toHaveBeenCalled();
+      }));
     });
   });
 });
