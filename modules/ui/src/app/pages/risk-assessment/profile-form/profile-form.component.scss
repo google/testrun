@@ -17,7 +17,14 @@
 @import 'src/theming/colors';
 @import 'src/theming/variables';
 
+:host {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .profile-form {
+  overflow: scroll;
   .field-container {
     display: flex;
     flex-direction: column;
