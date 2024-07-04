@@ -272,7 +272,8 @@ class TestOrchestrator:
         timestamp)
 
       # Define where to save the zip file
-      zip_location = os.path.join('/tmp/testrun',timestamp)
+      zip_location = os.path.join("/tmp/testrun",
+                                  timestamp)
 
       # Delete ZIP if it already exists
       if os.path.exists(zip_location + ".zip"):
@@ -290,9 +291,6 @@ class TestOrchestrator:
         with open(os.path.join(src_path, "profile.pdf"), "wb") as f:
           f.write(profile.to_pdf(device).getvalue())
 
-        with open(os.path.join(src_path, "profile.html"), "w") as fp:
-          fp.write(profile.to_html(device))
-
       # Create ZIP archive
       shutil.make_archive(zip_location, "zip", src_path)
 
@@ -301,6 +299,10 @@ class TestOrchestrator:
       LOGGER.info(f'''Archive {'created at ' + zip_file
                                 if os.path.exists(zip_file)
                                 else'creation failed'}''')
+
+      # Remove the profile now that it has been included
+      os.remove(os.path.join(src_path, "profile.pdf"))
+      os.remove(os.path.join(src_path, "profile.json"))
 
       return zip_file
 
