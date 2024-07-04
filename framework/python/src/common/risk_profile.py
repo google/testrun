@@ -53,6 +53,7 @@ class RiskProfile():
     self.status = None
     self.risk = None
     self._device = None
+    self._profile_format = profile_format
 
     self._validate(profile_json, profile_format)
     self.update_risk(profile_format)
