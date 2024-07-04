@@ -21,7 +21,6 @@ import { AppState } from '../../store/state';
 import { Store } from '@ngrx/store';
 import {
   selectHasDevices,
-  selectHasRiskProfiles,
   selectIsOpenStartTestrun,
   selectRiskProfiles,
   selectSystemStatus,
@@ -58,7 +57,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   );
   private hasDevices$ = this.store.select(selectHasDevices);
   private profiles$ = this.store.select(selectRiskProfiles);
-  private hasProfiles$ = this.store.select(selectHasRiskProfiles);
   private systemStatus$ = this.store.select(selectSystemStatus);
   isOpenStartTestrun$ = this.store.select(selectIsOpenStartTestrun);
   viewModel$ = this.select({
@@ -66,7 +64,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     systemStatus: this.systemStatus$,
     dataSource: this.dataSource$,
     stepsToResolveCount: this.stepsToResolveCount$,
-    hasProfiles: this.hasProfiles$,
     profiles: this.profiles$,
   });
 
