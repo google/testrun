@@ -378,13 +378,13 @@ class RiskProfile():
       if isinstance(question['answer'], str):
         content += question['answer']
 
-        if len(question['answer'] > 400):
+        if len(question['answer']) > 400:
           height += 160
-        elif len(question['answer'] > 300):
+        elif len(question['answer']) > 300:
           height += 140
-        elif len(question['answer'] > 200):
+        elif len(question['answer']) > 200:
           height += 120
-        elif len(question['answer'] > 100):
+        elif len(question['answer']) > 100:
           height += 70
         else:
           height += 53
