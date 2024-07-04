@@ -572,7 +572,7 @@ class Api:
       req_json = json.loads(req_raw)
 
       # Check if profile has been specified
-      if "profile" in req_json:
+      if "profile" in req_json and len(req_json.get("profile")) > 0:
         profile_name = req_json.get("profile")
         profile = self.get_session().get_profile(profile_name)
 

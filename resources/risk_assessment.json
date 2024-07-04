@@ -13,7 +13,7 @@
       },      
       {
         "text": "Controller - AHU",
-        "risk": "Limited"
+        "risk": "High"
       },
       {
         "text": "Controller - Boiler",
@@ -33,7 +33,7 @@
       },
       {
         "text": "Controller - CRAC",
-        "risk": "Limited"
+        "risk": "High"
       },
       {
         "text": "Controller - VAV",
@@ -57,7 +57,7 @@
       },
       {
         "text": "Controller - Blinds/Facades",
-        "risk": "Limited"
+        "risk": "High"
       },
       {
         "text": "Controller - Lifts/Elevators",
@@ -65,7 +65,7 @@
       },
       {
         "text": "Controller - UPS",
-        "risk": "Limited"
+        "risk": "High"
       },
       {
         "text": "Sensor - Air Quality",
@@ -165,7 +165,7 @@
       },
       {
         "text": "Tablet",
-        "risk": "Limited"
+        "risk": "High"
       }
     ],
     "validation": {
@@ -252,7 +252,7 @@
     "type": "select-multiple",
     "options": [
       {
-        "text": "PII/PHI, confidential business data, or crown jewel data is transmitted to a destination outside Alphabet's ownership",
+        "text": "PII/PHI, confidential/sensitive business data, Intellectual Property and Trade Secrets, Critical Infrastructure and Identity Assets to a domain outside Alphabet's ownership",
         "risk": "High"
       },
       {

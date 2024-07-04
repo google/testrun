@@ -34,6 +34,13 @@ $profile-draft-icon-size: 22px;
   align-items: center;
 }
 
+.profile-item-icon-container {
+  display: inline-block;
+  width: $profile-draft-icon-size;
+  height: $profile-draft-icon-size;
+  padding: 2px;
+}
+
 .profile-item-icon {
   color: $grey-700;
 }
