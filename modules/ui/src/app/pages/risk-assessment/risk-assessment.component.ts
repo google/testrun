@@ -26,6 +26,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Profile } from '../../model/profile';
 import { Observable } from 'rxjs/internal/Observable';
+import { DeviceValidators } from '../devices/components/device-form/device.validators';
 
 @Component({
   selector: 'app-risk-assessment',
@@ -58,6 +59,26 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.store.updateSelectedProfile(profile);
     await this.liveAnnouncer.announce('Risk assessment questionnaire');
     this.store.setFocusOnProfileForm();
+  }
+
+  async copyProfileAndOpenForm(profile: Profile) {
+    await this.openForm(this.getCopyOfProfile(profile));
+  }
+
+  getCopyOfProfile(profile: Profile): Profile {
+    const copyOfProfile = { ...profile };
+    copyOfProfile.name = this.getCopiedProfileName(profile.name);
+    return copyOfProfile;
+  }
+
+  private getCopiedProfileName(name: string): string {
+    name = `Copy of ${name}`;
+    if (name.length > DeviceValidators.STRING_FORMAT_MAX_LENGTH) {
+      name =
+        name.substring(0, DeviceValidators.STRING_FORMAT_MAX_LENGTH - 3) +
+        '...';
+    }
+    return name;
   }
 
   deleteProfile(

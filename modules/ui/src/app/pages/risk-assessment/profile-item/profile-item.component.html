@@ -52,6 +52,14 @@ limitations under the License.
     </p>
   </div>
   <button
+    *ngIf="profile.status !== ProfileStatus.EXPIRED"
+    class="profile-item-button copy"
+    mat-icon-button
+    attr.aria-label="Copy {{ profile.name }}"
+    (click)="copyProfileClicked.emit(profile)">
+    <mat-icon fontSet="material-symbols-outlined"> content_copy </mat-icon>
+  </button>
+  <button
     class="profile-item-button delete"
     mat-icon-button
     attr.aria-label="Delete {{ profile.name }}"

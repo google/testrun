@@ -217,6 +217,15 @@ describe('RiskAssessmentComponent', () => {
       });
     });
 
+    describe('#getCopyOfProfile', () => {
+      it('should open the form with copy of profile', () => {
+        const copy = component.getCopyOfProfile(PROFILE_MOCK);
+        expect(copy).toEqual(
+          Object.assign({}, PROFILE_MOCK, { name: 'Copy of Primary profile' })
+        );
+      });
+    });
+
     describe('#saveProfile', () => {
       describe('with no profile selected', () => {
         beforeEach(() => {
