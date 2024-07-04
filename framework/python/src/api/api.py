@@ -540,9 +540,18 @@ class Api:
       return self._generate_msg(False, "Invalid JSON received")
 
   async def get_report(self, response: Response, device_name, timestamp):
+    device = self._session.get_device_by_name(device_name)
 
-    file_path = os.path.join(DEVICES_PATH, device_name, "reports", timestamp,
+    # 1.3 file path
+    file_path = os.path.join(DEVICES_PATH, device_name, "reports", timestamp,'test',
+          device.mac_addr.replace(':',''),
+          "report.pdf")
+    if not os.path.isfile(file_path):
+      # pre 1.3 file path
+      file_path = os.path.join(DEVICES_PATH, device_name, "reports", timestamp,
                              "report.pdf")
+        
+
     LOGGER.debug(f"Received get report request for {device_name} / {timestamp}")
     if os.path.isfile(file_path):
       return FileResponse(file_path)
