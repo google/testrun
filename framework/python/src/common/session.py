@@ -268,6 +268,11 @@ class TestrunSession():
         return device
     return None
 
+  def get_device_by_make_and_model(self, make, model):
+    for device in self._device_repository:
+      if device.manufacturer == make and device.model == model:
+        return device
+
   def get_device_repository(self):
     return self._device_repository
 
