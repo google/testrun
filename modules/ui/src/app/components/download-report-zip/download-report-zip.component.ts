@@ -47,7 +47,6 @@ export class DownloadReportZipComponent
   implements OnDestroy, OnInit
 {
   private destroy$: Subject<boolean> = new Subject<boolean>();
-  @Input() hasProfiles: boolean = false;
   @Input() profiles: Profile[] = [];
   @Input() url: string | null | undefined = null;
 
@@ -61,7 +60,6 @@ export class DownloadReportZipComponent
     const dialogRef = this.dialog.open(DownloadZipModalComponent, {
       ariaLabel: 'Download zip',
       data: {
-        hasProfiles: this.hasProfiles,
         profiles: this.profiles,
       },
       autoFocus: true,
