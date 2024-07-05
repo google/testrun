@@ -377,7 +377,17 @@ class RiskProfile():
       # String answers (one line)
       if isinstance(question['answer'], str):
         content += question['answer']
-        height += 53
+
+        if len(question['answer']) > 400:
+          height += 160
+        elif len(question['answer']) > 300:
+          height += 140
+        elif len(question['answer']) > 200:
+          height += 120
+        elif len(question['answer']) > 100:
+          height += 70
+        else:
+          height += 53
 
       # Select multiple answers
       elif isinstance(question['answer'], list):

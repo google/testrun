@@ -515,7 +515,7 @@ class TestrunSession():
     with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'),
               'w',
               encoding='utf-8') as f:
-      f.write(risk_profile.to_json())
+      f.write(risk_profile.to_json(pretty=True))
 
     return risk_profile
 
