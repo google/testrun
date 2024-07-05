@@ -71,7 +71,9 @@ describe('AppStore', () => {
     mockNotificationService = jasmine.createSpyObj('mockNotificationService', [
       'notify',
     ]);
-    mockFocusManagerService = jasmine.createSpyObj(['focusTitle']);
+    mockFocusManagerService = jasmine.createSpyObj([
+      'focusFirstElementInContainer',
+    ]);
 
     TestBed.configureTestingModule({
       providers: [
@@ -214,12 +216,14 @@ describe('AppStore', () => {
     });
 
     describe('setFocusOnPage', () => {
-      it('should call focusTitle', fakeAsync(() => {
+      it('should call focusFirstElementInContainer', fakeAsync(() => {
         appStore.setFocusOnPage();
 
         tick(101);
 
-        expect(mockFocusManagerService.focusTitle).toHaveBeenCalled();
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalled();
       }));
     });
   });

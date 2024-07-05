@@ -17,15 +17,6 @@ export class FocusManagerService {
     }
   }
 
-  focusTitle() {
-    const title = window.document.querySelector('.title') as HTMLHeadingElement;
-    if (title) {
-      title.focus();
-    } else {
-      this.focusFirstElementInContainer();
-    }
-  }
-
   private findFirstInteractiveElem(
     parentEl: Document | Element | null
   ): HTMLElement | undefined | null {
