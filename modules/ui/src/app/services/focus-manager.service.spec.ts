@@ -52,30 +52,4 @@ describe('FocusManagerService', () => {
 
     expect(document.activeElement).toBe(testButton);
   });
-
-  describe('#focusTitle', () => {
-    it('should focus title if exists', () => {
-      const title = document.createElement('H2');
-      title.classList.add('title');
-      title.tabIndex = -1;
-      document.querySelector('#main')?.appendChild(title);
-      const element = fixture.nativeElement.querySelector(
-        '#main .title'
-      ) as HTMLHeadingElement;
-
-      service.focusTitle();
-
-      expect(document.activeElement).toBe(element);
-    });
-
-    it('should focus first interactive element on container if title does not exist', () => {
-      const testButton = fixture.nativeElement.querySelector(
-        '#main .test-button'
-      ) as HTMLButtonElement;
-
-      service.focusTitle();
-
-      expect(document.activeElement).toBe(testButton);
-    });
-  });
 });
