@@ -347,7 +347,11 @@ class RiskProfile():
           <h3>{'high' if self.risk == 'High' else 'limited'} Risk</h3>
         </div>
         <div class="risk-banner-description">
-          The device assessed with a high security risk profile due to its dedicated functionality, lack of sensitive data storage, and closed network operation. 
+          {
+            'The device has been assessed to be high risk due to the nature of the answers provided about the device functionality.'
+           if self.risk == 'High' else
+           'The device has been assessed to be limited risk due to the nature of the answers provided about the device functionality.'
+          }
         </div>
       </div>
     '''
