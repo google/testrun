@@ -571,6 +571,5 @@ class FakeProgressTableComponent {
 })
 class FakeDownloadOptionsComponent {
   @Input() data!: TestrunStatus;
-  @Input() hasProfiles!: boolean;
   @Input() profiles!: Profile[];
 }

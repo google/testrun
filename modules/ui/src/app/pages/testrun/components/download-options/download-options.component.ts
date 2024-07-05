@@ -55,7 +55,6 @@ export enum DownloadOption {
 })
 export class DownloadOptionsComponent {
   @ViewChild('downloadReportZip') downloadReportZip!: ElementRef;
-  @Input() hasProfiles: boolean = false;
   @Input() profiles: Profile[] = [];
   @Input() data!: TestrunStatus;
   DownloadOption = DownloadOption;
