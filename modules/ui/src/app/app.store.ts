@@ -145,7 +145,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
     return trigger$.pipe(
       delay(100),
       tap(() => {
-        this.focusManagerService.focusTitle();
+        this.focusManagerService.focusFirstElementInContainer();
       })
     );
   });
