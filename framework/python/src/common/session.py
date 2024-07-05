@@ -697,9 +697,17 @@ class TestrunSession():
     LOGGER.debug(f'Deleting certificate {filename}')
 
     try:
+
+      # Delete the cert file
       cert_file = os.path.join(CERTS_PATH, filename)
       os.remove(cert_file)
-      return True
+
+      # Delete the cert from the session
+      for cert in self._certs:
+        if cert['filename'] == filename:
+          self._certs.remove(cert)
+          return True
+
     except Exception as e:
       LOGGER.error('An error occurred whilst deleting the certificate')
       LOGGER.debug(e)

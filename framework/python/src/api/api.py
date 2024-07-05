@@ -772,7 +772,7 @@ class Api:
     try:
       # Pass to session to check and write
       cert_obj = self._session.upload_cert(filename, contents)
-    except ValueError as e:
+    except ValueError:
       response.status_code = status.HTTP_409_CONFLICT
       return self._generate_msg(False,
                                 "A certificate with that name already exists.")
@@ -806,7 +806,8 @@ class Api:
       for cert in self._session.get_certs():
         if cert["name"] == common_name:
           self._session.delete_cert(cert["filename"])
-          return self._generate_msg(True, "Successfully delete the certificate")
+          return self._generate_msg(True,
+                                    "Successfully deleted the certificate")
 
       response.status_code = status.HTTP_404_NOT_FOUND
       return self._generate_msg(
