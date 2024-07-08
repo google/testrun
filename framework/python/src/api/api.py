@@ -452,7 +452,7 @@ class Api:
       # Check if device with same MAC exists
       device = self._session.get_device(device_json.get(DEVICE_MAC_ADDR_KEY))
 
-      if device is None:
+      if device is not None:
 
         response.status_code = status.HTTP_409_CONFLICT
         return self._generate_msg(
