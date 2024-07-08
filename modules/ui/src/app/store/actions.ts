@@ -124,3 +124,10 @@ export const setStatus = createAction(
 export const stopInterval = createAction('[Shared] Stop Interval');
 
 export const fetchRiskProfiles = createAction('[Shared] Fetch risk profiles');
+
+export const fetchReports = createAction('[Shared] Fetch reports');
+
+export const setReports = createAction(
+  '[Shared] Set Reports',
+  props<{ reports: TestrunStatus[] }>()
+);

@@ -32,6 +32,7 @@ import { TestRunService } from './services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { device } from './mocks/device.mock';
 import {
+  fetchReports,
   fetchRiskProfiles,
   fetchSystemStatus,
   setDevices,
@@ -225,6 +226,14 @@ describe('AppStore', () => {
           mockFocusManagerService.focusFirstElementInContainer
         ).toHaveBeenCalled();
       }));
+    });
+
+    describe('getReports', () => {
+      it('should dispatch fetchReports', () => {
+        appStore.getReports();
+
+        expect(store.dispatch).toHaveBeenCalledWith(fetchReports());
+      });
     });
   });
 });

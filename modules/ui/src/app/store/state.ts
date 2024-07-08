@@ -54,6 +54,7 @@ export interface SharedState {
   isStopTestrun: boolean;
   isOpenWaitSnackBar: boolean;
   deviceInProgress: Device | null;
+  reports: TestrunStatus[];
 }
 
 export const initialAppComponentState: AppComponentState = {
@@ -78,4 +79,5 @@ export const initialSharedState: SharedState = {
   isOpenStartTestrun: false,
   systemStatus: null,
   status: null,
+  reports: [],
 };

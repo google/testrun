@@ -22,15 +22,31 @@ import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import * as AppActions from './actions';
 import { AppState } from './state';
 import { TestRunService } from '../services/test-run.service';
-import { filter, combineLatest, interval, Subject, timer, take } from 'rxjs';
+import {
+  filter,
+  combineLatest,
+  interval,
+  Subject,
+  timer,
+  take,
+  catchError,
+  EMPTY,
+} from 'rxjs';
 import {
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
   selectSystemStatus,
 } from './selectors';
-import { IResult, StatusOfTestrun, TestsData } from '../model/testrun-status';
+import {
+  IDLE_STATUS,
+  IResult,
+  StatusOfTestrun,
+  TestrunStatus,
+  TestsData,
+} from '../model/testrun-status';
 import {
   fetchSystemStatus,
+  setReports,
   setStatus,
   setTestrunStatus,
   stopInterval,
@@ -259,6 +275,52 @@ export class AppEffects {
       )
     );
   });
+
+  onFetchReports$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchReports),
+      switchMap(() =>
+        this.testrunService.getHistory().pipe(
+          map((reports: TestrunStatus[] | null) => {
+            if (reports !== null) {
+              return AppActions.setReports({ reports });
+            }
+            return AppActions.setReports({ reports: [] });
+          }),
+          catchError(() => {
+            this.store.dispatch(setReports({ reports: [] }));
+            return EMPTY;
+          })
+        )
+      )
+    );
+  });
+
+  checkStatusInReports$ = createEffect(() =>
+    combineLatest([
+      this.actions$.pipe(ofType(AppActions.setReports)),
+      this.actions$.pipe(ofType(AppActions.fetchSystemStatusSuccess)),
+    ]).pipe(
+      filter(([, { systemStatus }]) => {
+        return (
+          systemStatus.status === StatusOfTestrun.Compliant ||
+          systemStatus.status === StatusOfTestrun.NonCompliant ||
+          systemStatus.status === StatusOfTestrun.Error
+        );
+      }),
+      filter(([{ reports }, { systemStatus }]) => {
+        return (
+          !reports?.some(
+            report =>
+              report.report === systemStatus.report &&
+              report.started === systemStatus.started &&
+              report.finished === systemStatus.finished
+          ) || false
+        );
+      }),
+      map(() => AppActions.setTestrunStatus({ systemStatus: IDLE_STATUS }))
+    )
+  );
 
   private showSnackBar() {
     timer(WAIT_TO_OPEN_SNACKBAR_MS)

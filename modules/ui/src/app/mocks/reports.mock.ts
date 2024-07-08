@@ -43,9 +43,6 @@ export const HISTORY_AFTER_REMOVE = [
     report: 'https://api.testrun.io/report.pdf',
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
-    deviceFirmware: '1.2.2',
-    deviceInfo: 'Delta 03-DIN-SRC',
-    duration: '06m 10s',
   },
 ];
 
