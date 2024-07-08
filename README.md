@@ -18,13 +18,23 @@ Testrun creates an isolated and controlled network environment on a linux machin
 
 Two modes are supported by Testrun:
 
-1) <strong>Automated testing</strong>
+<details>
+  <summary>
+    <strong>Automated testing</strong>
+  </summary>
 
 Once the device has become operational (steady state), automated testing of the DUT (device under test) will begin. Containerized test modules will then execute against the device, one module at a time. Once all test modules have been executed, a report will be produced - presenting the results.
+</details>
 
-2) <strong>Lab network</strong>
+<details>
+
+  <summary>
+    <strong>Lab network</strong>
+  </summary>
 
 When manual testing or configuration changes are required, Testrun will provide the network and some tools to assist an engineer performing the additional testing. This reduces the need to maintain a separate but identical lab network. Testrun will take care of packet captures and logs for each network service for further debugging.
+
+</details>
 
 ## Minimum requirements :computer:
 ### Hardware
@@ -43,10 +53,10 @@ Once you have met the hardware and software requirements, you can get started wi
 Testrun will constantly evolve to further support end-users by automating device network behaviour against industry standards. For further information on upcoming features, check out the [Roadmap](docs/roadmap.pdf).
 
 ## Accessibility :busts_in_silhouette:
-We are proud of our tool and strive to provide an enjoyable experience for all of our users. Testrun goes through rigorous accessibility testing at each release. You can read more about [Google and Accessibility here](https://www.google.co.uk/accessibility). You are welcome to submit a new issue and provide feedback on our implementations.
+We are proud of our tool and strive to provide an enjoyable experience for all of our users. Testrun goes through rigorous accessibility testing at each release. You can read more about [Google and Accessibility here](https://www.google.co.uk/accessibility). You are welcome to submit a new issue and provide feedback on our implementations. To find out how Testrun implements accessibility features, you can view a [short video here](docs/ui/accessibility.mp4).
 
 ## Issue reporting :triangular_flag_on_post:
-If the application has come across a problem at any point during setup or use, please raise an issue under the [issues tab](https://github.com/auto-iot/test-run/issues). Issue templates exist for both bug reports and feature requests. If neither of these are appropriate for your issue, raise a blank issue instead.
+If the application has come across a problem at any point during setup or use, please raise an issue under the [issues tab](https://github.com/google/testrun/issues). Issue templates exist for both bug reports and feature requests. If neither of these are appropriate for your issue, raise a blank issue instead.
 
 ## Contributing :keyboard:
 The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md). In short, checkout the [Google CLA](https://cla.developers.google.com/) site to get started.
@@ -74,8 +84,4 @@ The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md)
 
 4) Can I run Testrun on a virtual machine?
 
-  Testrun can be virtualized if the 2x ethernet adapters are passed through to a VirtualBox VM as a USB device rather than managed network adapters. A full guide will be provided once virtualization of Testrun has been fully tested.
-
- 5) Can I connect multiple devices to Testrun?
-
-  In short, Yes you can. The way in which multiple devices could be tested simultaneously is yet to be decided. However, if you simply want to add field/peer devices during runtime (even another laptop performing manual testing) then you may connect the USB ethernet adapter to an unmanaged switch.
+  Testrun can be virtualized if the 2x ethernet adapters are passed through to a VirtualBox VM as a USB device rather than managed network adapters. You can view the guide to working on a [virtual machine here](docs/virtual_machine.md).
