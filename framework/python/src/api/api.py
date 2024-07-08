@@ -454,11 +454,15 @@ class Api:
 
       if device is None:
 
-        # Check if device with same manufacturer and model exists
-        device = self._session.get_device_by_make_and_model(
-          device_json.get(DEVICE_MANUFACTURER_KEY),
-          device_json.get(DEVICE_MODEL_KEY)
-        )
+        response.status_code = status.HTTP_409_CONFLICT
+        return self._generate_msg(
+            False, "A device with that MAC address already exists")
+
+      # Check if device with same manufacturer and model exists
+      device = self._session.get_device_by_make_and_model(
+        device_json.get(DEVICE_MANUFACTURER_KEY),
+        device_json.get(DEVICE_MODEL_KEY)
+      )
 
       if device is None:
 
@@ -477,7 +481,7 @@ class Api:
 
         response.status_code = status.HTTP_409_CONFLICT
         return self._generate_msg(
-            False, "A device with that MAC address or name already exists")
+            False, "A device with that manufacturer and model already exists")
 
       return device.to_config_json()
 
@@ -552,14 +556,17 @@ class Api:
     device = self._session.get_device_by_name(device_name)
 
     # 1.3 file path
-    file_path = os.path.join(DEVICES_PATH, device_name, "reports", timestamp,'test',
-          device.mac_addr.replace(':',''),
+    file_path = os.path.join(
+      DEVICES_PATH,
+      device_name,
+      "reports",
+      timestamp,"test",
+          device.mac_addr.replace(":",""),
           "report.pdf")
     if not os.path.isfile(file_path):
       # pre 1.3 file path
       file_path = os.path.join(DEVICES_PATH, device_name, "reports", timestamp,
                              "report.pdf")
-        
 
     LOGGER.debug(f"Received get report request for {device_name} / {timestamp}")
     if os.path.isfile(file_path):
