@@ -18,7 +18,7 @@ import paho.mqtt.client as mqtt_client
 from common import logger
 from common import util
 
-LOGGER = logger.get_logger("mgtt_client")
+LOGGER = logger.get_logger("mgtt")
 
 
 class MQTTException(Exception):
