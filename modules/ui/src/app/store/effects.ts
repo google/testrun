@@ -63,9 +63,11 @@ export class AppEffects {
             validInterfaces: {
               hasSetInterfaces: network != null,
               deviceValid:
-                !!network &&
-                !!network.device_intf &&
-                !!interfaces[network.device_intf],
+                (!!network &&
+                  !!network.device_intf &&
+                  !!interfaces[network.device_intf]) ||
+                (network?.device_intf == '' &&
+                  Object.keys(interfaces).length === 0),
               internetValid:
                 !!network &&
                 (network?.internet_intf == '' ||
