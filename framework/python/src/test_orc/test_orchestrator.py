@@ -271,13 +271,22 @@ class TestOrchestrator:
         device.device_folder),
         timestamp)
 
+      # Define temp directory to store files before zipping
+      results_dir = os.path.join(f'/tmp/testrun/{time.time()}')
+
       # Define where to save the zip file
       zip_location = os.path.join("/tmp/testrun",
                                   timestamp)
 
+      # Delete zip_temp if it already exists
+      if os.path.exists(results_dir):
+        os.remove(results_dir)
+
       # Delete ZIP if it already exists
       if os.path.exists(zip_location + ".zip"):
         os.remove(zip_location + ".zip")
+
+      shutil.copytree(src_path,results_dir)
 
       # Include profile if specified
       if profile is not None:
@@ -285,14 +294,17 @@ class TestOrchestrator:
           f"Copying profile {profile.name} to results directory")
         shutil.copy(profile.get_file_path(),
                     os.path.join(
-                      src_path,
+                      results_dir,
                       "profile.json"))
 
-        with open(os.path.join(src_path, "profile.pdf"), "wb") as f:
+        with open(os.path.join(results_dir, "profile.pdf"), "wb") as f:
           f.write(profile.to_pdf(device).getvalue())
 
       # Create ZIP archive
-      shutil.make_archive(zip_location, "zip", src_path)
+      shutil.make_archive(zip_location, "zip", results_dir)
+
+      # Delete the temp results directory
+      shutil.rmtree(results_dir)
 
       # Check that the ZIP was successfully created
       zip_file = zip_location + ".zip"
@@ -300,9 +312,6 @@ class TestOrchestrator:
                                 if os.path.exists(zip_file)
                                 else'creation failed'}''')
 
-      # Remove the profile now that it has been included
-      os.remove(os.path.join(src_path, "profile.pdf"))
-      os.remove(os.path.join(src_path, "profile.json"))
 
       return zip_file
 
