@@ -256,6 +256,10 @@ class TestOrchestrator:
     shutil.copytree(cur_results_dir, completed_results_dir, dirs_exist_ok=True)
     util.run_command(f"chown -R {self._host_user} '{completed_results_dir}'")
 
+    # Copy Testrun log to testing directory
+    shutil.copy(os.path.join(self._root_path, "testrun.log"),
+                os.path.join(completed_results_dir, "testrun.log"))
+
     return completed_results_dir
 
   def zip_results(self,
@@ -272,7 +276,7 @@ class TestOrchestrator:
         timestamp)
 
       # Define temp directory to store files before zipping
-      results_dir = os.path.join(f'/tmp/testrun/{time.time()}')
+      results_dir = os.path.join(f"/tmp/testrun/{time.time()}")
 
       # Define where to save the zip file
       zip_location = os.path.join("/tmp/testrun",
