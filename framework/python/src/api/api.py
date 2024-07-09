@@ -115,9 +115,7 @@ class Api:
     origins = ["*"]
 
     # Scheduler for background periodic tasks
-    self._scheduler = tasks.PeriodicTasks(
-        self._test_run.get_session(),
-        self._test_run.get_mqtt_client())
+    self._scheduler = tasks.PeriodicTasks(self._test_run)
 
     self._app = FastAPI(lifespan=self._scheduler.start)
     self._app.include_router(self._router)
