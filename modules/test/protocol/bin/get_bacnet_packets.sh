@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 # Copyright 2023 Google LLC
 #
@@ -14,4 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-sudo docker run --rm -it --name unit-test testrun/unit-test /bin/bash ./run_tests.sh
+CAPTURE_FILE="$1"
+OBJECT_ID="$2"
+
+TSHARK_OUTPUT="-T json -e ip.src -e ip.dst -e eth.src -e eth.dst -e bacapp.instance_number"
+TSHARK_FILTER="bacapp.instance_number == $OBJECT_ID"
+
+response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT $TSHARK_FILTER)
+
+echo "$response"
+  	
