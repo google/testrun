@@ -288,6 +288,12 @@ class NetworkOrchestrator:
 
     while sniffer.running:
       time.sleep(1)
+
+      # Check Testrun hasn't been cancelled
+      if self._session.get_status() == 'Cancelled':
+        sniffer.stop()
+        return
+
       if not self._ip_ctrl.check_interface_status(
           self._session.get_device_interface()):
         sniffer.stop()
