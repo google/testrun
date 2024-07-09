@@ -130,7 +130,10 @@ export class TestRunService {
   saveDevice(device: Device): Observable<boolean> {
     return this.http
       .post<boolean>(`${API_URL}/device`, JSON.stringify(device))
-      .pipe(map(() => true));
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
 
   editDevice(device: Device, mac_addr: string): Observable<boolean> {
@@ -145,14 +148,20 @@ export class TestRunService {
 
     return this.http
       .post<boolean>(`${API_URL}/device/edit`, JSON.stringify(request))
-      .pipe(map(() => true));
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
   deleteDevice(device: Device): Observable<boolean> {
     return this.http
       .delete<boolean>(`${API_URL}/device`, {
         body: JSON.stringify(device),
       })
-      .pipe(map(() => true));
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
 
   getHistory(): Observable<TestrunStatus[] | null> {
