@@ -634,9 +634,6 @@ class TestrunSession():
 
       return cert_obj
 
-    except ValueError as e:
-      LOGGER.error(e)
-      raise
     except Exception as e:
       LOGGER.error('An error occured whilst parsing a certificate')
       LOGGER.debug(e)

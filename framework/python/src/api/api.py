@@ -792,7 +792,7 @@ class Api:
       response.status_code = status.HTTP_409_CONFLICT
       return self._generate_msg(False,
                                 "A certificate with that name already exists.")
-    except IOError:
+    except Exception:
       LOGGER.error("An error occurred whilst uploading the certificate")
 
     # Return error if something went wrong
