@@ -104,8 +104,7 @@ export class AppEffects {
       map(({ systemConfig }) =>
         AppActions.setHasConnectionSettings({
           hasConnectionSettings:
-            systemConfig.network != null &&
-            systemConfig.network.device_intf != null,
+            systemConfig.network != null && !!systemConfig.network.device_intf,
         })
       )
     );

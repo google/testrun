@@ -344,7 +344,7 @@ describe('Effects', () => {
     it('should dispatch setHasConnectionSettings with false if device_intf is not present', done => {
       actions$ = of(
         actions.fetchSystemConfigSuccess({
-          systemConfig: { network: {} },
+          systemConfig: { network: { device_intf: '' } },
         })
       );
 
