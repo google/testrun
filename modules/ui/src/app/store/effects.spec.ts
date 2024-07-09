@@ -268,6 +268,35 @@ describe('Effects', () => {
         done();
       });
     });
+
+    it('should call updateValidInterfaces and set all true if interface are empty and config is not set', done => {
+      actions$ = of(
+        actions.fetchInterfacesSuccess({
+          interfaces: {},
+        }),
+        actions.fetchSystemConfigSuccess({
+          systemConfig: {
+            network: {
+              device_intf: '',
+              internet_intf: '',
+            },
+          },
+        })
+      );
+
+      effects.checkInterfacesInConfig$.subscribe(action => {
+        expect(action).toEqual(
+          actions.updateValidInterfaces({
+            validInterfaces: {
+              hasSetInterfaces: true,
+              deviceValid: true,
+              internetValid: true,
+            },
+          })
+        );
+        done();
+      });
+    });
   });
 
   it('onFetchSystemStatus$ should call onFetchSystemStatusSuccess on success', done => {
