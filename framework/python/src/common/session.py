@@ -598,49 +598,44 @@ class TestrunSession():
 
     now = datetime.datetime.now(pytz.utc)
 
-    try:
-      # Parse bytes into x509 object
-      cert = x509.load_pem_x509_certificate(content, default_backend())
+    # Parse bytes into x509 object
+    cert = x509.load_pem_x509_certificate(content, default_backend())
 
-      # Extract required properties
-      common_name = cert.subject.get_attributes_for_oid(
-          NameOID.COMMON_NAME)[0].value
+    # Extract required properties
+    common_name = cert.subject.get_attributes_for_oid(
+        NameOID.COMMON_NAME)[0].value
 
-      # Check if any existing certificates have the same common name
-      for cur_cert in self._certs:
-        if common_name == cur_cert['name']:
-          raise ValueError('A certificate with that name already exists')
+    # Check if any existing certificates have the same common name
+    for cur_cert in self._certs:
+      if common_name == cur_cert['name']:
+        raise ValueError('A certificate with that name already exists')
 
-      issuer = cert.issuer.get_attributes_for_oid(
-          NameOID.ORGANIZATION_NAME)[0].value
+    issuer = cert.issuer.get_attributes_for_oid(
+        NameOID.ORGANIZATION_NAME)[0].value
 
-      status = 'Valid'
-      if now > cert.not_valid_after_utc:
-        status = 'Expired'
+    status = 'Valid'
+    if now > cert.not_valid_after_utc:
+      status = 'Expired'
 
-      # Craft python dictionary with values
-      cert_obj = {
-          'name': common_name,
-          'status': status,
-          'organisation': issuer,
-          'expires': cert.not_valid_after_utc,
-          'filename': filename
-      }
+    # Craft python dictionary with values
+    cert_obj = {
+        'name': common_name,
+        'status': status,
+        'organisation': issuer,
+        'expires': cert.not_valid_after_utc,
+        'filename': filename
+    }
 
-      with open(os.path.join(CERTS_PATH, filename), 'wb') as f:
-        f.write(content)
+    with open(os.path.join(CERTS_PATH, filename), 'wb') as f:
+      f.write(content)
 
-      util.run_command(f'chown -R {util.get_host_user()} {CERTS_PATH}')
+    util.run_command(f'chown -R {util.get_host_user()} {CERTS_PATH}')
 
-      return cert_obj
-
-    except Exception as e:
-      LOGGER.error('An error occured whilst parsing a certificate')
-      LOGGER.debug(e)
-      return None
+    return cert_obj
 
   def check_cert_file_name(self, name):
 
+    # Check for duplicate file name
     if os.path.exists(os.path.join(CERTS_PATH, name)):
       return False
 
