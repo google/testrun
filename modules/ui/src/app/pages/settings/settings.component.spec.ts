@@ -90,7 +90,7 @@ describe('GeneralSettingsComponent', () => {
 
     component = fixture.componentInstance;
     component.viewModel$ = of({
-      systemConfig: {},
+      systemConfig: { network: {} },
       hasConnectionSettings: false,
       isSubmitting: false,
       isLessThanOneInterface: false,
@@ -255,7 +255,7 @@ describe('GeneralSettingsComponent', () => {
   describe('with no interfaces data', () => {
     beforeEach(() => {
       component.viewModel$ = of({
-        systemConfig: {},
+        systemConfig: { network: {} },
         hasConnectionSettings: false,
         isSubmitting: false,
         isLessThanOneInterface: false,
@@ -286,7 +286,7 @@ describe('GeneralSettingsComponent', () => {
   describe('with interfaces length less than one', () => {
     beforeEach(() => {
       component.viewModel$ = of({
-        systemConfig: {},
+        systemConfig: { network: {} },
         hasConnectionSettings: false,
         isSubmitting: false,
         isLessThanOneInterface: true,
@@ -325,7 +325,7 @@ describe('GeneralSettingsComponent', () => {
   describe('with interfaces length more then one', () => {
     beforeEach(() => {
       component.viewModel$ = of({
-        systemConfig: {},
+        systemConfig: { network: {} },
         hasConnectionSettings: false,
         isSubmitting: false,
         isLessThanOneInterface: false,

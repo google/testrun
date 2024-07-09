@@ -52,6 +52,14 @@ export class AppEffects {
       this.actions$.pipe(ofType(AppActions.fetchInterfacesSuccess)),
       this.actions$.pipe(ofType(AppActions.fetchSystemConfigSuccess)),
     ]).pipe(
+      filter(
+        ([
+          ,
+          {
+            systemConfig: { network },
+          },
+        ]) => network !== null
+      ),
       map(
         ([
           { interfaces },
@@ -61,18 +69,13 @@ export class AppEffects {
         ]) =>
           AppActions.updateValidInterfaces({
             validInterfaces: {
-              hasSetInterfaces: network != null,
               deviceValid:
-                (!!network &&
-                  !!network.device_intf &&
-                  !!interfaces[network.device_intf]) ||
-                (network?.device_intf == '' &&
-                  Object.keys(interfaces).length === 0),
+                network?.device_intf == '' ||
+                (!!network?.device_intf && !!interfaces[network.device_intf]),
               internetValid:
-                !!network &&
-                (network?.internet_intf == '' ||
-                  (!!network.internet_intf &&
-                    !!interfaces[network.internet_intf])),
+                network?.internet_intf == '' ||
+                (!!network?.internet_intf &&
+                  !!interfaces[network.internet_intf]),
             },
           })
       )
@@ -86,14 +89,23 @@ export class AppEffects {
         AppActions.updateError({
           settingMissedError: {
             isSettingMissed:
-              validInterfaces.hasSetInterfaces &&
-              (!validInterfaces.deviceValid || !validInterfaces.internetValid),
-            devicePortMissed:
-              validInterfaces.hasSetInterfaces && !validInterfaces.deviceValid,
-            internetPortMissed:
-              validInterfaces.hasSetInterfaces &&
-              !validInterfaces.internetValid,
+              !validInterfaces.deviceValid || !validInterfaces.internetValid,
+            devicePortMissed: !validInterfaces.deviceValid,
+            internetPortMissed: !validInterfaces.internetValid,
           },
+        })
+      )
+    );
+  });
+
+  onFetchSystemConfigSuccess$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchSystemConfigSuccess),
+      map(({ systemConfig }) =>
+        AppActions.setHasConnectionSettings({
+          hasConnectionSettings:
+            systemConfig.network != null &&
+            systemConfig.network.device_intf != null,
         })
       )
     );
