@@ -36,6 +36,7 @@ import {
   setIsOpenStartTestrun,
   fetchSystemStatus,
   fetchRiskProfiles,
+  fetchReports,
 } from './store/actions';
 import { TestrunStatus } from './model/testrun-status';
 import { SettingMissedError, SystemInterfaces } from './model/setting';
@@ -146,6 +147,14 @@ export class AppStore extends ComponentStore<AppComponentState> {
       delay(100),
       tap(() => {
         this.focusManagerService.focusFirstElementInContainer();
+      })
+    );
+  });
+
+  getReports = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        this.store.dispatch(fetchReports());
       })
     );
   });

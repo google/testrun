@@ -65,7 +65,7 @@ const PROGRESS_DATA_RESPONSE = (
   status: string,
   finished: string | null,
   tests: TestsData | IResult[],
-  report?: string
+  report: string = ''
 ) => {
   return {
     status,

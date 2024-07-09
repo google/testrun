@@ -36,12 +36,22 @@ import {
 import { device } from '../mocks/device.mock';
 import {
   MOCK_PROGRESS_DATA_CANCELLING,
+  MOCK_PROGRESS_DATA_COMPLIANT,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
 } from '../mocks/testrun.mock';
-import { fetchSystemStatus, setStatus, setTestrunStatus } from './actions';
+import {
+  fetchSystemStatus,
+  setReports,
+  setStatus,
+  setTestrunStatus,
+} from './actions';
 import { NotificationService } from '../services/notification.service';
 import { PROFILE_MOCK } from '../mocks/profile.mock';
+import { throwError } from 'rxjs/internal/observable/throwError';
+import { HttpErrorResponse } from '@angular/common/http';
+import { IDLE_STATUS } from '../model/testrun-status';
+import { HISTORY } from '../mocks/reports.mock';
 
 describe('Effects', () => {
   let actions$ = new Observable<Action>();
@@ -64,6 +74,7 @@ describe('Effects', () => {
       'testrunInProgress',
       'stopTestrun',
       'fetchProfiles',
+      'getHistory',
     ]);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of({}));
     testRunServiceMock.getSystemConfig.and.returnValue(of({ network: {} }));
@@ -72,6 +83,7 @@ describe('Effects', () => {
       of(MOCK_PROGRESS_DATA_IN_PROGRESS)
     );
     testRunServiceMock.fetchProfiles.and.returnValue(of([]));
+    testRunServiceMock.getHistory.and.returnValue(of([]));
 
     TestBed.configureTestingModule({
       providers: [
@@ -485,6 +497,78 @@ describe('Effects', () => {
         })
       );
       done();
+    });
+  });
+
+  describe('onFetchReports$', () => {
+    it(' should call setReports on success', done => {
+      testRunServiceMock.getHistory.and.returnValue(of([]));
+      actions$ = of(actions.fetchReports());
+
+      effects.onFetchReports$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setReports({
+            reports: [],
+          })
+        );
+        done();
+      });
+    });
+
+    it('should call setReports with empty array if null is returned', done => {
+      testRunServiceMock.getHistory.and.returnValue(of(null));
+      actions$ = of(actions.fetchReports());
+
+      effects.onFetchReports$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setReports({
+            reports: [],
+          })
+        );
+        done();
+      });
+    });
+
+    it('should call setReports with empty array if error happens', done => {
+      testRunServiceMock.getHistory.and.returnValue(
+        throwError(
+          new HttpErrorResponse({ error: { error: 'error' }, status: 500 })
+        )
+      );
+      actions$ = of(actions.fetchReports());
+
+      effects.onFetchReports$.subscribe({
+        complete: () => {
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            setReports({
+              reports: [],
+            })
+          );
+          done();
+        },
+      });
+    });
+  });
+
+  describe('checkStatusInReports$', () => {
+    it('should call setTestrunStatus if current test run is completed and not present in reports', done => {
+      actions$ = of(
+        actions.setReports({
+          reports: HISTORY,
+        }),
+        actions.fetchSystemStatusSuccess({
+          systemStatus: Object.assign({}, MOCK_PROGRESS_DATA_COMPLIANT, {
+            mac_addr: '01:02:03:04:05:07',
+          }),
+        })
+      );
+
+      effects.checkStatusInReports$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setTestrunStatus({ systemStatus: IDLE_STATUS })
+        );
+        done();
+      });
     });
   });
 });

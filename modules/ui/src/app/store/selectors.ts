@@ -93,3 +93,8 @@ export const selectStatus = createSelector(
   selectAppState,
   (state: AppState) => state.shared.status
 );
+
+export const selectReports = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.reports
+);

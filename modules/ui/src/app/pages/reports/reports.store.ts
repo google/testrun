@@ -4,13 +4,14 @@ import { MatRow, MatTableDataSource } from '@angular/material/table';
 import { HistoryTestrun, TestrunStatus } from '../../model/testrun-status';
 import { DateRange, Filters } from '../../model/filters';
 import { TestRunService } from '../../services/test-run.service';
-import { catchError, EMPTY, exhaustMap } from 'rxjs';
+import { exhaustMap } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { DatePipe } from '@angular/common';
 import { MatSort } from '@angular/material/sort';
-import { selectRiskProfiles } from '../../store/selectors';
+import { selectReports, selectRiskProfiles } from '../../store/selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
+import { setReports } from '../../store/actions';
 
 export interface ReportsComponentState {
   displayedColumns: string[];
@@ -28,7 +29,6 @@ export interface ReportsComponentState {
 export const DATA_SOURCE_INITIAL_VALUE = new MatTableDataSource<HistoryTestrun>(
   []
 );
-
 @Injectable()
 export class ReportsStore extends ComponentStore<ReportsComponentState> {
   private displayedColumns$ = this.select(state => state.displayedColumns);
@@ -40,7 +40,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
   private dataLoaded$ = this.select(state => state.dataLoaded);
   private selectedRow$ = this.select(state => state.selectedRow);
   private isFiltersEmpty$ = this.select(state => state.isFiltersEmpty);
-  private history$ = this.select(state => state.history);
+  private history$ = this.store.select(selectReports);
   private profiles$ = this.store.select(selectRiskProfiles);
   viewModel$ = this.select({
     displayedColumns: this.displayedColumns$,
@@ -105,40 +105,11 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     };
   });
 
-  setHistory = this.updater((state, history: TestrunStatus[]) => {
-    return {
-      ...state,
-      history,
-    };
-  });
-
   updateFilteredValues = this.updater((state, filteredValues: Filters) => {
     return {
       ...state,
       filteredValues,
     };
-  });
-
-  getHistory = this.effect(trigger$ => {
-    return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunService.getHistory().pipe(
-          withLatestFrom(this.filteredValues$),
-          tap(([reports, filteredValues]) => {
-            if (reports) {
-              this.setDataSource(reports);
-              this.setFilteredValues(filteredValues);
-              this.setHistory(reports);
-            }
-          }),
-          catchError(() => {
-            this.setDataSource([]);
-            this.setHistory([]);
-            return EMPTY;
-          })
-        );
-      })
-    );
   });
 
   deleteReport = this.effect<{
@@ -225,19 +196,27 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
     );
   });
 
+  getHistory = this.effect(() => {
+    return this.history$.pipe(
+      withLatestFrom(this.filteredValues$),
+      tap(([reports, filteredValues]) => {
+        this.setDataSource([...reports]);
+        this?.setFilteredValues(filteredValues);
+      })
+    );
+  });
   private removeReport(
     mac_addr: string,
     started: string | null,
     current: TestrunStatus[]
   ) {
-    const history = current;
+    const history = [...current];
     const idx = history.findIndex(
       report => report.mac_addr === mac_addr && report.started === started
     );
     if (typeof idx === 'number') {
       history.splice(idx, 1);
-      this.setHistory(history);
-      this.setDataSource(history);
+      this.store.dispatch(setReports({ reports: history }));
     }
   }
 
