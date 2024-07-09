@@ -503,23 +503,21 @@ class TestrunSession():
 
     else:
 
+      # Update the profile
+      risk_profile.update(profile_json, profile_format=self._profile_format)
+
       # Check if name has changed
       if 'rename' in profile_json:
-        new_name = profile_json.get('rename')
+        old_name = profile_json.get('name')
 
         # Delete the original file
-        os.remove(os.path.join(PROFILES_DIR, risk_profile.name + '.json'))
-
-        risk_profile.name = new_name
-
-      # Update questions and answers
-      risk_profile.questions = profile_json.get('questions')
+        os.remove(os.path.join(PROFILES_DIR, old_name + '.json'))
 
     # Write file to disk
     with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'),
               'w',
               encoding='utf-8') as f:
-      f.write(json.dumps(risk_profile.to_json()))
+      f.write(risk_profile.to_json())
 
     return risk_profile
 
