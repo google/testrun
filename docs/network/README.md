@@ -6,7 +6,7 @@
 3) [Addresses](addresses.md)
 4) [Add a new network service](add_new_service.md)
 
-Test Run provides several built-in network services that can be utilized for testing purposes. These services are already available and can be used without any additional configuration. 
+Testrun provides several built-in network services that can be utilized for testing purposes. These services are already available and can be used without any additional configuration. 
 
 The following network services are provided:
 
