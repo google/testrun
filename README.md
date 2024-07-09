@@ -38,7 +38,7 @@ When manual testing or configuration changes are required, Testrun will provide 
 
 ## Minimum requirements :computer:
 ### Hardware
- - PC running Ubuntu LTS 20.04 or 22.04 (laptop or desktop)
+ - PC running Ubuntu LTS 20.04, 22.04 or 24.04 (laptop or desktop)
  - 2x USB ethernet adapter (One may be built in ethernet)
  - Internet connection
 ### Software

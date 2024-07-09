@@ -1,6 +1,6 @@
 # Getting Started
 
-It is recommended that you run Testrun on a standalone machine running a fresh-install of Ubuntu 22.04.4 or 24.04 LTS.
+It is recommended that you run Testrun on a standalone machine running a fresh install of Ubuntu 22.04.4 or 24.04 LTS.
 
 ## Prerequisites
 
@@ -36,7 +36,7 @@ However, to achieve a compliant test outcome, your device must be configured cor
 
 ## Installation
 
-1. Download the latest version of the Testrun installer from the [releases page](https://github.com/google/test-run/releases)
+1. Download the latest version of the Testrun installer from the [releases page](https://github.com/google/testrun/releases)
 
 2. Open a terminal and navigate to location of the Testrun installer (most likely your downloads folder)
 
