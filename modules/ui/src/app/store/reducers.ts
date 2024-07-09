@@ -106,6 +106,12 @@ export const sharedReducer = createReducer(
       ...state,
       status,
     };
+  }),
+  on(Actions.setReports, (state, { reports }) => {
+    return {
+      ...state,
+      reports,
+    };
   })
 );
 

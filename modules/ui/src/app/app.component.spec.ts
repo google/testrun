@@ -59,6 +59,7 @@ import {
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
+  selectReports,
   selectStatus,
   selectSystemStatus,
 } from './store/selectors';
@@ -109,6 +110,7 @@ describe('AppComponent', () => {
       'testrunInProgress',
       'fetchProfiles',
       'fetchCertificates',
+      'getHistory',
     ]);
 
     mockService.fetchCertificates.and.returnValue(of([]));
@@ -159,6 +161,7 @@ describe('AppComponent', () => {
             { selector: selectSystemStatus, value: null },
             { selector: selectIsOpenStartTestrun, value: false },
             { selector: selectIsOpenWaitSnackBar, value: false },
+            { selector: selectReports, value: [] },
           ],
         }),
         { provide: FocusManagerService, useValue: mockFocusManagerService },

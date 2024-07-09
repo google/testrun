@@ -15,7 +15,7 @@
  */
 import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 
-import { ReportsComponent } from './reportscomponent';
+import { ReportsComponent } from './reports.component';
 import { TestRunService } from '../../services/test-run.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReportsModule } from './reports.module';
@@ -112,12 +112,6 @@ describe('ReportsComponent', () => {
     });
 
     describe('ngOnInit', () => {
-      it('should set dataSource data', () => {
-        component.ngOnInit();
-
-        expect(mockReportsStore.getHistory).toHaveBeenCalled();
-      });
-
       it('should update sort', fakeAsync(() => {
         const sort = new MatSort();
         component.sort = sort;

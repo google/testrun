@@ -27,6 +27,7 @@ import {
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
+  selectReports,
   selectRiskProfiles,
   selectStatus,
   selectSystemStatus,
@@ -55,6 +56,7 @@ describe('Selectors', () => {
       systemStatus: null,
       deviceInProgress: null,
       status: null,
+      reports: [],
     },
   };
 
@@ -126,5 +128,10 @@ describe('Selectors', () => {
   it('should select status', () => {
     const result = selectStatus.projector(initialState);
     expect(result).toEqual(null);
+  });
+
+  it('should select status', () => {
+    const result = selectReports.projector(initialState);
+    expect(result).toEqual([]);
   });
 });
