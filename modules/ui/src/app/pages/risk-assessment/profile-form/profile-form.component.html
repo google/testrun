@@ -76,6 +76,13 @@ limitations under the License.
     (click)="onSaveClick(ProfileStatus.DRAFT)">
     Save Draft
   </button>
+  <button
+    mat-button
+    class="discard-button"
+    [disabled]="profileForm.pristine"
+    (click)="onDiscardClick()">
+    Discard
+  </button>
 </div>
 
 <ng-template

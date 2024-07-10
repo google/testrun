@@ -284,6 +284,28 @@ describe('RiskAssessmentComponent', () => {
         }));
       });
     });
+
+    describe('#discard', () => {
+      beforeEach(() => {
+        component.discard();
+      });
+
+      it('should call setFocusOnCreateButton', () => {
+        expect(
+          mockRiskAssessmentStore.setFocusOnCreateButton
+        ).toHaveBeenCalled();
+      });
+
+      it('should close the form', () => {
+        expect(component.isOpenProfileForm).toBeFalse();
+      });
+
+      it('should update selected profile', () => {
+        expect(
+          mockRiskAssessmentStore.updateSelectedProfile
+        ).toHaveBeenCalledWith(null);
+      });
+    });
   });
 });
 

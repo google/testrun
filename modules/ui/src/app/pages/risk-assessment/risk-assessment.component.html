@@ -25,9 +25,8 @@ limitations under the License.
             [selectedProfile]="vm.selectedProfile"
             [profiles]="vm.profiles"
             [profileFormat]="vm.profileFormat"
-            (saveProfile)="
-              saveProfileClicked($event, vm.selectedProfile)
-            "></app-profile-form>
+            (saveProfile)="saveProfileClicked($event, vm.selectedProfile)"
+            (discard)="discard()"></app-profile-form>
         </div>
       </mat-drawer-content>
     </mat-drawer-container>

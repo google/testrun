@@ -105,6 +105,7 @@ export class ProfileFormComponent implements OnInit {
   }
 
   @Output() saveProfile = new EventEmitter<Profile>();
+  @Output() discard = new EventEmitter();
   constructor(
     private deviceValidators: DeviceValidators,
     private profileValidators: ProfileValidators,
@@ -239,6 +240,10 @@ export class ProfileFormComponent implements OnInit {
     if (optionIndex === optionLength - 1) {
       this.getControl(formControlName).markAsDirty();
     }
+  }
+
+  onDiscardClick() {
+    this.discard.emit();
   }
 
   private buildResponseFromForm(
