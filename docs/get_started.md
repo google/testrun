@@ -3,7 +3,7 @@
 
 ## Getting Started
 
-It is recommended that you run Testrun on a standalone machine running a fresh install of Ubuntu 22.04.4 or 24.04 LTS.
+It is recommended that you run Testrun on a standalone machine running a fresh install of Ubuntu 20.04, 22.04 or 24.04 LTS (laptop or desktop).
 
 ## Prerequisites
 
