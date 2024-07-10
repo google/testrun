@@ -388,6 +388,31 @@ describe('ProfileFormComponent', () => {
         });
       });
     });
+
+    describe('Discard button', () => {
+      beforeEach(() => {
+        fillForm(component);
+        fixture.detectChanges();
+      });
+
+      it('should be enabled when form is filled', () => {
+        const discardButton = compiled.querySelector(
+          '.discard-button'
+        ) as HTMLButtonElement;
+
+        expect(discardButton.disabled).toBeFalse();
+      });
+
+      it('should emit discard', () => {
+        const emitSpy = spyOn(component.discard, 'emit');
+        const discardButton = compiled.querySelector(
+          '.discard-button'
+        ) as HTMLButtonElement;
+        discardButton.click();
+
+        expect(emitSpy).toHaveBeenCalled();
+      });
+    });
   });
 
   describe('Class tests', () => {

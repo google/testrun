@@ -68,7 +68,8 @@
   padding: 8px 24px 24px 24px;
 }
 
-.save-draft-button:not(.mat-mdc-button-disabled) {
+.save-draft-button:not(.mat-mdc-button-disabled),
+.discard-button:not(.mat-mdc-button-disabled) {
   color: $primary;
 }
 
