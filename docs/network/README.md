@@ -1,4 +1,7 @@
-# Network Overview
+<img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
+
+
+## Network Overview
 
 ## Table of Contents
 1) Network Overview (this page)
@@ -6,7 +9,7 @@
 3) [Addresses](addresses.md)
 4) [Add a new network service](add_new_service.md)
 
-Test Run provides several built-in network services that can be utilized for testing purposes. These services are already available and can be used without any additional configuration. 
+Testrun provides several built-in network services that can be utilized for testing purposes. These services are already available and can be used without any additional configuration. 
 
 The following network services are provided:
 
