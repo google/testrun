@@ -98,3 +98,8 @@ export const selectReports = createSelector(
   selectAppState,
   (state: AppState) => state.shared.reports
 );
+
+export const selectTestModules = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.testModules
+);
