@@ -187,11 +187,16 @@ class NetworkOrchestrator:
       # Ignore device if not registered
       return
 
+    # Cleanup any old test files
+    test_dir = os.path.join(RUNTIME_DIR, TEST_DIR)
+    device_tests = os.listdir(test_dir)
+    for device_test in device_tests:
+      device_test_path = os.path.join(RUNTIME_DIR,TEST_DIR,device_test)
+      if os.path.isdir(device_test_path):
+        shutil.rmtree(device_test_path, ignore_errors=True)
+
     device_runtime_dir = os.path.join(RUNTIME_DIR, TEST_DIR,
                                       mac_addr.replace(':', ''))
-
-    # Cleanup any old current test files
-    shutil.rmtree(device_runtime_dir, ignore_errors=True)
     os.makedirs(device_runtime_dir, exist_ok=True)
 
     util.run_command(f'chown -R {util.get_host_user()} {device_runtime_dir}')
@@ -284,6 +289,12 @@ class NetworkOrchestrator:
 
     while sniffer.running:
       time.sleep(1)
+
+      # Check Testrun hasn't been cancelled
+      if self._session.get_status() == 'Cancelled':
+        sniffer.stop()
+        return
+
       if not self._ip_ctrl.check_interface_status(
           self._session.get_device_interface()):
         sniffer.stop()

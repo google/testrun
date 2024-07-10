@@ -31,7 +31,6 @@ describe('DownloadZipModalComponent', () => {
         {
           provide: MAT_DIALOG_DATA,
           useValue: {
-            hasProfiles: true,
             profiles: [PROFILE_MOCK_2, PROFILE_MOCK],
           },
         },
@@ -44,7 +43,6 @@ describe('DownloadZipModalComponent', () => {
     beforeEach(() => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
         useValue: {
-          hasProfiles: true,
           profiles: [PROFILE_MOCK_2, PROFILE_MOCK, PROFILE_MOCK_3],
         },
       });
@@ -133,7 +131,6 @@ describe('DownloadZipModalComponent', () => {
     beforeEach(() => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
         useValue: {
-          hasProfiles: false,
           profiles: [],
         },
       });

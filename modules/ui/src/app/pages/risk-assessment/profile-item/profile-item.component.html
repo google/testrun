@@ -14,22 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="profile-item-container">
-  <mat-icon
-    *ngIf="profile.status === ProfileStatus.VALID"
-    class="profile-item-icon"
-    fontSet="material-symbols-outlined">
-    check_circle
-  </mat-icon>
-  <mat-icon
-    *ngIf="profile.status === ProfileStatus.DRAFT"
-    svgIcon="draft"
-    class="profile-draft-icon"></mat-icon>
   <div
     class="profile-item-info"
     role="button"
     tabindex="0"
+    matTooltip="{{ profile.status }}"
     (click)="profileClicked.emit(profile)"
     (keydown.enter)="profileClicked.emit(profile)">
+    <span
+      class="profile-item-icon-container"
+      [attr.aria-label]="profile.status">
+      <mat-icon
+        *ngIf="profile.status === ProfileStatus.VALID"
+        class="profile-item-icon"
+        fontSet="material-symbols-outlined">
+        check_circle
+      </mat-icon>
+      <mat-icon
+        *ngIf="profile.status === ProfileStatus.DRAFT"
+        svgIcon="draft"
+        class="profile-draft-icon"></mat-icon>
+    </span>
     <p
       *ngIf="profile.risk"
       class="profile-item-risk"

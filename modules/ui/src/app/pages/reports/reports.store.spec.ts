@@ -33,10 +33,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MatRow } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { provideMockStore } from '@ngrx/store/testing';
-import {
-  selectHasRiskProfiles,
-  selectRiskProfiles,
-} from '../../store/selectors';
+import { selectRiskProfiles } from '../../store/selectors';
 
 describe('ReportsStore', () => {
   let reportsStore: ReportsStore;
@@ -50,10 +47,7 @@ describe('ReportsStore', () => {
         ReportsStore,
         { provide: TestRunService, useValue: mockService },
         provideMockStore({
-          selectors: [
-            { selector: selectHasRiskProfiles, value: false },
-            { selector: selectRiskProfiles, value: [] },
-          ],
+          selectors: [{ selector: selectRiskProfiles, value: [] }],
         }),
         DatePipe,
       ],
@@ -151,7 +145,6 @@ describe('ReportsStore', () => {
           dataLoaded: false,
           selectedRow: null,
           isFiltersEmpty: true,
-          hasProfiles: false,
           profiles: [],
         });
         done();

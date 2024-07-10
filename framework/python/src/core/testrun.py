@@ -215,10 +215,20 @@ class Testrun:  # pylint: disable=too-few-public-methods
     LOGGER.info(f'Loading reports from {reports_folder}')
 
     for report_folder in os.listdir(reports_folder):
+      # 1.3 file path
       report_json_file_path = os.path.join(
         reports_folder,
         report_folder,
+        'test',
+        device.mac_addr.replace(':',''),
         'report.json')
+        
+      if not os.path.isfile(report_json_file_path):
+        # Revert to pre 1.3 file path
+        report_json_file_path = os.path.join(
+          reports_folder,
+          report_folder,
+          'report.json')
 
       # Check if the report.json file exists
       if not os.path.isfile(report_json_file_path):

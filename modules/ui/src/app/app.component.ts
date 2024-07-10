@@ -18,7 +18,7 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
 import { StatusOfTestrun } from './model/testrun-status';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { CalloutType } from './model/callout-type';
 import { Routes } from './model/routes';
 import { FocusManagerService } from './services/focus-manager.service';
@@ -34,6 +34,7 @@ import { SettingsComponent } from './pages/settings/settings.component';
 import { AppStore } from './app.store';
 import { TestRunService } from './services/test-run.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { filter, take } from 'rxjs/operators';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
@@ -191,5 +192,16 @@ export class AppComponent {
 
   isTestrunInProgress(status?: string | null) {
     return this.testRunService.testrunInProgress(status);
+  }
+
+  onNavigationClick() {
+    this.route.events
+      .pipe(
+        filter(e => e instanceof NavigationEnd),
+        take(1)
+      )
+      .subscribe(() => {
+        this.appStore.setFocusOnPage();
+      });
   }
 }

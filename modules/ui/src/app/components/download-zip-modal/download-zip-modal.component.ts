@@ -19,7 +19,6 @@ import { MatOptionModule } from '@angular/material/core';
 import { TestRunService } from '../../services/test-run.service';
 
 interface DialogData {
-  hasProfiles: boolean;
   profiles: Profile[];
 }
 
@@ -50,10 +49,10 @@ export class DownloadZipModalComponent extends EscapableDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {
     super(dialogRef);
-    if (data.hasProfiles) {
-      this.profiles = data.profiles.filter(
-        profile => profile.status === ProfileStatus.VALID
-      );
+    this.profiles = data.profiles.filter(
+      profile => profile.status === ProfileStatus.VALID
+    );
+    if (this.profiles.length > 0) {
       this.profiles.sort((a, b) =>
         a.name.toLowerCase().localeCompare(b.name.toLowerCase())
       );
