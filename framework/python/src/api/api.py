@@ -788,12 +788,22 @@ class Api:
     try:
       # Pass to session to check and write
       cert_obj = self._session.upload_cert(filename, contents)
-    except ValueError:
-      response.status_code = status.HTTP_409_CONFLICT
-      return self._generate_msg(False,
-                                "A certificate with that name already exists.")
-    except IOError:
-      LOGGER.error("An error occurred whilst uploading the certificate")
+
+    except ValueError as e:
+
+      # Returned when duplicate common name detected
+      if str(e) == "A certificate with that name already exists":
+        response.status_code = status.HTTP_409_CONFLICT
+        return self._generate_msg(
+          False, "A certificate with that common name already exists."
+        )
+
+      # Returned when unable to load PEM file
+      else:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(
+          False,
+          "Failed to upload certificate. Is it in the correct format?")
 
     # Return error if something went wrong
     if cert_obj is None:
