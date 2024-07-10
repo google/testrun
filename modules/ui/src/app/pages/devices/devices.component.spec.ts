@@ -61,9 +61,8 @@ describe('DevicesComponent', () => {
       'selectDevice',
       'deleteDevice',
       'setStatus',
+      'getTestModules',
     ]);
-
-    mockDevicesStore.testModules = MOCK_TEST_MODULES;
 
     await TestBed.configureTestingModule({
       imports: [
@@ -99,8 +98,10 @@ describe('DevicesComponent', () => {
         devices: [] as Device[],
         selectedDevice: null,
         deviceInProgress: null,
+        testModules: [],
       });
       mockDevicesStore.devices$ = of([]);
+      mockDevicesStore.testModules$ = of([]);
       mockDevicesStore.isOpenAddDevice$ = of(true);
       fixture.detectChanges();
     });
@@ -128,6 +129,7 @@ describe('DevicesComponent', () => {
         devices: [device, device, device],
         selectedDevice: device,
         deviceInProgress: device,
+        testModules: [],
       });
       fixture.detectChanges();
     });
@@ -161,7 +163,7 @@ describe('DevicesComponent', () => {
         data: {
           device: null,
           title: 'Create device',
-          testModules: MOCK_TEST_MODULES,
+          testModules: [],
           devices: [device, device, device],
         },
         autoFocus: true,
@@ -180,7 +182,7 @@ describe('DevicesComponent', () => {
         } as MatDialogRef<typeof DeviceFormComponent>);
         fixture.detectChanges();
 
-        component.openDialog([device], device);
+        component.openDialog([device], MOCK_TEST_MODULES, device);
 
         expect(openSpy).toHaveBeenCalled();
         expect(openSpy).toHaveBeenCalledWith(DeviceFormComponent, {
@@ -206,7 +208,7 @@ describe('DevicesComponent', () => {
         } as MatDialogRef<typeof DeviceFormComponent>);
         fixture.detectChanges();
 
-        component.openDialog([device], device, true);
+        component.openDialog([device], MOCK_TEST_MODULES, device, true);
 
         expect(openSpy).toHaveBeenCalledWith(DeviceFormComponent, {
           ariaLabel: 'Edit device',
@@ -238,7 +240,7 @@ describe('DevicesComponent', () => {
       afterClosed: () => of(null),
     } as MatDialogRef<typeof DeviceFormComponent>);
 
-    component.openDialog();
+    component.openDialog([], MOCK_TEST_MODULES);
 
     expect(mockDevicesStore.setIsOpenAddDevice).toHaveBeenCalled();
   });
@@ -252,7 +254,7 @@ describe('DevicesComponent', () => {
         }),
     } as MatDialogRef<typeof DeviceFormComponent>);
 
-    component.openDialog([device], device);
+    component.openDialog([device], MOCK_TEST_MODULES, device);
 
     expect(mockDevicesStore.deleteDevice).toHaveBeenCalled();
   });
@@ -263,6 +265,7 @@ describe('DevicesComponent', () => {
         devices: [device, device, device],
         selectedDevice: device,
         deviceInProgress: null,
+        testModules: [],
       });
       fixture.detectChanges();
     });
@@ -278,7 +281,7 @@ describe('DevicesComponent', () => {
         afterClosed: () => of(true),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openDeleteDialog([device], device);
+      component.openDeleteDialog([device], MOCK_TEST_MODULES, device);
 
       const args = mockDevicesStore.deleteDevice.calls.argsFor(0);
       // @ts-expect-error config is in object
@@ -292,9 +295,14 @@ describe('DevicesComponent', () => {
         afterClosed: () => of(null),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openDeleteDialog([device], device);
+      component.openDeleteDialog([device], MOCK_TEST_MODULES, device);
 
-      expect(openDeviceDialogSpy).toHaveBeenCalledWith([device], device, true);
+      expect(openDeviceDialogSpy).toHaveBeenCalledWith(
+        [device],
+        MOCK_TEST_MODULES,
+        device,
+        true
+      );
     });
   });
 
@@ -305,13 +313,14 @@ describe('DevicesComponent', () => {
       } as MatDialogRef<typeof TestrunInitiateFormComponent>);
 
       fixture.ngZone?.run(() => {
-        component.openStartTestrun(device, [device]);
+        component.openStartTestrun(device, [device], MOCK_TEST_MODULES);
 
         expect(openSpy).toHaveBeenCalledWith(TestrunInitiateFormComponent, {
           ariaLabel: 'Initiate testrun',
           data: {
             devices: [device],
             device: device,
+            testModules: MOCK_TEST_MODULES,
           },
           autoFocus: true,
           hasBackdrop: true,

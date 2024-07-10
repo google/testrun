@@ -123,8 +123,10 @@ export class TestRunService {
       .pipe(map(() => true));
   }
 
-  getTestModules(): TestModule[] {
-    return this.testModules;
+  getTestModules(): Observable<string[]> {
+    return this.http
+      .get<string[]>(`${API_URL}/system/modules`)
+      .pipe(catchError(() => of([])));
   }
 
   saveDevice(device: Device): Observable<boolean> {

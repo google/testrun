@@ -31,6 +31,7 @@ import {
   selectRiskProfiles,
   selectStatus,
   selectSystemStatus,
+  selectTestModules,
 } from './selectors';
 
 describe('Selectors', () => {
@@ -57,6 +58,7 @@ describe('Selectors', () => {
       deviceInProgress: null,
       status: null,
       reports: [],
+      testModules: [],
     },
   };
 
@@ -132,6 +134,11 @@ describe('Selectors', () => {
 
   it('should select status', () => {
     const result = selectReports.projector(initialState);
+    expect(result).toEqual([]);
+  });
+
+  it('should select testModules', () => {
+    const result = selectTestModules.projector(initialState);
     expect(result).toEqual([]);
   });
 });

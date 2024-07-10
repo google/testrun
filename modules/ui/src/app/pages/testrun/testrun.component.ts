@@ -34,6 +34,8 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { TestrunStore } from './testrun.store';
 import { TestRunService } from '../../services/test-run.service';
 import { NotificationService } from '../../services/notification.service';
+import { TestModule } from '../../model/device';
+import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 
 @Component({
   selector: 'app-progress',
@@ -60,11 +62,14 @@ export class TestrunComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.testrunStore.isOpenStartTestrun$
+    combineLatest([
+      this.testrunStore.isOpenStartTestrun$,
+      this.testrunStore.testModules$,
+    ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(isOpenStartTestrun => {
+      .subscribe(([isOpenStartTestrun, testModules]) => {
         if (isOpenStartTestrun) {
-          this.openTestRunModal();
+          this.openTestRunModal(testModules);
         }
       });
   }
@@ -126,13 +131,16 @@ export class TestrunComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
-  openTestRunModal(): void {
+  openTestRunModal(testModules: TestModule[]): void {
     const dialogRef = this.dialog.open(TestrunInitiateFormComponent, {
       ariaLabel: 'Initiate testrun',
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'initiate-test-run-dialog',
+      data: {
+        testModules,
+      },
     });
 
     dialogRef
