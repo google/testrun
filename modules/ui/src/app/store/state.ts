@@ -15,7 +15,7 @@
  */
 import { TestrunStatus } from '../model/testrun-status';
 import { SettingMissedError, SystemInterfaces } from '../model/setting';
-import { Device } from '../model/device';
+import { Device, TestModule } from '../model/device';
 import { Profile } from '../model/profile';
 
 export interface AppState {
@@ -55,6 +55,7 @@ export interface SharedState {
   isOpenWaitSnackBar: boolean;
   deviceInProgress: Device | null;
   reports: TestrunStatus[];
+  testModules: TestModule[];
 }
 
 export const initialAppComponentState: AppComponentState = {
@@ -80,4 +81,5 @@ export const initialSharedState: SharedState = {
   systemStatus: null,
   status: null,
   reports: [],
+  testModules: [],
 };

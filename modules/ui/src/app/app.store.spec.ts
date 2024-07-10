@@ -27,15 +27,17 @@ import {
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
   selectStatus,
+  selectTestModules,
 } from './store/selectors';
 import { TestRunService } from './services/test-run.service';
 import SpyObj = jasmine.SpyObj;
-import { device } from './mocks/device.mock';
+import { device, MOCK_MODULES, MOCK_TEST_MODULES } from './mocks/device.mock';
 import {
   fetchReports,
   fetchRiskProfiles,
   fetchSystemStatus,
   setDevices,
+  setTestModules,
 } from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -68,7 +70,10 @@ describe('AppStore', () => {
   let mockFocusManagerService: SpyObj<FocusManagerService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj('mockService', ['fetchDevices']);
+    mockService = jasmine.createSpyObj('mockService', [
+      'fetchDevices',
+      'getTestModules',
+    ]);
     mockNotificationService = jasmine.createSpyObj('mockNotificationService', [
       'notify',
     ]);
@@ -83,6 +88,7 @@ describe('AppStore', () => {
           selectors: [
             { selector: selectStatus, value: null },
             { selector: selectIsOpenWaitSnackBar, value: false },
+            { selector: selectTestModules, value: MOCK_TEST_MODULES },
           ],
         }),
         { provide: TestRunService, useValue: mockService },
@@ -233,6 +239,35 @@ describe('AppStore', () => {
         appStore.getReports();
 
         expect(store.dispatch).toHaveBeenCalledWith(fetchReports());
+      });
+    });
+
+    describe('getTestModules', () => {
+      const modules = [...MOCK_MODULES];
+
+      beforeEach(() => {
+        mockService.getTestModules.and.returnValue(of(modules));
+      });
+
+      it('should dispatch action setDevices', () => {
+        appStore.getTestModules();
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setTestModules({
+            testModules: [
+              {
+                displayName: 'Connection',
+                name: 'connection',
+                enabled: true,
+              },
+              {
+                displayName: 'Udmi',
+                name: 'udmi',
+                enabled: true,
+              },
+            ],
+          })
+        );
       });
     });
   });

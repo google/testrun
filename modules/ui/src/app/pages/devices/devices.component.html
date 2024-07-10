@@ -22,8 +22,10 @@ limitations under the License.
     <div class="device-repository-content">
       <ng-container *ngFor="let device of vm.devices">
         <app-device-item
-          (itemClicked)="openDialog(vm.devices, $event)"
-          (startTestrunClicked)="openStartTestrun($event, vm.devices)"
+          (itemClicked)="openDialog(vm.devices, vm.testModules, $event)"
+          (startTestrunClicked)="
+            openStartTestrun($event, vm.devices, vm.testModules)
+          "
           [deviceView]="DeviceView.WithActions"
           [class.device-item-selected]="device === vm.selectedDevice"
           [device]="device"
@@ -41,7 +43,7 @@ limitations under the License.
 
   <ng-template #addDeviceButton>
     <button
-      (click)="openDialog(vm.devices)"
+      (click)="openDialog(vm.devices, vm.testModules)"
       aria-label="Add device"
       class="device-add-button"
       color="primary"

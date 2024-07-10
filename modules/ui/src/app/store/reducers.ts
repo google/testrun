@@ -112,6 +112,12 @@ export const sharedReducer = createReducer(
       ...state,
       reports,
     };
+  }),
+  on(Actions.setTestModules, (state, { testModules }) => {
+    return {
+      ...state,
+      testModules,
+    };
   })
 );
 

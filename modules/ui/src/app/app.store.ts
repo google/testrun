@@ -30,13 +30,14 @@ import { Store } from '@ngrx/store';
 import { AppState } from './store/state';
 import { TestRunService } from './services/test-run.service';
 import { delay, exhaustMap, Observable, skip } from 'rxjs';
-import { Device } from './model/device';
+import { Device, TestModule } from './model/device';
 import {
   setDevices,
   setIsOpenStartTestrun,
   fetchSystemStatus,
   fetchRiskProfiles,
   fetchReports,
+  setTestModules,
 } from './store/actions';
 import { TestrunStatus } from './model/testrun-status';
 import { SettingMissedError, SystemInterfaces } from './model/setting';
@@ -155,6 +156,29 @@ export class AppStore extends ComponentStore<AppComponentState> {
     return trigger$.pipe(
       tap(() => {
         this.store.dispatch(fetchReports());
+      })
+    );
+  });
+
+  getTestModules = this.effect(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap(() => {
+        return this.testRunService.getTestModules().pipe(
+          tap((testModules: string[]) => {
+            this.store.dispatch(
+              setTestModules({
+                testModules: testModules.map(
+                  module =>
+                    ({
+                      displayName: module,
+                      name: module.toLowerCase(),
+                      enabled: true,
+                    }) as TestModule
+                ),
+              })
+            );
+          })
+        );
       })
     );
   });
