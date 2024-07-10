@@ -143,13 +143,6 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
               AppActions.fetchSystemConfigSuccess({ systemConfig })
             );
             this.setSystemConfig(systemConfig);
-            this.store.dispatch(
-              AppActions.setHasConnectionSettings({
-                hasConnectionSettings:
-                  systemConfig.network != null &&
-                  systemConfig.network.device_intf != '',
-              })
-            );
           })
         );
       })
@@ -291,7 +284,7 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
     private store: Store<AppState>
   ) {
     super({
-      systemConfig: {},
+      systemConfig: { network: {} },
       hasConnectionSettings: false,
       isSubmitting: false,
       isLessThanOneInterface: false,

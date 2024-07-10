@@ -16,7 +16,7 @@ limitations under the License.
 <ng-container *ngIf="viewModel$ | async as vm">
   <ng-container *ngIf="vm.devices.length > 0; else empty">
     <mat-toolbar class="device-repository-toolbar">
-      <h2 class="title">Devices</h2>
+      <h2 class="title" tabindex="-1">Devices</h2>
       <ng-container *ngTemplateOutlet="addDeviceButton"></ng-container>
     </mat-toolbar>
     <div class="device-repository-content">

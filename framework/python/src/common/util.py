@@ -48,8 +48,6 @@ def run_command(cmd, output=True):
       success = True
     if output:
       out = stdout.strip().decode('utf-8')
-      if out is not None and len(out) != 0:
-        LOGGER.debug('Command output: ' + out)
       return out, stderr
     else:
       return success

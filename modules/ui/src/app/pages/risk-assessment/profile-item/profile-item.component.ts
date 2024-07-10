@@ -29,11 +29,12 @@ import { MatIcon } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { TestRunService } from '../../../services/test-run.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-profile-item',
   standalone: true,
-  imports: [MatIcon, MatButtonModule, CommonModule],
+  imports: [MatIcon, MatButtonModule, CommonModule, MatTooltipModule],
   templateUrl: './profile-item.component.html',
   styleUrl: './profile-item.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

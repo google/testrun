@@ -66,8 +66,8 @@ describe('Effects', () => {
       'fetchProfiles',
     ]);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of({}));
-    testRunServiceMock.getSystemConfig.and.returnValue(of({}));
-    testRunServiceMock.createSystemConfig.and.returnValue(of({}));
+    testRunServiceMock.getSystemConfig.and.returnValue(of({ network: {} }));
+    testRunServiceMock.createSystemConfig.and.returnValue(of({ network: {} }));
     testRunServiceMock.fetchSystemStatus.and.returnValue(
       of(MOCK_PROGRESS_DATA_IN_PROGRESS)
     );
@@ -157,9 +157,8 @@ describe('Effects', () => {
       actions$ = of(
         actions.updateValidInterfaces({
           validInterfaces: {
-            hasSetInterfaces: false,
-            deviceValid: false,
-            internetValid: false,
+            deviceValid: true,
+            internetValid: true,
           },
         })
       );
@@ -182,7 +181,6 @@ describe('Effects', () => {
       actions$ = of(
         actions.updateValidInterfaces({
           validInterfaces: {
-            hasSetInterfaces: true,
             deviceValid: false,
             internetValid: false,
           },
@@ -227,7 +225,6 @@ describe('Effects', () => {
         expect(action).toEqual(
           actions.updateValidInterfaces({
             validInterfaces: {
-              hasSetInterfaces: true,
               deviceValid: false,
               internetValid: true,
             },
@@ -259,11 +256,101 @@ describe('Effects', () => {
         expect(action).toEqual(
           actions.updateValidInterfaces({
             validInterfaces: {
-              hasSetInterfaces: true,
               deviceValid: true,
               internetValid: true,
             },
           })
+        );
+        done();
+      });
+    });
+
+    it('should call updateValidInterfaces and set all true if interface are empty and config is not set', done => {
+      actions$ = of(
+        actions.fetchInterfacesSuccess({
+          interfaces: {},
+        }),
+        actions.fetchSystemConfigSuccess({
+          systemConfig: {
+            network: {
+              device_intf: '',
+              internet_intf: '',
+            },
+          },
+        })
+      );
+
+      effects.checkInterfacesInConfig$.subscribe(action => {
+        expect(action).toEqual(
+          actions.updateValidInterfaces({
+            validInterfaces: {
+              deviceValid: true,
+              internetValid: true,
+            },
+          })
+        );
+        done();
+      });
+    });
+
+    it('should call updateValidInterfaces and set all true if interface are not empty and config is not set', done => {
+      actions$ = of(
+        actions.fetchInterfacesSuccess({
+          interfaces: {
+            enx00e04c020fa8: '00:e0:4c:02:0f:a8',
+            enx207bd26205e9: '20:7b:d2:62:05:e9',
+          },
+        }),
+        actions.fetchSystemConfigSuccess({
+          systemConfig: {
+            network: {
+              device_intf: '',
+              internet_intf: '',
+            },
+          },
+        })
+      );
+
+      effects.checkInterfacesInConfig$.subscribe(action => {
+        expect(action).toEqual(
+          actions.updateValidInterfaces({
+            validInterfaces: {
+              deviceValid: true,
+              internetValid: true,
+            },
+          })
+        );
+        done();
+      });
+    });
+  });
+
+  describe('onFetchSystemConfigSuccess$', () => {
+    it('should dispatch setHasConnectionSettings with true if device_intf is present', done => {
+      actions$ = of(
+        actions.fetchSystemConfigSuccess({
+          systemConfig: { network: { device_intf: 'intf' } },
+        })
+      );
+
+      effects.onFetchSystemConfigSuccess$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setHasConnectionSettings({ hasConnectionSettings: true })
+        );
+        done();
+      });
+    });
+
+    it('should dispatch setHasConnectionSettings with false if device_intf is not present', done => {
+      actions$ = of(
+        actions.fetchSystemConfigSuccess({
+          systemConfig: { network: { device_intf: '' } },
+        })
+      );
+
+      effects.onFetchSystemConfigSuccess$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setHasConnectionSettings({ hasConnectionSettings: false })
         );
         done();
       });

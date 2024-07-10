@@ -19,7 +19,7 @@ limitations under the License.
   Risk assessment profile for your ZIP report.
 </p>
 
-<div *ngIf="data.hasProfiles">
+<div *ngIf="profiles.length > 0">
   <mat-form-field appearance="outline" class="profile-select">
     <mat-select
       #select
@@ -78,7 +78,7 @@ limitations under the License.
 </div>
 
 <mat-dialog-actions
-  *ngIf="!data.hasProfiles"
+  *ngIf="profiles.length === 0"
   align="end"
   class="risk-profile-select-form-actions">
   <button

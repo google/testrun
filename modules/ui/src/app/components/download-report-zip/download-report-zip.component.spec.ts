@@ -78,7 +78,6 @@ describe('DownloadReportZipComponent', () => {
         expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
           ariaLabel: 'Download zip',
           data: {
-            hasProfiles: false,
             profiles: [],
           },
           autoFocus: true,
@@ -105,7 +104,6 @@ describe('DownloadReportZipComponent', () => {
           expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
             ariaLabel: 'Download zip',
             data: {
-              hasProfiles: false,
               profiles: [],
             },
             autoFocus: true,
@@ -131,7 +129,6 @@ describe('DownloadReportZipComponent', () => {
         expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
           ariaLabel: 'Download zip',
           data: {
-            hasProfiles: false,
             profiles: [],
           },
           autoFocus: true,

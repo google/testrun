@@ -17,6 +17,8 @@
 @import 'src/theming/variables';
 
 $profile-draft-icon-size: 22px;
+$profile-icon-container-size: 24px;
+$profile-item-container-gap: 16px;
 
 :host.selected {
   .profile-item-container {
@@ -26,12 +28,21 @@ $profile-draft-icon-size: 22px;
 
 .profile-item-container {
   display: grid;
-  grid-template-columns: 24px minmax(160px, 1fr) 24px;
-  gap: 16px;
+  grid-template-columns: minmax(160px, 1fr) $profile-icon-container-size;
+  gap: $profile-item-container-gap;
   box-sizing: border-box;
   padding: 12px 16px;
   border-bottom: 1px solid $lighter-grey;
   align-items: center;
+  height: 92px;
+}
+
+.profile-item-icon-container {
+  grid-area: icon;
+  display: inline-block;
+  width: $profile-draft-icon-size;
+  height: $profile-draft-icon-size;
+  padding: 2px;
 }
 
 .profile-item-icon {
@@ -40,12 +51,26 @@ $profile-draft-icon-size: 22px;
 
 .profile-item-info {
   cursor: pointer;
+  display: grid;
+  grid-template-columns: $profile-icon-container-size 1fr;
+  grid-template-areas:
+    'icon .'
+    'icon .'
+    'icon .';
+  column-gap: $profile-item-container-gap;
+  align-items: center;
+
   p {
     margin: 0;
     font-family: $font-secondary, sans-serif;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  ::ng-deep p.profile-item-risk {
+    margin-top: 6px;
+    justify-self: start;
   }
 
   .profile-item-name {

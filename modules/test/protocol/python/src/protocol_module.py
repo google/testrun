@@ -86,16 +86,21 @@ class ProtocolModule(TestModule):
     # Extract basic device connection information
     modbus = Modbus(log=LOGGER, device_ip=self._device_ipv4_addr, config=config)
     results = modbus.validate_device()
+    result_status = None
+    result_description = ''
+    result_details = results[1]
 
     # Determine results and return proper messaging and details
     if results[0] is None:
-      result = ('Feature Not Detected',
-                'Device did not respond to Modbus connection')
+      result_status = 'Feature Not Detected'
+      result_description = 'Device did not respond to Modbus connection'
     elif results[0]:
-      result = True, 'Valid modbus communication detected'
+      result_status = True
+      result_description = 'Valid modbus communication detected'
     else:
-      result = False, 'Failed to confirm valid modbus communication'
-    return result, results[1]
+      result_status = False
+      result_description = 'Failed to confirm valid modbus communication'
+    return result_status, result_description, result_details
 
   def get_local_ip(self, interface_name):
     try:
