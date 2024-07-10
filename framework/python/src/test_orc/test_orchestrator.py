@@ -229,10 +229,18 @@ class TestOrchestrator:
     oldest_timestamp = None
     oldest_directory = None
     for completed_test in os.listdir(completed_tests_dir):
-      timestamp = datetime.strptime(str(completed_test), "%Y-%m-%dT%H:%M:%S")
+      try:
+        timestamp = datetime.strptime(str(completed_test), "%Y-%m-%dT%H:%M:%S")
+
+      # Occurs when time does not match format
+      except ValueError as e:
+        LOGGER.error(e)
+        continue
+
       if oldest_timestamp is None or timestamp < oldest_timestamp:
         oldest_timestamp = timestamp
         oldest_directory = completed_test
+
     if oldest_directory:
       return oldest_timestamp, os.path.join(completed_tests_dir,
                                             oldest_directory)
