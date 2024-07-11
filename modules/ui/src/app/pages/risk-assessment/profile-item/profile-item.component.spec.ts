@@ -17,15 +17,19 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProfileItemComponent } from './profile-item.component';
 import { PROFILE_MOCK } from '../../../mocks/profile.mock';
+import { TestRunService } from '../../../services/test-run.service';
 
 describe('ProfileItemComponent', () => {
   let component: ProfileItemComponent;
   let fixture: ComponentFixture<ProfileItemComponent>;
   let compiled: HTMLElement;
 
+  const testRunServiceMock = jasmine.createSpyObj(['getRiskClass']);
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProfileItemComponent],
+      providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfileItemComponent);
@@ -45,16 +49,18 @@ describe('ProfileItemComponent', () => {
     expect(name?.textContent?.trim()).toEqual(PROFILE_MOCK.name);
   });
 
+  it('should have create date', () => {
+    const date = compiled.querySelector('.profile-item-created');
+
+    expect(date?.textContent?.trim()).toEqual('23 May 2024');
+  });
+
   it('should have profile name as part of buttons aria-label', () => {
     const deleteButton = fixture.nativeElement.querySelector(
       '.profile-item-button.delete'
     );
-    const copyButton = fixture.nativeElement.querySelector(
-      '.profile-item-button.copy'
-    );
 
     expect(deleteButton?.ariaLabel?.trim()).toContain(PROFILE_MOCK.name);
-    expect(copyButton?.ariaLabel?.trim()).toContain(PROFILE_MOCK.name);
   });
 
   it('should emit delete event on delete button clicked', () => {
@@ -66,5 +72,16 @@ describe('ProfileItemComponent', () => {
     deleteButton.click();
 
     expect(deleteSpy).toHaveBeenCalledWith(PROFILE_MOCK.name);
+  });
+
+  it('should emit click event on profile name clicked', () => {
+    const profileClickedSpy = spyOn(component.profileClicked, 'emit');
+    const profileName = fixture.nativeElement.querySelector(
+      '.profile-item-name'
+    ) as HTMLElement;
+
+    profileName.click();
+
+    expect(profileClickedSpy).toHaveBeenCalledWith(PROFILE_MOCK);
   });
 });

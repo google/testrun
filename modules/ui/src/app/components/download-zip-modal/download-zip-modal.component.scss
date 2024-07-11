@@ -38,6 +38,16 @@
   color: $grey-800;
 }
 
+.select-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px;
+  height: 72px;
+  box-sizing: border-box;
+  align-items: flex-start;
+}
+
 .risk-profile-select-form-actions {
   min-height: 30px;
   padding: 16px 0 0;
@@ -49,4 +59,13 @@
 
 .profile-select {
   width: 100%;
+}
+
+.profile-item-name {
+  font-size: 14px;
+}
+
+.profile-item-created {
+  font-size: 12px;
+  color: $grey-700;
 }

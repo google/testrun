@@ -1,13 +1,14 @@
-# Test Statuses
+<img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
+
+## Test Statuses
 Testrun will output the result and description of each automated test. The test results will be one of the following:
 
 | Name | Description | What next? |
 |---|---|---|
 | Compliant | The device implements the required feature correctly | Nothing |
 | Non-Compliant | The device does not support the specified requirements for the test | Modify or implement the required functionality on the device |
-| Feature Not Present | The device does not implement a feature covered by the test | You may implement the  functionality (not required) |
+| Feature Not Detected | The device does not implement a feature covered by the test | You may implement the  functionality (not required) |
 | Error | An error occured whilst running the test | Create a bug report requesting additional support to diagnose the issue |
-| Skipped | The test has not been executed because a linked test did not produce a compliant result | You may implement the functionality (not required) |
 
 ## Test Requirement
 Testrun also determines whether each test is required for the device to receive an overall compliant result. These rules are:

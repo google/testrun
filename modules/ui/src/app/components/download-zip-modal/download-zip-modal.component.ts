@@ -6,15 +6,19 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { EscapableDialogComponent } from '../escapable-dialog/escapable-dialog.component';
-import { Profile } from '../../model/profile';
+import {
+  Profile,
+  ProfileStatus,
+  RiskResultClassName,
+} from '../../model/profile';
 import { MatButtonModule } from '@angular/material/button';
-import { NgForOf, NgIf } from '@angular/common';
+import { CommonModule, NgForOf, NgIf } from '@angular/common';
 import { MatFormField } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
+import { TestRunService } from '../../services/test-run.service';
 
 interface DialogData {
-  hasProfiles: boolean;
   profiles: Profile[];
 }
 
@@ -22,6 +26,7 @@ interface DialogData {
   selector: 'app-download-zip-modal',
   standalone: true,
   imports: [
+    CommonModule,
     MatDialogActions,
     MatDialogModule,
     MatButtonModule,
@@ -39,12 +44,15 @@ export class DownloadZipModalComponent extends EscapableDialogComponent {
   profiles: Profile[] = [];
   selectedProfile: string = '';
   constructor(
+    private readonly testRunService: TestRunService,
     public override dialogRef: MatDialogRef<DownloadZipModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {
     super(dialogRef);
-    if (data.hasProfiles) {
-      this.profiles = [...data.profiles] as Profile[];
+    this.profiles = data.profiles.filter(
+      profile => profile.status === ProfileStatus.VALID
+    );
+    if (this.profiles.length > 0) {
       this.profiles.sort((a, b) =>
         a.name.toLowerCase().localeCompare(b.name.toLowerCase())
       );
@@ -54,5 +62,9 @@ export class DownloadZipModalComponent extends EscapableDialogComponent {
 
   cancel(profile?: string | null) {
     this.dialogRef.close(profile);
+  }
+
+  public getRiskClass(riskResult: string): RiskResultClassName {
+    return this.testRunService.getRiskClass(riskResult);
   }
 }

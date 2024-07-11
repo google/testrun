@@ -31,6 +31,18 @@
   top: 60px;
 }
 
+@media (width < 742px) {
+  :host + ::ng-deep app-callout {
+    top: 80px;
+  }
+}
+
+@media (width < 490px) {
+  :host + ::ng-deep app-callout {
+    top: 100px;
+  }
+}
+
 .callout-container {
   display: flex;
   box-sizing: border-box;

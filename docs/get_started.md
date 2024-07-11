@@ -1,6 +1,9 @@
-# Getting Started
+<img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
 
-It is recommended that you run Testrun on a standalone machine running a fresh-install of Ubuntu 22.04.3 LTS.
+
+## Getting Started
+
+It is recommended that you run Testrun on a standalone machine running a fresh install of Ubuntu 20.04, 22.04 or 24.04 LTS (laptop or desktop).
 
 ## Prerequisites
 
@@ -11,6 +14,8 @@ Before starting with Testrun, ensure you have the following hardware:
 - PC running Ubuntu LTS (laptop or desktop)
 - 2x USB Ethernet adapter (one may be a built-in Ethernet port)
 - Internet connection
+
+![Visual representation of setup](setup/visual.png)
 
 **NOTE: Running in a virtual machine? Checkout the virtual machine documentation [here](/docs/virtual_machine.md).**
 
@@ -34,17 +39,18 @@ However, to achieve a compliant test outcome, your device must be configured cor
 
 ## Installation
 
-1. Download the latest version of the Testrun installer from the [releases page](https://github.com/google/test-run/releases)
+1. Download the latest version of the Testrun installer from the [releases page](https://github.com/google/testrun/releases)
 
 2. Open a terminal and navigate to location of the Testrun installer (most likely your downloads folder)
 
 3. Install the package using ``sudo apt install ./testrun*.deb``
 
  - Testrun will be installed under the /usr/local/testrun directory.
-   - Testing data will be available in the ``local/devices/{device}/reports`` folders
-   - Additional configuration options are available in the ``local/system.json`` file
+ - Testing data will be available in the ``local/devices/{device}/reports`` folders
 
-    **NOTE: Place your local CA certificate in local/root_certs (any name with a .crt extension) to perform TLS server tests**
+    **NOTE: Local CA certificates should be uploaded within Testrun to run TLS server testing**
+
+    ![Installing Testrun in terminal window](setup/install.gif)
 
 ## Start Testrun
 
@@ -53,8 +59,8 @@ However, to achieve a compliant test outcome, your device must be configured cor
    - Connect the other USB Ethernet adapter directly to the IoT device you want to test using an ethernet cable.
 
   Some things to remember:
+  - <strong>Both adapters should be disabled in the host system (IPv4, IPv6 and general). You can do this by going to Settings > Network</strong>
   - The device under test should be powered off until prompted
-  - Both adapters should be disabled in the host system (IPv4, IPv6 and general). You can do this by going to Settings > Network
   - Struggling to identify the correct interfaces? See [this guide](network/identify_interfaces.md).
 
 2. Start Testrun.
@@ -111,7 +117,7 @@ If you encounter any issues or need assistance, consider the following:
 - Refer to the Testrun documentation or ask for assistance in the issues page: https://github.com/google/testrun/issues
 
 # Reviewing
-Once you have completed a test attempt, you may want to review the test report provided by Testrun. For more information about what Testrun looks for when testing, and what the output means, take a look at the testing documentation: [Testing](/docs/test/index.md).
+Once you have completed a test attempt, you may want to review the test report provided by Testrun. For more information about what Testrun looks for when testing, and what the output means, take a look at the testing documentation: [Testing](/docs/test/README.md).
 
 # Uninstall
 To uninstall Testrun, use the built-in dpkg uninstall command to remove Testrun correctly. For Testrun, this would be:  ```sudo apt-get remove testrun```. 

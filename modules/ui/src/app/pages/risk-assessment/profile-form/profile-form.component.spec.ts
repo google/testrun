@@ -18,11 +18,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProfileFormComponent } from './profile-form.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
+  NEW_PROFILE_MOCK,
+  NEW_PROFILE_MOCK_DRAFT,
   PROFILE_FORM,
   PROFILE_MOCK,
   PROFILE_MOCK_2,
+  PROFILE_MOCK_3,
+  RENAME_PROFILE_MOCK,
 } from '../../../mocks/profile.mock';
-import { FormControlType } from '../../../model/profile';
+import { FormControlType, ProfileStatus } from '../../../model/profile';
 
 describe('ProfileFormComponent', () => {
   let component: ProfileFormComponent;
@@ -37,7 +41,7 @@ describe('ProfileFormComponent', () => {
     fixture = TestBed.createComponent(ProfileFormComponent);
     component = fixture.componentInstance;
     component.profileFormat = PROFILE_FORM;
-    component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2];
+    component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, PROFILE_MOCK_3];
     compiled = fixture.nativeElement as HTMLElement;
 
     fixture.detectChanges();
@@ -48,6 +52,11 @@ describe('ProfileFormComponent', () => {
   });
 
   describe('DOM tests', () => {
+    beforeEach(() => {
+      component.selectedProfile = null;
+      fixture.detectChanges();
+    });
+
     describe('Profile name input', () => {
       it('should be present', () => {
         const name: HTMLInputElement = compiled.querySelector(
@@ -101,25 +110,29 @@ describe('ProfileFormComponent', () => {
         const name: HTMLInputElement = compiled.querySelector(
           '.form-name'
         ) as HTMLInputElement;
-        name.value = '';
-        name.dispatchEvent(new Event('input'));
-        component.nameControl.markAsTouched();
-        fixture.detectChanges();
+        ['', '     '].forEach(value => {
+          name.value = value;
+          name.dispatchEvent(new Event('input'));
+          component.nameControl.markAsTouched();
+          fixture.detectChanges();
 
-        const nameError = compiled.querySelector('mat-error')?.innerHTML;
-        const error = component.nameControl.hasError('required');
+          const nameError = compiled.querySelector('mat-error')?.innerHTML;
+          const error = component.nameControl.hasError('required');
 
-        expect(error).toBeTruthy();
-        expect(nameError).toContain('The Profile name is required');
+          expect(error).toBeTruthy();
+          expect(nameError).toContain('The Profile name is required');
+        });
       });
 
-      it('should have "required" error when field is not filled', () => {
+      it('should have different profile name error when profile with name is exist', () => {
         const name: HTMLInputElement = compiled.querySelector(
           '.form-name'
         ) as HTMLInputElement;
-        name.value = 'Profile name';
+        name.value = 'Primary profile';
         name.dispatchEvent(new Event('input'));
         component.nameControl.markAsTouched();
+
+        fixture.detectChanges();
         fixture.detectChanges();
 
         const nameError = compiled.querySelector('mat-error')?.innerHTML;
@@ -144,6 +157,9 @@ describe('ProfileFormComponent', () => {
         } else if (item.type === FormControlType.SELECT_MULTIPLE) {
           const select = fields[uiIndex].querySelector('mat-checkbox');
           expect(select).toBeTruthy();
+        } else if (item.type === FormControlType.TEXTAREA) {
+          const input = fields[uiIndex]?.querySelector('textarea');
+          expect(input).toBeTruthy();
         } else {
           const input = fields[uiIndex]?.querySelector('input');
           expect(input).toBeTruthy();
@@ -182,14 +198,10 @@ describe('ProfileFormComponent', () => {
 
           it('should have "required" error when field is not filled', () => {
             const fields = compiled.querySelectorAll('.profile-form-field');
-            const select = fields[uiIndex].querySelector(
-              'mat-select'
-            ) as HTMLElement;
 
-            select.focus();
-            select.blur();
-
+            component.getControl(index).setValue('');
             component.getControl(index).markAsTouched();
+
             fixture.detectChanges();
 
             const error = fields[uiIndex].querySelector('mat-error')?.innerHTML;
@@ -199,98 +211,253 @@ describe('ProfileFormComponent', () => {
         });
       }
 
-      if (
-        (item.type === FormControlType.TEXT ||
-          item.type === FormControlType.TEXTAREA) &&
-        item.validation?.required
-      ) {
-        describe('text or text-long', () => {
-          it('should have "required" error when field is not filled', () => {
+      if (item.type === FormControlType.SELECT_MULTIPLE) {
+        describe('select multiple', () => {
+          it(`should mark form group as dirty while tab navigation`, () => {
             const fields = compiled.querySelectorAll('.profile-form-field');
-            const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
-            const input: HTMLInputElement = fields[uiIndex].querySelector(
-              'input'
-            ) as HTMLInputElement;
-            input.value = '';
-            input.dispatchEvent(new Event('input'));
-            component.getControl(index).markAsTouched();
+            const checkbox = fields[uiIndex].querySelector(
+              '.field-select-checkbox:last-of-type mat-checkbox'
+            );
+            checkbox?.dispatchEvent(
+              new KeyboardEvent('keydown', { key: 'Tab' })
+            );
             fixture.detectChanges();
 
-            const error =
-              fields[uiIndex].querySelector('mat-error')?.textContent;
-
-            expect(error).toContain('The field is required');
-          });
-
-          it('should have "invalid_format" error when field does not satisfy validation rules', () => {
-            [
-              'very long value very long value very long value very long value very long value very long value very long value very long value very long value very long value',
-              'as\\\\\\\\\\""""""""',
-            ].forEach(value => {
-              const fields = compiled.querySelectorAll('.profile-form-field');
-              const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
-              const input: HTMLInputElement = fields[uiIndex].querySelector(
-                'input'
-              ) as HTMLInputElement;
-              input.value = value;
-              input.dispatchEvent(new Event('input'));
-              component.getControl(index).markAsTouched();
-              fixture.detectChanges();
-
-              const error = compiled.querySelector('mat-error')?.textContent;
-              expect(error).toContain(
-                'Please, check. “ and \\ are not allowed.'
-              );
-            });
+            expect(component.getControl(index).dirty).toBeTrue();
           });
         });
       }
 
       if (
-        item.type === FormControlType.EMAIL_MULTIPLE &&
-        item.validation?.required
+        item.type === FormControlType.TEXT ||
+        item.type === FormControlType.TEXTAREA ||
+        item.type === FormControlType.EMAIL_MULTIPLE
       ) {
-        describe('text or text-long', () => {
-          it('should have "required" error when field is not filled', () => {
+        describe('text or text-long or email-multiple', () => {
+          if (item.validation?.required) {
+            it('should have "required" error when field is not filled', () => {
+              const fields = compiled.querySelectorAll('.profile-form-field');
+              const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
+              const input = fields[uiIndex].querySelector(
+                '.mat-mdc-input-element'
+              ) as HTMLInputElement;
+              ['', '     '].forEach(value => {
+                input.value = value;
+                input.dispatchEvent(new Event('input'));
+                component.getControl(index).markAsTouched();
+                fixture.detectChanges();
+                const errors = fields[uiIndex].querySelectorAll('mat-error');
+                let hasError = false;
+                errors.forEach(error => {
+                  if (error.textContent === 'The field is required') {
+                    hasError = true;
+                  }
+                });
+
+                expect(hasError).toBeTrue();
+              });
+            });
+          }
+
+          it('should have "invalid_format" error when field does not satisfy validation rules', () => {
             const fields = compiled.querySelectorAll('.profile-form-field');
             const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
             const input: HTMLInputElement = fields[uiIndex].querySelector(
-              'input'
+              '.mat-mdc-input-element'
             ) as HTMLInputElement;
-            input.value = '';
+            input.value = 'as\\\\\\\\\\""""""""';
             input.dispatchEvent(new Event('input'));
             component.getControl(index).markAsTouched();
             fixture.detectChanges();
+            const result =
+              item.type === FormControlType.EMAIL_MULTIPLE
+                ? 'Please, check the email address. Valid e-mail can contain only latin letters, numbers, @ and . (dot).'
+                : 'Please, check. “ and \\ are not allowed.';
+            const errors = fields[uiIndex].querySelectorAll('mat-error');
+            let hasError = false;
+            errors.forEach(error => {
+              if (error.textContent === result) {
+                hasError = true;
+              }
+            });
 
-            const error =
-              fields[uiIndex].querySelector('mat-error')?.textContent;
-
-            expect(error).toContain('The field is required');
+            expect(hasError).toBeTrue();
           });
 
-          it('should have "invalid_format" error when field does not satisfy validation rules', () => {
-            [
-              'very long value very long value very long value very long value very long value very long value very long value very long value very long value very long value',
-              'as\\\\\\\\\\""""""""',
-            ].forEach(value => {
+          if (item.validation?.max) {
+            it('should have "maxlength" error when field is exceeding max length', () => {
               const fields = compiled.querySelectorAll('.profile-form-field');
               const uiIndex = index + 1; // as Profile name is at 0 position, the json items start from 1 i
               const input: HTMLInputElement = fields[uiIndex].querySelector(
-                'input'
+                '.mat-mdc-input-element'
               ) as HTMLInputElement;
-              input.value = value;
+              input.value =
+                'very long value very long value very long value very long value very long value very long value very long value very long value very long value very long value';
               input.dispatchEvent(new Event('input'));
               component.getControl(index).markAsTouched();
               fixture.detectChanges();
 
-              const error = compiled.querySelector('mat-error')?.textContent;
-              expect(error).toContain(
-                'Please, check the email address. Valid e-mail can contain only latin letters, numbers, @ and . (dot).'
-              );
+              const errors = fields[uiIndex].querySelectorAll('mat-error');
+              let hasError = false;
+              errors.forEach(error => {
+                if (
+                  error.textContent ===
+                  `The field must be a maximum of ${item.validation?.max} characters.`
+                ) {
+                  hasError = true;
+                }
+              });
+              expect(hasError).toBeTrue();
             });
-          });
+          }
         });
       }
     });
+
+    describe('Draft button', () => {
+      it('should be disabled when profile name is empty', () => {
+        component.nameControl.setValue('');
+        fixture.detectChanges();
+        const draftButton = compiled.querySelector(
+          '.save-draft-button'
+        ) as HTMLButtonElement;
+
+        expect(draftButton.disabled).toBeTrue();
+      });
+
+      it('should be disabled when profile name is not empty but other fields in wrong format', () => {
+        component.nameControl.setValue('New profile');
+        component.getControl('0').setValue('test');
+        fixture.detectChanges();
+        const draftButton = compiled.querySelector(
+          '.save-draft-button'
+        ) as HTMLButtonElement;
+
+        expect(draftButton.disabled).toBeTrue();
+      });
+
+      it('should be enabled when profile name is not empty; other fields are empty or in correct format', () => {
+        component.nameControl.setValue('New profile');
+        component.getControl('0').setValue('a@test.te;b@test.te, c@test.te');
+        fixture.detectChanges();
+        const draftButton = compiled.querySelector(
+          '.save-draft-button'
+        ) as HTMLButtonElement;
+
+        expect(draftButton.disabled).toBeFalse();
+      });
+
+      it('should emit new profile in draft status', () => {
+        component.nameControl.setValue('New profile');
+        fixture.detectChanges();
+        const emitSpy = spyOn(component.saveProfile, 'emit');
+        const draftButton = compiled.querySelector(
+          '.save-draft-button'
+        ) as HTMLButtonElement;
+        draftButton.click();
+
+        expect(emitSpy).toHaveBeenCalledWith({
+          ...NEW_PROFILE_MOCK_DRAFT,
+        });
+      });
+    });
+
+    describe('Save button', () => {
+      beforeEach(() => {
+        fillForm(component);
+        fixture.detectChanges();
+      });
+
+      it('should be enabled when required fields are present', () => {
+        const saveButton = compiled.querySelector(
+          '.save-profile-button'
+        ) as HTMLButtonElement;
+
+        expect(saveButton.disabled).toBeFalse();
+      });
+
+      it('should emit new profile', () => {
+        const emitSpy = spyOn(component.saveProfile, 'emit');
+        const saveButton = compiled.querySelector(
+          '.save-profile-button'
+        ) as HTMLButtonElement;
+        saveButton.click();
+
+        expect(emitSpy).toHaveBeenCalledWith({
+          ...NEW_PROFILE_MOCK,
+        });
+      });
+    });
   });
+
+  describe('Class tests', () => {
+    describe('with profile', () => {
+      beforeEach(() => {
+        component.selectedProfile = PROFILE_MOCK;
+        fixture.detectChanges();
+      });
+
+      it('save profile should have rename field', () => {
+        const emitSpy = spyOn(component.saveProfile, 'emit');
+        fillForm(component);
+        component.onSaveClick(ProfileStatus.VALID);
+
+        expect(emitSpy).toHaveBeenCalledWith(RENAME_PROFILE_MOCK);
+      });
+
+      it('should not have an error when uses the name of removed profile', () => {
+        component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, PROFILE_MOCK_3];
+        component.nameControl.setValue('Third profile name');
+
+        expect(
+          component.nameControl.hasError('has_same_profile_name')
+        ).toBeTrue();
+
+        component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2];
+        expect(
+          component.nameControl.hasError('has_same_profile_name')
+        ).toBeFalse();
+      });
+
+      it('should have an error when uses the name of added profile', () => {
+        component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2];
+        component.nameControl.setValue('Third profile name');
+
+        expect(
+          component.nameControl.hasError('has_same_profile_name')
+        ).toBeFalse();
+
+        component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, PROFILE_MOCK_3];
+        expect(
+          component.nameControl.hasError('has_same_profile_name')
+        ).toBeTrue();
+      });
+    });
+
+    describe('with no profile', () => {
+      beforeEach(() => {
+        component.selectedProfile = null;
+        fixture.detectChanges();
+      });
+
+      it('save profile should not have rename field', () => {
+        const emitSpy = spyOn(component.saveProfile, 'emit');
+        fillForm(component);
+        component.onSaveClick(ProfileStatus.VALID);
+
+        expect(emitSpy).toHaveBeenCalledWith(NEW_PROFILE_MOCK);
+      });
+    });
+  });
+
+  function fillForm(component: ProfileFormComponent) {
+    component.nameControl.setValue('New profile');
+    component.getControl('0').setValue('a@test.te;b@test.te, c@test.te');
+    component.getControl('1').setValue('test');
+    component.getControl('2').setValue('test');
+    component.getControl('3').setValue({ 0: true, 1: true, 2: true });
+    component.getControl('4').setValue('test');
+    component.profileForm.markAsDirty();
+    fixture.detectChanges();
+  }
 });

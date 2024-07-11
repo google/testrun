@@ -1,4 +1,6 @@
-# Virtual Machine
+<img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
+
+## Virtual Machine
 
 This guide will provide steps to use Testrun within a virtual machine in virtual Box (VMWare and other providers have not yet been tested). You should use this guide alongside the [Get Started guide](/docs/get_started.md) - only differences will be outlined in this guide.
 

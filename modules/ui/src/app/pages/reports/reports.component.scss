@@ -19,8 +19,8 @@
 
 :host {
   overflow: hidden;
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
 }
 
 .history-toolbar {
@@ -125,6 +125,10 @@
   align-items: center;
   justify-content: center;
   grid-row: 1/3;
+}
+
+.results-content-empty {
+  height: 100%;
 }
 
 .results-content-empty-message {

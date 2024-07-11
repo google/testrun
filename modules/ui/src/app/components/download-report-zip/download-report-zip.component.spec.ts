@@ -78,7 +78,6 @@ describe('DownloadReportZipComponent', () => {
         expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
           ariaLabel: 'Download zip',
           data: {
-            hasProfiles: false,
             profiles: [],
           },
           autoFocus: true,
@@ -90,6 +89,7 @@ describe('DownloadReportZipComponent', () => {
         tick();
 
         expect(testrunServiceMock.downloadZip).toHaveBeenCalled();
+        expect(router.url).not.toBe(Routes.RiskAssessment);
         openSpy.calls.reset();
       }));
 
@@ -104,7 +104,6 @@ describe('DownloadReportZipComponent', () => {
           expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
             ariaLabel: 'Download zip',
             data: {
-              hasProfiles: false,
               profiles: [],
             },
             autoFocus: true,
@@ -130,7 +129,6 @@ describe('DownloadReportZipComponent', () => {
         expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
           ariaLabel: 'Download zip',
           data: {
-            hasProfiles: false,
             profiles: [],
           },
           autoFocus: true,
@@ -173,9 +171,23 @@ describe('DownloadReportZipComponent', () => {
         expect(spyOnShow).toHaveBeenCalled();
       });
 
+      it('should be shown on focusin', () => {
+        const spyOnShow = spyOn(component.tooltip, 'show');
+        fixture.nativeElement.dispatchEvent(new Event('focusin'));
+
+        expect(spyOnShow).toHaveBeenCalled();
+      });
+
       it('should be hidden on mouseleave', () => {
         const spyOnHide = spyOn(component.tooltip, 'hide');
         fixture.nativeElement.dispatchEvent(new Event('mouseleave'));
+
+        expect(spyOnHide).toHaveBeenCalled();
+      });
+
+      it('should be hidden on focusout', () => {
+        const spyOnHide = spyOn(component.tooltip, 'hide');
+        fixture.nativeElement.dispatchEvent(new Event('focusout'));
 
         expect(spyOnHide).toHaveBeenCalled();
       });

@@ -28,7 +28,12 @@ import {
 } from '../model/testrun-status';
 import { Version } from '../model/version';
 import { Certificate } from '../model/certificate';
-import { Profile, ProfileFormat } from '../model/profile';
+import {
+  Profile,
+  ProfileFormat,
+  ProfileRisk,
+  RiskResultClassName,
+} from '../model/profile';
 
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
@@ -125,7 +130,10 @@ export class TestRunService {
   saveDevice(device: Device): Observable<boolean> {
     return this.http
       .post<boolean>(`${API_URL}/device`, JSON.stringify(device))
-      .pipe(map(() => true));
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
 
   editDevice(device: Device, mac_addr: string): Observable<boolean> {
@@ -140,14 +148,20 @@ export class TestRunService {
 
     return this.http
       .post<boolean>(`${API_URL}/device/edit`, JSON.stringify(request))
-      .pipe(map(() => true));
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
   deleteDevice(device: Device): Observable<boolean> {
     return this.http
       .delete<boolean>(`${API_URL}/device`, {
         body: JSON.stringify(device),
       })
-      .pipe(map(() => true));
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
 
   getHistory(): Observable<TestrunStatus[] | null> {
@@ -170,6 +184,13 @@ export class TestRunService {
       grey:
         result === StatusOfTestResult.NotDetected ||
         result === StatusOfTestResult.NotStarted,
+    };
+  }
+
+  getRiskClass(riskResult: string): RiskResultClassName {
+    return {
+      red: riskResult === ProfileRisk.HIGH,
+      cyan: riskResult === ProfileRisk.LIMITED,
     };
   }
 
@@ -282,5 +303,14 @@ export class TestRunService {
 
   fetchProfilesFormat(): Observable<ProfileFormat[]> {
     return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
+  }
+
+  saveProfile(profile: Profile): Observable<boolean> {
+    return this.http
+      .post<boolean>(`${API_URL}/profiles`, JSON.stringify(profile))
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
   }
 }

@@ -51,14 +51,17 @@
   }
 }
 
+.profile-form-field {
+  width: 100%;
+}
+
 .form-actions {
   display: flex;
   gap: 16px;
   padding: 8px 24px 24px 24px;
 }
 
-.save-draft-button,
-.discard-button {
+.save-draft-button:not(.mat-mdc-button-disabled) {
   color: $primary;
 }
 

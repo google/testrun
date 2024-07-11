@@ -50,7 +50,7 @@ class TestModule:
     global LOGGER
     LOGGER = logger.get_logger(name=log_name,
                                log_file=module_name,
-                               log_dir=log_dir)
+                               log_dir=log_dir) # pylint: disable=E1123
 
   def generate_module_report(self):
     pass
@@ -125,9 +125,9 @@ class TestModule:
           test['description'] = 'No description was provided for this test'
         else:
           # TODO: This is assuming that result is an array but haven't checked
-          # Skipped result
+          # Error result
           if result[0] is None:
-            test['result'] = 'Skipped'
+            test['result'] = 'Error'
             if len(result) > 1:
               test['description'] = result[1]
             else:

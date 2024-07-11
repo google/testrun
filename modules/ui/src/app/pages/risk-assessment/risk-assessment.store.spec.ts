@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of, skip, take } from 'rxjs';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TestRunService } from '../../services/test-run.service';
@@ -21,6 +21,7 @@ import SpyObj = jasmine.SpyObj;
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import {
+  NEW_PROFILE_MOCK,
   PROFILE_FORM,
   PROFILE_MOCK,
   PROFILE_MOCK_2,
@@ -28,7 +29,7 @@ import {
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
-import { setRiskProfiles } from '../../store/actions';
+import { fetchRiskProfiles, setRiskProfiles } from '../../store/actions';
 
 describe('RiskAssessmentStore', () => {
   let riskAssessmentStore: RiskAssessmentStore;
@@ -41,7 +42,9 @@ describe('RiskAssessmentStore', () => {
       'fetchProfiles',
       'deleteProfile',
       'fetchProfilesFormat',
+      'saveProfile',
     ]);
+    mockService.saveProfile.and.returnValue(of(true));
     mockFocusManagerService = jasmine.createSpyObj([
       'focusFirstElementInContainer',
     ]);
@@ -66,6 +69,7 @@ describe('RiskAssessmentStore', () => {
     store = TestBed.inject(MockStore);
     riskAssessmentStore = TestBed.inject(RiskAssessmentStore);
 
+    mockFocusManagerService.focusFirstElementInContainer.calls.reset();
     spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
@@ -82,6 +86,15 @@ describe('RiskAssessmentStore', () => {
 
       riskAssessmentStore.updateProfileFormat(PROFILE_FORM);
     });
+
+    it('should update selected profile', (done: DoneFn) => {
+      riskAssessmentStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
+        expect(store.selectedProfile).toEqual(PROFILE_MOCK);
+        done();
+      });
+
+      riskAssessmentStore.updateSelectedProfile(PROFILE_MOCK);
+    });
   });
 
   describe('selectors', () => {
@@ -90,6 +103,7 @@ describe('RiskAssessmentStore', () => {
         expect(store).toEqual({
           profiles: [PROFILE_MOCK, PROFILE_MOCK_2],
           profileFormat: [],
+          selectedProfile: null,
         });
         done();
       });
@@ -157,6 +171,49 @@ describe('RiskAssessmentStore', () => {
       });
     });
 
+    describe('setFocusOnCreateButton', () => {
+      const container = document.createElement('div') as HTMLElement;
+      container.classList.add('risk-assessment-content-empty');
+      document.querySelector('body')?.appendChild(container);
+
+      it('should call focusFirstElementInContainer', fakeAsync(() => {
+        riskAssessmentStore.setFocusOnCreateButton();
+
+        tick(11);
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalledWith(container);
+      }));
+    });
+
+    describe('setFocusOnSelectedProfile', () => {
+      const container = document.createElement('div') as HTMLElement;
+      container.classList.add('profiles-drawer-content');
+      const inner = document.createElement('div') as HTMLElement;
+      inner.classList.add('selected');
+      container.appendChild(inner);
+      document.querySelector('body')?.appendChild(container);
+
+      it('should call focusFirstElementInContainer', () => {
+        riskAssessmentStore.setFocusOnSelectedProfile();
+
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalledWith(inner);
+      });
+    });
+
+    describe('setFocusOnProfileForm', () => {
+      const profileForm = window.document.querySelector('app-profile-form');
+      it('should call focusFirstElementInContainer', () => {
+        riskAssessmentStore.setFocusOnProfileForm();
+
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalledWith(profileForm);
+      });
+    });
+
     describe('getProfilesFormat', () => {
       it('should update store', done => {
         mockService.fetchProfilesFormat.and.returnValue(of(PROFILE_FORM));
@@ -169,6 +226,14 @@ describe('RiskAssessmentStore', () => {
           });
 
         riskAssessmentStore.getProfilesFormat();
+      });
+    });
+
+    describe('saveProfile', () => {
+      it('should dispatch fetchRiskProfiles', () => {
+        riskAssessmentStore.saveProfile(NEW_PROFILE_MOCK);
+
+        expect(store.dispatch).toHaveBeenCalledWith(fetchRiskProfiles());
       });
     });
   });

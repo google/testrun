@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of, skip, take } from 'rxjs';
 import { AppStore, CONSENT_SHOWN_KEY } from './app.store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -32,14 +32,14 @@ import { TestRunService } from './services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { device } from './mocks/device.mock';
 import {
+  fetchRiskProfiles,
   fetchSystemStatus,
   setDevices,
-  setRiskProfiles,
 } from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
-import { PROFILE_MOCK } from './mocks/profile.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from './services/notification.service';
+import { FocusManagerService } from './services/focus-manager.service';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -64,14 +64,15 @@ describe('AppStore', () => {
   let store: MockStore<AppState>;
   let mockService: SpyObj<TestRunService>;
   let mockNotificationService: SpyObj<NotificationService>;
+  let mockFocusManagerService: SpyObj<FocusManagerService>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj('mockService', [
-      'fetchDevices',
-      'fetchProfiles',
-    ]);
+    mockService = jasmine.createSpyObj('mockService', ['fetchDevices']);
     mockNotificationService = jasmine.createSpyObj('mockNotificationService', [
       'notify',
+    ]);
+    mockFocusManagerService = jasmine.createSpyObj([
+      'focusFirstElementInContainer',
     ]);
 
     TestBed.configureTestingModule({
@@ -85,6 +86,7 @@ describe('AppStore', () => {
         }),
         { provide: TestRunService, useValue: mockService },
         { provide: NotificationService, useValue: mockNotificationService },
+        { provide: FocusManagerService, useValue: mockFocusManagerService },
       ],
       imports: [BrowserAnimationsModule],
     });
@@ -183,18 +185,10 @@ describe('AppStore', () => {
     });
 
     describe('fetchProfiles', () => {
-      const riskProfiles = [PROFILE_MOCK];
-
-      beforeEach(() => {
-        mockService.fetchProfiles.and.returnValue(of(riskProfiles));
-      });
-
-      it('should dispatch action setRiskProfiles', () => {
+      it('should dispatch action fetchRiskProfiles', () => {
         appStore.getRiskProfiles();
 
-        expect(store.dispatch).toHaveBeenCalledWith(
-          setRiskProfiles({ riskProfiles })
-        );
+        expect(store.dispatch).toHaveBeenCalledWith(fetchRiskProfiles());
       });
     });
 
@@ -219,6 +213,18 @@ describe('AppStore', () => {
         );
         store.refreshState();
       });
+    });
+
+    describe('setFocusOnPage', () => {
+      it('should call focusFirstElementInContainer', fakeAsync(() => {
+        appStore.setFocusOnPage();
+
+        tick(101);
+
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalled();
+      }));
     });
   });
 });

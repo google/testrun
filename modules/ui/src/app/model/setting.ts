@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 export interface SystemConfig {
-  network?: {
+  network: {
     device_intf?: string;
     internet_intf?: string;
-  };
+  } | null;
   log_level?: string;
   monitor_period?: number;
 }
 
 export interface InterfacesValidation {
-  hasSetInterfaces: boolean;
   deviceValid: boolean;
   internetValid: boolean;
 }
