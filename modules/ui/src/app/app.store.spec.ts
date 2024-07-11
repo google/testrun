@@ -26,6 +26,7 @@ import {
   selectInterfaces,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
+  selectReports,
   selectStatus,
   selectTestModules,
 } from './store/selectors';
@@ -103,6 +104,7 @@ describe('AppStore', () => {
 
     store.overrideSelector(selectHasDevices, true);
     store.overrideSelector(selectHasRiskProfiles, false);
+    store.overrideSelector(selectReports, []);
     store.overrideSelector(selectHasConnectionSettings, true);
     store.overrideSelector(selectMenuOpened, true);
     store.overrideSelector(selectInterfaces, {});
@@ -147,6 +149,7 @@ describe('AppStore', () => {
           consentShown: false,
           hasDevices: true,
           hasRiskProfiles: false,
+          reports: [],
           isStatusLoaded: false,
           systemStatus: null,
           hasConnectionSettings: true,

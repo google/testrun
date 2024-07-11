@@ -24,6 +24,7 @@ import {
   selectHasRiskProfiles,
   selectInterfaces,
   selectMenuOpened,
+  selectReports,
   selectStatus,
 } from './store/selectors';
 import { Store } from '@ngrx/store';
@@ -55,6 +56,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
   private hasDevices$ = this.store.select(selectHasDevices);
   private hasRiskProfiles$ = this.store.select(selectHasRiskProfiles);
+  private reports$ = this.store.select(selectReports);
   private hasConnectionSetting$ = this.store.select(
     selectHasConnectionSettings
   );
@@ -69,6 +71,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
     consentShown: this.consentShown$,
     hasDevices: this.hasDevices$,
     hasRiskProfiles: this.hasRiskProfiles$,
+    reports: this.reports$,
     isStatusLoaded: this.isStatusLoaded$,
     systemStatus: this.systemStatus$,
     hasConnectionSettings: this.hasConnectionSetting$,
