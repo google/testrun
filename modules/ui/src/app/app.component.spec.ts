@@ -68,6 +68,7 @@ import { CertificatesComponent } from './pages/certificates/certificates.compone
 import { of } from 'rxjs';
 import { WINDOW } from './providers/window.provider';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { HISTORY } from './mocks/reports.mock';
 
 const windowMock = {
   location: {
@@ -488,6 +489,16 @@ describe('AppComponent', () => {
 
         expect(callout).toBeTruthy();
         expect(calloutContent).toContain('Step 3');
+      });
+
+      it('should NOT have callout component with "Step 3" if has reports', () => {
+        store.overrideSelector(selectReports, [...HISTORY]);
+        store.refreshState();
+        fixture.detectChanges();
+
+        const callout = compiled.querySelector('app-callout');
+
+        expect(callout).toBeFalsy();
       });
     });
 
