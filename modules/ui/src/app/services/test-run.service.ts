@@ -18,7 +18,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
 import { Device, TestModule } from '../model/device';
-import { catchError, map, of, ReplaySubject, retry } from 'rxjs';
+import { catchError, map, of, retry } from 'rxjs';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
 import {
   StatusOfTestResult,
@@ -27,6 +27,13 @@ import {
   TestrunStatus,
 } from '../model/testrun-status';
 import { Version } from '../model/version';
+import { Certificate } from '../model/certificate';
+import {
+  Profile,
+  ProfileFormat,
+  ProfileRisk,
+  RiskResultClassName,
+} from '../model/profile';
 
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
@@ -75,23 +82,9 @@ export class TestRunService {
     },
   ];
 
-  private isOpenStartTestrunSub$ = new BehaviorSubject<boolean>(false);
-  public isOpenStartTestrun$ = this.isOpenStartTestrunSub$.asObservable();
-  private systemStatusSubject = new ReplaySubject<TestrunStatus>(1);
-  public systemStatus$ = this.systemStatusSubject.asObservable();
-  private isTestrunStartedSub$ = new BehaviorSubject<boolean>(false);
-  public isTestrunStarted$ = this.isTestrunStartedSub$.asObservable();
   private version = new BehaviorSubject<Version | null>(null);
 
   constructor(private http: HttpClient) {}
-
-  setIsOpenStartTestrun(isOpen: boolean): void {
-    this.isOpenStartTestrunSub$.next(isOpen);
-  }
-
-  setSystemStatus(status: TestrunStatus): void {
-    this.systemStatusSubject.next(status);
-  }
 
   fetchDevices(): Observable<Device[]> {
     return this.http.get<Device[]>(`${API_URL}/devices`);
@@ -111,28 +104,17 @@ export class TestRunService {
     return this.http.get<SystemInterfaces>(`${API_URL}/system/interfaces`);
   }
 
-  /**
-   * Gets system status.
-   * Status Cancelling exist only on FE. Every status except Cancelled
-   * should be overriden with Cancelling value during cancelling process
-   * @param isCancelling - indicates if status should be overridden with Cancelling value
-   */
-  getSystemStatus(isCancelling?: boolean): void {
-    this.http.get<TestrunStatus>(`${API_URL}/system/status`).subscribe(
-      (res: TestrunStatus) => {
-        if (isCancelling && res.status !== StatusOfTestrun.Cancelled) {
-          res.status = StatusOfTestrun.Cancelling;
-        }
-        this.setSystemStatus(res);
-      },
-      err => console.error('HTTP Error', err)
-    );
+  fetchSystemStatus() {
+    return this.http.get<TestrunStatus>(`${API_URL}/system/status`);
   }
 
   stopTestrun(): Observable<boolean> {
     return this.http
       .post<{ success: string }>(`${API_URL}${SYSTEM_STOP}`, {})
-      .pipe(map(() => true));
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
   }
 
   shutdownTestrun(): Observable<boolean> {
@@ -148,7 +130,10 @@ export class TestRunService {
   saveDevice(device: Device): Observable<boolean> {
     return this.http
       .post<boolean>(`${API_URL}/device`, JSON.stringify(device))
-      .pipe(map(() => true));
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
 
   editDevice(device: Device, mac_addr: string): Observable<boolean> {
@@ -163,14 +148,20 @@ export class TestRunService {
 
     return this.http
       .post<boolean>(`${API_URL}/device/edit`, JSON.stringify(request))
-      .pipe(map(() => true));
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
   deleteDevice(device: Device): Observable<boolean> {
     return this.http
       .delete<boolean>(`${API_URL}/device`, {
         body: JSON.stringify(device),
       })
-      .pipe(map(() => true));
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
 
   getHistory(): Observable<TestrunStatus[] | null> {
@@ -196,15 +187,26 @@ export class TestRunService {
     };
   }
 
-  startTestrun(device: Device): Observable<boolean> {
-    this.isTestrunStartedSub$.next(true);
+  getRiskClass(riskResult: string): RiskResultClassName {
+    return {
+      red: riskResult === ProfileRisk.HIGH,
+      cyan: riskResult === ProfileRisk.LIMITED,
+    };
+  }
 
-    return this.http
-      .post<TestrunStatus>(
-        `${API_URL}/system/start`,
-        JSON.stringify({ device })
-      )
-      .pipe(map(() => true));
+  testrunInProgress(status?: string | null): boolean {
+    return (
+      status === StatusOfTestrun.InProgress ||
+      status === StatusOfTestrun.WaitingForDevice ||
+      status === StatusOfTestrun.Monitoring
+    );
+  }
+
+  startTestrun(device: Device): Observable<TestrunStatus> {
+    return this.http.post<TestrunStatus>(
+      `${API_URL}/system/start`,
+      JSON.stringify({ device })
+    );
   }
 
   getVersion(): BehaviorSubject<Version | null> {
@@ -232,6 +234,83 @@ export class TestRunService {
       .delete<boolean>(`${API_URL}/report`, {
         body: JSON.stringify({ mac_addr, timestamp: started }),
       })
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
+  }
+
+  fetchProfiles(): Observable<Profile[]> {
+    return this.http.get<Profile[]>(`${API_URL}/profiles`);
+  }
+
+  deleteProfile(name: string): Observable<boolean> {
+    return this.http
+      .delete<boolean>(`${API_URL}/profiles`, {
+        body: JSON.stringify({ name }),
+      })
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
+  }
+
+  fetchCertificates(): Observable<Certificate[]> {
+    return this.http.get<Certificate[]>(`${API_URL}/system/config/certs`);
+  }
+
+  deleteCertificate(name: string): Observable<boolean> {
+    return this.http
+      .delete<boolean>(`${API_URL}/system/config/certs`, {
+        body: JSON.stringify({ name }),
+      })
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
+  }
+
+  uploadCertificate(file: File): Observable<boolean> {
+    const formData: FormData = new FormData();
+    formData.append('file', file, file.name);
+    return this.http
+      .post<boolean>(`${API_URL}/system/config/certs`, formData)
       .pipe(map(() => true));
+  }
+
+  downloadZip(url: string, profile: string) {
+    this.http
+      .post(url, JSON.stringify({ profile }), {
+        responseType: 'blob',
+        observe: 'response',
+      })
+      .subscribe(response => {
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let fileName = contentDisposition?.split(';')[1].trim().split('=')[1];
+        fileName = fileName?.replace(/"/g, '');
+
+        const blob = new Blob([response.body as BlobPart], {
+          type: 'application/zip',
+        });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.target = '_blank';
+        link.download = fileName ?? 'report.zip';
+        link.dispatchEvent(new MouseEvent('click'));
+      });
+  }
+
+  fetchProfilesFormat(): Observable<ProfileFormat[]> {
+    return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
+  }
+
+  saveProfile(profile: Profile): Observable<boolean> {
+    return this.http
+      .post<boolean>(`${API_URL}/profiles`, JSON.stringify(profile))
+      .pipe(
+        catchError(() => of(false)),
+        map(res => !!res)
+      );
   }
 }

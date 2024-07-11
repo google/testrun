@@ -50,7 +50,7 @@ class TestModule:
     global LOGGER
     LOGGER = logger.get_logger(name=log_name,
                                log_file=module_name,
-                               log_dir=log_dir)
+                               log_dir=log_dir) # pylint: disable=E1123
 
   def generate_module_report(self):
     pass
@@ -124,18 +124,20 @@ class TestModule:
           test['result'] = 'Compliant' if result else 'Non-Compliant'
           test['description'] = 'No description was provided for this test'
         else:
-          # Skipped result
+          # TODO: This is assuming that result is an array but haven't checked
+          # Error result
           if result[0] is None:
-            test['result'] = 'Skipped'
+            test['result'] = 'Error'
             if len(result) > 1:
               test['description'] = result[1]
             else:
               test['description'] = 'An error occured whilst running this test'
+
           # Compliant / Non-Compliant result
           elif isinstance(result[0], bool):
             test['result'] = 'Compliant' if result[0] else 'Non-Compliant'
-          # Result may be a string, e.g error
-          elif result[0] == 'Error':
+          # Result may be a string, e.g Error, Feature Not Detected
+          elif isinstance(result[0], str):
             test['result'] = result[0]
           else:
             LOGGER.error(f'Unknown result detected: {result[0]}')

@@ -60,8 +60,6 @@ DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
-VERSION = '1.2.2'
-
 class Testrun:  # pylint: disable=too-few-public-methods
   """Test Run controller.
 
@@ -89,8 +87,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     self._register_exits()
 
     # Create session
-    self._session = TestrunSession(config_file=self._config_file,
-                                   version=self.get_version())
+    self._session = TestrunSession(root_dir=root_dir)
 
     # Register runtime parameters
     if single_intf:
@@ -100,13 +97,17 @@ class Testrun:  # pylint: disable=too-few-public-methods
     if validate:
       self._session.add_runtime_param('validate')
 
-    self.load_all_devices()
-
     self._net_orc = net_orc.NetworkOrchestrator(
       session=self._session)
     self._test_orc = test_orc.TestOrchestrator(
       self._session,
       self._net_orc)
+
+    # Load device repository
+    self.load_all_devices()
+
+    # Load test modules
+    self._test_orc.start()
 
     if self._no_ui:
 
@@ -131,7 +132,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
         time.sleep(1)
 
   def get_version(self):
-    return VERSION
+    return self.get_session().get_version()
 
   def load_all_devices(self):
     self._session.clear_device_repository()
@@ -208,10 +209,20 @@ class Testrun:  # pylint: disable=too-few-public-methods
     LOGGER.info(f'Loading reports from {reports_folder}')
 
     for report_folder in os.listdir(reports_folder):
+      # 1.3 file path
       report_json_file_path = os.path.join(
         reports_folder,
         report_folder,
+        'test',
+        device.mac_addr.replace(':',''),
         'report.json')
+        
+      if not os.path.isfile(report_json_file_path):
+        # Revert to pre 1.3 file path
+        report_json_file_path = os.path.join(
+          reports_folder,
+          report_folder,
+          'report.json')
 
       # Check if the report.json file exists
       if not os.path.isfile(report_json_file_path):
@@ -324,8 +335,6 @@ class Testrun:  # pylint: disable=too-few-public-methods
     if self._net_only:
       LOGGER.info('Network only option configured, no tests will be run')
     else:
-      self._test_orc.start()
-
       self.get_net_orc().get_listener().register_callback(
           self._device_stable,
           [NetworkEvent.DEVICE_STABLE]
@@ -381,6 +390,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
   def get_net_orc(self):
     return self._net_orc
+
+  def get_test_orc(self):
+    return self._test_orc
 
   def _start_network(self):
     # Start the network orchestrator

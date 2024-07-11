@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Baseline test module"""
+"""TLS test module"""
 from test_module import TestModule
 from tls_util import TLSUtil
 import pyshark
@@ -27,7 +27,7 @@ GATEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
 LOGGER = None
 
 class TLSModule(TestModule):
-  """An example testing module."""
+  """The TLS testing module."""
 
   def __init__(self,
                module,
@@ -50,7 +50,6 @@ class TLSModule(TestModule):
     self._tls_util = TLSUtil(LOGGER)
 
   # def generate_module_report(self):
-
   # html_content = '<h1>TLS Module</h1>'
 
   # # List of capture files to scan
@@ -119,7 +118,7 @@ class TLSModule(TestModule):
   #     # cert_table = (f'| Property | Value |\n'
   #     #               f'|---|---|\n'
   #     #               f"| {'Version':<17} | {version_value:^25} |\n"
-  #     #               f"| {'Signature Alg.':<17} | 
+  #     #               f"| {'Signature Alg.':<17} |
   #                         {signature_alg_value:^25} |\n"
   #     #               f"| {'Validity from':<17} | {not_before:^25} |\n"
   #     #               f"| {'Valid to':<17} | {not_after:^25} |")
@@ -269,7 +268,7 @@ class TLSModule(TestModule):
       return results[0], description,results[1]
 
     else:
-      LOGGER.error('Could not resolve device IP address. Skipping')
+      LOGGER.error('Could not resolve device IP address')
       return 'Error', 'Could not resolve device IP address'
 
   def _security_tls_v1_2_client(self):
@@ -280,13 +279,17 @@ class TLSModule(TestModule):
       results = self._validate_tls_client(self._device_ipv4_addr, '1.2')
       # Determine results and return proper messaging and details
       description = ''
+      result = None
       if results[0] is None:
         description = 'No outbound connections were found'
+        result = 'Feature Not Detected'
       elif results[0]:
         description = 'TLS 1.2 client connections valid'
+        result = True
       else:
         description = 'TLS 1.2 client connections invalid'
-      return results[0], description,  results[1]
+        result = False
+      return result, description,  results[1]
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'
@@ -307,7 +310,7 @@ class TLSModule(TestModule):
         description = 'TLS 1.3 client connections invalid'
       return results[0], description,  results[1]
     else:
-      LOGGER.error('Could not resolve device IP address. Skipping')
+      LOGGER.error('Could not resolve device IP address')
       return 'Error', 'Could not resolve device IP address'
 
   def _validate_tls_client(self, client_ip, tls_version):
@@ -320,9 +323,9 @@ class TLSModule(TestModule):
 
     # Generate results based on the state
     result_message = 'No outbound connections were found.'
-    result_state = None
+    result_state = 'Feature Not Detected'
 
-    # If any of the packetes detect failed client comms, fail the test
+    # If any of the packets detect failed client comms, fail the test
     if not client_results[0] and client_results[0] is not None:
       result_state = False
       result_message = client_results[1]

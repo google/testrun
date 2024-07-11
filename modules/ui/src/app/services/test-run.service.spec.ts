@@ -17,18 +17,29 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { getTestBed, TestBed } from '@angular/core/testing';
+import { fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
 import { Device, TestModule } from '../model/device';
 
 import { TestRunService, UNAVAILABLE_VERSION } from './test-run.service';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/testrun.mock';
 import {
-  MOCK_PROGRESS_DATA_CANCELLING,
-  MOCK_PROGRESS_DATA_IN_PROGRESS,
-} from '../mocks/progress.mock';
-import { StatusOfTestResult, TestrunStatus } from '../model/testrun-status';
+  StatusOfTestResult,
+  StatusOfTestrun,
+  TestrunStatus,
+} from '../model/testrun-status';
 import { device } from '../mocks/device.mock';
 import { NEW_VERSION, VERSION } from '../mocks/version.mock';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { AppState } from '../store/state';
+import { Certificate } from '../model/certificate';
+import { certificate } from '../mocks/certificate.mock';
+import {
+  NEW_PROFILE_MOCK,
+  PROFILE_FORM,
+  PROFILE_MOCK,
+} from '../mocks/profile.mock';
+import { ProfileRisk } from '../model/profile';
 
 const MOCK_SYSTEM_CONFIG: SystemConfig = {
   network: {
@@ -41,15 +52,18 @@ describe('TestRunService', () => {
   let injector: TestBed;
   let httpTestingController: HttpTestingController;
   let service: TestRunService;
+  let store: MockStore<AppState>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [TestRunService],
+      providers: [TestRunService, provideMockStore({})],
     });
     injector = getTestBed();
     httpTestingController = injector.get(HttpTestingController);
     service = injector.get(TestRunService);
+    store = TestBed.inject(MockStore);
+    spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
   afterEach(() => {
@@ -155,30 +169,14 @@ describe('TestRunService', () => {
     req.flush(mockSystemInterfaces);
   });
 
-  describe('getSystemStatus', () => {
+  describe('fetchSystemStatus', () => {
     it('should get system status data with no changes', () => {
       const result = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
 
-      service.systemStatus$.subscribe(res => {
+      service.fetchSystemStatus().subscribe(res => {
         expect(res).toEqual(result);
       });
 
-      service.getSystemStatus();
-      const req = httpTestingController.expectOne(
-        'http://localhost:8000/system/status'
-      );
-      expect(req.request.method).toBe('GET');
-      req.flush(result);
-    });
-
-    it('should get cancelling data if status is cancelling', () => {
-      const result = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
-
-      service.systemStatus$.subscribe(res => {
-        expect(res).toEqual(MOCK_PROGRESS_DATA_CANCELLING);
-      });
-
-      service.getSystemStatus(true);
       const req = httpTestingController.expectOne(
         'http://localhost:8000/system/status'
       );
@@ -218,13 +216,13 @@ describe('TestRunService', () => {
       const apiUrl = 'http://localhost:8000/system/start';
 
       service.startTestrun(device).subscribe(res => {
-        expect(res).toEqual(true);
+        expect(res).toEqual(MOCK_PROGRESS_DATA_IN_PROGRESS);
       });
 
       const req = httpTestingController.expectOne(apiUrl);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(JSON.stringify({ device }));
-      req.flush({});
+      req.flush(MOCK_PROGRESS_DATA_IN_PROGRESS);
     });
   });
 
@@ -329,6 +327,61 @@ describe('TestRunService', () => {
     });
   });
 
+  describe('#getRiskClass', () => {
+    it('should return "red" class as true if risk result is "High"', () => {
+      const expectedResult = {
+        red: true,
+        cyan: false,
+      };
+
+      const result = service.getRiskClass(ProfileRisk.HIGH);
+
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should return "cyan" class as true if risk result is "Limited"', () => {
+      const expectedResult = {
+        red: false,
+        cyan: true,
+      };
+
+      const result = service.getRiskClass(ProfileRisk.LIMITED);
+
+      expect(result).toEqual(expectedResult);
+    });
+  });
+
+  describe('#testrunInProgress', () => {
+    const resultsInProgress = [
+      StatusOfTestrun.InProgress,
+      StatusOfTestrun.WaitingForDevice,
+      StatusOfTestrun.Monitoring,
+    ];
+
+    const resultsNotInProgress = [
+      StatusOfTestrun.Idle,
+      StatusOfTestrun.Cancelled,
+      StatusOfTestrun.Compliant,
+      StatusOfTestrun.NonCompliant,
+    ];
+
+    resultsInProgress.forEach(testCase => {
+      it(`should return true if testrun result is "${testCase}"`, () => {
+        const result = service.testrunInProgress(testCase);
+
+        expect(result).toBeTrue();
+      });
+    });
+
+    resultsNotInProgress.forEach(testCase => {
+      it(`should return false if testrun result is "${testCase}"`, () => {
+        const result = service.testrunInProgress(testCase);
+
+        expect(result).toBeFalse();
+      });
+    });
+  });
+
   it('deleteDevice should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/device';
 
@@ -409,6 +462,24 @@ describe('TestRunService', () => {
     req.flush({});
   });
 
+  it('deleteReport should return false when error happens', () => {
+    const apiUrl = 'http://localhost:8000/report';
+
+    service.deleteReport(device.mac_addr, '').subscribe(res => {
+      expect(res).toEqual(false);
+    });
+
+    const req = httpTestingController.expectOne(apiUrl);
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.body).toEqual(
+      JSON.stringify({
+        mac_addr: device.mac_addr,
+        timestamp: '',
+      })
+    );
+    req.error(new ErrorEvent(''));
+  });
+
   it('#saveDevice should have necessary request data', () => {
     const apiUrl = 'http://localhost:8000/device';
 
@@ -435,5 +506,173 @@ describe('TestRunService', () => {
       JSON.stringify({ mac_addr: '01:01:01:01:01:01', device })
     );
     req.flush(true);
+  });
+
+  it('fetchProfiles should return profiles', () => {
+    service.fetchProfiles().subscribe(res => {
+      expect(res).toEqual([PROFILE_MOCK]);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/profiles'
+    );
+
+    expect(req.request.method).toBe('GET');
+
+    req.flush([PROFILE_MOCK]);
+  });
+
+  it('deleteProfile should delete profile', () => {
+    service.deleteProfile('test').subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/profiles'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.flush(true);
+  });
+
+  it('deleteProfile should return false when error happens', () => {
+    service.deleteProfile('test').subscribe(res => {
+      expect(res).toEqual(false);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/profiles'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.error(new ErrorEvent(''));
+  });
+
+  it('fetchCertificates should return certificates', () => {
+    const certificates = [certificate] as Certificate[];
+
+    service.fetchCertificates().subscribe(res => {
+      expect(res).toEqual(certificates);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs'
+    );
+
+    expect(req.request.method).toBe('GET');
+
+    req.flush(certificates);
+  });
+
+  it('uploadCertificates should upload certificate', () => {
+    service.uploadCertificate(new File([], 'test')).subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs'
+    );
+
+    expect(req.request.method).toBe('POST');
+
+    req.flush(true);
+  });
+
+  it('deleteCertificate should delete certificate', () => {
+    service.deleteCertificate('test').subscribe(res => {
+      expect(res).toEqual(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.flush(true);
+  });
+
+  it('deleteCertificate should return false when error happens', () => {
+    service.deleteCertificate('test').subscribe(res => {
+      expect(res).toEqual(false);
+    });
+
+    const req = httpTestingController.expectOne(
+      'http://localhost:8000/system/config/certs'
+    );
+
+    expect(req.request.method).toBe('DELETE');
+
+    req.error(new ErrorEvent(''));
+  });
+
+  it('downloadZip should download zip', fakeAsync(() => {
+    // create spy object with a click() method
+    const spyObj = jasmine.createSpyObj('a', ['click', 'dispatchEvent']);
+    spyOn(document, 'createElement').and.returnValue(spyObj);
+
+    service.downloadZip('localhost:8080/export/test', '');
+    const req = httpTestingController.expectOne('localhost:8080/export/test');
+    req.flush(new Blob());
+    tick();
+
+    expect(req.request.method).toBe('POST');
+
+    expect(document.createElement).toHaveBeenCalledTimes(1);
+    expect(document.createElement).toHaveBeenCalledWith('a');
+
+    expect(spyObj.href).toBeDefined();
+    expect(spyObj.target).toBe('_blank');
+    expect(spyObj.download).toBe('report.zip');
+    expect(spyObj.dispatchEvent).toHaveBeenCalledTimes(1);
+    expect(spyObj.dispatchEvent).toHaveBeenCalledWith(new MouseEvent('click'));
+  }));
+
+  describe('fetchProfilesFormat', () => {
+    it('should get system status data with no changes', () => {
+      const result = { ...PROFILE_FORM };
+
+      service.fetchProfilesFormat().subscribe(res => {
+        expect(res).toEqual(result);
+      });
+
+      const req = httpTestingController.expectOne(
+        'http://localhost:8000/profiles/format'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(result);
+    });
+  });
+
+  describe('#saveProfile ', () => {
+    it('should have necessary request data', () => {
+      const apiUrl = 'http://localhost:8000/profiles';
+
+      service.saveProfile(NEW_PROFILE_MOCK).subscribe(res => {
+        expect(res).toEqual(true);
+      });
+
+      const req = httpTestingController.expectOne(apiUrl);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(JSON.stringify(NEW_PROFILE_MOCK));
+      req.flush(true);
+    });
+
+    it('should return false if error happens', () => {
+      const mockErrorResponse = { status: 500, statusText: 'Error' };
+      const data = 'Invalid request parameters';
+      const apiUrl = 'http://localhost:8000/profiles';
+
+      service.saveProfile(NEW_PROFILE_MOCK).subscribe(res => {
+        expect(res).toEqual(false);
+      });
+
+      const req = httpTestingController.expectOne(apiUrl);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(JSON.stringify(NEW_PROFILE_MOCK));
+      req.flush(data, mockErrorResponse);
+    });
   });
 });

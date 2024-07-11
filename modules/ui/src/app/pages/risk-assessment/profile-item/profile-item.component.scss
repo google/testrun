@@ -1,0 +1,106 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@import 'src/theming/colors';
+@import 'src/theming/variables';
+
+$profile-draft-icon-size: 22px;
+$profile-icon-container-size: 24px;
+$profile-item-container-gap: 16px;
+
+:host.selected {
+  .profile-item-container {
+    background-color: $grey-100;
+  }
+}
+
+.profile-item-container {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) $profile-icon-container-size;
+  gap: $profile-item-container-gap;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border-bottom: 1px solid $lighter-grey;
+  align-items: center;
+  height: 92px;
+}
+
+.profile-item-icon-container {
+  grid-area: icon;
+  display: inline-block;
+  width: $profile-draft-icon-size;
+  height: $profile-draft-icon-size;
+  padding: 2px;
+}
+
+.profile-item-icon {
+  color: $grey-700;
+}
+
+.profile-item-info {
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: $profile-icon-container-size 1fr;
+  grid-template-areas:
+    'icon .'
+    'icon .'
+    'icon .';
+  column-gap: $profile-item-container-gap;
+  align-items: center;
+
+  p {
+    margin: 0;
+    font-family: $font-secondary, sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  ::ng-deep p.profile-item-risk {
+    margin-top: 6px;
+    justify-self: start;
+  }
+
+  .profile-item-name {
+    font-size: 16px;
+    color: $grey-800;
+    min-height: 24px;
+  }
+
+  .profile-item-created {
+    font-size: 14px;
+    color: $grey-700;
+    min-height: 20px;
+  }
+}
+
+.profile-item-button {
+  padding: 0;
+  height: 24px;
+  width: 24px;
+  border-radius: 4px;
+  color: $grey-700;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  & ::ng-deep .mat-mdc-button-persistent-ripple {
+    border-radius: 4px;
+  }
+}
+
+.profile-draft-icon {
+  width: $profile-draft-icon-size;
+  height: $profile-draft-icon-size;
+}

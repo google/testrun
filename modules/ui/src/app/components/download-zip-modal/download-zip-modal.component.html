@@ -1,0 +1,109 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<span class="risk-profile-select-form-title">Download ZIP file</span>
+<p class="risk-profile-select-form-content">
+  Risk profile is required for device verification. Please, consider creating a
+  Risk assessment profile for your ZIP report.
+</p>
+
+<div *ngIf="profiles.length > 0">
+  <mat-form-field appearance="outline" class="profile-select">
+    <mat-select
+      #select
+      [(value)]="selectedProfile"
+      aria-label="Please choose risk assessment profile">
+      <mat-select-trigger>
+        {{ selectedProfile }}
+      </mat-select-trigger>
+      <mat-option *ngFor="let profile of profiles" [value]="profile.name">
+        <div class="select-container">
+          <span
+            *ngIf="profile.risk"
+            class="profile-item-risk"
+            [ngClass]="getRiskClass(profile.risk)">
+            {{ profile.risk }} risk
+          </span>
+          <span class="profile-item-name">
+            {{ profile.name }}
+          </span>
+          <span class="profile-item-created">
+            {{ profile.created | date: 'dd MMM yyyy' }}
+          </span>
+        </div>
+      </mat-option>
+    </mat-select>
+    <mat-hint>Please choose risk assessment profile</mat-hint>
+  </mat-form-field>
+
+  <mat-dialog-actions align="end" class="risk-profile-select-form-actions">
+    <button
+      (click)="cancel(null)"
+      color="primary"
+      mat-button
+      type="button"
+      class="redirect-button">
+      Go to Risk Assessment
+    </button>
+    <button
+      (click)="cancel()"
+      class="cancel-button"
+      color="primary"
+      mat-button
+      type="button">
+      Cancel
+    </button>
+    <button
+      (click)="cancel(select.value)"
+      class="download-button"
+      color="primary"
+      mat-flat-button
+      aria-label="Download"
+      type="button">
+      Download
+    </button>
+  </mat-dialog-actions>
+</div>
+
+<mat-dialog-actions
+  *ngIf="profiles.length === 0"
+  align="end"
+  class="risk-profile-select-form-actions">
+  <button
+    (click)="cancel('')"
+    color="primary"
+    mat-button
+    type="button"
+    aria-label="Download ZIP file without Risk Assessment"
+    class="download-button">
+    Download Anyway
+  </button>
+  <button
+    (click)="cancel()"
+    class="cancel-button"
+    color="primary"
+    mat-button
+    type="button">
+    Cancel
+  </button>
+  <button
+    (click)="cancel(null)"
+    class="redirect-button"
+    color="primary"
+    mat-flat-button
+    type="button">
+    Go to Risk Assessment
+  </button>
+</mat-dialog-actions>

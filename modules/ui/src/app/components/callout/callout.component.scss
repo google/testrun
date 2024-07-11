@@ -22,12 +22,25 @@
 }
 
 :host:has(.callout-container.info),
-:host:has(.callout-container.error) {
+:host:has(.callout-container.error),
+:host:has(.callout-container.check_circle) {
   position: absolute;
 }
 
 :host + ::ng-deep app-callout {
   top: 60px;
+}
+
+@media (width < 742px) {
+  :host + ::ng-deep app-callout {
+    top: 80px;
+  }
+}
+
+@media (width < 490px) {
+  :host + ::ng-deep app-callout {
+    top: 100px;
+  }
 }
 
 .callout-container {
@@ -69,6 +82,15 @@
 
   .callout-icon {
     color: $red-700;
+  }
+}
+
+.callout-container.check_circle {
+  margin: 24px 32px;
+  background-color: $green-50;
+
+  .callout-icon {
+    color: $green-800;
   }
 }
 

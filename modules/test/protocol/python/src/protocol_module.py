@@ -25,16 +25,16 @@ class ProtocolModule(TestModule):
   """Protocol Test module"""
 
   def __init__(self, module):
+    self._supports_bacnet = False
     super().__init__(module_name=module, log_name=LOG_NAME)
     global LOGGER
     LOGGER = self._get_logger()
-    self._bacnet = BACnet(LOGGER)
+    self._bacnet = BACnet(log=LOGGER,device_hw_addr=self._device_mac)
 
   def _protocol_valid_bacnet(self):
     LOGGER.info('Running protocol.valid_bacnet')
     result = None
     interface_name = 'veth0'
-
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is None:
       self._device_ipv4_addr = self._get_device_ipv4()
@@ -46,10 +46,12 @@ class ProtocolModule(TestModule):
     # Resolve the appropriate IP for BACnet comms
     local_address = self.get_local_ip(interface_name)
     if local_address:
-      result = self._bacnet.validate_device(local_address,
-                                            self._device_ipv4_addr)
+      self._bacnet.discover(local_address + '/24')
+      result = self._bacnet.validate_device()
+      if result[0]:
+        self._supports_bacnet = True
     else:
-      result = None, 'Could not resolve test container IP for BACnet discovery'
+      result = 'Error', 'Failed to perform BACnet discovery'
     return result
 
   def _protocol_bacnet_version(self):
@@ -59,20 +61,23 @@ class ProtocolModule(TestModule):
     this test can pass.
     """
     LOGGER.info('Running protocol.bacnet.version')
-    result_status = None
-    result_description = ''
+    result_status = 'Feature Not Detected'
+    result_description = 'Device did not respond to BACnet discovery'
+
+    # Do not run test if device does not support BACnet
+    if not self._supports_bacnet:
+      return result_status, result_description
 
     if len(self._bacnet.devices) > 0:
       for device in self._bacnet.devices:
-        LOGGER.info(f'Checking BACnet version for device: {device}')
         if self._device_ipv4_addr in device[2]:
+          LOGGER.debug(f'Checking BACnet version for device: {device}')
           result_status, result_description = \
-            self._bacnet.validate_protocol_version( device[2], device[3])
+            self._bacnet.validate_protocol_version(device[2], device[3])
           break
         else:
-          LOGGER.info('Device does not match expected IP address, skipping')
-    else:
-      result_description = 'No BACnet devices discovered.'
+          LOGGER.debug('Device does not match expected IP address, skipping')
+
     LOGGER.info(result_description)
     return result_status, result_description
 
@@ -81,15 +86,21 @@ class ProtocolModule(TestModule):
     # Extract basic device connection information
     modbus = Modbus(log=LOGGER, device_ip=self._device_ipv4_addr, config=config)
     results = modbus.validate_device()
+    result_status = None
+    result_description = ''
+    result_details = results[1]
+
     # Determine results and return proper messaging and details
-    description = ''
     if results[0] is None:
-      description = 'No modbus connection could be made'
+      result_status = 'Feature Not Detected'
+      result_description = 'Device did not respond to Modbus connection'
     elif results[0]:
-      description = 'Valid modbus communication detected'
+      result_status = True
+      result_description = 'Valid modbus communication detected'
     else:
-      description = 'Failed to confirm valid modbus communication'
-    return results[0], description,  results[1]
+      result_status = False
+      result_description = 'Failed to confirm valid modbus communication'
+    return result_status, result_description, result_details
 
   def get_local_ip(self, interface_name):
     try:

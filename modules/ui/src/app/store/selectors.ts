@@ -52,7 +52,44 @@ export const selectDevices = createSelector(
   (state: AppState) => state.shared.devices
 );
 
+export const selectDeviceInProgress = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.deviceInProgress
+);
+
+export const selectHasRiskProfiles = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.hasRiskProfiles
+);
+
+export const selectRiskProfiles = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.riskProfiles
+);
+
 export const selectError = createSelector(
   selectAppState,
   (state: AppState) => state.appComponent.settingMissedError
+);
+
+export const selectSystemStatus = createSelector(
+  selectAppState,
+  (state: AppState) => {
+    return state.shared.systemStatus;
+  }
+);
+
+export const selectIsOpenWaitSnackBar = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.isOpenWaitSnackBar
+);
+
+export const selectIsOpenStartTestrun = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.isOpenStartTestrun
+);
+
+export const selectStatus = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.status
 );

@@ -95,7 +95,7 @@ $nav-open-btn-width: 210px;
   box-sizing: border-box;
   height: 34px;
   margin: 11px 0;
-  line-height: 50%;
+  line-height: 50% !important;
 }
 
 .app-sidebar-button {
@@ -196,7 +196,7 @@ $nav-open-btn-width: 210px;
   border-left: 1px solid $light-grey;
 }
 
-.app-toolbar-button-general-settings {
+.app-toolbar-button.app-toolbar-button-certificates {
   margin-left: 72px;
 }
 

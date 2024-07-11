@@ -1,0 +1,83 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@use '@angular/material' as mat;
+@import 'src/theming/colors';
+@import 'src/theming/variables';
+
+.profile-form {
+  .field-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px 16px 8px 24px;
+  }
+  .field-label {
+    margin: 0;
+    color: $grey-800;
+    font-size: 18px;
+    line-height: 24px;
+    padding-top: 24px;
+    padding-bottom: 16px;
+    &:first-child {
+      padding-top: 0;
+    }
+    &:has(+ .field-select-multiple.ng-invalid.ng-dirty) {
+      color: mat.get-color-from-palette($color-warn, 700);
+    }
+  }
+  mat-form-field {
+    width: 100%;
+  }
+  .field-hint {
+    font-family: $font-secondary;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    text-align: left;
+    padding-top: 8px;
+  }
+}
+
+.profile-form-field {
+  width: 100%;
+}
+
+.form-actions {
+  display: flex;
+  gap: 16px;
+  padding: 8px 24px 24px 24px;
+}
+
+.save-draft-button:not(.mat-mdc-button-disabled) {
+  color: $primary;
+}
+
+.field-select-multiple {
+  .field-select-checkbox {
+    &:has(::ng-deep .mat-mdc-checkbox-checked) {
+      background: mat.get-color-from-palette($color-primary, 50);
+    }
+    ::ng-deep .mdc-checkbox__ripple {
+      display: none;
+    }
+    &:first-of-type {
+      margin-top: 0;
+    }
+    &:last-of-type {
+      margin-bottom: 8px;
+    }
+  }
+}

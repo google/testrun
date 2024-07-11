@@ -20,22 +20,28 @@ const routes: Routes = [
   {
     path: 'testing',
     loadChildren: () =>
-      import('./pages/testrun/progress.module').then(m => m.ProgressModule),
+      import('./pages/testrun/testrun.module').then(m => m.TestrunModule),
     title: 'Testrun',
   },
   {
     path: 'devices',
     loadChildren: () =>
-      import('./pages/devices/device-repository.module').then(
-        m => m.DeviceRepositoryModule
-      ),
+      import('./pages/devices/devices.module').then(m => m.DevicesModule),
     title: 'Testrun - Devices',
   },
   {
     path: 'reports',
     loadChildren: () =>
-      import('./pages/reports/history.module').then(m => m.HistoryModule),
+      import('./pages/reports/reports.module').then(m => m.ReportsModule),
     title: 'Testrun - Reports',
+  },
+  {
+    path: 'risk-assessment',
+    loadChildren: () =>
+      import('./pages/risk-assessment/risk-assessment.module').then(
+        m => m.RiskAssessmentModule
+      ),
+    title: 'Testrun - Risk Assessment',
   },
   {
     path: '',

@@ -51,6 +51,7 @@ $border-radius: 12px;
 .device-item-with-actions {
   display: grid;
   width: $device-item-width;
+  min-height: calc($icon-width - 2px);
   border-radius: $border-radius;
   border: 1px solid #c4c7c5;
   background: $white;
@@ -89,6 +90,11 @@ $border-radius: 12px;
       visibility: visible;
       width: 24px;
     }
+  }
+
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
   }
 }
 
@@ -157,7 +163,7 @@ $border-radius: 12px;
 .button-start {
   grid-area: start;
   width: $icon-width;
-  height: calc($icon-width - 2px);
+  height: 100%;
   background-color: mat.get-color-from-palette($color-primary, 50);
   justify-self: end;
   border-radius: 0 $border-radius $border-radius 0;
@@ -169,6 +175,10 @@ $border-radius: 12px;
     .button-start-icon {
       color: $white;
     }
+  }
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
   }
 }
 

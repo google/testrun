@@ -1,0 +1,58 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="profile-item-container">
+  <div
+    class="profile-item-info"
+    role="button"
+    tabindex="0"
+    matTooltip="{{ profile.status }}"
+    (click)="profileClicked.emit(profile)"
+    (keydown.enter)="profileClicked.emit(profile)">
+    <span
+      class="profile-item-icon-container"
+      [attr.aria-label]="profile.status">
+      <mat-icon
+        *ngIf="profile.status === ProfileStatus.VALID"
+        class="profile-item-icon"
+        fontSet="material-symbols-outlined">
+        check_circle
+      </mat-icon>
+      <mat-icon
+        *ngIf="profile.status === ProfileStatus.DRAFT"
+        svgIcon="draft"
+        class="profile-draft-icon"></mat-icon>
+    </span>
+    <p
+      *ngIf="profile.risk"
+      class="profile-item-risk"
+      [ngClass]="getRiskClass(profile.risk)">
+      {{ profile.risk }} risk
+    </p>
+    <p class="profile-item-name">
+      {{ profile.name }}
+    </p>
+    <p class="profile-item-created">
+      {{ profile.created | date: 'dd MMM yyyy' }}
+    </p>
+  </div>
+  <button
+    class="profile-item-button delete"
+    mat-icon-button
+    attr.aria-label="Delete {{ profile.name }}"
+    (click)="deleteButtonClicked.emit(profile.name)">
+    <mat-icon fontSet="material-symbols-outlined"> delete </mat-icon>
+  </button>
+</div>

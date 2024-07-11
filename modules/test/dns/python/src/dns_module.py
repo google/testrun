@@ -151,14 +151,23 @@ class DNSModule(TestModule):
       if DNS in packet and packet.haslayer(IP):
         source_ip = packet[IP].src
         destination_ip = packet[IP].dst
-         # 'qr' field indicates query (0) or response (1)
-        dns_type = 'Query' if packet[DNS].qr == 0 else 'Response'
+        dns_layer = packet[DNS]
+         
+        # 'qr' field indicates query (0) or response (1)
+        dns_type = 'Query' if dns_layer.qr == 0 else 'Response'
+
+        # Check for the presence of DNS query name
+        if hasattr(dns_layer, 'qd') and dns_layer.qd is not None:
+            qname = dns_layer.qd.qname.decode() if dns_layer.qd.qname else 'N/A'
+        else:
+            qname = 'N/A'
+
         dns_data.append({
             'Timestamp': float(packet.time),  # Timestamp of the DNS packet
             'Source': source_ip,
             'Destination': destination_ip,
             'Type': dns_type,
-            'Data': str(packet[DNS].qd.qname, 'utf-8')[:-1] 
+            'Data': qname[:-1]
         })
 
     # Filter unique entries based on 'Timestamp'
@@ -196,7 +205,6 @@ class DNSModule(TestModule):
 
   def _dns_network_from_dhcp(self):
     LOGGER.info('Running dns.network.from_dhcp')
-    result = None
     LOGGER.info('Checking DNS traffic for configured DHCP DNS server: ' +
                 self._dns_server)
 
@@ -213,25 +221,24 @@ class DNSModule(TestModule):
 
     if dns_packets_local or dns_packets_not_local:
       if dns_packets_not_local:
-        result = False, 'DNS traffic detected to non-DHCP provided server'
+        description = 'DNS traffic detected to non-DHCP provided server'
       else:
         LOGGER.info('DNS traffic detected only to configured DHCP DNS server')
-        result = True, 'DNS traffic detected only to DHCP provided server'
+        description = 'DNS traffic detected only to DHCP provided server'
     else:
       LOGGER.info('No DNS traffic detected from the device')
-      result = None, 'No DNS traffic detected from the device'
-    return result
+      description = 'No DNS traffic detected from the device'
+    return 'Informational', description
 
   def _dns_network_hostname_resolution(self):
     LOGGER.info('Running dns.network.hostname_resolution')
-    result = None
     LOGGER.info('Checking DNS traffic from device: ' + self._device_mac)
 
     # Check if the device DNS traffic
     tcpdump_filter = f'dst port 53 and ether src {self._device_mac}'
-    dns_packetes = self._has_dns_traffic(tcpdump_filter=tcpdump_filter)
+    dns_packets = self._has_dns_traffic(tcpdump_filter=tcpdump_filter)
 
-    if dns_packetes:
+    if dns_packets:
       LOGGER.info('DNS traffic detected from device')
       result = True, 'DNS traffic detected from device'
     else:
@@ -239,20 +246,18 @@ class DNSModule(TestModule):
       result = False, 'No DNS traffic detected from the device'
     return result
 
-  ## TODO: This test should always return 'Informational' result
   def _dns_mdns(self):
     LOGGER.info('Running dns.mdns')
-    result = None
     # Check if the device sends any MDNS traffic
     tcpdump_filter = f'udp port 5353 and ether src {self._device_mac}'
-    dns_packetes = self._has_dns_traffic(tcpdump_filter=tcpdump_filter)
+    dns_packets = self._has_dns_traffic(tcpdump_filter=tcpdump_filter)
 
-    if dns_packetes:
+    if dns_packets:
       LOGGER.info('MDNS traffic detected from device')
-      result = True, 'MDNS traffic detected from device'
+      result = 'Informational', 'MDNS traffic detected from device'
     else:
       LOGGER.info('No MDNS traffic detected from the device')
-      result = True, 'No MDNS traffic detected from the device'
+      result = 'Informational', 'No MDNS traffic detected from the device'
     return result
 
   def _exec_tcpdump(self, tcpdump_filter, capture_file):
@@ -267,16 +272,16 @@ class DNSModule(TestModule):
 
     LOGGER.debug('tcpdump command: ' + command)
 
-    process = subprocess.Popen(command,
+    with subprocess.Popen(command,
                                universal_newlines=True,
                                shell=True,
                                stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    text = str(process.stdout.read()).rstrip()
+                               stderr=subprocess.PIPE) as process:
+      text = str(process.stdout.read()).rstrip()
 
-    LOGGER.debug('tcpdump response: ' + text)
+      LOGGER.debug('tcpdump response: ' + text)
 
-    if text:
-      return text.split('\n')
+      if text:
+        return text.split('\n')
 
     return []

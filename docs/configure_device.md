@@ -1,4 +1,6 @@
-# Device Configuration
+<img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
+
+## Device Configuration (Deprecated)
 
 The device configuration file allows you to customize the testing behavior for a specific device. This file is located at `local/devices/{Device Name}/device_config.json`. Below is an overview of how to configure the device tests.
 
