@@ -60,6 +60,8 @@ class TestOrchestrator:
         os.path.dirname(
             os.path.dirname(
                 os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
+    self._test_modules_running = []
+    self._current_module = 0
 
   def start(self):
     LOGGER.debug("Starting test orchestrator")
@@ -102,14 +104,18 @@ class TestOrchestrator:
       test_modules.append(module)
       self.get_session().add_total_tests(len(module.tests))
 
-    for module in test_modules:
-      # TODO: add device ping check
-      if not self._net_orc._ip_ctrl.check_interface_status(
-        self._session.get_device_interface()):
-        self._session.set_status("Cancelled")
-        LOGGER.Error("Device was disconnected")
-        break
+    # Store enabled test modules in the TestsOrchectrator object
+    self._test_modules_running = test_modules
+    self._current_module = 0
 
+    # Thread for the device connection monitoring when test in progress
+    device_con_thread = threading.Thread(target=self._device_conn_monitoring)
+    device_con_thread.daemon = True
+    device_con_thread.start()
+
+    for index, module in enumerate(test_modules):
+
+      self._current_module = index
       self._run_test_module(module)
 
     LOGGER.info("All tests complete")
@@ -707,3 +713,19 @@ class TestOrchestrator:
 
   def get_session(self):
     return self._session
+
+  def _device_conn_monitoring(self):
+    """Device monitoring method"""
+    while self.get_session().get_status() == "In Progress":
+      if not self._net_orc.is_device_connected():
+        self._session.set_status("Cancelled")
+        LOGGER.error("Device was disconnected")
+        self._stop_module(
+            module=self._test_modules_running[self._current_module],
+            kill=True
+          )
+        for module in self._test_modules_running[self._current_module::]:
+          for test in module.tests:
+            self.get_session().set_test_result_error(test)
+        break
+      time.sleep(1)
