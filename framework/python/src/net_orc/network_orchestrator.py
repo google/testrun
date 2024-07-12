@@ -800,6 +800,11 @@ class NetworkOrchestrator:
     except Exception:
       LOGGER.error(traceback.format_exc())
 
+  def is_device_connected(self):
+    """Check if device connected"""
+    return self._ip_ctrl.check_interface_status(
+        self._session.get_device_interface()
+      )
 
 class NetworkModule:
   """Define all the properties of a Network Module"""
