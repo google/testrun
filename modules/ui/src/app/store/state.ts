@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 import { TestrunStatus } from '../model/testrun-status';
-import { SettingMissedError, SystemInterfaces } from '../model/setting';
+import {
+  Adapters,
+  SettingMissedError,
+  SystemInterfaces,
+} from '../model/setting';
 import { Device } from '../model/device';
 import { Profile } from '../model/profile';
 
@@ -54,6 +58,7 @@ export interface SharedState {
   isStopTestrun: boolean;
   isOpenWaitSnackBar: boolean;
   deviceInProgress: Device | null;
+  adapters: Adapters;
 }
 
 export const initialAppComponentState: AppComponentState = {
@@ -78,4 +83,5 @@ export const initialSharedState: SharedState = {
   isOpenStartTestrun: false,
   systemStatus: null,
   status: null,
+  adapters: {},
 };

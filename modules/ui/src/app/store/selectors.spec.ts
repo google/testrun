@@ -16,6 +16,7 @@
 
 import { AppState } from './state';
 import {
+  selectAdapters,
   selectDeviceInProgress,
   selectDevices,
   selectError,
@@ -55,6 +56,7 @@ describe('Selectors', () => {
       systemStatus: null,
       deviceInProgress: null,
       status: null,
+      adapters: {},
     },
   };
 
@@ -126,5 +128,10 @@ describe('Selectors', () => {
   it('should select status', () => {
     const result = selectStatus.projector(initialState);
     expect(result).toEqual(null);
+  });
+
+  it('should select adapters', () => {
+    const result = selectAdapters.projector(initialState);
+    expect(result).toEqual({});
   });
 });

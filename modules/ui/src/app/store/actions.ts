@@ -16,6 +16,7 @@
 
 import { createAction, props } from '@ngrx/store';
 import {
+  Adapters,
   InterfacesValidation,
   SettingMissedError,
   SystemConfig,
@@ -124,3 +125,7 @@ export const setStatus = createAction(
 export const stopInterval = createAction('[Shared] Stop Interval');
 
 export const fetchRiskProfiles = createAction('[Shared] Fetch risk profiles');
+export const updateAdapters = createAction(
+  '[Shared] Update Adapters',
+  props<{ adapters: Adapters }>()
+);

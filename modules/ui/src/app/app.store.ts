@@ -36,10 +36,17 @@ import {
   setIsOpenStartTestrun,
   fetchSystemStatus,
   fetchRiskProfiles,
+  updateAdapters,
 } from './store/actions';
 import { TestrunStatus } from './model/testrun-status';
-import { SettingMissedError, SystemInterfaces } from './model/setting';
+import {
+  Adapters,
+  SettingMissedError,
+  SystemInterfaces,
+} from './model/setting';
 import { FocusManagerService } from './services/focus-manager.service';
+import { TestRunMqttService } from './services/test-run-mqtt.service';
+import { NotificationService } from './services/notification.service';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export interface AppComponentState {
@@ -131,6 +138,27 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
+  getNetworkAdapters = this.effect(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap(() => {
+        return this.testRunMqttService.getNetworkAdapters().pipe(
+          tap((adapters: Adapters) => {
+            if (adapters.adapters_added) {
+              this.notifyAboutTheAdapters(adapters.adapters_added);
+            }
+            this.store.dispatch(updateAdapters({ adapters }));
+          })
+        );
+      })
+    );
+  });
+
+  private notifyAboutTheAdapters(adapters: SystemInterfaces) {
+    this.notificationService.notify(
+      `New network adapter(s) ${Object.keys(adapters).join(', ')} has been detected. You can switch to using it in the System settings menu`
+    );
+  }
+
   setIsOpenStartTestrun = this.effect(trigger$ => {
     return trigger$.pipe(
       tap(() => {
@@ -153,7 +181,9 @@ export class AppStore extends ComponentStore<AppComponentState> {
   constructor(
     private store: Store<AppState>,
     private testRunService: TestRunService,
-    private focusManagerService: FocusManagerService
+    private testRunMqttService: TestRunMqttService,
+    private focusManagerService: FocusManagerService,
+    private notificationService: NotificationService
   ) {
     super({
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,
