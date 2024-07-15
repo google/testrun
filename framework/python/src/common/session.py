@@ -19,6 +19,7 @@ import json
 import os
 from common import util, logger
 from common.risk_profile import RiskProfile
+from net_orc.ip_control import IPControl
 
 # Certificate dependencies
 from cryptography import x509
@@ -738,7 +739,7 @@ class TestrunSession():
 
   def detect_network_adapters_change(self) -> dict:
     adapters = {}
-    ifaces_new = util.get_sys_interfaces()
+    ifaces_new = IPControl.get_sys_interfaces()
 
     #difference between stored and newly received network interfaces
     diff = util.diff_dicts(self._ifaces, ifaces_new)

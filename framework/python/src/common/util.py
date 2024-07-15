@@ -15,7 +15,6 @@
 """Provides basic utilities for the network orchestrator."""
 import getpass
 import os
-import psutil
 import subprocess
 import shlex
 import netifaces
@@ -134,26 +133,6 @@ def get_docker_host_by_name(container_name: str) -> str:
     raise Exception(f'Container {container_name} is not running')
   return container.attrs['NetworkSettings']['IPAddress']
   
-
-def get_sys_interfaces() -> t.Dict[str, t.Dict[str, str]]:
-  """ Retrieves all Ethernet network interfaces from the host system
-  Returns:
-      t.Dict[str, str]
-  """
-  addrs = psutil.net_if_addrs()
-  ifaces = {}
-
-  for key in addrs:
-    nic = addrs[key]
-    # Ignore any interfaces that are not ethernet
-    if not (key.startswith('en') or key.startswith('eth')):
-      continue
-
-    ifaces[key] = nic[0].address
-
-  return ifaces
-
-
 def diff_dicts(d1: t.Dict[t.Any, t.Any], d2: t.Dict[t.Any, t.Any]) -> t.Dict:
   """Compares two dictionaries by keys
 
