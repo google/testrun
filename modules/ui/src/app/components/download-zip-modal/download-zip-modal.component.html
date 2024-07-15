@@ -57,7 +57,10 @@ limitations under the License.
       <mat-select-trigger>
         {{ selectedProfile }}
       </mat-select-trigger>
-      <mat-option *ngFor="let profile of profiles" [value]="profile.name">
+      <mat-option
+        *ngFor="let profile of profiles"
+        [value]="profile.name"
+        class="profile-item-option">
         <div class="select-container">
           <span
             *ngIf="profile.risk"
