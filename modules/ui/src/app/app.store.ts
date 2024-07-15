@@ -29,7 +29,7 @@ import {
 import { Store } from '@ngrx/store';
 import { AppState } from './store/state';
 import { TestRunService } from './services/test-run.service';
-import { exhaustMap, Observable, skip } from 'rxjs';
+import { delay, exhaustMap, Observable, skip } from 'rxjs';
 import { Device } from './model/device';
 import {
   setDevices,
@@ -39,6 +39,7 @@ import {
 } from './store/actions';
 import { TestrunStatus } from './model/testrun-status';
 import { SettingMissedError, SystemInterfaces } from './model/setting';
+import { FocusManagerService } from './services/focus-manager.service';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export interface AppComponentState {
@@ -140,9 +141,19 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
+  setFocusOnPage = this.effect(trigger$ => {
+    return trigger$.pipe(
+      delay(100),
+      tap(() => {
+        this.focusManagerService.focusFirstElementInContainer();
+      })
+    );
+  });
+
   constructor(
     private store: Store<AppState>,
-    private testRunService: TestRunService
+    private testRunService: TestRunService,
+    private focusManagerService: FocusManagerService
   ) {
     super({
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,

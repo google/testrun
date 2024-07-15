@@ -66,9 +66,11 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
       exhaustMap(({ device, onDelete }) => {
         return this.testRunService.deleteDevice(device).pipe(
           withLatestFrom(this.devices$),
-          tap(([, devices]) => {
-            this.removeDevice(device, devices);
-            onDelete();
+          tap(([deleted, devices]) => {
+            if (deleted) {
+              this.removeDevice(device, devices);
+              onDelete();
+            }
           })
         );
       })
@@ -81,9 +83,11 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
         exhaustMap(({ device, onSuccess }) => {
           return this.testRunService.saveDevice(device).pipe(
             withLatestFrom(this.devices$),
-            tap(([, devices]) => {
-              this.addDevice(device, devices);
-              onSuccess();
+            tap(([added, devices]) => {
+              if (added) {
+                this.addDevice(device, devices);
+                onSuccess();
+              }
             })
           );
         })
@@ -100,9 +104,11 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
       exhaustMap(({ device, mac_addr, onSuccess }) => {
         return this.testRunService.editDevice(device, mac_addr).pipe(
           withLatestFrom(this.devices$),
-          tap(([, devices]) => {
-            this.updateDevice(device, mac_addr, devices);
-            onSuccess();
+          tap(([edited, devices]) => {
+            if (edited) {
+              this.updateDevice(device, mac_addr, devices);
+              onSuccess();
+            }
           })
         );
       })

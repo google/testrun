@@ -270,6 +270,11 @@ class TestrunSession():
         return device
     return None
 
+  def get_device_by_make_and_model(self, make, model):
+    for device in self._device_repository:
+      if device.manufacturer == make and device.model == model:
+        return device
+
   def get_device_repository(self):
     return self._device_repository
 
@@ -523,23 +528,21 @@ class TestrunSession():
 
     else:
 
+      # Update the profile
+      risk_profile.update(profile_json, profile_format=self._profile_format)
+
       # Check if name has changed
       if 'rename' in profile_json:
-        new_name = profile_json.get('rename')
+        old_name = profile_json.get('name')
 
         # Delete the original file
-        os.remove(os.path.join(PROFILES_DIR, risk_profile.name + '.json'))
-
-        risk_profile.name = new_name
-
-      # Update questions and answers
-      risk_profile.questions = profile_json.get('questions')
+        os.remove(os.path.join(PROFILES_DIR, old_name + '.json'))
 
     # Write file to disk
     with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'),
               'w',
               encoding='utf-8') as f:
-      f.write(json.dumps(risk_profile.to_json()))
+      f.write(risk_profile.to_json(pretty=True))
 
     return risk_profile
 
@@ -618,52 +621,44 @@ class TestrunSession():
 
     now = datetime.datetime.now(pytz.utc)
 
-    try:
-      # Parse bytes into x509 object
-      cert = x509.load_pem_x509_certificate(content, default_backend())
+    # Parse bytes into x509 object
+    cert = x509.load_pem_x509_certificate(content, default_backend())
 
-      # Extract required properties
-      common_name = cert.subject.get_attributes_for_oid(
-          NameOID.COMMON_NAME)[0].value
+    # Extract required properties
+    common_name = cert.subject.get_attributes_for_oid(
+        NameOID.COMMON_NAME)[0].value
 
-      # Check if any existing certificates have the same common name
-      for cur_cert in self._certs:
-        if common_name == cur_cert['name']:
-          raise ValueError('A certificate with that name already exists')
+    # Check if any existing certificates have the same common name
+    for cur_cert in self._certs:
+      if common_name == cur_cert['name']:
+        raise ValueError('A certificate with that name already exists')
 
-      issuer = cert.issuer.get_attributes_for_oid(
-          NameOID.ORGANIZATION_NAME)[0].value
+    issuer = cert.issuer.get_attributes_for_oid(
+        NameOID.ORGANIZATION_NAME)[0].value
 
-      status = 'Valid'
-      if now > cert.not_valid_after_utc:
-        status = 'Expired'
+    status = 'Valid'
+    if now > cert.not_valid_after_utc:
+      status = 'Expired'
 
-      # Craft python dictionary with values
-      cert_obj = {
-          'name': common_name,
-          'status': status,
-          'organisation': issuer,
-          'expires': cert.not_valid_after_utc,
-          'filename': filename
-      }
+    # Craft python dictionary with values
+    cert_obj = {
+        'name': common_name,
+        'status': status,
+        'organisation': issuer,
+        'expires': cert.not_valid_after_utc,
+        'filename': filename
+    }
 
-      with open(os.path.join(CERTS_PATH, filename), 'wb') as f:
-        f.write(content)
+    with open(os.path.join(CERTS_PATH, filename), 'wb') as f:
+      f.write(content)
 
-      util.run_command(f'chown -R {util.get_host_user()} {CERTS_PATH}')
+    util.run_command(f'chown -R {util.get_host_user()} {CERTS_PATH}')
 
-      return cert_obj
-
-    except ValueError as e:
-      LOGGER.error(e)
-      raise
-    except Exception as e:
-      LOGGER.error('An error occured whilst parsing a certificate')
-      LOGGER.debug(e)
-      return None
+    return cert_obj
 
   def check_cert_file_name(self, name):
 
+    # Check for duplicate file name
     if os.path.exists(os.path.join(CERTS_PATH, name)):
       return False
 
@@ -722,9 +717,17 @@ class TestrunSession():
     LOGGER.debug(f'Deleting certificate {filename}')
 
     try:
+
+      # Delete the cert file
       cert_file = os.path.join(CERTS_PATH, filename)
       os.remove(cert_file)
-      return True
+
+      # Delete the cert from the session
+      for cert in self._certs:
+        if cert['filename'] == filename:
+          self._certs.remove(cert)
+          return True
+
     except Exception as e:
       LOGGER.error('An error occurred whilst deleting the certificate')
       LOGGER.debug(e)
@@ -732,7 +735,6 @@ class TestrunSession():
 
   def get_certs(self):
     return self._certs
-
 
   def detect_network_adapters_change(self) -> dict:
     adapters = {}
@@ -749,4 +751,3 @@ class TestrunSession():
       LOGGER.debug(f'network adapters changed {adapters}')
       self._ifaces = ifaces_new
     return adapters
-

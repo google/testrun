@@ -6,7 +6,11 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { EscapableDialogComponent } from '../escapable-dialog/escapable-dialog.component';
-import { Profile, RiskResultClassName } from '../../model/profile';
+import {
+  Profile,
+  ProfileStatus,
+  RiskResultClassName,
+} from '../../model/profile';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule, NgForOf, NgIf } from '@angular/common';
 import { MatFormField } from '@angular/material/form-field';
@@ -15,7 +19,6 @@ import { MatOptionModule } from '@angular/material/core';
 import { TestRunService } from '../../services/test-run.service';
 
 interface DialogData {
-  hasProfiles: boolean;
   profiles: Profile[];
 }
 
@@ -46,8 +49,10 @@ export class DownloadZipModalComponent extends EscapableDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {
     super(dialogRef);
-    if (data.hasProfiles) {
-      this.profiles = [...data.profiles] as Profile[];
+    this.profiles = data.profiles.filter(
+      profile => profile.status === ProfileStatus.VALID
+    );
+    if (this.profiles.length > 0) {
       this.profiles.sort((a, b) =>
         a.name.toLowerCase().localeCompare(b.name.toLowerCase())
       );
