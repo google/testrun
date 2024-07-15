@@ -23,12 +23,15 @@ import {
   SystemConfig,
   SystemInterfaces,
 } from '../../model/setting';
-import { exhaustMap, switchMap, Observable } from 'rxjs';
+import { exhaustMap, switchMap, Observable, skip } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import * as AppActions from '../../store/actions';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
-import { selectHasConnectionSettings } from '../../store/selectors';
+import {
+  selectAdapters,
+  selectHasConnectionSettings,
+} from '../../store/selectors';
 import { FormControl, FormGroup } from '@angular/forms';
 
 export interface SettingsComponentState {
@@ -75,6 +78,8 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
   private hasConnectionSettings$ = this.store.select(
     selectHasConnectionSettings
   );
+
+  private adapters$ = this.store.select(selectAdapters);
   private isSubmitting$ = this.select(state => state.isSubmitting);
   private isLessThanOneInterfaces$ = this.select(
     state => state.isLessThanOneInterface
@@ -108,26 +113,25 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
     isSubmitting,
   }));
 
-  setInterfaces = this.updater((state, interfaces: SystemInterfaces) => ({
-    ...state,
-    interfaces,
-    deviceOptions: interfaces,
-    internetOptions: {
-      ...DEFAULT_INTERNET_OPTION,
-      ...interfaces,
-    },
-    isLessThanOneInterface: Object.keys(interfaces).length < 1,
-  }));
+  setInterfaces = this.updater((state, interfaces: SystemInterfaces) => {
+    return {
+      ...state,
+      interfaces,
+      deviceOptions: interfaces,
+      internetOptions: {
+        ...DEFAULT_INTERNET_OPTION,
+        ...interfaces,
+      },
+      isLessThanOneInterface: Object.keys(interfaces).length < 1,
+    };
+  });
 
   getInterfaces = this.effect(trigger$ => {
     return trigger$.pipe(
       exhaustMap(() => {
         return this.testRunService.getSystemInterfaces().pipe(
           tap((interfaces: SystemInterfaces) => {
-            this.store.dispatch(
-              AppActions.fetchInterfacesSuccess({ interfaces })
-            );
-            this.setInterfaces(interfaces);
+            this.updateInterfaces(interfaces);
           })
         );
       })
@@ -201,6 +205,48 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
       )
     );
   });
+
+  adaptersUpdate = this.effect(() => {
+    return this.adapters$.pipe(
+      skip(1),
+      withLatestFrom(this.interfaces$),
+      tap(([adapters, interfaces]) => {
+        const updatedInterfaces = { ...interfaces };
+        if (adapters.adapters_added) {
+          this.addInterfaces(adapters.adapters_added, updatedInterfaces);
+        }
+        if (adapters.adapters_removed) {
+          this.removeInterfaces(adapters.adapters_removed, updatedInterfaces);
+        }
+        this.updateInterfaces(updatedInterfaces);
+      })
+    );
+  });
+
+  private updateInterfaces(interfaces: SystemInterfaces) {
+    this.store.dispatch(
+      AppActions.fetchInterfacesSuccess({ interfaces: interfaces })
+    );
+    this.setInterfaces(interfaces);
+  }
+
+  private addInterfaces(
+    newInterfaces: SystemInterfaces,
+    interfaces: SystemInterfaces
+  ): void {
+    for (const [key, value] of Object.entries(newInterfaces)) {
+      interfaces[key] = value;
+    }
+  }
+
+  private removeInterfaces(
+    interfacesToDelete: SystemInterfaces,
+    interfaces: SystemInterfaces
+  ): void {
+    for (const key of Object.keys(interfacesToDelete)) {
+      delete interfaces[key];
+    }
+  }
 
   private setDefaultDeviceInterfaceValue(
     value: string | undefined,
