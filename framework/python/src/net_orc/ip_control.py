@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """IP Control Module"""
+import subprocess
 
 import psutil
 import typing as t
@@ -240,6 +241,16 @@ class IPControl:
       LOGGER.error(f'Failed to set interface up {namespace_intf}')
       return False
     return True
+
+  def ping_via_interface(self, host, iface=None):
+    """Ping the host trough the interface"""
+    if iface is None:
+      command = ['ping', '-c', '1', host]
+    else:
+      command = ['ping', '-c', '1', '-I', iface, host]
+    return subprocess.call(command,
+                           stdout=subprocess.DEVNULL,
+                           stderr=subprocess.STDOUT) == 0
 
   @staticmethod
   def get_sys_interfaces() -> t.Dict[str, t.Dict[str, str]]:
