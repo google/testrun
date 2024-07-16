@@ -26,7 +26,11 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { NEW_PROFILE_MOCK, PROFILE_MOCK } from '../../mocks/profile.mock';
+import {
+  COPY_PROFILE_MOCK,
+  NEW_PROFILE_MOCK,
+  PROFILE_MOCK,
+} from '../../mocks/profile.mock';
 import { of } from 'rxjs';
 import { Component, Input } from '@angular/core';
 import { Profile, ProfileFormat } from '../../model/profile';
@@ -220,9 +224,7 @@ describe('RiskAssessmentComponent', () => {
     describe('#getCopyOfProfile', () => {
       it('should open the form with copy of profile', () => {
         const copy = component.getCopyOfProfile(PROFILE_MOCK);
-        expect(copy).toEqual(
-          Object.assign({}, PROFILE_MOCK, { name: 'Copy of Primary profile' })
-        );
+        expect(copy).toEqual(COPY_PROFILE_MOCK);
       });
     });
 
