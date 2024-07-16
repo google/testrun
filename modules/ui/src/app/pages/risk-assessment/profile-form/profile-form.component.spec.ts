@@ -18,6 +18,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProfileFormComponent } from './profile-form.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
+  COPY_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
   NEW_PROFILE_MOCK_DRAFT,
   PROFILE_FORM,
@@ -132,7 +133,6 @@ describe('ProfileFormComponent', () => {
         name.dispatchEvent(new Event('input'));
         component.nameControl.markAsTouched();
 
-        fixture.detectChanges();
         fixture.detectChanges();
 
         const nameError = compiled.querySelector('mat-error')?.innerHTML;
@@ -453,6 +453,15 @@ describe('ProfileFormComponent', () => {
         ).toBeFalse();
 
         component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, PROFILE_MOCK_3];
+        expect(
+          component.nameControl.hasError('has_same_profile_name')
+        ).toBeTrue();
+      });
+
+      it('should have an error when uses the name of copy profile', () => {
+        component.selectedProfile = COPY_PROFILE_MOCK;
+        component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, COPY_PROFILE_MOCK];
+
         expect(
           component.nameControl.hasError('has_same_profile_name')
         ).toBeTrue();

@@ -68,6 +68,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   getCopyOfProfile(profile: Profile): Profile {
     const copyOfProfile = { ...profile };
     copyOfProfile.name = this.getCopiedProfileName(profile.name);
+    delete copyOfProfile.created; // new profile is not create yet
     return copyOfProfile;
   }
 
