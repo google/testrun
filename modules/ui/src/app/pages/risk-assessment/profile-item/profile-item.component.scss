@@ -37,7 +37,7 @@ $profile-item-container-gap: 16px;
   padding: 12px 16px;
   border-bottom: 1px solid $lighter-grey;
   align-items: center;
-  height: 92px;
+  min-height: 92px;
 }
 
 .profile-item-icon-container {
