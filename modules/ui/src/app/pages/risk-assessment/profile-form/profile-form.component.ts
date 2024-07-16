@@ -219,6 +219,7 @@ export class ProfileFormComponent implements OnInit {
         this.getControl(index).setValue(profile.questions[index].answer);
       }
     });
+    this.nameControl.markAsTouched();
     this.triggerResize();
   }
 
