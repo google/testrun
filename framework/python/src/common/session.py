@@ -588,7 +588,7 @@ class TestrunSession():
     self._results = []
     self._started = None
     self._finished = None
-    self._ifaces = util.get_sys_interfaces()
+    self._ifaces = IPControl.get_sys_interfaces()
 
   def to_json(self):
 
