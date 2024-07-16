@@ -15,7 +15,7 @@
 import util
 import time
 import traceback
-from scapy.all import rdpcap, DHCP, ARP, Ether, IPv6, ICMPv6ND_NS
+from scapy.all import rdpcap, DHCP, ARP, Ether, ICMP, IPv6, ICMPv6ND_NS
 from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
 from dhcp2.client import Client as DHCPClient2
@@ -158,6 +158,11 @@ class ConnectionModule(TestModule):
 
       dhcp_type = self._get_dhcp_type(packet)
       if dhcp_type in disallowed_dhcp_types:
+
+        # Check if packet is responding with port unreachable
+        if ICMP in packet and packet[ICMP].type == 3:
+          continue
+
         return False, 'Device has sent disallowed DHCP message'
 
     return True, 'Device does not act as a DHCP server'
