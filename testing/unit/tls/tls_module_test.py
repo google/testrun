@@ -54,7 +54,7 @@ class TLSModuleTest(unittest.TestCase):
     log = logger.get_logger('unit_test_' + MODULE)
     global TLS_UTIL
     TLS_UTIL = TLSUtil(log,
-                       bin_dir='modules/test/tls/bin',
+                       #bin_dir='modules/test/tls/bin',
                        cert_out_dir=OUTPUT_DIR,
                        root_certs_dir=ROOT_CERTS_DIR)
 
@@ -489,7 +489,7 @@ class TLSModuleTest(unittest.TestCase):
     self.assertEqual(cert_valid[0], True)
 
   def tls_module_ca_cert_spaces_test(self):
-    print('\tls_module_ca_cert_spaces_test')
+    print('\ntls_module_ca_cert_spaces_test')
     # Make a tmp folder to make a differnt CA directory
     tmp_dir = os.path.join(TEST_FILES_DIR, 'tmp')
     if os.path.exists(tmp_dir):
@@ -504,7 +504,6 @@ class TLSModuleTest(unittest.TestCase):
     log = logger.get_logger('unit_test_' + MODULE)
     log.setLevel(logging.DEBUG)
     tls_util = TLSUtil(log,
-                       bin_dir='modules/test/tls/bin',
                        cert_out_dir=OUTPUT_DIR,
                        root_certs_dir=tmp_dir)
 
