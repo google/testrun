@@ -297,24 +297,38 @@ describe('RiskAssessmentComponent', () => {
     });
 
     describe('#discard', () => {
-      beforeEach(() => {
-        component.discard();
+      describe('with no selected profile', () => {
+        beforeEach(() => {
+          component.discard(null);
+        });
+
+        it('should call setFocusOnCreateButton', () => {
+          expect(
+            mockRiskAssessmentStore.setFocusOnCreateButton
+          ).toHaveBeenCalled();
+        });
+
+        it('should close the form', () => {
+          expect(component.isOpenProfileForm).toBeFalse();
+        });
       });
 
-      it('should call setFocusOnCreateButton', () => {
-        expect(
-          mockRiskAssessmentStore.setFocusOnCreateButton
-        ).toHaveBeenCalled();
-      });
+      describe('with selected profile', () => {
+        beforeEach(() => {
+          component.discard(PROFILE_MOCK);
+        });
 
-      it('should close the form', () => {
-        expect(component.isOpenProfileForm).toBeFalse();
-      });
+        it('should call setFocusOnCreateButton', () => {
+          expect(
+            mockRiskAssessmentStore.setFocusOnSelectedProfile
+          ).toHaveBeenCalled();
+        });
 
-      it('should update selected profile', () => {
-        expect(
-          mockRiskAssessmentStore.updateSelectedProfile
-        ).toHaveBeenCalledWith(null);
+        it('should update selected profile', () => {
+          expect(
+            mockRiskAssessmentStore.updateSelectedProfile
+          ).toHaveBeenCalledWith(null);
+        });
       });
     });
   });
