@@ -552,14 +552,15 @@ describe('Effects', () => {
 
   describe('checkStatusInReports$', () => {
     it('should call setTestrunStatus if current test run is completed and not present in reports', done => {
+      store.overrideSelector(
+        selectSystemStatus,
+        Object.assign({}, MOCK_PROGRESS_DATA_COMPLIANT, {
+          mac_addr: '01:02:03:04:05:07',
+        })
+      );
       actions$ = of(
         actions.setReports({
           reports: HISTORY,
-        }),
-        actions.fetchSystemStatusSuccess({
-          systemStatus: Object.assign({}, MOCK_PROGRESS_DATA_COMPLIANT, {
-            mac_addr: '01:02:03:04:05:07',
-          }),
         })
       );
 

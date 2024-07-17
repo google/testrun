@@ -11,7 +11,7 @@ import { MatSort } from '@angular/material/sort';
 import { selectReports, selectRiskProfiles } from '../../store/selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
-import { setReports } from '../../store/actions';
+import { fetchReports, setReports } from '../../store/actions';
 
 export interface ReportsComponentState {
   displayedColumns: string[];
@@ -205,6 +205,15 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
       })
     );
   });
+
+  getReports = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        this.store.dispatch(fetchReports());
+      })
+    );
+  });
+
   private removeReport(
     mac_addr: string,
     started: string | null,
