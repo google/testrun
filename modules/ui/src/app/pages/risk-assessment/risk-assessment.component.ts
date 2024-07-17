@@ -127,10 +127,14 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     }
   }
 
-  discard() {
+  discard(selectedProfile: Profile | null) {
     this.isOpenProfileForm = false;
-    this.store.updateSelectedProfile(null);
-    this.store.setFocusOnCreateButton();
+    if (selectedProfile) {
+      this.store.setFocusOnSelectedProfile();
+      this.store.updateSelectedProfile(null);
+    } else {
+      this.store.setFocusOnCreateButton();
+    }
   }
 
   trackByIndex = (index: number): number => {
