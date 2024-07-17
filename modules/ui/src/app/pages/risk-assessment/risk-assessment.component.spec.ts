@@ -29,6 +29,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import {
   COPY_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
+  NEW_PROFILE_MOCK_DRAFT,
   PROFILE_MOCK,
 } from '../../mocks/profile.mock';
 import { of } from 'rxjs';
@@ -247,7 +248,7 @@ describe('RiskAssessmentComponent', () => {
       });
 
       describe('with profile selected', () => {
-        it('should open save profile modal', fakeAsync(() => {
+        it('should open save profile modal for valid profile', fakeAsync(() => {
           const openSpy = spyOn(component.dialog, 'open').and.returnValue({
             afterClosed: () => of(true),
           } as MatDialogRef<typeof SimpleDialogComponent>);
@@ -255,9 +256,31 @@ describe('RiskAssessmentComponent', () => {
           component.saveProfileClicked(NEW_PROFILE_MOCK, PROFILE_MOCK);
 
           expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
-            ariaLabel: 'Save changes',
+            ariaLabel: 'Save profile',
             data: {
-              title: 'Save changes',
+              title: 'Save profile',
+              content: `You are about to save changes in Primary profile. Are you sure?`,
+            },
+            autoFocus: true,
+            hasBackdrop: true,
+            disableClose: true,
+            panelClass: 'simple-dialog',
+          });
+
+          openSpy.calls.reset();
+        }));
+
+        it('should open save draft profile modal', fakeAsync(() => {
+          const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+            afterClosed: () => of(true),
+          } as MatDialogRef<typeof SimpleDialogComponent>);
+
+          component.saveProfileClicked(NEW_PROFILE_MOCK_DRAFT, PROFILE_MOCK);
+
+          expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
+            ariaLabel: 'Save draft profile',
+            data: {
+              title: 'Save draft profile',
               content: `You are about to save changes in Primary profile. Are you sure?`,
             },
             autoFocus: true,

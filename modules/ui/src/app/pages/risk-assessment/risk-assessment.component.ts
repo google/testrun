@@ -24,7 +24,7 @@ import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dia
 import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { Profile } from '../../model/profile';
+import { Profile, ProfileStatus } from '../../model/profile';
 import { Observable } from 'rxjs/internal/Observable';
 import { DeviceValidators } from '../devices/components/device-form/device.validators';
 
@@ -116,7 +116,10 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       this.saveProfile(profile);
       this.store.setFocusOnCreateButton();
     } else {
-      this.openSaveDialog(selectedProfile.name)
+      this.openSaveDialog(
+        selectedProfile.name,
+        profile.status === ProfileStatus.DRAFT
+      )
         .pipe(takeUntil(this.destroy$))
         .subscribe(saveProfile => {
           if (saveProfile) {
@@ -164,11 +167,14 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.store.setFocus({ nextItem, firstItem });
   }
 
-  private openSaveDialog(profileName: string): Observable<boolean> {
+  private openSaveDialog(
+    profileName: string,
+    draft: boolean = false
+  ): Observable<boolean> {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: 'Save changes',
+      ariaLabel: `Save ${draft ? 'draft profile' : 'profile'}`,
       data: {
-        title: 'Save changes',
+        title: `Save ${draft ? 'draft profile' : 'profile'}`,
         content: `You are about to save changes in ${profileName}. Are you sure?`,
       },
       autoFocus: true,
