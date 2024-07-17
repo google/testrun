@@ -87,6 +87,7 @@ describe('ReportsComponent', () => {
       'setFilterOpened',
       'updateSort',
       'getHistory',
+      'getReports',
     ]);
     mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
 
@@ -118,6 +119,12 @@ describe('ReportsComponent', () => {
         component.ngOnInit();
 
         expect(mockReportsStore.updateSort).toHaveBeenCalledWith(sort);
+      }));
+
+      it('should get reports', fakeAsync(() => {
+        component.ngOnInit();
+
+        expect(mockReportsStore.getReports).toHaveBeenCalled();
       }));
     });
 

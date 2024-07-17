@@ -309,31 +309,36 @@ export class AppEffects {
     );
   });
 
-  checkStatusInReports$ = createEffect(() =>
-    combineLatest([
-      this.actions$.pipe(ofType(AppActions.setReports)),
-      this.actions$.pipe(ofType(AppActions.fetchSystemStatusSuccess)),
-    ]).pipe(
-      filter(([, { systemStatus }]) => {
+  checkStatusInReports$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setReports),
+      withLatestFrom(this.store.select(selectSystemStatus)),
+      filter(([, systemStatus]) => {
         return (
-          systemStatus.status === StatusOfTestrun.Compliant ||
-          systemStatus.status === StatusOfTestrun.NonCompliant ||
-          systemStatus.status === StatusOfTestrun.Error
+          systemStatus != null && this.isTestrunFinished(systemStatus.status)
         );
       }),
-      filter(([{ reports }, { systemStatus }]) => {
+      filter(([{ reports }, systemStatus]) => {
         return (
           !reports?.some(
             report =>
-              report.report === systemStatus.report &&
-              report.started === systemStatus.started &&
-              report.finished === systemStatus.finished
+              report.report === systemStatus!.report &&
+              report.started === systemStatus!.started &&
+              report.finished === systemStatus!.finished
           ) || false
         );
       }),
       map(() => AppActions.setTestrunStatus({ systemStatus: IDLE_STATUS }))
-    )
-  );
+    );
+  });
+
+  private isTestrunFinished(status: string) {
+    return (
+      status === StatusOfTestrun.Compliant ||
+      status === StatusOfTestrun.NonCompliant ||
+      status === StatusOfTestrun.Error
+    );
+  }
 
   private showSnackBar() {
     timer(WAIT_TO_OPEN_SNACKBAR_MS)

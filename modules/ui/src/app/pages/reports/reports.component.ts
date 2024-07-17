@@ -56,6 +56,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.store.getReports();
     this.store.updateSort(this.sort);
   }
 
