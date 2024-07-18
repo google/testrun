@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """MQTT client"""
+import json
 import typing as t
 import paho.mqtt.client as mqtt_client
 from common import logger
@@ -56,4 +57,6 @@ class MQTT:
         message (t.Union[str, dict]): message
     """
     self._connect()
+    if isinstance(message, dict):
+      message = json.dumps(message)
     self._client.publish(topic, str(message))
