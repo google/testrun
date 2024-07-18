@@ -24,7 +24,7 @@ import docker
 import time
 import traceback
 from docker.types import Mount
-from common import logger, util
+from common import logger, util, mqtt
 from net_orc.listener import Listener
 from net_orc.network_event import NetworkEvent
 from net_orc.network_validator import NetworkValidator
@@ -787,7 +787,7 @@ class NetworkOrchestrator:
   def get_session(self):
     return self._session
 
-  def network_adapters_checker(self, mgtt_client, topic):
+  def network_adapters_checker(self, mqtt_client: mqtt.MQTT, topic: str):
     """Checks for changes in network adapters
     and sends a message to the frontend
     """
@@ -795,9 +795,20 @@ class NetworkOrchestrator:
     try:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
-        mgtt_client.send_message(topic, adapters)
+        mqtt_client.send_message(topic, adapters)
     except Exception:
       LOGGER.error(traceback.format_exc())
+
+  def internet_conn_checker(self, mqtt_client: mqtt.MQTT, topic: str):
+    """Checks internet connection and sends a status to frontend"""
+    internet_connection = False
+    if 'single_intf' in self._session.get_runtime_params():
+      internet_connection = self._ip_ctrl.ping_via_interface('google.com')
+    else:
+      iface = self._session.get_internet_interface()
+      if iface and iface in self._session._ifaces:
+        internet_connection = self._ip_ctrl.ping_via_interface('google.com', iface)
+    mqtt_client.send_message(topic, {"connection": internet_connection})    
 
 
 class NetworkModule:
