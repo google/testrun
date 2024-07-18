@@ -223,7 +223,9 @@ class NetworkOrchestrator:
     #self._ovs.add_arp_inspection_filter(ip_address=device.ip_addr,
     #  mac_address=device.mac_addr)
 
-    self._start_device_monitor(device)
+    # Don't monitor devices when in network only mode
+    if 'net_only' not in self._session.get_runtime_params():
+      self._start_device_monitor(device)
 
   def _get_conn_stats(self):
     """ Extract information about the physical connection

@@ -81,7 +81,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     self._net_only = net_only
     self._single_intf = single_intf
-    self._no_ui = no_ui
+    # Network only option only works if UI is also
+    # disbled so need to set no_ui if net_only is selected
+    self._no_ui = no_ui or net_only
 
     # Catch any exit signals
     self._register_exits()
