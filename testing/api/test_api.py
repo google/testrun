@@ -1135,3 +1135,128 @@ def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W06
                     timeout=5)
   print(r.text)
   print(r.status_code)
+
+
+# --------------------tests for profile endpoints---------------------------------
+
+def load_json(file_name):
+    file_path = os.path.join(os.path.dirname(__file__), 'profiles', file_name)
+    with open(file_path, 'r') as file:
+        return json.load(file)
+
+#test for profiles format
+def test_get_profiles_format(testrun):  # pylint: disable=W0613
+    r = requests.get(f"{API}/profiles/format", timeout=5)
+    assert r.status_code == 200
+    response = json.loads(r.text)
+    assert isinstance(response, list)  # Ensure the response is a list
+
+    # Check that each item in the response has keys "questions" and "type"
+    for item in response:
+        assert "question" in item
+        assert "type" in item
+
+#test for get profiles
+def test_get_profiles(testrun):  # pylint: disable=W0613
+    r = requests.get(f"{API}/profiles", timeout=5)
+    assert r.status_code == 200
+    response = json.loads(r.text)
+    assert isinstance(response, list)  # check if response is a list
+
+    # Check that each profile has the expected fields
+    for profile in response:
+        assert "name" in profile
+        assert "status" in profile
+        assert "created" in profile
+        assert "version" in profile
+        assert "questions" in profile
+        assert isinstance(profile["questions"], list) #check if questions values is list
+        
+        #check that "questions" has the expected fields
+        for element in profile["questions"]:
+          assert isinstance(element, dict) #check if each element is dict
+          assert "question" in element
+          assert "type" in element
+          assert "answer" in element
+        
+#check if profile exists (helper function)
+def profile_exists(profile_name):
+    r = requests.get(f"{API}/profiles", timeout=5)
+    assert r.status_code == 200
+    profiles = r.json()
+    return any(p["name"] == profile_name for p in profiles)
+
+#test for create profile if not exists
+def test_profile_create_profile(testrun):
+    new_profile = load_json('new_profile.json')
+    profile_name = new_profile["name"]
+
+    assert not profile_exists(profile_name), f"Profile '{profile_name}' exists"
+
+    r = requests.post(f"{API}/profiles", data=json.dumps(new_profile), timeout=5)
+    assert r.status_code == 201, f"Expected status code 201, got {r.status_code}"
+    response = r.json()
+    assert "success" in response, f"Expected 'success' in response, got {response}"
+
+    # Verify profile creation
+    r = requests.get(f"{API}/profiles", timeout=5)
+    assert r.status_code == 200, f"Expected status code 200, got {r.status_code}"
+    profiles = r.json()
+    created_profile = next((p for p in profiles if p["name"] == profile_name), None)
+    assert created_profile is not None, f"Profile '{profile_name}' not found"
+    assert created_profile["status"] == "New Draft"
+
+#test for update profile when exists
+def test_profile_update_profile(testrun):
+    updated_profile = load_json('updated_profile.json')
+    profile_name = updated_profile["name"]
+
+    assert profile_exists(profile_name), f"Profile '{profile_name}' does not exist. Update test cannot proceed."
+
+    r = requests.post(f"{API}/profiles", data=json.dumps(updated_profile), timeout=5)
+    assert r.status_code == 200, f"Expected status code 200, got {r.status_code}"
+    response = r.json()
+    assert "success" in response, f"Expected 'success' in response, got {response}"
+
+    # Verify profile update
+    r = requests.get(f"{API}/profiles", timeout=5)
+    assert r.status_code == 200, f"Expected status code 200, got {r.status_code}"
+    profiles = r.json()
+    updated_profile_check = next((p for p in profiles if p["name"] == profile_name), None)
+    assert updated_profile_check is not None, f"Profile '{profile_name}' not found"
+    assert updated_profile_check["status"] == "Updated Draft"
+
+#test for delete profile
+def test_profile_delete_profile(testrun):
+  profile = load_json('updated_profile.json')
+  profile_name = profile["name"]
+  
+  #create profile if not exists
+  if not profile_exists(profile_name):
+    r = requests.post(f"{API}/profiles", data=json.dumps(new_profile), timeout=5)
+    assert r.status_code == 201, f"Expected status code 201, got {r.status_code}"
+
+  # Verify the profile exists
+  r = requests.get(f"{API}/profiles", timeout=5)
+  assert r.status_code == 200
+  profiles = r.json()
+
+  #display all profiles names
+  for profile in profiles:
+    print(profile["name"])
+
+  profile_to_delete = next(p for p in profiles if p["name"] == profile_name)
+  assert profile_to_delete is not None
+
+  #delete profile
+  r = requests.delete(f"{API}/profiles", data=json.dumps(profile_to_delete), timeout=5)
+  assert r.status_code == 200 
+  response = json.loads(r.text)
+  assert "success" in response #check if the response contains "success" key
+
+  #check if the profile has been deleted
+  r = requests.get(f"{API}/profiles", timeout=5)
+  assert r.status_code == 200
+  profiles = json.loads(r.text)
+  deleted_profile = next((p for p in profiles if p["name"] == profile_name), None)
+  assert deleted_profile is None
