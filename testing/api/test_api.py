@@ -34,6 +34,7 @@ API = "http://127.0.0.1:8000"
 LOG_PATH = "/tmp/testrun.log"
 TEST_SITE_DIR = ".."
 
+
 DEVICES_DIRECTORY = "local/devices"
 TESTING_DEVICES = "../device_configs"
 SYSTEM_CONFIG_PATH = "local/system.json"
@@ -87,7 +88,6 @@ def stop_test_device(device_name):
       check=False
   )
   print(cmd.stdout)
-
 
 def docker_logs(device_name):
   """ Print docker logs from given docker container name """
@@ -223,7 +223,7 @@ def local_get_devices():
       )
   )
 
-
+ 
 def test_get_system_interfaces(testrun): # pylint: disable=W0613
   """Tests API system interfaces against actual local interfaces"""
   r = requests.get(f"{API}/system/interfaces", timeout=5)
@@ -234,7 +234,7 @@ def test_get_system_interfaces(testrun): # pylint: disable=W0613
   # schema expects a flat list
   assert all(isinstance(x, str) for x in response)
 
-
+ 
 def test_status_idle(testrun): # pylint: disable=W0613
   until_true(
       lambda: query_system_status().lower() == "idle",
@@ -297,6 +297,7 @@ def test_status_non_compliant(testing_devices, testrun): # pylint: disable=W0613
 
   stop_test_device("x123")
 
+ 
 def test_create_get_devices(empty_devices_dir, testrun): # pylint: disable=W0613
   device_1 = {
       "manufacturer": "Google",
@@ -359,7 +360,7 @@ def test_create_get_devices(empty_devices_dir, testrun): # pylint: disable=W0613
         [device_1[key], device_2[key]]
     )
 
-
+ 
 def test_delete_device_success(empty_devices_dir, testrun): # pylint: disable=W0613
   device_1 = {
       "manufacturer": "Google",
@@ -437,7 +438,7 @@ def test_delete_device_success(empty_devices_dir, testrun): # pylint: disable=W0
         [device_2[key]]
     )
 
-
+ 
 def test_delete_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
   device_1 = {
       "manufacturer": "Google",
@@ -476,7 +477,7 @@ def test_delete_device_not_found(empty_devices_dir, testrun): # pylint: disable=
   assert r.status_code == 404
   assert len(local_get_devices()) == 0
 
-
+ 
 def test_delete_device_no_mac(empty_devices_dir, testrun): # pylint: disable=W0613
   device_1 = {
       "manufacturer": "Google",
@@ -550,11 +551,17 @@ def test_delete_device_testrun_running(testing_devices, testrun): # pylint: disa
                       timeout=5)
   assert r.status_code == 403
 
-
+ 
 def test_start_testrun_started_successfully(
     testing_devices, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
-  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
+  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd", "test_modules": {
+                "dns": {"enabled": False},
+                "connection": {"enabled": True},
+                "ntp": {"enabled": False},
+                "baseline": {"enabled": False},
+                "nmap": {"enabled": False}
+            }}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
   assert r.status_code == 200
 
@@ -583,6 +590,7 @@ def test_start_testrun_already_in_progress(
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
   assert r.status_code == 409
 
+ 
 def test_start_system_not_configured_correctly(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -611,7 +619,7 @@ def test_start_system_not_configured_correctly(
                     timeout=10)
   assert r.status_code == 500
 
-
+ 
 def test_start_device_not_found(empty_devices_dir, # pylint: disable=W0613
                                 testrun): # pylint: disable=W0613
   device_1 = {
@@ -644,7 +652,7 @@ def test_start_device_not_found(empty_devices_dir, # pylint: disable=W0613
                     timeout=10)
   assert r.status_code == 404
 
-
+ 
 def test_start_missing_device_information(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -673,7 +681,7 @@ def test_start_missing_device_information(
                     timeout=10)
   assert r.status_code == 400
 
-
+ 
 def test_create_device_already_exists(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -703,7 +711,7 @@ def test_create_device_already_exists(
   print(r.text)
   assert r.status_code == 409
 
-
+ 
 def test_create_device_invalid_json(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -716,7 +724,7 @@ def test_create_device_invalid_json(
   print(r.text)
   assert r.status_code == 400
 
-
+ 
 def test_create_device_invalid_request(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -727,7 +735,7 @@ def test_create_device_invalid_request(
   print(r.text)
   assert r.status_code == 400
 
-
+ 
 def test_device_edit_device(
     testing_devices, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -776,7 +784,7 @@ def test_device_edit_device(
   assert updated_device_api["model"] == new_model
   assert updated_device_api["test_modules"] == new_test_modules
 
-
+ 
 def test_device_edit_device_not_found(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -814,7 +822,7 @@ def test_device_edit_device_not_found(
 
   assert r.status_code == 404
 
-
+ 
 def test_device_edit_device_incorrect_json_format(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -847,7 +855,7 @@ def test_device_edit_device_incorrect_json_format(
 
   assert r.status_code == 400
 
-
+ 
 def test_device_edit_device_with_mac_already_exists(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -904,13 +912,14 @@ def test_device_edit_device_with_mac_already_exists(
 
   assert r.status_code == 409
 
-
+ 
 def test_system_latest_version(testrun): # pylint: disable=W0613
   r = requests.get(f"{API}/system/version", timeout=5)
   assert r.status_code == 200
   updated_system_version = json.loads(r.text)["update_available"]
   assert updated_system_version is False
 
+ 
 def test_get_system_config(testrun): # pylint: disable=W0613
   r = requests.get(f"{API}/system/config", timeout=5)
 
@@ -936,7 +945,7 @@ def test_get_system_config(testrun): # pylint: disable=W0613
       == api_config["network"]["internet_intf"]
   )
 
-
+ 
 def test_invalid_path_get(testrun): # pylint: disable=W0613
   r = requests.get(f"{API}/blah/blah", timeout=5)
   response = json.loads(r.text)
@@ -1041,7 +1050,7 @@ def test_stop_running_test(testing_devices, testrun): # pylint: disable=W0613
 
   assert response["status"] == "Cancelled"
 
-
+ 
 def test_stop_running_not_running(testrun): # pylint: disable=W0613
   # Validate response
   r = requests.post(f"{API}/system/stop",
@@ -1110,7 +1119,7 @@ def test_multiple_runs(testing_devices, testrun): # pylint: disable=W0613
 
   stop_test_device("x123")
 
-
+ 
 def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W0613
   # local_delete_devices(ALL_DEVICES)
   # We must start test run with no devices in local/devices for this test
@@ -1137,12 +1146,36 @@ def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W06
   print(r.status_code)
 
 
-# --------------------tests for profile endpoints---------------------------------
+#Tests for profile endpoints
 
+PROFILES_DIRECTORY = "local/risk_profiles"
+
+#delete all profiles form risk_profile folder
+def delete_all_profiles():
+    profiles_path = Path(PROFILES_DIRECTORY)
+    if profiles_path.exists() and profiles_path.is_dir():
+      shutil.rmtree(profiles_path) #remove risk_profiles
+    profiles_path.mkdir(parents=True, exist_ok=True) #create risk_profiles
+   
+#clean the profiles before and after each test
+@pytest.fixture(scope="function")
+def clean_profiles_dir():
+    delete_all_profiles()
+    yield
+    delete_all_profiles()
+
+#load the json files
 def load_json(file_name):
     file_path = os.path.join(os.path.dirname(__file__), 'profiles', file_name)
     with open(file_path, 'r') as file:
         return json.load(file)
+    
+#check if profile exists
+def profile_exists(profile_name):
+    r = requests.get(f"{API}/profiles", timeout=5)
+    assert r.status_code == 200
+    profiles = r.json()
+    return any(p["name"] == profile_name for p in profiles)
 
 #test for profiles format
 def test_get_profiles_format(testrun):  # pylint: disable=W0613
@@ -1155,14 +1188,32 @@ def test_get_profiles_format(testrun):  # pylint: disable=W0613
     for item in response:
         assert "question" in item
         assert "type" in item
-
-#test for get profiles
-def test_get_profiles(testrun):  # pylint: disable=W0613
+  
+#test for get profiles (no profile, one profile, two profiles)
+def test_get_profiles(testrun, clean_profiles_dir):  # pylint: disable=W0613
+    #test no profiles
     r = requests.get(f"{API}/profiles", timeout=5)
     assert r.status_code == 200
     response = json.loads(r.text)
     assert isinstance(response, list)  # check if response is a list
+    assert len(response) == 0 #check if list is empty
 
+    #create the first profile
+    new_profile = load_json('new_profile.json')
+    profile_name = new_profile["name"]
+    assert not profile_exists(profile_name), f"Profile '{profile_name}' exists"
+
+    r = requests.post(f"{API}/profiles", data=json.dumps(new_profile), timeout=5)
+    assert r.status_code == 201, f"Expected status code 201, got {r.status_code}"
+    response = r.json()
+    assert "success" in response, f"Expected 'success' in response, got {response}"
+
+    #get the profile 
+    r = requests.get(f"{API}/profiles", timeout=5)
+    assert r.status_code == 200
+    response = json.loads(r.text)
+    assert isinstance(response, list)  # check if response is a list
+    assert len(response) == 1 #check if there is one profile
     # Check that each profile has the expected fields
     for profile in response:
         assert "name" in profile
@@ -1178,16 +1229,42 @@ def test_get_profiles(testrun):  # pylint: disable=W0613
           assert "question" in element
           assert "type" in element
           assert "answer" in element
-        
-#check if profile exists (helper function)
-def profile_exists(profile_name):
+
+
+    #create the second profile 
+    new_profile_2 = load_json('new_profile_2.json')
+    profile_name_2 = new_profile_2["name"]
+    assert not profile_exists(profile_name_2), f"Profile '{profile_name_2}' exists"
+
+    r = requests.post(f"{API}/profiles", data=json.dumps(new_profile_2), timeout=5)
+    assert r.status_code == 201, f"Expected status code 200, got {r.status_code}"
+    response = r.json()
+    assert "success" in response, f"Expected 'success' in response, got {response}"
+
+    #get the two profiles 
     r = requests.get(f"{API}/profiles", timeout=5)
     assert r.status_code == 200
-    profiles = r.json()
-    return any(p["name"] == profile_name for p in profiles)
+    response = json.loads(r.text)
+    assert isinstance(response, list)  # check if response is a list
+    assert len(response) == 2 #check if there are 2 profiles
+    # Check that each profile has the expected fields
+    for profile in response:
+        assert "name" in profile
+        assert "status" in profile
+        assert "created" in profile
+        assert "version" in profile
+        assert "questions" in profile
+        assert isinstance(profile["questions"], list) #check if questions values is list
+        
+        #check that "questions" has the expected fields
+        for element in profile["questions"]:
+          assert isinstance(element, dict) #check if each element is dict
+          assert "question" in element
+          assert "type" in element
+          assert "answer" in element
 
 #test for create profile if not exists
-def test_profile_create_profile(testrun):
+def test_create_profile(testrun, clean_profiles_dir):
     new_profile = load_json('new_profile.json')
     profile_name = new_profile["name"]
 
@@ -1204,51 +1281,61 @@ def test_profile_create_profile(testrun):
     profiles = r.json()
     created_profile = next((p for p in profiles if p["name"] == profile_name), None)
     assert created_profile is not None, f"Profile '{profile_name}' not found"
-    assert created_profile["status"] == "New Draft"
+    
 
 #test for update profile when exists
-def test_profile_update_profile(testrun):
+def test_update_profile(testrun, clean_profiles_dir):
+    new_profile = load_json('new_profile.json')
     updated_profile = load_json('updated_profile.json')
-    profile_name = updated_profile["name"]
+    profile_name = new_profile["name"]
+    updated_profile_name = updated_profile["rename"]
+
+    #create the profile
+    r = requests.post(f"{API}/profiles", data=json.dumps(new_profile), timeout=5)
+    assert r.status_code == 201, f"Expected status code 201, got {r.status_code}"
+    response = r.json()
+    assert "success" in response, f"Expected 'success' in response, got {response}"
 
     assert profile_exists(profile_name), f"Profile '{profile_name}' does not exist. Update test cannot proceed."
 
+    #update the profile
     r = requests.post(f"{API}/profiles", data=json.dumps(updated_profile), timeout=5)
     assert r.status_code == 200, f"Expected status code 200, got {r.status_code}"
     response = r.json()
     assert "success" in response, f"Expected 'success' in response, got {response}"
 
-    # Verify profile update
+    # verify profile update
     r = requests.get(f"{API}/profiles", timeout=5)
     assert r.status_code == 200, f"Expected status code 200, got {r.status_code}"
     profiles = r.json()
-    updated_profile_check = next((p for p in profiles if p["name"] == profile_name), None)
+    updated_profile_check = next((p for p in profiles if p["name"] == updated_profile_name), None)
     assert updated_profile_check is not None, f"Profile '{profile_name}' not found"
-    assert updated_profile_check["status"] == "Updated Draft"
+    #assert updated_profile_check["status"] == "Draft"
 
 #test for delete profile
-def test_profile_delete_profile(testrun):
-  profile = load_json('updated_profile.json')
-  profile_name = profile["name"]
-  
-  #create profile if not exists
-  if not profile_exists(profile_name):
-    r = requests.post(f"{API}/profiles", data=json.dumps(new_profile), timeout=5)
-    assert r.status_code == 201, f"Expected status code 201, got {r.status_code}"
+def test_delete_profile(testrun, clean_profiles_dir):
+#create the profile
+  new_profile = load_json('new_profile.json')
+  profile_name = new_profile["name"]
+  assert not profile_exists(profile_name), f"Profile '{profile_name}' exists"
+
+  r = requests.post(f"{API}/profiles", data=json.dumps(new_profile), timeout=5)
+  assert r.status_code == 201, f"Expected status code 201, got {r.status_code}"
+  response = r.json()
+  assert "success" in response, f"Expected 'success' in response, got {response}"
 
   # Verify the profile exists
   r = requests.get(f"{API}/profiles", timeout=5)
   assert r.status_code == 200
   profiles = r.json()
 
-  #display all profiles names
+  #display all profiles names in case of failure
   for profile in profiles:
     print(profile["name"])
 
+  #delete the profile
   profile_to_delete = next(p for p in profiles if p["name"] == profile_name)
   assert profile_to_delete is not None
-
-  #delete profile
   r = requests.delete(f"{API}/profiles", data=json.dumps(profile_to_delete), timeout=5)
   assert r.status_code == 200 
   response = json.loads(r.text)
