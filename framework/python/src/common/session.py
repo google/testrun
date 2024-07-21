@@ -720,14 +720,17 @@ class TestrunSession():
     adapters = {}
     ifaces_new = util.get_sys_interfaces()
 
-    #difference between stored and newly received network interfaces
+    # Difference between stored and newly received network interfaces
     diff = util.diff_dicts(self._ifaces, ifaces_new)
     if diff:
       if 'items_added' in diff:
         adapters['adapters_added'] = diff['items_added']
       if 'items_removed' in diff:
         adapters['adapters_removed'] = diff['items_removed']
-      # save new network interfaces to session
-      LOGGER.debug(f'network adapters changed {adapters}')
+      # Save new network interfaces to session
+      LOGGER.debug(f'Network adapters change detected: {adapters}')
       self._ifaces = ifaces_new
     return adapters
+
+  def get_ifaces(self):
+    return self._ifaces

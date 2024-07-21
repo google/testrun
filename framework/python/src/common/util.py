@@ -133,7 +133,6 @@ def get_docker_host_by_name(container_name: str) -> str:
     LOGGER.error(f'Container {container_name} is no running')
     raise Exception(f'Container {container_name} is not running')
   return container.attrs['NetworkSettings']['IPAddress']
-  
 
 def get_sys_interfaces() -> t.Dict[str, t.Dict[str, str]]:
   """ Retrieves all Ethernet network interfaces from the host system
