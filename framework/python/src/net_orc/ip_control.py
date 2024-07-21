@@ -13,7 +13,6 @@
 # limitations under the License.
 """IP Control Module"""
 import subprocess
-
 import psutil
 import typing as t
 from common import logger
@@ -103,7 +102,7 @@ class IPControl:
 
   def get_namespaces(self):
     result = util.run_command('ip netns list')
-    #Strip ID's from the namespace results
+    # Strip ID's from the namespace results
     namespaces = re.findall(r'(\S+)(?:\s+\(id: \d+\))?', result[0])
     return namespaces
 
@@ -242,6 +241,14 @@ class IPControl:
       return False
     return True
 
+  def ping_via_gateway(self, host):
+    """Ping the host trough the gateway container"""
+    command = f'docker exec tr-ct-gateway ping -W 1 -c 1 {host}'
+    output = util.run_command(command)
+    if '0% packet loss' in output[0]:
+      return True
+    return False
+  
   def ping_via_interface(self, host, iface=None):
     """Ping the host trough the interface"""
     if iface is None:

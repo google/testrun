@@ -548,10 +548,6 @@ class NetworkOrchestrator:
           cap_add=['NET_ADMIN'],
           name=net_module.container_name,
           hostname=net_module.container_name,
-          # Undetermined version of docker seems to have broken
-          # DNS configuration (/etc/resolv.conf)  Re-add when/if
-          # this network is utilized and DNS issue is resolved
-          #network=PRIVATE_DOCKER_NET,
           network_mode='none',
           privileged=True,
           detach=True,
@@ -791,7 +787,6 @@ class NetworkOrchestrator:
     """Checks for changes in network adapters
     and sends a message to the frontend
     """
-    LOGGER.debug('checking network adatpers...')
     try:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
@@ -799,16 +794,40 @@ class NetworkOrchestrator:
     except Exception:
       LOGGER.error(traceback.format_exc())
 
-  def internet_conn_checker(self, mqtt_client: mqtt.MQTT, topic: str):
+  def internet_conn_checker(self, mqtt_client: mqtt.MQTT):
     """Checks internet connection and sends a status to frontend"""
-    internet_connection = False
-    if 'single_intf' in self._session.get_runtime_params():
-      internet_connection = self._ip_ctrl.ping_via_interface('google.com')
-    else:
+
+    # Default message
+    topic = 'events'
+    message = {
+      'event': 'InternetConnectivityEvent',
+      'data': {
+        'internet': False
+      }
+    }
+
+    # Only check if Testrun is running
+    if self.get_session().get_status() not in [
+      'Waiting for Device', 'Monitoring', 'In Progress'
+    ]:
+      message['data']['internet'] = None
+
+    # Only run if single intf mode not used
+    elif 'single_intf' not in self._session.get_runtime_params():
       iface = self._session.get_internet_interface()
-      if iface and iface in self._session._ifaces:
-        internet_connection = self._ip_ctrl.ping_via_interface('google.com', iface)
-    mqtt_client.send_message(topic, {"connection": internet_connection})    
+
+      # Check that an internet intf has been selected
+      if iface and iface in self._session.get_ifaces():
+
+        # Ping google.com from gateway container
+        internet_connection = self._ip_ctrl.ping_via_gateway(
+          'google.com')
+
+        if internet_connection:
+          message['data']['internet'] = True
+
+    # Broadcast via MQTT client
+    mqtt_client.send_message(topic, message)
 
 
 class NetworkModule:
