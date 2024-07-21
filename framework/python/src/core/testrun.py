@@ -15,7 +15,7 @@
 """The overall control of the Testrun application.
 
 This file provides the integration between all of the
-Test Run components, such as net_orc, test_orc and test_ui.
+Testrun components, such as net_orc, test_orc and test_ui.
 
 Run using the provided command scripts in the cmd folder.
 E.g sudo cmd/start
@@ -112,7 +112,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # Start websockets server
     self.start_ws()
 
-    #MQTT client
+    # MQTT client
     self._mqtt_client = mqtt.MQTT()
 
     if self._no_ui:

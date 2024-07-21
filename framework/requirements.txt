@@ -31,7 +31,7 @@ pytz==2024.1
 # Requirements for MQTT client
 paho-mqtt==2.1.0
 
-#Requirements for background tasks
+# Requirements for background tasks
 APScheduler==3.10.4
 
 # Requirements for the risk profile

@@ -22,8 +22,7 @@ from fastapi import FastAPI
 
 from common import logger, session, mqtt
 
-
-# check adapters period seconds
+# Check adapters period seconds
 CHECK_NETWORK_ADAPTERS_PERIOD = 5
 NETWORK_ADAPTERS_TOPIC = "network_adapters"
 
@@ -61,7 +60,6 @@ class PeriodicTasks:
     """Checks for changes in network adapters
     and sends a message to the frontend
     """
-    LOGGER.debug("checking network adatpers...")
     try:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
