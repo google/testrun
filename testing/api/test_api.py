@@ -124,9 +124,9 @@ def testrun(request): # pylint: disable=W0613
       stdout=subprocess.PIPE,
       stderr=subprocess.STDOUT,
       encoding="utf-8",
-      preexec_fn=os.setsid #start_new_session=True 
+      preexec_fn=os.setsid #start_new_session=True
   ) as proc:
- 
+
     while True:
       try:
         outs = proc.communicate(timeout=1)[0]
@@ -1246,7 +1246,7 @@ def test_get_profiles(testrun, clean_profiles_dir):  # pylint: disable=W0613
   response = r.json()
   assert "success" in response, f"Expected 'success' got {response}"
 
-  #get the two profiles 
+  #get the two profiles
   r = requests.get(f"{API}/profiles", timeout=5)
   assert r.status_code == 200
   response = json.loads(r.text)
@@ -1307,7 +1307,7 @@ def test_update_profile(testrun, clean_profiles_dir): # pylint: disable=W0613
   #update the profile
   r = requests.post(
       f"{API}/profiles",
-      data=json.dumps(updated_profile), 
+      data=json.dumps(updated_profile),
       timeout=5)
   assert r.status_code == 200, f"Expected status code 200, got {r.status_code}"
   response = r.json()
@@ -1352,7 +1352,7 @@ def test_delete_profile(testrun, clean_profiles_dir): # pylint: disable=W0613
       f"{API}/profiles",
       data=json.dumps(profile_to_delete),
       timeout=5)
-  assert r.status_code == 200 
+  assert r.status_code == 200
   response = json.loads(r.text)
   assert "success" in response #check if the response contains "success" key
 
