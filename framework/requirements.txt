@@ -7,8 +7,11 @@ ipaddress==1.0.23
 netifaces==0.11.0
 scapy==2.5.0
 
-# Requirments for the test_orc module
+# Requirements for the test_orc module
 weasyprint==61.2
+
+# add more strict requirement for pydyf as a dependency of weasyprint, as newer pydyf has breaking API changes
+pydyf==0.8.0
 
 # Requirements for the API
 fastapi==0.109.1
