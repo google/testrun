@@ -15,6 +15,7 @@
 import util
 import time
 import traceback
+import os
 from scapy.all import rdpcap, DHCP, ARP, Ether, IPv6, ICMPv6ND_NS
 from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
@@ -96,10 +97,16 @@ class ConnectionModule(TestModule):
 
   def _connection_dhcp_disconnect(self):
     LOGGER.info('Running connection.dhcp.disconnect')
-    for _ in range(10):
-      iface_status = self.host_client.check_interface_status('ens9')
-      LOGGER.info(f'iface status: {iface_status}')
-      time.sleep(5)
+    dev_iface = os.getenv('DEV_IFACE')
+    if dev_iface:
+      # Seems to always fail on the first attempt so
+      # try a few times to make sure the connection is open
+      for _ in range(10):
+        iface_status = self.host_client.check_interface_status(dev_iface)
+        LOGGER.info(f'iface status: {iface_status}')
+        time.sleep(5)
+    else:
+      return None, 'Device interface could not be resolved'
       
   def _connection_switch_arp_inspection(self):
     LOGGER.info('Running connection.switch.arp_inspection')

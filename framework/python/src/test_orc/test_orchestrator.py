@@ -455,7 +455,8 @@ class TestOrchestrator:
               "IPV4_ADDR": device.ip_addr,
               "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
               "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
-              "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
+              "IPV6_SUBNET": self._net_orc.network_config.ipv6_network,
+              "DEV_IFACE": self._session.get_device_interface()
           },
           extra_hosts=extra_hosts
           )
