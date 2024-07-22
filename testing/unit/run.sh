@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Move into the root directory of test-run
+# Move into the root directory of testrun
 pushd ../../ >/dev/null 2>&1
 
 run_test() {

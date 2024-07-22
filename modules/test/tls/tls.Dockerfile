@@ -34,14 +34,11 @@ COPY $MODULE_DIR/bin /testrun/bin
 # Copy over all python files
 COPY $MODULE_DIR/python /testrun/python
 
-#Install all python requirements for the module
+# Install all python requirements for the module
 RUN pip3 install -r /testrun/python/requirements.txt
 
-#Install all python requirements for the modules unit test
+# Install all python requirements for the modules unit test
 RUN pip3 install -r /testrun/python/requirements-test.txt
 
 # Create a directory inside the container to store the root certificates
 RUN mkdir -p /testrun/root_certs
-
-
-

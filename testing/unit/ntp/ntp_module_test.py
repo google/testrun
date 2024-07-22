@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module run all the DNS related unit tests"""
+"""Module run all the NTP related unit tests"""
 from ntp_module import NTPModule
 import unittest
 from scapy.all import rdpcap, NTP, wrpcap
