@@ -70,15 +70,7 @@ cp -r local/root_certs $MAKE_SRC_DIR/usr/local/testrun/local/
 cp -r {framework,modules} $MAKE_SRC_DIR/usr/local/testrun
 
 # Build the UI
-echo Building user interface
-cd modules/ui
-
-# Run UI build commands
-npm install
-npm run build
-
-# Return back to root dir
-cd ../..
+cmd/build_ui
 
 # Build .deb file
 dpkg-deb --build --root-owner-group make
