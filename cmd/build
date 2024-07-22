@@ -36,7 +36,7 @@ fi
 # Builds all docker images
 echo Building docker images
 
-# Check if UI has already been built (not if -l was used during install)
+# Check if UI has already been built (if -l was used during install)
 if [ ! -d "modules/ui/dist" ]; then
   cmd/build_ui
 fi
