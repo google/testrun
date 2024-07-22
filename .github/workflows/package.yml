@@ -9,7 +9,7 @@ on:
       - 'dev'
 
 jobs:
-  testrun_package:
+  create_package:
     permissions: {}
     name: Package
     runs-on: ubuntu-22.04
@@ -25,3 +25,23 @@ jobs:
         with:
           name: testrun_package
           path: testrun*.deb
+
+  install_package:
+    permissions: {}
+    name: Install
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@v4
+        with:
+          name: testrun_package
+      - name: Install dependencies
+        shell: bash {0}
+        run: apt-get install unzip
+      - name: Extract package
+        shell: bash {0}
+        run: unzip *.zip
+      - name: Install package
+        shell: bash {0}
+        run: apt install ./testrun*.deb
