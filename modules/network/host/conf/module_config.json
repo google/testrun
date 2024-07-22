@@ -6,9 +6,6 @@
       "description": "Used to access host level networking operations"
     },
     "network": {
-      "interface": "veth0",
-      "enable_wan": false,
-      "ip_index": 8,
       "host": true
     },
     "grpc":{

@@ -491,13 +491,14 @@ class NetworkOrchestrator:
     # Load network service networking configuration
     if net_module.enable_container:
 
-      net_module.net_config.enable_wan = net_module_json['config']['network'][
-          'enable_wan']
-      net_module.net_config.ip_index = net_module_json['config']['network'][
-          'ip_index']
-
       net_module.net_config.host = False if not 'host' in net_module_json[
           'config']['network'] else net_module_json['config']['network']['host']
+
+      if not net_module.net_config.host:      
+        net_module.net_config.enable_wan = net_module_json['config']['network'][
+            'enable_wan']
+        net_module.net_config.ip_index = net_module_json['config']['network'][
+            'ip_index']
 
       net_module.net_config.ipv4_address = self.network_config.ipv4_network[
           net_module.net_config.ip_index]
