@@ -41,3 +41,23 @@ class Client():
     response = self._stub.CheckInterfaceStatus(request)
 
     return response
+
+  def set_iface_down(self, iface_name):
+    # Create a request message
+    request = pb2.SetIfaceRequest()
+    request.iface_name = iface_name
+
+    # Make the RPC call
+    response = self._stub.SetIfaceDown(request)
+
+    return response
+
+  def set_iface_up(self, iface_name):
+    # Create a request message
+    request = pb2.SetIfaceRequest()
+    request.iface_name = iface_name
+
+    # Make the RPC call
+    response = self._stub.SetIfaceUp(request)
+
+    return response

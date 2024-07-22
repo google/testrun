@@ -32,12 +32,6 @@
         "required_result": "Required"
       },
       {
-        "name": "connection.dhcp_disconnect",
-        "test_description": "DHCP Disconnect test",
-        "expected_behavior": "DHCP Disconnect test",
-        "required_result": "Required"
-      },
-      {
         "name": "connection.switch.arp_inspection",
         "test_description": "The device implements ARP correctly as per RFC826",
         "expected_behavior": "Device continues to operate correctly when ARP inspection is enabled on the switch.  No functionality is lost with ARP inspection enabled.",
@@ -121,6 +115,12 @@
           "Install a DHCP client that supports shared address space",
           "Enable shared address space support in the DHCP client"
         ]
+      },
+      {
+        "name": "connection.dhcp_disconnect",
+        "test_description": "The device under test issues a new DHCPREQUEST packet after a port ph ysical disconnection and reconnection",
+        "expected_behavior": "A client SHOULD use DHCP to reacquire or verify its IP address and network parameters whenever the local network parameters may have changed; e.g., at system boot time or after a disconnection from the local network, as the local network configuration may change without the client's or user's knowledge. If a client has knowledge ofa  previous network address and is unable to contact a local DHCP server, the client may continue to use the previous network addres until the lease for that address expires.  If the lease expires before the client can contact a DHCP server, the client must immediately discontinue use of the previous network address and may inform local users of the problem.",
+        "required_result": "Required"
       },
       {
         "name": "connection.single_ip",

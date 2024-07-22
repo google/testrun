@@ -32,7 +32,7 @@ class NetworkService(pb2_grpc.HostNetworkModule):
 
   def CheckInterfaceStatus(self, request, context):  # pylint: disable=W0613
     try:
-      status = stats = self.check_interface_status(request.iface_name)
+      status = self.check_interface_status(request.iface_name)
       return pb2.CheckInterfaceStatusResponse(code=200, status=status)
     except Exception as e:  # pylint: disable=W0718
       fail_message = 'Failed to read iface status: ' + str(e)
@@ -60,6 +60,26 @@ class NetworkService(pb2_grpc.HostNetworkModule):
       LOGGER.error(traceback.format_exc())
     return pb2.GetIfaceStatsResponse(code=500, stats=False)
 
+  def SetIfaceDown(self, request, context):  # pylint: disable=W0613
+    try:
+      success = self.set_interface_down(request.iface_name)
+      return pb2.SetIfaceResponse(code=200, success=success)
+    except Exception as e:  # pylint: disable=W0718
+      fail_message = 'Failed to set interface down: ' + str(e)
+      LOGGER.error(fail_message)
+      LOGGER.error(traceback.format_exc())
+    return pb2.SetIfaceResponse(code=500, success=False)
+
+  def SetIfaceUp(self, request, context):  # pylint: disable=W0613
+    try:
+      success = self.set_interface_up(request.iface_name)
+      return pb2.SetIfaceResponse(code=200, success=success)
+    except Exception as e:  # pylint: disable=W0718
+      fail_message = 'Failed to set interface up: ' + str(e)
+      LOGGER.error(fail_message)
+      LOGGER.error(traceback.format_exc())
+    return pb2.SetIfaceResponse(code=500, success=False)
+
   def check_interface_status(self, interface_name):
     output = util.run_command(cmd=f'ip link show {interface_name}', output=True)
     if 'state DOWN ' in output[0]:
@@ -78,6 +98,22 @@ class NetworkService(pb2_grpc.HostNetworkModule):
   def get_iface_port_stats(self, iface):
     """Extract information about packets connection"""
     response = util.run_command(f'ethtool -S {iface}')
+    if len(response[1]) == 0:
+      return response[0]
+    else:
+      return None
+
+  def set_interface_up(self, interface_name):
+    """Set the interface to the up state"""
+    response = util.run_command('ip link set dev ' + interface_name + ' up')
+    if len(response[1]) == 0:
+      return response[0]
+    else:
+      return None
+
+  def set_interface_down(self, interface_name):
+    """Set the interface to the up state"""
+    response = util.run_command('ip link set dev ' + interface_name + ' down')
     if len(response[1]) == 0:
       return response[0]
     else:

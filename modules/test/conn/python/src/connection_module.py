@@ -94,20 +94,7 @@ class ConnectionModule(TestModule):
   def _connection_port_duplex(self):
     LOGGER.info('Running connection.port_duplex')
     return self._port_stats.connection_port_duplex_test()
-
-  def _connection_dhcp_disconnect(self):
-    LOGGER.info('Running connection.dhcp.disconnect')
-    dev_iface = os.getenv('DEV_IFACE')
-    if dev_iface:
-      # Seems to always fail on the first attempt so
-      # try a few times to make sure the connection is open
-      for _ in range(10):
-        iface_status = self.host_client.check_interface_status(dev_iface)
-        LOGGER.info(f'iface status: {iface_status}')
-        time.sleep(5)
-    else:
-      return None, 'Device interface could not be resolved'
-      
+   
   def _connection_switch_arp_inspection(self):
     LOGGER.info('Running connection.switch.arp_inspection')
 
@@ -381,6 +368,61 @@ class ConnectionModule(TestModule):
       LOGGER.error('Network is not ready for this test. Skipping')
       result = None, 'Network is not ready for this test'
     return result
+
+  def _connection_dhcp_disconnect(self):
+      LOGGER.info('Running connection.dhcp.disconnect')
+      result = None
+      description = ''
+      dev_iface = os.getenv('DEV_IFACE')
+      iface_status = self.host_client.check_interface_status(dev_iface)
+      if iface_status.code == 200:
+        LOGGER.info('Successfully resolved iface status')
+        if iface_status.status:
+          lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
+                                          timeout=self._lease_wait_time_sec)
+          if lease is not None:
+            LOGGER.info('Current device lease resolved')
+            if self._dhcp_util.is_lease_active(lease):
+
+              # Disable the device interface
+              iface_down = self.host_client.set_iface_down(dev_iface)
+              LOGGER.info('Device interface set to down state')
+
+              # Wait for the lease to expire
+              self._dhcp_util.wait_for_lease_expire(lease,
+                                              self._lease_wait_time_sec)
+
+              # Wait an additonal 10 seconds to better test a true disconnect
+              # state
+              time.sleep(10)
+              LOGGER.info("Waiting 10 seconds before bringing iface back up")
+
+              # Enable the device interface
+              iface_up = self.host_client.set_iface_up(dev_iface)
+              LOGGER.info('Device interface set to up state')
+
+              # Confirm device receives a new lease
+              if self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
+                                           timeout=self._lease_wait_time_sec):
+                if self._dhcp_util.is_lease_active(lease):
+                  result = True 
+                  description = 'Device received a DHCP lease after disconnect'
+                else:
+                  result = False
+                  description = 'Could not confirm DHCP lease active after disconnect'
+              else:
+                result = False
+                description = 'Device did not recieve a DHCP lease after disconnect'
+          else:
+            result = 'Error'
+            description = 'No active lease available for device'
+        else:
+          result = 'Error'
+          description = 'Device interface is down'
+      else:
+        result = 'Error'
+        description = 'Device interface could not be resolved'
+      return result, description
 
   def _get_oui_manufacturer(self, mac_address):
     # Do some quick fixes on the format of the mac_address
