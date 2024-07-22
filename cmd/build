@@ -24,6 +24,12 @@ if [[ $(which docker) && $(docker --version) ]]; then
     exit 1
 fi
 
+# Check if user is in docker group
+if ! (id -nGz "$USER" | grep -qzxF "docker" || [ "$EUID" -eq 0 ]); then
+  echo User is not in docker group. Follow https://docs.docker.com/engine/install/linux-postinstall/ to finish setting up docker.
+  exit 1
+fi
+
 # Stop any running containers
 echo Stopping any running containers
 running_containers=$(docker container ls -q --filter name=tr-*)
