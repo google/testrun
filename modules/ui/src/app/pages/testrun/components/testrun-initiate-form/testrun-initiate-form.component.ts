@@ -42,6 +42,7 @@ import { TestrunStatus } from '../../../../model/testrun-status';
 
 interface DialogData {
   device?: Device;
+  testModules: TestModule[];
 }
 
 @Component({
@@ -91,7 +92,7 @@ export class TestrunInitiateFormComponent
 
   ngOnInit() {
     this.createInitiateForm();
-    this.testModules = this.testRunService.getTestModules();
+    this.testModules = this.data?.testModules;
 
     if (this.data?.device) {
       this.deviceSelected(this.data.device);

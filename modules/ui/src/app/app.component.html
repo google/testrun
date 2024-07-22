@@ -187,7 +187,8 @@ limitations under the License.
             vm.hasConnectionSettings === true &&
             vm.hasDevices &&
             (!vm.systemStatus || vm.systemStatus === StatusOfTestrun.Idle) &&
-            vm.isStatusLoaded === true
+            vm.isStatusLoaded === true &&
+            !vm.reports.length
           ">
           Step 3: Once device is created, you are able to
           <a

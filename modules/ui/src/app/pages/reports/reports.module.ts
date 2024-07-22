@@ -15,7 +15,7 @@
  */
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ReportsComponent } from './reportscomponent';
+import { ReportsComponent } from './reports.component';
 import { ReportsRoutingModule } from './reports-routing.module';
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';

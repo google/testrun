@@ -21,7 +21,7 @@ import {
   SystemConfig,
 } from '../model/setting';
 import { SystemInterfaces } from '../model/setting';
-import { Device } from '../model/device';
+import { Device, TestModule } from '../model/device';
 import { TestrunStatus } from '../model/testrun-status';
 import { Profile } from '../model/profile';
 
@@ -124,3 +124,15 @@ export const setStatus = createAction(
 export const stopInterval = createAction('[Shared] Stop Interval');
 
 export const fetchRiskProfiles = createAction('[Shared] Fetch risk profiles');
+
+export const fetchReports = createAction('[Shared] Fetch reports');
+
+export const setReports = createAction(
+  '[Shared] Set Reports',
+  props<{ reports: TestrunStatus[] }>()
+);
+
+export const setTestModules = createAction(
+  '[Shared] Set Test Modules',
+  props<{ testModules: TestModule[] }>()
+);

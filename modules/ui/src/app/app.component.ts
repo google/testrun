@@ -80,6 +80,8 @@ export class AppComponent {
     this.appStore.getDevices();
     this.appStore.getRiskProfiles();
     this.appStore.getSystemStatus();
+    this.appStore.getReports();
+    this.appStore.getTestModules();
     this.matIconRegistry.addSvgIcon(
       'devices',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_LOGO_URL)
