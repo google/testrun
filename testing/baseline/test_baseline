@@ -67,8 +67,8 @@ if [[ $i -eq $WAITING ]]; then
     exit 1
 fi
 
-# Load Test Container
-sudo docker run --network=endev0 --cap-add=NET_ADMIN -v /tmp:/out --privileged ci1 
+# Start test container
+sudo docker run --network=endev0 --cap-add=NET_ADMIN -v /tmp:/out --privileged ci1
 
 echo "Done baseline test"
 

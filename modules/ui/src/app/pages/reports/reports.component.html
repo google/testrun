@@ -17,7 +17,7 @@ limitations under the License.
   <ng-container *ngIf="vm.dataLoaded">
     <ng-container *ngIf="vm.dataSource?.data?.length; else empty">
       <mat-toolbar class="history-toolbar">
-        <h2 class="title">Reports</h2>
+        <h2 class="title" tabindex="-1">Reports</h2>
       </mat-toolbar>
 
       <div
@@ -152,14 +152,16 @@ limitations under the License.
               </app-download-report-pdf>
               <app-download-report-zip
                 *ngIf="data?.device"
+                [data]="data"
                 [url]="data.report"
-                [hasProfiles]="vm.hasProfiles"
                 [profiles]="vm.profiles">
-                <mat-icon
-                  class="download-report-icon"
-                  fontSet="material-symbols-outlined">
-                  archive
-                </mat-icon>
+                <span class="download-report-zip-icon-container">
+                  <mat-icon
+                    class="download-report-icon"
+                    fontSet="material-symbols-outlined">
+                    archive
+                  </mat-icon>
+                </span>
               </app-download-report-zip>
               <app-delete-report
                 *ngIf="data?.device"

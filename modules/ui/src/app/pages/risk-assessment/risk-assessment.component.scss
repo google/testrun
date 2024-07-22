@@ -16,15 +16,41 @@
 @import 'src/theming/colors';
 @import 'src/theming/variables';
 
+:host {
+  overflow: hidden;
+  display: flex;
+}
+
+.risk-assessment-content-empty {
+  height: 100%;
+  width: calc(100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host:has(.profiles-drawer) {
+  .risk-assessment-content-empty {
+    width: calc(100% - $profiles-drawer-width);
+  }
+}
+
 .risk-assessment-container,
 .risk-assessment-content {
   background-color: $white;
+}
+
+.risk-assessment-container {
+  flex: 1;
 }
 
 .risk-assessment-content {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-sizing: border-box;
+  padding-right: 94px;
+  overflow: hidden;
 }
 
 .risk-assessment-toolbar {
@@ -35,6 +61,8 @@
 
 .main-content {
   padding: 16px 32px;
+  overflow: hidden;
+  width: calc(100% - $profiles-drawer-width);
 }
 
 .profiles-drawer {
@@ -54,8 +82,4 @@
   font-weight: 400;
   line-height: 28px;
   color: $dark-grey;
-}
-
-.profiles-drawer-content {
-  padding: 0 16px;
 }

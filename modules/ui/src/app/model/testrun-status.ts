@@ -16,13 +16,13 @@
 import { Device } from './device';
 
 export interface TestrunStatus {
-  mac_addr: string;
+  mac_addr: string | null;
   status: string;
   device: IDevice;
   started: string | null;
   finished: string | null;
   tests?: TestsResponse;
-  report?: string;
+  report: string;
 }
 
 export interface HistoryTestrun extends TestrunStatus {
@@ -84,6 +84,19 @@ export interface StatusResultClassName {
   blue: boolean;
   grey: boolean;
 }
+
+export const IDLE_STATUS = {
+  status: StatusOfTestrun.Idle,
+  device: {} as IDevice,
+  started: null,
+  finished: null,
+  report: '',
+  mac_addr: '',
+  tests: {
+    total: 0,
+    results: [],
+  },
+} as TestrunStatus;
 
 export type TestrunStatusKey = keyof typeof StatusOfTestrun;
 export type TestrunStatusValue = (typeof StatusOfTestrun)[TestrunStatusKey];

@@ -8,7 +8,7 @@ netifaces==0.11.0
 scapy==2.5.0
 
 # Requirments for the test_orc module
-weasyprint==60.2
+weasyprint==61.2
 
 # Requirements for the API
 fastapi==0.109.1
@@ -27,3 +27,6 @@ markdown==3.5.2
 # Requirements for the session
 cryptography==42.0.7
 pytz==2024.1
+
+# Requirements for the risk profile
+python-dateutil==2.9.0

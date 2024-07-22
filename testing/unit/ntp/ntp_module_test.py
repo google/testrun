@@ -63,7 +63,7 @@ class NTPModuleTest(unittest.TestCase):
       formatted_report = self.add_formatting(report_out)
 
     # Write back the new formatted_report value
-    out_report_path = os.path.join(OUTPUT_DIR,'ntp_report_with_ntp.html')
+    out_report_path = os.path.join(OUTPUT_DIR, 'ntp_report_with_ntp.html')
     with open(out_report_path, 'w', encoding='utf-8') as file:
       file.write(formatted_report)
 

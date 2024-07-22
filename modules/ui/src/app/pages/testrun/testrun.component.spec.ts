@@ -39,7 +39,7 @@ import { Component, Input } from '@angular/core';
 import { IResult, TestrunStatus } from '../../model/testrun-status';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { TestrunInitiateFormComponent } from './components/testrun-initiate-form/testrun-initiate-form.component';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { LoaderService } from '../../services/loader.service';
 import { FocusManagerService } from '../../services/focus-manager.service';
@@ -53,6 +53,7 @@ import {
   selectIsOpenWaitSnackBar,
   selectRiskProfiles,
   selectSystemStatus,
+  selectTestModules,
 } from '../../store/selectors';
 import { TestrunStore } from './testrun.store';
 import {
@@ -123,6 +124,7 @@ describe('TestrunComponent', () => {
               { selector: selectIsOpenWaitSnackBar, value: false },
               { selector: selectHasRiskProfiles, value: false },
               { selector: selectRiskProfiles, value: [] },
+              { selector: selectTestModules, value: [] },
               {
                 selector: selectSystemStatus,
                 value: MOCK_PROGRESS_DATA_IN_PROGRESS,
@@ -200,7 +202,7 @@ describe('TestrunComponent', () => {
       const stopTestrunSpy = spyOn(component, 'stopTestrun');
       spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
-      } as MatDialogRef<typeof DeleteFormComponent>);
+      } as MatDialogRef<typeof SimpleDialogComponent>);
 
       component.openStopTestrunDialog(MOCK_PROGRESS_DATA_CANCELLING);
 
@@ -234,9 +236,17 @@ describe('TestrunComponent', () => {
           },
           provideMockStore({
             selectors: [
-              { selector: selectHasDevices, value: false },
               { selector: selectDevices, value: [] },
+              { selector: selectHasDevices, value: false },
+              { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
+              { selector: selectHasRiskProfiles, value: false },
+              { selector: selectRiskProfiles, value: [] },
+              { selector: selectTestModules, value: [] },
+              {
+                selector: selectSystemStatus,
+                value: MOCK_PROGRESS_DATA_IN_PROGRESS,
+              },
             ],
           }),
         ],
@@ -324,6 +334,9 @@ describe('TestrunComponent', () => {
           hasBackdrop: true,
           disableClose: true,
           panelClass: 'initiate-test-run-dialog',
+          data: {
+            testModules: [],
+          },
         });
         expect(store.dispatch).toHaveBeenCalledWith(
           fetchSystemStatusSuccess({
@@ -405,6 +418,7 @@ describe('TestrunComponent', () => {
           MOCK_PROGRESS_DATA_COMPLIANT
         );
         store.overrideSelector(selectHasDevices, true);
+        store.refreshState();
         fixture.detectChanges();
       });
 
@@ -571,6 +585,5 @@ class FakeProgressTableComponent {
 })
 class FakeDownloadOptionsComponent {
   @Input() data!: TestrunStatus;
-  @Input() hasProfiles!: boolean;
   @Input() profiles!: Profile[];
 }

@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Provides Testrun data via REST API."""
-from fastapi import (FastAPI,
-                     APIRouter,
-                     Response,
-                     Request,
-                     status,
-                     UploadFile)
+from fastapi import (FastAPI, APIRouter, Response, Request, status, UploadFile)
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
@@ -46,6 +41,7 @@ DEFAULT_DEVICE_INTF = "enx123456789123"
 LATEST_RELEASE_CHECK = ("https://api.github.com/repos/google/" +
                         "testrun/releases/latest")
 
+
 class Api:
   """Provide REST endpoints to manage Testrun"""
 
@@ -57,56 +53,47 @@ class Api:
 
     self._session = self._test_run.get_session()
 
-    self._router.add_api_route("/system/interfaces",
-                               self.get_sys_interfaces)
+    self._router.add_api_route("/system/interfaces", self.get_sys_interfaces)
     self._router.add_api_route("/system/config",
                                self.post_sys_config,
-                              methods=["POST"])
-    self._router.add_api_route("/system/config",
-                               self.get_sys_config)
+                               methods=["POST"])
+    self._router.add_api_route("/system/config", self.get_sys_config)
     self._router.add_api_route("/system/start",
                                self.start_test_run,
                                methods=["POST"])
     self._router.add_api_route("/system/stop",
                                self.stop_test_run,
                                methods=["POST"])
-    self._router.add_api_route("/system/status",
-                               self.get_status)
+    self._router.add_api_route("/system/status", self.get_status)
     self._router.add_api_route("/system/shutdown",
                                self.shutdown,
                                methods=["POST"])
 
-    self._router.add_api_route("/system/version",
-                               self.get_version)
+    self._router.add_api_route("/system/version", self.get_version)
 
-    self._router.add_api_route("/reports",
-                               self.get_reports)
+    self._router.add_api_route("/reports", self.get_reports)
     self._router.add_api_route("/report",
                                self.delete_report,
                                methods=["DELETE"])
     self._router.add_api_route("/report/{device_name}/{timestamp}",
                                self.get_report)
     self._router.add_api_route("/export/{device_name}/{timestamp}",
-                               self.get_results)
+                               self.get_results,
+                               methods=["POST"])
 
-    self._router.add_api_route("/devices",
-                               self.get_devices)
+    self._router.add_api_route("/devices", self.get_devices)
     self._router.add_api_route("/device",
                                self.delete_device,
                                methods=["DELETE"])
-    self._router.add_api_route("/device",
-                               self.save_device,
-                               methods=["POST"])
+    self._router.add_api_route("/device", self.save_device, methods=["POST"])
     self._router.add_api_route("/device/edit",
                                self.edit_device,
                                methods=["POST"])
 
     # Load modules
-    self._router.add_api_route("/system/modules",
-                               self.get_test_modules)
+    self._router.add_api_route("/system/modules", self.get_test_modules)
 
-    self._router.add_api_route("/system/config/certs",
-                               self.get_certs)
+    self._router.add_api_route("/system/config/certs", self.get_certs)
     self._router.add_api_route("/system/config/certs",
                                self.upload_cert,
                                methods=["POST"])
@@ -115,10 +102,14 @@ class Api:
                                methods=["DELETE"])
 
     # Profiles
-    self._router.add_api_route("/profiles/format",
-                               self.get_profiles_format)
+    self._router.add_api_route("/profiles/format", self.get_profiles_format)
+    self._router.add_api_route("/profiles", self.get_profiles)
     self._router.add_api_route("/profiles",
-                               self.get_profiles)
+                               self.update_profile,
+                               methods=["POST"])
+    self._router.add_api_route("/profiles",
+                               self.delete_profile,
+                               methods=["DELETE"])
 
     # Allow all origins to access the API
     origins = ["*"]
@@ -126,11 +117,11 @@ class Api:
     self._app = FastAPI()
     self._app.include_router(self._router)
     self._app.add_middleware(
-      CORSMiddleware,
-      allow_origins=origins,
-      allow_credentials=True,
-      allow_methods=["*"],
-      allow_headers=["*"],
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     self._api_thread = threading.Thread(target=self._start,
@@ -201,9 +192,8 @@ class Api:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid JSON received")
 
-    if "device" not in body_json or not (
-      "mac_addr" in body_json["device"] and
-      "firmware" in body_json["device"]):
+    if "device" not in body_json or not ("mac_addr" in body_json["device"]
+                                         and "firmware" in body_json["device"]):
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid request received")
 
@@ -211,46 +201,43 @@ class Api:
 
     # Check Testrun is not already running
     if self._test_run.get_session().get_status() in [
-        "In Progress",
-        "Waiting for Device",
-        "Monitoring"
-      ]:
+        "In Progress", "Waiting for Device", "Monitoring"
+    ]:
       LOGGER.debug("Testrun is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
-      return self._generate_msg(False, "Testrun cannot be started " +
-                                "whilst a test is running on another device")
+      return self._generate_msg(
+          False, "Testrun cannot be started " +
+          "whilst a test is running on another device")
 
     # Check if requested device is known in the device repository
     if device is None:
       response.status_code = status.HTTP_404_NOT_FOUND
       return self._generate_msg(
-        False,
-        "A device with that MAC address could not be found")
+          False, "A device with that MAC address could not be found")
 
     device.firmware = body_json["device"]["firmware"]
 
     # Check if config has been updated (device interface not default)
-    if (self._test_run.get_session().get_device_interface()
-        == DEFAULT_DEVICE_INTF):
+    if (self._test_run.get_session().get_device_interface() ==
+        DEFAULT_DEVICE_INTF):
       response.status_code = status.HTTP_400_BAD_REQUEST
-      return self._generate_msg(False,"Testrun configuration has not yet " +
-                                "been completed.")
+      return self._generate_msg(
+          False, "Testrun configuration has not yet " + "been completed.")
 
     # Check Testrun is able to start
     if self._test_run.get_net_orc().check_config() is False:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-      return self._generate_msg(False,"Configured interfaces are not " +
-                                "ready for use. Ensure required interfaces " +
-                                "are connected.")
-    
+      return self._generate_msg(
+          False, "Configured interfaces are not " +
+          "ready for use. Ensure required interfaces " + "are connected.")
+
     device.test_modules = body_json["device"]["test_modules"]
 
     LOGGER.info("Starting Testrun with device target " +
                 f"{device.manufacturer} {device.model} with " +
                 f"MAC address {device.mac_addr}")
 
-    thread = threading.Thread(target=self._start_test_run,
-                                        name="Testrun")
+    thread = threading.Thread(target=self._start_test_run, name="Testrun")
     thread.start()
 
     self._test_run.get_session().set_target_device(device)
@@ -270,8 +257,8 @@ class Api:
     LOGGER.debug("Received stop command")
 
     # Check if Testrun is running
-    if (self._test_run.get_session().get_status() not in
-        ["In Progress", "Waiting for Device", "Monitoring"]):
+    if (self._test_run.get_session().get_status()
+        not in ["In Progress", "Waiting for Device", "Monitoring"]):
       response.status_code = 404
       return self._generate_msg(False, "Testrun is not currently running")
 
@@ -287,17 +274,12 @@ class Api:
     LOGGER.debug("Received request to shutdown Testrun")
 
     # Check that Testrun is not currently running
-    if (self._session.get_status() not in [
-            "Cancelled",
-            "Compliant",
-            "Non-Compliant",
-            "Idle"]):
+    if (self._session.get_status()
+        not in ["Cancelled", "Compliant", "Non-Compliant", "Idle"]):
       LOGGER.debug("Unable to shutdown Testrun as Testrun is in progress")
       response.status_code = 400
       return self._generate_msg(
-        False,
-        "Unable to shutdown. A test is currently in progress."
-      )
+          False, "Unable to shutdown. A test is currently in progress.")
 
     self._test_run.shutdown()
     os.kill(os.getpid(), signal.SIGTERM)
@@ -310,7 +292,7 @@ class Api:
     json_response["update_available"] = False
     json_response["latest_version"] = None
     json_response["latest_version_url"] = (
-      "https://github.com/google/testrun/releases")
+        "https://github.com/google/testrun/releases")
 
     # Obtain the current version
     current_version = self._session.get_version()
@@ -329,9 +311,9 @@ class Api:
 
       # Check OK response was received
       if version_check.status_code != 200:
-        response.status_code = 500
         LOGGER.debug(version_check.content)
         LOGGER.error("Failed to fetch latest version")
+        response.status_code = 200
         return json_response
 
       # Extract version number from response, removing the leading 'v'
@@ -352,7 +334,7 @@ class Api:
 
       return json_response
     except Exception as e: # pylint: disable=W0703
-      response.status_code = 500
+      response.status_code = 200
       LOGGER.error("Failed to fetch latest version")
       LOGGER.debug(e)
       return json_response
@@ -380,7 +362,13 @@ class Api:
       response.status_code = 400
       return self._generate_msg(False, "Invalid request received")
 
-    body_json = json.loads(body_raw)
+    try:
+      body_json = json.loads(body_raw)
+    except JSONDecodeError as e:
+      LOGGER.error("An error occurred whilst decoding JSON")
+      LOGGER.debug(e)
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False, "Invalid request received")
 
     if "mac_addr" not in body_json or "timestamp" not in body_json:
       response.status_code = 400
@@ -429,14 +417,12 @@ class Api:
         return self._generate_msg(False, "Device not found")
 
       # Check that Testrun is not currently running against this device
-      if (self._session.get_target_device() == device and
-          self._session.get_status() not in [
-            "Cancelled",
-            "Compliant",
-            "Non-Compliant"]):
+      if (self._session.get_target_device() == device
+          and self._session.get_status()
+          not in ["Cancelled", "Compliant", "Non-Compliant"]):
         response.status_code = 403
-        return self._generate_msg(False, "Cannot delete this device whilst " +
-                                  "it is being tested")
+        return self._generate_msg(
+            False, "Cannot delete this device whilst " + "it is being tested")
 
       # Delete device
       self._test_run.delete_device(device)
@@ -446,11 +432,11 @@ class Api:
       return self._generate_msg(True, "Successfully deleted the device")
 
     # TODO: Find specific exception to catch
-    except Exception as e: # pylint: disable=W0703
+    except Exception as e:  # pylint: disable=W0703
       LOGGER.error(e)
       response.status_code = 500
-      return self._generate_msg(False, "An error occured whilst deleting " +
-                                "the device")
+      return self._generate_msg(
+          False, "An error occured whilst deleting " + "the device")
 
   async def save_device(self, request: Request, response: Response):
     LOGGER.debug("Received device post request")
@@ -463,7 +449,20 @@ class Api:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return self._generate_msg(False, "Invalid request received")
 
+      # Check if device with same MAC exists
       device = self._session.get_device(device_json.get(DEVICE_MAC_ADDR_KEY))
+
+      if device is not None:
+
+        response.status_code = status.HTTP_409_CONFLICT
+        return self._generate_msg(
+            False, "A device with that MAC address already exists")
+
+      # Check if device with same manufacturer and model exists
+      device = self._session.get_device_by_make_and_model(
+        device_json.get(DEVICE_MANUFACTURER_KEY),
+        device_json.get(DEVICE_MODEL_KEY)
+      )
 
       if device is None:
 
@@ -481,8 +480,8 @@ class Api:
       else:
 
         response.status_code = status.HTTP_409_CONFLICT
-        return self._generate_msg(False, "A device with that " +
-                                  "MAC address already exists")
+        return self._generate_msg(
+            False, "A device with that manufacturer and model already exists")
 
       return device.to_config_json()
 
@@ -500,8 +499,7 @@ class Api:
       req_json = json.loads(req_raw)
 
       # Validate top level fields
-      if not (DEVICE_MAC_ADDR_KEY in req_json and
-          "device" in req_json):
+      if not (DEVICE_MAC_ADDR_KEY in req_json and "device" in req_json):
         response.status_code = status.HTTP_400_BAD_REQUEST
         return self._generate_msg(False, "Invalid request received")
 
@@ -518,29 +516,25 @@ class Api:
       # Check if device exists
       if device is None:
         response.status_code = status.HTTP_404_NOT_FOUND
-        return self._generate_msg(False,
-                                  "A device with that MAC " +
-                                  "address could not be found")
+        return self._generate_msg(
+            False, "A device with that MAC " + "address could not be found")
 
-      if (self._session.get_target_device() == device and
-          self._session.get_status() not in [
-            "Cancelled",
-            "Compliant",
-            "Non-Compliant"]):
+      if (self._session.get_target_device() == device
+          and self._session.get_status()
+          not in ["Cancelled", "Compliant", "Non-Compliant"]):
         response.status_code = 403
-        return self._generate_msg(False, "Cannot edit this device whilst " +
-                                  "it is being tested")
+        return self._generate_msg(
+            False, "Cannot edit this device whilst " + "it is being tested")
 
       # Check if a device exists with the new MAC address
       check_new_device = self._session.get_device(
-        device_json.get(DEVICE_MAC_ADDR_KEY))
+          device_json.get(DEVICE_MAC_ADDR_KEY))
 
       if not check_new_device is None and (device.mac_addr
                                            != check_new_device.mac_addr):
         response.status_code = status.HTTP_409_CONFLICT
-        return self._generate_msg(False,
-                                  "A device with that MAC address " +
-                                  "already exists")
+        return self._generate_msg(
+            False, "A device with that MAC address " + "already exists")
 
       # Update the device
       device.mac_addr = device_json.get(DEVICE_MAC_ADDR_KEY).lower()
@@ -558,11 +552,22 @@ class Api:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid JSON received")
 
-  async def get_report(self, response: Response,
-                       device_name, timestamp):
+  async def get_report(self, response: Response, device_name, timestamp):
+    device = self._session.get_device_by_name(device_name)
 
-    file_path = os.path.join(DEVICES_PATH, device_name, "reports",
-                             timestamp, "report.pdf")
+    # 1.3 file path
+    file_path = os.path.join(
+      DEVICES_PATH,
+      device_name,
+      "reports",
+      timestamp,"test",
+          device.mac_addr.replace(":",""),
+          "report.pdf")
+    if not os.path.isfile(file_path):
+      # pre 1.3 file path
+      file_path = os.path.join(DEVICES_PATH, device_name, "reports", timestamp,
+                             "report.pdf")
+
     LOGGER.debug(f"Received get report request for {device_name} / {timestamp}")
     if os.path.isfile(file_path):
       return FileResponse(file_path)
@@ -571,13 +576,46 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Report could not be found")
 
-  async def get_results(self, response: Response,
-                       device_name, timestamp):
-
-    file_path = os.path.join(DEVICES_PATH, device_name, "reports",
-                             timestamp, "results.zip")
+  async def get_results(self, request: Request, response: Response, device_name,
+                        timestamp):
     LOGGER.debug("Received get results " +
                  f"request for {device_name} / {timestamp}")
+
+    profile = None
+
+    try:
+      req_raw = (await request.body()).decode("UTF-8")
+      req_json = json.loads(req_raw)
+
+      # Check if profile has been specified
+      if "profile" in req_json and len(req_json.get("profile")) > 0:
+        profile_name = req_json.get("profile")
+        profile = self.get_session().get_profile(profile_name)
+
+        if profile is None:
+          response.status_code = status.HTTP_404_NOT_FOUND
+          return self._generate_msg(
+              False, "A profile with that name could not be found")
+
+    except JSONDecodeError:
+      # Profile not specified
+      pass
+
+    # Check if device exists
+    device = self.get_session().get_device_by_name(device_name)
+    if device is None:
+      response.status_code = status.HTTP_404_NOT_FOUND
+      return self._generate_msg(False,
+                                "A device with that name could not be found")
+
+    file_path = self._get_test_run().get_test_orc().zip_results(
+        device, timestamp, profile)
+
+    if file_path is None:
+      response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+      return self._generate_msg(
+          False, "An error occurred whilst archiving test results")
+
     if os.path.isfile(file_path):
       return FileResponse(file_path)
     else:
@@ -588,15 +626,13 @@ class Api:
   def _validate_device_json(self, json_obj):
 
     # Check all required properties are present
-    if not (DEVICE_MAC_ADDR_KEY in json_obj and
-            DEVICE_MANUFACTURER_KEY in json_obj and
-            DEVICE_MODEL_KEY in json_obj
-    ):
+    if not (DEVICE_MAC_ADDR_KEY in json_obj and DEVICE_MANUFACTURER_KEY
+            in json_obj and DEVICE_MODEL_KEY in json_obj):
       return False
 
     # Check length of strings
     if len(json_obj.get(DEVICE_MANUFACTURER_KEY)) > 28 or len(
-      json_obj.get(DEVICE_MODEL_KEY)) > 28:
+        json_obj.get(DEVICE_MODEL_KEY)) > 28:
       return False
 
     disallowed_chars = ["/", "\\", "\'", "\"", ";"]
@@ -620,13 +656,95 @@ class Api:
     if self.get_session().get_profiles_format() is None:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
       return self._generate_msg(
-        False,
-        "Testrun could not load the risk assessment format")
+          False, "Testrun could not load the risk assessment format")
 
     return self.get_session().get_profiles_format()
 
   def get_profiles(self):
-    return self.get_session().get_profiles()
+    profiles = []
+    for profile in self.get_session().get_profiles():
+      profiles.append(json.loads(profile.to_json()))
+    return profiles
+
+  async def update_profile(self, request: Request, response: Response):
+
+    LOGGER.debug("Received profile update request")
+
+    try:
+      req_raw = (await request.body()).decode("UTF-8")
+      req_json = json.loads(req_raw)
+    except JSONDecodeError as e:
+      LOGGER.error("An error occurred whilst decoding JSON")
+      LOGGER.debug(e)
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False, "Invalid request received")
+
+    profile_name = req_json.get("name")
+
+    # Check if profile exists
+    profile = self.get_session().get_profile(profile_name)
+
+    if profile is None:
+      # Create new profile
+      profile = self.get_session().update_profile(req_json)
+
+      if profile is not None:
+        response.status_code = status.HTTP_201_CREATED
+        return self._generate_msg(True, "Successfully created a new profile")
+      LOGGER.error("An error occurred whilst creating a new profile")
+
+    else:
+      # Update existing profile
+      profile = self.get_session().update_profile(req_json)
+
+      if profile is not None:
+        response.status_code = status.HTTP_200_OK
+        return self._generate_msg(True, "Successfully updated that profile")
+      LOGGER.error("An error occurred whilst updating a profile")
+
+    response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    return self._generate_msg(
+        False, "An error occurred whilst creating or updating a profile")
+
+  async def delete_profile(self, request: Request, response: Response):
+
+    LOGGER.debug("Received profile delete request")
+
+    try:
+      req_raw = (await request.body()).decode("UTF-8")
+      req_json = json.loads(req_raw)
+    except JSONDecodeError as e:
+      LOGGER.error("An error occurred whilst decoding JSON")
+      LOGGER.debug(e)
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False, "Invalid request received")
+
+    # Check name included in request
+    if "name" not in req_json:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False, "Invalid request received")
+
+    # Get profile name
+    profile_name = req_json.get("name")
+
+    # Fetch profile
+    profile = self.get_session().get_profile(profile_name)
+
+    # Check if profile exists
+    if profile is None:
+      response.status_code = status.HTTP_404_NOT_FOUND
+      return self._generate_msg(False,
+                                "A profile with that name could not be found")
+
+    # Attempt to delete the profile
+    success = self.get_session().delete_profile(profile)
+
+    if not success:
+      response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+      return self._generate_msg(
+          False, "An error occurred whilst deleting that profile")
+
+    return self._generate_msg(True, "Successfully deleted that profile")
 
   # Certificates
   def get_certs(self):
@@ -637,9 +755,7 @@ class Api:
 
     return self._session.get_certs()
 
-  async def upload_cert(self,
-                  file: UploadFile,
-                  response: Response):
+  async def upload_cert(self, file: UploadFile, response: Response):
 
     filename = file.filename
     content_type = file.content_type
@@ -648,49 +764,52 @@ class Api:
     LOGGER.debug(f"Filename: {filename}, content type: {content_type}")
 
     if content_type not in [
-      "application/x-pem-file",
-      "application/x-x509-ca-cert"
+        "application/x-pem-file", "application/x-x509-ca-cert",
+        "application/pkix-cert"
     ]:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(
-        False,
-        "Failed to upload certificate. Is it in the correct format?"
-      )
+          False, "Failed to upload certificate. Is it in the correct format?")
 
     if len(filename) > 24:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(
-        False,
-        "Invalid filename. Maximum file name length is 24 characters."
-      )
+          False, "Invalid filename. Maximum file name length is 24 characters.")
 
     # Check if file already exists
-    if not self._session.check_cert_file_name(
-      filename
-    ):
+    if not self._session.check_cert_file_name(filename):
       response.status_code = status.HTTP_409_CONFLICT
       return self._generate_msg(
-        False,
-        "A certificate with that file name already exists."
-      )
+          False, "A certificate with that file name already exists.")
 
     # Get file contents
     contents = await file.read()
 
     try:
       # Pass to session to check and write
-      cert_obj = self._session.upload_cert(filename,
-                                          contents)
-    except IOError:
-      LOGGER.error("An error occurred whilst uploading the certificate")
+      cert_obj = self._session.upload_cert(filename, contents)
+
+    except ValueError as e:
+
+      # Returned when duplicate common name detected
+      if str(e) == "A certificate with that name already exists":
+        response.status_code = status.HTTP_409_CONFLICT
+        return self._generate_msg(
+          False, "A certificate with that common name already exists."
+        )
+
+      # Returned when unable to load PEM file
+      else:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(
+          False,
+          "Failed to upload certificate. Is it in the correct format?")
 
     # Return error if something went wrong
     if cert_obj is None:
       response.status_code = 500
       return self._generate_msg(
-        False,
-        "Failed to upload certificate. Is it in the correct format?"
-      )
+          False, "Failed to upload certificate. Is it in the correct format?")
 
     response.status_code = status.HTTP_201_CREATED
 
@@ -713,12 +832,12 @@ class Api:
       for cert in self._session.get_certs():
         if cert["name"] == common_name:
           self._session.delete_cert(cert["filename"])
-          return self._generate_msg(True, "Successfully delete the certificate")
+          return self._generate_msg(True,
+                                    "Successfully deleted the certificate")
 
       response.status_code = status.HTTP_404_NOT_FOUND
       return self._generate_msg(
-        False,
-        "A certificate with that name could not be found")
+          False, "A certificate with that name could not be found")
 
     except Exception as e:
       LOGGER.error("An error occurred whilst deleting a certificate")

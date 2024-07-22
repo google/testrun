@@ -20,10 +20,10 @@ import { skip, take } from 'rxjs';
 import {
   selectHasConnectionSettings,
   selectHasDevices,
-  selectHasRiskProfiles,
   selectIsOpenStartTestrun,
   selectRiskProfiles,
   selectSystemStatus,
+  selectTestModules,
 } from '../../store/selectors';
 import {
   fetchSystemStatus,
@@ -66,8 +66,8 @@ describe('TestrunStore', () => {
             { selector: selectSystemStatus, value: null },
             { selector: selectHasConnectionSettings, value: true },
             { selector: selectIsOpenStartTestrun, value: false },
-            { selector: selectHasRiskProfiles, value: false },
             { selector: selectRiskProfiles, value: [] },
+            { selector: selectTestModules, value: [] },
           ],
         }),
       ],
@@ -90,8 +90,8 @@ describe('TestrunStore', () => {
           systemStatus: null,
           dataSource: [],
           stepsToResolveCount: 0,
-          hasProfiles: false,
           profiles: [],
+          testModules: [],
         });
         done();
       });

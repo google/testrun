@@ -18,7 +18,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DeleteReportComponent } from './delete-report.component';
 import { of } from 'rxjs';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { DeleteFormComponent } from '../../../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../../../components/simple-dialog/simple-dialog.component';
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../../../mocks/testrun.mock';
 
 describe('DeleteReportComponent', () => {
@@ -53,7 +53,7 @@ describe('DeleteReportComponent', () => {
       const deviceRemovedSpy = spyOn(component.removeDevice, 'emit');
       spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
-      } as MatDialogRef<typeof DeleteFormComponent>);
+      } as MatDialogRef<typeof SimpleDialogComponent>);
 
       component.deleteReport(new Event('click'));
 

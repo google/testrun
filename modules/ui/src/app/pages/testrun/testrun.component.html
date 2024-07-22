@@ -35,7 +35,7 @@ limitations under the License.
               "></ng-container>
           </div>
           <div class="toolbar-row bottom">
-            <h2 class="title progress-title">
+            <h2 class="title progress-title" tabindex="-1">
               {{ data.device.manufacturer }} {{ data.device.model }} v{{
                 data.device.firmware
               }}
@@ -52,8 +52,7 @@ limitations under the License.
             <app-download-options
               *ngIf="data.report"
               [data]="data"
-              [profiles]="vm.profiles"
-              [hasProfiles]="vm.hasProfiles"></app-download-options>
+              [profiles]="vm.profiles"></app-download-options>
           </div>
         </div>
         <app-testrun-status-card [systemStatus]="vm.systemStatus">
@@ -100,7 +99,7 @@ limitations under the License.
         isTestrunInProgress(systemStatus?.status) ||
         systemStatus?.status === StatusOfTestrun.Cancelling
       "
-      (click)="openTestRunModal()"
+      (click)="openTestRunModal(vm.testModules)"
       mat-flat-button>
       Start New Testrun
     </button>

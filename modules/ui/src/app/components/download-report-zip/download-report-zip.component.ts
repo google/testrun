@@ -16,11 +16,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  HostBinding,
   HostListener,
   Input,
   OnDestroy,
+  OnInit,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Profile } from '../../model/profile';
 import { MatDialog } from '@angular/material/dialog';
 import { Subject, takeUntil } from 'rxjs';
@@ -28,27 +30,36 @@ import { Routes } from '../../model/routes';
 import { DownloadZipModalComponent } from '../download-zip-modal/download-zip-modal.component';
 import { TestRunService } from '../../services/test-run.service';
 import { Router } from '@angular/router';
+import { ReportActionComponent } from '../report-action/report-action.component';
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-download-report-zip',
   templateUrl: './download-report-zip.component.html',
   styleUrl: './download-report-zip.component.scss',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatTooltipModule],
+  providers: [DatePipe, MatTooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DownloadReportZipComponent implements OnDestroy {
+export class DownloadReportZipComponent
+  extends ReportActionComponent
+  implements OnDestroy, OnInit
+{
   private destroy$: Subject<boolean> = new Subject<boolean>();
-  @Input() hasProfiles: boolean = false;
   @Input() profiles: Profile[] = [];
   @Input() url: string | null | undefined = null;
 
-  @HostListener('click', ['$event.target'])
-  onClick() {
+  @HostListener('click', ['$event'])
+  @HostListener('keydown.enter', ['$event'])
+  @HostListener('keydown.space', ['$event'])
+  onClick(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+
     const dialogRef = this.dialog.open(DownloadZipModalComponent, {
       ariaLabel: 'Download zip',
       data: {
-        hasProfiles: this.hasProfiles,
         profiles: this.profiles,
       },
       autoFocus: true,
@@ -66,15 +77,25 @@ export class DownloadReportZipComponent implements OnDestroy {
         }
         if (profile === null) {
           this.route.navigate([Routes.RiskAssessment]);
-        }
-
-        if (this.url != null) {
-          this.testrunService
-            .downloadZip(this.getZipLink(this.url), profile)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe();
+        } else if (this.url != null) {
+          this.testrunService.downloadZip(this.getZipLink(this.url), profile);
         }
       });
+  }
+
+  @HostBinding('tabIndex')
+  readonly tabIndex = 0;
+
+  @HostListener('mouseenter')
+  @HostListener('keyup', ['$event'])
+  onEvent(): void {
+    this.tooltip.show();
+  }
+
+  @HostListener('mouseleave')
+  @HostListener('keydown', ['$event'])
+  outEvent(): void {
+    this.tooltip.hide();
   }
 
   ngOnDestroy() {
@@ -82,11 +103,21 @@ export class DownloadReportZipComponent implements OnDestroy {
     this.destroy$.unsubscribe();
   }
 
+  ngOnInit() {
+    if (this.data) {
+      this.tooltip.message = `Download zip for Testrun # ${this.getTestRunId(this.data)}`;
+    }
+  }
+
   constructor(
+    datePipe: DatePipe,
     public dialog: MatDialog,
     private testrunService: TestRunService,
-    private route: Router
-  ) {}
+    private route: Router,
+    public tooltip: MatTooltip
+  ) {
+    super(datePipe);
+  }
 
   private getZipLink(reportURL: string): string {
     return reportURL.replace('report', 'export');
