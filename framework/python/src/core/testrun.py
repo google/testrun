@@ -216,7 +216,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
         'test',
         device.mac_addr.replace(':',''),
         'report.json')
-        
+
       if not os.path.isfile(report_json_file_path):
         # Revert to pre 1.3 file path
         report_json_file_path = os.path.join(

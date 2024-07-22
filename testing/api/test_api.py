@@ -119,6 +119,7 @@ def testing_devices():
 @pytest.fixture
 def testrun(request): # pylint: disable=W0613
   """ Start intstance of testrun """
+  # pylint: disable=W1509
   with subprocess.Popen(
       "bin/testrun",
       stdout=subprocess.PIPE,
