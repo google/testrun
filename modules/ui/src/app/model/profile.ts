@@ -22,11 +22,6 @@ export interface Profile {
   created?: string;
 }
 
-export interface Question {
-  question?: string;
-  answer?: string | number[];
-}
-
 export enum FormControlType {
   SELECT = 'select',
   TEXTAREA = 'text-long',
@@ -40,17 +35,13 @@ export interface Validation {
   max?: string;
 }
 
-export interface ProfileFormat {
+export interface Question {
   question: string;
-  type: FormControlType;
+  type?: FormControlType;
   description?: string;
   options?: string[];
   default?: string;
   validation?: Validation;
-}
-
-export interface Question {
-  question?: string;
   answer?: string | number[];
 }
 
