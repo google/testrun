@@ -38,7 +38,7 @@ echo Building docker images
 
 # Build user interface
 echo Building user interface
-if docker build -t test-run/ui -f modules/ui/ui.Dockerfile . ; then
+if docker build -t testrun/ui -f modules/ui/ui.Dockerfile . ; then
   echo Successully built the user interface
 else
   echo An error occured whilst building the user interface
