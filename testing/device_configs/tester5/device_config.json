@@ -1,0 +1,28 @@
+{
+  "manufacturer": "Google",
+  "model": "Tester 5",
+  "mac_addr": "02:42:aa:00:00:05",
+  "test_modules": {
+    "dns": {
+      "enabled": true
+    },
+    "connection": {
+      "enabled": true
+    },
+    "ntp": {
+      "enabled": true
+    },
+    "baseline": {
+      "enabled": true
+    },
+    "nmap": {
+      "enabled": true
+    },
+    "tls": {
+      "enabled": true
+    },
+    "protocol": {
+      "enabled": true
+    }
+  }
+}
