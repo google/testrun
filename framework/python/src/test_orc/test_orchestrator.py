@@ -26,6 +26,7 @@ from common.testreport import TestReport
 from test_orc.module import TestModule
 from test_orc.test_case import TestCase
 import threading
+import socket
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
@@ -350,6 +351,15 @@ class TestOrchestrator:
 
     return enabled
 
+  def get_ip_address(self, interface_name):
+    ip_address = None
+    try:
+        ip_address = socket.gethostbyname(interface_name)
+        ip_address = ip_address
+    except socket.gaierror as e:
+        LOGGER.error(f"Error getting IP address for {interface_name}: {e}")
+    return ip_address
+
   def _run_test_module(self, module):
     """Start the test container and extract the results."""
 
@@ -394,6 +404,10 @@ class TestOrchestrator:
       device_monitor_capture = os.path.join(device_test_dir, "monitor.pcap")
       util.run_command(f"chown -R {self._host_user} {device_monitor_capture}")
 
+      inet_iface = self._session.get_internet_interface()
+      external_ip = self.get_ip_address(inet_iface)
+      extra_hosts = {"external.localhost": external_ip} if external_ip is not None else {}
+
       client = docker.from_env()
 
       module.container = client.containers.run(
@@ -437,7 +451,9 @@ class TestOrchestrator:
               "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
               "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
               "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
-          })
+          },
+          extra_hosts=extra_hosts
+          )
     except (docker.errors.APIError,
             docker.errors.ContainerError) as container_error:
       LOGGER.error("Test module " + module.name + " has failed to start")

@@ -19,6 +19,7 @@ from scapy.all import rdpcap, DHCP, ARP, Ether, IPv6, ICMPv6ND_NS
 from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
 from dhcp2.client import Client as DHCPClient2
+from host.client import Client as HostClient
 from dhcp_util import DHCPUtil
 from port_stats_util import PortStatsUtil
 
@@ -50,6 +51,7 @@ class ConnectionModule(TestModule):
     self._port_stats = PortStatsUtil(logger=LOGGER)
     self.dhcp1_client = DHCPClient1()
     self.dhcp2_client = DHCPClient2()
+    self.host_client = HostClient()
     self._dhcp_util = DHCPUtil(self.dhcp1_client, self.dhcp2_client, LOGGER)
     self._lease_wait_time_sec = LEASE_WAIT_TIME_DEFAULT
 
@@ -92,6 +94,13 @@ class ConnectionModule(TestModule):
     LOGGER.info('Running connection.port_duplex')
     return self._port_stats.connection_port_duplex_test()
 
+  def _connection_dhcp_disconnect(self):
+    LOGGER.info('Running connection.dhcp.disconnect')
+    for _ in range(10):
+      iface_status = self.host_client.check_interface_status('ens9')
+      LOGGER.info(f'iface status: {iface_status}')
+      time.sleep(5)
+      
   def _connection_switch_arp_inspection(self):
     LOGGER.info('Running connection.switch.arp_inspection')
 

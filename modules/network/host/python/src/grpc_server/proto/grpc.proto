@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+service HostNetworkModule {
+
+    rpc CheckInterfaceStatus(CheckInterfaceStatusRequest) returns (CheckInterfaceStatusResponse) {};
+    rpc GetIfaceConnectionStats(GetIfaceStatsRequest) returns (GetIfaceStatsResponse) {};
+    rpc GetIfacePortStats(GetIfaceStatsRequest) returns (GetIfaceStatsResponse) {};
+}
+
+message CheckInterfaceStatusRequest {
+	string iface_name = 1;
+}
+
+message CheckInterfaceStatusResponse {
+    int32 code = 1;
+    bool status = 2;
+}
+
+message GetIfaceStatsRequest {
+	string iface_name = 1;
+}
+
+message GetIfaceStatsResponse {
+    int32 code = 1;
+    string stats = 2;
+}
