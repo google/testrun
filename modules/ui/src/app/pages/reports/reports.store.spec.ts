@@ -181,12 +181,30 @@ describe('ReportsStore', () => {
         store.refreshState();
 
         reportsStore.deleteReport({
-          mac_addr: '00:1e:42:35:73:c4',
-          started: '2023-06-22T10:11:00.123Z',
+          mac_addr: '01:02:03:04:05:07',
+          deviceMacAddr: '01:02:03:04:05:07',
+          started: '2023-07-23T10:11:00.123Z',
         });
 
         expect(store.dispatch).toHaveBeenCalledWith(
           setReports({ reports: HISTORY_AFTER_REMOVE })
+        );
+        done();
+      });
+
+      it('should update store after remove with null mac_addr', done => {
+        mockService.deleteReport.and.returnValue(of(true));
+        store.overrideSelector(selectReports, [...HISTORY_AFTER_REMOVE]);
+        store.refreshState();
+
+        reportsStore.deleteReport({
+          mac_addr: null,
+          deviceMacAddr: '01:02:03:04:05:08',
+          started: '2023-06-23T10:11:00.123Z',
+        });
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setReports({ reports: [HISTORY_AFTER_REMOVE[0]] })
         );
         done();
       });
