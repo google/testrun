@@ -18,7 +18,6 @@ import os
 import subprocess
 import shlex
 import netifaces
-import docker
 import typing as t
 from common import logger
 
@@ -117,22 +116,6 @@ def get_module_display_name(search):
   return 'Unknown'
 
 
-def get_docker_host_by_name(container_name: str) -> str:
-  """ get running docker container ip address by 
-
-  Args:
-      container_name (str): container name
-
-  Returns:
-      str: container ip
-  """
-  client = docker.DockerClient()
-  container = client.containers.get(container_name)
-  if not container.attrs['State']['Running']:
-    LOGGER.error(f'Container {container_name} is no running')
-    raise Exception(f'Container {container_name} is not running')
-  return container.attrs['NetworkSettings']['IPAddress']
-  
 def diff_dicts(d1: t.Dict[t.Any, t.Any], d2: t.Dict[t.Any, t.Any]) -> t.Dict:
   """Compares two dictionaries by keys
 
