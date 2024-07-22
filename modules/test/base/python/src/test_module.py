@@ -153,12 +153,8 @@ class TestModule:
           if len(result)>2:
             test['details'] = result[2]
       else:
-        if 'enabled' in test and not test['enabled']:
-          test['result'] = 'Skipped'
-          test['description'] = 'Test disabled'
-        else:
-          test['result'] = 'Error'
-          test['description'] = 'An error occured whilst running this test'
+        test['result'] = 'Error'
+        test['description'] = 'An error occured whilst running this test'
 
       # Remove the steps to resolve if compliant already
       if (test['result'] == 'Compliant' and 'recommendations' in test):

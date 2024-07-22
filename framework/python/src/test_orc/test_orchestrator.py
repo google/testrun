@@ -184,9 +184,7 @@ class TestOrchestrator:
     result = "Compliant"
     for test_result in self._session.get_test_results():
       if (test_result.required_result.lower() == "required"
-          and test_result.result.lower() != "compliant"
-          and ("enabled" in test_result
-          and not test_result.enabled)):
+          and test_result.result.lower() != "compliant"):
         result = "Non-Compliant"
     return result
 
@@ -438,19 +436,25 @@ class TestOrchestrator:
 
     try:
       with open(results_file, "r", encoding="utf-8-sig") as f:
+
+        # Load results from JSON file
         module_results_json = json.load(f)
         module_results = module_results_json["results"]
         for test_result in module_results:
 
-          # Convert dict into TestCase object
+          # Convert dict from json into TestCase object
           test_case = TestCase(
             name=test_result["name"],
             description=test_result["description"],
             expected_behavior=test_result["expected_behavior"],
             required_result=test_result["required_result"],
             result=test_result["result"])
-          test_case.result=test_result["result"]
 
+          # Any informational test should always report informational
+          if test_case.required_result == "Informational":
+            test_case.result = "Informational"
+
+          # Add steps to resolve if test is non-compliant
           if (test_case.result == "Non-Compliant" and
               "recommendations" in test_result):
             test_case.recommendations = test_result["recommendations"]
