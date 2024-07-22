@@ -1,4 +1,6 @@
-# Identifying network interfaces
+<img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
+
+## Identifying network interfaces
 
 For Testrun to operate correctly, you must select the correct network interfaces within the settings panel of the user interface. There are 2 methods to identify the correct network interfaces:
 

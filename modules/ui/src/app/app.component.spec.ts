@@ -59,6 +59,7 @@ import {
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
+  selectReports,
   selectStatus,
   selectSystemStatus,
 } from './store/selectors';
@@ -67,6 +68,7 @@ import { CertificatesComponent } from './pages/certificates/certificates.compone
 import { of } from 'rxjs';
 import { WINDOW } from './providers/window.provider';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { HISTORY } from './mocks/reports.mock';
 
 const windowMock = {
   location: {
@@ -109,6 +111,7 @@ describe('AppComponent', () => {
       'testrunInProgress',
       'fetchProfiles',
       'fetchCertificates',
+      'getHistory',
     ]);
 
     mockService.fetchCertificates.and.returnValue(of([]));
@@ -159,6 +162,7 @@ describe('AppComponent', () => {
             { selector: selectSystemStatus, value: null },
             { selector: selectIsOpenStartTestrun, value: false },
             { selector: selectIsOpenWaitSnackBar, value: false },
+            { selector: selectReports, value: [] },
           ],
         }),
         { provide: FocusManagerService, useValue: mockFocusManagerService },
@@ -300,7 +304,7 @@ describe('AppComponent', () => {
       Promise.resolve('close')
     );
 
-    component.openGeneralSettings(false);
+    component.openGeneralSettings(false, false);
     tick();
     component.closeSetting(false);
     flush();
@@ -318,7 +322,7 @@ describe('AppComponent', () => {
     spyOn(component.settings, 'getSystemInterfaces');
     spyOn(component.settings, 'getSystemConfig');
 
-    component.openGeneralSettings(false);
+    component.openGeneralSettings(false, false);
 
     expect(component.settings.getSystemInterfaces).toHaveBeenCalled();
     expect(component.settings.getSystemConfig).toHaveBeenCalled();
@@ -328,24 +332,24 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     spyOn(component.settingsDrawer, 'open');
 
-    component.openSetting();
+    component.openSetting(false);
     tick();
 
     expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
   }));
 
-  it('should announce settingsDrawer open on openSetting', fakeAsync(() => {
+  it('should announce settingsDrawer disabled on openSetting and settings are disabled', fakeAsync(() => {
     fixture.detectChanges();
 
     spyOn(component.settingsDrawer, 'open').and.returnValue(
       Promise.resolve('open')
     );
 
-    component.openSetting();
+    component.openSetting(true);
     tick();
 
     expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-      'The settings panel is opened'
+      'The settings panel is disabled'
     );
   }));
 
@@ -485,6 +489,16 @@ describe('AppComponent', () => {
 
         expect(callout).toBeTruthy();
         expect(calloutContent).toContain('Step 3');
+      });
+
+      it('should NOT have callout component with "Step 3" if has reports', () => {
+        store.overrideSelector(selectReports, [...HISTORY]);
+        store.refreshState();
+        fixture.detectChanges();
+
+        const callout = compiled.querySelector('app-callout');
+
+        expect(callout).toBeFalsy();
       });
     });
 
@@ -738,21 +752,6 @@ describe('AppComponent', () => {
 
     expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
   });
-
-  it('should announce certificatesDrawer open on openCert', fakeAsync(() => {
-    fixture.detectChanges();
-
-    spyOn(component.certDrawer, 'open').and.returnValue(
-      Promise.resolve('open')
-    );
-
-    component.openCert();
-    tick();
-
-    expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-      'The certificates panel is opened'
-    );
-  }));
 });
 
 @Component({

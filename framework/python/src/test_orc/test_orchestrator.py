@@ -123,10 +123,7 @@ class TestOrchestrator:
     self.get_session().set_report_url(report.get_report_url())
 
     # Move testing output from runtime to local device folder
-    timestamp_dir = self._timestamp_results(device)
-
-    # Archive the runtime directory
-    self._zip_results(timestamp_dir)
+    self._timestamp_results(device)
 
     LOGGER.debug("Cleaning old test results...")
     self._cleanup_old_test_results(device)
@@ -183,8 +180,13 @@ class TestOrchestrator:
   def _calculate_result(self):
     result = "Compliant"
     for test_result in self._session.get_test_results():
+      # Check Required tests
       if (test_result.required_result.lower() == "required"
           and test_result.result.lower() != "compliant"):
+        result = "Non-Compliant"
+      # Check Required if Applicable tests
+      elif (test_result.required_result.lower() == "required if applicable"
+            and test_result.result.lower() == "non-compliant"):
         result = "Non-Compliant"
     return result
 
@@ -227,10 +229,18 @@ class TestOrchestrator:
     oldest_timestamp = None
     oldest_directory = None
     for completed_test in os.listdir(completed_tests_dir):
-      timestamp = datetime.strptime(str(completed_test), "%Y-%m-%dT%H:%M:%S")
+      try:
+        timestamp = datetime.strptime(str(completed_test), "%Y-%m-%dT%H:%M:%S")
+
+      # Occurs when time does not match format
+      except ValueError as e:
+        LOGGER.error(e)
+        continue
+
       if oldest_timestamp is None or timestamp < oldest_timestamp:
         oldest_timestamp = timestamp
         oldest_directory = completed_test
+
     if oldest_directory:
       return oldest_timestamp, os.path.join(completed_tests_dir,
                                             oldest_directory)
@@ -240,8 +250,7 @@ class TestOrchestrator:
   def _timestamp_results(self, device):
 
     # Define the current device results directory
-    cur_results_dir = os.path.join(self._root_path, RUNTIME_TEST_DIR,
-                                   device.mac_addr.replace(":", ""))
+    cur_results_dir = os.path.join(self._root_path, RUNTIME_DIR)
 
     # Define the directory
     completed_results_dir = os.path.join(
@@ -255,32 +264,73 @@ class TestOrchestrator:
     shutil.copytree(cur_results_dir, completed_results_dir, dirs_exist_ok=True)
     util.run_command(f"chown -R {self._host_user} '{completed_results_dir}'")
 
+    # Copy Testrun log to testing directory
+    shutil.copy(os.path.join(self._root_path, "testrun.log"),
+                os.path.join(completed_results_dir, "testrun.log"))
+
     return completed_results_dir
 
-  def _zip_results(self, dest_path):
+  def zip_results(self,
+                   device,
+                   timestamp,
+                   profile):
 
     try:
       LOGGER.debug("Archiving test results")
 
+      src_path = os.path.join(LOCAL_DEVICE_REPORTS.replace(
+        "{device_folder}",
+        device.device_folder),
+        timestamp)
+
+      # Define temp directory to store files before zipping
+      results_dir = os.path.join(f"/tmp/testrun/{time.time()}")
+
       # Define where to save the zip file
-      zip_location = os.path.join(dest_path, "results")
+      zip_location = os.path.join("/tmp/testrun",
+                                  timestamp)
 
-      # The runtime directory to include in ZIP
-      path_to_zip = os.path.join(
-        self._root_path,
-        RUNTIME_DIR)
+      # Delete zip_temp if it already exists
+      if os.path.exists(results_dir):
+        os.remove(results_dir)
 
-      # Create ZIP file
-      shutil.make_archive(zip_location, "zip", path_to_zip)
+      # Delete ZIP if it already exists
+      if os.path.exists(zip_location + ".zip"):
+        os.remove(zip_location + ".zip")
+
+      shutil.copytree(src_path,results_dir)
+
+      # Include profile if specified
+      if profile is not None:
+        LOGGER.debug(
+          f"Copying profile {profile.name} to results directory")
+        shutil.copy(profile.get_file_path(),
+                    os.path.join(
+                      results_dir,
+                      "profile.json"))
+
+        with open(os.path.join(results_dir, "profile.pdf"), "wb") as f:
+          f.write(profile.to_pdf(device).getvalue())
+
+      # Create ZIP archive
+      shutil.make_archive(zip_location, "zip", results_dir)
+
+      # Delete the temp results directory
+      shutil.rmtree(results_dir)
 
       # Check that the ZIP was successfully created
       zip_file = zip_location + ".zip"
       LOGGER.info(f'''Archive {'created at ' + zip_file
-                               if os.path.exists(zip_file)
-                               else'creation failed'}''')
+                                if os.path.exists(zip_file)
+                                else'creation failed'}''')
+
+
+      return zip_file
 
     except Exception as error: # pylint: disable=W0703
-      LOGGER.error(f"Failed to create zip file: {error}")
+      LOGGER.error("Failed to create zip file")
+      LOGGER.debug(error)
+      return None
 
   def test_in_progress(self):
     return self._test_in_progress

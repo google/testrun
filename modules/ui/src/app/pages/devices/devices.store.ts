@@ -19,13 +19,14 @@ import { ComponentStore } from '@ngrx/component-store';
 import { TestRunService } from '../../services/test-run.service';
 import { exhaustMap } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
-import { Device } from '../../model/device';
+import { Device, TestModule } from '../../model/device';
 import { AppState } from '../../store/state';
 import { Store } from '@ngrx/store';
 import {
   selectDeviceInProgress,
   selectDevices,
   selectIsOpenAddDevice,
+  selectTestModules,
 } from '../../store/selectors';
 import {
   fetchSystemStatusSuccess,
@@ -37,20 +38,23 @@ import { TestrunStatus } from '../../model/testrun-status';
 export interface DevicesComponentState {
   devices: Device[];
   selectedDevice: Device | null;
+  testModules: TestModule[];
 }
 
 @Injectable()
 export class DevicesStore extends ComponentStore<DevicesComponentState> {
   devices$ = this.store.select(selectDevices);
   isOpenAddDevice$ = this.store.select(selectIsOpenAddDevice);
+  testModules$ = this.store.select(selectTestModules);
   private deviceInProgress$ = this.store.select(selectDeviceInProgress);
   private selectedDevice$ = this.select(state => state.selectedDevice);
 
-  testModules = this.testRunService.getTestModules();
+  //testModules = this.testRunService.getTestModules();
   viewModel$ = this.select({
     devices: this.devices$,
     selectedDevice: this.selectedDevice$,
     deviceInProgress: this.deviceInProgress$,
+    testModules: this.testModules$,
   });
 
   selectDevice = this.updater((state, device: Device | null) => ({
@@ -66,9 +70,11 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
       exhaustMap(({ device, onDelete }) => {
         return this.testRunService.deleteDevice(device).pipe(
           withLatestFrom(this.devices$),
-          tap(([, devices]) => {
-            this.removeDevice(device, devices);
-            onDelete();
+          tap(([deleted, devices]) => {
+            if (deleted) {
+              this.removeDevice(device, devices);
+              onDelete();
+            }
           })
         );
       })
@@ -81,9 +87,11 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
         exhaustMap(({ device, onSuccess }) => {
           return this.testRunService.saveDevice(device).pipe(
             withLatestFrom(this.devices$),
-            tap(([, devices]) => {
-              this.addDevice(device, devices);
-              onSuccess();
+            tap(([added, devices]) => {
+              if (added) {
+                this.addDevice(device, devices);
+                onSuccess();
+              }
             })
           );
         })
@@ -100,9 +108,11 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
       exhaustMap(({ device, mac_addr, onSuccess }) => {
         return this.testRunService.editDevice(device, mac_addr).pipe(
           withLatestFrom(this.devices$),
-          tap(([, devices]) => {
-            this.updateDevice(device, mac_addr, devices);
-            onSuccess();
+          tap(([edited, devices]) => {
+            if (edited) {
+              this.updateDevice(device, mac_addr, devices);
+              onSuccess();
+            }
           })
         );
       })
@@ -168,6 +178,7 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
     super({
       devices: [],
       selectedDevice: null,
+      testModules: [],
     });
   }
 }
