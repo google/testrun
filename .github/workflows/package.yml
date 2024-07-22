@@ -39,7 +39,7 @@ jobs:
           name: testrun_package
       - name: Install dependencies
         shell: bash {0}
-        run: apt-get install unzip
+        run: sudo apt-get install unzip
       - name: Extract package
         shell: bash {0}
         run: unzip *.zip
