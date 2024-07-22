@@ -22,7 +22,7 @@ ARG COMMON_DIR=framework/python/src/common
 RUN apt-get update
 
 # Install common software
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq net-tools iputils-ping tzdata tcpdump iproute2 jq python3 python3-pip dos2unix nmap wget --fix-missing
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq git net-tools iputils-ping tzdata tcpdump iproute2 jq python3 python3-pip dos2unix nmap wget --fix-missing
 
 # Install common python modules
 COPY $COMMON_DIR/ /testrun/python/src/common
@@ -35,6 +35,13 @@ RUN pip3 install -r /testrun/python/requirements.txt
 
 # Copy over all binary files
 COPY $MODULE_DIR/bin /testrun/bin
+
+# Copy over license notice file
+COPY $MODULE_DIR/THIRD_PARTY_NOTICES.txt /testrun/THIRD_PARTY_NOTICES.txt
+
+# Clone third party software
+RUN git clone https://github.com/al45tair/netifaces.git testrun/third_party/netifaces
+RUN git clone https://github.com/grpc/grpc.git testrun/third_party/grpc
 
 # Remove incorrect line endings
 RUN dos2unix /testrun/bin/*
