@@ -62,6 +62,10 @@
   width: 100%;
 }
 
+.profile-form-field ::ng-deep .mat-mdc-form-field-textarea-control {
+  display: inherit;
+}
+
 .form-actions {
   display: flex;
   gap: 16px;
