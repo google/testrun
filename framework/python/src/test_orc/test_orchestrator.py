@@ -27,6 +27,7 @@ from test_orc.module import TestModule
 from test_orc.test_case import TestCase
 import threading
 import socket
+import psutil
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
@@ -352,13 +353,12 @@ class TestOrchestrator:
     return enabled
 
   def get_ip_address(self, interface_name):
-    ip_address = None
-    try:
-        ip_address = socket.gethostbyname(interface_name)
-        ip_address = ip_address
-    except socket.gaierror as e:
-        LOGGER.error(f"Error getting IP address for {interface_name}: {e}")
-    return ip_address
+    addrs = psutil.net_if_addrs()
+    if interface_name in addrs:
+        for addr in addrs[interface_name]:
+            if addr.family == socket.AF_INET:
+                return addr.address
+    return None
 
   def _run_test_module(self, module):
     """Start the test container and extract the results."""
@@ -404,10 +404,15 @@ class TestOrchestrator:
       device_monitor_capture = os.path.join(device_test_dir, "monitor.pcap")
       util.run_command(f"chown -R {self._host_user} {device_monitor_capture}")
 
-      inet_iface = self._session.get_internet_interface()
-      external_ip = self.get_ip_address(inet_iface)
+      # Resolve the main docker interface (docker0) for host interraction
+      # Can't use device or internet iface since these are not in a stable
+      # state for this type of communication during testing but docker0 has
+      # to exist and should always be available
+      external_ip = self.get_ip_address("docker0")
+      LOGGER.debug(f"Using external IP:{external_ip}")
       extra_hosts = {"external.localhost": external_ip} if external_ip is not None else {}
 
+      #extra_hosts = {"external.localhost":"172.17.0.1"}
       client = docker.from_env()
 
       module.container = client.containers.run(
