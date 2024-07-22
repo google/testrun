@@ -28,6 +28,7 @@ jobs:
 
   install_package:
     permissions: {}
+    needs: create_package
     name: Install
     runs-on: ubuntu-22.04
     timeout-minutes: 15
