@@ -45,4 +45,4 @@ jobs:
         run: unzip *.zip
       - name: Install package
         shell: bash {0}
-        run: apt install ./testrun*.deb
+        run: sudo apt install ./testrun*.deb
