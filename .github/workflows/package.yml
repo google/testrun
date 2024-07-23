@@ -37,15 +37,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: testrun_package
-      - name: View artifacts
-        shell: bash {0}
-        run: ls && pwd
       - name: Install dependencies
         shell: bash {0}
-        run: sudo apt-get install unzip
-      - name: Extract package
-        shell: bash {0}
-        run: unzip *.zip
+        run: sudo cmd/prepare
       - name: Install package
         shell: bash {0}
         run: sudo apt install ./testrun*.deb
