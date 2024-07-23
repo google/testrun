@@ -30,3 +30,9 @@ pytz==2024.1
 
 # Requirements for the risk profile
 python-dateutil==2.9.0
+
+# Requirements for MQTT client
+paho-mqtt==2.1.0
+
+# Requirements for background tasks
+APScheduler==3.10.4
