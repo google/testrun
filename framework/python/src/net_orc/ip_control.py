@@ -102,11 +102,10 @@ class IPControl:
   def get_ip_address(self, iface):
     addrs = psutil.net_if_addrs()
     if iface in addrs:
-        for addr in addrs[iface]:
-            if addr.family == socket.AF_INET:
-                return addr.address
+      for addr in addrs[iface]:
+        if addr.family == socket.AF_INET:
+          return addr.address
     return None
-
 
   def get_namespaces(self):
     result = util.run_command('ip netns list')

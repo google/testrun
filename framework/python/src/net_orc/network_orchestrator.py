@@ -494,7 +494,7 @@ class NetworkOrchestrator:
       net_module.net_config.host = False if not 'host' in net_module_json[
           'config']['network'] else net_module_json['config']['network']['host']
 
-      if not net_module.net_config.host:      
+      if not net_module.net_config.host:
         net_module.net_config.enable_wan = net_module_json['config']['network'][
             'enable_wan']
         net_module.net_config.ip_index = net_module_json['config']['network'][
