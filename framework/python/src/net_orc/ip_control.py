@@ -15,6 +15,8 @@
 from common import logger
 from common import util
 import re
+import socket
+import psutil
 
 LOGGER = logger.get_logger('ip_ctrl')
 
@@ -96,6 +98,15 @@ class IPControl:
       return response[0]
     else:
       return None
+
+  def get_ip_address(self, iface):
+    addrs = psutil.net_if_addrs()
+    if iface in addrs:
+        for addr in addrs[iface]:
+            if addr.family == socket.AF_INET:
+                return addr.address
+    return None
+
 
   def get_namespaces(self):
     result = util.run_command('ip netns list')
