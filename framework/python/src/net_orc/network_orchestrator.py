@@ -793,15 +793,15 @@ class NetworkOrchestrator:
         self._session.get_device_interface()
       )
 
-  def network_adapters_checker(self, mgtt_client, topic):
+  def network_adapters_checker(self, mqtt_client, topic):
     """Checks for changes in network adapters
     and sends a message to the frontend
     """
-    LOGGER.debug('checking network adatpers...')
+    LOGGER.debug('Checking network adatpers...')
     try:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
-        mgtt_client.send_message(topic, adapters)
+        mqtt_client.send_message(topic, adapters)
     except Exception:
       LOGGER.error(traceback.format_exc())
 

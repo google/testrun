@@ -18,22 +18,22 @@ import datetime
 import traceback
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
-from common import logger, session, mqtt
+from common import logger, mqtt
 
 # Check adapters period seconds
 CHECK_NETWORK_ADAPTERS_PERIOD = 5
-NETWORK_ADAPTERS_TOPIC = "network_adapters"
-
-LOGGER = logger.get_logger("tasks")
+NETWORK_ADAPTERS_TOPIC = 'network_adapters'
+LOGGER = logger.get_logger('tasks')
 
 
 class PeriodicTasks:
   """Background periodic tasks
   """
   def __init__(
-      self, testrun_session: session.TestrunSession, mqtt_client: mqtt.MQTT
+      self, testrun,
+      mqtt_client: mqtt.MQTT
   ) -> None:
-    self._session = testrun_session
+    self._testrun = testrun
     self._mqtt_client = mqtt_client
     local_tz = datetime.datetime.now().astimezone().tzinfo
     self._scheduler = AsyncIOScheduler(timezone=local_tz)
@@ -45,13 +45,13 @@ class PeriodicTasks:
     Args:
         app (FastAPI): app instance
     """
-    # job that checks for changes in network adapters
+    # Job that checks for changes in network adapters
     self._scheduler.add_job(
         func=self._testrun.get_net_orc().network_adapters_checker,
         kwargs={
-                'mgtt_client': self._mqtt_client,
-                'topic': NETWORK_ADAPTERS_TOPIC
-                },
+          'mqtt_client': self._mqtt_client,
+          'topic': NETWORK_ADAPTERS_TOPIC
+        },
         trigger='interval',
         seconds=CHECK_NETWORK_ADAPTERS_PERIOD,
     )
@@ -63,7 +63,7 @@ class PeriodicTasks:
     and sends a message to the frontend
     """
     try:
-      adapters = self._session.detect_network_adapters_change()
+      adapters = self._testrun.get_session().detect_network_adapters_change()
       if adapters:
         self._mqtt_client.send_message(NETWORK_ADAPTERS_TOPIC, adapters)
     except Exception:
