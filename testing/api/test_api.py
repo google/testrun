@@ -34,9 +34,9 @@ API = "http://127.0.0.1:8000"
 LOG_PATH = "/tmp/testrun.log"
 TEST_SITE_DIR = ".."
 
-
 DEVICES_DIRECTORY = "local/devices"
 TESTING_DEVICES = "../device_configs"
+PROFILES_DIRECTORY = "local/risk_profiles"
 SYSTEM_CONFIG_PATH = "local/system.json"
 
 BASELINE_MAC_ADDR = "02:42:aa:00:01:01"
@@ -125,7 +125,7 @@ def testrun(request): # pylint: disable=W0613
       stdout=subprocess.PIPE,
       stderr=subprocess.STDOUT,
       encoding="utf-8",
-      preexec_fn=os.setsid #start_new_session=True
+      preexec_fn=os.setsid
   ) as proc:
 
     while True:
@@ -1150,18 +1150,15 @@ def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W06
   print(r.status_code)
 
 
-#Tests for profile endpoints
-
-PROFILES_DIRECTORY = "local/risk_profiles"
-
-#delete all profiles from risk_profiles folder
+# Tests for profile endpoints
 def delete_all_profiles():
+  """Utility method to delete all profiles from risk_profiles folder"""
   profiles_path = Path(PROFILES_DIRECTORY)
 
   try:
-    #check if the path exists and is folder
+    # Check if the path exists and is a folder
     if profiles_path.exists() and profiles_path.is_dir():
-      shutil.rmtree(profiles_path) #remove risk_profiles
+      shutil.rmtree(profiles_path) # Remove risk_profiles
 
     #recreate risk_profiles folder
     profiles_path.mkdir(parents=True, exist_ok=True)
@@ -1213,7 +1210,7 @@ def test_get_profiles(testrun, clean_profiles_dir):  # pylint: disable=W0613
   #create the first profile
   new_profile = load_json("new_profile.json")
   profile_name = new_profile["name"]
-  assert not profile_exists(profile_name), f"Profile:{profile_name} exists"
+  assert not profile_exists(profile_name), f"Profile: {profile_name} exists"
 
   r = requests.post(f"{API}/profiles", data=json.dumps(new_profile), timeout=5)
   assert r.status_code == 201, f"Expected status code 201, got {r.status_code}"
