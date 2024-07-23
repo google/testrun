@@ -16,10 +16,10 @@
 import typing as t
 import paho.mqtt.client as mqtt_client
 from common import logger
-from common import util
 
-LOGGER = logger.get_logger("mgtt")
-
+LOGGER = logger.get_logger("mqtt")
+WEBSOCKETS_HOST = "localhost"
+WEBSOCKETS_PORT = 1883
 
 class MQTTException(Exception):
   def __init__(self, message: str) -> None:
@@ -30,10 +30,9 @@ class MQTT:
   """ MQTT client class
   """
   def __init__(self) -> None:
-    self._mosquitto_host = util.get_docker_host_by_name("tr-ws")
+    self._host = WEBSOCKETS_HOST
     self._client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2)
     self._client.enable_logger(LOGGER)
-    self._host = util.get_docker_host_by_name("tr-ws")
 
   def _connect(self):
     """Establish connection to Mosquitto server
@@ -43,7 +42,7 @@ class MQTT:
     """
     if not self._client.is_connected():
       try:
-        self._client.connect(self._host, 1883, 60)
+        self._client.connect(self._host, WEBSOCKETS_PORT, 60)
       except (ValueError, ConnectionRefusedError) as e:
         LOGGER.error("Can't connect to host")
         raise MQTTException("Connection to the Mosquitto server failed") from e

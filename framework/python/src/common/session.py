@@ -19,6 +19,7 @@ import json
 import os
 from common import util, logger
 from common.risk_profile import RiskProfile
+from net_orc.ip_control import IPControl
 
 # Certificate dependencies
 from cryptography import x509
@@ -567,7 +568,7 @@ class TestrunSession():
     self._results = []
     self._started = None
     self._finished = None
-    self._ifaces = util.get_sys_interfaces()
+    self._ifaces = IPControl.get_sys_interfaces()
 
   def to_json(self):
 
@@ -719,17 +720,17 @@ class TestrunSession():
 
   def detect_network_adapters_change(self) -> dict:
     adapters = {}
-    ifaces_new = util.get_sys_interfaces()
+    ifaces_new = IPControl.get_sys_interfaces()
 
-    #difference between stored and newly received network interfaces
+    # Difference between stored and newly received network interfaces
     diff = util.diff_dicts(self._ifaces, ifaces_new)
     if diff:
       if 'items_added' in diff:
         adapters['adapters_added'] = diff['items_added']
       if 'items_removed' in diff:
         adapters['adapters_removed'] = diff['items_removed']
-      # save new network interfaces to session
-      LOGGER.debug(f'network adapters changed {adapters}')
+      # Save new network interfaces to session
+      LOGGER.debug(f'Network adapters changed {adapters}')
       self._ifaces = ifaces_new
     return adapters
 

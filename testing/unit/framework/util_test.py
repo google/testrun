@@ -17,6 +17,7 @@
 from collections import namedtuple
 from unittest.mock import patch
 from common import util
+from net_orc import ip_control
 
 Snicaddr = namedtuple('snicaddr',
                       ['family', 'address'])
@@ -36,7 +37,7 @@ def test_get_sys_interfaces(mock_net_if_addrs):
       'enp0s3': '11:22:33:44:55:66'
   }
 
-  result = util.get_sys_interfaces()
+  result = ip_control.IPControl.get_sys_interfaces()
   # Assert the result
   assert result == expected
 
