@@ -556,7 +556,8 @@ def test_delete_device_testrun_running(testing_devices, testrun): # pylint: disa
 def test_start_testrun_started_successfully(
     testing_devices, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
-  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR,
+  payload = {"device": {
+             "mac_addr": BASELINE_MAC_ADDR,
              "firmware": "asd", 
              "test_modules": {
                 "dns": {"enabled": False},
@@ -1153,12 +1154,20 @@ def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W06
 
 PROFILES_DIRECTORY = "local/risk_profiles"
 
-#delete all profiles form risk_profile folder
+#delete all profiles from risk_profiles folder
 def delete_all_profiles():
   profiles_path = Path(PROFILES_DIRECTORY)
-  if profiles_path.exists() and profiles_path.is_dir():
-    shutil.rmtree(profiles_path) #remove risk_profiles
-  profiles_path.mkdir(parents=True, exist_ok=True) #create risk_profiles
+
+  try:
+    #check if the path exists and is folder
+    if profiles_path.exists() and profiles_path.is_dir():
+      shutil.rmtree(profiles_path) #remove risk_profiles
+
+    #recreate risk_profiles folder
+    profiles_path.mkdir(parents=True, exist_ok=True)
+
+  except Exception as e:
+    raise RuntimeError("Error while deleting and recreating the folder") from e
 
 #clean the profiles before and after each test
 @pytest.fixture(scope="function")
