@@ -117,6 +117,7 @@ class TestModule:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
       else:
         LOGGER.debug(f'Test {test["name"]} is disabled')
+        result = 'Disabled', 'Test disabled, did not run'
 
       if result is not None:
         # Compliant or non-compliant as a boolean only
