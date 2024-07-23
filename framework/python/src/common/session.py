@@ -456,71 +456,73 @@ class TestrunSession():
     return None
 
   def update_profile(self, profile_json):
+
     profile_name = profile_json['name']
-    LOGGER.debug(f"Profile name: {profile_name}")
 
     # Add version, timestamp and status
     profile_json['version'] = self.get_version()
     profile_json['created'] = datetime.datetime.now().strftime('%Y-%m-%d')
 
     if 'status' in profile_json and profile_json.get('status') == 'Valid':
-        LOGGER.debug("Attempting to set profile status to 'Valid'. Checking all questions are answered.")
-        # Check all questions have been answered
-        all_questions_answered = True
+      # Attempting to submit a risk profile, we need to check it
 
-        for question in self.get_profiles_format():
-            profile_question = self._get_profile_question(profile_json, question.get('question'))
-            if profile_question is not None:
-                if 'answer' not in profile_question:
-                    LOGGER.error(f"Missing answer for question: {question.get('question')}")
-                    all_questions_answered = False
-            else:
-                LOGGER.error(f"Missing question: {question.get('question')}")
-                all_questions_answered = False
+      # Check all questions have been answered
+      all_questions_answered = True
 
-        if not all_questions_answered:
-            LOGGER.error('Not all questions answered')
-            return None
-    else:
-        profile_json['status'] = 'Draft'
+      for question in self.get_profiles_format():
 
-    risk_profile = self.get_profile(profile_name)
-    LOGGER.debug(f"Retrieved risk profile: {risk_profile}")
+        # Check question is present
+        profile_question = self._get_profile_question(profile_json,
+                                                      question.get('question'))
 
-    if risk_profile is None:
-        LOGGER.debug("Creating a new risk profile.")
-        risk_profile = RiskProfile(
-            profile_json=profile_json,
-            profile_format=self._profile_format)
-        self._profiles.append(risk_profile)
-    else:
-        LOGGER.debug("Updating the existing profile.")
-        risk_profile.update(profile_json, profile_format=self._profile_format)
+        if profile_question is not None:
 
-        # Check if name has changed
-        if 'rename' in profile_json and profile_json['rename'] != risk_profile.name:
-            old_name = risk_profile.name
-            new_name = profile_json['rename']
-            LOGGER.debug(f"Renaming profile from {old_name} to {new_name}")
-            risk_profile.name = new_name
-            try:
-                os.remove(os.path.join(PROFILES_DIR, old_name + '.json'))
-            except OSError as e:
-                LOGGER.error(f"Error deleting old profile file: {e}")
-                return None
+          # Check answer is present
+          if 'answer' not in profile_question:
+            LOGGER.error('Missing answer for question: ' +
+                         question.get('question'))
+            all_questions_answered = False
 
-    # Write file to disk
-    try:
-        with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'),
-                  'w',
-                  encoding='utf-8') as f:
-            f.write(risk_profile.to_json(pretty=True))
-    except Exception as e:
-        LOGGER.error(f"Error writing profile to disk: {e}")
+        else:
+          LOGGER.error('Missing question: ' + question.get('question'))
+          all_questions_answered = False
+
+      if not all_questions_answered:
+        LOGGER.error('Not all questions answered')
         return None
 
-    return risk_profile
+    else:
+      profile_json['status'] = 'Draft'
 
+    risk_profile = self.get_profile(profile_name)
+
+    if risk_profile is None:
+
+      # Create a new risk profile
+      risk_profile = RiskProfile(
+        profile_json=profile_json,
+        profile_format=self._profile_format)
+      self._profiles.append(risk_profile)
+
+    else:
+
+      # Update the profile
+      risk_profile.update(profile_json, profile_format=self._profile_format)
+
+      # Check if name has changed
+      if 'rename' in profile_json:
+        old_name = profile_json.get('name')
+
+        # Delete the original file
+        os.remove(os.path.join(PROFILES_DIR, old_name + '.json'))
+
+    # Write file to disk
+    with open(os.path.join(PROFILES_DIR, risk_profile.name + '.json'),
+              'w',
+              encoding='utf-8') as f:
+      f.write(risk_profile.to_json(pretty=True))
+
+    return risk_profile
 
   def check_profile_status(self, profile):
 
