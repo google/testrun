@@ -16,10 +16,8 @@
 from contextlib import asynccontextmanager
 import datetime
 import traceback
-
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
-
 from common import logger, session, mqtt
 
 # Check adapters period seconds
@@ -49,8 +47,12 @@ class PeriodicTasks:
     """
     # job that checks for changes in network adapters
     self._scheduler.add_job(
-        func=self.network_adapters_checker,
-        trigger="interval",
+        func=self._testrun.get_net_orc().network_adapters_checker,
+        kwargs={
+                'mgtt_client': self._mqtt_client,
+                'topic': NETWORK_ADAPTERS_TOPIC
+                },
+        trigger='interval',
         seconds=CHECK_NETWORK_ADAPTERS_PERIOD,
     )
     self._scheduler.start()

@@ -46,7 +46,6 @@ import { DeviceValidators } from '../../devices/components/device-form/device.va
 import {
   FormControlType,
   Profile,
-  ProfileFormat,
   ProfileStatus,
   Question,
   Validation,
@@ -81,7 +80,8 @@ export class ProfileFormComponent implements OnInit {
   profileForm: FormGroup = this.fb.group({});
   @ViewChildren(CdkTextareaAutosize)
   autosize!: QueryList<CdkTextareaAutosize>;
-  @Input() profileFormat!: ProfileFormat[];
+  questionnaire!: Question[];
+  @Input() profileFormat!: Question[];
   @Input()
   set profiles(profiles: Profile[]) {
     this.profileList = profiles;
@@ -95,9 +95,8 @@ export class ProfileFormComponent implements OnInit {
   @Input()
   set selectedProfile(profile: Profile | null) {
     this.profile = profile;
-    if (profile && this.nameControl) {
-      this.updateNameValidator();
-      this.fillProfileForm(this.profileFormat, profile);
+    if (profile && this.questionnaire) {
+      this.updateForm(profile);
     }
   }
   get selectedProfile() {
@@ -105,15 +104,29 @@ export class ProfileFormComponent implements OnInit {
   }
 
   @Output() saveProfile = new EventEmitter<Profile>();
+  @Output() discard = new EventEmitter();
   constructor(
     private deviceValidators: DeviceValidators,
     private profileValidators: ProfileValidators,
     private fb: FormBuilder
   ) {}
   ngOnInit() {
-    this.profileForm = this.createProfileForm(this.profileFormat);
     if (this.selectedProfile) {
-      this.fillProfileForm(this.profileFormat, this.selectedProfile);
+      this.updateForm(this.selectedProfile);
+    } else {
+      this.questionnaire = this.profileFormat;
+      this.profileForm = this.createProfileForm(this.questionnaire);
+    }
+  }
+
+  updateForm(profile: Profile) {
+    this.questionnaire = profile.questions;
+    this.profileForm = this.createProfileForm(this.questionnaire);
+    this.fillProfileForm(profile);
+    if (profile.status === ProfileStatus.EXPIRED) {
+      this.profileForm.disable();
+    } else {
+      this.profileForm.enable();
     }
   }
 
@@ -122,7 +135,7 @@ export class ProfileFormComponent implements OnInit {
   }
 
   private get fieldsHasError(): boolean {
-    return this.profileFormat.some((field, index) => {
+    return this.questionnaire.some((field, index) => {
       return (
         this.getControl(index).hasError('invalid_format') ||
         this.getControl(index).hasError('maxlength')
@@ -138,7 +151,7 @@ export class ProfileFormComponent implements OnInit {
     return this.profileForm.get(name.toString()) as AbstractControl;
   }
 
-  createProfileForm(questions: ProfileFormat[]): FormGroup {
+  createProfileForm(questions: Question[]): FormGroup {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const group: any = {};
 
@@ -158,7 +171,7 @@ export class ProfileFormComponent implements OnInit {
         group[index] = this.getMultiSelectGroup(question);
       } else {
         const validators = this.getValidators(
-          question.type,
+          question.type!,
           question.validation
         );
         group[index] = new FormControl(question.default || '', validators);
@@ -186,7 +199,7 @@ export class ProfileFormComponent implements OnInit {
     return validators;
   }
 
-  getMultiSelectGroup(question: ProfileFormat): FormGroup {
+  getMultiSelectGroup(question: Question): FormGroup {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const group: any = {};
     question.options?.forEach((option, index) => {
@@ -203,9 +216,9 @@ export class ProfileFormComponent implements OnInit {
     return this.profileForm?.controls[name] as FormGroup;
   }
 
-  fillProfileForm(profileFormat: ProfileFormat[], profile: Profile): void {
+  fillProfileForm(profile: Profile): void {
     this.nameControl.setValue(profile.name);
-    profileFormat.forEach((question, index) => {
+    profile.questions.forEach((question, index) => {
       if (question.type === FormControlType.SELECT_MULTIPLE) {
         question.options?.forEach((item, idx) => {
           if ((profile.questions[index].answer as number[])?.includes(idx)) {
@@ -218,6 +231,7 @@ export class ProfileFormComponent implements OnInit {
         this.getControl(index).setValue(profile.questions[index].answer);
       }
     });
+    this.nameControl.markAsTouched();
     this.triggerResize();
   }
 
@@ -241,8 +255,12 @@ export class ProfileFormComponent implements OnInit {
     }
   }
 
+  onDiscardClick() {
+    this.discard.emit();
+  }
+
   private buildResponseFromForm(
-    initialQuestions: ProfileFormat[],
+    initialQuestions: Question[],
     profileForm: FormGroup,
     status: ProfileStatus,
     profile: Profile | null
@@ -260,8 +278,9 @@ export class ProfileFormComponent implements OnInit {
     const questions: Question[] = [];
 
     initialQuestions.forEach((initialQuestion, index) => {
-      const question: Question = {};
-      question.question = initialQuestion.question;
+      const question: Question = {
+        question: initialQuestion.question,
+      };
 
       if (initialQuestion.type === FormControlType.SELECT_MULTIPLE) {
         const answer: number[] = [];

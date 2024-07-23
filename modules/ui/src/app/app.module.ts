@@ -50,6 +50,13 @@ import { WindowProvider } from './providers/window.provider';
 import { CertificatesComponent } from './pages/certificates/certificates.component';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from './services/loaderConfig';
 
+import { MqttModule, IMqttServiceOptions } from 'ngx-mqtt';
+
+export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
+  hostname: 'localhost',
+  port: 9001,
+};
+
 @NgModule({
   declarations: [AppComponent, SettingsComponent],
   imports: [
@@ -79,6 +86,7 @@ import { LOADER_TIMEOUT_CONFIG_TOKEN } from './services/loaderConfig';
     SettingsDropdownComponent,
     ShutdownAppComponent,
     CertificatesComponent,
+    MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
   ],
   providers: [
     WindowProvider,

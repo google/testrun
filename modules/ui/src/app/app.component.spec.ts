@@ -59,6 +59,7 @@ import {
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
+  selectReports,
   selectStatus,
   selectSystemStatus,
 } from './store/selectors';
@@ -67,6 +68,9 @@ import { CertificatesComponent } from './pages/certificates/certificates.compone
 import { of } from 'rxjs';
 import { WINDOW } from './providers/window.provider';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { HISTORY } from './mocks/reports.mock';
+import { TestRunMqttService } from './services/test-run-mqtt.service';
+import { MOCK_ADAPTERS } from './mocks/settings.mock';
 
 const windowMock = {
   location: {
@@ -84,6 +88,7 @@ describe('AppComponent', () => {
   let focusNavigation = true;
   let mockFocusManagerService: SpyObj<FocusManagerService>;
   let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
+  let mockMqttService: SpyObj<TestRunMqttService>;
 
   const enterKeyEvent = new KeyboardEvent('keydown', {
     key: 'Enter',
@@ -109,6 +114,7 @@ describe('AppComponent', () => {
       'testrunInProgress',
       'fetchProfiles',
       'fetchCertificates',
+      'getHistory',
     ]);
 
     mockService.fetchCertificates.and.returnValue(of([]));
@@ -116,6 +122,7 @@ describe('AppComponent', () => {
       'focusFirstElementInContainer',
     ]);
     mockLiveAnnouncer = jasmine.createSpyObj('mockLiveAnnouncer', ['announce']);
+    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters']);
 
     TestBed.configureTestingModule({
       imports: [
@@ -135,6 +142,7 @@ describe('AppComponent', () => {
       providers: [
         { provide: TestRunService, useValue: mockService },
         { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
+        { provide: TestRunMqttService, useValue: mockMqttService },
         {
           provide: State,
           useValue: {
@@ -159,6 +167,7 @@ describe('AppComponent', () => {
             { selector: selectSystemStatus, value: null },
             { selector: selectIsOpenStartTestrun, value: false },
             { selector: selectIsOpenWaitSnackBar, value: false },
+            { selector: selectReports, value: [] },
           ],
         }),
         { provide: FocusManagerService, useValue: mockFocusManagerService },
@@ -173,6 +182,7 @@ describe('AppComponent', () => {
       ],
     });
 
+    mockMqttService.getNetworkAdapters.and.returnValue(of(MOCK_ADAPTERS));
     store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
@@ -485,6 +495,16 @@ describe('AppComponent', () => {
 
         expect(callout).toBeTruthy();
         expect(calloutContent).toContain('Step 3');
+      });
+
+      it('should NOT have callout component with "Step 3" if has reports', () => {
+        store.overrideSelector(selectReports, [...HISTORY]);
+        store.refreshState();
+        fixture.detectChanges();
+
+        const callout = compiled.querySelector('app-callout');
+
+        expect(callout).toBeFalsy();
       });
     });
 
