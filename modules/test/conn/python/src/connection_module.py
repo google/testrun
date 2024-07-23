@@ -394,8 +394,9 @@ class ConnectionModule(TestModule):
 
               # Wait an additonal 10 seconds to better test a true disconnect
               # state
-              time.sleep(10)
               LOGGER.info("Waiting 10 seconds before bringing iface back up")
+              time.sleep(10)
+
 
               # Enable the device interface
               iface_up = self.host_client.set_iface_up(dev_iface)

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/dhcp-primary
+# Image name: test-run/host
 FROM test-run/base:latest
 
 ARG MODULE_NAME=host

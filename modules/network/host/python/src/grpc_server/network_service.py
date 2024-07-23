@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""gRPC Network Service for the DHCP Server network module"""
+"""gRPC Network Service for the Host network module"""
 import proto.grpc_pb2_grpc as pb2_grpc
 import proto.grpc_pb2 as pb2
 
 import traceback
 from common import logger
-import util
+from common import util
 
 LOG_NAME = 'network_service'
 LOGGER = None
