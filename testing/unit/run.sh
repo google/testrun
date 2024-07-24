@@ -14,9 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Move into the root directory of testrun
-pushd ../../ >/dev/null 2>&1
-
+# Must be run from the root directory of Testrun
 run_test() {
   local MODULE_NAME=$1
   shift
@@ -73,6 +71,4 @@ export PYTHONPATH
 python3 testing/unit/risk_profile/risk_profile_test.py
 python3 testing/unit/report/report_test.py
 
-
 deactivate
-popd >/dev/null 2>&1
