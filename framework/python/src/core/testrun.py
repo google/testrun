@@ -230,6 +230,13 @@ class Testrun:  # pylint: disable=too-few-public-methods
           report_folder,
           'report.json')
 
+      if not os.path.isfile(report_json_file_path):
+        # Revert to pre 1.3 file path
+        report_json_file_path = os.path.join(
+          reports_folder,
+          report_folder,
+          'report.json')
+
       # Check if the report.json file exists
       if not os.path.isfile(report_json_file_path):
         # Some error may have occured during this test run

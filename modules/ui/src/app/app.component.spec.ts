@@ -540,6 +540,38 @@ describe('AppComponent', () => {
       });
     });
 
+    describe('with systemStatus data IN Progress and without riskProfiles', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasConnectionSettings, true);
+        store.overrideSelector(selectHasDevices, true);
+        store.overrideSelector(selectHasRiskProfiles, false);
+        store.overrideSelector(
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
+        );
+        fixture.detectChanges();
+      });
+
+      it('should have callout component with "Congratulations" text', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutContent = callout?.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutContent).toContain('Congratulations');
+      });
+
+      it('should have callout component with "Risk Assessment" link', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutLinkEl = compiled.querySelector(
+          '.message-link'
+        ) as HTMLAnchorElement;
+        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutLinkContent).toContain('Risk Assessment');
+      });
+    });
+
     describe('with no devices setted', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, false);
