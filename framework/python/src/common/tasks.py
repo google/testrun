@@ -25,7 +25,7 @@ from common import logger
 # Check adapters period seconds
 CHECK_NETWORK_ADAPTERS_PERIOD = 5
 NETWORK_ADAPTERS_TOPIC = 'network_adapters'
-INTERNET_CONNECTION_TOPIC = 'internet'
+INTERNET_CONNECTION_TOPIC = 'events/internet'
 
 LOGGER = logger.get_logger('tasks')
 
@@ -63,7 +63,8 @@ class PeriodicTasks:
     self._scheduler.add_job(
         func=self._testrun.get_net_orc().internet_conn_checker,
         kwargs={
-                'mqtt_client': self._mqtt_client
+                'mqtt_client': self._mqtt_client,
+                'topic': INTERNET_CONNECTION_TOPIC
                 },
         trigger='interval',
         seconds=CHECK_NETWORK_ADAPTERS_PERIOD,

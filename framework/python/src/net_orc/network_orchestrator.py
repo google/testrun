@@ -794,23 +794,17 @@ class NetworkOrchestrator:
     except Exception:
       LOGGER.error(traceback.format_exc())
 
-  def internet_conn_checker(self, mqtt_client: mqtt.MQTT):
+  def internet_conn_checker(self, mqtt_client: mqtt.MQTT, topic: str):
     """Checks internet connection and sends a status to frontend"""
 
     # Default message
-    topic = 'events'
-    message = {
-      'event': 'InternetConnectivityEvent',
-      'data': {
-        'internet': False
-      }
-    }
+    message = {'connection': False}
 
     # Only check if Testrun is running
     if self.get_session().get_status() not in [
       'Waiting for Device', 'Monitoring', 'In Progress'
     ]:
-      message['data']['internet'] = None
+      message['connection'] = None
 
     # Only run if single intf mode not used
     elif 'single_intf' not in self._session.get_runtime_params():
@@ -824,7 +818,7 @@ class NetworkOrchestrator:
           'google.com')
 
         if internet_connection:
-          message['data']['internet'] = True
+          message['connection'] = True
 
     # Broadcast via MQTT client
     mqtt_client.send_message(topic, message)
