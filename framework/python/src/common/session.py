@@ -717,7 +717,6 @@ class TestrunSession():
   def get_certs(self):
     return self._certs
 
-
   def detect_network_adapters_change(self) -> dict:
     adapters = {}
     ifaces_new = IPControl.get_sys_interfaces()
@@ -733,4 +732,3 @@ class TestrunSession():
       LOGGER.debug(f'Network adapters changed {adapters}')
       self._ifaces = ifaces_new
     return adapters
-
