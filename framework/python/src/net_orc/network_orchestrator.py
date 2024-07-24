@@ -791,7 +791,6 @@ class NetworkOrchestrator:
     """Checks for changes in network adapters
     and sends a message to the frontend
     """
-    LOGGER.debug('checking network adatpers...')
     try:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
