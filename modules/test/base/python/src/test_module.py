@@ -115,8 +115,13 @@ class TestModule:
             LOGGER.error(e)
         else:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
+          test['result'] = 'Error'
+          test['description'] = 'This test could not be found'
       else:
         LOGGER.debug(f'Test {test["name"]} is disabled')
+
+        # To be added in v1.3.2
+        # result = 'Disabled', 'This test is disabled and did not run'
 
       if result is not None:
         # Compliant or non-compliant as a boolean only
