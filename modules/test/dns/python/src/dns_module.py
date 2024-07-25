@@ -19,7 +19,7 @@ import os
 from collections import Counter
 
 LOG_NAME = 'test_dns'
-MODULE_REPORT_FILE_NAME='dns_report.html'
+MODULE_REPORT_FILE_NAME = 'dns_report.html'
 DNS_SERVER_CAPTURE_FILE = '/runtime/network/dns.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
@@ -42,9 +42,9 @@ class DNSModule(TestModule):
                      log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
-    self.dns_server_capture_file=dns_server_capture_file
-    self.startup_capture_file=startup_capture_file
-    self.monitor_capture_file=monitor_capture_file
+    self.dns_server_capture_file = dns_server_capture_file
+    self.startup_capture_file = startup_capture_file
+    self.monitor_capture_file = monitor_capture_file
     self._dns_server = '10.10.10.4'
     global LOGGER
     LOGGER = self._get_logger()
@@ -56,18 +56,17 @@ class DNSModule(TestModule):
     html_content = '<h1>DNS Module</h1>'
 
     # Set the summary variables
-    local_requests = sum(1 for row in dns_table_data
-                         if row['Destination'] ==
-                         self._dns_server and row['Type'] == 'Query')
-    external_requests = sum(1 for row in dns_table_data
-                            if row['Destination'] !=
-                            self._dns_server and row['Type'] == 'Query')
+    local_requests = sum(
+        1 for row in dns_table_data
+        if row['Destination'] == self._dns_server and row['Type'] == 'Query')
+    external_requests = sum(
+        1 for row in dns_table_data
+        if row['Destination'] != self._dns_server and row['Type'] == 'Query')
 
-    total_requests = sum(1 for row in dns_table_data
-                            if row['Type'] == 'Query')
+    total_requests = sum(1 for row in dns_table_data if row['Type'] == 'Query')
 
     total_responses = sum(1 for row in dns_table_data
-                            if row['Type'] == 'Response')
+                          if row['Type'] == 'Response')
 
     # Add summary table
     html_content += (f'''
@@ -105,13 +104,14 @@ class DNSModule(TestModule):
           </thead>
           <tbody>'''
 
-
       # Count unique combinations
-      counter = Counter((row['Source'], row['Destination'], row['Type'], row['Data']) for row in dns_table_data)
+      counter = Counter(
+          (row['Source'], row['Destination'], row['Type'], row['Data'])
+          for row in dns_table_data)
 
       # Generate the HTML table with the count column
       for (src, dst, typ, dat), count in counter.items():
-          table_content += f'''
+        table_content += f'''
               <tr>
                 <td>{src}</td>
                 <td>{dst}</td>
@@ -159,10 +159,7 @@ class DNSModule(TestModule):
       if DNS in packet and packet.haslayer(IP):
 
         # Check if either source or destination MAC matches the device
-        if (Ether in packet and 
-           (packet[Ether].src == self._device_mac or 
-            packet[Ether].dst == self._device_mac)):
-
+        if self._device_mac in (packet[Ether].src, packet[Ether].dst):
           source_ip = packet[IP].src
           destination_ip = packet[IP].dst
           dns_layer = packet[DNS]
@@ -286,10 +283,10 @@ class DNSModule(TestModule):
     LOGGER.debug('tcpdump command: ' + command)
 
     with subprocess.Popen(command,
-                               universal_newlines=True,
-                               shell=True,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE) as process:
+                          universal_newlines=True,
+                          shell=True,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE) as process:
       text = str(process.stdout.read()).rstrip()
 
       LOGGER.debug('tcpdump response: ' + text)
