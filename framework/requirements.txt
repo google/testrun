@@ -9,6 +9,7 @@ scapy==2.5.0
 
 # Requirments for the test_orc module
 weasyprint==61.2
+pydyf==0.8.0
 
 # Requirements for the API
 fastapi==0.109.1

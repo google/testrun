@@ -397,6 +397,14 @@ describe('ProfileFormComponent', () => {
           fixture.detectChanges();
         });
 
+        it('should has Discard text', () => {
+          const discardButton = compiled.querySelector(
+            '.discard-button'
+          ) as HTMLButtonElement;
+
+          expect(discardButton.textContent?.trim()).toEqual('Discard');
+        });
+
         it('should be enabled when form is filled', () => {
           const discardButton = compiled.querySelector(
             '.discard-button'
@@ -431,6 +439,34 @@ describe('ProfileFormComponent', () => {
           expect(
             field.classList.contains('mat-form-field-disabled')
           ).toBeTrue();
+        });
+      });
+
+      describe('Close button', () => {
+        it('should has Discard text', () => {
+          const discardButton = compiled.querySelector(
+            '.discard-button'
+          ) as HTMLButtonElement;
+
+          expect(discardButton.textContent?.trim()).toEqual('Close');
+        });
+
+        it('should be enabled', () => {
+          const discardButton = compiled.querySelector(
+            '.discard-button'
+          ) as HTMLButtonElement;
+
+          expect(discardButton.disabled).toBeFalse();
+        });
+
+        it('should emit discard', () => {
+          const emitSpy = spyOn(component.discard, 'emit');
+          const discardButton = compiled.querySelector(
+            '.discard-button'
+          ) as HTMLButtonElement;
+          discardButton.click();
+
+          expect(emitSpy).toHaveBeenCalled();
         });
       });
     });

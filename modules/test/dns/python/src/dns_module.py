@@ -152,15 +152,14 @@ class DNSModule(TestModule):
         source_ip = packet[IP].src
         destination_ip = packet[IP].dst
         dns_layer = packet[DNS]
-         
         # 'qr' field indicates query (0) or response (1)
         dns_type = 'Query' if dns_layer.qr == 0 else 'Response'
 
         # Check for the presence of DNS query name
         if hasattr(dns_layer, 'qd') and dns_layer.qd is not None:
-            qname = dns_layer.qd.qname.decode() if dns_layer.qd.qname else 'N/A'
+          qname = dns_layer.qd.qname.decode() if dns_layer.qd.qname else 'N/A'
         else:
-            qname = 'N/A'
+          qname = 'N/A'
 
         dns_data.append({
             'Timestamp': float(packet.time),  # Timestamp of the DNS packet
