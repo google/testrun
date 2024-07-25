@@ -8,6 +8,9 @@ on:
     branches:
       - 'dev'
 
+permissions:
+  contents: read
+
 jobs:
   testrun_package:
     permissions: {}

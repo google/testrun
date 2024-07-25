@@ -556,6 +556,7 @@ describe('Effects', () => {
         selectSystemStatus,
         Object.assign({}, MOCK_PROGRESS_DATA_COMPLIANT, {
           mac_addr: '01:02:03:04:05:07',
+          report: 'http://localhost:8000/report/1234 1234/2024-07-17T15:33:40',
         })
       );
       actions$ = of(

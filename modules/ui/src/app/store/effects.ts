@@ -320,12 +320,8 @@ export class AppEffects {
       }),
       filter(([{ reports }, systemStatus]) => {
         return (
-          !reports?.some(
-            report =>
-              report.report === systemStatus!.report &&
-              report.started === systemStatus!.started &&
-              report.finished === systemStatus!.finished
-          ) || false
+          !reports?.some(report => report.report === systemStatus!.report) ||
+          false
         );
       }),
       map(() => AppActions.setTestrunStatus({ systemStatus: IDLE_STATUS }))
