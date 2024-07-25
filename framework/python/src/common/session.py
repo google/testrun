@@ -345,10 +345,11 @@ class TestrunSession():
       if test_result.name == result.name:
 
         # Just update the result and description
-        test_result.result = 'Error'
-        test_result.description = result.description
-        test_result.recommendations = None
-        updated = True
+        if test_result.result == 'In Progress':
+          test_result.result = 'Error'
+          test_result.description = result.description
+          test_result.recommendations = None
+          updated = True
 
     if not updated:
       result.result = 'Error'

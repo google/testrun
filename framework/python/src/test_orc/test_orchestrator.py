@@ -108,11 +108,6 @@ class TestOrchestrator:
     self._test_modules_running = test_modules
     self._current_module = 0
 
-    # Thread for the device connection monitoring when test in progress
-    device_con_thread = threading.Thread(target=self._device_conn_monitoring)
-    device_con_thread.daemon = True
-    device_con_thread.start()
-
     for index, module in enumerate(test_modules):
 
       self._current_module = index
@@ -376,6 +371,13 @@ class TestOrchestrator:
 
     # Get all tests to be executed and set to in progress
     for test in module.tests:
+
+      # Check that device is connected
+      if not self._net_orc.is_device_connected():
+        LOGGER.error("Device was disconnected")
+        self._set_test_modules_error()
+        self._session.set_status("Cancelled")
+        return
 
       test_copy = copy.deepcopy(test)
       test_copy.result = "In Progress"
@@ -749,18 +751,9 @@ class TestOrchestrator:
   def get_session(self):
     return self._session
 
-  def _device_conn_monitoring(self):
+  def _set_test_modules_error(self):
     """Device monitoring method"""
-    while self.get_session().get_status() == "In Progress":
-      if not self._net_orc.is_device_connected():
-        self._session.set_status("Cancelled")
-        LOGGER.error("Device was disconnected")
-        self._stop_module(
-            module=self._test_modules_running[self._current_module],
-            kill=True
-          )
-        for module in self._test_modules_running[self._current_module::]:
-          for test in module.tests:
-            self.get_session().set_test_result_error(test)
-        break
-      time.sleep(1)
+    for module in self._test_modules_running[self._current_module::]:
+      for test in module.tests:
+        self.get_session().set_test_result_error(test)
+
