@@ -72,7 +72,7 @@ jobs:
         timeout-minutes: 10
       - name: Run tests
         shell: bash {0}
-        run: sh testing/unit/run.sh
+        run: bash testing/unit/run.sh
 
   pylint:
     permissions: {}
