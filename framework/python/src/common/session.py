@@ -528,16 +528,14 @@ class TestrunSession():
     return risk_profile
 
   def check_profile_status(self, profile):
+    """Check if a profile has expired"""
 
-    if profile.status == 'Valid':
+    created_date = profile.created.timestamp()
 
-      # Check expiry
-      created_date = profile.created.timestamp()
+    today = datetime.datetime.now().timestamp()
 
-      today = datetime.datetime.now().timestamp()
-
-      if created_date < (today - SECONDS_IN_YEAR):
-        profile.status = 'Expired'
+    if created_date < (today - SECONDS_IN_YEAR):
+      profile.status = 'Expired'
 
     return profile.status
 
