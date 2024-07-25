@@ -506,7 +506,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
       if container is not None:
         container.kill()
     except docker.errors.NotFound:
-      return
+      pass
 
 
   def start_ws(self):
@@ -542,4 +542,4 @@ class Testrun:  # pylint: disable=too-few-public-methods
       if container is not None:
         container.kill()
     except docker.errors.NotFound:
-      return
+      pass

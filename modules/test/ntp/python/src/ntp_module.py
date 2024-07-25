@@ -171,6 +171,10 @@ class NTPModule(TestModule):
         # Local NTP server syncs to external servers so we need to filter only
         # for traffic to/from the device
         if self._device_mac in (source_mac, destination_mac):
+
+          source_ip = None
+          dest_ip = None
+
           if IP in packet:
             source_ip = packet[IP].src
             dest_ip = packet[IP].dst
@@ -218,6 +222,9 @@ class NTPModule(TestModule):
     for packet in packet_capture:
 
       if NTP in packet and packet.src == self._device_mac:
+
+        dest_ip = None
+
         if IP in packet:
           dest_ip = packet[IP].dst
         elif IPv6 in packet:
@@ -255,6 +262,7 @@ class NTPModule(TestModule):
     for packet in packet_capture:
       if NTP in packet and packet.src == self._device_mac:
         device_sends_ntp = True
+        dest_ip = None
         if IP in packet:
           dest_ip = packet[IP].dst
         elif IPv6 in packet:
@@ -267,6 +275,7 @@ class NTPModule(TestModule):
           ntp_to_remote = True
 
     if device_sends_ntp:
+      result = 'Feature Not Detected', 'Device has not sent any NTP requests'
       if ntp_to_local and ntp_to_remote:
         result = False, ('Device sent NTP request to DHCP provided ' +
                          'server and non-DHCP provided server')
@@ -275,8 +284,6 @@ class NTPModule(TestModule):
           'Device sent NTP request to non-DHCP provided server')
       elif ntp_to_local:
         result = True, 'Device sent NTP request to DHCP provided server'
-    else:
-      result = 'Feature Not Detected', 'Device has not sent any NTP requests'
 
     LOGGER.info(result[1])
     return result
