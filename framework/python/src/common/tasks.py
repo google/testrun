@@ -24,7 +24,7 @@ from common import logger
 
 # Check adapters period seconds
 CHECK_NETWORK_ADAPTERS_PERIOD = 5
-NETWORK_ADAPTERS_TOPIC = 'network_adapters'
+NETWORK_ADAPTERS_TOPIC = 'events/adapter'
 
 LOGGER = logger.get_logger('tasks')
 
