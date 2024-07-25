@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 import { TestrunStatus } from '../model/testrun-status';
-import { SettingMissedError, SystemInterfaces } from '../model/setting';
 import { Device, TestModule } from '../model/device';
+import {
+  Adapters,
+  SettingMissedError,
+  SystemInterfaces,
+} from '../model/setting';
 import { Profile } from '../model/profile';
 
 export interface AppState {
@@ -56,6 +60,7 @@ export interface SharedState {
   deviceInProgress: Device | null;
   reports: TestrunStatus[];
   testModules: TestModule[];
+  adapters: Adapters;
 }
 
 export const initialAppComponentState: AppComponentState = {
@@ -82,4 +87,5 @@ export const initialSharedState: SharedState = {
   status: null,
   reports: [],
   testModules: [],
+  adapters: {},
 };

@@ -152,7 +152,6 @@ class DNSModule(TestModule):
         source_ip = packet[IP].src
         destination_ip = packet[IP].dst
         dns_layer = packet[DNS]
-
         # 'qr' field indicates query (0) or response (1)
         dns_type = 'Query' if dns_layer.qr == 0 else 'Response'
 

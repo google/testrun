@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """IP Control Module"""
+
+import psutil
+import typing as t
 from common import logger
 from common import util
 import re
@@ -247,3 +250,22 @@ class IPControl:
       LOGGER.error(f'Failed to set interface up {namespace_intf}')
       return False
     return True
+
+  @staticmethod
+  def get_sys_interfaces() -> t.Dict[str, t.Dict[str, str]]:
+    """ Retrieves all Ethernet network interfaces from the host system
+    Returns:
+        t.Dict[str, str]
+    """
+    addrs = psutil.net_if_addrs()
+    ifaces = {}
+
+    for key in addrs:
+      nic = addrs[key]
+      # Ignore any interfaces that are not ethernet
+      if not (key.startswith('en') or key.startswith('eth')):
+        continue
+
+      ifaces[key] = nic[0].address
+
+    return ifaces
