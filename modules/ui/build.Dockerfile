@@ -1,5 +1,3 @@
-#!/bin/bash -e
-
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Optional script to prepare your system for use with Testrun.
-# Installs system dependencies
+# Image name: testrun/build-ui
+FROM node@sha256:ffebb4405810c92d267a764b21975fb2d96772e41877248a37bf3abaa0d3b590 as build
 
-echo Installing system dependencies
+# Set the working directory
+WORKDIR /modules/ui
 
-# Install system dependencies
-sudo apt-get update && sudo apt-get install openvswitch-common openvswitch-switch python3 libpangocairo-1.0-0 ethtool
+# Copy UI source code to the image
+COPY modules/ui/ /modules/ui
 
-echo Finished installing system dependencies
+# Install npm dependencies
+RUN npm install
+
+# Build the UI
+RUN npm run build
+
+# Keep the container running (Testrun will kill it when required)
+ENTRYPOINT ["tail", "-f", "/dev/null"]

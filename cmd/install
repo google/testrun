@@ -28,6 +28,7 @@ done
 if [[ -z "${TESTRUN_DIR}" ]]; then
   TESTRUN_DIR=/usr/local/testrun
 
+  # Check that user is sudo
   if [[ "$EUID" -ne 0 ]]; then
     echo "Installing Testrun in the default location requires sudo. Run using sudo cmd/install"
     exit 1
@@ -36,6 +37,7 @@ if [[ -z "${TESTRUN_DIR}" ]]; then
 else
   TESTRUN_DIR="${TESTRUN_DIR}"
 
+  # Check that user is in docker group
   if ! (id -nGz "$USER" | grep -qzxF "docker"); then
     echo User is not in docker group. Follow https://docs.docker.com/engine/install/linux-postinstall/ to finish setting up docker.
     exit 1
