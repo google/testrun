@@ -30,7 +30,7 @@ import { Version } from '../model/version';
 import { Certificate } from '../model/certificate';
 import {
   Profile,
-  ProfileFormat,
+  Question,
   ProfileRisk,
   RiskResultClassName,
 } from '../model/profile';
@@ -123,8 +123,10 @@ export class TestRunService {
       .pipe(map(() => true));
   }
 
-  getTestModules(): TestModule[] {
-    return this.testModules;
+  getTestModules(): Observable<string[]> {
+    return this.http
+      .get<string[]>(`${API_URL}/system/modules`)
+      .pipe(catchError(() => of([])));
   }
 
   saveDevice(device: Device): Observable<boolean> {
@@ -301,8 +303,8 @@ export class TestRunService {
       });
   }
 
-  fetchProfilesFormat(): Observable<ProfileFormat[]> {
-    return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
+  fetchProfilesFormat(): Observable<Question[]> {
+    return this.http.get<Question[]>(`${API_URL}/profiles/format`);
   }
 
   saveProfile(profile: Profile): Observable<boolean> {

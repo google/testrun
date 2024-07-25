@@ -17,7 +17,7 @@
 import {
   FormControlType,
   Profile,
-  ProfileFormat,
+  Question,
   ProfileStatus,
 } from '../model/profile';
 
@@ -29,22 +29,51 @@ export const PROFILE_MOCK: Profile = {
     {
       question: 'What is the email of the device owner(s)?',
       answer: 'boddey@google.com, cmeredith@google.com',
+      type: FormControlType.EMAIL_MULTIPLE,
+      validation: {
+        required: true,
+        max: '30',
+      },
     },
     {
       question: 'What type of device do you need reviewed?',
-      answer: 'IoT Sensor',
+      answer: 'Type',
+      type: FormControlType.TEXTAREA,
+      validation: {
+        required: true,
+        max: '28',
+      },
+      description: 'This tells us about the device',
     },
     {
       question: 'Are any of the following statements true about your device?',
       answer: 'First',
+      type: FormControlType.SELECT,
+      options: ['First', 'Second'],
+      validation: {
+        required: true,
+      },
     },
     {
       question: 'What features does the device have?',
+      description:
+        'This tells us about the data your device will collectThis tells us about the data your device will collect',
+      type: FormControlType.SELECT_MULTIPLE,
       answer: [0, 1, 2],
+      options: ['Wi-fi', 'Bluetooth', 'ZigBee / Z-Wave / Thread / Matter'],
+      validation: {
+        required: true,
+      },
     },
     {
       question: 'Comments',
       answer: 'Yes',
+      type: FormControlType.TEXT,
+      description: 'Please enter any comments here',
+      validation: {
+        max: '28',
+        required: true,
+      },
     },
   ],
 };
@@ -61,7 +90,7 @@ export const PROFILE_MOCK_3: Profile = {
   questions: [],
 };
 
-export const PROFILE_FORM: ProfileFormat[] = [
+export const PROFILE_FORM: Question[] = [
   {
     question: 'Email',
     type: FormControlType.EMAIL_MULTIPLE,
@@ -154,4 +183,60 @@ export const RENAME_PROFILE_MOCK = {
   ...NEW_PROFILE_MOCK,
   name: 'Primary profile',
   rename: 'New profile',
+};
+
+export const COPY_PROFILE_MOCK: Profile = {
+  name: 'Copy of Primary profile',
+  status: ProfileStatus.VALID,
+  questions: [
+    {
+      question: 'What is the email of the device owner(s)?',
+      answer: 'boddey@google.com, cmeredith@google.com',
+      type: FormControlType.EMAIL_MULTIPLE,
+      validation: {
+        required: true,
+        max: '30',
+      },
+    },
+    {
+      question: 'What type of device do you need reviewed?',
+      answer: 'Type',
+      type: FormControlType.TEXTAREA,
+      validation: {
+        required: true,
+        max: '28',
+      },
+      description: 'This tells us about the device',
+    },
+    {
+      question: 'Are any of the following statements true about your device?',
+      answer: 'First',
+      type: FormControlType.SELECT,
+      options: ['First', 'Second'],
+      validation: {
+        required: true,
+      },
+    },
+    {
+      question: 'What features does the device have?',
+      description:
+        'This tells us about the data your device will collectThis tells us about the data your device will collect',
+      type: FormControlType.SELECT_MULTIPLE,
+      answer: [0, 1, 2],
+      options: ['Wi-fi', 'Bluetooth', 'ZigBee / Z-Wave / Thread / Matter'],
+      validation: {
+        required: true,
+      },
+    },
+    {
+      question: 'Comments',
+      answer: 'Yes',
+      type: FormControlType.TEXT,
+      description: 'Please enter any comments here',
+      validation: {
+        max: '28',
+        required: true,
+      },
+    },
+  ],
 };
