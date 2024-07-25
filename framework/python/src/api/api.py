@@ -241,9 +241,8 @@ class Api:
       # Check if the module exists in UI test modules
       if module_name in body_json["device"]["test_modules"]:
         # Merge the enabled state
-        module_config["enabled"] = body_json["device"]["test_modules"][module_name]["enabled"]
-
-    LOGGER.info(f'Device config{device.test_modules}')
+        module_config["enabled"] = body_json[
+          "device"]["test_modules"][module_name]["enabled"]
 
     LOGGER.info("Starting Testrun with device target " +
                 f"{device.manufacturer} {device.model} with " +

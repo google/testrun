@@ -81,7 +81,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     self._net_only = net_only
     self._single_intf = single_intf
-    self._no_ui = no_ui
+    # Network only option only works if UI is also
+    # disbled so need to set no_ui if net_only is selected
+    self._no_ui = no_ui or net_only
 
     # Catch any exit signals
     self._register_exits()
@@ -222,6 +224,13 @@ class Testrun:  # pylint: disable=too-few-public-methods
         'test',
         device.mac_addr.replace(':',''),
         'report.json')
+
+      if not os.path.isfile(report_json_file_path):
+        # Revert to pre 1.3 file path
+        report_json_file_path = os.path.join(
+          reports_folder,
+          report_folder,
+          'report.json')
 
       if not os.path.isfile(report_json_file_path):
         # Revert to pre 1.3 file path
@@ -499,7 +508,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
       if container is not None:
         container.kill()
     except docker.errors.NotFound:
-      return
+      pass
 
 
   def start_ws(self):
@@ -535,4 +544,4 @@ class Testrun:  # pylint: disable=too-few-public-methods
       if container is not None:
         container.kill()
     except docker.errors.NotFound:
-      return
+      pass
