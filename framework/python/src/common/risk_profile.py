@@ -24,6 +24,7 @@ import os
 PROFILES_PATH = 'local/risk_profiles'
 LOGGER = logger.get_logger('risk_profile')
 RESOURCES_DIR = 'resources/report'
+SECONDS_IN_YEAR = 31536000
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -94,6 +95,17 @@ class RiskProfile():
   def get_file_path(self):
     return os.path.join(PROFILES_PATH,
                         self.name + '.json')
+
+  def check_status(self):
+    """Checks if the profile has expired
+    and updates the status to Expired if required."""
+
+    created_date = self.created.timestamp()
+
+    today = datetime.now().timestamp()
+
+    if created_date < (today - SECONDS_IN_YEAR):
+      self.status = 'Expired'
 
   def _validate(self, profile_json, profile_format):
     if self._valid(profile_json, profile_format):
