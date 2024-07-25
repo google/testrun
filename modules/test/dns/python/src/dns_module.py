@@ -100,7 +100,7 @@ class DNSModule(TestModule):
               <th>Destination</th>
               <th>Type</th>
               <th>URL</th>
-              <th>COUNT</th>
+              <th>Count</th>
             </tr>
           </thead>
           <tbody>'''
