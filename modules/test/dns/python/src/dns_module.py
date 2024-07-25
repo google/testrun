@@ -13,9 +13,10 @@
 # limitations under the License.
 """DNS test module"""
 import subprocess
-from scapy.all import rdpcap, DNS, IP
+from scapy.all import rdpcap, DNS, IP, Ether
 from test_module import TestModule
 import os
+from collections import Counter
 
 LOG_NAME = 'test_dns'
 MODULE_REPORT_FILE_NAME='dns_report.html'
@@ -99,18 +100,25 @@ class DNSModule(TestModule):
               <th>Destination</th>
               <th>Type</th>
               <th>URL</th>
+              <th>COUNT</th>
             </tr>
           </thead>
           <tbody>'''
 
-      for row in dns_table_data:
-        table_content += (f'''
-            <tr>
-              <td>{row['Source']}</td>
-              <td>{row['Destination']}</td>
-              <td>{row['Type']}</td>
-              <td>{row['Data']}</td>
-            </tr>''')
+
+      # Count unique combinations
+      counter = Counter((row['Source'], row['Destination'], row['Type'], row['Data']) for row in dns_table_data)
+
+      # Generate the HTML table with the count column
+      for (src, dst, typ, dat), count in counter.items():
+          table_content += f'''
+              <tr>
+                <td>{src}</td>
+                <td>{dst}</td>
+                <td>{typ}</td>
+                <td>{dat}</td>
+                <td>{count}</td>
+              </tr>'''
 
       table_content += '''
             </tbody>
@@ -149,25 +157,31 @@ class DNSModule(TestModule):
     # Iterate through DNS packets
     for packet in packets:
       if DNS in packet and packet.haslayer(IP):
-        source_ip = packet[IP].src
-        destination_ip = packet[IP].dst
-        dns_layer = packet[DNS]
-        # 'qr' field indicates query (0) or response (1)
-        dns_type = 'Query' if dns_layer.qr == 0 else 'Response'
 
-        # Check for the presence of DNS query name
-        if hasattr(dns_layer, 'qd') and dns_layer.qd is not None:
-          qname = dns_layer.qd.qname.decode() if dns_layer.qd.qname else 'N/A'
-        else:
-          qname = 'N/A'
+        # Check if either source or destination MAC matches the device
+        if (Ether in packet and 
+           (packet[Ether].src == self._device_mac or 
+            packet[Ether].dst == self._device_mac)):
 
-        dns_data.append({
-            'Timestamp': float(packet.time),  # Timestamp of the DNS packet
-            'Source': source_ip,
-            'Destination': destination_ip,
-            'Type': dns_type,
-            'Data': qname[:-1]
-        })
+          source_ip = packet[IP].src
+          destination_ip = packet[IP].dst
+          dns_layer = packet[DNS]
+          # 'qr' field indicates query (0) or response (1)
+          dns_type = 'Query' if dns_layer.qr == 0 else 'Response'
+
+          # Check for the presence of DNS query name
+          if hasattr(dns_layer, 'qd') and dns_layer.qd is not None:
+            qname = dns_layer.qd.qname.decode() if dns_layer.qd.qname else 'N/A'
+          else:
+            qname = 'N/A'
+
+          dns_data.append({
+              'Timestamp': float(packet.time),  # Timestamp of the DNS packet
+              'Source': source_ip,
+              'Destination': destination_ip,
+              'Type': dns_type,
+              'Data': qname[:-1]
+          })
 
     # Filter unique entries based on 'Timestamp'
     # DNS Server will duplicate messages caught by

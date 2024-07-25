@@ -41,6 +41,9 @@ class TLSModuleTest(unittest.TestCase):
   def setUpClass(cls):
     # Create the output directories and ignore errors if it already exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+    
+    # Set the MAC address for device in capture files
+    os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
 
   # Test the module report generation
   def dns_module_report_test(self):
