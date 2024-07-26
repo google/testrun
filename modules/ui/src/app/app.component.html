@@ -266,6 +266,7 @@ limitations under the License.
     mat-button
     routerLink="{{ route }}"
     routerLinkActive="app-sidebar-button-active"
+    [matTooltip]="label"
     (keydown.enter)="onNavigationClick()">
     <mat-icon *ngIf="svgIcon" svgIcon="{{ svgIcon }}"></mat-icon>
     <mat-icon *ngIf="icon">{{ icon }}</mat-icon>
