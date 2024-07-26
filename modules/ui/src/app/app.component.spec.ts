@@ -71,6 +71,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { HISTORY } from './mocks/reports.mock';
 import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { MOCK_ADAPTERS } from './mocks/settings.mock';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 const windowMock = {
   location: {
@@ -138,6 +139,7 @@ describe('AppComponent', () => {
         CalloutComponent,
         MatIconTestingModule,
         CertificatesComponent,
+        MatTooltipModule,
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
