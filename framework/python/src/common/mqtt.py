@@ -43,7 +43,6 @@ class MQTT:
     if not self._client.is_connected():
       try:
         self._client.connect(self._host, WEBSOCKETS_PORT, 60)
-        self._client.connect(self._host, WEBSOCKETS_PORT, 60)
       except (ValueError, ConnectionRefusedError) as e:
         LOGGER.error("Can't connect to host")
         raise MQTTException("Connection to the Mosquitto server failed") from e
