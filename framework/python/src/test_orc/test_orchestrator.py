@@ -370,12 +370,12 @@ class TestOrchestrator:
     LOGGER.info(f"Running test module {module.name}")
 
     # Get all tests to be executed and set to in progress
-    for test in module.tests:
+    for current_test,test in enumerate(module.tests):
 
       # Check that device is connected
       if not self._net_orc.is_device_connected():
         LOGGER.error("Device was disconnected")
-        self._set_test_modules_error()
+        self._set_test_modules_error(current_test)
         self._session.set_status("Cancelled")
         return
 
@@ -751,9 +751,12 @@ class TestOrchestrator:
   def get_session(self):
     return self._session
 
-  def _set_test_modules_error(self):
-    """Device monitoring method"""
-    for module in self._test_modules_running[self._current_module::]:
-      for test in module.tests:
-        self.get_session().set_test_result_error(test)
+  def _set_test_modules_error(self, current_test):
+    """Set all remaining tests to error"""
+    for i in range(self._current_module, len(self._test_modules_running)):
+      start_idx = current_test if i == self._current_module else 0
+      for j in range(start_idx, len(self._test_modules_running[i].tests)):
+        self.get_session().set_test_result_error(
+          self._test_modules_running[i].tests[j]
+          )
 
