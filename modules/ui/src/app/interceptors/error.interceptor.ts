@@ -35,6 +35,7 @@ import { finalize } from 'rxjs/operators';
 
 const DEFAULT_TIMEOUT_MS = 5000;
 const SYSTEM_STOP_TIMEOUT_MS = 60 * 1000;
+const LOGS_FOLDER = '/usr/local/testrun/testrun.log';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
@@ -57,17 +58,18 @@ export class ErrorInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse | TimeoutError) => {
         if (error instanceof TimeoutError) {
           this.notificationService.notify(
-            'Back End is not responding. Please, try again later.'
+            'Testrun is not responding. Please try again in a moment.'
           );
         } else {
           if (error.status === 0) {
             this.notificationService.notify(
-              'Back End is not responding. Please, try again later.'
+              'Testrun is not responding. Please try again in a moment.'
             );
           } else {
             this.notificationService.notify(
-              error.error?.error || error.message
+              `Something went wrong. Check the logs for details here ${LOGS_FOLDER}`
             );
+            console.error(error.error?.error || error.message);
           }
         }
         return throwError(error);
