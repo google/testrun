@@ -140,8 +140,8 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     }
   }
 
-  trackByIndex = (index: number): number => {
-    return index;
+  trackByName = (index: number, item: Profile): string => {
+    return item.name;
   };
 
   private closeFormAfterDelete(name: string, selectedProfile: Profile | null) {
