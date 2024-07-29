@@ -138,6 +138,9 @@ class NetworkOrchestrator:
     # Get network ready (via Network orchestrator)
     LOGGER.debug('Network is ready')
 
+  def get_ip_address(self, iface):
+    return self._ip_ctrl.get_ip_address(iface)
+
   def get_listener(self):
     return self._listener
 
@@ -797,7 +800,7 @@ class NetworkOrchestrator:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
         mgtt_client.send_message(topic, adapters)
-    except Exception:
+    except Exception: # pylint: disable=W0718
       LOGGER.error(traceback.format_exc())
 
 

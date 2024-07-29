@@ -387,7 +387,7 @@ class TestOrchestrator:
       # Can't use device or internet iface since these are not in a stable
       # state for this type of communication during testing but docker0 has
       # to exist and should always be available
-      external_ip = self._net_orc._ip_ctrl.get_ip_address("docker0")
+      external_ip = self._net_orc.get_ip_address("docker0")
       LOGGER.debug(f"Using external IP:{external_ip}")
       extra_hosts = {
           "external.localhost": external_ip

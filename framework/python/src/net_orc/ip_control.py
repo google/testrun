@@ -19,7 +19,6 @@ from common import logger
 from common import util
 import re
 import socket
-import psutil
 
 LOGGER = logger.get_logger('ip_ctrl')
 
