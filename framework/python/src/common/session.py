@@ -17,7 +17,10 @@ import datetime
 import pytz
 import json
 import os
+<<<<<<< HEAD
 from fastapi.encoders import jsonable_encoder
+=======
+>>>>>>> 2f21407 (send testrun status using mqtt)
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
 from net_orc.ip_control import IPControl
@@ -38,6 +41,10 @@ API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
+<<<<<<< HEAD
+=======
+SECONDS_IN_YEAR = 31536000
+>>>>>>> 2f21407 (send testrun status using mqtt)
 STATUS_TOPIC = 'status'
 
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
@@ -53,10 +60,14 @@ def session_tracker(method):
     result = method(self, *args, **kwargs)
 
     if self.get_status() != 'Idle':
+<<<<<<< HEAD
       self.get_mqtt_client().send_message(
                                         STATUS_TOPIC,
                                         jsonable_encoder(self.to_json())
                                         )
+=======
+      self.get_mqtt_client().send_message(STATUS_TOPIC, self.to_json())
+>>>>>>> 2f21407 (send testrun status using mqtt)
 
     return result
   return wrapper
@@ -348,7 +359,7 @@ class TestrunSession():
     return {'total': self.get_total_tests(), 'results': test_results}
 
   def add_test_result(self, result):
-
+    LOGGER.info('------adding resul----t')
     updated = False
 
     # Check if test has already been added
@@ -729,6 +740,9 @@ class TestrunSession():
 
   def get_mqtt_client(self):
     return self._mqtt_client
+<<<<<<< HEAD
 
   def get_ifaces(self):
     return self._ifaces
+=======
+>>>>>>> 2f21407 (send testrun status using mqtt)
