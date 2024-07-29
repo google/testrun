@@ -437,7 +437,7 @@ class ConnectionModule(TestModule):
     cmd += ' -6 ' if ipv6 else ''
     cmd += str(host)
     #cmd = 'ping -c 1 ' + str(host)
-    success = util.run_command(cmd, output=False)
+    success = util.run_command(cmd, output=False) # pylint: disable=E1120
     return success
 
   def restore_failover_dhcp_server(self, subnet):

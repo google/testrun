@@ -59,8 +59,12 @@ describe('ProfileItemComponent', () => {
     const deleteButton = fixture.nativeElement.querySelector(
       '.profile-item-button.delete'
     );
+    const copyButton = fixture.nativeElement.querySelector(
+      '.profile-item-button.copy'
+    );
 
     expect(deleteButton?.ariaLabel?.trim()).toContain(PROFILE_MOCK.name);
+    expect(copyButton?.ariaLabel?.trim()).toContain(PROFILE_MOCK.name);
   });
 
   it('should emit delete event on delete button clicked', () => {
