@@ -73,6 +73,11 @@ class RiskProfile():
     self._validate(profile_json, profile_format)
     self.update_risk(profile_format)
 
+    # Check if the profile has expired
+    expired = self._expired()
+    if expired:
+      self.status = 'Expired'
+
     return self
 
   def update(self, profile_json, profile_format):
@@ -95,17 +100,6 @@ class RiskProfile():
   def get_file_path(self):
     return os.path.join(PROFILES_PATH,
                         self.name + '.json')
-
-  def check_status(self):
-    """Checks if the profile has expired
-    and updates the status to Expired if required."""
-
-    created_date = self.created.timestamp()
-
-    today = datetime.now().timestamp()
-
-    if created_date < (today - SECONDS_IN_YEAR):
-      self.status = 'Expired'
 
   def _validate(self, profile_json, profile_format):
     if self._valid(profile_json, profile_format):

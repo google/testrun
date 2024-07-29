@@ -420,9 +420,6 @@ class TestrunSession():
             profile_format=self._profile_format
           )
 
-          # Trigger checking of profile status (expiry)
-          risk_profile.check_status()
-
           # Add risk profile to session
           self._profiles.append(risk_profile)
 
