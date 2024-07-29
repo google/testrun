@@ -237,6 +237,9 @@ class ConnectionModule(TestModule):
     result = self._device_mac.upper() in mac_addresses
     LOGGER.info('DHCPREQUEST detected from device: ' + str(result))
 
+    if not result:
+      return result, 'Device did not request a DHCP address.'
+
     # Check the unique MAC addresses to see if they match the device
     for mac_address in mac_addresses:
       result &= self._device_mac.upper() == mac_address
@@ -429,7 +432,7 @@ class ConnectionModule(TestModule):
     cmd += ' -6 ' if ipv6 else ''
     cmd += str(host)
     #cmd = 'ping -c 1 ' + str(host)
-    success = util.run_command(cmd, output=False)
+    success = util.run_command(cmd, output=False) # pylint: disable=E1120
     return success
 
   def restore_failover_dhcp_server(self, subnet):

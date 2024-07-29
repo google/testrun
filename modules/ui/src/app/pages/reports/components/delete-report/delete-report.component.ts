@@ -24,7 +24,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { ReportActionComponent } from '../../../../components/report-action/report-action.component';
 import { MatDialog } from '@angular/material/dialog';
-import { DeleteFormComponent } from '../../../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../../../components/simple-dialog/simple-dialog.component';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { Subject } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -58,16 +58,16 @@ export class DeleteReportComponent
 
   deleteReport(event: Event) {
     event.preventDefault();
-    const dialogRef = this.dialog.open(DeleteFormComponent, {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Delete report',
       data: {
-        title: 'Delete report',
+        title: 'Delete report?',
         content: this.getTestRunId(this.data),
       },
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'delete-form-dialog',
+      panelClass: 'simple-dialog',
     });
 
     dialogRef

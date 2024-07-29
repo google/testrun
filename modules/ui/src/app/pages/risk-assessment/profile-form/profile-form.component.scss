@@ -17,7 +17,14 @@
 @import 'src/theming/colors';
 @import 'src/theming/variables';
 
+:host {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .profile-form {
+  overflow: scroll;
   .field-container {
     display: flex;
     flex-direction: column;
@@ -34,6 +41,9 @@
     &:first-child {
       padding-top: 0;
     }
+    &:has(+ .field-select-multiple.ng-invalid.ng-dirty) {
+      color: mat.get-color-from-palette($color-warn, 700);
+    }
   }
   mat-form-field {
     width: 100%;
@@ -48,14 +58,22 @@
   }
 }
 
+.profile-form-field {
+  width: 100%;
+}
+
+.profile-form-field ::ng-deep .mat-mdc-form-field-textarea-control {
+  display: inherit;
+}
+
 .form-actions {
   display: flex;
   gap: 16px;
   padding: 8px 24px 24px 24px;
 }
 
-.save-draft-button,
-.discard-button {
+.save-draft-button:not(.mat-mdc-button-disabled),
+.discard-button:not(.mat-mdc-button-disabled) {
   color: $primary;
 }
 

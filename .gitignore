@@ -14,6 +14,8 @@ testing/unit/ntp/output/
 testing/unit/tls/output/
 testing/unit/tls/tmp/
 testing/unit/report/output/
+testing/unit/risk_profile/output/
+testing/unit/services/output/
 
 *.deb
 make/DEBIAN/postinst

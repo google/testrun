@@ -15,7 +15,6 @@ limitations under the License.
 -->
 <form [formGroup]="profileForm" class="profile-form">
   <div class="field-container">
-    <!-- TODO move profile name to json (in scope of validation) -->
     <p class="field-label">Profile name *</p>
     <mat-form-field
       appearance="outline"
@@ -23,6 +22,7 @@ limitations under the License.
       class="name-field profile-form-field">
       <mat-label>Specify risk assessment profile name</mat-label>
       <input class="form-name" formControlName="name" matInput />
+      <mat-hint>Required for saving a profile</mat-hint>
       <mat-error
         *ngIf="nameControl.hasError('invalid_format')"
         role="alert"
@@ -43,7 +43,7 @@ limitations under the License.
       </mat-error>
     </mat-form-field>
 
-    <ng-container *ngFor="let control of profileFormat; index as i">
+    <ng-container *ngFor="let control of questionnaire; index as i">
       <ng-container
         *ngTemplateOutlet="
           formField;
@@ -61,15 +61,35 @@ limitations under the License.
   </div>
 </form>
 <div class="form-actions">
-  <button mat-flat-button color="primary" class="save-profile-button">
-    Save Profile
-  </button>
-  <button mat-flat-button class="save-draft-button">Save Draft</button>
   <button
     mat-flat-button
+    color="primary"
+    class="save-profile-button"
+    [disabled]="!profileForm.valid"
+    (click)="onSaveClick(ProfileStatus.VALID)">
+    Save Profile
+  </button>
+  <button
+    mat-button
+    class="save-draft-button"
+    [disabled]="isDraftDisabled"
+    (click)="onSaveClick(ProfileStatus.DRAFT)">
+    Save Draft
+  </button>
+  <button
+    *ngIf="selectedProfile?.status !== ProfileStatus.EXPIRED"
+    mat-button
     class="discard-button"
-    [disabled]="profileForm.pristine">
+    [disabled]="profileForm.pristine"
+    (click)="onDiscardClick()">
     Discard
+  </button>
+  <button
+    *ngIf="selectedProfile?.status === ProfileStatus.EXPIRED"
+    mat-button
+    class="discard-button"
+    (click)="onDiscardClick()">
+    Close
   </button>
 </div>
 
@@ -170,6 +190,22 @@ limitations under the License.
       id="{{ formControlName }}-group"
       [formControlName]="formControlName" />
     <mat-hint *ngIf="description">{{ description }}</mat-hint>
+    <mat-error
+      *ngIf="getControl(formControlName).hasError('invalid_format')"
+      role="alert"
+      aria-live="assertive">
+      <span>Please, check. “ and \ are not allowed.</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('maxlength')">
+      <span
+        >The field must be a maximum of
+        {{ getControl(formControlName).getError('maxlength').requiredLength }}
+        characters.</span
+      >
+    </mat-error>
   </mat-form-field>
 </ng-template>
 
@@ -182,11 +218,28 @@ limitations under the License.
     floatLabel="always"
     class="profile-form-field"
     [formGroup]="profileForm">
-    <input
+    <textarea
       matInput
+      cdkTextareaAutosize
       id="{{ formControlName }}-group"
-      [formControlName]="formControlName" />
+      [formControlName]="formControlName"></textarea>
     <mat-hint *ngIf="description">{{ description }}</mat-hint>
+    <mat-error
+      *ngIf="getControl(formControlName).hasError('invalid_format')"
+      role="alert"
+      aria-live="assertive">
+      <span>Please, check. “ and \ are not allowed.</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('maxlength')">
+      <span
+        >The field must be a maximum of
+        {{ getControl(formControlName).getError('maxlength').requiredLength }}
+        characters.</span
+      >
+    </mat-error>
   </mat-form-field>
 </ng-template>
 
@@ -204,6 +257,22 @@ limitations under the License.
       id="{{ formControlName }}-group"
       [formControlName]="formControlName" />
     <mat-hint *ngIf="description">{{ description }}</mat-hint>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('invalid_format')">
+      <span
+        >Please, check the email address. Valid e-mail can contain only latin
+        letters, numbers, &#64; and . (dot).</span
+      >
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('maxlength')">
+      <span
+        >The field must be a maximum of
+        {{ getControl(formControlName).getError('maxlength').requiredLength }}
+        characters.</span
+      >
+    </mat-error>
   </mat-form-field>
 </ng-template>
 
@@ -218,7 +287,9 @@ limitations under the License.
     <p
       *ngFor="let option of options; let i = index"
       class="field-select-checkbox">
-      <mat-checkbox [formControlName]="i">
+      <mat-checkbox
+        [formControlName]="i"
+        (keydown.tab)="markSectionAsDirty(i, options.length, formControlName)">
         {{ option }}
       </mat-checkbox>
     </p>
@@ -252,5 +323,8 @@ limitations under the License.
     <mat-hint *ngIf="description" class="field-hint">{{
       description
     }}</mat-hint>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
   </mat-form-field>
 </ng-template>

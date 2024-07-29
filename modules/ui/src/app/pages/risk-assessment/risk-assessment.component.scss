@@ -61,7 +61,7 @@
 
 .main-content {
   padding: 16px 32px;
-  overflow: scroll;
+  overflow: hidden;
   width: calc(100% - $profiles-drawer-width);
 }
 
@@ -82,8 +82,4 @@
   font-weight: 400;
   line-height: 28px;
   color: $dark-grey;
-}
-
-.profiles-drawer-content {
-  padding: 0 16px;
 }

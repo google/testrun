@@ -47,7 +47,6 @@ export class DownloadReportZipComponent
   implements OnDestroy, OnInit
 {
   private destroy$: Subject<boolean> = new Subject<boolean>();
-  @Input() hasProfiles: boolean = false;
   @Input() profiles: Profile[] = [];
   @Input() url: string | null | undefined = null;
 
@@ -61,7 +60,6 @@ export class DownloadReportZipComponent
     const dialogRef = this.dialog.open(DownloadZipModalComponent, {
       ariaLabel: 'Download zip',
       data: {
-        hasProfiles: this.hasProfiles,
         profiles: this.profiles,
       },
       autoFocus: true,
@@ -79,9 +77,7 @@ export class DownloadReportZipComponent
         }
         if (profile === null) {
           this.route.navigate([Routes.RiskAssessment]);
-        }
-
-        if (this.url != null) {
+        } else if (this.url != null) {
           this.testrunService.downloadZip(this.getZipLink(this.url), profile);
         }
       });
@@ -90,11 +86,15 @@ export class DownloadReportZipComponent
   @HostBinding('tabIndex')
   readonly tabIndex = 0;
 
-  @HostListener('mouseenter') onMouseEnter(): void {
+  @HostListener('mouseenter')
+  @HostListener('keyup', ['$event'])
+  onEvent(): void {
     this.tooltip.show();
   }
 
-  @HostListener('mouseleave') onMouseLeave(): void {
+  @HostListener('mouseleave')
+  @HostListener('keydown', ['$event'])
+  outEvent(): void {
     this.tooltip.hide();
   }
 

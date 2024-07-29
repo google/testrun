@@ -56,7 +56,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.store.getHistory();
+    this.store.getReports();
     this.store.updateSort(this.sort);
   }
 
@@ -165,6 +165,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   removeDevice(data: TestrunStatus) {
     this.store.deleteReport({
       mac_addr: data.mac_addr,
+      deviceMacAddr: data.device.mac_addr,
       started: data.started,
     });
     this.focusNextButton();

@@ -17,33 +17,40 @@
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
-import { exhaustMap } from 'rxjs';
+import { delay, exhaustMap } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
-import { Profile, ProfileFormat } from '../../model/profile';
+import { Profile, Question } from '../../model/profile';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
-import { setRiskProfiles } from '../../store/actions';
+import { fetchRiskProfiles, setRiskProfiles } from '../../store/actions';
 
 export interface AppComponentState {
+  selectedProfile: Profile | null;
   profiles: Profile[];
-  profileFormat: ProfileFormat[];
+  profileFormat: Question[];
 }
 @Injectable()
 export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
   profiles$ = this.store.select(selectRiskProfiles);
   profileFormat$ = this.select(state => state.profileFormat);
+  selectedProfile$ = this.select(state => state.selectedProfile);
 
   viewModel$ = this.select({
     profiles: this.profiles$,
     profileFormat: this.profileFormat$,
+    selectedProfile: this.selectedProfile$,
   });
 
-  updateProfileFormat = this.updater(
-    (state, profileFormat: ProfileFormat[]) => ({
+  updateProfileFormat = this.updater((state, profileFormat: Question[]) => ({
+    ...state,
+    profileFormat,
+  }));
+  updateSelectedProfile = this.updater(
+    (state, selectedProfile: Profile | null) => ({
       ...state,
-      profileFormat,
+      selectedProfile,
     })
   );
 
@@ -79,12 +86,57 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     }
   );
 
+  setFocusOnCreateButton = this.effect(trigger$ => {
+    return trigger$.pipe(
+      delay(10),
+      tap(() => {
+        this.focusManagerService.focusFirstElementInContainer(
+          window.document.querySelector('.risk-assessment-content-empty')
+        );
+      })
+    );
+  });
+
+  setFocusOnSelectedProfile = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        this.focusManagerService.focusFirstElementInContainer(
+          window.document.querySelector('.profiles-drawer-content .selected')
+        );
+      })
+    );
+  });
+
+  setFocusOnProfileForm = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        this.focusManagerService.focusFirstElementInContainer(
+          window.document.querySelector('app-profile-form')
+        );
+      })
+    );
+  });
+
   getProfilesFormat = this.effect(trigger$ => {
     return trigger$.pipe(
       exhaustMap(() => {
         return this.testRunService.fetchProfilesFormat().pipe(
-          tap((profileFormat: ProfileFormat[]) => {
+          tap((profileFormat: Question[]) => {
             this.updateProfileFormat(profileFormat);
+          })
+        );
+      })
+    );
+  });
+
+  saveProfile = this.effect<Profile>(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap((name: Profile) => {
+        return this.testRunService.saveProfile(name).pipe(
+          tap(saved => {
+            if (saved) {
+              this.store.dispatch(fetchRiskProfiles());
+            }
           })
         );
       })
@@ -108,6 +160,7 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     super({
       profiles: [],
       profileFormat: [],
+      selectedProfile: null,
     });
   }
 }

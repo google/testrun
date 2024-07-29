@@ -128,6 +128,7 @@ mat-hint {
   }
 
   app-version {
+    min-width: 80px;
     width: auto !important;
   }
 }
@@ -163,6 +164,28 @@ mat-hint {
   &.grey {
     background: $color-background-grey;
     color: $grey-800;
+  }
+}
+
+.profile-item-risk {
+  display: inline-flex;
+  margin: 0;
+  padding: 0 4px;
+  border-radius: 2px;
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.64px;
+  text-transform: uppercase;
+
+  &.red {
+    background: $red-50;
+    color: $red-700;
+  }
+
+  &.cyan {
+    background: $cyan-50;
+    color: $cyan-900;
   }
 }
 

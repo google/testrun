@@ -123,7 +123,7 @@ class TestOrchestrator:
     self.get_session().set_report_url(report.get_report_url())
 
     # Move testing output from runtime to local device folder
-    timestamp_dir = self._timestamp_results(device)
+    self._timestamp_results(device)
 
     LOGGER.debug("Cleaning old test results...")
     self._cleanup_old_test_results(device)
@@ -229,10 +229,18 @@ class TestOrchestrator:
     oldest_timestamp = None
     oldest_directory = None
     for completed_test in os.listdir(completed_tests_dir):
-      timestamp = datetime.strptime(str(completed_test), "%Y-%m-%dT%H:%M:%S")
+      try:
+        timestamp = datetime.strptime(str(completed_test), "%Y-%m-%dT%H:%M:%S")
+
+      # Occurs when time does not match format
+      except ValueError as e:
+        LOGGER.error(e)
+        continue
+
       if oldest_timestamp is None or timestamp < oldest_timestamp:
         oldest_timestamp = timestamp
         oldest_directory = completed_test
+
     if oldest_directory:
       return oldest_timestamp, os.path.join(completed_tests_dir,
                                             oldest_directory)
@@ -242,8 +250,7 @@ class TestOrchestrator:
   def _timestamp_results(self, device):
 
     # Define the current device results directory
-    cur_results_dir = os.path.join(self._root_path, RUNTIME_TEST_DIR,
-                                   device.mac_addr.replace(":", ""))
+    cur_results_dir = os.path.join(self._root_path, RUNTIME_DIR)
 
     # Define the directory
     completed_results_dir = os.path.join(
@@ -256,6 +263,10 @@ class TestOrchestrator:
     # most recent test
     shutil.copytree(cur_results_dir, completed_results_dir, dirs_exist_ok=True)
     util.run_command(f"chown -R {self._host_user} '{completed_results_dir}'")
+
+    # Copy Testrun log to testing directory
+    shutil.copy(os.path.join(self._root_path, "testrun.log"),
+                os.path.join(completed_results_dir, "testrun.log"))
 
     return completed_results_dir
 
@@ -272,10 +283,22 @@ class TestOrchestrator:
         device.device_folder),
         timestamp)
 
+      # Define temp directory to store files before zipping
+      results_dir = os.path.join(f"/tmp/testrun/{time.time()}")
+
       # Define where to save the zip file
-      zip_location = os.path.join(LOCAL_DEVICE_REPORTS.replace(
-        "{device_folder}", device.device_folder), timestamp
-      )
+      zip_location = os.path.join("/tmp/testrun",
+                                  timestamp)
+
+      # Delete zip_temp if it already exists
+      if os.path.exists(results_dir):
+        os.remove(results_dir)
+
+      # Delete ZIP if it already exists
+      if os.path.exists(zip_location + ".zip"):
+        os.remove(zip_location + ".zip")
+
+      shutil.copytree(src_path,results_dir)
 
       # Include profile if specified
       if profile is not None:
@@ -283,18 +306,24 @@ class TestOrchestrator:
           f"Copying profile {profile.name} to results directory")
         shutil.copy(profile.get_file_path(),
                     os.path.join(
-                      src_path,
+                      results_dir,
                       "profile.json"))
 
-      # Create ZIP file
-      if not os.path.exists(zip_location + ".zip"):
-        shutil.make_archive(zip_location, "zip", src_path)
+        with open(os.path.join(results_dir, "profile.pdf"), "wb") as f:
+          f.write(profile.to_pdf(device).getvalue())
+
+      # Create ZIP archive
+      shutil.make_archive(zip_location, "zip", results_dir)
+
+      # Delete the temp results directory
+      shutil.rmtree(results_dir)
 
       # Check that the ZIP was successfully created
       zip_file = zip_location + ".zip"
       LOGGER.info(f'''Archive {'created at ' + zip_file
                                 if os.path.exists(zip_file)
                                 else'creation failed'}''')
+
 
       return zip_file
 
@@ -457,19 +486,25 @@ class TestOrchestrator:
 
     try:
       with open(results_file, "r", encoding="utf-8-sig") as f:
+
+        # Load results from JSON file
         module_results_json = json.load(f)
         module_results = module_results_json["results"]
         for test_result in module_results:
 
-          # Convert dict into TestCase object
+          # Convert dict from json into TestCase object
           test_case = TestCase(
             name=test_result["name"],
             description=test_result["description"],
             expected_behavior=test_result["expected_behavior"],
             required_result=test_result["required_result"],
             result=test_result["result"])
-          test_case.result=test_result["result"]
 
+          # Any informational test should always report informational
+          if test_case.required_result == "Informational":
+            test_case.result = "Informational"
+
+          # Add steps to resolve if test is non-compliant
           if (test_case.result == "Non-Compliant" and
               "recommendations" in test_result):
             test_case.recommendations = test_result["recommendations"]

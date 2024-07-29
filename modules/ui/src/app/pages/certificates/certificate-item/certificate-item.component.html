@@ -1,7 +1,21 @@
-<div class="certificate-item-container">
-  <mat-icon class="certificate-item-icon" fontSet="material-symbols-outlined"
-    >workspace_premium</mat-icon
-  >
+<div
+  class="certificate-item-container"
+  [class.certificate-expired]="
+    certificate.status === CertificateStatus.Expired
+  ">
+  <mat-icon
+    *ngIf="certificate.status !== CertificateStatus.Expired"
+    class="certificate-item-icon"
+    fontSet="material-symbols-outlined">
+    workspace_premium
+  </mat-icon>
+  <mat-icon
+    *ngIf="certificate.status === CertificateStatus.Expired"
+    class="certificate-item-icon"
+    aria-label="The certificate is outdated"
+    aria-hidden="false"
+    fontIcon="error">
+  </mat-icon>
   <div class="certificate-item-information">
     <p class="certificate-item-name">{{ certificate.name }}</p>
     <p class="certificate-item-organisation" *ngIf="certificate.organisation">

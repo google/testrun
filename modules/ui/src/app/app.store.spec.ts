@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of, skip, take } from 'rxjs';
 import { AppStore, CONSENT_SHOWN_KEY } from './app.store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -26,20 +26,27 @@ import {
   selectInterfaces,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
+  selectReports,
   selectStatus,
+  selectTestModules,
 } from './store/selectors';
 import { TestRunService } from './services/test-run.service';
 import SpyObj = jasmine.SpyObj;
-import { device } from './mocks/device.mock';
+import { device, MOCK_MODULES, MOCK_TEST_MODULES } from './mocks/device.mock';
 import {
+  fetchReports,
+  fetchRiskProfiles,
   fetchSystemStatus,
   setDevices,
-  setRiskProfiles,
+  updateAdapters,
+  setTestModules,
 } from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
-import { PROFILE_MOCK } from './mocks/profile.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from './services/notification.service';
+import { FocusManagerService } from './services/focus-manager.service';
+import { TestRunMqttService } from './services/test-run-mqtt.service';
+import { MOCK_ADAPTERS } from './mocks/settings.mock';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -64,15 +71,21 @@ describe('AppStore', () => {
   let store: MockStore<AppState>;
   let mockService: SpyObj<TestRunService>;
   let mockNotificationService: SpyObj<NotificationService>;
+  let mockFocusManagerService: SpyObj<FocusManagerService>;
+  let mockMqttService: SpyObj<TestRunMqttService>;
 
   beforeEach(() => {
     mockService = jasmine.createSpyObj('mockService', [
       'fetchDevices',
-      'fetchProfiles',
+      'getTestModules',
     ]);
     mockNotificationService = jasmine.createSpyObj('mockNotificationService', [
       'notify',
     ]);
+    mockFocusManagerService = jasmine.createSpyObj([
+      'focusFirstElementInContainer',
+    ]);
+    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -81,10 +94,13 @@ describe('AppStore', () => {
           selectors: [
             { selector: selectStatus, value: null },
             { selector: selectIsOpenWaitSnackBar, value: false },
+            { selector: selectTestModules, value: MOCK_TEST_MODULES },
           ],
         }),
         { provide: TestRunService, useValue: mockService },
         { provide: NotificationService, useValue: mockNotificationService },
+        { provide: FocusManagerService, useValue: mockFocusManagerService },
+        { provide: TestRunMqttService, useValue: mockMqttService },
       ],
       imports: [BrowserAnimationsModule],
     });
@@ -94,6 +110,7 @@ describe('AppStore', () => {
 
     store.overrideSelector(selectHasDevices, true);
     store.overrideSelector(selectHasRiskProfiles, false);
+    store.overrideSelector(selectReports, []);
     store.overrideSelector(selectHasConnectionSettings, true);
     store.overrideSelector(selectMenuOpened, true);
     store.overrideSelector(selectInterfaces, {});
@@ -138,6 +155,7 @@ describe('AppStore', () => {
           consentShown: false,
           hasDevices: true,
           hasRiskProfiles: false,
+          reports: [],
           isStatusLoaded: false,
           systemStatus: null,
           hasConnectionSettings: true,
@@ -183,18 +201,10 @@ describe('AppStore', () => {
     });
 
     describe('fetchProfiles', () => {
-      const riskProfiles = [PROFILE_MOCK];
-
-      beforeEach(() => {
-        mockService.fetchProfiles.and.returnValue(of(riskProfiles));
-      });
-
-      it('should dispatch action setRiskProfiles', () => {
+      it('should dispatch action fetchRiskProfiles', () => {
         appStore.getRiskProfiles();
 
-        expect(store.dispatch).toHaveBeenCalledWith(
-          setRiskProfiles({ riskProfiles })
-        );
+        expect(store.dispatch).toHaveBeenCalledWith(fetchRiskProfiles());
       });
     });
 
@@ -218,6 +228,79 @@ describe('AppStore', () => {
           MOCK_PROGRESS_DATA_IN_PROGRESS.status
         );
         store.refreshState();
+      });
+    });
+
+    describe('setFocusOnPage', () => {
+      it('should call focusFirstElementInContainer', fakeAsync(() => {
+        appStore.setFocusOnPage();
+
+        tick(101);
+
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalled();
+      }));
+    });
+
+    describe('getReports', () => {
+      it('should dispatch fetchReports', () => {
+        appStore.getReports();
+
+        expect(store.dispatch).toHaveBeenCalledWith(fetchReports());
+      });
+    });
+
+    describe('getTestModules', () => {
+      const modules = [...MOCK_MODULES];
+
+      beforeEach(() => {
+        mockService.getTestModules.and.returnValue(of(modules));
+      });
+
+      it('should dispatch action setDevices', () => {
+        appStore.getTestModules();
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setTestModules({
+            testModules: [
+              {
+                displayName: 'Connection',
+                name: 'connection',
+                enabled: true,
+              },
+              {
+                displayName: 'Udmi',
+                name: 'udmi',
+                enabled: true,
+              },
+            ],
+          })
+        );
+      });
+    });
+
+    describe('getNetworkAdapters', () => {
+      const adapters = MOCK_ADAPTERS;
+
+      beforeEach(() => {
+        mockMqttService.getNetworkAdapters.and.returnValue(of(adapters));
+      });
+
+      it('should dispatch action setDevices', () => {
+        appStore.getNetworkAdapters();
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          updateAdapters({ adapters })
+        );
+      });
+
+      it('should notify about new adapters', () => {
+        appStore.getNetworkAdapters();
+
+        expect(mockNotificationService.notify).toHaveBeenCalledWith(
+          'New network adapter(s) mockNewInternetKey has been detected. You can switch to using it in the System settings menu'
+        );
       });
     });
   });

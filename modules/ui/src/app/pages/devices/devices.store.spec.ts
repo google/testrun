@@ -20,6 +20,7 @@ import { AppState } from '../../store/state';
 import {
   selectDeviceInProgress,
   selectHasDevices,
+  selectTestModules,
 } from '../../store/selectors';
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
@@ -54,6 +55,7 @@ describe('DevicesStore', () => {
             { selector: selectDevices, value: [device] },
             { selector: selectIsOpenAddDevice, value: true },
             { selector: selectDeviceInProgress, value: device },
+            { selector: selectTestModules, value: [] },
           ],
         }),
         { provide: TestRunService, useValue: mockService },
@@ -89,6 +91,7 @@ describe('DevicesStore', () => {
           devices: [device],
           selectedDevice: null,
           deviceInProgress: device,
+          testModules: [],
         });
         done();
       });

@@ -29,7 +29,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import SpyObj = jasmine.SpyObj;
 import { of } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { TestRunService } from '../../services/test-run.service';
 import { NotificationService } from '../../services/notification.service';
 import { FILE, INVALID_FILE } from '../../mocks/certificate.mock';
@@ -127,22 +127,22 @@ describe('CertificatesComponent', () => {
       it('should open delete certificate modal', fakeAsync(() => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(true),
-        } as MatDialogRef<typeof DeleteFormComponent>);
+        } as MatDialogRef<typeof SimpleDialogComponent>);
         tick();
 
         component.deleteCertificate(certificate.name);
         tick();
 
-        expect(openSpy).toHaveBeenCalledWith(DeleteFormComponent, {
+        expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
           ariaLabel: 'Delete certificate',
           data: {
-            title: 'Delete certificate',
+            title: 'Delete certificate?',
             content: `You are about to delete a certificate iot.bms.google.com. Are you sure?`,
           },
           autoFocus: true,
           hasBackdrop: true,
           disableClose: true,
-          panelClass: 'delete-form-dialog',
+          panelClass: 'simple-dialog',
         });
 
         openSpy.calls.reset();

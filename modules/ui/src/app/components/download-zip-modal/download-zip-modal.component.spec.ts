@@ -2,13 +2,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DownloadZipModalComponent } from './download-zip-modal.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { PROFILE_MOCK, PROFILE_MOCK_2 } from '../../mocks/profile.mock';
+import {
+  PROFILE_MOCK,
+  PROFILE_MOCK_2,
+  PROFILE_MOCK_3,
+} from '../../mocks/profile.mock';
 import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { TestRunService } from '../../services/test-run.service';
 
 describe('DownloadZipModalComponent', () => {
   let component: DownloadZipModalComponent;
   let fixture: ComponentFixture<DownloadZipModalComponent>;
+
+  const testRunServiceMock = jasmine.createSpyObj(['getRiskClass']);
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -24,10 +31,10 @@ describe('DownloadZipModalComponent', () => {
         {
           provide: MAT_DIALOG_DATA,
           useValue: {
-            hasProfiles: true,
             profiles: [PROFILE_MOCK_2, PROFILE_MOCK],
           },
         },
+        { provide: TestRunService, useValue: testRunServiceMock },
       ],
     });
   });
@@ -36,8 +43,7 @@ describe('DownloadZipModalComponent', () => {
     beforeEach(() => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
         useValue: {
-          hasProfiles: true,
-          profiles: [PROFILE_MOCK_2, PROFILE_MOCK],
+          profiles: [PROFILE_MOCK_2, PROFILE_MOCK, PROFILE_MOCK_3],
         },
       });
 
@@ -53,21 +59,23 @@ describe('DownloadZipModalComponent', () => {
       expect(select).toBeTruthy();
     });
 
-    it('should preselect first profile', async () => {
+    it('should preselect "no profile" option', async () => {
       const select = fixture.nativeElement.querySelector(
         'mat-select'
       ) as HTMLElement;
 
-      expect(select.getAttribute('ng-reflect-value')).toEqual('Profile name');
+      expect(select.getAttribute('ng-reflect-value')).toEqual(
+        'No Risk Profile selected'
+      );
     });
 
     it('should close with null on redirect button click', async () => {
       const closeSpy = spyOn(component.dialogRef, 'close');
-      const redirectButton = fixture.nativeElement.querySelector(
-        '.redirect-button'
-      ) as HTMLButtonElement;
+      const redirectLink = fixture.nativeElement.querySelector(
+        '.redirect-link'
+      ) as HTMLAnchorElement;
 
-      redirectButton.click();
+      redirectLink.click();
 
       expect(closeSpy).toHaveBeenCalledWith(null);
 
@@ -95,13 +103,31 @@ describe('DownloadZipModalComponent', () => {
 
       downloadButton.click();
 
-      expect(closeSpy).toHaveBeenCalledWith('Profile name');
+      expect(closeSpy).toHaveBeenCalledWith('');
 
       closeSpy.calls.reset();
     });
 
-    it('should have sorted profiles', async () => {
-      expect(component.profiles).toEqual([PROFILE_MOCK, PROFILE_MOCK_2]);
+    it('should have filtered and sorted profiles', async () => {
+      expect(component.profiles).toEqual([
+        component.NO_PROFILE,
+        PROFILE_MOCK,
+        PROFILE_MOCK_2,
+      ]);
+    });
+
+    it('#getRiskClass should call the service method getRiskClass"', () => {
+      const expectedResult = {
+        red: true,
+        cyan: false,
+      };
+
+      testRunServiceMock.getRiskClass.and.returnValue(expectedResult);
+
+      const result = component.getRiskClass('High');
+
+      expect(testRunServiceMock.getRiskClass).toHaveBeenCalledWith('High');
+      expect(result).toEqual(expectedResult);
     });
   });
 
@@ -109,7 +135,6 @@ describe('DownloadZipModalComponent', () => {
     beforeEach(() => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
         useValue: {
-          hasProfiles: false,
           profiles: [],
         },
       });
@@ -120,19 +145,19 @@ describe('DownloadZipModalComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should have no dropdown with profiles', async () => {
+    it('should have disabled dropdown', async () => {
       const select = fixture.nativeElement.querySelector('mat-select');
 
-      expect(select).toEqual(null);
+      expect(select.classList.contains('mat-mdc-select-disabled')).toBeTruthy();
     });
 
     it('should close with null on redirect button click', async () => {
       const closeSpy = spyOn(component.dialogRef, 'close');
-      const redirectButton = fixture.nativeElement.querySelector(
-        '.redirect-button'
-      ) as HTMLButtonElement;
+      const redirectLink = fixture.nativeElement.querySelector(
+        '.redirect-link'
+      ) as HTMLAnchorElement;
 
-      redirectButton.click();
+      redirectLink.click();
 
       expect(closeSpy).toHaveBeenCalledWith(null);
 
