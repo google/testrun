@@ -26,10 +26,10 @@ else
 fi
 
 # Check that the container is not already running
-docker kill tr-ui-build 2> /dev/null || true
+#docker kill tr-ui-build 2> /dev/null || true
 
 # Start build container and build the ui dist 
 docker run -it --rm -v "$PWD/modules/ui":/modules/ui testrun/build-ui /bin/sh -c "npm install && npm run build"
 
 # Kill the container
-docker kill tr-ui-build
+#docker kill tr-ui-build
