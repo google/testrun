@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module run all the DNS related unit tests"""
+"""Module run all the NTP related unit tests"""
 from ntp_module import NTPModule
 import unittest
 from scapy.all import rdpcap, NTP, wrpcap
 import os
-from testreport import TestReport
 
 MODULE = 'ntp'
 
@@ -28,7 +27,6 @@ CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
 
 LOCAL_REPORT = os.path.join(REPORTS_DIR,'ntp_report_local.html')
 LOCAL_REPORT_NO_NTP = os.path.join(REPORTS_DIR,'ntp_report_local_no_ntp.html')
-CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 # Define the capture files to be used for the test
 NTP_SERVER_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'ntp.pcap')
@@ -49,7 +47,6 @@ class NTPModuleTest(unittest.TestCase):
   def ntp_module_report_test(self):
     ntp_module = NTPModule(module=MODULE,
                            log_dir=OUTPUT_DIR,
-                           conf_file=CONF_FILE,
                            results_dir=OUTPUT_DIR,
                            ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE,
                            startup_capture_file=STARTUP_CAPTURE_FILE,
@@ -60,12 +57,6 @@ class NTPModuleTest(unittest.TestCase):
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
-      formatted_report = self.add_formatting(report_out)
-
-    # Write back the new formatted_report value
-    out_report_path = os.path.join(OUTPUT_DIR, 'ntp_report_with_ntp.html')
-    with open(out_report_path, 'w', encoding='utf-8') as file:
-      file.write(formatted_report)
 
     # Read the local good report
     with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
@@ -105,7 +96,6 @@ class NTPModuleTest(unittest.TestCase):
 
     ntp_module = NTPModule(module='dns',
                            log_dir=OUTPUT_DIR,
-                           conf_file=CONF_FILE,
                            results_dir=OUTPUT_DIR,
                            ntp_server_capture_file=ntp_server_cap_file,
                            startup_capture_file=startup_cap_file,
@@ -116,28 +106,12 @@ class NTPModuleTest(unittest.TestCase):
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
-      formatted_report = self.add_formatting(report_out)
-
-    # Write back the new formatted_report value
-    out_report_path = os.path.join(OUTPUT_DIR,'ntp_report_no_ntp.html')
-    with open(out_report_path, 'w', encoding='utf-8') as file:
-      file.write(formatted_report)
 
     # Read the local good report
     with open(LOCAL_REPORT_NO_NTP, 'r', encoding='utf-8') as file:
       report_local = file.read()
 
     self.assertEqual(report_out, report_local)
-
-  def add_formatting(self,body):
-    return f'''
-    <!DOCTYPE html>
-    <html lang="en">
-    {TestReport().generate_head()}
-    <body>
-      {body}
-    </body>
-    </html'''
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
