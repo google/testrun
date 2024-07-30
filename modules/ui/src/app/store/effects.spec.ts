@@ -36,12 +36,22 @@ import {
 import { device } from '../mocks/device.mock';
 import {
   MOCK_PROGRESS_DATA_CANCELLING,
+  MOCK_PROGRESS_DATA_COMPLIANT,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
 } from '../mocks/testrun.mock';
-import { fetchSystemStatus, setStatus, setTestrunStatus } from './actions';
+import {
+  fetchSystemStatus,
+  setReports,
+  setStatus,
+  setTestrunStatus,
+} from './actions';
 import { NotificationService } from '../services/notification.service';
 import { PROFILE_MOCK } from '../mocks/profile.mock';
+import { throwError } from 'rxjs/internal/observable/throwError';
+import { HttpErrorResponse } from '@angular/common/http';
+import { IDLE_STATUS } from '../model/testrun-status';
+import { HISTORY } from '../mocks/reports.mock';
 
 describe('Effects', () => {
   let actions$ = new Observable<Action>();
@@ -63,13 +73,18 @@ describe('Effects', () => {
       'fetchSystemStatus',
       'testrunInProgress',
       'stopTestrun',
+      'fetchProfiles',
+      'getHistory',
     ]);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of({}));
-    testRunServiceMock.getSystemConfig.and.returnValue(of({}));
-    testRunServiceMock.createSystemConfig.and.returnValue(of({}));
+    testRunServiceMock.getSystemConfig.and.returnValue(of({ network: {} }));
+    testRunServiceMock.createSystemConfig.and.returnValue(of({ network: {} }));
     testRunServiceMock.fetchSystemStatus.and.returnValue(
       of(MOCK_PROGRESS_DATA_IN_PROGRESS)
     );
+    testRunServiceMock.fetchProfiles.and.returnValue(of([]));
+    testRunServiceMock.getHistory.and.returnValue(of([]));
+
     TestBed.configureTestingModule({
       providers: [
         AppEffects,
@@ -154,9 +169,8 @@ describe('Effects', () => {
       actions$ = of(
         actions.updateValidInterfaces({
           validInterfaces: {
-            hasSetInterfaces: false,
-            deviceValid: false,
-            internetValid: false,
+            deviceValid: true,
+            internetValid: true,
           },
         })
       );
@@ -179,7 +193,6 @@ describe('Effects', () => {
       actions$ = of(
         actions.updateValidInterfaces({
           validInterfaces: {
-            hasSetInterfaces: true,
             deviceValid: false,
             internetValid: false,
           },
@@ -224,7 +237,6 @@ describe('Effects', () => {
         expect(action).toEqual(
           actions.updateValidInterfaces({
             validInterfaces: {
-              hasSetInterfaces: true,
               deviceValid: false,
               internetValid: true,
             },
@@ -256,11 +268,101 @@ describe('Effects', () => {
         expect(action).toEqual(
           actions.updateValidInterfaces({
             validInterfaces: {
-              hasSetInterfaces: true,
               deviceValid: true,
               internetValid: true,
             },
           })
+        );
+        done();
+      });
+    });
+
+    it('should call updateValidInterfaces and set all true if interface are empty and config is not set', done => {
+      actions$ = of(
+        actions.fetchInterfacesSuccess({
+          interfaces: {},
+        }),
+        actions.fetchSystemConfigSuccess({
+          systemConfig: {
+            network: {
+              device_intf: '',
+              internet_intf: '',
+            },
+          },
+        })
+      );
+
+      effects.checkInterfacesInConfig$.subscribe(action => {
+        expect(action).toEqual(
+          actions.updateValidInterfaces({
+            validInterfaces: {
+              deviceValid: true,
+              internetValid: true,
+            },
+          })
+        );
+        done();
+      });
+    });
+
+    it('should call updateValidInterfaces and set all true if interface are not empty and config is not set', done => {
+      actions$ = of(
+        actions.fetchInterfacesSuccess({
+          interfaces: {
+            enx00e04c020fa8: '00:e0:4c:02:0f:a8',
+            enx207bd26205e9: '20:7b:d2:62:05:e9',
+          },
+        }),
+        actions.fetchSystemConfigSuccess({
+          systemConfig: {
+            network: {
+              device_intf: '',
+              internet_intf: '',
+            },
+          },
+        })
+      );
+
+      effects.checkInterfacesInConfig$.subscribe(action => {
+        expect(action).toEqual(
+          actions.updateValidInterfaces({
+            validInterfaces: {
+              deviceValid: true,
+              internetValid: true,
+            },
+          })
+        );
+        done();
+      });
+    });
+  });
+
+  describe('onFetchSystemConfigSuccess$', () => {
+    it('should dispatch setHasConnectionSettings with true if device_intf is present', done => {
+      actions$ = of(
+        actions.fetchSystemConfigSuccess({
+          systemConfig: { network: { device_intf: 'intf' } },
+        })
+      );
+
+      effects.onFetchSystemConfigSuccess$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setHasConnectionSettings({ hasConnectionSettings: true })
+        );
+        done();
+      });
+    });
+
+    it('should dispatch setHasConnectionSettings with false if device_intf is not present', done => {
+      actions$ = of(
+        actions.fetchSystemConfigSuccess({
+          systemConfig: { network: { device_intf: '' } },
+        })
+      );
+
+      effects.onFetchSystemConfigSuccess$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setHasConnectionSettings({ hasConnectionSettings: false })
         );
         done();
       });
@@ -380,6 +482,93 @@ describe('Effects', () => {
       effects.onStopTestrun$.subscribe(() => {
         expect(testRunServiceMock.stopTestrun).toHaveBeenCalled();
         expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
+        done();
+      });
+    });
+  });
+
+  it('onFetchSystemStatus$ should call onFetchSystemStatusSuccess on success', done => {
+    actions$ = of(actions.fetchRiskProfiles());
+
+    effects.onFetchRiskProfiles$.subscribe(action => {
+      expect(action).toEqual(
+        actions.setRiskProfiles({
+          riskProfiles: [],
+        })
+      );
+      done();
+    });
+  });
+
+  describe('onFetchReports$', () => {
+    it(' should call setReports on success', done => {
+      testRunServiceMock.getHistory.and.returnValue(of([]));
+      actions$ = of(actions.fetchReports());
+
+      effects.onFetchReports$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setReports({
+            reports: [],
+          })
+        );
+        done();
+      });
+    });
+
+    it('should call setReports with empty array if null is returned', done => {
+      testRunServiceMock.getHistory.and.returnValue(of(null));
+      actions$ = of(actions.fetchReports());
+
+      effects.onFetchReports$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setReports({
+            reports: [],
+          })
+        );
+        done();
+      });
+    });
+
+    it('should call setReports with empty array if error happens', done => {
+      testRunServiceMock.getHistory.and.returnValue(
+        throwError(
+          new HttpErrorResponse({ error: { error: 'error' }, status: 500 })
+        )
+      );
+      actions$ = of(actions.fetchReports());
+
+      effects.onFetchReports$.subscribe({
+        complete: () => {
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            setReports({
+              reports: [],
+            })
+          );
+          done();
+        },
+      });
+    });
+  });
+
+  describe('checkStatusInReports$', () => {
+    it('should call setTestrunStatus if current test run is completed and not present in reports', done => {
+      store.overrideSelector(
+        selectSystemStatus,
+        Object.assign({}, MOCK_PROGRESS_DATA_COMPLIANT, {
+          mac_addr: '01:02:03:04:05:07',
+          report: 'http://localhost:8000/report/1234 1234/2024-07-17T15:33:40',
+        })
+      );
+      actions$ = of(
+        actions.setReports({
+          reports: HISTORY,
+        })
+      );
+
+      effects.checkStatusInReports$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setTestrunStatus({ systemStatus: IDLE_STATUS })
+        );
         done();
       });
     });

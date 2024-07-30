@@ -48,7 +48,7 @@ class TestModule:
 
   def _add_logger(self, log_name, module_name, log_dir=None):
     global LOGGER
-    LOGGER = logger.get_logger(name=log_name,
+    LOGGER = logger.get_logger(name=log_name, # pylint: disable=E1123
                                log_file=module_name,
                                log_dir=log_dir)
 
@@ -115,8 +115,13 @@ class TestModule:
             LOGGER.error(e)
         else:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
+          test['result'] = 'Error'
+          test['description'] = 'This test could not be found'
       else:
         LOGGER.debug(f'Test {test["name"]} is disabled')
+
+        # To be added in v1.3.2
+        # result = 'Disabled', 'This test is disabled and did not run'
 
       if result is not None:
         # Compliant or non-compliant as a boolean only
@@ -125,9 +130,9 @@ class TestModule:
           test['description'] = 'No description was provided for this test'
         else:
           # TODO: This is assuming that result is an array but haven't checked
-          # Skipped result
+          # Error result
           if result[0] is None:
-            test['result'] = 'Skipped'
+            test['result'] = 'Error'
             if len(result) > 1:
               test['description'] = result[1]
             else:
@@ -182,7 +187,7 @@ class TestModule:
   def _get_device_ipv4(self):
     command = f"""/testrun/bin/get_ipv4_addr {self._ipv4_subnet}
     {self._device_mac.upper()}"""
-    text = util.run_command(command)[0]
+    text = util.run_command(command)[0] # pylint: disable=E1120
     if text:
       return text.split('\n')[0]
     return None

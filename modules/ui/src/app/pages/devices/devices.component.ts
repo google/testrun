@@ -21,14 +21,14 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Device, DeviceView } from '../../model/device';
+import { Device, DeviceView, TestModule } from '../../model/device';
 import {
   DeviceFormComponent,
   FormAction,
   FormResponse,
 } from './components/device-form/device-form.component';
 import { Subject, takeUntil } from 'rxjs';
-import { DeleteFormComponent } from '../../components/delete-form/delete-form.component';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Routes } from '../../model/routes';
@@ -61,11 +61,12 @@ export class DevicesComponent implements OnInit, OnDestroy {
     combineLatest([
       this.devicesStore.devices$,
       this.devicesStore.isOpenAddDevice$,
+      this.devicesStore.testModules$,
     ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([devices, isOpenAddDevice]) => {
+      .subscribe(([devices, isOpenAddDevice, testModules]) => {
         if (!devices?.length && isOpenAddDevice) {
-          this.openDialog(devices);
+          this.openDialog(devices, testModules);
         }
       });
   }
@@ -75,12 +76,17 @@ export class DevicesComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
-  openStartTestrun(selectedDevice: Device, devices: Device[]): void {
+  openStartTestrun(
+    selectedDevice: Device,
+    devices: Device[],
+    testModules: TestModule[]
+  ): void {
     const dialogRef = this.dialog.open(TestrunInitiateFormComponent, {
       ariaLabel: 'Initiate testrun',
       data: {
         devices,
         device: selectedDevice,
+        testModules,
       },
       autoFocus: true,
       hasBackdrop: true,
@@ -105,6 +111,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
 
   openDialog(
     devices: Device[] = [],
+    testModules: TestModule[],
     selectedDevice?: Device,
     focusDeleteButton = false
   ): void {
@@ -113,7 +120,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
       data: {
         device: selectedDevice || null,
         title: selectedDevice ? 'Edit device' : 'Create device',
-        testModules: this.devicesStore.testModules,
+        testModules: testModules,
         devices,
       },
       autoFocus: focusDeleteButton ? '.delete-button' : true,
@@ -144,16 +151,20 @@ export class DevicesComponent implements OnInit, OnDestroy {
         }
         if (response.action === FormAction.Delete && selectedDevice) {
           this.devicesStore.selectDevice(selectedDevice);
-          this.openDeleteDialog(devices, selectedDevice);
+          this.openDeleteDialog(devices, testModules, selectedDevice);
         }
       });
   }
 
-  openDeleteDialog(devices: Device[], device: Device) {
-    const dialogRef = this.dialog.open(DeleteFormComponent, {
+  openDeleteDialog(
+    devices: Device[],
+    testModules: TestModule[],
+    device: Device
+  ) {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Delete device',
       data: {
-        title: 'Delete device',
+        title: 'Delete device?',
         content: `You are about to delete ${
           device.manufacturer + ' ' + device.model
         }. Are you sure?`,
@@ -162,7 +173,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'delete-form-dialog',
+      panelClass: 'simple-dialog',
     });
 
     dialogRef
@@ -178,7 +189,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
             },
           });
         } else {
-          this.openDialog(devices, device, true);
+          this.openDialog(devices, testModules, device, true);
           this.devicesStore.selectDevice(null);
         }
       });

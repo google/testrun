@@ -22,21 +22,38 @@ import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import * as AppActions from './actions';
 import { AppState } from './state';
 import { TestRunService } from '../services/test-run.service';
-import { filter, combineLatest, interval, Subject, timer, take } from 'rxjs';
+import {
+  filter,
+  combineLatest,
+  interval,
+  Subject,
+  timer,
+  take,
+  catchError,
+  EMPTY,
+} from 'rxjs';
 import {
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
   selectSystemStatus,
 } from './selectors';
-import { IResult, StatusOfTestrun, TestsData } from '../model/testrun-status';
+import {
+  IDLE_STATUS,
+  IResult,
+  StatusOfTestrun,
+  TestrunStatus,
+  TestsData,
+} from '../model/testrun-status';
 import {
   fetchSystemStatus,
+  setReports,
   setStatus,
   setTestrunStatus,
   stopInterval,
 } from './actions';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { NotificationService } from '../services/notification.service';
+import { Profile } from '../model/profile';
 
 const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
@@ -51,6 +68,14 @@ export class AppEffects {
       this.actions$.pipe(ofType(AppActions.fetchInterfacesSuccess)),
       this.actions$.pipe(ofType(AppActions.fetchSystemConfigSuccess)),
     ]).pipe(
+      filter(
+        ([
+          ,
+          {
+            systemConfig: { network },
+          },
+        ]) => network !== null
+      ),
       map(
         ([
           { interfaces },
@@ -60,16 +85,13 @@ export class AppEffects {
         ]) =>
           AppActions.updateValidInterfaces({
             validInterfaces: {
-              hasSetInterfaces: network != null,
               deviceValid:
-                !!network &&
-                !!network.device_intf &&
-                !!interfaces[network.device_intf],
+                network?.device_intf == '' ||
+                (!!network?.device_intf && !!interfaces[network.device_intf]),
               internetValid:
-                !!network &&
-                (network?.internet_intf == '' ||
-                  (!!network.internet_intf &&
-                    !!interfaces[network.internet_intf])),
+                network?.internet_intf == '' ||
+                (!!network?.internet_intf &&
+                  !!interfaces[network.internet_intf]),
             },
           })
       )
@@ -83,14 +105,22 @@ export class AppEffects {
         AppActions.updateError({
           settingMissedError: {
             isSettingMissed:
-              validInterfaces.hasSetInterfaces &&
-              (!validInterfaces.deviceValid || !validInterfaces.internetValid),
-            devicePortMissed:
-              validInterfaces.hasSetInterfaces && !validInterfaces.deviceValid,
-            internetPortMissed:
-              validInterfaces.hasSetInterfaces &&
-              !validInterfaces.internetValid,
+              !validInterfaces.deviceValid || !validInterfaces.internetValid,
+            devicePortMissed: !validInterfaces.deviceValid,
+            internetPortMissed: !validInterfaces.internetValid,
           },
+        })
+      )
+    );
+  });
+
+  onFetchSystemConfigSuccess$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchSystemConfigSuccess),
+      map(({ systemConfig }) =>
+        AppActions.setHasConnectionSettings({
+          hasConnectionSettings:
+            systemConfig.network != null && !!systemConfig.network.device_intf,
         })
       )
     );
@@ -245,6 +275,66 @@ export class AppEffects {
     },
     { dispatch: false }
   );
+
+  onFetchRiskProfiles$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchRiskProfiles),
+      switchMap(() =>
+        this.testrunService.fetchProfiles().pipe(
+          map((riskProfiles: Profile[]) => {
+            return AppActions.setRiskProfiles({ riskProfiles });
+          })
+        )
+      )
+    );
+  });
+
+  onFetchReports$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchReports),
+      switchMap(() =>
+        this.testrunService.getHistory().pipe(
+          map((reports: TestrunStatus[] | null) => {
+            if (reports !== null) {
+              return AppActions.setReports({ reports });
+            }
+            return AppActions.setReports({ reports: [] });
+          }),
+          catchError(() => {
+            this.store.dispatch(setReports({ reports: [] }));
+            return EMPTY;
+          })
+        )
+      )
+    );
+  });
+
+  checkStatusInReports$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setReports),
+      withLatestFrom(this.store.select(selectSystemStatus)),
+      filter(([, systemStatus]) => {
+        return (
+          systemStatus != null && this.isTestrunFinished(systemStatus.status)
+        );
+      }),
+      filter(([{ reports }, systemStatus]) => {
+        return (
+          !reports?.some(report => report.report === systemStatus!.report) ||
+          false
+        );
+      }),
+      map(() => AppActions.setTestrunStatus({ systemStatus: IDLE_STATUS }))
+    );
+  });
+
+  private isTestrunFinished(status: string) {
+    return (
+      status === StatusOfTestrun.Compliant ||
+      status === StatusOfTestrun.NonCompliant ||
+      status === StatusOfTestrun.Error
+    );
+  }
 
   private showSnackBar() {
     timer(WAIT_TO_OPEN_SNACKBAR_MS)

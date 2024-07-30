@@ -18,7 +18,7 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
 import { StatusOfTestrun } from './model/testrun-status';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { CalloutType } from './model/callout-type';
 import { Routes } from './model/routes';
 import { FocusManagerService } from './services/focus-manager.service';
@@ -34,6 +34,7 @@ import { SettingsComponent } from './pages/settings/settings.component';
 import { AppStore } from './app.store';
 import { TestRunService } from './services/test-run.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { filter, take } from 'rxjs/operators';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
@@ -42,6 +43,7 @@ const RISK_ASSESSMENT_LOGO_URL = '/assets/icons/risk-assessment.svg';
 const TESTRUN_LOGO_URL = '/assets/icons/testrun_logo_small.svg';
 const TESTRUN_LOGO_COLOR_URL = '/assets/icons/testrun_logo_color.svg';
 const CLOSE_URL = '/assets/icons/close.svg';
+const DRAFT_URL = '/assets/icons/draft.svg';
 
 @Component({
   selector: 'app-root',
@@ -78,6 +80,9 @@ export class AppComponent {
     this.appStore.getDevices();
     this.appStore.getRiskProfiles();
     this.appStore.getSystemStatus();
+    this.appStore.getReports();
+    this.appStore.getTestModules();
+    this.appStore.getNetworkAdapters();
     this.matIconRegistry.addSvgIcon(
       'devices',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_LOGO_URL)
@@ -105,6 +110,10 @@ export class AppComponent {
     this.matIconRegistry.addSvgIcon(
       'close',
       this.domSanitizer.bypassSecurityTrustResourceUrl(CLOSE_URL)
+    );
+    this.matIconRegistry.addSvgIcon(
+      'draft',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(DRAFT_URL)
     );
   }
 
@@ -186,5 +195,16 @@ export class AppComponent {
 
   isTestrunInProgress(status?: string | null) {
     return this.testRunService.testrunInProgress(status);
+  }
+
+  onNavigationClick() {
+    this.route.events
+      .pipe(
+        filter(e => e instanceof NavigationEnd),
+        take(1)
+      )
+      .subscribe(() => {
+        this.appStore.setFocusOnPage();
+      });
   }
 }

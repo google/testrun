@@ -1,0 +1,135 @@
+{
+  "22tcp": {
+    "number": "22",
+    "tcp_udp": "tcp",
+    "state": "closed",
+    "service": "ssh",
+    "version": "8.8 protocol 2.0"
+  },
+  "443tcp": {
+    "number": "443",
+    "tcp_udp": "tcp",
+    "state": "closed",
+    "service": "http",
+    "version": ""
+  },
+  "502tcp": {
+    "number": "502",
+    "tcp_udp": "tcp",
+    "state": "closed",
+    "service": "mbap",
+    "version": ""
+  },
+  "20udp": {
+    "number": "20",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "ftp-data",
+    "version": ""
+  },
+  "21udp": {
+    "number": "21",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "ftp",
+    "version": ""
+  },
+  "23udp": {
+    "number": "23",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "telnet",
+    "version": ""
+  },
+  "69udp": {
+    "number": "69",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "tftp",
+    "version": ""
+  },
+  "80udp": {
+    "number": "80",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "http",
+    "version": ""
+  },
+  "109udp": {
+    "number": "109",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "pop2",
+    "version": ""
+  },
+  "110udp": {
+    "number": "110",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "pop3",
+    "version": ""
+  },
+  "123udp": {
+    "number": "123",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "ntp",
+    "version": ""
+  },
+  "143udp": {
+    "number": "143",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "imap",
+    "version": ""
+  },
+  "161udp": {
+    "number": "161",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "snmp",
+    "version": ""
+  },
+  "220udp": {
+    "number": "220",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "imap3",
+    "version": ""
+  },
+  "443udp": {
+    "number": "443",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "https",
+    "version": ""
+  },
+  "585udp": {
+    "number": "585",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "imap4-ssl",
+    "version": ""
+  },
+  "993udp": {
+    "number": "993",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "imaps",
+    "version": ""
+  },
+  "995udp": {
+    "number": "995",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "pop3s",
+    "version": ""
+  },
+  "3713udp": {
+    "number": "3713",
+    "tcp_udp": "udp",
+    "state": "closed",
+    "service": "tftps",
+    "version": ""
+  }
+}

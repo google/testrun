@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Certificate } from '../../../model/certificate';
+import { Certificate, CertificateStatus } from '../../../model/certificate';
 import { MatIcon } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,4 +24,6 @@ import { MatError } from '@angular/material/form-field';
 export class CertificateItemComponent {
   @Input() certificate!: Certificate;
   @Output() deleteButtonClicked = new EventEmitter<string>();
+
+  CertificateStatus = CertificateStatus;
 }

@@ -25,16 +25,17 @@ import { TestBed } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../../store/state';
 import { skip, take } from 'rxjs';
-import { selectHasConnectionSettings } from '../../store/selectors';
-import { of } from 'rxjs/internal/observable/of';
 import {
-  fetchSystemConfigSuccess,
-  setHasConnectionSettings,
-} from '../../store/actions';
+  selectAdapters,
+  selectHasConnectionSettings,
+} from '../../store/selectors';
+import { of } from 'rxjs/internal/observable/of';
+import { fetchSystemConfigSuccess } from '../../store/actions';
 import { fetchInterfacesSuccess } from '../../store/actions';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { FormKey, SystemConfig } from '../../model/setting';
 import {
+  MOCK_ADAPTERS,
   MOCK_DEVICE_VALUE,
   MOCK_INTERFACE_VALUE,
   MOCK_INTERFACES,
@@ -63,7 +64,10 @@ describe('SettingsStore', () => {
         SettingsStore,
         { provide: TestRunService, useValue: mockService },
         provideMockStore({
-          selectors: [{ selector: selectHasConnectionSettings, value: true }],
+          selectors: [
+            { selector: selectHasConnectionSettings, value: true },
+            { selector: selectAdapters, value: {} },
+          ],
         }),
         FormBuilder,
       ],
@@ -131,7 +135,7 @@ describe('SettingsStore', () => {
     it('should select state', done => {
       settingsStore.viewModel$.pipe(take(1)).subscribe(store => {
         expect(store).toEqual({
-          systemConfig: {},
+          systemConfig: { network: {} },
           hasConnectionSettings: true,
           isSubmitting: false,
           isLessThanOneInterface: false,
@@ -149,46 +153,24 @@ describe('SettingsStore', () => {
   describe('effects', () => {
     describe('getSystemConfig', () => {
       beforeEach(() => {
-        mockService.getSystemConfig.and.returnValue(of({}));
+        mockService.getSystemConfig.and.returnValue(of({ network: {} }));
       });
 
       it('should dispatch action fetchSystemConfigSuccess', () => {
         settingsStore.getSystemConfig();
 
         expect(store.dispatch).toHaveBeenCalledWith(
-          fetchSystemConfigSuccess({ systemConfig: {} })
+          fetchSystemConfigSuccess({ systemConfig: { network: {} } })
         );
       });
 
       it('should update store', done => {
         settingsStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-          expect(store.systemConfig).toEqual({});
+          expect(store.systemConfig).toEqual({ network: {} });
           done();
         });
 
         settingsStore.getSystemConfig();
-      });
-
-      describe('should dispatch setHasConnectionSettings', () => {
-        it('with true if device_intf is present', () => {
-          mockService.getSystemConfig.and.returnValue(
-            of({ network: { device_intf: 'intf' } })
-          );
-          settingsStore.getSystemConfig();
-
-          expect(store.dispatch).toHaveBeenCalledWith(
-            setHasConnectionSettings({ hasConnectionSettings: true })
-          );
-        });
-
-        it('with false if device_intf is not present', () => {
-          mockService.getSystemConfig.and.returnValue(of({}));
-          settingsStore.getSystemConfig();
-
-          expect(store.dispatch).toHaveBeenCalledWith(
-            setHasConnectionSettings({ hasConnectionSettings: false })
-          );
-        });
       });
     });
 
@@ -221,32 +203,32 @@ describe('SettingsStore', () => {
 
     describe('updateSystemConfig', () => {
       beforeEach(() => {
-        mockService.createSystemConfig.and.returnValue(of({}));
+        mockService.createSystemConfig.and.returnValue(of({ network: {} }));
       });
 
       it('should dispatch action fetchSystemConfigSuccess', () => {
         settingsStore.updateSystemConfig(
           of({
             onSystemConfigUpdate: () => {},
-            config: {},
+            config: { network: {} },
           })
         );
 
         expect(store.dispatch).toHaveBeenCalledWith(
-          fetchSystemConfigSuccess({ systemConfig: {} })
+          fetchSystemConfigSuccess({ systemConfig: { network: {} } })
         );
       });
 
       it('should update store', done => {
         settingsStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-          expect(store.systemConfig).toEqual({});
+          expect(store.systemConfig).toEqual({ network: {} });
           done();
         });
 
         settingsStore.updateSystemConfig(
           of({
             onSystemConfigUpdate: () => {},
-            config: {},
+            config: { network: {} },
           })
         );
       });
@@ -254,7 +236,7 @@ describe('SettingsStore', () => {
       it('should call onSystemConfigUpdate', () => {
         const effectParams = {
           onSystemConfigUpdate: () => {},
-          config: {},
+          config: { network: {} },
         };
         const spyOnSystemConfigUpdate = spyOn(
           effectParams,
@@ -331,6 +313,40 @@ describe('SettingsStore', () => {
             value: 'Optimal',
           });
         });
+      });
+    });
+
+    describe('adaptersUpdate', () => {
+      const updateInterfaces = {
+        mockDeviceKey: 'mockDeviceValue',
+        mockNewInternetKey: 'mockNewInternetValue',
+      };
+      const updateInternetOptions = {
+        '': 'Not specified',
+        mockDeviceKey: 'mockDeviceValue',
+        mockNewInternetKey: 'mockNewInternetValue',
+      };
+
+      beforeEach(() => {
+        settingsStore.setInterfaces(MOCK_INTERFACES);
+      });
+
+      it('should update store', done => {
+        settingsStore.viewModel$
+          .pipe(skip(3), take(1))
+          .subscribe(storeValue => {
+            expect(storeValue.interfaces).toEqual(updateInterfaces);
+            expect(storeValue.deviceOptions).toEqual(updateInterfaces);
+            expect(storeValue.internetOptions).toEqual(updateInternetOptions);
+
+            expect(store.dispatch).toHaveBeenCalledWith(
+              fetchInterfacesSuccess({ interfaces: updateInterfaces })
+            );
+            done();
+          });
+
+        store.overrideSelector(selectAdapters, MOCK_ADAPTERS);
+        store.refreshState();
       });
     });
   });

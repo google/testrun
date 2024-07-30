@@ -17,8 +17,9 @@ import getpass
 import os
 import subprocess
 import shlex
-from common import logger
+import typing as t
 import netifaces
+from common import logger
 
 LOGGER = logger.get_logger('util')
 
@@ -45,8 +46,6 @@ def run_command(cmd, output=True):
       success = True
     if output:
       out = stdout.strip().decode('utf-8')
-      if out is not None and len(out) != 0:
-        LOGGER.debug('Command output: ' + out)
       return out, stderr
     else:
       return success
@@ -115,3 +114,32 @@ def get_module_display_name(search):
       return module[1]
 
   return 'Unknown'
+
+
+def diff_dicts(d1: t.Dict[t.Any, t.Any], d2: t.Dict[t.Any, t.Any]) -> t.Dict:
+  """Compares two dictionaries by keys
+
+  Args:
+      d1 (t.Dict[t.Any, t.Any]): first dict to compare
+      d2 (t.Dict[t.Any, t.Any]): second dict to compare
+
+  Returns:
+      t.Dict[t.Any, t.Any]: Returns an empty dictionary
+      if the compared dictionaries are equal,
+      otherwise returns a dictionary that contains
+      the removed items(if available)
+      and the added items(if available).
+  """
+  diff = {}
+  if d1 != d2:
+    s1 = set(d1)
+    s2 = set(d2)
+    keys_removed = s1 - s2
+    keys_added = s2 - s1
+    items_removed = {k:d1[k] for k in keys_removed}
+    items_added = {k:d2[k] for k in keys_added}
+    if items_removed:
+      diff['items_removed'] = items_removed
+    if items_added:
+      diff['items_added'] = items_added
+  return diff

@@ -99,6 +99,7 @@ limitations under the License.
           class="app-toolbar-button app-toolbar-button-certificates"
           mat-icon-button
           aria-label="Certificates"
+          matTooltip="Certificates"
           (click)="openCert()">
           <mat-icon fontSet="material-symbols-outlined"
             >workspace_premium</mat-icon
@@ -109,6 +110,7 @@ limitations under the License.
           class="app-toolbar-button app-toolbar-button-general-settings"
           mat-icon-button
           aria-label="System settings"
+          matTooltip="Settings"
           (click)="
             openGeneralSettings(true, isTestrunInProgress(vm.systemStatus))
           ">
@@ -185,7 +187,8 @@ limitations under the License.
             vm.hasConnectionSettings === true &&
             vm.hasDevices &&
             (!vm.systemStatus || vm.systemStatus === StatusOfTestrun.Idle) &&
-            vm.isStatusLoaded === true
+            vm.isStatusLoaded === true &&
+            !vm.reports.length
           ">
           Step 3: Once device is created, you are able to
           <a
@@ -262,7 +265,9 @@ limitations under the License.
     class="app-sidebar-button app-sidebar-button-{{ name }}"
     mat-button
     routerLink="{{ route }}"
-    routerLinkActive="app-sidebar-button-active">
+    routerLinkActive="app-sidebar-button-active"
+    [matTooltip]="label"
+    (keydown.enter)="onNavigationClick()">
     <mat-icon *ngIf="svgIcon" svgIcon="{{ svgIcon }}"></mat-icon>
     <mat-icon *ngIf="icon">{{ icon }}</mat-icon>
     <span class="sidebar-button-label">{{ label }}</span>
