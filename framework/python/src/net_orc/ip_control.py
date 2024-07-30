@@ -46,10 +46,7 @@ class IPControl:
 
   def check_interface_status(self, interface_name):
     output = util.run_command(cmd=f'ip link show {interface_name}', output=True)
-    if 'state UP ' in output[0]:
-      return True
-    else:
-      return False
+    return 'state UP ' in output[0]
 
   def delete_link(self, interface_name):
     """Delete an ip link"""
