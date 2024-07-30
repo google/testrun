@@ -18,14 +18,3 @@ FROM node@sha256:ffebb4405810c92d267a764b21975fb2d96772e41877248a37bf3abaa0d3b59
 # Set the working directory
 WORKDIR /modules/ui
 
-# Copy UI source code to the image
-COPY modules/ui/ /modules/ui
-
-# Install npm dependencies
-RUN npm install
-
-# Build the UI
-RUN npm run build
-
-# Keep the container running (Testrun will kill it when required)
-ENTRYPOINT ["tail", "-f", "/dev/null"]
