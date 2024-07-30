@@ -42,11 +42,7 @@ limitations under the License.
     </div>
     <div class="profiles-drawer-content">
       <app-profile-item
-        *ngFor="
-          let profile of vm.profiles;
-          let i = index;
-          trackBy: trackByIndex
-        "
+        *ngFor="let profile of vm.profiles; let i = index; trackBy: trackByName"
         [profile]="profile"
         class="profile-item-{{ i }}"
         [ngClass]="{ selected: profile.name === vm.selectedProfile?.name }"
