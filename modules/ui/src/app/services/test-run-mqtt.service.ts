@@ -3,8 +3,8 @@ import { IMqttMessage, MqttService } from 'ngx-mqtt';
 import { catchError, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Adapters } from '../model/setting';
-import { Topic } from '../model/topic';
 import { TestrunStatus } from '../model/testrun-status';
+import { InternetConnection, Topic } from '../model/topic';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +14,10 @@ export class TestRunMqttService {
 
   getNetworkAdapters(): Observable<Adapters> {
     return this.topic<Adapters>(Topic.NetworkAdapters);
+  }
+
+  getInternetConnection(): Observable<InternetConnection> {
+    return this.topic<InternetConnection>(Topic.InternetConnection);
   }
 
   getStatus(): Observable<TestrunStatus> {

@@ -7,6 +7,7 @@ import SpyObj = jasmine.SpyObj;
 import { of } from 'rxjs';
 import { MOCK_ADAPTERS } from '../mocks/settings.mock';
 import { Topic } from '../model/topic';
+import { MOCK_INTERNET } from '../mocks/topic.mock';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/testrun.mock';
 
 describe('TestRunMqttService', () => {
@@ -27,7 +28,7 @@ describe('TestRunMqttService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('', () => {
+  describe('getNetworkAdapters', () => {
     beforeEach(() => {
       mockService.observe.and.returnValue(of(getResponse(MOCK_ADAPTERS)));
     });
@@ -42,6 +43,28 @@ describe('TestRunMqttService', () => {
     it('should return object of type', done => {
       service.getNetworkAdapters().subscribe(res => {
         expect(res).toEqual(MOCK_ADAPTERS);
+        done();
+      });
+    });
+  });
+
+  describe('getInternetConnection', () => {
+    beforeEach(() => {
+      mockService.observe.and.returnValue(of(getResponse(MOCK_INTERNET)));
+    });
+
+    it('should subscribe the topic', done => {
+      service.getInternetConnection().subscribe(() => {
+        expect(mockService.observe).toHaveBeenCalledWith(
+          Topic.InternetConnection
+        );
+        done();
+      });
+    });
+
+    it('should return object of type', done => {
+      service.getInternetConnection().subscribe(res => {
+        expect(res).toEqual(MOCK_INTERNET);
         done();
       });
     });
