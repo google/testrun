@@ -7,6 +7,7 @@ import SpyObj = jasmine.SpyObj;
 import { of } from 'rxjs';
 import { MOCK_ADAPTERS } from '../mocks/settings.mock';
 import { Topic } from '../model/topic';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/testrun.mock';
 import { MOCK_INTERNET } from '../mocks/topic.mock';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/testrun.mock';
 
