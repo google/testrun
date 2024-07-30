@@ -9,9 +9,6 @@
 ## General guidelines
 As an open source project, we absolutely encourage contributions from the community to help Testrun remain an expanding but stable product. However, before contributing there are a number of things to take into consideration.
 
-## First steps
-Okay, so you have decided you would like to contribute to Testrun. These are the first steps you must take for your contributions to be accepted:
-
 1) [Sign the Google CLA](https://cla.developers.google.com/): Whether you are an individual or contributing on behalf of your organisation, you must be covered by a Google CLA.
 
 2) Determine the scope of your contribution
