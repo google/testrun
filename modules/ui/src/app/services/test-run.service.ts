@@ -30,7 +30,7 @@ import { Version } from '../model/version';
 import { Certificate } from '../model/certificate';
 import {
   Profile,
-  Question,
+  ProfileFormat,
   ProfileRisk,
   RiskResultClassName,
 } from '../model/profile';
@@ -303,8 +303,8 @@ export class TestRunService {
       });
   }
 
-  fetchProfilesFormat(): Observable<Question[]> {
-    return this.http.get<Question[]>(`${API_URL}/profiles/format`);
+  fetchProfilesFormat(): Observable<ProfileFormat[]> {
+    return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
   }
 
   saveProfile(profile: Profile): Observable<boolean> {
