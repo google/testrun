@@ -49,6 +49,7 @@ import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.com
 import { WindowProvider } from './providers/window.provider';
 import { CertificatesComponent } from './pages/certificates/certificates.component';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from './services/loaderConfig';
+import { WifiComponent } from './components/wifi/wifi.component';
 
 import { MqttModule, IMqttServiceOptions } from 'ngx-mqtt';
 
@@ -87,6 +88,7 @@ export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
     ShutdownAppComponent,
     CertificatesComponent,
     MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
+    WifiComponent,
   ],
   providers: [
     WindowProvider,
