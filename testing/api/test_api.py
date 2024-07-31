@@ -309,7 +309,7 @@ def test_update_system_config_invalid_config(testrun, restore_config): # pylint:
                     data=json.dumps(updated_system_config),
                     timeout=5)
 
-  # Check if status code is 500 (bad request)
+  # Check if status code is 500 (Invalid config)
   assert r.status_code == 500
 
 def test_get_system_config(testrun): # pylint: disable=W0613
@@ -579,6 +579,42 @@ def test_status_idle(testrun): # pylint: disable=W0613
       "system status is `idle`",
       30,
   )
+
+def test_system_shutdown(testrun): # pylint: disable=W0613
+  """Test the shutdown system endpoint"""
+  # Send a POST request to initiate the system shutdown
+  r = requests.post(f"{API}/system/shutdown", timeout=5)
+
+  # Check if the response status code is 200 (OK)
+  assert r.status_code == 200, f"Expected status code 200, got {r.status_code}"
+
+def test_system_shutdown_in_progress(testrun):  # pylint: disable=W0613
+  """Test system shutdown during an in-progress test"""
+  # Payload with device details to start a test
+  payload = {
+      "device": {
+          "mac_addr": BASELINE_MAC_ADDR,
+          "firmware": "asd",
+          "test_modules": {
+              "dns": {"enabled": False},
+              "connection": {"enabled": True},
+              "ntp": {"enabled": False},
+              "baseline": {"enabled": False},
+              "nmap": {"enabled": False}
+          }
+      }
+  }
+  # Start a test run
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+
+  # Check if the response status code is 200 (OK) for starting the test
+  assert r.status_code == 200
+
+  # Attempt to shutdown while the test is running
+  r = requests.post(f"{API}/system/shutdown", timeout=5)
+
+  # Check if the response status code is 400 (test in progress)
+  assert r.status_code == 400
 
 # Tests for device endpoints
 
