@@ -24,7 +24,6 @@ import os
 PROFILES_PATH = 'local/risk_profiles'
 LOGGER = logger.get_logger('risk_profile')
 RESOURCES_DIR = 'resources/report'
-SECONDS_IN_YEAR = 31536000
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
