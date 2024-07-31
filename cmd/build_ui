@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # Build the UI
-echo Building the user interface
+echo Building the ui builder
 
 # Build UI builder image
 if docker build -t testrun/build-ui -f modules/ui/build.Dockerfile . ; then
@@ -28,8 +28,10 @@ fi
 # Check that the container is not already running
 docker kill tr-ui-build 2> /dev/null || true
 
-# Start build container and build the ui dist 
-docker run -it --rm -v $PWD/modules/ui:/modules/ui testrun/build-ui /bin/sh -c "npm install && npm run build"
+echo "Building the user interface"
 
-# Kill the container
-docker kill tr-ui-build
+# Start build container and build the ui dist 
+docker run --rm -v $PWD/modules/ui:/modules/ui testrun/build-ui /bin/sh -c "npm install && npm run build"
+
+# Kill the container (Should not be running anymore)
+docker kill tr-ui-build 2> /dev/null || true
