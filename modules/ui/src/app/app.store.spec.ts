@@ -85,7 +85,10 @@ describe('AppStore', () => {
     mockFocusManagerService = jasmine.createSpyObj([
       'focusFirstElementInContainer',
     ]);
-    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters']);
+    mockMqttService = jasmine.createSpyObj([
+      'getNetworkAdapters',
+      'getInternetConnection',
+    ]);
 
     TestBed.configureTestingModule({
       providers: [
@@ -162,6 +165,7 @@ describe('AppStore', () => {
           isMenuOpen: true,
           interfaces: {},
           settingMissedError: null,
+          hasInternetConnection: true,
         });
         done();
       });
@@ -300,6 +304,44 @@ describe('AppStore', () => {
 
         expect(mockNotificationService.notify).toHaveBeenCalledWith(
           'New network adapter(s) mockNewInternetKey has been detected. You can switch to using it in the System settings menu'
+        );
+      });
+    });
+
+    describe('getInternetConnection', () => {
+      it('should update store', done => {
+        mockMqttService.getInternetConnection.and.returnValue(
+          of({ connection: false })
+        );
+        appStore.getInternetConnection();
+
+        appStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.hasInternetConnection).toEqual(false);
+          done();
+        });
+      });
+
+      it('should call notification service when value is false', () => {
+        mockMqttService.getInternetConnection.and.returnValue(
+          of({ connection: false })
+        );
+        appStore.updateHasInternetConnection(true);
+        appStore.getInternetConnection();
+
+        expect(mockNotificationService.notify).toHaveBeenCalledWith(
+          'Internet connection is lost. It may affect testing results. Please, check your internet connection settings.'
+        );
+      });
+
+      it('should call notification service when value is true and previous value is false', () => {
+        appStore.updateHasInternetConnection(false);
+        mockMqttService.getInternetConnection.and.returnValue(
+          of({ connection: true })
+        );
+        appStore.getInternetConnection();
+
+        expect(mockNotificationService.notify).toHaveBeenCalledWith(
+          'Internet connection is restored. The loss of internet connection could have affected the testing results.'
         );
       });
     });
