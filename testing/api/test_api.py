@@ -224,24 +224,84 @@ def local_get_devices():
       )
   )
 
+# Tests for system endpoints
 
 def test_get_system_interfaces(testrun): # pylint: disable=W0613
   """Tests API system interfaces against actual local interfaces"""
+  # Send a GET request to the API to retrieve system interfaces 
   r = requests.get(f"{API}/system/interfaces", timeout=5)
+  # Parse the JSON response
   response = r.json()
+  # Retrieve the actual network interfaces
   local_interfaces = get_network_interfaces()
-  assert set(response.keys()) == set(local_interfaces)
 
-  # schema expects a flat list
+  # Check if status code is 200 (OK)
+  assert r.status_code == 200, f"status code is {r.status_code}"
+  # Check if the key are in the response
+  assert set(response.keys()) == set(local_interfaces)
+  # Ensure that all values in the response are strings
   assert all(isinstance(x, str) for x in response)
 
+def test_update_system_config(testrun): # pylint: disable=W0613
+  """Test update system configuration endpoint ('/system/config')"""
+  pass
 
-def test_status_idle(testrun): # pylint: disable=W0613
-  until_true(
-      lambda: query_system_status().lower() == "idle",
-      "system status is `idle`",
-      30,
+def test_get_system_config(testrun): # pylint: disable=W0613
+  """Tests get system configuration endpoint ('/system/config')"""
+  # Send a GET request to the API to retrieve system configuration
+  r = requests.get(f"{API}/system/config", timeout=5)
+
+  # Open the local system configuration file
+  with open(
+    SYSTEM_CONFIG_PATH,
+    encoding="utf-8"
+  ) as f:
+    local_config = json.load(f)
+
+  # Parse the JSON response
+  api_config = r.json()
+
+  # Check if status code is 200 (OK)
+  assert r.status_code == 200, f"status code is {r.status_code}"
+
+  # Validate structure
+  assert set(dict_paths(api_config)) | set(dict_paths(local_config)) == set(
+      dict_paths(api_config)
   )
+
+  # Check if the device interface in the local config matches the API config
+  assert (
+      local_config["network"]["device_intf"]
+      == api_config["network"]["device_intf"]
+  )
+
+  # Check if the internet interface in the local config matches the API config
+  assert (
+      local_config["network"]["internet_intf"]
+      == api_config["network"]["internet_intf"]
+  )
+
+def test_start_testrun_started_successfully(
+    testing_devices, # pylint: disable=W0613
+    testrun): # pylint: disable=W0613
+  """Test if testrun started successfully """
+
+  # Payload with device details
+  payload = {"device": {
+             "mac_addr": BASELINE_MAC_ADDR,
+             "firmware": "asd", 
+             "test_modules": {
+                "dns": {"enabled": False},
+                "connection": {"enabled": True},
+                "ntp": {"enabled": False},
+                "baseline": {"enabled": False},
+                "nmap": {"enabled": False}
+            }}}
+  # Send the post request
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+
+  # Check if the response status code is 200 (OK)
+  assert r.status_code == 200
 
 # Currently not working due to blocking during monitoring period
 @pytest.mark.skip()
@@ -265,6 +325,196 @@ def test_status_in_progress(testing_devices, testrun):  # pylint: disable=W0613
       600,
   )
 
+# Currently not working due to blocking during monitoring period
+@pytest.mark.skip()
+def test_start_testrun_already_in_progress(
+  testing_devices, # pylint: disable=W0613
+  testrun): # pylint: disable=W0613
+  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+
+  until_true(
+      lambda: query_system_status().lower() == "waiting for device",
+      "system status is `waiting for device`",
+      30,
+  )
+
+  start_test_device("x123", BASELINE_MAC_ADDR)
+
+  until_true(
+      lambda: query_system_status().lower() == "in progress",
+      "system status is `in progress`",
+      600,
+  )
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  assert r.status_code == 409
+
+@pytest.mark.skip()
+def test_trigger_run(testing_devices, testrun): # pylint: disable=W0613
+  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  assert r.status_code == 200
+
+  until_true(
+      lambda: query_system_status().lower() == "waiting for device",
+      "system status is `waiting for device`",
+      30,
+  )
+
+  start_test_device("x123", BASELINE_MAC_ADDR)
+
+  until_true(
+      lambda: query_system_status().lower() == "compliant",
+      "system status is `complete`",
+      600,
+  )
+
+  stop_test_device("x123")
+
+  # Validate response
+  r = requests.get(f"{API}/system/status", timeout=5)
+  response = r.json()
+  pretty_print(response)
+
+  # Validate results
+  results = {x["name"]: x for x in response["tests"]["results"]}
+  print(results)
+  # there are only 3 baseline tests
+  assert len(results) == 3
+
+  # Validate structure
+  with open(
+      os.path.join(
+          os.path.dirname(__file__), "mockito/running_system_status.json"
+      ), encoding="utf-8"
+  ) as f:
+    mockito = json.load(f)
+
+  # validate structure
+  assert set(dict_paths(mockito)).issubset(set(dict_paths(response)))
+
+  # Validate results structure
+  assert set(dict_paths(mockito["tests"]["results"][0])).issubset(
+      set(dict_paths(response["tests"]["results"][0]))
+  )
+
+  # Validate a result
+  assert results["baseline.compliant"]["result"] == "Compliant"
+
+@pytest.mark.skip()
+def test_stop_running_test(testing_devices, testrun): # pylint: disable=W0613
+  payload = {"device": {"mac_addr": ALL_MAC_ADDR, "firmware": "asd"}}
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
+                    timeout=10)
+  assert r.status_code == 200
+
+  until_true(
+      lambda: query_system_status().lower() == "waiting for device",
+      "system status is `waiting for device`",
+      30,
+  )
+
+  start_test_device("x12345", ALL_MAC_ADDR)
+
+  until_true(
+      lambda: query_test_count() > 1,
+      "system status is `complete`",
+      1000,
+  )
+
+  stop_test_device("x12345")
+
+  # Validate response
+  r = requests.post(f"{API}/system/stop", timeout=5)
+  response = r.json()
+  pretty_print(response)
+  assert response == {"success": "Testrun stopped"}
+  time.sleep(1)
+
+  # Validate response
+  r = requests.get(f"{API}/system/status", timeout=5)
+  response = r.json()
+  pretty_print(response)
+
+  assert response["status"] == "Cancelled"
+
+def test_stop_running_not_running(testrun): # pylint: disable=W0613
+  # Validate response
+  r = requests.post(f"{API}/system/stop",
+                    timeout=10)
+  response = r.json()
+  pretty_print(response)
+
+  assert r.status_code == 404
+  assert response["error"] == "Testrun is not currently running"
+
+@pytest.mark.skip()
+def test_multiple_runs(testing_devices, testrun): # pylint: disable=W0613
+  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
+                    timeout=10)
+  assert r.status_code == 200
+  print(r.text)
+
+  until_true(
+      lambda: query_system_status().lower() == "waiting for device",
+      "system status is `waiting for device`",
+      30,
+  )
+
+  start_test_device("x123", BASELINE_MAC_ADDR)
+
+  until_true(
+      lambda: query_system_status().lower() == "compliant",
+      "system status is `complete`",
+      900,
+  )
+
+  stop_test_device("x123")
+
+  # Validate response
+  r = requests.get(f"{API}/system/status", timeout=5)
+  response = r.json()
+  pretty_print(response)
+
+  # Validate results
+  results = {x["name"]: x for x in response["tests"]["results"]}
+  print(results)
+  # there are only 3 baseline tests
+  assert len(results) == 3
+
+  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
+                    timeout=10)
+  # assert r.status_code == 200
+  # returns 409
+  print(r.text)
+
+  until_true(
+      lambda: query_system_status().lower() == "waiting for device",
+      "system status is `waiting for device`",
+      30,
+  )
+
+  start_test_device("x123", BASELINE_MAC_ADDR)
+
+  until_true(
+      lambda: query_system_status().lower() == "compliant",
+      "system status is `complete`",
+      900,
+  )
+
+  stop_test_device("x123")
+
+def test_status_idle(testrun): # pylint: disable=W0613
+  """Test system status 'idle' endpoint (/system/status)"""
+  until_true(
+      lambda: query_system_status().lower() == "idle",
+      "system status is `idle`",
+      30,
+  )
+
+# Tests for device endpoints
 
 @pytest.mark.skip()
 def test_status_non_compliant(testing_devices, testrun): # pylint: disable=W0613
@@ -297,7 +547,6 @@ def test_status_non_compliant(testing_devices, testrun): # pylint: disable=W0613
   )
 
   stop_test_device("x123")
-
 
 def test_create_get_devices(empty_devices_dir, testrun): # pylint: disable=W0613
   device_1 = {
@@ -360,7 +609,6 @@ def test_create_get_devices(empty_devices_dir, testrun): # pylint: disable=W0613
     assert set([all_devices[0][key], all_devices[1][key]]) == set(
         [device_1[key], device_2[key]]
     )
-
 
 def test_delete_device_success(empty_devices_dir, testrun): # pylint: disable=W0613
   device_1 = {
@@ -439,7 +687,6 @@ def test_delete_device_success(empty_devices_dir, testrun): # pylint: disable=W0
         [device_2[key]]
     )
 
-
 def test_delete_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
   device_1 = {
       "manufacturer": "Google",
@@ -478,7 +725,6 @@ def test_delete_device_not_found(empty_devices_dir, testrun): # pylint: disable=
   assert r.status_code == 404
   assert len(local_get_devices()) == 0
 
-
 def test_delete_device_no_mac(empty_devices_dir, testrun): # pylint: disable=W0613
   device_1 = {
       "manufacturer": "Google",
@@ -511,7 +757,6 @@ def test_delete_device_no_mac(empty_devices_dir, testrun): # pylint: disable=W06
                       timeout=5)
   assert r.status_code == 400
   assert len(local_get_devices()) == 1
-
 
 # Currently not working due to blocking during monitoring period
 @pytest.mark.skip()
@@ -551,49 +796,6 @@ def test_delete_device_testrun_running(testing_devices, testrun): # pylint: disa
                       data=json.dumps(device_1),
                       timeout=5)
   assert r.status_code == 403
-
-
-def test_start_testrun_started_successfully(
-    testing_devices, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
-  payload = {"device": {
-             "mac_addr": BASELINE_MAC_ADDR,
-             "firmware": "asd", 
-             "test_modules": {
-                "dns": {"enabled": False},
-                "connection": {"enabled": True},
-                "ntp": {"enabled": False},
-                "baseline": {"enabled": False},
-                "nmap": {"enabled": False}
-            }}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
-  assert r.status_code == 200
-
-
-# Currently not working due to blocking during monitoring period
-@pytest.mark.skip()
-def test_start_testrun_already_in_progress(
-  testing_devices, # pylint: disable=W0613
-  testrun): # pylint: disable=W0613
-  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
-
-  until_true(
-      lambda: query_system_status().lower() == "waiting for device",
-      "system status is `waiting for device`",
-      30,
-  )
-
-  start_test_device("x123", BASELINE_MAC_ADDR)
-
-  until_true(
-      lambda: query_system_status().lower() == "in progress",
-      "system status is `in progress`",
-      600,
-  )
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
-  assert r.status_code == 409
-
 
 def test_start_system_not_configured_correctly(
     empty_devices_dir, # pylint: disable=W0613
@@ -924,32 +1126,6 @@ def test_system_latest_version(testrun): # pylint: disable=W0613
   assert updated_system_version is False
 
 
-def test_get_system_config(testrun): # pylint: disable=W0613
-  r = requests.get(f"{API}/system/config", timeout=5)
-
-  with open(
-    SYSTEM_CONFIG_PATH,
-    encoding="utf-8"
-  ) as f:
-    local_config = json.load(f)
-
-  api_config = r.json()
-
-  # validate structure
-  assert set(dict_paths(api_config)) | set(dict_paths(local_config)) == set(
-      dict_paths(api_config)
-  )
-
-  assert (
-      local_config["network"]["device_intf"]
-      == api_config["network"]["device_intf"]
-  )
-  assert (
-      local_config["network"]["internet_intf"]
-      == api_config["network"]["internet_intf"]
-  )
-
-
 def test_invalid_path_get(testrun): # pylint: disable=W0613
   r = requests.get(f"{API}/blah/blah", timeout=5)
   response = r.json()
@@ -962,166 +1138,6 @@ def test_invalid_path_get(testrun): # pylint: disable=W0613
 
   # validate structure
   assert set(dict_paths(mockito)) == set(dict_paths(response))
-
-
-@pytest.mark.skip()
-def test_trigger_run(testing_devices, testrun): # pylint: disable=W0613
-  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
-  assert r.status_code == 200
-
-  until_true(
-      lambda: query_system_status().lower() == "waiting for device",
-      "system status is `waiting for device`",
-      30,
-  )
-
-  start_test_device("x123", BASELINE_MAC_ADDR)
-
-  until_true(
-      lambda: query_system_status().lower() == "compliant",
-      "system status is `complete`",
-      600,
-  )
-
-  stop_test_device("x123")
-
-  # Validate response
-  r = requests.get(f"{API}/system/status", timeout=5)
-  response = r.json()
-  pretty_print(response)
-
-  # Validate results
-  results = {x["name"]: x for x in response["tests"]["results"]}
-  print(results)
-  # there are only 3 baseline tests
-  assert len(results) == 3
-
-  # Validate structure
-  with open(
-      os.path.join(
-          os.path.dirname(__file__), "mockito/running_system_status.json"
-      ), encoding="utf-8"
-  ) as f:
-    mockito = json.load(f)
-
-  # validate structure
-  assert set(dict_paths(mockito)).issubset(set(dict_paths(response)))
-
-  # Validate results structure
-  assert set(dict_paths(mockito["tests"]["results"][0])).issubset(
-      set(dict_paths(response["tests"]["results"][0]))
-  )
-
-  # Validate a result
-  assert results["baseline.compliant"]["result"] == "Compliant"
-
-
-@pytest.mark.skip()
-def test_stop_running_test(testing_devices, testrun): # pylint: disable=W0613
-  payload = {"device": {"mac_addr": ALL_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
-                    timeout=10)
-  assert r.status_code == 200
-
-  until_true(
-      lambda: query_system_status().lower() == "waiting for device",
-      "system status is `waiting for device`",
-      30,
-  )
-
-  start_test_device("x12345", ALL_MAC_ADDR)
-
-  until_true(
-      lambda: query_test_count() > 1,
-      "system status is `complete`",
-      1000,
-  )
-
-  stop_test_device("x12345")
-
-  # Validate response
-  r = requests.post(f"{API}/system/stop", timeout=5)
-  response = r.json()
-  pretty_print(response)
-  assert response == {"success": "Testrun stopped"}
-  time.sleep(1)
-
-  # Validate response
-  r = requests.get(f"{API}/system/status", timeout=5)
-  response = r.json()
-  pretty_print(response)
-
-  assert response["status"] == "Cancelled"
-
-
-def test_stop_running_not_running(testrun): # pylint: disable=W0613
-  # Validate response
-  r = requests.post(f"{API}/system/stop",
-                    timeout=10)
-  response = r.json()
-  pretty_print(response)
-
-  assert r.status_code == 404
-  assert response["error"] == "Testrun is not currently running"
-
-@pytest.mark.skip()
-def test_multiple_runs(testing_devices, testrun): # pylint: disable=W0613
-  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
-                    timeout=10)
-  assert r.status_code == 200
-  print(r.text)
-
-  until_true(
-      lambda: query_system_status().lower() == "waiting for device",
-      "system status is `waiting for device`",
-      30,
-  )
-
-  start_test_device("x123", BASELINE_MAC_ADDR)
-
-  until_true(
-      lambda: query_system_status().lower() == "compliant",
-      "system status is `complete`",
-      900,
-  )
-
-  stop_test_device("x123")
-
-  # Validate response
-  r = requests.get(f"{API}/system/status", timeout=5)
-  response = r.json()
-  pretty_print(response)
-
-  # Validate results
-  results = {x["name"]: x for x in response["tests"]["results"]}
-  print(results)
-  # there are only 3 baseline tests
-  assert len(results) == 3
-
-  payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload),
-                    timeout=10)
-  # assert r.status_code == 200
-  # returns 409
-  print(r.text)
-
-  until_true(
-      lambda: query_system_status().lower() == "waiting for device",
-      "system status is `waiting for device`",
-      30,
-  )
-
-  start_test_device("x123", BASELINE_MAC_ADDR)
-
-  until_true(
-      lambda: query_system_status().lower() == "compliant",
-      "system status is `complete`",
-      900,
-  )
-
-  stop_test_device("x123")
 
 
 def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W0613
