@@ -35,13 +35,17 @@ export interface Validation {
   max?: string;
 }
 
-export interface Question {
+export interface ProfileFormat {
   question: string;
-  type?: FormControlType;
+  type: FormControlType;
   description?: string;
   options?: string[];
   default?: string;
   validation?: Validation;
+}
+
+export interface Question {
+  question?: string;
   answer?: string | number[];
 }
 

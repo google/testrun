@@ -34,7 +34,7 @@ import {
 } from '../../mocks/profile.mock';
 import { of } from 'rxjs';
 import { Component, Input } from '@angular/core';
-import { Profile, Question } from '../../model/profile';
+import { Profile, ProfileFormat } from '../../model/profile';
 import { MatDialogRef } from '@angular/material/dialog';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { RiskAssessmentStore } from './risk-assessment.store';
@@ -372,5 +372,5 @@ class FakeProfileItemComponent {
 class FakeProfileFormComponent {
   @Input() profiles!: Profile[];
   @Input() selectedProfile!: Profile;
-  @Input() profileFormat!: Question[];
+  @Input() profileFormat!: ProfileFormat[];
 }
