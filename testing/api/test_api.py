@@ -38,6 +38,7 @@ DEVICES_DIRECTORY = "local/devices"
 TESTING_DEVICES = "../device_configs"
 PROFILES_DIRECTORY = "local/risk_profiles"
 SYSTEM_CONFIG_PATH = "local/system.json"
+SYSTEM_CONFIG_RESTORE_PATH = "testing/api/system.json"
 
 BASELINE_MAC_ADDR = "02:42:aa:00:01:01"
 ALL_MAC_ADDR = "02:42:aa:00:00:01"
@@ -226,9 +227,18 @@ def local_get_devices():
 
 # Tests for system endpoints
 
+@pytest.fixture()
+def restore_config():
+  """Restore the original configuration (system.json) after the test"""
+  yield
+  # Restore system.json from 'testing/api/' after the test
+  if os.path.exists(SYSTEM_CONFIG_RESTORE_PATH):
+    shutil.copy(SYSTEM_CONFIG_RESTORE_PATH, SYSTEM_CONFIG_PATH)
+
 def test_get_system_interfaces(testrun): # pylint: disable=W0613
   """Tests API system interfaces against actual local interfaces"""
-  # Send a GET request to the API to retrieve system interfaces 
+
+  # Send a GET request to the API to retrieve system interfaces
   r = requests.get(f"{API}/system/interfaces", timeout=5)
   # Parse the JSON response
   response = r.json()
@@ -242,9 +252,65 @@ def test_get_system_interfaces(testrun): # pylint: disable=W0613
   # Ensure that all values in the response are strings
   assert all(isinstance(x, str) for x in response)
 
-def test_update_system_config(testrun): # pylint: disable=W0613
+def test_update_system_config(testrun, restore_config): # pylint: disable=W0613
   """Test update system configuration endpoint ('/system/config')"""
-  pass
+
+  # Configuration data to update
+  updated_system_config = {
+      "network": {
+          "device_intf": "updated_endev0a",
+          "internet_intf": "updated_wlan1"
+      },
+      "log_level": "DEBUG"
+  }
+
+  # Send the post request to update the system configuration
+  r = requests.post(f"{API}/system/config",
+                    data=json.dumps(updated_system_config),
+                    timeout=5)
+
+  # Check if status code is 200 (OK)
+  assert r.status_code == 200
+
+  # Parse the JSON response
+  response = r.json()
+
+  # Check if the response["network"]["device_intf"] has been updated
+  assert (
+    response["network"]["device_intf"]
+    == updated_system_config["network"]["device_intf"]
+  )
+
+  # Check if the response["network"]["internet_intf"] has been updated
+  assert (
+        response["network"]["internet_intf"]
+        == updated_system_config["network"]["internet_intf"]
+  )
+
+  # Check if the response["log_level"] has been updated
+  assert (
+    response["log_level"]
+    == updated_system_config["log_level"]
+  )
+
+def test_update_system_config_invalid_config(testrun, restore_config): # pylint: disable=W0613
+  """Test invalid configuration file for update system configuration"""
+
+  # Configuration data to update
+  updated_system_config = {
+      "network": {
+          "device_intf": "updated_endev0a",
+          "internet_intf": "updated_wlan1"
+      }
+  }
+
+  # Send the post request to update the system configuration
+  r = requests.post(f"{API}/system/config",
+                    data=json.dumps(updated_system_config),
+                    timeout=5)
+
+  # Check if status code is 500 (bad request)
+  assert r.status_code == 500
 
 def test_get_system_config(testrun): # pylint: disable=W0613
   """Tests get system configuration endpoint ('/system/config')"""
