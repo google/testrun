@@ -65,7 +65,7 @@ COPY $MODULE_DIR/bin /testrun/bin
 # Copy over all python files
 COPY $MODULE_DIR/python /testrun/python
 
-# Do not specify a CMD or Entrypoint as Test Run will automatically start your service as required
+# Do not specify a CMD or Entrypoint as Testrun will automatically start your service as required
 ```
 
 ### Example of start_network_service script
