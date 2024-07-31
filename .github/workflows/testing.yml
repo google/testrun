@@ -77,17 +77,19 @@ jobs:
         shell: bash {0}
         run: bash testing/unit/run.sh
 
-  pylint:
+  testrun_lint:
     permissions: {}
-    name:  Pylint
+    name:  Lint
     runs-on: ubuntu-22.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - name: Checkout source
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Run pylint
         shell: bash {0}
         run: testing/pylint/test_pylint
+      - name: stylelint 
+        uses: actions-hub/stylelint@79a72921dfce2e51791be2df406f0c103fb47553
 
   testrun_ui:
     permissions: {}
@@ -114,7 +116,7 @@ jobs:
 
   linters_ui:
     permissions: {}
-    name: ESLint
+    name: Lint UI
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
