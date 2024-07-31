@@ -64,7 +64,9 @@ describe('ErrorInterceptor', () => {
     interceptor.intercept(requestMock, next).subscribe(
       () => ({}),
       () => {
-        expect(notificationServiceMock.notify).toHaveBeenCalledWith('Something went wrong. Check the logs for details here /usr/local/testrun/testrun.log');
+        expect(notificationServiceMock.notify).toHaveBeenCalledWith(
+          'Something went wrong. Check the Terminal for details.'
+        );
         done();
       }
     );

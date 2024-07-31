@@ -35,7 +35,6 @@ import { finalize } from 'rxjs/operators';
 
 const DEFAULT_TIMEOUT_MS = 5000;
 const SYSTEM_STOP_TIMEOUT_MS = 60 * 1000;
-const LOGS_FOLDER = '/usr/local/testrun/testrun.log';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
@@ -67,7 +66,7 @@ export class ErrorInterceptor implements HttpInterceptor {
             );
           } else {
             this.notificationService.notify(
-              `Something went wrong. Check the logs for details here ${LOGS_FOLDER}`
+              'Something went wrong. Check the Terminal for details.'
             );
             console.error(error.error?.error || error.message);
           }
