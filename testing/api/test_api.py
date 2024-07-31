@@ -309,8 +309,8 @@ def test_update_system_config_invalid_config(testrun, restore_config): # pylint:
                     data=json.dumps(updated_system_config),
                     timeout=5)
 
-  # Check if status code is 500 (Invalid config)
-  assert r.status_code == 500
+  # Check if status code is 400 (Invalid config)
+  assert r.status_code == 400
 
 def test_get_system_config(testrun): # pylint: disable=W0613
   """Tests get system configuration endpoint ('/system/config')"""
@@ -604,17 +604,54 @@ def test_system_shutdown_in_progress(testrun):  # pylint: disable=W0613
           }
       }
   }
-  # Start a test run
+  # Start a test
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
 
-  # Check if the response status code is 200 (OK) for starting the test
-  assert r.status_code == 200
+  # Check if status code is not 200 (OK)
+  if r.status_code != 200:
+    raise ValueError(f"Api request failed with code: {r.status_code}")
 
   # Attempt to shutdown while the test is running
   r = requests.post(f"{API}/system/shutdown", timeout=5)
 
   # Check if the response status code is 400 (test in progress)
   assert r.status_code == 400
+
+# Tests for reports endpoints
+
+def test_get_reports(testrun): # pylint: disable=W0613
+  """Test for get reports endpoint"""
+  # Send a GET request to the /reports endpoint
+  r = requests.get(f"{API}/reports", timeout=5)
+
+  # Check if the status code is 200 (OK)
+  assert r.status_code == 200
+
+  # Parse the JSON response
+  response = r.json()
+
+  # Check if the response is a list
+  assert isinstance(response, list)
+
+  # Iterate through each report
+  for report in response:
+    # Check if the report is dict
+    assert isinstance(report, dict)
+    # Check if "mac_adrr" key is in report
+    assert "mac_addr" in report
+    # Check if "device" key is in report
+    assert "device" in report
+    # Check if "status" key is in report
+    assert "status" in report
+    # Check if "started" key is in report
+    assert "started" in report
+    # Check if "finished" key is in report
+    assert "finished" in report
+    # Check if "tests" key is in report
+    assert "tests" in report
+    # Check if "report" key is in report
+    assert "report" in report
+    # Check if "device" key is in report
 
 # Tests for device endpoints
 
