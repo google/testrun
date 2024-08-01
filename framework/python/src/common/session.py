@@ -440,17 +440,26 @@ class TestrunSession():
     try:
       for risk_profile_file in os.listdir(
               os.path.join(self._root_dir, PROFILES_DIR)):
+
         LOGGER.debug(f'Discovered profile {risk_profile_file}')
 
+        # Open the risk profile file
         with open(os.path.join(self._root_dir, PROFILES_DIR, risk_profile_file),
                   encoding='utf-8') as f:
+
+          # Parse risk profile json
           json_data = json.load(f)
+
+          # Instantiate a new risk profile
           risk_profile = RiskProfile()
+
+          # Pass JSON to populate risk profile
           risk_profile.load(
             profile_json=json_data,
             profile_format=self._profile_format
           )
-          risk_profile.status = self.check_profile_status(risk_profile)
+
+          # Add risk profile to session
           self._profiles.append(risk_profile)
 
     except Exception as e:
@@ -564,20 +573,6 @@ class TestrunSession():
       f.write(risk_profile.to_json(pretty=True))
 
     return risk_profile
-
-  def check_profile_status(self, profile):
-
-    if profile.status == 'Valid':
-
-      # Check expiry
-      created_date = profile.created.timestamp()
-
-      today = datetime.datetime.now().timestamp()
-
-      if created_date < (today - SECONDS_IN_YEAR):
-        profile.status = 'Expired'
-
-    return profile.status
 
   def delete_profile(self, profile):
 
