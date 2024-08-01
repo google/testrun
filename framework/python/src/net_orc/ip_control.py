@@ -248,16 +248,6 @@ class IPControl:
     if '0% packet loss' in output[0]:
       return True
     return False
-  
-  def ping_via_interface(self, host, iface=None):
-    """Ping the host trough the interface"""
-    if iface is None:
-      command = ['ping', '-c', '1', host]
-    else:
-      command = ['ping', '-c', '1', '-I', iface, host]
-    return subprocess.call(command,
-                           stdout=subprocess.DEVNULL,
-                           stderr=subprocess.STDOUT) == 0
 
   @staticmethod
   def get_sys_interfaces() -> t.Dict[str, t.Dict[str, str]]:
