@@ -72,10 +72,13 @@ export class DownloadZipModalComponent extends EscapableDialogComponent {
     this.selectedProfile = this.profiles[0];
   }
 
-  cancel(profile: Profile | null) {
-    let value = '';
-    if (profile && profile?.name !== this.NO_PROFILE.name) {
-      value = profile.name;
+  cancel(profile?: Profile | null) {
+    if (profile === null) {
+      this.dialogRef.close(null);
+    }
+    let value = profile?.name;
+    if (profile && profile?.name === this.NO_PROFILE.name) {
+      value = '';
     }
     this.dialogRef.close(value);
   }
