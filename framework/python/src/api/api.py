@@ -168,9 +168,8 @@ class Api:
     try:
       config = (await request.body()).decode("UTF-8")
       config_json = json.loads(config)
-      self._session.set_config(config_json)
 
-      # Validate req fields
+            # Validate req fields
       if ("network" not in config_json or
           "device_intf" not in config_json.get("network") or
           "internet_intf" not in config_json.get("network") or
@@ -179,6 +178,10 @@ class Api:
         return self._generate_msg(
           False,
           "Configuration is missing required fields")
+
+      self._session.set_config(config_json)
+
+
 
     # Catch JSON Decode error etc
     except JSONDecodeError:
@@ -702,6 +705,18 @@ class Api:
       return self._generate_msg(False, "Invalid request received")
 
     profile_name = req_json.get("name")
+
+    # Error handling if profile name not in request
+    if not profile_name:
+      LOGGER.error("Missing 'name' in the request JSON")
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False, "Invalid request received")
+
+    # Error handling if 'questions' not in request
+    if "questions" not in req_json:
+      LOGGER.error("Missing 'questions' in the request JSON")
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False, "Invalid request received")
 
     # Check if profile exists
     profile = self.get_session().get_profile(profile_name)
