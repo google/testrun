@@ -177,20 +177,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
           withLatestFrom(this.hasInternetConnection$),
           tap(([{ connection }]) => {
             this.updateHasInternetConnection(connection);
-          }),
-          tap(([{ connection }, prevInternetConnection]) => {
-            if (connection === false && prevInternetConnection === true) {
-              this.notificationService.notify(
-                'Internet connection is lost. It may affect testing results. Please, check your internet connection settings.'
-              );
-            } else if (
-              prevInternetConnection === false &&
-              connection === true
-            ) {
-              this.notificationService.notify(
-                'Internet connection is restored. The loss of internet connection could have affected the testing results.'
-              );
-            }
           })
         );
       })

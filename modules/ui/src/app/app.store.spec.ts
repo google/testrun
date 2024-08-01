@@ -320,30 +320,6 @@ describe('AppStore', () => {
           done();
         });
       });
-
-      it('should call notification service when value is false', () => {
-        mockMqttService.getInternetConnection.and.returnValue(
-          of({ connection: false })
-        );
-        appStore.updateHasInternetConnection(true);
-        appStore.getInternetConnection();
-
-        expect(mockNotificationService.notify).toHaveBeenCalledWith(
-          'Internet connection is lost. It may affect testing results. Please, check your internet connection settings.'
-        );
-      });
-
-      it('should call notification service when value is true and previous value is false', () => {
-        appStore.updateHasInternetConnection(false);
-        mockMqttService.getInternetConnection.and.returnValue(
-          of({ connection: true })
-        );
-        appStore.getInternetConnection();
-
-        expect(mockNotificationService.notify).toHaveBeenCalledWith(
-          'Internet connection is restored. The loss of internet connection could have affected the testing results.'
-        );
-      });
     });
   });
 });
