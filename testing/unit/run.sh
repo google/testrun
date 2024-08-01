@@ -43,7 +43,6 @@ run_test() {
 
   # Add the container image and entry point
   DOCKER_CMD="$DOCKER_CMD test-run/${MODULE_NAME}-test $UNIT_TEST_FILE_DST"
-  #DOCKER_CMD="$DOCKER_CMD --entrypoint bin/bash test-run/${MODULE_NAME}-test"
   
   # Execute the docker command
   eval $DOCKER_CMD
@@ -51,11 +50,11 @@ run_test() {
 
 # Run all test module tests from within their containers
 run_test "conn" "captures" "ethtool" "output"
-# run_test "dns" "captures" "reports" "output"
-# run_test "ntp" "captures" "reports" "output"
-# run_test "protocol" "captures" "output"
-# run_test "services" "reports" "results" "output"
-# run_test "tls" "captures" "CertAuth" "certs" "reports" "root_certs" "output"
+run_test "dns" "captures" "reports" "output"
+run_test "ntp" "captures" "reports" "output"
+run_test "protocol" "captures" "output"
+run_test "services" "reports" "results" "output"
+run_test "tls" "captures" "CertAuth" "certs" "reports" "root_certs" "output"
 
 # Activate Python virtual environment
 source venv/bin/activate
