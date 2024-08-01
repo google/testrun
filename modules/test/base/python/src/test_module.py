@@ -119,6 +119,8 @@ class TestModule:
           test['description'] = 'This test could not be found'
       else:
         LOGGER.debug(f'Test {test["name"]} is disabled')
+        test['result'] = 'Disabled'
+        test['description'] = 'This test did not run because it is disabled'
 
         # To be added in v1.3.2
         # result = 'Disabled', 'This test is disabled and did not run'
