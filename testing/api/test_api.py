@@ -619,8 +619,9 @@ def test_system_shutdown_in_progress(testrun):  # pylint: disable=W0613
 
 # Tests for reports endpoints
 
-def test_get_reports(testrun): # pylint: disable=W0613
-  """Test for get reports endpoint"""
+def test_get_reports_no_reports(testrun): # pylint: disable=W0613
+  """Test get reports when no reports exist."""
+
   # Send a GET request to the /reports endpoint
   r = requests.get(f"{API}/reports", timeout=5)
 
@@ -633,36 +634,13 @@ def test_get_reports(testrun): # pylint: disable=W0613
   # Check if the response is a list
   assert isinstance(response, list)
 
-  # Iterate through each report
-  for report in response:
-    # Check if the report is dict
-    assert isinstance(report, dict)
-    # Check if "mac_adrr" key is in report
-    assert "mac_addr" in report
-    # Check if "device" key is in report
-    assert "device" in report
-    # Check if "status" key is in report
-    assert "status" in report
-    # Check if "started" key is in report
-    assert "started" in report
-    # Check if "finished" key is in report
-    assert "finished" in report
-    # Check if "tests" key is in report
-    assert "tests" in report
-    # Check if "report" key is in report
-    assert "report" in report
-
-def test_get_reports_no_reports(testrun): # pylint: disable=W0613
-  """Test get reports when no reports exist."""
-  r = requests.get(f"{API}/reports", timeout=5)
-  assert r.status_code == 200, f"Expected 200, got {r.status_code}"
-  response = r.json()
-  assert response == [], "Expected empty list when no reports exist"
+  # Check if the response is an empty list
+  assert response == []
 
 @pytest.mark.skip()
 def run_test_and_get_report(testing_devices, testrun): # pylint: disable=W0613
   """Initiate a test run, ensure report generation, and fetch the report."""
-  # Step 1: Prepare and start the test run
+
   payload = {
       "device": {
           "mac_addr": BASELINE_MAC_ADDR,
@@ -685,12 +663,12 @@ def run_test_and_get_report(testing_devices, testrun): # pylint: disable=W0613
   device_name = "test_device"
   start_test_device(device_name, BASELINE_MAC_ADDR)
 
-  # Step 3: Wait for the test to complete
-  max_retries = 300  # time limit
+  # Wait for the test to complete
+  max_retries = 300
   for _ in range(max_retries):
     time.sleep(1)
     status = query_system_status().lower()
-    print(f"Current system status: {status}")  # Additional logging
+    print(f"Current system status: {status}")
     if status in ["compliant", "non-compliant", "cancelled"]:
       break
   else:
@@ -698,15 +676,15 @@ def run_test_and_get_report(testing_devices, testrun): # pylint: disable=W0613
     stop_test_device(device_name)
     final_status = query_system_status().lower()  # Get the final status
     print("Final system status:", final_status)  # Log the final status
-    pytest.fail("Test run did not complete within the expected time. Final status: " + final_status)
+    pytest.fail("Test run did not complete. Final status: " + final_status)
 
-  # Step 4: Fetch the generated report
+  # Get request to retrieve the generated report
   r = requests.get(f"{API}/report/{BASELINE_MAC_ADDR}", timeout=5)
   assert r.status_code == 200, "Failed to fetch the report"
   report_data = r.json()
   print(f"Reports are {report_data}")
 
-  # Step 5: Stop the test device
+  # Stop the test device
   stop_test_device(device_name)
 
 def test_delete_report(testrun): # pylint: disable=W0613
@@ -1325,13 +1303,11 @@ def test_device_edit_device_with_mac_already_exists(
 
   assert r.status_code == 409
 
-
 def test_system_latest_version(testrun): # pylint: disable=W0613
   r = requests.get(f"{API}/system/version", timeout=5)
   assert r.status_code == 200
   updated_system_version = r.json()["update_available"]
   assert updated_system_version is False
-
 
 def test_invalid_path_get(testrun): # pylint: disable=W0613
   r = requests.get(f"{API}/blah/blah", timeout=5)
@@ -1345,7 +1321,6 @@ def test_invalid_path_get(testrun): # pylint: disable=W0613
 
   # validate structure
   assert set(dict_paths(mockito)) == set(dict_paths(response))
-
 
 def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W0613
   # local_delete_devices(ALL_DEVICES)
@@ -1371,7 +1346,6 @@ def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W06
                     timeout=5)
   print(r.text)
   print(r.status_code)
-
 
 # Tests for profile endpoints
 def delete_all_profiles():
@@ -1418,7 +1392,6 @@ def create_profile(file_name):
 
   # Return the profile
   return new_profile
-
 
 @pytest.fixture()
 def reset_profiles():
@@ -1685,7 +1658,6 @@ def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   response = r.json()
   # Check if "error" key in response
   assert "error" in response
-
 
 def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable=W0613
   """Test for delete profile"""
