@@ -646,7 +646,7 @@ class RiskProfile():
 
     .risk-label{
       position: absolute;
-      top: 1px; 
+      top: 0px; 
       right: 0px;
       width: 52px;
       height: 16px;
