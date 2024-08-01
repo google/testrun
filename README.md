@@ -47,7 +47,7 @@ When manual testing or configuration changes are required, Testrun will provide 
  - DHCP client - The device must be able to obtain an IP address via DHCP
 
 ## Get started ▶️
-Once you have met the hardware and software requirements, you can get started with Testrun by following the [Get started guide](docs/get_started.md).
+Once you have met the hardware and software requirements, you can get started with Testrun by following the [Get started guide](docs/get_started.md). Further docs are available in the [docs directory](docs)
 
 ## Roadmap :chart_with_upwards_trend:
 Testrun will constantly evolve to further support end-users by automating device network behaviour against industry standards. For further information on upcoming features, check out the [Roadmap](docs/roadmap.pdf).
@@ -59,7 +59,7 @@ We are proud of our tool and strive to provide an enjoyable experience for all o
 If the application has come across a problem at any point during setup or use, please raise an issue under the [issues tab](https://github.com/google/testrun/issues). Issue templates exist for both bug reports and feature requests. If neither of these are appropriate for your issue, raise a blank issue instead.
 
 ## Contributing :keyboard:
-The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md). In short, checkout the [Google CLA](https://cla.developers.google.com/) site to get started.
+The contributing requirements can be found in [CONTRIBUTING.md](CONTRIBUTING.md). In short, checkout the [Google CLA](https://cla.developers.google.com/) site to get started. After that, check out our [developer documentation](docs/dev/README.md).
 
 ## FAQ :raising_hand:
 1) I have an issue whilst installing/upgrading Testrun, what do I do?

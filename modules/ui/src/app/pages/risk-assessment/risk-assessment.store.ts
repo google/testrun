@@ -19,7 +19,7 @@ import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { delay, exhaustMap } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
-import { Profile, Question } from '../../model/profile';
+import { Profile, ProfileFormat } from '../../model/profile';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
@@ -29,7 +29,7 @@ import { fetchRiskProfiles, setRiskProfiles } from '../../store/actions';
 export interface AppComponentState {
   selectedProfile: Profile | null;
   profiles: Profile[];
-  profileFormat: Question[];
+  profileFormat: ProfileFormat[];
 }
 @Injectable()
 export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
@@ -43,10 +43,12 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     selectedProfile: this.selectedProfile$,
   });
 
-  updateProfileFormat = this.updater((state, profileFormat: Question[]) => ({
-    ...state,
-    profileFormat,
-  }));
+  updateProfileFormat = this.updater(
+    (state, profileFormat: ProfileFormat[]) => ({
+      ...state,
+      profileFormat,
+    })
+  );
   updateSelectedProfile = this.updater(
     (state, selectedProfile: Profile | null) => ({
       ...state,
@@ -121,7 +123,7 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     return trigger$.pipe(
       exhaustMap(() => {
         return this.testRunService.fetchProfilesFormat().pipe(
-          tap((profileFormat: Question[]) => {
+          tap((profileFormat: ProfileFormat[]) => {
             this.updateProfileFormat(profileFormat);
           })
         );
