@@ -522,12 +522,12 @@ describe('AppComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have callout component with "Congratulations" text', () => {
+      it('should have callout component with "The device is now being tested" text', () => {
         const callout = compiled.querySelector('app-callout');
         const calloutContent = callout?.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('Congratulations');
+        expect(calloutContent).toContain('The device is now being tested');
       });
 
       it('should have callout component with "Risk Assessment" link', () => {
@@ -554,12 +554,12 @@ describe('AppComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have callout component with "Congratulations" text', () => {
+      it('should have callout component with "The device is now being tested" text', () => {
         const callout = compiled.querySelector('app-callout');
         const calloutContent = callout?.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('Congratulations');
+        expect(calloutContent).toContain('The device is now being tested');
       });
 
       it('should have callout component with "Risk Assessment" link', () => {
@@ -740,7 +740,7 @@ describe('AppComponent', () => {
           const calloutContent = callout?.innerHTML.trim();
 
           expect(callout).toBeTruthy();
-          expect(calloutContent).toContain('No ports are detected.');
+          expect(calloutContent).toContain('No ports detected.');
         });
       });
 
