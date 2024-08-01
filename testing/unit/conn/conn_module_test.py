@@ -136,7 +136,7 @@ class ConnectionModuleTest(unittest.TestCase):
                            results_dir=OUTPUT_DIR,
                            startup_capture_file=STARTUP_CAPTURE_FILE,
                            monitor_capture_file=MONITOR_CAPTURE_FILE)
-    result = conn_module._connection_switch_dhcp_snooping()
+    result = conn_module._connection_switch_dhcp_snooping() # pylint: disable=W0212
     LOGGER.info(result)
     self.assertEqual(result[0], True)
 
