@@ -53,7 +53,7 @@ export class DownloadZipModalComponent extends EscapableDialogComponent {
   } as Profile;
   public readonly Routes = Routes;
   profiles: Profile[] = [];
-  selectedProfile: string = '';
+  selectedProfile: Profile;
   constructor(
     private readonly testRunService: TestRunService,
     public override dialogRef: MatDialogRef<DownloadZipModalComponent>,
@@ -69,14 +69,15 @@ export class DownloadZipModalComponent extends EscapableDialogComponent {
       );
     }
     this.profiles.unshift(this.NO_PROFILE);
-    this.selectedProfile = this.profiles[0].name;
+    this.selectedProfile = this.profiles[0];
   }
 
-  cancel(profile?: string | null) {
-    if (profile === this.NO_PROFILE.name) {
-      profile = '';
+  cancel(profile: Profile | null) {
+    let value = '';
+    if (profile && profile?.name !== this.NO_PROFILE.name) {
+      value = profile.name;
     }
-    this.dialogRef.close(profile);
+    this.dialogRef.close(value);
   }
 
   public getRiskClass(riskResult: string): RiskResultClassName {
