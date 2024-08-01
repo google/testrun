@@ -54,6 +54,12 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
+  async profileClicked(profile: Profile | null = null) {
+    if (profile === null || profile.status !== ProfileStatus.EXPIRED) {
+      await this.openForm(profile);
+    }
+  }
+
   async openForm(profile: Profile | null = null) {
     this.isOpenProfileForm = true;
     this.store.updateSelectedProfile(profile);
@@ -140,8 +146,8 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     }
   }
 
-  trackByIndex = (index: number): number => {
-    return index;
+  trackByName = (index: number, item: Profile): string => {
+    return item.name;
   };
 
   private closeFormAfterDelete(name: string, selectedProfile: Profile | null) {
