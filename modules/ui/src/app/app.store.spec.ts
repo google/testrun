@@ -85,7 +85,10 @@ describe('AppStore', () => {
     mockFocusManagerService = jasmine.createSpyObj([
       'focusFirstElementInContainer',
     ]);
-    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters']);
+    mockMqttService = jasmine.createSpyObj([
+      'getNetworkAdapters',
+      'getInternetConnection',
+    ]);
 
     TestBed.configureTestingModule({
       providers: [
@@ -162,6 +165,7 @@ describe('AppStore', () => {
           isMenuOpen: true,
           interfaces: {},
           settingMissedError: null,
+          hasInternetConnection: true,
         });
         done();
       });
@@ -301,6 +305,20 @@ describe('AppStore', () => {
         expect(mockNotificationService.notify).toHaveBeenCalledWith(
           'New network adapter(s) mockNewInternetKey has been detected. You can switch to using it in the System settings menu'
         );
+      });
+    });
+
+    describe('getInternetConnection', () => {
+      it('should update store', done => {
+        mockMqttService.getInternetConnection.and.returnValue(
+          of({ connection: false })
+        );
+        appStore.getInternetConnection();
+
+        appStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.hasInternetConnection).toEqual(false);
+          done();
+        });
       });
     });
   });

@@ -15,7 +15,7 @@
 
 from contextlib import asynccontextmanager
 import datetime
-
+import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
@@ -25,6 +25,7 @@ from common import logger
 # Check adapters period seconds
 CHECK_NETWORK_ADAPTERS_PERIOD = 5
 NETWORK_ADAPTERS_TOPIC = 'network_adapters'
+INTERNET_CONNECTION_TOPIC = 'events/internet'
 
 LOGGER = logger.get_logger('tasks')
 
@@ -39,6 +40,8 @@ class PeriodicTasks:
     self._mqtt_client = self._testrun.get_mqtt_client()
     local_tz = datetime.datetime.now().astimezone().tzinfo
     self._scheduler = AsyncIOScheduler(timezone=local_tz)
+    # Prevent scheduler warnings
+    self._scheduler._logger.setLevel(logging.ERROR)
 
   @asynccontextmanager
   async def start(self, app: FastAPI):  # pylint: disable=unused-argument
@@ -47,12 +50,21 @@ class PeriodicTasks:
     Args:
         app (FastAPI): app instance
     """
-    # job that checks for changes in network adapters
+    # Job that checks for changes in network adapters
     self._scheduler.add_job(
         func=self._testrun.get_net_orc().network_adapters_checker,
         kwargs={
-                'mgtt_client': self._mqtt_client,
+                'mqtt_client': self._mqtt_client,
                 'topic': NETWORK_ADAPTERS_TOPIC
+                },
+        trigger='interval',
+        seconds=CHECK_NETWORK_ADAPTERS_PERIOD,
+    )
+    self._scheduler.add_job(
+        func=self._testrun.get_net_orc().internet_conn_checker,
+        kwargs={
+                'mqtt_client': self._mqtt_client,
+                'topic': INTERNET_CONNECTION_TOPIC
                 },
         trigger='interval',
         seconds=CHECK_NETWORK_ADAPTERS_PERIOD,
