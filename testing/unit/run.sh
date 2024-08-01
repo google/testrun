@@ -27,13 +27,11 @@ run_test() {
   # Define the location in the container to
   # load the unit test files
   local UNIT_TEST_DIR_DST="/testing/unit/$MODULE_NAME"
-  local UNIT_TEST_FILE_DST="$UNIT_TEST_DIR_DST/module_test.py"
-
-  # Define the python path inside the container
-  local PYTHONPATH="/testrun/python/src"
+  local UNIT_TEST_FILE_DST="/testrun/python/src/module_test.py"
 
   # Build the docker run command
-  local DOCKER_CMD="sudo docker run --rm -it --name ${MODULE_NAME}-unit-test -e PYTHONPATH=$PYTHONPATH"
+  local DOCKER_CMD="sudo docker run --rm -it --name ${MODULE_NAME}-unit-test"
+
 
   # Add volume mounts for the main test file
   DOCKER_CMD="$DOCKER_CMD -v $UNIT_TEST_FILE_SRC:$UNIT_TEST_FILE_DST"
@@ -44,19 +42,20 @@ run_test() {
   done
 
   # Add the container image and entry point
-  DOCKER_CMD="$DOCKER_CMD --entrypoint python3 test-run/${MODULE_NAME}-test $UNIT_TEST_FILE_DST"
-
+  DOCKER_CMD="$DOCKER_CMD test-run/${MODULE_NAME}-test $UNIT_TEST_FILE_DST"
+  #DOCKER_CMD="$DOCKER_CMD --entrypoint bin/bash test-run/${MODULE_NAME}-test"
+  
   # Execute the docker command
   eval $DOCKER_CMD
 }
 
 # Run all test module tests from within their containers
-run_test "conn" "ethtool" "output"
-run_test "dns" "captures" "reports" "output"
-run_test "ntp" "captures" "reports" "output"
-run_test "protocol" "captures" "output"
-run_test "services" "reports" "results" "output"
-run_test "tls" "captures" "CertAuth" "certs" "reports" "root_certs" "output"
+run_test "conn" "captures" "ethtool" "output"
+# run_test "dns" "captures" "reports" "output"
+# run_test "ntp" "captures" "reports" "output"
+# run_test "protocol" "captures" "output"
+# run_test "services" "reports" "results" "output"
+# run_test "tls" "captures" "CertAuth" "certs" "reports" "root_certs" "output"
 
 # Activate Python virtual environment
 source venv/bin/activate

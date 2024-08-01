@@ -39,7 +39,14 @@ LEASE_WAIT_TIME_DEFAULT = 60
 class ConnectionModule(TestModule):
   """Connection Test module"""
 
-  def __init__(self, module, log_dir=None, conf_file=None, results_dir=None):
+  def __init__(self,
+               module,
+               log_dir=None,
+               conf_file=None,
+               results_dir=None,
+               startup_capture_file=STARTUP_CAPTURE_FILE,
+               monitor_capture_file=MONITOR_CAPTURE_FILE):
+
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
                      log_dir=log_dir,
@@ -47,6 +54,8 @@ class ConnectionModule(TestModule):
                      results_dir=results_dir)
     global LOGGER
     LOGGER = self._get_logger()
+    self.startup_capture_file = startup_capture_file
+    self.monitor_capture_file = monitor_capture_file
     self._port_stats = PortStatsUtil(logger=LOGGER)
     self.dhcp1_client = DHCPClient1()
     self.dhcp2_client = DHCPClient2()
@@ -106,7 +115,7 @@ class ConnectionModule(TestModule):
     no_arp = True
 
     # Read all the pcap files
-    packets = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
+    packets = rdpcap(self.startup_capture_file) + rdpcap(self.monitor_capture_file)
     for packet in packets:
 
       # We are not interested in packets unless they are ARP packets
@@ -145,7 +154,7 @@ class ConnectionModule(TestModule):
     disallowed_dhcp_types = [2, 4, 5, 6, 9, 10, 12, 13, 15, 17]
 
     # Read all the pcap files
-    packets = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
+    packets = rdpcap(self.startup_capture_file) + rdpcap(self.monitor_capture_file)
     for packet in packets:
 
       # We are not interested in packets unless they are DHCP packets
@@ -225,7 +234,7 @@ class ConnectionModule(TestModule):
       return result, 'No MAC address found.'
 
     # Read all the pcap files containing DHCP packet information
-    packets = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
+    packets = rdpcap(self.startup_capture_file) + rdpcap(self.monitor_capture_file)
 
     # Extract MAC addresses from DHCP packets
     mac_addresses = set()
@@ -399,8 +408,8 @@ class ConnectionModule(TestModule):
     return result
 
   def _has_slaac_addres(self):
-    packet_capture = (rdpcap(STARTUP_CAPTURE_FILE) +
-                      rdpcap(MONITOR_CAPTURE_FILE) + rdpcap(DHCP_CAPTURE_FILE))
+    packet_capture = (rdpcap(self.startup_capture_file) +
+                      rdpcap(self.monitor_capture_file) + rdpcap(DHCP_CAPTURE_FILE))
     sends_ipv6 = False
     for packet_number, packet in enumerate(packet_capture, start=1):
       if IPv6 in packet and packet.src == self._device_mac:
