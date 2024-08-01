@@ -332,7 +332,6 @@ class TestrunSession():
         updated = True
 
     if not updated:
-      result.result = 'In Progress'
       self._results.append(result)
 
   def add_module_report(self, module_report):
