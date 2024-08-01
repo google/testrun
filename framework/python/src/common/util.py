@@ -17,8 +17,8 @@ import getpass
 import os
 import subprocess
 import shlex
-import typing as t
 import netifaces
+import typing as t
 from common import logger
 
 LOGGER = logger.get_logger('util')

@@ -334,6 +334,27 @@ class TestrunSession():
       result.result = 'In Progress'
       self._results.append(result)
 
+  def set_test_result_error(self, result):
+    """Set test result error"""
+    updated = False
+
+    for test_result in self._results:
+
+      # result type is TestCase object
+      if test_result.name == result.name:
+
+        # Just update the result and description
+        if test_result.result == 'In Progress':
+          test_result.result = 'Error'
+          test_result.description = result.description
+          test_result.recommendations = None
+          updated = True
+
+    if not updated:
+      result.result = 'Error'
+      result.recommendations = None
+      self._results.append(result)
+
   def add_module_report(self, module_report):
     self._module_reports.append(module_report)
 

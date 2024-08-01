@@ -789,17 +789,22 @@ class NetworkOrchestrator:
   def get_session(self):
     return self._session
 
-  def network_adapters_checker(self, mgtt_client, topic):
+  def is_device_connected(self):
+    """Check if device connected"""
+    return self._ip_ctrl.check_interface_status(
+        self._session.get_device_interface()
+      )
+
+  def network_adapters_checker(self, mqtt_client, topic):
     """Checks for changes in network adapters
     and sends a message to the frontend
     """
     try:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
-        mgtt_client.send_message(topic, adapters)
+        mqtt_client.send_message(topic, adapters)
     except Exception:
       LOGGER.error(traceback.format_exc())
-
 
 class NetworkModule:
   """Define all the properties of a Network Module"""

@@ -45,13 +45,13 @@ LATEST_RELEASE_CHECK = ("https://api.github.com/repos/google/" +
 class Api:
   """Provide REST endpoints to manage Testrun"""
 
-  def __init__(self, test_run):
+  def __init__(self, testrun):
 
-    self._test_run = test_run
+    self._testrun = testrun
     self._name = "Testrun API"
     self._router = APIRouter()
 
-    self._session = self._test_run.get_session()
+    self._session = self._testrun.get_session()
 
     self._router.add_api_route("/system/interfaces", self.get_sys_interfaces)
     self._router.add_api_route("/system/config",
@@ -115,16 +115,18 @@ class Api:
     origins = ["*"]
 
     # Scheduler for background periodic tasks
-    self._scheduler = tasks.PeriodicTasks(self._test_run)
+    self._scheduler = tasks.PeriodicTasks(
+      self._testrun,
+      self._testrun.get_mqtt_client())
 
     self._app = FastAPI(lifespan=self._scheduler.start)
     self._app.include_router(self._router)
     self._app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+      CORSMiddleware,
+      allow_origins=origins,
+      allow_credentials=True,
+      allow_methods=["*"],
+      allow_headers=["*"],
     )
 
     self._api_thread = threading.Thread(target=self._start,
@@ -203,7 +205,7 @@ class Api:
     device = self._session.get_device(body_json["device"]["mac_addr"])
 
     # Check Testrun is not already running
-    if self._test_run.get_session().get_status() in [
+    if self._testrun.get_session().get_status() in [
         "In Progress", "Waiting for Device", "Monitoring"
     ]:
       LOGGER.debug("Testrun is already running. Cannot start another instance")
@@ -221,14 +223,14 @@ class Api:
     device.firmware = body_json["device"]["firmware"]
 
     # Check if config has been updated (device interface not default)
-    if (self._test_run.get_session().get_device_interface() ==
+    if (self._testrun.get_session().get_device_interface() ==
         DEFAULT_DEVICE_INTF):
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(
           False, "Testrun configuration has not yet " + "been completed.")
 
     # Check Testrun is able to start
-    if self._test_run.get_net_orc().check_config() is False:
+    if self._testrun.get_net_orc().check_config() is False:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
       return self._generate_msg(
           False, "Configured interfaces are not " +
@@ -251,9 +253,9 @@ class Api:
     thread = threading.Thread(target=self._start_test_run, name="Testrun")
     thread.start()
 
-    self._test_run.get_session().set_target_device(device)
+    self._testrun.get_session().set_target_device(device)
 
-    return self._test_run.get_session().to_json()
+    return self._testrun.get_session().to_json()
 
   def _generate_msg(self, success, message):
     msg_type = "success"
@@ -262,23 +264,23 @@ class Api:
     return json.loads('{"' + msg_type + '": "' + message + '"}')
 
   def _start_test_run(self):
-    self._test_run.start()
+    self._testrun.start()
 
   async def stop_test_run(self, response: Response):
     LOGGER.debug("Received stop command")
 
     # Check if Testrun is running
-    if (self._test_run.get_session().get_status()
+    if (self._testrun.get_session().get_status()
         not in ["In Progress", "Waiting for Device", "Monitoring"]):
       response.status_code = 404
       return self._generate_msg(False, "Testrun is not currently running")
 
-    self._test_run.stop()
+    self._testrun.stop()
 
     return self._generate_msg(True, "Testrun stopped")
 
   async def get_status(self):
-    return self._test_run.get_session().to_json()
+    return self._testrun.get_session().to_json()
 
   def shutdown(self, response: Response):
 
@@ -292,14 +294,14 @@ class Api:
       return self._generate_msg(
           False, "Unable to shutdown. A test is currently in progress.")
 
-    self._test_run.shutdown()
+    self._testrun.shutdown()
     os.kill(os.getpid(), signal.SIGTERM)
 
   async def get_version(self, response: Response):
 
     # Add defaults
     json_response = {}
-    json_response["installed_version"] = "v" + self._test_run.get_version()
+    json_response["installed_version"] = "v" + self._testrun.get_version()
     json_response["update_available"] = False
     json_response["latest_version"] = None
     json_response["latest_version_url"] = (
@@ -397,7 +399,7 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Could not find device")
 
-    if self._test_run.delete_report(device, timestamp_formatted):
+    if self._testrun.delete_report(device, timestamp_formatted):
       return self._generate_msg(True, "Deleted report")
 
     response.status_code = 500
@@ -421,7 +423,7 @@ class Api:
       mac_addr = device_json.get("mac_addr").lower()
 
       # Check that device exists
-      device = self._test_run.get_session().get_device(mac_addr)
+      device = self._testrun.get_session().get_device(mac_addr)
 
       if device is None:
         response.status_code = 404
@@ -436,7 +438,7 @@ class Api:
             False, "Cannot delete this device whilst " + "it is being tested")
 
       # Delete device
-      self._test_run.delete_device(device)
+      self._testrun.delete_device(device)
 
       # Return success response
       response.status_code = 200
@@ -485,7 +487,7 @@ class Api:
         device.device_folder = device.manufacturer + " " + device.model
         device.test_modules = device_json.get(DEVICE_TEST_MODULES_KEY)
 
-        self._test_run.create_device(device)
+        self._testrun.create_device(device)
         response.status_code = status.HTTP_201_CREATED
 
       else:
@@ -553,7 +555,7 @@ class Api:
       device.model = device_json.get(DEVICE_MODEL_KEY)
       device.test_modules = device_json.get(DEVICE_TEST_MODULES_KEY)
 
-      self._test_run.save_device(device, device_json)
+      self._testrun.save_device(device, device_json)
       response.status_code = status.HTTP_200_OK
 
       return device.to_config_json()
@@ -658,7 +660,7 @@ class Api:
     return True
 
   def _get_test_run(self):
-    return self._test_run
+    return self._testrun
 
   # Profiles
   def get_profiles_format(self, response: Response):
@@ -856,7 +858,7 @@ class Api:
 
   def get_test_modules(self):
     modules = []
-    for module in self._test_run.get_test_orc().get_test_modules():
+    for module in self._testrun.get_test_orc().get_test_modules():
       if module.enabled and module.enable_container:
         modules.append(module.display_name)
     return modules
