@@ -651,7 +651,75 @@ def test_get_reports(testrun): # pylint: disable=W0613
     assert "tests" in report
     # Check if "report" key is in report
     assert "report" in report
-    # Check if "device" key is in report
+
+def test_get_reports_no_reports(testrun): # pylint: disable=W0613
+  """Test get reports when no reports exist."""
+  r = requests.get(f"{API}/reports", timeout=5)
+  assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+  response = r.json()
+  assert response == [], "Expected empty list when no reports exist"
+
+@pytest.mark.skip()
+def run_test_and_get_report(testing_devices, testrun): # pylint: disable=W0613
+  """Initiate a test run, ensure report generation, and fetch the report."""
+  # Step 1: Prepare and start the test run
+  payload = {
+      "device": {
+          "mac_addr": BASELINE_MAC_ADDR,
+          "firmware": "asd",
+          "test_modules": {
+              "dns": {"enabled": False},
+              "connection": {"enabled": True},
+              "ntp": {"enabled": False},
+              "baseline": {"enabled": False},
+              "nmap": {"enabled": False}
+          }
+      }
+  }
+
+  # Send the post request to start the test
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  assert r.status_code == 200
+
+  # Step 2: Start the device for the test
+  device_name = "test_device"
+  start_test_device(device_name, BASELINE_MAC_ADDR)
+
+  # Step 3: Wait for the test to complete
+  max_retries = 300  # time limit
+  for _ in range(max_retries):
+    time.sleep(1)
+    status = query_system_status().lower()
+    print(f"Current system status: {status}")  # Additional logging
+    if status in ["compliant", "non-compliant", "cancelled"]:
+      break
+  else:
+    # Timeout reached without a valid end state
+    stop_test_device(device_name)
+    final_status = query_system_status().lower()  # Get the final status
+    print("Final system status:", final_status)  # Log the final status
+    pytest.fail("Test run did not complete within the expected time. Final status: " + final_status)
+
+  # Step 4: Fetch the generated report
+  r = requests.get(f"{API}/report/{BASELINE_MAC_ADDR}", timeout=5)
+  assert r.status_code == 200, "Failed to fetch the report"
+  report_data = r.json()
+  print(f"Reports are {report_data}")
+
+  # Step 5: Stop the test device
+  stop_test_device(device_name)
+
+def test_delete_report(testrun): # pylint: disable=W0613
+  """Test the delete report endpoint"""
+  pass
+
+def test_get_report(testrun): # pylint: disable=W0613
+  """Test the get report endpoint"""
+  pass
+
+def test_export_report(testrun): # pylint: disable=W0613
+  """Test the export report endpoint"""
+  pass
 
 # Tests for device endpoints
 
@@ -1563,6 +1631,62 @@ def test_update_profile(testrun, reset_profiles, add_profile): # pylint: disable
   # Check if profile was updated
   assert updated_profile_check is not None
 
+def test_update_profile_invalid_json(testrun, reset_profiles, add_profile): # pylint: disable=W0613
+  """Test for update profile invalid JSON payload (no 'name')"""
+  # Load the new profile using add_profile fixture
+  add_profile("new_profile.json")
+  # Load the updated profile using load_profile utility method
+  updated_profile = load_profile("profile_invalid_format.json")
+
+  # Send the post request to update the profile
+  r = requests.post(
+      f"{API}/profiles",
+      data=json.dumps(updated_profile),
+      timeout=5)
+
+  # Check if status code is 400 (Bad request)
+  assert r.status_code == 400
+  # Parse the response
+  response = r.json()
+  # Check if "error" key in response
+  assert "error" in response
+
+def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable=W0613
+  """Test for create profile invalid JSON payload """
+
+  # Load the profile using load_profile utility method
+  new_profile = load_profile("profile_invalid_format.json")
+
+  # Send the post request to update the profile
+  r = requests.post(
+      f"{API}/profiles",
+      data=json.dumps(new_profile),
+      timeout=5)
+
+  # Check if status code is 400 (Bad request)
+  assert r.status_code == 400
+  # Parse the response
+  response = r.json()
+  # Check if "error" key in response
+  assert "error" in response
+
+  # Load the 2nd profile
+  new_profile_2 = {"name": "New Profile"}
+
+  # Send the post request to update the profile
+  r = requests.post(
+      f"{API}/profiles",
+      data=json.dumps(new_profile_2),
+      timeout=5)
+
+  # Check if status code is 400 (Bad request)
+  assert r.status_code == 400
+  # Parse the response
+  response = r.json()
+  # Check if "error" key in response
+  assert "error" in response
+
+
 def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable=W0613
   """Test for delete profile"""
 
@@ -1599,3 +1723,52 @@ def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable
   )
   # Check if profile was deleted
   assert deleted_profile is None
+
+def test_delete_profile_no_profile(testrun, reset_profiles): # pylint: disable=W0613
+  """Test delete profile if the profile does not exists"""
+  # Load the profile to delete
+  profile_to_delete = load_profile("new_profile.json")
+
+  # Delete the profile
+  r = requests.delete(
+      f"{API}/profiles",
+      data=json.dumps(profile_to_delete),
+      timeout=5)
+
+  # Check if status code is 404 (Profile does not exist)
+  assert r.status_code == 404
+
+def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable=W0613
+  """Test for delete profile wrong JSON payload"""
+
+  profile_to_delete = {} #load_profile("profile_invalid_format.json")
+
+  # Delete the profile
+  r = requests.delete(
+      f"{API}/profiles",
+      data=json.dumps(profile_to_delete),
+      timeout=5)
+
+  # Parse the response
+  response = r.json()
+
+  # Check if status code is 400 (bad request)
+  assert r.status_code == 400
+  # Check if "error" key in response
+  assert "error" in response
+
+  profile_to_delete_2 = load_profile("profile_invalid_format.json")
+
+  # Delete the profile
+  r = requests.delete(
+      f"{API}/profiles",
+      data=json.dumps(profile_to_delete_2),
+      timeout=5)
+
+  # Parse the response
+  response = r.json()
+
+  # Check if status code is 400 (bad request)
+  assert r.status_code == 400
+  # Check if "error" key in response
+  assert "error" in response
