@@ -115,7 +115,8 @@ class ConnectionModule(TestModule):
     no_arp = True
 
     # Read all the pcap files
-    packets = rdpcap(self.startup_capture_file) + rdpcap(self.monitor_capture_file)
+    packets = rdpcap(self.startup_capture_file) + rdpcap(
+        self.monitor_capture_file)
     for packet in packets:
 
       # We are not interested in packets unless they are ARP packets
@@ -132,12 +133,8 @@ class ConnectionModule(TestModule):
 
       # Check MAC address matches IP address
       if (arp_packet.hwsrc == self._device_mac
-          and (arp_packet.psrc not in (
-            self._device_ipv4_addr,
-            '0.0.0.0'
-          )) and not arp_packet.psrc.startswith(
-            '169.254'
-          )):
+          and (arp_packet.psrc not in (self._device_ipv4_addr, '0.0.0.0'))
+          and not arp_packet.psrc.startswith('169.254')):
         LOGGER.info(f'Bad ARP packet detected for MAC: {self._device_mac}')
         LOGGER.info(f'''ARP packet from IP {arp_packet.psrc}
                     does not match {self._device_ipv4_addr}''')
@@ -154,7 +151,8 @@ class ConnectionModule(TestModule):
     disallowed_dhcp_types = [2, 4, 5, 6, 9, 10, 12, 13, 15, 17]
 
     # Read all the pcap files
-    packets = rdpcap(self.startup_capture_file) + rdpcap(self.monitor_capture_file)
+    packets = rdpcap(self.startup_capture_file) + rdpcap(
+        self.monitor_capture_file)
     for packet in packets:
 
       # We are not interested in packets unless they are DHCP packets
@@ -234,7 +232,8 @@ class ConnectionModule(TestModule):
       return result, 'No MAC address found.'
 
     # Read all the pcap files containing DHCP packet information
-    packets = rdpcap(self.startup_capture_file) + rdpcap(self.monitor_capture_file)
+    packets = rdpcap(self.startup_capture_file) + rdpcap(
+        self.monitor_capture_file)
 
     # Extract MAC addresses from DHCP packets
     mac_addresses = set()
@@ -409,7 +408,8 @@ class ConnectionModule(TestModule):
 
   def _has_slaac_addres(self):
     packet_capture = (rdpcap(self.startup_capture_file) +
-                      rdpcap(self.monitor_capture_file) + rdpcap(DHCP_CAPTURE_FILE))
+                      rdpcap(self.monitor_capture_file) +
+                      rdpcap(DHCP_CAPTURE_FILE))
     sends_ipv6 = False
     for packet_number, packet in enumerate(packet_capture, start=1):
       if IPv6 in packet and packet.src == self._device_mac:
@@ -446,7 +446,7 @@ class ConnectionModule(TestModule):
     cmd += ' -6 ' if ipv6 else ''
     cmd += str(host)
     #cmd = 'ping -c 1 ' + str(host)
-    success = util.run_command(cmd, output=False) # pylint: disable=E1120
+    success = util.run_command(cmd, output=False)  # pylint: disable=E1120
     return success
 
   def restore_failover_dhcp_server(self, subnet):
