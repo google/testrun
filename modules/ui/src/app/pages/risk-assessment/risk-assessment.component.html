@@ -47,7 +47,7 @@ limitations under the License.
         class="profile-item-{{ i }}"
         [ngClass]="{ selected: profile.name === vm.selectedProfile?.name }"
         (deleteButtonClicked)="deleteProfile($event, i, vm.selectedProfile)"
-        (profileClicked)="openForm($event)"
+        (profileClicked)="profileClicked($event)"
         (copyProfileClicked)="copyProfileAndOpenForm($event)">
       </app-profile-item>
     </div>

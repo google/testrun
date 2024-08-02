@@ -37,7 +37,6 @@ API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
-SECONDS_IN_YEAR = 31536000
 STATUS_TOPIC = 'status'
 
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
@@ -436,17 +435,26 @@ class TestrunSession():
     try:
       for risk_profile_file in os.listdir(
               os.path.join(self._root_dir, PROFILES_DIR)):
+
         LOGGER.debug(f'Discovered profile {risk_profile_file}')
 
+        # Open the risk profile file
         with open(os.path.join(self._root_dir, PROFILES_DIR, risk_profile_file),
                   encoding='utf-8') as f:
+
+          # Parse risk profile json
           json_data = json.load(f)
+
+          # Instantiate a new risk profile
           risk_profile = RiskProfile()
+
+          # Pass JSON to populate risk profile
           risk_profile.load(
             profile_json=json_data,
             profile_format=self._profile_format
           )
-          risk_profile.status = self.check_profile_status(risk_profile)
+
+          # Add risk profile to session
           self._profiles.append(risk_profile)
 
     except Exception as e:
@@ -560,20 +568,6 @@ class TestrunSession():
       f.write(risk_profile.to_json(pretty=True))
 
     return risk_profile
-
-  def check_profile_status(self, profile):
-
-    if profile.status == 'Valid':
-
-      # Check expiry
-      created_date = profile.created.timestamp()
-
-      today = datetime.datetime.now().timestamp()
-
-      if created_date < (today - SECONDS_IN_YEAR):
-        profile.status = 'Expired'
-
-    return profile.status
 
   def delete_profile(self, profile):
 
@@ -763,9 +757,12 @@ class TestrunSession():
       if 'items_removed' in diff:
         adapters['adapters_removed'] = diff['items_removed']
       # Save new network interfaces to session
-      LOGGER.debug(f'Network adapters changed {adapters}')
+      LOGGER.debug(f'Network adapters change detected: {adapters}')
       self._ifaces = ifaces_new
     return adapters
 
   def get_mqtt_client(self):
     return self._mqtt_client
+
+  def get_ifaces(self):
+    return self._ifaces

@@ -54,6 +54,12 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
+  async profileClicked(profile: Profile | null = null) {
+    if (profile === null || profile.status !== ProfileStatus.EXPIRED) {
+      await this.openForm(profile);
+    }
+  }
+
   async openForm(profile: Profile | null = null) {
     this.isOpenProfileForm = true;
     this.store.updateSelectedProfile(profile);

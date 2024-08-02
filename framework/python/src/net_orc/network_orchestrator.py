@@ -24,7 +24,7 @@ import docker
 import time
 import traceback
 from docker.types import Mount
-from common import logger, util
+from common import logger, util, mqtt
 from net_orc.listener import Listener
 from net_orc.network_event import NetworkEvent
 from net_orc.network_validator import NetworkValidator
@@ -550,10 +550,6 @@ class NetworkOrchestrator:
           cap_add=['NET_ADMIN'],
           name=net_module.container_name,
           hostname=net_module.container_name,
-          # Undetermined version of docker seems to have broken
-          # DNS configuration (/etc/resolv.conf)  Re-add when/if
-          # this network is utilized and DNS issue is resolved
-          #network=PRIVATE_DOCKER_NET,
           network_mode='none',
           privileged=True,
           detach=True,
@@ -789,14 +785,14 @@ class NetworkOrchestrator:
   def get_session(self):
     return self._session
 
-  def network_adapters_checker(self, mgtt_client, topic):
+  def network_adapters_checker(self, mqtt_client: mqtt.MQTT, topic: str):
     """Checks for changes in network adapters
     and sends a message to the frontend
     """
     try:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
-        mgtt_client.send_message(topic, adapters)
+        mqtt_client.send_message(topic, adapters)
     except Exception:
       LOGGER.error(traceback.format_exc())
 
@@ -805,6 +801,35 @@ class NetworkOrchestrator:
     return self._ip_ctrl.check_interface_status(
         self._session.get_device_interface()
       )
+
+  def internet_conn_checker(self, mqtt_client: mqtt.MQTT, topic: str):
+    """Checks internet connection and sends a status to frontend"""
+
+    # Default message
+    message = {'connection': False}
+
+    # Only check if Testrun is running
+    if self.get_session().get_status() not in [
+      'Waiting for Device', 'Monitoring', 'In Progress'
+    ]:
+      message['connection'] = None
+
+    # Only run if single intf mode not used
+    elif 'single_intf' not in self._session.get_runtime_params():
+      iface = self._session.get_internet_interface()
+
+      # Check that an internet intf has been selected
+      if iface and iface in self._session.get_ifaces():
+
+        # Ping google.com from gateway container
+        internet_connection = self._ip_ctrl.ping_via_gateway(
+          'google.com')
+
+        if internet_connection:
+          message['connection'] = True
+
+    # Broadcast via MQTT client
+    mqtt_client.send_message(topic, message)
 
 class NetworkModule:
   """Define all the properties of a Network Module"""
