@@ -100,6 +100,17 @@ def docker_logs(device_name):
   )
   print(cmd.stdout)
 
+def load_json(file_name, directory):
+  """Utility method to load json files' """
+  # Construct the base path relative to the main folder
+  base_path = Path(__file__).resolve().parent.parent.parent
+  # Construct the full file path
+  file_path = base_path / directory / file_name
+
+  # Open the file in read mode
+  with open(file_path, "r", encoding="utf-8") as file:
+    # Return the file content
+    return json.load(file)
 
 @pytest.fixture
 def empty_devices_dir():
@@ -232,7 +243,7 @@ def local_get_devices():
 @pytest.fixture()
 def restore_config():
   """Restore the original configuration (system.json) after the test"""
-  yield
+
   # Restore system.json from 'testing/api/' after the test
   if os.path.exists(SYSTEM_CONFIG_RESTORE_PATH):
     shutil.copy(SYSTEM_CONFIG_RESTORE_PATH, SYSTEM_CONFIG_PATH)
@@ -242,13 +253,16 @@ def test_get_system_interfaces(testrun): # pylint: disable=W0613
 
   # Send a GET request to the API to retrieve system interfaces
   r = requests.get(f"{API}/system/interfaces", timeout=5)
+
+  # Check if status code is 200 (OK)
+  assert r.status_code == 200
+
   # Parse the JSON response
   response = r.json()
+
   # Retrieve the actual network interfaces
   local_interfaces = get_network_interfaces()
 
-  # Check if status code is 200 (OK)
-  assert r.status_code == 200, f"status code is {r.status_code}"
   # Check if the key are in the response
   assert set(response.keys()) == set(local_interfaces)
   # Ensure that all values in the response are strings
@@ -298,7 +312,7 @@ def test_update_system_config(testrun, restore_config): # pylint: disable=W0613
 def test_update_system_config_invalid_config(testrun, restore_config): # pylint: disable=W0613
   """Test invalid configuration file for update system configuration"""
 
-  # Configuration data to update
+  # Configuration data to update with missing "log_level" field
   updated_system_config = {
       "network": {
           "device_intf": "updated_endev0a",
@@ -316,15 +330,12 @@ def test_update_system_config_invalid_config(testrun, restore_config): # pylint:
 
 def test_get_system_config(testrun): # pylint: disable=W0613
   """Tests get system configuration endpoint ('/system/config')"""
+
   # Send a GET request to the API to retrieve system configuration
   r = requests.get(f"{API}/system/config", timeout=5)
 
-  # Open the local system configuration file
-  with open(
-    SYSTEM_CONFIG_PATH,
-    encoding="utf-8"
-  ) as f:
-    local_config = json.load(f)
+  # Load system configuration file
+  local_config = load_json("system.json", directory="local")
 
   # Parse the JSON response
   api_config = r.json()
@@ -365,6 +376,7 @@ def test_start_testrun_started_successfully(
                 "baseline": {"enabled": False},
                 "nmap": {"enabled": False}
             }}}
+
   # Send the post request
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
 
@@ -606,6 +618,7 @@ def test_system_shutdown_in_progress(testrun):  # pylint: disable=W0613
           }
       }
   }
+
   # Start a test
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
 
@@ -1436,7 +1449,7 @@ def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W06
   print(r.status_code)
 
 def test_get_test_modules(testrun): # pylint: disable=W0613
-  """Test the /system/modules endpoint to check the test modules"""
+  """Test the /system/modules endpoint to get the test modules"""
 
   # Send a GET request to the API endpoint
   r = requests.get(f"{API}/system/modules", timeout=5)
@@ -1467,6 +1480,8 @@ def test_get_test_modules(testrun): # pylint: disable=W0613
 # Tests for profile endpoints
 def delete_all_profiles():
   """Utility method to delete all profiles from risk_profiles folder"""
+
+  # Assign the profiles directory
   profiles_path = Path(PROFILES_DIRECTORY)
 
   try:
@@ -1491,8 +1506,10 @@ def delete_all_profiles():
 
 def create_profile(file_name):
   """Utility method to create the profile"""
+
   # Load the profile
-  new_profile = load_profile(file_name)
+  new_profile = load_json(file_name, directory="testing/api/profiles")
+
   # Assign the profile name to profile_name
   profile_name = new_profile["name"]
 
@@ -1513,9 +1530,12 @@ def create_profile(file_name):
 @pytest.fixture()
 def reset_profiles():
   """Delete the profiles before and after each test"""
+
   # Delete before the test
   delete_all_profiles()
+
   yield
+
   # Delete after the test
   delete_all_profiles()
 
@@ -1524,15 +1544,6 @@ def add_profile():
   """Fixture to create profiles during tests."""
   # Returning the reference to create_profile
   return create_profile
-
-def load_profile(file_name):
-  """Utility method to load the profiles from 'testing/api/profiles' """
-  # Construct the file path
-  file_path = os.path.join(os.path.dirname(__file__), "profiles", file_name)
-  # Open the file in read mode
-  with open(file_path, "r", encoding="utf-8") as file:
-    # Return the file content
-    return json.load(file)
 
 def profile_exists(profile_name):
   """Utility method to check if profile exists"""
@@ -1629,10 +1640,11 @@ def test_get_profiles(testrun, reset_profiles, add_profile):  # pylint: disable=
   # Send the get request to "/profiles" endpoint
   r = requests.get(f"{API}/profiles", timeout=5)
 
-  # Check if status code is 200 (OK)
-  assert r.status_code == 200
   # Parse the response (profiles)
   response = r.json()
+
+  # Check if status code is 200 (OK)
+  assert r.status_code == 200
   # Check if response is a list
   assert isinstance(response, list)
   # Check if response contains two profiles
@@ -1642,7 +1654,8 @@ def test_create_profile(testrun, reset_profiles): # pylint: disable=W0613
   """Test for create profile if not exists"""
 
   # Load the profile
-  new_profile = load_profile("new_profile.json")
+  new_profile = load_json("new_profile.json", directory="testing/api/profiles")
+
   # Assign the profile name to profile_name
   profile_name = new_profile["name"]
 
@@ -1655,8 +1668,10 @@ def test_create_profile(testrun, reset_profiles): # pylint: disable=W0613
 
   # Check if status code is 201 (Created)
   assert r.status_code == 201
+
   # Parse the response
   response = r.json()
+
   # Check if "success" key in response
   assert "success" in response
 
@@ -1665,6 +1680,7 @@ def test_create_profile(testrun, reset_profiles): # pylint: disable=W0613
 
   # Check if status code is 200 (OK)
   assert r.status_code == 200
+
   # Parse the response
   profiles = r.json()
 
@@ -1672,19 +1688,23 @@ def test_create_profile(testrun, reset_profiles): # pylint: disable=W0613
   created_profile = next(
       (p for p in profiles if p["name"] == profile_name), None
   )
+
   # Check if profile was created
   assert created_profile is not None
 
 def test_update_profile(testrun, reset_profiles, add_profile): # pylint: disable=W0613
-  """test for update profile when exists"""
+  """Test for update profile when exists"""
 
   # Load the new profile using add_profile fixture
   new_profile = add_profile("new_profile.json")
-  # Load the updated profile using load_profile utility method
-  updated_profile = load_profile("updated_profile.json")
+
+  # Load the updated profile using load_json utility method
+  updated_profile = load_json("updated_profile.json",
+                              directory="testing/api/profiles")
 
   # Assign the new_profile name
   profile_name = new_profile["name"]
+
   # Assign the updated_profile name
   updated_profile_name = updated_profile["rename"]
 
@@ -1700,8 +1720,10 @@ def test_update_profile(testrun, reset_profiles, add_profile): # pylint: disable
 
   # Check if status code is 200 (OK)
   assert r.status_code == 200
+
   # Parse the response
   response = r.json()
+
   # Check if "success" key in response
   assert "success" in response
 
@@ -1710,6 +1732,7 @@ def test_update_profile(testrun, reset_profiles, add_profile): # pylint: disable
 
   # Check if status code is 200 (OK)
   assert r.status_code == 200
+
   # Parse the response
   profiles = r.json()
 
@@ -1723,10 +1746,13 @@ def test_update_profile(testrun, reset_profiles, add_profile): # pylint: disable
 
 def test_update_profile_invalid_json(testrun, reset_profiles, add_profile): # pylint: disable=W0613
   """Test for update profile invalid JSON payload (no 'name')"""
+
   # Load the new profile using add_profile fixture
   add_profile("new_profile.json")
-  # Load the updated profile using load_profile utility method
-  updated_profile = load_profile("profile_invalid_format.json")
+
+  # Load the updated profile using load_json utility method
+  updated_profile = load_json("profile_invalid_format.json",
+                              directory="testing/api/profiles")
 
   # Send the post request to update the profile
   r = requests.post(
@@ -1734,18 +1760,21 @@ def test_update_profile_invalid_json(testrun, reset_profiles, add_profile): # py
       data=json.dumps(updated_profile),
       timeout=5)
 
-  # Check if status code is 400 (Bad request)
-  assert r.status_code == 400
   # Parse the response
   response = r.json()
+
+  # Check if status code is 400 (Bad request)
+  assert r.status_code == 400
+
   # Check if "error" key in response
   assert "error" in response
 
 def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable=W0613
   """Test for create profile invalid JSON payload """
 
-  # Load the profile using load_profile utility method
-  new_profile = load_profile("profile_invalid_format.json")
+  # Load the profile using load_json utility method
+  new_profile = load_json("profile_invalid_format.json",
+                          directory="testing/api/profiles")
 
   # Send the post request to update the profile
   r = requests.post(
@@ -1753,10 +1782,12 @@ def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable
       data=json.dumps(new_profile),
       timeout=5)
 
-  # Check if status code is 400 (Bad request)
-  assert r.status_code == 400
   # Parse the response
   response = r.json()
+
+  # Check if status code is 400 (Bad request)
+  assert r.status_code == 400
+
   # Check if "error" key in response
   assert "error" in response
 
@@ -1769,10 +1800,12 @@ def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable
       data=json.dumps(new_profile_2),
       timeout=5)
 
-  # Check if status code is 400 (Bad request)
-  assert r.status_code == 400
   # Parse the response
   response = r.json()
+
+  # Check if status code is 400 (Bad request)
+  assert r.status_code == 400
+
   # Check if "error" key in response
   assert "error" in response
 
@@ -1781,6 +1814,7 @@ def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable
 
   # Assign the profile from the fixture
   profile_to_delete = add_profile("new_profile.json")
+
   # Assign the profile name
   profile_name = profile_to_delete["name"]
 
@@ -1792,8 +1826,10 @@ def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable
 
   # Check if status code is 200 (OK)
   assert r.status_code == 200
+
   # Parse the JSON response
   response = r.json()
+
   # Check if the response contains "success" key
   assert "success" in response
 
@@ -1802,6 +1838,7 @@ def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable
 
   # Check if status code is 200 (OK)
   assert r.status_code == 200
+
   # Parse the JSON response
   profiles = r.json()
 
@@ -1815,8 +1852,9 @@ def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable
 
 def test_delete_profile_no_profile(testrun, reset_profiles): # pylint: disable=W0613
   """Test delete profile if the profile does not exists"""
-  # Load the profile to delete
-  profile_to_delete = load_profile("new_profile.json")
+
+  # Assign the profile to delete
+  profile_to_delete = {"name": "New Profile"}
 
   # Delete the profile
   r = requests.delete(
@@ -1830,7 +1868,7 @@ def test_delete_profile_no_profile(testrun, reset_profiles): # pylint: disable=W
 def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable=W0613
   """Test for delete profile wrong JSON payload"""
 
-  profile_to_delete = {} #load_profile("profile_invalid_format.json")
+  profile_to_delete = {}
 
   # Delete the profile
   r = requests.delete(
@@ -1843,10 +1881,12 @@ def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable
 
   # Check if status code is 400 (bad request)
   assert r.status_code == 400
+
   # Check if "error" key in response
   assert "error" in response
 
-  profile_to_delete_2 = load_profile("profile_invalid_format.json")
+  profile_to_delete_2 = load_json("profile_invalid_format.json",
+                                  directory="testing/api/profiles")
 
   # Delete the profile
   r = requests.delete(
