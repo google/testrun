@@ -482,7 +482,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     try:
       client.containers.run(
-            image='test-run/ui',
+            image='testrun/ui',
             auto_remove=True,
             name='tr-ui',
             hostname='testrun.io',
