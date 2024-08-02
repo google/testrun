@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: testrun/ui
-FROM nginx@sha256:4c0fdaa8b6341bfdeca5f18f7837462c80cff90527ee35ef185571e1c327beac
+# Image name: testrun/build-ui
+FROM node@sha256:ffebb4405810c92d267a764b21975fb2d96772e41877248a37bf3abaa0d3b590 as build
 
-COPY modules/ui/dist/ /usr/share/nginx/html
+# Set the working directory
+WORKDIR /modules/ui
 
-EXPOSE 8080
-
-CMD ["nginx", "-g", "daemon off;"]
