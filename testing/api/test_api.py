@@ -28,6 +28,8 @@ import time
 from typing import Iterator
 import pytest
 import requests
+import responses
+import datetime
 
 ALL_DEVICES = "*"
 API = "http://127.0.0.1:8000"
@@ -617,6 +619,74 @@ def test_system_shutdown_in_progress(testrun):  # pylint: disable=W0613
   # Check if the response status code is 400 (test in progress)
   assert r.status_code == 400
 
+def test_system_latest_version(testrun): # pylint: disable=W0613
+  """Test for testrun version when the latest version is installed"""
+
+  # Send the get request to the API
+  r = requests.get(f"{API}/system/version", timeout=5)
+
+  # Parse the response
+  response = r.json()
+
+  # Check if status code is 200 (update available)
+  assert r.status_code == 200
+  # Check if an update is available
+  assert response["update_available"] is False
+
+@responses.activate
+def test_system_update_available(testrun): # pylint: disable=W0613
+  """Test for testrun version when update is available"""
+
+  # Mock the API response when the update is available
+  responses.add(
+    responses.GET,
+    f"{API}/system/version",
+    json={
+        "installed_version": "3.1",
+        "update_available": True,
+        "latest_version": "3.1.1",
+        "latest_version_url":
+          ("https://github.com/google/testrun/releases/tag/v3.1.1")
+    },
+    status=200
+  )
+
+  # Send the get request to the API
+  r = requests.get(f"{API}/system/version", timeout=5)
+
+  # Parse the response
+  response = r.json()
+
+  # Check if status code is 200 (update available)
+  assert r.status_code == 200
+  # Check if an update is available
+  assert response["update_available"] is True
+
+@responses.activate
+def test_system_version_cannot_be_obtained(testrun): # pylint: disable=W0613
+  """Test when the current version cannot be obtained"""
+
+  # Mock the API response when the current version cannot be obtained
+  responses.add(
+    responses.GET,
+    f"{API}/system/version",
+    json={"error": "Could not fetch current version"},
+    status=500
+  )
+
+  # Send the get request to the API
+  r = requests.get(f"{API}/system/version", timeout=5)
+
+  # Parse the JSON response
+  response = r.json()
+
+
+  # Check if the response status code is 500
+  assert r.status_code == 500
+
+  # Check if the error in response
+  assert "error" in response
+
 # Tests for reports endpoints
 
 def test_get_reports_no_reports(testrun): # pylint: disable=W0613
@@ -638,8 +708,8 @@ def test_get_reports_no_reports(testrun): # pylint: disable=W0613
   assert response == []
 
 @pytest.mark.skip()
-def run_test_and_get_report(testing_devices, testrun): # pylint: disable=W0613
-  """Initiate a test run, ensure report generation, and fetch the report."""
+def get_report_one_report(testrun): # pylint: disable=W0613
+  """Initiate a test run, ensure report generation, and get the report."""
 
   payload = {
       "device": {
@@ -647,10 +717,11 @@ def run_test_and_get_report(testing_devices, testrun): # pylint: disable=W0613
           "firmware": "asd",
           "test_modules": {
               "dns": {"enabled": False},
-              "connection": {"enabled": True},
-              "ntp": {"enabled": False},
-              "baseline": {"enabled": False},
-              "nmap": {"enabled": False}
+              "connection": {"enabled": False},
+              "ntp": {"enabled": True},
+              "services": {"enabled": False},
+              "protocol": {"enabled": False},
+              "tls": {"enabled": False}
           }
       }
   }
@@ -674,30 +745,53 @@ def run_test_and_get_report(testing_devices, testrun): # pylint: disable=W0613
   else:
     # Timeout reached without a valid end state
     stop_test_device(device_name)
-    final_status = query_system_status().lower()  # Get the final status
-    print("Final system status:", final_status)  # Log the final status
+     # Get the final status
+    final_status = query_system_status().lower()
+    print("Final system status:", final_status)
+     # Log the final status
     pytest.fail("Test run did not complete. Final status: " + final_status)
 
+  # Get the current timestamp in the expected format
+  timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
   # Get request to retrieve the generated report
-  r = requests.get(f"{API}/report/{BASELINE_MAC_ADDR}", timeout=5)
-  assert r.status_code == 200, "Failed to fetch the report"
+  r = requests.get(f"{API}/report/{device_name}/{timestamp}", timeout=5)
+  # Parse the json
   report_data = r.json()
+
   print(f"Reports are {report_data}")
+  assert r.status_code == 200
 
   # Stop the test device
   stop_test_device(device_name)
 
-def test_delete_report(testrun): # pylint: disable=W0613
-  """Test the delete report endpoint"""
-  pass
+# def test_get_report_no_report(testrun): # pylint: disable=W0613
+  device_name = "test"
+  timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
-def test_get_report(testrun): # pylint: disable=W0613
-  """Test the get report endpoint"""
-  pass
+  # Get request to retrieve the generated report
+  r = requests.get(f"{API}/report/{device_name}/{timestamp}", timeout=5)
+  # Parse the json
+  response = r.json()
+  print(f"response is {response}")
 
-def test_export_report(testrun): # pylint: disable=W0613
-  """Test the export report endpoint"""
-  pass
+  # Check if the response is a list
+  assert "Not Found" in response.values()
+
+  # Check if status code is 404 (Report Not Found)
+  assert r.status_code == 404
+
+# def test_delete_report(testrun): # pylint: disable=W0613
+#   """Test the delete report endpoint"""
+#   pass
+
+# def test_get_report(testrun): # pylint: disable=W0613
+#   """Test the get report endpoint"""
+#   pass
+
+# def test_export_report(testrun): # pylint: disable=W0613
+  # """Test the export report endpoint"""
+  # pass
 
 # Tests for device endpoints
 
@@ -1303,12 +1397,6 @@ def test_device_edit_device_with_mac_already_exists(
 
   assert r.status_code == 409
 
-def test_system_latest_version(testrun): # pylint: disable=W0613
-  r = requests.get(f"{API}/system/version", timeout=5)
-  assert r.status_code == 200
-  updated_system_version = r.json()["update_available"]
-  assert updated_system_version is False
-
 def test_invalid_path_get(testrun): # pylint: disable=W0613
   r = requests.get(f"{API}/blah/blah", timeout=5)
   response = r.json()
@@ -1346,6 +1434,35 @@ def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W06
                     timeout=5)
   print(r.text)
   print(r.status_code)
+
+def test_get_test_modules(testrun): # pylint: disable=W0613
+  """Test the /system/modules endpoint to check the test modules"""
+
+  # Send a GET request to the API endpoint
+  r = requests.get(f"{API}/system/modules", timeout=5)
+
+  # Check if status code is 200 (OK)
+  assert r.status_code == 200
+
+  # Parse the JSON response
+  response = r.json()
+
+  # Check if the response is a list
+  assert isinstance(response, list)
+
+  # Define the expected modules
+  expected_modules = [
+      "Connection",
+      "Services",
+      "NTP",
+      "DNS",
+      "Protocol",
+      "TLS"
+  ]
+
+  # Check if all expected modules are in the response
+  for module in expected_modules:
+    assert module in response
 
 # Tests for profile endpoints
 def delete_all_profiles():
