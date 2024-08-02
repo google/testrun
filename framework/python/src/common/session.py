@@ -345,7 +345,7 @@ class TestrunSession():
     return {'total': self.get_total_tests(), 'results': test_results}
 
   def add_test_result(self, result):
-    LOGGER.info('------adding resul----t')
+    
     updated = False
 
     # Check if test has already been added
