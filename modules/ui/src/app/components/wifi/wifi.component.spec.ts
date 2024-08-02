@@ -40,13 +40,25 @@ describe('WifiComponent', () => {
   describe('Class tests', () => {
     describe('with internet connection', () => {
       it('should return label', () => {
-        expect(component.getLabel(true)).toEqual('Internet connection');
+        expect(component.getLabel(true)).toEqual(
+          'Testrun detects a working internet connection for the device under test.'
+        );
       });
     });
 
-    describe('should have no wifi icon', () => {
+    describe('with no internet connection', () => {
       it('should return label', () => {
-        expect(component.getLabel(false)).toEqual('No Internet connection');
+        expect(component.getLabel(false)).toEqual(
+          'No internet connection detected for the device under test.'
+        );
+      });
+    });
+
+    describe('with N/A internet connection', () => {
+      it('should return label', () => {
+        expect(component.getLabel(false, true)).toEqual(
+          'Internet connection is not being monitored.'
+        );
       });
     });
   });
@@ -74,7 +86,7 @@ describe('WifiComponent', () => {
       });
     });
 
-    it(' button should be disables', () => {
+    it('button should be disabled', () => {
       component.disable = true;
       fixture.detectChanges();
 
@@ -82,7 +94,7 @@ describe('WifiComponent', () => {
         '.wifi-button'
       ) as HTMLButtonElement;
 
-      expect(shutdownButton.disabled).toBeTrue();
+      expect(shutdownButton?.classList.contains('disabled')).toBeTrue();
     });
   });
 });

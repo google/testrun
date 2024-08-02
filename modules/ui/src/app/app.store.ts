@@ -250,7 +250,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,
       isStatusLoaded: false,
       systemStatus: null,
-      hasInternetConnection: true,
+      hasInternetConnection: null,
     });
   }
 }

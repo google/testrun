@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """IP Control Module"""
-import subprocess
 import psutil
 import typing as t
 from common import logger

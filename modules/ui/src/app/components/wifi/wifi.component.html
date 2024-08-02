@@ -16,9 +16,9 @@ limitations under the License.
 <button
   mat-icon-button
   class="app-toolbar-button wifi-button"
-  [attr.aria-label]="getLabel(on)"
-  [disabled]="disable"
-  [matTooltip]="getLabel(on)">
+  [attr.aria-label]="getLabel(on, disable)"
+  [class.disabled]="disable"
+  [matTooltip]="getLabel(on, disable)">
   <mat-icon>
     {{ on === true || on === null ? 'wifi' : 'wifi_off' }}
   </mat-icon>
