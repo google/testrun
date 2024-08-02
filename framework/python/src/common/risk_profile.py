@@ -96,11 +96,11 @@ class RiskProfile():
                         self.name + '.json')
 
   def _validate(self, profile_json, profile_format):
-    if self._valid(profile_json, profile_format):
-      if self._expired():
-        self.status = 'Expired'
+    if self._expired():
+      self.status = 'Expired'
+    elif self._valid(profile_json, profile_format):
       # User only wants to save a draft
-      elif 'status' in profile_json and profile_json['status'] == 'Draft':
+      if 'status' in profile_json and profile_json['status'] == 'Draft':
         self.status = 'Draft'
       else:
         self.status = 'Valid'
