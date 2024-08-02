@@ -723,6 +723,9 @@ class TestrunSession():
       if 'items_removed' in diff:
         adapters['adapters_removed'] = diff['items_removed']
       # Save new network interfaces to session
-      LOGGER.debug(f'Network adapters changed {adapters}')
+      LOGGER.debug(f'Network adapters change detected: {adapters}')
       self._ifaces = ifaces_new
     return adapters
+
+  def get_ifaces(self):
+    return self._ifaces
