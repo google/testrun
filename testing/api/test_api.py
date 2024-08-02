@@ -1810,6 +1810,32 @@ def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   # Check if "error" key in response
   assert "error" in response
 
+@responses.activate
+def test_update_profile_internal_server_error(testrun): # pylint: disable=W0613
+  """Test for create/update profile causing internal server error."""
+
+  # Mock the POST request for create/update profiles API response
+  responses.add(
+      responses.POST,
+      f"{API}/profiles",
+      json={"error": "An error occurred whilst creating or updating a profile"},
+      status=500
+  )
+
+   # Send the POST request to create/update the profile
+  r = requests.post(f"{API}/profiles",
+                    json={"name": "New Profile", "questions": []},
+                    timeout=5)
+
+  # Parse the json response
+  response = r.json()
+
+  # Check if status code is 500 (Internal Server Error)
+  assert r.status_code == 500
+
+  # Check if "error" key in response
+  assert "error" in response
+
 def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable=W0613
   """Test for delete profile"""
 
@@ -1902,3 +1928,5 @@ def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   assert r.status_code == 400
   # Check if "error" key in response
   assert "error" in response
+
+
