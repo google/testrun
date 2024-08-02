@@ -165,7 +165,7 @@ describe('AppStore', () => {
           isMenuOpen: true,
           interfaces: {},
           settingMissedError: null,
-          hasInternetConnection: true,
+          hasInternetConnection: null,
         });
         done();
       });

@@ -26,10 +26,15 @@ import { MatButton, MatIconButton } from '@angular/material/button';
   styleUrl: './wifi.component.scss',
 })
 export class WifiComponent {
-  @Input() on: boolean | null = true;
+  @Input() on: boolean | null = null;
   @Input() disable: boolean = false;
 
-  getLabel(on: boolean | null) {
-    return on ? 'Internet connection' : 'No Internet connection';
+  getLabel(on: boolean | null, disable: boolean = false) {
+    if (disable) {
+      return 'Internet connection is not being monitored.';
+    }
+    return on
+      ? 'Testrun detects a working internet connection for the device under test.'
+      : 'No internet connection detected for the device under test.';
   }
 }
