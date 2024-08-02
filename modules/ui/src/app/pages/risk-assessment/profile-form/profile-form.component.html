@@ -43,7 +43,7 @@ limitations under the License.
       </mat-error>
     </mat-form-field>
 
-    <ng-container *ngFor="let control of questionnaire; index as i">
+    <ng-container *ngFor="let control of profileFormat; index as i">
       <ng-container
         *ngTemplateOutlet="
           formField;
@@ -77,11 +77,19 @@ limitations under the License.
     Save Draft
   </button>
   <button
+    *ngIf="selectedProfile?.status !== ProfileStatus.EXPIRED"
     mat-button
     class="discard-button"
     [disabled]="profileForm.pristine"
     (click)="onDiscardClick()">
     Discard
+  </button>
+  <button
+    *ngIf="selectedProfile?.status === ProfileStatus.EXPIRED"
+    mat-button
+    class="discard-button"
+    (click)="onDiscardClick()">
+    Close
   </button>
 </div>
 

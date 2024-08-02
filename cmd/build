@@ -36,12 +36,25 @@ fi
 # Builds all docker images
 echo Building docker images
 
-# Build user interface
-echo Building user interface
-if docker build -t test-run/ui -f modules/ui/ui.Dockerfile . ; then
+# Check if UI has already been built (if -l was used during install)
+if [ ! -d "modules/ui/dist" ]; then
+  cmd/build_ui
+fi
+
+# Build UI image
+if docker build -t testrun/ui -f modules/ui/ui.Dockerfile . ; then
   echo Successully built the user interface
 else
   echo An error occured whilst building the user interface
+  exit 1
+fi
+
+# Build websockets server
+echo Building websockets server
+if docker build -t testrun/ws -f modules/ws/ws.Dockerfile . ; then
+  echo Successully built the web sockets server
+else
+  echo An error occured whilst building the websockets server
   exit 1
 fi
 

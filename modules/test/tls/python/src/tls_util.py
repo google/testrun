@@ -372,6 +372,8 @@ class TLSUtil():
       public_key = self.get_public_key(public_cert)
       if public_key:
         key_valid = self.verify_public_key(public_key)
+      else:
+        key_valid = [0]
 
       sig_valid = self.validate_signature(host)
 

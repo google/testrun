@@ -19,6 +19,7 @@ import json
 import os
 from common import util, logger
 from common.risk_profile import RiskProfile
+from net_orc.ip_control import IPControl
 
 # Certificate dependencies
 from cryptography import x509
@@ -36,7 +37,6 @@ API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
-SECONDS_IN_YEAR = 31536000
 
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
 PROFILES_DIR = 'local/risk_profiles'
@@ -93,6 +93,8 @@ class TestrunSession():
     self._config_file = os.path.join(root_dir, CONFIG_FILE_PATH)
     self._config = self._get_default_config()
 
+    # System network interfaces
+    self._ifaces = {}
     # Loading methods
     self._load_version()
     self._load_config()
@@ -399,17 +401,26 @@ class TestrunSession():
     try:
       for risk_profile_file in os.listdir(
               os.path.join(self._root_dir, PROFILES_DIR)):
+
         LOGGER.debug(f'Discovered profile {risk_profile_file}')
 
+        # Open the risk profile file
         with open(os.path.join(self._root_dir, PROFILES_DIR, risk_profile_file),
                   encoding='utf-8') as f:
+
+          # Parse risk profile json
           json_data = json.load(f)
+
+          # Instantiate a new risk profile
           risk_profile = RiskProfile()
+
+          # Pass JSON to populate risk profile
           risk_profile.load(
             profile_json=json_data,
             profile_format=self._profile_format
           )
-          risk_profile.status = self.check_profile_status(risk_profile)
+
+          # Add risk profile to session
           self._profiles.append(risk_profile)
 
     except Exception as e:
@@ -524,20 +535,6 @@ class TestrunSession():
 
     return risk_profile
 
-  def check_profile_status(self, profile):
-
-    if profile.status == 'Valid':
-
-      # Check expiry
-      created_date = profile.created.timestamp()
-
-      today = datetime.datetime.now().timestamp()
-
-      if created_date < (today - SECONDS_IN_YEAR):
-        profile.status = 'Expired'
-
-    return profile.status
-
   def delete_profile(self, profile):
 
     try:
@@ -565,6 +562,7 @@ class TestrunSession():
     self._results = []
     self._started = None
     self._finished = None
+    self._ifaces = IPControl.get_sys_interfaces()
 
   def to_json(self):
 
@@ -712,3 +710,22 @@ class TestrunSession():
 
   def get_certs(self):
     return self._certs
+
+  def detect_network_adapters_change(self) -> dict:
+    adapters = {}
+    ifaces_new = IPControl.get_sys_interfaces()
+
+    # Difference between stored and newly received network interfaces
+    diff = util.diff_dicts(self._ifaces, ifaces_new)
+    if diff:
+      if 'items_added' in diff:
+        adapters['adapters_added'] = diff['items_added']
+      if 'items_removed' in diff:
+        adapters['adapters_removed'] = diff['items_removed']
+      # Save new network interfaces to session
+      LOGGER.debug(f'Network adapters change detected: {adapters}')
+      self._ifaces = ifaces_new
+    return adapters
+
+  def get_ifaces(self):
+    return self._ifaces

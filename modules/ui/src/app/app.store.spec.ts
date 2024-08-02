@@ -38,12 +38,15 @@ import {
   fetchRiskProfiles,
   fetchSystemStatus,
   setDevices,
+  updateAdapters,
   setTestModules,
 } from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from './services/notification.service';
 import { FocusManagerService } from './services/focus-manager.service';
+import { TestRunMqttService } from './services/test-run-mqtt.service';
+import { MOCK_ADAPTERS } from './mocks/settings.mock';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -69,6 +72,7 @@ describe('AppStore', () => {
   let mockService: SpyObj<TestRunService>;
   let mockNotificationService: SpyObj<NotificationService>;
   let mockFocusManagerService: SpyObj<FocusManagerService>;
+  let mockMqttService: SpyObj<TestRunMqttService>;
 
   beforeEach(() => {
     mockService = jasmine.createSpyObj('mockService', [
@@ -80,6 +84,10 @@ describe('AppStore', () => {
     ]);
     mockFocusManagerService = jasmine.createSpyObj([
       'focusFirstElementInContainer',
+    ]);
+    mockMqttService = jasmine.createSpyObj([
+      'getNetworkAdapters',
+      'getInternetConnection',
     ]);
 
     TestBed.configureTestingModule({
@@ -95,6 +103,7 @@ describe('AppStore', () => {
         { provide: TestRunService, useValue: mockService },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: FocusManagerService, useValue: mockFocusManagerService },
+        { provide: TestRunMqttService, useValue: mockMqttService },
       ],
       imports: [BrowserAnimationsModule],
     });
@@ -156,6 +165,7 @@ describe('AppStore', () => {
           isMenuOpen: true,
           interfaces: {},
           settingMissedError: null,
+          hasInternetConnection: null,
         });
         done();
       });
@@ -271,6 +281,44 @@ describe('AppStore', () => {
             ],
           })
         );
+      });
+    });
+
+    describe('getNetworkAdapters', () => {
+      const adapters = MOCK_ADAPTERS;
+
+      beforeEach(() => {
+        mockMqttService.getNetworkAdapters.and.returnValue(of(adapters));
+      });
+
+      it('should dispatch action setDevices', () => {
+        appStore.getNetworkAdapters();
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          updateAdapters({ adapters })
+        );
+      });
+
+      it('should notify about new adapters', () => {
+        appStore.getNetworkAdapters();
+
+        expect(mockNotificationService.notify).toHaveBeenCalledWith(
+          'New network adapter(s) mockNewInternetKey has been detected. You can switch to using it in the System settings menu'
+        );
+      });
+    });
+
+    describe('getInternetConnection', () => {
+      it('should update store', done => {
+        mockMqttService.getInternetConnection.and.returnValue(
+          of({ connection: false })
+        );
+        appStore.getInternetConnection();
+
+        appStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.hasInternetConnection).toEqual(false);
+          done();
+        });
       });
     });
   });

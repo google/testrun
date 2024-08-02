@@ -96,11 +96,11 @@ class RiskProfile():
                         self.name + '.json')
 
   def _validate(self, profile_json, profile_format):
-    if self._valid(profile_json, profile_format):
-      if self._expired():
-        self.status = 'Expired'
+    if self._expired():
+      self.status = 'Expired'
+    elif self._valid(profile_json, profile_format):
       # User only wants to save a draft
-      elif 'status' in profile_json and profile_json['status'] == 'Draft':
+      if 'status' in profile_json and profile_json['status'] == 'Draft':
         self.status = 'Draft'
       else:
         self.status = 'Valid'
@@ -409,6 +409,14 @@ class RiskProfile():
 
         content += '</ul>'
 
+      # Question risk label
+      if 'risk' in question:
+        if question['risk'] == 'High':
+          content += '<div class="risk-label risk-label-high">HIGH RISK</div>'
+        elif question['risk'] == 'Limited':
+          content += '''<div class="risk-label risk-label-limited">
+                    LIMITED RISK</div>'''
+
       content += '''</div></div></tr>'''
 
       index += 1
@@ -634,6 +642,33 @@ class RiskProfile():
 
     ul {
       margin-top: 0;
+    }
+
+    .risk-label{
+      position: absolute;
+      top: 0px; 
+      right: 0px;
+      width: 52px;
+      height: 16px;
+      font-family: 'Google Sans', sans-serif;
+      font-size: 8px;
+      font-weight: 500;
+      line-height: 16px;
+      letter-spacing: 0.64px;
+      text-align: center;
+      font-weight: bold;
+      border-radius: 3px;
+    }
+
+    .risk-label-high{
+      background-color: #FCE8E6;
+      color: #C5221F;
+    }
+
+    .risk-label-limited{
+      width: 65px;
+      background-color:#E4F7FB;
+      color: #007B83;
     }
     '''
 

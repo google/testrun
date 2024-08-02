@@ -26,7 +26,7 @@ import threading
 import uvicorn
 from urllib.parse import urlparse
 
-from common import logger
+from common import logger, tasks
 from common.device import Device
 
 LOGGER = logger.get_logger("api")
@@ -114,7 +114,10 @@ class Api:
     # Allow all origins to access the API
     origins = ["*"]
 
-    self._app = FastAPI()
+    # Scheduler for background periodic tasks
+    self._scheduler = tasks.PeriodicTasks(self._test_run)
+
+    self._app = FastAPI(lifespan=self._scheduler.start)
     self._app.include_router(self._router)
     self._app.add_middleware(
         CORSMiddleware,
@@ -234,7 +237,15 @@ class Api:
           False, "Configured interfaces are not " +
           "ready for use. Ensure required interfaces " + "are connected.")
 
-    device.test_modules = body_json["device"]["test_modules"]
+    # UI doesn't send individual test configs so we need to
+    # merge these manually until the UI is updated to handle
+    # the full config file
+    for module_name, module_config in device.test_modules.items():
+      # Check if the module exists in UI test modules
+      if module_name in body_json["device"]["test_modules"]:
+        # Merge the enabled state
+        module_config["enabled"] = body_json[
+          "device"]["test_modules"][module_name]["enabled"]
 
     LOGGER.info("Starting Testrun with device target " +
                 f"{device.manufacturer} {device.model} with " +

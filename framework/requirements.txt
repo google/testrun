@@ -1,14 +1,15 @@
 # Requirements for the core module
-requests<2.32.0
+requests==2.32.3
 
 # Requirements for the net_orc module
-docker==7.0.0
+docker==7.1.0
 ipaddress==1.0.23
 netifaces==0.11.0
 scapy==2.5.0
 
 # Requirments for the test_orc module
 weasyprint==61.2
+pydyf==0.8.0
 
 # Requirements for the API
 fastapi==0.109.1
@@ -30,3 +31,9 @@ pytz==2024.1
 
 # Requirements for the risk profile
 python-dateutil==2.9.0
+
+# Requirements for MQTT client
+paho-mqtt==2.1.0
+
+# Requirements for background tasks
+APScheduler==3.10.4

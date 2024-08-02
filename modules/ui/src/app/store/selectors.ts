@@ -103,3 +103,8 @@ export const selectTestModules = createSelector(
   selectAppState,
   (state: AppState) => state.shared.testModules
 );
+
+export const selectAdapters = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.adapters
+);

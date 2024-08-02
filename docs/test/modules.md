@@ -10,7 +10,7 @@ Testrun provides some pre-built test modules for you to use when testing your ow
 | Baseline | A sample test module | [Baseline module](/modules/test/baseline/README.md) |
 | Connection | Verify IP and DHCP based behavior | [Connection module](/modules/test/conn/README.md) |
 | DNS | Verify DNS functionality | [DNS module](/modules/test/dns/README.md) |
-| NMAP | Ensure unsecure services are disabled | [NMAP module](/modules/test/nmap/README.md) |
+| Services | Ensure unsecure services are disabled | [Services module](/modules/test/services/README.md) |
 | NTP | Verify NTP functionality | [NTP module](/modules/test/ntp/README.md) |
 | Protocol | Inspect BMS protocol implementation | [Protocol Module](/modules/test/protocol/README.md) |
 | TLS | Determine TLS client and server behavior | [TLS module](/modules/test/tls/README.md) |
