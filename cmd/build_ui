@@ -1,0 +1,37 @@
+#!/bin/bash -e
+
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Build the UI
+echo Building the ui builder
+
+# Build UI builder image
+if docker build -t testrun/build-ui -f modules/ui/build.Dockerfile . ; then
+  echo Successully built the ui builder
+else
+  echo An error occured whilst building the ui builder
+  exit 1
+fi
+
+# Check that the container is not already running
+docker kill tr-ui-build 2> /dev/null || true
+
+echo "Building the user interface"
+
+# Start build container and build the ui dist 
+docker run --rm -v $PWD/modules/ui:/modules/ui testrun/build-ui /bin/sh -c "npm install && npm run build"
+
+# Kill the container (Should not be running anymore)
+docker kill tr-ui-build 2> /dev/null || true

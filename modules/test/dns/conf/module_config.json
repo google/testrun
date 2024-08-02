@@ -34,7 +34,7 @@
       },
       {
         "name": "dns.mdns",
-        "test_description": "If the device has MDNS (or any kind of IP multicast), can it be disabled",
+        "test_description": "Does the device has MDNS (or any kind of IP multicast)",
         "expected_behavior": "Device may send MDNS requests",
         "required_result": "Informational"
       }
