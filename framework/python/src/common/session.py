@@ -17,6 +17,7 @@ import datetime
 import pytz
 import json
 import os
+from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
 from net_orc.ip_control import IPControl
@@ -53,7 +54,10 @@ def session_tracker(method):
     result = method(self, *args, **kwargs)
 
     if self.get_status() != 'Idle':
-      self.get_mqtt_client().send_message(STATUS_TOPIC, self.to_json())
+      self.get_mqtt_client().send_message(
+                                        STATUS_TOPIC,
+                                        jsonable_encoder(self.to_json())
+                                        )
 
     return result
   return wrapper
@@ -285,7 +289,7 @@ class TestrunSession():
     self._save_config()
 
     # Update log level
-    LOGGER.debug(f'Setting log level to {config_json["log_level"]}')
+    LOGGER.debug(f'Setting log level to {config_json['log_level']}')
     logger.set_log_level(config_json['log_level'])
 
   def set_target_device(self, device):
@@ -345,7 +349,7 @@ class TestrunSession():
     return {'total': self.get_total_tests(), 'results': test_results}
 
   def add_test_result(self, result):
-    
+
     updated = False
 
     # Check if test has already been added
