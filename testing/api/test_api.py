@@ -243,6 +243,7 @@ def local_get_devices():
 @pytest.fixture()
 def restore_config():
   """Restore the original configuration (system.json) after the test"""
+  yield
 
   # Restore system.json from 'testing/api/' after the test
   if os.path.exists(SYSTEM_CONFIG_RESTORE_PATH):
