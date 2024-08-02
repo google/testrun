@@ -169,7 +169,7 @@ class Api:
       config = (await request.body()).decode("UTF-8")
       config_json = json.loads(config)
 
-            # Validate req fields
+      # Validate req fields
       if ("network" not in config_json or
           "device_intf" not in config_json.get("network") or
           "internet_intf" not in config_json.get("network") or
@@ -180,9 +180,7 @@ class Api:
           "Configuration is missing required fields")
 
       self._session.set_config(config_json)
-
-
-
+      
     # Catch JSON Decode error etc
     except JSONDecodeError:
       response.status_code = status.HTTP_400_BAD_REQUEST
