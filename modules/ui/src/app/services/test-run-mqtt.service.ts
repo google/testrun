@@ -5,7 +5,6 @@ import { map } from 'rxjs/operators';
 import { Adapters } from '../model/setting';
 import { TestrunStatus } from '../model/testrun-status';
 import { InternetConnection, Topic } from '../model/topic';
-import { TestrunStatus } from '../model/testrun-status';
 
 @Injectable({
   providedIn: 'root',

@@ -9,8 +9,6 @@ import { MOCK_ADAPTERS } from '../mocks/settings.mock';
 import { Topic } from '../model/topic';
 import { MOCK_INTERNET } from '../mocks/topic.mock';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/testrun.mock';
-import { MOCK_INTERNET } from '../mocks/topic.mock';
-import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/testrun.mock';
 
 describe('TestRunMqttService', () => {
   let service: TestRunMqttService;

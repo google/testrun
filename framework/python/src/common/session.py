@@ -38,7 +38,6 @@ API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
-SECONDS_IN_YEAR = 31536000
 STATUS_TOPIC = 'status'
 
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
@@ -762,9 +761,12 @@ class TestrunSession():
       if 'items_removed' in diff:
         adapters['adapters_removed'] = diff['items_removed']
       # Save new network interfaces to session
-      LOGGER.debug(f'Network adapters changed {adapters}')
+      LOGGER.debug(f'Network adapters change detected: {adapters}')
       self._ifaces = ifaces_new
     return adapters
 
   def get_mqtt_client(self):
     return self._mqtt_client
+
+  def get_ifaces(self):
+    return self._ifaces
