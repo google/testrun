@@ -127,7 +127,8 @@ limitations under the License.
                 error.devicePortMissed && error.internetPortMissed;
                 else onePortMissed
               ">
-              No ports are detected. Please define a valid ones using
+              No ports detected. Please connect and configure network and device
+              connections in the
             </ng-container>
             <ng-template #onePortMissed>
               Selected port is missing! Please define a valid one using
@@ -213,7 +214,8 @@ limitations under the License.
             vm.systemStatus === StatusOfTestrun.InProgress &&
             isRiskAssessmentRoute === false
           ">
-          Congratulations, the device is under test now! Do not forget to fill
+          The device is now being tested. Why not take the time to complete the
+          device
           <a
             (click)="navigateToRiskAssessment()"
             (keydown.enter)="navigateToRiskAssessment()"
@@ -223,7 +225,7 @@ limitations under the License.
             role="link"
             class="message-link"
             >Risk Assessment questionnaire</a
-          >. It is required to complete verification process.
+          >?
         </app-callout>
         <router-outlet></router-outlet>
       </div>
