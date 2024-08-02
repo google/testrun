@@ -22,6 +22,7 @@ from docker.types import Mount
 import getpass
 from common import logger
 from common import util
+from net_orc.ovs_control import OVSControl
 
 LOGGER = logger.get_logger('validator')
 OUTPUT_DIR = 'runtime/validation'
@@ -45,6 +46,8 @@ class NetworkValidator:
     self._device_dir = os.path.join(self._path, DEVICES_DIR)
 
     shutil.rmtree(os.path.join(self._path, OUTPUT_DIR), ignore_errors=True)
+
+    self._ovs = OVSControl(session=None)
 
   def start(self):
     """Start the network validator."""
@@ -87,6 +90,8 @@ class NetworkValidator:
   def _load_devices(self):
 
     LOGGER.info(f'Loading validators from {self._device_dir}')
+    # Reset device list before loading
+    self._net_devices = []
 
     loaded_devices = 'Loaded the following validators: '
 
@@ -286,7 +291,6 @@ class NetworkValidator:
       LOGGER.error(e)
 
   def _get_device_container(self, net_device):
-    LOGGER.debug('Resolving device container: ' + net_device.container_name)
     container = None
     try:
       client = docker.from_env()
@@ -305,6 +309,9 @@ class NetworkValidator:
       if not net_device.enable_container:
         continue
       self._stop_network_device(net_device, kill)
+      # Remove the device port form the ovs bridge once validation is done
+      bridge_intf = DEVICE_BRIDGE + 'i-' + net_device.dir_name
+      self._ovs.delete_port(DEVICE_BRIDGE,bridge_intf)
 
 
 class FauxDevice:  # pylint: disable=too-few-public-methods,too-many-instance-attributes
