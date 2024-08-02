@@ -22,7 +22,11 @@ limitations under the License.
     class="profile-item-info"
     role="button"
     tabindex="0"
-    matTooltip="{{ profile.status }}"
+    matTooltip="{{
+      profile.status === ProfileStatus.EXPIRED
+        ? 'Expired. Please, create a new Risk profile.'
+        : profile.status
+    }}"
     (click)="profileClicked.emit(profile)"
     (keydown.enter)="profileClicked.emit(profile)">
     <span

@@ -72,6 +72,7 @@ import { HISTORY } from './mocks/reports.mock';
 import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { MOCK_ADAPTERS } from './mocks/settings.mock';
 import { WifiComponent } from './components/wifi/wifi.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 const windowMock = {
   location: {
@@ -143,6 +144,7 @@ describe('AppComponent', () => {
         MatIconTestingModule,
         CertificatesComponent,
         WifiComponent,
+        MatTooltipModule,
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
@@ -532,12 +534,44 @@ describe('AppComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have callout component with "Congratulations" text', () => {
+      it('should have callout component with "The device is now being tested" text', () => {
         const callout = compiled.querySelector('app-callout');
         const calloutContent = callout?.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('Congratulations');
+        expect(calloutContent).toContain('The device is now being tested');
+      });
+
+      it('should have callout component with "Risk Assessment" link', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutLinkEl = compiled.querySelector(
+          '.message-link'
+        ) as HTMLAnchorElement;
+        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutLinkContent).toContain('Risk Assessment');
+      });
+    });
+
+    describe('with systemStatus data IN Progress and without riskProfiles', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasConnectionSettings, true);
+        store.overrideSelector(selectHasDevices, true);
+        store.overrideSelector(selectHasRiskProfiles, false);
+        store.overrideSelector(
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
+        );
+        fixture.detectChanges();
+      });
+
+      it('should have callout component with "The device is now being tested" text', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutContent = callout?.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutContent).toContain('The device is now being tested');
       });
 
       it('should have callout component with "Risk Assessment" link', () => {
@@ -718,7 +752,7 @@ describe('AppComponent', () => {
           const calloutContent = callout?.innerHTML.trim();
 
           expect(callout).toBeTruthy();
-          expect(calloutContent).toContain('No ports are detected.');
+          expect(calloutContent).toContain('No ports detected.');
         });
       });
 

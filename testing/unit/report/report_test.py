@@ -16,6 +16,7 @@ import unittest
 from testreport import TestReport
 import os
 import json
+import shutil
 
 MODULE = 'report'
 
@@ -30,6 +31,10 @@ class ReportTest(unittest.TestCase):
 
   @classmethod
   def setUpClass(cls):
+    # Delete old files
+    if os.path.exists(OUTPUT_DIR) and os.path.isdir(OUTPUT_DIR):
+      shutil.rmtree(OUTPUT_DIR)
+
     # Create the output directories and ignore errors if it already exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -59,6 +64,47 @@ class ReportTest(unittest.TestCase):
   def report_noncompliant_test(self):
     self.create_report(os.path.join(TEST_FILES_DIR, 'report_noncompliant.json'))
 
+  # Generate formatted reports for each report generated from
+  # the test containers.
+  # Not a unit test but can't run from within the test module container and must
+  # be done through the venv. Useful for doing visual inspections
+  # of report formatting changes without having to re-run a new device test.
+  def report_formatting(self):
+    test_modules = ['conn','dns','ntp','protocol','services','tls']
+    unit_tests = os.listdir(UNIT_TEST_DIR)
+    for test in unit_tests:
+      if test in test_modules:
+        output_dir = os.path.join(UNIT_TEST_DIR,test,'output')
+        if os.path.isdir(output_dir):
+          output_files = os.listdir(output_dir)
+          for file in output_files:
+            if file.endswith('.html'):
+
+              # Read the generated report and add formatting
+              report_out_path = os.path.join(output_dir,file)
+              with open(report_out_path, 'r', encoding='utf-8') as f:
+                report_out = f.read()
+                formatted_report = self.add_formatting(report_out)
+
+                # Write back the new formatted_report value
+                out_report_dir = os.path.join(OUTPUT_DIR, test)
+                os.makedirs(out_report_dir, exist_ok=True)
+
+                with open(os.path.join(
+                  out_report_dir,file), 'w',
+                  encoding='utf-8') as f:
+                  f.write(formatted_report)
+
+  def add_formatting(self, body):
+    return f'''
+    <!DOCTYPE html>
+    <html lang="en">
+    {TestReport().generate_head()}
+    <body>
+      {body}
+    </body>
+    </html'''
+
   def get_module_html_report(self, module):
     # Combine the path components using os.path.join
     report_file = os.path.join(
@@ -75,6 +121,9 @@ if __name__ == '__main__':
   suite = unittest.TestSuite()
   suite.addTest(ReportTest('report_compliant_test'))
   suite.addTest(ReportTest('report_noncompliant_test'))
+
+  # Create some
+  suite.addTest(ReportTest('report_formatting'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)
