@@ -114,7 +114,7 @@ class TestModule:
           except Exception as e:  # pylint: disable=W0718
             LOGGER.error(f'An error occurred whilst running {test["name"]}')
             LOGGER.error(e)
-            traceback.print_exc() 
+            traceback.print_exc()
         else:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
           test['result'] = 'Error'
