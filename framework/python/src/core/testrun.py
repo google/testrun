@@ -114,7 +114,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # Start websockets server
     self.start_ws()
 
-    # MQTT client
+    # Init MQTT client
     self._mqtt_client = mqtt.MQTT()
 
     if self._no_ui:
