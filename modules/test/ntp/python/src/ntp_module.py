@@ -16,7 +16,7 @@ from test_module import TestModule
 from scapy.all import rdpcap, IP, IPv6, NTP, UDP, Ether
 from datetime import datetime
 import os
-from collections import defaultdict, Counter
+from collections import defaultdict
 
 LOG_NAME = 'test_ntp'
 MODULE_REPORT_FILE_NAME = 'ntp_report.html'
