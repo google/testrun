@@ -16,6 +16,12 @@
 
 # Creates a package for Testrun
 
+# Check that user is not root
+if [[ "$EUID" == 0 ]]; then
+    echo "Must not run as root. Use cmd/package as regular user"
+    exit 1
+fi
+
 MAKE_SRC_DIR=make
 MAKE_CONTROL_DIR=make/DEBIAN/control
 
@@ -25,10 +31,10 @@ version=$(grep -R "Version: " $MAKE_CONTROL_DIR | awk '{print $2}')
 # Replace invalid characters
 version="${version//./_}"
 
-# Delete existing make files
-rm -rf $MAKE_SRC_DIR/usr
+echo Building package for testrun v${version}
 
 # Delete existing make files
+echo Cleaning up previous build files
 rm -rf $MAKE_SRC_DIR/usr
 
 # Copy testrun script to /bin
@@ -59,6 +65,9 @@ mkdir -p $MAKE_SRC_DIR/usr/local/testrun/local/risk_profiles
 # Copy root_certs folder
 mkdir -p local/root_certs
 cp -r local/root_certs $MAKE_SRC_DIR/usr/local/testrun/local/
+
+# Build the UI
+cmd/build_ui
 
 # Copy framework and modules into testrun folder
 cp -r {framework,modules} $MAKE_SRC_DIR/usr/local/testrun
