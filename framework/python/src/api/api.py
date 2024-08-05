@@ -681,7 +681,7 @@ class Api:
       return self._generate_msg(False, "Test results could not be found")
 
   async def get_device_types(self):
-    return self._device_types
+    return tuple(map(lambda i: i["text"], self._device_types))
 
   async def get_device_technologies(self):
     return self._device_techs
