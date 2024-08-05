@@ -330,7 +330,7 @@ def test_get_system_config(testrun): # pylint: disable=W0613
   api_config = r.json()
 
   # Check if status code is 200 (OK)
-  assert r.status_code == 200, f"status code is {r.status_code}"
+  assert r.status_code == 200
 
   # Validate structure
   assert set(dict_paths(api_config)) | set(dict_paths(local_config)) == set(
@@ -349,10 +349,8 @@ def test_get_system_config(testrun): # pylint: disable=W0613
       == api_config["network"]["internet_intf"]
   )
 
-def test_start_testrun_started_successfully(
-    testing_devices, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
-  """Test if testrun started successfully """
+def test_start_testrun_started_successfully(testing_devices, testrun): # pylint: disable=W0613
+  """Test for testrun started successfully """
 
   # Payload with device details
   payload = {"device": {
@@ -371,6 +369,96 @@ def test_start_testrun_started_successfully(
 
   # Check if the response status code is 200 (OK)
   assert r.status_code == 200
+
+  # Parse the json response
+  response = r.json()
+
+  # Check that device is in response
+  assert "device" in response
+
+  # Check that mac_addr in response
+  assert "mac_addr" in response["device"]
+
+  # Check that firmware in response
+  assert "firmware" in response["device"]
+
+def test_start_testrun_missing_device(testing_devices, testrun): # pylint: disable=W0613
+  """Test for missing device when testrun is started """
+
+  # Payload empty dict (no device)
+  payload = {}
+
+  # Send the post request
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+
+  # Check if the response status code is 400 (bad request)
+  assert r.status_code == 400
+
+  # Parse the json response
+  response = r.json()
+
+  # Check if 'error' in response
+  assert "error" in response
+
+def test_start_testrun_already_started(testing_devices, testrun): # pylint: disable=W0613
+  """Test for testrun already started """
+
+  # Payload with device details
+  payload = {"device": {
+             "mac_addr": BASELINE_MAC_ADDR,
+             "firmware": "asd", 
+             "test_modules": {
+                "dns": {"enabled": False},
+                "connection": {"enabled": True},
+                "ntp": {"enabled": False},
+                "baseline": {"enabled": False},
+                "nmap": {"enabled": False}
+            }}}
+
+  # Send the post request (start test)
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+
+  # Check if the response status code is 200 (OK)
+  assert r.status_code == 200
+
+  # Send the second post request (start test again)
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+
+  # Parse the json response
+  response = r.json()
+
+  # Check if the response status code is 409 (Conflict)
+  assert r.status_code == 409
+
+  # Check if 'error' in response
+  assert "error" in response
+
+def test_start_testrun_device_not_found(testing_devices, testrun): # pylint: disable=W0613
+  """Test for start testrun device not found """
+
+  # Payload with device details with no mac address assigned
+  payload = {"device": {
+             "mac_addr": "",
+             "firmware": "asd", 
+             "test_modules": {
+                "dns": {"enabled": False},
+                "connection": {"enabled": True},
+                "ntp": {"enabled": False},
+                "baseline": {"enabled": False},
+                "nmap": {"enabled": False}
+            }}}
+
+  # Send the post request
+  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+
+  # Check if the response status code is 404 (not found)
+  assert r.status_code == 404
+
+  # Parse the json response
+  response = r.json()
+
+  # Check if 'error' in response
+  assert "error" in response
 
 # Currently not working due to blocking during monitoring period
 @pytest.mark.skip()
@@ -1465,12 +1553,16 @@ def profile_exists(profile_name):
 
 def test_get_profiles_format(testrun):  # pylint: disable=W0613
   """Test profiles format"""
+
   # Send the get request
   r = requests.get(f"{API}/profiles/format", timeout=5)
+
   # Check if status code is 200 (OK)
   assert r.status_code == 200
+
   # Parse the response
   response = r.json()
+
   # Check if the response is a list
   assert isinstance(response, list)
 
@@ -1478,6 +1570,30 @@ def test_get_profiles_format(testrun):  # pylint: disable=W0613
   for item in response:
     assert "question" in item
     assert "type" in item
+
+@responses.activate
+def test_get_profiles_format_internal_server_error(testrun): # pylint: disable=W0613
+  """Test for get_profiles_format causing internal server error"""
+
+  # Mock the response for GET request for getting profiles format
+  responses.add(
+      responses.GET,
+      f"{API}/profiles/format",
+      json={"error": "Testrun could not load the risk assessment format"},
+      status=500
+    )
+
+  # Send the get request
+  r = requests.get(f"{API}/profiles/format", timeout=5)
+
+  # Check if status code is 500 (Internal Server Error)
+  assert r.status_code == 500
+
+  # Parse the response
+  response = r.json()
+
+  # Check if "error" key in response
+  assert "error" in response
 
 def test_get_profiles(testrun, reset_profiles, add_profile):  # pylint: disable=W0613
   """Test for get profiles (no profile, one profile, two profiles)"""
@@ -1716,7 +1832,7 @@ def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   assert "error" in response
 
 @responses.activate
-def test_update_profile_internal_server_error(testrun): # pylint: disable=W0613
+def test_create_update_profile_internal_server_error(testrun): # pylint: disable=W0613
   """Test for create/update profile causing internal server error."""
 
   # Mock the POST request for create/update profiles API response
@@ -1732,11 +1848,11 @@ def test_update_profile_internal_server_error(testrun): # pylint: disable=W0613
                     json={"name": "New Profile", "questions": []},
                     timeout=5)
 
-  # Parse the json response
-  response = r.json()
-
   # Check if status code is 500 (Internal Server Error)
   assert r.status_code == 500
+
+  # Parse the json response
+  response = r.json()
 
   # Check if "error" key in response
   assert "error" in response
@@ -1834,4 +1950,32 @@ def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   # Check if "error" key in response
   assert "error" in response
 
+@responses.activate
+def test_delete_profile_internal_server_error(testrun): # pylint: disable=W0613
+  """Test for create/update profile causing internal server error"""
+
+  # Assign the profile to delete
+  profile_to_delete = {"name": "New Profile"}
+
+  # Mock the response for DELETE request for deleting a profile
+  responses.add(
+      responses.DELETE,
+      f"{API}/profiles",
+      json={"error": "An error occurred whilst deleting the profile"},
+      status=500
+  )
+
+  # Send the DELETE request to delete the profile
+  r = requests.delete(f"{API}/profiles",
+                      json=profile_to_delete,
+                      timeout=5)
+
+  # Check if status code is 500 (Internal Server Error)
+  assert r.status_code == 500
+
+  # Parse the JSON response
+  response = r.json()
+
+  # Check if "error" key in response
+  assert "error" in response
 
