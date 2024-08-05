@@ -100,20 +100,16 @@ describe('ProfileItemComponent', () => {
 
   describe('with Expired profile', () => {
     beforeEach(() => {
-      component.profile = EXPIRED_PROFILE_MOCK;
+      component.enterProfileItem(EXPIRED_PROFILE_MOCK);
     });
 
     it('should change tooltip on enterProfileItem', () => {
-      component.enterProfileItem(EXPIRED_PROFILE_MOCK);
-
       expect(component.tooltip.message).toEqual(
         'This risk profile is outdated. Please create a new risk profile.'
       );
     });
 
     it('should announce', () => {
-      component.outEvent();
-
       expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
         'This risk profile is outdated. Please create a new risk profile.'
       );
