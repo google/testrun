@@ -47,14 +47,14 @@ GRPC=$(echo "$CONF" | jq -r '.config.grpc')
 # Validate the module name is present
 if [[ -z "$MODULE_NAME" || "$MODULE_NAME" == "null" ]]
 then
-	echo "No module name present in $CONF_FILE.  Exiting startup."
+	echo "No module name present in $CONF_FILE. Exiting startup."
 	exit 1
 fi
 
 # Select which interace to use
 if [[ -z $DEFINED_IFACE || "$DEFINED_IFACE" == "null" ]]
 then
-	echo "No Interface Defined, defaulting to veth0"
+	echo "No interface defined, defaulting to veth0"
 	INTF=$DEFAULT_IFACE
 else
 	INTF=$DEFINED_IFACE
@@ -74,7 +74,7 @@ echo "Starting module $MODULE_NAME on local interface $INTF..."
 $BIN_DIR/wait_for_interface $INTF
 
 # Small pause to let the interface stabalize before starting the capture
-#sleep 1 
+sleep 1 
 
 # Start network capture
 $BIN_DIR/capture $MODULE_NAME $INTF
