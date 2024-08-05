@@ -29,7 +29,6 @@ from typing import Iterator
 import pytest
 import requests
 import responses
-import datetime
 
 ALL_DEVICES = "*"
 API = "http://127.0.0.1:8000"
@@ -49,20 +48,17 @@ def pretty_print(dictionary: dict):
   """ Pretty print dictionary """
   print(json.dumps(dictionary, indent=4))
 
-
 def query_system_status() -> str:
   """Query system status from API and returns this"""
   r = requests.get(f"{API}/system/status", timeout=5)
   response = r.json()
   return response["status"]
 
-
 def query_test_count() -> int:
   """Queries status and returns number of test results"""
   r = requests.get(f"{API}/system/status", timeout=5)
   response = r.json()
   return len(response["tests"]["results"])
-
 
 def start_test_device(
     device_name, mac_address, image_name="test-run/ci_device_1", args=""
@@ -77,7 +73,6 @@ def start_test_device(
       capture_output=True,
   )
   print(cmd.stdout)
-
 
 def stop_test_device(device_name):
   """ Stop docker container with given name """
@@ -117,7 +112,6 @@ def empty_devices_dir():
   """ Use e,pty devices directory """
   local_delete_devices(ALL_DEVICES)
 
-
 @pytest.fixture
 def testing_devices():
   """ Use devices from the testing/device_configs directory """
@@ -128,7 +122,6 @@ def testing_devices():
       dirs_exist_ok=True,
   )
   return local_get_devices()
-
 
 @pytest.fixture
 def testrun(request): # pylint: disable=W0613
@@ -180,7 +173,6 @@ def testrun(request): # pylint: disable=W0613
   )
   print(cmd.stdout)
 
-
 def until_true(func: Callable, message: str, timeout: int):
   """ Blocks until given func returns True
 
@@ -194,7 +186,6 @@ def until_true(func: Callable, message: str, timeout: int):
     time.sleep(1)
   raise TimeoutError(f"Timed out waiting {timeout}s for {message}")
 
-
 def dict_paths(thing: dict, stem: str = "") -> Iterator[str]:
   """Returns json paths (in dot notation) from a given dictionary"""
   for k, v in thing.items():
@@ -203,7 +194,6 @@ def dict_paths(thing: dict, stem: str = "") -> Iterator[str]:
       yield from dict_paths(v, path)
     else:
       yield path
-
 
 def get_network_interfaces():
   """return list of network interfaces on machine
@@ -219,7 +209,6 @@ def get_network_interfaces():
       ifaces.append(i.stem)
   return ifaces
 
-
 def local_delete_devices(path):
   """ Deletes all local devices 
   """
@@ -228,7 +217,6 @@ def local_delete_devices(path):
       thing.unlink()
     else:
       shutil.rmtree(thing)
-
 
 def local_get_devices():
   """ Returns path to device configs of devices in local/devices directory"""
@@ -721,80 +709,6 @@ def test_get_reports_no_reports(testrun): # pylint: disable=W0613
   # Check if the response is an empty list
   assert response == []
 
-@pytest.mark.skip()
-def get_report_one_report(testrun): # pylint: disable=W0613
-  """Initiate a test run, ensure report generation, and get the report."""
-
-  payload = {
-      "device": {
-          "mac_addr": BASELINE_MAC_ADDR,
-          "firmware": "asd",
-          "test_modules": {
-              "dns": {"enabled": False},
-              "connection": {"enabled": False},
-              "ntp": {"enabled": True},
-              "services": {"enabled": False},
-              "protocol": {"enabled": False},
-              "tls": {"enabled": False}
-          }
-      }
-  }
-
-  # Send the post request to start the test
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
-  assert r.status_code == 200
-
-  # Step 2: Start the device for the test
-  device_name = "test_device"
-  start_test_device(device_name, BASELINE_MAC_ADDR)
-
-  # Wait for the test to complete
-  max_retries = 300
-  for _ in range(max_retries):
-    time.sleep(1)
-    status = query_system_status().lower()
-    print(f"Current system status: {status}")
-    if status in ["compliant", "non-compliant", "cancelled"]:
-      break
-  else:
-    # Timeout reached without a valid end state
-    stop_test_device(device_name)
-     # Get the final status
-    final_status = query_system_status().lower()
-    print("Final system status:", final_status)
-     # Log the final status
-    pytest.fail("Test run did not complete. Final status: " + final_status)
-
-  # Get the current timestamp in the expected format
-  timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-
-  # Get request to retrieve the generated report
-  r = requests.get(f"{API}/report/{device_name}/{timestamp}", timeout=5)
-  # Parse the json
-  report_data = r.json()
-
-  print(f"Reports are {report_data}")
-  assert r.status_code == 200
-
-  # Stop the test device
-  stop_test_device(device_name)
-
-# def test_get_report_no_report(testrun): # pylint: disable=W0613
-  device_name = "test"
-  timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-
-  # Get request to retrieve the generated report
-  r = requests.get(f"{API}/report/{device_name}/{timestamp}", timeout=5)
-  # Parse the json
-  response = r.json()
-  print(f"response is {response}")
-
-  # Check if the response is a list
-  assert "Not Found" in response.values()
-
-  # Check if status code is 404 (Report Not Found)
-  assert r.status_code == 404
-
 # def test_delete_report(testrun): # pylint: disable=W0613
 #   """Test the delete report endpoint"""
 #   pass
@@ -1118,7 +1032,6 @@ def test_start_system_not_configured_correctly(
                     timeout=10)
   assert r.status_code == 500
 
-
 def test_start_device_not_found(empty_devices_dir, # pylint: disable=W0613
                                 testrun): # pylint: disable=W0613
   device_1 = {
@@ -1151,7 +1064,6 @@ def test_start_device_not_found(empty_devices_dir, # pylint: disable=W0613
                     timeout=10)
   assert r.status_code == 404
 
-
 def test_start_missing_device_information(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -1179,7 +1091,6 @@ def test_start_missing_device_information(
                     data=json.dumps(payload),
                     timeout=10)
   assert r.status_code == 400
-
 
 def test_create_device_already_exists(
     empty_devices_dir, # pylint: disable=W0613
@@ -1210,7 +1121,6 @@ def test_create_device_already_exists(
   print(r.text)
   assert r.status_code == 409
 
-
 def test_create_device_invalid_json(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -1223,7 +1133,6 @@ def test_create_device_invalid_json(
   print(r.text)
   assert r.status_code == 400
 
-
 def test_create_device_invalid_request(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -1233,7 +1142,6 @@ def test_create_device_invalid_request(
                     timeout=5)
   print(r.text)
   assert r.status_code == 400
-
 
 def test_device_edit_device(
     testing_devices, # pylint: disable=W0613
@@ -1283,7 +1191,6 @@ def test_device_edit_device(
   assert updated_device_api["model"] == new_model
   assert updated_device_api["test_modules"] == new_test_modules
 
-
 def test_device_edit_device_not_found(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -1321,7 +1228,6 @@ def test_device_edit_device_not_found(
 
   assert r.status_code == 404
 
-
 def test_device_edit_device_incorrect_json_format(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
@@ -1353,7 +1259,6 @@ def test_device_edit_device_incorrect_json_format(
                       timeout=5)
 
   assert r.status_code == 400
-
 
 def test_device_edit_device_with_mac_already_exists(
     empty_devices_dir, # pylint: disable=W0613
