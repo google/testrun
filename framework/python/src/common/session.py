@@ -652,6 +652,11 @@ class TestrunSession():
     self._certs = []
 
     for cert_file in os.listdir(CERTS_PATH):
+
+      # Ignore directories
+      if os.path.isdir(os.path.join(CERTS_PATH, cert_file)):
+        continue
+
       LOGGER.debug(f'Loading certificate {cert_file}')
       try:
 
