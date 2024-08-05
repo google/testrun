@@ -117,6 +117,12 @@
         ]
       },
       {
+        "name": "connection.dhcp_disconnect",
+        "test_description": "The device under test issues a new DHCPREQUEST packet after a port ph ysical disconnection and reconnection",
+        "expected_behavior": "A client SHOULD use DHCP to reacquire or verify its IP address and network parameters whenever the local network parameters may have changed; e.g., at system boot time or after a disconnection from the local network, as the local network configuration may change without the client's or user's knowledge. If a client has knowledge ofa  previous network address and is unable to contact a local DHCP server, the client may continue to use the previous network addres until the lease for that address expires.  If the lease expires before the client can contact a DHCP server, the client must immediately discontinue use of the previous network address and may inform local users of the problem.",
+        "required_result": "Required"
+      },
+      {
         "name": "connection.single_ip",
         "test_description": "The network switch port connected to the device reports only one IP address for the device under test.",
         "expected_behavior": "The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible.",
