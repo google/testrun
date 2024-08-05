@@ -16,8 +16,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProfileItemComponent } from './profile-item.component';
-import { PROFILE_MOCK } from '../../../mocks/profile.mock';
+import {
+  EXPIRED_PROFILE_MOCK,
+  PROFILE_MOCK,
+} from '../../../mocks/profile.mock';
 import { TestRunService } from '../../../services/test-run.service';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 describe('ProfileItemComponent', () => {
   let component: ProfileItemComponent;
@@ -25,11 +29,16 @@ describe('ProfileItemComponent', () => {
   let compiled: HTMLElement;
 
   const testRunServiceMock = jasmine.createSpyObj(['getRiskClass']);
-
+  const mockLiveAnnouncer = jasmine.createSpyObj('mockLiveAnnouncer', [
+    'announce',
+  ]);
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProfileItemComponent],
-      providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
+      providers: [
+        { provide: TestRunService, useValue: testRunServiceMock },
+        { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfileItemComponent);
@@ -87,5 +96,27 @@ describe('ProfileItemComponent', () => {
     profileName.click();
 
     expect(profileClickedSpy).toHaveBeenCalledWith(PROFILE_MOCK);
+  });
+
+  describe('with Expired profile', () => {
+    beforeEach(() => {
+      component.profile = EXPIRED_PROFILE_MOCK;
+    });
+
+    it('should change tooltip on enterProfileItem', () => {
+      component.enterProfileItem(EXPIRED_PROFILE_MOCK);
+
+      expect(component.tooltip.message).toEqual(
+        'This risk profile is outdated. Please create a new risk profile.'
+      );
+    });
+
+    it('should announce', () => {
+      component.outEvent();
+
+      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
+        'This risk profile is outdated. Please create a new risk profile.'
+      );
+    });
   });
 });
