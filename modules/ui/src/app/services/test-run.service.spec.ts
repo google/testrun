@@ -268,6 +268,8 @@ describe('TestRunService', () => {
     const statusesForGreyRes = [
       StatusOfTestResult.NotDetected,
       StatusOfTestResult.NotStarted,
+      StatusOfTestResult.Skipped,
+      StatusOfTestResult.Disabled,
     ];
 
     statusesForGreenRes.forEach(testCase => {
