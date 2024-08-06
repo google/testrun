@@ -14,7 +14,6 @@
 """NTP test module"""
 from test_module import TestModule
 from scapy.all import rdpcap, IP, IPv6, NTP, UDP, Ether
-from datetime import datetime
 import os
 from collections import defaultdict
 
@@ -91,9 +90,9 @@ class NTPModule(TestModule):
 
       # Calculate the average of the time differences
       if time_diffs:
-          avg_diff = sum(time_diffs) / len(time_diffs)
+        avg_diff = sum(time_diffs) / len(time_diffs)
       else:
-          avg_diff = 0  # If there's only one timestamp, the average difference is 0
+        avg_diff = 0  # one timestamp, the average difference is 0
 
       average_time_between_requests[key] = avg_diff
 
@@ -135,7 +134,8 @@ class NTPModule(TestModule):
           <tbody>'''
 
       # Generate the HTML table with the count column
-      for (src, dst, typ, version), avg_diff in average_time_between_requests.items():
+      for (src, dst, typ,
+           version), avg_diff in average_time_between_requests.items():
         cnt = len(timestamps[(src, dst, typ, version)])
 
         # Sync Average only applies to client requests
@@ -187,8 +187,8 @@ class NTPModule(TestModule):
 
     # Read the pcap files
     packets = (rdpcap(self.startup_capture_file) +
-      rdpcap(self.monitor_capture_file) +
-      rdpcap(self.ntp_server_capture_file))
+               rdpcap(self.monitor_capture_file) +
+               rdpcap(self.ntp_server_capture_file))
 
     # Iterate through NTP packets
     for packet in packets:
@@ -311,7 +311,7 @@ class NTPModule(TestModule):
                          'server and non-DHCP provided server')
       elif ntp_to_remote:
         result = ('Feature Not Detected',
-          'Device sent NTP request to non-DHCP provided server')
+                  'Device sent NTP request to non-DHCP provided server')
       elif ntp_to_local:
         result = True, 'Device sent NTP request to DHCP provided server'
 
