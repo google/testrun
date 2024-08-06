@@ -35,7 +35,7 @@ else
 	INTF=$DEFINED_IFACE
 fi
 
-#Create and set permissions on the output files
+# Create and set permissions on the output files
 OUTPUT_DIR=/runtime/validation/
 LOG_FILE=$OUTPUT_DIR/$MODULE_NAME.log
 RESULT_FILE=$OUTPUT_DIR/result.json
