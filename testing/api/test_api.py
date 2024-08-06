@@ -28,20 +28,7 @@ import time
 from typing import Iterator
 import pytest
 import requests
-import responses
 
-#import sys
-
-# from unittest.mock import patch, MagicMock
-
-# # Get the directory of the current script
-# current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# # Define the relative path to the desired directory
-# relative_path = os.path.join(current_dir, '../../framework/python/src')
-
-# # Append the relative path to sys.path
-# sys.path.append(relative_path)
 
 ALL_DEVICES = "*"
 API = "http://127.0.0.1:8000"
@@ -735,60 +722,6 @@ def test_system_latest_version(testrun): # pylint: disable=W0613
   assert r.status_code == 200
   # Check if an update is available
   assert response["update_available"] is False
-
-@responses.activate
-def test_system_update_available(testrun): # pylint: disable=W0613
-  """Test for testrun version when update is available"""
-
-  # Mock the API response when the update is available
-  responses.add(
-    responses.GET,
-    f"{API}/system/version",
-    json={
-        "installed_version": "3.1",
-        "update_available": True,
-        "latest_version": "3.1.1",
-        "latest_version_url":
-          ("https://github.com/google/testrun/releases/tag/v3.1.1")
-    },
-    status=200
-  )
-
-  # Send the get request to the API
-  r = requests.get(f"{API}/system/version", timeout=5)
-
-  # Parse the response
-  response = r.json()
-
-  # Check if status code is 200 (update available)
-  assert r.status_code == 200
-  # Check if an update is available
-  assert response["update_available"] is True
-
-@responses.activate
-def test_system_version_cannot_be_obtained(testrun): # pylint: disable=W0613
-  """Test when the current version cannot be obtained"""
-
-  # Mock the API response when the current version cannot be obtained
-  responses.add(
-    responses.GET,
-    f"{API}/system/version",
-    json={"error": "Could not fetch current version"},
-    status=500
-  )
-
-  # Send the get request to the API
-  r = requests.get(f"{API}/system/version", timeout=5)
-
-  # Parse the JSON response
-  response = r.json()
-
-
-  # Check if the response status code is 500
-  assert r.status_code == 500
-
-  # Check if the error in response
-  assert "error" in response
 
 # Tests for reports endpoints
 
