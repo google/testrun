@@ -30,6 +30,19 @@ import pytest
 import requests
 import responses
 
+#import sys
+
+# from unittest.mock import patch, MagicMock
+
+# # Get the directory of the current script
+# current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# # Define the relative path to the desired directory
+# relative_path = os.path.join(current_dir, '../../framework/python/src')
+
+# # Append the relative path to sys.path
+# sys.path.append(relative_path)
+
 ALL_DEVICES = "*"
 API = "http://127.0.0.1:8000"
 LOG_PATH = "/tmp/testrun.log"
@@ -1571,30 +1584,6 @@ def test_get_profiles_format(testrun):  # pylint: disable=W0613
     assert "question" in item
     assert "type" in item
 
-@responses.activate
-def test_get_profiles_format_internal_server_error(testrun): # pylint: disable=W0613
-  """Test for get_profiles_format causing internal server error"""
-
-  # Mock the response for GET request for getting profiles format
-  responses.add(
-      responses.GET,
-      f"{API}/profiles/format",
-      json={"error": "Testrun could not load the risk assessment format"},
-      status=500
-    )
-
-  # Send the get request
-  r = requests.get(f"{API}/profiles/format", timeout=5)
-
-  # Check if status code is 500 (Internal Server Error)
-  assert r.status_code == 500
-
-  # Parse the response
-  response = r.json()
-
-  # Check if "error" key in response
-  assert "error" in response
-
 def test_get_profiles(testrun, reset_profiles, add_profile):  # pylint: disable=W0613
   """Test for get profiles (no profile, one profile, two profiles)"""
 
@@ -1831,31 +1820,20 @@ def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   # Check if "error" key in response
   assert "error" in response
 
-@responses.activate
-def test_create_update_profile_internal_server_error(testrun): # pylint: disable=W0613
-  """Test for create/update profile causing internal server error."""
+def test_create_update_profile_missing_answer(testrun): # pylint: disable=W0613
+  """Test for create/update profile causing bad request."""
 
-  # Mock the POST request for create/update profiles API response
-  responses.add(
-      responses.POST,
-      f"{API}/profiles",
-      json={"error": "An error occurred whilst creating or updating a profile"},
-      status=500
-  )
+  # Load the json file
+  profile = load_json("no_answer.json", directory="testing/api/profiles")
 
-   # Send the POST request to create/update the profile
-  r = requests.post(f"{API}/profiles",
-                    json={"name": "New Profile", "questions": []},
-                    timeout=5)
-
-  # Check if status code is 500 (Internal Server Error)
-  assert r.status_code == 500
+  # Send teh post request
+  r = requests.post(f"{API}/profiles", data=json.dumps(profile), timeout=5)
 
   # Parse the json response
-  response = r.json()
+  print(r.json())
 
-  # Check if "error" key in response
-  assert "error" in response
+  # Check if status code is 400 (bad request)
+  assert r.status_code == 400
 
 def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable=W0613
   """Test for delete profile"""
@@ -1950,32 +1928,34 @@ def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   # Check if "error" key in response
   assert "error" in response
 
-@responses.activate
-def test_delete_profile_internal_server_error(testrun): # pylint: disable=W0613
-  """Test for create/update profile causing internal server error"""
+def test_delete_profile_internal_server_error(testrun, # pylint: disable=W0613
+                                              reset_profiles, # pylint: disable=W0613
+                                              add_profile ):
+  """Test for delete profile causing internal server error"""
 
-  # Assign the profile to delete
-  profile_to_delete = {"name": "New Profile"}
+  # Assign the profile from the fixture
+  profile_to_delete = add_profile("new_profile.json")
 
-  # Mock the response for DELETE request for deleting a profile
-  responses.add(
-      responses.DELETE,
-      f"{API}/profiles",
-      json={"error": "An error occurred whilst deleting the profile"},
-      status=500
-  )
+  # Assign the profile name to profile_name
+  profile_name = profile_to_delete["name"]
+
+  # Construct the path to the profile JSON file in local/risk_profiles
+  risk_profile_path = os.path.join(PROFILES_DIRECTORY, f"{profile_name}.json")
+
+  # Delete the profile JSON file before making the DELETE request
+  if os.path.exists(risk_profile_path):
+    os.remove(risk_profile_path)
 
   # Send the DELETE request to delete the profile
   r = requests.delete(f"{API}/profiles",
-                      json=profile_to_delete,
+                      json={"name": profile_to_delete["name"]},
                       timeout=5)
 
   # Check if status code is 500 (Internal Server Error)
   assert r.status_code == 500
 
-  # Parse the JSON response
+  # Parse the json response
   response = r.json()
 
-  # Check if "error" key in response
+  # Check if error in response
   assert "error" in response
-
