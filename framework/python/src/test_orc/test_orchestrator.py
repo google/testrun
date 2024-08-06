@@ -51,10 +51,6 @@ class TestOrchestrator:
                      str(self._session.get_api_port()))
     self._net_orc = net_orc
     self._test_in_progress = False
-    self._path = os.path.dirname(
-        os.path.dirname(
-            os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
     self._root_path = os.path.dirname(
         os.path.dirname(
@@ -87,19 +83,41 @@ class TestOrchestrator:
 
     device = self._session.get_target_device()
     self._test_in_progress = True
+
     LOGGER.info(
         f"Running test modules on device with mac addr {device.mac_addr}")
 
     test_modules = []
+
     for module in self._test_modules:
 
+      # Ignore test modules that are just base images etc
       if module is None or not module.enable_container:
         continue
 
+      # Ignore test modules that are disabled for this device
       if not self._is_module_enabled(module, device):
         continue
 
+      # Add module to list of modules to run
       test_modules.append(module)
+
+      for test in module.tests:
+
+        # Duplicate test obj so we don't alter the source
+        test_copy = copy.deepcopy(test)
+
+        # Set result to Not Started
+        test_copy.result = "Not Started"
+
+        # We don't want steps to resolve for not started tests
+        if hasattr(test_copy, "recommendations"):
+          test_copy.recommendations = None
+
+        # Add test result to the session
+        self.get_session().add_test_result(test_copy)
+
+      # Increment number of tests that will be run
       self.get_session().add_total_tests(len(module.tests))
 
     for module in test_modules:
@@ -540,13 +558,14 @@ class TestOrchestrator:
 
     LOGGER.info(f"Test module {module.name} has finished")
 
-  # Resolve all current log data in the containers log_stream
-  # this method is blocking so should be called in
-  # a thread or within a proper blocking context
   def _get_container_logs(self, log_stream):
+    """Resolve all current log data in the containers log_stream
+    this method is blocking so should be called in
+    a thread or within a proper blocking context"""
     self._container_logs = []
     for log_chunk in log_stream:
       lines = log_chunk.decode("utf-8").splitlines()
+
       # Process each line and strip blank space
       processed_lines = [line.strip() for line in lines if line.strip()]
       self._container_logs.extend(processed_lines)
@@ -585,7 +604,7 @@ class TestOrchestrator:
     LOGGER.debug("Loading test modules from /" + TEST_MODULES_DIR)
 
     loaded_modules = "Loaded the following test modules: "
-    test_modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
+    test_modules_dir = os.path.join(self._root_path, TEST_MODULES_DIR)
 
     module_dirs = os.listdir(test_modules_dir)
     # Check if the directory protocol exists and move it to the beginning
@@ -607,11 +626,14 @@ class TestOrchestrator:
 
     LOGGER.debug(f"Loading test module {module_dir}")
 
-    modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
+    modules_dir = os.path.join(self._root_path, TEST_MODULES_DIR)
 
     # Load basic module information
     module = TestModule()
-    with open(os.path.join(self._path, modules_dir, module_dir, MODULE_CONFIG),
+    with open(os.path.join(self._root_path,
+                           modules_dir,
+                           module_dir,
+                           MODULE_CONFIG),
               encoding="UTF-8") as module_config_file:
       module_json = json.load(module_config_file)
 
@@ -622,7 +644,7 @@ class TestOrchestrator:
     if "enabled" in module_json["config"]:
       module.enabled = module_json["config"]["enabled"]
 
-    module.dir = os.path.join(self._path, modules_dir, module_dir)
+    module.dir = os.path.join(self._root_path, modules_dir, module_dir)
     module.dir_name = module_dir
     module.build_file = module_dir + ".Dockerfile"
     module.container_name = "tr-ct-" + module.dir_name + "-test"
@@ -681,7 +703,7 @@ class TestOrchestrator:
     try:
       client.images.build(
           dockerfile=os.path.join(module.dir, module.build_file),
-          path=self._path,
+          path=self._root_path,
           forcerm=True,  # Cleans up intermediate containers during build
           tag=module.image_name)
     except docker.errors.BuildError as error:
