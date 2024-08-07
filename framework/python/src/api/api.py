@@ -42,6 +42,7 @@ RESOURCES_PATH = "resources"
 DEVICE_FOLDER_PATH = "devices"
 DEVICE_TYPES_FILE_NAME = "types.json"
 DEVICE_TECHS_FILE_NAME = "technologies.json"
+DEVICE_QUESTIONS_FILE_NAME = "device_profile.json"
 
 LATEST_RELEASE_CHECK = ("https://api.github.com/repos/google/" +
                         "testrun/releases/latest")
@@ -68,6 +69,9 @@ class Api:
     # Load device technologies list
     self._device_techs = self._load_json(device_resources,
                                          DEVICE_TECHS_FILE_NAME)
+    # Load device profile questions
+    self._device_profile = self._load_json(device_resources,
+                                           DEVICE_QUESTIONS_FILE_NAME)
 
     # Fetch Testrun session
     self._session = self._testrun.get_session()
@@ -111,10 +115,7 @@ class Api:
     self._router.add_api_route("/device/edit",
                                self.edit_device,
                                methods=["POST"])
-    self._router.add_api_route("/devices/types",
-                               self.get_device_types)
-    self._router.add_api_route("/devices/technology",
-                               self.get_device_technologies)
+    self._router.add_api_route("/devices/format", self.get_devices_profile)
 
     # Certificate endpoints
     self._router.add_api_route("/system/config/certs", self.get_certs)
@@ -685,6 +686,25 @@ class Api:
 
   async def get_device_technologies(self):
     return self._device_techs
+
+  async def get_devices_profile(self,
+                                request: Request,
+                                response: Response,
+                                step: int = 1):
+    """Device profile questions"""
+
+    all_steps = len(self._device_profile)
+
+    try:
+      questions = self._device_profile[step-1]
+      if step < all_steps:
+        questions["next_step"] = f"{request.url.path}?step={step + 1}"
+      return questions
+
+    except IndexError:
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(
+          False, f"Step {step} does not exist.")
 
   def _validate_device_json(self, json_obj):
 
