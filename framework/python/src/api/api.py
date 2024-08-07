@@ -702,19 +702,12 @@ class Api:
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid request received")
 
+    # Validate json profile
+    if not self._session.validate_profile_json(req_json):
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False, "Invalid request received")
+
     profile_name = req_json.get("name")
-
-    # Error handling if profile name not in request
-    if not profile_name:
-      LOGGER.error("Missing 'name' in the request JSON")
-      response.status_code = status.HTTP_400_BAD_REQUEST
-      return self._generate_msg(False, "Invalid request received")
-
-    # Error handling if 'questions' not in request
-    if "questions" not in req_json:
-      LOGGER.error("Missing 'questions' in the request JSON")
-      response.status_code = status.HTTP_400_BAD_REQUEST
-      return self._generate_msg(False, "Invalid request received")
 
     # Check if profile exists
     profile = self.get_session().get_profile(profile_name)
