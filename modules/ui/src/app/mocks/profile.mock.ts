@@ -182,3 +182,26 @@ export const COPY_PROFILE_MOCK: Profile = {
     },
   ],
 };
+
+export const OUTDATED_DRAFT_PROFILE_MOCK: Profile = {
+  name: 'Outdated profile',
+  status: ProfileStatus.DRAFT,
+  questions: [
+    {
+      question: 'Old question',
+      answer: 'qwerty',
+    },
+    {
+      question: 'What is the email of the device owner(s)?',
+      answer: 'boddey@google.com, cmeredith@google.com',
+    },
+    {
+      question: 'What type of device do you need reviewed?',
+      answer: 'IoT Sensor',
+    },
+    {
+      question: 'Another old question',
+      answer: 'qwerty',
+    },
+  ],
+};
