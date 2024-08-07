@@ -205,3 +205,7 @@ export const OUTDATED_DRAFT_PROFILE_MOCK: Profile = {
     },
   ],
 };
+
+export const EXPIRED_PROFILE_MOCK: Profile = Object.assign({}, PROFILE_MOCK, {
+  status: ProfileStatus.EXPIRED,
+});
