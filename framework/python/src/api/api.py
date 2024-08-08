@@ -777,8 +777,6 @@ class Api:
   def _validate_profile_json(self, profile_json):
     """Validate properties in profile update requests"""
 
-    profile_format = self.get_session().get_profiles_format()
-
     # Get the status field
     valid = False
     if "status" in profile_json and profile_json.get("status") == "Valid":
@@ -835,7 +833,7 @@ class Api:
         field_type = format_q.get("type")
 
         # Check if type is string or single select, answer should be a string
-        if ((field_type == "string" or field_type == "select")
+        if ((field_type in ["string", "select"])
             and not isinstance(answer, str)):
           LOGGER.error(f"""Answer for question \
 {question.get('question')} is incorrect data type""")
