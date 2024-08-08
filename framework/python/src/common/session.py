@@ -45,7 +45,7 @@ LOGGER = logger.get_logger('session')
 
 
 class TestrunSession():
-  """Represents the current session of Test Run."""
+  """Represents the current session of Testrun."""
 
   def __init__(self, root_dir):
     self._root_dir = root_dir
@@ -439,25 +439,6 @@ class TestrunSession():
         return profile
     return None
 
-  def validate_profile(self, profile_json):
-
-    # Check name field is present
-    if 'name' not in profile_json:
-      return False
-
-    # Check questions field is present
-    if 'questions' not in profile_json:
-      return False
-
-    # Check all questions are present
-    for format_q in self.get_profiles_format():
-      if self._get_profile_question(profile_json,
-                                    format_q.get('question')) is None:
-        LOGGER.error('Missing question: ' + format_q.get('question'))
-        return False
-
-    return True
-
   def _get_profile_question(self, profile_json, question):
 
     for q in profile_json.get('questions'):
@@ -466,52 +447,14 @@ class TestrunSession():
 
     return None
 
-  # Validate the JSON profile for completeness
-  def validate_profile_json(self, profile_json):
-
-    # Check if 'name' exists in profile
-    if 'name' not in profile_json:
-      LOGGER.error("Missing 'name' in profile")
-      return False
-
-    # Check if 'name' field not empty
-    elif len(profile_json.get('name').strip()) == 0:
-      LOGGER.error('Name field left empty')
-      return False
-
-    # Error handling if 'questions' not in request
-    if 'questions' not in profile_json:
-      LOGGER.error("Missing 'questions' field in profile")
-      return False
-
-    # Error handling if 'question' is missing
-    for question in profile_json.get('questions'):
-      if 'question' not in question:
-        LOGGER.error("The 'question' field is missing")
-        return False
-
-      # Check if 'question' field not empty
-      elif len(question.get('question').strip()) == 0:
-        LOGGER.error("A question is missing from 'question' field")
-        return False
-
-    # Error handling if 'answer' is missing
-    for answer in profile_json.get('questions'):
-      if 'answer' not in answer:
-        LOGGER.error('The answer field is missing')
-        return False
-
-    # Attempting to submit a valid risk profile
-    if 'status' in profile_json and profile_json.get('status') == 'Valid':
-
-      # Check if 'risk' exists in profile
-      if 'risk' not in profile_json:
-        LOGGER.error("Missing 'risk' in profile")
-        return False
-
-    return True
+  def get_profile_format_question(self, question):
+    for q in self.get_profiles_format():
+      if q.get('question') == question:
+        return q
 
   def update_profile(self, profile_json):
+    """Update the risk profile with the provided JSON.
+    The content has already been validated in the API"""
 
     profile_name = profile_json['name']
 
@@ -519,13 +462,8 @@ class TestrunSession():
     profile_json['version'] = self.get_version()
     profile_json['created'] = datetime.datetime.now().strftime('%Y-%m-%d')
 
-    # Validate profile data
-    if not self.validate_profile_json(profile_json):
-      return None
-
-
+    # Check if profile already exists
     risk_profile = self.get_profile(profile_name)
-
     if risk_profile is None:
 
       # Create a new risk profile
@@ -555,7 +493,6 @@ class TestrunSession():
     return risk_profile
 
   def delete_profile(self, profile):
-    print(f"delete_profile called with profile: {profile}")
 
     try:
       profile_name = profile.name

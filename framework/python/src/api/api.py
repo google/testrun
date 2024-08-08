@@ -703,7 +703,7 @@ class Api:
       return self._generate_msg(False, "Invalid request received")
 
     # Validate json profile
-    if not self._session.validate_profile_json(req_json):
+    if not self._validate_profile_json(req_json):
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid request received")
 
@@ -773,6 +773,108 @@ class Api:
           False, "An error occurred whilst deleting that profile")
 
     return self._generate_msg(True, "Successfully deleted that profile")
+
+  def _validate_profile_json(self, profile_json):
+    """Validate properties in profile update requests"""
+
+    profile_format = self.get_session().get_profiles_format()
+
+    # Get the status field
+    valid = False
+    if "status" in profile_json and profile_json.get("status") == "Valid":
+      valid = True
+
+    # Check if "name" exists in profile
+    if "name" not in profile_json:
+      LOGGER.error("Missing 'name' in profile")
+      return False
+
+    # Check if "name" field not empty
+    elif len(profile_json.get("name").strip()) == 0:
+      LOGGER.error("Name field left empty")
+      return False
+
+    # Error handling if "questions" not in request
+    if "questions" not in profile_json and valid:
+      LOGGER.error("Missing 'questions' field in profile")
+      return False
+
+    # Validating the questions section
+    for question in profile_json.get("questions"):
+
+      # Check if the question field is present
+      if "question" not in question:
+        LOGGER.error("The 'question' field is missing")
+        return False
+
+      # Check if "question" field not empty
+      elif len(question.get("question").strip()) == 0:
+        LOGGER.error("A question is missing from 'question' field")
+        return False
+
+      # Check if question is a recognized question
+      format_q = self.get_session().get_profile_format_question(
+        question.get("question"))
+
+      if format_q is None:
+        LOGGER.error(f"Unrecognized question: {question.get('question')}")
+        return False
+
+      # Error handling if "answer" is missing
+      if "answer" not in question and valid:
+        LOGGER.error("The answer field is missing")
+        return False
+
+      # If answer is present, check the validation rules
+      else:
+
+        # Extract the answer out of the profile
+        answer = question.get("answer")
+
+        # Get the validation rules
+        field_type = format_q.get("type")
+
+        # Check if type is string or single select, answer should be a string
+        if ((field_type == "string" or field_type == "select")
+            and not isinstance(answer, str)):
+          LOGGER.error(f"""Answer for question \
+{question.get('question')} is incorrect data type""")
+          return False
+
+        # Check if type is select, answer must be from list
+        if field_type == "select":
+          possible_answers = format_q.get("options")
+          if answer not in possible_answers:
+            LOGGER.error(f"""Answer for question \
+{question.get('question')} is not valid""")
+            return False
+
+        # Validate select multiple field types
+        if field_type == "select-multiple":
+
+          if not isinstance(answer, list):
+            LOGGER.error(f"""Answer for question \
+{question.get('question')} is incorrect data type""")
+            return False
+
+          question_options_len = len(format_q.get("options"))
+
+          # We know it is a list, now check the indexes
+          for index in answer:
+
+            # Check if the index is an integer
+            if not isinstance(index, int):
+              LOGGER.error(f"""Answer for question \
+{question.get('question')} is incorrect data type""")
+              return False
+
+            # Check if index is 0 or above and less than the num of options
+            if index < 0 or index >= question_options_len:
+              LOGGER.error(f"""Invalid index provided as answer for \
+question {question.get('question')}""")
+              return False
+
+    return True
 
   # Certificates
   def get_certs(self):
