@@ -475,7 +475,7 @@ class TestrunSession():
       return False
 
     # Check if 'name' field not empty
-    elif len(profile_json.get('name')) == 0:
+    elif len(profile_json.get('name').strip()) == 0:
       LOGGER.error('Name field left empty')
       return False
 
@@ -491,7 +491,7 @@ class TestrunSession():
         return False
 
       # Check if 'question' field not empty
-      elif len(question.get('question')) == 0:
+      elif len(question.get('question').strip()) == 0:
         LOGGER.error("A question is missing from 'question' field")
         return False
 
@@ -503,11 +503,11 @@ class TestrunSession():
 
     # Attempting to submit a valid risk profile
     if 'status' in profile_json and profile_json.get('status') == 'Valid':
-      # Error handling if 'answer' is missing
-      for answer in profile_json.get('questions'):
-        if len(answer.get('answer')) == 0:
-          LOGGER.error("The 'answer' field is missing")
-          return False
+
+      # Check if 'risk' exists in profile
+      if 'risk' not in profile_json:
+        LOGGER.error("Missing 'risk' in profile")
+        return False
 
     return True
 
