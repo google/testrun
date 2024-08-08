@@ -25,10 +25,7 @@ import { Device } from '../../model/device';
 import { DevicesComponent } from './devices.component';
 import { DevicesModule } from './devices.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import {
-  DeviceFormComponent,
-  FormAction,
-} from './components/device-form/device-form.component';
+import { FormAction } from './components/device-form/device-form.component';
 import { MatDialogRef } from '@angular/material/dialog';
 import { device, MOCK_TEST_MODULES } from '../../mocks/device.mock';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
@@ -42,6 +39,7 @@ import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../../mocks/testrun.mock';
+import { DeviceQualificationFromComponent } from './components/device-qualification-from/device-qualification-from.component';
 
 describe('DevicesComponent', () => {
   let component: DevicesComponent;
@@ -149,7 +147,7 @@ describe('DevicesComponent', () => {
     it('should open device dialog on "add device button" click', () => {
       const openSpy = spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
-      } as MatDialogRef<typeof DeviceFormComponent>);
+      } as MatDialogRef<typeof DeviceQualificationFromComponent>);
       fixture.detectChanges();
       const button = compiled.querySelector(
         '.device-add-button'
@@ -158,7 +156,7 @@ describe('DevicesComponent', () => {
 
       expect(button).toBeTruthy();
       expect(openSpy).toHaveBeenCalled();
-      expect(openSpy).toHaveBeenCalledWith(DeviceFormComponent, {
+      expect(openSpy).toHaveBeenCalledWith(DeviceQualificationFromComponent, {
         ariaLabel: 'Create device',
         data: {
           device: null,
@@ -179,13 +177,13 @@ describe('DevicesComponent', () => {
       it('should open device dialog on item click', () => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(true),
-        } as MatDialogRef<typeof DeviceFormComponent>);
+        } as MatDialogRef<typeof DeviceQualificationFromComponent>);
         fixture.detectChanges();
 
         component.openDialog([device], MOCK_TEST_MODULES, device);
 
         expect(openSpy).toHaveBeenCalled();
-        expect(openSpy).toHaveBeenCalledWith(DeviceFormComponent, {
+        expect(openSpy).toHaveBeenCalledWith(DeviceQualificationFromComponent, {
           ariaLabel: 'Edit device',
           data: {
             device: device,
@@ -205,12 +203,12 @@ describe('DevicesComponent', () => {
       it('should open device dialog with delete-button focus element', () => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(true),
-        } as MatDialogRef<typeof DeviceFormComponent>);
+        } as MatDialogRef<typeof DeviceQualificationFromComponent>);
         fixture.detectChanges();
 
         component.openDialog([device], MOCK_TEST_MODULES, device, true);
 
-        expect(openSpy).toHaveBeenCalledWith(DeviceFormComponent, {
+        expect(openSpy).toHaveBeenCalledWith(DeviceQualificationFromComponent, {
           ariaLabel: 'Edit device',
           data: {
             device: device,
@@ -238,7 +236,7 @@ describe('DevicesComponent', () => {
   it('should call setIsOpenAddDevice if dialog closes with null', () => {
     spyOn(component.dialog, 'open').and.returnValue({
       afterClosed: () => of(null),
-    } as MatDialogRef<typeof DeviceFormComponent>);
+    } as MatDialogRef<typeof DeviceQualificationFromComponent>);
 
     component.openDialog([], MOCK_TEST_MODULES);
 
@@ -252,7 +250,7 @@ describe('DevicesComponent', () => {
           device,
           action: FormAction.Delete,
         }),
-    } as MatDialogRef<typeof DeviceFormComponent>);
+    } as MatDialogRef<typeof DeviceQualificationFromComponent>);
 
     component.openDialog([device], MOCK_TEST_MODULES, device);
 
