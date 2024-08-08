@@ -17,7 +17,8 @@ import datetime
 import pytz
 import json
 import os
-from common import util, logger
+from fastapi.encoders import jsonable_encoder
+from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
 from net_orc.ip_control import IPControl
 
@@ -37,6 +38,7 @@ API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
+STATUS_TOPIC = 'status'
 
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
 PROFILES_DIR = 'local/risk_profiles'
@@ -44,6 +46,34 @@ PROFILES_DIR = 'local/risk_profiles'
 LOGGER = logger.get_logger('session')
 
 
+def session_tracker(method):
+  """Session changes tracker."""
+  def wrapper(self, *args, **kwargs):
+
+    result = method(self, *args, **kwargs)
+
+    if self.get_status() != 'Idle':
+      self.get_mqtt_client().send_message(
+                                        STATUS_TOPIC,
+                                        jsonable_encoder(self.to_json())
+                                        )
+
+    return result
+  return wrapper
+
+def apply_session_tracker(cls):
+  """Applies tracker decorator to class methods"""
+  for attr in dir(cls):
+    if (callable(getattr(cls, attr))
+      and not attr.startswith('_')
+      and not attr.startswith('get')
+      and not attr == 'to_json'
+      ):
+      setattr(cls, attr, session_tracker(getattr(cls, attr)))
+  return cls
+
+
+@apply_session_tracker
 class TestrunSession():
   """Represents the current session of Testrun."""
 
@@ -108,6 +138,9 @@ class TestrunSession():
     # TODO: Check if timezone is fetched successfully
     self._timezone = tz[0]
     LOGGER.debug(f'System timezone is {self._timezone}')
+
+    # MQTT client
+    self._mqtt_client = mqtt.MQTT()
 
   def start(self):
     self.reset()
@@ -333,6 +366,11 @@ class TestrunSession():
     if not updated:
       result.result = 'In Progress'
       self._results.append(result)
+
+  def set_test_result_error(self, result):
+    """Set test result error"""
+    result.result = 'Error'
+    self._results.append(result)
 
   def add_module_report(self, module_report):
     self._module_reports.append(module_report)
@@ -688,6 +726,9 @@ class TestrunSession():
       LOGGER.debug(f'Network adapters change detected: {adapters}')
       self._ifaces = ifaces_new
     return adapters
+
+  def get_mqtt_client(self):
+    return self._mqtt_client
 
   def get_ifaces(self):
     return self._ifaces
