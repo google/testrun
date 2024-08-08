@@ -64,8 +64,9 @@ class TLSUtil():
                              port=443,
                              validate_cert=False,
                              tls_version='1.2'):
+    """Obtains the public certificate from the device
+    web server"""
     try:
-      #context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
       context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
       context.check_hostname = False
       if not validate_cert:
@@ -107,12 +108,12 @@ class TLSUtil():
     return cert_pem
 
   def get_public_key(self, public_cert):
-    # Extract and return the public key from the certificate
+    """Extract and return the public key from the certificate"""
     public_key = public_cert.get_pubkey()
     return public_key
 
   def verify_certificate_timerange(self, public_cert):
-    # Extract the notBefore and notAfter dates from the certificate
+    """Extract the notBefore and notAfter dates from the certificate"""
     not_before = datetime.strptime(public_cert.get_notBefore().decode(),
                                    '%Y%m%d%H%M%SZ')
     not_after = datetime.strptime(public_cert.get_notAfter().decode(),
@@ -133,6 +134,8 @@ class TLSUtil():
       return False, 'Certificate has expired'
 
   def verify_public_key(self, public_key):
+    """Validates that a public key matches the requirements.
+    Key length must be sufficient and key type must be RSA or EC"""
 
     # Get the key length based bits
     key_length = public_key.bits()
@@ -167,9 +170,10 @@ class TLSUtil():
       return False, 'Key is not RSA or EC type'
 
   def validate_signature(self, host):
-    # Reconnect to the device but with validate signature option
-    # set to true which will check for proper cert chains
-    # within the valid CA root certs stored on the server
+    """Reconnect to the device but with validate signature option
+    set to true which will check for proper cert chains
+    within the valid CA root certs stored on the server"""
+
     if self.validate_trusted_ca_signature(host):
       LOGGER.info('Authorized Certificate Authority signature confirmed')
       return True, 'Authorized Certificate Authority signature confirmed'
@@ -184,10 +188,14 @@ class TLSUtil():
     return False, 'Device certificate has not been signed'
 
   def validate_local_ca_signature(self, device_cert_path):
+    """Runs the check cert signature script to check that
+    the device certificate has been signed by one of the
+    local root CA certificates"""
+
     bin_file = self._bin_dir + '/check_cert_signature.sh'
     # Get a list of all root certificates
     root_certs = os.listdir(self._root_certs_dir)
-    LOGGER.info('Root Certs Found: ' + str(len(root_certs)))
+    LOGGER.info('Root certs found: ' + str(len(root_certs)))
     for root_cert in root_certs:
       try:
         # Create the file path
@@ -207,9 +215,9 @@ class TLSUtil():
     return False, None
 
   def validate_trusted_ca_signature(self, host):
-    # Reconnect to the device but with validate signature option
-    # set to true which will check for proper cert chains
-    # within the valid CA root certs stored on the server
+    """Reconnect to the device but with validate signature option
+    set to true which will check for proper cert chains
+    within the valid CA root certs stored on the server"""
     LOGGER.info(
         'Checking for valid signature from authorized Certificate Authorities')
     public_cert = self.get_public_certificate(host,
@@ -225,6 +233,8 @@ class TLSUtil():
       return self.validate_cert_chain(device_cert_path=device_cert_path)
 
   def validate_cert_chain(self, device_cert_path):
+    """Validates each certificate in the certificate chain"""
+
     LOGGER.info('Validating certificate chain')
     # Load the certificate from the PEM file
     with open(device_cert_path, 'rb') as cert_file:
@@ -235,7 +245,7 @@ class TLSUtil():
 
     ca_issuer_cert, cert_file_path = self.get_ca_issuer(certificate)
     if ca_issuer_cert is not None and cert_file_path is not None:
-      LOGGER.info('CA Issuer resolved')
+      LOGGER.info('CA issuer resolved')
       cert_text = crypto.dump_certificate(crypto.FILETYPE_TEXT,
                                           ca_issuer_cert).decode()
       LOGGER.info(cert_text)
@@ -268,6 +278,7 @@ class TLSUtil():
     return combined_cert_name + ': OK' in str(response)
 
   def get_ca_issuer(self, certificate):
+    """Extracts the issuer of a CA certificate"""
     cert_file_path = None
     ca_issuer_cert = None
     ca_issuers_uri = self.resolve_ca_issuer(certificate)
@@ -280,7 +291,7 @@ class TLSUtil():
     return ca_issuer_cert, cert_file_path
 
   def resolve_ca_issuer(self, certificate):
-    LOGGER.info('Resolving CA Issuer')
+    LOGGER.info('Resolving CA issuer')
     # Print the certificate information
     cert_text = crypto.dump_certificate(crypto.FILETYPE_TEXT,
                                         certificate).decode()
@@ -290,10 +301,11 @@ class TLSUtil():
       if 'CA Issuers - URI' in line:
         ca_issuers_uri = line.split(':', 1)[1].strip()
         break
-    LOGGER.info(f'CA Issuers resolved: {ca_issuers_uri}')
+    LOGGER.info(f'CA issuers resolved: {ca_issuers_uri}')
     return ca_issuers_uri
 
   def get_certificate(self, uri, timeout=10):
+    """Obtains a remote certificate"""
     LOGGER.info(f'Resolving certificate from {uri}')
     certificate = None
     try:
@@ -323,6 +335,7 @@ class TLSUtil():
     return certificate
 
   def process_tls_server_results(self, tls_1_2_results, tls_1_3_results):
+    """Determines whether gathered results meet requirements"""
     results = ''
     if tls_1_2_results[0] is None and tls_1_3_results[0] is not None:
       # Validate only TLS 1.3 results
@@ -388,6 +401,7 @@ class TLSUtil():
       return None, 'Failed to resolve public certificate'
 
   def write_cert_to_file(self, cert_name, cert):
+    """Writes a certificate to file"""
     try:
       cert_file = os.path.join(self._cert_out_dir, cert_name)
       if isinstance(cert, str):
@@ -445,8 +459,8 @@ class TLSUtil():
         combined_results += response[0]
     return combined_results
 
-  # Resolve all connections from the device that don't use TLS
   def get_non_tls_packetes(self, client_ip, capture_files):
+    """Resolve all connections from the device that don't use TLS"""
     combined_packets = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_non_tls_client_connections.sh'
@@ -458,11 +472,11 @@ class TLSUtil():
         combined_packets.extend(packets)
     return combined_packets
 
-  # Resolve all connections from the device that use TLS
   def get_tls_client_connection_packetes(self,
                                          client_ip,
                                          capture_files,
                                          protocol=None):
+    """Resolve all connections from the device that use TLS"""
     combined_packets = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_tls_client_connections.sh'
@@ -475,11 +489,11 @@ class TLSUtil():
       combined_packets.extend(packets)
     return combined_packets
 
-  # Resolve any TLS packets for the specified version. Does not care if the
-  # connections are established or any other validation only
-  # that there is some level of connection attempt from the device
-  # using the TLS version specified.
   def get_tls_packets(self, capture_files, src_ip, tls_version):
+    """Resolve any TLS packets for the specified version. Does not care if the
+    connections are established or any other validation only
+    that there is some level of connection attempt from the device
+    using the TLS version specified."""
     combined_results = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_tls_packets.sh'
@@ -520,7 +534,7 @@ class TLSUtil():
                             hello_packets,
                             allowed_protocol_client_ips,
                             tls_version='1.2'):
-    # Validate the ciphers only for tls 1.2
+    """Validate the ciphers only for tls 1.2"""
     client_hello_results = {'valid': [], 'invalid': []}
 
     if tls_version == '1.2':
@@ -555,12 +569,12 @@ class TLSUtil():
       client_hello_results['valid'] = hello_packets
     return client_hello_results
 
-  # Check if the device has made any outbound connections that don't
-  # use TLS. Since some protocols do use non-encrypted methods (NTP, DHCP, etc.)
-  # we will assume any local connections using the same IP subnet as our
-  # local network are approved and only connections to IP addresses outside
-  # our network will be flagged.
   def get_non_tls_client_connection_ips(self, client_ip, capture_files):
+    """Check if the device has made any outbound connections that don't
+    use TLS. Since some protocols do use non-encrypted methods (NTP, DHCP, etc.)
+    we will assume any local connections using the same IP subnet as our
+    local network are approved and only connections to IP addresses outside
+    our network will be flagged."""
     LOGGER.info('Checking client for non-TLS client connections')
     packets = self.get_non_tls_packetes(client_ip=client_ip,
                                         capture_files=capture_files)
@@ -584,12 +598,12 @@ class TLSUtil():
             non_tls_dst_ips.add(str(dst_ip))
     return non_tls_dst_ips
 
-  # Check if the device has made any outbound connections that don't
-  # use TLS. Since some protocols do use non-encrypted methods (NTP, DHCP, etc.)
-  # we will assume any local connections using the same IP subnet as our
-  # local network are approved and only connections to IP addresses outside
-  # our network will be flagged.
   def get_unsupported_tls_ips(self, client_ip, capture_files):
+    """Check if the device has made any outbound connections that don't
+    use TLS. Since some protocols do use non-encrypted methods (NTP, DHCP, etc.)
+    we will assume any local connections using the same IP subnet as our
+    local network are approved and only connections to IP addresses outside
+    our network will be flagged."""
     LOGGER.info('Checking client for unsupported TLS client connections')
     tls_1_0_packets = self.get_tls_packets(capture_files, client_ip, '1.0')
     tls_1_1_packets = self.get_tls_packets(capture_files, client_ip, '1.1')
@@ -621,9 +635,9 @@ class TLSUtil():
           unsupported_tls_dst_ips[dst_ip] = [tls_version]
     return unsupported_tls_dst_ips
 
-  # Check if the device has made any outbound connections that use any
-  # version of TLS.
   def get_tls_client_connection_ips(self, client_ip, capture_files):
+    """Check if the device has made any outbound
+    connections that use any version of TLS."""
     LOGGER.info('Checking client for TLS client connections')
     packets = self.get_tls_client_connection_packetes(
         client_ip=client_ip, capture_files=capture_files)
@@ -634,10 +648,10 @@ class TLSUtil():
       tls_dst_ips.add(str(dst_ip))
     return tls_dst_ips
 
-  # Check if the device has made any outbound connections that use any
-  # allowed protocols that do not fit into a direct TLS packet inspection
   def get_allowed_protocol_client_connection_ips(self, client_ip,
                                                  capture_files):
+    """Check if the device has made any outbound connections that use any
+    allowed protocols that do not fit into a direct TLS packet inspection"""
     LOGGER.info('Checking client for TLS Protocol client connections')
     tls_dst_ips = {}  # Store unique destination IPs with the protocol name
     for protocol in self._allowed_protocols:
@@ -651,7 +665,7 @@ class TLSUtil():
     return tls_dst_ips
 
   def is_private_ip(self, ip):
-    # Check if an IP is within any private IP subnet
+    """Check if an IP is within any private IP subnet"""
     for subnet in PRIVATE_SUBNETS:
       if ip in subnet:
         return True
@@ -768,6 +782,7 @@ class TLSUtil():
     return tls_client_valid, tls_client_details
 
   def is_ecdh_and_ecdsa(self, ciphers):
+    """Returns whether ciphers include ecdh or ecdsa ciphers"""
     ecdh = False
     ecdsa = False
     for cipher in ciphers:

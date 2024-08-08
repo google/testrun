@@ -191,6 +191,8 @@ class TLSModule(TestModule):
   # return report_path
 
   def extract_certificates_from_pcap(self, pcap_files, mac_address):
+    """Obtains the certificate that the source device uses
+    for outbound communication to other devices via TLS."""
     # Initialize a list to store packets
     all_packets = []
     # Iterate over each file
@@ -336,6 +338,6 @@ class TLSModule(TestModule):
     return result_state, result_message
 
   def _resolve_device_ip(self):
-    # If the ipv4 address wasn't resolved yet, try again
+    """If the ipv4 address wasn't resolved yet, try again"""
     if self._device_ipv4_addr is None:
       self._device_ipv4_addr = self._get_device_ipv4()
