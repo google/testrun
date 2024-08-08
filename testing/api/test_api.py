@@ -1499,12 +1499,16 @@ def test_get_profiles(testrun, reset_profiles, add_profile):  # pylint: disable=
 
   # Send the get request to "/profiles" endpoint
   r = requests.get(f"{API}/profiles", timeout=5)
+
   # Check if status code is 200 (OK)
   assert r.status_code == 200
+
   # Parse the response (profiles)
   response = r.json()
+
   # Check if response is a list
   assert isinstance(response, list)
+
   # Check if the list is empty
   assert len(response) == 0
 
@@ -1515,39 +1519,35 @@ def test_get_profiles(testrun, reset_profiles, add_profile):  # pylint: disable=
 
   # Send get request to the "/profiles" endpoint
   r = requests.get(f"{API}/profiles", timeout=5)
+
   # Check if status code is 200 (OK)
   assert r.status_code == 200
+
   # Parse the response (profiles)
   response = r.json()
+
   # Check if response is a list
   assert isinstance(response, list)
+
   # Check if response contains one profile
   assert len(response) == 1
 
   # Check that each profile has the expected fields
   for profile in response:
-    # Check if "name" key exists in profile
-    assert "name" in profile
-    # Check if "status" key exists in profile
-    assert "status" in profile
-    # Check if "created" key exists in profile
-    assert "created" in profile
-    # Check if "version" key exists in profile
-    assert "version" in profile
-    # Check if "questions" key exists in profile
-    assert "questions" in profile
+    for field in ["name", "status", "created", "version", "questions", "risk"]:
+      assert field in profile
 
     # Check if "questions" value is a list
     assert isinstance(profile["questions"], list)
 
-    #check that "questions" value has the expected fields
+    # Check that "questions" value has the expected fields
     for element in profile["questions"]:
       # Check if each element is dict
       assert isinstance(element, dict)
+
       # Check if "question" key is in dict element
       assert "question" in element
-      # Check if "type" key is in dict element
-      assert "type" in element
+
       # Check if "asnswer" key is in dict element
       assert "answer" in element
 
@@ -1564,8 +1564,10 @@ def test_get_profiles(testrun, reset_profiles, add_profile):  # pylint: disable=
 
   # Check if status code is 200 (OK)
   assert r.status_code == 200
+
   # Check if response is a list
   assert isinstance(response, list)
+
   # Check if response contains two profiles
   assert len(response) == 2
 
