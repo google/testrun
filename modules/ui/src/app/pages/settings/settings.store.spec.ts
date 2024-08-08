@@ -25,13 +25,17 @@ import { TestBed } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../../store/state';
 import { skip, take } from 'rxjs';
-import { selectHasConnectionSettings } from '../../store/selectors';
+import {
+  selectAdapters,
+  selectHasConnectionSettings,
+} from '../../store/selectors';
 import { of } from 'rxjs/internal/observable/of';
 import { fetchSystemConfigSuccess } from '../../store/actions';
 import { fetchInterfacesSuccess } from '../../store/actions';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { FormKey, SystemConfig } from '../../model/setting';
 import {
+  MOCK_ADAPTERS,
   MOCK_DEVICE_VALUE,
   MOCK_INTERFACE_VALUE,
   MOCK_INTERFACES,
@@ -60,7 +64,10 @@ describe('SettingsStore', () => {
         SettingsStore,
         { provide: TestRunService, useValue: mockService },
         provideMockStore({
-          selectors: [{ selector: selectHasConnectionSettings, value: true }],
+          selectors: [
+            { selector: selectHasConnectionSettings, value: true },
+            { selector: selectAdapters, value: {} },
+          ],
         }),
         FormBuilder,
       ],
@@ -306,6 +313,40 @@ describe('SettingsStore', () => {
             value: 'Optimal',
           });
         });
+      });
+    });
+
+    describe('adaptersUpdate', () => {
+      const updateInterfaces = {
+        mockDeviceKey: 'mockDeviceValue',
+        mockNewInternetKey: 'mockNewInternetValue',
+      };
+      const updateInternetOptions = {
+        '': 'Not specified',
+        mockDeviceKey: 'mockDeviceValue',
+        mockNewInternetKey: 'mockNewInternetValue',
+      };
+
+      beforeEach(() => {
+        settingsStore.setInterfaces(MOCK_INTERFACES);
+      });
+
+      it('should update store', done => {
+        settingsStore.viewModel$
+          .pipe(skip(3), take(1))
+          .subscribe(storeValue => {
+            expect(storeValue.interfaces).toEqual(updateInterfaces);
+            expect(storeValue.deviceOptions).toEqual(updateInterfaces);
+            expect(storeValue.internetOptions).toEqual(updateInternetOptions);
+
+            expect(store.dispatch).toHaveBeenCalledWith(
+              fetchInterfacesSuccess({ interfaces: updateInterfaces })
+            );
+            done();
+          });
+
+        store.overrideSelector(selectAdapters, MOCK_ADAPTERS);
+        store.refreshState();
       });
     });
   });

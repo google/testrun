@@ -28,15 +28,28 @@ $profile-item-container-gap: 16px;
 
 .profile-item-container {
   display: grid;
-  grid-template-columns: minmax(160px, 1fr) $profile-icon-container-size;
+  grid-template-columns: minmax(160px, 1fr) repeat(
+      2,
+      $profile-icon-container-size
+    );
   gap: $profile-item-container-gap;
   box-sizing: border-box;
   padding: 12px 16px;
   border-bottom: 1px solid $lighter-grey;
   align-items: center;
-  height: 92px;
+  min-height: 92px;
+  &-expired {
+    grid-template-columns: minmax(160px, 1fr) $profile-icon-container-size;
+  }
 }
 
+.profile-item-container-expired .profile-item-info {
+  .profile-item-icon,
+  .profile-item-name,
+  .profile-item-created {
+    color: $red-800;
+  }
+}
 .profile-item-icon-container {
   grid-area: icon;
   display: inline-block;

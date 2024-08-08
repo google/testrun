@@ -14,27 +14,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ERROR_LIMIT=25
+# Install python venv
+python3 -m venv venv
 
-sudo cmd/install
-
+# Activate the venv
 source venv/bin/activate
-sudo pip3 install pylint==3.0.3
 
+# Install pylint
+pip install pylint==3.2.6
+
+# Declare the applicable files
 files=$(find . -path ./venv -prune -o -name '*.py' -print)
 
+# Define the pylint output file
 OUT=pylint.out
 
-rm -f $OUT && touch $OUT
+# Remove it if it already exists
+rm -f $OUT
 
+# Run pylint against the target files
+# Change the evaluation to total the number of errors
+# Output to the specified output file
 pylint $files -ry --extension-pkg-allow-list=docker --evaluation="error + warning + refactor + convention" 2>/dev/null | tee -a $OUT
 
-new_errors=$(cat $OUT | grep -oP  "(?!=^Your code has been rated at)([0-9]+)(?=\.00/10[ \(]?)" )
+# Obtain the total number of errors from the pylint out file
+errors=$(cat $OUT | grep -oP  "(?!=^Your code has been rated at)([0-9]+)(?=\.00/10[ \(]?)" )
 
-echo "$new_errors > $ERROR_LIMIT?"
-if (( $new_errors > $ERROR_LIMIT)); then
-    echo new errors $new_errors > error limit $ERROR_LIMIT 
-    echo failing ..
+# Check if any errors exist
+if (( $errors > 0 )); then
+    echo "$errors pylint issues have been identified. These must be resolved before merging."
     exit 1
 fi
 

@@ -46,7 +46,6 @@ class ProtocolModuleTest(unittest.TestCase):
     BACNET = BACnet(log=LOGGER,
                     captures_dir=CAPTURES_DIR,
                     capture_file='bacnet.pcap',
-                    bin_dir='modules/test/protocol/bin',
                     device_hw_addr=HW_ADDR)
 
   # Test the BACNet traffic for a matching Object ID and HW address

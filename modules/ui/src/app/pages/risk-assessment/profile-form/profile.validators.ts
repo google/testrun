@@ -37,7 +37,13 @@ export class ProfileValidators {
   ): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value?.trim();
-      if (value && profiles.length && (!profile || profile?.name !== value)) {
+      if (
+        value &&
+        profiles.length &&
+        (!profile ||
+          !profile.created ||
+          (profile.created && profile?.name !== value))
+      ) {
         const isSameProfileName = this.hasSameProfileName(value, profiles);
         return isSameProfileName ? { has_same_profile_name: true } : null;
       }

@@ -29,7 +29,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DeviceTestsComponent } from '../../../../components/device-tests/device-tests.component';
-import { device } from '../../../../mocks/device.mock';
+import { device, MOCK_TEST_MODULES } from '../../../../mocks/device.mock';
 import { of } from 'rxjs';
 import { MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE } from '../../../../mocks/testrun.mock';
 import { SpinnerComponent } from '../../../../components/spinner/spinner.component';
@@ -44,24 +44,11 @@ describe('ProgressInitiateFormComponent', () => {
   const testRunServiceMock = jasmine.createSpyObj([
     'getDevices',
     'fetchDevices',
-    'getTestModules',
     'startTestrun',
     'systemStatus$',
     'getSystemStatus',
     'fetchVersion',
     'setIsOpenStartTestrun',
-  ]);
-  testRunServiceMock.getTestModules.and.returnValue([
-    {
-      displayName: 'Connection',
-      name: 'connection',
-      enabled: true,
-    },
-    {
-      displayName: 'DNS',
-      name: 'dns',
-      enabled: false,
-    },
   ]);
   testRunServiceMock.getDevices.and.returnValue(
     new BehaviorSubject<Device[] | null>([device, device])
@@ -81,7 +68,10 @@ describe('ProgressInitiateFormComponent', () => {
             close: () => ({}),
           },
         },
-        { provide: MAT_DIALOG_DATA, useValue: {} },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: { testModules: MOCK_TEST_MODULES },
+        },
         provideMockStore({
           selectors: [{ selector: selectDevices, value: [device, device] }],
         }),
@@ -214,7 +204,7 @@ describe('ProgressInitiateFormComponent', () => {
               connection: {
                 enabled: true,
               },
-              dns: {
+              udmi: {
                 enabled: true,
               },
             },

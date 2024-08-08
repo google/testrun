@@ -200,7 +200,7 @@ class ServicesModule(TestModule):
   def _scan_tcp_ports(self):
     max_port = 1000
     LOGGER.info('Running nmap TCP port scan')
-    nmap_results = util.run_command(
+    nmap_results = util.run_command( # pylint: disable=E1120
         f'''nmap --open -sT -sV -Pn -v -p 1-{max_port}
       --version-intensity 7 -T4 -oX - {self._ipv4_addr}''')[0]
 
@@ -228,7 +228,7 @@ class ServicesModule(TestModule):
       port_list = ','.join(ports)
       LOGGER.info('Running nmap UDP port scan')
       LOGGER.debug('UDP ports: ' + str(port_list))
-      nmap_results = util.run_command(
+      nmap_results = util.run_command( # pylint: disable=E1120
           f'nmap -sU -sV -p {port_list} -oX - {self._ipv4_addr}')[0]
       LOGGER.info('UDP port scan complete')
       nmap_results_json = self._nmap_results_to_json(nmap_results)

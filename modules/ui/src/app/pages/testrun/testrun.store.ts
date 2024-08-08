@@ -24,6 +24,7 @@ import {
   selectIsOpenStartTestrun,
   selectRiskProfiles,
   selectSystemStatus,
+  selectTestModules,
 } from '../../store/selectors';
 import {
   fetchSystemStatus,
@@ -41,12 +42,14 @@ import {
 } from '../../model/testrun-status';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { LoaderService } from '../../services/loader.service';
+import { TestModule } from '../../model/device';
 
 const EMPTY_RESULT = new Array(100).fill(null).map(() => ({}) as IResult);
 
 export interface TestrunComponentState {
   dataSource: IResult[] | undefined;
   stepsToResolveCount: number;
+  testModules: TestModule[];
 }
 
 @Injectable()
@@ -59,12 +62,15 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   private profiles$ = this.store.select(selectRiskProfiles);
   private systemStatus$ = this.store.select(selectSystemStatus);
   isOpenStartTestrun$ = this.store.select(selectIsOpenStartTestrun);
+  testModules$ = this.store.select(selectTestModules);
+
   viewModel$ = this.select({
     hasDevices: this.hasDevices$,
     systemStatus: this.systemStatus$,
     dataSource: this.dataSource$,
     stepsToResolveCount: this.stepsToResolveCount$,
     profiles: this.profiles$,
+    testModules: this.testModules$,
   });
 
   setDataSource = this.updater((state, dataSource: IResult[] | undefined) => {
@@ -215,6 +221,7 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     super({
       dataSource: undefined,
       stepsToResolveCount: 0,
+      testModules: [],
     });
   }
 }

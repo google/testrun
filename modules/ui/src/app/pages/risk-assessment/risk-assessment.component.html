@@ -25,9 +25,8 @@ limitations under the License.
             [selectedProfile]="vm.selectedProfile"
             [profiles]="vm.profiles"
             [profileFormat]="vm.profileFormat"
-            (saveProfile)="
-              saveProfileClicked($event, vm.selectedProfile)
-            "></app-profile-form>
+            (saveProfile)="saveProfileClicked($event, vm.selectedProfile)"
+            (discard)="discard(vm.selectedProfile)"></app-profile-form>
         </div>
       </mat-drawer-content>
     </mat-drawer-container>
@@ -43,16 +42,13 @@ limitations under the License.
     </div>
     <div class="profiles-drawer-content">
       <app-profile-item
-        *ngFor="
-          let profile of vm.profiles;
-          let i = index;
-          trackBy: trackByIndex
-        "
+        *ngFor="let profile of vm.profiles; let i = index; trackBy: trackByName"
         [profile]="profile"
         class="profile-item-{{ i }}"
         [ngClass]="{ selected: profile.name === vm.selectedProfile?.name }"
         (deleteButtonClicked)="deleteProfile($event, i, vm.selectedProfile)"
-        (profileClicked)="openForm($event)">
+        (profileClicked)="profileClicked($event)"
+        (copyProfileClicked)="copyProfileAndOpenForm($event)">
       </app-profile-item>
     </div>
   </mat-drawer>

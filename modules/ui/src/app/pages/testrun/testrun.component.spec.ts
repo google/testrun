@@ -53,6 +53,7 @@ import {
   selectIsOpenWaitSnackBar,
   selectRiskProfiles,
   selectSystemStatus,
+  selectTestModules,
 } from '../../store/selectors';
 import { TestrunStore } from './testrun.store';
 import {
@@ -123,6 +124,7 @@ describe('TestrunComponent', () => {
               { selector: selectIsOpenWaitSnackBar, value: false },
               { selector: selectHasRiskProfiles, value: false },
               { selector: selectRiskProfiles, value: [] },
+              { selector: selectTestModules, value: [] },
               {
                 selector: selectSystemStatus,
                 value: MOCK_PROGRESS_DATA_IN_PROGRESS,
@@ -234,9 +236,17 @@ describe('TestrunComponent', () => {
           },
           provideMockStore({
             selectors: [
-              { selector: selectHasDevices, value: false },
               { selector: selectDevices, value: [] },
+              { selector: selectHasDevices, value: false },
+              { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
+              { selector: selectHasRiskProfiles, value: false },
+              { selector: selectRiskProfiles, value: [] },
+              { selector: selectTestModules, value: [] },
+              {
+                selector: selectSystemStatus,
+                value: MOCK_PROGRESS_DATA_IN_PROGRESS,
+              },
             ],
           }),
         ],
@@ -324,6 +334,9 @@ describe('TestrunComponent', () => {
           hasBackdrop: true,
           disableClose: true,
           panelClass: 'initiate-test-run-dialog',
+          data: {
+            testModules: [],
+          },
         });
         expect(store.dispatch).toHaveBeenCalledWith(
           fetchSystemStatusSuccess({
@@ -405,6 +418,7 @@ describe('TestrunComponent', () => {
           MOCK_PROGRESS_DATA_COMPLIANT
         );
         store.overrideSelector(selectHasDevices, true);
+        store.refreshState();
         fixture.detectChanges();
       });
 

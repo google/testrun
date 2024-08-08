@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { SystemConfig, SystemInterfaces } from '../model/setting';
+import { Adapters, SystemConfig, SystemInterfaces } from '../model/setting';
 
 export const MOCK_SYSTEM_CONFIG_WITH_NO_DATA: SystemConfig = {
   network: {
@@ -59,4 +59,9 @@ export const MOCK_LOG_VALUE: SystemInterfaces = {
 export const MOCK_PERIOD_VALUE: SystemInterfaces = {
   key: '600',
   value: 'Very slow device',
+};
+
+export const MOCK_ADAPTERS: Adapters = {
+  adapters_added: { mockNewInternetKey: 'mockNewInternetValue' },
+  adapters_removed: { mockInternetKey: 'mockInternetValue' },
 };

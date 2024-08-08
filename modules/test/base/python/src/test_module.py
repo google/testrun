@@ -17,6 +17,7 @@ import logger
 import os
 import util
 from datetime import datetime
+import traceback
 
 LOGGER = None
 RESULTS_DIR = '/runtime/output/'
@@ -48,9 +49,9 @@ class TestModule:
 
   def _add_logger(self, log_name, module_name, log_dir=None):
     global LOGGER
-    LOGGER = logger.get_logger(name=log_name,
+    LOGGER = logger.get_logger(name=log_name, # pylint: disable=E1123
                                log_file=module_name,
-                               log_dir=log_dir) # pylint: disable=E1123
+                               log_dir=log_dir)
 
   def generate_module_report(self):
     pass
@@ -113,10 +114,16 @@ class TestModule:
           except Exception as e:  # pylint: disable=W0718
             LOGGER.error(f'An error occurred whilst running {test["name"]}')
             LOGGER.error(e)
+            traceback.print_exc()
         else:
           LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
+          test['result'] = 'Error'
+          test['description'] = 'This test could not be found'
       else:
         LOGGER.debug(f'Test {test["name"]} is disabled')
+
+        # To be added in v1.3.2
+        # result = 'Disabled', 'This test is disabled and did not run'
 
       if result is not None:
         # Compliant or non-compliant as a boolean only
@@ -182,7 +189,7 @@ class TestModule:
   def _get_device_ipv4(self):
     command = f"""/testrun/bin/get_ipv4_addr {self._ipv4_subnet}
     {self._device_mac.upper()}"""
-    text = util.run_command(command)[0]
+    text = util.run_command(command)[0] # pylint: disable=E1120
     if text:
       return text.split('\n')[0]
     return None

@@ -23,6 +23,7 @@ import {
   selectIsOpenStartTestrun,
   selectRiskProfiles,
   selectSystemStatus,
+  selectTestModules,
 } from '../../store/selectors';
 import {
   fetchSystemStatus,
@@ -66,6 +67,7 @@ describe('TestrunStore', () => {
             { selector: selectHasConnectionSettings, value: true },
             { selector: selectIsOpenStartTestrun, value: false },
             { selector: selectRiskProfiles, value: [] },
+            { selector: selectTestModules, value: [] },
           ],
         }),
       ],
@@ -89,6 +91,7 @@ describe('TestrunStore', () => {
           dataSource: [],
           stepsToResolveCount: 0,
           profiles: [],
+          testModules: [],
         });
         done();
       });

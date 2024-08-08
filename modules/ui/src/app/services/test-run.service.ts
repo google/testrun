@@ -123,8 +123,10 @@ export class TestRunService {
       .pipe(map(() => true));
   }
 
-  getTestModules(): TestModule[] {
-    return this.testModules;
+  getTestModules(): Observable<string[]> {
+    return this.http
+      .get<string[]>(`${API_URL}/system/modules`)
+      .pipe(catchError(() => of([])));
   }
 
   saveDevice(device: Device): Observable<boolean> {
@@ -183,7 +185,9 @@ export class TestRunService {
         result === StatusOfTestResult.InProgress,
       grey:
         result === StatusOfTestResult.NotDetected ||
-        result === StatusOfTestResult.NotStarted,
+        result === StatusOfTestResult.NotStarted ||
+        result === StatusOfTestResult.Skipped ||
+        result === StatusOfTestResult.Disabled,
     };
   }
 

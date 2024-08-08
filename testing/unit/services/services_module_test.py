@@ -16,7 +16,7 @@ from services_module import ServicesModule
 import unittest
 import os
 import shutil
-from testreport import TestReport
+# from testreport import TestReport
 
 MODULE = 'services'
 
@@ -29,8 +29,6 @@ RESULTS_DIR = os.path.join(TEST_FILES_DIR, 'results/')
 LOCAL_REPORT = os.path.join(REPORTS_DIR, 'services_report_local.html')
 LOCAL_REPORT_ALL_CLOSED = os.path.join(REPORTS_DIR,
                                        'services_report_all_closed_local.html')
-CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
-
 
 class ServicesTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""
@@ -51,7 +49,6 @@ class ServicesTest(unittest.TestCase):
 
     services_module = ServicesModule(module=MODULE,
                              log_dir=OUTPUT_DIR,
-                             conf_file=CONF_FILE,
                              results_dir=OUTPUT_DIR,
                              run=False,
                              nmap_scan_results_path=OUTPUT_DIR)
@@ -61,13 +58,6 @@ class ServicesTest(unittest.TestCase):
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
-      formatted_report = self.add_formatting(report_out)
-
-    # Write back the new formatted_report value
-    out_report_path = os.path.join(
-      OUTPUT_DIR, 'services_report_ports_open.html')
-    with open(out_report_path, 'w', encoding='utf-8') as file:
-      file.write(formatted_report)
 
     # Read the local good report
     with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
@@ -85,7 +75,6 @@ class ServicesTest(unittest.TestCase):
 
     services_module = ServicesModule(module=MODULE,
                              log_dir=OUTPUT_DIR,
-                             conf_file=CONF_FILE,
                              results_dir=OUTPUT_DIR,
                              run=False,
                              nmap_scan_results_path=OUTPUT_DIR)
@@ -95,30 +84,12 @@ class ServicesTest(unittest.TestCase):
     # Read the generated report
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
-      formatted_report = self.add_formatting(report_out)
-
-    # Write back the new formatted_report value
-    out_report_path = os.path.join(
-      OUTPUT_DIR, 'services_report_all_closed.html')
-    with open(out_report_path, 'w', encoding='utf-8') as file:
-      file.write(formatted_report)
 
     # Read the local good report
     with open(LOCAL_REPORT_ALL_CLOSED, 'r', encoding='utf-8') as file:
       report_local = file.read()
 
     self.assertEqual(report_out, report_local)
-
-  def add_formatting(self, body):
-    return f'''
-    <!DOCTYPE html>
-    <html lang="en">
-    {TestReport().generate_head()}
-    <body>
-      {body}
-    </body>
-    </html'''
-
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()

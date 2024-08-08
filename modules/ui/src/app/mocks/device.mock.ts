@@ -43,8 +43,10 @@ export const MOCK_TEST_MODULES = [
     enabled: true,
   },
   {
-    displayName: 'Smart Ready',
+    displayName: 'Udmi',
     name: 'udmi',
     enabled: false,
   },
 ];
+
+export const MOCK_MODULES = ['Connection', 'Udmi'];

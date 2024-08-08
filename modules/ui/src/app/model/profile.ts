@@ -22,11 +22,6 @@ export interface Profile {
   created?: string;
 }
 
-export interface Question {
-  question?: string;
-  answer?: string | number[];
-}
-
 export enum FormControlType {
   SELECT = 'select',
   TEXTAREA = 'text-long',
@@ -62,6 +57,7 @@ export enum ProfileRisk {
 export enum ProfileStatus {
   VALID = 'Valid',
   DRAFT = 'Draft',
+  EXPIRED = 'Expired',
 }
 
 export interface RiskResultClassName {

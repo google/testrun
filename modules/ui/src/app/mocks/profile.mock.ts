@@ -155,3 +155,57 @@ export const RENAME_PROFILE_MOCK = {
   name: 'Primary profile',
   rename: 'New profile',
 };
+
+export const COPY_PROFILE_MOCK: Profile = {
+  name: 'Copy of Primary profile',
+  status: ProfileStatus.VALID,
+  questions: [
+    {
+      question: 'What is the email of the device owner(s)?',
+      answer: 'boddey@google.com, cmeredith@google.com',
+    },
+    {
+      question: 'What type of device do you need reviewed?',
+      answer: 'IoT Sensor',
+    },
+    {
+      question: 'Are any of the following statements true about your device?',
+      answer: 'First',
+    },
+    {
+      question: 'What features does the device have?',
+      answer: [0, 1, 2],
+    },
+    {
+      question: 'Comments',
+      answer: 'Yes',
+    },
+  ],
+};
+
+export const OUTDATED_DRAFT_PROFILE_MOCK: Profile = {
+  name: 'Outdated profile',
+  status: ProfileStatus.DRAFT,
+  questions: [
+    {
+      question: 'Old question',
+      answer: 'qwerty',
+    },
+    {
+      question: 'What is the email of the device owner(s)?',
+      answer: 'boddey@google.com, cmeredith@google.com',
+    },
+    {
+      question: 'What type of device do you need reviewed?',
+      answer: 'IoT Sensor',
+    },
+    {
+      question: 'Another old question',
+      answer: 'qwerty',
+    },
+  ],
+};
+
+export const EXPIRED_PROFILE_MOCK: Profile = Object.assign({}, PROFILE_MOCK, {
+  status: ProfileStatus.EXPIRED,
+});

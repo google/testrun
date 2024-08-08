@@ -16,3 +16,6 @@
    - [Running on a virtual machine](virtual_machine.md)
    - [Accessibility](ui/accessibility.mp4)
    - [Roadmap](roadmap.pdf)
+
+## Something missing?
+If you feel there is some documentation that you would find useful, or have found an issue with existing documentation, please raise an issue on GitHub by navigating [here](https://github.com/google/testrun/issues/new/choose)

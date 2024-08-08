@@ -59,23 +59,19 @@ describe('DownloadZipModalComponent', () => {
       expect(select).toBeTruthy();
     });
 
-    it('should preselect first profile', async () => {
-      const select = fixture.nativeElement.querySelector(
-        'mat-select'
-      ) as HTMLElement;
-
-      expect(select.getAttribute('ng-reflect-value')).toEqual(
-        'Primary profile'
+    it('should preselect "no profile" option', async () => {
+      expect(component.selectedProfile.name).toEqual(
+        'No Risk Profile selected'
       );
     });
 
     it('should close with null on redirect button click', async () => {
       const closeSpy = spyOn(component.dialogRef, 'close');
-      const redirectButton = fixture.nativeElement.querySelector(
-        '.redirect-button'
-      ) as HTMLButtonElement;
+      const redirectLink = fixture.nativeElement.querySelector(
+        '.redirect-link'
+      ) as HTMLAnchorElement;
 
-      redirectButton.click();
+      redirectLink.click();
 
       expect(closeSpy).toHaveBeenCalledWith(null);
 
@@ -103,13 +99,17 @@ describe('DownloadZipModalComponent', () => {
 
       downloadButton.click();
 
-      expect(closeSpy).toHaveBeenCalledWith('Primary profile');
+      expect(closeSpy).toHaveBeenCalledWith('');
 
       closeSpy.calls.reset();
     });
 
     it('should have filtered and sorted profiles', async () => {
-      expect(component.profiles).toEqual([PROFILE_MOCK, PROFILE_MOCK_2]);
+      expect(component.profiles).toEqual([
+        component.NO_PROFILE,
+        PROFILE_MOCK,
+        PROFILE_MOCK_2,
+      ]);
     });
 
     it('#getRiskClass should call the service method getRiskClass"', () => {
@@ -141,19 +141,19 @@ describe('DownloadZipModalComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should have no dropdown with profiles', async () => {
+    it('should have disabled dropdown', async () => {
       const select = fixture.nativeElement.querySelector('mat-select');
 
-      expect(select).toEqual(null);
+      expect(select.classList.contains('mat-mdc-select-disabled')).toBeTruthy();
     });
 
     it('should close with null on redirect button click', async () => {
       const closeSpy = spyOn(component.dialogRef, 'close');
-      const redirectButton = fixture.nativeElement.querySelector(
-        '.redirect-button'
-      ) as HTMLButtonElement;
+      const redirectLink = fixture.nativeElement.querySelector(
+        '.redirect-link'
+      ) as HTMLAnchorElement;
 
-      redirectButton.click();
+      redirectLink.click();
 
       expect(closeSpy).toHaveBeenCalledWith(null);
 

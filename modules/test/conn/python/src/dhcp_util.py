@@ -207,7 +207,7 @@ class DHCPUtil():
 
   def ping(self, host):
     cmd = 'ping -c 1 ' + str(host)
-    success = util.run_command(cmd, output=False)
+    success = util.run_command(cmd, output=False) # pylint: disable=E1120
     return success
 
   def add_reserved_lease(self,

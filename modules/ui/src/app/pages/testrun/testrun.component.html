@@ -99,7 +99,7 @@ limitations under the License.
         isTestrunInProgress(systemStatus?.status) ||
         systemStatus?.status === StatusOfTestrun.Cancelling
       "
-      (click)="openTestRunModal()"
+      (click)="openTestRunModal(vm.testModules)"
       mat-flat-button>
       Start New Testrun
     </button>

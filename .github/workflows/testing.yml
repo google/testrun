@@ -39,7 +39,7 @@ jobs:
         run: cmd/prepare
       - name: Install Testrun
         shell: bash {0}
-        run: TESTRUN_DIR=. cmd/install
+        run: cmd/install -l
         timeout-minutes: 30
       - name: Run tests
         shell: bash {0}
@@ -54,6 +54,28 @@ jobs:
           if-no-files-found: error
           name: runtime_api_${{ github.run_id }}
           path: runtime.tgz
+
+  testrun_unit:
+    permissions: {}
+    name:  Unit
+    runs-on: ubuntu-20.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Install dependencies
+        shell: bash {0}
+        run: cmd/prepare
+      - name: Install Testrun
+        shell: bash {0}
+        run: cmd/install -l
+      - name: Build Testrun
+        shell: bash {0}
+        run: cmd/build
+        timeout-minutes: 10
+      - name: Run tests
+        shell: bash {0}
+        run: bash testing/unit/run.sh
 
   pylint:
     permissions: {}

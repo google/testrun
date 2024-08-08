@@ -97,6 +97,10 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
                 !certificates.some(cert => cert.name === certificate.name)
             )[0];
             this.updateCertificates(newCertificates);
+            // @ts-expect-error data layer is not null
+            window.dataLayer.push({
+              event: 'successful_saving_certificate',
+            });
             this.notify(
               `Certificate successfully added.\n${uploadedCertificate.name} by ${uploadedCertificate.organisation} valid until ${this.datePipe.transform(uploadedCertificate.expires, 'dd MMM yyyy')}`
             );

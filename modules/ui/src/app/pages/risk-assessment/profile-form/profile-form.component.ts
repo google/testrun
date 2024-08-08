@@ -105,6 +105,7 @@ export class ProfileFormComponent implements OnInit {
   }
 
   @Output() saveProfile = new EventEmitter<Profile>();
+  @Output() discard = new EventEmitter();
   constructor(
     private deviceValidators: DeviceValidators,
     private profileValidators: ProfileValidators,
@@ -206,18 +207,22 @@ export class ProfileFormComponent implements OnInit {
   fillProfileForm(profileFormat: ProfileFormat[], profile: Profile): void {
     this.nameControl.setValue(profile.name);
     profileFormat.forEach((question, index) => {
+      const answer = profile.questions.find(
+        answers => answers.question === question.question
+      );
       if (question.type === FormControlType.SELECT_MULTIPLE) {
         question.options?.forEach((item, idx) => {
-          if ((profile.questions[index].answer as number[])?.includes(idx)) {
+          if ((answer?.answer as number[])?.includes(idx)) {
             this.getFormGroup(index).controls[idx].setValue(true);
           } else {
             this.getFormGroup(index).controls[idx].setValue(false);
           }
         });
       } else {
-        this.getControl(index).setValue(profile.questions[index].answer);
+        this.getControl(index).setValue(answer?.answer || '');
       }
     });
+    this.nameControl.markAsTouched();
     this.triggerResize();
   }
 
@@ -239,6 +244,10 @@ export class ProfileFormComponent implements OnInit {
     if (optionIndex === optionLength - 1) {
       this.getControl(formControlName).markAsDirty();
     }
+  }
+
+  onDiscardClick() {
+    this.discard.emit();
   }
 
   private buildResponseFromForm(

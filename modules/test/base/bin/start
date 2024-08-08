@@ -14,4 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-/testrun/bin/start_module
+# Allow one argument which is the unit test file to run
+# instead of running the test module 
+UNIT_TEST_FILE=$1
+
+source /testrun/bin/setup
+
+# Conditionally run start_module based on RUN
+if [[ -z "$UNIT_TEST_FILE" ]];then
+    /testrun/bin/start_module
+else
+	python3 $UNIT_TEST_FILE
+fi

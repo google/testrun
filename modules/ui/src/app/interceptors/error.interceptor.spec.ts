@@ -42,6 +42,10 @@ describe('ErrorInterceptor', () => {
     interceptor = TestBed.inject(ErrorInterceptor);
   });
 
+  afterEach(() => {
+    notificationServiceMock.notify.calls.reset();
+  });
+
   it('should be created', () => {
     expect(interceptor).toBeTruthy();
   });
@@ -60,7 +64,9 @@ describe('ErrorInterceptor', () => {
     interceptor.intercept(requestMock, next).subscribe(
       () => ({}),
       () => {
-        expect(notificationServiceMock.notify).toHaveBeenCalledWith('error');
+        expect(notificationServiceMock.notify).toHaveBeenCalledWith(
+          'Something went wrong. Check the Terminal for details.'
+        );
         done();
       }
     );
@@ -79,7 +85,7 @@ describe('ErrorInterceptor', () => {
       () => ({}),
       () => {
         expect(notificationServiceMock.notify).toHaveBeenCalledWith(
-          'Back End is not responding. Please, try again later.'
+          'Testrun is not responding. Please try again in a moment.'
         );
         done();
       }
@@ -99,7 +105,7 @@ describe('ErrorInterceptor', () => {
       () => ({}),
       () => {
         expect(notificationServiceMock.notify).toHaveBeenCalledWith(
-          'Back End is not responding. Please, try again later.'
+          'Testrun is not responding. Please try again in a moment.'
         );
         done();
       }

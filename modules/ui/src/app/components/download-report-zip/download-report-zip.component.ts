@@ -87,13 +87,13 @@ export class DownloadReportZipComponent
   readonly tabIndex = 0;
 
   @HostListener('mouseenter')
-  @HostListener('focusin', ['$event'])
+  @HostListener('keyup', ['$event'])
   onEvent(): void {
     this.tooltip.show();
   }
 
   @HostListener('mouseleave')
-  @HostListener('focusout', ['$event'])
+  @HostListener('keydown', ['$event'])
   outEvent(): void {
     this.tooltip.hide();
   }

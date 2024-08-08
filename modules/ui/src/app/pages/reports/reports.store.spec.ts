@@ -18,9 +18,8 @@ import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { TestBed } from '@angular/core/testing';
 import { skip, take } from 'rxjs';
-import { throwError } from 'rxjs/internal/observable/throwError';
 import { of } from 'rxjs/internal/observable/of';
-import { DATA_SOURCE_INITIAL_VALUE, ReportsStore } from './reports.store';
+import { ReportsStore } from './reports.store';
 import {
   EMPTY_FILTERS,
   FILTERS,
@@ -29,31 +28,39 @@ import {
   HISTORY_AFTER_REMOVE,
 } from '../../mocks/reports.mock';
 import { DatePipe } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { MatRow } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { provideMockStore } from '@ngrx/store/testing';
-import { selectRiskProfiles } from '../../store/selectors';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { selectReports, selectRiskProfiles } from '../../store/selectors';
+import { AppState } from '../../store/state';
+import { setReports } from '../../store/actions';
 
 describe('ReportsStore', () => {
   let reportsStore: ReportsStore;
   let mockService: SpyObj<TestRunService>;
+  let store: MockStore<AppState>;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj(['getHistory', 'deleteReport']);
+    mockService = jasmine.createSpyObj(['deleteReport']);
 
     TestBed.configureTestingModule({
       providers: [
         ReportsStore,
         { provide: TestRunService, useValue: mockService },
         provideMockStore({
-          selectors: [{ selector: selectRiskProfiles, value: [] }],
+          selectors: [
+            { selector: selectRiskProfiles, value: [] },
+            { selector: selectReports, value: [] },
+          ],
         }),
         DatePipe,
       ],
     });
 
     reportsStore = TestBed.inject(ReportsStore);
+    store = TestBed.inject(MockStore);
+
+    spyOn(store, 'dispatch').and.callFake(() => {});
   });
 
   it('should be created', () => {
@@ -110,7 +117,7 @@ describe('ReportsStore', () => {
     });
 
     it('should update dataSource', (done: DoneFn) => {
-      reportsStore.viewModel$.pipe(skip(2), take(1)).subscribe(store => {
+      reportsStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
         expect(store.dataSource.data).toEqual(FORMATTED_HISTORY);
         expect(store.dataLoaded).toEqual(true);
         done();
@@ -133,7 +140,7 @@ describe('ReportsStore', () => {
             'report',
           ],
           chips: ['chips'],
-          dataSource: DATA_SOURCE_INITIAL_VALUE,
+          dataSource: store.dataSource,
           filterOpened: false,
           activeFilter: '',
           filteredValues: {
@@ -142,7 +149,7 @@ describe('ReportsStore', () => {
             results: [],
             dateRange: '',
           },
-          dataLoaded: false,
+          dataLoaded: true,
           selectedRow: null,
           isFiltersEmpty: true,
           profiles: [],
@@ -154,56 +161,59 @@ describe('ReportsStore', () => {
 
   describe('effects', () => {
     describe('getHistory', () => {
-      describe('should update store', () => {
-        it('with empty value if error happens', done => {
-          mockService.getHistory.and.returnValue(
-            throwError(
-              new HttpErrorResponse({ error: { error: 'error' }, status: 500 })
-            )
-          );
+      it('should update store', done => {
+        store.overrideSelector(selectReports, [...HISTORY]);
+        store.refreshState();
 
-          reportsStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-            expect(store.dataSource.data).toEqual([]);
-            done();
-          });
-
-          reportsStore.getHistory();
+        reportsStore.viewModel$.pipe(take(1)).subscribe(store => {
+          expect(store.dataSource.data).toEqual(FORMATTED_HISTORY);
+          done();
         });
 
-        it('with value if not null', done => {
-          mockService.getHistory.and.returnValue(of([...HISTORY]));
-
-          reportsStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-            expect(store.dataSource.data).toEqual(FORMATTED_HISTORY);
-            done();
-          });
-
-          reportsStore.getHistory();
-        });
+        reportsStore.getHistory();
       });
     });
 
     describe('deleteReport', () => {
       it('should update store', done => {
         mockService.deleteReport.and.returnValue(of(true));
-        reportsStore.setHistory([...HISTORY]);
-
-        reportsStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-          expect(store.dataSource.data).toEqual(HISTORY_AFTER_REMOVE);
-          done();
-        });
+        store.overrideSelector(selectReports, [...HISTORY]);
+        store.refreshState();
 
         reportsStore.deleteReport({
-          mac_addr: '00:1e:42:35:73:c4',
-          started: '2023-06-22T10:11:00.123Z',
+          mac_addr: '01:02:03:04:05:07',
+          deviceMacAddr: '01:02:03:04:05:07',
+          started: '2023-07-23T10:11:00.123Z',
         });
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setReports({ reports: HISTORY_AFTER_REMOVE })
+        );
+        done();
+      });
+
+      it('should update store after remove with null mac_addr', done => {
+        mockService.deleteReport.and.returnValue(of(true));
+        store.overrideSelector(selectReports, [...HISTORY_AFTER_REMOVE]);
+        store.refreshState();
+
+        reportsStore.deleteReport({
+          mac_addr: null,
+          deviceMacAddr: '01:02:03:04:05:08',
+          started: '2023-06-23T10:11:00.123Z',
+        });
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setReports({ reports: [HISTORY_AFTER_REMOVE[0]] })
+        );
+        done();
       });
     });
 
     describe('updateSort', () => {
       it('should update store', done => {
         const sort = new MatSort();
-        reportsStore.setHistory([...HISTORY]);
+        store.overrideSelector(selectReports, [...HISTORY]);
 
         reportsStore.updateSort(sort);
 
@@ -217,7 +227,7 @@ describe('ReportsStore', () => {
     describe('setFilteredValuesResults', () => {
       it('should update store', done => {
         const updatedFilters = { ...FILTERS, ...{ results: ['test2'] } };
-        reportsStore.setHistory([...HISTORY]);
+        store.overrideSelector(selectReports, [...HISTORY]);
         reportsStore.setFilteredValues({ ...FILTERS });
 
         reportsStore.setFilteredValuesResults(['test2']);
@@ -235,7 +245,7 @@ describe('ReportsStore', () => {
     describe('setFilteredValuesDeviceInfo', () => {
       it('should update store', done => {
         const updatedFilters = { ...FILTERS, ...{ deviceInfo: 'test2' } };
-        reportsStore.setHistory([...HISTORY]);
+        store.overrideSelector(selectReports, [...HISTORY]);
         reportsStore.setFilteredValues({ ...FILTERS });
 
         reportsStore.setFilteredValuesDeviceInfo('test2');
@@ -253,7 +263,7 @@ describe('ReportsStore', () => {
     describe('setFilteredValuesDeviceFirmware', () => {
       it('should update store', done => {
         const updatedFilters = { ...FILTERS, ...{ deviceFirmware: 'test2' } };
-        reportsStore.setHistory([...HISTORY]);
+        store.overrideSelector(selectReports, [...HISTORY]);
         reportsStore.setFilteredValues({ ...FILTERS });
 
         reportsStore.setFilteredValuesDeviceFirmware('test2');
@@ -271,7 +281,7 @@ describe('ReportsStore', () => {
     describe('setFilteredValuesDateRange', () => {
       it('should update store', done => {
         const updatedFilters = { ...FILTERS, ...{ dateRange: 'test2' } };
-        reportsStore.setHistory([...HISTORY]);
+        store.overrideSelector(selectReports, [...HISTORY]);
         reportsStore.setFilteredValues({ ...FILTERS });
 
         reportsStore.setFilteredValuesDateRange('test2');
@@ -289,7 +299,7 @@ describe('ReportsStore', () => {
     describe('setFilteredValues', () => {
       it('should update store', done => {
         const updatedFilters = { ...EMPTY_FILTERS };
-        reportsStore.setHistory([...HISTORY]);
+        store.overrideSelector(selectReports, [...HISTORY]);
         reportsStore.setFilteredValues({ ...FILTERS });
 
         reportsStore.setFilteredValues(updatedFilters);

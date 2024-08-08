@@ -1,5 +1,3 @@
-#!/bin/bash -e
-
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,4 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-sudo docker build -f testing/unit/unit_test.Dockerfile -t testrun/unit-test .
+# Image name: testrun/build-ui
+FROM node@sha256:ffebb4405810c92d267a764b21975fb2d96772e41877248a37bf3abaa0d3b590 as build
+
+# Set the working directory
+WORKDIR /modules/ui
+

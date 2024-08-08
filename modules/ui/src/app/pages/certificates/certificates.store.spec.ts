@@ -42,6 +42,8 @@ describe('CertificatesStore', () => {
       'uploadCertificate',
       'deleteCertificate',
     ]);
+    // @ts-expect-error data layer should be defined
+    window.dataLayer = window.dataLayer || [];
 
     TestBed.configureTestingModule({
       imports: [NoopAnimationsModule],
@@ -151,6 +153,21 @@ describe('CertificatesStore', () => {
             10000,
             container
           );
+        });
+
+        it('should send GA event "successful_saving_certificate"', () => {
+          const container = document.createElement('DIV');
+          container.classList.add('certificates-drawer-content');
+          document.querySelector('body')?.appendChild(container);
+          certificateStore.uploadCertificate(FILE);
+
+          expect(
+            // @ts-expect-error data layer should be defined
+            window.dataLayer.some(
+              (item: { event: string }) =>
+                item.event === 'successful_saving_certificate'
+            )
+          ).toBeTruthy();
         });
       });
 

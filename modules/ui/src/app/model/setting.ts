@@ -48,3 +48,8 @@ export enum FormKey {
 export type SystemInterfaces = {
   [key: string]: string;
 };
+
+export type Adapters = {
+  adapters_added?: SystemInterfaces;
+  adapters_removed?: SystemInterfaces;
+};
