@@ -1,0 +1,35 @@
+<section class="form-container">
+  <header class="form-header" *ngIf="header">
+    <ng-container [ngTemplateOutlet]="header"></ng-container>
+  </header>
+
+  <div class="form-content">
+    <ng-container
+      [ngTemplateOutlet]="selected ? selected.content : null"></ng-container>
+  </div>
+
+  <footer class="form-footer">
+    <button
+      class="form-button-back"
+      [class.hidden]="backButtonHidden()"
+      cdkStepperPrevious
+      mat-button
+      aria-label="Go to previous step">
+      <mat-icon fontSet="material-symbols-outlined"> arrow_back </mat-icon>
+    </button>
+    <div class="form-steps">
+      <div
+        *ngFor="let step of stepsCount; let i = index"
+        class="form-step"
+        [class.step-active]="selectedIndex === i"></div>
+    </div>
+    <button
+      class="form-button-forward"
+      [class.hidden]="forwardButtonHidden()"
+      cdkStepperNext
+      mat-button
+      aria-label="Go to next step">
+      <mat-icon fontSet="material-symbols-outlined"> arrow_forward </mat-icon>
+    </button>
+  </footer>
+</section>

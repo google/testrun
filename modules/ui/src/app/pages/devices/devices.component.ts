@@ -23,7 +23,6 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { Device, DeviceView, TestModule } from '../../model/device';
 import {
-  DeviceFormComponent,
   FormAction,
   FormResponse,
 } from './components/device-form/device-form.component';
@@ -36,6 +35,7 @@ import { Router } from '@angular/router';
 import { timer } from 'rxjs/internal/observable/timer';
 import { TestrunInitiateFormComponent } from '../testrun/components/testrun-initiate-form/testrun-initiate-form.component';
 import { DevicesStore } from './devices.store';
+import { DeviceQualificationFromComponent } from './components/device-qualification-from/device-qualification-from.component';
 
 @Component({
   selector: 'app-device-repository',
@@ -115,7 +115,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
     selectedDevice?: Device,
     focusDeleteButton = false
   ): void {
-    const dialogRef = this.dialog.open(DeviceFormComponent, {
+    const dialogRef = this.dialog.open(DeviceQualificationFromComponent, {
       ariaLabel: selectedDevice ? 'Edit device' : 'Create device',
       data: {
         device: selectedDevice || null,
