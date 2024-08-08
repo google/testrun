@@ -67,6 +67,10 @@ class NetworkOrchestrator:
     self._ovs = OVSControl(self._session)
     self._ip_ctrl = IPControl()
 
+    # Load subnet information into the session
+    self._session.set_subnets(self.network_config.ipv4_network,
+                              self.network_config.ipv6_network)
+
   def start(self):
     """Start the network orchestrator."""
 
@@ -191,7 +195,7 @@ class NetworkOrchestrator:
     test_dir = os.path.join(RUNTIME_DIR, TEST_DIR)
     device_tests = os.listdir(test_dir)
     for device_test in device_tests:
-      device_test_path = os.path.join(RUNTIME_DIR,TEST_DIR,device_test)
+      device_test_path = os.path.join(RUNTIME_DIR, TEST_DIR, device_test)
       if os.path.isdir(device_test_path):
         shutil.rmtree(device_test_path, ignore_errors=True)
 
@@ -793,7 +797,7 @@ class NetworkOrchestrator:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
         mqtt_client.send_message(topic, adapters)
-    except Exception:
+    except Exception: # pylint: disable=W0703
       LOGGER.error(traceback.format_exc())
 
   def internet_conn_checker(self, mqtt_client: mqtt.MQTT, topic: str):
@@ -804,7 +808,7 @@ class NetworkOrchestrator:
 
     # Only check if Testrun is running
     if self.get_session().get_status() not in [
-      'Waiting for Device', 'Monitoring', 'In Progress'
+        'Waiting for Device', 'Monitoring', 'In Progress'
     ]:
       message['connection'] = None
 
@@ -816,8 +820,7 @@ class NetworkOrchestrator:
       if iface and iface in self._session.get_ifaces():
 
         # Ping google.com from gateway container
-        internet_connection = self._ip_ctrl.ping_via_gateway(
-          'google.com')
+        internet_connection = self._ip_ctrl.ping_via_gateway('google.com')
 
         if internet_connection:
           message['connection'] = True

@@ -92,7 +92,7 @@ mkdir -p build/test
 for dir in modules/test/* ; do
   module=$(basename $dir)
   echo Building test module $module...
-  if docker build -f modules/test/$module/$module.Dockerfile -t test-run/$module-test . ; then
+  if docker build -f modules/test/$module/$module.Dockerfile -t testrun/$module-test . ; then
     echo Successfully built container for test module $module
   else
     echo An error occured whilst building container for test module $module

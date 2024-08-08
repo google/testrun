@@ -100,6 +100,13 @@ class TestrunSession():
     self._load_config()
     self._load_profiles()
 
+    # Network information
+    self._ipv4_subnet = None
+    self._ipv6_subnet = None
+
+    # Store host user for permissions use
+    self._host_user = util.get_host_user()
+
     self._certs = []
     self.load_certs()
 
@@ -163,7 +170,7 @@ class TestrunSession():
       # Network interfaces
       if (NETWORK_KEY in config_file_json
           and DEVICE_INTF_KEY in config_file_json.get(NETWORK_KEY)
-              and INTERNET_INTF_KEY in config_file_json.get(NETWORK_KEY)):
+          and INTERNET_INTF_KEY in config_file_json.get(NETWORK_KEY)):
         self._config[NETWORK_KEY][DEVICE_INTF_KEY] = config_file_json.get(
             NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
         self._config[NETWORK_KEY][INTERNET_INTF_KEY] = config_file_json.get(
@@ -207,10 +214,13 @@ class TestrunSession():
       try:
         version = util.run_command(
             '$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
-      except Exception as e:
+      except Exception as e: # pylint: disable=W0703
         LOGGER.debug('Failed getting the version from make control file')
         LOGGER.error(e)
         self._version = 'Unknown'
+
+  def get_host_user(self):
+    return self._host_user
 
   def get_version(self):
     return self._version
@@ -293,6 +303,12 @@ class TestrunSession():
   def remove_device(self, device):
     self._device_repository.remove(device)
 
+  def get_ipv4_subnet(self):
+    return self._ipv4_subnet
+
+  def get_ipv6_subnet(self):
+    return self._ipv6_subnet
+
   def get_status(self):
     return self._status
 
@@ -359,15 +375,18 @@ class TestrunSession():
   def set_report_url(self, url):
     self._report_url = url
 
+  def set_subnets(self, ipv4_subnet, ipv6_subnet):
+    self._ipv4_subnet = ipv4_subnet
+    self._ipv6_subnet = ipv6_subnet
+
   def _load_profiles(self):
 
     # Load format of questionnaire
     LOGGER.debug('Loading risk assessment format')
 
     try:
-      with open(os.path.join(
-        self._root_dir, PROFILE_FORMAT_PATH
-      ), encoding='utf-8') as profile_format_file:
+      with open(os.path.join(self._root_dir, PROFILE_FORMAT_PATH),
+                encoding='utf-8') as profile_format_file:
         format_json = json.load(profile_format_file)
         # Save original profile format for internal validation
         self._profile_format = format_json
@@ -400,7 +419,7 @@ class TestrunSession():
 
     try:
       for risk_profile_file in os.listdir(
-              os.path.join(self._root_dir, PROFILES_DIR)):
+          os.path.join(self._root_dir, PROFILES_DIR)):
 
         LOGGER.debug(f'Discovered profile {risk_profile_file}')
 
@@ -415,15 +434,13 @@ class TestrunSession():
           risk_profile = RiskProfile()
 
           # Pass JSON to populate risk profile
-          risk_profile.load(
-            profile_json=json_data,
-            profile_format=self._profile_format
-          )
+          risk_profile.load(profile_json=json_data,
+                            profile_format=self._profile_format)
 
           # Add risk profile to session
           self._profiles.append(risk_profile)
 
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       LOGGER.error('An error occurred whilst loading risk profiles')
       LOGGER.debug(e)
 
@@ -510,9 +527,8 @@ class TestrunSession():
     if risk_profile is None:
 
       # Create a new risk profile
-      risk_profile = RiskProfile(
-        profile_json=profile_json,
-        profile_format=self._profile_format)
+      risk_profile = RiskProfile(profile_json=profile_json,
+                                 profile_format=self._profile_format)
       self._profiles.append(risk_profile)
 
     else:
@@ -548,7 +564,7 @@ class TestrunSession():
 
       return True
 
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       LOGGER.error('An error occurred whilst deleting a profile')
       LOGGER.debug(e)
       return False
@@ -688,7 +704,7 @@ class TestrunSession():
           self._certs.append(cert_obj)
 
           LOGGER.debug(f'Successfully loaded {cert_file}')
-      except Exception as e:
+      except Exception as e: # pylint: disable=W0703
         LOGGER.error(f'An error occurred whilst loading {cert_file}')
         LOGGER.debug(e)
 
@@ -708,7 +724,7 @@ class TestrunSession():
           self._certs.remove(cert)
           return True
 
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       LOGGER.error('An error occurred whilst deleting the certificate')
       LOGGER.debug(e)
       return False
