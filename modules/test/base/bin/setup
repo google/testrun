@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Define the local mount point to store local files to
+export OUTPUT_DIR="/runtime/output"
+
+# Directory where all binaries will be loaded
+export BIN_DIR="/testrun/bin"
+
+# Default interface should be veth0 for all containers
+export IFACE=veth0
+
+# Create a local user that matches the same as the host
+# to be used for correct file ownership for various logs
+# HOST_USER mapped in via docker container environemnt variables
+useradd $HOST_USER
+
+# Set permissions on the output files
+chown -R $HOST_USER $OUTPUT_DIR
+
+# Enable IPv6 for all containers
+sysctl net.ipv6.conf.all.disable_ipv6=0
+sysctl -p
+
+# Read in the config file
+CONF_FILE="/testrun/conf/module_config.json"
+CONF=`cat $CONF_FILE`
+
+if [[ -z $CONF ]]
+then
+	echo "No config file present at $CONF_FILE.  Exiting startup."
+	exit 1
+fi
+
+# Extract the necessary config parameters
+export MODULE_NAME=$(echo "$CONF" | jq -r '.config.meta.name')
+export NETWORK_REQUIRED=$(echo "$CONF" | jq -r '.config.network')
+export GRPC=$(echo "$CONF" | jq -r '.config.grpc')
+
+# Validate the module name is present
+if [[ -z "$MODULE_NAME" || "$MODULE_NAME" == "null" ]]
+then
+	echo "No module name present in $CONF_FILE.  Exiting startup."
+	exit 1
+fi
+
+# Setup the PYTHONPATH so all imports work as expected
+echo "Setting up PYTHONPATH..."
+export PYTHONPATH=$($BIN_DIR/setup_python_path)
+echo "PYTHONPATH: $PYTHONPATH"
+
+echo "Configuring binary files..."
+$BIN_DIR/setup_binaries $BIN_DIR
+
+# Build all gRPC files from the proto for use in
+# gRPC clients for communications to network modules
+echo "Building gRPC files from available proto files..."
+$BIN_DIR/setup_grpc_clients

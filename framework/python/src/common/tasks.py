@@ -23,6 +23,7 @@ from fastapi import FastAPI
 from common import logger
 
 # Check adapters period seconds
+# Check adapters period seconds
 CHECK_NETWORK_ADAPTERS_PERIOD = 5
 INTERNET_CONNECTION_TOPIC = 'events/internet'
 NETWORK_ADAPTERS_TOPIC = 'events/adapter'

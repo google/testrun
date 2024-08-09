@@ -8,6 +8,7 @@ import { of } from 'rxjs';
 import { MOCK_ADAPTERS } from '../mocks/settings.mock';
 import { Topic } from '../model/topic';
 import { MOCK_INTERNET } from '../mocks/topic.mock';
+import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/testrun.mock';
 
 describe('TestRunMqttService', () => {
   let service: TestRunMqttService;
@@ -64,6 +65,28 @@ describe('TestRunMqttService', () => {
     it('should return object of type', done => {
       service.getInternetConnection().subscribe(res => {
         expect(res).toEqual(MOCK_INTERNET);
+        done();
+      });
+    });
+  });
+
+  describe('getStatus', () => {
+    beforeEach(() => {
+      mockService.observe.and.returnValue(
+        of(getResponse(MOCK_PROGRESS_DATA_IN_PROGRESS))
+      );
+    });
+
+    it('should subscribe the topic', done => {
+      service.getStatus().subscribe(() => {
+        expect(mockService.observe).toHaveBeenCalledWith(Topic.Status);
+        done();
+      });
+    });
+
+    it('should return object of type', done => {
+      service.getStatus().subscribe(res => {
+        expect(res).toEqual(MOCK_PROGRESS_DATA_IN_PROGRESS);
         done();
       });
     });

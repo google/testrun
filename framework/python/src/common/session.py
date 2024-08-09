@@ -17,7 +17,8 @@ import datetime
 import pytz
 import json
 import os
-from common import util, logger
+from fastapi.encoders import jsonable_encoder
+from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
 from net_orc.ip_control import IPControl
 
@@ -37,6 +38,7 @@ API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
+STATUS_TOPIC = 'status'
 
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
 PROFILES_DIR = 'local/risk_profiles'
@@ -44,8 +46,36 @@ PROFILES_DIR = 'local/risk_profiles'
 LOGGER = logger.get_logger('session')
 
 
+def session_tracker(method):
+  """Session changes tracker."""
+  def wrapper(self, *args, **kwargs):
+
+    result = method(self, *args, **kwargs)
+
+    if self.get_status() != 'Idle':
+      self.get_mqtt_client().send_message(
+                                        STATUS_TOPIC,
+                                        jsonable_encoder(self.to_json())
+                                        )
+
+    return result
+  return wrapper
+
+def apply_session_tracker(cls):
+  """Applies tracker decorator to class methods"""
+  for attr in dir(cls):
+    if (callable(getattr(cls, attr))
+      and not attr.startswith('_')
+      and not attr.startswith('get')
+      and not attr == 'to_json'
+      ):
+      setattr(cls, attr, session_tracker(getattr(cls, attr)))
+  return cls
+
+
+@apply_session_tracker
 class TestrunSession():
-  """Represents the current session of Test Run."""
+  """Represents the current session of Testrun."""
 
   def __init__(self, root_dir):
     self._root_dir = root_dir
@@ -108,6 +138,9 @@ class TestrunSession():
     # TODO: Check if timezone is fetched successfully
     self._timezone = tz[0]
     LOGGER.debug(f'System timezone is {self._timezone}')
+
+    # MQTT client
+    self._mqtt_client = mqtt.MQTT()
 
   def start(self):
     self.reset()
@@ -334,6 +367,11 @@ class TestrunSession():
       result.result = 'In Progress'
       self._results.append(result)
 
+  def set_test_result_error(self, result):
+    """Set test result error"""
+    result.result = 'Error'
+    self._results.append(result)
+
   def add_module_report(self, module_report):
     self._module_reports.append(module_report)
 
@@ -439,25 +477,6 @@ class TestrunSession():
         return profile
     return None
 
-  def validate_profile(self, profile_json):
-
-    # Check name field is present
-    if 'name' not in profile_json:
-      return False
-
-    # Check questions field is present
-    if 'questions' not in profile_json:
-      return False
-
-    # Check all questions are present
-    for format_q in self.get_profiles_format():
-      if self._get_profile_question(profile_json,
-                                    format_q.get('question')) is None:
-        LOGGER.error('Missing question: ' + format_q.get('question'))
-        return False
-
-    return True
-
   def _get_profile_question(self, profile_json, question):
 
     for q in profile_json.get('questions'):
@@ -466,7 +485,14 @@ class TestrunSession():
 
     return None
 
+  def get_profile_format_question(self, question):
+    for q in self.get_profiles_format():
+      if q.get('question') == question:
+        return q
+
   def update_profile(self, profile_json):
+    """Update the risk profile with the provided JSON.
+    The content has already been validated in the API"""
 
     profile_name = profile_json['name']
 
@@ -474,39 +500,8 @@ class TestrunSession():
     profile_json['version'] = self.get_version()
     profile_json['created'] = datetime.datetime.now().strftime('%Y-%m-%d')
 
-    if 'status' in profile_json and profile_json.get('status') == 'Valid':
-      # Attempting to submit a risk profile, we need to check it
-
-      # Check all questions have been answered
-      all_questions_answered = True
-
-      for question in self.get_profiles_format():
-
-        # Check question is present
-        profile_question = self._get_profile_question(profile_json,
-                                                      question.get('question'))
-
-        if profile_question is not None:
-
-          # Check answer is present
-          if 'answer' not in profile_question:
-            LOGGER.error('Missing answer for question: ' +
-                         question.get('question'))
-            all_questions_answered = False
-
-        else:
-          LOGGER.error('Missing question: ' + question.get('question'))
-          all_questions_answered = False
-
-      if not all_questions_answered:
-        LOGGER.error('Not all questions answered')
-        return None
-
-    else:
-      profile_json['status'] = 'Draft'
-
+    # Check if profile already exists
     risk_profile = self.get_profile(profile_name)
-
     if risk_profile is None:
 
       # Create a new risk profile
@@ -731,6 +726,9 @@ class TestrunSession():
       LOGGER.debug(f'Network adapters change detected: {adapters}')
       self._ifaces = ifaces_new
     return adapters
+
+  def get_mqtt_client(self):
+    return self._mqtt_client
 
   def get_ifaces(self):
     return self._ifaces
