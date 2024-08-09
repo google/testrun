@@ -33,7 +33,7 @@ jobs:
   install_package_20:
     permissions: {}
     needs: create_package
-    name: Install
+    name: Install on Ubuntu 20.04
     runs-on: ubuntu-20.04
     timeout-minutes: 15
     steps:
@@ -53,7 +53,7 @@ jobs:
   install_package_22:
     permissions: {}
     needs: create_package
-    name: Install
+    name: Install on Ubuntu 22.04
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
@@ -73,7 +73,7 @@ jobs:
   install_package_24:
     permissions: {}
     needs: create_package
-    name: Install
+    name: Install on Ubuntu 24.04
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
