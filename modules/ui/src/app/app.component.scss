@@ -208,3 +208,9 @@ app-version {
   display: flex;
   justify-content: center;
 }
+
+.separator {
+  width: 1px;
+  height: 28px;
+  background-color: $light-grey;
+}

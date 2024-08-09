@@ -103,7 +103,7 @@ class Modbus():
           self._discrete_input_enabled = False
 
     # Initialize the modbus client
-    self.client = ModbusClient(device_ip, self._port)
+    self.client = ModbusClient(host=device_ip, port=self._port)
 
   # Connections created from this method are simple socket connections
   # and aren't indicative of valid modbus

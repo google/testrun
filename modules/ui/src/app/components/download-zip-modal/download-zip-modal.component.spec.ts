@@ -60,11 +60,7 @@ describe('DownloadZipModalComponent', () => {
     });
 
     it('should preselect "no profile" option', async () => {
-      const select = fixture.nativeElement.querySelector(
-        'mat-select'
-      ) as HTMLElement;
-
-      expect(select.getAttribute('ng-reflect-value')).toEqual(
+      expect(component.selectedProfile.name).toEqual(
         'No Risk Profile selected'
       );
     });

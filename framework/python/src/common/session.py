@@ -35,9 +35,9 @@ LOG_LEVEL_KEY = 'log_level'
 API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
+ORG_NAME_KEY = 'org_name'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
-SECONDS_IN_YEAR = 31536000
 
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
 PROFILES_DIR = 'local/risk_profiles'
@@ -144,7 +144,8 @@ class TestrunSession():
         'monitor_period': 30,
         'max_device_reports': 0,
         'api_url': 'http://localhost',
-        'api_port': 8000
+        'api_port': 8000,
+        'org_name': ''
     }
 
   def get_config(self):
@@ -190,6 +191,11 @@ class TestrunSession():
       if MAX_DEVICE_REPORTS_KEY in config_file_json:
         self._config[MAX_DEVICE_REPORTS_KEY] = config_file_json.get(
             MAX_DEVICE_REPORTS_KEY)
+
+      if ORG_NAME_KEY in config_file_json:
+        self._config[ORG_NAME_KEY] = config_file_json.get(
+          ORG_NAME_KEY
+        )
 
       LOGGER.debug(self._config)
 
@@ -401,17 +407,26 @@ class TestrunSession():
     try:
       for risk_profile_file in os.listdir(
               os.path.join(self._root_dir, PROFILES_DIR)):
+
         LOGGER.debug(f'Discovered profile {risk_profile_file}')
 
+        # Open the risk profile file
         with open(os.path.join(self._root_dir, PROFILES_DIR, risk_profile_file),
                   encoding='utf-8') as f:
+
+          # Parse risk profile json
           json_data = json.load(f)
+
+          # Instantiate a new risk profile
           risk_profile = RiskProfile()
+
+          # Pass JSON to populate risk profile
           risk_profile.load(
             profile_json=json_data,
             profile_format=self._profile_format
           )
-          risk_profile.status = self.check_profile_status(risk_profile)
+
+          # Add risk profile to session
           self._profiles.append(risk_profile)
 
     except Exception as e:
@@ -526,20 +541,6 @@ class TestrunSession():
 
     return risk_profile
 
-  def check_profile_status(self, profile):
-
-    if profile.status == 'Valid':
-
-      # Check expiry
-      created_date = profile.created.timestamp()
-
-      today = datetime.datetime.now().timestamp()
-
-      if created_date < (today - SECONDS_IN_YEAR):
-        profile.status = 'Expired'
-
-    return profile.status
-
   def delete_profile(self, profile):
 
     try:
@@ -653,6 +654,11 @@ class TestrunSession():
     self._certs = []
 
     for cert_file in os.listdir(CERTS_PATH):
+
+      # Ignore directories
+      if os.path.isdir(os.path.join(CERTS_PATH, cert_file)):
+        continue
+
       LOGGER.debug(f'Loading certificate {cert_file}')
       try:
 
@@ -728,6 +734,9 @@ class TestrunSession():
       if 'items_removed' in diff:
         adapters['adapters_removed'] = diff['items_removed']
       # Save new network interfaces to session
-      LOGGER.debug(f'Network adapters changed {adapters}')
+      LOGGER.debug(f'Network adapters change detected: {adapters}')
       self._ifaces = ifaces_new
     return adapters
+
+  def get_ifaces(self):
+    return self._ifaces

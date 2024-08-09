@@ -72,3 +72,15 @@
   display: inline-block;
   width: fit-content;
 }
+
+::ng-deep mat-select-trigger {
+  display: inline-flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+::ng-deep mat-select-trigger .profile-item-risk {
+  vertical-align: middle;
+  align-self: center;
+  margin-right: 16px;
+}

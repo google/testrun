@@ -75,7 +75,9 @@ export enum StatusOfTestResult {
   NotStarted = 'Not Started',
   InProgress = 'In Progress',
   Error = 'Error', // test failed to run
-  Info = 'Informational', // nice to know information, not necessarily compliant/non-compliant
+  Info = 'Informational', // nice to know information, not necessarily compliant/non-compliant,
+  Skipped = 'Skipped',
+  Disabled = 'Disabled',
 }
 
 export interface StatusResultClassName {

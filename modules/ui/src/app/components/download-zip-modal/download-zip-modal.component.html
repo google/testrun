@@ -55,11 +55,17 @@ limitations under the License.
       [(value)]="selectedProfile"
       aria-label="Please choose a Risk Profile from the list">
       <mat-select-trigger>
-        {{ selectedProfile }}
+        {{ selectedProfile.name }}
+        <span
+          *ngIf="selectedProfile.risk"
+          class="profile-item-risk"
+          [ngClass]="getRiskClass(selectedProfile.risk)">
+          {{ selectedProfile.risk }} risk
+        </span>
       </mat-select-trigger>
       <mat-option
         *ngFor="let profile of profiles"
-        [value]="profile.name"
+        [value]="profile"
         class="profile-item-option">
         <div class="select-container">
           <span
@@ -82,7 +88,7 @@ limitations under the License.
 
   <mat-dialog-actions align="end" class="risk-profile-select-form-actions">
     <button
-      (click)="cancel()"
+      (click)="cancel(null)"
       class="cancel-button"
       color="primary"
       mat-button
