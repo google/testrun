@@ -1453,11 +1453,11 @@ def test_get_device_profile():
   with open(DEVICE_PROFILE_QUESTIONS, "r", encoding="utf-8") as file:
     questions = json.load(file)
 
-  # Checking the 400 error when a step does not exist.
+  # Checking the 404 error when a step does not exist.
   r = requests.get(f"{API}/devices/format?step={len(questions) + 1}",
                    timeout=5
                    )
-  assert r.status_code == 400
+  assert r.status_code == 404
 
   r = requests.get(f"{API}/devices/format", timeout=5)
   assert r.status_code == 200
