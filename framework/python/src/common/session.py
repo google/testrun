@@ -35,6 +35,7 @@ LOG_LEVEL_KEY = 'log_level'
 API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
+ORG_NAME_KEY = 'org_name'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 
@@ -143,7 +144,8 @@ class TestrunSession():
         'monitor_period': 30,
         'max_device_reports': 0,
         'api_url': 'http://localhost',
-        'api_port': 8000
+        'api_port': 8000,
+        'org_name': ''
     }
 
   def get_config(self):
@@ -189,6 +191,11 @@ class TestrunSession():
       if MAX_DEVICE_REPORTS_KEY in config_file_json:
         self._config[MAX_DEVICE_REPORTS_KEY] = config_file_json.get(
             MAX_DEVICE_REPORTS_KEY)
+
+      if ORG_NAME_KEY in config_file_json:
+        self._config[ORG_NAME_KEY] = config_file_json.get(
+          ORG_NAME_KEY
+        )
 
       LOGGER.debug(self._config)
 
