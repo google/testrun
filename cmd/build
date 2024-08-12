@@ -78,7 +78,7 @@ mkdir -p build/devices
 for dir in modules/devices/* ; do
   module=$(basename $dir)
   echo Building validator module $module...
-  if docker build -f modules/devices/$module/$module.Dockerfile -t test-run/$module . ; then
+  if docker build -f modules/devices/$module/$module.Dockerfile -t testrun/$module . ; then
     echo Successfully built container for device module $module
   else
     echo An error occured whilst building container for device module $module
