@@ -64,7 +64,7 @@ mkdir -p build/network
 for dir in modules/network/* ; do
   module=$(basename $dir)
   echo Building network module $module...
-  if docker build -f modules/network/$module/$module.Dockerfile -t test-run/$module . ; then
+  if docker build -f modules/network/$module/$module.Dockerfile -t testrun/$module . ; then
     echo Successfully built container for network $module
   else
     echo An error occured whilst building container for network module $module

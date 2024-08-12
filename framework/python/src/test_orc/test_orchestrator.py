@@ -547,18 +547,7 @@ class TestOrchestrator:
 
   def _stop_module(self, module, kill=False):
     LOGGER.debug("Stopping test module " + module.container_name)
-    try:
-      container = module.container
-      if container is not None:
-        if kill:
-          LOGGER.debug("Killing container:" + module.container_name)
-          container.kill()
-        else:
-          LOGGER.debug("Stopping container:" + module.container_name)
-          container.stop()
-        LOGGER.debug("Container stopped:" + module.container_name)
-    except docker.errors.NotFound:
-      pass
+    module.stop(kill=kill)
 
   def get_test_modules(self):
     return self._test_modules
