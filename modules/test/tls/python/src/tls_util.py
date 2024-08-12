@@ -529,7 +529,7 @@ class TLSUtil():
           LOGGER.info('Checking client ciphers: ' + str(packet))
           if packet['cipher_support']['ecdh'] and packet['cipher_support'][
               'ecdsa']:
-            LOGGER.info('Valid ciphers detected')
+            LOGGER.info('Required ciphers detected')
             client_hello_results['valid'].append(packet)
             # If a previous hello packet to the same destination failed,
             # we can now remove it as it has passed on a different attempt
@@ -539,7 +539,7 @@ class TLSUtil():
                 if packet['dst_ip'] in str(invalid_packet):
                   client_hello_results['invalid'].remove(invalid_packet)
           else:
-            LOGGER.info('Invalid ciphers detected')
+            LOGGER.info('Required ciphers not detected')
             if packet['dst_ip'] not in allowed_protocol_client_ips:
               if packet['dst_ip'] not in str(client_hello_results['invalid']):
                 client_hello_results['invalid'].append(packet)
