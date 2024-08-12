@@ -679,6 +679,12 @@ class NetworkOrchestrator:
     except Exception:  # pylint: disable=W0703
       LOGGER.error(traceback.format_exc())
 
+  def is_device_connected(self):
+    """Check if device connected"""
+    return self._ip_ctrl.check_interface_status(
+        self._session.get_device_interface()
+      )
+
   def internet_conn_checker(self, mqtt_client: mqtt.MQTT, topic: str):
     """Checks internet connection and sends a status to frontend"""
 
