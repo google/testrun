@@ -23,6 +23,7 @@ from datetime import datetime
 from docker.types import Mount
 from common import logger, util
 from common.testreport import TestReport
+from common.config import TestrunStatuses
 from test_orc.module import TestModule
 from test_orc.test_case import TestCase
 import threading
@@ -84,7 +85,7 @@ class TestOrchestrator:
     """Iterates through each test module and starts the container."""
 
     # Do not start test modules if status is not in progress, e.g. Stopping
-    if self.get_session().get_status() != "In Progress":
+    if self.get_session().get_status() != TestrunStatuses.IN_PROGRESS:
       return
 
     device = self._session.get_target_device()
@@ -118,8 +119,8 @@ class TestOrchestrator:
     self._session.finish()
 
     # Do not carry on (generating a report) if Testrun has been stopped
-    if self.get_session().get_status() != "In Progress":
-      return "Cancelled"
+    if self.get_session().get_status() != TestrunStatuses.IN_PROGRESS:
+      return TestrunStatuses.CANCELLED
 
     report = TestReport()
     report.from_json(self._generate_report())
@@ -328,9 +329,9 @@ class TestOrchestrator:
 
       # Check that the ZIP was successfully created
       zip_file = zip_location + ".zip"
-      LOGGER.info(f'''Archive {'created at ' + zip_file
+      LOGGER.info(f"""Archive {"created at " + zip_file
                                 if os.path.exists(zip_file)
-                                else'creation failed'}''')
+                                else "creation failed"}""")
 
 
       return zip_file
@@ -362,7 +363,7 @@ class TestOrchestrator:
     """Start the test container and extract the results."""
 
     # Check that Testrun is not stopping
-    if self.get_session().get_status() != "In Progress":
+    if self.get_session().get_status() != TestrunStatuses.IN_PROGRESS:
       return
 
     device = self._session.get_target_device()
@@ -376,7 +377,7 @@ class TestOrchestrator:
       if not self._net_orc.is_device_connected():
         LOGGER.error("Device was disconnected")
         self._set_test_modules_error(current_test)
-        self._session.set_status("Cancelled")
+        self._session.set_status(TestrunStatuses.CANCELLED)
         return
 
       test_copy = copy.deepcopy(test)
@@ -475,7 +476,8 @@ class TestOrchestrator:
     log_thread.daemon = True
     log_thread.start()
 
-    while (status == "running" and self._session.get_status() == "In Progress"):
+    while (status == "running"
+           and self._session.get_status() == TestrunStatuses.IN_PROGRESS):
       if time.time() > test_module_timeout:
         LOGGER.error("Module timeout exceeded, killing module: " + module.name)
         self._stop_module(module=module, kill=True)
@@ -488,7 +490,7 @@ class TestOrchestrator:
         f.write(line + "\n")
 
     # Check that Testrun has not been stopped whilst this module was running
-    if self.get_session().get_status() == "Stopping":
+    if self.get_session().get_status() == TestrunStatuses.STOPPING:
       # Discard results for this module
       LOGGER.info(f"Test module {module.name} has forcefully quit")
       return

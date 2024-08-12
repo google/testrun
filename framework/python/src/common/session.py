@@ -20,6 +20,7 @@ import os
 from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
+from common.config import TestrunStatuses
 from net_orc.ip_control import IPControl
 
 # Certificate dependencies
@@ -52,7 +53,7 @@ def session_tracker(method):
 
     result = method(self, *args, **kwargs)
 
-    if self.get_status() != 'Idle':
+    if self.get_status() != TestrunStatuses.IDLE:
       self.get_mqtt_client().send_message(
                                         STATUS_TOPIC,
                                         jsonable_encoder(self.to_json())
@@ -80,7 +81,7 @@ class TestrunSession():
   def __init__(self, root_dir):
     self._root_dir = root_dir
 
-    self._status = 'Idle'
+    self._status = TestrunStatuses.IDLE
 
     # Target test device
     self._device = None
@@ -144,7 +145,7 @@ class TestrunSession():
 
   def start(self):
     self.reset()
-    self._status = 'Waiting for Device'
+    self._status = TestrunStatuses.WAITING_FOR_DEVICE
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -288,7 +289,7 @@ class TestrunSession():
     self._save_config()
 
     # Update log level
-    LOGGER.debug(f'Setting log level to {config_json["log_level"]}')
+    LOGGER.debug(f'Setting log level to {config_json["log_level"]}') # pylint: disable=W1405
     logger.set_log_level(config_json['log_level'])
 
   def set_target_device(self, device):
@@ -592,7 +593,7 @@ class TestrunSession():
       return False
 
   def reset(self):
-    self.set_status('Idle')
+    self.set_status(TestrunStatuses.IDLE)
     self.set_target_device(None)
     self._report_url = None
     self._total_tests = 0
