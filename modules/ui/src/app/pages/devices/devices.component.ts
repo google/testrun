@@ -116,10 +116,10 @@ export class DevicesComponent implements OnInit, OnDestroy {
     focusDeleteButton = false
   ): void {
     const dialogRef = this.dialog.open(DeviceQualificationFromComponent, {
-      ariaLabel: selectedDevice ? 'Edit device' : 'Create device',
+      ariaLabel: selectedDevice ? 'Edit device' : 'Create Device',
       data: {
         device: selectedDevice || null,
-        title: selectedDevice ? 'Edit device' : 'Create device',
+        title: selectedDevice ? 'Edit device' : 'Create Device',
         testModules: testModules,
         devices,
       },
