@@ -31,6 +31,7 @@ import {
   take,
   catchError,
   EMPTY,
+  Subscription,
 } from 'rxjs';
 import {
   selectIsOpenWaitSnackBar,
@@ -50,15 +51,19 @@ import {
   setStatus,
   setTestrunStatus,
   stopInterval,
+  updateInternetConnection,
 } from './actions';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { NotificationService } from '../services/notification.service';
 import { Profile } from '../model/profile';
+import { TestRunMqttService } from '../services/test-run-mqtt.service';
+import { InternetConnection } from '../model/topic';
 
 const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
 @Injectable()
 export class AppEffects {
+  private internetSubscription: Subscription | undefined;
   private startInterval = false;
   private destroyInterval$: Subject<boolean> = new Subject<boolean>();
   private destroyWaitDeviceInterval$: Subject<boolean> = new Subject<boolean>();
@@ -208,6 +213,7 @@ export class AppEffects {
         tap(() => {
           this.startInterval = false;
           this.destroyInterval$.next(true);
+          this.internetSubscription?.unsubscribe();
         })
       );
     },
@@ -224,6 +230,7 @@ export class AppEffects {
             !this.startInterval
           ) {
             this.pullingSystemStatusData();
+            this.fetchInternetConnection();
           } else if (
             !this.testrunService.testrunInProgress(systemStatus.status)
           ) {
@@ -364,11 +371,29 @@ export class AppEffects {
     });
   }
 
+  private fetchInternetConnection() {
+    if (
+      this.internetSubscription === undefined ||
+      this.internetSubscription?.closed
+    ) {
+      this.internetSubscription = this.testrunMqttService
+        .getInternetConnection()
+        .subscribe((internetConnection: InternetConnection) => {
+          this.store.dispatch(
+            updateInternetConnection({
+              internetConnection: internetConnection.connection,
+            })
+          );
+        });
+    }
+  }
+
   constructor(
     private actions$: Actions,
     private testrunService: TestRunService,
     private store: Store<AppState>,
     private ngZone: NgZone,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private testrunMqttService: TestRunMqttService
   ) {}
 }

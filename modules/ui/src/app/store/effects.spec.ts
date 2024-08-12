@@ -52,6 +52,7 @@ import { throwError } from 'rxjs/internal/observable/throwError';
 import { HttpErrorResponse } from '@angular/common/http';
 import { IDLE_STATUS } from '../model/testrun-status';
 import { HISTORY } from '../mocks/reports.mock';
+import { TestRunMqttService } from '../services/test-run-mqtt.service';
 
 describe('Effects', () => {
   let actions$ = new Observable<Action>();
@@ -59,6 +60,7 @@ describe('Effects', () => {
   let testRunServiceMock: SpyObj<TestRunService>;
   let store: MockStore<AppState>;
   let dispatchSpy: jasmine.Spy;
+  let mockMqttService: SpyObj<TestRunMqttService>;
   const notificationServiceMock: jasmine.SpyObj<NotificationService> =
     jasmine.createSpyObj('notificationServiceMock', [
       'dismissWithTimout',
@@ -76,6 +78,7 @@ describe('Effects', () => {
       'fetchProfiles',
       'getHistory',
     ]);
+    mockMqttService = jasmine.createSpyObj(['getInternetConnection']);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of({}));
     testRunServiceMock.getSystemConfig.and.returnValue(of({ network: {} }));
     testRunServiceMock.createSystemConfig.and.returnValue(of({ network: {} }));
@@ -84,12 +87,16 @@ describe('Effects', () => {
     );
     testRunServiceMock.fetchProfiles.and.returnValue(of([]));
     testRunServiceMock.getHistory.and.returnValue(of([]));
+    mockMqttService.getInternetConnection.and.returnValue(
+      of({ connection: false })
+    );
 
     TestBed.configureTestingModule({
       providers: [
         AppEffects,
         { provide: TestRunService, useValue: testRunServiceMock },
         { provide: NotificationService, useValue: notificationServiceMock },
+        { provide: TestRunMqttService, useValue: mockMqttService },
         provideMockActions(() => actions$),
         provideMockStore({}),
       ],
@@ -433,6 +440,12 @@ describe('Effects', () => {
 
           expect(notificationServiceMock.dismissWithTimout).toHaveBeenCalled();
           done();
+        });
+      });
+
+      it('should call fetchInternetConnection for status "in progress"', () => {
+        effects.onFetchSystemStatusSuccess$.subscribe(() => {
+          expect(mockMqttService.getInternetConnection).toHaveBeenCalled();
         });
       });
     });

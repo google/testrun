@@ -124,10 +124,7 @@ describe('AppComponent', () => {
       'focusFirstElementInContainer',
     ]);
     mockLiveAnnouncer = jasmine.createSpyObj('mockLiveAnnouncer', ['announce']);
-    mockMqttService = jasmine.createSpyObj([
-      'getNetworkAdapters',
-      'getInternetConnection',
-    ]);
+    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters']);
 
     TestBed.configureTestingModule({
       imports: [

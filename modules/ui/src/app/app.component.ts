@@ -83,7 +83,6 @@ export class AppComponent {
     this.appStore.getReports();
     this.appStore.getTestModules();
     this.appStore.getNetworkAdapters();
-    this.appStore.getInternetConnection();
     this.matIconRegistry.addSvgIcon(
       'devices',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_LOGO_URL)
