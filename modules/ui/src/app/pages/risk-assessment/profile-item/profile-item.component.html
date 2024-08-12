@@ -22,12 +22,21 @@ limitations under the License.
     class="profile-item-info"
     role="button"
     tabindex="0"
-    matTooltip="{{ profile.status }}"
+    #tooltip="matTooltip"
+    matTooltip="{{
+      profile.status === ProfileStatus.EXPIRED
+        ? EXPIRED_TOOLTIP
+        : profile.status
+    }}"
     (click)="profileClicked.emit(profile)"
-    (keydown.enter)="profileClicked.emit(profile)">
+    (keydown.enter)="enterProfileItem(profile)">
     <span
       class="profile-item-icon-container"
-      [attr.aria-label]="profile.status">
+      [attr.aria-label]="
+        profile.status === ProfileStatus.EXPIRED
+          ? EXPIRED_TOOLTIP
+          : profile.status
+      ">
       <mat-icon
         *ngIf="profile.status === ProfileStatus.VALID"
         class="profile-item-icon"
