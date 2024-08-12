@@ -42,6 +42,7 @@ import {
 } from '../mocks/testrun.mock';
 import {
   fetchSystemStatus,
+  fetchSystemStatusSuccess,
   setReports,
   setStatus,
   setTestrunStatus,
@@ -60,11 +61,15 @@ describe('Effects', () => {
   let testRunServiceMock: SpyObj<TestRunService>;
   let store: MockStore<AppState>;
   let dispatchSpy: jasmine.Spy;
-  let mockMqttService: SpyObj<TestRunMqttService>;
   const notificationServiceMock: jasmine.SpyObj<NotificationService> =
     jasmine.createSpyObj('notificationServiceMock', [
       'dismissWithTimout',
       'openSnackBar',
+    ]);
+  const mockMqttService: jasmine.SpyObj<TestRunMqttService> =
+    jasmine.createSpyObj('mockMqttService', [
+      'getStatus',
+      'getInternetConnection',
     ]);
 
   beforeEach(() => {
@@ -78,7 +83,6 @@ describe('Effects', () => {
       'fetchProfiles',
       'getHistory',
     ]);
-    mockMqttService = jasmine.createSpyObj(['getInternetConnection']);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of({}));
     testRunServiceMock.getSystemConfig.and.returnValue(of({ network: {} }));
     testRunServiceMock.createSystemConfig.and.returnValue(of({ network: {} }));
@@ -89,6 +93,10 @@ describe('Effects', () => {
     testRunServiceMock.getHistory.and.returnValue(of([]));
     mockMqttService.getInternetConnection.and.returnValue(
       of({ connection: false })
+    );
+
+    mockMqttService.getStatus.and.returnValue(
+      of(MOCK_PROGRESS_DATA_IN_PROGRESS)
     );
 
     TestBed.configureTestingModule({
@@ -406,14 +414,15 @@ describe('Effects', () => {
         );
       });
 
-      it('should call fetchSystemStatus for status "in progress"', fakeAsync(() => {
+      it('should call fetchSystemStatus for status "in progress"', () => {
         effects.onFetchSystemStatusSuccess$.subscribe(() => {
-          tick(5000);
-
-          expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
-          discardPeriodicTasks();
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            fetchSystemStatusSuccess({
+              systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
+            })
+          );
         });
-      }));
+      });
 
       it('should dispatch status and systemStatus', done => {
         effects.onFetchSystemStatusSuccess$.subscribe(() => {
@@ -464,14 +473,15 @@ describe('Effects', () => {
         );
       });
 
-      it('should call fetchSystemStatus for status "waiting for device"', fakeAsync(() => {
+      it('should call fetchSystemStatus for status "waiting for device"', () => {
         effects.onFetchSystemStatusSuccess$.subscribe(() => {
-          tick(5000);
-
-          expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
-          discardPeriodicTasks();
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            fetchSystemStatusSuccess({
+              systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
+            })
+          );
         });
-      }));
+      });
 
       it('should open snackbar when waiting for device is too long', fakeAsync(() => {
         effects.onFetchSystemStatusSuccess$.subscribe(() => {
