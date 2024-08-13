@@ -21,7 +21,7 @@
     formArrayName="steps"
     [linear]="true"
     [header]="header">
-    <cdk-step [editable]="true" formGroupName="0" [stepControl]="first_step">
+    <cdk-step [editable]="true" formGroupName="0" [stepControl]="getStep(0)">
       <mat-form-field appearance="outline" class="manufacturer-field">
         <mat-label>Device Manufacturer</mat-label>
         <input
@@ -124,14 +124,38 @@
 
       <app-device-tests
         class="device-qualification-form-test-modules-container"
-        [deviceForm]="first_step"
+        [deviceForm]="getStep(0)"
         [deviceTestModules]="data.device?.test_modules"
         [testModules]="testModules">
       </app-device-tests>
     </cdk-step>
 
-    <cdk-step [editable]="true" formGroupName="1" [stepControl]="second_step">
-      Second step
+    <ng-container *ngFor="let step of format">
+      <cdk-step
+        *ngIf="getStep(step.step)"
+        [editable]="true"
+        [formGroupName]="step.step"
+        [stepControl]="getStep(step.step)">
+        <h3 class="device-qualification-form-step-title" *ngIf="step.title">
+          {{ step.title }}
+        </h3>
+        <p
+          class="device-qualification-form-step-description"
+          *ngIf="step.description">
+          {{ step.description }}
+        </p>
+        <app-dynamic-form
+          [format]="step.questions"
+          [optionKey]="'text'"></app-dynamic-form>
+      </cdk-step>
+    </ng-container>
+
+    <cdk-step
+      *ngIf="format.length && getStep(2)"
+      [editable]="true"
+      formGroupName="2"
+      [stepControl]="getStep(2)">
+      Third step
     </cdk-step>
   </app-stepper>
 </form>
