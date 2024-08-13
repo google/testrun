@@ -56,6 +56,7 @@ import {
   selectHasDevices,
   selectHasRiskProfiles,
   selectInterfaces,
+  selectInternetConnection,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
@@ -163,6 +164,7 @@ describe('AppComponent', () => {
           selectors: [
             { selector: selectInterfaces, value: {} },
             { selector: selectHasConnectionSettings, value: true },
+            { selector: selectInternetConnection, value: true },
             { selector: selectError, value: null },
             { selector: selectMenuOpened, value: false },
             { selector: selectHasDevices, value: false },
