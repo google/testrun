@@ -23,7 +23,7 @@ from datetime import datetime
 from docker.types import Mount
 from common import logger, util
 from common.testreport import TestReport
-from common.config import TestrunStatuses
+from common.config import TestrunStatuses, TestResults
 from test_orc.module import TestModule
 from test_orc.test_case import TestCase
 import threading
@@ -187,16 +187,16 @@ class TestOrchestrator:
     return report
 
   def _calculate_result(self):
-    result = "Compliant"
+    result = TestResults.COMPLIANT
     for test_result in self._session.get_test_results():
       # Check Required tests
       if (test_result.required_result.lower() == "required"
           and test_result.result.lower() != "compliant"):
-        result = "Non-Compliant"
+        result = TestResults.NON_COMPLIANT
       # Check Required if Applicable tests
       elif (test_result.required_result.lower() == "required if applicable"
             and test_result.result.lower() == "non-compliant"):
-        result = "Non-Compliant"
+        result = TestResults.NON_COMPLIANT
     return result
 
   def _cleanup_old_test_results(self, device):
@@ -381,7 +381,7 @@ class TestOrchestrator:
         return
 
       test_copy = copy.deepcopy(test)
-      test_copy.result = "In Progress"
+      test_copy.result = TestResults.IN_PROGRESS
 
       # We don't want steps to resolve for in progress tests
       if hasattr(test_copy, "recommendations"):
@@ -518,11 +518,11 @@ class TestOrchestrator:
             result=test_result["result"])
 
           # Any informational test should always report informational
-          if test_case.required_result == "Informational":
-            test_case.result = "Informational"
+          if test_case.required_result == TestResults.INFORMATIONAL:
+            test_case.result = TestResults.INFORMATIONAL
 
           # Add steps to resolve if test is non-compliant
-          if (test_case.result == "Non-Compliant" and
+          if (test_case.result == TestResults.NON_COMPLIANT and
               "recommendations" in test_result):
             test_case.recommendations = test_result["recommendations"]
           else:

@@ -460,7 +460,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
       return
 
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
-    self._set_status('In Progress')
+    self._set_status(TestrunStatuses.IN_PROGRESS)
     result = self._test_orc.run_test_modules()
 
     if result is not None:

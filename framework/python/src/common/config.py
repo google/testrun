@@ -30,5 +30,6 @@ class TestResults:
   NON_COMPLIANT = "Non-Compliant"
   ERROR = "Error"
   FEATURE_NOT_DETECTED = "Feature Not Detected"
+  INFORMATIONAL = "Informational"
 
 

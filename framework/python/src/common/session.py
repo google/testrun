@@ -20,7 +20,7 @@ import os
 from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
-from common.config import TestrunStatuses
+from common.config import TestrunStatuses, TestResults
 from net_orc.ip_control import IPControl
 
 # Certificate dependencies
@@ -161,8 +161,8 @@ class TestrunSession():
   def finish(self):
     # Set any in progress test results to Error
     for test_result in self._results:
-      if test_result.result == 'In Progress':
-        test_result.result = 'Error'
+      if test_result.result == TestResults.IN_PROGRESS:
+        test_result.result = TestResults.ERROR
 
     self._finished = datetime.datetime.now()
 
@@ -370,7 +370,7 @@ class TestrunSession():
 
   def set_test_result_error(self, result):
     """Set test result error"""
-    result.result = 'Error'
+    result.result = TestResults.ERROR
     self._results.append(result)
 
   def add_module_report(self, module_report):
