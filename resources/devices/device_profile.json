@@ -1,6 +1,8 @@
 [
   {
     "step": 1,
+    "title": "Select device type & technology",
+    "description": "Before your device can go through testing, tell us more about your device and its functionality. It is important that we fully understand your device before a thorough assessment can be made.",
     "questions": [
       {
         "id": 1,
