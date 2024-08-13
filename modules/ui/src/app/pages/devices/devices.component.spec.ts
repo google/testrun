@@ -157,10 +157,10 @@ describe('DevicesComponent', () => {
       expect(button).toBeTruthy();
       expect(openSpy).toHaveBeenCalled();
       expect(openSpy).toHaveBeenCalledWith(DeviceQualificationFromComponent, {
-        ariaLabel: 'Create device',
+        ariaLabel: 'Create Device',
         data: {
           device: null,
-          title: 'Create device',
+          title: 'Create Device',
           testModules: [],
           devices: [device, device, device],
         },
