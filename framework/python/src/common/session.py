@@ -451,7 +451,7 @@ class TestrunSession():
 
           # Validate profile JSON
           if not self.validate_profile_json(json_data):
-            LOGGER.error("Profile failed validation")
+            LOGGER.error('Profile failed validation')
             continue
 
           # Instantiate a new risk profile
