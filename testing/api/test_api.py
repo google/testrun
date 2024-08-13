@@ -42,6 +42,8 @@ SYSTEM_CONFIG_PATH = "local/system.json"
 BASELINE_MAC_ADDR = "02:42:aa:00:01:01"
 ALL_MAC_ADDR = "02:42:aa:00:00:01"
 
+DEVICE_PROFILE_QUESTIONS = "resources/devices/device_profile.json"
+
 def pretty_print(dictionary: dict):
   """ Pretty print dictionary """
   print(json.dumps(dictionary, indent=4))
@@ -1444,3 +1446,26 @@ def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable
   )
   # Check if profile was deleted
   assert deleted_profile is None
+
+
+def test_get_device_profile():
+  """ Test get device profile question"""
+  with open(DEVICE_PROFILE_QUESTIONS, "r", encoding="utf-8") as file:
+    questions = json.load(file)
+
+  # Checking the 404 error when a step does not exist.
+  r = requests.get(f"{API}/devices/format?step={len(questions) + 1}",
+                   timeout=5
+                   )
+  assert r.status_code == 404
+
+  r = requests.get(f"{API}/devices/format", timeout=5)
+  assert r.status_code == 200
+  r = requests.get(f"{API}/devices/format?step=1", timeout=5)
+  assert r.status_code == 200
+
+  # Check next_step is presented
+  if len(questions) == 1:
+    assert "next_step" not in r.json()
+  else:
+    assert "next_step" in r.json()
