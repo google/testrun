@@ -66,7 +66,8 @@ export class ErrorInterceptor implements HttpInterceptor {
             );
           } else {
             this.notificationService.notify(
-              'Something went wrong. Check the Terminal for details.'
+              error.error?.error ||
+                'Something went wrong. Check the Terminal for details.'
             );
             console.error(error.error?.error || error.message);
           }
