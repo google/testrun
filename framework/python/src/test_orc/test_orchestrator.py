@@ -100,6 +100,23 @@ class TestOrchestrator:
         continue
 
       test_modules.append(module)
+
+      for test in module.tests:
+
+        # Duplicate test obj so we don't alter the source
+        test_copy = copy.deepcopy(test)
+
+        # Set result to Not Started
+        test_copy.result = "Not Started"
+
+        # We don't want steps to resolve for not started tests
+        if hasattr(test_copy, "recommendations"):
+          test_copy.recommendations = None
+
+        # Add test result to the session
+        self.get_session().add_test_result(test_copy)
+
+      # Increment number of tests that will be run
       self.get_session().add_total_tests(len(module.tests))
 
     for module in test_modules:
