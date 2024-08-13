@@ -40,8 +40,6 @@ DEFAULT_DEVICE_INTF = "enx123456789123"
 
 RESOURCES_PATH = "resources"
 DEVICE_FOLDER_PATH = "devices"
-DEVICE_TYPES_FILE_NAME = "types.json"
-DEVICE_TECHS_FILE_NAME = "technologies.json"
 DEVICE_QUESTIONS_FILE_NAME = "device_profile.json"
 
 LATEST_RELEASE_CHECK = ("https://api.github.com/repos/google/" +
@@ -62,13 +60,6 @@ class Api:
                                 RESOURCES_PATH,
                                 DEVICE_FOLDER_PATH)
 
-    # Load device types list
-    self._device_types = self._load_json(device_resources,
-                                         DEVICE_TYPES_FILE_NAME)
-
-    # Load device technologies list
-    self._device_techs = self._load_json(device_resources,
-                                         DEVICE_TECHS_FILE_NAME)
     # Load device profile questions
     self._device_profile = self._load_json(device_resources,
                                            DEVICE_QUESTIONS_FILE_NAME)
@@ -680,12 +671,6 @@ class Api:
       LOGGER.info("Test results could not be found, returning 404")
       response.status_code = 404
       return self._generate_msg(False, "Test results could not be found")
-
-  async def get_device_types(self):
-    return tuple(map(lambda i: i["text"], self._device_types))
-
-  async def get_device_technologies(self):
-    return self._device_techs
 
   async def get_devices_profile(self,
                                 request: Request,

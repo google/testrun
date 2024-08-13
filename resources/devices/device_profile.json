@@ -221,31 +221,6 @@
       },
       {
         "id": 2,
-        "question": "Does your device process any sensitive information? ",
-        "validation": {
-          "required": true
-        },
-        "type": "select",
-        "options": [
-          {
-            "id": 1,
-            "text": "Yes",
-            "risk": "Limited"
-          },
-          {
-            "id": 2,
-            "text": "No",
-            "risk": "High"
-          },
-          {
-            "id": 3,
-            "text": "I don't know",
-            "risk": "High"
-          }
-        ]
-      },
-      {
-        "id": 3,
         "question": "Please select the technology this device falls into",
         "validation": {
           "required": true
@@ -347,6 +322,96 @@
           {
             "id": 24,
             "text": "Other"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "question": "Does your device process any sensitive information? ",
+        "validation": {
+          "required": true
+        },
+        "type": "select",
+        "options": [
+          {
+            "id": 1,
+            "text": "Yes",
+            "risk": "Limited"
+          },
+          {
+            "id": 2,
+            "text": "No",
+            "risk": "High"
+          },
+          {
+            "id": 3,
+            "text": "I don't know",
+            "risk": "High"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "title": "Tell us more about your device",
+    "description": "Before your device can go through testing, tell us more about your device and its functionality. It is important that we fully understand your device before a thorough assessment can be made.",
+    "questions": [
+      {
+        "id": 1,
+        "question": "Can all non-essential services be disabled on your device?",
+        "validation": {
+          "required": true
+        },
+        "type": "select",
+        "options": [
+          {
+            "text": "Yes",
+            "id": 1
+          },
+          {
+            "text": "No",
+            "id": 2
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "question": "Is there a second IP port on the device?",
+        "validation": {
+          "required": true
+        },
+        "type": "select",
+        "options": [
+          {
+            "text": "Yes",
+            "id": 1
+          },
+          {
+            "text": "No",
+            "id": 2
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "question": "Can the second IP port on your device be disabled?",
+        "validation": {
+          "required": true
+        },
+        "type": "select",
+        "options": [
+          {
+            "text": "Yes",
+            "id": 1
+          },
+          {
+            "text": "No",
+            "id": 2
+          },
+          {
+            "text": "N/A",
+            "id": 3
           }
         ]
       }
