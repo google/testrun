@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,36 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { QuestionFormat } from './question';
-export interface Profile {
-  name: string;
-  risk?: string;
-  questions: Question[];
-  status?: ProfileStatus;
-  rename?: string;
-  created?: string;
+export interface Validation {
+  required: boolean | undefined;
+  max?: string;
 }
 
-export interface ProfileFormat extends QuestionFormat {}
-
-export interface Question {
-  question?: string;
-  answer?: string | number[];
+export enum FormControlType {
+  SELECT = 'select',
+  TEXTAREA = 'text-long',
+  EMAIL_MULTIPLE = 'email-multiple',
+  SELECT_MULTIPLE = 'select-multiple',
+  TEXT = 'text',
 }
 
-export enum ProfileRisk {
-  HIGH = 'High',
-  LIMITED = 'Limited',
+export interface QuestionFormat {
+  question: string;
+  type: FormControlType;
+  description?: string;
+  options?: OptionType[];
+  default?: string;
+  validation?: Validation;
 }
 
-export enum ProfileStatus {
-  VALID = 'Valid',
-  DRAFT = 'Draft',
-  EXPIRED = 'Expired',
-}
-
-export interface RiskResultClassName {
-  red: boolean;
-  cyan: boolean;
-}
+export type OptionType = string | object;

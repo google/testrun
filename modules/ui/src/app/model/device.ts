@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { QuestionFormat } from './question';
+
 export interface Device {
   manufacturer: string;
   model: string;
@@ -42,4 +44,15 @@ export interface TestModule {
 export enum DeviceView {
   Basic = 'basic',
   WithActions = 'with actions',
+}
+
+export interface DeviceQuestionnaireSection {
+  step: number;
+  title?: string;
+  description?: string;
+  questions: QuestionnaireFormat[];
+}
+
+export interface QuestionnaireFormat extends QuestionFormat {
+  id: number;
 }
