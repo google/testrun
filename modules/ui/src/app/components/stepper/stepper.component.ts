@@ -3,6 +3,7 @@ import { CdkStepper, CdkStepperModule } from '@angular/cdk/stepper';
 import { NgForOf, NgIf, NgTemplateOutlet } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
+import { FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-stepper',
@@ -32,5 +33,14 @@ export class StepperComponent extends CdkStepper {
 
   backButtonHidden() {
     return this.selectedIndex === 0;
+  }
+
+  nextClick() {
+    if (
+      this.selected?.interacted &&
+      !(this.selected?.stepControl as FormGroup).valid
+    ) {
+      this.selected?.stepControl.markAllAsTouched();
+    }
   }
 }
