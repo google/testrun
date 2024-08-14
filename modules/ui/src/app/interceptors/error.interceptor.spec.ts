@@ -50,12 +50,30 @@ describe('ErrorInterceptor', () => {
     expect(interceptor).toBeTruthy();
   });
 
-  it('should notify about backend errors', done => {
+  it('should notify about backend errors with message if exist', done => {
     const next: HttpHandler = {
       handle: () => {
         return throwError(
           new HttpErrorResponse({ error: { error: 'error' }, status: 500 })
         );
+      },
+    };
+
+    const requestMock = new HttpRequest('GET', '/test');
+
+    interceptor.intercept(requestMock, next).subscribe(
+      () => ({}),
+      () => {
+        expect(notificationServiceMock.notify).toHaveBeenCalledWith('error');
+        done();
+      }
+    );
+  });
+
+  it('should notify about backend errors with default message', done => {
+    const next: HttpHandler = {
+      handle: () => {
+        return throwError(new HttpErrorResponse({ status: 500 }));
       },
     };
 
