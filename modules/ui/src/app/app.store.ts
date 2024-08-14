@@ -16,13 +16,14 @@
 
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
-import { tap, withLatestFrom } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
   selectHasRiskProfiles,
   selectInterfaces,
+  selectInternetConnection,
   selectMenuOpened,
   selectReports,
   selectStatus,
@@ -55,16 +56,13 @@ export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export interface AppComponentState {
   consentShown: boolean;
   isStatusLoaded: boolean;
-  hasInternetConnection: boolean | null;
   systemStatus: TestrunStatus | null;
 }
 @Injectable()
 export class AppStore extends ComponentStore<AppComponentState> {
   private consentShown$ = this.select(state => state.consentShown);
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
-  private hasInternetConnection$ = this.select(
-    state => state.hasInternetConnection
-  );
+  private hasInternetConnection$ = this.store.select(selectInternetConnection);
   private hasDevices$ = this.store.select(selectHasDevices);
   private hasRiskProfiles$ = this.store.select(selectHasRiskProfiles);
   private reports$ = this.store.select(selectReports);
@@ -101,13 +99,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
     ...state,
     isStatusLoaded,
   }));
-
-  updateHasInternetConnection = this.updater(
-    (state, hasInternetConnection: boolean | null) => ({
-      ...state,
-      hasInternetConnection,
-    })
-  );
 
   setContent = this.effect<void>(trigger$ => {
     return trigger$.pipe(
@@ -164,19 +155,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
               this.notifyAboutTheAdapters(adapters.adapters_added);
             }
             this.store.dispatch(updateAdapters({ adapters }));
-          })
-        );
-      })
-    );
-  });
-
-  getInternetConnection = this.effect(trigger$ => {
-    return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunMqttService.getInternetConnection().pipe(
-          withLatestFrom(this.hasInternetConnection$),
-          tap(([{ connection }]) => {
-            this.updateHasInternetConnection(connection);
           })
         );
       })
@@ -250,7 +228,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,
       isStatusLoaded: false,
       systemStatus: null,
-      hasInternetConnection: null,
     });
   }
 }

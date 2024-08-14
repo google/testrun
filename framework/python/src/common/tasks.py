@@ -25,6 +25,7 @@ from common import logger
 # Check adapters period seconds
 # Check adapters period seconds
 CHECK_NETWORK_ADAPTERS_PERIOD = 5
+CHECK_INTERNET_PERIOD = 2
 INTERNET_CONNECTION_TOPIC = 'events/internet'
 NETWORK_ADAPTERS_TOPIC = 'events/adapter'
 
@@ -44,15 +45,7 @@ class PeriodicTasks:
     # Prevent scheduler warnings
     self._scheduler._logger.setLevel(logging.ERROR)
 
-  @asynccontextmanager
-  async def start(self, app: FastAPI):  # pylint: disable=unused-argument
-    """Start background tasks
-
-    Args:
-        app (FastAPI): app instance
-    """
-    # Job that checks for changes in network adapters
-    self._scheduler.add_job(
+    self.adapters_checker_job = self._scheduler.add_job(
         func=self._testrun.get_net_orc().network_adapters_checker,
         kwargs={
                 'mqtt_client': self._mqtt_client,
@@ -61,14 +54,25 @@ class PeriodicTasks:
         trigger='interval',
         seconds=CHECK_NETWORK_ADAPTERS_PERIOD,
     )
-    self._scheduler.add_job(
-        func=self._testrun.get_net_orc().internet_conn_checker,
-        kwargs={
-                'mqtt_client': self._mqtt_client,
-                'topic': INTERNET_CONNECTION_TOPIC
-                },
-        trigger='interval',
-        seconds=CHECK_NETWORK_ADAPTERS_PERIOD,
-    )
+    # add internet connection cheking job only in single-intf mode
+    if 'single_intf' not in self._testrun.get_session().get_runtime_params():
+      self.internet_shecker = self._scheduler.add_job(
+          func=self._testrun.get_net_orc().internet_conn_checker,
+          kwargs={
+                  'mqtt_client': self._mqtt_client,
+                  'topic': INTERNET_CONNECTION_TOPIC
+                  },
+          trigger='interval',
+          seconds=CHECK_INTERNET_PERIOD,
+      )
+
+  @asynccontextmanager
+  async def start(self, app: FastAPI):  # pylint: disable=unused-argument
+    """Start background tasks
+
+    Args:
+        app (FastAPI): app instance
+    """
+    # Job that checks for changes in network adapters
     self._scheduler.start()
     yield

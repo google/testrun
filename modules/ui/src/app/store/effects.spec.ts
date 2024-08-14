@@ -67,7 +67,10 @@ describe('Effects', () => {
       'openSnackBar',
     ]);
   const mockMqttService: jasmine.SpyObj<TestRunMqttService> =
-    jasmine.createSpyObj('mockMqttService', ['getStatus']);
+    jasmine.createSpyObj('mockMqttService', [
+      'getStatus',
+      'getInternetConnection',
+    ]);
 
   beforeEach(() => {
     testRunServiceMock = jasmine.createSpyObj('testRunServiceMock', [
@@ -88,6 +91,9 @@ describe('Effects', () => {
     );
     testRunServiceMock.fetchProfiles.and.returnValue(of([]));
     testRunServiceMock.getHistory.and.returnValue(of([]));
+    mockMqttService.getInternetConnection.and.returnValue(
+      of({ connection: false })
+    );
 
     mockMqttService.getStatus.and.returnValue(
       of(MOCK_PROGRESS_DATA_IN_PROGRESS)
@@ -443,6 +449,12 @@ describe('Effects', () => {
 
           expect(notificationServiceMock.dismissWithTimout).toHaveBeenCalled();
           done();
+        });
+      });
+
+      it('should call fetchInternetConnection for status "in progress"', () => {
+        effects.onFetchSystemStatusSuccess$.subscribe(() => {
+          expect(mockMqttService.getInternetConnection).toHaveBeenCalled();
         });
       });
     });

@@ -51,17 +51,20 @@ import {
   setStatus,
   setTestrunStatus,
   stopInterval,
+  updateInternetConnection,
 } from './actions';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { NotificationService } from '../services/notification.service';
 import { Profile } from '../model/profile';
 import { TestRunMqttService } from '../services/test-run-mqtt.service';
+import { InternetConnection } from '../model/topic';
 
 const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
 @Injectable()
 export class AppEffects {
   private statusSubscription: Subscription | undefined;
+  private internetSubscription: Subscription | undefined;
   private destroyWaitDeviceInterval$: Subject<boolean> = new Subject<boolean>();
 
   checkInterfacesInConfig$ = createEffect(() =>
@@ -208,6 +211,7 @@ export class AppEffects {
         ofType(AppActions.stopInterval),
         tap(() => {
           this.statusSubscription?.unsubscribe();
+          this.internetSubscription?.unsubscribe();
         })
       );
     },
@@ -221,6 +225,7 @@ export class AppEffects {
         tap(({ systemStatus }) => {
           if (this.testrunService.testrunInProgress(systemStatus.status)) {
             this.pullingSystemStatusData();
+            this.fetchInternetConnection();
           } else if (
             !this.testrunService.testrunInProgress(systemStatus.status)
           ) {
@@ -354,6 +359,23 @@ export class AppEffects {
         .getStatus()
         .subscribe(systemStatus => {
           this.store.dispatch(fetchSystemStatusSuccess({ systemStatus }));
+        });
+    }
+  }
+
+  private fetchInternetConnection() {
+    if (
+      this.internetSubscription === undefined ||
+      this.internetSubscription?.closed
+    ) {
+      this.internetSubscription = this.testrunMqttService
+        .getInternetConnection()
+        .subscribe((internetConnection: InternetConnection) => {
+          this.store.dispatch(
+            updateInternetConnection({
+              internetConnection: internetConnection.connection,
+            })
+          );
         });
     }
   }
