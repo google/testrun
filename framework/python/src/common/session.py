@@ -414,6 +414,10 @@ class TestrunSession():
           'An error occurred whilst loading the risk assessment format')
       LOGGER.debug(e)
 
+      # If the format JSON fails to load, skip loading profiles
+      LOGGER.error('Profiles will not be loaded')
+      return
+
     profile_format_array = []
 
     # Remove internal properties
