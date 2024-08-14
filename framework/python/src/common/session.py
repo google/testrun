@@ -370,6 +370,7 @@ class TestrunSession():
   def set_test_result_error(self, result):
     """Set test result error"""
     result.result = 'Error'
+    result.recommendations = None
     self._results.append(result)
 
   def add_module_report(self, module_report):
