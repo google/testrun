@@ -20,7 +20,7 @@ import os
 from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
-from common.config import TestrunStatuses, TestResults
+from common.statuses import TestrunStatus, TestResult
 from net_orc.ip_control import IPControl
 
 # Certificate dependencies
@@ -53,7 +53,7 @@ def session_tracker(method):
 
     result = method(self, *args, **kwargs)
 
-    if self.get_status() != TestrunStatuses.IDLE:
+    if self.get_status() != TestrunStatus.IDLE:
       self.get_mqtt_client().send_message(
                                         STATUS_TOPIC,
                                         jsonable_encoder(self.to_json())
@@ -81,7 +81,7 @@ class TestrunSession():
   def __init__(self, root_dir):
     self._root_dir = root_dir
 
-    self._status = TestrunStatuses.IDLE
+    self._status = TestrunStatus.IDLE
 
     # Target test device
     self._device = None
@@ -145,7 +145,7 @@ class TestrunSession():
 
   def start(self):
     self.reset()
-    self._status = TestrunStatuses.WAITING_FOR_DEVICE
+    self._status = TestrunStatus.WAITING_FOR_DEVICE
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -155,14 +155,14 @@ class TestrunSession():
     return self._finished
 
   def stop(self):
-    self.set_status(TestrunStatuses.STOPPING)
+    self.set_status(TestrunStatus.STOPPING)
     self.finish()
 
   def finish(self):
     # Set any in progress test results to Error
     for test_result in self._results:
-      if test_result.result == TestResults.IN_PROGRESS:
-        test_result.result = TestResults.ERROR
+      if test_result.result == TestResult.IN_PROGRESS:
+        test_result.result = TestResult.ERROR
 
     self._finished = datetime.datetime.now()
 
@@ -369,7 +369,7 @@ class TestrunSession():
 
   def set_test_result_error(self, result):
     """Set test result error"""
-    result.result = TestResults.ERROR
+    result.result = TestResult.ERROR
     self._results.append(result)
 
   def add_module_report(self, module_report):
@@ -596,7 +596,7 @@ class TestrunSession():
       return False
 
   def reset(self):
-    self.set_status(TestrunStatuses.IDLE)
+    self.set_status(TestrunStatus.IDLE)
     self.set_target_device(None)
     self._report_url = None
     self._total_tests = 0

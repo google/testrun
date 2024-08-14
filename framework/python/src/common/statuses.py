@@ -14,7 +14,7 @@
 """Testrun config"""
 
 
-class TestrunStatuses:
+class TestrunStatus:
   IDLE = "Idle"
   WAITING_FOR_DEVICE = "Waiting for Device"
   MONITORING = "Monitoring"
@@ -25,7 +25,7 @@ class TestrunStatuses:
   STOPPING = "Stopping"
 
 
-class TestResults:
+class TestResult:
   IN_PROGRESS = "In Progress"
   COMPLIANT =  "Compliant"
   NON_COMPLIANT = "Non-Compliant"

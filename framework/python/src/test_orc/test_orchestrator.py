@@ -23,7 +23,7 @@ from datetime import datetime
 from docker.types import Mount
 from common import logger, util
 from common.testreport import TestReport
-from common.config import TestrunStatuses, TestResults
+from common.statuses import TestrunStatus, TestResult
 from test_orc.module import TestModule
 from test_orc.test_case import TestCase
 import threading
@@ -85,7 +85,7 @@ class TestOrchestrator:
     """Iterates through each test module and starts the container."""
 
     # Do not start test modules if status is not in progress, e.g. Stopping
-    if self.get_session().get_status() != TestrunStatuses.IN_PROGRESS:
+    if self.get_session().get_status() != TestrunStatus.IN_PROGRESS:
       return
 
     device = self._session.get_target_device()
@@ -110,7 +110,7 @@ class TestOrchestrator:
         test_copy = copy.deepcopy(test)
 
         # Set result to Not Started
-        test_copy.result = TestResults.NOT_STARTED
+        test_copy.result = TestResult.NOT_STARTED
 
         # We don't want steps to resolve for not started tests
         if hasattr(test_copy, "recommendations"):
@@ -136,8 +136,8 @@ class TestOrchestrator:
     self._session.finish()
 
     # Do not carry on (generating a report) if Testrun has been stopped
-    if self.get_session().get_status() != TestrunStatuses.IN_PROGRESS:
-      return TestrunStatuses.CANCELLED
+    if self.get_session().get_status() != TestrunStatus.IN_PROGRESS:
+      return TestrunStatus.CANCELLED
 
     report = TestReport()
     report.from_json(self._generate_report())
@@ -204,16 +204,16 @@ class TestOrchestrator:
     return report
 
   def _calculate_result(self):
-    result = TestResults.COMPLIANT
+    result = TestResult.COMPLIANT
     for test_result in self._session.get_test_results():
       # Check Required tests
       if (test_result.required_result.lower() == "required"
           and test_result.result.lower() != "compliant"):
-        result = TestResults.NON_COMPLIANT
+        result = TestResult.NON_COMPLIANT
       # Check Required if Applicable tests
       elif (test_result.required_result.lower() == "required if applicable"
             and test_result.result.lower() == "non-compliant"):
-        result = TestResults.NON_COMPLIANT
+        result = TestResult.NON_COMPLIANT
     return result
 
   def _cleanup_old_test_results(self, device):
@@ -380,7 +380,7 @@ class TestOrchestrator:
     """Start the test container and extract the results."""
 
     # Check that Testrun is not stopping
-    if self.get_session().get_status() != TestrunStatuses.IN_PROGRESS:
+    if self.get_session().get_status() != TestrunStatus.IN_PROGRESS:
       return
 
     device = self._session.get_target_device()
@@ -394,11 +394,11 @@ class TestOrchestrator:
       if not self._net_orc.is_device_connected():
         LOGGER.error("Device was disconnected")
         self._set_test_modules_error(current_test)
-        self._session.set_status(TestrunStatuses.CANCELLED)
+        self._session.set_status(TestrunStatus.CANCELLED)
         return
 
       test_copy = copy.deepcopy(test)
-      test_copy.result = TestResults.IN_PROGRESS
+      test_copy.result = TestResult.IN_PROGRESS
 
       # We don't want steps to resolve for in progress tests
       if hasattr(test_copy, "recommendations"):
@@ -494,7 +494,7 @@ class TestOrchestrator:
     log_thread.start()
 
     while (status == "running"
-           and self._session.get_status() == TestrunStatuses.IN_PROGRESS):
+           and self._session.get_status() == TestrunStatus.IN_PROGRESS):
       if time.time() > test_module_timeout:
         LOGGER.error("Module timeout exceeded, killing module: " + module.name)
         self._stop_module(module=module, kill=True)
@@ -507,7 +507,7 @@ class TestOrchestrator:
         f.write(line + "\n")
 
     # Check that Testrun has not been stopped whilst this module was running
-    if self.get_session().get_status() == TestrunStatuses.STOPPING:
+    if self.get_session().get_status() == TestrunStatus.STOPPING:
       # Discard results for this module
       LOGGER.info(f"Test module {module.name} has forcefully quit")
       return
@@ -535,11 +535,11 @@ class TestOrchestrator:
             result=test_result["result"])
 
           # Any informational test should always report informational
-          if test_case.required_result == TestResults.INFORMATIONAL:
-            test_case.result = TestResults.INFORMATIONAL
+          if test_case.required_result == TestResult.INFORMATIONAL:
+            test_case.result = TestResult.INFORMATIONAL
 
           # Add steps to resolve if test is non-compliant
-          if (test_case.result == TestResults.NON_COMPLIANT and
+          if (test_case.result == TestResult.NON_COMPLIANT and
               "recommendations" in test_result):
             test_case.recommendations = test_result["recommendations"]
           else:

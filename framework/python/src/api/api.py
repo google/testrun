@@ -28,7 +28,7 @@ from urllib.parse import urlparse
 
 from common import logger, tasks
 from common.device import Device
-from common.config import TestrunStatuses
+from common.statuses import TestrunStatus
 
 LOGGER = logger.get_logger("api")
 
@@ -205,9 +205,9 @@ class Api:
 
     # Check Testrun is not already running
     if self._test_run.get_session().get_status() in [
-        TestrunStatuses.IN_PROGRESS,
-        TestrunStatuses.WAITING_FOR_DEVICE,
-        TestrunStatuses.MONITORING
+        TestrunStatus.IN_PROGRESS,
+        TestrunStatus.WAITING_FOR_DEVICE,
+        TestrunStatus.MONITORING
     ]:
       LOGGER.debug("Testrun is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
@@ -272,9 +272,9 @@ class Api:
 
     # Check if Testrun is running
     if (self._test_run.get_session().get_status()
-        not in [TestrunStatuses.IN_PROGRESS,
-                TestrunStatuses.WAITING_FOR_DEVICE,
-                TestrunStatuses.MONITORING]):
+        not in [TestrunStatus.IN_PROGRESS,
+                TestrunStatus.WAITING_FOR_DEVICE,
+                TestrunStatus.MONITORING]):
       response.status_code = 404
       return self._generate_msg(False, "Testrun is not currently running")
 
@@ -291,10 +291,10 @@ class Api:
 
     # Check that Testrun is not currently running
     if (self._session.get_status()
-        not in [TestrunStatuses.CANCELLED,
-                TestrunStatuses.COMPLIANT,
-                TestrunStatuses.NON_COMPLIANT,
-                TestrunStatuses.IDLE
+        not in [TestrunStatus.CANCELLED,
+                TestrunStatus.COMPLIANT,
+                TestrunStatus.NON_COMPLIANT,
+                TestrunStatus.IDLE
                 ]):
       LOGGER.debug("Unable to shutdown Testrun as Testrun is in progress")
       response.status_code = 400
@@ -439,9 +439,9 @@ class Api:
       # Check that Testrun is not currently running against this device
       if (self._session.get_target_device() == device
           and self._session.get_status()
-          not in [TestrunStatuses.CANCELLED,
-                  TestrunStatuses.COMPLIANT,
-                  TestrunStatuses.NON_COMPLIANT
+          not in [TestrunStatus.CANCELLED,
+                  TestrunStatus.COMPLIANT,
+                  TestrunStatus.NON_COMPLIANT
                   ]):
         response.status_code = 403
         return self._generate_msg(
@@ -544,9 +544,9 @@ class Api:
 
       if (self._session.get_target_device() == device
           and self._session.get_status()
-          not in [TestrunStatuses.CANCELLED,
-                  TestrunStatuses.COMPLIANT,
-                  TestrunStatuses.NON_COMPLIANT
+          not in [TestrunStatus.CANCELLED,
+                  TestrunStatus.COMPLIANT,
+                  TestrunStatus.NON_COMPLIANT
                   ]):
         response.status_code = 403
         return self._generate_msg(

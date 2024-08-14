@@ -17,7 +17,7 @@ from datetime import datetime
 from weasyprint import HTML
 from io import BytesIO
 from common import util
-from common.config import TestResults, TestrunStatuses
+from common.statuses import TestResult, TestrunStatus
 import base64
 import os
 from test_orc.test_case import TestCase
@@ -44,7 +44,7 @@ class TestReport():
   """Represents a previous Testrun report."""
 
   def __init__(self,
-               status=TestrunStatuses.NON_COMPLIANT,
+               status=TestrunStatus.NON_COMPLIANT,
                started=None,
                finished=None,
                total_tests=0):
@@ -431,7 +431,7 @@ class TestReport():
 
     successful_tests = 0
     for test in json_data['tests']['results']:
-      if test['result'] != TestResults.ERROR:
+      if test['result'] != TestResult.ERROR:
         successful_tests += 1
 
     result_list = f'''
@@ -458,15 +458,15 @@ class TestReport():
     return result_list
 
   def generate_result(self, result):
-    if result['result'] == TestResults.NON_COMPLIANT:
+    if result['result'] == TestResult.NON_COMPLIANT:
       result_class = 'result-test-result-non-compliant'
-    elif result['result'] == TestResults.COMPLIANT:
+    elif result['result'] == TestResult.COMPLIANT:
       result_class = 'result-test-result-compliant'
-    elif result['result'] == TestResults.ERROR:
+    elif result['result'] == TestResult.ERROR:
       result_class = 'result-test-result-error'
-    elif result['result'] == TestResults.FEATURE_NOT_DETECTED:
+    elif result['result'] == TestResult.FEATURE_NOT_DETECTED:
       result_class = 'result-test-result-feature-not-detected'
-    elif result['result'] == TestResults.INFORMATIONAL:
+    elif result['result'] == TestResult.INFORMATIONAL:
       result_class = 'result-test-result-informational'
     else:
       result_class = 'result-test-result-skipped'
@@ -616,7 +616,7 @@ class TestReport():
     return label
 
   def generate_result_summary(self, json_data):
-    if json_data['status'] == TestResults.COMPLIANT:
+    if json_data['status'] == TestResult.COMPLIANT:
       result_summary = '''<div class ="summary-color-box
       summary-box-compliant">'''
     else:
