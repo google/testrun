@@ -110,7 +110,7 @@ class TestOrchestrator:
         test_copy = copy.deepcopy(test)
 
         # Set result to Not Started
-        test_copy.result = "Not Started"
+        test_copy.result = TestResults.NOT_STARTED
 
         # We don't want steps to resolve for not started tests
         if hasattr(test_copy, "recommendations"):

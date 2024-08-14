@@ -24,6 +24,7 @@ class TestrunStatuses:
   NON_COMPLIANT = "Non-Compliant"
   STOPPING = "Stopping"
 
+
 class TestResults:
   IN_PROGRESS = "In Progress"
   COMPLIANT =  "Compliant"
@@ -31,5 +32,8 @@ class TestResults:
   ERROR = "Error"
   FEATURE_NOT_DETECTED = "Feature Not Detected"
   INFORMATIONAL = "Informational"
+  NOT_STARTED = "Not Started"
+  DISABLED = "Disabled"
+
 
 

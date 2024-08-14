@@ -155,7 +155,7 @@ class TestrunSession():
     return self._finished
 
   def stop(self):
-    self.set_status('Stopping')
+    self.set_status(TestrunStatuses.STOPPING)
     self.finish()
 
   def finish(self):
