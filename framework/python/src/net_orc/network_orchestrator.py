@@ -805,21 +805,18 @@ class NetworkOrchestrator:
   def internet_conn_checker(self, mqtt_client: mqtt.MQTT, topic: str):
     """Checks internet connection and sends a status to frontend"""
 
-    # Default message
-    message = {'connection': False}
-
-    # Only check if Testrun is running
-    if self.get_session().get_status() not in [
-      'Waiting for Device', 'Monitoring', 'In Progress'
-    ]:
-      message['connection'] = None
-
-    # Only run if single intf mode not used
-    elif 'single_intf' not in self._session.get_runtime_params():
+    # Only check if Testrun is running not in single-intf mode
+    if (self.get_session().get_status() in [
+                                          'Waiting for Device',
+                                          'Monitoring',
+                                          'In Progress'
+                                          ]):
+      # Default message
+      message = {'connection': False}
       iface = self._session.get_internet_interface()
 
       # Check that an internet intf has been selected
-      if iface and iface in self._session.get_ifaces():
+      if iface and iface in self._ip_ctrl.get_sys_interfaces():
 
         # Ping google.com from gateway container
         internet_connection = self._ip_ctrl.ping_via_gateway(
@@ -828,8 +825,8 @@ class NetworkOrchestrator:
         if internet_connection:
           message['connection'] = True
 
-    # Broadcast via MQTT client
-    mqtt_client.send_message(topic, message)
+      # Broadcast via MQTT client
+      mqtt_client.send_message(topic, message)
 
 class NetworkModule:
   """Define all the properties of a Network Module"""
