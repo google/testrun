@@ -122,14 +122,16 @@ class TestModule:
           result = TestResult.ERROR, 'This test could not be found'
       else:
         LOGGER.debug(f'Test {test["name"]} is disabled')
-        result = TestResult.DISABLED, 'This test did not run because it is disabled'
+        result = (TestResult.DISABLED,
+                  'This test did not run because it is disabled')
 
       # Check if the test module has returned a result
       if result is not None:
 
         # Compliant or non-compliant as a boolean only
         if isinstance(result, bool):
-          test['result'] = TestResult.COMPLIANT if result else TestResult.NON_COMPLIANT
+          test['result'] = (TestResult.COMPLIANT
+                            if result else TestResult.NON_COMPLIANT)
           test['description'] = 'No description was provided for this test'
         else:
           # Error result
@@ -142,7 +144,8 @@ class TestModule:
 
           # Compliant / Non-Compliant result
           elif isinstance(result[0], bool):
-            test['result'] = TestResult.COMPLIANT if result[0] else TestResult.NON_COMPLIANT
+            test['result'] = (TestResult.COMPLIANT
+                              if result[0] else TestResult.NON_COMPLIANT)
           # Result may be a string, e.g Error, Feature Not Detected
           elif isinstance(result[0], str):
             test['result'] = result[0]
