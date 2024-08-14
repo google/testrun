@@ -487,6 +487,19 @@ class Api:
         device_json.get(DEVICE_MODEL_KEY)
       )
 
+      # Check if device folder exists
+      device_folder = os.path.join(self._test_run.get_root_dir(),
+                                     DEVICES_PATH,
+                                     device_json.get(DEVICE_MANUFACTURER_KEY) +
+                                     " " +
+                                     device_json.get(DEVICE_MODEL_KEY))
+
+      if os.path.exists(device_folder):
+        response.status_code = status.HTTP_409_CONFLICT
+        return self._generate_msg(
+            False, "A folder with that name already exists, " \
+              "please rename the device or folder")
+
       if device is None:
 
         # Create new device
