@@ -205,7 +205,10 @@ class TestOrchestrator:
     for test_result in self._session.get_test_results():
       # Check Required tests
       if (test_result.required_result.lower() == "required"
-          and test_result.result.lower() != "compliant"):
+          and test_result.result.lower() not in [
+            "compliant",
+            "error"
+          ]):
         result = "Non-Compliant"
       # Check Required if Applicable tests
       elif (test_result.required_result.lower() == "required if applicable"
@@ -415,12 +418,12 @@ class TestOrchestrator:
       device_monitor_capture = os.path.join(device_test_dir, "monitor.pcap")
       util.run_command(f"chown -R {self._host_user} {device_monitor_capture}")
 
-      # Resolve the main docker interface (docker0) for host interraction
+      # Resolve the main docker interface (docker0) for host interaction
       # Can't use device or internet iface since these are not in a stable
       # state for this type of communication during testing but docker0 has
       # to exist and should always be available
       external_ip = self._net_orc.get_ip_address("docker0")
-      LOGGER.debug(f"Using external IP:{external_ip}")
+      LOGGER.debug(f"Using external IP: {external_ip}")
       extra_hosts = {
           "external.localhost": external_ip
       } if external_ip is not None else {}

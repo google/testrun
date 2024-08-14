@@ -799,7 +799,7 @@ class NetworkOrchestrator:
     try:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
-        mgtt_client.send_message(topic, adapters)
+        mqtt_client.send_message(topic, adapters)
     except Exception: # pylint: disable=W0718
       LOGGER.error(traceback.format_exc())
 
