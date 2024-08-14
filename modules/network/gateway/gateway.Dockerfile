@@ -19,7 +19,7 @@ ARG MODULE_NAME=gateway
 ARG MODULE_DIR=modules/network/$MODULE_NAME
 
 # Install required packages
-RUN apt-get update && apt-get install -y iptables isc-dhcp-client fping
+RUN apt-get update && apt-get install -y iptables isc-dhcp-client
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf
