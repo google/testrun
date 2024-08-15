@@ -25,8 +25,9 @@ DEFAULT_NETWORK = 'bridge'
 class Module:
   """Represents the base module."""
 
-  def __init__(self, module_config_file, session):
+  def __init__(self, module_config_file, session, extra_hosts={}):
     self._session = session
+    self.extra_hosts = extra_hosts
 
     # Read the config file into a json object
     with open(module_config_file, encoding='UTF-8') as config_file:
@@ -134,7 +135,8 @@ class Module:
           privileged=True,
           detach=True,
           mounts=self.get_mounts(),
-          environment=self.get_environment(device))
+          environment=self.get_environment(device),
+          extra_hosts=self.extra_hosts)
     except docker.errors.ContainerError as error:
       self.logger.error('Container run error')
       self.logger.error(error)

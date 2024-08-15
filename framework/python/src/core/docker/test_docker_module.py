@@ -26,8 +26,8 @@ DEFAULT_TIMEOUT = 60  # time in seconds
 class TestModule(Module):
   """Represents a test module."""
 
-  def __init__(self, module_config_file, session):
-    super().__init__(module_config_file=module_config_file, session=session)
+  def __init__(self, module_config_file, session, extra_hosts):
+    super().__init__(module_config_file=module_config_file, session=session, extra_hosts=extra_hosts)
 
     # Set IP Index for all test modules
     self.ip_index = 9
@@ -96,7 +96,8 @@ class TestModule(Module):
         'IPV4_ADDR': device.ip_addr,
         'DEVICE_TEST_MODULES': json.dumps(device.test_modules),
         'IPV4_SUBNET': self.get_session().get_ipv4_subnet(),
-        'IPV6_SUBNET': self.get_session().get_ipv6_subnet()
+        'IPV6_SUBNET': self.get_session().get_ipv6_subnet(),
+        'DEV_IFACE': self.get_session().get_device_interface(),
     }
     return environment
 
