@@ -20,16 +20,15 @@ from scapy.all import sniff, wrpcap, BOOTP, AsyncSniffer
 import shutil
 import subprocess
 import sys
-import docker
 import time
 import traceback
-from docker.types import Mount
 from common import logger, util, mqtt
 from net_orc.listener import Listener
 from net_orc.network_event import NetworkEvent
 from net_orc.network_validator import NetworkValidator
 from net_orc.ovs_control import OVSControl
 from net_orc.ip_control import IPControl
+from core.docker.network_module import NetworkModule
 
 LOGGER = logger.get_logger('net_orc')
 RUNTIME_DIR = 'runtime'
@@ -66,6 +65,10 @@ class NetworkOrchestrator:
     self.network_config = NetworkConfig()
     self._ovs = OVSControl(self._session)
     self._ip_ctrl = IPControl()
+
+    # Load subnet information into the session
+    self._session.set_subnets(self.network_config.ipv4_network,
+                              self.network_config.ipv6_network)
 
   def start(self):
     """Start the network orchestrator."""
@@ -191,7 +194,7 @@ class NetworkOrchestrator:
     test_dir = os.path.join(RUNTIME_DIR, TEST_DIR)
     device_tests = os.listdir(test_dir)
     for device_test in device_tests:
-      device_test_path = os.path.join(RUNTIME_DIR,TEST_DIR,device_test)
+      device_test_path = os.path.join(RUNTIME_DIR, TEST_DIR, device_test)
       if os.path.isdir(device_test_path):
         shutil.rmtree(device_test_path, ignore_errors=True)
 
@@ -333,26 +336,6 @@ class NetworkOrchestrator:
     success = util.run_command(cmd, output=False)
     return success
 
-  def _create_private_net(self):
-    client = docker.from_env()
-    try:
-      network = client.networks.get(PRIVATE_DOCKER_NET)
-      network.remove()
-    except docker.errors.NotFound:
-      pass
-
-    # TODO: These should be made into variables
-    ipam_pool = docker.types.IPAMPool(subnet='100.100.0.0/16',
-                                      iprange='100.100.100.0/24')
-
-    ipam_config = docker.types.IPAMConfig(pool_configs=[ipam_pool])
-
-    client.networks.create(PRIVATE_DOCKER_NET,
-                           ipam=ipam_config,
-                           internal=True,
-                           check_duplicate=True,
-                           driver='macvlan')
-
   def _ci_pre_network_create(self):
     """ Stores network properties to restore network after
         network creation and flushes internet interface
@@ -446,72 +429,24 @@ class NetworkOrchestrator:
     LOGGER.info(loaded_modules)
 
   def _load_network_module(self, module_dir):
+    """Import module configuration from module_config.json."""
 
-    net_modules_dir = os.path.join(self._path, NETWORK_MODULES_DIR)
+    # Make sure we only load each module once since some modules will
+    # depend on the same module
+    if not any(m.dir_name == module_dir for m in self._net_modules):
+      LOGGER.debug(f'Loading network module {module_dir}')
 
-    net_module = NetworkModule()
+      modules_dir = os.path.join(self._path, NETWORK_MODULES_DIR)
 
-    # Load module information
-    with open(os.path.join(self._path, net_modules_dir, module_dir,
-                           NETWORK_MODULE_METADATA),
-              'r',
-              encoding='UTF-8') as module_file_open:
-      net_module_json = json.load(module_file_open)
+      module_conf_file = os.path.join(self._path, modules_dir, module_dir,
+                                      NETWORK_MODULE_METADATA)
 
-    net_module.name = net_module_json['config']['meta']['name']
-    net_module.display_name = net_module_json['config']['meta']['display_name']
-    net_module.description = net_module_json['config']['meta']['description']
-    net_module.dir = os.path.join(self._path, net_modules_dir, module_dir)
-    net_module.dir_name = module_dir
-    net_module.build_file = module_dir + '.Dockerfile'
-    net_module.container_name = 'tr-ct-' + net_module.dir_name
-    net_module.image_name = 'test-run/' + net_module.dir_name
+      module = NetworkModule(module_conf_file, self._session)
+      if module.depends_on is not None:
+        self._load_network_module(module.depends_on)
+      self._net_modules.append(module)
 
-    # Attach folder mounts to network module
-    if 'docker' in net_module_json['config']:
-
-      if 'mounts' in net_module_json['config']['docker']:
-        for mount_point in net_module_json['config']['docker']['mounts']:
-          net_module.mounts.append(
-              Mount(target=mount_point['target'],
-                    source=os.path.join(os.getcwd(), mount_point['source']),
-                    type='bind'))
-
-      if 'depends_on' in net_module_json['config']['docker']:
-        depends_on_module = net_module_json['config']['docker']['depends_on']
-        if self._get_network_module(depends_on_module) is None:
-          self._load_network_module(depends_on_module)
-
-    # Determine if this is a container or just an image/template
-    if 'enable_container' in net_module_json['config']['docker']:
-      net_module.enable_container = net_module_json['config']['docker'][
-          'enable_container']
-
-    # Determine if this is a template
-    if 'template' in net_module_json['config']['docker']:
-      net_module.template = net_module_json['config']['docker']['template']
-
-    # Load network service networking configuration
-    if net_module.enable_container:
-
-      net_module.net_config.enable_wan = net_module_json['config']['network'][
-          'enable_wan']
-      net_module.net_config.ip_index = net_module_json['config']['network'][
-          'ip_index']
-
-      net_module.net_config.host = False if not 'host' in net_module_json[
-          'config']['network'] else net_module_json['config']['network']['host']
-
-      net_module.net_config.ipv4_address = self.network_config.ipv4_network[
-          net_module.net_config.ip_index]
-      net_module.net_config.ipv4_network = self.network_config.ipv4_network
-
-      net_module.net_config.ipv6_address = self.network_config.ipv6_network[
-          net_module.net_config.ip_index]
-      net_module.net_config.ipv6_network = self.network_config.ipv6_network
-
-    self._net_modules.append(net_module)
-    return net_module
+      return module
 
   def build_network_modules(self):
     LOGGER.info('Building network modules...')
@@ -521,12 +456,7 @@ class NetworkOrchestrator:
 
   def _build_module(self, net_module):
     LOGGER.debug('Building network module ' + net_module.dir_name)
-    client = docker.from_env()
-    client.images.build(dockerfile=os.path.join(net_module.dir,
-                                                net_module.build_file),
-                        path=self._path,
-                        forcerm=True,
-                        tag='test-run/' + net_module.dir_name)
+    net_module.build()
 
   def _get_network_module(self, name):
     for net_module in self._net_modules:
@@ -542,57 +472,13 @@ class NetworkOrchestrator:
     LOGGER.debug(f"""Network: {network}, image name: {net_module.image_name},
                      container name: {net_module.container_name}""")
 
-    try:
-      client = docker.from_env()
-      net_module.container = client.containers.run(
-          net_module.image_name,
-          auto_remove=True,
-          cap_add=['NET_ADMIN'],
-          name=net_module.container_name,
-          hostname=net_module.container_name,
-          network_mode='none',
-          privileged=True,
-          detach=True,
-          mounts=net_module.mounts,
-          environment={
-              'TZ': self.get_session().get_timezone(),
-              'HOST_USER': util.get_host_user()
-          })
-    except docker.errors.ContainerError as error:
-      LOGGER.error('Container run error')
-      LOGGER.error(error)
-
-    if network != 'host':
+    net_module.start()
+    if net_module.get_network() != 'host':
       self._attach_service_to_network(net_module)
 
   def _stop_service_module(self, net_module, kill=False):
     LOGGER.debug('Stopping network container ' + net_module.container_name)
-    try:
-      container = self._get_service_container(net_module)
-      if container is not None:
-        if kill:
-          LOGGER.debug('Killing container: ' + net_module.container_name)
-          container.kill()
-        else:
-          LOGGER.debug('Stopping container: ' + net_module.container_name)
-          container.stop()
-        LOGGER.debug('Container stopped: ' + net_module.container_name)
-    except Exception as error:  # pylint: disable=W0703
-      LOGGER.error('Container stop error')
-      LOGGER.error(error)
-
-  def _get_service_container(self, net_module):
-    LOGGER.debug('Resolving service container: ' + net_module.container_name)
-    container = None
-    try:
-      client = docker.from_env()
-      container = client.containers.get(net_module.container_name)
-    except docker.errors.NotFound:
-      LOGGER.debug('Container ' + net_module.container_name + ' not found')
-    except Exception as e:  # pylint: disable=W0703
-      LOGGER.error('Failed to resolve container')
-      LOGGER.error(e)
-    return container
+    net_module.stop(kill=kill)
 
   def stop_networking_services(self, kill=False):
     LOGGER.info('Stopping network services')
@@ -757,13 +643,10 @@ class NetworkOrchestrator:
     if self.get_listener() is not None and self.get_listener().is_running():
       self.get_listener().stop_listener()
 
-    client = docker.from_env()
-
     # Stop all network containers if still running
     for net_module in self._net_modules:
       try:
-        container = client.containers.get('tr-ct-' + net_module.dir_name)
-        container.kill()
+        net_module.stop(kill=True)
       except Exception:  # pylint: disable=W0703
         continue
 
@@ -793,7 +676,7 @@ class NetworkOrchestrator:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
         mqtt_client.send_message(topic, adapters)
-    except Exception:
+    except Exception:  # pylint: disable=W0703
       LOGGER.error(traceback.format_exc())
 
   def is_device_connected(self):
@@ -805,75 +688,30 @@ class NetworkOrchestrator:
   def internet_conn_checker(self, mqtt_client: mqtt.MQTT, topic: str):
     """Checks internet connection and sends a status to frontend"""
 
-    # Only check if Testrun is running not in single-intf mode
-    if (self.get_session().get_status() in [
-                                          'Waiting for Device',
-                                          'Monitoring',
-                                          'In Progress'
-                                          ]):
-      # Default message
-      message = {'connection': False}
+    # Default message
+    message = {'connection': False}
+
+    # Only check if Testrun is running
+    if self.get_session().get_status() not in [
+        'Waiting for Device', 'Monitoring', 'In Progress'
+    ]:
+      message['connection'] = None
+
+    # Only run if single intf mode not used
+    elif 'single_intf' not in self._session.get_runtime_params():
       iface = self._session.get_internet_interface()
 
       # Check that an internet intf has been selected
       if iface and iface in self._ip_ctrl.get_sys_interfaces():
 
         # Ping google.com from gateway container
-        internet_connection = self._ip_ctrl.ping_via_gateway(
-          'google.com')
+        internet_connection = self._ip_ctrl.ping_via_gateway('google.com')
 
         if internet_connection:
           message['connection'] = True
 
       # Broadcast via MQTT client
       mqtt_client.send_message(topic, message)
-
-class NetworkModule:
-  """Define all the properties of a Network Module"""
-
-  def __init__(self):
-    self.name = None
-    self.display_name = None
-    self.description = None
-
-    self.container = None
-    self.container_name = None
-    self.image_name = None
-    self.template = False
-
-    # Absolute path
-    self.dir = None
-    self.dir_name = None
-    self.build_file = None
-    self.mounts = []
-
-    self.enable_container = True
-
-    self.net_config = NetworkModuleNetConfig()
-
-
-class NetworkModuleNetConfig:
-  """Define all the properties of the network config
-  for a network module"""
-
-  def __init__(self):
-
-    self.enable_wan = False
-
-    self.ip_index = 0
-    self.ipv4_address = None
-    self.ipv4_network = None
-    self.ipv6_address = None
-    self.ipv6_network = None
-
-    self.host = False
-
-  def get_ipv4_addr_with_prefix(self):
-    return format(self.ipv4_address) + '/' + str(self.ipv4_network.prefixlen)
-
-  def get_ipv6_addr_with_prefix(self):
-    return format(self.ipv6_address) + '/' + str(self.ipv6_network.prefixlen)
-
 
 class NetworkConfig:
   """Define all the properties of the network configuration"""
