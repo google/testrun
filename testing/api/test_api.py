@@ -48,6 +48,8 @@ REPORTS_PATH = "testing/api/reports"
 BASELINE_MAC_ADDR = "02:42:aa:00:01:01"
 ALL_MAC_ADDR = "02:42:aa:00:00:01"
 
+TIMESTAMP = "2024-01-01 00:00:00"
+
 def pretty_print(dictionary: dict):
   """ Pretty print dictionary """
   print(json.dumps(dictionary, indent=4))
@@ -102,9 +104,9 @@ def docker_logs(device_name):
 def load_json(file_name, directory):
   """Utility method to load json files' """
   # Construct the base path relative to the main folder
-  base_path = Path(__file__).resolve().parent.parent.parent
+  base_path = os.path.abspath(os.path.join(__file__, "../../.."))
   # Construct the full file path
-  file_path = base_path / directory / file_name
+  file_path = os.path.join(base_path, directory, file_name)
 
   # Open the file in read mode
   with open(file_path, "r", encoding="utf-8") as file:
@@ -359,7 +361,7 @@ def test_get_system_config(testrun): # pylint: disable=W0613
       == api_config["network"]["internet_intf"]
   )
 
-def test_start_testrun_started_successfully(testing_devices, testrun): # pylint: disable=W0613
+def test_start_testrun_success(testing_devices, testrun): # pylint: disable=W0613
   """Test for testrun started successfully """
 
   # Payload with device details
@@ -472,7 +474,7 @@ def test_start_testrun_device_not_found(testing_devices, testrun): # pylint: dis
 
 # Currently not working due to blocking during monitoring period
 @pytest.mark.skip()
-def test_status_in_progress(testing_devices, testrun):  # pylint: disable=W0613
+def test_status_in_progress(testing_devices, testrun): # pylint: disable=W0613
 
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
@@ -689,7 +691,7 @@ def test_system_shutdown(testrun): # pylint: disable=W0613
   # Check if the response status code is 200 (OK)
   assert r.status_code == 200, f"Expected status code 200, got {r.status_code}"
 
-def test_system_shutdown_in_progress(testrun):  # pylint: disable=W0613
+def test_system_shutdown_in_progress(testrun): # pylint: disable=W0613
   """Test system shutdown during an in-progress test"""
   # Payload with device details to start a test
   payload = {
@@ -752,7 +754,7 @@ def create_report_folder(): # pylint: disable=W0613
   def _create_report_folder(device_name, mac_address, timestamp):
 
     # Create the device folder path
-    main_folder = Path(DEVICES_DIRECTORY) / device_name
+    main_folder = os.path.join(DEVICES_DIRECTORY, device_name)
 
     # Remove the ":" from mac address for the folder structure
     mac_address = mac_address.replace(":", "")
@@ -761,19 +763,19 @@ def create_report_folder(): # pylint: disable=W0613
     timestamp = timestamp.replace(" ", "T")
 
     # Create the report folder path
-    report_folder = (main_folder / "reports" / timestamp /
-                      "test" / mac_address)
+    report_folder = os.path.join(main_folder, "reports", timestamp,
+                                 "test", mac_address)
 
     # Ensure the report folder exists
-    report_folder.mkdir(parents=True, exist_ok=True)
+    os.makedirs(report_folder, exist_ok=True)
 
     # Define the source and target paths for the report.json
-    json_source_report_path = Path(REPORTS_PATH) / "report.json"
-    json_target_report_path = report_folder / "report.json"
+    json_source_report_path = os.path.join(REPORTS_PATH, "report.json")
+    json_target_report_path = os.path.join(report_folder, "report.json")
 
      # Define the source and target paths for the report.pdf
-    pdf_source_report_path = Path(REPORTS_PATH) / "report.pdf"
-    pdf_target_report_path = report_folder / "report.pdf"
+    pdf_source_report_path = os.path.join(REPORTS_PATH, "report.pdf")
+    pdf_target_report_path = os.path.join(report_folder, "report.pdf")
 
     # Copy the report.json file from the source to the target location
     shutil.copy(json_source_report_path, json_target_report_path)
@@ -841,20 +843,19 @@ def test_delete_report_success(testrun, empty_devices_dir, # pylint: disable=W06
   # Assign the device name
   mac_address = device[0]["mac_addr"]
 
-  # Assign the timestamp format for the folder structure
-  timestamp = "2024-01-01 00:00:00"
-
   # Create the report directory
-  report_folder = create_report_folder(device_name, mac_address, timestamp)
+  report_folder = create_report_folder(device_name, mac_address, TIMESTAMP)
 
   # Payload
   delete_data = {
     "mac_addr": mac_address,
-    "timestamp": timestamp
+    "timestamp": TIMESTAMP
   }
 
   # Send a DELETE request to remove the report
   r = requests.delete(f"{API}/report", data=json.dumps(delete_data), timeout=5)
+
+  print(f"delete error is: {r.json()}")
 
   # Check if status code is 200 (OK)
   assert r.status_code == 200
@@ -866,7 +867,7 @@ def test_delete_report_success(testrun, empty_devices_dir, # pylint: disable=W06
   assert "success" in response
 
   # Check if report folder has been deleted
-  assert not report_folder.exists()
+  assert not os.path.exists(report_folder)
 
 def test_delete_report_no_payload(testrun, empty_devices_dir, # pylint: disable=W0613
                             add_device, create_report_folder):  # pylint: disable=W0613
@@ -900,11 +901,8 @@ def test_delete_report_invalid_payload(testrun, empty_devices_dir, # pylint: dis
   # Assign the device name
   mac_address = device[0]["mac_addr"]
 
-  # Assign the timestamp format for the folder structure
-  timestamp = "2024-01-01 00:00:00"
-
   # Create the report directory
-  create_report_folder(device_name, mac_address, timestamp)
+  create_report_folder(device_name, mac_address, TIMESTAMP)
 
   # Empty payload
   delete_data = {}
@@ -924,9 +922,9 @@ def test_delete_report_invalid_payload(testrun, empty_devices_dir, # pylint: dis
   # Check if the correct error message returned
   assert "Missing mac address or timestamp" in response["error"]
 
-def test_delete_report_incorrect_timestamp_format(testrun, empty_devices_dir, # pylint: disable=W0613
+def test_delete_report_invalid_timestamp(testrun, empty_devices_dir, # pylint: disable=W0613
                                             add_device, create_report_folder):
-  """Test delete report bad request when timestamp format is incorrect (400)"""
+  """Test delete report bad request when timestamp format is not valid (400)"""
 
   # Load a device using the add_device fixture
   device = add_device()
@@ -938,7 +936,7 @@ def test_delete_report_incorrect_timestamp_format(testrun, empty_devices_dir, # 
   mac_address = device[0]["mac_addr"]
 
   # Assign the incorrect timestamp format
-  timestamp = "2024-01-01 incorrect"
+  timestamp = "2024-01-01 invalid"
 
   # Create the report.json
   create_report_folder(device_name, mac_address, timestamp)
@@ -964,7 +962,7 @@ def test_delete_report_incorrect_timestamp_format(testrun, empty_devices_dir, # 
   # Check if the correct error message returned
   assert "Incorrect timestamp format" in response["error"]
 
-def test_delete_report_no_report(testrun, empty_devices_dir):  # pylint: disable=W0613
+def test_delete_report_no_report(testrun, empty_devices_dir): # pylint: disable=W0613
   """Test delete report when report does not exist (404)"""
 
   # Payload to be deleted for a non existing device
@@ -985,7 +983,7 @@ def test_delete_report_no_report(testrun, empty_devices_dir):  # pylint: disable
   # Check if "error" in response
   assert "error" in response
 
-def test_delete_report_server_error(testrun, empty_devices_dir,  # pylint: disable=W0613
+def test_delete_report_server_error(testrun, empty_devices_dir, # pylint: disable=W0613
                                       add_device, create_report_folder):
   """Test for delete report causing internal server error (500)"""
 
@@ -999,7 +997,7 @@ def test_delete_report_server_error(testrun, empty_devices_dir,  # pylint: disab
   mac_address = device[0]["mac_addr"]
 
   # Assign the timestamp format for the folder structure
-  timestamp = "2024-01-01 00:00:00"
+  timestamp = TIMESTAMP
 
   # Create the report folder and JSON file
   create_report_folder(device_name, mac_address, timestamp)
@@ -1033,7 +1031,7 @@ def test_delete_report_server_error(testrun, empty_devices_dir,  # pylint: disab
   # Check if the correct error message is returned
   assert "Error occured whilst deleting report" in response["error"]
 
-def test_get_report_success(testrun, empty_devices_dir,  # pylint: disable=W0613
+def test_get_report_success(testrun, empty_devices_dir, # pylint: disable=W0613
                     add_device, create_report_folder):
   """Test get report when report exists (200)"""
 
@@ -1046,8 +1044,8 @@ def test_get_report_success(testrun, empty_devices_dir,  # pylint: disable=W0613
   # Assign the device name
   mac_address = device[0]["mac_addr"]
 
-  # Assign the timestamp format
-  timestamp = "2024-01-01T00:00:00"
+  # Assign the timestamp and change the format
+  timestamp = TIMESTAMP.replace(" ", "T")
 
   # Create the report for the device
   create_report_folder(device_name, mac_address, timestamp)
@@ -1061,11 +1059,11 @@ def test_get_report_success(testrun, empty_devices_dir,  # pylint: disable=W0613
   # Check if the response is a PDF
   assert r.headers["Content-Type"] == "application/pdf"
 
-def test_get_report_not_found(testrun, empty_devices_dir, add_device):  # pylint: disable=W0613
+def test_get_report_not_found(testrun, empty_devices_dir, add_device): # pylint: disable=W0613
   """Test get report when report doesn't exist (404)"""
 
   # Assign timestamp
-  timestamp = "2024-01-01T00:00:00"
+  timestamp = TIMESTAMP
 
   # Load a device using the add_device fixture
   device = add_device()
@@ -1088,12 +1086,12 @@ def test_get_report_not_found(testrun, empty_devices_dir, add_device):  # pylint
   # Check if the correct error message returned
   assert "Report could not be found" in response["error"]
 
-def test_get_report_device_not_found(empty_devices_dir, testrun):  # pylint: disable=W0613
+def test_get_report_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
   """Test getting a report when the device is not found (404)"""
 
   # Assign device name and timestamp
   device_name = "nonexistent_device"
-  timestamp = "2024-01-01T00:00:00"
+  timestamp = TIMESTAMP
 
   # Send the get request
   r = requests.get(f"{API}/report/{device_name}/{timestamp}", timeout=5)
@@ -1117,7 +1115,7 @@ def test_export_report_device_not_found(testrun, empty_devices_dir, # pylint: di
   # Assign the non-existing device name, mac_address and timestamp
   device_name = "non existing device"
   mac_address = "00:1e:42:35:73:c4"
-  timestamp = "2024-01-01T00:00:00"
+  timestamp = TIMESTAMP
 
   # Create the report for the non-existing device
   create_report_folder(device_name, mac_address, timestamp)
@@ -1148,17 +1146,14 @@ def test_export_report_profile_not_found(testrun, empty_devices_dir, # pylint: d
   device_name = device[0]["device_folder"]
   mac_address = device[0]["mac_addr"]
 
-  # Set the timestamp
-  timestamp = "2024-01-01T00:00:00"
-
   # Create the report for the device
-  create_report_folder(device_name, mac_address, timestamp)
+  create_report_folder(device_name, mac_address, TIMESTAMP)
 
   # Add a non existing profile into the payload
   payload = {"profile": "non_existent_profile"}
 
   # Send the post request
-  r = requests.post(f"{API}/export/{device_name}/{timestamp}",
+  r = requests.post(f"{API}/export/{device_name}/{TIMESTAMP}",
                     json=payload,
                     timeout=5)
 
@@ -1174,7 +1169,7 @@ def test_export_report_profile_not_found(testrun, empty_devices_dir, # pylint: d
   # Check if the correct error message returned
   assert "A profile with that name could not be found" in response["error"]
 
-def test_export_report_not_found(testrun, empty_devices_dir, add_device):  # pylint: disable=W0613
+def test_export_report_not_found(testrun, empty_devices_dir, add_device): # pylint: disable=W0613
   """Test for export the report result when the report could not be found"""
 
   # Load a device using the add_device fixture
@@ -1183,11 +1178,8 @@ def test_export_report_not_found(testrun, empty_devices_dir, add_device):  # pyl
   # Assign the device name and mac address
   device_name = device[0]["device_folder"]
 
-  # Set the timestamp
-  timestamp = "2024-01-01T00:00:00"
-
   # Send the post request to trigger the zipping process
-  r = requests.post(f"{API}/export/{device_name}/{timestamp}", timeout=10)
+  r = requests.post(f"{API}/export/{device_name}/{TIMESTAMP}", timeout=10)
 
   # Check if status code is 500 (Internal Server Error)
   assert r.status_code == 404
@@ -1211,10 +1203,12 @@ def test_export_report_with_profile(testrun, empty_devices_dir, add_device, # py
   # Load a device using the add_device fixture
   device = add_device()
 
-  # Assign the device name, mac address and timestamp
+  # Assign the device name, mac address
   device_name = device[0]["device_folder"]
   mac_address = device[0]["mac_addr"]
-  timestamp = "2024-01-01T00:00:00"
+
+  # Assign the timestamp and change the format
+  timestamp = TIMESTAMP.replace(" ", "T")
 
   # Create the report for the device
   create_report_folder(device_name, mac_address, timestamp)
@@ -1237,10 +1231,12 @@ def test_export_results_with_no_profile(testrun, empty_devices_dir, # pylint: di
   # Load a device using the add_device fixture
   device = add_device()
 
-  # Assign the device name, mac address and timestamp
+  # Assign the device name, mac address
   device_name = device[0]["device_folder"]
   mac_address = device[0]["mac_addr"]
-  timestamp = "2024-01-01T00:00:00"
+
+  # Assign the timestamp and change the format
+  timestamp = TIMESTAMP.replace(" ", "T")
 
   # Create the report for the device
   create_report_folder(device_name, mac_address, timestamp)
@@ -1592,7 +1588,7 @@ def test_start_device_not_found(empty_devices_dir, # pylint: disable=W0613
   assert r.status_code == 200
 
   payload = {"device": {"mac_addr": device_1["mac_addr"], "firmware": "asd"}}
-  r = requests.post(f"{API}/`system/start`",
+  r = requests.post(f"{API}/system/start",
                     data=json.dumps(payload),
                     timeout=10)
   assert r.status_code == 404
@@ -1907,31 +1903,35 @@ def test_get_test_modules(testrun): # pylint: disable=W0613
 def delete_all_certs():
   """Utility method to delete all certificates from root_certs folder"""
 
-  # Assign the certificates directory
-  certs_path = Path(CERTS_DIRECTORY)
-
   try:
+
     # Check if the profile_path (local/root_certs) exists and is a folder
-    if certs_path.exists() and certs_path.is_dir():
+    if os.path.exists(CERTS_DIRECTORY) and os.path.isdir(CERTS_DIRECTORY):
 
        # Iterate over all certificates from root_certs folder
-      for item in certs_path.iterdir():
+      for item in os.listdir(CERTS_DIRECTORY):
+
+        # Combine the directory path with the item name to create the full path
+        item_path = os.path.join(CERTS_DIRECTORY, item)
 
         # Check if item is a file
-        if item.is_file():
+        if os.path.isfile(item_path):
 
           #If True remove file
-          item.unlink()
+          os.unlink(item_path)
 
         else:
+
           # If item is a folder remove it
-          shutil.rmtree(item)
+          shutil.rmtree(item_path)
 
   except PermissionError:
+
     # Permission related issues
     print(f"Permission Denied: {item}")
 
   except OSError as err:
+
     # System related issues
     print(f"Error removing {item}: {err}")
 
@@ -2038,7 +2038,7 @@ def test_get_certificates(testrun, reset_certs, add_cert): # pylint: disable=W06
   # Check if response contains two certificates
   assert len(response) == 2
 
-def test_upload_certificate(testrun, reset_certs):  # pylint: disable=W0613
+def test_upload_certificate(testrun, reset_certs): # pylint: disable=W0613
   """Test for upload certificate successfully"""
 
   # Load the first certificate file content using the utility method
@@ -2097,7 +2097,7 @@ def test_upload_certificate(testrun, reset_certs):  # pylint: disable=W0613
   # Check if "WR2.pem" exists
   assert any(cert["filename"] == "WR2.pem" for cert in response)
 
-def test_upload_invalid_certificate_format(testrun, reset_certs):  # pylint: disable=W0613
+def test_upload_invalid_certificate_format(testrun, reset_certs): # pylint: disable=W0613
   """Test for upload an invalid certificate format """
 
   # Load the first certificate file content using the utility method
@@ -2119,10 +2119,10 @@ def test_upload_invalid_certificate_format(testrun, reset_certs):  # pylint: dis
   # Check if "error" key is in response
   assert "error" in response
 
-def test_upload_invalid_certificate_name(testrun, reset_certs):  # pylint: disable=W0613
+def test_upload_invalid_certificate_name(testrun, reset_certs): # pylint: disable=W0613
   """Test for upload a valid certificate with invalid filename"""
 
-  # Assign the certificate name to a variable
+  # Assign the invalid certificate name to a variable
   cert_name = "invalidname1234567891234.pem"
 
   # Load the first certificate file content using the utility method
@@ -2144,7 +2144,7 @@ def test_upload_invalid_certificate_name(testrun, reset_certs):  # pylint: disab
   # Check if "error" key is in response
   assert "error" in response
 
-def test_upload_existing_certificate(testrun, reset_certs):  # pylint: disable=W0613
+def test_upload_existing_certificate(testrun, reset_certs): # pylint: disable=W0613
   """Test for upload an existing certificate"""
 
   # Load the first certificate file content using the utility method
@@ -2188,7 +2188,7 @@ def test_upload_existing_certificate(testrun, reset_certs):  # pylint: disable=W
   # Check if "error" key is in response
   assert "error" in response
 
-def test_delete_certificate_success(testrun, reset_certs, add_cert):  # pylint: disable=W0613
+def test_delete_certificate_success(testrun, reset_certs, add_cert): # pylint: disable=W0613
   """Test for successfully deleting an existing certificate"""
 
   # Use the add_cert fixture to upload the first certificate
@@ -2226,7 +2226,7 @@ def test_delete_certificate_success(testrun, reset_certs, add_cert):  # pylint: 
   # Check that the certificate is no longer listed
   assert not any(cert["filename"] == "crt.pem" for cert in response)
 
-def test_delete_certificate_bad_request(testrun, reset_certs, add_cert):  # pylint: disable=W0613
+def test_delete_certificate_bad_request(testrun, reset_certs, add_cert): # pylint: disable=W0613
   """Test for delete a certificate without providing the name"""
 
   # Use the add_cert fixture to upload the first certificate
@@ -2249,7 +2249,7 @@ def test_delete_certificate_bad_request(testrun, reset_certs, add_cert):  # pyli
   # Check if error in response
   assert "error" in response
 
-def test_delete_certificate_not_found(testrun, reset_certs):  # pylint: disable=W0613
+def test_delete_certificate_not_found(testrun, reset_certs): # pylint: disable=W0613
   """Test for delete certificate when does not exist"""
 
   # Attempt to delete a certificate with a name that doesn't exist
@@ -2275,25 +2275,37 @@ def delete_all_profiles():
   """Utility method to delete all profiles from risk_profiles folder"""
 
   # Assign the profiles directory
-  profiles_path = Path(PROFILES_DIRECTORY)
+  profiles_path = os.path.join(PROFILES_DIRECTORY)
 
   try:
+
     # Check if the profile_path (local/risk_profiles) exists and is a folder
-    if profiles_path.exists() and profiles_path.is_dir():
+    if os.path.exists(profiles_path) and os.path.isdir(profiles_path):
+
       # Iterate over all profiles from risk_profiles folder
-      for item in profiles_path.iterdir():
+      for item in os.listdir(profiles_path):
+
+        # Create the full path
+        item_path = os.path.join(profiles_path, item)
+
         # Check if item is a file
-        if item.is_file():
+        if os.path.isfile(item_path):
+
           #If True remove file
-          item.unlink()
+          os.unlink(item_path)
+
         else:
+
           # If item is a folder remove it
-          shutil.rmtree(item)
+          shutil.rmtree(item_path)
 
   except PermissionError:
+
     # Permission related issues
     print(f"Permission Denied: {item}")
+
   except OSError as err:
+
     # System related issues
     print(f"Error removing {item}: {err}")
 
@@ -2334,23 +2346,28 @@ def reset_profiles():
 
 @pytest.fixture()
 def add_profile():
-  """Fixture to create profiles during tests."""
+  """Fixture to create profiles during tests"""
+
   # Returning the reference to create_profile
   return create_profile
 
 def profile_exists(profile_name):
   """Utility method to check if profile exists"""
+
   # Send the get request
   r = requests.get(f"{API}/profiles", timeout=5)
+
   # Check if status code is not 200 (OK)
   if r.status_code != 200:
     raise ValueError(f"Api request failed with code: {r.status_code}")
+
   # Parse the JSON response to get the list of profiles
   profiles = r.json()
+
   # Return if name is in the list of profiles
   return any(p["name"] == profile_name for p in profiles)
 
-def test_get_profiles_format(testrun):  # pylint: disable=W0613
+def test_get_profiles_format(testrun): # pylint: disable=W0613
   """Test profiles format"""
 
   # Send the get request
@@ -2370,10 +2387,10 @@ def test_get_profiles_format(testrun):  # pylint: disable=W0613
     assert "question" in item
     assert "type" in item
 
-def test_get_profiles(testrun, reset_profiles, add_profile):  # pylint: disable=W0613
+def test_get_profiles(testrun, reset_profiles, add_profile): # pylint: disable=W0613
   """Test for get profiles (no profile, one profile, two profiles)"""
 
-  # Test for no profiles
+  # Test for no profile
 
   # Send the get request to "/profiles" endpoint
   r = requests.get(f"{API}/profiles", timeout=5)
@@ -2415,11 +2432,15 @@ def test_get_profiles(testrun, reset_profiles, add_profile):  # pylint: disable=
     for field in ["name", "status", "created", "version", "questions", "risk"]:
       assert field in profile
 
+    # Assign profile["questions"]
+    profile_questions = profile["questions"]
+
     # Check if "questions" value is a list
-    assert isinstance(profile["questions"], list)
+    assert isinstance(profile_questions, list)
 
     # Check that "questions" value has the expected fields
-    for element in profile["questions"]:
+    for element in profile_questions:
+
       # Check if each element is dict
       assert isinstance(element, dict)
 
@@ -2450,7 +2471,7 @@ def test_get_profiles(testrun, reset_profiles, add_profile):  # pylint: disable=
   assert len(response) == 2
 
 def test_create_profile(testrun, reset_profiles): # pylint: disable=W0613
-  """Test for create profile if not exists"""
+  """Test for create profile when profile does not exist"""
 
   # Load the profile
   new_profile = load_json("new_profile.json", directory=PROFILES_PATH)
@@ -2492,7 +2513,7 @@ def test_create_profile(testrun, reset_profiles): # pylint: disable=W0613
   assert created_profile is not None
 
 def test_update_profile(testrun, reset_profiles, add_profile): # pylint: disable=W0613
-  """Test for update profile when exists"""
+  """Test for update profile when profile already exists"""
 
   # Load the new profile using add_profile fixture
   new_profile = add_profile("new_profile.json")
@@ -2549,7 +2570,7 @@ def test_update_profile_invalid_json(testrun, reset_profiles, add_profile): # py
   # Load the new profile using add_profile fixture
   add_profile("new_profile.json")
 
-  # invalid JSON
+  # Invalid JSON
   updated_profile = {}
 
   # Send the post request to update the profile
@@ -2570,7 +2591,7 @@ def test_update_profile_invalid_json(testrun, reset_profiles, add_profile): # py
 def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable=W0613
   """Test for create profile invalid JSON payload """
 
-  # invalid JSON
+  # Invalid JSON
   new_profile = {}
 
   # Send the post request to update the profile
@@ -2597,7 +2618,7 @@ def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable
   # Assign the profile name
   profile_name = profile_to_delete["name"]
 
-  # Delete the profile
+  # Send the delete request
   r = requests.delete(
       f"{API}/profiles",
       data=json.dumps(profile_to_delete),
@@ -2626,6 +2647,7 @@ def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable
       (p for p in profiles if p["name"] == profile_name),
       None
   )
+
   # Check if profile was deleted
   assert deleted_profile is None
 
@@ -2647,6 +2669,7 @@ def test_delete_profile_no_profile(testrun, reset_profiles): # pylint: disable=W
 def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable=W0613
   """Test for delete profile wrong JSON payload"""
 
+  # Invalid payload
   profile_to_delete = {}
 
   # Delete the profile
@@ -2664,7 +2687,9 @@ def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   # Check if "error" key in response
   assert "error" in response
 
+  # Invalid payload
   profile_to_delete_2 = {"status": "Draft"}
+
   # Delete the profile
   r = requests.delete(
       f"{API}/profiles",
@@ -2680,9 +2705,8 @@ def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   # Check if "error" key in response
   assert "error" in response
 
-def test_delete_profile_internal_server_error(testrun, # pylint: disable=W0613
-                                              reset_profiles, # pylint: disable=W0613
-                                              add_profile ):
+def test_delete_profile_server_error(testrun, reset_profiles, # pylint: disable=W0613
+                                     add_profile):
   """Test for delete profile causing internal server error"""
 
   # Assign the profile from the fixture
