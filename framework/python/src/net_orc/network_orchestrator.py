@@ -141,6 +141,9 @@ class NetworkOrchestrator:
     # Get network ready (via Network orchestrator)
     LOGGER.debug('Network is ready')
 
+  def get_ip_address(self, iface):
+    return self._ip_ctrl.get_ip_address(iface)
+
   def get_listener(self):
     return self._listener
 
@@ -468,7 +471,7 @@ class NetworkOrchestrator:
   def _start_network_service(self, net_module):
 
     LOGGER.debug('Starting network service ' + net_module.display_name)
-    network = 'host' if net_module.net_config.host else PRIVATE_DOCKER_NET
+    network = 'host' if net_module.net_config.host else 'bridge'
     LOGGER.debug(f"""Network: {network}, image name: {net_module.image_name},
                      container name: {net_module.container_name}""")
 

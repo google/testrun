@@ -101,6 +101,23 @@ class TestOrchestrator:
         continue
 
       test_modules.append(module)
+
+      for test in module.tests:
+
+        # Duplicate test obj so we don't alter the source
+        test_copy = copy.deepcopy(test)
+
+        # Set result to Not Started
+        test_copy.result = "Not Started"
+
+        # We don't want steps to resolve for not started tests
+        if hasattr(test_copy, "recommendations"):
+          test_copy.recommendations = None
+
+        # Add test result to the session
+        self.get_session().add_test_result(test_copy)
+
+      # Increment number of tests that will be run
       self.get_session().add_total_tests(len(module.tests))
 
     # Store enabled test modules in the TestsOrchectrator object
@@ -187,7 +204,10 @@ class TestOrchestrator:
     for test_result in self._session.get_test_results():
       # Check Required tests
       if (test_result.required_result.lower() == "required"
-          and test_result.result.lower() != "compliant"):
+          and test_result.result.lower() not in [
+            "compliant",
+            "error"
+          ]):
         result = "Non-Compliant"
       # Check Required if Applicable tests
       elif (test_result.required_result.lower() == "required if applicable"

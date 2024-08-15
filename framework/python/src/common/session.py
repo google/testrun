@@ -380,7 +380,6 @@ class TestrunSession():
         updated = True
 
     if not updated:
-      result.result = 'In Progress'
       self._results.append(result)
 
   def set_test_result_error(self, result):
@@ -433,6 +432,10 @@ class TestrunSession():
       LOGGER.error(
           'An error occurred whilst loading the risk assessment format')
       LOGGER.debug(e)
+
+      # If the format JSON fails to load, skip loading profiles
+      LOGGER.error('Profiles will not be loaded')
+      return
 
     profile_format_array = []
 

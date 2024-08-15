@@ -706,6 +706,12 @@ class Api:
 
     LOGGER.debug("Received profile update request")
 
+    # Check if the profiles format was loaded correctly
+    if self.get_session().get_profiles_format() is None:
+      response.status_code = status.HTTP_501_NOT_IMPLEMENTED
+      return self._generate_msg(False,
+                                "Risk profiles are not available right now")
+
     try:
       req_raw = (await request.body()).decode("UTF-8")
       req_json = json.loads(req_raw)
@@ -726,6 +732,7 @@ class Api:
     profile = self.get_session().get_profile(profile_name)
 
     if profile is None:
+
       # Create new profile
       profile = self.get_session().update_profile(req_json)
 
