@@ -23,11 +23,14 @@ RUNTIME_DIR = 'runtime'
 RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR, 'test')
 DEFAULT_TIMEOUT = 60  # time in seconds
 
+
 class TestModule(Module):
   """Represents a test module."""
 
   def __init__(self, module_config_file, session, extra_hosts):
-    super().__init__(module_config_file=module_config_file, session=session, extra_hosts=extra_hosts)
+    super().__init__(module_config_file=module_config_file,
+                     session=session,
+                     extra_hosts=extra_hosts)
 
     # Set IP Index for all test modules
     self.ip_index = 9

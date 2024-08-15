@@ -22,10 +22,11 @@ IMAGE_PREFIX = 'testrun/'
 CONTAINER_PREFIX = 'tr-ct'
 DEFAULT_NETWORK = 'bridge'
 
+
 class Module:
   """Represents the base module."""
 
-  def __init__(self, module_config_file, session, extra_hosts={}):
+  def __init__(self, module_config_file, session, extra_hosts=None):
     self._session = session
     self.extra_hosts = extra_hosts
 
@@ -106,7 +107,7 @@ class Module:
   def get_mounts(self):
     return []
 
-  def get_environment(self, device=None): # pylint: disable=W0613
+  def get_environment(self, device=None):  # pylint: disable=W0613
     return {}
 
   def setup_module(self, module_json):
@@ -136,7 +137,7 @@ class Module:
           detach=True,
           mounts=self.get_mounts(),
           environment=self.get_environment(device),
-          extra_hosts=self.extra_hosts)
+          extra_hosts=self.extra_hosts if self.extra_hosts is not None else {})
     except docker.errors.ContainerError as error:
       self.logger.error('Container run error')
       self.logger.error(error)
