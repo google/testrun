@@ -22,7 +22,7 @@ import docker
 from datetime import datetime
 from common import logger, util
 from common.testreport import TestReport
-from core.docker.test_module import TestModule
+from core.docker.test_docker_module import TestModule
 from test_orc.test_case import TestCase
 import threading
 

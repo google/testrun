@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Represents a test module."""
-from core.docker.module import Module
+from core.docker.docker_module import Module
 from test_orc.test_case import TestCase
 import os
 import json
