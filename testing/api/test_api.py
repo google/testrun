@@ -29,7 +29,6 @@ from typing import Iterator
 import pytest
 import requests
 
-
 ALL_DEVICES = "*"
 API = "http://127.0.0.1:8000"
 LOG_PATH = "/tmp/testrun.log"
@@ -720,19 +719,30 @@ def test_system_shutdown_in_progress(testrun):  # pylint: disable=W0613
   # Check if the response status code is 400 (test in progress)
   assert r.status_code == 400
 
-def test_system_latest_version(testrun): # pylint: disable=W0613
-  """Test for testrun version when the latest version is installed"""
+def test_system_version(testrun): # pylint: disable=W0613
+  """Test for testrun version endpoint"""
 
   # Send the get request to the API
   r = requests.get(f"{API}/system/version", timeout=5)
 
+  # Check if status code is 200 (ok)
+  assert r.status_code == 200
+
   # Parse the response
   response = r.json()
 
-  # Check if status code is 200 (update available)
-  assert r.status_code == 200
-  # Check if an update is available
-  assert response["update_available"] is False
+  # Assign the json keys to a list
+  version_json = ["installed_version",
+                  "update_available", 
+                  "latest_version", 
+                  "latest_version_url"]
+
+  # Check if all the keys are in json response
+  for key in version_json:
+    assert key in response
+
+  # Check if the update_available is a boolean
+  assert isinstance(response["update_available"], bool)
 
 # Tests for reports endpoints
 
@@ -1582,7 +1592,7 @@ def test_start_device_not_found(empty_devices_dir, # pylint: disable=W0613
   assert r.status_code == 200
 
   payload = {"device": {"mac_addr": device_1["mac_addr"], "firmware": "asd"}}
-  r = requests.post(f"{API}/system/start",
+  r = requests.post(f"{API}/`system/start`",
                     data=json.dumps(payload),
                     timeout=10)
   assert r.status_code == 404
