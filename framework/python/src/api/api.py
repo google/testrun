@@ -383,7 +383,7 @@ class Api:
 
     if len(body_raw) == 0:
       response.status_code = 400
-      return self._generate_msg(False, "Invalid request received, missing body")  
+      return self._generate_msg(False, "Invalid request received, missing body")
 
     try:
       body_json = json.loads(body_raw)
