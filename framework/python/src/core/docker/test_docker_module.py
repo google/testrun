@@ -23,7 +23,6 @@ RUNTIME_DIR = 'runtime'
 RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR, 'test')
 DEFAULT_TIMEOUT = 60  # time in seconds
 
-
 class TestModule(Module):
   """Represents a test module."""
 

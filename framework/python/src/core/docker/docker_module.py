@@ -20,7 +20,7 @@ import json
 
 IMAGE_PREFIX = 'testrun/'
 CONTAINER_PREFIX = 'tr-ct'
-
+DEFAULT_NETWORK = 'bridge'
 
 class Module:
   """Represents the base module."""
@@ -32,6 +32,7 @@ class Module:
     with open(module_config_file, encoding='UTF-8') as config_file:
       module_json = json.load(config_file)
 
+    self.docker_network = DEFAULT_NETWORK
     # General module information
     self.name = module_json['config']['meta']['name']
     self.display_name = module_json['config']['meta']['display_name']
@@ -99,7 +100,7 @@ class Module:
     return None
 
   def get_network(self):
-    return 'bridge'
+    return self.docker_network
 
   def get_mounts(self):
     return []
