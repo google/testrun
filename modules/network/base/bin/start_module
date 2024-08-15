@@ -42,19 +42,20 @@ fi
 # Extract the necessary config parameters
 MODULE_NAME=$(echo "$CONF" | jq -r '.config.meta.name')
 DEFINED_IFACE=$(echo "$CONF" | jq -r '.config.network.interface')
+HOST=$(echo "$CONF" | jq -r '.config.network.host')
 GRPC=$(echo "$CONF" | jq -r '.config.grpc')
 
 # Validate the module name is present
 if [[ -z "$MODULE_NAME" || "$MODULE_NAME" == "null" ]]
 then
-	echo "No module name present in $CONF_FILE. Exiting startup."
+	echo "No module name present in $CONF_FILE.  Exiting startup."
 	exit 1
 fi
 
 # Select which interace to use
 if [[ -z $DEFINED_IFACE || "$DEFINED_IFACE" == "null" ]]
 then
-	echo "No interface defined, defaulting to veth0"
+	echo "No Interface Defined, defaulting to veth0"
 	INTF=$DEFAULT_IFACE
 else
 	INTF=$DEFINED_IFACE
@@ -70,14 +71,19 @@ $BIN_DIR/setup_binaries $BIN_DIR
 
 echo "Starting module $MODULE_NAME on local interface $INTF..."
 
-# Wait for interface to become ready
-$BIN_DIR/wait_for_interface $INTF
+# Only non-host containers will have a specific
+# interface for capturing
+if [[ "$HOST" != "true" ]]; then
 
-# Small pause to let the interface stabalize before starting the capture
-sleep 1 
+	# Wait for interface to become ready
+	$BIN_DIR/wait_for_interface $INTF
 
-# Start network capture
-$BIN_DIR/capture $MODULE_NAME $INTF
+	# Small pause to let the interface stabalize before starting the capture
+	#sleep 1 
+
+	# Start network capture
+	$BIN_DIR/capture $MODULE_NAME $INTF
+fi
 
 # Start the grpc server
 if [[ ! -z $GRPC && ! $GRPC == "null" ]]

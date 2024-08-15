@@ -138,6 +138,9 @@ class NetworkOrchestrator:
     # Get network ready (via Network orchestrator)
     LOGGER.debug('Network is ready')
 
+  def get_ip_address(self, iface):
+    return self._ip_ctrl.get_ip_address(iface)
+
   def get_listener(self):
     return self._listener
 
@@ -494,13 +497,14 @@ class NetworkOrchestrator:
     # Load network service networking configuration
     if net_module.enable_container:
 
-      net_module.net_config.enable_wan = net_module_json['config']['network'][
-          'enable_wan']
-      net_module.net_config.ip_index = net_module_json['config']['network'][
-          'ip_index']
-
       net_module.net_config.host = False if not 'host' in net_module_json[
           'config']['network'] else net_module_json['config']['network']['host']
+
+      if not net_module.net_config.host:
+        net_module.net_config.enable_wan = net_module_json['config']['network'][
+            'enable_wan']
+        net_module.net_config.ip_index = net_module_json['config']['network'][
+            'ip_index']
 
       net_module.net_config.ipv4_address = self.network_config.ipv4_network[
           net_module.net_config.ip_index]
@@ -538,26 +542,29 @@ class NetworkOrchestrator:
   def _start_network_service(self, net_module):
 
     LOGGER.debug('Starting network service ' + net_module.display_name)
-    network = 'host' if net_module.net_config.host else PRIVATE_DOCKER_NET
+    network = 'host' if net_module.net_config.host else 'bridge'
     LOGGER.debug(f"""Network: {network}, image name: {net_module.image_name},
                      container name: {net_module.container_name}""")
 
     try:
       client = docker.from_env()
       net_module.container = client.containers.run(
-          net_module.image_name,
-          auto_remove=True,
-          cap_add=['NET_ADMIN'],
-          name=net_module.container_name,
-          hostname=net_module.container_name,
-          network_mode='none',
-          privileged=True,
-          detach=True,
-          mounts=net_module.mounts,
-          environment={
-              'TZ': self.get_session().get_timezone(),
-              'HOST_USER': util.get_host_user()
-          })
+        net_module.image_name,
+        auto_remove=True,
+        cap_add=['NET_ADMIN'],
+        name=net_module.container_name,
+        hostname=net_module.container_name,
+        # Undetermined version of docker seems to have broken
+        # DNS configuration (/etc/resolv.conf)  Re-add when/if
+        # this network is utilized and DNS issue is resolved
+        network=network,
+        privileged=True,
+        detach=True,
+        mounts=net_module.mounts,
+        environment={
+          'TZ': self.get_session().get_timezone(),
+          'HOST_USER': util.get_host_user()
+        })
     except docker.errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)
@@ -793,27 +800,30 @@ class NetworkOrchestrator:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
         mqtt_client.send_message(topic, adapters)
-    except Exception:
+    except Exception: # pylint: disable=W0718
       LOGGER.error(traceback.format_exc())
+
+  def is_device_connected(self):
+    """Check if device connected"""
+    return self._ip_ctrl.check_interface_status(
+        self._session.get_device_interface()
+      )
 
   def internet_conn_checker(self, mqtt_client: mqtt.MQTT, topic: str):
     """Checks internet connection and sends a status to frontend"""
 
-    # Default message
-    message = {'connection': False}
-
-    # Only check if Testrun is running
-    if self.get_session().get_status() not in [
-      'Waiting for Device', 'Monitoring', 'In Progress'
-    ]:
-      message['connection'] = None
-
-    # Only run if single intf mode not used
-    elif 'single_intf' not in self._session.get_runtime_params():
+    # Only check if Testrun is running not in single-intf mode
+    if (self.get_session().get_status() in [
+                                          'Waiting for Device',
+                                          'Monitoring',
+                                          'In Progress'
+                                          ]):
+      # Default message
+      message = {'connection': False}
       iface = self._session.get_internet_interface()
 
       # Check that an internet intf has been selected
-      if iface and iface in self._session.get_ifaces():
+      if iface and iface in self._ip_ctrl.get_sys_interfaces():
 
         # Ping google.com from gateway container
         internet_connection = self._ip_ctrl.ping_via_gateway(
@@ -822,9 +832,8 @@ class NetworkOrchestrator:
         if internet_connection:
           message['connection'] = True
 
-    # Broadcast via MQTT client
-    mqtt_client.send_message(topic, message)
-
+      # Broadcast via MQTT client
+      mqtt_client.send_message(topic, message)
 
 class NetworkModule:
   """Define all the properties of a Network Module"""

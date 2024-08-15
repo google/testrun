@@ -24,7 +24,7 @@ from common import logger
 LOGGER = logger.get_logger('util')
 
 
-def run_command(cmd, output=True):
+def run_command(cmd, output=True, timeout=None):
   """Runs a process at the os level
   By default, returns the standard output and error output
   If the caller sets optional output parameter to False,
@@ -36,7 +36,7 @@ def run_command(cmd, output=True):
   with subprocess.Popen(shlex.split(cmd),
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE) as process:
-    stdout, stderr = process.communicate()
+    stdout, stderr = process.communicate(timeout)
 
     if process.returncode != 0 and output:
       err_msg = f'{stderr.strip()}. Code: {process.returncode}'
