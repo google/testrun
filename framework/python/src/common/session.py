@@ -76,7 +76,7 @@ def apply_session_tracker(cls):
 
 @apply_session_tracker
 class TestrunSession():
-  """Represents the current session of Test Run."""
+  """Represents the current session of Testrun."""
 
   def __init__(self, root_dir):
     self._root_dir = root_dir
@@ -130,6 +130,13 @@ class TestrunSession():
     self._load_version()
     self._load_config()
     self._load_profiles()
+
+    # Network information
+    self._ipv4_subnet = None
+    self._ipv6_subnet = None
+
+    # Store host user for permissions use
+    self._host_user = util.get_host_user()
 
     self._certs = []
     self.load_certs()
@@ -197,7 +204,7 @@ class TestrunSession():
       # Network interfaces
       if (NETWORK_KEY in config_file_json
           and DEVICE_INTF_KEY in config_file_json.get(NETWORK_KEY)
-              and INTERNET_INTF_KEY in config_file_json.get(NETWORK_KEY)):
+          and INTERNET_INTF_KEY in config_file_json.get(NETWORK_KEY)):
         self._config[NETWORK_KEY][DEVICE_INTF_KEY] = config_file_json.get(
             NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
         self._config[NETWORK_KEY][INTERNET_INTF_KEY] = config_file_json.get(
@@ -241,10 +248,13 @@ class TestrunSession():
       try:
         version = util.run_command(
             '$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
-      except Exception as e:
+      except Exception as e: # pylint: disable=W0703
         LOGGER.debug('Failed getting the version from make control file')
         LOGGER.error(e)
         self._version = 'Unknown'
+
+  def get_host_user(self):
+    return self._host_user
 
   def get_version(self):
     return self._version
@@ -327,6 +337,12 @@ class TestrunSession():
   def remove_device(self, device):
     self._device_repository.remove(device)
 
+  def get_ipv4_subnet(self):
+    return self._ipv4_subnet
+
+  def get_ipv6_subnet(self):
+    return self._ipv6_subnet
+
   def get_status(self):
     return self._status
 
@@ -370,6 +386,7 @@ class TestrunSession():
   def set_test_result_error(self, result):
     """Set test result error"""
     result.result = TestResult.ERROR
+    result.recommendations = None
     self._results.append(result)
 
   def add_module_report(self, module_report):
@@ -397,15 +414,18 @@ class TestrunSession():
   def set_report_url(self, url):
     self._report_url = url
 
+  def set_subnets(self, ipv4_subnet, ipv6_subnet):
+    self._ipv4_subnet = ipv4_subnet
+    self._ipv6_subnet = ipv6_subnet
+
   def _load_profiles(self):
 
     # Load format of questionnaire
     LOGGER.debug('Loading risk assessment format')
 
     try:
-      with open(os.path.join(
-        self._root_dir, PROFILE_FORMAT_PATH
-      ), encoding='utf-8') as profile_format_file:
+      with open(os.path.join(self._root_dir, PROFILE_FORMAT_PATH),
+                encoding='utf-8') as profile_format_file:
         format_json = json.load(profile_format_file)
         # Save original profile format for internal validation
         self._profile_format = format_json
@@ -442,7 +462,7 @@ class TestrunSession():
 
     try:
       for risk_profile_file in os.listdir(
-              os.path.join(self._root_dir, PROFILES_DIR)):
+          os.path.join(self._root_dir, PROFILES_DIR)):
 
         LOGGER.debug(f'Discovered profile {risk_profile_file}')
 
@@ -453,19 +473,22 @@ class TestrunSession():
           # Parse risk profile json
           json_data = json.load(f)
 
+          # Validate profile JSON
+          if not self.validate_profile_json(json_data):
+            LOGGER.error('Profile failed validation')
+            continue
+
           # Instantiate a new risk profile
           risk_profile = RiskProfile()
 
           # Pass JSON to populate risk profile
-          risk_profile.load(
-            profile_json=json_data,
-            profile_format=self._profile_format
-          )
+          risk_profile.load(profile_json=json_data,
+                            profile_format=self._profile_format)
 
           # Add risk profile to session
           self._profiles.append(risk_profile)
 
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       LOGGER.error('An error occurred whilst loading risk profiles')
       LOGGER.debug(e)
 
@@ -481,25 +504,6 @@ class TestrunSession():
         return profile
     return None
 
-  def validate_profile(self, profile_json):
-
-    # Check name field is present
-    if 'name' not in profile_json:
-      return False
-
-    # Check questions field is present
-    if 'questions' not in profile_json:
-      return False
-
-    # Check all questions are present
-    for format_q in self.get_profiles_format():
-      if self._get_profile_question(profile_json,
-                                    format_q.get('question')) is None:
-        LOGGER.error('Missing question: ' + format_q.get('question'))
-        return False
-
-    return True
-
   def _get_profile_question(self, profile_json, question):
 
     for q in profile_json.get('questions'):
@@ -508,7 +512,14 @@ class TestrunSession():
 
     return None
 
+  def get_profile_format_question(self, question):
+    for q in self.get_profiles_format():
+      if q.get('question') == question:
+        return q
+
   def update_profile(self, profile_json):
+    """Update the risk profile with the provided JSON.
+    The content has already been validated in the API"""
 
     profile_name = profile_json['name']
 
@@ -516,45 +527,13 @@ class TestrunSession():
     profile_json['version'] = self.get_version()
     profile_json['created'] = datetime.datetime.now().strftime('%Y-%m-%d')
 
-    if 'status' in profile_json and profile_json.get('status') == 'Valid':
-      # Attempting to submit a risk profile, we need to check it
-
-      # Check all questions have been answered
-      all_questions_answered = True
-
-      for question in self.get_profiles_format():
-
-        # Check question is present
-        profile_question = self._get_profile_question(profile_json,
-                                                      question.get('question'))
-
-        if profile_question is not None:
-
-          # Check answer is present
-          if 'answer' not in profile_question:
-            LOGGER.error('Missing answer for question: ' +
-                         question.get('question'))
-            all_questions_answered = False
-
-        else:
-          LOGGER.error('Missing question: ' + question.get('question'))
-          all_questions_answered = False
-
-      if not all_questions_answered:
-        LOGGER.error('Not all questions answered')
-        return None
-
-    else:
-      profile_json['status'] = 'Draft'
-
+    # Check if profile already exists
     risk_profile = self.get_profile(profile_name)
-
     if risk_profile is None:
 
       # Create a new risk profile
-      risk_profile = RiskProfile(
-        profile_json=profile_json,
-        profile_format=self._profile_format)
+      risk_profile = RiskProfile(profile_json=profile_json,
+                                 profile_format=self._profile_format)
       self._profiles.append(risk_profile)
 
     else:
@@ -577,6 +556,106 @@ class TestrunSession():
 
     return risk_profile
 
+  def validate_profile_json(self, profile_json):
+    """Validate properties in profile update requests"""
+
+    # Get the status field
+    valid = False
+    if 'status' in profile_json and profile_json.get('status') == 'Valid':
+      valid = True
+
+    # Check if 'name' exists in profile
+    if 'name' not in profile_json:
+      LOGGER.error('Missing "name" in profile')
+      return False
+
+    # Check if 'name' field not empty
+    elif len(profile_json.get('name').strip()) == 0:
+      LOGGER.error('Name field left empty')
+      return False
+
+    # Error handling if 'questions' not in request
+    if 'questions' not in profile_json and valid:
+      LOGGER.error('Missing "questions" field in profile')
+      return False
+
+    # Validating the questions section
+    for question in profile_json.get('questions'):
+
+      # Check if the question field is present
+      if 'question' not in question:
+        LOGGER.error('The "question" field is missing')
+        return False
+
+      # Check if 'question' field not empty
+      elif len(question.get('question').strip()) == 0:
+        LOGGER.error('A question is missing from "question" field')
+        return False
+
+      # Check if question is a recognized question
+      format_q = self.get_profile_format_question(
+        question.get('question'))
+
+      if format_q is None:
+        LOGGER.error(f'Unrecognized question: {question.get("question")}')
+        return False
+
+      # Error handling if 'answer' is missing
+      if 'answer' not in question and valid:
+        LOGGER.error('The answer field is missing')
+        return False
+
+      # If answer is present, check the validation rules
+      else:
+
+        # Extract the answer out of the profile
+        answer = question.get('answer')
+
+        # Get the validation rules
+        field_type = format_q.get('type')
+
+        # Check if type is string or single select, answer should be a string
+        if ((field_type in ['string', 'select'])
+            and not isinstance(answer, str)):
+          LOGGER.error(f'''Answer for question \
+{question.get('question')} is incorrect data type''')
+          return False
+
+        # Check if type is select, answer must be from list
+        if field_type == 'select' and valid:
+          possible_answers = format_q.get('options')
+          if answer not in possible_answers:
+            LOGGER.error(f'''Answer for question \
+{question.get('question')} is not valid''')
+            return False
+
+        # Validate select multiple field types
+        if field_type == 'select-multiple':
+
+          if not isinstance(answer, list):
+            LOGGER.error(f'''Answer for question \
+{question.get('question')} is incorrect data type''')
+            return False
+
+          question_options_len = len(format_q.get('options'))
+
+          # We know it is a list, now check the indexes
+          for index in answer:
+
+            # Check if the index is an integer
+            if not isinstance(index, int):
+              LOGGER.error(f'''Answer for question \
+{question.get('question')} is incorrect data type''')
+              return False
+
+            # Check if index is 0 or above and less than the num of options
+            if index < 0 or index >= question_options_len:
+              LOGGER.error(f'''Invalid index provided as answer for \
+question {question.get('question')}''')
+              return False
+
+    return True
+
   def delete_profile(self, profile):
 
     try:
@@ -590,7 +669,7 @@ class TestrunSession():
 
       return True
 
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       LOGGER.error('An error occurred whilst deleting a profile')
       LOGGER.debug(e)
       return False
@@ -730,7 +809,7 @@ class TestrunSession():
           self._certs.append(cert_obj)
 
           LOGGER.debug(f'Successfully loaded {cert_file}')
-      except Exception as e:
+      except Exception as e: # pylint: disable=W0703
         LOGGER.error(f'An error occurred whilst loading {cert_file}')
         LOGGER.debug(e)
 
@@ -750,7 +829,7 @@ class TestrunSession():
           self._certs.remove(cert)
           return True
 
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
       LOGGER.error('An error occurred whilst deleting the certificate')
       LOGGER.debug(e)
       return False
