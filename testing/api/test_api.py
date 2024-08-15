@@ -996,11 +996,8 @@ def test_delete_report_server_error(testrun, empty_devices_dir, # pylint: disabl
   # Assign the device name
   mac_address = device[0]["mac_addr"]
 
-  # Assign the timestamp format for the folder structure
-  timestamp = TIMESTAMP
-
   # Create the report folder and JSON file
-  create_report_folder(device_name, mac_address, timestamp)
+  create_report_folder(device_name, mac_address, TIMESTAMP)
 
   # Construct the device report path
   device_directory = os.path.join(DEVICES_DIRECTORY, device_name)
@@ -1011,7 +1008,7 @@ def test_delete_report_server_error(testrun, empty_devices_dir, # pylint: disabl
   # Prepare the payload for the DELETE request
   delete_data = {
       "mac_addr": mac_address,
-      "timestamp": timestamp
+      "timestamp": TIMESTAMP
   }
 
   # Send the delete request to delete the report
@@ -1062,9 +1059,6 @@ def test_get_report_success(testrun, empty_devices_dir, # pylint: disable=W0613
 def test_get_report_not_found(testrun, empty_devices_dir, add_device): # pylint: disable=W0613
   """Test get report when report doesn't exist (404)"""
 
-  # Assign timestamp
-  timestamp = TIMESTAMP
-
   # Load a device using the add_device fixture
   device = add_device()
 
@@ -1072,7 +1066,7 @@ def test_get_report_not_found(testrun, empty_devices_dir, add_device): # pylint:
   device_name = device[0]["device_folder"]
 
   # Send the get request
-  r = requests.get(f"{API}/report/{device_name}/{timestamp}", timeout=5)
+  r = requests.get(f"{API}/report/{device_name}/{TIMESTAMP}", timeout=5)
 
   # Check if status code is 404 (not found)
   assert r.status_code == 404
@@ -1091,10 +1085,9 @@ def test_get_report_device_not_found(empty_devices_dir, testrun): # pylint: disa
 
   # Assign device name and timestamp
   device_name = "nonexistent_device"
-  timestamp = TIMESTAMP
 
   # Send the get request
-  r = requests.get(f"{API}/report/{device_name}/{timestamp}", timeout=5)
+  r = requests.get(f"{API}/report/{device_name}/{TIMESTAMP}", timeout=5)
 
   # Check if is 404 (not found)
   assert r.status_code == 404
@@ -1112,16 +1105,15 @@ def test_export_report_device_not_found(testrun, empty_devices_dir, # pylint: di
                                  create_report_folder):
   """Test for export the report result when the device could not be found"""
 
-  # Assign the non-existing device name, mac_address and timestamp
+  # Assign the non-existing device name, mac_address
   device_name = "non existing device"
   mac_address = "00:1e:42:35:73:c4"
-  timestamp = TIMESTAMP
 
   # Create the report for the non-existing device
-  create_report_folder(device_name, mac_address, timestamp)
+  create_report_folder(device_name, mac_address, TIMESTAMP)
 
   # Send the post request
-  r = requests.post(f"{API}/export/{device_name}/{timestamp}", timeout=5)
+  r = requests.post(f"{API}/export/{device_name}/{TIMESTAMP}", timeout=5)
 
   # Check if is 404 (not found)
   assert r.status_code == 404
