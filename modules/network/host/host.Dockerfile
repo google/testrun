@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: testrun/ntp
+# Image name: testrun/host
 FROM testrun/base:latest
 
-ARG MODULE_NAME=ntp
+ARG MODULE_NAME=host
 ARG MODULE_DIR=modules/network/$MODULE_NAME
 
-# Set DEBIAN_FRONTEND to noninteractive mode
-ENV DEBIAN_FRONTEND=noninteractive
+#Update and get all additional requirements not contained in the base image
+RUN apt-get update --fix-missing
 
 # Install all necessary packages
-RUN apt-get install -y chrony
+RUN apt-get install -y net-tools ethtool
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf
@@ -32,5 +32,3 @@ COPY $MODULE_DIR/bin /testrun/bin
 
 # Copy over all python files
 COPY $MODULE_DIR/python /testrun/python
-
-EXPOSE 123/udp

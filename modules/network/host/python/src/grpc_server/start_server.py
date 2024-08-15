@@ -24,7 +24,7 @@ DEFAULT_PORT = '5001'
 
 def serve(port):
   server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-  pb2_grpc.add_NetworkModuleServicer_to_server(NetworkService(), server)
+  pb2_grpc.add_HostNetworkModuleServicer_to_server(NetworkService(), server)
   server.add_insecure_port('[::]:' + port)
   server.start()
   server.wait_for_termination()

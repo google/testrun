@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,25 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: testrun/ntp
-FROM testrun/base:latest
+echo "Starting Host Service..."
 
-ARG MODULE_NAME=ntp
-ARG MODULE_DIR=modules/network/$MODULE_NAME
 
-# Set DEBIAN_FRONTEND to noninteractive mode
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install all necessary packages
-RUN apt-get install -y chrony
-
-# Copy over all configuration files
-COPY $MODULE_DIR/conf /testrun/conf
-
-# Copy over all binary files
-COPY $MODULE_DIR/bin /testrun/bin
-
-# Copy over all python files
-COPY $MODULE_DIR/python /testrun/python
-
-EXPOSE 123/udp
+# Keep host container running until stopped
+while true; do
+    sleep 3
+done

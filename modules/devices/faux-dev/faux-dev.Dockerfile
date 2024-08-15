@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/faux-dev
-FROM test-run/base:latest
+# Image name: testrun/faux-dev
+FROM testrun/base:latest
 
 ARG MODULE_NAME=faux-dev
 ARG MODULE_DIR=modules/devices/$MODULE_NAME
