@@ -20,18 +20,21 @@ import json
 
 IMAGE_PREFIX = 'testrun/'
 CONTAINER_PREFIX = 'tr-ct'
+DEFAULT_NETWORK = 'bridge'
 
 
 class Module:
   """Represents the base module."""
 
-  def __init__(self, module_config_file, session):
+  def __init__(self, module_config_file, session, extra_hosts=None):
     self._session = session
+    self.extra_hosts = extra_hosts
 
     # Read the config file into a json object
     with open(module_config_file, encoding='UTF-8') as config_file:
       module_json = json.load(config_file)
 
+    self.docker_network = DEFAULT_NETWORK
     # General module information
     self.name = module_json['config']['meta']['name']
     self.display_name = module_json['config']['meta']['display_name']
@@ -99,12 +102,12 @@ class Module:
     return None
 
   def get_network(self):
-    return 'bridge'
+    return self.docker_network
 
   def get_mounts(self):
     return []
 
-  def get_environment(self, device=None): # pylint: disable=W0613
+  def get_environment(self, device=None):  # pylint: disable=W0613
     return {}
 
   def setup_module(self, module_json):
@@ -133,7 +136,8 @@ class Module:
           privileged=True,
           detach=True,
           mounts=self.get_mounts(),
-          environment=self.get_environment(device))
+          environment=self.get_environment(device),
+          extra_hosts=self.extra_hosts if self.extra_hosts is not None else {})
     except docker.errors.ContainerError as error:
       self.logger.error('Container run error')
       self.logger.error(error)
