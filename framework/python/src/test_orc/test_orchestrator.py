@@ -30,7 +30,7 @@ import threading
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
 RUNTIME_DIR = "runtime"
-RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR,"test")
+RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR, "test")
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
 LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
@@ -182,9 +182,7 @@ class TestOrchestrator:
   def _generate_report(self):
 
     report = {}
-    report["testrun"] = {
-      "version": self.get_session().get_version()
-    }
+    report["testrun"] = {"version": self.get_session().get_version()}
 
     report["mac_addr"] = self.get_session().get_target_device().mac_addr
     report["device"] = self.get_session().get_target_device().to_dict()
@@ -207,7 +205,10 @@ class TestOrchestrator:
     for test_result in self._session.get_test_results():
       # Check Required tests
       if (test_result.required_result.lower() == "required"
-          and test_result.result.lower() != "compliant"):
+          and test_result.result.lower() not in [
+            "compliant",
+            "error"
+          ]):
         result = "Non-Compliant"
       # Check Required if Applicable tests
       elif (test_result.required_result.lower() == "required if applicable"
@@ -295,25 +296,20 @@ class TestOrchestrator:
 
     return completed_results_dir
 
-  def zip_results(self,
-                   device,
-                   timestamp,
-                   profile):
+  def zip_results(self, device, timestamp, profile):
 
     try:
       LOGGER.debug("Archiving test results")
 
-      src_path = os.path.join(LOCAL_DEVICE_REPORTS.replace(
-        "{device_folder}",
-        device.device_folder),
-        timestamp)
+      src_path = os.path.join(
+          LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
+          timestamp)
 
       # Define temp directory to store files before zipping
       results_dir = os.path.join(f"/tmp/testrun/{time.time()}")
 
       # Define where to save the zip file
-      zip_location = os.path.join("/tmp/testrun",
-                                  timestamp)
+      zip_location = os.path.join("/tmp/testrun", timestamp)
 
       # Delete zip_temp if it already exists
       if os.path.exists(results_dir):
@@ -323,16 +319,13 @@ class TestOrchestrator:
       if os.path.exists(zip_location + ".zip"):
         os.remove(zip_location + ".zip")
 
-      shutil.copytree(src_path,results_dir)
+      shutil.copytree(src_path, results_dir)
 
       # Include profile if specified
       if profile is not None:
-        LOGGER.debug(
-          f"Copying profile {profile.name} to results directory")
+        LOGGER.debug(f"Copying profile {profile.name} to results directory")
         shutil.copy(profile.get_file_path(),
-                    os.path.join(
-                      results_dir,
-                      "profile.json"))
+                    os.path.join(results_dir, "profile.json"))
 
         with open(os.path.join(results_dir, "profile.pdf"), "wb") as f:
           f.write(profile.to_pdf(device).getvalue())
@@ -349,10 +342,9 @@ class TestOrchestrator:
                                 if os.path.exists(zip_file)
                                 else'creation failed'}''')
 
-
       return zip_file
 
-    except Exception as error: # pylint: disable=W0703
+    except Exception as error:  # pylint: disable=W0703
       LOGGER.error("Failed to create zip file")
       LOGGER.debug(error)
       return None
@@ -426,6 +418,17 @@ class TestOrchestrator:
       device_monitor_capture = os.path.join(device_test_dir, "monitor.pcap")
       util.run_command(f"chown -R {self._host_user} {device_monitor_capture}")
 
+      # Resolve the main docker interface (docker0) for host interaction
+      # Can't use device or internet iface since these are not in a stable
+      # state for this type of communication during testing but docker0 has
+      # to exist and should always be available
+      external_ip = self._net_orc.get_ip_address("docker0")
+      LOGGER.debug(f"Using external IP: {external_ip}")
+      extra_hosts = {
+          "external.localhost": external_ip
+      } if external_ip is not None else {}
+
+      #extra_hosts = {"external.localhost":"172.17.0.1"}
       client = docker.from_env()
 
       module.container = client.containers.run(
@@ -468,8 +471,10 @@ class TestOrchestrator:
               "IPV4_ADDR": device.ip_addr,
               "DEVICE_TEST_MODULES": json.dumps(device.test_modules),
               "IPV4_SUBNET": self._net_orc.network_config.ipv4_network,
-              "IPV6_SUBNET": self._net_orc.network_config.ipv6_network
-          })
+              "IPV6_SUBNET": self._net_orc.network_config.ipv6_network,
+              "DEV_IFACE": self._session.get_device_interface()
+          },
+          extra_hosts=extra_hosts)
     except (docker.errors.APIError,
             docker.errors.ContainerError) as container_error:
       LOGGER.error("Test module " + module.name + " has failed to start")
@@ -526,19 +531,19 @@ class TestOrchestrator:
 
           # Convert dict from json into TestCase object
           test_case = TestCase(
-            name=test_result["name"],
-            description=test_result["description"],
-            expected_behavior=test_result["expected_behavior"],
-            required_result=test_result["required_result"],
-            result=test_result["result"])
+              name=test_result["name"],
+              description=test_result["description"],
+              expected_behavior=test_result["expected_behavior"],
+              required_result=test_result["required_result"],
+              result=test_result["result"])
 
           # Any informational test should always report informational
           if test_case.required_result == "Informational":
             test_case.result = "Informational"
 
           # Add steps to resolve if test is non-compliant
-          if (test_case.result == "Non-Compliant" and
-              "recommendations" in test_result):
+          if (test_case.result == "Non-Compliant"
+              and "recommendations" in test_result):
             test_case.recommendations = test_result["recommendations"]
           else:
             test_case.recommendations = None
@@ -548,7 +553,7 @@ class TestOrchestrator:
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
       LOGGER.error(
-        f"Error occurred whilst obtaining results for module {module.name}")
+          f"Error occurred whilst obtaining results for module {module.name}")
       LOGGER.error(results_error)
 
     # Get the markdown report from the module if generated
@@ -666,11 +671,10 @@ class TestOrchestrator:
       for test_case_json in module_json["config"]["tests"]:
         try:
           test_case = TestCase(
-            name=test_case_json["name"],
-            description=test_case_json["test_description"],
-            expected_behavior=test_case_json["expected_behavior"],
-            required_result=test_case_json["required_result"]
-          )
+              name=test_case_json["name"],
+              description=test_case_json["test_description"],
+              expected_behavior=test_case_json["expected_behavior"],
+              required_result=test_case_json["required_result"])
 
           if "recommendations" in test_case_json:
             test_case.recommendations = test_case_json["recommendations"]

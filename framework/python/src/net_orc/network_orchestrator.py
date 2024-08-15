@@ -138,6 +138,9 @@ class NetworkOrchestrator:
     # Get network ready (via Network orchestrator)
     LOGGER.debug('Network is ready')
 
+  def get_ip_address(self, iface):
+    return self._ip_ctrl.get_ip_address(iface)
+
   def get_listener(self):
     return self._listener
 
@@ -494,13 +497,14 @@ class NetworkOrchestrator:
     # Load network service networking configuration
     if net_module.enable_container:
 
-      net_module.net_config.enable_wan = net_module_json['config']['network'][
-          'enable_wan']
-      net_module.net_config.ip_index = net_module_json['config']['network'][
-          'ip_index']
-
       net_module.net_config.host = False if not 'host' in net_module_json[
           'config']['network'] else net_module_json['config']['network']['host']
+
+      if not net_module.net_config.host:
+        net_module.net_config.enable_wan = net_module_json['config']['network'][
+            'enable_wan']
+        net_module.net_config.ip_index = net_module_json['config']['network'][
+            'ip_index']
 
       net_module.net_config.ipv4_address = self.network_config.ipv4_network[
           net_module.net_config.ip_index]
@@ -538,26 +542,29 @@ class NetworkOrchestrator:
   def _start_network_service(self, net_module):
 
     LOGGER.debug('Starting network service ' + net_module.display_name)
-    network = 'host' if net_module.net_config.host else PRIVATE_DOCKER_NET
+    network = 'host' if net_module.net_config.host else 'bridge'
     LOGGER.debug(f"""Network: {network}, image name: {net_module.image_name},
                      container name: {net_module.container_name}""")
 
     try:
       client = docker.from_env()
       net_module.container = client.containers.run(
-          net_module.image_name,
-          auto_remove=True,
-          cap_add=['NET_ADMIN'],
-          name=net_module.container_name,
-          hostname=net_module.container_name,
-          network_mode='none',
-          privileged=True,
-          detach=True,
-          mounts=net_module.mounts,
-          environment={
-              'TZ': self.get_session().get_timezone(),
-              'HOST_USER': util.get_host_user()
-          })
+        net_module.image_name,
+        auto_remove=True,
+        cap_add=['NET_ADMIN'],
+        name=net_module.container_name,
+        hostname=net_module.container_name,
+        # Undetermined version of docker seems to have broken
+        # DNS configuration (/etc/resolv.conf)  Re-add when/if
+        # this network is utilized and DNS issue is resolved
+        network=network,
+        privileged=True,
+        detach=True,
+        mounts=net_module.mounts,
+        environment={
+          'TZ': self.get_session().get_timezone(),
+          'HOST_USER': util.get_host_user()
+        })
     except docker.errors.ContainerError as error:
       LOGGER.error('Container run error')
       LOGGER.error(error)
@@ -793,7 +800,7 @@ class NetworkOrchestrator:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
         mqtt_client.send_message(topic, adapters)
-    except Exception:
+    except Exception: # pylint: disable=W0718
       LOGGER.error(traceback.format_exc())
 
   def is_device_connected(self):
