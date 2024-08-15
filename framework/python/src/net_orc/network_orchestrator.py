@@ -702,7 +702,7 @@ class NetworkOrchestrator:
       iface = self._session.get_internet_interface()
 
       # Check that an internet intf has been selected
-      if iface and iface in self._session.get_ifaces():
+      if iface and iface in self._ip_ctrl.get_sys_interfaces():
 
         # Ping google.com from gateway container
         internet_connection = self._ip_ctrl.ping_via_gateway('google.com')
@@ -710,8 +710,8 @@ class NetworkOrchestrator:
         if internet_connection:
           message['connection'] = True
 
-    # Broadcast via MQTT client
-    mqtt_client.send_message(topic, message)
+      # Broadcast via MQTT client
+      mqtt_client.send_message(topic, message)
 
 class NetworkConfig:
   """Define all the properties of the network configuration"""
