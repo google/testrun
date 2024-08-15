@@ -36,11 +36,12 @@ class NetworkModule(Module):
       self.net_config.host = module_json['config']['network'].get('host', False)
       # Override default network if host is requested
       if self.net_config.host:
-          self.docker_network = 'host'
+        self.docker_network = 'host'
 
       if not self.net_config.host:
-        self.net_config.ip_index = module_json['config']['network'].get('ip_index')
-      
+        self.net_config.ip_index = module_json['config']['network'].get(
+            'ip_index')
+
         self.net_config.ipv4_address = self.get_session().get_ipv4_subnet()[
             self.net_config.ip_index]
         self.net_config.ipv4_network = self.get_session().get_ipv4_subnet()
@@ -61,7 +62,7 @@ class NetworkModule(Module):
   def _setup_runtime(self, device):
     pass
 
-  def get_environment(self, device=None): # pylint: disable=W0613
+  def get_environment(self, device=None):  # pylint: disable=W0613
     environment = {
         'TZ': self.get_session().get_timezone(),
         'HOST_USER': self.get_session().get_host_user()
