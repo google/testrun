@@ -28,7 +28,7 @@ from net_orc.network_event import NetworkEvent
 from net_orc.network_validator import NetworkValidator
 from net_orc.ovs_control import OVSControl
 from net_orc.ip_control import IPControl
-from core.docker.network_module import NetworkModule
+from core.docker.network_docker_module import NetworkModule
 
 LOGGER = logger.get_logger('net_orc')
 RUNTIME_DIR = 'runtime'
