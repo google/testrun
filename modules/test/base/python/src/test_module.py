@@ -17,6 +17,7 @@ import logger
 import os
 import util
 from datetime import datetime
+import traceback
 
 LOGGER = None
 RESULTS_DIR = '/runtime/output/'
@@ -113,25 +114,22 @@ class TestModule:
           except Exception as e:  # pylint: disable=W0718
             LOGGER.error(f'An error occurred whilst running {test["name"]}')
             LOGGER.error(e)
+            traceback.print_exc()
         else:
-          LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
-          test['result'] = 'Error'
-          test['description'] = 'This test could not be found'
+          LOGGER.error(f'Test {test["name"]} has not been implemented')
+          result = 'Error', 'This test could not be found'
       else:
         LOGGER.debug(f'Test {test["name"]} is disabled')
-        test['result'] = 'Disabled'
-        test['description'] = 'This test did not run because it is disabled'
+        result = 'Disabled', 'This test did not run because it is disabled'
 
-        # To be added in v1.3.2
-        # result = 'Disabled', 'This test is disabled and did not run'
-
+      # Check if the test module has returned a result
       if result is not None:
+
         # Compliant or non-compliant as a boolean only
         if isinstance(result, bool):
           test['result'] = 'Compliant' if result else 'Non-Compliant'
           test['description'] = 'No description was provided for this test'
         else:
-          # TODO: This is assuming that result is an array but haven't checked
           # Error result
           if result[0] is None:
             test['result'] = 'Error'
@@ -143,6 +141,7 @@ class TestModule:
           # Compliant / Non-Compliant result
           elif isinstance(result[0], bool):
             test['result'] = 'Compliant' if result[0] else 'Non-Compliant'
+
           # Result may be a string, e.g Error, Feature Not Detected
           elif isinstance(result[0], str):
             test['result'] = result[0]
@@ -160,6 +159,7 @@ class TestModule:
           if len(result)>2:
             test['details'] = result[2]
       else:
+        LOGGER.debug('No result was returned from the test module')
         test['result'] = 'Error'
         test['description'] = 'An error occured whilst running this test'
 

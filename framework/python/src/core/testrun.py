@@ -114,7 +114,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # Start websockets server
     self.start_ws()
 
-    # MQTT client
+    # Init MQTT client
     self._mqtt_client = mqtt.MQTT()
 
     if self._no_ui:
@@ -401,6 +401,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # Expand the config file to absolute pathing
     return os.path.abspath(config_file)
 
+  def get_root_dir(self):
+    return root_dir
+
   def get_config_file(self):
     return self._get_config_abs()
 
@@ -482,7 +485,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     try:
       client.containers.run(
-            image='test-run/ui',
+            image='testrun/ui',
             auto_remove=True,
             name='tr-ui',
             hostname='testrun.io',

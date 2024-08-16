@@ -36,9 +36,13 @@ fi
 # Builds all docker images
 echo Building docker images
 
-# Build user interface
-echo Building user interface
-if docker build -t test-run/ui -f modules/ui/ui.Dockerfile . ; then
+# Check if UI has already been built (if -l was used during install)
+if [ ! -d "modules/ui/dist" ]; then
+  cmd/build_ui
+fi
+
+# Build UI image
+if docker build -t testrun/ui -f modules/ui/ui.Dockerfile . ; then
   echo Successully built the user interface
 else
   echo An error occured whilst building the user interface
@@ -60,7 +64,7 @@ mkdir -p build/network
 for dir in modules/network/* ; do
   module=$(basename $dir)
   echo Building network module $module...
-  if docker build -f modules/network/$module/$module.Dockerfile -t test-run/$module . ; then
+  if docker build -f modules/network/$module/$module.Dockerfile -t testrun/$module . ; then
     echo Successfully built container for network $module
   else
     echo An error occured whilst building container for network module $module
@@ -74,7 +78,7 @@ mkdir -p build/devices
 for dir in modules/devices/* ; do
   module=$(basename $dir)
   echo Building validator module $module...
-  if docker build -f modules/devices/$module/$module.Dockerfile -t test-run/$module . ; then
+  if docker build -f modules/devices/$module/$module.Dockerfile -t testrun/$module . ; then
     echo Successfully built container for device module $module
   else
     echo An error occured whilst building container for device module $module
@@ -88,7 +92,7 @@ mkdir -p build/test
 for dir in modules/test/* ; do
   module=$(basename $dir)
   echo Building test module $module...
-  if docker build -f modules/test/$module/$module.Dockerfile -t test-run/$module-test . ; then
+  if docker build -f modules/test/$module/$module.Dockerfile -t testrun/$module-test . ; then
     echo Successfully built container for test module $module
   else
     echo An error occured whilst building container for test module $module

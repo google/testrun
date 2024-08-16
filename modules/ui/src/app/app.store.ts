@@ -23,6 +23,7 @@ import {
   selectHasDevices,
   selectHasRiskProfiles,
   selectInterfaces,
+  selectInternetConnection,
   selectMenuOpened,
   selectReports,
   selectStatus,
@@ -61,6 +62,7 @@ export interface AppComponentState {
 export class AppStore extends ComponentStore<AppComponentState> {
   private consentShown$ = this.select(state => state.consentShown);
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
+  private hasInternetConnection$ = this.store.select(selectInternetConnection);
   private hasDevices$ = this.store.select(selectHasDevices);
   private hasRiskProfiles$ = this.store.select(selectHasRiskProfiles);
   private reports$ = this.store.select(selectReports);
@@ -85,6 +87,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
     isMenuOpen: this.isMenuOpen$,
     interfaces: this.interfaces$,
     settingMissedError: this.settingMissedError$,
+    hasInternetConnection: this.hasInternetConnection$,
   });
 
   updateConsent = this.updater((state, consentShown: boolean) => ({
