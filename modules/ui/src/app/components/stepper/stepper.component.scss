@@ -29,7 +29,8 @@
   display: grid;
   padding: 24px;
   gap: 10px;
-  overflow: auto;
+  overflow: hidden;
+  height: 100%;
 }
 
 .form-footer {
@@ -78,6 +79,6 @@
   }
 
   &.hidden {
-    display: none;
+    visibility: hidden;
   }
 }

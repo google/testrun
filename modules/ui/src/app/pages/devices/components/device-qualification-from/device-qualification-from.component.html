@@ -32,10 +32,11 @@ limitations under the License.
   </ng-template>
 
   <app-stepper
-    #cdkStepper
+    #stepper
     formArrayName="steps"
     [linear]="true"
-    [header]="header">
+    [header]="header"
+    [selectedIndex]="selectedIndex">
     <cdk-step [editable]="true" formGroupName="0" [stepControl]="getStep(0)">
       <mat-form-field appearance="outline" class="manufacturer-field">
         <mat-label>Device Manufacturer</mat-label>
@@ -151,26 +152,43 @@ limitations under the License.
         [editable]="true"
         [formGroupName]="step.step"
         [stepControl]="getStep(step.step)">
-        <h3 class="device-qualification-form-step-title" *ngIf="step.title">
-          {{ step.title }}
-        </h3>
-        <p
-          class="device-qualification-form-step-description"
-          *ngIf="step.description">
-          {{ step.description }}
-        </p>
-        <app-dynamic-form
-          [format]="step.questions"
-          [optionKey]="'text'"></app-dynamic-form>
+        <section class="device-qualification-form-page">
+          <h3 class="device-qualification-form-step-title" *ngIf="step.title">
+            {{ step.title }}
+          </h3>
+          <p
+            class="device-qualification-form-step-description"
+            *ngIf="step.description">
+            {{ step.description }}
+          </p>
+          <app-dynamic-form
+            class="device-qualification-form-step-content"
+            [format]="step.questions"
+            [optionKey]="'text'"></app-dynamic-form>
+        </section>
       </cdk-step>
     </ng-container>
 
-    <cdk-step
-      *ngIf="format.length && getStep(3)"
-      [editable]="true"
-      formGroupName="2"
-      [stepControl]="getStep(3)">
-      Final step
+    <cdk-step *ngIf="format.length" [editable]="true">
+      <section class="device-qualification-form-page">
+        <h3 class="device-qualification-form-step-title">Summary</h3>
+        <p class="device-qualification-form-step-description">
+          The device has been configured. Please check the setup.
+        </p>
+        <section></section>
+        <div class="device-qualification-form-actions">
+          <button
+            mat-button
+            color="primary"
+            class="close-button"
+            (click)="closeForm()">
+            Cancel
+          </button>
+          <button mat-flat-button color="primary" class="save-button">
+            Save
+          </button>
+        </div>
+      </section>
     </cdk-step>
   </app-stepper>
 </form>

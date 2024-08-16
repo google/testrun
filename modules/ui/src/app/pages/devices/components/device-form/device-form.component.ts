@@ -29,6 +29,7 @@ import { Subject } from 'rxjs';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
 import { DevicesStore } from '../../devices.store';
+import { FormAction, FormResponse } from '../../devices.component';
 
 const MAC_ADDRESS_PATTERN =
   '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
@@ -38,16 +39,6 @@ interface DialogData {
   device?: Device;
   devices: Device[];
   testModules: TestModule[];
-}
-
-export enum FormAction {
-  Delete = 'Delete',
-  Save = 'Save',
-}
-
-export interface FormResponse {
-  device?: Device;
-  action: FormAction;
 }
 
 @Component({
