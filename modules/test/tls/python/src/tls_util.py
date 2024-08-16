@@ -669,7 +669,9 @@ class TLSUtil():
                                                         capture_files))
 
     if len(allowed_protocol_client_ips) > 0:
-      LOGGER.info(f'Allowed Protocol IP connections detected: {allowed_protocol_client_ips}')
+      LOGGER.info(
+          f'Allowed Protocol IP connections detected: {allowed_protocol_client_ips}'
+      )
     client_hello_results = self.process_hello_packets(
         hello_packets, allowed_protocol_client_ips, tls_version)
 
