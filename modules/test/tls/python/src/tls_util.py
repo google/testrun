@@ -664,16 +664,15 @@ class TLSUtil():
 
     # Resolve allowed protocol connections that require
     # additional consideration beyond packet inspection
-    allowed_protocol_client_ips = (
-        self.get_allowed_protocol_client_connection_ips(client_ip,
-                                                        capture_files))
+    protocol_client_ips = (self.get_allowed_protocol_client_connection_ips(
+        client_ip, capture_files))
 
-    if len(allowed_protocol_client_ips) > 0:
+    if len(protocol_client_ips) > 0:
       LOGGER.info(
-          f'Allowed Protocol IP connections detected: {allowed_protocol_client_ips}'
-      )
-    client_hello_results = self.process_hello_packets(
-        hello_packets, allowed_protocol_client_ips, tls_version)
+          f'Allowed Protocol IP connections detected: {protocol_client_ips}')
+    client_hello_results = self.process_hello_packets(hello_packets,
+                                                      protocol_client_ips,
+                                                      tls_version)
 
     handshakes = {'complete': [], 'incomplete': []}
     for packet in client_hello_results['valid']:
