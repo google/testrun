@@ -20,7 +20,7 @@ import {
   TestBed,
 } from '@angular/core/testing';
 
-import { DeviceFormComponent, FormAction } from './device-form.component';
+import { DeviceFormComponent } from './device-form.component';
 import { MatButtonModule } from '@angular/material/button';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -39,6 +39,7 @@ import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 import { DevicesStore } from '../../devices.store';
 import { device, MOCK_TEST_MODULES } from '../../../../mocks/device.mock';
 import SpyObj = jasmine.SpyObj;
+import { FormAction } from '../../devices.component';
 
 describe('DeviceFormComponent', () => {
   let component: DeviceFormComponent;

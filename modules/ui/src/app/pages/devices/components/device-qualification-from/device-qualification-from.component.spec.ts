@@ -39,6 +39,7 @@ import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { TestRunService } from '../../../../services/test-run.service';
 import { DevicesStore } from '../../devices.store';
 import { provideMockStore } from '@ngrx/store/testing';
+import { FormAction } from '../../devices.component';
 describe('DeviceQualificationFromComponent', () => {
   let component: DeviceQualificationFromComponent;
   let fixture: ComponentFixture<DeviceQualificationFromComponent>;
@@ -85,6 +86,7 @@ describe('DeviceQualificationFromComponent', () => {
     component.data = {
       testModules: MOCK_TEST_MODULES,
       devices: [],
+      index: 0,
     };
     testrunServiceMock.fetchQuestionnaireFormat.and.returnValue(
       of(DEVICES_FORM)
@@ -97,13 +99,13 @@ describe('DeviceQualificationFromComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should fetch devices format', () => {
+  it('should contain device form', () => {
     const form = compiled.querySelector('.device-qualification-form');
 
     expect(form).toBeTruthy();
   });
 
-  it('should contain device form', () => {
+  it('should fetch devices format', () => {
     const getQuestionnaireFormatSpy = spyOn(
       component.devicesStore,
       'getQuestionnaireFormat'
@@ -122,7 +124,23 @@ describe('DeviceQualificationFromComponent', () => {
 
     closeButton?.click();
 
-    expect(closeSpy).toHaveBeenCalledWith();
+    expect(closeSpy).toHaveBeenCalledWith({
+      action: FormAction.Close,
+      index: 0,
+      device: {
+        manufacturer: '',
+        model: '',
+        mac_addr: '',
+        test_modules: {
+          udmi: {
+            enabled: false,
+          },
+          connection: {
+            enabled: true,
+          },
+        },
+      },
+    });
 
     closeSpy.calls.reset();
   });
@@ -304,6 +322,7 @@ describe('DeviceQualificationFromComponent', () => {
       component.data = {
         testModules: MOCK_TEST_MODULES,
         devices: [device],
+        index: 0,
       };
       component.ngOnInit();
       fixture.detectChanges();
@@ -341,6 +360,7 @@ describe('DeviceQualificationFromComponent', () => {
             },
           },
         },
+        index: 0,
       };
 
       component.ngOnInit();
@@ -360,7 +380,7 @@ describe('DeviceQualificationFromComponent', () => {
     });
   });
 
-  describe('with questioner', () => {
+  describe('with questionnaire', () => {
     it('should have steps', () => {
       expect(
         (component.deviceQualificationForm.get('steps') as FormArray).controls

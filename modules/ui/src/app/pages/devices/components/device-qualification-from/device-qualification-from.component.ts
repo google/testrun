@@ -18,7 +18,9 @@ import {
   Component,
   ElementRef,
   Inject,
+  OnDestroy,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -56,7 +58,8 @@ import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { ProfileValidators } from '../../../risk-assessment/profile-form/profile.validators';
 import { DevicesStore } from '../../devices.store';
 import { DynamicFormComponent } from '../../../../components/dynamic-form/dynamic-form.component';
-import { skip } from 'rxjs';
+import { skip, Subject, takeUntil, timer } from 'rxjs';
+import { FormAction, FormResponse } from '../../devices.component';
 
 const MAC_ADDRESS_PATTERN =
   '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
@@ -66,6 +69,7 @@ interface DialogData {
   device?: Device;
   devices: Device[];
   testModules: TestModule[];
+  index: number;
 }
 
 @Component({
@@ -98,12 +102,16 @@ interface DialogData {
 })
 export class DeviceQualificationFromComponent
   extends EscapableDialogComponent
-  implements OnInit, AfterViewInit
+  implements OnInit, AfterViewInit, OnDestroy
 {
+  @ViewChild('stepper') public stepper!: StepperComponent;
   testModules: TestModule[] = [];
   deviceQualificationForm: FormGroup = this.fb.group({});
   device: Device | undefined;
   format: DeviceQuestionnaireSection[] = [];
+  selectedIndex: number = 0;
+
+  private destroy$: Subject<boolean> = new Subject<boolean>();
 
   get model() {
     return this.getStep(0).get('model') as AbstractControl;
@@ -146,6 +154,13 @@ export class DeviceQualificationFromComponent
     this.devicesStore.questionnaireFormat$.pipe(skip(1)).subscribe(format => {
       this.createDeviceForm(format);
       this.format = format;
+      if (this.data.index) {
+        timer(0)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe(() => {
+            this.selectedIndex = this.data.index;
+          });
+      }
     });
 
     this.devicesStore.getQuestionnaireFormat();
@@ -157,12 +172,21 @@ export class DeviceQualificationFromComponent
       this.element.nativeElement.offsetHeight + 'px';
   }
 
+  ngOnDestroy() {
+    this.destroy$.next(true);
+    this.destroy$.unsubscribe();
+  }
+
   submit(): void {
     this.device = this.createDeviceFromForm(this.getStep(0));
   }
 
   closeForm(): void {
-    this.dialogRef.close();
+    this.dialogRef.close({
+      action: FormAction.Close,
+      device: this.createDeviceFromForm(this.getStep(0)),
+      index: this.stepper.selectedIndex,
+    } as FormResponse);
   }
 
   getStep(step: number) {
@@ -229,7 +253,7 @@ export class DeviceQualificationFromComponent
       );
     });
 
-    // TODO dummy step
+    // summary step
     (this.deviceQualificationForm.get('steps') as FormArray).controls.push(
       this.fb.group({})
     );

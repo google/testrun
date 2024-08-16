@@ -40,10 +40,8 @@ export class StepperComponent extends CdkStepper {
   @Input() header: TemplateRef<HTMLElement> | undefined;
   @Input() activeClass = 'active';
 
-  stepsCount = [1, 2, 3, 4]; //TODO will be removed when all steps are implemented
-
   forwardButtonHidden() {
-    return this.selectedIndex === this.stepsCount.length - 1;
+    return this.selectedIndex === this.steps.length - 1;
   }
 
   backButtonHidden() {

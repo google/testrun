@@ -22,20 +22,27 @@ import {
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Device, DeviceView, TestModule } from '../../model/device';
-import {
-  FormAction,
-  FormResponse,
-} from './components/device-form/device-form.component';
 import { Subject, takeUntil } from 'rxjs';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
-import { timer } from 'rxjs/internal/observable/timer';
 import { TestrunInitiateFormComponent } from '../testrun/components/testrun-initiate-form/testrun-initiate-form.component';
 import { DevicesStore } from './devices.store';
 import { DeviceQualificationFromComponent } from './components/device-qualification-from/device-qualification-from.component';
+
+export enum FormAction {
+  Delete = 'Delete',
+  Close = 'Close',
+  Save = 'Save',
+}
+
+export interface FormResponse {
+  device?: Device;
+  action: FormAction;
+  index: number;
+}
 
 @Component({
   selector: 'app-device-repository',
@@ -113,17 +120,19 @@ export class DevicesComponent implements OnInit, OnDestroy {
     devices: Device[] = [],
     testModules: TestModule[],
     selectedDevice?: Device,
-    focusDeleteButton = false
+    isEditDevice = false,
+    index = 0
   ): void {
     const dialogRef = this.dialog.open(DeviceQualificationFromComponent, {
-      ariaLabel: selectedDevice ? 'Edit device' : 'Create Device',
+      ariaLabel: isEditDevice ? 'Edit device' : 'Create Device',
       data: {
         device: selectedDevice || null,
-        title: selectedDevice ? 'Edit device' : 'Create Device',
+        title: isEditDevice ? 'Edit device' : 'Create Device',
         testModules: testModules,
         devices,
+        index,
       },
-      autoFocus: focusDeleteButton ? '.delete-button' : true,
+      autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'device-form-dialog',
@@ -138,37 +147,30 @@ export class DevicesComponent implements OnInit, OnDestroy {
           this.devicesStore.setIsOpenAddDevice(false);
           return;
         }
-        if (
-          response.action === FormAction.Save &&
-          response.device &&
-          !selectedDevice
-        ) {
-          timer(10)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => {
-              this.focusManagerService.focusFirstElementInContainer();
-            });
-        }
-        if (response.action === FormAction.Delete && selectedDevice) {
-          this.devicesStore.selectDevice(selectedDevice);
-          this.openDeleteDialog(devices, testModules, selectedDevice);
+        if (response.action === FormAction.Close) {
+          this.openCloseDialog(
+            devices,
+            testModules,
+            response.device,
+            isEditDevice,
+            response.index
+          );
         }
       });
   }
 
-  openDeleteDialog(
+  openCloseDialog(
     devices: Device[],
     testModules: TestModule[],
-    device: Device
+    device?: Device,
+    isEditDevice = false,
+    index = 0
   ) {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: 'Delete device',
+      ariaLabel: 'Close the Device menu',
       data: {
-        title: 'Delete device?',
-        content: `You are about to delete ${
-          device.manufacturer + ' ' + device.model
-        }. Are you sure?`,
-        device: device,
+        title: 'Close the Device menu?',
+        content: `Are you ok to close the Device menu?`,
       },
       autoFocus: true,
       hasBackdrop: true,
@@ -179,24 +181,16 @@ export class DevicesComponent implements OnInit, OnDestroy {
     dialogRef
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(deleteDevice => {
-        if (deleteDevice) {
-          this.devicesStore.deleteDevice({
-            device,
-            onDelete: () => {
-              this.focusNextButton();
-              this.devicesStore.selectDevice(null);
-            },
-          });
-        } else {
-          this.openDialog(devices, testModules, device, true);
+      .subscribe(close => {
+        if (!close) {
+          this.openDialog(devices, testModules, device, isEditDevice, index);
           this.devicesStore.selectDevice(null);
         }
       });
   }
 
   private focusNextButton() {
-    // Try to focus next device item, if exitst
+    // Try to focus next device item, if exist
     const next = this.element.nativeElement.querySelector(
       '.device-item-selected + app-device-item button'
     );

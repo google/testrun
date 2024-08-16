@@ -145,3 +145,27 @@ $form-height: 993px;
   margin: 0;
   padding-top: 8px;
 }
+
+.device-qualification-form-step-content {
+  overflow: scroll;
+}
+
+.device-qualification-form-page {
+  display: grid;
+  gap: 10px;
+  height: 100%;
+  overflow: hidden;
+  &:last-of-type {
+    grid-template-rows: min-content min-content 1fr min-content;
+  }
+}
+
+.device-qualification-form-actions {
+  text-align: center;
+  .close-button {
+    padding: 0 16px;
+  }
+  .save-button {
+    margin: 0 16px;
+  }
+}
