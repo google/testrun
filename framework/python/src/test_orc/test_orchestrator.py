@@ -23,7 +23,7 @@ from datetime import datetime
 from common import logger, util
 from common.testreport import TestReport
 from common.statuses import TestrunStatus, TestResult
-from core.docker.test_module import TestModule
+from core.docker.test_docker_module import TestModule
 from test_orc.test_case import TestCase
 import threading
 
@@ -555,6 +555,16 @@ class TestOrchestrator:
   def _load_test_module(self, module_dir):
     """Import module configuration from module_config.json."""
 
+    # Resolve the main docker interface (docker0) for host interaction
+    # Can't use device or internet iface since these are not in a stable
+    # state for this type of communication during testing but docker0 has
+    # to exist and should always be available
+    external_ip = self._net_orc.get_ip_address("docker0")
+    LOGGER.debug(f"Using external IP: {external_ip}")
+    extra_hosts = {
+        "external.localhost": external_ip
+    } if external_ip is not None else {}
+
     # Make sure we only load each module once since some modules will
     # depend on the same module
     if not any(m.dir_name == module_dir for m in self._test_modules):
@@ -565,7 +575,7 @@ class TestOrchestrator:
       module_conf_file = os.path.join(self._path, modules_dir, module_dir,
                                       MODULE_CONFIG)
 
-      module = TestModule(module_conf_file, self._session)
+      module = TestModule(module_conf_file, self._session, extra_hosts)
       if module.depends_on is not None:
         self._load_test_module(module.depends_on)
       self._test_modules.append(module)

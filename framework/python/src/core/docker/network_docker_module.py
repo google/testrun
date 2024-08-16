@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Represents a test module."""
-from core.docker.module import Module
+from core.docker.docker_module import Module
 import os
 from docker.types import Mount
 
@@ -33,16 +33,23 @@ class NetworkModule(Module):
     if self.enable_container:
       self.net_config.enable_wan = module_json['config']['network'].get(
           'enable_wan', False)
-      self.net_config.ip_index = module_json['config']['network']['ip_index']
       self.net_config.host = module_json['config']['network'].get('host', False)
-      self.net_config.ipv4_address = self.get_session().get_ipv4_subnet()[
-          self.net_config.ip_index]
-      self.net_config.ipv4_network = self.get_session().get_ipv4_subnet()
+      # Override default network if host is requested
+      if self.net_config.host:
+        self.docker_network = 'host'
 
-      self.net_config.ipv6_address = self.get_session().get_ipv6_subnet()[
-          self.net_config.ip_index]
+      if not self.net_config.host:
+        self.net_config.ip_index = module_json['config']['network'].get(
+            'ip_index')
 
-      self.net_config.ipv6_network = self.get_session().get_ipv6_subnet()
+        self.net_config.ipv4_address = self.get_session().get_ipv4_subnet()[
+            self.net_config.ip_index]
+        self.net_config.ipv4_network = self.get_session().get_ipv4_subnet()
+
+        self.net_config.ipv6_address = self.get_session().get_ipv6_subnet()[
+            self.net_config.ip_index]
+
+        self.net_config.ipv6_network = self.get_session().get_ipv6_subnet()
 
       self._mounts = []
       if 'mounts' in module_json['config']['docker']:
@@ -55,7 +62,7 @@ class NetworkModule(Module):
   def _setup_runtime(self, device):
     pass
 
-  def get_environment(self, device=None): # pylint: disable=W0613
+  def get_environment(self, device=None):  # pylint: disable=W0613
     environment = {
         'TZ': self.get_session().get_timezone(),
         'HOST_USER': self.get_session().get_host_user()
