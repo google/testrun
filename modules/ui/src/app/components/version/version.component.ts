@@ -48,9 +48,7 @@ declare const gtag: Function;
 })
 export class VersionComponent implements OnInit, OnDestroy {
   @Input() consentShown!: boolean;
-  @Input() hasRiskProfiles!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
-  @Output() navigateToRiskAssessmentEvent = new EventEmitter<void>();
   version$!: Observable<Version | null>;
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -86,7 +84,7 @@ export class VersionComponent implements OnInit, OnDestroy {
   }
 
   openConsentDialog(version: Version) {
-    const dialogData = { version, hasRiskProfiles: this.hasRiskProfiles };
+    const dialogData = { version };
     const dialogRef = this.dialog.open(ConsentDialogComponent, {
       ariaLabel: 'Welcome to Testrun modal window',
       data: dialogData,
@@ -106,10 +104,6 @@ export class VersionComponent implements OnInit, OnDestroy {
         gtag('consent', 'update', {
           analytics_storage: dialogResult.grant ? 'granted' : 'denied',
         });
-
-        if (dialogResult.isNavigateToRiskAssessment) {
-          this.navigateToRiskAssessmentEvent.emit();
-        }
       });
   }
 

@@ -15,11 +15,13 @@ limitations under the License.
 -->
 <div class="callout-container" [ngClass]="type">
   <mat-icon
+    *ngIf="type !== CalloutType.InfoPilot"
     class="callout-icon"
     fontSet="material-icons-outlined"
     color="primary">
     {{ type }}
   </mat-icon>
+  <span *ngIf="type === CalloutType.InfoPilot" class="callout-icon">🚀</span>
   <p class="callout-context">
     <ng-content></ng-content>
   </p>

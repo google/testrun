@@ -29,7 +29,6 @@ import { FormsModule } from '@angular/forms';
 
 type DialogData = {
   version: Version;
-  hasRiskProfiles: boolean;
 };
 
 @Component({
@@ -54,11 +53,10 @@ export class ConsentDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {}
 
-  confirm(optOut: boolean, isNavigateToRiskAssessment?: boolean) {
+  confirm(optOut: boolean) {
     // dialog should be closed with opposite value to grant or deny access to GA
     const dialogResult: ConsentDialogResult = {
       grant: !optOut,
-      isNavigateToRiskAssessment,
     };
     this.dialogRef.close(dialogResult);
   }
