@@ -54,6 +54,7 @@ import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
   selectIsOpenStartTestrun,
@@ -164,6 +165,7 @@ describe('AppComponent', () => {
             { selector: selectError, value: null },
             { selector: selectMenuOpened, value: false },
             { selector: selectHasDevices, value: false },
+            { selector: selectHasExpiredDevices, value: false },
             { selector: selectHasRiskProfiles, value: false },
             { selector: selectStatus, value: null },
             { selector: selectSystemStatus, value: null },
@@ -755,6 +757,32 @@ describe('AppComponent', () => {
 
           expect(callout).toBeNull();
         });
+      });
+    });
+
+    describe('with expired devices', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasExpiredDevices, true);
+        fixture.detectChanges();
+      });
+
+      it('should have callout component', () => {
+        const callouts = compiled.querySelectorAll('app-callout');
+        //const calloutContent = callout?.innerHTML.trim();
+        let hasExpiredDeviceCallout = false;
+        callouts.forEach(callout => {
+          if (
+            callout?.innerHTML
+              .trim()
+              .includes(
+                'Further information is required in your device configurations.'
+              )
+          ) {
+            hasExpiredDeviceCallout = true;
+          }
+        });
+
+        expect(hasExpiredDeviceCallout).toBeTrue();
       });
     });
   });

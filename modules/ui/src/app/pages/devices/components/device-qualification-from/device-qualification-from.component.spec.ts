@@ -40,6 +40,8 @@ import { TestRunService } from '../../../../services/test-run.service';
 import { DevicesStore } from '../../devices.store';
 import { provideMockStore } from '@ngrx/store/testing';
 import { FormAction } from '../../devices.component';
+import { DeviceStatus } from '../../../../model/device';
+
 describe('DeviceQualificationFromComponent', () => {
   let component: DeviceQualificationFromComponent;
   let fixture: ComponentFixture<DeviceQualificationFromComponent>;
@@ -351,6 +353,7 @@ describe('DeviceQualificationFromComponent', () => {
         devices: [device],
         testModules: MOCK_TEST_MODULES,
         device: {
+          status: DeviceStatus.VALID,
           manufacturer: 'Delta',
           model: 'O3-DIN-CPU',
           mac_addr: '00:1e:42:35:73:c4',

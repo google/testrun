@@ -54,6 +54,7 @@ import {
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { NotificationService } from '../services/notification.service';
 import { Profile } from '../model/profile';
+import { DeviceStatus } from '../model/device';
 
 const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
@@ -140,6 +141,19 @@ export class AppEffects {
       ofType(AppActions.setDevices),
       map(({ devices }) =>
         AppActions.setHasDevices({ hasDevices: devices.length > 0 })
+      )
+    );
+  });
+
+  onSetExpiredDevices$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setDevices),
+      map(({ devices }) =>
+        AppActions.setHasExpiredDevices({
+          hasExpiredDevices: devices.some(
+            device => device.status === DeviceStatus.INVALID
+          ),
+        })
       )
     );
   });

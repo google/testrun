@@ -13,18 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostBinding,
+  Input,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-callout',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule],
   templateUrl: './callout.component.html',
   styleUrls: ['./callout.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalloutComponent {
+  @HostBinding('class.hidden') closed: boolean = false;
   @Input() type = '';
+  @Input() closable = false;
 }

@@ -22,6 +22,7 @@ import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
   selectIsOpenWaitSnackBar,
@@ -109,6 +110,7 @@ describe('AppStore', () => {
     appStore = TestBed.inject(AppStore);
 
     store.overrideSelector(selectHasDevices, true);
+    store.overrideSelector(selectHasExpiredDevices, true);
     store.overrideSelector(selectHasRiskProfiles, false);
     store.overrideSelector(selectReports, []);
     store.overrideSelector(selectHasConnectionSettings, true);
@@ -154,6 +156,7 @@ describe('AppStore', () => {
         expect(store).toEqual({
           consentShown: false,
           hasDevices: true,
+          hasExpiredDevices: true,
           hasRiskProfiles: false,
           reports: [],
           isStatusLoaded: false,

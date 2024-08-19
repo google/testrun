@@ -21,6 +21,7 @@ import {
   setDevices,
   setHasConnectionSettings,
   setHasDevices,
+  setHasExpiredDevices,
   setHasRiskProfiles,
   setIsOpenAddDevice,
   setIsOpenStartTestrun,
@@ -158,6 +159,18 @@ describe('Reducer', () => {
       const action = setHasDevices({ hasDevices: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ hasDevices: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setHasExpiredDevices action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setHasExpiredDevices({ hasExpiredDevices: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ hasExpiredDevices: true } };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);
