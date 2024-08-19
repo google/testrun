@@ -19,6 +19,8 @@ import util
 from datetime import datetime
 import traceback
 
+from common.statuses import TestResult
+
 LOGGER = None
 RESULTS_DIR = '/runtime/output/'
 CONF_FILE = '/testrun/conf/module_config.json'
@@ -117,22 +119,24 @@ class TestModule:
             traceback.print_exc()
         else:
           LOGGER.error(f'Test {test["name"]} has not been implemented')
-          result = 'Error', 'This test could not be found'
+          result = TestResult.ERROR, 'This test could not be found'
       else:
         LOGGER.debug(f'Test {test["name"]} is disabled')
-        result = 'Disabled', 'This test did not run because it is disabled'
+        result = (TestResult.DISABLED,
+                  'This test did not run because it is disabled')
 
       # Check if the test module has returned a result
       if result is not None:
 
         # Compliant or non-compliant as a boolean only
         if isinstance(result, bool):
-          test['result'] = 'Compliant' if result else 'Non-Compliant'
+          test['result'] = (TestResult.COMPLIANT
+                            if result else TestResult.NON_COMPLIANT)
           test['description'] = 'No description was provided for this test'
         else:
           # Error result
           if result[0] is None:
-            test['result'] = 'Error'
+            test['result'] = TestResult.ERROR
             if len(result) > 1:
               test['description'] = result[1]
             else:
@@ -140,14 +144,14 @@ class TestModule:
 
           # Compliant / Non-Compliant result
           elif isinstance(result[0], bool):
-            test['result'] = 'Compliant' if result[0] else 'Non-Compliant'
-
+            test['result'] = (TestResult.COMPLIANT
+                              if result[0] else TestResult.NON_COMPLIANT)
           # Result may be a string, e.g Error, Feature Not Detected
           elif isinstance(result[0], str):
             test['result'] = result[0]
           else:
             LOGGER.error(f'Unknown result detected: {result[0]}')
-            test['result'] = 'Error'
+            test['result'] = TestResult.ERROR
 
           # Check that description is a string
           if isinstance(result[1], str):
@@ -160,11 +164,11 @@ class TestModule:
             test['details'] = result[2]
       else:
         LOGGER.debug('No result was returned from the test module')
-        test['result'] = 'Error'
+        test['result'] = TestResult.ERROR
         test['description'] = 'An error occured whilst running this test'
 
       # Remove the steps to resolve if compliant already
-      if (test['result'] == 'Compliant' and 'recommendations' in test):
+      if (test['result'] == TestResult.COMPLIANT and 'recommendations' in test):
         test.pop('recommendations')
 
       test['end'] = datetime.now().isoformat()
