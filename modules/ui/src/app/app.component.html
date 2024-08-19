@@ -68,11 +68,7 @@ limitations under the License.
         </ng-container>
         <app-version
           [consentShown]="vm.consentShown"
-          [hasRiskProfiles]="vm.hasRiskProfiles"
-          (consentShownEvent)="consentShown()"
-          (navigateToRiskAssessmentEvent)="
-            navigateToRiskAssessment()
-          "></app-version>
+          (consentShownEvent)="consentShown()"></app-version>
       </div>
     </mat-drawer>
 

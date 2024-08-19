@@ -16,6 +16,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { CalloutType } from '../../model/callout-type';
 
 @Component({
   selector: 'app-callout',
@@ -26,5 +27,6 @@ import { MatIconModule } from '@angular/material/icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalloutComponent {
+  public readonly CalloutType = CalloutType;
   @Input() type = '';
 }
