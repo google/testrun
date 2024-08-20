@@ -24,6 +24,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { CalloutType } from '../../model/callout-type';
 
 @Component({
   selector: 'app-callout',
@@ -34,6 +35,7 @@ import { MatButtonModule } from '@angular/material/button';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalloutComponent {
+  public readonly CalloutType = CalloutType;
   @HostBinding('class.hidden') @Input() closed: boolean = false;
   @Input() id: string | null = null;
   @Input() type = '';
