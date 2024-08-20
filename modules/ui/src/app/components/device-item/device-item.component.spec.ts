@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Device, DeviceView } from '../../model/device';
+import { Device, DeviceStatus, DeviceView } from '../../model/device';
 
 import { DeviceItemComponent } from './device-item.component';
 import { DevicesModule } from '../../pages/devices/devices.module';
@@ -39,6 +39,7 @@ describe('DeviceItemComponent', () => {
     component = fixture.componentInstance;
     compiled = fixture.nativeElement as HTMLElement;
     component.device = {
+      status: DeviceStatus.VALID,
       manufacturer: 'Delta',
       model: 'O3-DIN-CPU',
       mac_addr: '00:1e:42:35:73:c4',

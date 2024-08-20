@@ -13,11 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Device, DeviceQuestionnaireSection } from '../model/device';
+import {
+  Device,
+  DeviceStatus,
+  DeviceQuestionnaireSection,
+} from '../model/device';
 import { ProfileRisk } from '../model/profile';
 import { FormControlType } from '../model/question';
 
 export const device = {
+  status: DeviceStatus.VALID,
+  manufacturer: 'Delta',
+  model: 'O3-DIN-CPU',
+  mac_addr: '00:1e:42:35:73:c4',
+  test_modules: {
+    dns: {
+      enabled: true,
+    },
+  },
+} as Device;
+
+export const expired_device = {
+  status: DeviceStatus.INVALID,
   manufacturer: 'Delta',
   model: 'O3-DIN-CPU',
   mac_addr: '00:1e:42:35:73:c4',
@@ -28,6 +45,7 @@ export const device = {
   },
 } as Device;
 export const updated_device = {
+  status: DeviceStatus.VALID,
   manufacturer: 'Alpha',
   model: 'O3-XYZ-CPU',
   mac_addr: '00:1e:42:35:73:11',

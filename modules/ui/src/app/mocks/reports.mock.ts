@@ -1,11 +1,13 @@
 import { HistoryTestrun, TestrunStatus } from '../model/testrun-status';
 import { MatTableDataSource } from '@angular/material/table';
+import { DeviceStatus } from '../model/device';
 
 export const HISTORY = [
   {
     mac_addr: '01:02:03:04:05:06',
     status: 'compliant',
     device: {
+      status: DeviceStatus.VALID,
       manufacturer: 'Delta',
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:06',
@@ -19,6 +21,7 @@ export const HISTORY = [
     status: 'compliant',
     mac_addr: '01:02:03:04:05:07',
     device: {
+      status: DeviceStatus.VALID,
       manufacturer: 'Delta',
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:07',
@@ -32,6 +35,7 @@ export const HISTORY = [
     mac_addr: null,
     status: 'compliant',
     device: {
+      status: DeviceStatus.VALID,
       manufacturer: 'Delta',
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:08',
@@ -48,6 +52,7 @@ export const HISTORY_AFTER_REMOVE = [
     mac_addr: '01:02:03:04:05:06',
     status: 'compliant',
     device: {
+      status: DeviceStatus.VALID,
       manufacturer: 'Delta',
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:06',
@@ -61,6 +66,7 @@ export const HISTORY_AFTER_REMOVE = [
     mac_addr: null,
     status: 'compliant',
     device: {
+      status: DeviceStatus.VALID,
       manufacturer: 'Delta',
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:08',
@@ -77,6 +83,7 @@ export const FORMATTED_HISTORY = [
     status: 'compliant',
     mac_addr: '01:02:03:04:05:06',
     device: {
+      status: DeviceStatus.VALID,
       manufacturer: 'Delta',
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:06',
@@ -93,6 +100,7 @@ export const FORMATTED_HISTORY = [
     status: 'compliant',
     mac_addr: '01:02:03:04:05:07',
     device: {
+      status: DeviceStatus.VALID,
       manufacturer: 'Delta',
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:07',
@@ -109,6 +117,7 @@ export const FORMATTED_HISTORY = [
     mac_addr: null,
     status: 'compliant',
     device: {
+      status: DeviceStatus.VALID,
       manufacturer: 'Delta',
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:08',

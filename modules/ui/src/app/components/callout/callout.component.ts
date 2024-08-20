@@ -13,20 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  HostBinding,
+  Input,
+  Output,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { CalloutType } from '../../model/callout-type';
 
 @Component({
   selector: 'app-callout',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule],
   templateUrl: './callout.component.html',
   styleUrls: ['./callout.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalloutComponent {
   public readonly CalloutType = CalloutType;
+  @HostBinding('class.hidden') @Input() closed: boolean = false;
+  @Input() id: string | null = null;
   @Input() type = '';
+  @Input() closable = false;
+  @Output() calloutClosed = new EventEmitter<string | null>();
 }

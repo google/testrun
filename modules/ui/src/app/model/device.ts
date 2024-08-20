@@ -21,6 +21,12 @@ export interface Device {
   mac_addr: string;
   test_modules?: TestModules;
   firmware?: string;
+  status: DeviceStatus;
+}
+
+export enum DeviceStatus {
+  VALID = 'Valid',
+  INVALID = 'Invalid',
 }
 
 /**

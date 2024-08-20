@@ -23,7 +23,7 @@ import {
 } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-import { Device, TestModule } from '../../../../model/device';
+import { Device, DeviceStatus, TestModule } from '../../../../model/device';
 import { DeviceValidators } from './device.validators';
 import { Subject } from 'rxjs';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
@@ -159,6 +159,7 @@ export class DeviceFormComponent
       }
     );
     return {
+      status: DeviceStatus.VALID,
       model: this.model.value.trim(),
       manufacturer: this.manufacturer.value.trim(),
       mac_addr: this.mac_addr.value.trim(),
