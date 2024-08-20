@@ -20,10 +20,14 @@ import base64
 from common import logger
 import json
 import os
+from jinja2 import Template
+from copy import deepcopy
 
 PROFILES_PATH = 'local/risk_profiles'
 LOGGER = logger.get_logger('risk_profile')
 RESOURCES_DIR = 'resources/report'
+TEMPLATE_FILE = 'risk_report.html'
+TEMPLATE_STYLES = 'styles.css'
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -43,6 +47,12 @@ class RiskProfile():
 
   def __init__(self, profile_json=None, profile_format=None):
 
+    # Jinja template
+    with open(os.path.join(report_resource_dir, TEMPLATE_FILE), 'r', encoding='UTF-8') as template_file:
+        self._template = Template(template_file.read())
+    with open(os.path.join(report_resource_dir, TEMPLATE_STYLES), 'r', encoding='UTF-8') as style_file:
+        self._template_styles = style_file.read()
+
     if profile_json is None or profile_format is None:
       return
 
@@ -55,8 +65,10 @@ class RiskProfile():
     self._device = None
     self._profile_format = profile_format
 
+
     self._validate(profile_json, profile_format)
     self.update_risk(profile_format)
+
 
   # Load a profile without modifying the created date
   # but still validate the profile
@@ -295,21 +307,42 @@ class RiskProfile():
   def to_html(self, device):
 
     self._device = device
+    high_risk_message = '''The device has been assessed to be high
+                               risk due to the nature of the answers provided
+                                 about the device functionality.'''
+    limited_risk_message = '''The device has been assessed to be limited risk
+                               due to the nature of the answers provided about
+                                 the device functionality.'''
+    with open(test_run_img_file, 'rb') as f:
+      logo_img_b64 = base64.b64encode(f.read()).decode('utf-8')
+    pages = self._generate_pages()
+    return self._template.render(
+                                styles=self._template_styles,
+                                manufacturer=self._device.manufacturer,
+                                model=self._device.model,
+                                logo=logo_img_b64,
+                                risk=self.risk,
+                                high_risk_message=high_risk_message,
+                                limited_risk_message=limited_risk_message,
+                                pages=pages,
+                                version=self.version,
+                                created_at=self.created.strftime('%d.%m.%Y')
+                                )
 
-    return f'''
-    <!DOCTYPE html>
-    <html lang="en">
-      {self._generate_head()}
-    <body>
-      <div class="page">
-        {self._generate_header()}
-        {self._generate_risk_banner()}
-        {self._generate_risk_questions()}
-        {self._generate_footer()}
-      </div>
-    </body>
-    </html>
-    '''
+    # return f'''
+    # <!DOCTYPE html>
+    # <html lang="en">
+    #   {self._generate_head()}
+    # <body>
+    #   <div class="page">
+    #     {self._generate_header()}
+    #     {self._generate_risk_banner()}
+    #     {self._generate_risk_questions()}
+    #     {self._generate_footer()}
+    #   </div>
+    # </body>
+    # </html>
+    # '''
 
   def _generate_head(self):
 
@@ -355,6 +388,57 @@ class RiskProfile():
         </div>
       </div>
     '''
+  
+
+  def _generate_pages(self):
+    max_page_height = 350
+    height = 0
+    pages = []
+    current_page = []
+    index = 1
+
+    for question in self.questions:
+
+      if height > max_page_height:
+        pages.append(current_page)
+        height = 0
+        current_page = []
+
+      page_item = deepcopy(question)
+
+      if isinstance(page_item['answer'], str):
+
+        if len(page_item['answer']) > 400:
+          height += 160
+        elif len(page_item['answer']) > 300:
+          height += 140
+        elif len(page_item['answer']) > 200:
+          height += 120
+        elif len(page_item['answer']) > 100:
+          height += 70
+        else:
+          height += 53     
+
+      # Select multiple answers
+      elif isinstance(page_item['answer'], list):
+        text_answers = []
+
+        options = self._get_format_question(
+          question=page_item['question'],
+          profile_format=self._profile_format)['options']
+
+        options_dict = dict(enumerate(options))
+
+        for answer_index in page_item['answer']:
+          height += 40
+          text_answers.append(options_dict[answer_index]['text'])
+        page_item['answer'] = text_answers
+      page_item['index'] = index
+      index += 1
+      current_page.append(page_item)
+    pages.append(current_page)
+
+    return pages
 
   def _generate_risk_questions(self):
 
