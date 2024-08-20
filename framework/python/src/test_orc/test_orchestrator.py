@@ -60,6 +60,8 @@ class TestOrchestrator:
         os.path.dirname(
             os.path.dirname(
                 os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
+    self._test_modules_running = []
+    self._current_module = 0
 
   def start(self):
     LOGGER.debug("Starting test orchestrator")
@@ -102,7 +104,13 @@ class TestOrchestrator:
       test_modules.append(module)
       self.get_session().add_total_tests(len(module.tests))
 
-    for module in test_modules:
+    # Store enabled test modules in the TestsOrchectrator object
+    self._test_modules_running = test_modules
+    self._current_module = 0
+
+    for index, module in enumerate(test_modules):
+
+      self._current_module = index
       self._run_test_module(module)
 
     LOGGER.info("All tests complete")
@@ -362,7 +370,14 @@ class TestOrchestrator:
     LOGGER.info(f"Running test module {module.name}")
 
     # Get all tests to be executed and set to in progress
-    for test in module.tests:
+    for current_test,test in enumerate(module.tests):
+
+      # Check that device is connected
+      if not self._net_orc.is_device_connected():
+        LOGGER.error("Device was disconnected")
+        self._set_test_modules_error(current_test)
+        self._session.set_status("Cancelled")
+        return
 
       test_copy = copy.deepcopy(test)
       test_copy.result = "In Progress"
@@ -486,19 +501,25 @@ class TestOrchestrator:
 
     try:
       with open(results_file, "r", encoding="utf-8-sig") as f:
+
+        # Load results from JSON file
         module_results_json = json.load(f)
         module_results = module_results_json["results"]
         for test_result in module_results:
 
-          # Convert dict into TestCase object
+          # Convert dict from json into TestCase object
           test_case = TestCase(
             name=test_result["name"],
             description=test_result["description"],
             expected_behavior=test_result["expected_behavior"],
             required_result=test_result["required_result"],
             result=test_result["result"])
-          test_case.result=test_result["result"]
 
+          # Any informational test should always report informational
+          if test_case.required_result == "Informational":
+            test_case.result = "Informational"
+
+          # Add steps to resolve if test is non-compliant
           if (test_case.result == "Non-Compliant" and
               "recommendations" in test_result):
             test_case.recommendations = test_result["recommendations"]
@@ -729,3 +750,13 @@ class TestOrchestrator:
 
   def get_session(self):
     return self._session
+
+  def _set_test_modules_error(self, current_test):
+    """Set all remaining tests to error"""
+    for i in range(self._current_module, len(self._test_modules_running)):
+      start_idx = current_test if i == self._current_module else 0
+      for j in range(start_idx, len(self._test_modules_running[i].tests)):
+        self.get_session().set_test_result_error(
+          self._test_modules_running[i].tests[j]
+          )
+

@@ -17,8 +17,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  HostListener,
   Input,
   Output,
+  ViewChild,
 } from '@angular/core';
 import {
   Profile,
@@ -29,25 +31,55 @@ import { MatIcon } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { TestRunService } from '../../../services/test-run.service';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-profile-item',
   standalone: true,
   imports: [MatIcon, MatButtonModule, CommonModule, MatTooltipModule],
+  providers: [MatTooltip],
   templateUrl: './profile-item.component.html',
   styleUrl: './profile-item.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileItemComponent {
   public readonly ProfileStatus = ProfileStatus;
+  public readonly EXPIRED_TOOLTIP =
+    'Expired. Please, create a new Risk profile.';
   @Input() profile!: Profile;
   @Output() deleteButtonClicked = new EventEmitter<string>();
   @Output() profileClicked = new EventEmitter<Profile>();
+  @Output() copyProfileClicked = new EventEmitter<Profile>();
 
-  constructor(private readonly testRunService: TestRunService) {}
+  @ViewChild('tooltip') tooltip!: MatTooltip;
+
+  @HostListener('focusout', ['$event'])
+  outEvent(): void {
+    if (this.profile.status === ProfileStatus.EXPIRED) {
+      this.tooltip.message = this.EXPIRED_TOOLTIP;
+    }
+  }
+
+  constructor(
+    private readonly testRunService: TestRunService,
+    private liveAnnouncer: LiveAnnouncer
+  ) {}
 
   public getRiskClass(riskResult: string): RiskResultClassName {
     return this.testRunService.getRiskClass(riskResult);
+  }
+
+  public async enterProfileItem(profile: Profile) {
+    if (profile.status === ProfileStatus.EXPIRED) {
+      this.tooltip.message =
+        'This risk profile is outdated. Please create a new risk profile.';
+      this.tooltip.show();
+      await this.liveAnnouncer.announce(
+        'This risk profile is outdated. Please create a new risk profile.'
+      );
+    } else {
+      this.profileClicked.emit(profile);
+    }
   }
 }

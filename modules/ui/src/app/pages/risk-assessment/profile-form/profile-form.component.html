@@ -76,6 +76,21 @@ limitations under the License.
     (click)="onSaveClick(ProfileStatus.DRAFT)">
     Save Draft
   </button>
+  <button
+    *ngIf="selectedProfile?.status !== ProfileStatus.EXPIRED"
+    mat-button
+    class="discard-button"
+    [disabled]="profileForm.pristine"
+    (click)="onDiscardClick()">
+    Discard
+  </button>
+  <button
+    *ngIf="selectedProfile?.status === ProfileStatus.EXPIRED"
+    mat-button
+    class="discard-button"
+    (click)="onDiscardClick()">
+    Close
+  </button>
 </div>
 
 <ng-template

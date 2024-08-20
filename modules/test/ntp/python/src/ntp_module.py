@@ -14,8 +14,8 @@
 """NTP test module"""
 from test_module import TestModule
 from scapy.all import rdpcap, IP, IPv6, NTP, UDP, Ether
-from datetime import datetime
 import os
+from collections import defaultdict
 
 LOG_NAME = 'test_ntp'
 MODULE_REPORT_FILE_NAME = 'ntp_report.html'
@@ -69,6 +69,33 @@ class NTPModule(TestModule):
     total_responses = sum(1 for row in ntp_table_data
                           if row['Type'] == 'Server')
 
+    # Initialize a dictionary to store timestamps for each unique combination
+    timestamps = defaultdict(list)
+
+    # Collect timestamps for each unique combination
+    for row in ntp_table_data:
+      # Add the timestamp to the corresponding combination
+      key = (row['Source'], row['Destination'], row['Type'], row['Version'])
+      timestamps[key].append(row['Timestamp'])
+
+    # Calculate the average time between requests for each unique combination
+    average_time_between_requests = {}
+
+    for key, times in timestamps.items():
+      # Sort the timestamps
+      times.sort()
+
+      # Calculate the time differences between consecutive timestamps
+      time_diffs = [t2 - t1 for t1, t2 in zip(times[:-1], times[1:])]
+
+      # Calculate the average of the time differences
+      if time_diffs:
+        avg_diff = sum(time_diffs) / len(time_diffs)
+      else:
+        avg_diff = 0  # one timestamp, the average difference is 0
+
+      average_time_between_requests[key] = avg_diff
+
     # Add summary table
     html_content += (f'''
       <table class="module-summary">
@@ -92,7 +119,6 @@ class NTPModule(TestModule):
       ''')
 
     if total_requests + total_responses > 0:
-
       table_content = '''
         <table class="module-data">
           <thead>
@@ -101,37 +127,39 @@ class NTPModule(TestModule):
               <th>Destination</th>
               <th>Type</th>
               <th>Version</th>
-              <th>Timestamp</th>
+              <th>Count</th>
+              <th>Sync Request Average</th>
             </tr>
           </thead>
           <tbody>'''
 
-      for row in ntp_table_data:
+      # Generate the HTML table with the count column
+      for (src, dst, typ,
+           version), avg_diff in average_time_between_requests.items():
+        cnt = len(timestamps[(src, dst, typ, version)])
 
-        # Timestamp of the NTP packet
-        dt_object = datetime.utcfromtimestamp(row['Timestamp'])
+        # Sync Average only applies to client requests
+        if 'Client' in typ:
+          # Convert avg_diff to seconds and format it
+          avg_diff_seconds = avg_diff
+          avg_formatted_time = f'{avg_diff_seconds:.3f} seconds'
+        else:
+          avg_formatted_time = 'N/A'
 
-        # Extract milliseconds from the fractional part of the timestamp
-        milliseconds = int((row['Timestamp'] % 1) * 1000)
-
-        # Format the datetime object with milliseconds
-        formatted_time = dt_object.strftime(
-            '%b %d, %Y %H:%M:%S.') + f'{milliseconds:03d}'
-
-        table_content += (f'''
+        table_content += f'''
             <tr>
-              <td>{row['Source']}</td>
-              <td>{row['Destination']}</td>
-              <td>{row['Type']}</td>
-              <td>{row['Version']}</td>
-              <td>{formatted_time}</td>
-            </tr>''')
+              <td>{src}</td>
+              <td>{dst}</td>
+              <td>{typ}</td>
+              <td>{version}</td>
+              <td>{cnt}</td>
+              <td>{avg_formatted_time}</td>
+            </tr>'''
 
       table_content += '''
             </tbody>
           </table>
                        '''
-
       html_content += table_content
 
     else:
@@ -159,8 +187,8 @@ class NTPModule(TestModule):
 
     # Read the pcap files
     packets = (rdpcap(self.startup_capture_file) +
-      rdpcap(self.monitor_capture_file) +
-      rdpcap(self.ntp_server_capture_file))
+               rdpcap(self.monitor_capture_file) +
+               rdpcap(self.ntp_server_capture_file))
 
     # Iterate through NTP packets
     for packet in packets:
@@ -171,6 +199,10 @@ class NTPModule(TestModule):
         # Local NTP server syncs to external servers so we need to filter only
         # for traffic to/from the device
         if self._device_mac in (source_mac, destination_mac):
+
+          source_ip = None
+          dest_ip = None
+
           if IP in packet:
             source_ip = packet[IP].src
             dest_ip = packet[IP].dst
@@ -218,6 +250,9 @@ class NTPModule(TestModule):
     for packet in packet_capture:
 
       if NTP in packet and packet.src == self._device_mac:
+
+        dest_ip = None
+
         if IP in packet:
           dest_ip = packet[IP].dst
         elif IPv6 in packet:
@@ -229,16 +264,17 @@ class NTPModule(TestModule):
           device_sends_ntp3 = True
           LOGGER.info(f'Device sent NTPv3 request to {dest_ip}')
 
-    if not (device_sends_ntp3 or device_sends_ntp4):
-      result = False, 'Device has not sent any NTP requests'
-    elif device_sends_ntp3 and device_sends_ntp4:
+    result = False, 'Device has not sent any NTP requests'
+
+    if device_sends_ntp3 and device_sends_ntp4:
       result = False, ('Device sent NTPv3 and NTPv4 packets. ' +
-                       'NTPv3 is not allowed.')
+                       'NTPv3 is not allowed')
     elif device_sends_ntp3:
       result = False, ('Device sent NTPv3 packets. '
-                       'NTPv3 is not allowed.')
+                       'NTPv3 is not allowed')
     elif device_sends_ntp4:
-      result = True, 'Device sent NTPv4 packets.'
+      result = True, 'Device sent NTPv4 packets'
+
     LOGGER.info(result[1])
     return result
 
@@ -255,6 +291,7 @@ class NTPModule(TestModule):
     for packet in packet_capture:
       if NTP in packet and packet.src == self._device_mac:
         device_sends_ntp = True
+        dest_ip = None
         if IP in packet:
           dest_ip = packet[IP].dst
         elif IPv6 in packet:
@@ -266,17 +303,17 @@ class NTPModule(TestModule):
           LOGGER.info('Device sent NTP request to non-DHCP provided NTP server')
           ntp_to_remote = True
 
+    result = 'Feature Not Detected', 'Device has not sent any NTP requests'
+
     if device_sends_ntp:
       if ntp_to_local and ntp_to_remote:
         result = False, ('Device sent NTP request to DHCP provided ' +
                          'server and non-DHCP provided server')
       elif ntp_to_remote:
         result = ('Feature Not Detected',
-          'Device sent NTP request to non-DHCP provided server')
+                  'Device sent NTP request to non-DHCP provided server')
       elif ntp_to_local:
         result = True, 'Device sent NTP request to DHCP provided server'
-    else:
-      result = 'Feature Not Detected', 'Device has not sent any NTP requests'
 
     LOGGER.info(result[1])
     return result

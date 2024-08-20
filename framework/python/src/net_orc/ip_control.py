@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """IP Control Module"""
+import psutil
+import typing as t
 from common import logger
 from common import util
 import re
@@ -43,10 +45,7 @@ class IPControl:
 
   def check_interface_status(self, interface_name):
     output = util.run_command(cmd=f'ip link show {interface_name}', output=True)
-    if 'state DOWN ' in output[0]:
-      return False
-    else:
-      return True
+    return 'state UP ' in output[0]
 
   def delete_link(self, interface_name):
     """Delete an ip link"""
@@ -99,7 +98,7 @@ class IPControl:
 
   def get_namespaces(self):
     result = util.run_command('ip netns list')
-    #Strip ID's from the namespace results
+    # Strip ID's from the namespace results
     namespaces = re.findall(r'(\S+)(?:\s+\(id: \d+\))?', result[0])
     return namespaces
 
@@ -237,3 +236,30 @@ class IPControl:
       LOGGER.error(f'Failed to set interface up {namespace_intf}')
       return False
     return True
+
+  def ping_via_gateway(self, host):
+    """Ping the host trough the gateway container"""
+    command = f'timeout 3 docker exec tr-ct-gateway ping -W 1 -c 1 {host}'
+    output = util.run_command(command)
+    if '0% packet loss' in output[0]:
+      return True
+    return False
+
+  @staticmethod
+  def get_sys_interfaces() -> t.Dict[str, t.Dict[str, str]]:
+    """ Retrieves all Ethernet network interfaces from the host system
+    Returns:
+        t.Dict[str, str]
+    """
+    addrs = psutil.net_if_addrs()
+    ifaces = {}
+
+    for key in addrs:
+      nic = addrs[key]
+      # Ignore any interfaces that are not ethernet
+      if not (key.startswith('en') or key.startswith('eth')):
+        continue
+
+      ifaces[key] = nic[0].address
+
+    return ifaces

@@ -17,6 +17,9 @@ import { MatFormField } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { TestRunService } from '../../services/test-run.service';
+import { Routes } from '../../model/routes';
+import { RouterLink } from '@angular/router';
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 
 interface DialogData {
   profiles: Profile[];
@@ -35,14 +38,22 @@ interface DialogData {
     MatFormField,
     MatSelectModule,
     MatOptionModule,
+    RouterLink,
+    MatTooltip,
+    MatTooltipModule,
   ],
   templateUrl: './download-zip-modal.component.html',
   styleUrl: './download-zip-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DownloadZipModalComponent extends EscapableDialogComponent {
+  readonly NO_PROFILE = {
+    name: 'No Risk Profile selected',
+    questions: [],
+  } as Profile;
+  public readonly Routes = Routes;
   profiles: Profile[] = [];
-  selectedProfile: string = '';
+  selectedProfile: Profile;
   constructor(
     private readonly testRunService: TestRunService,
     public override dialogRef: MatDialogRef<DownloadZipModalComponent>,
@@ -56,12 +67,20 @@ export class DownloadZipModalComponent extends EscapableDialogComponent {
       this.profiles.sort((a, b) =>
         a.name.toLowerCase().localeCompare(b.name.toLowerCase())
       );
-      this.selectedProfile = this.profiles[0].name;
     }
+    this.profiles.unshift(this.NO_PROFILE);
+    this.selectedProfile = this.profiles[0];
   }
 
-  cancel(profile?: string | null) {
-    this.dialogRef.close(profile);
+  cancel(profile?: Profile | null) {
+    if (profile === null) {
+      this.dialogRef.close(null);
+    }
+    let value = profile?.name;
+    if (profile && profile?.name === this.NO_PROFILE.name) {
+      value = '';
+    }
+    this.dialogRef.close(value);
   }
 
   public getRiskClass(riskResult: string): RiskResultClassName {

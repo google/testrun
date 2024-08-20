@@ -14,21 +14,59 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <span class="risk-profile-select-form-title">Download ZIP file</span>
-<p class="risk-profile-select-form-content">
-  Risk profile is required for device verification. Please, consider creating a
-  Risk assessment profile for your ZIP report.
+<p class="risk-profile-select-form-content" *ngIf="profiles.length === 1">
+  Risk Profile is required for device verification. Please consider going to
+  <a
+    tabindex="0"
+    role="link"
+    class="redirect-link"
+    aria-label="Go to Risk Assessment tab"
+    matTooltip="Go to Risk Assessment tab"
+    (keydown.enter)="cancel(null)"
+    (keydown.space)="cancel(null)"
+    (click)="cancel(null)"
+    >Risk Assessment</a
+  >
+  and creating a profile to attach to your report.
 </p>
 
-<div *ngIf="profiles.length > 0">
+<p class="risk-profile-select-form-content" *ngIf="profiles.length > 1">
+  Risk Profile is required for device verification. Please select a profile from
+  the list, or go to
+  <a
+    tabindex="0"
+    role="link"
+    class="redirect-link"
+    aria-label="Go to Risk Assessment tab"
+    matTooltip="Go to Risk Assessment tab"
+    (keydown.enter)="cancel(null)"
+    (keydown.space)="cancel(null)"
+    (click)="cancel(null)"
+    >Risk Assessment</a
+  >
+  and create a new one to attach to your report.
+</p>
+
+<div>
   <mat-form-field appearance="outline" class="profile-select">
     <mat-select
       #select
+      [disabled]="profiles.length === 1"
       [(value)]="selectedProfile"
-      aria-label="Please choose risk assessment profile">
+      aria-label="Please choose a Risk Profile from the list">
       <mat-select-trigger>
-        {{ selectedProfile }}
+        {{ selectedProfile.name }}
+        <span
+          *ngIf="selectedProfile.risk"
+          class="profile-item-risk"
+          [ngClass]="getRiskClass(selectedProfile.risk)">
+          {{ selectedProfile.risk }} risk
+        </span>
       </mat-select-trigger>
-      <mat-option *ngFor="let profile of profiles" [value]="profile.name">
+      <mat-option
+        *ngFor="let profile of profiles"
+        [value]="profile"
+        class="profile-item-option">
         <div class="select-container">
           <span
             *ngIf="profile.risk"
@@ -45,20 +83,12 @@ limitations under the License.
         </div>
       </mat-option>
     </mat-select>
-    <mat-hint>Please choose risk assessment profile</mat-hint>
+    <mat-hint>Please choose a Risk Profile from the list</mat-hint>
   </mat-form-field>
 
   <mat-dialog-actions align="end" class="risk-profile-select-form-actions">
     <button
       (click)="cancel(null)"
-      color="primary"
-      mat-button
-      type="button"
-      class="redirect-button">
-      Go to Risk Assessment
-    </button>
-    <button
-      (click)="cancel()"
       class="cancel-button"
       color="primary"
       mat-button
@@ -76,34 +106,3 @@ limitations under the License.
     </button>
   </mat-dialog-actions>
 </div>
-
-<mat-dialog-actions
-  *ngIf="profiles.length === 0"
-  align="end"
-  class="risk-profile-select-form-actions">
-  <button
-    (click)="cancel('')"
-    color="primary"
-    mat-button
-    type="button"
-    aria-label="Download ZIP file without Risk Assessment"
-    class="download-button">
-    Download Anyway
-  </button>
-  <button
-    (click)="cancel()"
-    class="cancel-button"
-    color="primary"
-    mat-button
-    type="button">
-    Cancel
-  </button>
-  <button
-    (click)="cancel(null)"
-    class="redirect-button"
-    color="primary"
-    mat-flat-button
-    type="button">
-    Go to Risk Assessment
-  </button>
-</mat-dialog-actions>

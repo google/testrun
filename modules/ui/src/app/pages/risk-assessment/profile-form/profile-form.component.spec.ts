@@ -18,8 +18,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProfileFormComponent } from './profile-form.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
+  COPY_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
   NEW_PROFILE_MOCK_DRAFT,
+  OUTDATED_DRAFT_PROFILE_MOCK,
   PROFILE_FORM,
   PROFILE_MOCK,
   PROFILE_MOCK_2,
@@ -132,7 +134,6 @@ describe('ProfileFormComponent', () => {
         name.dispatchEvent(new Event('input'));
         component.nameControl.markAsTouched();
 
-        fixture.detectChanges();
         fixture.detectChanges();
 
         const nameError = compiled.querySelector('mat-error')?.innerHTML;
@@ -388,9 +389,52 @@ describe('ProfileFormComponent', () => {
         });
       });
     });
+
+    describe('Discard button', () => {
+      beforeEach(() => {
+        fillForm(component);
+        fixture.detectChanges();
+      });
+
+      it('should be enabled when form is filled', () => {
+        const discardButton = compiled.querySelector(
+          '.discard-button'
+        ) as HTMLButtonElement;
+
+        expect(discardButton.disabled).toBeFalse();
+      });
+
+      it('should emit discard', () => {
+        const emitSpy = spyOn(component.discard, 'emit');
+        const discardButton = compiled.querySelector(
+          '.discard-button'
+        ) as HTMLButtonElement;
+        discardButton.click();
+
+        expect(emitSpy).toHaveBeenCalled();
+      });
+    });
   });
 
   describe('Class tests', () => {
+    describe('with outdated draft profile', () => {
+      beforeEach(() => {
+        component.selectedProfile = OUTDATED_DRAFT_PROFILE_MOCK;
+        fixture.detectChanges();
+      });
+
+      it('should have an error when uses the name of copy profile', () => {
+        expect(component.profileForm.value).toEqual({
+          0: '',
+          1: 'IoT Sensor',
+          2: '',
+          3: { 0: false, 1: false, 2: false },
+          4: '',
+          name: 'Outdated profile',
+        });
+      });
+    });
+
     describe('with profile', () => {
       beforeEach(() => {
         component.selectedProfile = PROFILE_MOCK;
@@ -428,6 +472,15 @@ describe('ProfileFormComponent', () => {
         ).toBeFalse();
 
         component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, PROFILE_MOCK_3];
+        expect(
+          component.nameControl.hasError('has_same_profile_name')
+        ).toBeTrue();
+      });
+
+      it('should have an error when uses the name of copy profile', () => {
+        component.selectedProfile = COPY_PROFILE_MOCK;
+        component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, COPY_PROFILE_MOCK];
+
         expect(
           component.nameControl.hasError('has_same_profile_name')
         ).toBeTrue();

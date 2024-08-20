@@ -26,7 +26,12 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { NEW_PROFILE_MOCK, PROFILE_MOCK } from '../../mocks/profile.mock';
+import {
+  COPY_PROFILE_MOCK,
+  NEW_PROFILE_MOCK,
+  NEW_PROFILE_MOCK_DRAFT,
+  PROFILE_MOCK,
+} from '../../mocks/profile.mock';
 import { of } from 'rxjs';
 import { Component, Input } from '@angular/core';
 import { Profile, ProfileFormat } from '../../model/profile';
@@ -217,6 +222,13 @@ describe('RiskAssessmentComponent', () => {
       });
     });
 
+    describe('#getCopyOfProfile', () => {
+      it('should open the form with copy of profile', () => {
+        const copy = component.getCopyOfProfile(PROFILE_MOCK);
+        expect(copy).toEqual(COPY_PROFILE_MOCK);
+      });
+    });
+
     describe('#saveProfile', () => {
       describe('with no profile selected', () => {
         beforeEach(() => {
@@ -236,7 +248,7 @@ describe('RiskAssessmentComponent', () => {
       });
 
       describe('with profile selected', () => {
-        it('should open save profile modal', fakeAsync(() => {
+        it('should open save profile modal for valid profile', fakeAsync(() => {
           const openSpy = spyOn(component.dialog, 'open').and.returnValue({
             afterClosed: () => of(true),
           } as MatDialogRef<typeof SimpleDialogComponent>);
@@ -244,9 +256,31 @@ describe('RiskAssessmentComponent', () => {
           component.saveProfileClicked(NEW_PROFILE_MOCK, PROFILE_MOCK);
 
           expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
-            ariaLabel: 'Save changes',
+            ariaLabel: 'Save profile',
             data: {
-              title: 'Save changes',
+              title: 'Save profile',
+              content: `You are about to save changes in Primary profile. Are you sure?`,
+            },
+            autoFocus: true,
+            hasBackdrop: true,
+            disableClose: true,
+            panelClass: 'simple-dialog',
+          });
+
+          openSpy.calls.reset();
+        }));
+
+        it('should open save draft profile modal', fakeAsync(() => {
+          const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+            afterClosed: () => of(true),
+          } as MatDialogRef<typeof SimpleDialogComponent>);
+
+          component.saveProfileClicked(NEW_PROFILE_MOCK_DRAFT, PROFILE_MOCK);
+
+          expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
+            ariaLabel: 'Save draft profile',
+            data: {
+              title: 'Save draft profile',
               content: `You are about to save changes in Primary profile. Are you sure?`,
             },
             autoFocus: true,
@@ -282,6 +316,42 @@ describe('RiskAssessmentComponent', () => {
 
           expect(component.isOpenProfileForm).toBeFalse();
         }));
+      });
+    });
+
+    describe('#discard', () => {
+      describe('with no selected profile', () => {
+        beforeEach(() => {
+          component.discard(null);
+        });
+
+        it('should call setFocusOnCreateButton', () => {
+          expect(
+            mockRiskAssessmentStore.setFocusOnCreateButton
+          ).toHaveBeenCalled();
+        });
+
+        it('should close the form', () => {
+          expect(component.isOpenProfileForm).toBeFalse();
+        });
+      });
+
+      describe('with selected profile', () => {
+        beforeEach(() => {
+          component.discard(PROFILE_MOCK);
+        });
+
+        it('should call setFocusOnCreateButton', () => {
+          expect(
+            mockRiskAssessmentStore.setFocusOnSelectedProfile
+          ).toHaveBeenCalled();
+        });
+
+        it('should update selected profile', () => {
+          expect(
+            mockRiskAssessmentStore.updateSelectedProfile
+          ).toHaveBeenCalledWith(null);
+        });
       });
     });
   });

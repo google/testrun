@@ -15,7 +15,7 @@
 """The overall control of the Test Run application.
 
 This file provides the integration between all of the
-Test Run components, such as net_orc, test_orc and test_ui.
+Testrun components, such as net_orc, test_orc and test_ui.
 
 Run using the provided command scripts in the cmd folder.
 E.g sudo cmd/start
@@ -27,7 +27,7 @@ import shutil
 import signal
 import sys
 import time
-from common import logger, util
+from common import logger, util, mqtt
 from common.device import Device
 from common.session import TestrunSession
 from common.testreport import TestReport
@@ -81,7 +81,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     self._net_only = net_only
     self._single_intf = single_intf
-    self._no_ui = no_ui
+    # Network only option only works if UI is also
+    # disbled so need to set no_ui if net_only is selected
+    self._no_ui = no_ui or net_only
 
     # Catch any exit signals
     self._register_exits()
@@ -108,6 +110,12 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     # Load test modules
     self._test_orc.start()
+
+    # Start websockets server
+    self.start_ws()
+
+    # Init MQTT client
+    self._mqtt_client = mqtt.MQTT()
 
     if self._no_ui:
 
@@ -216,7 +224,14 @@ class Testrun:  # pylint: disable=too-few-public-methods
         'test',
         device.mac_addr.replace(':',''),
         'report.json')
-        
+
+      if not os.path.isfile(report_json_file_path):
+        # Revert to pre 1.3 file path
+        report_json_file_path = os.path.join(
+          reports_folder,
+          report_folder,
+          'report.json')
+
       if not os.path.isfile(report_json_file_path):
         # Revert to pre 1.3 file path
         report_json_file_path = os.path.join(
@@ -369,6 +384,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     LOGGER.info('Shutting down Testrun')
     self.stop()
     self._stop_ui()
+    self._stop_ws()
 
   def _exit_handler(self, signum, arg):  # pylint: disable=unused-argument
     LOGGER.debug('Exit signal received: ' + str(signum))
@@ -384,6 +400,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     # Expand the config file to absolute pathing
     return os.path.abspath(config_file)
+
+  def get_root_dir(self):
+    return root_dir
 
   def get_config_file(self):
     return self._get_config_abs()
@@ -405,6 +424,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
   def _stop_tests(self):
     self._test_orc.stop()
+
+  def get_mqtt_client(self):
+    return self._mqtt_client
 
   def get_device(self, mac_addr):
     """Returns a loaded device object from the device mac address."""
@@ -463,7 +485,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     try:
       client.containers.run(
-            image='test-run/ui',
+            image='testrun/ui',
             auto_remove=True,
             name='tr-ui',
             hostname='testrun.io',
@@ -489,4 +511,40 @@ class Testrun:  # pylint: disable=too-few-public-methods
       if container is not None:
         container.kill()
     except docker.errors.NotFound:
-      return
+      pass
+
+
+  def start_ws(self):
+
+    self._stop_ws()
+
+    LOGGER.info('Starting WS server')
+
+    client = docker.from_env()
+
+    try:
+      client.containers.run(
+            image='testrun/ws',
+            auto_remove=True,
+            name='tr-ws',
+            detach=True,
+            ports={
+              '9001': 9001,
+              '1883': 1883
+            }
+      )
+    except ImageNotFound as ie:
+      LOGGER.error('An error occured whilst starting the websockets server. ' +
+                   'Please investigate and try again.')
+      LOGGER.error(ie)
+      sys.exit(1)
+
+  def _stop_ws(self):
+    LOGGER.info('Stopping websockets server')
+    client = docker.from_env()
+    try:
+      container = client.containers.get('tr-ws')
+      if container is not None:
+        container.kill()
+    except docker.errors.NotFound:
+      pass

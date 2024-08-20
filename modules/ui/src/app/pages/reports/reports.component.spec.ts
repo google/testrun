@@ -15,7 +15,7 @@
  */
 import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 
-import { ReportsComponent } from './reportscomponent';
+import { ReportsComponent } from './reports.component';
 import { TestRunService } from '../../services/test-run.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReportsModule } from './reports.module';
@@ -87,6 +87,7 @@ describe('ReportsComponent', () => {
       'setFilterOpened',
       'updateSort',
       'getHistory',
+      'getReports',
     ]);
     mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
 
@@ -112,18 +113,18 @@ describe('ReportsComponent', () => {
     });
 
     describe('ngOnInit', () => {
-      it('should set dataSource data', () => {
-        component.ngOnInit();
-
-        expect(mockReportsStore.getHistory).toHaveBeenCalled();
-      });
-
       it('should update sort', fakeAsync(() => {
         const sort = new MatSort();
         component.sort = sort;
         component.ngOnInit();
 
         expect(mockReportsStore.updateSort).toHaveBeenCalledWith(sort);
+      }));
+
+      it('should get reports', fakeAsync(() => {
+        component.ngOnInit();
+
+        expect(mockReportsStore.getReports).toHaveBeenCalled();
       }));
     });
 
@@ -275,7 +276,8 @@ describe('ReportsComponent', () => {
       const data = HISTORY[0];
       component.removeDevice(data);
       expect(mockReportsStore.deleteReport).toHaveBeenCalledWith({
-        mac_addr: data.device.mac_addr,
+        mac_addr: data.mac_addr,
+        deviceMacAddr: data.device.mac_addr,
         started: data.started,
       });
     });

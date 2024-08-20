@@ -16,6 +16,7 @@
 
 import { AppState } from './state';
 import {
+  selectAdapters,
   selectDeviceInProgress,
   selectDevices,
   selectError,
@@ -27,9 +28,12 @@ import {
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
+  selectReports,
   selectRiskProfiles,
   selectStatus,
   selectSystemStatus,
+  selectTestModules,
+  selectInternetConnection,
 } from './selectors';
 
 describe('Selectors', () => {
@@ -55,6 +59,10 @@ describe('Selectors', () => {
       systemStatus: null,
       deviceInProgress: null,
       status: null,
+      reports: [],
+      testModules: [],
+      adapters: {},
+      internetConnection: null,
     },
   };
 
@@ -125,6 +133,26 @@ describe('Selectors', () => {
 
   it('should select status', () => {
     const result = selectStatus.projector(initialState);
+    expect(result).toEqual(null);
+  });
+
+  it('should select status', () => {
+    const result = selectReports.projector(initialState);
+    expect(result).toEqual([]);
+  });
+
+  it('should select testModules', () => {
+    const result = selectTestModules.projector(initialState);
+    expect(result).toEqual([]);
+  });
+
+  it('should select adapters', () => {
+    const result = selectAdapters.projector(initialState);
+    expect(result).toEqual({});
+  });
+
+  it('should select internetConnection', () => {
+    const result = selectInternetConnection.projector(initialState);
     expect(result).toEqual(null);
   });
 });

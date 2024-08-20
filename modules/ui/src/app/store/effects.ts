@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
@@ -22,29 +22,49 @@ import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import * as AppActions from './actions';
 import { AppState } from './state';
 import { TestRunService } from '../services/test-run.service';
-import { filter, combineLatest, interval, Subject, timer, take } from 'rxjs';
+import {
+  filter,
+  combineLatest,
+  Subject,
+  timer,
+  take,
+  catchError,
+  EMPTY,
+  Subscription,
+} from 'rxjs';
 import {
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
   selectSystemStatus,
 } from './selectors';
-import { IResult, StatusOfTestrun, TestsData } from '../model/testrun-status';
+import {
+  IDLE_STATUS,
+  IResult,
+  StatusOfTestrun,
+  TestrunStatus,
+  TestsData,
+} from '../model/testrun-status';
 import {
   fetchSystemStatus,
+  fetchSystemStatusSuccess,
+  setReports,
   setStatus,
   setTestrunStatus,
   stopInterval,
+  updateInternetConnection,
 } from './actions';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { NotificationService } from '../services/notification.service';
 import { Profile } from '../model/profile';
+import { TestRunMqttService } from '../services/test-run-mqtt.service';
+import { InternetConnection } from '../model/topic';
 
 const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
 @Injectable()
 export class AppEffects {
-  private startInterval = false;
-  private destroyInterval$: Subject<boolean> = new Subject<boolean>();
+  private statusSubscription: Subscription | undefined;
+  private internetSubscription: Subscription | undefined;
   private destroyWaitDeviceInterval$: Subject<boolean> = new Subject<boolean>();
 
   checkInterfacesInConfig$ = createEffect(() =>
@@ -190,8 +210,8 @@ export class AppEffects {
       return this.actions$.pipe(
         ofType(AppActions.stopInterval),
         tap(() => {
-          this.startInterval = false;
-          this.destroyInterval$.next(true);
+          this.statusSubscription?.unsubscribe();
+          this.internetSubscription?.unsubscribe();
         })
       );
     },
@@ -203,11 +223,9 @@ export class AppEffects {
       return this.actions$.pipe(
         ofType(AppActions.fetchSystemStatusSuccess),
         tap(({ systemStatus }) => {
-          if (
-            this.testrunService.testrunInProgress(systemStatus.status) &&
-            !this.startInterval
-          ) {
+          if (this.testrunService.testrunInProgress(systemStatus.status)) {
             this.pullingSystemStatusData();
+            this.fetchInternetConnection();
           } else if (
             !this.testrunService.testrunInProgress(systemStatus.status)
           ) {
@@ -235,12 +253,10 @@ export class AppEffects {
         tap(([{ systemStatus }, , status]) => {
           // for app - requires only status
           if (systemStatus.status !== status?.status) {
-            this.ngZone.run(() => {
-              this.store.dispatch(setStatus({ status: systemStatus.status }));
-              this.store.dispatch(
-                setTestrunStatus({ systemStatus: systemStatus })
-              );
-            });
+            this.store.dispatch(setStatus({ status: systemStatus.status }));
+            this.store.dispatch(
+              setTestrunStatus({ systemStatus: systemStatus })
+            );
           } else if (
             systemStatus.finished !== status?.finished ||
             (systemStatus.tests as TestsData)?.results?.length !==
@@ -248,11 +264,9 @@ export class AppEffects {
             (systemStatus.tests as IResult[])?.length !==
               (status?.tests as IResult[])?.length
           ) {
-            this.ngZone.run(() => {
-              this.store.dispatch(
-                setTestrunStatus({ systemStatus: systemStatus })
-              );
-            });
+            this.store.dispatch(
+              setTestrunStatus({ systemStatus: systemStatus })
+            );
           }
         })
       );
@@ -273,6 +287,53 @@ export class AppEffects {
     );
   });
 
+  onFetchReports$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchReports),
+      switchMap(() =>
+        this.testrunService.getHistory().pipe(
+          map((reports: TestrunStatus[] | null) => {
+            if (reports !== null) {
+              return AppActions.setReports({ reports });
+            }
+            return AppActions.setReports({ reports: [] });
+          }),
+          catchError(() => {
+            this.store.dispatch(setReports({ reports: [] }));
+            return EMPTY;
+          })
+        )
+      )
+    );
+  });
+
+  checkStatusInReports$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setReports),
+      withLatestFrom(this.store.select(selectSystemStatus)),
+      filter(([, systemStatus]) => {
+        return (
+          systemStatus != null && this.isTestrunFinished(systemStatus.status)
+        );
+      }),
+      filter(([{ reports }, systemStatus]) => {
+        return (
+          !reports?.some(report => report.report === systemStatus!.report) ||
+          false
+        );
+      }),
+      map(() => AppActions.setTestrunStatus({ systemStatus: IDLE_STATUS }))
+    );
+  });
+
+  private isTestrunFinished(status: string) {
+    return (
+      status === StatusOfTestrun.Compliant ||
+      status === StatusOfTestrun.NonCompliant ||
+      status === StatusOfTestrun.Error
+    );
+  }
+
   private showSnackBar() {
     timer(WAIT_TO_OPEN_SNACKBAR_MS)
       .pipe(
@@ -290,22 +351,40 @@ export class AppEffects {
   }
 
   private pullingSystemStatusData(): void {
-    this.ngZone.runOutsideAngular(() => {
-      this.startInterval = true;
-      interval(5000)
-        .pipe(
-          takeUntil(this.destroyInterval$),
-          tap(() => this.store.dispatch(fetchSystemStatus()))
-        )
-        .subscribe();
-    });
+    if (
+      this.statusSubscription === undefined ||
+      this.statusSubscription?.closed
+    ) {
+      this.statusSubscription = this.testrunMqttService
+        .getStatus()
+        .subscribe(systemStatus => {
+          this.store.dispatch(fetchSystemStatusSuccess({ systemStatus }));
+        });
+    }
+  }
+
+  private fetchInternetConnection() {
+    if (
+      this.internetSubscription === undefined ||
+      this.internetSubscription?.closed
+    ) {
+      this.internetSubscription = this.testrunMqttService
+        .getInternetConnection()
+        .subscribe((internetConnection: InternetConnection) => {
+          this.store.dispatch(
+            updateInternetConnection({
+              internetConnection: internetConnection.connection,
+            })
+          );
+        });
+    }
   }
 
   constructor(
     private actions$: Actions,
     private testrunService: TestRunService,
+    private testrunMqttService: TestRunMqttService,
     private store: Store<AppState>,
-    private ngZone: NgZone,
     private notificationService: NotificationService
   ) {}
 }

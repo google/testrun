@@ -57,17 +57,19 @@ export class ErrorInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse | TimeoutError) => {
         if (error instanceof TimeoutError) {
           this.notificationService.notify(
-            'Back End is not responding. Please, try again later.'
+            'Testrun is not responding. Please try again in a moment.'
           );
         } else {
           if (error.status === 0) {
             this.notificationService.notify(
-              'Back End is not responding. Please, try again later.'
+              'Testrun is not responding. Please try again in a moment.'
             );
           } else {
             this.notificationService.notify(
-              error.error?.error || error.message
+              error.error?.error ||
+                'Something went wrong. Check the Terminal for details.'
             );
+            console.error(error.error?.error || error.message);
           }
         }
         return throwError(error);

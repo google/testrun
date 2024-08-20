@@ -26,7 +26,7 @@ import threading
 import uvicorn
 from urllib.parse import urlparse
 
-from common import logger
+from common import logger, tasks
 from common.device import Device
 
 LOGGER = logger.get_logger("api")
@@ -114,7 +114,10 @@ class Api:
     # Allow all origins to access the API
     origins = ["*"]
 
-    self._app = FastAPI()
+    # Scheduler for background periodic tasks
+    self._scheduler = tasks.PeriodicTasks(self._test_run)
+
+    self._app = FastAPI(lifespan=self._scheduler.start)
     self._app.include_router(self._router)
     self._app.add_middleware(
         CORSMiddleware,
@@ -165,7 +168,19 @@ class Api:
     try:
       config = (await request.body()).decode("UTF-8")
       config_json = json.loads(config)
+
+      # Validate req fields
+      if ("network" not in config_json or
+          "device_intf" not in config_json.get("network") or
+          "internet_intf" not in config_json.get("network") or
+        "log_level" not in config_json):
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(
+          False,
+          "Configuration is missing required fields")
+
       self._session.set_config(config_json)
+
     # Catch JSON Decode error etc
     except JSONDecodeError:
       response.status_code = status.HTTP_400_BAD_REQUEST
@@ -231,7 +246,15 @@ class Api:
           False, "Configured interfaces are not " +
           "ready for use. Ensure required interfaces " + "are connected.")
 
-    device.test_modules = body_json["device"]["test_modules"]
+    # UI doesn't send individual test configs so we need to
+    # merge these manually until the UI is updated to handle
+    # the full config file
+    for module_name, module_config in device.test_modules.items():
+      # Check if the module exists in UI test modules
+      if module_name in body_json["device"]["test_modules"]:
+        # Merge the enabled state
+        module_config["enabled"] = body_json[
+          "device"]["test_modules"][module_name]["enabled"]
 
     LOGGER.info("Starting Testrun with device target " +
                 f"{device.manufacturer} {device.model} with " +
@@ -464,6 +487,19 @@ class Api:
         device_json.get(DEVICE_MODEL_KEY)
       )
 
+      # Check if device folder exists
+      device_folder = os.path.join(self._test_run.get_root_dir(),
+                                     DEVICES_PATH,
+                                     device_json.get(DEVICE_MANUFACTURER_KEY) +
+                                     " " +
+                                     device_json.get(DEVICE_MODEL_KEY))
+
+      if os.path.exists(device_folder):
+        response.status_code = status.HTTP_409_CONFLICT
+        return self._generate_msg(
+            False, "A folder with that name already exists, " \
+              "please rename the device or folder")
+
       if device is None:
 
         # Create new device
@@ -676,6 +712,11 @@ class Api:
     except JSONDecodeError as e:
       LOGGER.error("An error occurred whilst decoding JSON")
       LOGGER.debug(e)
+      response.status_code = status.HTTP_400_BAD_REQUEST
+      return self._generate_msg(False, "Invalid request received")
+
+    # Validate json profile
+    if not self.get_session().validate_profile_json(req_json):
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Invalid request received")
 

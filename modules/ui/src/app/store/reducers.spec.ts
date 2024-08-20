@@ -25,16 +25,22 @@ import {
   setIsOpenAddDevice,
   setIsOpenStartTestrun,
   setIsOpenWaitSnackBar,
+  setReports,
   setRiskProfiles,
   setStatus,
+  setTestModules,
   setTestrunStatus,
   toggleMenu,
+  updateAdapters,
   updateError,
   updateFocusNavigation,
+  updateInternetConnection,
 } from './actions';
-import { device } from '../mocks/device.mock';
+import { device, MOCK_TEST_MODULES } from '../mocks/device.mock';
 import { MOCK_PROGRESS_DATA_CANCELLING } from '../mocks/testrun.mock';
 import { PROFILE_MOCK } from '../mocks/profile.mock';
+import { HISTORY } from '../mocks/reports.mock';
+import { MOCK_ADAPTERS } from '../mocks/settings.mock';
 
 describe('Reducer', () => {
   describe('unknown action', () => {
@@ -253,6 +259,69 @@ describe('Reducer', () => {
         ...initialState,
         ...{ status: MOCK_PROGRESS_DATA_CANCELLING.status },
       };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setReports action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setReports({
+        reports: HISTORY,
+      });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = {
+        ...initialState,
+        ...{ reports: HISTORY },
+      };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setTestModules action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setTestModules({
+        testModules: MOCK_TEST_MODULES,
+      });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = {
+        ...initialState,
+        ...{ testModules: MOCK_TEST_MODULES },
+      };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('updateAdapters action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = updateAdapters({
+        adapters: MOCK_ADAPTERS,
+      });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = {
+        ...initialState,
+        ...{ adapters: MOCK_ADAPTERS },
+      };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('updateInternetConnection action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = updateInternetConnection({ internetConnection: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ internetConnection: true } };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);

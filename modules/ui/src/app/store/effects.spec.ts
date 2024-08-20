@@ -36,12 +36,24 @@ import {
 import { device } from '../mocks/device.mock';
 import {
   MOCK_PROGRESS_DATA_CANCELLING,
+  MOCK_PROGRESS_DATA_COMPLIANT,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
 } from '../mocks/testrun.mock';
-import { fetchSystemStatus, setStatus, setTestrunStatus } from './actions';
+import {
+  fetchSystemStatus,
+  fetchSystemStatusSuccess,
+  setReports,
+  setStatus,
+  setTestrunStatus,
+} from './actions';
 import { NotificationService } from '../services/notification.service';
 import { PROFILE_MOCK } from '../mocks/profile.mock';
+import { throwError } from 'rxjs/internal/observable/throwError';
+import { HttpErrorResponse } from '@angular/common/http';
+import { IDLE_STATUS } from '../model/testrun-status';
+import { HISTORY } from '../mocks/reports.mock';
+import { TestRunMqttService } from '../services/test-run-mqtt.service';
 
 describe('Effects', () => {
   let actions$ = new Observable<Action>();
@@ -54,6 +66,11 @@ describe('Effects', () => {
       'dismissWithTimout',
       'openSnackBar',
     ]);
+  const mockMqttService: jasmine.SpyObj<TestRunMqttService> =
+    jasmine.createSpyObj('mockMqttService', [
+      'getStatus',
+      'getInternetConnection',
+    ]);
 
   beforeEach(() => {
     testRunServiceMock = jasmine.createSpyObj('testRunServiceMock', [
@@ -64,6 +81,7 @@ describe('Effects', () => {
       'testrunInProgress',
       'stopTestrun',
       'fetchProfiles',
+      'getHistory',
     ]);
     testRunServiceMock.getSystemInterfaces.and.returnValue(of({}));
     testRunServiceMock.getSystemConfig.and.returnValue(of({ network: {} }));
@@ -72,12 +90,21 @@ describe('Effects', () => {
       of(MOCK_PROGRESS_DATA_IN_PROGRESS)
     );
     testRunServiceMock.fetchProfiles.and.returnValue(of([]));
+    testRunServiceMock.getHistory.and.returnValue(of([]));
+    mockMqttService.getInternetConnection.and.returnValue(
+      of({ connection: false })
+    );
+
+    mockMqttService.getStatus.and.returnValue(
+      of(MOCK_PROGRESS_DATA_IN_PROGRESS)
+    );
 
     TestBed.configureTestingModule({
       providers: [
         AppEffects,
         { provide: TestRunService, useValue: testRunServiceMock },
         { provide: NotificationService, useValue: notificationServiceMock },
+        { provide: TestRunMqttService, useValue: mockMqttService },
         provideMockActions(() => actions$),
         provideMockStore({}),
       ],
@@ -387,14 +414,15 @@ describe('Effects', () => {
         );
       });
 
-      it('should call fetchSystemStatus for status "in progress"', fakeAsync(() => {
+      it('should call fetchSystemStatus for status "in progress"', () => {
         effects.onFetchSystemStatusSuccess$.subscribe(() => {
-          tick(5000);
-
-          expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
-          discardPeriodicTasks();
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            fetchSystemStatusSuccess({
+              systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
+            })
+          );
         });
-      }));
+      });
 
       it('should dispatch status and systemStatus', done => {
         effects.onFetchSystemStatusSuccess$.subscribe(() => {
@@ -423,6 +451,12 @@ describe('Effects', () => {
           done();
         });
       });
+
+      it('should call fetchInternetConnection for status "in progress"', () => {
+        effects.onFetchSystemStatusSuccess$.subscribe(() => {
+          expect(mockMqttService.getInternetConnection).toHaveBeenCalled();
+        });
+      });
     });
 
     describe('with status "waiting for device"', () => {
@@ -439,14 +473,15 @@ describe('Effects', () => {
         );
       });
 
-      it('should call fetchSystemStatus for status "waiting for device"', fakeAsync(() => {
+      it('should call fetchSystemStatus for status "waiting for device"', () => {
         effects.onFetchSystemStatusSuccess$.subscribe(() => {
-          tick(5000);
-
-          expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
-          discardPeriodicTasks();
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            fetchSystemStatusSuccess({
+              systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
+            })
+          );
         });
-      }));
+      });
 
       it('should open snackbar when waiting for device is too long', fakeAsync(() => {
         effects.onFetchSystemStatusSuccess$.subscribe(() => {
@@ -485,6 +520,80 @@ describe('Effects', () => {
         })
       );
       done();
+    });
+  });
+
+  describe('onFetchReports$', () => {
+    it(' should call setReports on success', done => {
+      testRunServiceMock.getHistory.and.returnValue(of([]));
+      actions$ = of(actions.fetchReports());
+
+      effects.onFetchReports$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setReports({
+            reports: [],
+          })
+        );
+        done();
+      });
+    });
+
+    it('should call setReports with empty array if null is returned', done => {
+      testRunServiceMock.getHistory.and.returnValue(of(null));
+      actions$ = of(actions.fetchReports());
+
+      effects.onFetchReports$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setReports({
+            reports: [],
+          })
+        );
+        done();
+      });
+    });
+
+    it('should call setReports with empty array if error happens', done => {
+      testRunServiceMock.getHistory.and.returnValue(
+        throwError(
+          new HttpErrorResponse({ error: { error: 'error' }, status: 500 })
+        )
+      );
+      actions$ = of(actions.fetchReports());
+
+      effects.onFetchReports$.subscribe({
+        complete: () => {
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            setReports({
+              reports: [],
+            })
+          );
+          done();
+        },
+      });
+    });
+  });
+
+  describe('checkStatusInReports$', () => {
+    it('should call setTestrunStatus if current test run is completed and not present in reports', done => {
+      store.overrideSelector(
+        selectSystemStatus,
+        Object.assign({}, MOCK_PROGRESS_DATA_COMPLIANT, {
+          mac_addr: '01:02:03:04:05:07',
+          report: 'http://localhost:8000/report/1234 1234/2024-07-17T15:33:40',
+        })
+      );
+      actions$ = of(
+        actions.setReports({
+          reports: HISTORY,
+        })
+      );
+
+      effects.checkStatusInReports$.subscribe(action => {
+        expect(action).toEqual(
+          actions.setTestrunStatus({ systemStatus: IDLE_STATUS })
+        );
+        done();
+      });
     });
   });
 });

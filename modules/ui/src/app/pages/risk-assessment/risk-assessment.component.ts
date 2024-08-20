@@ -24,8 +24,9 @@ import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dia
 import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { Profile } from '../../model/profile';
+import { Profile, ProfileStatus } from '../../model/profile';
 import { Observable } from 'rxjs/internal/Observable';
+import { DeviceValidators } from '../devices/components/device-form/device.validators';
 
 @Component({
   selector: 'app-risk-assessment',
@@ -53,11 +54,38 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.destroy$.unsubscribe();
   }
 
+  async profileClicked(profile: Profile | null = null) {
+    if (profile === null || profile.status !== ProfileStatus.EXPIRED) {
+      await this.openForm(profile);
+    }
+  }
+
   async openForm(profile: Profile | null = null) {
     this.isOpenProfileForm = true;
     this.store.updateSelectedProfile(profile);
     await this.liveAnnouncer.announce('Risk assessment questionnaire');
     this.store.setFocusOnProfileForm();
+  }
+
+  async copyProfileAndOpenForm(profile: Profile) {
+    await this.openForm(this.getCopyOfProfile(profile));
+  }
+
+  getCopyOfProfile(profile: Profile): Profile {
+    const copyOfProfile = { ...profile };
+    copyOfProfile.name = this.getCopiedProfileName(profile.name);
+    delete copyOfProfile.created; // new profile is not create yet
+    return copyOfProfile;
+  }
+
+  private getCopiedProfileName(name: string): string {
+    name = `Copy of ${name}`;
+    if (name.length > DeviceValidators.STRING_FORMAT_MAX_LENGTH) {
+      name =
+        name.substring(0, DeviceValidators.STRING_FORMAT_MAX_LENGTH - 3) +
+        '...';
+    }
+    return name;
   }
 
   deleteProfile(
@@ -94,7 +122,10 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       this.saveProfile(profile);
       this.store.setFocusOnCreateButton();
     } else {
-      this.openSaveDialog(selectedProfile.name)
+      this.openSaveDialog(
+        selectedProfile.name,
+        profile.status === ProfileStatus.DRAFT
+      )
         .pipe(takeUntil(this.destroy$))
         .subscribe(saveProfile => {
           if (saveProfile) {
@@ -105,8 +136,18 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     }
   }
 
-  trackByIndex = (index: number): number => {
-    return index;
+  discard(selectedProfile: Profile | null) {
+    this.isOpenProfileForm = false;
+    if (selectedProfile) {
+      this.store.setFocusOnSelectedProfile();
+      this.store.updateSelectedProfile(null);
+    } else {
+      this.store.setFocusOnCreateButton();
+    }
+  }
+
+  trackByName = (index: number, item: Profile): string => {
+    return item.name;
   };
 
   private closeFormAfterDelete(name: string, selectedProfile: Profile | null) {
@@ -132,11 +173,14 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.store.setFocus({ nextItem, firstItem });
   }
 
-  private openSaveDialog(profileName: string): Observable<boolean> {
+  private openSaveDialog(
+    profileName: string,
+    draft: boolean = false
+  ): Observable<boolean> {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: 'Save changes',
+      ariaLabel: `Save ${draft ? 'draft profile' : 'profile'}`,
       data: {
-        title: 'Save changes',
+        title: `Save ${draft ? 'draft profile' : 'profile'}`,
         content: `You are about to save changes in ${profileName}. Are you sure?`,
       },
       autoFocus: true,

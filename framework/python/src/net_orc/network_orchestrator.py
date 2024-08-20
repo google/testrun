@@ -22,8 +22,9 @@ import subprocess
 import sys
 import docker
 import time
+import traceback
 from docker.types import Mount
-from common import logger, util
+from common import logger, util, mqtt
 from net_orc.listener import Listener
 from net_orc.network_event import NetworkEvent
 from net_orc.network_validator import NetworkValidator
@@ -223,7 +224,9 @@ class NetworkOrchestrator:
     #self._ovs.add_arp_inspection_filter(ip_address=device.ip_addr,
     #  mac_address=device.mac_addr)
 
-    self._start_device_monitor(device)
+    # Don't monitor devices when in network only mode
+    if 'net_only' not in self._session.get_runtime_params():
+      self._start_device_monitor(device)
 
   def _get_conn_stats(self):
     """ Extract information about the physical connection
@@ -547,10 +550,6 @@ class NetworkOrchestrator:
           cap_add=['NET_ADMIN'],
           name=net_module.container_name,
           hostname=net_module.container_name,
-          # Undetermined version of docker seems to have broken
-          # DNS configuration (/etc/resolv.conf)  Re-add when/if
-          # this network is utilized and DNS issue is resolved
-          #network=PRIVATE_DOCKER_NET,
           network_mode='none',
           privileged=True,
           detach=True,
@@ -786,6 +785,48 @@ class NetworkOrchestrator:
   def get_session(self):
     return self._session
 
+  def network_adapters_checker(self, mqtt_client: mqtt.MQTT, topic: str):
+    """Checks for changes in network adapters
+    and sends a message to the frontend
+    """
+    try:
+      adapters = self._session.detect_network_adapters_change()
+      if adapters:
+        mqtt_client.send_message(topic, adapters)
+    except Exception:
+      LOGGER.error(traceback.format_exc())
+
+  def is_device_connected(self):
+    """Check if device connected"""
+    return self._ip_ctrl.check_interface_status(
+        self._session.get_device_interface()
+      )
+
+  def internet_conn_checker(self, mqtt_client: mqtt.MQTT, topic: str):
+    """Checks internet connection and sends a status to frontend"""
+
+    # Only check if Testrun is running not in single-intf mode
+    if (self.get_session().get_status() in [
+                                          'Waiting for Device',
+                                          'Monitoring',
+                                          'In Progress'
+                                          ]):
+      # Default message
+      message = {'connection': False}
+      iface = self._session.get_internet_interface()
+
+      # Check that an internet intf has been selected
+      if iface and iface in self._ip_ctrl.get_sys_interfaces():
+
+        # Ping google.com from gateway container
+        internet_connection = self._ip_ctrl.ping_via_gateway(
+          'google.com')
+
+        if internet_connection:
+          message['connection'] = True
+
+      # Broadcast via MQTT client
+      mqtt_client.send_message(topic, message)
 
 class NetworkModule:
   """Define all the properties of a Network Module"""

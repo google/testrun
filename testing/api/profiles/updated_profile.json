@@ -1,0 +1,57 @@
+{
+    "name": "New Profile",
+    "rename": "Updated Profile",
+    "status": "Draft",
+    "questions": [
+        {
+            "question": "What type of device is this?",
+            "answer": "IoT Gateway"
+        },
+        {
+            "question": "How will this device be used at Google?",
+            "answer": "Installed in a building"
+        },
+        {
+            "question": "Is this device going to be managed by Google or a third party?",
+            "answer": "Google"
+        },
+        {
+            "question": "Will the third-party device administrator be able to grant access to authorized Google personnel upon request?",
+            "answer": "Yes"
+        },
+        {
+            "question": "Are any of the following statements true about your device?",
+            "answer": [
+                0,
+                2
+            ]
+        },
+        {
+            "question": "Which of the following statements are true about this device?",
+            "answer": [
+                0,
+                1,
+                5
+            ]
+        },
+        {
+            "question": "Does the network protocol assure server-to-client identity verification?",
+            "answer": "Yes"
+        },
+        {
+            "question": "Click the statements that best describe the characteristics of this device.",
+            "answer": [
+                0,
+                1,
+                2
+            ]
+        },
+        {
+            "question": "Are any of the following statements true about this device?",
+            "answer": [
+                2,
+                3
+            ]
+        }
+    ]
+}

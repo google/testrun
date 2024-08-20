@@ -7,9 +7,13 @@ on:
   push:
     branches:
       - 'dev'
+      - 'release/*'
+
+permissions:
+  contents: read
 
 jobs:
-  testrun_package:
+  create_package:
     permissions: {}
     name: Package
     runs-on: ubuntu-22.04
@@ -25,3 +29,63 @@ jobs:
         with:
           name: testrun_package
           path: testrun*.deb
+
+  install_package_20:
+    permissions: {}
+    needs: create_package
+    name: Install on Ubuntu 20.04
+    runs-on: ubuntu-20.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Download package
+        uses: actions/download-artifact@v4
+        with:
+          name: testrun_package
+      - name: Install dependencies
+        shell: bash {0}
+        run: sudo cmd/prepare
+      - name: Install package
+        shell: bash {0}
+        run: sudo apt install ./testrun*.deb
+
+  install_package_22:
+    permissions: {}
+    needs: create_package
+    name: Install on Ubuntu 22.04
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Download package
+        uses: actions/download-artifact@v4
+        with:
+          name: testrun_package
+      - name: Install dependencies
+        shell: bash {0}
+        run: sudo cmd/prepare
+      - name: Install package
+        shell: bash {0}
+        run: sudo apt install ./testrun*.deb
+
+  install_package_24:
+    permissions: {}
+    needs: create_package
+    name: Install on Ubuntu 24.04
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Download package
+        uses: actions/download-artifact@v4
+        with:
+          name: testrun_package
+      - name: Install dependencies
+        shell: bash {0}
+        run: sudo cmd/prepare
+      - name: Install package
+        shell: bash {0}
+        run: sudo apt install ./testrun*.deb

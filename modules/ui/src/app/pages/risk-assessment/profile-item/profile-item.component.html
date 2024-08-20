@@ -13,17 +13,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="profile-item-container">
+<div
+  class="profile-item-container"
+  [class.profile-item-container-expired]="
+    profile.status === ProfileStatus.EXPIRED
+  ">
   <div
     class="profile-item-info"
     role="button"
     tabindex="0"
-    matTooltip="{{ profile.status }}"
+    #tooltip="matTooltip"
+    matTooltip="{{
+      profile.status === ProfileStatus.EXPIRED
+        ? EXPIRED_TOOLTIP
+        : profile.status
+    }}"
     (click)="profileClicked.emit(profile)"
-    (keydown.enter)="profileClicked.emit(profile)">
+    (keydown.enter)="enterProfileItem(profile)">
     <span
       class="profile-item-icon-container"
-      [attr.aria-label]="profile.status">
+      [attr.aria-label]="
+        profile.status === ProfileStatus.EXPIRED
+          ? EXPIRED_TOOLTIP
+          : profile.status
+      ">
       <mat-icon
         *ngIf="profile.status === ProfileStatus.VALID"
         class="profile-item-icon"
@@ -34,6 +47,11 @@ limitations under the License.
         *ngIf="profile.status === ProfileStatus.DRAFT"
         svgIcon="draft"
         class="profile-draft-icon"></mat-icon>
+      <mat-icon
+        *ngIf="profile.status === ProfileStatus.EXPIRED"
+        class="profile-item-icon"
+        fontIcon="error">
+      </mat-icon>
     </span>
     <p
       *ngIf="profile.risk"
@@ -45,13 +63,28 @@ limitations under the License.
       {{ profile.name }}
     </p>
     <p class="profile-item-created">
-      {{ profile.created | date: 'dd MMM yyyy' }}
+      <ng-container *ngIf="profile.status === ProfileStatus.EXPIRED">
+        Outdated ({{ profile.created | date: 'dd MMM yyyy' }})
+      </ng-container>
+      <ng-container *ngIf="profile.status !== ProfileStatus.EXPIRED">
+        {{ profile.created | date: 'dd MMM yyyy' }}
+      </ng-container>
     </p>
   </div>
+  <button
+    *ngIf="profile.status !== ProfileStatus.EXPIRED"
+    class="profile-item-button copy"
+    mat-icon-button
+    attr.aria-label="Copy {{ profile.name }}"
+    matTooltip="Copy {{ profile.name }}"
+    (click)="copyProfileClicked.emit(profile)">
+    <mat-icon fontSet="material-symbols-outlined"> content_copy </mat-icon>
+  </button>
   <button
     class="profile-item-button delete"
     mat-icon-button
     attr.aria-label="Delete {{ profile.name }}"
+    matTooltip="Delete {{ profile.name }}"
     (click)="deleteButtonClicked.emit(profile.name)">
     <mat-icon fontSet="material-symbols-outlined"> delete </mat-icon>
   </button>
