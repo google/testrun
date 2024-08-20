@@ -26,6 +26,7 @@ limitations under the License.
     <ng-content></ng-content>
   </p>
   <button
+    *ngIf="closable"
     class="callout-close-button"
     mat-button
     (click)="calloutClosed.emit(id)">
