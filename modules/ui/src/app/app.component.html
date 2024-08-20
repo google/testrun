@@ -228,10 +228,13 @@ limitations under the License.
           >?
         </app-callout>
         <app-callout
+          id="outdated_devices_callout"
           role="alert"
           aria-live="assertive"
+          [closed]="!!vm.calloutState.get('outdated_devices_callout')"
           [closable]="true"
           [type]="CalloutType.Error"
+          (calloutClosed)="calloutClosed($event)"
           *ngIf="vm.hasExpiredDevices">
           Further information is required in your device configurations. Please
           update your

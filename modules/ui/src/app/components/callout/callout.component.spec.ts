@@ -55,13 +55,14 @@ describe('CalloutComponent', () => {
       expect(closeButton).toBeTruthy();
     });
 
-    it('should have hidden class on close button clicked', () => {
+    it('should emit event', () => {
+      const calloutClosedSpy = spyOn(component.calloutClosed, 'emit');
       const closeButton = compiled.querySelector(
         '.callout-close-button'
       ) as HTMLButtonElement;
       closeButton?.click();
 
-      expect(component.closed).toBeTrue();
+      expect(calloutClosedSpy).toHaveBeenCalled();
     });
   });
 });

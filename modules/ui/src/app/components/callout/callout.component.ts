@@ -16,8 +16,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   HostBinding,
   Input,
+  Output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -32,7 +34,9 @@ import { MatButtonModule } from '@angular/material/button';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalloutComponent {
-  @HostBinding('class.hidden') closed: boolean = false;
+  @HostBinding('class.hidden') @Input() closed: boolean = false;
+  @Input() id: string | null = null;
   @Input() type = '';
   @Input() closable = false;
+  @Output() calloutClosed = new EventEmitter<string | null>();
 }

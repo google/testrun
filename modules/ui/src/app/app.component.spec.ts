@@ -768,7 +768,6 @@ describe('AppComponent', () => {
 
       it('should have callout component', () => {
         const callouts = compiled.querySelectorAll('app-callout');
-        //const calloutContent = callout?.innerHTML.trim();
         let hasExpiredDeviceCallout = false;
         callouts.forEach(callout => {
           if (

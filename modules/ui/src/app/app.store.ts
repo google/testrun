@@ -53,14 +53,17 @@ import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { NotificationService } from './services/notification.service';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
+export const CALLOUT_STATE_KEY = 'CALLOUT_STATE';
 export interface AppComponentState {
   consentShown: boolean;
   isStatusLoaded: boolean;
   systemStatus: TestrunStatus | null;
+  calloutState: Map<string, boolean>;
 }
 @Injectable()
 export class AppStore extends ComponentStore<AppComponentState> {
   private consentShown$ = this.select(state => state.consentShown);
+  private calloutState$ = this.select(state => state.calloutState);
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
   private hasDevices$ = this.store.select(selectHasDevices);
   private hasExpiredDevices$ = this.store.select(selectHasExpiredDevices);
@@ -88,12 +91,24 @@ export class AppStore extends ComponentStore<AppComponentState> {
     isMenuOpen: this.isMenuOpen$,
     interfaces: this.interfaces$,
     settingMissedError: this.settingMissedError$,
+    calloutState: this.calloutState$,
   });
 
   updateConsent = this.updater((state, consentShown: boolean) => ({
     ...state,
     consentShown,
   }));
+
+  updateCalloutState = this.updater((state, callout: string) => {
+    const calloutState = state.calloutState;
+    calloutState.set(callout, true);
+    // @ts-expect-error property is defined in index.html
+    sessionStorage.setObject(CALLOUT_STATE_KEY, calloutState);
+    return {
+      ...state,
+      calloutState: new Map(calloutState),
+    };
+  });
 
   updateIsStatusLoaded = this.updater((state, isStatusLoaded: boolean) => ({
     ...state,
@@ -217,6 +232,14 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
+  setCloseCallout = this.effect<string>(trigger$ => {
+    return trigger$.pipe(
+      tap((id: string) => {
+        this.updateCalloutState(id);
+      })
+    );
+  });
+
   constructor(
     private store: Store<AppState>,
     private testRunService: TestRunService,
@@ -224,10 +247,16 @@ export class AppStore extends ComponentStore<AppComponentState> {
     private focusManagerService: FocusManagerService,
     private notificationService: NotificationService
   ) {
+    // @ts-expect-error get object is defined in index.html
+    const calloutState = sessionStorage.getObject(CALLOUT_STATE_KEY);
+
     super({
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,
       isStatusLoaded: false,
       systemStatus: null,
+      calloutState: calloutState
+        ? new Map(Object.entries(calloutState))
+        : new Map(),
     });
   }
 }

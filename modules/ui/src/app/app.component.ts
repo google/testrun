@@ -210,4 +210,10 @@ export class AppComponent {
         this.appStore.setFocusOnPage();
       });
   }
+
+  calloutClosed(id: string | null) {
+    if (id) {
+      this.appStore.setCloseCallout(id);
+    }
+  }
 }
