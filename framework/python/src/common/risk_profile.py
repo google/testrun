@@ -26,8 +26,8 @@ from copy import deepcopy
 PROFILES_PATH = 'local/risk_profiles'
 LOGGER = logger.get_logger('risk_profile')
 RESOURCES_DIR = 'resources/report'
-TEMPLATE_FILE = 'risk_report.html'
-TEMPLATE_STYLES = 'styles.css'
+TEMPLATE_FILE = 'risk_report_template.html'
+TEMPLATE_STYLES = 'risk_report_styles.css'
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
