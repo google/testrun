@@ -680,7 +680,7 @@ class NetworkOrchestrator:
       adapters = self._session.detect_network_adapters_change()
       if adapters:
         mqtt_client.send_message(topic, adapters)
-    except Exception:
+    except Exception:  # pylint: disable=W0703
       LOGGER.error(traceback.format_exc())
 
   def is_device_connected(self):
