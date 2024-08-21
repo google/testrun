@@ -12,21 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: testrun/faux-dev
+# Image name: testrun/host
 FROM testrun/base:latest
 
-ARG MODULE_NAME=faux-dev
-ARG MODULE_DIR=modules/devices/$MODULE_NAME
-ARG COMMON_DIR=framework/python/src/common
+ARG MODULE_NAME=host
+ARG MODULE_DIR=modules/network/$MODULE_NAME
 
-# Update and get all additional requirements not contained in the base image
+#Update and get all additional requirements not contained in the base image
 RUN apt-get update --fix-missing
 
-# NTP requireds interactive installation so we're going to turn that off
-ARG DEBIAN_FRONTEND=noninteractive
-
-# Install dhcp client and ntp client
-RUN apt-get install -y isc-dhcp-client ntp ntpdate
+# Install all necessary packages
+RUN apt-get install -y net-tools ethtool
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf

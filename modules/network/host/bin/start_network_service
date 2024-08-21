@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,8 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: testrun/build-ui
-FROM node@sha256:ffebb4405810c92d267a764b21975fb2d96772e41877248a37bf3abaa0d3b590 as build
+echo "Starting host service..."
 
-# Set the working directory
-WORKDIR /modules/ui
+# Keep host container running until stopped
+while true; do
+    sleep 3
+done

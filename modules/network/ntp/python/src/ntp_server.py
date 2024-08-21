@@ -38,7 +38,7 @@ class NTPServer:
 if __name__ == '__main__':
   ntp = NTPServer()
   ntp.start()
-  # give some time for the server to start
+  # Give some time for the server to start
   running = False
   for _ in range(10):
     running = ntp.is_running()
