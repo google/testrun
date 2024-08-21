@@ -113,3 +113,8 @@ export const selectAdapters = createSelector(
   selectAppState,
   (state: AppState) => state.shared.adapters
 );
+
+export const selectInternetConnection = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.internetConnection
+);

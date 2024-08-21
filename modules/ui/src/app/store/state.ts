@@ -62,6 +62,7 @@ export interface SharedState {
   reports: TestrunStatus[];
   testModules: TestModule[];
   adapters: Adapters;
+  internetConnection: boolean | null;
 }
 
 export const initialAppComponentState: AppComponentState = {
@@ -90,4 +91,5 @@ export const initialSharedState: SharedState = {
   reports: [],
   testModules: [],
   adapters: {},
+  internetConnection: null,
 };

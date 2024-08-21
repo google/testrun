@@ -35,6 +35,7 @@ import {
   updateAdapters,
   updateError,
   updateFocusNavigation,
+  updateInternetConnection,
 } from './actions';
 import { device, MOCK_TEST_MODULES } from '../mocks/device.mock';
 import { MOCK_PROGRESS_DATA_CANCELLING } from '../mocks/testrun.mock';
@@ -322,6 +323,18 @@ describe('Reducer', () => {
         ...initialState,
         ...{ adapters: MOCK_ADAPTERS },
       };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('updateInternetConnection action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = updateInternetConnection({ internetConnection: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ internetConnection: true } };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);

@@ -25,6 +25,7 @@ import {
   selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
+  selectInternetConnection,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
   selectReports,
@@ -102,6 +103,7 @@ describe('AppStore', () => {
             { selector: selectStatus, value: null },
             { selector: selectIsOpenWaitSnackBar, value: false },
             { selector: selectTestModules, value: MOCK_TEST_MODULES },
+            { selector: selectInternetConnection, value: false },
           ],
         }),
         { provide: TestRunService, useValue: mockService },
@@ -172,6 +174,7 @@ describe('AppStore', () => {
           interfaces: {},
           settingMissedError: null,
           calloutState: new Map(),
+          hasInternetConnection: false,
         });
         done();
       });

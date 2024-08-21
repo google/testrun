@@ -147,3 +147,8 @@ export const setTestModules = createAction(
   '[Shared] Set Test Modules',
   props<{ testModules: TestModule[] }>()
 );
+
+export const updateInternetConnection = createAction(
+  '[Shared] Fetch internet connection',
+  props<{ internetConnection: boolean | null }>()
+);

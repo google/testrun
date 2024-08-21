@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/base
+# Image name: testrun/base
 FROM ubuntu@sha256:e6173d4dc55e76b87c4af8db8821b1feae4146dd47341e4d431118c7dd060a74
 
 RUN apt-get update
@@ -42,5 +42,5 @@ RUN dos2unix /testrun/bin/*
 # Make sure all the bin files are executable
 RUN chmod u+x /testrun/bin/*
 
-#Start the network module
+# Start the network module
 ENTRYPOINT [ "/testrun/bin/start_module" ]

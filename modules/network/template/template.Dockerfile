@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/template
-FROM test-run/base:latest
+# Image name: testrun/template
+FROM testrun/base:latest
 
 ARG MODULE_NAME=template
 ARG MODULE_DIR=modules/network/$MODULE_NAME
