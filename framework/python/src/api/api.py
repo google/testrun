@@ -179,7 +179,10 @@ class Api:
     return self._session.get_config()
 
   async def get_devices(self):
-    return self._session.get_device_repository()
+    devices = []
+    for device in self._session.get_device_repository():
+      devices.append(device.to_dict())
+    return devices
 
   async def start_test_run(self, request: Request, response: Response):
 

@@ -58,6 +58,10 @@ DEVICE_MANUFACTURER = 'manufacturer'
 DEVICE_MODEL = 'model'
 DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
+DEVICE_TYPE_KEY = 'type'
+DEVICE_TECHNOLOGY_KEY = 'technology'
+DEVICE_TEST_PACK_KEY = 'test_pack'
+
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
 class Testrun:  # pylint: disable=too-few-public-methods
@@ -165,7 +169,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
       # Check if device config file exists before loading
       if not os.path.exists(device_config_file_path):
         LOGGER.error('Device configuration file missing ' +
-                     f'from device {device_folder}')
+                     f'for device {device_folder}')
         continue
 
       # Open device config file
@@ -177,6 +181,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
         device_model = device_config_json.get(DEVICE_MODEL)
         mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
         test_modules = device_config_json.get(DEVICE_TEST_MODULES)
+
+        # Load max device reports
         max_device_reports = None
         if 'max_device_reports' in device_config_json:
           max_device_reports = device_config_json.get(MAX_DEVICE_REPORTS_KEY)
@@ -190,6 +196,20 @@ class Testrun:  # pylint: disable=too-few-public-methods
                         test_modules=test_modules,
                         max_device_reports=max_device_reports,
                         device_folder=device_folder)
+
+        # Load in the additional fields
+        if DEVICE_TYPE_KEY in device_config_json:
+          device.type = device_config_json.get(DEVICE_TYPE_KEY)
+
+        if DEVICE_TECHNOLOGY_KEY in device_config_json:
+          device.technology = device_config_json.get(DEVICE_TECHNOLOGY_KEY)
+
+        if DEVICE_TEST_PACK_KEY in device_config_json:
+          device.test_pack = device_config_json.get(DEVICE_TEST_PACK_KEY)
+
+        if None in [device.type, device.technology, device.test_pack]:
+          LOGGER.warning('Device is outdated and requires further configuration')
+          device.status = 'Invalid'
 
         self._load_test_reports(device)
 
