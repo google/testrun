@@ -11,21 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Testrun config"""
 
-# Image name: testrun/dns
-FROM testrun/base:latest
 
-ARG MODULE_NAME=dns
-ARG MODULE_DIR=modules/network/$MODULE_NAME
+class TestrunStatus:
+  IDLE = "Idle"
+  WAITING_FOR_DEVICE = "Waiting for Device"
+  MONITORING = "Monitoring"
+  IN_PROGRESS = "In Progress"
+  CANCELLED = "Cancelled"
+  COMPLIANT =  "Compliant"
+  NON_COMPLIANT = "Non-Compliant"
+  STOPPING = "Stopping"
 
-#Update and get all additional requirements not contained in the base image
-RUN apt-get update --fix-missing
 
-#Install dnsmasq 
-RUN apt-get install -y dnsmasq
+class TestResult:
+  IN_PROGRESS = "In Progress"
+  COMPLIANT =  "Compliant"
+  NON_COMPLIANT = "Non-Compliant"
+  ERROR = "Error"
+  FEATURE_NOT_DETECTED = "Feature Not Detected"
+  INFORMATIONAL = "Informational"
+  NOT_STARTED = "Not Started"
+  DISABLED = "Disabled"
 
-# Copy over all configuration files
-COPY $MODULE_DIR/conf /testrun/conf
 
-# Copy over all binary files
-COPY $MODULE_DIR/bin /testrun/bin
+

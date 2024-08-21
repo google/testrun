@@ -1,0 +1,24 @@
+{
+  "config": {
+    "meta": {
+      "name": "host",
+      "display_name": "Host",
+      "description": "Used to access host level networking operations"
+    },
+    "network": {
+      "host": true
+    },
+    "grpc":{
+      "port": 5001
+    },
+    "docker": {
+      "depends_on": "base",
+      "mounts": [
+        {
+          "source": "runtime/network",
+          "target": "/runtime/network"
+        }
+      ]
+    }
+  }
+}
