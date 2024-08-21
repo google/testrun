@@ -51,10 +51,6 @@ class TestOrchestrator:
                      str(self._session.get_api_port()))
     self._net_orc = net_orc
     self._test_in_progress = False
-    self._path = os.path.dirname(
-        os.path.dirname(
-            os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
     self._root_path = os.path.dirname(
         os.path.dirname(
@@ -89,18 +85,23 @@ class TestOrchestrator:
 
     device = self._session.get_target_device()
     self._test_in_progress = True
+
     LOGGER.info(
         f"Running test modules on device with mac addr {device.mac_addr}")
 
     test_modules = []
+
     for module in self._test_modules:
 
+      # Ignore test modules that are just base images etc
       if module is None or not module.enable_container:
         continue
 
+      # Ignore test modules that are disabled for this device
       if not self._is_module_enabled(module, device):
         continue
 
+      # Add module to list of modules to run
       test_modules.append(module)
 
       for test in module.tests:
@@ -490,13 +491,14 @@ class TestOrchestrator:
 
     LOGGER.info(f"Test module {module.name} has finished")
 
-  # Resolve all current log data in the containers log_stream
-  # this method is blocking so should be called in
-  # a thread or within a proper blocking context
   def _get_container_logs(self, log_stream):
+    """Resolve all current log data in the containers log_stream
+    this method is blocking so should be called in
+    a thread or within a proper blocking context"""
     self._container_logs = []
     for log_chunk in log_stream:
       lines = log_chunk.decode("utf-8").splitlines()
+
       # Process each line and strip blank space
       processed_lines = [line.strip() for line in lines if line.strip()]
       self._container_logs.extend(processed_lines)
@@ -535,7 +537,7 @@ class TestOrchestrator:
     LOGGER.debug("Loading test modules from /" + TEST_MODULES_DIR)
 
     loaded_modules = "Loaded the following test modules: "
-    test_modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
+    test_modules_dir = os.path.join(self._root_path, TEST_MODULES_DIR)
 
     module_dirs = os.listdir(test_modules_dir)
     # Check if the directory protocol exists and move it to the beginning

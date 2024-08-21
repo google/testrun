@@ -123,6 +123,9 @@ export class AppComponent {
 
   navigateToDeviceRepository(): void {
     this.route.navigate([Routes.Devices]);
+  }
+  navigateToAddDevice(): void {
+    this.route.navigate([Routes.Devices]);
     this.store.dispatch(setIsOpenAddDevice({ isOpenAddDevice: true }));
   }
 
@@ -206,5 +209,11 @@ export class AppComponent {
       .subscribe(() => {
         this.appStore.setFocusOnPage();
       });
+  }
+
+  calloutClosed(id: string | null) {
+    if (id) {
+      this.appStore.setCloseCallout(id);
+    }
   }
 }

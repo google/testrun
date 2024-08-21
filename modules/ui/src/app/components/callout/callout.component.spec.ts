@@ -42,4 +42,27 @@ describe('CalloutComponent', () => {
 
     expect(calloutContainerdEl?.classList).toContain('mockValue');
   });
+
+  describe('closeable', () => {
+    beforeEach(() => {
+      component.closable = true;
+      fixture.detectChanges();
+    });
+
+    it('should have close button', () => {
+      const closeButton = compiled.querySelector('.callout-close-button');
+
+      expect(closeButton).toBeTruthy();
+    });
+
+    it('should emit event', () => {
+      const calloutClosedSpy = spyOn(component.calloutClosed, 'emit');
+      const closeButton = compiled.querySelector(
+        '.callout-close-button'
+      ) as HTMLButtonElement;
+      closeButton?.click();
+
+      expect(calloutClosedSpy).toHaveBeenCalled();
+    });
+  });
 });

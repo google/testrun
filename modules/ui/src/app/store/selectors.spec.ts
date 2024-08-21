@@ -34,6 +34,7 @@ import {
   selectSystemStatus,
   selectTestModules,
   selectInternetConnection,
+  selectHasExpiredDevices,
 } from './selectors';
 
 describe('Selectors', () => {
@@ -50,6 +51,7 @@ describe('Selectors', () => {
       hasConnectionSettings: false,
       devices: [],
       hasDevices: false,
+      hasExpiredDevices: false,
       isOpenAddDevice: false,
       riskProfiles: [],
       hasRiskProfiles: false,
@@ -93,6 +95,11 @@ describe('Selectors', () => {
 
   it('should select hasDevices', () => {
     const result = selectHasDevices.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select hasExpiredDevices', () => {
+    const result = selectHasExpiredDevices.projector(initialState);
     expect(result).toEqual(false);
   });
 

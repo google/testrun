@@ -23,7 +23,7 @@ import {
 } from '@angular/material/dialog';
 import { TestRunService } from '../../../../services/test-run.service';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { Device } from '../../../../model/device';
+import { Device, DeviceStatus } from '../../../../model/device';
 import { DeviceItemComponent } from '../../../../components/device-item/device-item.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
@@ -196,6 +196,7 @@ describe('ProgressInitiateFormComponent', () => {
           component.startTestRun();
 
           expect(testRunServiceMock.startTestrun).toHaveBeenCalledWith({
+            status: DeviceStatus.VALID,
             manufacturer: 'Delta',
             model: 'O3-DIN-CPU',
             mac_addr: '00:1e:42:35:73:c4',

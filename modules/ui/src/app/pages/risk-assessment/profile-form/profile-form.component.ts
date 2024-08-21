@@ -39,19 +39,18 @@ import {
   FormGroup,
   ReactiveFormsModule,
   ValidatorFn,
-  Validators,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { DeviceValidators } from '../../devices/components/device-form/device.validators';
 import {
-  FormControlType,
   Profile,
   ProfileFormat,
   ProfileStatus,
   Question,
-  Validation,
 } from '../../../model/profile';
+import { FormControlType } from '../../../model/question';
 import { ProfileValidators } from './profile.validators';
+import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';
 
 @Component({
   selector: 'app-profile-form',
@@ -66,6 +65,7 @@ import { ProfileValidators } from './profile.validators';
     MatSelectModule,
     MatCheckboxModule,
     TextFieldModule,
+    DynamicFormComponent,
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss',
@@ -76,7 +76,6 @@ export class ProfileFormComponent implements OnInit {
   private profileList!: Profile[];
   private injector = inject(Injector);
   private nameValidator!: ValidatorFn;
-  public readonly FormControlType = FormControlType;
   public readonly ProfileStatus = ProfileStatus;
   profileForm: FormGroup = this.fb.group({});
   @ViewChildren(CdkTextareaAutosize)
@@ -112,7 +111,7 @@ export class ProfileFormComponent implements OnInit {
     private fb: FormBuilder
   ) {}
   ngOnInit() {
-    this.profileForm = this.createProfileForm(this.profileFormat);
+    this.profileForm = this.createProfileForm();
     if (this.selectedProfile) {
       this.fillProfileForm(this.profileFormat, this.selectedProfile);
     }
@@ -139,7 +138,7 @@ export class ProfileFormComponent implements OnInit {
     return this.profileForm.get(name.toString()) as AbstractControl;
   }
 
-  createProfileForm(questions: ProfileFormat[]): FormGroup {
+  createProfileForm(): FormGroup {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const group: any = {};
 
@@ -154,50 +153,7 @@ export class ProfileFormComponent implements OnInit {
       this.nameValidator,
     ]);
 
-    questions.forEach((question, index) => {
-      if (question.type === FormControlType.SELECT_MULTIPLE) {
-        group[index] = this.getMultiSelectGroup(question);
-      } else {
-        const validators = this.getValidators(
-          question.type,
-          question.validation
-        );
-        group[index] = new FormControl(question.default || '', validators);
-      }
-    });
     return new FormGroup(group);
-  }
-
-  getValidators(type: FormControlType, validation?: Validation): ValidatorFn[] {
-    const validators: ValidatorFn[] = [];
-    if (validation) {
-      if (validation.required) {
-        validators.push(this.profileValidators.textRequired());
-      }
-      if (validation.max) {
-        validators.push(Validators.maxLength(Number(validation.max)));
-      }
-      if (type === FormControlType.EMAIL_MULTIPLE) {
-        validators.push(this.profileValidators.emailStringFormat());
-      }
-      if (type === FormControlType.TEXT || type === FormControlType.TEXTAREA) {
-        validators.push(this.profileValidators.textFormat());
-      }
-    }
-    return validators;
-  }
-
-  getMultiSelectGroup(question: ProfileFormat): FormGroup {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const group: any = {};
-    question.options?.forEach((option, index) => {
-      group[index] = false;
-    });
-    return this.fb.group(group, {
-      validators: question.validation?.required
-        ? [this.profileValidators.multiSelectRequired]
-        : [],
-    });
   }
 
   getFormGroup(name: string | number): FormGroup {
@@ -234,16 +190,6 @@ export class ProfileFormComponent implements OnInit {
       this.selectedProfile
     );
     this.saveProfile.emit(response);
-  }
-
-  public markSectionAsDirty(
-    optionIndex: number,
-    optionLength: number,
-    formControlName: string
-  ) {
-    if (optionIndex === optionLength - 1) {
-      this.getControl(formControlName).markAsDirty();
-    }
   }
 
   onDiscardClick() {
