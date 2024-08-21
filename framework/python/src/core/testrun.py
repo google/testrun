@@ -208,7 +208,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
           device.test_pack = device_config_json.get(DEVICE_TEST_PACK_KEY)
 
         if None in [device.type, device.technology, device.test_pack]:
-          LOGGER.warning('Device is outdated and requires further configuration')
+          LOGGER.warning(
+            'Device is outdated and requires further configuration')
           device.status = 'Invalid'
 
         self._load_test_reports(device)
