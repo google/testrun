@@ -21,8 +21,18 @@ limitations under the License.
   [ngClass]="{ 'non-interective': tabIndex !== 0 }"
   class="device-item"
   type="button">
-  <div [attr.aria-label]="device.manufacturer" class="item-manufacturer">
-    {{ device.manufacturer }}
+  <div class="item-manufacturer">
+    <app-qualification-icon
+      *ngIf="device.test_pack === TestingType.Qualification"
+      matTooltip="This device will be tested for Qualification."
+      aria-label="This device will be tested for Qualification."></app-qualification-icon>
+    <app-pilot-icon
+      *ngIf="device.test_pack === TestingType.Pilot"
+      matTooltip="This device will be tested for the Pilot program."
+      aria-label="This device will be tested for the Pilot program."></app-pilot-icon>
+    <span [attr.aria-label]="device.manufacturer">{{
+      device.manufacturer
+    }}</span>
   </div>
   <div [attr.aria-label]="device.model" class="item-name">
     {{ device.model }}

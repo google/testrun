@@ -80,9 +80,6 @@ export const DEVICES_FORM: DeviceQuestionnaireSection[] = [
       {
         id: 1,
         question: 'What type of device is this?',
-        validation: {
-          required: true,
-        },
         type: FormControlType.SELECT,
         options: [
           {
@@ -100,9 +97,6 @@ export const DEVICES_FORM: DeviceQuestionnaireSection[] = [
       {
         id: 2,
         question: 'Does your device process any sensitive information? ',
-        validation: {
-          required: true,
-        },
         type: FormControlType.SELECT,
         options: [
           {
@@ -120,11 +114,11 @@ export const DEVICES_FORM: DeviceQuestionnaireSection[] = [
       {
         id: 3,
         question: 'Please select the technology this device falls into',
-        validation: {
-          required: true,
-        },
         type: FormControlType.SELECT,
-        options: ['Hardware - Access Control', 'Hardware - Air quality'],
+        options: [
+          { text: 'Hardware - Access Control' },
+          { text: 'Hardware - Air quality' },
+        ],
       },
     ],
   },

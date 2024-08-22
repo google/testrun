@@ -34,12 +34,14 @@ import { DeviceValidators } from '../device-form/device.validators';
 import {
   Device,
   DeviceQuestionnaireSection,
+  DeviceView,
   TestModule,
+  TestingType,
 } from '../../../../model/device';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
 import { CommonModule } from '@angular/common';
-import { CdkStep } from '@angular/cdk/stepper';
+import { CdkStep, StepperSelectionEvent } from '@angular/cdk/stepper';
 import { StepperComponent } from '../../../../components/stepper/stepper.component';
 import {
   MatError,
@@ -60,6 +62,9 @@ import { DevicesStore } from '../../devices.store';
 import { DynamicFormComponent } from '../../../../components/dynamic-form/dynamic-form.component';
 import { skip, Subject, takeUntil, timer } from 'rxjs';
 import { FormAction, FormResponse } from '../../devices.component';
+import { DeviceItemComponent } from '../../../../components/device-item/device-item.component';
+import { QualificationIconComponent } from '../../../../components/qualification-icon/qualification-icon.component';
+import { PilotIconComponent } from '../../../../components/pilot-icon/pilot-icon.component';
 
 const MAC_ADDRESS_PATTERN =
   '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
@@ -70,6 +75,7 @@ interface DialogData {
   devices: Device[];
   testModules: TestModule[];
   index: number;
+  isLinear: boolean;
 }
 
 @Component({
@@ -95,6 +101,9 @@ interface DialogData {
     MatRadioGroup,
     MatRadioButton,
     DynamicFormComponent,
+    DeviceItemComponent,
+    QualificationIconComponent,
+    PilotIconComponent,
   ],
   providers: [provideNgxMask(), DevicesStore],
   templateUrl: './device-qualification-from.component.html',
@@ -104,6 +113,8 @@ export class DeviceQualificationFromComponent
   extends EscapableDialogComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
+  readonly TestingType = TestingType;
+  readonly DeviceView = DeviceView;
   @ViewChild('stepper') public stepper!: StepperComponent;
   testModules: TestModule[] = [];
   deviceQualificationForm: FormGroup = this.fb.group({});
@@ -125,8 +136,32 @@ export class DeviceQualificationFromComponent
     return this.getStep(0).get('mac_addr') as AbstractControl;
   }
 
+  get test_pack() {
+    return this.getStep(0).get('test_pack') as AbstractControl;
+  }
+
+  get type() {
+    return this.getStep(1).get('0') as AbstractControl;
+  }
+
+  get technology() {
+    return this.getStep(1).get('2') as AbstractControl;
+  }
+
   get test_modules() {
     return this.getStep(0).controls['test_modules'] as FormArray;
+  }
+
+  get formPristine() {
+    return (
+      this.deviceQualificationForm.get('steps') as FormArray
+    ).controls.every(control => (control as FormGroup).pristine);
+  }
+
+  get formValid() {
+    return (
+      this.deviceQualificationForm.get('steps') as FormArray
+    ).controls.every(control => (control as FormGroup).valid);
   }
 
   constructor(
@@ -141,7 +176,7 @@ export class DeviceQualificationFromComponent
     super(dialogRef);
     this.device = data.device;
   }
-
+  loaded = false;
   ngOnInit(): void {
     this.createBasicStep();
     if (this.data.device) {
@@ -161,6 +196,7 @@ export class DeviceQualificationFromComponent
             this.selectedIndex = this.data.index;
           });
       }
+      this.loaded = true;
     });
 
     this.devicesStore.getQuestionnaireFormat();
@@ -178,13 +214,13 @@ export class DeviceQualificationFromComponent
   }
 
   submit(): void {
-    this.device = this.createDeviceFromForm(this.getStep(0));
+    this.device = this.createDeviceFromForm();
   }
 
   closeForm(): void {
     this.dialogRef.close({
       action: FormAction.Close,
-      device: this.createDeviceFromForm(this.getStep(0)),
+      device: this.createDeviceFromForm(),
       index: this.stepper.selectedIndex,
     } as FormResponse);
   }
@@ -195,18 +231,43 @@ export class DeviceQualificationFromComponent
     ] as FormGroup;
   }
 
-  private createDeviceFromForm(formGroup: FormGroup): Device {
+  onStepChange(event: StepperSelectionEvent) {
+    if (event.previouslySelectedStep.completed) {
+      this.device = this.createDeviceFromForm();
+    }
+  }
+
+  getErrorSteps(): number[] {
+    const steps: number[] = [];
+    (this.deviceQualificationForm.get('steps') as FormArray).controls.forEach(
+      (control, index) => {
+        if (!control.valid) steps.push(index);
+      }
+    );
+    return steps;
+  }
+
+  goToStep(index: number) {
+    this.stepper.selectedIndex = index;
+  }
+
+  private createDeviceFromForm(): Device {
     const testModules: { [key: string]: { enabled: boolean } } = {};
-    formGroup.value.test_modules.forEach((enabled: boolean, i: number) => {
-      testModules[this.testModules[i]?.name] = {
-        enabled: enabled,
-      };
-    });
+    this.getStep(0).value.test_modules.forEach(
+      (enabled: boolean, i: number) => {
+        testModules[this.testModules[i]?.name] = {
+          enabled: enabled,
+        };
+      }
+    );
     return {
       model: this.model.value.trim(),
       manufacturer: this.manufacturer.value.trim(),
       mac_addr: this.mac_addr.value.trim(),
+      test_pack: this.test_pack.value,
       test_modules: testModules,
+      type: this.type.value,
+      technology: this.technology.value,
     } as Device;
   }
 
@@ -238,7 +299,7 @@ export class DeviceQualificationFromComponent
         ],
       ],
       test_modules: new FormArray([]),
-      testing_journey: [0],
+      test_pack: [TestingType.Qualification],
     });
 
     this.deviceQualificationForm = this.fb.group({

@@ -40,7 +40,7 @@ import { TestRunService } from '../../../../services/test-run.service';
 import { DevicesStore } from '../../devices.store';
 import { provideMockStore } from '@ngrx/store/testing';
 import { FormAction } from '../../devices.component';
-import { DeviceStatus } from '../../../../model/device';
+import { DeviceStatus, TestingType } from '../../../../model/device';
 
 describe('DeviceQualificationFromComponent', () => {
   let component: DeviceQualificationFromComponent;
@@ -89,6 +89,7 @@ describe('DeviceQualificationFromComponent', () => {
       testModules: MOCK_TEST_MODULES,
       devices: [],
       index: 0,
+      isLinear: true,
     };
     testrunServiceMock.fetchQuestionnaireFormat.and.returnValue(
       of(DEVICES_FORM)
@@ -133,6 +134,9 @@ describe('DeviceQualificationFromComponent', () => {
         manufacturer: '',
         model: '',
         mac_addr: '',
+        test_pack: 'Device qualification',
+        type: '',
+        technology: '',
         test_modules: {
           udmi: {
             enabled: false,
@@ -145,39 +149,6 @@ describe('DeviceQualificationFromComponent', () => {
     });
 
     closeSpy.calls.reset();
-  });
-
-  it('should not save data when fields are empty', () => {
-    const forwardButton = compiled.querySelector(
-      '.form-button-forward'
-    ) as HTMLButtonElement;
-    const model: HTMLInputElement = compiled.querySelector(
-      '.device-qualification-form-model'
-    ) as HTMLInputElement;
-    const manufacturer: HTMLInputElement = compiled.querySelector(
-      '.device-qualification-form-manufacturer'
-    ) as HTMLInputElement;
-    const macAddress: HTMLInputElement = compiled.querySelector(
-      '.device-qualification-form-mac-address'
-    ) as HTMLInputElement;
-
-    ['', '                     '].forEach(value => {
-      model.value = value;
-      model.dispatchEvent(new Event('input'));
-      manufacturer.value = value;
-      manufacturer.dispatchEvent(new Event('input'));
-      macAddress.value = value;
-      macAddress.dispatchEvent(new Event('input'));
-      forwardButton?.click();
-      fixture.detectChanges();
-
-      const requiredErrors = compiled.querySelectorAll('mat-error');
-      expect(requiredErrors?.length).toEqual(3);
-
-      requiredErrors.forEach(error => {
-        expect(error?.innerHTML).toContain('required');
-      });
-    });
   });
 
   describe('test modules', () => {
@@ -325,6 +296,7 @@ describe('DeviceQualificationFromComponent', () => {
         testModules: MOCK_TEST_MODULES,
         devices: [device],
         index: 0,
+        isLinear: true,
       };
       component.ngOnInit();
       fixture.detectChanges();
@@ -363,6 +335,7 @@ describe('DeviceQualificationFromComponent', () => {
             },
           },
         },
+        isLinear: false,
         index: 0,
       };
 
@@ -383,12 +356,182 @@ describe('DeviceQualificationFromComponent', () => {
     });
   });
 
-  describe('with questionnaire', () => {
-    it('should have steps', () => {
-      expect(
-        (component.deviceQualificationForm.get('steps') as FormArray).controls
-          .length
-      ).toEqual(3);
+  describe('steps', () => {
+    describe('with questionnaire', () => {
+      it('should have steps', () => {
+        expect(
+          (component.deviceQualificationForm.get('steps') as FormArray).controls
+            .length
+        ).toEqual(3);
+      });
+    });
+
+    it('should not save data when fields are empty', () => {
+      const forwardButton = compiled.querySelector(
+        '.form-button-forward'
+      ) as HTMLButtonElement;
+      const model: HTMLInputElement = compiled.querySelector(
+        '.device-qualification-form-model'
+      ) as HTMLInputElement;
+      const manufacturer: HTMLInputElement = compiled.querySelector(
+        '.device-qualification-form-manufacturer'
+      ) as HTMLInputElement;
+      const macAddress: HTMLInputElement = compiled.querySelector(
+        '.device-qualification-form-mac-address'
+      ) as HTMLInputElement;
+
+      ['', '                     '].forEach(value => {
+        model.value = value;
+        model.dispatchEvent(new Event('input'));
+        manufacturer.value = value;
+        manufacturer.dispatchEvent(new Event('input'));
+        macAddress.value = value;
+        macAddress.dispatchEvent(new Event('input'));
+        forwardButton?.click();
+        fixture.detectChanges();
+
+        const requiredErrors = compiled.querySelectorAll('mat-error');
+        expect(requiredErrors?.length).toEqual(3);
+
+        requiredErrors.forEach(error => {
+          expect(error?.innerHTML).toContain('required');
+        });
+      });
+    });
+
+    describe('happy flow', () => {
+      beforeEach(() => {
+        component.model.setValue('model');
+        component.manufacturer.setValue('manufacturer');
+        component.mac_addr.setValue('07:07:07:07:07:07');
+        component.test_modules.setValue([true, true]);
+      });
+
+      it('should save device when step is changed', () => {
+        const forwardButton = compiled.querySelector(
+          '.form-button-forward'
+        ) as HTMLButtonElement;
+        forwardButton.click();
+
+        expect(component.device).toEqual({
+          manufacturer: 'manufacturer',
+          model: 'model',
+          mac_addr: '07:07:07:07:07:07',
+          test_pack: TestingType.Qualification,
+          type: '',
+          technology: '',
+          test_modules: {
+            udmi: {
+              enabled: true,
+            },
+            connection: {
+              enabled: true,
+            },
+          },
+        });
+      });
+
+      describe('summary', () => {
+        beforeEach(() => {
+          const forwardButton = compiled.querySelector(
+            '.form-button-forward'
+          ) as HTMLButtonElement;
+          forwardButton.click(); // will redirect to 2 step
+          fixture.detectChanges();
+
+          const selects = compiled.querySelectorAll(
+            'mat-select .mat-mdc-select-trigger'
+          );
+
+          selects.forEach((el, index) => {
+            (el as HTMLDivElement)?.click();
+            fixture.detectChanges();
+            selectValue(index);
+          });
+
+          const nextForwardButton = compiled.querySelector(
+            '.form-button-forward'
+          ) as HTMLButtonElement;
+          nextForwardButton.click(); //will redirect to summary
+
+          fixture.detectChanges();
+        });
+
+        it('should have device item', () => {
+          const item = compiled.querySelector('app-device-item');
+          expect(item).toBeTruthy();
+        });
+
+        it('should have device information', () => {
+          const item = compiled.querySelectorAll('.info-value');
+
+          expect(item[0].textContent?.trim()).toEqual(
+            'Building Automation Gateway'
+          );
+          expect(item[1].textContent?.trim()).toEqual(
+            'Hardware - Access Control'
+          );
+        });
+      });
+    });
+
+    describe('with errors', () => {
+      beforeEach(() => {
+        component.data = {
+          devices: [device],
+          testModules: MOCK_TEST_MODULES,
+          device: {
+            status: DeviceStatus.VALID,
+            manufacturer: 'Delta',
+            model: 'O3-DIN-CPU',
+            mac_addr: '00:1e:42:35:73:c4',
+            test_modules: {
+              udmi: {
+                enabled: true,
+              },
+            },
+          },
+          isLinear: false,
+          index: 0,
+        };
+        component.model.setValue('');
+
+        fixture.detectChanges();
+      });
+
+      describe('summary', () => {
+        beforeEach(() => {
+          const forwardButton = compiled.querySelector(
+            '.form-button-forward'
+          ) as HTMLButtonElement;
+          forwardButton.click(); // will redirect to 2 step
+          fixture.detectChanges();
+
+          const nextForwardButton = compiled.querySelector(
+            '.form-button-forward'
+          ) as HTMLButtonElement;
+          nextForwardButton.click(); //will redirect to summary
+          fixture.detectChanges();
+        });
+
+        it('should have error message', () => {
+          const error = compiled.querySelector(
+            '.device-qualification-form-summary-info-description'
+          );
+          expect(error?.textContent?.trim()).toEqual(
+            'Please go back and correct the errors on Step 1.'
+          );
+        });
+      });
     });
   });
+
+  function selectValue(index: number) {
+    const panel = document.querySelectorAll('body .mat-mdc-select-panel');
+    const matOption = panel[index].querySelector(
+      'mat-option'
+    ) as HTMLDivElement;
+    matOption.click();
+    fixture.detectChanges();
+  }
 });
