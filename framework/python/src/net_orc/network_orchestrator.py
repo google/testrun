@@ -23,6 +23,7 @@ import sys
 import time
 import traceback
 from common import logger, util, mqtt
+from common.statuses import TestrunStatus
 from net_orc.listener import Listener
 from net_orc.network_event import NetworkEvent
 from net_orc.network_validator import NetworkValidator
@@ -222,7 +223,7 @@ class NetworkOrchestrator:
     if device.ip_addr is None:
       LOGGER.info(
           f'Timed out whilst waiting for {mac_addr} to obtain an IP address')
-      self._session.set_status('Cancelled')
+      self._session.set_status(TestrunStatus.CANCELLED)
       return
     LOGGER.info(
         f'Device with mac addr {device.mac_addr} has obtained IP address '
@@ -282,7 +283,7 @@ class NetworkOrchestrator:
   def _start_device_monitor(self, device):
     """Start a timer until the steady state has been reached and
         callback the steady state method for this device."""
-    self.get_session().set_status('Monitoring')
+    self.get_session().set_status(TestrunStatus.MONITORING)
     self._monitor_packets = []
     LOGGER.info(f'Monitoring device with mac addr {device.mac_addr} '
                 f'for {str(self._session.get_monitor_period())} seconds')
@@ -299,14 +300,14 @@ class NetworkOrchestrator:
       time.sleep(1)
 
       # Check Testrun hasn't been cancelled
-      if self._session.get_status() == 'Cancelled':
+      if self._session.get_status() == TestrunStatus.CANCELLED:
         sniffer.stop()
         return
 
       if not self._ip_ctrl.check_interface_status(
           self._session.get_device_interface()):
         sniffer.stop()
-        self._session.set_status('Cancelled')
+        self._session.set_status(TestrunStatus.CANCELLED)
         LOGGER.error('Device interface disconnected, cancelling Testrun')
 
     LOGGER.debug('Writing packets to monitor.pcap')
@@ -696,8 +697,10 @@ class NetworkOrchestrator:
 
     # Only check if Testrun is running
     if self.get_session().get_status() not in [
-        'Waiting for Device', 'Monitoring', 'In Progress'
-    ]:
+        TestrunStatus.WAITING_FOR_DEVICE,
+        TestrunStatus.MONITORING,
+        TestrunStatus.IN_PROGRESS
+      ]:
       message['connection'] = None
 
     # Only run if single intf mode not used

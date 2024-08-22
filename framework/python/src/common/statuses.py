@@ -11,9 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Testrun config"""
 
-# Image name: testrun/build-ui
-FROM node@sha256:ffebb4405810c92d267a764b21975fb2d96772e41877248a37bf3abaa0d3b590 as build
 
-# Set the working directory
-WORKDIR /modules/ui
+class TestrunStatus:
+  IDLE = "Idle"
+  WAITING_FOR_DEVICE = "Waiting for Device"
+  MONITORING = "Monitoring"
+  IN_PROGRESS = "In Progress"
+  CANCELLED = "Cancelled"
+  COMPLIANT =  "Compliant"
+  NON_COMPLIANT = "Non-Compliant"
+  STOPPING = "Stopping"
+
+
+class TestResult:
+  IN_PROGRESS = "In Progress"
+  COMPLIANT =  "Compliant"
+  NON_COMPLIANT = "Non-Compliant"
+  ERROR = "Error"
+  FEATURE_NOT_DETECTED = "Feature Not Detected"
+  INFORMATIONAL = "Informational"
+  NOT_STARTED = "Not Started"
+  DISABLED = "Disabled"
+
+
+

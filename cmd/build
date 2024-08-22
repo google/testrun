@@ -60,7 +60,6 @@ fi
 
 # Build network modules
 echo Building network modules
-mkdir -p build/network
 for dir in modules/network/* ; do
   module=$(basename $dir)
   echo Building network module $module...
@@ -74,7 +73,6 @@ done
 
 # Build validators
 echo Building network validators
-mkdir -p build/devices
 for dir in modules/devices/* ; do
   module=$(basename $dir)
   echo Building validator module $module...
@@ -88,7 +86,6 @@ done
 
 # Build test modules
 echo Building test modules
-mkdir -p build/test
 for dir in modules/test/* ; do
   module=$(basename $dir)
   echo Building test module $module...
