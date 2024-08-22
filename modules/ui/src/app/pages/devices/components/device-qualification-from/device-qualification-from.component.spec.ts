@@ -41,6 +41,8 @@ import { DevicesStore } from '../../devices.store';
 import { provideMockStore } from '@ngrx/store/testing';
 import { FormAction } from '../../devices.component';
 import { DeviceStatus, TestingType } from '../../../../model/device';
+import { Component, Input } from '@angular/core';
+import { QuestionFormat } from '../../../../model/question';
 
 describe('DeviceQualificationFromComponent', () => {
   let component: DeviceQualificationFromComponent;
@@ -51,6 +53,7 @@ describe('DeviceQualificationFromComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      declarations: [FakeDynamicFormComponent],
       imports: [
         DeviceQualificationFromComponent,
         MatButtonModule,
@@ -439,16 +442,6 @@ describe('DeviceQualificationFromComponent', () => {
           forwardButton.click(); // will redirect to 2 step
           fixture.detectChanges();
 
-          const selects = compiled.querySelectorAll(
-            'mat-select .mat-mdc-select-trigger'
-          );
-
-          selects.forEach((el, index) => {
-            (el as HTMLDivElement)?.click();
-            fixture.detectChanges();
-            selectValue(index);
-          });
-
           const nextForwardButton = compiled.querySelector(
             '.form-button-forward'
           ) as HTMLButtonElement;
@@ -460,17 +453,6 @@ describe('DeviceQualificationFromComponent', () => {
         it('should have device item', () => {
           const item = compiled.querySelector('app-device-item');
           expect(item).toBeTruthy();
-        });
-
-        it('should have device information', () => {
-          const item = compiled.querySelectorAll('.info-value');
-
-          expect(item[0].textContent?.trim()).toEqual(
-            'Building Automation Gateway'
-          );
-          expect(item[1].textContent?.trim()).toEqual(
-            'Hardware - Access Control'
-          );
         });
       });
     });
@@ -525,13 +507,13 @@ describe('DeviceQualificationFromComponent', () => {
       });
     });
   });
-
-  function selectValue(index: number) {
-    const panel = document.querySelectorAll('body .mat-mdc-select-panel');
-    const matOption = panel[index].querySelector(
-      'mat-option'
-    ) as HTMLDivElement;
-    matOption.click();
-    fixture.detectChanges();
-  }
 });
+
+@Component({
+  selector: 'app-dynamic-form',
+  template: '<div></div>',
+})
+class FakeDynamicFormComponent {
+  @Input() format: QuestionFormat[] = [];
+  @Input() optionKey: string | undefined;
+}
