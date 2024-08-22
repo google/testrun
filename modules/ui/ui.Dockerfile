@@ -12,17 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/ui
-FROM node@sha256:ffebb4405810c92d267a764b21975fb2d96772e41877248a37bf3abaa0d3b590 as build
-
-WORKDIR /modules/ui
-COPY modules/ui/ /modules/ui
-RUN npm install
-RUN npm run build
-
+# Image name: testrun/ui
 FROM nginx@sha256:4c0fdaa8b6341bfdeca5f18f7837462c80cff90527ee35ef185571e1c327beac
 
-COPY --from=build /modules/ui/dist/ /usr/share/nginx/html
+COPY modules/ui/dist/ /usr/share/nginx/html
 
 EXPOSE 8080
 

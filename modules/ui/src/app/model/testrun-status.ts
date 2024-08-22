@@ -16,7 +16,7 @@
 import { Device } from './device';
 
 export interface TestrunStatus {
-  mac_addr: string;
+  mac_addr: string | null;
   status: string;
   device: IDevice;
   started: string | null;
@@ -75,7 +75,9 @@ export enum StatusOfTestResult {
   NotStarted = 'Not Started',
   InProgress = 'In Progress',
   Error = 'Error', // test failed to run
-  Info = 'Informational', // nice to know information, not necessarily compliant/non-compliant
+  Info = 'Informational', // nice to know information, not necessarily compliant/non-compliant,
+  Skipped = 'Skipped',
+  Disabled = 'Disabled',
 }
 
 export interface StatusResultClassName {

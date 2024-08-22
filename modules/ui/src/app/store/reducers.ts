@@ -118,6 +118,18 @@ export const sharedReducer = createReducer(
       ...state,
       testModules,
     };
+  }),
+  on(Actions.updateAdapters, (state, { adapters }) => {
+    return {
+      ...state,
+      adapters,
+    };
+  }),
+  on(Actions.updateInternetConnection, (state, { internetConnection }) => {
+    return {
+      ...state,
+      internetConnection,
+    };
   })
 );
 

@@ -16,6 +16,7 @@
 
 import { createAction, props } from '@ngrx/store';
 import {
+  Adapters,
   InterfacesValidation,
   SettingMissedError,
   SystemConfig,
@@ -125,6 +126,11 @@ export const stopInterval = createAction('[Shared] Stop Interval');
 
 export const fetchRiskProfiles = createAction('[Shared] Fetch risk profiles');
 
+export const updateAdapters = createAction(
+  '[Shared] Update Adapters',
+  props<{ adapters: Adapters }>()
+);
+
 export const fetchReports = createAction('[Shared] Fetch reports');
 
 export const setReports = createAction(
@@ -135,4 +141,9 @@ export const setReports = createAction(
 export const setTestModules = createAction(
   '[Shared] Set Test Modules',
   props<{ testModules: TestModule[] }>()
+);
+
+export const updateInternetConnection = createAction(
+  '[Shared] Fetch internet connection',
+  props<{ internetConnection: boolean | null }>()
 );

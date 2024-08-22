@@ -276,7 +276,8 @@ describe('ReportsComponent', () => {
       const data = HISTORY[0];
       component.removeDevice(data);
       expect(mockReportsStore.deleteReport).toHaveBeenCalledWith({
-        mac_addr: data.device.mac_addr,
+        mac_addr: data.mac_addr,
+        deviceMacAddr: data.device.mac_addr,
         started: data.started,
       });
     });
