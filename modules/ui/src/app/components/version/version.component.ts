@@ -37,7 +37,7 @@ import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { filter } from 'rxjs';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 declare const gtag: Function;
 @Component({
   selector: 'app-version',
@@ -64,7 +64,6 @@ export class VersionComponent implements OnInit, OnDestroy {
       filter(version => version !== null),
       tap(version => {
         if (!this.consentShown) {
-          // @ts-expect-error null is filtered
           this.openConsentDialog(version);
           this.consentShownEvent.emit();
         }
