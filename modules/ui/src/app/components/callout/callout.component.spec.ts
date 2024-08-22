@@ -45,7 +45,7 @@ describe('CalloutComponent', () => {
 
   describe('closeable', () => {
     beforeEach(() => {
-      component.closable = true;
+      fixture.componentRef.setInput('closable', true);
       fixture.detectChanges();
     });
 
