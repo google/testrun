@@ -13,61 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  ComponentFixture,
-  fakeAsync,
-  flush,
-  TestBed,
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DeviceFormComponent } from './device-form.component';
-import { MatButtonModule } from '@angular/material/button';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatInputModule } from '@angular/material/input';
+import { DeviceQualificationFromComponent } from './device-qualification-from.component';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Device, DeviceStatus } from '../../../../model/device';
 import { of } from 'rxjs';
+import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
+import { MatButtonModule } from '@angular/material/button';
+import { FormArray, ReactiveFormsModule } from '@angular/forms';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatInputModule } from '@angular/material/input';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DeviceTestsComponent } from '../../../../components/device-tests/device-tests.component';
 import { SpinnerComponent } from '../../../../components/spinner/spinner.component';
-import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
+import {
+  device,
+  DEVICES_FORM,
+  MOCK_TEST_MODULES,
+} from '../../../../mocks/device.mock';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { TestRunService } from '../../../../services/test-run.service';
 import { DevicesStore } from '../../devices.store';
-import { device, MOCK_TEST_MODULES } from '../../../../mocks/device.mock';
-import SpyObj = jasmine.SpyObj;
+import { provideMockStore } from '@ngrx/store/testing';
 import { FormAction } from '../../devices.component';
+import { DeviceStatus } from '../../../../model/device';
 
-describe('DeviceFormComponent', () => {
-  let component: DeviceFormComponent;
-  let fixture: ComponentFixture<DeviceFormComponent>;
-  let mockDevicesStore: SpyObj<DevicesStore>;
+describe('DeviceQualificationFromComponent', () => {
+  let component: DeviceQualificationFromComponent;
+  let fixture: ComponentFixture<DeviceQualificationFromComponent>;
   let compiled: HTMLElement;
+  const testrunServiceMock: jasmine.SpyObj<TestRunService> =
+    jasmine.createSpyObj('testrunServiceMock', ['fetchQuestionnaireFormat']);
 
-  beforeEach(() => {
-    mockDevicesStore = jasmine.createSpyObj('DevicesStore', [
-      'editDevice',
-      'saveDevice',
-    ]);
-
-    TestBed.configureTestingModule({
-      declarations: [DeviceFormComponent],
-      providers: [
-        { provide: DevicesStore, useValue: mockDevicesStore },
-        {
-          provide: MatDialogRef,
-          useValue: {
-            keydownEvents: () => of(new KeyboardEvent('keydown', { code: '' })),
-            close: () => ({}),
-          },
-        },
-        { provide: MAT_DIALOG_DATA, useValue: {} },
-        provideNgxMask(),
-      ],
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
+        DeviceQualificationFromComponent,
         MatButtonModule,
         ReactiveFormsModule,
         MatCheckboxModule,
@@ -78,17 +63,37 @@ describe('DeviceFormComponent', () => {
         SpinnerComponent,
         NgxMaskDirective,
         NgxMaskPipe,
+        MatIconTestingModule,
       ],
-    });
-    TestBed.overrideProvider(DevicesStore, { useValue: mockDevicesStore });
+      providers: [
+        DevicesStore,
+        {
+          provide: MatDialogRef,
+          useValue: {
+            keydownEvents: () => of(new KeyboardEvent('keydown', { code: '' })),
+            close: () => ({}),
+          },
+        },
+        { provide: MAT_DIALOG_DATA, useValue: {} },
+        { provide: TestRunService, useValue: testrunServiceMock },
+        provideNgxMask(),
+        provideMockStore({}),
+      ],
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(DeviceFormComponent);
+    fixture = TestBed.createComponent(DeviceQualificationFromComponent);
     component = fixture.componentInstance;
     compiled = fixture.nativeElement as HTMLElement;
+
     component.data = {
       testModules: MOCK_TEST_MODULES,
       devices: [],
+      index: 0,
     };
+    testrunServiceMock.fetchQuestionnaireFormat.and.returnValue(
+      of(DEVICES_FORM)
+    );
+
     fixture.detectChanges();
   });
 
@@ -97,36 +102,63 @@ describe('DeviceFormComponent', () => {
   });
 
   it('should contain device form', () => {
-    const form = compiled.querySelector('.device-form');
+    const form = compiled.querySelector('.device-qualification-form');
 
     expect(form).toBeTruthy();
+  });
+
+  it('should fetch devices format', () => {
+    const getQuestionnaireFormatSpy = spyOn(
+      component.devicesStore,
+      'getQuestionnaireFormat'
+    );
+    component.ngOnInit();
+    fixture.detectChanges();
+
+    expect(getQuestionnaireFormatSpy).toHaveBeenCalled();
   });
 
   it('should close dialog on "cancel" click', () => {
     const closeSpy = spyOn(component.dialogRef, 'close');
     const closeButton = compiled.querySelector(
-      '.close-button'
+      '.device-qualification-form-header-close-button'
     ) as HTMLButtonElement;
 
     closeButton?.click();
 
-    expect(closeSpy).toHaveBeenCalledWith();
+    expect(closeSpy).toHaveBeenCalledWith({
+      action: FormAction.Close,
+      index: 0,
+      device: {
+        manufacturer: '',
+        model: '',
+        mac_addr: '',
+        test_modules: {
+          udmi: {
+            enabled: false,
+          },
+          connection: {
+            enabled: true,
+          },
+        },
+      },
+    });
 
     closeSpy.calls.reset();
   });
 
   it('should not save data when fields are empty', () => {
-    const saveButton = compiled.querySelector(
-      '.save-button'
+    const forwardButton = compiled.querySelector(
+      '.form-button-forward'
     ) as HTMLButtonElement;
     const model: HTMLInputElement = compiled.querySelector(
-      '.device-form-model'
+      '.device-qualification-form-model'
     ) as HTMLInputElement;
     const manufacturer: HTMLInputElement = compiled.querySelector(
-      '.device-form-manufacturer'
+      '.device-qualification-form-manufacturer'
     ) as HTMLInputElement;
     const macAddress: HTMLInputElement = compiled.querySelector(
-      '.device-form-mac-address'
+      '.device-qualification-form-mac-address'
     ) as HTMLInputElement;
 
     ['', '                     '].forEach(value => {
@@ -136,7 +168,7 @@ describe('DeviceFormComponent', () => {
       manufacturer.dispatchEvent(new Event('input'));
       macAddress.value = value;
       macAddress.dispatchEvent(new Event('input'));
-      saveButton?.click();
+      forwardButton?.click();
       fixture.detectChanges();
 
       const requiredErrors = compiled.querySelectorAll('mat-error');
@@ -146,50 +178,6 @@ describe('DeviceFormComponent', () => {
         expect(error?.innerHTML).toContain('required');
       });
     });
-  });
-
-  it('should not save data if no test selected', fakeAsync(() => {
-    component.model.setValue('model');
-    component.manufacturer.setValue('manufacturer');
-    component.mac_addr.setValue('07:07:07:07:07:07');
-    component.test_modules.setValue([false, false]);
-
-    component.saveDevice();
-    fixture.detectChanges();
-
-    const error = compiled.querySelector('mat-error');
-    expect(error?.innerHTML).toContain(
-      'At least one test has to be selected to save a Device.'
-    );
-
-    flush();
-  }));
-
-  it('should save data when form is valid', () => {
-    const device: Device = {
-      status: DeviceStatus.VALID,
-      manufacturer: 'manufacturer',
-      model: 'model',
-      mac_addr: '07:07:07:07:07:07',
-      test_modules: {
-        connection: {
-          enabled: true,
-        },
-        udmi: {
-          enabled: false,
-        },
-      },
-    };
-    component.model.setValue('model');
-    component.manufacturer.setValue('manufacturer');
-    component.mac_addr.setValue('07:07:07:07:07:07');
-
-    component.saveDevice();
-
-    const args = mockDevicesStore.saveDevice.calls.argsFor(0);
-    // @ts-expect-error config is in object
-    expect(args[0].device).toEqual(device);
-    expect(mockDevicesStore.saveDevice).toHaveBeenCalled();
   });
 
   describe('test modules', () => {
@@ -209,7 +197,7 @@ describe('DeviceFormComponent', () => {
   describe('device model', () => {
     it('should not contain errors when input is correct', () => {
       const model: HTMLInputElement = compiled.querySelector(
-        '.device-form-model'
+        '.device-qualification-form-model'
       ) as HTMLInputElement;
       ['model', 'Gebäude', 'jardín'].forEach(value => {
         model.value = value;
@@ -230,7 +218,7 @@ describe('DeviceFormComponent', () => {
         'as&@3$',
       ].forEach(value => {
         const model: HTMLInputElement = compiled.querySelector(
-          '.device-form-model'
+          '.device-qualification-form-model'
         ) as HTMLInputElement;
         model.value = value;
         model.dispatchEvent(new Event('input'));
@@ -251,7 +239,7 @@ describe('DeviceFormComponent', () => {
   describe('device manufacturer', () => {
     it('should not contain errors when input is correct', () => {
       const manufacturer: HTMLInputElement = compiled.querySelector(
-        '.device-form-manufacturer'
+        '.device-qualification-form-manufacturer'
       ) as HTMLInputElement;
       ['manufacturer', 'Gebäude', 'jardín'].forEach(value => {
         manufacturer.value = value;
@@ -272,7 +260,7 @@ describe('DeviceFormComponent', () => {
         'as&@3$',
       ].forEach(value => {
         const manufacturer: HTMLInputElement = compiled.querySelector(
-          '.device-form-manufacturer'
+          '.device-qualification-form-manufacturer'
         ) as HTMLInputElement;
         manufacturer.value = value;
         manufacturer.dispatchEvent(new Event('input'));
@@ -298,7 +286,7 @@ describe('DeviceFormComponent', () => {
 
     it('should not contain errors when input is correct', () => {
       const macAddress: HTMLInputElement = compiled.querySelector(
-        '.device-form-mac-address'
+        '.device-qualification-form-mac-address'
       ) as HTMLInputElement;
       ['07:07:07:07:07:07', '     07:07:07:07:07:07     '].forEach(value => {
         macAddress.value = value;
@@ -315,7 +303,7 @@ describe('DeviceFormComponent', () => {
     it('should have "pattern" error when field does not satisfy pattern', () => {
       ['value', 'q01e423573c4'].forEach(value => {
         const macAddress: HTMLInputElement = compiled.querySelector(
-          '.device-form-mac-address'
+          '.device-qualification-form-mac-address'
         ) as HTMLInputElement;
         macAddress.value = value;
         macAddress.dispatchEvent(new Event('input'));
@@ -336,12 +324,13 @@ describe('DeviceFormComponent', () => {
       component.data = {
         testModules: MOCK_TEST_MODULES,
         devices: [device],
+        index: 0,
       };
       component.ngOnInit();
       fixture.detectChanges();
 
       const macAddress: HTMLInputElement = compiled.querySelector(
-        '.device-form-mac-address'
+        '.device-qualification-form-mac-address'
       ) as HTMLInputElement;
       macAddress.value = '00:1e:42:35:73:c4';
       macAddress.dispatchEvent(new Event('input'));
@@ -356,14 +345,6 @@ describe('DeviceFormComponent', () => {
         'This MAC address is already used for another device in the repository.'
       );
     });
-  });
-
-  it('should have hidden delete device button', () => {
-    const deleteButton = compiled.querySelector(
-      '.delete-button'
-    ) as HTMLButtonElement;
-
-    expect(deleteButton.classList.contains('hidden')).toBeTrue();
   });
 
   describe('when device is present', () => {
@@ -382,82 +363,32 @@ describe('DeviceFormComponent', () => {
             },
           },
         },
+        index: 0,
       };
+
       component.ngOnInit();
       fixture.detectChanges();
     });
 
     it('should fill form values with device values', () => {
       const model: HTMLInputElement = compiled.querySelector(
-        '.device-form-model'
+        '.device-qualification-form-model'
       ) as HTMLInputElement;
       const manufacturer: HTMLInputElement = compiled.querySelector(
-        '.device-form-manufacturer'
+        '.device-qualification-form-manufacturer'
       ) as HTMLInputElement;
 
       expect(model.value).toEqual('O3-DIN-CPU');
       expect(manufacturer.value).toEqual('Delta');
     });
-
-    it('should save data even mac address already exist', fakeAsync(() => {
-      // fill the test controls
-      component.test_modules.push(new FormControl(false));
-      component.test_modules.push(new FormControl(true));
-      component.saveDevice();
-      fixture.detectChanges();
-
-      fixture.whenStable().then(() => {
-        const error = compiled.querySelector('mat-error');
-        expect(error).toBeFalse();
-      });
-
-      const args = mockDevicesStore.editDevice.calls.argsFor(0);
-      // @ts-expect-error config is in object
-      expect(args[0].device).toEqual({
-        status: DeviceStatus.VALID,
-        manufacturer: 'Delta',
-        model: 'O3-DIN-CPU',
-        mac_addr: '00:1e:42:35:73:c4',
-        test_modules: {
-          connection: {
-            enabled: false,
-          },
-          udmi: {
-            enabled: true,
-          },
-        },
-      });
-      expect(mockDevicesStore.editDevice).toHaveBeenCalled();
-
-      flush();
-    }));
-
-    it('should have delete device button', () => {
-      const deleteButton = compiled.querySelector(
-        '.delete-button'
-      ) as HTMLButtonElement;
-
-      expect(deleteButton.classList.contains('hidden')).toBeFalse();
-      expect(deleteButton).toBeTruthy();
-    });
-
-    it('should close dialog with delete action on "delete" click', () => {
-      const closeSpy = spyOn(component.dialogRef, 'close');
-      const closeButton = compiled.querySelector(
-        '.delete-button'
-      ) as HTMLButtonElement;
-
-      closeButton?.click();
-
-      expect(closeSpy).toHaveBeenCalledWith({ action: FormAction.Delete });
-
-      closeSpy.calls.reset();
-    });
   });
 
-  it('should has loader element', () => {
-    const spinner = compiled.querySelector('app-spinner');
-
-    expect(spinner).toBeTruthy();
+  describe('with questionnaire', () => {
+    it('should have steps', () => {
+      expect(
+        (component.deviceQualificationForm.get('steps') as FormArray).controls
+          .length
+      ).toEqual(3);
+    });
   });
 });

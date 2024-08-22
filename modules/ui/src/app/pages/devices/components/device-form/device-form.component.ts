@@ -23,12 +23,13 @@ import {
 } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-import { Device, TestModule } from '../../../../model/device';
+import { Device, DeviceStatus, TestModule } from '../../../../model/device';
 import { DeviceValidators } from './device.validators';
 import { Subject } from 'rxjs';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
 import { DevicesStore } from '../../devices.store';
+import { FormAction, FormResponse } from '../../devices.component';
 
 const MAC_ADDRESS_PATTERN =
   '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
@@ -38,16 +39,6 @@ interface DialogData {
   device?: Device;
   devices: Device[];
   testModules: TestModule[];
-}
-
-export enum FormAction {
-  Delete = 'Delete',
-  Save = 'Save',
-}
-
-export interface FormResponse {
-  device?: Device;
-  action: FormAction;
 }
 
 @Component({
@@ -168,6 +159,7 @@ export class DeviceFormComponent
       }
     );
     return {
+      status: DeviceStatus.VALID,
       model: this.model.value.trim(),
       manufacturer: this.manufacturer.value.trim(),
       mac_addr: this.mac_addr.value.trim(),

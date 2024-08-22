@@ -15,13 +15,14 @@
  */
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of, skip, take } from 'rxjs';
-import { AppStore, CONSENT_SHOWN_KEY } from './app.store';
+import { AppStore, CALLOUT_STATE_KEY, CONSENT_SHOWN_KEY } from './app.store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from './store/state';
 import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
   selectInternetConnection,
@@ -57,6 +58,12 @@ const mock = (() => {
     },
     setItem: (key: string, value: string) => {
       store[key] = value + '';
+    },
+    getObject: (key: string) => {
+      return store[key] || null;
+    },
+    setObject: (key: string, value: object) => {
+      store[key] = JSON.stringify(value);
     },
     clear: () => {
       store = {};
@@ -111,6 +118,7 @@ describe('AppStore', () => {
     appStore = TestBed.inject(AppStore);
 
     store.overrideSelector(selectHasDevices, true);
+    store.overrideSelector(selectHasExpiredDevices, true);
     store.overrideSelector(selectHasRiskProfiles, false);
     store.overrideSelector(selectReports, []);
     store.overrideSelector(selectHasConnectionSettings, true);
@@ -156,6 +164,7 @@ describe('AppStore', () => {
         expect(store).toEqual({
           consentShown: false,
           hasDevices: true,
+          hasExpiredDevices: true,
           hasRiskProfiles: false,
           reports: [],
           isStatusLoaded: false,
@@ -164,6 +173,7 @@ describe('AppStore', () => {
           isMenuOpen: true,
           interfaces: {},
           settingMissedError: null,
+          calloutState: new Map(),
           hasInternetConnection: false,
         });
         done();
@@ -304,6 +314,23 @@ describe('AppStore', () => {
         expect(mockNotificationService.notify).toHaveBeenCalledWith(
           'New network adapter(s) mockNewInternetKey has been detected. You can switch to using it in the System settings menu'
         );
+      });
+    });
+
+    describe('setCloseCallout', () => {
+      it('should update store', done => {
+        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
+          expect(store.calloutState.get('test')).toEqual(true);
+          done();
+        });
+
+        appStore.setCloseCallout('test');
+      });
+
+      it('should update storage', () => {
+        appStore.setCloseCallout('test');
+
+        expect(mock.getObject(CALLOUT_STATE_KEY)).toBeTruthy();
       });
     });
   });
