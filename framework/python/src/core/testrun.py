@@ -27,6 +27,7 @@ from common import logger, util, mqtt
 from common.device import Device
 from common.session import TestrunSession
 from common.testreport import TestReport
+from common.statuses import TestrunStatus
 from api.api import Api
 from net_orc.listener import NetworkEvent
 from net_orc import network_orchestrator as net_orc
@@ -374,7 +375,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     self._stop_tests()
     self._stop_network(kill=True)
-    self.get_session().set_status('Cancelled')
+    self.get_session().set_status(TestrunStatus.CANCELLED)
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
@@ -402,6 +403,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     # Expand the config file to absolute pathing
     return os.path.abspath(config_file)
+
+  def get_root_dir(self):
+    return root_dir
 
   def get_config_file(self):
     return self._get_config_abs()
@@ -456,12 +460,12 @@ class Testrun:  # pylint: disable=too-few-public-methods
   def _device_stable(self, mac_addr):
 
     # Do not continue testing if Testrun has cancelled during monitor phase
-    if self.get_session().get_status() == 'Cancelled':
+    if self.get_session().get_status() == TestrunStatus.CANCELLED:
       self._stop_network()
       return
 
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
-    self._set_status('In Progress')
+    self._set_status(TestrunStatus.IN_PROGRESS)
     result = self._test_orc.run_test_modules()
 
     if result is not None:

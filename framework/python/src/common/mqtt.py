@@ -33,6 +33,7 @@ class MQTT:
   def __init__(self) -> None:
     self._host = WEBSOCKETS_HOST
     self._client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2)
+    LOGGER.setLevel(logger.logging.INFO)
     self._client.enable_logger(LOGGER)
 
   def _connect(self):

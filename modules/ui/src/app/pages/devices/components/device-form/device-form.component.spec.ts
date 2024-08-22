@@ -20,7 +20,7 @@ import {
   TestBed,
 } from '@angular/core/testing';
 
-import { DeviceFormComponent, FormAction } from './device-form.component';
+import { DeviceFormComponent } from './device-form.component';
 import { MatButtonModule } from '@angular/material/button';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -31,7 +31,7 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Device } from '../../../../model/device';
+import { Device, DeviceStatus } from '../../../../model/device';
 import { of } from 'rxjs';
 import { DeviceTestsComponent } from '../../../../components/device-tests/device-tests.component';
 import { SpinnerComponent } from '../../../../components/spinner/spinner.component';
@@ -39,6 +39,7 @@ import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 import { DevicesStore } from '../../devices.store';
 import { device, MOCK_TEST_MODULES } from '../../../../mocks/device.mock';
 import SpyObj = jasmine.SpyObj;
+import { FormAction } from '../../devices.component';
 
 describe('DeviceFormComponent', () => {
   let component: DeviceFormComponent;
@@ -166,6 +167,7 @@ describe('DeviceFormComponent', () => {
 
   it('should save data when form is valid', () => {
     const device: Device = {
+      status: DeviceStatus.VALID,
       manufacturer: 'manufacturer',
       model: 'model',
       mac_addr: '07:07:07:07:07:07',
@@ -370,6 +372,7 @@ describe('DeviceFormComponent', () => {
         devices: [device],
         testModules: MOCK_TEST_MODULES,
         device: {
+          status: DeviceStatus.VALID,
           manufacturer: 'Delta',
           model: 'O3-DIN-CPU',
           mac_addr: '00:1e:42:35:73:c4',
@@ -411,6 +414,7 @@ describe('DeviceFormComponent', () => {
       const args = mockDevicesStore.editDevice.calls.argsFor(0);
       // @ts-expect-error config is in object
       expect(args[0].device).toEqual({
+        status: DeviceStatus.VALID,
         manufacturer: 'Delta',
         model: 'O3-DIN-CPU',
         mac_addr: '00:1e:42:35:73:c4',

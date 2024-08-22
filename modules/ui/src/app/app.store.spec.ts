@@ -15,15 +15,17 @@
  */
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of, skip, take } from 'rxjs';
-import { AppStore, CONSENT_SHOWN_KEY } from './app.store';
+import { AppStore, CALLOUT_STATE_KEY, CONSENT_SHOWN_KEY } from './app.store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from './store/state';
 import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
+  selectInternetConnection,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
   selectReports,
@@ -57,6 +59,12 @@ const mock = (() => {
     setItem: (key: string, value: string) => {
       store[key] = value + '';
     },
+    getObject: (key: string) => {
+      return store[key] || null;
+    },
+    setObject: (key: string, value: object) => {
+      store[key] = JSON.stringify(value);
+    },
     clear: () => {
       store = {};
     },
@@ -85,10 +93,7 @@ describe('AppStore', () => {
     mockFocusManagerService = jasmine.createSpyObj([
       'focusFirstElementInContainer',
     ]);
-    mockMqttService = jasmine.createSpyObj([
-      'getNetworkAdapters',
-      'getInternetConnection',
-    ]);
+    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -98,6 +103,7 @@ describe('AppStore', () => {
             { selector: selectStatus, value: null },
             { selector: selectIsOpenWaitSnackBar, value: false },
             { selector: selectTestModules, value: MOCK_TEST_MODULES },
+            { selector: selectInternetConnection, value: false },
           ],
         }),
         { provide: TestRunService, useValue: mockService },
@@ -112,6 +118,7 @@ describe('AppStore', () => {
     appStore = TestBed.inject(AppStore);
 
     store.overrideSelector(selectHasDevices, true);
+    store.overrideSelector(selectHasExpiredDevices, true);
     store.overrideSelector(selectHasRiskProfiles, false);
     store.overrideSelector(selectReports, []);
     store.overrideSelector(selectHasConnectionSettings, true);
@@ -157,6 +164,7 @@ describe('AppStore', () => {
         expect(store).toEqual({
           consentShown: false,
           hasDevices: true,
+          hasExpiredDevices: true,
           hasRiskProfiles: false,
           reports: [],
           isStatusLoaded: false,
@@ -165,7 +173,8 @@ describe('AppStore', () => {
           isMenuOpen: true,
           interfaces: {},
           settingMissedError: null,
-          hasInternetConnection: null,
+          calloutState: new Map(),
+          hasInternetConnection: false,
         });
         done();
       });
@@ -308,17 +317,20 @@ describe('AppStore', () => {
       });
     });
 
-    describe('getInternetConnection', () => {
+    describe('setCloseCallout', () => {
       it('should update store', done => {
-        mockMqttService.getInternetConnection.and.returnValue(
-          of({ connection: false })
-        );
-        appStore.getInternetConnection();
-
-        appStore.viewModel$.pipe(take(1)).subscribe(store => {
-          expect(store.hasInternetConnection).toEqual(false);
+        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
+          expect(store.calloutState.get('test')).toEqual(true);
           done();
         });
+
+        appStore.setCloseCallout('test');
+      });
+
+      it('should update storage', () => {
+        appStore.setCloseCallout('test');
+
+        expect(mock.getObject(CALLOUT_STATE_KEY)).toBeTruthy();
       });
     });
   });

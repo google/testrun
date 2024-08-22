@@ -80,6 +80,11 @@ export const setHasDevices = createAction(
   props<{ hasDevices: boolean }>()
 );
 
+export const setHasExpiredDevices = createAction(
+  '[Shared] Set Has Expired Devices',
+  props<{ hasExpiredDevices: boolean }>()
+);
+
 export const setDevices = createAction(
   '[Shared] Set Devices',
   props<{ devices: Device[] }>()
@@ -141,4 +146,9 @@ export const setReports = createAction(
 export const setTestModules = createAction(
   '[Shared] Set Test Modules',
   props<{ testModules: TestModule[] }>()
+);
+
+export const updateInternetConnection = createAction(
+  '[Shared] Fetch internet connection',
+  props<{ internetConnection: boolean | null }>()
 );

@@ -34,11 +34,13 @@ import {
   setIsOpenAddDevice,
 } from '../../store/actions';
 import { TestrunStatus } from '../../model/testrun-status';
+import { DeviceQuestionnaireSection } from '../../model/device';
 
 export interface DevicesComponentState {
   devices: Device[];
   selectedDevice: Device | null;
   testModules: TestModule[];
+  questionnaireFormat: DeviceQuestionnaireSection[];
 }
 
 @Injectable()
@@ -46,10 +48,10 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
   devices$ = this.store.select(selectDevices);
   isOpenAddDevice$ = this.store.select(selectIsOpenAddDevice);
   testModules$ = this.store.select(selectTestModules);
+  questionnaireFormat$ = this.select(state => state.questionnaireFormat);
   private deviceInProgress$ = this.store.select(selectDeviceInProgress);
   private selectedDevice$ = this.select(state => state.selectedDevice);
 
-  //testModules = this.testRunService.getTestModules();
   viewModel$ = this.select({
     devices: this.devices$,
     selectedDevice: this.selectedDevice$,
@@ -62,6 +64,12 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
     selectedDevice: device,
   }));
 
+  updateQuestionnaireFormat = this.updater(
+    (state, questionnaireFormat: DeviceQuestionnaireSection[]) => ({
+      ...state,
+      questionnaireFormat,
+    })
+  );
   deleteDevice = this.effect<{
     device: Device;
     onDelete: () => void;
@@ -139,6 +147,18 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
     );
   });
 
+  getQuestionnaireFormat = this.effect(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap(() => {
+        return this.testRunService.fetchQuestionnaireFormat().pipe(
+          tap((questionnaireFormat: DeviceQuestionnaireSection[]) => {
+            this.updateQuestionnaireFormat(questionnaireFormat);
+          })
+        );
+      })
+    );
+  });
+
   private addDevice(device: Device, devices: Device[]): void {
     this.updateDevices(devices.concat([device]));
   }
@@ -179,6 +199,7 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
       devices: [],
       selectedDevice: null,
       testModules: [],
+      questionnaireFormat: [],
     });
   }
 }
