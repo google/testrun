@@ -572,9 +572,9 @@ class TestOrchestrator:
     if not any(m.dir_name == module_dir for m in self._test_modules):
       LOGGER.debug(f"Loading test module {module_dir}")
 
-      modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
+      modules_dir = os.path.join(self._root_path, TEST_MODULES_DIR)
 
-      module_conf_file = os.path.join(self._path, modules_dir, module_dir,
+      module_conf_file = os.path.join(self._root_path, modules_dir, module_dir,
                                       MODULE_CONFIG)
 
       module = TestModule(module_conf_file, self._session, extra_hosts)
