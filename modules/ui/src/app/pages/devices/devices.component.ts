@@ -131,6 +131,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
         testModules: testModules,
         devices,
         index,
+        isLinear: !isEditDevice,
       },
       autoFocus: true,
       hasBackdrop: true,
