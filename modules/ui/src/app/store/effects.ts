@@ -56,6 +56,7 @@ import {
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { NotificationService } from '../services/notification.service';
 import { Profile } from '../model/profile';
+import { DeviceStatus } from '../model/device';
 import { TestRunMqttService } from '../services/test-run-mqtt.service';
 import { InternetConnection } from '../model/topic';
 
@@ -144,6 +145,19 @@ export class AppEffects {
       ofType(AppActions.setDevices),
       map(({ devices }) =>
         AppActions.setHasDevices({ hasDevices: devices.length > 0 })
+      )
+    );
+  });
+
+  onSetExpiredDevices$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setDevices),
+      map(({ devices }) =>
+        AppActions.setHasExpiredDevices({
+          hasExpiredDevices: devices.some(
+            device => device.status === DeviceStatus.INVALID
+          ),
+        })
       )
     );
   });

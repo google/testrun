@@ -1,0 +1,194 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<form
+  class="device-qualification-form"
+  [formGroup]="deviceQualificationForm"
+  (submit)="submit()">
+  <ng-template #header>
+    <div class="device-qualification-form-header">
+      <button
+        (click)="closeForm()"
+        aria-label="close"
+        id="device-qualification-form-header-close-button"
+        class="device-qualification-form-header-close-button"
+        mat-button>
+        <mat-icon class="close-button-icon" svgIcon="close"></mat-icon>
+      </button>
+      <h2 class="device-qualification-form-header-title">{{ data.title }}</h2>
+    </div>
+  </ng-template>
+
+  <app-stepper
+    #stepper
+    formArrayName="steps"
+    [linear]="true"
+    [header]="header"
+    [selectedIndex]="selectedIndex">
+    <cdk-step [editable]="true" formGroupName="0" [stepControl]="getStep(0)">
+      <mat-form-field appearance="outline" class="manufacturer-field">
+        <mat-label>Device Manufacturer</mat-label>
+        <input
+          class="device-qualification-form-manufacturer"
+          formControlName="manufacturer"
+          matInput />
+        <mat-hint>Please enter device manufacturer name</mat-hint>
+        <mat-error
+          *ngIf="manufacturer.hasError('invalid_format')"
+          role="alert"
+          aria-live="assertive">
+          <span
+            >Please, check. The manufacturer name must be a maximum of 28
+            characters. Only letters, numbers, and accented letters are
+            permitted.</span
+          >
+        </mat-error>
+        <mat-error *ngIf="manufacturer.errors?.['required']">
+          <span>Device Manufacturer is <strong>required</strong></span>
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="model-field">
+        <mat-label>Device Model</mat-label>
+        <input
+          class="device-qualification-form-model"
+          formControlName="model"
+          matInput />
+        <mat-hint>Please enter device name</mat-hint>
+        <mat-error
+          *ngIf="model.hasError('invalid_format')"
+          role="alert"
+          aria-live="assertive">
+          <span
+            >Please, check. The device model name must be a maximum of 28
+            characters. Only letters, numbers, and accented letters are
+            permitted.</span
+          >
+        </mat-error>
+        <mat-error *ngIf="model.errors?.['required']">
+          <span>Device Model is <strong>required</strong></span>
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>MAC address</mat-label>
+        <input
+          class="device-qualification-form-mac-address"
+          formControlName="mac_addr"
+          matInput
+          [dropSpecialCharacters]="false"
+          [showMaskTyped]="true"
+          [specialCharacters]="[':']"
+          mask="AA:AA:AA:AA:AA:AA"
+          shownMaskExpression="__:__:__:__:__:__"
+          type="text" />
+        <mat-hint>Please enter MAC address</mat-hint>
+        <mat-error
+          *ngIf="
+            mac_addr.errors?.['required'] && !mac_addr.errors?.['pattern']
+          ">
+          <span>MAC address is <strong>required</strong></span>
+        </mat-error>
+        <mat-error
+          *ngIf="mac_addr.errors?.['pattern']"
+          class="device-form-mac-address-error">
+          <span
+            >Please, check. A MAC address consists of 12 hexadecimal digits (0
+            to 9, a to f, or A to F).</span
+          >
+        </mat-error>
+        <mat-error *ngIf="mac_addr.errors?.['has_same_mac_address']">
+          <span
+            >This MAC address is already used for another device in the
+            repository.</span
+          >
+        </mat-error>
+      </mat-form-field>
+
+      <mat-label class="device-qualification-form-journey-label"
+        >Please, select the testing journey for device</mat-label
+      >
+      <input matInput style="display: none" />
+
+      <mat-radio-group formControlName="testing_journey">
+        <mat-radio-button
+          [value]="0"
+          class="device-qualification-form-journey-button">
+          <span class="device-qualification-form-journey-button-label">
+            🛡️ Device Qualification
+          </span>
+        </mat-radio-button>
+
+        <mat-radio-button
+          [value]="1"
+          class="device-qualification-form-journey-button">
+          <span class="device-qualification-form-journey-button-label">
+            🚀 Pilot Assessment
+          </span>
+        </mat-radio-button>
+      </mat-radio-group>
+
+      <app-device-tests
+        class="device-qualification-form-test-modules-container"
+        [deviceForm]="getStep(0)"
+        [deviceTestModules]="data.device?.test_modules"
+        [testModules]="testModules">
+      </app-device-tests>
+    </cdk-step>
+
+    <ng-container *ngFor="let step of format">
+      <cdk-step
+        *ngIf="getStep(step.step)"
+        [editable]="true"
+        [formGroupName]="step.step"
+        [stepControl]="getStep(step.step)">
+        <section class="device-qualification-form-page">
+          <h3 class="device-qualification-form-step-title" *ngIf="step.title">
+            {{ step.title }}
+          </h3>
+          <p
+            class="device-qualification-form-step-description"
+            *ngIf="step.description">
+            {{ step.description }}
+          </p>
+          <app-dynamic-form
+            class="device-qualification-form-step-content"
+            [format]="step.questions"
+            [optionKey]="'text'"></app-dynamic-form>
+        </section>
+      </cdk-step>
+    </ng-container>
+
+    <cdk-step *ngIf="format.length" [editable]="true">
+      <section class="device-qualification-form-page">
+        <h3 class="device-qualification-form-step-title">Summary</h3>
+        <p class="device-qualification-form-step-description">
+          The device has been configured. Please check the setup.
+        </p>
+        <section></section>
+        <div class="device-qualification-form-actions">
+          <button
+            mat-button
+            color="primary"
+            class="close-button"
+            (click)="closeForm()">
+            Cancel
+          </button>
+          <button mat-flat-button color="primary" class="save-button">
+            Save
+          </button>
+        </div>
+      </section>
+    </cdk-step>
+  </app-stepper>
+</form>
