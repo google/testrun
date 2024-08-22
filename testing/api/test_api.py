@@ -733,24 +733,28 @@ def test_system_version(testrun): # pylint: disable=W0613
   # Parse the response
   response = r.json()
 
-  # Assign the json keys to a list
-  version_json = ["installed_version",
-                  "update_available", 
-                  "latest_version", 
-                  "latest_version_url"]
+  # Assign the json response keys and expected types
+  expected_keys = {
+    "installed_version":str,
+    "update_available":bool, 
+    "latest_version":str, 
+    "latest_version_url":str
+  }
 
-  # Check if all the keys are in json response
-  for key in version_json:
+  # Iterate over the dict keys and values
+  for key, key_type in expected_keys.items():
+
+    # Check if the key is in the JSON response
     assert key in response
 
-  # Check if the update_available is a boolean
-  assert isinstance(response["update_available"], bool)
+    # Check if the key has the expected data type
+    assert isinstance(response[key], key_type)
 
 # Tests for reports endpoints
 
 @pytest.fixture
 def create_report_folder(): # pylint: disable=W0613
-  """Fixture to create the report.json and report.pdf in the expected path"""
+  """Fixture to create the reports folder in local/devices"""
   def _create_report_folder(device_name, mac_address, timestamp):
 
     # Create the device folder path
@@ -769,19 +773,17 @@ def create_report_folder(): # pylint: disable=W0613
     # Ensure the report folder exists
     os.makedirs(report_folder, exist_ok=True)
 
-    # Define the source and target paths for the report.json
-    json_source_report_path = os.path.join(REPORTS_PATH, "report.json")
-    json_target_report_path = os.path.join(report_folder, "report.json")
+    # Iterate over the files from 'testing/api/reports' folder
+    for file in os.listdir(REPORTS_PATH):
 
-     # Define the source and target paths for the report.pdf
-    pdf_source_report_path = os.path.join(REPORTS_PATH, "report.pdf")
-    pdf_target_report_path = os.path.join(report_folder, "report.pdf")
+      # Construct full path of the file from 'testing/api/reports' folder
+      source_path = os.path.join(REPORTS_PATH, file)
 
-    # Copy the report.json file from the source to the target location
-    shutil.copy(json_source_report_path, json_target_report_path)
+      # Construct full path where the file will be copied
+      target_path = os.path.join(report_folder, file)
 
-    # Copy the report.json file from the source to the target location
-    shutil.copy(pdf_source_report_path, pdf_target_report_path)
+      # Copy the file
+      shutil.copy(source_path, target_path)
 
     return report_folder
 
@@ -968,7 +970,7 @@ def test_delete_report_no_report(testrun, empty_devices_dir): # pylint: disable=
   # Payload to be deleted for a non existing device
   delete_data = {
       "mac_addr": "00:1e:42:35:73:c4",
-      "timestamp": "2024-01-01 00:00:00"
+      "timestamp": TIMESTAMP
   }
 
   # Send the delete request to the endpoint
