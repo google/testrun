@@ -9,7 +9,6 @@ export const getValidationErrors = (file: File): string[] => {
   errors.push(validateExtension(file.name));
   errors.push(validateFileNameLength(file.name));
   errors.push(validateSize(file.size));
-  // @ts-expect-error null values are filtered
   return errors.filter(error => error !== null);
 };
 const validateFileName = (name: string): string | null => {

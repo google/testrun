@@ -183,7 +183,7 @@ $form-height: 993px;
 
 .device-qualification-form-summary {
   border-radius: 12px;
-  background: mat.get-color-from-palette($color-primary, 50);
+  background: mat.m2-get-color-from-palette($color-primary, 50);
   padding: 24px;
   width: max-content;
   margin-left: auto;
