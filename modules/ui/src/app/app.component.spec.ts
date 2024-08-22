@@ -57,6 +57,7 @@ import {
   selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
+  selectInternetConnection,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
@@ -72,6 +73,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { HISTORY } from './mocks/reports.mock';
 import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { MOCK_ADAPTERS } from './mocks/settings.mock';
+import { WifiComponent } from './components/wifi/wifi.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 const windowMock = {
@@ -140,6 +142,7 @@ describe('AppComponent', () => {
         CalloutComponent,
         MatIconTestingModule,
         CertificatesComponent,
+        WifiComponent,
         MatTooltipModule,
       ],
       providers: [
@@ -162,6 +165,7 @@ describe('AppComponent', () => {
           selectors: [
             { selector: selectInterfaces, value: {} },
             { selector: selectHasConnectionSettings, value: true },
+            { selector: selectInternetConnection, value: true },
             { selector: selectError, value: null },
             { selector: selectMenuOpened, value: false },
             { selector: selectHasDevices, value: false },
@@ -441,6 +445,13 @@ describe('AppComponent', () => {
     const version = compiled.querySelector('app-version');
 
     expect(version).toBeTruthy();
+  });
+
+  it('should internet icon', () => {
+    fixture.detectChanges();
+    const internet = compiled.querySelector('app-wifi');
+
+    expect(internet).toBeTruthy();
   });
 
   describe('Callout component visibility', () => {

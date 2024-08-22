@@ -34,6 +34,7 @@ import {
   selectSystemStatus,
   selectTestModules,
   selectHasExpiredDevices,
+  selectInternetConnection,
 } from './selectors';
 
 describe('Selectors', () => {
@@ -63,6 +64,7 @@ describe('Selectors', () => {
       reports: [],
       testModules: [],
       adapters: {},
+      internetConnection: null,
     },
   };
 
@@ -154,5 +156,10 @@ describe('Selectors', () => {
   it('should select adapters', () => {
     const result = selectAdapters.projector(initialState);
     expect(result).toEqual({});
+  });
+
+  it('should select internetConnection', () => {
+    const result = selectInternetConnection.projector(initialState);
+    expect(result).toEqual(null);
   });
 });

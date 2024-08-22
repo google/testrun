@@ -21,6 +21,7 @@ import {
   COPY_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
   NEW_PROFILE_MOCK_DRAFT,
+  OUTDATED_DRAFT_PROFILE_MOCK,
   PROFILE_FORM,
   PROFILE_MOCK,
   PROFILE_MOCK_2,
@@ -247,6 +248,24 @@ describe('ProfileFormComponent', () => {
   });
 
   describe('Class tests', () => {
+    describe('with outdated draft profile', () => {
+      beforeEach(() => {
+        component.selectedProfile = OUTDATED_DRAFT_PROFILE_MOCK;
+        fixture.detectChanges();
+      });
+
+      it('should have an error when uses the name of copy profile', () => {
+        expect(component.profileForm.value).toEqual({
+          0: '',
+          1: 'IoT Sensor',
+          2: '',
+          3: { 0: false, 1: false, 2: false },
+          4: '',
+          name: 'Outdated profile',
+        });
+      });
+    });
+
     describe('with profile', () => {
       beforeEach(() => {
         component.selectedProfile = PROFILE_MOCK;

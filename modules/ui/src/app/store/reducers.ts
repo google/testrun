@@ -130,6 +130,12 @@ export const sharedReducer = createReducer(
       ...state,
       adapters,
     };
+  }),
+  on(Actions.updateInternetConnection, (state, { internetConnection }) => {
+    return {
+      ...state,
+      internetConnection,
+    };
   })
 );
 

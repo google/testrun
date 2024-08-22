@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/base-test
+# Image name: testrun/base-test
 FROM ubuntu@sha256:e6173d4dc55e76b87c4af8db8821b1feae4146dd47341e4d431118c7dd060a74
 
 ARG MODULE_NAME=base
@@ -49,6 +49,7 @@ ARG CONTAINER_PROTO_DIR=testrun/python/src/grpc_server/proto
 
 COPY $NET_MODULE_DIR/dhcp-1/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/dhcp1/
 COPY $NET_MODULE_DIR/dhcp-2/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/dhcp2/
+COPY $NET_MODULE_DIR/host/$NET_MODULE_PROTO_DIR $CONTAINER_PROTO_DIR/host/
 
 # Copy the cached version of oui.txt incase the download fails
 RUN mkdir -p /usr/local/etc

@@ -112,6 +112,14 @@ limitations under the License.
           ">
           <mat-icon>tune</mat-icon>
         </button>
+
+        <span class="separator"></span>
+        <app-wifi
+          [on]="vm.hasInternetConnection"
+          [disable]="
+            !isTestrunInProgress(vm.systemStatus) ||
+            vm.hasInternetConnection === null
+          "></app-wifi>
         <app-shutdown-app [disable]="isTestrunInProgress(vm.systemStatus)">
         </app-shutdown-app>
       </mat-toolbar>

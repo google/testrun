@@ -152,7 +152,9 @@ export class TestRunService {
         result === StatusOfTestResult.InProgress,
       grey:
         result === StatusOfTestResult.NotDetected ||
-        result === StatusOfTestResult.NotStarted,
+        result === StatusOfTestResult.NotStarted ||
+        result === StatusOfTestResult.Skipped ||
+        result === StatusOfTestResult.Disabled,
     };
   }
 
