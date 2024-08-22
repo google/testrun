@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  FormControlType,
-  Profile,
-  ProfileFormat,
-  ProfileStatus,
-} from '../model/profile';
+import { Profile, ProfileFormat, ProfileStatus } from '../model/profile';
+import { FormControlType } from '../model/question';
 
 export const PROFILE_MOCK: Profile = {
   name: 'Primary profile',

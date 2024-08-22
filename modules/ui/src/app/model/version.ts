@@ -23,5 +23,4 @@ export interface Version {
 
 export interface ConsentDialogResult {
   grant: boolean;
-  isNavigateToRiskAssessment?: boolean;
 }

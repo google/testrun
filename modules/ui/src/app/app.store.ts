@@ -16,13 +16,15 @@
 
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
-import { tap, withLatestFrom } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
+  selectInternetConnection,
   selectMenuOpened,
   selectReports,
   selectStatus,
@@ -52,20 +54,21 @@ import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { NotificationService } from './services/notification.service';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
+export const CALLOUT_STATE_KEY = 'CALLOUT_STATE';
 export interface AppComponentState {
   consentShown: boolean;
   isStatusLoaded: boolean;
-  hasInternetConnection: boolean | null;
   systemStatus: TestrunStatus | null;
+  calloutState: Map<string, boolean>;
 }
 @Injectable()
 export class AppStore extends ComponentStore<AppComponentState> {
   private consentShown$ = this.select(state => state.consentShown);
+  private calloutState$ = this.select(state => state.calloutState);
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
-  private hasInternetConnection$ = this.select(
-    state => state.hasInternetConnection
-  );
+  private hasInternetConnection$ = this.store.select(selectInternetConnection);
   private hasDevices$ = this.store.select(selectHasDevices);
+  private hasExpiredDevices$ = this.store.select(selectHasExpiredDevices);
   private hasRiskProfiles$ = this.store.select(selectHasRiskProfiles);
   private reports$ = this.store.select(selectReports);
   private hasConnectionSetting$ = this.store.select(
@@ -81,6 +84,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
   viewModel$ = this.select({
     consentShown: this.consentShown$,
     hasDevices: this.hasDevices$,
+    hasExpiredDevices: this.hasExpiredDevices$,
     hasRiskProfiles: this.hasRiskProfiles$,
     reports: this.reports$,
     isStatusLoaded: this.isStatusLoaded$,
@@ -89,6 +93,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
     isMenuOpen: this.isMenuOpen$,
     interfaces: this.interfaces$,
     settingMissedError: this.settingMissedError$,
+    calloutState: this.calloutState$,
     hasInternetConnection: this.hasInternetConnection$,
   });
 
@@ -97,17 +102,21 @@ export class AppStore extends ComponentStore<AppComponentState> {
     consentShown,
   }));
 
+  updateCalloutState = this.updater((state, callout: string) => {
+    const calloutState = state.calloutState;
+    calloutState.set(callout, true);
+    // @ts-expect-error property is defined in index.html
+    sessionStorage.setObject(CALLOUT_STATE_KEY, calloutState);
+    return {
+      ...state,
+      calloutState: new Map(calloutState),
+    };
+  });
+
   updateIsStatusLoaded = this.updater((state, isStatusLoaded: boolean) => ({
     ...state,
     isStatusLoaded,
   }));
-
-  updateHasInternetConnection = this.updater(
-    (state, hasInternetConnection: boolean | null) => ({
-      ...state,
-      hasInternetConnection,
-    })
-  );
 
   setContent = this.effect<void>(trigger$ => {
     return trigger$.pipe(
@@ -170,19 +179,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  getInternetConnection = this.effect(trigger$ => {
-    return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunMqttService.getInternetConnection().pipe(
-          withLatestFrom(this.hasInternetConnection$),
-          tap(([{ connection }]) => {
-            this.updateHasInternetConnection(connection);
-          })
-        );
-      })
-    );
-  });
-
   private notifyAboutTheAdapters(adapters: SystemInterfaces) {
     this.notificationService.notify(
       `New network adapter(s) ${Object.keys(adapters).join(', ')} has been detected. You can switch to using it in the System settings menu`
@@ -239,6 +235,14 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
+  setCloseCallout = this.effect<string>(trigger$ => {
+    return trigger$.pipe(
+      tap((id: string) => {
+        this.updateCalloutState(id);
+      })
+    );
+  });
+
   constructor(
     private store: Store<AppState>,
     private testRunService: TestRunService,
@@ -246,11 +250,16 @@ export class AppStore extends ComponentStore<AppComponentState> {
     private focusManagerService: FocusManagerService,
     private notificationService: NotificationService
   ) {
+    // @ts-expect-error get object is defined in index.html
+    const calloutState = sessionStorage.getObject(CALLOUT_STATE_KEY);
+
     super({
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,
       isStatusLoaded: false,
       systemStatus: null,
-      hasInternetConnection: null,
+      calloutState: calloutState
+        ? new Map(Object.entries(calloutState))
+        : new Map(),
     });
   }
 }

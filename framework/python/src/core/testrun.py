@@ -31,6 +31,7 @@ from common import logger, util, mqtt
 from common.device import Device
 from common.session import TestrunSession
 from common.testreport import TestReport
+from common.statuses import TestrunStatus
 from api.api import Api
 from net_orc.listener import NetworkEvent
 from net_orc import network_orchestrator as net_orc
@@ -58,6 +59,10 @@ DEVICE_MANUFACTURER = 'manufacturer'
 DEVICE_MODEL = 'model'
 DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
+DEVICE_TYPE_KEY = 'type'
+DEVICE_TECHNOLOGY_KEY = 'technology'
+DEVICE_TEST_PACK_KEY = 'test_pack'
+
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
 class Testrun:  # pylint: disable=too-few-public-methods
@@ -165,7 +170,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
       # Check if device config file exists before loading
       if not os.path.exists(device_config_file_path):
         LOGGER.error('Device configuration file missing ' +
-                     f'from device {device_folder}')
+                     f'for device {device_folder}')
         continue
 
       # Open device config file
@@ -177,6 +182,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
         device_model = device_config_json.get(DEVICE_MODEL)
         mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
         test_modules = device_config_json.get(DEVICE_TEST_MODULES)
+
+        # Load max device reports
         max_device_reports = None
         if 'max_device_reports' in device_config_json:
           max_device_reports = device_config_json.get(MAX_DEVICE_REPORTS_KEY)
@@ -190,6 +197,21 @@ class Testrun:  # pylint: disable=too-few-public-methods
                         test_modules=test_modules,
                         max_device_reports=max_device_reports,
                         device_folder=device_folder)
+
+        # Load in the additional fields
+        if DEVICE_TYPE_KEY in device_config_json:
+          device.type = device_config_json.get(DEVICE_TYPE_KEY)
+
+        if DEVICE_TECHNOLOGY_KEY in device_config_json:
+          device.technology = device_config_json.get(DEVICE_TECHNOLOGY_KEY)
+
+        if DEVICE_TEST_PACK_KEY in device_config_json:
+          device.test_pack = device_config_json.get(DEVICE_TEST_PACK_KEY)
+
+        if None in [device.type, device.technology, device.test_pack]:
+          LOGGER.warning(
+            'Device is outdated and requires further configuration')
+          device.status = 'Invalid'
 
         self._load_test_reports(device)
 
@@ -372,7 +394,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     self._stop_tests()
     self._stop_network(kill=True)
-    self.get_session().set_status('Cancelled')
+    self.get_session().set_status(TestrunStatus.CANCELLED)
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
@@ -400,6 +422,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     # Expand the config file to absolute pathing
     return os.path.abspath(config_file)
+
+  def get_root_dir(self):
+    return root_dir
 
   def get_config_file(self):
     return self._get_config_abs()
@@ -454,12 +479,12 @@ class Testrun:  # pylint: disable=too-few-public-methods
   def _device_stable(self, mac_addr):
 
     # Do not continue testing if Testrun has cancelled during monitor phase
-    if self.get_session().get_status() == 'Cancelled':
+    if self.get_session().get_status() == TestrunStatus.CANCELLED:
       self._stop_network()
       return
 
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
-    self._set_status('In Progress')
+    self._set_status(TestrunStatus.IN_PROGRESS)
     result = self._test_orc.run_test_modules()
 
     if result is not None:

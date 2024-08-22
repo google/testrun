@@ -47,6 +47,11 @@ export const selectHasDevices = createSelector(
   (state: AppState) => state.shared.hasDevices
 );
 
+export const selectHasExpiredDevices = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.hasExpiredDevices
+);
+
 export const selectDevices = createSelector(
   selectAppState,
   (state: AppState) => state.shared.devices
@@ -107,4 +112,9 @@ export const selectTestModules = createSelector(
 export const selectAdapters = createSelector(
   selectAppState,
   (state: AppState) => state.shared.adapters
+);
+
+export const selectInternetConnection = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.internetConnection
 );

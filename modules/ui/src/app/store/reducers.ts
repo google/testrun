@@ -65,6 +65,12 @@ export const sharedReducer = createReducer(
       hasDevices,
     };
   }),
+  on(Actions.setHasExpiredDevices, (state, { hasExpiredDevices }) => {
+    return {
+      ...state,
+      hasExpiredDevices,
+    };
+  }),
   on(Actions.setDevices, (state, { devices }) => {
     return {
       ...state,
@@ -123,6 +129,12 @@ export const sharedReducer = createReducer(
     return {
       ...state,
       adapters,
+    };
+  }),
+  on(Actions.updateInternetConnection, (state, { internetConnection }) => {
+    return {
+      ...state,
+      internetConnection,
     };
   })
 );
