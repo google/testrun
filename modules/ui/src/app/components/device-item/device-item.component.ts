@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Device, DeviceView, TestingType } from '../../model/device';
+import {
+  Device,
+  DeviceStatus,
+  DeviceView,
+  TestingType,
+} from '../../model/device';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -37,6 +42,7 @@ import { PilotIconComponent } from '../pilot-icon/pilot-icon.component';
   ],
 })
 export class DeviceItemComponent {
+  readonly DeviceStatus = DeviceStatus;
   readonly TestingType = TestingType;
   @Input() device!: Device;
   @Input() tabIndex = 0;

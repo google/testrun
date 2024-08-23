@@ -116,6 +116,28 @@ describe('DeviceItemComponent', () => {
       fixture.detectChanges();
     });
 
+    describe('with device status as invalid', () => {
+      beforeEach(() => {
+        component.device.status = DeviceStatus.INVALID;
+        fixture.detectChanges();
+      });
+
+      it('should have item status as Outdated', () => {
+        component.device.status = DeviceStatus.INVALID;
+        fixture.detectChanges();
+        const status = compiled.querySelector('.item-status');
+
+        expect(status).toBeTruthy();
+        expect(status?.textContent?.trim()).toEqual('Outdated');
+      });
+
+      it('should disable start buttons', () => {
+        const startBtn = compiled.querySelector('.button-start') as HTMLElement;
+
+        expect(startBtn.getAttribute('disabled')).toBeTruthy();
+      });
+    });
+
     it('should emit device on click edit button', () => {
       const clickSpy = spyOn(component.itemClicked, 'emit');
       const editBtn = compiled.querySelector('.button-edit') as HTMLElement;
