@@ -19,7 +19,7 @@
     </div>
     {# Risk banner #}
 
-    {% if loop.index == 1 and risk is not none %}
+    {% if loop.first and risk is not none %}
     <div class="risk-banner risk-banner-{{ risk.lower() }}">
       <div class="risk-banner-title">
         <h3>{{ risk.lower() }} Risk</h3>
