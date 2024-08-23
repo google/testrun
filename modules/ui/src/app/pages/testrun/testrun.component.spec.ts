@@ -49,6 +49,7 @@ import {
   selectDevices,
   selectHasDevices,
   selectHasRiskProfiles,
+  selectIsAllDevicesOutdated,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectRiskProfiles,
@@ -120,6 +121,7 @@ describe('TestrunComponent', () => {
           provideMockStore({
             selectors: [
               { selector: selectHasDevices, value: false },
+              { selector: selectIsAllDevicesOutdated, value: false },
               { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
               { selector: selectHasRiskProfiles, value: false },
@@ -238,6 +240,7 @@ describe('TestrunComponent', () => {
             selectors: [
               { selector: selectDevices, value: [] },
               { selector: selectHasDevices, value: false },
+              { selector: selectIsAllDevicesOutdated, value: false },
               { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
               { selector: selectHasRiskProfiles, value: false },
@@ -282,6 +285,23 @@ describe('TestrunComponent', () => {
       beforeEach(() => {
         store.overrideSelector(selectSystemStatus, null);
         store.overrideSelector(selectHasDevices, false);
+        fixture.detectChanges();
+      });
+
+      it('should have disabled "Start" button', () => {
+        const startBtn = compiled.querySelector(
+          '.start-button'
+        ) as HTMLButtonElement;
+
+        expect(startBtn.disabled).toBeTrue();
+      });
+    });
+
+    describe('with all devices outdated', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectSystemStatus, null);
+        store.overrideSelector(selectHasDevices, true);
+        store.overrideSelector(selectIsAllDevicesOutdated, true);
         fixture.detectChanges();
       });
 

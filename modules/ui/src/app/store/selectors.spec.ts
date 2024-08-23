@@ -33,7 +33,9 @@ import {
   selectStatus,
   selectSystemStatus,
   selectTestModules,
+  selectHasExpiredDevices,
   selectInternetConnection,
+  selectIsAllDevicesOutdated,
 } from './selectors';
 
 describe('Selectors', () => {
@@ -48,8 +50,10 @@ describe('Selectors', () => {
     },
     shared: {
       hasConnectionSettings: false,
+      isAllDevicesOutdated: false,
       devices: [],
       hasDevices: false,
+      hasExpiredDevices: false,
       isOpenAddDevice: false,
       riskProfiles: [],
       hasRiskProfiles: false,
@@ -93,6 +97,16 @@ describe('Selectors', () => {
 
   it('should select hasDevices', () => {
     const result = selectHasDevices.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select hasExpiredDevices', () => {
+    const result = selectHasExpiredDevices.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select isAllDevicesOutdated', () => {
+    const result = selectIsAllDevicesOutdated.projector(initialState);
     expect(result).toEqual(false);
   });
 

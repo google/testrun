@@ -29,7 +29,7 @@ limitations under the License.
               route: Routes.Testing,
               svgIcon: 'testrun_logo_small',
               label: 'Testing',
-              name: 'testrun'
+              name: 'testrun',
             }
           ">
         </ng-container>
@@ -40,7 +40,7 @@ limitations under the License.
               route: Routes.Devices,
               svgIcon: 'devices',
               label: 'Devices',
-              name: 'devices'
+              name: 'devices',
             }
           ">
         </ng-container>
@@ -51,7 +51,7 @@ limitations under the License.
               route: Routes.Reports,
               svgIcon: 'reports',
               label: 'Reports',
-              name: 'reports'
+              name: 'reports',
             }
           ">
         </ng-container>
@@ -62,17 +62,13 @@ limitations under the License.
               route: Routes.RiskAssessment,
               svgIcon: 'risk_assessment',
               label: 'Risk Assessment',
-              name: 'risk-assessment'
+              name: 'risk-assessment',
             }
           ">
         </ng-container>
         <app-version
           [consentShown]="vm.consentShown"
-          [hasRiskProfiles]="vm.hasRiskProfiles"
-          (consentShownEvent)="consentShown()"
-          (navigateToRiskAssessmentEvent)="
-            navigateToRiskAssessment()
-          "></app-version>
+          (consentShownEvent)="consentShown()"></app-version>
       </div>
     </mat-drawer>
 
@@ -179,9 +175,9 @@ limitations under the License.
           *ngIf="vm.hasConnectionSettings === true && vm.hasDevices === false">
           Step 2: To perform a device test please
           <a
-            (click)="navigateToDeviceRepository()"
-            (keydown.enter)="navigateToDeviceRepository()"
-            (keydown.space)="navigateToDeviceRepository()"
+            (click)="navigateToAddDevice()"
+            (keydown.enter)="navigateToAddDevice()"
+            (keydown.space)="navigateToAddDevice()"
             aria-label="The Create a Device link redirects to the Devices page and opens the dialogue there."
             tabindex="0"
             role="link"
@@ -234,6 +230,29 @@ limitations under the License.
             class="message-link"
             >Risk Assessment questionnaire</a
           >?
+        </app-callout>
+        <app-callout
+          id="outdated_devices_callout"
+          role="alert"
+          aria-live="assertive"
+          [closed]="!!vm.calloutState.get('outdated_devices_callout')"
+          [closable]="true"
+          [type]="CalloutType.Error"
+          (calloutClosed)="calloutClosed($event)"
+          *ngIf="vm.hasExpiredDevices">
+          Further information is required in your device configurations. Please
+          update your
+          <a
+            (click)="navigateToDeviceRepository()"
+            (keydown.enter)="navigateToDeviceRepository()"
+            (keydown.space)="navigateToDeviceRepository()"
+            aria-label="The Devices link redirects to the device repository page."
+            tabindex="0"
+            role="link"
+            class="message-link"
+            >Devices</a
+          >
+          to continue testing.
         </app-callout>
         <router-outlet></router-outlet>
       </div>

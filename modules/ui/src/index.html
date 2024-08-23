@@ -28,6 +28,22 @@ limitations under the License.
         j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
         f.parentNode.insertBefore(j, f);
       })(window, document, 'script', 'dataLayer', 'GTM-NDFZ7L89');
+
+      Storage.prototype.setObject = function (key, value) {
+        if (value instanceof Map) {
+          this.setItem(
+            key,
+            JSON.stringify(Object.fromEntries(value.entries()))
+          );
+        } else {
+          this.setItem(key, JSON.stringify(value));
+        }
+      };
+
+      Storage.prototype.getObject = function (key) {
+        var value = this.getItem(key);
+        return value && JSON.parse(value);
+      };
     </script>
     <!-- End Google Tag Manager -->
     <!-- Google tag (gtag.js) -->

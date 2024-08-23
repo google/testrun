@@ -24,7 +24,12 @@ import {
 } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TestRunService } from '../../../../services/test-run.service';
-import { Device, TestModule, DeviceView } from '../../../../model/device';
+import {
+  Device,
+  TestModule,
+  DeviceStatus,
+  DeviceView,
+} from '../../../../model/device';
 import {
   AbstractControl,
   FormArray,
@@ -61,6 +66,7 @@ export class TestrunInitiateFormComponent
   testModules: TestModule[] = [];
   prevDevice: Device | null = null;
   setFirmwareFocus = false;
+  readonly DeviceStatus = DeviceStatus;
   readonly DeviceView = DeviceView;
   error$: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(
     null

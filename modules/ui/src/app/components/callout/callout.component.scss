@@ -31,6 +31,10 @@
   top: 60px;
 }
 
+:host.hidden {
+  display: none;
+}
+
 @media (width < 742px) {
   :host + ::ng-deep app-callout {
     top: 80px;
@@ -61,10 +65,10 @@
 
 .callout-container.info {
   margin: 24px 32px;
-  background-color: mat.get-color-from-palette($color-primary, 50);
+  background-color: mat.m2-get-color-from-palette($color-primary, 50);
 
   .callout-icon {
-    color: mat.get-color-from-palette($color-primary, 700);
+    color: mat.m2-get-color-from-palette($color-primary, 700);
   }
 }
 
@@ -116,4 +120,10 @@
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
+}
+
+.callout-close-button {
+  margin-left: auto;
+  margin-right: -20px;
+  color: $warn;
 }

@@ -52,7 +52,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
   @Input() set settingsDisable(value: boolean) {
     this.isSettingsDisable = value;
-    value ? this.disableSettings() : this.enableSettings();
+    if (value) {
+      this.disableSettings();
+    } else {
+      this.enableSettings();
+    }
   }
   public readonly CalloutType = CalloutType;
   public readonly EventType = EventType;

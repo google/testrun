@@ -33,7 +33,7 @@ import {
   selectMenuOpened,
   selectSystemStatus,
 } from './selectors';
-import { device } from '../mocks/device.mock';
+import { device, expired_device } from '../mocks/device.mock';
 import {
   MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_COMPLIANT,
@@ -152,6 +152,30 @@ describe('Effects', () => {
 
     effects.onSetDevices$.subscribe(action => {
       expect(action).toEqual(actions.setHasDevices({ hasDevices: true }));
+      done();
+    });
+  });
+
+  it('onSetExpiredDevices$ should call setHasExpiredDevices', done => {
+    actions$ = of(actions.setDevices({ devices: [device, expired_device] }));
+
+    effects.onSetExpiredDevices$.subscribe(action => {
+      expect(action).toEqual(
+        actions.setHasExpiredDevices({ hasExpiredDevices: true })
+      );
+      done();
+    });
+  });
+
+  it('onSetIsAllDevicesOutdated$ should call setIsAllDevicesOutdated', done => {
+    actions$ = of(
+      actions.setDevices({ devices: [expired_device, expired_device] })
+    );
+
+    effects.onSetIsAllDevicesOutdated$.subscribe(action => {
+      expect(action).toEqual(
+        actions.setIsAllDevicesOutdated({ isAllDevicesOutdated: true })
+      );
       done();
     });
   });
