@@ -809,7 +809,7 @@ def create_and_get_device():
   response = r.json()
 
   # Extract the device name and MAC address from response
-  device_name = f"{response[0]["manufacturer"]} {response[0]["model"]}"
+  device_name = f'{response[0]["manufacturer"]} {response[0]["model"]}'
   mac_address = response[0]["mac_addr"]
 
   # Return only the device name and MAC address
@@ -846,8 +846,6 @@ def test_delete_report_success(empty_devices_dir, testrun, # pylint: disable=W06
   """Test for succesfully delete a report (200)"""
 
   r = requests.get(f"{API}/devices", timeout=5)
-
-  print(f"devices before: {r.json()}")
 
   # Load the device_name and mac_address from add_device fixture
   device_name, mac_address = add_device()
