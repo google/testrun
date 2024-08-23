@@ -855,10 +855,6 @@ def test_delete_report_success(empty_devices_dir, testrun, # pylint: disable=W06
   # Create the report directory
   report_folder = create_report_folder(device_name, mac_address, TIMESTAMP)
 
-  r = requests.get(f"{API}/devices", timeout=5)
-
-  print(f"devices after: {r.json()}")
-
   # Payload
   delete_data = {
     "mac_addr": mac_address,
