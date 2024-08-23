@@ -21,7 +21,10 @@ export interface Device {
   mac_addr: string;
   test_modules?: TestModules;
   firmware?: string;
-  status: DeviceStatus;
+  status?: DeviceStatus;
+  type?: string;
+  technology?: string;
+  test_pack?: TestingType;
 }
 
 export enum DeviceStatus {
@@ -61,4 +64,9 @@ export interface DeviceQuestionnaireSection {
 
 export interface QuestionnaireFormat extends QuestionFormat {
   id: number;
+}
+
+export enum TestingType {
+  Pilot = 'Pilot assessment',
+  Qualification = 'Device qualification',
 }

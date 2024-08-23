@@ -51,9 +51,9 @@ export class StepperComponent extends CdkStepper {
   nextClick() {
     if (
       this.selected?.interacted &&
-      !(this.selected?.stepControl as FormGroup).valid
+      !(this.selected?.stepControl as FormGroup)?.valid
     ) {
-      this.selected?.stepControl.markAllAsTouched();
+      this.selected?.stepControl?.markAllAsTouched();
     }
   }
 }

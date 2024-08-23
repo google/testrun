@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use '@angular/material' as mat;
 @import 'src/theming/colors';
 @import 'src/theming/variables';
 
@@ -146,6 +147,12 @@ $form-height: 993px;
   padding-top: 8px;
 }
 
+.step-link {
+  color: $primary;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .device-qualification-form-step-content {
   overflow: scroll;
 }
@@ -160,6 +167,33 @@ $form-height: 993px;
   }
 }
 
+.device-qualification-form-summary-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: scroll;
+  ::ng-deep {
+    .device-item,
+    .device-qualification-form-summary-info {
+      width: $device-item-width;
+    }
+  }
+}
+
+.device-qualification-form-summary {
+  border-radius: 12px;
+  background: mat.m2-get-color-from-palette($color-primary, 50);
+  padding: 24px;
+  width: max-content;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 24px;
+  &-error {
+    background: $red-50;
+  }
+}
+
 .device-qualification-form-actions {
   text-align: center;
   .close-button {
@@ -168,4 +202,78 @@ $form-height: 993px;
   .save-button {
     margin: 0 16px;
   }
+}
+
+.device-qualification-form-summary-info {
+  margin-top: 16px;
+  border-radius: 12px;
+  padding: 16px 24px;
+  background: #fff;
+  box-sizing: border-box;
+  &-title,
+  &-title-error {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 24px;
+    text-align: center;
+    color: $grey-900;
+  }
+  &-description {
+    font-family: $font-secondary;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    text-align: center;
+    color: $grey-800;
+  }
+  .info-label {
+    display: block;
+    font-family: $font-secondary;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    text-align: left;
+    color: $secondary;
+  }
+  .info-value {
+    display: block;
+    color: $grey-800;
+    font-family: $font-secondary;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    text-align: left;
+  }
+}
+
+.device-qualification-form-summary-info-title-error {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  margin: auto;
+  justify-content: center;
+  color: $red-800;
+  gap: 14px;
+  ::ng-deep mat-icon {
+    color: $red-800;
+  }
+}
+
+.device-qualification-form-instructions {
+  margin-top: auto;
+  color: $grey-800;
+  text-align: center;
+  font-family: $font-secondary;
+  font-size: 16px;
+
+  ul {
+    text-align: left;
+  }
+  li {
+    line-height: 24px;
+  }
+}
+
+::ng-deep mat-error {
+  background: $white;
 }
