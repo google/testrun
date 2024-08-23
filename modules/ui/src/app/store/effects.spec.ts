@@ -167,6 +167,19 @@ describe('Effects', () => {
     });
   });
 
+  it('onSetIsAllDevicesOutdated$ should call setIsAllDevicesOutdated', done => {
+    actions$ = of(
+      actions.setDevices({ devices: [expired_device, expired_device] })
+    );
+
+    effects.onSetIsAllDevicesOutdated$.subscribe(action => {
+      expect(action).toEqual(
+        actions.setIsAllDevicesOutdated({ isAllDevicesOutdated: true })
+      );
+      done();
+    });
+  });
+
   it('onSetRiskProfiles$ should call setHasRiskProfiles', done => {
     actions$ = of(actions.setRiskProfiles({ riskProfiles: [PROFILE_MOCK] }));
 

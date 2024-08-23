@@ -162,6 +162,19 @@ export class AppEffects {
     );
   });
 
+  onSetIsAllDevicesOutdated$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setDevices),
+      map(({ devices }) =>
+        AppActions.setIsAllDevicesOutdated({
+          isAllDevicesOutdated: devices.every(
+            device => device.status === DeviceStatus.INVALID
+          ),
+        })
+      )
+    );
+  });
+
   onSetRiskProfiles$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(AppActions.setRiskProfiles),
