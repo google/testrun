@@ -24,7 +24,7 @@ export interface Profile {
   created?: string;
 }
 
-export interface ProfileFormat extends QuestionFormat {}
+export type ProfileFormat = QuestionFormat;
 
 export interface Question {
   question?: string;

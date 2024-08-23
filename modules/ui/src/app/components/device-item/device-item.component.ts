@@ -14,20 +14,30 @@
  * limitations under the License.
  */
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Device, DeviceView } from '../../model/device';
+import { Device, DeviceView, TestingType } from '../../model/device';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { QualificationIconComponent } from '../qualification-icon/qualification-icon.component';
+import { PilotIconComponent } from '../pilot-icon/pilot-icon.component';
 
 @Component({
   selector: 'app-device-item',
   templateUrl: './device-item.component.html',
   styleUrls: ['./device-item.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    QualificationIconComponent,
+    PilotIconComponent,
+  ],
 })
 export class DeviceItemComponent {
+  readonly TestingType = TestingType;
   @Input() device!: Device;
   @Input() tabIndex = 0;
   @Input() deviceView!: string;

@@ -22,7 +22,7 @@ $option-height: 36px;
 
 .download-options-field {
   width: $option-width;
-  background: mat.get-color-from-palette($color-primary, 50);
+  background: mat.m2-get-color-from-palette($color-primary, 50);
 
   ::ng-deep.mat-mdc-text-field-wrapper {
     padding: 0 16px;
@@ -39,7 +39,7 @@ $option-height: 36px;
   }
 
   ::ng-deep.mat-mdc-select-placeholder {
-    color: mat.get-color-from-palette($color-primary, 700);
+    color: mat.m2-get-color-from-palette($color-primary, 700);
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
@@ -48,11 +48,11 @@ $option-height: 36px;
   }
 
   ::ng-deep.mat-mdc-select-arrow {
-    color: mat.get-color-from-palette($color-primary, 700);
+    color: mat.m2-get-color-from-palette($color-primary, 700);
   }
 
   ::ng-deep .mat-mdc-text-field-wrapper .mdc-notched-outline > * {
-    border-color: mat.get-color-from-palette($color-primary, 50);
+    border-color: mat.m2-get-color-from-palette($color-primary, 50);
   }
 
   ::ng-deep
