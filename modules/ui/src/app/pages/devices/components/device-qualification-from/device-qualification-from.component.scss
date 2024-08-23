@@ -22,10 +22,15 @@ $form-min-width: 732px;
 $form-height: 993px;
 
 :host {
+  container-type: size;
+  container-name: qualification-form;
+
   display: grid;
   grid-template-rows: 1fr;
   overflow: auto;
   grid-template-columns: minmax(285px, $form-max-width);
+  height: 100vh;
+  max-height: 978px;
 }
 
 .device-qualification-form {
@@ -276,4 +281,22 @@ $form-height: 993px;
 
 ::ng-deep mat-error {
   background: $white;
+}
+
+@container qualification-form (height < 870px) {
+  .device-qualification-form-page {
+    overflow: scroll;
+    ::ng-deep app-device-tests {
+      overflow: visible;
+    }
+  }
+}
+@container qualification-form (height < 580px) {
+  .device-qualification-form-page {
+    overflow: scroll;
+    .device-qualification-form-step-content,
+    .device-qualification-form-summary-container {
+      overflow: visible;
+    }
+  }
 }
