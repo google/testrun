@@ -805,8 +805,17 @@ def create_and_get_device():
   # Send the GET request to retrieve the created device's folder name
   r = requests.get(f"{API}/devices", timeout=5)
 
-  # Return the parsed the json response
-  return r.json()
+  # Parse the json response
+  response = r.json()
+
+  # Extract the device name and MAC address from response
+  device_name = f"{response[0]["manufacturer"]} {response[0]["model"]}"
+  mac_address = response[0]["mac_addr"]
+
+  # Return only the device name and MAC address
+  return device_name, mac_address
+
+
 
 @pytest.fixture()
 def add_device():
@@ -832,21 +841,23 @@ def test_get_reports_no_reports(testrun): # pylint: disable=W0613
   # Check if the response is an empty list
   assert response == []
 
-def test_delete_report_success(testrun, empty_devices_dir, # pylint: disable=W0613
+def test_delete_report_success(empty_devices_dir, testrun, # pylint: disable=W0613
                         add_device, create_report_folder):
   """Test for succesfully delete a report (200)"""
 
-  # Load a device using the add_device fixture
-  device = add_device()
+  r = requests.get(f"{API}/devices", timeout=5)
 
-  # Assign the device name
-  device_name = device[0]["device_folder"]
+  print(f"devices before: {r.json()}")
 
-  # Assign the device name
-  mac_address = device[0]["mac_addr"]
+  # Load the device_name and mac_address from add_device fixture
+  device_name, mac_address = add_device()
 
   # Create the report directory
   report_folder = create_report_folder(device_name, mac_address, TIMESTAMP)
+
+  r = requests.get(f"{API}/devices", timeout=5)
+
+  print(f"devices after: {r.json()}")
 
   # Payload
   delete_data = {
@@ -856,8 +867,6 @@ def test_delete_report_success(testrun, empty_devices_dir, # pylint: disable=W06
 
   # Send a DELETE request to remove the report
   r = requests.delete(f"{API}/report", data=json.dumps(delete_data), timeout=5)
-
-  print(f"delete error is: {r.json()}")
 
   # Check if status code is 200 (OK)
   assert r.status_code == 200
@@ -871,8 +880,8 @@ def test_delete_report_success(testrun, empty_devices_dir, # pylint: disable=W06
   # Check if report folder has been deleted
   assert not os.path.exists(report_folder)
 
-def test_delete_report_no_payload(testrun, empty_devices_dir, # pylint: disable=W0613
-                            add_device, create_report_folder):  # pylint: disable=W0613
+def test_delete_report_no_payload(empty_devices_dir, testrun, # pylint: disable=W0613
+                           add_device, create_report_folder): # pylint: disable=W0613
   """Test delete report bad request when the payload is missing (400)"""
 
   # Send a DELETE request to remove the report without the payload
@@ -890,18 +899,12 @@ def test_delete_report_no_payload(testrun, empty_devices_dir, # pylint: disable=
   # Check if the correct error message returned
   assert "Invalid request received, missing body" in response["error"]
 
-def test_delete_report_invalid_payload(testrun, empty_devices_dir, # pylint: disable=W0613
+def test_delete_report_invalid_payload(empty_devices_dir, testrun, # pylint: disable=W0613
                                 add_device, create_report_folder):
   """Test delete report bad request, mac addr and timestamp are missing (400)"""
 
-  # Load a device using the add_device fixture
-  device = add_device()
-
-  # Assign the device name
-  device_name = device[0]["device_folder"]
-
-  # Assign the device name
-  mac_address = device[0]["mac_addr"]
+  # Load the device_name and mac_address from add_device fixture
+  device_name, mac_address = add_device()
 
   # Create the report directory
   create_report_folder(device_name, mac_address, TIMESTAMP)
@@ -924,18 +927,12 @@ def test_delete_report_invalid_payload(testrun, empty_devices_dir, # pylint: dis
   # Check if the correct error message returned
   assert "Missing mac address or timestamp" in response["error"]
 
-def test_delete_report_invalid_timestamp(testrun, empty_devices_dir, # pylint: disable=W0613
-                                            add_device, create_report_folder):
+def test_delete_report_invalid_timestamp(empty_devices_dir, testrun, # pylint: disable=W0613
+                                  add_device, create_report_folder):
   """Test delete report bad request when timestamp format is not valid (400)"""
 
-  # Load a device using the add_device fixture
-  device = add_device()
-
-  # Assign the device name
-  device_name = device[0]["device_folder"]
-
-  # Assign the device name
-  mac_address = device[0]["mac_addr"]
+  # Load the device_name and mac_address from add_device fixture
+  device_name, mac_address = add_device()
 
   # Assign the incorrect timestamp format
   timestamp = "2024-01-01 invalid"
@@ -964,7 +961,7 @@ def test_delete_report_invalid_timestamp(testrun, empty_devices_dir, # pylint: d
   # Check if the correct error message returned
   assert "Incorrect timestamp format" in response["error"]
 
-def test_delete_report_no_report(testrun, empty_devices_dir): # pylint: disable=W0613
+def test_delete_report_no_report(empty_devices_dir, testrun): # pylint: disable=W0613
   """Test delete report when report does not exist (404)"""
 
   # Payload to be deleted for a non existing device
@@ -985,18 +982,12 @@ def test_delete_report_no_report(testrun, empty_devices_dir): # pylint: disable=
   # Check if "error" in response
   assert "error" in response
 
-def test_delete_report_server_error(testrun, empty_devices_dir, # pylint: disable=W0613
-                                      add_device, create_report_folder):
+def test_delete_report_server_error(empty_devices_dir, testrun, # pylint: disable=W0613
+                             add_device, create_report_folder):
   """Test for delete report causing internal server error (500)"""
 
-  # Load a device using the add_device fixture
-  device = add_device()
-
-  # Assign the device name
-  device_name = device[0]["device_folder"]
-
-  # Assign the device name
-  mac_address = device[0]["mac_addr"]
+  # Load the device_name and mac_address from add_device fixture
+  device_name, mac_address = add_device()
 
   # Create the report folder and JSON file
   create_report_folder(device_name, mac_address, TIMESTAMP)
@@ -1030,18 +1021,12 @@ def test_delete_report_server_error(testrun, empty_devices_dir, # pylint: disabl
   # Check if the correct error message is returned
   assert "Error occured whilst deleting report" in response["error"]
 
-def test_get_report_success(testrun, empty_devices_dir, # pylint: disable=W0613
-                    add_device, create_report_folder):
+def test_get_report_success(empty_devices_dir, testrun, # pylint: disable=W0613
+                     add_device, create_report_folder):
   """Test get report when report exists (200)"""
 
- # Load a device using the add_device fixture
-  device = add_device()
-
-  # Assign the device name
-  device_name = device[0]["device_folder"]
-
-  # Assign the device name
-  mac_address = device[0]["mac_addr"]
+  # Load the device_name and mac_address from add_device fixture
+  device_name, mac_address = add_device()
 
   # Assign the timestamp and change the format
   timestamp = TIMESTAMP.replace(" ", "T")
@@ -1058,14 +1043,11 @@ def test_get_report_success(testrun, empty_devices_dir, # pylint: disable=W0613
   # Check if the response is a PDF
   assert r.headers["Content-Type"] == "application/pdf"
 
-def test_get_report_not_found(testrun, empty_devices_dir, add_device): # pylint: disable=W0613
+def test_get_report_not_found(empty_devices_dir, testrun, add_device): # pylint: disable=W0613
   """Test get report when report doesn't exist (404)"""
 
-  # Load a device using the add_device fixture
-  device = add_device()
-
-  # Assign the device name
-  device_name = device[0]["device_folder"]
+  # Load the device_name and ignore mac_address from add_device fixture
+  device_name, _ = add_device()
 
   # Send the get request
   r = requests.get(f"{API}/report/{device_name}/{TIMESTAMP}", timeout=5)
@@ -1103,7 +1085,7 @@ def test_get_report_device_not_found(empty_devices_dir, testrun): # pylint: disa
   # Check if the correct error message is returned
   assert "Device not found" in response["error"]
 
-def test_export_report_device_not_found(testrun, empty_devices_dir, # pylint: disable=W0613
+def test_export_report_device_not_found(empty_devices_dir, testrun, # pylint: disable=W0613
                                  create_report_folder):
   """Test for export the report result when the device could not be found"""
 
@@ -1129,16 +1111,12 @@ def test_export_report_device_not_found(testrun, empty_devices_dir, # pylint: di
   # Check if the correct error message returned
   assert "A device with that name could not be found" in response["error"]
 
-def test_export_report_profile_not_found(testrun, empty_devices_dir, # pylint: disable=W0613
+def test_export_report_profile_not_found(empty_devices_dir, testrun, # pylint: disable=W0613
                             add_device, create_report_folder):
   """Test for export report result when the profile is not found"""
 
-  # Load a device using the add_device fixture
-  device = add_device()
-
-  # Assign the device name and mac address
-  device_name = device[0]["device_folder"]
-  mac_address = device[0]["mac_addr"]
+  # Load the device_name and mac_address from add_device fixture
+  device_name, mac_address = add_device()
 
   # Create the report for the device
   create_report_folder(device_name, mac_address, TIMESTAMP)
@@ -1163,14 +1141,11 @@ def test_export_report_profile_not_found(testrun, empty_devices_dir, # pylint: d
   # Check if the correct error message returned
   assert "A profile with that name could not be found" in response["error"]
 
-def test_export_report_not_found(testrun, empty_devices_dir, add_device): # pylint: disable=W0613
+def test_export_report_not_found(empty_devices_dir, testrun, add_device): # pylint: disable=W0613
   """Test for export the report result when the report could not be found"""
 
-  # Load a device using the add_device fixture
-  device = add_device()
-
-  # Assign the device name and mac address
-  device_name = device[0]["device_folder"]
+  # Load the device_name and ignore mac_address from add_device fixture
+  device_name, _ = add_device()
 
   # Send the post request to trigger the zipping process
   r = requests.post(f"{API}/export/{device_name}/{TIMESTAMP}", timeout=10)
@@ -1187,19 +1162,15 @@ def test_export_report_not_found(testrun, empty_devices_dir, add_device): # pyli
   # Check if the correct error message is returned
   assert "Report could not be found" in response["error"]
 
-def test_export_report_with_profile(testrun, empty_devices_dir, add_device, # pylint: disable=W0613
+def test_export_report_with_profile(empty_devices_dir, testrun, add_device, # pylint: disable=W0613
                         create_report_folder, reset_profiles, add_profile): # pylint: disable=W0613
   """Test export results with existing profile when report exists (200)"""
 
   # Create a profile using the add_profile fixture
   profile = add_profile("new_profile.json")
 
-  # Load a device using the add_device fixture
-  device = add_device()
-
-  # Assign the device name, mac address
-  device_name = device[0]["device_folder"]
-  mac_address = device[0]["mac_addr"]
+  # Load the device_name and mac_address from add_device fixture
+  device_name, mac_address = add_device()
 
   # Assign the timestamp and change the format
   timestamp = TIMESTAMP.replace(" ", "T")
@@ -1218,16 +1189,12 @@ def test_export_report_with_profile(testrun, empty_devices_dir, add_device, # py
   # Check if the response is a zip file
   assert r.headers["Content-Type"] == "application/zip"
 
-def test_export_results_with_no_profile(testrun, empty_devices_dir, # pylint: disable=W0613
+def test_export_results_with_no_profile(empty_devices_dir, testrun, # pylint: disable=W0613
                                         add_device, create_report_folder):
   """Test export results with no profile when report exists (200)"""
 
-  # Load a device using the add_device fixture
-  device = add_device()
-
-  # Assign the device name, mac address
-  device_name = device[0]["device_folder"]
-  mac_address = device[0]["mac_addr"]
+  # Load the device_name and mac_address from add_device fixture
+  device_name, mac_address = add_device()
 
   # Assign the timestamp and change the format
   timestamp = TIMESTAMP.replace(" ", "T")
@@ -1547,7 +1514,6 @@ def test_start_system_not_configured_correctly(
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
                     timeout=5)
-  print(r.text)
 
   payload = {"device": {"mac_addr": None, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start",
@@ -1574,7 +1540,6 @@ def test_start_device_not_found(empty_devices_dir, # pylint: disable=W0613
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
                     timeout=5)
-  print(r.text)
 
   r = requests.delete(f"{API}/device/",
                       data=json.dumps(device_1),
@@ -1607,7 +1572,6 @@ def test_start_missing_device_information(
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
                     timeout=5)
-  print(r.text)
 
   payload = {}
   r = requests.post(f"{API}/system/start",
@@ -1634,14 +1598,12 @@ def test_create_device_already_exists(
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
                     timeout=5)
-  print(r.text)
   assert r.status_code == 201
   assert len(local_get_devices()) == 1
 
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
                     timeout=5)
-  print(r.text)
   assert r.status_code == 409
 
 def test_create_device_invalid_json(
@@ -1653,7 +1615,6 @@ def test_create_device_invalid_json(
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
                     timeout=5)
-  print(r.text)
   assert r.status_code == 400
 
 def test_create_device_invalid_request(
@@ -1663,7 +1624,6 @@ def test_create_device_invalid_request(
   r = requests.post(f"{API}/device",
                     data=None,
                     timeout=5)
-  print(r.text)
   assert r.status_code == 400
 
 def test_device_edit_device(
@@ -1733,7 +1693,6 @@ def test_device_edit_device_not_found(
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
                     timeout=5)
-  print(r.text)
   assert r.status_code == 201
   assert len(local_get_devices()) == 1
 
@@ -1770,7 +1729,6 @@ def test_device_edit_device_incorrect_json_format(
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
                     timeout=5)
-  print(r.text)
   assert r.status_code == 201
   assert len(local_get_devices()) == 1
 
@@ -1802,7 +1760,6 @@ def test_device_edit_device_with_mac_already_exists(
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
                     timeout=5)
-  print(r.text)
   assert r.status_code == 201
   assert len(local_get_devices()) == 1
 
