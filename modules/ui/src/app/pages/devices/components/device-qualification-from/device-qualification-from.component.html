@@ -37,6 +37,7 @@ limitations under the License.
     [linear]="data.isLinear"
     [header]="header"
     [selectedIndex]="selectedIndex"
+    [title]="data.title + ' modal window'"
     (selectionChange)="onStepChange($event)">
     {{ selectedIndex }}
     <cdk-step [editable]="true" formGroupName="0" [stepControl]="getStep(0)">
