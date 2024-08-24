@@ -539,7 +539,6 @@ class Testrun:  # pylint: disable=too-few-public-methods
     except docker.errors.NotFound:
       pass
 
-
   def start_ws(self):
 
     self._stop_ws()

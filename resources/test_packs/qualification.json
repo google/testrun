@@ -1,0 +1,9 @@
+{
+    "name": "Device Qualification",
+    "tests": [
+        {
+            "name": "connection.dhcp_address",
+            "required_result": "Required"
+        }
+    ]
+}

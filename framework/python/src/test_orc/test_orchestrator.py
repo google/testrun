@@ -25,18 +25,26 @@ from common.testreport import TestReport
 from common.statuses import TestrunStatus, TestResult
 from core.docker.test_docker_module import TestModule
 from test_orc.test_case import TestCase
+from test_orc.test_pack import TestPack
 import threading
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
+
 RUNTIME_DIR = "runtime"
+RESOURCES_DIR = "resources"
+
 RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR, "test")
+TEST_PACKS_DIR = os.path.join(RESOURCES_DIR, "test_packs")
+
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
-LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
+
 SAVED_DEVICE_REPORTS = "report/{device_folder}/"
 LOCAL_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
+
+LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
 API_URL = "http://localhost:8000"
 
 
@@ -44,11 +52,16 @@ class TestOrchestrator:
   """Manages and controls the test modules."""
 
   def __init__(self, session, net_orc):
-    self._test_modules = []
+
+    self._test_modules: list[TestModule] = []
+    self._test_packs: list[TestPack] = []
+
     self._container_logs = []
     self._session = session
+
     self._api_url = (self._session.get_api_url() + ":" +
                      str(self._session.get_api_port()))
+
     self._net_orc = net_orc
     self._test_in_progress = False
 
@@ -56,6 +69,7 @@ class TestOrchestrator:
         os.path.dirname(
             os.path.dirname(
                 os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
+
     self._test_modules_running = []
     self._current_module = 0
 
@@ -71,6 +85,7 @@ class TestOrchestrator:
     os.makedirs(DEVICE_ROOT_CERTS, exist_ok=True)
 
     self._load_test_modules()
+    self._load_test_packs()
 
   def stop(self):
     """Stop any running tests"""
@@ -532,6 +547,24 @@ class TestOrchestrator:
       LOGGER.error(error)
     return container
 
+  def _load_test_packs(self):
+
+    for test_pack_file in os.listdir(TEST_PACKS_DIR):
+
+      LOGGER.debug(f"Loading test pack {test_pack_file}")
+
+      with open(os.path.join(
+        self._root_path,
+        TEST_PACKS_DIR,
+        test_pack_file), encoding="utf-8") as f:
+        test_pack_json = json.load(f)
+
+      test_pack: TestPack = TestPack(
+        name = test_pack_json.name
+      )
+
+      self._test_packs.append(test_pack)
+
   def _load_test_modules(self):
     """Load network modules from module_config.json."""
     LOGGER.debug("Loading test modules from /" + TEST_MODULES_DIR)
@@ -584,6 +617,9 @@ class TestOrchestrator:
 
       return module
 
+  def get_test_packs(self) -> list[TestPack]:
+    return self._test_packs
+
   def _stop_modules(self, kill=False):
     LOGGER.info("Stopping test modules")
     for module in self._test_modules:
@@ -630,4 +666,3 @@ class TestOrchestrator:
         self.get_session().set_test_result_error(
           self._test_modules_running[i].tests[j]
           )
-

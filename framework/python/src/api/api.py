@@ -91,9 +91,8 @@ class Api:
                                self.edit_device,
                                methods=["POST"])
 
-    # Load modules
     self._router.add_api_route("/system/modules", self.get_test_modules)
-
+    self._router.add_api_route("/system/testpacks", self.get_test_packs)
     self._router.add_api_route("/system/config/certs", self.get_certs)
     self._router.add_api_route("/system/config/certs",
                                self.upload_cert,
@@ -915,3 +914,9 @@ class Api:
       if module.enabled and module.enable_container:
         modules.append(module.display_name)
     return modules
+
+  def get_test_packs(self):
+    test_packs: list[str] = []
+    for test_pack in self._test_run.get_test_orc().get_test_packs():
+      test_packs.append(test_pack.name)
+    return test_packs
