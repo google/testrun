@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Device, DeviceStatus, DeviceView } from '../../model/device';
+import {
+  Device,
+  DeviceStatus,
+  DeviceView,
+  TestingType,
+} from '../../model/device';
 
 import { DeviceItemComponent } from './device-item.component';
 import { DevicesModule } from '../../pages/devices/devices.module';
@@ -72,6 +77,22 @@ describe('DeviceItemComponent', () => {
       expect(mac?.textContent?.trim()).toEqual('00:1e:42:35:73:c4');
     });
 
+    it('should have qualification icon if testing type is qualification', () => {
+      component.device.test_pack = TestingType.Qualification;
+      fixture.detectChanges();
+      const icon = compiled.querySelector('app-qualification-icon');
+
+      expect(icon).toBeTruthy();
+    });
+
+    it('should have pilot icon if testing type is pilot', () => {
+      component.device.test_pack = TestingType.Pilot;
+      fixture.detectChanges();
+      const icon = compiled.querySelector('app-pilot-icon');
+
+      expect(icon).toBeTruthy();
+    });
+
     it('should emit mac address', () => {
       const clickSpy = spyOn(component.itemClicked, 'emit');
       const item = compiled.querySelector('.device-item') as HTMLElement;
@@ -93,6 +114,28 @@ describe('DeviceItemComponent', () => {
     beforeEach(() => {
       component.deviceView = DeviceView.WithActions;
       fixture.detectChanges();
+    });
+
+    describe('with device status as invalid', () => {
+      beforeEach(() => {
+        component.device.status = DeviceStatus.INVALID;
+        fixture.detectChanges();
+      });
+
+      it('should have item status as Outdated', () => {
+        component.device.status = DeviceStatus.INVALID;
+        fixture.detectChanges();
+        const status = compiled.querySelector('.item-status');
+
+        expect(status).toBeTruthy();
+        expect(status?.textContent?.trim()).toEqual('Outdated');
+      });
+
+      it('should disable start buttons', () => {
+        const startBtn = compiled.querySelector('.button-start') as HTMLElement;
+
+        expect(startBtn.getAttribute('disabled')).toBeTruthy();
+      });
     });
 
     it('should emit device on click edit button', () => {

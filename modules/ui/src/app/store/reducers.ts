@@ -71,6 +71,12 @@ export const sharedReducer = createReducer(
       hasExpiredDevices,
     };
   }),
+  on(Actions.setIsAllDevicesOutdated, (state, { isAllDevicesOutdated }) => {
+    return {
+      ...state,
+      isAllDevicesOutdated,
+    };
+  }),
   on(Actions.setDevices, (state, { devices }) => {
     return {
       ...state,

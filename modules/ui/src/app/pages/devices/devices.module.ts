@@ -24,7 +24,6 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { DeviceFormComponent } from './components/device-form/device-form.component';
 
 import { DevicesRoutingModule } from './devices-routing.module';
 import { DevicesComponent } from './devices.component';
@@ -35,7 +34,7 @@ import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dia
 import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 
 @NgModule({
-  declarations: [DevicesComponent, DeviceFormComponent],
+  declarations: [DevicesComponent],
   imports: [
     CommonModule,
     DevicesRoutingModule,
