@@ -51,6 +51,10 @@ export const selectHasExpiredDevices = createSelector(
   selectAppState,
   (state: AppState) => state.shared.hasExpiredDevices
 );
+export const selectIsAllDevicesOutdated = createSelector(
+  selectAppState,
+  (state: AppState) => state.shared.isAllDevicesOutdated
+);
 
 export const selectDevices = createSelector(
   selectAppState,

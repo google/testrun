@@ -162,6 +162,10 @@ class TestModule:
           # Check if details were provided
           if len(result)>2:
             test['details'] = result[2]
+
+          # Check if tags were provided
+          if len(result)>3:
+            test['tags'] = result[3]
       else:
         LOGGER.debug('No result was returned from the test module')
         test['result'] = TestResult.ERROR
