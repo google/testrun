@@ -134,7 +134,7 @@ mat-hint {
 }
 
 .filter-button.active .filter-icon path {
-  fill: mat.get-color-from-palette($color-primary, 600);
+  fill: mat.m2-get-color-from-palette($color-primary, 600);
 }
 
 .cell-result-text {
@@ -157,8 +157,8 @@ mat-hint {
   }
 
   &.blue {
-    background-color: mat.get-color-from-palette($color-primary, 50);
-    color: mat.get-color-from-palette($color-primary, 800);
+    background-color: mat.m2-get-color-from-palette($color-primary, 50);
+    color: mat.m2-get-color-from-palette($color-primary, 800);
   }
 
   &.grey {
@@ -199,14 +199,14 @@ mat-hint {
 }
 
 .message-link {
-  color: mat.get-color-from-palette($color-primary, 700);
+  color: mat.m2-get-color-from-palette($color-primary, 700);
   text-decoration: none;
   cursor: pointer;
   font-weight: 500;
 }
 
 .message-link:hover {
-  color: mat.get-color-from-palette($color-primary, 800);
+  color: mat.m2-get-color-from-palette($color-primary, 800);
 }
 
 .mat-mdc-snack-bar-container {

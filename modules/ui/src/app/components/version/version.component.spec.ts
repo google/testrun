@@ -26,7 +26,6 @@ import { Version } from '../../model/version';
 import { NEW_VERSION, VERSION } from '../../mocks/version.mock';
 import { of } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
-import { DeviceFormComponent } from '../../pages/devices/components/device-form/device-form.component';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 
 describe('VersionComponent', () => {
@@ -73,7 +72,7 @@ describe('VersionComponent', () => {
   it('should open consent window on start', () => {
     const openSpy = spyOn(component.dialog, 'open').and.returnValue({
       afterClosed: () => of(true),
-    } as MatDialogRef<typeof DeviceFormComponent>);
+    } as MatDialogRef<typeof ConsentDialogComponent>);
     versionBehaviorSubject$.next(VERSION);
     mockService.getVersion.and.returnValue(versionBehaviorSubject$);
     fixture.detectChanges();

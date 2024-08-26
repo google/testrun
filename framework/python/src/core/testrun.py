@@ -134,7 +134,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     else:
 
       # Start UI container
-      self.start_ui()
+      self.start_ui(self._single_intf)
 
       self._api = Api(self)
       self._api.start()
@@ -496,13 +496,17 @@ class Testrun:  # pylint: disable=too-few-public-methods
   def _set_status(self, status):
     self.get_session().set_status(status)
 
-  def start_ui(self):
+  def start_ui(self, single_intf):
 
     self._stop_ui()
 
     LOGGER.info('Starting UI')
 
-    client = docker.from_env()
+    # Passing "single interface" mode to the FE
+    envs = os.environ
+    envs['TESTRUN_SINGLE_INTF'] = str(int(single_intf))
+
+    client = docker.from_env(environment=envs)
 
     try:
       client.containers.run(
