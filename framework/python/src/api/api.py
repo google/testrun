@@ -257,7 +257,7 @@ class Api:
     device = self._session.get_device(body_json["device"]["mac_addr"])
 
     # Check Testrun is not already running
-    if self._test_run.get_session().get_status() in [
+    if self._testrun.get_session().get_status() in [
         TestrunStatus.IN_PROGRESS,
         TestrunStatus.WAITING_FOR_DEVICE,
         TestrunStatus.MONITORING
