@@ -163,6 +163,8 @@ $form-height: 993px;
 }
 
 .device-qualification-form-page {
+  padding-top: 10px;
+  margin-top: -10px;
   display: grid;
   gap: 10px;
   height: 100%;
@@ -304,5 +306,14 @@ $form-height: 993px;
     .device-qualification-form-summary-container {
       overflow: visible;
     }
+  }
+}
+
+@container qualification-form (width < 360px) {
+  .manufacturer-field ::ng-deep mat-hint {
+    white-space: nowrap;
+  }
+  ::ng-deep .device-form-test-modules {
+    display: block;
   }
 }
