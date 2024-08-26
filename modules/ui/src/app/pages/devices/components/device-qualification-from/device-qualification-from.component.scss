@@ -163,11 +163,13 @@ $form-height: 993px;
 }
 
 .device-qualification-form-page {
+  padding-top: 10px;
+  margin-top: -10px;
   display: grid;
   gap: 10px;
   height: 100%;
   overflow: hidden;
-  &:last-of-type {
+  &:has(.device-qualification-form-summary-container) {
     grid-template-rows: min-content min-content 1fr min-content;
   }
 }
@@ -283,6 +285,11 @@ $form-height: 993px;
   background: $white;
 }
 
+.manufacturer-field:has(.error-multiline),
+.model-field:has(.error-multiline) {
+  padding-bottom: 14px;
+}
+
 @container qualification-form (height < 870px) {
   .device-qualification-form-page {
     overflow: scroll;
@@ -291,6 +298,7 @@ $form-height: 993px;
     }
   }
 }
+
 @container qualification-form (height < 580px) {
   .device-qualification-form-page {
     overflow: scroll;
@@ -298,5 +306,14 @@ $form-height: 993px;
     .device-qualification-form-summary-container {
       overflow: visible;
     }
+  }
+}
+
+@container qualification-form (width < 360px) {
+  .manufacturer-field ::ng-deep mat-hint {
+    white-space: nowrap;
+  }
+  ::ng-deep .device-form-test-modules {
+    display: block;
   }
 }
