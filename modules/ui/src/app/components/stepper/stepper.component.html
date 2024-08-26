@@ -29,14 +29,18 @@ limitations under the License.
       [class.hidden]="backButtonHidden()"
       cdkStepperPrevious
       mat-button
-      aria-label="Go to previous step">
+      [matTooltip]="getNavigationLabel(selectedIndex)"
+      [attr.aria-label]="getNavigationLabel(selectedIndex)">
       <mat-icon fontSet="material-symbols-outlined"> arrow_back </mat-icon>
     </button>
     <div class="form-steps">
       <div
         *ngFor="let step of steps; let i = index"
         class="form-step"
-        [class.step-active]="selectedIndex === i"></div>
+        [tabindex]="selectedIndex === i ? 0 : -1"
+        [class.step-active]="selectedIndex === i"
+        [matTooltip]="getStepLabel(selectedIndex === i)"
+        [attr.aria-label]="getStepLabel(selectedIndex === i)"></div>
     </div>
     <button
       class="form-button-forward"
@@ -44,7 +48,8 @@ limitations under the License.
       (click)="nextClick()"
       cdkStepperNext
       mat-button
-      aria-label="Go to next step">
+      [matTooltip]="getNavigationLabel(selectedIndex + 2)"
+      [attr.aria-label]="getNavigationLabel(selectedIndex + 2)">
       <mat-icon fontSet="material-symbols-outlined"> arrow_forward </mat-icon>
     </button>
   </footer>
