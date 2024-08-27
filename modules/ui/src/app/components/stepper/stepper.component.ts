@@ -19,6 +19,7 @@ import { NgForOf, NgIf, NgTemplateOutlet } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { FormGroup } from '@angular/forms';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-stepper',
@@ -31,6 +32,7 @@ import { FormGroup } from '@angular/forms';
     MatIcon,
     MatIconButton,
     MatButton,
+    MatTooltipModule,
   ],
   templateUrl: './stepper.component.html',
   styleUrl: './stepper.component.scss',
@@ -38,6 +40,7 @@ import { FormGroup } from '@angular/forms';
 })
 export class StepperComponent extends CdkStepper {
   @Input() header: TemplateRef<HTMLElement> | undefined;
+  @Input() title = '';
   @Input() activeClass = 'active';
 
   forwardButtonHidden() {
@@ -55,5 +58,15 @@ export class StepperComponent extends CdkStepper {
     ) {
       this.selected?.stepControl?.markAllAsTouched();
     }
+  }
+
+  getStepLabel(isActive: boolean) {
+    return isActive
+      ? `Step #${this.selectedIndex + 1} of ${this.steps.length}`
+      : '';
+  }
+
+  getNavigationLabel(index: number) {
+    return `Go to step #${index} of ${this.title}`;
   }
 }

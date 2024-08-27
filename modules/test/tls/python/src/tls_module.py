@@ -303,8 +303,12 @@ class TLSModule(TestModule):
     result_state = None
     result_message = ''
     result_details = ''
+    result_tags = []
 
     if client_results[0] is not None:
+      # Tag for a VSA requirement if there are any connections
+      # detected regardless of validity
+      result_tags.append('VSA')
       result_details = client_results[1]
       if client_results[0]:
         result_state = True
@@ -315,7 +319,7 @@ class TLSModule(TestModule):
     else:
       result_state = 'Feature Not Detected'
       result_message = 'No outbound connections were found'
-    return result_state, result_message, result_details
+    return result_state, result_message, result_details, result_tags
 
   def _resolve_device_ip(self):
     # If the ipv4 address wasn't resolved yet, try again
