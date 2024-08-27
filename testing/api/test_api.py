@@ -45,6 +45,8 @@ PROFILES_PATH = "testing/api/profiles"
 BASELINE_MAC_ADDR = "02:42:aa:00:01:01"
 ALL_MAC_ADDR = "02:42:aa:00:00:01"
 
+DEVICE_PROFILE_QUESTIONS = "resources/devices/device_profile.json"
+
 def pretty_print(dictionary: dict):
   """ Pretty print dictionary """
   print(json.dumps(dictionary, indent=4))

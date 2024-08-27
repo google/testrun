@@ -122,7 +122,24 @@ describe('DeviceQualificationFromComponent', () => {
     expect(getQuestionnaireFormatSpy).toHaveBeenCalled();
   });
 
+  it('should close dialog on "cancel" click with do data if form has no changes', () => {
+    const closeSpy = spyOn(component.dialogRef, 'close');
+    const closeButton = compiled.querySelector(
+      '.device-qualification-form-header-close-button'
+    ) as HTMLButtonElement;
+
+    closeButton?.click();
+
+    expect(closeSpy).toHaveBeenCalledWith();
+
+    closeSpy.calls.reset();
+  });
+
   it('should close dialog on "cancel" click', () => {
+    (
+      component.deviceQualificationForm.get('steps') as FormArray
+    ).controls.forEach(control => control.markAsDirty());
+    fixture.detectChanges();
     const closeSpy = spyOn(component.dialogRef, 'close');
     const closeButton = compiled.querySelector(
       '.device-qualification-form-header-close-button'

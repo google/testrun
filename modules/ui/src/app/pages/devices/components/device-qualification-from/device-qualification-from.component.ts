@@ -176,7 +176,7 @@ export class DeviceQualificationFromComponent
     super(dialogRef);
     this.device = data.device;
   }
-  loaded = false;
+
   ngOnInit(): void {
     this.createBasicStep();
     if (this.data.device) {
@@ -196,7 +196,6 @@ export class DeviceQualificationFromComponent
             this.selectedIndex = this.data.index;
           });
       }
-      this.loaded = true;
     });
 
     this.devicesStore.getQuestionnaireFormat();
@@ -218,11 +217,20 @@ export class DeviceQualificationFromComponent
   }
 
   closeForm(): void {
-    this.dialogRef.close({
-      action: FormAction.Close,
-      device: this.createDeviceFromForm(),
-      index: this.stepper.selectedIndex,
-    } as FormResponse);
+    const obj1 = this.data.device;
+    const obj2 = this.createDeviceFromForm();
+    if (
+      (obj1 && obj2 && this.compareObjects(obj1, obj2)) ||
+      this.formPristine
+    ) {
+      this.dialogRef.close();
+    } else {
+      this.dialogRef.close({
+        action: FormAction.Close,
+        device: this.createDeviceFromForm(),
+        index: this.stepper.selectedIndex,
+      } as FormResponse);
+    }
   }
 
   getStep(step: number) {
@@ -322,5 +330,34 @@ export class DeviceQualificationFromComponent
 
   private createStep() {
     return new FormGroup({});
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private compareObjects(object1: any, object2: any) {
+    const keys1 = Object.keys(object1);
+    const keys2 = Object.keys(object2);
+
+    if (keys1.length !== keys2.length) {
+      return false;
+    }
+
+    for (const key of keys1) {
+      const val1 = object1[key];
+      const val2 = object2[key];
+      const areObjects = this.isObject(val1) && this.isObject(val2);
+      if (
+        (areObjects && !this.compareObjects(val1, val2)) ||
+        (!areObjects && val1 !== val2)
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private isObject(object: any) {
+    return object != null && typeof object === 'object';
   }
 }

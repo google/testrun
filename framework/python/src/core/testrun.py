@@ -12,13 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The overall control of the Test Run application.
-
+"""The overall control of the Testrun application.
 This file provides the integration between all of the
 Testrun components, such as net_orc, test_orc and test_ui.
-
-Run using the provided command scripts in the cmd folder.
-E.g sudo cmd/start
 """
 import docker
 import json
@@ -38,13 +34,6 @@ from net_orc import network_orchestrator as net_orc
 from test_orc import test_orchestrator as test_orc
 
 from docker.errors import ImageNotFound
-
-# Locate parent directory
-current_dir = os.path.dirname(os.path.realpath(__file__))
-
-# Locate the test-run root directory, 4 levels, src->python->framework->test-run
-root_dir = os.path.dirname(os.path.dirname(
-  os.path.dirname(os.path.dirname(current_dir))))
 
 LOGGER = logger.get_logger('test_run')
 
@@ -66,7 +55,7 @@ DEVICE_TEST_PACK_KEY = 'test_pack'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
 class Testrun:  # pylint: disable=too-few-public-methods
-  """Test Run controller.
+  """Testrun controller.
 
   Creates an instance of the network orchestrator, test
   orchestrator and user interface.
@@ -79,6 +68,15 @@ class Testrun:  # pylint: disable=too-few-public-methods
                single_intf=False,
                no_ui=False):
 
+    # Locate parent directory
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+
+    # Locate the test-run root directory, 4 levels,
+    # src->python->framework->test-run
+    self._root_dir = os.path.dirname(os.path.dirname(
+      os.path.dirname(os.path.dirname(current_dir))))
+
+    # Determine config file
     if config_file is None:
       self._config_file = self._get_config_abs(DEFAULT_CONFIG_FILE)
     else:
@@ -86,6 +84,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     self._net_only = net_only
     self._single_intf = single_intf
+
     # Network only option only works if UI is also
     # disbled so need to set no_ui if net_only is selected
     self._no_ui = no_ui or net_only
@@ -94,7 +93,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     self._register_exits()
 
     # Create session
-    self._session = TestrunSession(root_dir=root_dir)
+    self._session = TestrunSession(root_dir=self._root_dir)
 
     # Register runtime parameters
     if single_intf:
@@ -143,6 +142,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
       # Hold until API ends
       while True:
         time.sleep(1)
+
+  def get_root_dir(self):
+    return self._root_dir
 
   def get_version(self):
     return self.get_session().get_version()
@@ -228,7 +230,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     device.clear_reports()
 
     # Locate reports folder
-    reports_folder = os.path.join(root_dir,
+    reports_folder = os.path.join(self._root_dir,
                                   LOCAL_DEVICES_DIR,
                                   device.device_folder, 'reports')
 
@@ -278,7 +280,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
                  f'at {timestamp}')
 
     # Locate reports folder
-    reports_folder = os.path.join(root_dir,
+    reports_folder = os.path.join(self._root_dir,
                                   LOCAL_DEVICES_DIR,
                                   device.device_folder, 'reports')
 
@@ -298,7 +300,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
   def create_device(self, device: Device):
 
     # Define the device folder location
-    device_folder_path = os.path.join(root_dir,
+    device_folder_path = os.path.join(self._root_dir,
                                       LOCAL_DEVICES_DIR,
                                       device.device_folder)
 
@@ -332,7 +334,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
       device.test_modules = {}
 
     # Obtain the config file path
-    config_file_path = os.path.join(root_dir,
+    config_file_path = os.path.join(self._root_dir,
                                       LOCAL_DEVICES_DIR,
                                       device.device_folder,
                                       DEVICE_CONFIG)
@@ -348,7 +350,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
   def delete_device(self, device: Device):
 
     # Obtain the config file path
-    device_folder = os.path.join(root_dir,
+    device_folder = os.path.join(self._root_dir,
                                   LOCAL_DEVICES_DIR,
                                   device.device_folder)
 
@@ -418,13 +420,10 @@ class Testrun:  # pylint: disable=too-few-public-methods
   def _get_config_abs(self, config_file=None):
     if config_file is None:
       # If not defined, use relative pathing to local file
-      config_file = os.path.join(root_dir, self._config_file)
+      config_file = os.path.join(self._root_dir, self._config_file)
 
     # Expand the config file to absolute pathing
     return os.path.abspath(config_file)
-
-  def get_root_dir(self):
-    return root_dir
 
   def get_config_file(self):
     return self._get_config_abs()
