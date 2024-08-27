@@ -715,24 +715,9 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Test results could not be found")
 
-  async def get_devices_profile(self,
-                                request: Request,
-                                response: Response,
-                                step: int = 1):
+  async def get_devices_profile(self):
     """Device profile questions"""
-
-    all_steps = len(self._device_profile)
-
-    try:
-      questions = self._device_profile[step-1]
-      if step < all_steps:
-        questions["next_step"] = f"{request.url.path}?step={step + 1}"
-      return questions
-
-    except IndexError:
-      response.status_code = status.HTTP_404_NOT_FOUND
-      return self._generate_msg(
-          False, f"Step {step} does not exist.")
+    return self._device_profile
 
   def _validate_device_json(self, json_obj):
 
