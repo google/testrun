@@ -37,6 +37,7 @@ limitations under the License.
     [linear]="data.isLinear"
     [header]="header"
     [selectedIndex]="selectedIndex"
+    [title]="data.title + ' modal window'"
     (selectionChange)="onStepChange($event)">
     {{ selectedIndex }}
     <cdk-step [editable]="true" formGroupName="0" [stepControl]="getStep(0)">
@@ -50,6 +51,7 @@ limitations under the License.
           <mat-hint>Please enter device manufacturer name</mat-hint>
           <mat-error
             *ngIf="manufacturer.hasError('invalid_format')"
+            class="error-multiline"
             role="alert"
             aria-live="assertive">
             <span
@@ -71,6 +73,7 @@ limitations under the License.
           <mat-hint>Please enter device name</mat-hint>
           <mat-error
             *ngIf="model.hasError('invalid_format')"
+            class="error-multiline"
             role="alert"
             aria-live="assertive">
             <span
