@@ -59,6 +59,7 @@ import { Profile } from '../model/profile';
 import { DeviceStatus } from '../model/device';
 import { TestRunMqttService } from '../services/test-run-mqtt.service';
 import { InternetConnection } from '../model/topic';
+import { environment } from '../../environments/environment';
 
 const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
@@ -391,6 +392,11 @@ export class AppEffects {
   }
 
   private fetchInternetConnection() {
+    console.log('environment', environment);
+    if (environment?.single_intf) {
+      console.log('env');
+      return;
+    }
     if (
       this.internetSubscription === undefined ||
       this.internetSubscription?.closed
