@@ -560,7 +560,7 @@ class TestOrchestrator:
         test_pack_json = json.load(f)
 
       test_pack: TestPack = TestPack(
-        name = test_pack_json.name
+        name = test_pack_json["name"]
       )
 
       self._test_packs.append(test_pack)
@@ -595,7 +595,6 @@ class TestOrchestrator:
     # state for this type of communication during testing but docker0 has
     # to exist and should always be available
     external_ip = self._net_orc.get_ip_address("docker0")
-    LOGGER.debug(f"Using external IP: {external_ip}")
     extra_hosts = {
         "external.localhost": external_ip
     } if external_ip is not None else {}
