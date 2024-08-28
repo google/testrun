@@ -324,7 +324,7 @@ class Api:
     LOGGER.debug("Received stop command")
 
     # Check if Testrun is running
-    if (self._test_run.get_session().get_status()
+    if (self._testrun.get_session().get_status()
         not in [TestrunStatus.IN_PROGRESS,
                 TestrunStatus.WAITING_FOR_DEVICE,
                 TestrunStatus.MONITORING]):
