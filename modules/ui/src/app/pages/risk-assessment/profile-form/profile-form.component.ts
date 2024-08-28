@@ -15,7 +15,8 @@
  */
 import { CdkTextareaAutosize, TextFieldModule } from '@angular/cdk/text-field';
 import {
-  afterNextRender, AfterViewInit,
+  afterNextRender,
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
@@ -50,8 +51,7 @@ import {
 } from '../../../model/profile';
 import { FormControlType } from '../../../model/question';
 import { ProfileValidators } from './profile.validators';
-import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';
-import {timeout, timer} from 'rxjs';
+import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';js';
 
 @Component({
   selector: 'app-profile-form',
@@ -116,11 +116,10 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-      if (this.selectedProfile) {
+    if (this.selectedProfile) {
       this.fillProfileForm(this.profileFormat, this.selectedProfile!);
     }
-
-}
+  }
 
   get isDraftDisabled(): boolean {
     return !this.nameControl.valid || this.fieldsHasError;
