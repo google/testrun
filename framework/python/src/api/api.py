@@ -324,7 +324,7 @@ class Api:
     LOGGER.debug("Received stop command")
 
     # Check if Testrun is running
-    if (self._test_run.get_session().get_status()
+    if (self._testrun.get_session().get_status()
         not in [TestrunStatus.IN_PROGRESS,
                 TestrunStatus.WAITING_FOR_DEVICE,
                 TestrunStatus.MONITORING]):
@@ -547,7 +547,7 @@ class Api:
       )
 
       # Check if device folder exists
-      device_folder = os.path.join(self._test_run.get_root_dir(),
+      device_folder = os.path.join(self._testrun.get_root_dir(),
                                      DEVICES_PATH,
                                      device_json.get(DEVICE_MANUFACTURER_KEY) +
                                      " " +
@@ -730,7 +730,7 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Report could not be found")
 
-    zip_file_path = self._get_test_run().get_test_orc().zip_results(
+    zip_file_path = self._get_testrun().get_test_orc().zip_results(
         device, timestamp, profile)
 
     if zip_file_path is None:
