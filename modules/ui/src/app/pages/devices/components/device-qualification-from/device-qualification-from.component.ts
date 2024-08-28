@@ -39,7 +39,6 @@ import {
   TestingType,
 } from '../../../../model/device';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
 import { CommonModule } from '@angular/common';
 import { CdkStep, StepperSelectionEvent } from '@angular/cdk/stepper';
 import { StepperComponent } from '../../../../components/stepper/stepper.component';
@@ -60,11 +59,13 @@ import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { ProfileValidators } from '../../../risk-assessment/profile-form/profile.validators';
 import { DevicesStore } from '../../devices.store';
 import { DynamicFormComponent } from '../../../../components/dynamic-form/dynamic-form.component';
-import { skip, Subject, takeUntil, timer } from 'rxjs';
+import { filter, skip, Subject, takeUntil, timer } from 'rxjs';
 import { FormAction, FormResponse } from '../../devices.component';
 import { DeviceItemComponent } from '../../../../components/device-item/device-item.component';
 import { QualificationIconComponent } from '../../../../components/qualification-icon/qualification-icon.component';
 import { PilotIconComponent } from '../../../../components/pilot-icon/pilot-icon.component';
+import { Question } from '../../../../model/profile';
+import { FormControlType } from '../../../../model/question';
 
 const MAC_ADDRESS_PATTERN =
   '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
@@ -75,7 +76,7 @@ interface DialogData {
   devices: Device[];
   testModules: TestModule[];
   index: number;
-  isLinear: boolean;
+  isCreate: boolean;
 }
 
 @Component({
@@ -110,7 +111,6 @@ interface DialogData {
   styleUrl: './device-qualification-from.component.scss',
 })
 export class DeviceQualificationFromComponent
-  extends EscapableDialogComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
   readonly TestingType = TestingType;
@@ -121,6 +121,10 @@ export class DeviceQualificationFromComponent
   device: Device | undefined;
   format: DeviceQuestionnaireSection[] = [];
   selectedIndex: number = 0;
+  typeStep = 1;
+  typeQuestion = 0;
+  technologyStep = 1;
+  technologyQuestion = 2;
 
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -141,11 +145,15 @@ export class DeviceQualificationFromComponent
   }
 
   get type() {
-    return this.getStep(1).get('0') as AbstractControl;
+    return this.getStep(this.typeStep)?.get(
+      this.typeQuestion.toString()
+    ) as AbstractControl;
   }
 
   get technology() {
-    return this.getStep(1).get('2') as AbstractControl;
+    return this.getStep(this.technologyStep)?.get(
+      this.technologyQuestion.toString()
+    ) as AbstractControl;
   }
 
   get test_modules() {
@@ -164,38 +172,63 @@ export class DeviceQualificationFromComponent
     ).controls.every(control => (control as FormGroup).valid);
   }
 
+  get deviceHasNoChanges() {
+    const obj1 = this.data.device;
+    const obj2 = this.device;
+    return (
+      (obj1 && obj2 && this.compareObjects(obj1, obj2)) || this.formPristine
+    );
+  }
+
   constructor(
     private fb: FormBuilder,
     private deviceValidators: DeviceValidators,
     private profileValidators: ProfileValidators,
-    public override dialogRef: MatDialogRef<DeviceQualificationFromComponent>,
+    public dialogRef: MatDialogRef<DeviceQualificationFromComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     public devicesStore: DevicesStore,
     private element: ElementRef
   ) {
-    super(dialogRef);
     this.device = data.device;
   }
 
   ngOnInit(): void {
     this.createBasicStep();
-    if (this.data.device) {
-      this.model.setValue(this.data.device.model);
-      this.manufacturer.setValue(this.data.device.manufacturer);
-      this.mac_addr.setValue(this.data.device.mac_addr);
-    }
     this.testModules = this.data.testModules;
 
     this.devicesStore.questionnaireFormat$.pipe(skip(1)).subscribe(format => {
       this.createDeviceForm(format);
       this.format = format;
-      if (this.data.index) {
-        timer(0)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe(() => {
+
+      format.forEach(step => {
+        step.questions.forEach((question, index) => {
+          // need to define the step and index of type and technology
+          if (question.question.toLowerCase().includes('type')) {
+            this.typeStep = step.step;
+            this.typeQuestion = index;
+          } else if (question.question.toLowerCase().includes('technology')) {
+            this.technologyStep = step.step;
+            this.technologyQuestion = index;
+          }
+        });
+      });
+
+      timer(0)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          if (this.data.device) {
+            this.fillDeviceForm(this.format, this.data.device!);
+          }
+          if (this.data.index) {
             this.selectedIndex = this.data.index;
-          });
-      }
+          }
+          this.dialogRef
+            .keydownEvents()
+            .pipe(filter((e: KeyboardEvent) => e.code === 'Escape'))
+            .subscribe(() => {
+              this.closeForm();
+            });
+        });
     });
 
     this.devicesStore.getQuestionnaireFormat();
@@ -213,7 +246,12 @@ export class DeviceQualificationFromComponent
   }
 
   submit(): void {
-    this.device = this.createDeviceFromForm();
+    this.updateDevice(this.device!, () => {
+      this.dialogRef.close({
+        action: FormAction.Save,
+        device: this.device,
+      } as FormResponse);
+    });
   }
 
   closeForm(): void {
@@ -259,6 +297,66 @@ export class DeviceQualificationFromComponent
     this.stepper.selectedIndex = index;
   }
 
+  private fillDeviceForm(
+    format: DeviceQuestionnaireSection[],
+    device: Device
+  ): void {
+    format.forEach(step => {
+      step.questions.forEach((question, index) => {
+        const answer = device.additional_info?.find(
+          answers => answers.question === question.question
+        );
+        if (answer !== undefined) {
+          if (question.type === FormControlType.SELECT_MULTIPLE) {
+            question.options?.forEach((item, idx) => {
+              if ((answer?.answer as number[])?.includes(idx)) {
+                (
+                  this.getStep(step.step).get(index.toString()) as FormGroup
+                ).controls[idx].setValue(true);
+              } else {
+                (
+                  this.getStep(step.step).get(index.toString()) as FormGroup
+                ).controls[idx].setValue(false);
+              }
+            });
+          } else {
+            (
+              this.getStep(step.step).get(index.toString()) as AbstractControl
+            ).setValue(answer?.answer || '');
+          }
+        } else {
+          (
+            this.getStep(step.step)?.get(index.toString()) as AbstractControl
+          )?.markAsTouched();
+        }
+      });
+    });
+    this.model.setValue(device.model);
+    this.manufacturer.setValue(device.manufacturer);
+    this.mac_addr.setValue(device.mac_addr);
+
+    if (device.test_pack) {
+      this.test_pack.setValue(device.test_pack);
+    } else {
+      this.test_pack.setValue(TestingType.Qualification);
+    }
+
+    this.type?.setValue(device.type);
+    this.technology?.setValue(device.technology);
+  }
+
+  private updateDevice(device: Device, callback: () => void) {
+    if (!this.data.isCreate && this.data.device) {
+      this.devicesStore.editDevice({
+        device,
+        mac_addr: this.data.device.mac_addr,
+        onSuccess: callback,
+      });
+    } else {
+      this.devicesStore.saveDevice({ device, onSuccess: callback });
+    }
+  }
+
   private createDeviceFromForm(): Device {
     const testModules: { [key: string]: { enabled: boolean } } = {};
     this.getStep(0).value.test_modules.forEach(
@@ -268,6 +366,30 @@ export class DeviceQualificationFromComponent
         };
       }
     );
+
+    const additionalInfo: Question[] = [];
+
+    this.format.forEach(step => {
+      step.questions.forEach((question, index) => {
+        const response: Question = {};
+        response.question = question.question;
+
+        if (question.type === FormControlType.SELECT_MULTIPLE) {
+          const answer: number[] = [];
+          question.options?.forEach((_, idx) => {
+            const value = this.getStep(step.step).value[index][idx];
+            if (value) {
+              answer.push(idx);
+            }
+          });
+          response.answer = answer;
+        } else {
+          response.answer = this.getStep(step.step).value[index]?.trim();
+        }
+        additionalInfo.push(response);
+      });
+    });
+
     return {
       model: this.model.value.trim(),
       manufacturer: this.manufacturer.value.trim(),
@@ -276,6 +398,7 @@ export class DeviceQualificationFromComponent
       test_modules: testModules,
       type: this.type.value,
       technology: this.technology.value,
+      additional_info: additionalInfo,
     } as Device;
   }
 
@@ -306,7 +429,10 @@ export class DeviceQualificationFromComponent
           ),
         ],
       ],
-      test_modules: new FormArray([]),
+      test_modules: new FormArray(
+        [],
+        this.deviceValidators.testModulesRequired()
+      ),
       test_pack: [TestingType.Qualification],
     });
 
