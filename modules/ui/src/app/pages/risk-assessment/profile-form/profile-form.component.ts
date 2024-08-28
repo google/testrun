@@ -51,7 +51,7 @@ import {
 } from '../../../model/profile';
 import { FormControlType } from '../../../model/question';
 import { ProfileValidators } from './profile.validators';
-import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';js';
+import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';
 
 @Component({
   selector: 'app-profile-form',
@@ -179,7 +179,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
           }
         });
       } else {
-        this.getControl(index.toString()).setValue(answer?.answer || '');
+        this.getControl(index).setValue(answer?.answer || '');
       }
     });
     this.nameControl.markAsTouched();
