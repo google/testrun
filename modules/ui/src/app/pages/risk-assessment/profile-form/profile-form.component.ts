@@ -15,7 +15,7 @@
  */
 import { CdkTextareaAutosize, TextFieldModule } from '@angular/cdk/text-field';
 import {
-  afterNextRender,
+  afterNextRender, AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
@@ -51,6 +51,7 @@ import {
 import { FormControlType } from '../../../model/question';
 import { ProfileValidators } from './profile.validators';
 import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';
+import {timeout, timer} from 'rxjs';
 
 @Component({
   selector: 'app-profile-form',
@@ -71,7 +72,7 @@ import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-f
   styleUrl: './profile-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProfileFormComponent implements OnInit {
+export class ProfileFormComponent implements OnInit, AfterViewInit {
   private profile: Profile | null = null;
   private profileList!: Profile[];
   private injector = inject(Injector);
@@ -112,10 +113,14 @@ export class ProfileFormComponent implements OnInit {
   ) {}
   ngOnInit() {
     this.profileForm = this.createProfileForm();
-    if (this.selectedProfile) {
-      this.fillProfileForm(this.profileFormat, this.selectedProfile);
-    }
   }
+
+  ngAfterViewInit(): void {
+      if (this.selectedProfile) {
+      this.fillProfileForm(this.profileFormat, this.selectedProfile!);
+    }
+
+}
 
   get isDraftDisabled(): boolean {
     return !this.nameControl.valid || this.fieldsHasError;
@@ -175,7 +180,7 @@ export class ProfileFormComponent implements OnInit {
           }
         });
       } else {
-        this.getControl(index).setValue(answer?.answer || '');
+        this.getControl(index.toString()).setValue(answer?.answer || '');
       }
     });
     this.nameControl.markAsTouched();
