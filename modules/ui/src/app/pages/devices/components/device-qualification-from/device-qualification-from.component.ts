@@ -34,9 +34,10 @@ import { DeviceValidators } from '../device-form/device.validators';
 import {
   Device,
   DeviceQuestionnaireSection,
+  DeviceStatus,
   DeviceView,
-  TestModule,
   TestingType,
+  TestModule,
 } from '../../../../model/device';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
@@ -391,6 +392,7 @@ export class DeviceQualificationFromComponent
     });
 
     return {
+      status: DeviceStatus.VALID,
       model: this.model.value.trim(),
       manufacturer: this.manufacturer.value.trim(),
       mac_addr: this.mac_addr.value.trim(),
