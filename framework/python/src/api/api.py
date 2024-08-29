@@ -257,7 +257,7 @@ class Api:
     device = self._session.get_device(body_json["device"]["mac_addr"])
 
     # Check if device is fully configured
-    if device.status != 'Valid':
+    if device.status != "Valid":
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(False, "Device configuration is not complete")
 
