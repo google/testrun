@@ -212,7 +212,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
           device.test_pack = device_config_json.get(DEVICE_TEST_PACK_KEY)
 
         if DEVICE_ADDITIONAL_INFO_KEY in device_config_json:
-          device.additional_info = device_config_json.get(DEVICE_ADDITIONAL_INFO_KEY)
+          device.additional_info = device_config_json.get(
+            DEVICE_ADDITIONAL_INFO_KEY)
 
         if None in [device.type, device.technology, device.test_pack]:
           LOGGER.warning(
