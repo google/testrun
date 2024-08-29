@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  discardPeriodicTasks,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
 import { DeviceQualificationFromComponent } from './device-qualification-from.component';
 import {
@@ -43,6 +49,7 @@ import { FormAction } from '../../devices.component';
 import { DeviceStatus, TestingType } from '../../../../model/device';
 import { Component, Input } from '@angular/core';
 import { QuestionFormat } from '../../../../model/question';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 
 describe('DeviceQualificationFromComponent', () => {
   let component: DeviceQualificationFromComponent;
@@ -50,6 +57,9 @@ describe('DeviceQualificationFromComponent', () => {
   let compiled: HTMLElement;
   const testrunServiceMock: jasmine.SpyObj<TestRunService> =
     jasmine.createSpyObj('testrunServiceMock', ['fetchQuestionnaireFormat']);
+  const keyboardEvent = new BehaviorSubject<KeyboardEvent>(
+    new KeyboardEvent('keydown', { code: '' })
+  );
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -73,7 +83,7 @@ describe('DeviceQualificationFromComponent', () => {
         {
           provide: MatDialogRef,
           useValue: {
-            keydownEvents: () => of(new KeyboardEvent('keydown', { code: '' })),
+            keydownEvents: () => keyboardEvent.asObservable(),
             close: () => ({}),
           },
         },
@@ -92,26 +102,27 @@ describe('DeviceQualificationFromComponent', () => {
       testModules: MOCK_TEST_MODULES,
       devices: [],
       index: 0,
-      isLinear: true,
+      isCreate: true,
     };
     testrunServiceMock.fetchQuestionnaireFormat.and.returnValue(
       of(DEVICES_FORM)
     );
-
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
   it('should contain device form', () => {
+    fixture.detectChanges();
     const form = compiled.querySelector('.device-qualification-form');
 
     expect(form).toBeTruthy();
   });
 
   it('should fetch devices format', () => {
+    fixture.detectChanges();
     const getQuestionnaireFormatSpy = spyOn(
       component.devicesStore,
       'getQuestionnaireFormat'
@@ -123,6 +134,7 @@ describe('DeviceQualificationFromComponent', () => {
   });
 
   it('should close dialog on "cancel" click with do data if form has no changes', () => {
+    fixture.detectChanges();
     const closeSpy = spyOn(component.dialogRef, 'close');
     const closeButton = compiled.querySelector(
       '.device-qualification-form-header-close-button'
@@ -135,7 +147,21 @@ describe('DeviceQualificationFromComponent', () => {
     closeSpy.calls.reset();
   });
 
+  it('should close dialog on escape', fakeAsync(() => {
+    const closeSpy = spyOn(component.dialogRef, 'close');
+    fixture.detectChanges();
+
+    keyboardEvent.next(new KeyboardEvent('keydown', { code: 'Escape' }));
+
+    tick();
+
+    expect(closeSpy).toHaveBeenCalledWith();
+
+    closeSpy.calls.reset();
+  }));
+
   it('should close dialog on "cancel" click', () => {
+    fixture.detectChanges();
     (
       component.deviceQualificationForm.get('steps') as FormArray
     ).controls.forEach(control => control.markAsDirty());
@@ -151,6 +177,7 @@ describe('DeviceQualificationFromComponent', () => {
       action: FormAction.Close,
       index: 0,
       device: {
+        status: DeviceStatus.VALID,
         manufacturer: '',
         model: '',
         mac_addr: '',
@@ -165,6 +192,17 @@ describe('DeviceQualificationFromComponent', () => {
             enabled: true,
           },
         },
+        additional_info: [
+          { question: 'What type of device is this?', answer: '' },
+          {
+            question: 'Does your device process any sensitive information? ',
+            answer: '',
+          },
+          {
+            question: 'Please select the technology this device falls into',
+            answer: '',
+          },
+        ],
       },
     });
 
@@ -172,6 +210,10 @@ describe('DeviceQualificationFromComponent', () => {
   });
 
   describe('test modules', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
     it('should be present', () => {
       const test = compiled.querySelectorAll('mat-checkbox');
 
@@ -183,9 +225,23 @@ describe('DeviceQualificationFromComponent', () => {
 
       expect(tests[0].classList.contains('disabled')).toEqual(false);
     });
+
+    it('should have error when no modules selected', () => {
+      component.test_modules.setValue([false, false]);
+      fixture.detectChanges();
+
+      const modules = compiled.querySelectorAll(
+        '.device-qualification-form-test-modules-error'
+      );
+      expect(modules).toBeTruthy();
+    });
   });
 
   describe('device model', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
     it('should not contain errors when input is correct', () => {
       const model: HTMLInputElement = compiled.querySelector(
         '.device-qualification-form-model'
@@ -228,6 +284,10 @@ describe('DeviceQualificationFromComponent', () => {
   });
 
   describe('device manufacturer', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
     it('should not contain errors when input is correct', () => {
       const manufacturer: HTMLInputElement = compiled.querySelector(
         '.device-qualification-form-manufacturer'
@@ -271,6 +331,10 @@ describe('DeviceQualificationFromComponent', () => {
   });
 
   describe('mac address', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
     it('should not be disabled', () => {
       expect(component.mac_addr.disabled).toBeFalse();
     });
@@ -316,7 +380,7 @@ describe('DeviceQualificationFromComponent', () => {
         testModules: MOCK_TEST_MODULES,
         devices: [device],
         index: 0,
-        isLinear: true,
+        isCreate: true,
       };
       component.ngOnInit();
       fixture.detectChanges();
@@ -355,15 +419,20 @@ describe('DeviceQualificationFromComponent', () => {
             },
           },
         },
-        isLinear: false,
+        isCreate: false,
         index: 0,
       };
-
-      component.ngOnInit();
-      fixture.detectChanges();
     });
 
-    it('should fill form values with device values', () => {
+    it('should fill form values with device values', fakeAsync(() => {
+      fixture.detectChanges();
+
+      testrunServiceMock.fetchQuestionnaireFormat.and.returnValue(
+        of(DEVICES_FORM)
+      );
+
+      tick(1);
+
       const model: HTMLInputElement = compiled.querySelector(
         '.device-qualification-form-model'
       ) as HTMLInputElement;
@@ -373,10 +442,16 @@ describe('DeviceQualificationFromComponent', () => {
 
       expect(model.value).toEqual('O3-DIN-CPU');
       expect(manufacturer.value).toEqual('Delta');
-    });
+
+      discardPeriodicTasks();
+    }));
   });
 
   describe('steps', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
     describe('with questionnaire', () => {
       it('should have steps', () => {
         expect(
@@ -434,6 +509,7 @@ describe('DeviceQualificationFromComponent', () => {
         forwardButton.click();
 
         expect(component.device).toEqual({
+          status: DeviceStatus.VALID,
           manufacturer: 'manufacturer',
           model: 'model',
           mac_addr: '07:07:07:07:07:07',
@@ -448,6 +524,17 @@ describe('DeviceQualificationFromComponent', () => {
               enabled: true,
             },
           },
+          additional_info: [
+            { question: 'What type of device is this?', answer: '' },
+            {
+              question: 'Does your device process any sensitive information? ',
+              answer: '',
+            },
+            {
+              question: 'Please select the technology this device falls into',
+              answer: '',
+            },
+          ],
         });
       });
 
@@ -471,6 +558,102 @@ describe('DeviceQualificationFromComponent', () => {
           const item = compiled.querySelector('app-device-item');
           expect(item).toBeTruthy();
         });
+
+        it('should save device', () => {
+          const saveSpy = spyOn(component.devicesStore, 'saveDevice');
+
+          component.submit();
+
+          const args = saveSpy.calls.argsFor(0);
+          // @ts-expect-error config is in object
+          expect(args[0].device).toEqual({
+            status: DeviceStatus.VALID,
+            manufacturer: 'manufacturer',
+            model: 'model',
+            mac_addr: '07:07:07:07:07:07',
+            test_pack: 'Device qualification',
+            type: '',
+            technology: '',
+            test_modules: {
+              connection: {
+                enabled: true,
+              },
+              udmi: {
+                enabled: true,
+              },
+            },
+            additional_info: [
+              { question: 'What type of device is this?', answer: '' },
+              {
+                question:
+                  'Does your device process any sensitive information? ',
+                answer: '',
+              },
+              {
+                question: 'Please select the technology this device falls into',
+                answer: '',
+              },
+            ],
+          });
+          expect(saveSpy).toHaveBeenCalled();
+        });
+
+        it('should edit device', () => {
+          component.data = {
+            devices: [device],
+            testModules: MOCK_TEST_MODULES,
+            device: {
+              status: DeviceStatus.VALID,
+              manufacturer: 'Delta',
+              model: 'O3-DIN-CPU',
+              mac_addr: '00:1e:42:35:73:c4',
+              test_modules: {
+                udmi: {
+                  enabled: true,
+                },
+              },
+            },
+            isCreate: false,
+            index: 0,
+          };
+          fixture.detectChanges();
+          const editSpy = spyOn(component.devicesStore, 'editDevice');
+
+          component.submit();
+
+          const args = editSpy.calls.argsFor(0);
+          // @ts-expect-error config is in object
+          expect(args[0].device).toEqual({
+            status: DeviceStatus.VALID,
+            manufacturer: 'manufacturer',
+            model: 'model',
+            mac_addr: '07:07:07:07:07:07',
+            test_pack: 'Device qualification',
+            type: '',
+            technology: '',
+            test_modules: {
+              connection: {
+                enabled: true,
+              },
+              udmi: {
+                enabled: true,
+              },
+            },
+            additional_info: [
+              { question: 'What type of device is this?', answer: '' },
+              {
+                question:
+                  'Does your device process any sensitive information? ',
+                answer: '',
+              },
+              {
+                question: 'Please select the technology this device falls into',
+                answer: '',
+              },
+            ],
+          });
+          expect(editSpy).toHaveBeenCalled();
+        });
       });
     });
 
@@ -490,7 +673,7 @@ describe('DeviceQualificationFromComponent', () => {
               },
             },
           },
-          isLinear: false,
+          isCreate: false,
           index: 0,
         };
         component.model.setValue('');

@@ -3,10 +3,6 @@
     "status": "Valid",
     "questions": [
       {
-        "question": "What type of device is this?",
-        "answer": "IoT Gateway"
-      },
-      {
         "question": "How will this device be used at Google?",
         "answer": "Monitoring"
       },
@@ -19,16 +15,10 @@
         "answer": "N/A"
       },
       {
-        "question": "Are any of the following statements true about your device?",
-        "answer": [
-          0
-        ]
-      },
-      {
         "question": "Which of the following statements are true about this device?",
         "answer": [
           0
-        ]
+      ]
       },
       {
         "question": "Does the network protocol assure server-to-client identity verification?",
@@ -38,7 +28,7 @@
         "question": "Click the statements that best describe the characteristics of this device.",
         "answer": [
           0
-        ]
+      ]
       },
       {
         "question": "Are any of the following statements true about this device?",

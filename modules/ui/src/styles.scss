@@ -71,6 +71,7 @@ body {
   display: grid;
   grid-template-rows: 1fr;
   min-width: 300px;
+  width: $form-max-width;
 }
 
 .device-form-dialog .mat-mdc-dialog-container {
@@ -302,6 +303,22 @@ body
   app-progress:not(:has(.progress-content-empty)),
 body
   #main:has(app-callout .info):has(app-callout .error)
+  app-risk-assessment
+  .risk-assessment-container {
+  margin-top: 156px;
+}
+
+body
+  #main:has(app-callout .error):has(app-callout .error)
+  app-device-repository:not(:has(.device-repository-content-empty)),
+body
+  #main:has(app-callout .error):has(app-callout .error)
+  app-history:not(:has(.results-content-empty)),
+body
+  #main:has(app-callout .error):has(app-callout .error)
+  app-progress:not(:has(.progress-content-empty)),
+body
+  #main:has(app-callout .error):has(app-callout .error)
   app-risk-assessment
   .risk-assessment-container {
   margin-top: 156px;
