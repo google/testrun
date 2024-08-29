@@ -71,6 +71,7 @@ body {
   display: grid;
   grid-template-rows: 1fr;
   min-width: 300px;
+  width: $form-max-width;
 }
 
 .device-form-dialog .mat-mdc-dialog-container {
