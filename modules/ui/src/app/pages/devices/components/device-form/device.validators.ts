@@ -54,6 +54,16 @@ export class DeviceValidators {
     };
   }
 
+  public testModulesRequired(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+      if (value.every((module: boolean) => !module)) {
+        return { required: true };
+      }
+      return null;
+    };
+  }
+
   public differentMACAddress(devices: Device[], device?: Device): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value?.trim();
