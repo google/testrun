@@ -22,6 +22,7 @@ import docker
 from datetime import datetime
 from common import logger, util
 from common.testreport import TestReport
+from common.statuses import TestrunStatus, TestResult
 from core.docker.test_docker_module import TestModule
 from test_orc.test_case import TestCase
 import threading
@@ -50,10 +51,6 @@ class TestOrchestrator:
                      str(self._session.get_api_port()))
     self._net_orc = net_orc
     self._test_in_progress = False
-    self._path = os.path.dirname(
-        os.path.dirname(
-            os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
     self._root_path = os.path.dirname(
         os.path.dirname(
@@ -83,23 +80,28 @@ class TestOrchestrator:
     """Iterates through each test module and starts the container."""
 
     # Do not start test modules if status is not in progress, e.g. Stopping
-    if self.get_session().get_status() != "In Progress":
+    if self.get_session().get_status() != TestrunStatus.IN_PROGRESS:
       return
 
     device = self._session.get_target_device()
     self._test_in_progress = True
+
     LOGGER.info(
         f"Running test modules on device with mac addr {device.mac_addr}")
 
     test_modules = []
+
     for module in self._test_modules:
 
+      # Ignore test modules that are just base images etc
       if module is None or not module.enable_container:
         continue
 
+      # Ignore test modules that are disabled for this device
       if not self._is_module_enabled(module, device):
         continue
 
+      # Add module to list of modules to run
       test_modules.append(module)
 
       for test in module.tests:
@@ -108,7 +110,7 @@ class TestOrchestrator:
         test_copy = copy.deepcopy(test)
 
         # Set result to Not Started
-        test_copy.result = "Not Started"
+        test_copy.result = TestResult.NOT_STARTED
 
         # We don't want steps to resolve for not started tests
         if hasattr(test_copy, "recommendations"):
@@ -134,8 +136,8 @@ class TestOrchestrator:
     self._session.finish()
 
     # Do not carry on (generating a report) if Testrun has been stopped
-    if self.get_session().get_status() != "In Progress":
-      return "Cancelled"
+    if self.get_session().get_status() != TestrunStatus.IN_PROGRESS:
+      return TestrunStatus.CANCELLED
 
     report = TestReport()
     report.from_json(self._generate_report())
@@ -200,19 +202,19 @@ class TestOrchestrator:
     return report
 
   def _calculate_result(self):
-    result = "Compliant"
+    result = TestResult.COMPLIANT
     for test_result in self._session.get_test_results():
       # Check Required tests
       if (test_result.required_result.lower() == "required"
           and test_result.result.lower() not in [
-            "compliant",
-            "error"
+            TestResult.COMPLIANT,
+            TestResult.ERROR
           ]):
-        result = "Non-Compliant"
+        result = TestResult.NON_COMPLIANT
       # Check Required if Applicable tests
       elif (test_result.required_result.lower() == "required if applicable"
             and test_result.result.lower() == "non-compliant"):
-        result = "Non-Compliant"
+        result = TestResult.NON_COMPLIANT
     return result
 
   def _cleanup_old_test_results(self, device):
@@ -337,9 +339,9 @@ class TestOrchestrator:
 
       # Check that the ZIP was successfully created
       zip_file = zip_location + ".zip"
-      LOGGER.info(f'''Archive {'created at ' + zip_file
+      LOGGER.info(f"""Archive {"created at " + zip_file
                                 if os.path.exists(zip_file)
-                                else'creation failed'}''')
+                                else "creation failed"}""")
 
       return zip_file
 
@@ -370,7 +372,7 @@ class TestOrchestrator:
     """Start the test container and extract the results."""
 
     # Check that Testrun is not stopping
-    if self.get_session().get_status() != "In Progress":
+    if self.get_session().get_status() != TestrunStatus.IN_PROGRESS:
       return
 
     device = self._session.get_target_device()
@@ -384,11 +386,11 @@ class TestOrchestrator:
       if not self._net_orc.is_device_connected():
         LOGGER.error("Device was disconnected")
         self._set_test_modules_error(current_test)
-        self._session.set_status("Cancelled")
+        self._session.set_status(TestrunStatus.CANCELLED)
         return
 
       test_copy = copy.deepcopy(test)
-      test_copy.result = "In Progress"
+      test_copy.result = TestResult.IN_PROGRESS
 
       # We don't want steps to resolve for in progress tests
       if hasattr(test_copy, "recommendations"):
@@ -414,7 +416,7 @@ class TestOrchestrator:
     log_thread.start()
 
     while (module.get_status() == "running"
-           and self._session.get_status() == "In Progress"):
+           and self._session.get_status() == TestrunStatus.IN_PROGRESS):
       if time.time() > test_module_timeout:
         LOGGER.error("Module timeout exceeded, killing module: " + module.name)
         module.stop(kill=True)
@@ -426,7 +428,7 @@ class TestOrchestrator:
         f.write(line + "\n")
 
     # Check that Testrun has not been stopped whilst this module was running
-    if self.get_session().get_status() == "Stopping":
+    if self.get_session().get_status() == TestrunStatus.STOPPING:
       # Discard results for this module
       LOGGER.info(f"Test module {module.name} has forcefully quit")
       return
@@ -450,12 +452,12 @@ class TestOrchestrator:
               result=test_result["result"])
 
           # Any informational test should always report informational
-          if test_case.required_result == "Informational":
-            test_case.result = "Informational"
+          if test_case.required_result == TestResult.INFORMATIONAL:
+            test_case.result = TestResult.INFORMATIONAL
 
           # Add steps to resolve if test is non-compliant
-          if (test_case.result == "Non-Compliant"
-              and "recommendations" in test_result):
+          if (test_case.result == TestResult.NON_COMPLIANT and
+              "recommendations" in test_result):
             test_case.recommendations = test_result["recommendations"]
           else:
             test_case.recommendations = None
@@ -489,13 +491,14 @@ class TestOrchestrator:
 
     LOGGER.info(f"Test module {module.name} has finished")
 
-  # Resolve all current log data in the containers log_stream
-  # this method is blocking so should be called in
-  # a thread or within a proper blocking context
   def _get_container_logs(self, log_stream):
+    """Resolve all current log data in the containers log_stream
+    this method is blocking so should be called in
+    a thread or within a proper blocking context"""
     self._container_logs = []
     for log_chunk in log_stream:
       lines = log_chunk.decode("utf-8").splitlines()
+
       # Process each line and strip blank space
       processed_lines = [line.strip() for line in lines if line.strip()]
       self._container_logs.extend(processed_lines)
@@ -534,7 +537,7 @@ class TestOrchestrator:
     LOGGER.debug("Loading test modules from /" + TEST_MODULES_DIR)
 
     loaded_modules = "Loaded the following test modules: "
-    test_modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
+    test_modules_dir = os.path.join(self._root_path, TEST_MODULES_DIR)
 
     module_dirs = os.listdir(test_modules_dir)
     # Check if the directory protocol exists and move it to the beginning
@@ -569,9 +572,9 @@ class TestOrchestrator:
     if not any(m.dir_name == module_dir for m in self._test_modules):
       LOGGER.debug(f"Loading test module {module_dir}")
 
-      modules_dir = os.path.join(self._path, TEST_MODULES_DIR)
+      modules_dir = os.path.join(self._root_path, TEST_MODULES_DIR)
 
-      module_conf_file = os.path.join(self._path, modules_dir, module_dir,
+      module_conf_file = os.path.join(self._root_path, modules_dir, module_dir,
                                       MODULE_CONFIG)
 
       module = TestModule(module_conf_file, self._session, extra_hosts)

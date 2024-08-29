@@ -54,6 +54,7 @@ import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
   selectInternetConnection,
@@ -168,6 +169,7 @@ describe('AppComponent', () => {
             { selector: selectError, value: null },
             { selector: selectMenuOpened, value: false },
             { selector: selectHasDevices, value: false },
+            { selector: selectHasExpiredDevices, value: false },
             { selector: selectHasRiskProfiles, value: false },
             { selector: selectStatus, value: null },
             { selector: selectSystemStatus, value: null },
@@ -768,6 +770,31 @@ describe('AppComponent', () => {
         });
       });
     });
+
+    describe('with expired devices', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasExpiredDevices, true);
+        fixture.detectChanges();
+      });
+
+      it('should have callout component', () => {
+        const callouts = compiled.querySelectorAll('app-callout');
+        let hasExpiredDeviceCallout = false;
+        callouts.forEach(callout => {
+          if (
+            callout?.innerHTML
+              .trim()
+              .includes(
+                'Further information is required in your device configurations.'
+              )
+          ) {
+            hasExpiredDeviceCallout = true;
+          }
+        });
+
+        expect(hasExpiredDeviceCallout).toBeTrue();
+      });
+    });
   });
 
   it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {
@@ -836,7 +863,5 @@ class FakeShutdownAppComponent {
 })
 class FakeVersionComponent {
   @Input() consentShown!: boolean;
-  @Input() hasRiskProfiles!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
-  @Output() navigateToRiskAssessmentEvent = new EventEmitter<void>();
 }

@@ -21,8 +21,18 @@ limitations under the License.
   [ngClass]="{ 'non-interective': tabIndex !== 0 }"
   class="device-item"
   type="button">
-  <div [attr.aria-label]="device.manufacturer" class="item-manufacturer">
-    {{ device.manufacturer }}
+  <div class="item-manufacturer">
+    <app-qualification-icon
+      *ngIf="device.test_pack === TestingType.Qualification"
+      matTooltip="This device will be tested for Qualification."
+      aria-label="This device will be tested for Qualification."></app-qualification-icon>
+    <app-pilot-icon
+      *ngIf="device.test_pack === TestingType.Pilot"
+      matTooltip="This device will be tested for the Pilot program."
+      aria-label="This device will be tested for the Pilot program."></app-pilot-icon>
+    <span [attr.aria-label]="device.manufacturer">{{
+      device.manufacturer
+    }}</span>
   </div>
   <div [attr.aria-label]="device.model" class="item-name">
     {{ device.model }}
@@ -34,6 +44,7 @@ limitations under the License.
 
 <div
   *ngIf="deviceView === DeviceView.WithActions"
+  [class.device-item-outdated]="device.status === DeviceStatus.INVALID"
   class="device-item-with-actions">
   <button
     [disabled]="disabled"
@@ -50,6 +61,12 @@ limitations under the License.
         edit_square</mat-icon
       >
     </div>
+    <div
+      *ngIf="device.status === DeviceStatus.INVALID"
+      [attr.aria-label]="device.status"
+      class="item-status">
+      Outdated
+    </div>
     <div [attr.aria-label]="device.model" class="item-name">
       {{ device.model }}
     </div>
@@ -58,7 +75,7 @@ limitations under the License.
     </div>
   </button>
   <button
-    [disabled]="disabled"
+    [disabled]="disabled || device.status === DeviceStatus.INVALID"
     (click)="startTestrunClick()"
     attr.aria-label="Start new testrun for device {{ label }}"
     matTooltip="Test device"

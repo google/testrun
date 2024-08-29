@@ -17,6 +17,7 @@ from datetime import datetime
 from weasyprint import HTML
 from io import BytesIO
 from common import util
+from common.statuses import TestResult, TestrunStatus
 import base64
 import os
 from test_orc.test_case import TestCase
@@ -47,7 +48,7 @@ class TestReport():
   """Represents a previous Testrun report."""
 
   def __init__(self,
-               status='Non-Compliant',
+               status=TestrunStatus.NON_COMPLIANT,
                started=None,
                finished=None,
                total_tests=0):

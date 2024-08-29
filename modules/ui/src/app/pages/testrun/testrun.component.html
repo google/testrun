@@ -30,7 +30,8 @@ limitations under the License.
                 startNewTestrunButton;
                 context: {
                   hasDevices: vm.hasDevices,
-                  systemStatus: vm.systemStatus
+                  systemStatus: vm.systemStatus,
+                  isAllDevicesOutdated: vm.isAllDevicesOutdated,
                 }
               "></ng-container>
           </div>
@@ -80,7 +81,8 @@ limitations under the License.
         *ngTemplateOutlet="
           startNewTestrunButton;
           context: {
-            hasDevices: vm.hasDevices
+            hasDevices: vm.hasDevices,
+            isAllDevicesOutdated: vm.isAllDevicesOutdated,
           }
         "></ng-container>
     </div>
@@ -89,6 +91,7 @@ limitations under the License.
   <ng-template
     #startNewTestrunButton
     let-hasDevices="hasDevices"
+    let-isAllDevicesOutdated="isAllDevicesOutdated"
     let-systemStatus="systemStatus">
     <button
       class="start-button"
@@ -96,6 +99,7 @@ limitations under the License.
       color="primary"
       [disabled]="
         hasDevices === false ||
+        isAllDevicesOutdated === true ||
         isTestrunInProgress(systemStatus?.status) ||
         systemStatus?.status === StatusOfTestrun.Cancelling
       "

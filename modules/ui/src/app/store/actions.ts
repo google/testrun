@@ -80,6 +80,16 @@ export const setHasDevices = createAction(
   props<{ hasDevices: boolean }>()
 );
 
+export const setHasExpiredDevices = createAction(
+  '[Shared] Set Has Expired Devices',
+  props<{ hasExpiredDevices: boolean }>()
+);
+
+export const setIsAllDevicesOutdated = createAction(
+  '[Shared] Set Is All Devices Outdated',
+  props<{ isAllDevicesOutdated: boolean }>()
+);
+
 export const setDevices = createAction(
   '[Shared] Set Devices',
   props<{ devices: Device[] }>()

@@ -20,7 +20,7 @@ import json
 
 IMAGE_PREFIX = 'testrun/'
 CONTAINER_PREFIX = 'tr-ct'
-DEFAULT_NETWORK = 'bridge'
+DEFAULT_NETWORK = 'none'
 
 
 class Module:

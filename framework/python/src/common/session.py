@@ -20,6 +20,7 @@ import os
 from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
+from common.statuses import TestrunStatus, TestResult
 from net_orc.ip_control import IPControl
 
 # Certificate dependencies
@@ -36,6 +37,7 @@ LOG_LEVEL_KEY = 'log_level'
 API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
+ORG_NAME_KEY = 'org_name'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 STATUS_TOPIC = 'status'
@@ -52,7 +54,7 @@ def session_tracker(method):
 
     result = method(self, *args, **kwargs)
 
-    if self.get_status() != 'Idle':
+    if self.get_status() != TestrunStatus.IDLE:
       self.get_mqtt_client().send_message(
                                         STATUS_TOPIC,
                                         jsonable_encoder(self.to_json())
@@ -80,7 +82,7 @@ class TestrunSession():
   def __init__(self, root_dir):
     self._root_dir = root_dir
 
-    self._status = 'Idle'
+    self._status = TestrunStatus.IDLE
 
     # Target test device
     self._device = None
@@ -151,7 +153,7 @@ class TestrunSession():
 
   def start(self):
     self.reset()
-    self._status = 'Waiting for Device'
+    self._status = TestrunStatus.WAITING_FOR_DEVICE
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -161,14 +163,14 @@ class TestrunSession():
     return self._finished
 
   def stop(self):
-    self.set_status('Stopping')
+    self.set_status(TestrunStatus.STOPPING)
     self.finish()
 
   def finish(self):
     # Set any in progress test results to Error
     for test_result in self._results:
-      if test_result.result == 'In Progress':
-        test_result.result = 'Error'
+      if test_result.result == TestResult.IN_PROGRESS:
+        test_result.result = TestResult.ERROR
 
     self._finished = datetime.datetime.now()
 
@@ -183,7 +185,8 @@ class TestrunSession():
         'monitor_period': 30,
         'max_device_reports': 0,
         'api_url': 'http://localhost',
-        'api_port': 8000
+        'api_port': 8000,
+        'org_name': ''
     }
 
   def get_config(self):
@@ -229,6 +232,11 @@ class TestrunSession():
       if MAX_DEVICE_REPORTS_KEY in config_file_json:
         self._config[MAX_DEVICE_REPORTS_KEY] = config_file_json.get(
             MAX_DEVICE_REPORTS_KEY)
+
+      if ORG_NAME_KEY in config_file_json:
+        self._config[ORG_NAME_KEY] = config_file_json.get(
+          ORG_NAME_KEY
+        )
 
       LOGGER.debug(self._config)
 
@@ -298,7 +306,7 @@ class TestrunSession():
     self._save_config()
 
     # Update log level
-    LOGGER.debug(f'Setting log level to {config_json["log_level"]}')
+    LOGGER.debug(f'Setting log level to {config_json["log_level"]}') # pylint: disable=W1405
     logger.set_log_level(config_json['log_level'])
 
   def set_target_device(self, device):
@@ -384,7 +392,7 @@ class TestrunSession():
 
   def set_test_result_error(self, result):
     """Set test result error"""
-    result.result = 'Error'
+    result.result = TestResult.ERROR
     result.recommendations = None
     self._results.append(result)
 
@@ -674,7 +682,7 @@ question {question.get('question')}''')
       return False
 
   def reset(self):
-    self.set_status('Idle')
+    self.set_status(TestrunStatus.IDLE)
     self.set_target_device(None)
     self._report_url = None
     self._total_tests = 0
