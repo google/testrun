@@ -13,10 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<form
-  class="device-qualification-form"
-  [formGroup]="deviceQualificationForm"
-  (submit)="submit()">
+<form class="device-qualification-form" [formGroup]="deviceQualificationForm">
   <ng-template #header>
     <div class="device-qualification-form-header">
       <button
@@ -34,14 +31,15 @@ limitations under the License.
   <app-stepper
     #stepper
     formArrayName="steps"
-    [linear]="data.isLinear"
+    [linear]="data.isCreate"
     [header]="header"
     [selectedIndex]="selectedIndex"
     [title]="data.title + ' modal window'"
     (selectionChange)="onStepChange($event)">
     {{ selectedIndex }}
     <cdk-step [editable]="true" formGroupName="0" [stepControl]="getStep(0)">
-      <section class="device-qualification-form-page">
+      <section
+        class="device-qualification-form-page device-qualification-form-step-content">
         <mat-form-field appearance="outline" class="manufacturer-field">
           <mat-label>Device Manufacturer</mat-label>
           <input
@@ -132,7 +130,7 @@ limitations under the License.
             class="device-qualification-form-journey-button">
             <span>
               <app-qualification-icon></app-qualification-icon
-              ><span class="device-qualification-form-journey-button-label-text"
+              ><span class="device-qualification-form-journey-button-label"
                 >Device Qualification</span
               >
             </span>
@@ -140,14 +138,19 @@ limitations under the License.
           <mat-radio-button
             [value]="TestingType.Pilot"
             class="device-qualification-form-journey-button">
-            <span class="device-qualification-form-journey-button-label">
-              <app-pilot-icon></app-pilot-icon><span>Pilot Assessment</span>
+            <span>
+              <app-pilot-icon></app-pilot-icon
+              ><span class="device-qualification-form-journey-button-label"
+                >Pilot Assessment</span
+              >
             </span>
           </mat-radio-button>
         </mat-radio-group>
-
         <app-device-tests
           class="device-qualification-form-test-modules-container"
+          [class.device-qualification-form-test-modules-error]="
+            test_modules.touched && test_modules.errors?.['required']
+          "
           [deviceForm]="getStep(0)"
           [deviceTestModules]="data.device?.test_modules"
           [testModules]="testModules">
@@ -182,10 +185,10 @@ limitations under the License.
       <section class="device-qualification-form-page">
         <h3 class="device-qualification-form-step-title">Summary</h3>
         <p class="device-qualification-form-step-description">
-          <ng-container *ngIf="formValid && !formPristine">
+          <ng-container *ngIf="formValid && !deviceHasNoChanges">
             The device has been configured. Please check the setup.
           </ng-container>
-          <ng-container *ngIf="formValid && formPristine">
+          <ng-container *ngIf="formValid && deviceHasNoChanges">
             No changes were made to the device configuration.
           </ng-container>
           <ng-container *ngIf="!formValid"
@@ -271,7 +274,8 @@ limitations under the License.
           mat-flat-button
           color="primary"
           class="save-button"
-          [disabled]="formPristine || !formValid">
+          [disabled]="formPristine || !formValid"
+          (click)="submit()">
           Save
         </button>
       </div>
