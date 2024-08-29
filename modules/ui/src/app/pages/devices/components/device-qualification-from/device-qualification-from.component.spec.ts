@@ -177,6 +177,7 @@ describe('DeviceQualificationFromComponent', () => {
       action: FormAction.Close,
       index: 0,
       device: {
+        status: DeviceStatus.VALID,
         manufacturer: '',
         model: '',
         mac_addr: '',
@@ -508,6 +509,7 @@ describe('DeviceQualificationFromComponent', () => {
         forwardButton.click();
 
         expect(component.device).toEqual({
+          status: DeviceStatus.VALID,
           manufacturer: 'manufacturer',
           model: 'model',
           mac_addr: '07:07:07:07:07:07',
@@ -565,6 +567,7 @@ describe('DeviceQualificationFromComponent', () => {
           const args = saveSpy.calls.argsFor(0);
           // @ts-expect-error config is in object
           expect(args[0].device).toEqual({
+            status: DeviceStatus.VALID,
             manufacturer: 'manufacturer',
             model: 'model',
             mac_addr: '07:07:07:07:07:07',
@@ -621,6 +624,7 @@ describe('DeviceQualificationFromComponent', () => {
           const args = editSpy.calls.argsFor(0);
           // @ts-expect-error config is in object
           expect(args[0].device).toEqual({
+            status: DeviceStatus.VALID,
             manufacturer: 'manufacturer',
             model: 'model',
             mac_addr: '07:07:07:07:07:07',
