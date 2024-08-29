@@ -433,7 +433,7 @@ class Api:
 
     if len(body_raw) == 0:
       response.status_code = 400
-      return self._generate_msg(False, "Invalid request received")
+      return self._generate_msg(False, "Invalid request received, missing body")
 
     try:
       body_json = json.loads(body_raw)
@@ -445,12 +445,18 @@ class Api:
 
     if "mac_addr" not in body_json or "timestamp" not in body_json:
       response.status_code = 400
-      return self._generate_msg(False, "Invalid request received")
+      return self._generate_msg(False, "Missing mac address or timestamp")
 
     mac_addr = body_json.get("mac_addr").lower()
     timestamp = body_json.get("timestamp")
-    parsed_timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
-    timestamp_formatted = parsed_timestamp.strftime("%Y-%m-%dT%H:%M:%S")
+
+    try:
+      parsed_timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+      timestamp_formatted = parsed_timestamp.strftime("%Y-%m-%dT%H:%M:%S")
+
+    except ValueError:
+      response.status_code = 400
+      return self._generate_msg(False, "Incorrect timestamp format")
 
     # Get device from MAC address
     device = self._session.get_device(mac_addr)
@@ -541,7 +547,7 @@ class Api:
       )
 
       # Check if device folder exists
-      device_folder = os.path.join(self._test_run.get_root_dir(),
+      device_folder = os.path.join(self._testrun.get_root_dir(),
                                      DEVICES_PATH,
                                      device_json.get(DEVICE_MANUFACTURER_KEY) +
                                      " " +
@@ -647,6 +653,12 @@ class Api:
   async def get_report(self, response: Response, device_name, timestamp):
     device = self._session.get_device_by_name(device_name)
 
+    # If the device not found
+    if device is None:
+      LOGGER.info("Device not found, returning 404")
+      response.status_code = 404
+      return self._generate_msg(False, "Device not found")
+
     # 1.3 file path
     file_path = os.path.join(
       DEVICES_PATH,
@@ -700,16 +712,34 @@ class Api:
       return self._generate_msg(False,
                                 "A device with that name could not be found")
 
-    file_path = self._get_testrun().get_test_orc().zip_results(
+    # Check if report exists (1.3 file path)
+    report_file_path = os.path.join(
+      DEVICES_PATH,
+      device_name,
+      "reports",
+      timestamp,"test",
+          device.mac_addr.replace(":",""))
+
+    if not os.path.isdir(report_file_path):
+      # pre 1.3 file path
+      report_file_path = os.path.join(DEVICES_PATH, device_name, "reports",
+                                                    timestamp)
+
+    if not os.path.isdir(report_file_path):
+      LOGGER.info("Report could not be found, returning 404")
+      response.status_code = 404
+      return self._generate_msg(False, "Report could not be found")
+
+    zip_file_path = self._get_testrun().get_test_orc().zip_results(
         device, timestamp, profile)
 
-    if file_path is None:
+    if zip_file_path is None:
       response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
       return self._generate_msg(
           False, "An error occurred whilst archiving test results")
 
-    if os.path.isfile(file_path):
-      return FileResponse(file_path)
+    if os.path.isfile(zip_file_path):
+      return FileResponse(zip_file_path)
     else:
       LOGGER.info("Test results could not be found, returning 404")
       response.status_code = 404
