@@ -16,6 +16,7 @@
 import { CdkTextareaAutosize, TextFieldModule } from '@angular/cdk/text-field';
 import {
   afterNextRender,
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
@@ -71,7 +72,7 @@ import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-f
   styleUrl: './profile-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProfileFormComponent implements OnInit {
+export class ProfileFormComponent implements OnInit, AfterViewInit {
   private profile: Profile | null = null;
   private profileList!: Profile[];
   private injector = inject(Injector);
@@ -112,8 +113,11 @@ export class ProfileFormComponent implements OnInit {
   ) {}
   ngOnInit() {
     this.profileForm = this.createProfileForm();
+  }
+
+  ngAfterViewInit(): void {
     if (this.selectedProfile) {
-      this.fillProfileForm(this.profileFormat, this.selectedProfile);
+      this.fillProfileForm(this.profileFormat, this.selectedProfile!);
     }
   }
 
