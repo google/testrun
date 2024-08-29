@@ -465,6 +465,14 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Could not find device")
 
+    # Assign the reports folder path from testrun
+    reports_folder = self._testrun.get_reports_folder(device)
+
+    # Check if reports folder exists
+    if not os.path.exists(reports_folder):
+      response.status_code = 404
+      return self._generate_msg(False, "Report not found")
+
     if self._testrun.delete_report(device, timestamp_formatted):
       return self._generate_msg(True, "Deleted report")
 

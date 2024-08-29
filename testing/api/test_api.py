@@ -956,8 +956,8 @@ def test_delete_report_invalid_timestamp(empty_devices_dir, testrun, # pylint: d
   # Check if the correct error message returned
   assert "Incorrect timestamp format" in response["error"]
 
-def test_delete_report_no_report(empty_devices_dir, testrun): # pylint: disable=W0613
-  """Test delete report when report does not exist (404)"""
+def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=W0613
+  """Test delete report when device does not exist (404)"""
 
   # Payload to be deleted for a non existing device
   delete_data = {
@@ -977,7 +977,10 @@ def test_delete_report_no_report(empty_devices_dir, testrun): # pylint: disable=
   # Check if "error" in response
   assert "error" in response
 
-def test_delete_report_server_error(empty_devices_dir, testrun, # pylint: disable=W0613
+  # Check if the correct error message returned
+  assert "Could not find device" in response["error"]
+
+def test_delete_report_no_report(empty_devices_dir, testrun, # pylint: disable=W0613
                              add_device, create_report_folder):
   """Test for delete report causing internal server error (500)"""
 
@@ -1004,8 +1007,8 @@ def test_delete_report_server_error(empty_devices_dir, testrun, # pylint: disabl
                       data=json.dumps(delete_data),
                       timeout=5)
 
-  # Check if status code is 500 (Internal Server Error)
-  assert r.status_code == 500
+  # Check if status code is 404 (not found)
+  assert r.status_code == 404
 
   # Parse the JSON response
   response = r.json()
@@ -1014,7 +1017,7 @@ def test_delete_report_server_error(empty_devices_dir, testrun, # pylint: disabl
   assert "error" in response
 
   # Check if the correct error message is returned
-  assert "Error occured whilst deleting report" in response["error"]
+  assert "Report not found" in response["error"]
 
 def test_get_report_success(empty_devices_dir, testrun, # pylint: disable=W0613
                      add_device, create_report_folder):
