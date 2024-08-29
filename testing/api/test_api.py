@@ -980,21 +980,11 @@ def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=
   # Check if the correct error message returned
   assert "Could not find device" in response["error"]
 
-def test_delete_report_no_report(empty_devices_dir, testrun, # pylint: disable=W0613
-                             add_device, create_report_folder):
-  """Test for delete report causing internal server error (500)"""
+def test_delete_report_no_report(empty_devices_dir, testrun, add_device): # pylint: disable=W0613
+  """Test for delete report when report does not exist (404)"""
 
   # Load the device_name and mac_address from add_device fixture
-  device_name, mac_address = add_device()
-
-  # Create the report folder and JSON file
-  create_report_folder(device_name, mac_address, TIMESTAMP)
-
-  # Construct the device report path
-  device_directory = os.path.join(DEVICES_DIRECTORY, device_name)
-
-  # Remove the folder and all its content before delete request
-  shutil.rmtree(device_directory)
+  _, mac_address = add_device()
 
   # Prepare the payload for the DELETE request
   delete_data = {
