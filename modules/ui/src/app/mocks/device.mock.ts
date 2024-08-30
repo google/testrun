@@ -65,7 +65,7 @@ export const MOCK_TEST_MODULES = [
   {
     displayName: 'Udmi',
     name: 'udmi',
-    enabled: false,
+    enabled: true,
   },
 ];
 
