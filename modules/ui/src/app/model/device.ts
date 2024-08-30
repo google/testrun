@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { QuestionFormat } from './question';
+import { Question } from './profile';
 
 export interface Device {
   manufacturer: string;
@@ -25,6 +26,7 @@ export interface Device {
   type?: string;
   technology?: string;
   test_pack?: TestingType;
+  additional_info?: Question[];
 }
 
 export enum DeviceStatus {

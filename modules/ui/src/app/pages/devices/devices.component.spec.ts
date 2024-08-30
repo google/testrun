@@ -158,11 +158,12 @@ describe('DevicesComponent', () => {
         ariaLabel: 'Create Device',
         data: {
           device: null,
+          initialDevice: undefined,
           title: 'Create Device',
           testModules: [],
           devices: [device, device, device],
           index: 0,
-          isLinear: true,
+          isCreate: true,
         },
         autoFocus: true,
         hasBackdrop: true,
@@ -180,18 +181,19 @@ describe('DevicesComponent', () => {
         } as MatDialogRef<typeof DeviceQualificationFromComponent>);
         fixture.detectChanges();
 
-        component.openDialog([device], MOCK_TEST_MODULES, device, true);
+        component.openDialog([device], MOCK_TEST_MODULES, device, device, true);
 
         expect(openSpy).toHaveBeenCalled();
         expect(openSpy).toHaveBeenCalledWith(DeviceQualificationFromComponent, {
           ariaLabel: 'Edit device',
           data: {
             device: device,
+            initialDevice: device,
             title: 'Edit device',
             devices: [device],
             testModules: MOCK_TEST_MODULES,
             index: 0,
-            isLinear: false,
+            isCreate: false,
           },
           autoFocus: true,
           hasBackdrop: true,
@@ -249,6 +251,7 @@ describe('DevicesComponent', () => {
         [device],
         MOCK_TEST_MODULES,
         device,
+        undefined,
         false,
         0
       );

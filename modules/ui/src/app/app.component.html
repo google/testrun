@@ -172,7 +172,12 @@ limitations under the License.
         </app-callout>
         <app-callout
           [type]="CalloutType.Info"
-          *ngIf="vm.hasConnectionSettings === true && vm.hasDevices === false">
+          *ngIf="
+            vm.hasConnectionSettings === true &&
+            (vm.hasDevices === false ||
+              (!!vm.calloutState.get('outdated_devices_callout') &&
+                vm.isAllDevicesOutdated))
+          ">
           Step 2: To perform a device test please
           <a
             (click)="navigateToAddDevice()"
@@ -193,7 +198,8 @@ limitations under the License.
             vm.hasDevices &&
             (!vm.systemStatus || vm.systemStatus === StatusOfTestrun.Idle) &&
             vm.isStatusLoaded === true &&
-            !vm.reports.length
+            !vm.reports.length &&
+            !vm.isAllDevicesOutdated
           ">
           Step 3: Once device is created, you are able to
           <a
