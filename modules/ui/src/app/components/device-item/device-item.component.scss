@@ -32,7 +32,7 @@ $border-radius: 12px;
   padding: 0;
   grid-column-gap: 8px;
   grid-row-gap: 4px;
-  font-family: 'Open Sans', sans-serif;
+  font-family: $font-primary;
   grid-template-areas:
     'manufacturer manufacturer'
     'name address';
@@ -59,7 +59,7 @@ $border-radius: 12px;
   grid-template-columns: 1fr $icon-width;
   grid-column-gap: 1px;
   padding: 0;
-  font-family: 'Open Sans', sans-serif;
+  font-family: $font-primary;
   grid-template-areas: 'edit start';
 
   &.device-item-outdated {
@@ -76,7 +76,7 @@ $border-radius: 12px;
   padding: 0 6px 0 0;
   grid-column-gap: 8px;
   grid-row-gap: 4px;
-  font-family: 'Open Sans', sans-serif;
+  font-family: $font-primary;
   grid-template-areas:
     'manufacturer status'
     'name address';

@@ -70,6 +70,12 @@
   .callout-icon {
     color: mat.m2-get-color-from-palette($color-primary, 700);
   }
+
+  .info-pilot {
+    width: 24px;
+    display: flex;
+    justify-content: center;
+  }
 }
 
 .callout-container.warning_amber {

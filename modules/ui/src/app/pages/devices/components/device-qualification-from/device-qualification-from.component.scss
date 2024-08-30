@@ -17,7 +17,6 @@
 @import 'src/theming/colors';
 @import 'src/theming/variables';
 
-$form-max-width: 732px;
 $form-min-width: 732px;
 $form-height: 993px;
 
@@ -274,13 +273,15 @@ $form-height: 993px;
 
 .device-qualification-form-instructions {
   margin-top: auto;
+  padding-top: 8px;
   color: $grey-800;
   text-align: center;
   font-family: $font-secondary;
   font-size: 16px;
-
+  width: 510px;
   ul {
     text-align: left;
+    padding-left: 26px;
   }
   li {
     line-height: 24px;
@@ -296,8 +297,14 @@ $form-height: 993px;
   padding-bottom: 14px;
 }
 
-.device-qualification-form-test-modules-error ::ng-deep .device-tests-title {
+.device-qualification-form-test-modules-container-error
+  ::ng-deep
+  .device-tests-title {
   color: $red-800;
+}
+
+.device-qualification-form-test-modules-error {
+  padding: 0 24px;
 }
 
 @container qualification-form (height < 870px) {
