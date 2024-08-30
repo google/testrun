@@ -78,7 +78,7 @@ HOST="127.0.0.1 testrun.io"
 grep -qxF "$HOST" /etc/hosts || echo $HOST | sudo tee -a /etc/hosts
 
 # Prepare for certificate generation
-UI_CERTS_DIR=local/ui/certs
+UI_CERTS_DIR=$PWD/local/ui/certs
 CA_NAME=testrun.ca
 CRT_NAME=testrun
 
@@ -89,7 +89,7 @@ openssl req -x509 -new -nodes -key $UI_CERTS_DIR/$CA_NAME.key -passin pass:super
 
 # Trust CA certificate
 mkdir -p /usr/local/share/ca-certificates/
-cp $UI_CERTS_DIR/$CA_NAME.pem /usr/local/share/ca-certificates/$CA_NAME.pem
+cp $UI_CERTS_DIR/$CA_NAME.crt /usr/local/share/ca-certificates/$CA_NAME.crt
 
 # Create signing config file
 echo 'subjectAltName = DNS:testrun.io' >> $UI_CERTS_DIR/$CRT_NAME.ext

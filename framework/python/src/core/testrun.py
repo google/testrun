@@ -511,7 +511,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     client = docker.from_env(environment=envs)
 
-    certs_folder = os.path.join(root_dir,
+    certs_folder = os.path.join(self._root_dir,
                                 LOCAL_CERTS_DIR)
 
     try:
