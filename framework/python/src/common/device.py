@@ -14,6 +14,7 @@
 
 """Track device object information."""
 
+from typing import List, Dict
 from dataclasses import dataclass, field
 from common.testreport import TestReport
 from datetime import datetime
@@ -30,12 +31,12 @@ class Device():
   type: str = None
   technology: str = None
   test_pack: str = 'Device Qualification'
-  additional_info: list[dict] = field(default_factory=list)
-  test_modules: dict = field(default_factory=dict)
+  additional_info: List[dict] = field(default_factory=list)
+  test_modules: Dict = field(default_factory=dict)
   ip_addr: str = None
   firmware: str = None
   device_folder: str = None
-  reports: list[TestReport] = field(default_factory=list)
+  reports: List[TestReport] = field(default_factory=list)
   max_device_reports: int = None
 
   def add_report(self, report):
