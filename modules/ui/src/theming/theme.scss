@@ -16,6 +16,7 @@
 @use '@angular/material' as mat;
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
 @import 'colors';
+@import 'variables';
 
 @include mat.core();
 @include mat.strong-focus-indicators(
@@ -31,7 +32,7 @@ $app-secondary: mat.m2-define-palette($color-secondary);
 $app-blue-light-palette: mat.m2-define-palette($color-blue-light);
 
 $app-typography: mat.m2-define-typography-config(
-  $font-family: 'Open Sans',
+  $font-family: $font-primary,
 );
 
 $brand-light-theme: mat.m2-define-light-theme(

@@ -67,6 +67,7 @@ import { QualificationIconComponent } from '../../../../components/qualification
 import { PilotIconComponent } from '../../../../components/pilot-icon/pilot-icon.component';
 import { Question } from '../../../../model/profile';
 import { FormControlType } from '../../../../model/question';
+import { FocusManagerService } from '../../../../services/focus-manager.service';
 
 const MAC_ADDRESS_PATTERN =
   '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
@@ -74,6 +75,7 @@ const MAC_ADDRESS_PATTERN =
 interface DialogData {
   title?: string;
   device?: Device;
+  initialDevice?: Device;
   devices: Device[];
   testModules: TestModule[];
   index: number;
@@ -173,12 +175,8 @@ export class DeviceQualificationFromComponent
     ).controls.every(control => (control as FormGroup).valid);
   }
 
-  get deviceHasNoChanges() {
-    const obj1 = this.data.device;
-    const obj2 = this.device;
-    return (
-      (obj1 && obj2 && this.compareObjects(obj1, obj2)) || this.formPristine
-    );
+  deviceHasNoChanges(device1: Device | undefined, device2: Device | undefined) {
+    return device1 && device2 && this.compareDevices(device1, device2);
   }
 
   constructor(
@@ -188,7 +186,8 @@ export class DeviceQualificationFromComponent
     public dialogRef: MatDialogRef<DeviceQualificationFromComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     public devicesStore: DevicesStore,
-    private element: ElementRef
+    private element: ElementRef,
+    private focusService: FocusManagerService
   ) {
     this.device = data.device;
   }
@@ -221,7 +220,10 @@ export class DeviceQualificationFromComponent
             this.fillDeviceForm(this.format, this.data.device!);
           }
           if (this.data.index) {
-            this.selectedIndex = this.data.index;
+            // previous steps should be marked as interacted
+            for (let i = 0; i <= this.data.index; i++) {
+              this.goToStep(i);
+            }
           }
           this.dialogRef
             .keydownEvents()
@@ -256,11 +258,11 @@ export class DeviceQualificationFromComponent
   }
 
   closeForm(): void {
-    const obj1 = this.data.device;
-    const obj2 = this.createDeviceFromForm();
+    const device1 = this.data.initialDevice;
+    const device2 = this.createDeviceFromForm();
     if (
-      (obj1 && obj2 && this.compareObjects(obj1, obj2)) ||
-      this.formPristine
+      (device1 && device2 && this.compareDevices(device1, device2)) ||
+      (!device1 && this.deviceIsEmpty(device2))
     ) {
       this.dialogRef.close();
     } else {
@@ -279,6 +281,7 @@ export class DeviceQualificationFromComponent
   }
 
   onStepChange(event: StepperSelectionEvent) {
+    this.focusService.focusFirstElementInContainer();
     if (event.previouslySelectedStep.completed) {
       this.device = this.createDeviceFromForm();
     }
@@ -460,32 +463,89 @@ export class DeviceQualificationFromComponent
     return new FormGroup({});
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private compareObjects(object1: any, object2: any) {
-    const keys1 = Object.keys(object1);
-    const keys2 = Object.keys(object2);
-
-    if (keys1.length !== keys2.length) {
+  private compareDevices(device1: Device, device2: Device) {
+    if (device1.manufacturer !== device2.manufacturer) {
       return false;
     }
+    if (device1.model !== device2.model) {
+      return false;
+    }
+    if (device1.mac_addr !== device2.mac_addr) {
+      return false;
+    }
+    if (device1.type !== device2.type) {
+      return false;
+    }
+    if (device1.technology !== device2.technology) {
+      return false;
+    }
+    if (device1.test_pack !== device2.test_pack) {
+      return false;
+    }
+    const keys1 = Object.keys(device1.test_modules!);
 
     for (const key of keys1) {
-      const val1 = object1[key];
-      const val2 = object2[key];
-      const areObjects = this.isObject(val1) && this.isObject(val2);
-      if (
-        (areObjects && !this.compareObjects(val1, val2)) ||
-        (!areObjects && val1 !== val2)
-      ) {
+      const val1 = device1.test_modules![key];
+      const val2 = device2.test_modules![key];
+      if (val1.enabled !== val2.enabled) {
         return false;
       }
     }
 
+    if (device1.additional_info) {
+      for (const question of device1.additional_info) {
+        if (
+          question.answer !==
+          device2.additional_info?.find(
+            question2 => question2.question === question.question
+          )?.answer
+        ) {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
     return true;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private isObject(object: any) {
-    return object != null && typeof object === 'object';
+  private deviceIsEmpty(device: Device) {
+    if (device.manufacturer !== '') {
+      return false;
+    }
+    if (device.model !== '') {
+      return false;
+    }
+    if (device.mac_addr !== '') {
+      return false;
+    }
+    if (device.type !== '') {
+      return false;
+    }
+    if (device.technology !== '') {
+      return false;
+    }
+    if (device.test_pack !== TestingType.Qualification) {
+      return false;
+    }
+    const keys1 = Object.keys(device.test_modules!);
+
+    for (const key of keys1) {
+      const val1 = device.test_modules![key];
+      if (!val1.enabled) {
+        return false;
+      }
+    }
+
+    if (device.additional_info) {
+      for (const question of device.additional_info) {
+        if (question.answer !== '') {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+    return true;
   }
 }

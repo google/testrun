@@ -119,6 +119,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
   openDialog(
     devices: Device[] = [],
     testModules: TestModule[],
+    initialDevice?: Device,
     selectedDevice?: Device,
     isEditDevice = false,
     index = 0
@@ -127,6 +128,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
       ariaLabel: isEditDevice ? 'Edit device' : 'Create Device',
       data: {
         device: selectedDevice || null,
+        initialDevice,
         title: isEditDevice ? 'Edit device' : 'Create Device',
         testModules: testModules,
         devices,
@@ -152,6 +154,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
           this.openCloseDialog(
             devices,
             testModules,
+            initialDevice,
             response.device,
             isEditDevice,
             response.index
@@ -173,6 +176,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
   openCloseDialog(
     devices: Device[],
     testModules: TestModule[],
+    initialDevice?: Device,
     device?: Device,
     isEditDevice = false,
     index = 0
@@ -194,7 +198,14 @@ export class DevicesComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(close => {
         if (!close) {
-          this.openDialog(devices, testModules, device, isEditDevice, index);
+          this.openDialog(
+            devices,
+            testModules,
+            initialDevice,
+            device,
+            isEditDevice,
+            index
+          );
           this.devicesStore.selectDevice(null);
         }
       });
