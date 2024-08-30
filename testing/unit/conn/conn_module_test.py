@@ -13,13 +13,17 @@
 # limitations under the License.
 """Module run all the Connection module related unit tests"""
 from port_stats_util import PortStatsUtil
+from connection_module import ConnectionModule
 import os
 import unittest
 from common import logger
 
 MODULE = 'conn'
-# Define the file paths
-TEST_FILES_DIR = 'testing/unit/' + MODULE
+# Define the directories
+TEST_FILES_DIR = '/testing/unit/' + MODULE
+OUTPUT_DIR = os.path.join(TEST_FILES_DIR, 'output/')
+CAPTURES_DIR = os.path.join(TEST_FILES_DIR, 'captures/')
+
 ETHTOOL_RESULTS_COMPLIANT_FILE = os.path.join(TEST_FILES_DIR, 'ethtool',
                                               'ethtool_results_compliant.txt')
 ETHTOOL_RESULTS_NONCOMPLIANT_FILE = os.path.join(
@@ -34,8 +38,12 @@ ETHTOOL_PORT_STATS_POST_FILE = os.path.join(
 ETHTOOL_PORT_STATS_POST_NONCOMPLIANT_FILE = os.path.join(
     TEST_FILES_DIR, 'ethtool',
     'ethtool_port_stats_post_monitor_noncompliant.txt')
-LOGGER = None
 
+# Define the capture files to be used for the test
+STARTUP_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'startup.pcap')
+MONITOR_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'monitor.pcap')
+
+LOGGER = None
 
 class ConnectionModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning Connection 
@@ -45,6 +53,9 @@ class ConnectionModuleTest(unittest.TestCase):
   def setUpClass(cls):
     global LOGGER
     LOGGER = logger.get_logger('unit_test_' + MODULE)
+
+    # Set the MAC address for device in capture files
+    os.environ['DEVICE_MAC'] = '98:f0:7b:d1:87:06'
 
   # Test the port link status
   def connection_port_link_compliant_test(self):
@@ -117,6 +128,17 @@ class ConnectionModuleTest(unittest.TestCase):
     LOGGER.info(result)
     self.assertEqual(result[0], False)
 
+  # Test proper filtering for ICMP protocol in DHCP packets
+  def connection_switch_dhcp_snooping_icmp_test(self):
+    LOGGER.info('connection_switch_dhcp_snooping_icmp_test')
+    conn_module = ConnectionModule(module=MODULE,
+                           log_dir=OUTPUT_DIR,
+                           results_dir=OUTPUT_DIR,
+                           startup_capture_file=STARTUP_CAPTURE_FILE,
+                           monitor_capture_file=MONITOR_CAPTURE_FILE)
+    result = conn_module._connection_switch_dhcp_snooping() # pylint: disable=W0212
+    LOGGER.info(result)
+    self.assertEqual(result[0], True)
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
@@ -135,6 +157,10 @@ if __name__ == '__main__':
   # Autonegotiation off failure test
   suite.addTest(
       ConnectionModuleTest('connection_port_speed_autonegotiation_fail_test'))
+
+  # DHCP Snooping related tests
+  suite.addTest(
+      ConnectionModuleTest('connection_switch_dhcp_snooping_icmp_test'))
 
   runner = unittest.TextTestRunner()
   runner.run(suite)

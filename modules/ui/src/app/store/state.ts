@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 import { TestrunStatus } from '../model/testrun-status';
-import { SettingMissedError, SystemInterfaces } from '../model/setting';
 import { Device, TestModule } from '../model/device';
+import {
+  Adapters,
+  SettingMissedError,
+  SystemInterfaces,
+} from '../model/setting';
 import { Profile } from '../model/profile';
 
 export interface AppState {
@@ -39,6 +43,8 @@ export interface SharedState {
   devices: Device[];
   //used in app, devices, testrun
   hasDevices: boolean;
+  hasExpiredDevices: boolean;
+  isAllDevicesOutdated: boolean;
   //app, risk-assessment, testrun, reports
   riskProfiles: Profile[];
   hasRiskProfiles: boolean;
@@ -56,6 +62,8 @@ export interface SharedState {
   deviceInProgress: Device | null;
   reports: TestrunStatus[];
   testModules: TestModule[];
+  adapters: Adapters;
+  internetConnection: boolean | null;
 }
 
 export const initialAppComponentState: AppComponentState = {
@@ -73,6 +81,8 @@ export const initialSharedState: SharedState = {
   isStopTestrun: false,
   isOpenWaitSnackBar: false,
   hasDevices: false,
+  hasExpiredDevices: false,
+  isAllDevicesOutdated: false,
   devices: [],
   deviceInProgress: null,
   riskProfiles: [],
@@ -82,4 +92,6 @@ export const initialSharedState: SharedState = {
   status: null,
   reports: [],
   testModules: [],
+  adapters: {},
+  internetConnection: null,
 };

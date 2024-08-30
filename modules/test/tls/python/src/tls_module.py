@@ -276,20 +276,7 @@ class TLSModule(TestModule):
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      results = self._validate_tls_client(self._device_ipv4_addr, '1.2')
-      # Determine results and return proper messaging and details
-      description = ''
-      result = None
-      if results[0] is None:
-        description = 'No outbound connections were found'
-        result = 'Feature Not Detected'
-      elif results[0]:
-        description = 'TLS 1.2 client connections valid'
-        result = True
-      else:
-        description = 'TLS 1.2 client connections invalid'
-        result = False
-      return result, description,  results[1]
+      return self._validate_tls_client(self._device_ipv4_addr, '1.2')
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'
@@ -299,18 +286,9 @@ class TLSModule(TestModule):
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      results = self._validate_tls_client(self._device_ipv4_addr, '1.3')
-      # Determine results and return proper messaging and details
-      description = ''
-      if results[0] is None:
-        description = 'No outbound connections were found'
-      elif results[0]:
-        description = 'TLS 1.3 client connections valid'
-      else:
-        description = 'TLS 1.3 client connections invalid'
-      return results[0], description,  results[1]
+      return self._validate_tls_client(self._device_ipv4_addr, '1.3')
     else:
-      LOGGER.error('Could not resolve device IP address')
+      LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'
 
   def _validate_tls_client(self, client_ip, tls_version):
@@ -322,18 +300,26 @@ class TLSModule(TestModule):
         ])
 
     # Generate results based on the state
-    result_message = 'No outbound connections were found.'
-    result_state = 'Feature Not Detected'
+    result_state = None
+    result_message = ''
+    result_details = ''
+    result_tags = []
 
-    # If any of the packets detect failed client comms, fail the test
-    if not client_results[0] and client_results[0] is not None:
-      result_state = False
-      result_message = client_results[1]
-    else:
+    if client_results[0] is not None:
+      # Tag for a VSA requirement if there are any connections
+      # detected regardless of validity
+      result_tags.append('VSA')
+      result_details = client_results[1]
       if client_results[0]:
         result_state = True
-        result_message = client_results[1]
-    return result_state, result_message
+        result_message = f'TLS {tls_version} client connections valid'
+      else:
+        result_state = False
+        result_message = f'TLS {tls_version} client connections invalid'
+    else:
+      result_state = 'Feature Not Detected'
+      result_message = 'No outbound connections were found'
+    return result_state, result_message, result_details, result_tags
 
   def _resolve_device_ip(self):
     # If the ipv4 address wasn't resolved yet, try again

@@ -17,7 +17,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
-import { Device, TestModule } from '../model/device';
+import { Device, DeviceQuestionnaireSection } from '../model/device';
 import { catchError, map, of, retry } from 'rxjs';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
 import {
@@ -30,7 +30,7 @@ import { Version } from '../model/version';
 import { Certificate } from '../model/certificate';
 import {
   Profile,
-  Question,
+  ProfileFormat,
   ProfileRisk,
   RiskResultClassName,
 } from '../model/profile';
@@ -49,39 +49,6 @@ export const UNAVAILABLE_VERSION = {
   providedIn: 'root',
 })
 export class TestRunService {
-  private readonly testModules: TestModule[] = [
-    {
-      displayName: 'Connection',
-      name: 'connection',
-      enabled: true,
-    },
-    {
-      displayName: 'NTP',
-      name: 'ntp',
-      enabled: true,
-    },
-    {
-      displayName: 'DNS',
-      name: 'dns',
-      enabled: true,
-    },
-    {
-      displayName: 'Services',
-      name: 'services',
-      enabled: true,
-    },
-    {
-      displayName: 'TLS',
-      name: 'tls',
-      enabled: true,
-    },
-    {
-      displayName: 'Protocol',
-      name: 'protocol',
-      enabled: true,
-    },
-  ];
-
   private version = new BehaviorSubject<Version | null>(null);
 
   constructor(private http: HttpClient) {}
@@ -185,7 +152,9 @@ export class TestRunService {
         result === StatusOfTestResult.InProgress,
       grey:
         result === StatusOfTestResult.NotDetected ||
-        result === StatusOfTestResult.NotStarted,
+        result === StatusOfTestResult.NotStarted ||
+        result === StatusOfTestResult.Skipped ||
+        result === StatusOfTestResult.Disabled,
     };
   }
 
@@ -303,8 +272,14 @@ export class TestRunService {
       });
   }
 
-  fetchProfilesFormat(): Observable<Question[]> {
-    return this.http.get<Question[]>(`${API_URL}/profiles/format`);
+  fetchProfilesFormat(): Observable<ProfileFormat[]> {
+    return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
+  }
+
+  fetchQuestionnaireFormat(): Observable<DeviceQuestionnaireSection[]> {
+    return this.http.get<DeviceQuestionnaireSection[]>(
+      `${API_URL}/devices/format`
+    );
   }
 
   saveProfile(profile: Profile): Observable<boolean> {

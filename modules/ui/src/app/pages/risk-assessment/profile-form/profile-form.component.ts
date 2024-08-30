@@ -16,6 +16,7 @@
 import { CdkTextareaAutosize, TextFieldModule } from '@angular/cdk/text-field';
 import {
   afterNextRender,
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
@@ -39,18 +40,18 @@ import {
   FormGroup,
   ReactiveFormsModule,
   ValidatorFn,
-  Validators,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { DeviceValidators } from '../../devices/components/device-form/device.validators';
 import {
-  FormControlType,
   Profile,
+  ProfileFormat,
   ProfileStatus,
   Question,
-  Validation,
 } from '../../../model/profile';
+import { FormControlType } from '../../../model/question';
 import { ProfileValidators } from './profile.validators';
+import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';
 
 @Component({
   selector: 'app-profile-form',
@@ -65,23 +66,22 @@ import { ProfileValidators } from './profile.validators';
     MatSelectModule,
     MatCheckboxModule,
     TextFieldModule,
+    DynamicFormComponent,
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProfileFormComponent implements OnInit {
+export class ProfileFormComponent implements OnInit, AfterViewInit {
   private profile: Profile | null = null;
   private profileList!: Profile[];
   private injector = inject(Injector);
   private nameValidator!: ValidatorFn;
-  public readonly FormControlType = FormControlType;
   public readonly ProfileStatus = ProfileStatus;
   profileForm: FormGroup = this.fb.group({});
   @ViewChildren(CdkTextareaAutosize)
   autosize!: QueryList<CdkTextareaAutosize>;
-  questionnaire!: Question[];
-  @Input() profileFormat!: Question[];
+  @Input() profileFormat!: ProfileFormat[];
   @Input()
   set profiles(profiles: Profile[]) {
     this.profileList = profiles;
@@ -95,8 +95,9 @@ export class ProfileFormComponent implements OnInit {
   @Input()
   set selectedProfile(profile: Profile | null) {
     this.profile = profile;
-    if (profile && this.questionnaire) {
-      this.updateForm(profile);
+    if (profile && this.nameControl) {
+      this.updateNameValidator();
+      this.fillProfileForm(this.profileFormat, profile);
     }
   }
   get selectedProfile() {
@@ -111,22 +112,12 @@ export class ProfileFormComponent implements OnInit {
     private fb: FormBuilder
   ) {}
   ngOnInit() {
-    if (this.selectedProfile) {
-      this.updateForm(this.selectedProfile);
-    } else {
-      this.questionnaire = this.profileFormat;
-      this.profileForm = this.createProfileForm(this.questionnaire);
-    }
+    this.profileForm = this.createProfileForm();
   }
 
-  updateForm(profile: Profile) {
-    this.questionnaire = profile.questions;
-    this.profileForm = this.createProfileForm(this.questionnaire);
-    this.fillProfileForm(profile);
-    if (profile.status === ProfileStatus.EXPIRED) {
-      this.profileForm.disable();
-    } else {
-      this.profileForm.enable();
+  ngAfterViewInit(): void {
+    if (this.selectedProfile) {
+      this.fillProfileForm(this.profileFormat, this.selectedProfile!);
     }
   }
 
@@ -135,7 +126,7 @@ export class ProfileFormComponent implements OnInit {
   }
 
   private get fieldsHasError(): boolean {
-    return this.questionnaire.some((field, index) => {
+    return this.profileFormat.some((field, index) => {
       return (
         this.getControl(index).hasError('invalid_format') ||
         this.getControl(index).hasError('maxlength')
@@ -151,7 +142,7 @@ export class ProfileFormComponent implements OnInit {
     return this.profileForm.get(name.toString()) as AbstractControl;
   }
 
-  createProfileForm(questions: Question[]): FormGroup {
+  createProfileForm(): FormGroup {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const group: any = {};
 
@@ -166,69 +157,29 @@ export class ProfileFormComponent implements OnInit {
       this.nameValidator,
     ]);
 
-    questions.forEach((question, index) => {
-      if (question.type === FormControlType.SELECT_MULTIPLE) {
-        group[index] = this.getMultiSelectGroup(question);
-      } else {
-        const validators = this.getValidators(
-          question.type!,
-          question.validation
-        );
-        group[index] = new FormControl(question.default || '', validators);
-      }
-    });
     return new FormGroup(group);
-  }
-
-  getValidators(type: FormControlType, validation?: Validation): ValidatorFn[] {
-    const validators: ValidatorFn[] = [];
-    if (validation) {
-      if (validation.required) {
-        validators.push(this.profileValidators.textRequired());
-      }
-      if (validation.max) {
-        validators.push(Validators.maxLength(Number(validation.max)));
-      }
-      if (type === FormControlType.EMAIL_MULTIPLE) {
-        validators.push(this.profileValidators.emailStringFormat());
-      }
-      if (type === FormControlType.TEXT || type === FormControlType.TEXTAREA) {
-        validators.push(this.profileValidators.textFormat());
-      }
-    }
-    return validators;
-  }
-
-  getMultiSelectGroup(question: Question): FormGroup {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const group: any = {};
-    question.options?.forEach((option, index) => {
-      group[index] = false;
-    });
-    return this.fb.group(group, {
-      validators: question.validation?.required
-        ? [this.profileValidators.multiSelectRequired]
-        : [],
-    });
   }
 
   getFormGroup(name: string | number): FormGroup {
     return this.profileForm?.controls[name] as FormGroup;
   }
 
-  fillProfileForm(profile: Profile): void {
+  fillProfileForm(profileFormat: ProfileFormat[], profile: Profile): void {
     this.nameControl.setValue(profile.name);
-    profile.questions.forEach((question, index) => {
+    profileFormat.forEach((question, index) => {
+      const answer = profile.questions.find(
+        answers => answers.question === question.question
+      );
       if (question.type === FormControlType.SELECT_MULTIPLE) {
         question.options?.forEach((item, idx) => {
-          if ((profile.questions[index].answer as number[])?.includes(idx)) {
+          if ((answer?.answer as number[])?.includes(idx)) {
             this.getFormGroup(index).controls[idx].setValue(true);
           } else {
             this.getFormGroup(index).controls[idx].setValue(false);
           }
         });
       } else {
-        this.getControl(index).setValue(profile.questions[index].answer);
+        this.getControl(index).setValue(answer?.answer || '');
       }
     });
     this.nameControl.markAsTouched();
@@ -245,22 +196,12 @@ export class ProfileFormComponent implements OnInit {
     this.saveProfile.emit(response);
   }
 
-  public markSectionAsDirty(
-    optionIndex: number,
-    optionLength: number,
-    formControlName: string
-  ) {
-    if (optionIndex === optionLength - 1) {
-      this.getControl(formControlName).markAsDirty();
-    }
-  }
-
   onDiscardClick() {
     this.discard.emit();
   }
 
   private buildResponseFromForm(
-    initialQuestions: Question[],
+    initialQuestions: ProfileFormat[],
     profileForm: FormGroup,
     status: ProfileStatus,
     profile: Profile | null
@@ -278,9 +219,8 @@ export class ProfileFormComponent implements OnInit {
     const questions: Question[] = [];
 
     initialQuestions.forEach((initialQuestion, index) => {
-      const question: Question = {
-        question: initialQuestion.question,
-      };
+      const question: Question = {};
+      question.question = initialQuestion.question;
 
       if (initialQuestion.type === FormControlType.SELECT_MULTIPLE) {
         const answer: number[] = [];

@@ -42,11 +42,15 @@ describe('ErrorInterceptor', () => {
     interceptor = TestBed.inject(ErrorInterceptor);
   });
 
+  afterEach(() => {
+    notificationServiceMock.notify.calls.reset();
+  });
+
   it('should be created', () => {
     expect(interceptor).toBeTruthy();
   });
 
-  it('should notify about backend errors', done => {
+  it('should notify about backend errors with message if exist', done => {
     const next: HttpHandler = {
       handle: () => {
         return throwError(
@@ -66,6 +70,26 @@ describe('ErrorInterceptor', () => {
     );
   });
 
+  it('should notify about backend errors with default message', done => {
+    const next: HttpHandler = {
+      handle: () => {
+        return throwError(new HttpErrorResponse({ status: 500 }));
+      },
+    };
+
+    const requestMock = new HttpRequest('GET', '/test');
+
+    interceptor.intercept(requestMock, next).subscribe(
+      () => ({}),
+      () => {
+        expect(notificationServiceMock.notify).toHaveBeenCalledWith(
+          'Something went wrong. Check the Terminal for details.'
+        );
+        done();
+      }
+    );
+  });
+
   it('should notify about other errors', done => {
     const next: HttpHandler = {
       handle: () => {
@@ -79,7 +103,7 @@ describe('ErrorInterceptor', () => {
       () => ({}),
       () => {
         expect(notificationServiceMock.notify).toHaveBeenCalledWith(
-          'Back End is not responding. Please, try again later.'
+          'Testrun is not responding. Please try again in a moment.'
         );
         done();
       }
@@ -99,7 +123,7 @@ describe('ErrorInterceptor', () => {
       () => ({}),
       () => {
         expect(notificationServiceMock.notify).toHaveBeenCalledWith(
-          'Back End is not responding. Please, try again later.'
+          'Testrun is not responding. Please try again in a moment.'
         );
         done();
       }

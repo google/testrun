@@ -20,6 +20,7 @@ import { skip, take } from 'rxjs';
 import {
   selectHasConnectionSettings,
   selectHasDevices,
+  selectIsAllDevicesOutdated,
   selectIsOpenStartTestrun,
   selectRiskProfiles,
   selectSystemStatus,
@@ -63,6 +64,7 @@ describe('TestrunStore', () => {
         provideMockStore({
           selectors: [
             { selector: selectHasDevices, value: false },
+            { selector: selectIsAllDevicesOutdated, value: false },
             { selector: selectSystemStatus, value: null },
             { selector: selectHasConnectionSettings, value: true },
             { selector: selectIsOpenStartTestrun, value: false },
@@ -87,6 +89,7 @@ describe('TestrunStore', () => {
       testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
         expect(store).toEqual({
           hasDevices: false,
+          isAllDevicesOutdated: false,
           systemStatus: null,
           dataSource: [],
           stepsToResolveCount: 0,

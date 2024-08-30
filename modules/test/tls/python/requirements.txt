@@ -2,4 +2,4 @@ cryptography==38.0.0 # Do not upgrade until TLS module can be fixed to account f
 pyOpenSSL==23.0.0
 lxml==5.1.0 # Requirement of pyshark but if upgraded automatically above 5.1 will cause a python crash
 pyshark==0.6
-requests==2.32.0
+requests==2.32.3

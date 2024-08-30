@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { QuestionFormat } from './question';
 export interface Profile {
   name: string;
   risk?: string;
@@ -22,26 +24,10 @@ export interface Profile {
   created?: string;
 }
 
-export enum FormControlType {
-  SELECT = 'select',
-  TEXTAREA = 'text-long',
-  EMAIL_MULTIPLE = 'email-multiple',
-  SELECT_MULTIPLE = 'select-multiple',
-  TEXT = 'text',
-}
-
-export interface Validation {
-  required?: boolean;
-  max?: string;
-}
+export type ProfileFormat = QuestionFormat;
 
 export interface Question {
-  question: string;
-  type?: FormControlType;
-  description?: string;
-  options?: string[];
-  default?: string;
-  validation?: Validation;
+  question?: string;
   answer?: string | number[];
 }
 

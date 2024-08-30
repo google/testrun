@@ -31,6 +31,12 @@
         "recommendations": [
           "Install a DNS client that supports fetching DNS servers from DHCP options"
         ]
+      },
+      {
+        "name": "dns.mdns",
+        "test_description": "Does the device has MDNS (or any kind of IP multicast)",
+        "expected_behavior": "Device may send MDNS requests",
+        "required_result": "Informational"
       }
     ]
   }

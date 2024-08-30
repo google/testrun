@@ -22,7 +22,9 @@ limitations under the License.
     <div class="device-repository-content">
       <ng-container *ngFor="let device of vm.devices">
         <app-device-item
-          (itemClicked)="openDialog(vm.devices, vm.testModules, $event)"
+          (itemClicked)="
+            openDialog(vm.devices, vm.testModules, $event, $event, true)
+          "
           (startTestrunClicked)="
             openStartTestrun($event, vm.devices, vm.testModules)
           "

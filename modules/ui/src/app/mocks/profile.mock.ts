@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  FormControlType,
-  Profile,
-  Question,
-  ProfileStatus,
-} from '../model/profile';
+import { Profile, ProfileFormat, ProfileStatus } from '../model/profile';
+import { FormControlType } from '../model/question';
 
 export const PROFILE_MOCK: Profile = {
   name: 'Primary profile',
@@ -29,51 +25,22 @@ export const PROFILE_MOCK: Profile = {
     {
       question: 'What is the email of the device owner(s)?',
       answer: 'boddey@google.com, cmeredith@google.com',
-      type: FormControlType.EMAIL_MULTIPLE,
-      validation: {
-        required: true,
-        max: '30',
-      },
     },
     {
       question: 'What type of device do you need reviewed?',
-      answer: 'Type',
-      type: FormControlType.TEXTAREA,
-      validation: {
-        required: true,
-        max: '28',
-      },
-      description: 'This tells us about the device',
+      answer: 'IoT Sensor',
     },
     {
       question: 'Are any of the following statements true about your device?',
       answer: 'First',
-      type: FormControlType.SELECT,
-      options: ['First', 'Second'],
-      validation: {
-        required: true,
-      },
     },
     {
       question: 'What features does the device have?',
-      description:
-        'This tells us about the data your device will collectThis tells us about the data your device will collect',
-      type: FormControlType.SELECT_MULTIPLE,
       answer: [0, 1, 2],
-      options: ['Wi-fi', 'Bluetooth', 'ZigBee / Z-Wave / Thread / Matter'],
-      validation: {
-        required: true,
-      },
     },
     {
       question: 'Comments',
       answer: 'Yes',
-      type: FormControlType.TEXT,
-      description: 'Please enter any comments here',
-      validation: {
-        max: '28',
-        required: true,
-      },
     },
   ],
 };
@@ -90,7 +57,7 @@ export const PROFILE_MOCK_3: Profile = {
   questions: [],
 };
 
-export const PROFILE_FORM: Question[] = [
+export const PROFILE_FORM: ProfileFormat[] = [
   {
     question: 'Email',
     type: FormControlType.EMAIL_MULTIPLE,
@@ -192,51 +159,49 @@ export const COPY_PROFILE_MOCK: Profile = {
     {
       question: 'What is the email of the device owner(s)?',
       answer: 'boddey@google.com, cmeredith@google.com',
-      type: FormControlType.EMAIL_MULTIPLE,
-      validation: {
-        required: true,
-        max: '30',
-      },
     },
     {
       question: 'What type of device do you need reviewed?',
-      answer: 'Type',
-      type: FormControlType.TEXTAREA,
-      validation: {
-        required: true,
-        max: '28',
-      },
-      description: 'This tells us about the device',
+      answer: 'IoT Sensor',
     },
     {
       question: 'Are any of the following statements true about your device?',
       answer: 'First',
-      type: FormControlType.SELECT,
-      options: ['First', 'Second'],
-      validation: {
-        required: true,
-      },
     },
     {
       question: 'What features does the device have?',
-      description:
-        'This tells us about the data your device will collectThis tells us about the data your device will collect',
-      type: FormControlType.SELECT_MULTIPLE,
       answer: [0, 1, 2],
-      options: ['Wi-fi', 'Bluetooth', 'ZigBee / Z-Wave / Thread / Matter'],
-      validation: {
-        required: true,
-      },
     },
     {
       question: 'Comments',
       answer: 'Yes',
-      type: FormControlType.TEXT,
-      description: 'Please enter any comments here',
-      validation: {
-        max: '28',
-        required: true,
-      },
     },
   ],
 };
+
+export const OUTDATED_DRAFT_PROFILE_MOCK: Profile = {
+  name: 'Outdated profile',
+  status: ProfileStatus.DRAFT,
+  questions: [
+    {
+      question: 'Old question',
+      answer: 'qwerty',
+    },
+    {
+      question: 'What is the email of the device owner(s)?',
+      answer: 'boddey@google.com, cmeredith@google.com',
+    },
+    {
+      question: 'What type of device do you need reviewed?',
+      answer: 'IoT Sensor',
+    },
+    {
+      question: 'Another old question',
+      answer: 'qwerty',
+    },
+  ],
+};
+
+export const EXPIRED_PROFILE_MOCK: Profile = Object.assign({}, PROFILE_MOCK, {
+  status: ProfileStatus.EXPIRED,
+});

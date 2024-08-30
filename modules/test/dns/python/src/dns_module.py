@@ -13,12 +13,13 @@
 # limitations under the License.
 """DNS test module"""
 import subprocess
-from scapy.all import rdpcap, DNS, IP
+from scapy.all import rdpcap, DNS, IP, Ether
 from test_module import TestModule
 import os
+from collections import Counter
 
 LOG_NAME = 'test_dns'
-MODULE_REPORT_FILE_NAME='dns_report.html'
+MODULE_REPORT_FILE_NAME = 'dns_report.html'
 DNS_SERVER_CAPTURE_FILE = '/runtime/network/dns.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
@@ -41,9 +42,9 @@ class DNSModule(TestModule):
                      log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
-    self.dns_server_capture_file=dns_server_capture_file
-    self.startup_capture_file=startup_capture_file
-    self.monitor_capture_file=monitor_capture_file
+    self.dns_server_capture_file = dns_server_capture_file
+    self.startup_capture_file = startup_capture_file
+    self.monitor_capture_file = monitor_capture_file
     self._dns_server = '10.10.10.4'
     global LOGGER
     LOGGER = self._get_logger()
@@ -55,18 +56,17 @@ class DNSModule(TestModule):
     html_content = '<h1>DNS Module</h1>'
 
     # Set the summary variables
-    local_requests = sum(1 for row in dns_table_data
-                         if row['Destination'] ==
-                         self._dns_server and row['Type'] == 'Query')
-    external_requests = sum(1 for row in dns_table_data
-                            if row['Destination'] !=
-                            self._dns_server and row['Type'] == 'Query')
+    local_requests = sum(
+        1 for row in dns_table_data
+        if row['Destination'] == self._dns_server and row['Type'] == 'Query')
+    external_requests = sum(
+        1 for row in dns_table_data
+        if row['Destination'] != self._dns_server and row['Type'] == 'Query')
 
-    total_requests = sum(1 for row in dns_table_data
-                            if row['Type'] == 'Query')
+    total_requests = sum(1 for row in dns_table_data if row['Type'] == 'Query')
 
     total_responses = sum(1 for row in dns_table_data
-                            if row['Type'] == 'Response')
+                          if row['Type'] == 'Response')
 
     # Add summary table
     html_content += (f'''
@@ -99,18 +99,26 @@ class DNSModule(TestModule):
               <th>Destination</th>
               <th>Type</th>
               <th>URL</th>
+              <th>Count</th>
             </tr>
           </thead>
           <tbody>'''
 
-      for row in dns_table_data:
-        table_content += (f'''
-            <tr>
-              <td>{row['Source']}</td>
-              <td>{row['Destination']}</td>
-              <td>{row['Type']}</td>
-              <td>{row['Data']}</td>
-            </tr>''')
+      # Count unique combinations
+      counter = Counter(
+          (row['Source'], row['Destination'], row['Type'], row['Data'])
+          for row in dns_table_data)
+
+      # Generate the HTML table with the count column
+      for (src, dst, typ, dat), count in counter.items():
+        table_content += f'''
+              <tr>
+                <td>{src}</td>
+                <td>{dst}</td>
+                <td>{typ}</td>
+                <td>{dat}</td>
+                <td>{count}</td>
+              </tr>'''
 
       table_content += '''
             </tbody>
@@ -149,26 +157,28 @@ class DNSModule(TestModule):
     # Iterate through DNS packets
     for packet in packets:
       if DNS in packet and packet.haslayer(IP):
-        source_ip = packet[IP].src
-        destination_ip = packet[IP].dst
-        dns_layer = packet[DNS]
-         
-        # 'qr' field indicates query (0) or response (1)
-        dns_type = 'Query' if dns_layer.qr == 0 else 'Response'
 
-        # Check for the presence of DNS query name
-        if hasattr(dns_layer, 'qd') and dns_layer.qd is not None:
+        # Check if either source or destination MAC matches the device
+        if self._device_mac in (packet[Ether].src, packet[Ether].dst):
+          source_ip = packet[IP].src
+          destination_ip = packet[IP].dst
+          dns_layer = packet[DNS]
+          # 'qr' field indicates query (0) or response (1)
+          dns_type = 'Query' if dns_layer.qr == 0 else 'Response'
+
+          # Check for the presence of DNS query name
+          if hasattr(dns_layer, 'qd') and dns_layer.qd is not None:
             qname = dns_layer.qd.qname.decode() if dns_layer.qd.qname else 'N/A'
-        else:
+          else:
             qname = 'N/A'
 
-        dns_data.append({
-            'Timestamp': float(packet.time),  # Timestamp of the DNS packet
-            'Source': source_ip,
-            'Destination': destination_ip,
-            'Type': dns_type,
-            'Data': qname[:-1]
-        })
+          dns_data.append({
+              'Timestamp': float(packet.time),  # Timestamp of the DNS packet
+              'Source': source_ip,
+              'Destination': destination_ip,
+              'Type': dns_type,
+              'Data': qname[:-1]
+          })
 
     # Filter unique entries based on 'Timestamp'
     # DNS Server will duplicate messages caught by
@@ -273,10 +283,10 @@ class DNSModule(TestModule):
     LOGGER.debug('tcpdump command: ' + command)
 
     with subprocess.Popen(command,
-                               universal_newlines=True,
-                               shell=True,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE) as process:
+                          universal_newlines=True,
+                          shell=True,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE) as process:
       text = str(process.stdout.read()).rstrip()
 
       LOGGER.debug('tcpdump response: ' + text)

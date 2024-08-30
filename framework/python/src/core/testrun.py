@@ -12,13 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The overall control of the Test Run application.
-
+"""The overall control of the Testrun application.
 This file provides the integration between all of the
-Test Run components, such as net_orc, test_orc and test_ui.
-
-Run using the provided command scripts in the cmd folder.
-E.g sudo cmd/start
+Testrun components, such as net_orc, test_orc and test_ui.
 """
 import docker
 import json
@@ -27,10 +23,11 @@ import shutil
 import signal
 import sys
 import time
-from common import logger, util
+from common import logger, util, mqtt
 from common.device import Device
 from common.session import TestrunSession
 from common.testreport import TestReport
+from common.statuses import TestrunStatus
 from api.api import Api
 from net_orc.listener import NetworkEvent
 from net_orc import network_orchestrator as net_orc
@@ -38,13 +35,6 @@ from test_orc import test_orchestrator as test_orc
 
 from docker.errors import ImageNotFound, APIError
 from docker.types import Mount
-
-# Locate parent directory
-current_dir = os.path.dirname(os.path.realpath(__file__))
-
-# Locate the test-run root directory, 4 levels, src->python->framework->test-run
-root_dir = os.path.dirname(os.path.dirname(
-  os.path.dirname(os.path.dirname(current_dir))))
 
 LOGGER = logger.get_logger('test_run')
 
@@ -61,10 +51,14 @@ DEVICE_MANUFACTURER = 'manufacturer'
 DEVICE_MODEL = 'model'
 DEVICE_MAC_ADDR = 'mac_addr'
 DEVICE_TEST_MODULES = 'test_modules'
+DEVICE_TYPE_KEY = 'type'
+DEVICE_TECHNOLOGY_KEY = 'technology'
+DEVICE_TEST_PACK_KEY = 'test_pack'
+
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
 class Testrun:  # pylint: disable=too-few-public-methods
-  """Test Run controller.
+  """Testrun controller.
 
   Creates an instance of the network orchestrator, test
   orchestrator and user interface.
@@ -77,6 +71,15 @@ class Testrun:  # pylint: disable=too-few-public-methods
                single_intf=False,
                no_ui=False):
 
+    # Locate parent directory
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+
+    # Locate the test-run root directory, 4 levels,
+    # src->python->framework->test-run
+    self._root_dir = os.path.dirname(os.path.dirname(
+      os.path.dirname(os.path.dirname(current_dir))))
+
+    # Determine config file
     if config_file is None:
       self._config_file = self._get_config_abs(DEFAULT_CONFIG_FILE)
     else:
@@ -84,13 +87,16 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     self._net_only = net_only
     self._single_intf = single_intf
-    self._no_ui = no_ui
+
+    # Network only option only works if UI is also
+    # disbled so need to set no_ui if net_only is selected
+    self._no_ui = no_ui or net_only
 
     # Catch any exit signals
     self._register_exits()
 
     # Create session
-    self._session = TestrunSession(root_dir=root_dir)
+    self._session = TestrunSession(root_dir=self._root_dir)
 
     # Register runtime parameters
     if single_intf:
@@ -112,6 +118,12 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # Load test modules
     self._test_orc.start()
 
+    # Start websockets server
+    self.start_ws()
+
+    # Init MQTT client
+    self._mqtt_client = mqtt.MQTT()
+
     if self._no_ui:
 
       # Check Testrun is able to start
@@ -125,7 +137,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     else:
 
       # Start UI container
-      self.start_ui()
+      self.start_ui(self._single_intf)
 
       self._api = Api(self)
       self._api.start()
@@ -133,6 +145,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
       # Hold until API ends
       while True:
         time.sleep(1)
+
+  def get_root_dir(self):
+    return self._root_dir
 
   def get_version(self):
     return self.get_session().get_version()
@@ -160,7 +175,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
       # Check if device config file exists before loading
       if not os.path.exists(device_config_file_path):
         LOGGER.error('Device configuration file missing ' +
-                     f'from device {device_folder}')
+                     f'for device {device_folder}')
         continue
 
       # Open device config file
@@ -172,6 +187,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
         device_model = device_config_json.get(DEVICE_MODEL)
         mac_addr = device_config_json.get(DEVICE_MAC_ADDR)
         test_modules = device_config_json.get(DEVICE_TEST_MODULES)
+
+        # Load max device reports
         max_device_reports = None
         if 'max_device_reports' in device_config_json:
           max_device_reports = device_config_json.get(MAX_DEVICE_REPORTS_KEY)
@@ -185,6 +202,21 @@ class Testrun:  # pylint: disable=too-few-public-methods
                         test_modules=test_modules,
                         max_device_reports=max_device_reports,
                         device_folder=device_folder)
+
+        # Load in the additional fields
+        if DEVICE_TYPE_KEY in device_config_json:
+          device.type = device_config_json.get(DEVICE_TYPE_KEY)
+
+        if DEVICE_TECHNOLOGY_KEY in device_config_json:
+          device.technology = device_config_json.get(DEVICE_TECHNOLOGY_KEY)
+
+        if DEVICE_TEST_PACK_KEY in device_config_json:
+          device.test_pack = device_config_json.get(DEVICE_TEST_PACK_KEY)
+
+        if None in [device.type, device.technology, device.test_pack]:
+          LOGGER.warning(
+            'Device is outdated and requires further configuration')
+          device.status = 'Invalid'
 
         self._load_test_reports(device)
 
@@ -201,7 +233,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     device.clear_reports()
 
     # Locate reports folder
-    reports_folder = os.path.join(root_dir,
+    reports_folder = os.path.join(self._root_dir,
                                   LOCAL_DEVICES_DIR,
                                   device.device_folder, 'reports')
 
@@ -219,7 +251,14 @@ class Testrun:  # pylint: disable=too-few-public-methods
         'test',
         device.mac_addr.replace(':',''),
         'report.json')
-        
+
+      if not os.path.isfile(report_json_file_path):
+        # Revert to pre 1.3 file path
+        report_json_file_path = os.path.join(
+          reports_folder,
+          report_folder,
+          'report.json')
+
       if not os.path.isfile(report_json_file_path):
         # Revert to pre 1.3 file path
         report_json_file_path = os.path.join(
@@ -244,7 +283,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
                  f'at {timestamp}')
 
     # Locate reports folder
-    reports_folder = os.path.join(root_dir,
+    reports_folder = os.path.join(self._root_dir,
                                   LOCAL_DEVICES_DIR,
                                   device.device_folder, 'reports')
 
@@ -264,7 +303,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
   def create_device(self, device: Device):
 
     # Define the device folder location
-    device_folder_path = os.path.join(root_dir,
+    device_folder_path = os.path.join(self._root_dir,
                                       LOCAL_DEVICES_DIR,
                                       device.device_folder)
 
@@ -298,7 +337,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
       device.test_modules = {}
 
     # Obtain the config file path
-    config_file_path = os.path.join(root_dir,
+    config_file_path = os.path.join(self._root_dir,
                                       LOCAL_DEVICES_DIR,
                                       device.device_folder,
                                       DEVICE_CONFIG)
@@ -314,7 +353,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
   def delete_device(self, device: Device):
 
     # Obtain the config file path
-    device_folder = os.path.join(root_dir,
+    device_folder = os.path.join(self._root_dir,
                                   LOCAL_DEVICES_DIR,
                                   device.device_folder)
 
@@ -360,7 +399,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     self._stop_tests()
     self._stop_network(kill=True)
-    self.get_session().set_status('Cancelled')
+    self.get_session().set_status(TestrunStatus.CANCELLED)
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
@@ -372,6 +411,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     LOGGER.info('Shutting down Testrun')
     self.stop()
     self._stop_ui()
+    self._stop_ws()
 
   def _exit_handler(self, signum, arg):  # pylint: disable=unused-argument
     LOGGER.debug('Exit signal received: ' + str(signum))
@@ -383,7 +423,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
   def _get_config_abs(self, config_file=None):
     if config_file is None:
       # If not defined, use relative pathing to local file
-      config_file = os.path.join(root_dir, self._config_file)
+      config_file = os.path.join(self._root_dir, self._config_file)
 
     # Expand the config file to absolute pathing
     return os.path.abspath(config_file)
@@ -408,6 +448,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
   def _stop_tests(self):
     self._test_orc.stop()
+
+  def get_mqtt_client(self):
+    return self._mqtt_client
 
   def get_device(self, mac_addr):
     """Returns a loaded device object from the device mac address."""
@@ -438,12 +481,12 @@ class Testrun:  # pylint: disable=too-few-public-methods
   def _device_stable(self, mac_addr):
 
     # Do not continue testing if Testrun has cancelled during monitor phase
-    if self.get_session().get_status() == 'Cancelled':
+    if self.get_session().get_status() == TestrunStatus.CANCELLED:
       self._stop_network()
       return
 
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
-    self._set_status('In Progress')
+    self._set_status(TestrunStatus.IN_PROGRESS)
     result = self._test_orc.run_test_modules()
 
     if result is not None:
@@ -456,20 +499,24 @@ class Testrun:  # pylint: disable=too-few-public-methods
   def _set_status(self, status):
     self.get_session().set_status(status)
 
-  def start_ui(self):
+  def start_ui(self, single_intf):
 
     self._stop_ui()
 
     LOGGER.info('Starting UI')
 
-    client = docker.from_env()
+    # Passing "single interface" mode to the FE
+    envs = os.environ
+    envs['TESTRUN_SINGLE_INTF'] = str(int(single_intf))
+
+    client = docker.from_env(environment=envs)
 
     certs_folder = os.path.join(root_dir,
                                 LOCAL_CERTS_DIR)
 
     try:
       client.containers.run(
-            image='test-run/ui',
+            image='testrun/ui',
             auto_remove=True,
             name='tr-ui',
             hostname='testrun.io',
@@ -501,4 +548,40 @@ class Testrun:  # pylint: disable=too-few-public-methods
       if container is not None:
         container.kill()
     except docker.errors.NotFound:
-      return
+      pass
+
+
+  def start_ws(self):
+
+    self._stop_ws()
+
+    LOGGER.info('Starting WS server')
+
+    client = docker.from_env()
+
+    try:
+      client.containers.run(
+            image='testrun/ws',
+            auto_remove=True,
+            name='tr-ws',
+            detach=True,
+            ports={
+              '9001': 9001,
+              '1883': 1883
+            }
+      )
+    except ImageNotFound as ie:
+      LOGGER.error('An error occured whilst starting the websockets server. ' +
+                   'Please investigate and try again.')
+      LOGGER.error(ie)
+      sys.exit(1)
+
+  def _stop_ws(self):
+    LOGGER.info('Stopping websockets server')
+    client = docker.from_env()
+    try:
+      container = client.containers.get('tr-ws')
+      if container is not None:
+        container.kill()
+    except docker.errors.NotFound:
+      pass

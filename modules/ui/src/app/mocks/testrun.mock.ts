@@ -19,6 +19,7 @@ import {
   TestrunStatus,
   TestsData,
 } from '../model/testrun-status';
+import { DeviceStatus } from '../model/device';
 
 export const TEST_DATA_RESULT: IResult[] = [
   {
@@ -71,6 +72,7 @@ const PROGRESS_DATA_RESPONSE = (
     status,
     mac_addr: '01:02:03:04:05:06',
     device: {
+      status: DeviceStatus.VALID,
       manufacturer: 'Delta',
       model: '03-DIN-CPU',
       mac_addr: '01:02:03:04:05:06',

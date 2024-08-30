@@ -15,15 +15,18 @@
  */
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of, skip, take } from 'rxjs';
-import { AppStore, CONSENT_SHOWN_KEY } from './app.store';
+import { AppStore, CALLOUT_STATE_KEY, CONSENT_SHOWN_KEY } from './app.store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from './store/state';
 import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
+  selectInternetConnection,
+  selectIsAllDevicesOutdated,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
   selectReports,
@@ -38,12 +41,15 @@ import {
   fetchRiskProfiles,
   fetchSystemStatus,
   setDevices,
+  updateAdapters,
   setTestModules,
 } from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from './services/notification.service';
 import { FocusManagerService } from './services/focus-manager.service';
+import { TestRunMqttService } from './services/test-run-mqtt.service';
+import { MOCK_ADAPTERS } from './mocks/settings.mock';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -53,6 +59,12 @@ const mock = (() => {
     },
     setItem: (key: string, value: string) => {
       store[key] = value + '';
+    },
+    getObject: (key: string) => {
+      return store[key] || null;
+    },
+    setObject: (key: string, value: object) => {
+      store[key] = JSON.stringify(value);
     },
     clear: () => {
       store = {};
@@ -69,6 +81,7 @@ describe('AppStore', () => {
   let mockService: SpyObj<TestRunService>;
   let mockNotificationService: SpyObj<NotificationService>;
   let mockFocusManagerService: SpyObj<FocusManagerService>;
+  let mockMqttService: SpyObj<TestRunMqttService>;
 
   beforeEach(() => {
     mockService = jasmine.createSpyObj('mockService', [
@@ -81,6 +94,7 @@ describe('AppStore', () => {
     mockFocusManagerService = jasmine.createSpyObj([
       'focusFirstElementInContainer',
     ]);
+    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -90,11 +104,14 @@ describe('AppStore', () => {
             { selector: selectStatus, value: null },
             { selector: selectIsOpenWaitSnackBar, value: false },
             { selector: selectTestModules, value: MOCK_TEST_MODULES },
+            { selector: selectInternetConnection, value: false },
+            { selector: selectIsAllDevicesOutdated, value: false },
           ],
         }),
         { provide: TestRunService, useValue: mockService },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: FocusManagerService, useValue: mockFocusManagerService },
+        { provide: TestRunMqttService, useValue: mockMqttService },
       ],
       imports: [BrowserAnimationsModule],
     });
@@ -103,6 +120,7 @@ describe('AppStore', () => {
     appStore = TestBed.inject(AppStore);
 
     store.overrideSelector(selectHasDevices, true);
+    store.overrideSelector(selectHasExpiredDevices, true);
     store.overrideSelector(selectHasRiskProfiles, false);
     store.overrideSelector(selectReports, []);
     store.overrideSelector(selectHasConnectionSettings, true);
@@ -148,6 +166,8 @@ describe('AppStore', () => {
         expect(store).toEqual({
           consentShown: false,
           hasDevices: true,
+          hasExpiredDevices: true,
+          isAllDevicesOutdated: false,
           hasRiskProfiles: false,
           reports: [],
           isStatusLoaded: false,
@@ -156,6 +176,8 @@ describe('AppStore', () => {
           isMenuOpen: true,
           interfaces: {},
           settingMissedError: null,
+          calloutState: new Map(),
+          hasInternetConnection: false,
         });
         done();
       });
@@ -271,6 +293,47 @@ describe('AppStore', () => {
             ],
           })
         );
+      });
+    });
+
+    describe('getNetworkAdapters', () => {
+      const adapters = MOCK_ADAPTERS;
+
+      beforeEach(() => {
+        mockMqttService.getNetworkAdapters.and.returnValue(of(adapters));
+      });
+
+      it('should dispatch action setDevices', () => {
+        appStore.getNetworkAdapters();
+
+        expect(store.dispatch).toHaveBeenCalledWith(
+          updateAdapters({ adapters })
+        );
+      });
+
+      it('should notify about new adapters', () => {
+        appStore.getNetworkAdapters();
+
+        expect(mockNotificationService.notify).toHaveBeenCalledWith(
+          'New network adapter(s) mockNewInternetKey has been detected. You can switch to using it in the System settings menu'
+        );
+      });
+    });
+
+    describe('setCloseCallout', () => {
+      it('should update store', done => {
+        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
+          expect(store.calloutState.get('test')).toEqual(true);
+          done();
+        });
+
+        appStore.setCloseCallout('test');
+      });
+
+      it('should update storage', () => {
+        appStore.setCloseCallout('test');
+
+        expect(mock.getObject(CALLOUT_STATE_KEY)).toBeTruthy();
       });
     });
   });

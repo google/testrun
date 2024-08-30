@@ -54,8 +54,11 @@ import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
+  selectInternetConnection,
+  selectIsAllDevicesOutdated,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectMenuOpened,
@@ -69,6 +72,10 @@ import { of } from 'rxjs';
 import { WINDOW } from './providers/window.provider';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { HISTORY } from './mocks/reports.mock';
+import { TestRunMqttService } from './services/test-run-mqtt.service';
+import { MOCK_ADAPTERS } from './mocks/settings.mock';
+import { WifiComponent } from './components/wifi/wifi.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 const windowMock = {
   location: {
@@ -86,6 +93,7 @@ describe('AppComponent', () => {
   let focusNavigation = true;
   let mockFocusManagerService: SpyObj<FocusManagerService>;
   let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
+  let mockMqttService: SpyObj<TestRunMqttService>;
 
   const enterKeyEvent = new KeyboardEvent('keydown', {
     key: 'Enter',
@@ -119,6 +127,7 @@ describe('AppComponent', () => {
       'focusFirstElementInContainer',
     ]);
     mockLiveAnnouncer = jasmine.createSpyObj('mockLiveAnnouncer', ['announce']);
+    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters']);
 
     TestBed.configureTestingModule({
       imports: [
@@ -134,10 +143,13 @@ describe('AppComponent', () => {
         CalloutComponent,
         MatIconTestingModule,
         CertificatesComponent,
+        WifiComponent,
+        MatTooltipModule,
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
         { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
+        { provide: TestRunMqttService, useValue: mockMqttService },
         {
           provide: State,
           useValue: {
@@ -154,9 +166,12 @@ describe('AppComponent', () => {
           selectors: [
             { selector: selectInterfaces, value: {} },
             { selector: selectHasConnectionSettings, value: true },
+            { selector: selectInternetConnection, value: true },
             { selector: selectError, value: null },
             { selector: selectMenuOpened, value: false },
             { selector: selectHasDevices, value: false },
+            { selector: selectIsAllDevicesOutdated, value: false },
+            { selector: selectHasExpiredDevices, value: false },
             { selector: selectHasRiskProfiles, value: false },
             { selector: selectStatus, value: null },
             { selector: selectSystemStatus, value: null },
@@ -177,6 +192,7 @@ describe('AppComponent', () => {
       ],
     });
 
+    mockMqttService.getNetworkAdapters.and.returnValue(of(MOCK_ADAPTERS));
     store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
@@ -433,6 +449,13 @@ describe('AppComponent', () => {
     expect(version).toBeTruthy();
   });
 
+  it('should internet icon', () => {
+    fixture.detectChanges();
+    const internet = compiled.querySelector('app-wifi');
+
+    expect(internet).toBeTruthy();
+  });
+
   describe('Callout component visibility', () => {
     describe('with no connection settings', () => {
       beforeEach(() => {
@@ -514,12 +537,44 @@ describe('AppComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have callout component with "Congratulations" text', () => {
+      it('should have callout component with "The device is now being tested" text', () => {
         const callout = compiled.querySelector('app-callout');
         const calloutContent = callout?.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('Congratulations');
+        expect(calloutContent).toContain('The device is now being tested');
+      });
+
+      it('should have callout component with "Risk Assessment" link', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutLinkEl = compiled.querySelector(
+          '.message-link'
+        ) as HTMLAnchorElement;
+        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutLinkContent).toContain('Risk Assessment');
+      });
+    });
+
+    describe('with systemStatus data IN Progress and without riskProfiles', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasConnectionSettings, true);
+        store.overrideSelector(selectHasDevices, true);
+        store.overrideSelector(selectHasRiskProfiles, false);
+        store.overrideSelector(
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
+        );
+        fixture.detectChanges();
+      });
+
+      it('should have callout component with "The device is now being tested" text', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutContent = callout?.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutContent).toContain('The device is now being tested');
       });
 
       it('should have callout component with "Risk Assessment" link', () => {
@@ -700,7 +755,7 @@ describe('AppComponent', () => {
           const calloutContent = callout?.innerHTML.trim();
 
           expect(callout).toBeTruthy();
-          expect(calloutContent).toContain('No ports are detected.');
+          expect(calloutContent).toContain('No ports detected.');
         });
       });
 
@@ -715,6 +770,31 @@ describe('AppComponent', () => {
 
           expect(callout).toBeNull();
         });
+      });
+    });
+
+    describe('with expired devices', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasExpiredDevices, true);
+        fixture.detectChanges();
+      });
+
+      it('should have callout component', () => {
+        const callouts = compiled.querySelectorAll('app-callout');
+        let hasExpiredDeviceCallout = false;
+        callouts.forEach(callout => {
+          if (
+            callout?.innerHTML
+              .trim()
+              .includes(
+                'Further information is required in your device configurations.'
+              )
+          ) {
+            hasExpiredDeviceCallout = true;
+          }
+        });
+
+        expect(hasExpiredDeviceCallout).toBeTrue();
       });
     });
   });
@@ -785,7 +865,5 @@ class FakeShutdownAppComponent {
 })
 class FakeVersionComponent {
   @Input() consentShown!: boolean;
-  @Input() hasRiskProfiles!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
-  @Output() navigateToRiskAssessmentEvent = new EventEmitter<void>();
 }

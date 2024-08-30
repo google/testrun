@@ -21,7 +21,9 @@ import {
   setDevices,
   setHasConnectionSettings,
   setHasDevices,
+  setHasExpiredDevices,
   setHasRiskProfiles,
+  setIsAllDevicesOutdated,
   setIsOpenAddDevice,
   setIsOpenStartTestrun,
   setIsOpenWaitSnackBar,
@@ -31,13 +33,16 @@ import {
   setTestModules,
   setTestrunStatus,
   toggleMenu,
+  updateAdapters,
   updateError,
   updateFocusNavigation,
+  updateInternetConnection,
 } from './actions';
 import { device, MOCK_TEST_MODULES } from '../mocks/device.mock';
 import { MOCK_PROGRESS_DATA_CANCELLING } from '../mocks/testrun.mock';
 import { PROFILE_MOCK } from '../mocks/profile.mock';
 import { HISTORY } from '../mocks/reports.mock';
+import { MOCK_ADAPTERS } from '../mocks/settings.mock';
 
 describe('Reducer', () => {
   describe('unknown action', () => {
@@ -156,6 +161,30 @@ describe('Reducer', () => {
       const action = setHasDevices({ hasDevices: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ hasDevices: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setHasExpiredDevices action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setHasExpiredDevices({ hasExpiredDevices: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ hasExpiredDevices: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setIsAllDevicesOutdated action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setIsAllDevicesOutdated({ isAllDevicesOutdated: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ isAllDevicesOutdated: true } };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);
@@ -290,6 +319,35 @@ describe('Reducer', () => {
         ...initialState,
         ...{ testModules: MOCK_TEST_MODULES },
       };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('updateAdapters action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = updateAdapters({
+        adapters: MOCK_ADAPTERS,
+      });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = {
+        ...initialState,
+        ...{ adapters: MOCK_ADAPTERS },
+      };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('updateInternetConnection action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = updateInternetConnection({ internetConnection: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ internetConnection: true } };
 
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);

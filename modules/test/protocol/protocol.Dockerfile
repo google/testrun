@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/protocol-test
-FROM test-run/base-test:latest
+# Image name: testrun/protocol-test
+FROM testrun/base-test:latest
 
 # Set DEBIAN_FRONTEND to noninteractive mode
 ENV DEBIAN_FRONTEND=noninteractive
