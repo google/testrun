@@ -42,7 +42,6 @@ DEVICE_TECH_KEY = "technology"
 DEVICE_ADDITIONAL_INFO_KEY = "additional_info"
 
 DEVICES_PATH = "local/devices"
-DEFAULT_DEVICE_INTF = "enx123456789123"
 
 RESOURCES_PATH = "resources"
 DEVICE_FOLDER_PATH = "devices"
@@ -288,7 +287,7 @@ class Api:
 
     # Check if config has been updated (device interface not default)
     if (self._testrun.get_session().get_device_interface() ==
-        DEFAULT_DEVICE_INTF):
+        ""):
       response.status_code = status.HTTP_400_BAD_REQUEST
       return self._generate_msg(
           False, "Testrun configuration has not yet " + "been completed.")
