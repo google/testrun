@@ -36,6 +36,11 @@ DEVICE_MAC_ADDR_KEY = "mac_addr"
 DEVICE_MANUFACTURER_KEY = "manufacturer"
 DEVICE_MODEL_KEY = "model"
 DEVICE_TEST_MODULES_KEY = "test_modules"
+DEVICE_TEST_PACK_KEY = "test_pack"
+DEVICE_TYPE_KEY = "type"
+DEVICE_TECH_KEY = "technology"
+DEVICE_ADDITIONAL_INFO_KEY = "additional_info"
+
 DEVICES_PATH = "local/devices"
 DEFAULT_DEVICE_INTF = "enx123456789123"
 
@@ -566,6 +571,11 @@ class Api:
         device.mac_addr = device_json.get(DEVICE_MAC_ADDR_KEY).lower()
         device.manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
         device.model = device_json.get(DEVICE_MODEL_KEY)
+        device.test_pack = device_json.get(DEVICE_TEST_PACK_KEY)
+        device.type = device_json.get(DEVICE_TYPE_KEY)
+        device.technology = device_json.get(DEVICE_TECH_KEY)
+        device.additional_info = device_json.get(DEVICE_ADDITIONAL_INFO_KEY)
+
         device.device_folder = device.manufacturer + " " + device.model
         device.test_modules = device_json.get(DEVICE_TEST_MODULES_KEY)
 
@@ -612,7 +622,7 @@ class Api:
       if device is None:
         response.status_code = status.HTTP_404_NOT_FOUND
         return self._generate_msg(
-            False, "A device with that MAC " + "address could not be found")
+            False, "A device with that MAC address could not be found")
 
       if (self._session.get_target_device() == device
           and self._session.get_status()
@@ -622,7 +632,7 @@ class Api:
                   ]):
         response.status_code = 403
         return self._generate_msg(
-            False, "Cannot edit this device whilst " + "it is being tested")
+            False, "Cannot edit this device whilst it is being tested")
 
       # Check if a device exists with the new MAC address
       check_new_device = self._session.get_device(
@@ -632,15 +642,21 @@ class Api:
                                            != check_new_device.mac_addr):
         response.status_code = status.HTTP_409_CONFLICT
         return self._generate_msg(
-            False, "A device with that MAC address " + "already exists")
+            False, "A device with that MAC address already exists")
 
       # Update the device
       device.mac_addr = device_json.get(DEVICE_MAC_ADDR_KEY).lower()
       device.manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
       device.model = device_json.get(DEVICE_MODEL_KEY)
+      device.type = device_json.get(DEVICE_TYPE_KEY)
+      device.technology = device_json.get(DEVICE_TECH_KEY)
+      device.additional_info = device_json.get(DEVICE_ADDITIONAL_INFO_KEY)
       device.test_modules = device_json.get(DEVICE_TEST_MODULES_KEY)
 
-      self._testrun.save_device(device, device_json)
+      # Update device status to valid now that configuration is complete
+      device.status = "Valid"
+
+      self._testrun.save_device(device)
       response.status_code = status.HTTP_200_OK
 
       return device.to_config_json()
@@ -752,22 +768,33 @@ class Api:
   def _validate_device_json(self, json_obj):
 
     # Check all required properties are present
-    if not (DEVICE_MAC_ADDR_KEY in json_obj and DEVICE_MANUFACTURER_KEY
-            in json_obj and DEVICE_MODEL_KEY in json_obj):
-      return False
+    for string in [
+      DEVICE_MAC_ADDR_KEY,
+      DEVICE_MANUFACTURER_KEY,
+      DEVICE_MODEL_KEY,
+      DEVICE_TYPE_KEY,
+      DEVICE_TECH_KEY,
+      DEVICE_ADDITIONAL_INFO_KEY
+    ]:
+      if string not in json_obj:
+        LOGGER.error(f"Missing required key {string} in device configuration")
+        return False
 
     # Check length of strings
     if len(json_obj.get(DEVICE_MANUFACTURER_KEY)) > 28 or len(
         json_obj.get(DEVICE_MODEL_KEY)) > 28:
+      LOGGER.error("Device manufacturer or model are longer than 28 characters")
       return False
 
     disallowed_chars = ["/", "\\", "\'", "\"", ";"]
     for char in json_obj.get(DEVICE_MANUFACTURER_KEY):
       if char in disallowed_chars:
+        LOGGER.error("Disallowed character in device manufacturer")
         return False
 
     for char in json_obj.get(DEVICE_MODEL_KEY):
       if char in disallowed_chars:
+        LOGGER.error("Disallowed character in device model")
         return False
 
     return True
