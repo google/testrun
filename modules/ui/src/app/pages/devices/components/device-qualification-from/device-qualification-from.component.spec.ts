@@ -162,6 +162,7 @@ describe('DeviceQualificationFromComponent', () => {
 
   it('should close dialog on "cancel" click', () => {
     fixture.detectChanges();
+    component.manufacturer.setValue('test');
     (
       component.deviceQualificationForm.get('steps') as FormArray
     ).controls.forEach(control => control.markAsDirty());
@@ -178,7 +179,7 @@ describe('DeviceQualificationFromComponent', () => {
       index: 0,
       device: {
         status: DeviceStatus.VALID,
-        manufacturer: '',
+        manufacturer: 'test',
         model: '',
         mac_addr: '',
         test_pack: 'Device qualification',
@@ -186,7 +187,7 @@ describe('DeviceQualificationFromComponent', () => {
         technology: '',
         test_modules: {
           udmi: {
-            enabled: false,
+            enabled: true,
           },
           connection: {
             enabled: true,
@@ -228,12 +229,19 @@ describe('DeviceQualificationFromComponent', () => {
 
     it('should have error when no modules selected', () => {
       component.test_modules.setValue([false, false]);
+      component.test_modules.markAsTouched();
       fixture.detectChanges();
-
-      const modules = compiled.querySelectorAll(
+      const modules = compiled.querySelector(
+        '.device-qualification-form-test-modules-container-error'
+      );
+      const error = compiled.querySelector(
         '.device-qualification-form-test-modules-error'
       );
+
       expect(modules).toBeTruthy();
+      expect(error?.innerHTML.trim()).toEqual(
+        'At least one test has to be selected to save a Device.'
+      );
     });
   });
 
@@ -557,6 +565,13 @@ describe('DeviceQualificationFromComponent', () => {
         it('should have device item', () => {
           const item = compiled.querySelector('app-device-item');
           expect(item).toBeTruthy();
+        });
+
+        it('should have instructions', () => {
+          const instructions = compiled.querySelector(
+            '.device-qualification-form-instructions'
+          );
+          expect(instructions).toBeTruthy();
         });
 
         it('should save device', () => {
