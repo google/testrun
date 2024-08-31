@@ -54,6 +54,14 @@ limitations under the License.
     class="button-edit"
     type="button">
     <div [attr.aria-label]="device.manufacturer" class="item-manufacturer">
+      <app-qualification-icon
+        *ngIf="device.test_pack === TestingType.Qualification"
+        matTooltip="This device will be tested for Qualification."
+        aria-label="This device will be tested for Qualification."></app-qualification-icon>
+      <app-pilot-icon
+        *ngIf="device.test_pack === TestingType.Pilot"
+        matTooltip="This device will be tested for the Pilot program."
+        aria-label="This device will be tested for the Pilot program."></app-pilot-icon>
       <p class="item-manufacturer-text">{{ device.manufacturer }}</p>
       <mat-icon
         class="item-manufacturer-icon"
