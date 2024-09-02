@@ -313,11 +313,11 @@ export class DeviceQualificationFromComponent
       step.questions.forEach((question, index) => {
         const answer = device.additional_info?.find(
           answers => answers.question === question.question
-        );
-        if (answer !== undefined) {
+        )?.answer;
+        if (answer !== undefined && answer !== null && answer !== '') {
           if (question.type === FormControlType.SELECT_MULTIPLE) {
             question.options?.forEach((item, idx) => {
-              if ((answer?.answer as number[])?.includes(idx)) {
+              if ((answer as number[])?.includes(idx)) {
                 (
                   this.getStep(step.step).get(index.toString()) as FormGroup
                 ).controls[idx].setValue(true);
@@ -330,7 +330,7 @@ export class DeviceQualificationFromComponent
           } else {
             (
               this.getStep(step.step).get(index.toString()) as AbstractControl
-            ).setValue(answer?.answer || '');
+            ).setValue(answer || '');
           }
         } else {
           (
