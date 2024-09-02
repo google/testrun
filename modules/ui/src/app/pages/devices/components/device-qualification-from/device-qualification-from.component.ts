@@ -257,6 +257,10 @@ export class DeviceQualificationFromComponent
     });
   }
 
+  delete(): void {
+    this.dialogRef.close({ action: FormAction.Delete } as FormResponse);
+  }
+
   closeForm(): void {
     const device1 = this.data.initialDevice;
     const device2 = this.createDeviceFromForm();
