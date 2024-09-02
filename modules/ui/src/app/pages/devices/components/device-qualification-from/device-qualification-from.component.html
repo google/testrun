@@ -288,6 +288,14 @@ limitations under the License.
       </section>
       <div class="device-qualification-form-actions">
         <button
+          *ngIf="!data.isCreate"
+          (click)="delete()"
+          class="delete-button"
+          mat-flat-button
+          type="button">
+          Delete
+        </button>
+        <button
           mat-button
           color="primary"
           class="close-button"

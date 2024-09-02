@@ -57,11 +57,6 @@ $form-height: 993px;
   white-space: nowrap;
 }
 
-.delete-button {
-  color: $primary;
-  margin-right: auto;
-}
-
 .hidden {
   display: none;
 }
@@ -206,8 +201,19 @@ $form-height: 993px;
   }
 }
 
+.delete-button {
+  color: $primary;
+  float: left;
+}
+
 .device-qualification-form-actions {
+  width: $device-item-width;
   text-align: center;
+  padding: 0 24px;
+  justify-self: center;
+  &:has(.delete-button) {
+    text-align: right;
+  }
   .close-button {
     padding: 0 16px;
   }
