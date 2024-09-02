@@ -136,6 +136,7 @@ describe('ReportsStore', () => {
             'duration',
             'deviceInfo',
             'deviceFirmware',
+            'program',
             'status',
             'report',
           ],

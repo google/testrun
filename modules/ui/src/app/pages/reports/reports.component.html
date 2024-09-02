@@ -112,6 +112,20 @@ limitations under the License.
             <td *matCellDef="let data" mat-cell>{{ data.deviceFirmware }}</td>
           </ng-container>
 
+          <!-- Program Column -->
+          <ng-container matColumnDef="program">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header
+              sortActionDescription="Sort by program type">
+              Program
+            </th>
+            <td *matCellDef="let data" mat-cell>
+              {{ data.program }}
+            </td>
+          </ng-container>
+
           <!-- Result Column -->
           <ng-container matColumnDef="status">
             <th
