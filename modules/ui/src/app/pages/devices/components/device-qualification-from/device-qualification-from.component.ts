@@ -343,7 +343,11 @@ export class DeviceQualificationFromComponent
     this.manufacturer.setValue(device.manufacturer);
     this.mac_addr.setValue(device.mac_addr);
 
-    if (device.test_pack) {
+    if (
+      device.test_pack &&
+      (device.test_pack === TestingType.Qualification ||
+        device.test_pack === TestingType.Pilot)
+    ) {
       this.test_pack.setValue(device.test_pack);
     } else {
       this.test_pack.setValue(TestingType.Qualification);
