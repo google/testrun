@@ -62,11 +62,11 @@ export class StepperComponent extends CdkStepper {
 
   getStepLabel(isActive: boolean) {
     return isActive
-      ? `Step #${this.selectedIndex + 1} of ${this.steps.length}`
+      ? `Step #${this.selectedIndex + 1} out of ${this.steps.length}`
       : '';
   }
 
   getNavigationLabel(index: number) {
-    return `Go to step #${index} of ${this.title}`;
+    return `Go to step #${index} out of ${this.title}`;
   }
 }

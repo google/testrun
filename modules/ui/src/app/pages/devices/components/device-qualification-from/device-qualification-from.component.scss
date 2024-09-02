@@ -17,7 +17,6 @@
 @import 'src/theming/colors';
 @import 'src/theming/variables';
 
-$form-max-width: 732px;
 $form-min-width: 732px;
 $form-height: 993px;
 
@@ -76,7 +75,7 @@ $form-height: 993px;
     font-style: normal;
     font-weight: 400;
     line-height: 40px;
-    color: $dark-grey;
+    color: $grey-800;
     text-align: center;
     padding: 38px 0;
     background-image: url(/assets/icons/create_device_header.svg);
@@ -124,7 +123,7 @@ $form-height: 993px;
 .device-qualification-form-journey-button-label {
   font-family: $font-secondary;
   font-style: normal;
-  font-weight: bold;
+  font-weight: 500;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
@@ -138,18 +137,22 @@ $form-height: 993px;
 .device-qualification-form-step-title {
   margin: 0;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 500;
   font-size: 22px;
   line-height: 28px;
   text-align: center;
   color: $grey-900;
+  padding: 0 24px;
+  display: inline-block;
+  height: 28px;
 }
 
 .device-qualification-form-step-description {
+  font-family: $font-secondary;
   text-align: center;
   color: $grey-800;
   margin: 0;
-  padding-top: 8px;
+  padding: 8px 16px 0 16px;
 }
 
 .step-link {
@@ -159,6 +162,7 @@ $form-height: 993px;
 }
 
 .device-qualification-form-step-content {
+  padding: 0 16px;
   overflow: scroll;
 }
 
@@ -169,6 +173,7 @@ $form-height: 993px;
   gap: 10px;
   height: 100%;
   overflow: hidden;
+  align-content: start;
   &:has(.device-qualification-form-summary-container) {
     grid-template-rows: min-content min-content 1fr min-content;
   }
@@ -268,13 +273,15 @@ $form-height: 993px;
 
 .device-qualification-form-instructions {
   margin-top: auto;
+  padding-top: 8px;
   color: $grey-800;
   text-align: center;
   font-family: $font-secondary;
   font-size: 16px;
-
+  width: 510px;
   ul {
     text-align: left;
+    padding-left: 26px;
   }
   li {
     line-height: 24px;
@@ -288,6 +295,16 @@ $form-height: 993px;
 .manufacturer-field:has(.error-multiline),
 .model-field:has(.error-multiline) {
   padding-bottom: 14px;
+}
+
+.device-qualification-form-test-modules-container-error
+  ::ng-deep
+  .device-tests-title {
+  color: $red-800;
+}
+
+.device-qualification-form-test-modules-error {
+  padding: 0 24px;
 }
 
 @container qualification-form (height < 870px) {

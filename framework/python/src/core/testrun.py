@@ -51,6 +51,7 @@ DEVICE_TEST_MODULES = 'test_modules'
 DEVICE_TYPE_KEY = 'type'
 DEVICE_TECHNOLOGY_KEY = 'technology'
 DEVICE_TEST_PACK_KEY = 'test_pack'
+DEVICE_ADDITIONAL_INFO_KEY = 'additional_info'
 
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 
@@ -210,6 +211,10 @@ class Testrun:  # pylint: disable=too-few-public-methods
         if DEVICE_TEST_PACK_KEY in device_config_json:
           device.test_pack = device_config_json.get(DEVICE_TEST_PACK_KEY)
 
+        if DEVICE_ADDITIONAL_INFO_KEY in device_config_json:
+          device.additional_info = device_config_json.get(
+            DEVICE_ADDITIONAL_INFO_KEY)
+
         if None in [device.type, device.technology, device.test_pack]:
           LOGGER.warning(
             'Device is outdated and requires further configuration')
@@ -321,17 +326,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     return device.to_config_json()
 
-  def save_device(self, device: Device, device_json):
+  def save_device(self, device: Device):
     """Edit and save an existing device config."""
-
-    # Update device properties
-    device.manufacturer = device_json['manufacturer']
-    device.model = device_json['model']
-
-    if 'test_modules' in device_json:
-      device.test_modules = device_json['test_modules']
-    else:
-      device.test_modules = {}
 
     # Obtain the config file path
     config_file_path = os.path.join(self._root_dir,

@@ -22,7 +22,7 @@ import {
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Device, DeviceView, TestModule } from '../../model/device';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, timer } from 'rxjs';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { FocusManagerService } from '../../services/focus-manager.service';
@@ -119,6 +119,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
   openDialog(
     devices: Device[] = [],
     testModules: TestModule[],
+    initialDevice?: Device,
     selectedDevice?: Device,
     isEditDevice = false,
     index = 0
@@ -127,11 +128,12 @@ export class DevicesComponent implements OnInit, OnDestroy {
       ariaLabel: isEditDevice ? 'Edit device' : 'Create Device',
       data: {
         device: selectedDevice || null,
+        initialDevice,
         title: isEditDevice ? 'Edit device' : 'Create Device',
         testModules: testModules,
         devices,
         index,
-        isLinear: !isEditDevice,
+        isCreate: !isEditDevice,
       },
       autoFocus: true,
       hasBackdrop: true,
@@ -152,10 +154,21 @@ export class DevicesComponent implements OnInit, OnDestroy {
           this.openCloseDialog(
             devices,
             testModules,
+            initialDevice,
             response.device,
             isEditDevice,
             response.index
           );
+        } else if (
+          response.action === FormAction.Save &&
+          response.device &&
+          !selectedDevice
+        ) {
+          timer(10)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+              this.focusManagerService.focusFirstElementInContainer();
+            });
         }
       });
   }
@@ -163,6 +176,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
   openCloseDialog(
     devices: Device[],
     testModules: TestModule[],
+    initialDevice?: Device,
     device?: Device,
     isEditDevice = false,
     index = 0
@@ -170,8 +184,8 @@ export class DevicesComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Close the Device menu',
       data: {
-        title: 'Close the Device menu?',
-        content: `Are you ok to close the Device menu?`,
+        title: 'Are you sure?',
+        content: `By closing the device profile you will loose any new changes you have made to the device.`,
       },
       autoFocus: true,
       hasBackdrop: true,
@@ -184,7 +198,14 @@ export class DevicesComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(close => {
         if (!close) {
-          this.openDialog(devices, testModules, device, isEditDevice, index);
+          this.openDialog(
+            devices,
+            testModules,
+            initialDevice,
+            device,
+            isEditDevice,
+            index
+          );
           this.devicesStore.selectDevice(null);
         }
       });

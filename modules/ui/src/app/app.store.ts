@@ -25,6 +25,7 @@ import {
   selectHasRiskProfiles,
   selectInterfaces,
   selectInternetConnection,
+  selectIsAllDevicesOutdated,
   selectMenuOpened,
   selectReports,
   selectStatus,
@@ -68,6 +69,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
   private hasInternetConnection$ = this.store.select(selectInternetConnection);
   private hasDevices$ = this.store.select(selectHasDevices);
+  private isAllDevicesOutdated$ = this.store.select(selectIsAllDevicesOutdated);
   private hasExpiredDevices$ = this.store.select(selectHasExpiredDevices);
   private hasRiskProfiles$ = this.store.select(selectHasRiskProfiles);
   private reports$ = this.store.select(selectReports);
@@ -84,6 +86,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
   viewModel$ = this.select({
     consentShown: this.consentShown$,
     hasDevices: this.hasDevices$,
+    isAllDevicesOutdated: this.isAllDevicesOutdated$,
     hasExpiredDevices: this.hasExpiredDevices$,
     hasRiskProfiles: this.hasRiskProfiles$,
     reports: this.reports$,
