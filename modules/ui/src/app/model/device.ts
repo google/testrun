@@ -69,6 +69,6 @@ export interface QuestionnaireFormat extends QuestionFormat {
 }
 
 export enum TestingType {
-  Pilot = 'Pilot assessment',
-  Qualification = 'Device qualification',
+  Pilot = 'Pilot Assessment',
+  Qualification = 'Device Qualification',
 }
