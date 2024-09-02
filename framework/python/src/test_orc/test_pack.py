@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Represents a testing pack."""
+from typing import List
 from dataclasses import dataclass, field
 
 
@@ -22,7 +23,7 @@ class TestPack:  # pylint: disable=too-few-public-methods,too-many-instance-attr
 
   name: str = "undefined"
   description: str = ""
-  tests: list[dict] = field(default_factory=lambda: [])
+  tests: List[dict] = field(default_factory=lambda: [])
 
   def get_required_result(self, test_name: str) -> str:
     print(f"Getting required result for {test_name}")
