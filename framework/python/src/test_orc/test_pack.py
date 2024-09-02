@@ -22,4 +22,16 @@ class TestPack:  # pylint: disable=too-few-public-methods,too-many-instance-attr
 
   name: str = "undefined"
   description: str = ""
-  tests: list = field(default_factory=lambda: [])
+  tests: list[dict] = field(default_factory=lambda: [])
+
+  def get_required_result(self, test_name: str) -> str:
+    print(f"Getting required result for {test_name}")
+    for test in self.tests:
+      if "name" in test and test["name"].lower() == test_name.lower():
+        print(f"Found test {test_name} in test pack")
+        if "required_result" in test:
+          print(f"Required result is {test['required_result']}")
+          return test["required_result"]
+        else:
+          print("Required result not found")
+    return "Informational"

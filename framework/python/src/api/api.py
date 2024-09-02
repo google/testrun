@@ -653,6 +653,7 @@ class Api:
       device.mac_addr = device_json.get(DEVICE_MAC_ADDR_KEY).lower()
       device.manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
       device.model = device_json.get(DEVICE_MODEL_KEY)
+      device.test_pack = device_json.get(DEVICE_TEST_PACK_KEY)
       device.type = device_json.get(DEVICE_TYPE_KEY)
       device.technology = device_json.get(DEVICE_TECH_KEY)
       device.additional_info = device_json.get(DEVICE_ADDITIONAL_INFO_KEY)

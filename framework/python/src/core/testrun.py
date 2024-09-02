@@ -229,7 +229,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
   def _load_test_reports(self, device):
 
-    LOGGER.debug(f'Loading test reports for device {device.model}')
+    LOGGER.debug('Loading test reports for device ' +
+                 f'{device.manufacturer} {device.model}')
 
     # Remove the existing reports in memory
     device.clear_reports()
@@ -242,8 +243,6 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # Check if reports folder exists (device may have no reports)
     if not os.path.exists(reports_folder):
       return
-
-    LOGGER.info(f'Loading reports from {reports_folder}')
 
     for report_folder in os.listdir(reports_folder):
       # 1.3 file path

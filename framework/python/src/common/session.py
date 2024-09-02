@@ -238,8 +238,6 @@ class TestrunSession():
           ORG_NAME_KEY
         )
 
-      LOGGER.debug(self._config)
-
   def _load_version(self):
     version_cmd = util.run_command(
         'dpkg-query --showformat=\'${Version}\' --show testrun')
@@ -381,8 +379,21 @@ class TestrunSession():
       # result type is TestCase object
       if test_result.name == result.name:
 
-        # Just update the result and description
-        test_result.result = result.result
+        # Just update the result, description and recommendations
+
+        if result.result is not None:
+
+          # Any informational test should always report informational
+          if (test_result.required_result == 'Informational' and
+              result.result in [
+                TestResult.COMPLIANT,
+                TestResult.NON_COMPLIANT,
+                TestResult.FEATURE_NOT_DETECTED
+              ]):
+            test_result.result = TestResult.INFORMATIONAL
+          else:
+            test_result.result = result.result
+
         test_result.description = result.description
         test_result.recommendations = result.recommendations
         updated = True
