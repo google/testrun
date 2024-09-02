@@ -27,6 +27,7 @@ from core.docker.test_docker_module import TestModule
 from test_orc.test_case import TestCase
 from test_orc.test_pack import TestPack
 import threading
+from typing import List
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
@@ -53,8 +54,8 @@ class TestOrchestrator:
 
   def __init__(self, session, net_orc):
 
-    self._test_modules: list[TestModule] = []
-    self._test_packs: list[TestPack] = []
+    self._test_modules: List[TestModule] = []
+    self._test_packs: List[TestPack] = []
 
     self._container_logs = []
     self._session = session
@@ -629,7 +630,7 @@ class TestOrchestrator:
 
       return module
 
-  def get_test_packs(self) -> list[TestPack]:
+  def get_test_packs(self) -> List[TestPack]:
     return self._test_packs
 
   def get_test_pack(self, name: str) -> TestPack:
