@@ -257,6 +257,10 @@ export class DeviceQualificationFromComponent
     });
   }
 
+  delete(): void {
+    this.dialogRef.close({ action: FormAction.Delete } as FormResponse);
+  }
+
   closeForm(): void {
     const device1 = this.data.initialDevice;
     const device2 = this.createDeviceFromForm();
@@ -309,11 +313,11 @@ export class DeviceQualificationFromComponent
       step.questions.forEach((question, index) => {
         const answer = device.additional_info?.find(
           answers => answers.question === question.question
-        );
-        if (answer !== undefined) {
+        )?.answer;
+        if (answer !== undefined && answer !== null && answer !== '') {
           if (question.type === FormControlType.SELECT_MULTIPLE) {
             question.options?.forEach((item, idx) => {
-              if ((answer?.answer as number[])?.includes(idx)) {
+              if ((answer as number[])?.includes(idx)) {
                 (
                   this.getStep(step.step).get(index.toString()) as FormGroup
                 ).controls[idx].setValue(true);
@@ -326,7 +330,7 @@ export class DeviceQualificationFromComponent
           } else {
             (
               this.getStep(step.step).get(index.toString()) as AbstractControl
-            ).setValue(answer?.answer || '');
+            ).setValue(answer || '');
           }
         } else {
           (
@@ -339,7 +343,11 @@ export class DeviceQualificationFromComponent
     this.manufacturer.setValue(device.manufacturer);
     this.mac_addr.setValue(device.mac_addr);
 
-    if (device.test_pack) {
+    if (
+      device.test_pack &&
+      (device.test_pack === TestingType.Qualification ||
+        device.test_pack === TestingType.Pilot)
+    ) {
       this.test_pack.setValue(device.test_pack);
     } else {
       this.test_pack.setValue(TestingType.Qualification);

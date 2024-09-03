@@ -57,11 +57,6 @@ $form-height: 993px;
   white-space: nowrap;
 }
 
-.delete-button {
-  color: $primary;
-  margin-right: auto;
-}
-
 .hidden {
   display: none;
 }
@@ -170,7 +165,7 @@ $form-height: 993px;
   padding-top: 10px;
   margin-top: -10px;
   display: grid;
-  gap: 10px;
+  gap: 8px;
   height: 100%;
   overflow: hidden;
   align-content: start;
@@ -180,8 +175,7 @@ $form-height: 993px;
 }
 
 .device-qualification-form-summary-container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   align-items: center;
   justify-content: center;
   overflow: scroll;
@@ -207,12 +201,27 @@ $form-height: 993px;
 }
 
 .device-qualification-form-actions {
+  width: $device-item-width;
   text-align: center;
+  padding: 8px 24px;
+  justify-self: center;
+  align-self: end;
+  &:has(.delete-button) {
+    text-align: right;
+  }
+  .close-button,
+  .delete-button {
+    border: 1px solid $lighter-grey;
+  }
+  .delete-button {
+    color: $primary;
+    float: left;
+  }
   .close-button {
     padding: 0 16px;
   }
   .save-button {
-    margin: 0 16px;
+    margin-left: 16px;
   }
 }
 
@@ -280,6 +289,7 @@ $form-height: 993px;
   font-size: 16px;
   width: 510px;
   ul {
+    margin-bottom: 0;
     text-align: left;
     padding-left: 26px;
   }
@@ -305,6 +315,13 @@ $form-height: 993px;
 
 .device-qualification-form-test-modules-error {
   padding: 0 24px;
+}
+
+.form-content-summary {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  grid-row-gap: 16px;
+  overflow: hidden;
 }
 
 @container qualification-form (height < 870px) {
