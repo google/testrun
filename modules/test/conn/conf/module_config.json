@@ -123,6 +123,12 @@
         "required_result": "Required"
       },
       {
+        "name": "connection.dhcp_disconnect_ip_change",
+        "test_description": "When device is disconnected,  update device IP on the DHCP server and reconnect the device.  Ensure device received new IP address",
+        "expected_behavior": "If IP address for a device was changed on the DHCP server while the device was disconnected then the device shoiuld request and update the new IP upon reconnecting to the network",
+        "required_result": "Required"
+      },
+      {
         "name": "connection.single_ip",
         "test_description": "The network switch port connected to the device reports only one IP address for the device under test.",
         "expected_behavior": "The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible.",
