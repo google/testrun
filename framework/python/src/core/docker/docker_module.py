@@ -26,7 +26,11 @@ DEFAULT_NETWORK = 'bridge'
 class Module:
   """Represents the base module."""
 
-  def __init__(self, module_config_file, session, docker_network=DEFAULT_NETWORK, extra_hosts=None):
+  def __init__(self,
+               module_config_file,
+               session,
+               docker_network=DEFAULT_NETWORK,
+               extra_hosts=None):
     self._session = session
     self.extra_hosts = extra_hosts
 
