@@ -186,132 +186,140 @@ limitations under the License.
     </ng-container>
 
     <cdk-step *ngIf="format.length" [editable]="false">
-      <section class="device-qualification-form-page">
-        <h3 class="device-qualification-form-step-title">Summary</h3>
-        <p class="device-qualification-form-step-description">
-          <ng-container
-            *ngIf="
-              formValid && !deviceHasNoChanges(data.initialDevice, device)
-            ">
-            The device has been configured. Please check the setup.
-          </ng-container>
-          <ng-container
-            *ngIf="formValid && deviceHasNoChanges(data.initialDevice, device)">
-            No changes were made to the device configuration.
-          </ng-container>
-          <ng-container *ngIf="!formValid"
-            >The device cannot be configured</ng-container
-          >
-        </p>
-        <section class="device-qualification-form-summary-container">
-          <section *ngIf="formValid" class="device-qualification-form-summary">
-            <app-device-item
-              *ngIf="device"
-              [deviceView]="DeviceView.Basic"
-              [device]="device"></app-device-item>
-            <div class="device-qualification-form-summary-info">
-              <p>
-                <span class="info-label">Device type</span>
-                <span class="info-value">{{ device?.type }}</span>
-              </p>
-              <p>
-                <span class="info-label">Technology</span>
-                <span class="info-value">{{ device?.technology }}</span>
-              </p>
-            </div>
-          </section>
-          <section
-            *ngIf="formValid && !deviceHasNoChanges(data.initialDevice, device)"
-            class="device-qualification-form-instructions">
-            <span
-              >Select Save to create your new device. You will then be able to
-              carry on your device testing journey:</span
+      <div class="form-content-summary">
+        <section class="device-qualification-form-page">
+          <h3 class="device-qualification-form-step-title">Summary</h3>
+          <p class="device-qualification-form-step-description">
+            <ng-container
+              *ngIf="
+                formValid && !deviceHasNoChanges(data.initialDevice, device)
+              ">
+              The device has been configured. Please check the setup.
+            </ng-container>
+            <ng-container
+              *ngIf="
+                formValid && deviceHasNoChanges(data.initialDevice, device)
+              ">
+              No changes were made to the device configuration.
+            </ng-container>
+            <ng-container *ngIf="!formValid"
+              >The device cannot be configured</ng-container
             >
-            <ul>
-              <li>
-                Run Testrun against your device until you achieve a compliant
-                result
-              </li>
-              <li>Export the Testrun report and output files</li>
-              <li>Send the testing results to the lab for validation</li>
-            </ul>
-          </section>
+          </p>
+          <section class="device-qualification-form-summary-container">
+            <section
+              *ngIf="formValid"
+              class="device-qualification-form-summary">
+              <app-device-item
+                *ngIf="device"
+                [deviceView]="DeviceView.Basic"
+                [device]="device"></app-device-item>
+              <div class="device-qualification-form-summary-info">
+                <p>
+                  <span class="info-label">Device type</span>
+                  <span class="info-value">{{ device?.type }}</span>
+                </p>
+                <p>
+                  <span class="info-label">Technology</span>
+                  <span class="info-value">{{ device?.technology }}</span>
+                </p>
+              </div>
+            </section>
+            <section
+              *ngIf="
+                formValid && !deviceHasNoChanges(data.initialDevice, device)
+              "
+              class="device-qualification-form-instructions">
+              <span
+                >Select Save to create your new device. You will then be able to
+                carry on your device testing journey:</span
+              >
+              <ul>
+                <li>
+                  Run Testrun against your device until you achieve a compliant
+                  result
+                </li>
+                <li>Export the Testrun report and output files</li>
+                <li>Send the testing results to the lab for validation</li>
+              </ul>
+            </section>
 
-          <section
-            *ngIf="!formValid"
-            class="device-qualification-form-summary device-qualification-form-summary-error">
-            <div class="device-qualification-form-summary-info">
-              <h3 class="device-qualification-form-summary-info-title-error">
-                <mat-icon
-                  class="callout-icon"
-                  fontSet="material-icons-outlined"
-                  color="primary">
-                  error
-                </mat-icon>
-                Unable to create the device
-              </h3>
-            </div>
-            <div class="device-qualification-form-summary-info">
-              <h3 class="device-qualification-form-summary-info-title">
-                Validation error!
-              </h3>
-              <p class="device-qualification-form-summary-info-description">
-                Please go back and correct the errors on
-                <ng-container
-                  *ngFor="let step of getErrorSteps(); let i = index">
+            <section
+              *ngIf="!formValid"
+              class="device-qualification-form-summary device-qualification-form-summary-error">
+              <div class="device-qualification-form-summary-info">
+                <h3 class="device-qualification-form-summary-info-title-error">
+                  <mat-icon
+                    class="callout-icon"
+                    fontSet="material-icons-outlined"
+                    color="primary">
+                    error
+                  </mat-icon>
+                  Unable to create the device
+                </h3>
+              </div>
+              <div class="device-qualification-form-summary-info">
+                <h3 class="device-qualification-form-summary-info-title">
+                  Validation error!
+                </h3>
+                <p class="device-qualification-form-summary-info-description">
+                  Please go back and correct the errors on
                   <ng-container
-                    *ngIf="i !== 0 && i < getErrorSteps().length - 1"
-                    >,
-                  </ng-container>
-                  <ng-container
-                    *ngIf="i !== 0 && i === getErrorSteps().length - 1">
-                    and
-                  </ng-container>
-                  <a
-                    class="step-link"
-                    tabindex="0"
-                    role="link"
-                    (keydown.enter)="goToStep(step)"
-                    (keydown.space)="goToStep(step)"
-                    (click)="goToStep(step)"
-                    >Step {{ step + 1 }}</a
-                  ></ng-container
-                >.
-              </p>
+                    *ngFor="let step of getErrorSteps(); let i = index">
+                    <ng-container
+                      *ngIf="i !== 0 && i < getErrorSteps().length - 1"
+                      >,
+                    </ng-container>
+                    <ng-container
+                      *ngIf="i !== 0 && i === getErrorSteps().length - 1">
+                      and
+                    </ng-container>
+                    <a
+                      class="step-link"
+                      tabindex="0"
+                      role="link"
+                      (keydown.enter)="goToStep(step)"
+                      (keydown.space)="goToStep(step)"
+                      (click)="goToStep(step)"
+                      >Step {{ step + 1 }}</a
+                    ></ng-container
+                  >.
+                </p>
 
-              <p class="device-qualification-form-summary-info-description">
-                All existing fields must be filled in.
-              </p>
-            </div>
+                <p class="device-qualification-form-summary-info-description">
+                  All existing fields must be filled in.
+                </p>
+              </div>
+            </section>
           </section>
         </section>
-      </section>
-      <div class="device-qualification-form-actions">
-        <button
-          *ngIf="!data.isCreate"
-          (click)="delete()"
-          class="delete-button"
-          mat-flat-button
-          type="button">
-          Delete
-        </button>
-        <button
-          mat-button
-          color="primary"
-          class="close-button"
-          (click)="closeForm()">
-          Cancel
-        </button>
-        <button
-          mat-flat-button
-          color="primary"
-          class="save-button"
-          [disabled]="
-            deviceHasNoChanges(data.initialDevice, device) || !formValid
-          "
-          (click)="submit()">
-          Save
-        </button>
+        <div class="device-qualification-form-actions">
+          <button
+            *ngIf="!data.isCreate"
+            (click)="delete()"
+            class="delete-button"
+            mat-flat-button
+            type="button">
+            Delete
+          </button>
+          <button
+            mat-button
+            color="primary"
+            class="close-button"
+            (click)="closeForm()">
+            Cancel
+          </button>
+          <button
+            mat-flat-button
+            color="primary"
+            class="save-button"
+            [disabled]="
+              deviceHasNoChanges(data.initialDevice, device) || !formValid
+            "
+            (click)="submit()">
+            Save
+          </button>
+        </div>
       </div>
     </cdk-step>
   </app-stepper>
