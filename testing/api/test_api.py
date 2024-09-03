@@ -44,6 +44,7 @@ SYSTEM_CONFIG_RESTORE_PATH = "testing/api/system.json"
 CERTS_PATH = "testing/api/certificates"
 PROFILES_PATH = "testing/api/profiles"
 REPORTS_PATH = "testing/api/reports"
+DEVICES_PATH = "testing/api/devices"
 
 BASELINE_MAC_ADDR = "02:42:aa:00:01:01"
 ALL_MAC_ADDR = "02:42:aa:00:00:01"
@@ -362,20 +363,23 @@ def test_get_system_config(testrun): # pylint: disable=W0613
       == api_config["network"]["internet_intf"]
   )
 
-def test_start_testrun_success(testing_devices, testrun): # pylint: disable=W0613
+def test_start_testrun_success(empty_devices_dir, testrun, add_device): # pylint: disable=W0613
   """Test for testrun started successfully """
+
+  _, mac_address = add_device()
 
   # Payload with device details
   payload = {"device": {
-             "mac_addr": BASELINE_MAC_ADDR,
-             "firmware": "asd", 
-             "test_modules": {
-                "dns": {"enabled": False},
-                "connection": {"enabled": True},
-                "ntp": {"enabled": False},
-                "baseline": {"enabled": False},
-                "nmap": {"enabled": False}
-            }}}
+    "mac_addr": mac_address,
+    "firmware": "test",
+    "test_modules": {
+        "protocol": { "enabled": True },
+        "services": { "enabled": True },
+        "ntp": { "enabled": True },
+        "tls": { "enabled": True },
+        "connection": { "enabled": True },
+        "dns": { "enabled": True }
+    }}}
 
   # Send the post request
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
@@ -413,20 +417,23 @@ def test_start_testrun_missing_device(testing_devices, testrun): # pylint: disab
   # Check if 'error' in response
   assert "error" in response
 
-def test_start_testrun_already_started(testing_devices, testrun): # pylint: disable=W0613
+def test_start_testrun_already_started(empty_devices_dir, testrun, add_device): # pylint: disable=W0613
   """Test for testrun already started """
+
+  _, mac_address = add_device()
 
   # Payload with device details
   payload = {"device": {
-             "mac_addr": BASELINE_MAC_ADDR,
-             "firmware": "asd", 
-             "test_modules": {
-                "dns": {"enabled": False},
-                "connection": {"enabled": True},
-                "ntp": {"enabled": False},
-                "baseline": {"enabled": False},
-                "nmap": {"enabled": False}
-            }}}
+    "mac_addr": mac_address,
+    "firmware": "test",
+    "test_modules": {
+        "protocol": { "enabled": True },
+        "services": { "enabled": True },
+        "ntp": { "enabled": True },
+        "tls": { "enabled": True },
+        "connection": { "enabled": True },
+        "dns": { "enabled": True }
+    }}}
 
   # Send the post request (start test)
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
@@ -446,20 +453,15 @@ def test_start_testrun_already_started(testing_devices, testrun): # pylint: disa
   # Check if 'error' in response
   assert "error" in response
 
-def test_start_testrun_device_not_found(testing_devices, testrun): # pylint: disable=W0613
+def test_start_testrun_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
   """Test for start testrun device not found """
 
   # Payload with device details with no mac address assigned
   payload = {"device": {
-             "mac_addr": "",
-             "firmware": "asd", 
-             "test_modules": {
-                "dns": {"enabled": False},
-                "connection": {"enabled": True},
-                "ntp": {"enabled": False},
-                "baseline": {"enabled": False},
-                "nmap": {"enabled": False}
-            }}}
+    "mac_addr": "",
+    "firmware": "test",
+    "test_modules": {}
+    }}
 
   # Send the post request
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
@@ -692,22 +694,23 @@ def test_system_shutdown(testrun): # pylint: disable=W0613
   # Check if the response status code is 200 (OK)
   assert r.status_code == 200, f"Expected status code 200, got {r.status_code}"
 
-def test_system_shutdown_in_progress(testrun): # pylint: disable=W0613
+def test_system_shutdown_in_progress(empty_devices_dir, testrun, add_device): # pylint: disable=W0613
   """Test system shutdown during an in-progress test"""
+
+  _, mac_address = add_device()
+
   # Payload with device details to start a test
-  payload = {
-      "device": {
-          "mac_addr": BASELINE_MAC_ADDR,
-          "firmware": "asd",
-          "test_modules": {
-              "dns": {"enabled": False},
-              "connection": {"enabled": True},
-              "ntp": {"enabled": False},
-              "baseline": {"enabled": False},
-              "nmap": {"enabled": False}
-          }
-      }
-  }
+  payload = {"device": {
+    "mac_addr": mac_address,
+    "firmware": "test",
+    "test_modules": {
+        "protocol": { "enabled": True },
+        "services": { "enabled": True },
+        "ntp": { "enabled": True },
+        "tls": { "enabled": True },
+        "connection": { "enabled": True },
+        "dns": { "enabled": True }
+    }}}
 
   # Start a test
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
@@ -794,13 +797,9 @@ def create_and_get_device():
   """Utility method to create a device"""
 
   # Payload with device details
-  device = {
-        "mac_addr": "00:1e:42:28:9e:4a",
-        "manufacturer": "Teltonika",
-        "model": "TRB140"
-    }
+  device = load_json("device_1.json", directory=DEVICES_PATH)
 
-  # Send a POST request to create a new device
+   # Send a POST request to create a new device
   requests.post(f"{API}/device", data=json.dumps(device), timeout=5)
 
   # Send the GET request to retrieve the created device's folder name
@@ -815,8 +814,6 @@ def create_and_get_device():
 
   # Return only the device name and MAC address
   return device_name, mac_address
-
-
 
 @pytest.fixture()
 def add_device():
@@ -1234,18 +1231,8 @@ def test_status_non_compliant(testing_devices, testrun): # pylint: disable=W0613
   stop_test_device("x123")
 
 def test_create_get_devices(empty_devices_dir, testrun): # pylint: disable=W0613
-  device_1 = {
-      "manufacturer": "Google",
-      "model": "First",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+
+  device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
   r = requests.post(f"{API}/device", data=json.dumps(device_1),
                     timeout=5)
@@ -1253,18 +1240,8 @@ def test_create_get_devices(empty_devices_dir, testrun): # pylint: disable=W0613
   assert r.status_code == 201
   assert len(local_get_devices()) == 1
 
-  device_2 = {
-      "manufacturer": "Google",
-      "model": "Second",
-      "mac_addr": "00:1e:42:35:73:c6",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+  device_2 = load_json("device_2.json", directory=DEVICES_PATH)
+
   r = requests.post(f"{API}/device", data=json.dumps(device_2),
                     timeout=5)
   assert r.status_code == 201
@@ -1296,18 +1273,8 @@ def test_create_get_devices(empty_devices_dir, testrun): # pylint: disable=W0613
     )
 
 def test_delete_device_success(empty_devices_dir, testrun): # pylint: disable=W0613
-  device_1 = {
-      "manufacturer": "Google",
-      "model": "First",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+
+  device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
   # Send create device request
   r = requests.post(f"{API}/device",
@@ -1319,18 +1286,8 @@ def test_delete_device_success(empty_devices_dir, testrun): # pylint: disable=W0
   assert r.status_code == 201
   assert len(local_get_devices()) == 1
 
-  device_2 = {
-      "manufacturer": "Google",
-      "model": "Second",
-      "mac_addr": "00:1e:42:35:73:c6",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+  device_2 = load_json("device_2.json", directory=DEVICES_PATH)
+
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_2),
                     timeout=5)
@@ -1373,56 +1330,21 @@ def test_delete_device_success(empty_devices_dir, testrun): # pylint: disable=W0
     )
 
 def test_delete_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
-  device_1 = {
-      "manufacturer": "Google",
-      "model": "First",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
 
-  # Send create device request
-  r = requests.post(f"{API}/device",
-                    data=json.dumps(device_1),
-                    timeout=5)
-  print(r.text)
-
-  # Check device has been created
-  assert r.status_code == 201
-  assert len(local_get_devices()) == 1
+  payload = {"mac_addr": "non_existing"}
 
   # Test that device_1 deletes
   r = requests.delete(f"{API}/device/",
-                      data=json.dumps(device_1),
+                      data=json.dumps(payload),
                       timeout=5)
-  assert r.status_code == 200
-  assert len(local_get_devices()) == 0
 
-  # Test that device_1 is not found
-  r = requests.delete(f"{API}/device/",
-                      data=json.dumps(device_1),
-                      timeout=5)
   assert r.status_code == 404
+
   assert len(local_get_devices()) == 0
 
 def test_delete_device_no_mac(empty_devices_dir, testrun): # pylint: disable=W0613
-  device_1 = {
-      "manufacturer": "Google",
-      "model": "First",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+
+  device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
   # Send create device request
   r = requests.post(f"{API}/device",
@@ -1485,18 +1407,8 @@ def test_delete_device_testrun_running(testing_devices, testrun): # pylint: disa
 def test_start_system_not_configured_correctly(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
-  device_1 = {
-      "manufacturer": "Google",
-      "model": "First",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+
+  device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
   # Send create device request
   r = requests.post(f"{API}/device",
@@ -1504,25 +1416,17 @@ def test_start_system_not_configured_correctly(
                     timeout=5)
 
   payload = {"device": {"mac_addr": None, "firmware": "asd"}}
+
   r = requests.post(f"{API}/system/start",
                     data=json.dumps(payload),
                     timeout=10)
+
   assert r.status_code == 500
 
 def test_start_device_not_found(empty_devices_dir, # pylint: disable=W0613
                                 testrun): # pylint: disable=W0613
-  device_1 = {
-      "manufacturer": "Google",
-      "model": "First",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+
+  device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
   # Send create device request
   r = requests.post(f"{API}/device",
@@ -1543,18 +1447,8 @@ def test_start_device_not_found(empty_devices_dir, # pylint: disable=W0613
 def test_start_missing_device_information(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
-  device_1 = {
-      "manufacturer": "Google",
-      "model": "First",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+
+  device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
   # Send create device request
   r = requests.post(f"{API}/device",
@@ -1570,18 +1464,8 @@ def test_start_missing_device_information(
 def test_create_device_already_exists(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
-  device_1 = {
-      "manufacturer": "Google",
-      "model": "First",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+
+  device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
@@ -1597,8 +1481,8 @@ def test_create_device_already_exists(
 def test_create_device_invalid_json(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
-  device_1 = {
-  }
+
+  device_1 = {}
 
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
@@ -1665,18 +1549,8 @@ def test_device_edit_device(
 def test_device_edit_device_not_found(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
-  device_1 = {
-      "manufacturer": "Google",
-      "model": "First",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+
+  device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
@@ -1701,18 +1575,8 @@ def test_device_edit_device_not_found(
 def test_device_edit_device_incorrect_json_format(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
-  device_1 = {
-      "manufacturer": "Google",
-      "model": "First",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+
+  device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
@@ -1732,47 +1596,31 @@ def test_device_edit_device_incorrect_json_format(
 def test_device_edit_device_with_mac_already_exists(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
-  device_1 = {
-      "manufacturer": "Google",
-      "model": "First",
-      "mac_addr": "00:1e:42:35:73:c4",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+
+  device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_1),
                     timeout=5)
+
   assert r.status_code == 201
+
   assert len(local_get_devices()) == 1
 
-  device_2 = {
-      "manufacturer": "Google",
-      "model": "Second",
-      "mac_addr": "00:1e:42:35:73:c6",
-      "test_modules": {
-          "dns": {"enabled": True},
-          "connection": {"enabled": True},
-          "ntp": {"enabled": True},
-          "baseline": {"enabled": True},
-          "nmap": {"enabled": True},
-      },
-  }
+  device_2 = load_json("device_2.json", directory=DEVICES_PATH)
+
   r = requests.post(f"{API}/device",
                     data=json.dumps(device_2),
                     timeout=5)
+
   assert r.status_code == 201
+
   assert len(local_get_devices()) == 2
 
   updated_device = copy.deepcopy(device_1)
 
   updated_device_payload = {}
-  updated_device_payload = {}
+
   updated_device_payload["device"] = updated_device
   updated_device_payload["mac_addr"] = "00:1e:42:35:73:c6"
   updated_device_payload["model"] = "Alphabet"

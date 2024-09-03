@@ -260,6 +260,12 @@ class Api:
 
     device = self._session.get_device(body_json["device"]["mac_addr"])
 
+    # Check if requested device is known in the device repository
+    if device is None:
+      response.status_code = status.HTTP_404_NOT_FOUND
+      return self._generate_msg(
+          False, "A device with that MAC address could not be found")
+
     # Check if device is fully configured
     if device.status != "Valid":
       response.status_code = status.HTTP_400_BAD_REQUEST
@@ -276,12 +282,6 @@ class Api:
       return self._generate_msg(
           False, "Testrun cannot be started " +
           "whilst a test is running on another device")
-
-    # Check if requested device is known in the device repository
-    if device is None:
-      response.status_code = status.HTTP_404_NOT_FOUND
-      return self._generate_msg(
-          False, "A device with that MAC address could not be found")
 
     device.firmware = body_json["device"]["firmware"]
 
