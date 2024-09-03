@@ -102,7 +102,6 @@ class TestOrchestrator:
     device = self.get_session().get_target_device()
     test_pack_name = device.test_pack
     test_pack = self.get_test_pack(test_pack_name)
-
     LOGGER.debug("Using test pack " + test_pack.name)
 
     self._test_in_progress = True
