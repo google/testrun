@@ -41,10 +41,11 @@ sudo cp testing/api/system.json local/system.json
 
 # Needs to be sudo because this invokes bin/testrun 
 sudo venv/bin/python3 -m pytest -v testing/api/test_api.py
+return_code=$?
 
 # Clean up network interfaces after use
 sudo docker network rm endev0
 sudo ip link del dev endev0a
 sudo ip link del dev dummynet
 
-exit $?
+exit $return_code
