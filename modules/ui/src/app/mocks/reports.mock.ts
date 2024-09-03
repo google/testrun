@@ -1,6 +1,6 @@
 import { HistoryTestrun, TestrunStatus } from '../model/testrun-status';
 import { MatTableDataSource } from '@angular/material/table';
-import { DeviceStatus } from '../model/device';
+import { DeviceStatus, TestingType } from '../model/device';
 
 export const HISTORY = [
   {
@@ -12,6 +12,7 @@ export const HISTORY = [
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:06',
       firmware: '1.2.2',
+      test_pack: TestingType.Qualification,
     },
     report: 'https://api.testrun.io/report.pdf',
     started: '2023-06-23T10:11:00.123Z',
@@ -26,6 +27,7 @@ export const HISTORY = [
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:07',
       firmware: '1.2.3',
+      test_pack: TestingType.Qualification,
     },
     report: 'https://api.testrun.io/report.pdf',
     started: '2023-07-23T10:11:00.123Z',
@@ -40,6 +42,7 @@ export const HISTORY = [
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:08',
       firmware: '1.2.2',
+      test_pack: TestingType.Qualification,
     },
     report: 'https://api.testrun.io/report.pdf',
     started: '2023-06-23T10:11:00.123Z',
@@ -57,6 +60,7 @@ export const HISTORY_AFTER_REMOVE = [
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:06',
       firmware: '1.2.2',
+      test_pack: TestingType.Qualification,
     },
     report: 'https://api.testrun.io/report.pdf',
     started: '2023-06-23T10:11:00.123Z',
@@ -71,6 +75,7 @@ export const HISTORY_AFTER_REMOVE = [
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:08',
       firmware: '1.2.2',
+      test_pack: TestingType.Qualification,
     },
     report: 'https://api.testrun.io/report.pdf',
     started: '2023-06-23T10:11:00.123Z',
@@ -88,6 +93,7 @@ export const FORMATTED_HISTORY = [
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:06',
       firmware: '1.2.2',
+      test_pack: TestingType.Qualification,
     },
     report: 'https://api.testrun.io/report.pdf',
     started: '2023-06-23T10:11:00.123Z',
@@ -95,6 +101,7 @@ export const FORMATTED_HISTORY = [
     deviceFirmware: '1.2.2',
     deviceInfo: 'Delta 03-DIN-SRC',
     duration: '06m 10s',
+    program: 'Device Qualification',
   },
   {
     status: 'compliant',
@@ -105,6 +112,7 @@ export const FORMATTED_HISTORY = [
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:07',
       firmware: '1.2.3',
+      test_pack: TestingType.Qualification,
     },
     report: 'https://api.testrun.io/report.pdf',
     started: '2023-07-23T10:11:00.123Z',
@@ -112,6 +120,7 @@ export const FORMATTED_HISTORY = [
     deviceFirmware: '1.2.3',
     deviceInfo: 'Delta 03-DIN-SRC',
     duration: '06m 10s',
+    program: 'Device Qualification',
   },
   {
     mac_addr: null,
@@ -122,6 +131,7 @@ export const FORMATTED_HISTORY = [
       model: '03-DIN-SRC',
       mac_addr: '01:02:03:04:05:08',
       firmware: '1.2.2',
+      test_pack: TestingType.Qualification,
     },
     report: 'https://api.testrun.io/report.pdf',
     started: '2023-06-23T10:11:00.123Z',
@@ -129,6 +139,7 @@ export const FORMATTED_HISTORY = [
     deviceFirmware: '1.2.2',
     deviceInfo: 'Delta 03-DIN-SRC',
     duration: '06m 10s',
+    program: 'Device Qualification',
   },
 ];
 
