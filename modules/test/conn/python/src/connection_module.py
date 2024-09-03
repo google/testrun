@@ -460,8 +460,8 @@ class ConnectionModule(TestModule):
       if iface_status.code == 200:
         LOGGER.info('Successfully resolved iface status')
         if iface_status.status:
-          lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
-                                                timeout=self._lease_wait_time_sec)
+          lease = self._dhcp_util.get_cur_lease(
+              mac_address=self._device_mac, timeout=self._lease_wait_time_sec)
           if lease is not None:
             LOGGER.info('Current device lease resolved')
             if self._dhcp_util.is_lease_active(lease):
@@ -479,11 +479,12 @@ class ConnectionModule(TestModule):
                 # Wait for the lease to expire
                 self._dhcp_util.wait_for_lease_expire(lease,
                                                       self._lease_wait_time_sec)
-                
+
                 if reserved_lease:
-                  # Wait an additonal 10 seconds to better test a true disconnect
-                  # state
-                  LOGGER.info('Waiting 10 seconds before bringing iface back up')
+                  # Wait an additonal 10 seconds to better test a true
+                  # disconnect state
+                  LOGGER.info(
+                      'Waiting 10 seconds before bringing iface back up')
                   time.sleep(10)
 
                   # Enable the device interface
@@ -497,7 +498,8 @@ class ConnectionModule(TestModule):
                       LOGGER.info('Pinging device at IP: ' + ip_address)
                       if self._ping(ip_address):
                         LOGGER.debug('Ping success')
-                        LOGGER.debug('Reserved lease confirmed active in device')
+                        LOGGER.debug(
+                            'Reserved lease confirmed active in device')
                         reserved_lease_accepted = True
                         break
                       else:
@@ -507,7 +509,7 @@ class ConnectionModule(TestModule):
                     if reserved_lease_accepted:
                       result = True
                       description = ('Device received expected IP address '
-                                      'after disconnect')
+                                     'after disconnect')
                     else:
                       result = False
                       description = (
