@@ -212,6 +212,7 @@ limitations under the License.
               class="device-qualification-form-summary">
               <app-device-item
                 *ngIf="device"
+                [tabIndex]="-1"
                 [deviceView]="DeviceView.Basic"
                 [device]="device"></app-device-item>
               <div class="device-qualification-form-summary-info">
