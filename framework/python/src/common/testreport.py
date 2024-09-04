@@ -62,6 +62,12 @@ class TestReport():
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
 
+  def add_module_report(self, module_report):
+    self._module_reports.append(module_report)
+
+  def get_module_reports(self):
+    return self._module_reports
+
   def get_status(self):
     return self._status
 
@@ -164,6 +170,7 @@ class TestReport():
 
   # Create a pdf file in memory and return the bytes
   def to_pdf(self):
+
     # Resolve the data as html first
     report_html = self.to_html()
 

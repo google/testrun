@@ -687,6 +687,7 @@ class Api:
       timestamp,"test",
           device.mac_addr.replace(":",""),
           "report.pdf")
+
     if not os.path.isfile(file_path):
       # pre 1.3 file path
       file_path = os.path.join(DEVICES_PATH, device_name, "reports", timestamp,
