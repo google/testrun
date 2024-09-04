@@ -17,7 +17,7 @@ from datetime import datetime
 from weasyprint import HTML
 from io import BytesIO
 from common import util
-from common.statuses import TestResult, TestrunStatus
+from common.statuses import TestrunStatus
 import base64
 import os
 from test_orc.test_case import TestCase
