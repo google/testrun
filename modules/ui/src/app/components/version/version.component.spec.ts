@@ -27,6 +27,7 @@ import { NEW_VERSION, VERSION } from '../../mocks/version.mock';
 import { of } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
 
 describe('VersionComponent', () => {
   let component: VersionComponent;
@@ -42,7 +43,7 @@ describe('VersionComponent', () => {
     mockService = jasmine.createSpyObj(['getVersion', 'fetchVersion']);
     mockService.getVersion.and.returnValue(versionBehaviorSubject$);
     TestBed.configureTestingModule({
-      imports: [VersionComponent],
+      imports: [VersionComponent, MatIconTestingModule],
       providers: [{ provide: TestRunService, useValue: mockService }],
     });
     fixture = TestBed.createComponent(VersionComponent);

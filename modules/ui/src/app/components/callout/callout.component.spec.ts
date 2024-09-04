@@ -16,6 +16,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CalloutComponent } from './callout.component';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
 
 describe('CalloutComponent', () => {
   let component: CalloutComponent;
@@ -24,7 +25,7 @@ describe('CalloutComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [CalloutComponent],
+      imports: [CalloutComponent, MatIconTestingModule],
     }).compileComponents();
     fixture = TestBed.createComponent(CalloutComponent);
     component = fixture.componentInstance;
