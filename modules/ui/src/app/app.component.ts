@@ -44,6 +44,8 @@ const TESTRUN_LOGO_URL = '/assets/icons/testrun_logo_small.svg';
 const TESTRUN_LOGO_COLOR_URL = '/assets/icons/testrun_logo_color.svg';
 const CLOSE_URL = '/assets/icons/close.svg';
 const DRAFT_URL = '/assets/icons/draft.svg';
+const PILOT_URL = '/assets/icons/pilot.svg';
+const QUALIFICATION_URL = '/assets/icons/qualification.svg';
 
 @Component({
   selector: 'app-root',
@@ -114,6 +116,14 @@ export class AppComponent {
     this.matIconRegistry.addSvgIcon(
       'draft',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DRAFT_URL)
+    );
+    this.matIconRegistry.addSvgIcon(
+      'pilot',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(PILOT_URL)
+    );
+    this.matIconRegistry.addSvgIcon(
+      'qualification',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(QUALIFICATION_URL)
     );
   }
 
