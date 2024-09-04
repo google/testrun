@@ -63,10 +63,10 @@ import { DynamicFormComponent } from '../../../../components/dynamic-form/dynami
 import { filter, skip, Subject, takeUntil, timer } from 'rxjs';
 import { FormAction, FormResponse } from '../../devices.component';
 import { DeviceItemComponent } from '../../../../components/device-item/device-item.component';
-import { QualificationIconComponent } from '../../../../components/qualification-icon/qualification-icon.component';
-import { PilotIconComponent } from '../../../../components/pilot-icon/pilot-icon.component';
+import { ProgramTypeIconComponent } from '../../../../components/program-type-icon/program-type-icon.component';
 import { Question } from '../../../../model/profile';
 import { FormControlType } from '../../../../model/question';
+import { ProgramType } from '../../../../model/program-type';
 import { FocusManagerService } from '../../../../services/focus-manager.service';
 
 const MAC_ADDRESS_PATTERN =
@@ -106,8 +106,7 @@ interface DialogData {
     MatRadioButton,
     DynamicFormComponent,
     DeviceItemComponent,
-    QualificationIconComponent,
-    PilotIconComponent,
+    ProgramTypeIconComponent,
   ],
   providers: [provideNgxMask(), DevicesStore],
   templateUrl: './device-qualification-from.component.html',
@@ -118,6 +117,7 @@ export class DeviceQualificationFromComponent
 {
   readonly TestingType = TestingType;
   readonly DeviceView = DeviceView;
+  readonly ProgramType = ProgramType;
   @ViewChild('stepper') public stepper!: StepperComponent;
   testModules: TestModule[] = [];
   deviceQualificationForm: FormGroup = this.fb.group({});
