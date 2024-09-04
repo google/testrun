@@ -22,14 +22,16 @@ limitations under the License.
   class="device-item"
   type="button">
   <div class="item-manufacturer">
-    <app-qualification-icon
+    <app-program-type-icon
       *ngIf="device.test_pack === TestingType.Qualification"
+      [type]="ProgramType.Qualification"
       matTooltip="This device will be tested for Qualification."
-      aria-label="This device will be tested for Qualification."></app-qualification-icon>
-    <app-pilot-icon
+      aria-label="This device will be tested for Qualification."></app-program-type-icon>
+    <app-program-type-icon
       *ngIf="device.test_pack === TestingType.Pilot"
+      [type]="ProgramType.Pilot"
       matTooltip="This device will be tested for the Pilot program."
-      aria-label="This device will be tested for the Pilot program."></app-pilot-icon>
+      aria-label="This device will be tested for the Pilot program."></app-program-type-icon>
     <span [attr.aria-label]="device.manufacturer">{{
       device.manufacturer
     }}</span>
@@ -54,14 +56,16 @@ limitations under the License.
     class="button-edit"
     type="button">
     <div [attr.aria-label]="device.manufacturer" class="item-manufacturer">
-      <app-qualification-icon
+      <app-program-type-icon
         *ngIf="device.test_pack === TestingType.Qualification"
+        [type]="ProgramType.Qualification"
         matTooltip="This device will be tested for Qualification."
-        aria-label="This device will be tested for Qualification."></app-qualification-icon>
-      <app-pilot-icon
+        aria-label="This device will be tested for Qualification."></app-program-type-icon>
+      <app-program-type-icon
         *ngIf="device.test_pack === TestingType.Pilot"
+        [type]="ProgramType.Pilot"
         matTooltip="This device will be tested for the Pilot program."
-        aria-label="This device will be tested for the Pilot program."></app-pilot-icon>
+        aria-label="This device will be tested for the Pilot program."></app-program-type-icon>
       <p class="item-manufacturer-text">{{ device.manufacturer }}</p>
       <mat-icon
         class="item-manufacturer-icon"
