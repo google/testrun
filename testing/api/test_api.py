@@ -1029,7 +1029,7 @@ def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=
   # Check if the correct error message returned
   assert "Could not find device" in response["error"]
 
-def test_delete_report_no_report(empty_devices_dir, testrun, add_one_device): # pylint: disable=W0613
+def test_delete_report_no_report(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
   """Test for delete report when report does not exist (404)"""
 
   # Load the device using load_json utility method
@@ -1061,8 +1061,8 @@ def test_delete_report_no_report(empty_devices_dir, testrun, add_one_device): # 
   # Check if the correct error message is returned
   assert "Report not found" in response["error"]
 
-def test_get_report_success(empty_devices_dir, testrun, # pylint: disable=W0613
-                     add_one_device, create_report_folder):
+def test_get_report_success(empty_devices_dir, add_one_device, # pylint: disable=W0613
+                               create_report_folder, testrun): # pylint: disable=W0613
   """Test get report when report exists (200)"""
 
   # Load the device using load_json utility method
@@ -1089,7 +1089,7 @@ def test_get_report_success(empty_devices_dir, testrun, # pylint: disable=W0613
   # Check if the response is a PDF
   assert r.headers["Content-Type"] == "application/pdf"
 
-def test_get_report_not_found(empty_devices_dir, testrun, add_one_device): # pylint: disable=W0613
+def test_get_report_not_found(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
   """Test get report when report doesn't exist (404)"""
 
   # Load the device using load_json utility method
@@ -1160,8 +1160,8 @@ def test_export_report_device_not_found(empty_devices_dir, testrun, # pylint: di
   # Check if the correct error message returned
   assert "A device with that name could not be found" in response["error"]
 
-def test_export_report_profile_not_found(empty_devices_dir, testrun, # pylint: disable=W0613
-                            add_one_device, create_report_folder):
+def test_export_report_profile_not_found(empty_devices_dir, add_one_device, # pylint: disable=W0613
+                                            create_report_folder, testrun): # pylint: disable=W0613
   """Test for export report result when the profile is not found"""
 
   # Load the device using load_json utility method
@@ -1196,7 +1196,7 @@ def test_export_report_profile_not_found(empty_devices_dir, testrun, # pylint: d
   # Check if the correct error message returned
   assert "A profile with that name could not be found" in response["error"]
 
-def test_export_report_not_found(empty_devices_dir, testrun, add_one_device): # pylint: disable=W0613
+def test_export_report_not_found(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
   """Test for export the report result when the report could not be found"""
 
   # Load the device using load_json utility method
@@ -1226,7 +1226,7 @@ def test_export_report_with_profile(empty_devices_dir, add_one_device, # pylint:
   """Test export results with existing profile when report exists (200)"""
 
   # Load the profile using load_json utility method
-  profile = load_json("profile_1.json", directory=PROFILES_PATH)
+  profile = load_json("new_profile_1.json", directory=PROFILES_PATH)
 
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
@@ -1313,10 +1313,10 @@ def add_two_devices():
   # List of device folders from 'testing/api/devices'
   devices = ["device_1", "device_2"]
 
-  for device in devices:
+  for file in devices:
 
     # Construct the full path for the device_config.json
-    device_path = os.path.join(DEVICES_PATH, device)
+    device_path = os.path.join(DEVICES_PATH, file)
 
     # Load the device configurations using load_json utility method
     device = load_json("device_config.json", directory=device_path)
@@ -1329,6 +1329,9 @@ def add_two_devices():
 
     # Construct the target path where the profile will be copied
     target_path = os.path.join(DEVICES_DIRECTORY, device_name)
+
+    # Create the target directory if it doesn't exist
+    os.makedirs(target_path, exist_ok=True)
 
     # Copy the profile from source to target
     shutil.copy(source_path, target_path)
