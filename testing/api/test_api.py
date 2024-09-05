@@ -29,7 +29,6 @@ from typing import Iterator
 import pytest
 import requests
 
-ALL_DEVICES = "*"
 API = "http://127.0.0.1:8000"
 LOG_PATH = "/tmp/testrun.log"
 TEST_SITE_DIR = ".."
@@ -105,31 +104,97 @@ def docker_logs(device_name):
 
 def load_json(file_name, directory):
   """Utility method to load json files' """
+
   # Construct the base path relative to the main folder
   base_path = os.path.abspath(os.path.join(__file__, "../../.."))
+
   # Construct the full file path
   file_path = os.path.join(base_path, directory, file_name)
 
   # Open the file in read mode
   with open(file_path, "r", encoding="utf-8") as file:
+
     # Return the file content
     return json.load(file)
+
+def local_delete_devices():
+  """ Deletes all devices from local/devices directory"""
+
+  try:
+
+    # Check if the profile_path (local/devices) exists and is a folder
+    if os.path.exists(DEVICES_DIRECTORY) and os.path.isdir(DEVICES_DIRECTORY):
+
+      # Iterate over all devices from devices folder
+      for item in os.listdir(DEVICES_DIRECTORY):
+
+        # Create the full path
+        item_path = os.path.join(DEVICES_DIRECTORY, item)
+
+        # Check if item is a file
+        if os.path.isfile(item_path):
+
+          #If True remove file
+          os.unlink(item_path)
+
+        else:
+
+          # If item is a folder remove it
+          shutil.rmtree(item_path)
+
+  except PermissionError:
+
+    # Permission related issues
+    print(f"Permission Denied: {item}")
+
+  except OSError as err:
+
+    # System related issues
+    print(f"Error removing {item}: {err}")
+
+def local_get_devices():
+  """ Returns path to 'device_config.json' for all devices from local/devices"""
+
+  # List to store the paths of all 'device_config.json' files
+  device_configs = []
+
+  # Loop through each file/folder from 'local/devices'.
+  for device_folder in os.listdir(DEVICES_DIRECTORY):
+
+    # Construct the full path for the file/folder
+    device_path = os.path.join(DEVICES_DIRECTORY, device_folder)
+
+    # Check if the current path is a folder
+    if os.path.isdir(device_path):
+
+      # Construct the full path to 'device_config.json' inside the folder.
+      config_path = os.path.join(device_path, "device_config.json")
+
+      # Check if 'device_config.json' exists in the path.
+      if os.path.exists(config_path):
+
+        # Append the file path to the list.
+        device_configs.append(config_path)
+
+  # Return all the device_config.json paths
+  return device_configs
 
 @pytest.fixture
 def empty_devices_dir():
   """ Fixture to empty devices directory """
+
   # Empty the directory before the test
-  local_delete_devices(ALL_DEVICES)
+  local_delete_devices()
 
   yield
 
   # Empty the directory after the test
-  local_delete_devices(ALL_DEVICES)
+  local_delete_devices()
 
 @pytest.fixture
 def testing_devices():
   """ Use devices from the testing/device_configs directory """
-  local_delete_devices(ALL_DEVICES)
+  local_delete_devices()
   shutil.copytree(
       os.path.join(os.path.dirname(__file__), TESTING_DEVICES),
       os.path.join(DEVICES_DIRECTORY),
@@ -222,23 +287,6 @@ def get_network_interfaces():
     if i.stem.startswith("en") or i.stem.startswith("eth"):
       ifaces.append(i.stem)
   return ifaces
-
-def local_delete_devices(path):
-  """ Deletes all local devices 
-  """
-  for thing in Path(DEVICES_DIRECTORY).glob(path):
-    if thing.is_file():
-      thing.unlink()
-    else:
-      shutil.rmtree(thing)
-
-def local_get_devices():
-  """ Returns path to device configs of devices in local/devices directory"""
-  return sorted(
-      Path(DEVICES_DIRECTORY).glob(
-          "*/device_config.json"
-      )
-  )
 
 # Tests for system endpoints
 
@@ -1147,12 +1195,13 @@ def test_export_report_not_found(empty_devices_dir, testrun, add_device): # pyli
   # Check if the correct error message is returned
   assert "Report could not be found" in response["error"]
 
-def test_export_report_with_profile(empty_devices_dir, testrun, add_device, # pylint: disable=W0613
-                        create_report_folder, reset_profiles, add_profile): # pylint: disable=W0613
+def test_export_report_with_profile(empty_devices_dir, empty_profiles_dir,  # pylint: disable=W0613
+                                      add_one_profile, testrun, add_device, # pylint: disable=W0613
+                        create_report_folder): # pylint: disable=W0613
   """Test export results with existing profile when report exists (200)"""
 
-  # Create a profile using the add_profile fixture
-  profile = add_profile("new_profile.json")
+  # Load the profile using load_json utility method
+  profile = load_json("new_profile_1.json", directory=PROFILES_PATH)
 
   # Load the device_name and mac_address from add_device fixture
   device_name, mac_address = add_device()
@@ -2058,27 +2107,53 @@ def test_delete_certificate_not_found(testrun, reset_certs): # pylint: disable=W
 
 # Tests for profile endpoints
 
-def delete_all_profiles():
-  """Utility method to delete all profiles from risk_profiles folder"""
+@pytest.fixture()
+def add_one_profile():
+  """Fixture to create one profile during tests"""
 
-  # Assign the profiles directory
-  profiles_path = os.path.join(PROFILES_DIRECTORY)
+  # Construct full path of the profile from 'testing/api/profiles' folder
+  source_path = os.path.join(PROFILES_PATH, "new_profile_1.json")
+
+  # Construct full path where the profile will be copied
+  target_path = os.path.join(PROFILES_DIRECTORY, "new_profile_1.json")
+
+  # Copy the profile from 'testing/api/profiles' to 'local/risk_profiles'
+  shutil.copy(source_path, target_path)
+
+@pytest.fixture()
+def add_two_profiles():
+  """Fixture to create two profiles during tests"""
+
+  # Iterate over the files from 'testing/api/profiles' folder
+  for file in os.listdir(PROFILES_PATH):
+
+    # Construct full path of the file_name from 'testing/api/profiles' folder
+    source_path = os.path.join(PROFILES_PATH, file)
+
+    # Construct full path where the file_name will be copied
+    target_path = os.path.join(PROFILES_DIRECTORY, file)
+
+    # Copy the file_name from 'testing/api/profiles' to 'local/risk_profiles'
+    shutil.copy(source_path, target_path)
+
+def delete_all_profiles():
+  """Utility method to delete all profiles from local/risk_profiles"""
 
   try:
 
     # Check if the profile_path (local/risk_profiles) exists and is a folder
-    if os.path.exists(profiles_path) and os.path.isdir(profiles_path):
+    if os.path.exists(PROFILES_DIRECTORY) and os.path.isdir(PROFILES_DIRECTORY):
 
       # Iterate over all profiles from risk_profiles folder
-      for item in os.listdir(profiles_path):
+      for item in os.listdir(PROFILES_DIRECTORY):
 
         # Create the full path
-        item_path = os.path.join(profiles_path, item)
+        item_path = os.path.join(PROFILES_DIRECTORY, item)
 
         # Check if item is a file
         if os.path.isfile(item_path):
 
-          #If True remove file
+          # Remove file
           os.unlink(item_path)
 
         else:
@@ -2096,31 +2171,8 @@ def delete_all_profiles():
     # System related issues
     print(f"Error removing {item}: {err}")
 
-def create_profile(file_name):
-  """Utility method to create the profile"""
-
-  # Load the profile
-  new_profile = load_json(file_name, directory=PROFILES_PATH)
-
-  # Assign the profile name to profile_name
-  profile_name = new_profile["name"]
-
-  # Exception if the profile already exists
-  if profile_exists(profile_name):
-    raise ValueError(f"Profile: {profile_name} exists")
-
-  # Send the post request
-  r = requests.post(f"{API}/profiles", data=json.dumps(new_profile), timeout=5)
-
-  # Exception if status code is not 201
-  if r.status_code != 201:
-    raise ValueError(f"API request failed with code: {r.status_code}")
-
-  # Return the profile
-  return new_profile
-
 @pytest.fixture()
-def reset_profiles():
+def empty_profiles_dir():
   """Delete the profiles before and after each test"""
 
   # Delete before the test
@@ -2130,13 +2182,6 @@ def reset_profiles():
 
   # Delete after the test
   delete_all_profiles()
-
-@pytest.fixture()
-def add_profile():
-  """Fixture to create profiles during tests"""
-
-  # Returning the reference to create_profile
-  return create_profile
 
 def profile_exists(profile_name):
   """Utility method to check if profile exists"""
@@ -2174,10 +2219,8 @@ def test_get_profiles_format(testrun): # pylint: disable=W0613
     assert "question" in item
     assert "type" in item
 
-def test_get_profiles(testrun, reset_profiles, add_profile): # pylint: disable=W0613
-  """Test for get profiles (no profile, one profile, two profiles)"""
-
-  # Test for no profile
+def test_get_profiles_no_profiles(empty_profiles_dir, testrun): # pylint: disable=W0613
+  """Test for get profiles when no profiles created (200)"""
 
   # Send the get request to "/profiles" endpoint
   r = requests.get(f"{API}/profiles", timeout=5)
@@ -2194,10 +2237,8 @@ def test_get_profiles(testrun, reset_profiles, add_profile): # pylint: disable=W
   # Check if the list is empty
   assert len(response) == 0
 
-  # Test for one profile
-
-  # Load the profile using add_profile fixture
-  add_profile("new_profile.json")
+def test_get_profiles_one_profile(empty_profiles_dir, add_one_profile, testrun): # pylint: disable=W0613
+  """Test for get profiles when one profile is created (200)"""
 
   # Send get request to the "/profiles" endpoint
   r = requests.get(f"{API}/profiles", timeout=5)
@@ -2237,10 +2278,9 @@ def test_get_profiles(testrun, reset_profiles, add_profile): # pylint: disable=W
       # Check if "asnswer" key is in dict element
       assert "answer" in element
 
-  # Test for two profiles
-
-  # Load the profile using add_profile fixture
-  add_profile("new_profile_2.json")
+def test_get_profiles_two_profiles(empty_profiles_dir, add_two_profiles, # pylint: disable=W0613
+                                   testrun): # pylint: disable=W0613
+  """Test for get profiles when two profiles are created (200)"""
 
   # Send the get request to "/profiles" endpoint
   r = requests.get(f"{API}/profiles", timeout=5)
@@ -2257,11 +2297,11 @@ def test_get_profiles(testrun, reset_profiles, add_profile): # pylint: disable=W
   # Check if response contains two profiles
   assert len(response) == 2
 
-def test_create_profile(testrun, reset_profiles): # pylint: disable=W0613
-  """Test for create profile when profile does not exist"""
+def test_create_profile(testrun): # pylint: disable=W0613
+  """Test for create profile when profile does not exist (201)"""
 
   # Load the profile
-  new_profile = load_json("new_profile.json", directory=PROFILES_PATH)
+  new_profile = load_json("new_profile_1.json", directory=PROFILES_PATH)
 
   # Assign the profile name to profile_name
   profile_name = new_profile["name"]
@@ -2299,25 +2339,28 @@ def test_create_profile(testrun, reset_profiles): # pylint: disable=W0613
   # Check if profile was created
   assert created_profile is not None
 
-def test_update_profile(testrun, reset_profiles, add_profile): # pylint: disable=W0613
-  """Test for update profile when profile already exists"""
+def test_update_profile(empty_profiles_dir, add_one_profile, testrun): # pylint: disable=W0613
+  """Test for update profile when profile already exists (200)"""
 
-  # Load the new profile using add_profile fixture
-  new_profile = add_profile("new_profile.json")
-
-  # Load the updated profile using load_json utility method
-  updated_profile = load_json("updated_profile.json",
-                              directory=PROFILES_PATH)
+  # Load the new profile using load_json fixture
+  new_profile = load_json("new_profile_1.json", directory=PROFILES_PATH)
 
   # Assign the new_profile name
   profile_name = new_profile["name"]
 
   # Assign the updated_profile name
-  updated_profile_name = updated_profile["rename"]
+  updated_profile_name = "updated_profile_1"
 
-  # Exception if the profile does't exists
+  # Payload with the updated device name
+  updated_profile = {
+    "name": profile_name,
+    "rename" : updated_profile_name,
+    "questions": new_profile["questions"]   
+    }
+
+  # Exception if the profile does not exists
   if not profile_exists(profile_name):
-    raise ValueError(f"Profile: {profile_name} exists")
+    raise ValueError(f"Profile: {profile_name} does not exists")
 
   # Send the post request to update the profile
   r = requests.post(
@@ -2351,11 +2394,9 @@ def test_update_profile(testrun, reset_profiles, add_profile): # pylint: disable
   # Check if profile was updated
   assert updated_profile_check is not None
 
-def test_update_profile_invalid_json(testrun, reset_profiles, add_profile): # pylint: disable=W0613
-  """Test for update profile invalid JSON payload (no 'name')"""
-
-  # Load the new profile using add_profile fixture
-  add_profile("new_profile.json")
+def test_update_profile_invalid_json(empty_profiles_dir, add_one_profile, # pylint: disable=W0613
+                                     testrun): # pylint: disable=W0613
+  """Test for update profile invalid JSON payload (400)"""
 
   # Invalid JSON
   updated_profile = {}
@@ -2375,8 +2416,8 @@ def test_update_profile_invalid_json(testrun, reset_profiles, add_profile): # py
   # Check if "error" key in response
   assert "error" in response
 
-def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable=W0613
-  """Test for create profile invalid JSON payload """
+def test_create_profile_invalid_json(empty_profiles_dir, testrun): # pylint: disable=W0613
+  """Test for create profile invalid JSON payload (400) """
 
   # Invalid JSON
   new_profile = {}
@@ -2396,11 +2437,11 @@ def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   # Check if "error" key in response
   assert "error" in response
 
-def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable=W0613
-  """Test for delete profile"""
+def test_delete_profile(empty_profiles_dir, add_one_profile, testrun): # pylint: disable=W0613
+  """Test for successfully delete profile (200)"""
 
-  # Assign the profile from the fixture
-  profile_to_delete = add_profile("new_profile.json")
+  # Load the profile using load_json utility method
+  profile_to_delete = load_json("new_profile_1.json", directory=PROFILES_PATH)
 
   # Assign the profile name
   profile_name = profile_to_delete["name"]
@@ -2438,8 +2479,8 @@ def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable
   # Check if profile was deleted
   assert deleted_profile is None
 
-def test_delete_profile_no_profile(testrun, reset_profiles): # pylint: disable=W0613
-  """Test delete profile if the profile does not exists"""
+def test_delete_profile_no_profile(empty_profiles_dir, testrun): # pylint: disable=W0613
+  """Test delete profile if the profile does not exists (404)"""
 
   # Assign the profile to delete
   profile_to_delete = {"name": "New Profile"}
@@ -2453,8 +2494,8 @@ def test_delete_profile_no_profile(testrun, reset_profiles): # pylint: disable=W
   # Check if status code is 404 (Profile does not exist)
   assert r.status_code == 404
 
-def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable=W0613
-  """Test for delete profile wrong JSON payload"""
+def test_delete_profile_invalid_json(empty_profiles_dir, testrun): # pylint: disable=W0613
+  """Test for delete profile invalid JSON payload (400)"""
 
   # Invalid payload
   profile_to_delete = {}
@@ -2492,12 +2533,12 @@ def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   # Check if "error" key in response
   assert "error" in response
 
-def test_delete_profile_server_error(testrun, reset_profiles, # pylint: disable=W0613
-                                     add_profile):
-  """Test for delete profile causing internal server error"""
+def test_delete_profile_server_error(empty_profiles_dir, add_one_profile, # pylint: disable=W0613
+                                     testrun): # pylint: disable=W0613
+  """Test for delete profile causing internal server error (500)"""
 
   # Assign the profile from the fixture
-  profile_to_delete = add_profile("new_profile.json")
+  profile_to_delete = load_json("new_profile_1.json", directory=PROFILES_PATH)
 
   # Assign the profile name to profile_name
   profile_name = profile_to_delete["name"]
