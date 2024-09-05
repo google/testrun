@@ -21,9 +21,9 @@ limitations under the License.
     color="primary">
     {{ type }}
   </mat-icon>
-  <span *ngIf="type === CalloutType.InfoPilot" class="callout-icon info-pilot"
-    >🚀</span
-  >
+  <span *ngIf="type === CalloutType.InfoPilot" class="callout-icon info-pilot">
+    <app-program-type-icon [type]="ProgramType.Pilot"></app-program-type-icon
+  ></span>
   <p class="callout-context">
     <ng-content></ng-content>
   </p>

@@ -27,6 +27,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Profile, ProfileStatus } from '../../model/profile';
 import { Observable } from 'rxjs/internal/Observable';
 import { DeviceValidators } from '../devices/components/device-form/device.validators';
+import { SuccessDialogComponent } from './components/success-dialog/success-dialog.component';
 
 @Component({
   selector: 'app-risk-assessment',
@@ -158,7 +159,12 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   }
 
   private saveProfile(profile: Profile) {
-    this.store.saveProfile(profile);
+    this.store.saveProfile({
+      profile,
+      onSave: (profile: Profile) => {
+        this.openSuccessDialog(profile);
+      },
+    });
     this.isOpenProfileForm = false;
   }
 
@@ -190,5 +196,18 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     });
 
     return dialogRef?.afterClosed();
+  }
+
+  private openSuccessDialog(profile: Profile): void {
+    this.dialog.open(SuccessDialogComponent, {
+      ariaLabel: 'Risk Assessment Profile Completed',
+      data: {
+        profile,
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: 'simple-dialog',
+    });
   }
 }
