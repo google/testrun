@@ -512,15 +512,10 @@ def test_start_testrun_already_started(empty_devices_dir, add_one_device, # pyli
   assert "error" in response
 
 def test_start_testrun_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
-def test_start_testrun_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
   """Test for start testrun device not found """
 
   # Payload with device details with no mac address assigned
   payload = {"device": {
-    "mac_addr": "",
-    "firmware": "test",
-    "test_modules": {}
-    }}
     "mac_addr": "",
     "firmware": "test",
     "test_modules": {}
@@ -1012,8 +1007,6 @@ def test_delete_report_invalid_timestamp(empty_devices_dir, add_one_device, # py
 
 def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=W0613
   """Test delete report when device does not exist (404)"""
-def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=W0613
-  """Test delete report when device does not exist (404)"""
 
   # Payload to be deleted for a non existing device
   delete_data = {
@@ -1058,8 +1051,6 @@ def test_delete_report_no_report(empty_devices_dir, add_one_device, testrun): # 
 
   # Check if status code is 404 (not found)
   assert r.status_code == 404
-  # Check if status code is 404 (not found)
-  assert r.status_code == 404
 
   # Parse the JSON response
   response = r.json()
@@ -1068,7 +1059,6 @@ def test_delete_report_no_report(empty_devices_dir, add_one_device, testrun): # 
   assert "error" in response
 
   # Check if the correct error message is returned
-  assert "Report not found" in response["error"]
   assert "Report not found" in response["error"]
 
 def test_get_report_success(empty_devices_dir, add_one_device, # pylint: disable=W0613
@@ -1523,16 +1513,12 @@ def test_delete_device_not_found(empty_devices_dir, testrun): # pylint: disable=
 
   payload = {"mac_addr": "non_existing"}
 
-  payload = {"mac_addr": "non_existing"}
-
   # Test that device_1 deletes
   r = requests.delete(f"{API}/device/",
-                      data=json.dumps(payload),
                       data=json.dumps(payload),
                       timeout=5)
 
   assert r.status_code == 404
-
 
   assert len(local_get_devices()) == 0
 
@@ -1611,11 +1597,9 @@ def test_start_system_not_configured_correctly(
 
   payload = {"device": {"mac_addr": None, "firmware": "asd"}}
 
-
   r = requests.post(f"{API}/system/start",
                     data=json.dumps(payload),
                     timeout=10)
-
 
   assert r.status_code == 500
 
@@ -1677,8 +1661,6 @@ def test_create_device_already_exists(
 def test_create_device_invalid_json(
     empty_devices_dir, # pylint: disable=W0613
     testrun): # pylint: disable=W0613
-
-  device_1 = {}
 
   device_1 = {}
 
@@ -1801,9 +1783,7 @@ def test_device_edit_device_with_mac_already_exists(
                     data=json.dumps(device_1),
                     timeout=5)
 
-
   assert r.status_code == 201
-
 
   assert len(local_get_devices()) == 1
 
@@ -1813,16 +1793,13 @@ def test_device_edit_device_with_mac_already_exists(
                     data=json.dumps(device_2),
                     timeout=5)
 
-
   assert r.status_code == 201
-
 
   assert len(local_get_devices()) == 2
 
   updated_device = copy.deepcopy(device_1)
 
   updated_device_payload = {}
-
 
   updated_device_payload["device"] = updated_device
   updated_device_payload["mac_addr"] = "00:1e:42:35:73:c6"
