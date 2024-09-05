@@ -13,8 +13,9 @@
 # limitations under the License.
 
 """Represents a testing pack."""
-from typing import List
+from typing import List, Dict
 from dataclasses import dataclass, field
+from collections import defaultdict
 
 
 @dataclass
@@ -24,15 +25,18 @@ class TestPack:  # pylint: disable=too-few-public-methods,too-many-instance-attr
   name: str = "undefined"
   description: str = ""
   tests: List[dict] = field(default_factory=lambda: [])
+  language: Dict = field(default_factory=lambda: defaultdict(dict))
 
   def get_required_result(self, test_name: str) -> str:
-    print(f"Getting required result for {test_name}")
+
     for test in self.tests:
       if "name" in test and test["name"].lower() == test_name.lower():
-        print(f"Found test {test_name} in test pack")
         if "required_result" in test:
-          print(f"Required result is {test['required_result']}")
           return test["required_result"]
-        else:
-          print("Required result not found")
+
     return "Informational"
+
+  def get_message(self, name: str) -> str:
+    if name in self.language:
+      return self.language[name]
+    return "Message not found"

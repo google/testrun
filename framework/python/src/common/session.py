@@ -82,6 +82,7 @@ class TestrunSession():
     self._root_dir = root_dir
 
     self._status = TestrunStatus.IDLE
+    self._description = None
 
     # Target test device
     self._device = None
@@ -354,6 +355,9 @@ class TestrunSession():
   def set_status(self, status):
     self._status = status
 
+  def set_description(self, desc: str):
+    self._description = desc
+
   def get_test_results(self):
     return self._results
 
@@ -394,8 +398,15 @@ class TestrunSession():
           else:
             test_result.result = result.result
 
-        test_result.description = result.description
-        test_result.recommendations = result.recommendations
+        if len(result.description) != 0:
+          test_result.description = result.description
+
+        if result.recommendations is not None:
+          test_result.recommendations = result.recommendations
+
+          if len(result.recommendations) == 0:
+            test_result.recommendations = None
+
         updated = True
 
     if not updated:
@@ -710,6 +721,7 @@ question {question.get('question')}''')
 
   def reset(self):
     self.set_status(TestrunStatus.IDLE)
+    self.set_description(None)
     self.set_target_device(None)
     self._report_url = None
     self._total_tests = 0
@@ -741,6 +753,9 @@ question {question.get('question')}''')
 
     if self._report_url is not None:
       session_json['report'] = self.get_report_url()
+
+    if self._description is not None:
+      session_json['description'] = self._description
 
     return session_json
 

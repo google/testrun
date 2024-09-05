@@ -483,6 +483,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     if result is not None:
       self._set_status(result)
+
     self._stop_network()
 
   def get_session(self):

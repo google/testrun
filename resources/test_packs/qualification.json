@@ -1,5 +1,9 @@
 {
     "name": "Device Qualification",
+    "language": {
+      "compliant_description": "Your device has met the initial device qualification requirements. Please send your Testrun ZIP file to the qualification lab for verification. The lab will then contact you with further instructions.",
+      "non_compliant_description": "Your device didn't quite meet the initial device qualification requirements. The Testrun report will provide guidance on how to resolve any issues. If you require further support, please get in touch with the qualification lab."
+    },
     "tests": [
         {
           "name": "connection.port_link",

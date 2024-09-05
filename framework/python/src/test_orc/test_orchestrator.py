@@ -174,6 +174,19 @@ class TestOrchestrator:
     self._test_in_progress = False
     self.get_session().set_report_url(report.get_report_url())
 
+    # Set testing description
+    test_pack: TestPack = self.get_test_pack(device.test_pack)
+
+    # Default message is empty (better than an error message).
+    # This should never be shown
+    message: str = ""
+    if report.get_status() == TestrunStatus.COMPLIANT:
+      message = test_pack.get_message("compliant_description")
+    elif report.get_status() == TestrunStatus.NON_COMPLIANT:
+      message = test_pack.get_message("non_compliant_description")
+
+    self.get_session().set_description(message)
+
     # Move testing output from runtime to local device folder
     self._timestamp_results(device)
 
@@ -488,7 +501,7 @@ class TestOrchestrator:
               "recommendations" in test_result):
             test_case.recommendations = test_result["recommendations"]
           else:
-            test_case.recommendations = None
+            test_case.recommendations = []
 
           self.get_session().add_test_result(test_case)
 
@@ -574,7 +587,8 @@ class TestOrchestrator:
 
       test_pack: TestPack = TestPack(
         name = test_pack_json["name"],
-        tests = test_pack_json["tests"]
+        tests = test_pack_json["tests"],
+        language = test_pack_json["language"]
       )
 
       self._test_packs.append(test_pack)
