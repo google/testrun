@@ -261,90 +261,25 @@ body:has(.filter-dialog-content)
 }
 
 body
-  #main:has(app-callout .info):not(:has(app-callout .error))
+  #main:has(app-callout)
   app-device-repository:not(:has(.device-repository-content-empty)),
-body
-  #main:has(app-callout .info):not(:has(app-callout .error))
-  app-history:not(:has(.results-content-empty)),
-body
-  #main:has(app-callout .info):not(:has(app-callout .error))
-  app-progress:not(:has(.progress-content-empty)),
-body
-  #main:has(app-callout .info):not(:has(app-callout .error))
-  app-risk-assessment
-  .risk-assessment-container,
-body
-  #main:has(app-callout .check_circle):not(:has(app-callout .error))
-  app-device-repository:not(:has(.device-repository-content-empty)),
-body
-  #main:has(app-callout .check_circle):not(:has(app-callout .error))
-  app-history:not(:has(.results-content-empty)),
-body
-  #main:has(app-callout .check_circle):not(:has(app-callout .error))
-  app-progress:not(:has(.progress-content-empty)),
-body
-  #main:has(app-callout .check_circle):not(:has(app-callout .error))
-  app-risk-assessment
-  .risk-assessment-container,
-body
-  #main:has(app-callout .error):not(:has(app-callout .info))
-  app-device-repository:not(:has(.device-repository-content-empty)),
-body
-  #main:has(app-callout .error):not(:has(app-callout .info))
-  app-history:not(:has(.results-content-empty)),
-body
-  #main:has(app-callout .error):not(:has(app-callout .info))
-  app-progress:not(:has(.progress-content-empty)),
-body
-  #main:has(app-callout .error):not(:has(app-callout .info))
-  app-risk-assessment
-  .risk-assessment-container {
+body #main:has(app-callout) app-history:not(:has(.results-content-empty)),
+body #main:has(app-callout) app-progress:not(:has(.progress-content-empty)),
+body #main:has(app-callout) app-risk-assessment .risk-assessment-container {
   margin-top: 96px;
 }
 
 body
-  #main:has(app-callout .info):has(app-callout .error)
+  #main:has(app-callout + app-callout)
   app-device-repository:not(:has(.device-repository-content-empty)),
 body
-  #main:has(app-callout .info):has(app-callout .error)
+  #main:has(app-callout + app-callout)
   app-history:not(:has(.results-content-empty)),
 body
-  #main:has(app-callout .info):has(app-callout .error)
+  #main:has(app-callout + app-callout)
   app-progress:not(:has(.progress-content-empty)),
 body
-  #main:has(app-callout .info):has(app-callout .error)
-  app-risk-assessment
-  .risk-assessment-container {
-  margin-top: 156px;
-}
-
-body
-  #main:has(app-callout .error app-callout .error)
-  app-device-repository:not(:has(.device-repository-content-empty)),
-body
-  #main:has(app-callout .error app-callout .error)
-  app-history:not(:has(.results-content-empty)),
-body
-  #main:has(app-callout .error app-callout .error)
-  app-progress:not(:has(.progress-content-empty)),
-body
-  #main:has(app-callout .error app-callout .error)
-  app-risk-assessment
-  .risk-assessment-container {
-  margin-top: 156px;
-}
-
-body
-  #main:has(app-callout .check_circle):has(app-callout .error)
-  app-device-repository:not(:has(.device-repository-content-empty)),
-body
-  #main:has(app-callout .check_circle):has(app-callout .error)
-  app-history:not(:has(.results-content-empty)),
-body
-  #main:has(app-callout .check_circle):has(app-callout .error)
-  app-progress:not(:has(.progress-content-empty)),
-body
-  #main:has(app-callout .check_circle):has(app-callout .error)
+  #main:has(app-callout + app-callout)
   app-risk-assessment
   .risk-assessment-container {
   margin-top: 156px;
