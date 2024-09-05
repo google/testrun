@@ -172,7 +172,16 @@ export class DevicesComponent implements OnInit, OnDestroy {
         }
         if (response.action === FormAction.Delete && initialDevice) {
           this.devicesStore.selectDevice(initialDevice);
-          this.openDeleteDialog(devices, testModules, initialDevice);
+          if (response.device) {
+            this.openDeleteDialog(
+              devices,
+              testModules,
+              initialDevice,
+              response.device,
+              isEditDevice,
+              response.index
+            );
+          }
         }
       });
   }
@@ -219,7 +228,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
     devices: Device[],
     testModules: TestModule[],
     initialDevice: Device,
-    device?: Device,
+    device: Device,
     isEditDevice = false,
     index = 0
   ) {
