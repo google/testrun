@@ -41,10 +41,6 @@
   }
 }
 
-:host.hidden {
-  display: none;
-}
-
 @media (width < 742px) {
   :host + ::ng-deep app-callout {
     top: 80px;

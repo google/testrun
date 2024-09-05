@@ -17,7 +17,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
-  HostBinding,
   Input,
   Output,
 } from '@angular/core';
@@ -44,7 +43,6 @@ import { ProgramTypeIconComponent } from '../program-type-icon/program-type-icon
 export class CalloutComponent {
   readonly CalloutType = CalloutType;
   readonly ProgramType = ProgramType;
-  @HostBinding('class.hidden') @Input() closed: boolean = false;
   @Input() id: string | null = null;
   @Input() type = '';
   @Input() closable = false;
