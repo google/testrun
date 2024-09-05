@@ -44,6 +44,7 @@ export class DeviceItemComponent {
   readonly DeviceStatus = DeviceStatus;
   readonly TestingType = TestingType;
   readonly ProgramType = ProgramType;
+  readonly INVALID_DEVICE = 'Outdated';
   @Input() device!: Device;
   @Input() tabIndex = 0;
   @Input() deviceView!: string;
@@ -60,6 +61,8 @@ export class DeviceItemComponent {
   }
 
   get label() {
-    return `${this.device.manufacturer} ${this.device.model} ${this.device.mac_addr}`;
+    const deviceStatus =
+      this.device.status === DeviceStatus.INVALID ? this.INVALID_DEVICE : '';
+    return `${this.device.test_pack} ${this.device.manufacturer} ${this.device.model} ${deviceStatus} ${this.device.mac_addr}`;
   }
 }
