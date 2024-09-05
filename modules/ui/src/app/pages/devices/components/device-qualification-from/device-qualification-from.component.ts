@@ -17,6 +17,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  HostListener,
   Inject,
   OnDestroy,
   OnInit,
@@ -115,6 +116,7 @@ interface DialogData {
 export class DeviceQualificationFromComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
+  readonly FORM_HEIGHT = 993;
   readonly TestingType = TestingType;
   readonly DeviceView = DeviceView;
   readonly ProgramType = ProgramType;
@@ -171,6 +173,11 @@ export class DeviceQualificationFromComponent
 
   deviceHasNoChanges(device1: Device | undefined, device2: Device | undefined) {
     return device1 && device2 && this.compareDevices(device1, device2);
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.setDialogHeight();
   }
 
   constructor(
@@ -553,5 +560,14 @@ export class DeviceQualificationFromComponent
       return false;
     }
     return true;
+  }
+
+  private setDialogHeight(): void {
+    const windowHeight = window.innerHeight;
+    if (windowHeight < this.FORM_HEIGHT) {
+      this.element.nativeElement.style.height = '100vh';
+    } else {
+      this.element.nativeElement.style.height = this.FORM_HEIGHT + 'px';
+    }
   }
 }
