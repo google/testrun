@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div *ngIf="!closed" class="callout-container" [ngClass]="type">
+<div class="callout-container" [ngClass]="type">
   <mat-icon
     *ngIf="type !== CalloutType.InfoPilot"
     class="callout-icon"
@@ -21,9 +21,9 @@ limitations under the License.
     color="primary">
     {{ type }}
   </mat-icon>
-  <span *ngIf="type === CalloutType.InfoPilot" class="callout-icon info-pilot"
-    >🚀</span
-  >
+  <span *ngIf="type === CalloutType.InfoPilot" class="callout-icon info-pilot">
+    <app-program-type-icon [type]="ProgramType.Pilot"></app-program-type-icon
+  ></span>
   <p class="callout-context">
     <ng-content></ng-content>
   </p>
