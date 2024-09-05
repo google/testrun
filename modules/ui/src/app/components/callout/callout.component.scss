@@ -31,6 +31,16 @@
   top: 60px;
 }
 
+:host .info-pilot ::ng-deep app-program-type-icon {
+  padding-rigt: 1px;
+
+  .icon {
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+  }
+}
+
 :host.hidden {
   display: none;
 }

@@ -25,17 +25,25 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { CalloutType } from '../../model/callout-type';
+import { ProgramType } from '../../model/program-type';
+import { ProgramTypeIconComponent } from '../program-type-icon/program-type-icon.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatButtonModule,
+    ProgramTypeIconComponent,
+  ],
   selector: 'app-callout',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule],
-  templateUrl: './callout.component.html',
   styleUrls: ['./callout.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './callout.component.html',
 })
 export class CalloutComponent {
-  public readonly CalloutType = CalloutType;
+  readonly CalloutType = CalloutType;
+  readonly ProgramType = ProgramType;
   @HostBinding('class.hidden') @Input() closed: boolean = false;
   @Input() id: string | null = null;
   @Input() type = '';
