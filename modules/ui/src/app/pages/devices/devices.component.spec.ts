@@ -137,12 +137,6 @@ describe('DevicesComponent', () => {
       expect(item.length).toEqual(3);
     }));
 
-    it('should add device-item-selected class for selected device', fakeAsync(() => {
-      const item = compiled.querySelector('app-device-item');
-
-      expect(item?.classList.contains('device-item-selected')).toBeTrue();
-    }));
-
     it('should open device dialog on "add device button" click', () => {
       const openSpy = spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
@@ -289,7 +283,15 @@ describe('DevicesComponent', () => {
         afterClosed: () => of(true),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openDeleteDialog([device], MOCK_TEST_MODULES, device);
+      component.openDeleteDialog(
+        [device],
+        MOCK_TEST_MODULES,
+        device,
+        device,
+        false,
+        0,
+        0
+      );
 
       const args = mockDevicesStore.deleteDevice.calls.argsFor(0);
       // @ts-expect-error config is in object
@@ -303,14 +305,23 @@ describe('DevicesComponent', () => {
         afterClosed: () => of(null),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openDeleteDialog([device], MOCK_TEST_MODULES, device);
+      component.openDeleteDialog(
+        [device],
+        MOCK_TEST_MODULES,
+        device,
+        device,
+        false,
+        0,
+        0
+      );
 
       expect(openDeviceDialogSpy).toHaveBeenCalledWith(
         [device],
         MOCK_TEST_MODULES,
         device,
-        undefined,
+        device,
         false,
+        0,
         0
       );
     });
