@@ -163,12 +163,6 @@ export class DeviceQualificationFromComponent
     return this.getStep(0).controls['test_modules'] as FormArray;
   }
 
-  get formPristine() {
-    return (
-      this.deviceQualificationForm.get('steps') as FormArray
-    ).controls.every(control => (control as FormGroup).pristine);
-  }
-
   get formValid() {
     return (
       this.deviceQualificationForm.get('steps') as FormArray
@@ -258,7 +252,11 @@ export class DeviceQualificationFromComponent
   }
 
   delete(): void {
-    this.dialogRef.close({ action: FormAction.Delete } as FormResponse);
+    this.dialogRef.close({
+      action: FormAction.Delete,
+      device: this.createDeviceFromForm(),
+      index: this.stepper.selectedIndex,
+    } as FormResponse);
   }
 
   closeForm(): void {
