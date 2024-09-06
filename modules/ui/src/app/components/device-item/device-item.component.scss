@@ -41,7 +41,7 @@ $border-radius: 12px;
     cursor: pointer;
   }
 
-  &.non-interective {
+  &.non-interactive {
     &:hover {
       cursor: default;
     }
@@ -102,6 +102,36 @@ $border-radius: 12px;
   }
 }
 
+.device-item:not(.non-interective):hover {
+  border-color: mat.m2-get-color-from-palette($color-primary, 600);
+}
+
+.device-item-with-actions:not(.device-item-outdated):has(
+    .button-edit:not(:disabled):hover
+  ) {
+  border-color: mat.m2-get-color-from-palette($color-primary, 600);
+}
+
+.device-item-with-actions:not(.device-item-outdated):has(
+    .button-start:not(:disabled):hover
+  ) {
+  border-color: mat.m2-get-color-from-palette($color-primary, 600);
+}
+
+.visually-hidden {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .item-status {
   margin-right: 16px;
   grid-area: status;
@@ -130,7 +160,6 @@ $border-radius: 12px;
   font-weight: 500;
   line-height: 24px;
   text-align: start;
-  gap: 4px;
 
   .item-manufacturer-text {
     margin: 0;
@@ -217,11 +246,17 @@ $border-radius: 12px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    margin: 0;
   }
 
   .item-name {
     width: 230px;
     box-sizing: border-box;
     text-align: start;
+    margin: 0;
+  }
+
+  .item-mac-address {
+    margin: 0;
   }
 }
