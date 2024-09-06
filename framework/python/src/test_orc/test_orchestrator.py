@@ -25,18 +25,27 @@ from common.testreport import TestReport
 from common.statuses import TestrunStatus, TestResult
 from core.docker.test_docker_module import TestModule
 from test_orc.test_case import TestCase
+from test_orc.test_pack import TestPack
 import threading
+from typing import List
 
 LOG_NAME = "test_orc"
 LOGGER = logger.get_logger("test_orc")
+
 RUNTIME_DIR = "runtime"
+RESOURCES_DIR = "resources"
+
 RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR, "test")
+TEST_PACKS_DIR = os.path.join(RESOURCES_DIR, "test_packs")
+
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
-LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
+
 SAVED_DEVICE_REPORTS = "report/{device_folder}/"
 LOCAL_DEVICE_REPORTS = "local/devices/{device_folder}/reports"
 DEVICE_ROOT_CERTS = "local/root_certs"
+
+LOG_REGEX = r"^[A-Z][a-z]{2} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} test_"
 API_URL = "http://localhost:8000"
 
 
@@ -44,11 +53,16 @@ class TestOrchestrator:
   """Manages and controls the test modules."""
 
   def __init__(self, session, net_orc):
-    self._test_modules = []
+
+    self._test_modules: List[TestModule] = []
+    self._test_packs: List[TestPack] = []
+
     self._container_logs = []
     self._session = session
-    self._api_url = (self._session.get_api_url() + ":" +
-                     str(self._session.get_api_port()))
+
+    self._api_url = (self.get_session().get_api_url() + ":" +
+                     str(self.get_session().get_api_port()))
+
     self._net_orc = net_orc
     self._test_in_progress = False
 
@@ -56,6 +70,7 @@ class TestOrchestrator:
         os.path.dirname(
             os.path.dirname(
                 os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
+
     self._test_modules_running = []
     self._current_module = 0
 
@@ -71,6 +86,7 @@ class TestOrchestrator:
     os.makedirs(DEVICE_ROOT_CERTS, exist_ok=True)
 
     self._load_test_modules()
+    self._load_test_packs()
 
   def stop(self):
     """Stop any running tests"""
@@ -83,7 +99,11 @@ class TestOrchestrator:
     if self.get_session().get_status() != TestrunStatus.IN_PROGRESS:
       return
 
-    device = self._session.get_target_device()
+    device = self.get_session().get_target_device()
+    test_pack_name = device.test_pack
+    test_pack = self.get_test_pack(test_pack_name)
+    LOGGER.debug("Using test pack " + test_pack.name)
+
     self._test_in_progress = True
 
     LOGGER.info(
@@ -116,6 +136,12 @@ class TestOrchestrator:
         if hasattr(test_copy, "recommendations"):
           test_copy.recommendations = None
 
+        # Set the required result from the correct test pack
+        required_result = test_pack.get_required_result(test.name)
+        LOGGER.debug(f"Required result for {test.name} is {required_result}")
+
+        test_copy.required_result = required_result
+
         # Add test result to the session
         self.get_session().add_test_result(test_copy)
 
@@ -133,7 +159,7 @@ class TestOrchestrator:
 
     LOGGER.info("All tests complete")
 
-    self._session.finish()
+    self.get_session().finish()
 
     # Do not carry on (generating a report) if Testrun has been stopped
     if self.get_session().get_status() != TestrunStatus.IN_PROGRESS:
@@ -147,6 +173,19 @@ class TestOrchestrator:
     self._write_reports(report)
     self._test_in_progress = False
     self.get_session().set_report_url(report.get_report_url())
+
+    # Set testing description
+    test_pack: TestPack = self.get_test_pack(device.test_pack)
+
+    # Default message is empty (better than an error message).
+    # This should never be shown
+    message: str = ""
+    if report.get_status() == TestrunStatus.COMPLIANT:
+      message = test_pack.get_message("compliant_description")
+    elif report.get_status() == TestrunStatus.NON_COMPLIANT:
+      message = test_pack.get_message("non_compliant_description")
+
+    self.get_session().set_description(message)
 
     # Move testing output from runtime to local device folder
     self._timestamp_results(device)
@@ -162,7 +201,7 @@ class TestOrchestrator:
 
     out_dir = os.path.join(
         self._root_path, RUNTIME_TEST_DIR,
-        self._session.get_target_device().mac_addr.replace(":", ""))
+        self.get_session().get_target_device().mac_addr.replace(":", ""))
 
     LOGGER.debug(f"Writing reports to {out_dir}")
 
@@ -203,18 +242,21 @@ class TestOrchestrator:
 
   def _calculate_result(self):
     result = TestResult.COMPLIANT
-    for test_result in self._session.get_test_results():
+    for test_result in self.get_session().get_test_results():
+
       # Check Required tests
       if (test_result.required_result.lower() == "required"
-          and test_result.result.lower() not in [
+          and test_result.result not in [
             TestResult.COMPLIANT,
             TestResult.ERROR
           ]):
         result = TestResult.NON_COMPLIANT
+
       # Check Required if Applicable tests
       elif (test_result.required_result.lower() == "required if applicable"
-            and test_result.result.lower() == "non-compliant"):
+            and test_result.result == TestResult.NON_COMPLIANT):
         result = TestResult.NON_COMPLIANT
+
     return result
 
   def _cleanup_old_test_results(self, device):
@@ -222,7 +264,7 @@ class TestOrchestrator:
     if device.max_device_reports is not None:
       max_device_reports = device.max_device_reports
     else:
-      max_device_reports = self._session.get_max_device_reports()
+      max_device_reports = self.get_session().get_max_device_reports()
 
     if max_device_reports > 0:
       completed_results_dir = os.path.join(
@@ -375,21 +417,24 @@ class TestOrchestrator:
     if self.get_session().get_status() != TestrunStatus.IN_PROGRESS:
       return
 
-    device = self._session.get_target_device()
+    device = self.get_session().get_target_device()
 
     LOGGER.info(f"Running test module {module.name}")
 
     # Get all tests to be executed and set to in progress
-    for current_test,test in enumerate(module.tests):
+    for current_test, test in enumerate(module.tests):
 
       # Check that device is connected
       if not self._net_orc.is_device_connected():
         LOGGER.error("Device was disconnected")
         self._set_test_modules_error(current_test)
-        self._session.set_status(TestrunStatus.CANCELLED)
+        self.get_session().set_status(TestrunStatus.CANCELLED)
         return
 
+      # Copy the test so we don't alter the source
       test_copy = copy.deepcopy(test)
+
+      # Update test status to in progress
       test_copy.result = TestResult.IN_PROGRESS
 
       # We don't want steps to resolve for in progress tests
@@ -398,6 +443,7 @@ class TestOrchestrator:
 
       self.get_session().add_test_result(test_copy)
 
+    # Start the test module
     module.start(device)
 
     # Mount the test container to the virtual network if requried
@@ -416,7 +462,9 @@ class TestOrchestrator:
     log_thread.start()
 
     while (module.get_status() == "running"
-           and self._session.get_status() == TestrunStatus.IN_PROGRESS):
+           and self.get_session().get_status() == TestrunStatus.IN_PROGRESS):
+
+      # Check that timeout has not exceeded
       if time.time() > test_module_timeout:
         LOGGER.error("Module timeout exceeded, killing module: " + module.name)
         module.stop(kill=True)
@@ -446,23 +494,16 @@ class TestOrchestrator:
           # Convert dict from json into TestCase object
           test_case = TestCase(
               name=test_result["name"],
-              description=test_result["description"],
-              expected_behavior=test_result["expected_behavior"],
-              required_result=test_result["required_result"],
               result=test_result["result"])
-
-          # Any informational test should always report informational
-          if test_case.required_result == TestResult.INFORMATIONAL:
-            test_case.result = TestResult.INFORMATIONAL
 
           # Add steps to resolve if test is non-compliant
           if (test_case.result == TestResult.NON_COMPLIANT and
               "recommendations" in test_result):
             test_case.recommendations = test_result["recommendations"]
           else:
-            test_case.recommendations = None
+            test_case.recommendations = []
 
-          self._session.add_test_result(test_case)
+          self.get_session().add_test_result(test_case)
 
     except (FileNotFoundError, PermissionError,
             json.JSONDecodeError) as results_error:
@@ -475,7 +516,7 @@ class TestOrchestrator:
     try:
       with open(markdown_file, "r", encoding="utf-8") as f:
         module_report = f.read()
-        self._session.add_module_report(module_report)
+        self.get_session().add_module_report(module_report)
     except (FileNotFoundError, PermissionError):
       LOGGER.debug("Test module did not produce a markdown module report")
 
@@ -485,7 +526,7 @@ class TestOrchestrator:
       with open(html_file, "r", encoding="utf-8") as f:
         module_report = f.read()
         LOGGER.debug(f"Adding module report for module {module.name}")
-        self._session.add_module_report(module_report)
+        self.get_session().add_module_report(module_report)
     except (FileNotFoundError, PermissionError):
       LOGGER.debug("Test module did not produce a html module report")
 
@@ -532,6 +573,26 @@ class TestOrchestrator:
       LOGGER.error(error)
     return container
 
+  def _load_test_packs(self):
+
+    for test_pack_file in os.listdir(TEST_PACKS_DIR):
+
+      LOGGER.debug(f"Loading test pack {test_pack_file}")
+
+      with open(os.path.join(
+        self._root_path,
+        TEST_PACKS_DIR,
+        test_pack_file), encoding="utf-8") as f:
+        test_pack_json = json.load(f)
+
+      test_pack: TestPack = TestPack(
+        name = test_pack_json["name"],
+        tests = test_pack_json["tests"],
+        language = test_pack_json["language"]
+      )
+
+      self._test_packs.append(test_pack)
+
   def _load_test_modules(self):
     """Load network modules from module_config.json."""
     LOGGER.debug("Loading test modules from /" + TEST_MODULES_DIR)
@@ -562,7 +623,6 @@ class TestOrchestrator:
     # state for this type of communication during testing but docker0 has
     # to exist and should always be available
     external_ip = self._net_orc.get_ip_address("docker0")
-    LOGGER.debug(f"Using external IP: {external_ip}")
     extra_hosts = {
         "external.localhost": external_ip
     } if external_ip is not None else {}
@@ -570,19 +630,27 @@ class TestOrchestrator:
     # Make sure we only load each module once since some modules will
     # depend on the same module
     if not any(m.dir_name == module_dir for m in self._test_modules):
-      LOGGER.debug(f"Loading test module {module_dir}")
 
       modules_dir = os.path.join(self._root_path, TEST_MODULES_DIR)
 
       module_conf_file = os.path.join(self._root_path, modules_dir, module_dir,
                                       MODULE_CONFIG)
 
-      module = TestModule(module_conf_file, self._session, extra_hosts)
+      module = TestModule(module_conf_file, self.get_session(), extra_hosts)
       if module.depends_on is not None:
         self._load_test_module(module.depends_on)
       self._test_modules.append(module)
 
       return module
+
+  def get_test_packs(self) -> List[TestPack]:
+    return self._test_packs
+
+  def get_test_pack(self, name: str) -> TestPack:
+    for test_pack in self._test_packs:
+      if test_pack.name.lower() == name.lower():
+        return test_pack
+    return None
 
   def _stop_modules(self, kill=False):
     LOGGER.info("Stopping test modules")
@@ -630,4 +698,3 @@ class TestOrchestrator:
         self.get_session().set_test_result_error(
           self._test_modules_running[i].tests[j]
           )
-
