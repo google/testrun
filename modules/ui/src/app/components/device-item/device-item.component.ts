@@ -24,8 +24,8 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { QualificationIconComponent } from '../qualification-icon/qualification-icon.component';
-import { PilotIconComponent } from '../pilot-icon/pilot-icon.component';
+import { ProgramTypeIconComponent } from '../program-type-icon/program-type-icon.component';
+import { ProgramType } from '../../model/program-type';
 
 @Component({
   selector: 'app-device-item',
@@ -37,13 +37,14 @@ import { PilotIconComponent } from '../pilot-icon/pilot-icon.component';
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
-    QualificationIconComponent,
-    PilotIconComponent,
+    ProgramTypeIconComponent,
   ],
 })
 export class DeviceItemComponent {
   readonly DeviceStatus = DeviceStatus;
   readonly TestingType = TestingType;
+  readonly ProgramType = ProgramType;
+  readonly INVALID_DEVICE = 'Outdated';
   @Input() device!: Device;
   @Input() tabIndex = 0;
   @Input() deviceView!: string;
@@ -60,6 +61,8 @@ export class DeviceItemComponent {
   }
 
   get label() {
-    return `${this.device.manufacturer} ${this.device.model} ${this.device.mac_addr}`;
+    const deviceStatus =
+      this.device.status === DeviceStatus.INVALID ? this.INVALID_DEVICE : '';
+    return `${this.device.test_pack} ${this.device.manufacturer} ${this.device.model} ${deviceStatus} ${this.device.mac_addr}`;
   }
 }

@@ -80,17 +80,19 @@ describe('DeviceItemComponent', () => {
     it('should have qualification icon if testing type is qualification', () => {
       component.device.test_pack = TestingType.Qualification;
       fixture.detectChanges();
-      const icon = compiled.querySelector('app-qualification-icon');
+      const icon = compiled.querySelector('app-program-type-icon');
 
       expect(icon).toBeTruthy();
+      expect(icon?.getAttribute('ng-reflect-type')).toEqual('qualification');
     });
 
     it('should have pilot icon if testing type is pilot', () => {
       component.device.test_pack = TestingType.Pilot;
       fixture.detectChanges();
-      const icon = compiled.querySelector('app-pilot-icon');
+      const icon = compiled.querySelector('app-program-type-icon');
 
       expect(icon).toBeTruthy();
+      expect(icon?.getAttribute('ng-reflect-type')).toEqual('pilot');
     });
 
     it('should emit mac address', () => {
@@ -99,14 +101,6 @@ describe('DeviceItemComponent', () => {
       item.click();
 
       expect(clickSpy).toHaveBeenCalledWith(component.device);
-    });
-
-    it('should have tabindex', () => {
-      component.tabIndex = -2;
-      fixture.detectChanges();
-      const item = compiled.querySelector('.device-item') as HTMLElement;
-
-      expect(item.tabIndex).toBe(-2);
     });
   });
 

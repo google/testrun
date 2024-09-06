@@ -127,8 +127,9 @@ limitations under the License.
           <mat-radio-button
             [value]="TestingType.Qualification"
             class="device-qualification-form-journey-button">
-            <span>
-              <app-qualification-icon></app-qualification-icon
+            <span class="device-qualification-form-journey-button-info">
+              <app-program-type-icon
+                [type]="ProgramType.Qualification"></app-program-type-icon
               ><span class="device-qualification-form-journey-button-label"
                 >Device Qualification</span
               >
@@ -137,8 +138,9 @@ limitations under the License.
           <mat-radio-button
             [value]="TestingType.Pilot"
             class="device-qualification-form-journey-button">
-            <span>
-              <app-pilot-icon></app-pilot-icon
+            <span class="device-qualification-form-journey-button-info">
+              <app-program-type-icon
+                [type]="ProgramType.Pilot"></app-program-type-icon
               ><span class="device-qualification-form-journey-button-label"
                 >Pilot Assessment</span
               >
@@ -212,6 +214,7 @@ limitations under the License.
               class="device-qualification-form-summary">
               <app-device-item
                 *ngIf="device"
+                [tabIndex]="-1"
                 [deviceView]="DeviceView.Basic"
                 [device]="device"></app-device-item>
               <div class="device-qualification-form-summary-info">
@@ -296,15 +299,15 @@ limitations under the License.
         <div class="device-qualification-form-actions">
           <button
             *ngIf="!data.isCreate"
-            (click)="delete()"
-            class="delete-button"
             mat-flat-button
-            type="button">
+            type="button"
+            class="delete-button"
+            (click)="delete()">
             Delete
           </button>
           <button
-            mat-button
-            color="primary"
+            mat-flat-button
+            type="button"
             class="close-button"
             (click)="closeForm()">
             Cancel

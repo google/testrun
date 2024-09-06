@@ -18,7 +18,6 @@
 @import 'src/theming/variables';
 
 $form-min-width: 732px;
-$form-height: 993px;
 
 :host {
   container-type: size;
@@ -113,6 +112,10 @@ $form-height: 993px;
 
 .device-qualification-form-journey-button {
   padding: 0 18px 0 24px;
+}
+
+.device-qualification-form-journey-button-info {
+  display: flex;
 }
 
 .device-qualification-form-journey-button-label {
