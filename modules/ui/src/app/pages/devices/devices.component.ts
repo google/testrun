@@ -170,6 +170,19 @@ export class DevicesComponent implements OnInit, OnDestroy {
               this.focusManagerService.focusFirstElementInContainer();
             });
         }
+        if (response.action === FormAction.Delete && initialDevice) {
+          this.devicesStore.selectDevice(initialDevice);
+          if (response.device) {
+            this.openDeleteDialog(
+              devices,
+              testModules,
+              initialDevice,
+              response.device,
+              isEditDevice,
+              response.index
+            );
+          }
+        }
       });
   }
 
@@ -198,6 +211,54 @@ export class DevicesComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(close => {
         if (!close) {
+          this.openDialog(
+            devices,
+            testModules,
+            initialDevice,
+            device,
+            isEditDevice,
+            index
+          );
+          this.devicesStore.selectDevice(null);
+        }
+      });
+  }
+
+  openDeleteDialog(
+    devices: Device[],
+    testModules: TestModule[],
+    initialDevice: Device,
+    device: Device,
+    isEditDevice = false,
+    index = 0
+  ) {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
+      ariaLabel: 'Delete device',
+      data: {
+        title: 'Delete device?',
+        content: `You are about to delete ${
+          initialDevice.manufacturer + ' ' + initialDevice.model
+        }. Are you sure?`,
+        device: device,
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: 'simple-dialog',
+    });
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(deleteDevice => {
+        if (deleteDevice) {
+          this.devicesStore.deleteDevice({
+            device: initialDevice,
+            onDelete: () => {
+              this.focusNextButton();
+              this.devicesStore.selectDevice(null);
+            },
+          });
+        } else {
           this.openDialog(
             devices,
             testModules,

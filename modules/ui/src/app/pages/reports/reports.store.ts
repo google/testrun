@@ -253,6 +253,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         deviceFirmware: item.device.firmware,
         deviceInfo: item.device.manufacturer + ' ' + item.device.model,
         duration: this.getDuration(item.started, item.finished),
+        program: item.device.test_pack ?? '',
       };
     });
   }
@@ -367,6 +368,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         'duration',
         'deviceInfo',
         'deviceFirmware',
+        'program',
         'status',
         'report',
       ],

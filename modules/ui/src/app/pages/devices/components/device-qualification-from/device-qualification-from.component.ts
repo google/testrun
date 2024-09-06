@@ -17,6 +17,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  HostListener,
   Inject,
   OnDestroy,
   OnInit,
@@ -63,10 +64,10 @@ import { DynamicFormComponent } from '../../../../components/dynamic-form/dynami
 import { filter, skip, Subject, takeUntil, timer } from 'rxjs';
 import { FormAction, FormResponse } from '../../devices.component';
 import { DeviceItemComponent } from '../../../../components/device-item/device-item.component';
-import { QualificationIconComponent } from '../../../../components/qualification-icon/qualification-icon.component';
-import { PilotIconComponent } from '../../../../components/pilot-icon/pilot-icon.component';
+import { ProgramTypeIconComponent } from '../../../../components/program-type-icon/program-type-icon.component';
 import { Question } from '../../../../model/profile';
 import { FormControlType } from '../../../../model/question';
+import { ProgramType } from '../../../../model/program-type';
 import { FocusManagerService } from '../../../../services/focus-manager.service';
 
 const MAC_ADDRESS_PATTERN =
@@ -106,8 +107,7 @@ interface DialogData {
     MatRadioButton,
     DynamicFormComponent,
     DeviceItemComponent,
-    QualificationIconComponent,
-    PilotIconComponent,
+    ProgramTypeIconComponent,
   ],
   providers: [provideNgxMask(), DevicesStore],
   templateUrl: './device-qualification-from.component.html',
@@ -116,8 +116,10 @@ interface DialogData {
 export class DeviceQualificationFromComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
+  readonly FORM_HEIGHT = 993;
   readonly TestingType = TestingType;
   readonly DeviceView = DeviceView;
+  readonly ProgramType = ProgramType;
   @ViewChild('stepper') public stepper!: StepperComponent;
   testModules: TestModule[] = [];
   deviceQualificationForm: FormGroup = this.fb.group({});
@@ -163,12 +165,6 @@ export class DeviceQualificationFromComponent
     return this.getStep(0).controls['test_modules'] as FormArray;
   }
 
-  get formPristine() {
-    return (
-      this.deviceQualificationForm.get('steps') as FormArray
-    ).controls.every(control => (control as FormGroup).pristine);
-  }
-
   get formValid() {
     return (
       this.deviceQualificationForm.get('steps') as FormArray
@@ -177,6 +173,11 @@ export class DeviceQualificationFromComponent
 
   deviceHasNoChanges(device1: Device | undefined, device2: Device | undefined) {
     return device1 && device2 && this.compareDevices(device1, device2);
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.setDialogHeight();
   }
 
   constructor(
@@ -257,6 +258,14 @@ export class DeviceQualificationFromComponent
     });
   }
 
+  delete(): void {
+    this.dialogRef.close({
+      action: FormAction.Delete,
+      device: this.createDeviceFromForm(),
+      index: this.stepper.selectedIndex,
+    } as FormResponse);
+  }
+
   closeForm(): void {
     const device1 = this.data.initialDevice;
     const device2 = this.createDeviceFromForm();
@@ -309,11 +318,11 @@ export class DeviceQualificationFromComponent
       step.questions.forEach((question, index) => {
         const answer = device.additional_info?.find(
           answers => answers.question === question.question
-        );
-        if (answer !== undefined) {
+        )?.answer;
+        if (answer !== undefined && answer !== null && answer !== '') {
           if (question.type === FormControlType.SELECT_MULTIPLE) {
             question.options?.forEach((item, idx) => {
-              if ((answer?.answer as number[])?.includes(idx)) {
+              if ((answer as number[])?.includes(idx)) {
                 (
                   this.getStep(step.step).get(index.toString()) as FormGroup
                 ).controls[idx].setValue(true);
@@ -326,7 +335,7 @@ export class DeviceQualificationFromComponent
           } else {
             (
               this.getStep(step.step).get(index.toString()) as AbstractControl
-            ).setValue(answer?.answer || '');
+            ).setValue(answer || '');
           }
         } else {
           (
@@ -339,7 +348,11 @@ export class DeviceQualificationFromComponent
     this.manufacturer.setValue(device.manufacturer);
     this.mac_addr.setValue(device.mac_addr);
 
-    if (device.test_pack) {
+    if (
+      device.test_pack &&
+      (device.test_pack === TestingType.Qualification ||
+        device.test_pack === TestingType.Pilot)
+    ) {
       this.test_pack.setValue(device.test_pack);
     } else {
       this.test_pack.setValue(TestingType.Qualification);
@@ -547,5 +560,14 @@ export class DeviceQualificationFromComponent
       return false;
     }
     return true;
+  }
+
+  private setDialogHeight(): void {
+    const windowHeight = window.innerHeight;
+    if (windowHeight < this.FORM_HEIGHT) {
+      this.element.nativeElement.style.height = '100vh';
+    } else {
+      this.element.nativeElement.style.height = this.FORM_HEIGHT + 'px';
+    }
   }
 }

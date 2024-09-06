@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-$device-item-width: 352px;
-$profiles-drawer-width: 320px;
-$form-max-width: 732px;
-$icon-size: 24px;
-
-$font-primary: 'Google Sans', sans-serif;
-$font-secondary: 'Roboto';
+export enum ProgramType {
+  Pilot = 'pilot',
+  Qualification = 'qualification',
+}

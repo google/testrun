@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk Assessment </title>
+  <style> {{ styles }} </style>
+</head>
+
+<body>
+  {% for page in pages %}
+  <div class="page">
+    <div class="header" style="margin-bottom:1px solid #DADCE0">
+      <h1>Risk assessment</h1>
+      <h3 style="margin-top:0;max-width:700px">{{ manufacturer }} {{ model }}</h3>
+      <img src="data:image/png;base64, {{ logo }}" alt="Testrun" width="90"
+        style="position: absolute;top: 40%; right: 0px;"></img>
+    </div>
+    {# Risk banner #}
+
+    {% if loop.first and risk is not none %}
+    <div class="risk-banner risk-banner-{{ risk.lower() }}">
+      <div class="risk-banner-title">
+        <h3>{{ risk.lower() }} Risk</h3>
+      </div>
+      <div class="risk-banner-description">
+        {% if risk == "High" %}
+        {{ high_risk_message }}
+        {% else %}
+        {{ limited_risk_message }}
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+
+    {# Risk table #}
+    <div class="risk-table">
+      <div class="risk-table-head">
+        <div class="risk-table-head-question">Question</div>
+        <div class="risk-table-head-answer">Answer</div>
+      </div>
+      {% for question in page %}
+      <div class="risk-table-row">
+        <div class="risk-question-no">{{ question['index'] }}.</div>
+        <div class="risk-question">{{ question['question'] }}</div>
+        <div class="risk-answer">
+          {% if question['answer'] is string %}
+            {{ question['answer'] }}
+          {% elif question['answer'] is sequence %}
+            <ul style="padding-left: 20px">
+              {% for answer in question['answer'] %}
+                <li>{{ answer }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+          {% if 'risk' in question %}
+            <div class="risk-label risk-label-{{ question['risk'].lower() }}">{{ question['risk'].upper()}} RISK</div>
+          {% endif %}
+        </div>
+      </div>
+      </tr>
+
+      {% endfor %}
+      <div class="footer">
+        <div class="footer-label">Testrun v{{ version }} - {{ created_at }}</div>
+      </div>
+
+    </div>
+  </div>
+  {% endfor %}
+</body>
+
+</html>

@@ -13,10 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-$device-item-width: 352px;
-$profiles-drawer-width: 320px;
-$form-max-width: 732px;
-$icon-size: 24px;
+import { Component, Input } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
 
-$font-primary: 'Google Sans', sans-serif;
-$font-secondary: 'Roboto';
+@Component({
+  selector: 'app-program-type-icon',
+  standalone: true,
+  imports: [MatIcon],
+  template: ` <mat-icon [svgIcon]="type" class="icon"></mat-icon> `,
+  styles: `
+    :host {
+      display: inline-flex;
+      align-items: center;
+      padding-right: 4px;
+    }
+    .icon {
+      width: 16px;
+      height: 16px;
+      line-height: 16px;
+    }
+  `,
+})
+export class ProgramTypeIconComponent {
+  @Input() type = '';
+}

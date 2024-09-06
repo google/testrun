@@ -182,7 +182,7 @@ describe('DeviceQualificationFromComponent', () => {
         manufacturer: 'test',
         model: '',
         mac_addr: '',
-        test_pack: 'Device qualification',
+        test_pack: 'Device Qualification',
         type: '',
         technology: '',
         test_modules: {
@@ -586,7 +586,7 @@ describe('DeviceQualificationFromComponent', () => {
             manufacturer: 'manufacturer',
             model: 'model',
             mac_addr: '07:07:07:07:07:07',
-            test_pack: 'Device qualification',
+            test_pack: 'Device Qualification',
             type: '',
             technology: '',
             test_modules: {
@@ -643,7 +643,7 @@ describe('DeviceQualificationFromComponent', () => {
             manufacturer: 'manufacturer',
             model: 'model',
             mac_addr: '07:07:07:07:07:07',
-            test_pack: 'Device qualification',
+            test_pack: 'Device Qualification',
             type: '',
             technology: '',
             test_modules: {

@@ -14,33 +14,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <button
-  *ngIf="deviceView === DeviceView.Basic"
+  *ngIf="deviceView === DeviceView.Basic && tabIndex === 0"
   [tabIndex]="tabIndex"
   (click)="itemClick()"
   [attr.aria-label]="label"
-  [ngClass]="{ 'non-interective': tabIndex !== 0 }"
   class="device-item"
   type="button">
-  <div class="item-manufacturer">
-    <app-qualification-icon
-      *ngIf="device.test_pack === TestingType.Qualification"
-      matTooltip="This device will be tested for Qualification."
-      aria-label="This device will be tested for Qualification."></app-qualification-icon>
-    <app-pilot-icon
-      *ngIf="device.test_pack === TestingType.Pilot"
-      matTooltip="This device will be tested for the Pilot program."
-      aria-label="This device will be tested for the Pilot program."></app-pilot-icon>
-    <span [attr.aria-label]="device.manufacturer">{{
-      device.manufacturer
-    }}</span>
-  </div>
-  <div [attr.aria-label]="device.model" class="item-name">
-    {{ device.model }}
-  </div>
-  <div [attr.aria-label]="device.mac_addr" class="item-mac-address">
-    {{ device.mac_addr }}
-  </div>
+  <ng-container *ngTemplateOutlet="basicView"></ng-container>
 </button>
+
+<div
+  *ngIf="deviceView === DeviceView.Basic && tabIndex !== 0"
+  [attr.aria-label]="label"
+  class="device-item non-interactive">
+  <ng-container *ngTemplateOutlet="basicView"></ng-container>
+</div>
+
+<ng-template #basicView>
+  <p class="item-manufacturer">
+    <span class="visually-hidden">{{ device.test_pack }}</span>
+    <app-program-type-icon
+      *ngIf="device.test_pack === TestingType.Qualification"
+      [type]="ProgramType.Qualification"
+      matTooltip="This device will be tested for Qualification."></app-program-type-icon>
+    <app-program-type-icon
+      *ngIf="device.test_pack === TestingType.Pilot"
+      [type]="ProgramType.Pilot"
+      matTooltip="This device will be tested for the Pilot program."></app-program-type-icon>
+    <span>{{ device.manufacturer }}</span>
+  </p>
+  <p class="item-name">
+    {{ device.model }}
+  </p>
+  <p class="item-mac-address">
+    {{ device.mac_addr }}
+  </p>
+</ng-template>
 
 <div
   *ngIf="deviceView === DeviceView.WithActions"
@@ -53,7 +62,17 @@ limitations under the License.
     attr.aria-label="Edit device {{ label }}"
     class="button-edit"
     type="button">
-    <div [attr.aria-label]="device.manufacturer" class="item-manufacturer">
+    <div class="item-manufacturer">
+      <app-program-type-icon
+        *ngIf="device.test_pack === TestingType.Qualification"
+        [type]="ProgramType.Qualification"
+        matTooltip="This device will be tested for Qualification."
+        aria-label="This device will be tested for Qualification."></app-program-type-icon>
+      <app-program-type-icon
+        *ngIf="device.test_pack === TestingType.Pilot"
+        [type]="ProgramType.Pilot"
+        matTooltip="This device will be tested for the Pilot program."
+        aria-label="This device will be tested for the Pilot program."></app-program-type-icon>
       <p class="item-manufacturer-text">{{ device.manufacturer }}</p>
       <mat-icon
         class="item-manufacturer-icon"
@@ -61,16 +80,13 @@ limitations under the License.
         edit_square</mat-icon
       >
     </div>
-    <div
-      *ngIf="device.status === DeviceStatus.INVALID"
-      [attr.aria-label]="device.status"
-      class="item-status">
-      Outdated
+    <div *ngIf="device.status === DeviceStatus.INVALID" class="item-status">
+      {{ INVALID_DEVICE }}
     </div>
-    <div [attr.aria-label]="device.model" class="item-name">
+    <div class="item-name">
       {{ device.model }}
     </div>
-    <div [attr.aria-label]="device.mac_addr" class="item-mac-address">
+    <div class="item-mac-address">
       {{ device.mac_addr }}
     </div>
   </button>

@@ -24,6 +24,7 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { of } from 'rxjs';
 import { NEW_VERSION, VERSION } from '../../../mocks/version.mock';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
 
 describe('ConsentDialogComponent', () => {
   let component: ConsentDialogComponent;
@@ -32,7 +33,12 @@ describe('ConsentDialogComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [ConsentDialogComponent, MatDialogModule, MatButtonModule],
+      imports: [
+        ConsentDialogComponent,
+        MatDialogModule,
+        MatButtonModule,
+        MatIconTestingModule,
+      ],
       providers: [
         {
           provide: MatDialogRef,
