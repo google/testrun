@@ -20,10 +20,14 @@ import base64
 from common import logger
 import json
 import os
+from jinja2 import Template
+from copy import deepcopy
 
 PROFILES_PATH = 'local/risk_profiles'
 LOGGER = logger.get_logger('risk_profile')
 RESOURCES_DIR = 'resources/report'
+TEMPLATE_FILE = 'risk_report_template.html'
+TEMPLATE_STYLES = 'risk_report_styles.css'
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -43,6 +47,19 @@ class RiskProfile():
 
   def __init__(self, profile_json=None, profile_format=None):
 
+    # Jinja template
+    with open(os.path.join(report_resource_dir, TEMPLATE_FILE),
+                            'r',
+                            encoding='UTF-8'
+                            ) as template_file:
+      self._template = Template(template_file.read())
+    with open(os.path.join(report_resource_dir,
+                           TEMPLATE_STYLES),
+                           'r',
+                           encoding='UTF-8'
+                           ) as style_file:
+      self._template_styles = style_file.read()
+
     if profile_json is None or profile_format is None:
       return
 
@@ -55,8 +72,10 @@ class RiskProfile():
     self._device = None
     self._profile_format = profile_format
 
+
     self._validate(profile_json, profile_format)
     self.update_risk(profile_format)
+
 
   # Load a profile without modifying the created date
   # but still validate the profile
@@ -295,382 +314,77 @@ class RiskProfile():
   def to_html(self, device):
 
     self._device = device
-
-    return f'''
-    <!DOCTYPE html>
-    <html lang="en">
-      {self._generate_head()}
-    <body>
-      <div class="page">
-        {self._generate_header()}
-        {self._generate_risk_banner()}
-        {self._generate_risk_questions()}
-        {self._generate_footer()}
-      </div>
-    </body>
-    </html>
-    '''
-
-  def _generate_head(self):
-
-    return f'''
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Risk Assessment</title>
-      <style>
-        {self._generate_css()}
-      </style>
-    </head>
-    '''
-
-  def _generate_header(self):
+    high_risk_message = '''The device has been assessed to be high
+                               risk due to the nature of the answers provided
+                                 about the device functionality.'''
+    limited_risk_message = '''The device has been assessed to be limited risk
+                               due to the nature of the answers provided about
+                                 the device functionality.'''
     with open(test_run_img_file, 'rb') as f:
-      tr_img_b64 = base64.b64encode(f.read()).decode('utf-8')
-      header = f'''
-        <div class="header" style="margin-bottom:1px solid #DADCE0">
-          <h1>Risk assessment</h1>
-          <h3 style="margin-top:0;max-width:700px">
-            {self._device.manufacturer}
-            {self._device.model}
-          </h3>'''
-    header += f'''<img src="data:image/png;base64,
-      {tr_img_b64}" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
-    </div>
-    '''
-    return header
+      logo_img_b64 = base64.b64encode(f.read()).decode('utf-8')
+    pages = self._generate_report_pages()
+    return self._template.render(
+                                styles=self._template_styles,
+                                manufacturer=self._device.manufacturer,
+                                model=self._device.model,
+                                logo=logo_img_b64,
+                                risk=self.risk,
+                                high_risk_message=high_risk_message,
+                                limited_risk_message=limited_risk_message,
+                                pages=pages,
+                                version=self.version,
+                                created_at=self.created.strftime('%d.%m.%Y')
+                                )
 
-  def _generate_risk_banner(self):
-    return f'''
-      <div class="risk-banner risk-banner-{'high' if self.risk == 'High' else 'limited'}">
-        <div class="risk-banner-title">
-          <h3>{'high' if self.risk == 'High' else 'limited'} Risk</h3>
-        </div>
-        <div class="risk-banner-description">
-          {
-            'The device has been assessed to be high risk due to the nature of the answers provided about the device functionality.'
-           if self.risk == 'High' else
-           'The device has been assessed to be limited risk due to the nature of the answers provided about the device functionality.'
-          }
-        </div>
-      </div>
-    '''
-
-  def _generate_risk_questions(self):
-
+  def _generate_report_pages(self):
     max_page_height = 350
-    content = ''
-
-    content += self._generate_table_head()
-
-    index = 1
     height = 0
+    pages = []
+    current_page = []
+    index = 1
 
     for question in self.questions:
 
       if height > max_page_height:
-        content += self._generate_new_page()
+        pages.append(current_page)
         height = 0
+        current_page = []
 
-      content += f'''
-        <div class="risk-table-row">
-          <div class="risk-question-no">{index}.</div>
-          <div class="risk-question">{question['question']}</div>
-          <div class="risk-answer">'''
+      page_item = deepcopy(question)
 
-      # String answers (one line)
-      if isinstance(question['answer'], str):
-        content += question['answer']
+      if isinstance(page_item['answer'], str):
 
-        if len(question['answer']) > 400:
+        if len(page_item['answer']) > 400:
           height += 160
-        elif len(question['answer']) > 300:
+        elif len(page_item['answer']) > 300:
           height += 140
-        elif len(question['answer']) > 200:
+        elif len(page_item['answer']) > 200:
           height += 120
-        elif len(question['answer']) > 100:
+        elif len(page_item['answer']) > 100:
           height += 70
         else:
           height += 53
 
       # Select multiple answers
-      elif isinstance(question['answer'], list):
-        content += '<ul style="padding-left: 20px">'
+      elif isinstance(page_item['answer'], list):
+        text_answers = []
 
         options = self._get_format_question(
-          question=question['question'],
+          question=page_item['question'],
           profile_format=self._profile_format)['options']
 
-        for answer_index in question['answer']:
+        options_dict = dict(enumerate(options))
+
+        for answer_index in page_item['answer']:
           height += 40
-          content += f'''
-          <li>
-            {self._get_option_from_index(options, answer_index)['text']}</li>'''
-
-        content += '</ul>'
-
-      # Question risk label
-      if 'risk' in question:
-        if question['risk'] == 'High':
-          content += '<div class="risk-label risk-label-high">HIGH RISK</div>'
-        elif question['risk'] == 'Limited':
-          content += '''<div class="risk-label risk-label-limited">
-                    LIMITED RISK</div>'''
-
-      content += '''</div></div></tr>'''
-
+          text_answers.append(options_dict[answer_index]['text'])
+        page_item['answer'] = text_answers
+      page_item['index'] = index
       index += 1
+      current_page.append(page_item)
+    pages.append(current_page)
 
-    return content
-
-  def _generate_table_head(self):
-    return '''
-      <div class="risk-table">
-        <div class="risk-table-head">
-          <div class="risk-table-head-question">Question</div>
-          <div class="risk-table-head-answer">Answer</div>
-        </div>'''
-
-  def _generate_new_page(self):
-
-    # End the current table
-    content = '''
-      </div>'''
-
-    # End the page
-    content += self._generate_footer()
-    content += '</div>'
-
-    # Start a new page
-    content += '''
-      <div class="page">
-      '''
-
-    content += self._generate_header()
-
-    content += self._generate_table_head()
-
-    return content
-
-  def _generate_footer(self):
-    footer = f'''
-    <div class="footer">
-      <div class="footer-label">Testrun v{self.version} - {self.created.strftime('%d.%m.%Y')}</div>
-    </div>
-    '''
-    return footer
-
-  def _generate_css(self):
-    return '''
-    /* Set some global variables */
-    :root {
-      --header-height: .75in;
-      --header-width: 8.5in;
-      --header-pos-x: 0in;
-      --header-pos-y: 0in;
-      --page-width: 8.5in;
-    }
-
-    @font-face {
-      font-family: 'Google Sans';
-      font-style: normal;
-      src: url(https://fonts.gstatic.com/s/googlesans/v58/4Ua_rENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iqcsih3SAyH6cAwhX9RFD48TE63OOYKtrwEIJllpyk.woff2) format('woff2');
-      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-    }
-
-    @font-face {
-      font-family: 'Roboto Mono';
-      font-style: normal;
-      src: url(https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap) format('woff2');
-      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-    }
-
-    /* Define some common body formatting*/
-    body {
-      font-family: 'Google Sans', sans-serif;
-      margin: 0px;
-      padding: 0px;
-    }
-    
-    /* Sets proper page size during print to pdf for weasyprint */
-    @page {
-      size: Letter;
-      width: 8.5in;
-      height: 11in;
-    }
-
-    .page {
-      position: relative;
-      margin: 0 20px;
-      width: 8.5in;
-      height: 11in;
-    }
-
-    /* Define the  header related css elements*/
-    .header {
-      position: relative;
-    }
-
-    h1 {
-      margin: 0 0 8px 0;
-      font-size: 20px;
-      font-weight: 400;
-    }
-
-    h2 {
-      margin: 0px;
-      font-size: 48px;
-      font-weight: 700;
-    }
-
-    h3 {
-      font-size: 24px;
-      margin-bottom: 10px;
-      margin-top: 15px;
-    }
-
-    h4 {
-      font-size: 12px;
-      font-weight: 500;
-      color: #5F6368;
-      margin-bottom: 0;
-      margin-top: 0;
-    }
-
-    /* CSS for the footer */
-    .footer {
-      position: absolute;
-      height: 30px;
-      width: 8.5in;
-      bottom: 0in;
-      border-top: 1px solid #D3D3D3;
-    }
-
-    .footer-label {
-      color: #3C4043;
-      position: absolute;
-      top: 5px;
-      font-size: 12px;
-    }
-
-    @media print {
-      @page {
-        size: Letter;
-        width: 8.5in;
-        height: 11in;
-      }
-    }
-
-    .risk-banner {
-      min-height: 120px;
-      padding: 5px 40px 0 40px;
-      margin-top: 30px;
-    }
-
-    .risk-banner-limited {
-      background-color: #E4F7FB;
-      color: #007B83;
-    }
-
-    .risk-banner-high {
-      background-color: #FCE8E6;
-      color: #C5221F;
-    }
-
-    .risk-banner-title {
-      text-transform: uppercase;
-      font-weight: bold;
-    }
-
-    .risk-table {
-      width: 100%;
-      margin-top: 40px;
-      text-align: left;
-      color: #3C4043;
-      font-size: 14px;
-    }
-
-    .risk-table-head {
-      margin-bottom: 15px;
-    }
-
-    .risk-table-head-question {
-      display: inline-block;
-      margin-left: 70px;
-      font-weight: bold;
-    }
-
-    .risk-table-head-answer {
-      display: inline-block;
-      margin-left: 325px;
-      font-weight: bold;
-    }
-
-    .risk-table-row {
-      margin-bottom: 8px;
-      background-color: #F8F9FA;
-      display: flex;
-      align-items: stretch;
-      overflow: hidden;
-    }
-
-    .risk-question-no {
-      padding: 15px 20px;
-      width: 10px;
-      display: inline-block;
-      vertical-align: top;
-      position: relative;
-    }
-
-    .risk-question {
-      padding: 15px 20px;
-      display: inline-block;
-      width: 350px;
-      vertical-align: top;
-      position: relative;
-      height: 100%;
-    }
-
-    .risk-answer {
-      background-color: #E8F0FE;
-      padding: 15px 20px;
-      display: inline-block;
-      width: 340px;
-      position: relative;
-      height: 100%;
-    }
-
-    ul {
-      margin-top: 0;
-    }
-
-    .risk-label{
-      position: absolute;
-      top: 0px; 
-      right: 0px;
-      width: 52px;
-      height: 16px;
-      font-family: 'Google Sans', sans-serif;
-      font-size: 8px;
-      font-weight: 500;
-      line-height: 16px;
-      letter-spacing: 0.64px;
-      text-align: center;
-      font-weight: bold;
-      border-radius: 3px;
-    }
-
-    .risk-label-high{
-      background-color: #FCE8E6;
-      color: #C5221F;
-    }
-
-    .risk-label-limited{
-      width: 65px;
-      background-color:#E4F7FB;
-      color: #007B83;
-    }
-    '''
+    return pages
 
   def to_pdf(self, device):
 

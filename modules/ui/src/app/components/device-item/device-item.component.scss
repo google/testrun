@@ -102,6 +102,22 @@ $border-radius: 12px;
   }
 }
 
+.device-item:not(.non-interective):hover {
+  border-color: mat.m2-get-color-from-palette($color-primary, 600);
+}
+
+.device-item-with-actions:not(.device-item-outdated):has(
+    .button-edit:not(:disabled):hover
+  ) {
+  border-color: mat.m2-get-color-from-palette($color-primary, 600);
+}
+
+.device-item-with-actions:not(.device-item-outdated):has(
+    .button-start:not(:disabled):hover
+  ) {
+  border-color: mat.m2-get-color-from-palette($color-primary, 600);
+}
+
 .item-status {
   margin-right: 16px;
   grid-area: status;
@@ -130,7 +146,6 @@ $border-radius: 12px;
   font-weight: 500;
   line-height: 24px;
   text-align: start;
-  gap: 4px;
 
   .item-manufacturer-text {
     margin: 0;
