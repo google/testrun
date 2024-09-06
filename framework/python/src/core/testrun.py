@@ -280,39 +280,41 @@ class Testrun:  # pylint: disable=too-few-public-methods
         test_report.from_json(report_json)
         test_report.set_mac_addr(device.mac_addr)
 
-      for test_module in os.listdir(report_test_folder_path):
+      if os.path.exists(report_test_folder_path):
 
-        # Skip if not a directory
-        if not os.path.isdir(os.path.join(
-          report_test_folder_path,
-          test_module)):
-          continue
+        for test_module in os.listdir(report_test_folder_path):
 
-        # Get the markdown report from the module if generated
-        markdown_file = os.path.join(
-          report_test_folder_path,
-          test_module,
-          test_module + '_report.md')
-        try:
-          with open(markdown_file, 'r', encoding='utf-8') as f:
-            module_report = f.read()
-            test_report.add_module_report(module_report)
-        except (FileNotFoundError, PermissionError):
-          pass
+          # Skip if not a directory
+          if not os.path.isdir(os.path.join(
+            report_test_folder_path,
+            test_module)):
+            continue
 
-        # Get the HTML report from the module if generated
-        html_file = os.path.join(
-          report_test_folder_path,
-          test_module,
-          test_module + '_report.html')
-        try:
-          with open(html_file, 'r', encoding='utf-8') as f:
-            module_report = f.read()
-            test_report.add_module_report(module_report)
-        except (FileNotFoundError, PermissionError):
-          pass
+          # Get the markdown report from the module if generated
+          markdown_file = os.path.join(
+            report_test_folder_path,
+            test_module,
+            test_module + '_report.md')
+          try:
+            with open(markdown_file, 'r', encoding='utf-8') as f:
+              module_report = f.read()
+              test_report.add_module_report(module_report)
+          except (FileNotFoundError, PermissionError):
+            pass
 
-      device.add_report(test_report)
+          # Get the HTML report from the module if generated
+          html_file = os.path.join(
+            report_test_folder_path,
+            test_module,
+            test_module + '_report.html')
+          try:
+            with open(html_file, 'r', encoding='utf-8') as f:
+              module_report = f.read()
+              test_report.add_module_report(module_report)
+          except (FileNotFoundError, PermissionError):
+            pass
+
+        device.add_report(test_report)
 
   def get_reports_folder(self, device):
     """Return the reports folder path for the device"""
