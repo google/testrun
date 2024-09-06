@@ -261,6 +261,12 @@ class Api:
 
     device = self._session.get_device(body_json["device"]["mac_addr"])
 
+    # Check if requested device is known in the device repository
+    if device is None:
+      response.status_code = status.HTTP_404_NOT_FOUND
+      return self._generate_msg(
+          False, "A device with that MAC address could not be found")
+
     # Check if device is fully configured
     if device.status != "Valid":
       response.status_code = status.HTTP_400_BAD_REQUEST
@@ -277,12 +283,6 @@ class Api:
       return self._generate_msg(
           False, "Testrun cannot be started " +
           "whilst a test is running on another device")
-
-    # Check if requested device is known in the device repository
-    if device is None:
-      response.status_code = status.HTTP_404_NOT_FOUND
-      return self._generate_msg(
-          False, "A device with that MAC address could not be found")
 
     device.firmware = body_json["device"]["firmware"]
 
@@ -474,6 +474,14 @@ class Api:
     if device is None:
       response.status_code = 404
       return self._generate_msg(False, "Could not find device")
+
+    # Assign the reports folder path from testrun
+    reports_folder = self._testrun.get_reports_folder(device)
+
+    # Check if reports folder exists
+    if not os.path.exists(reports_folder):
+      response.status_code = 404
+      return self._generate_msg(False, "Report not found")
 
     if self._testrun.delete_report(device, timestamp_formatted):
       return self._generate_msg(True, "Deleted report")

@@ -289,7 +289,7 @@ describe('DevicesComponent', () => {
         afterClosed: () => of(true),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openDeleteDialog([device], MOCK_TEST_MODULES, device);
+      component.openDeleteDialog([device], MOCK_TEST_MODULES, device, device);
 
       const args = mockDevicesStore.deleteDevice.calls.argsFor(0);
       // @ts-expect-error config is in object
@@ -303,13 +303,13 @@ describe('DevicesComponent', () => {
         afterClosed: () => of(null),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openDeleteDialog([device], MOCK_TEST_MODULES, device);
+      component.openDeleteDialog([device], MOCK_TEST_MODULES, device, device);
 
       expect(openDeviceDialogSpy).toHaveBeenCalledWith(
         [device],
         MOCK_TEST_MODULES,
         device,
-        undefined,
+        device,
         false,
         0
       );

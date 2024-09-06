@@ -236,9 +236,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     device.clear_reports()
 
     # Locate reports folder
-    reports_folder = os.path.join(self._root_dir,
-                                  LOCAL_DEVICES_DIR,
-                                  device.device_folder, 'reports')
+    reports_folder = self.get_reports_folder(device)
 
     # Check if reports folder exists (device may have no reports)
     if not os.path.exists(reports_folder):
@@ -279,18 +277,18 @@ class Testrun:  # pylint: disable=too-few-public-methods
         test_report.set_mac_addr(device.mac_addr)
         device.add_report(test_report)
 
+  def get_reports_folder(self, device):
+    """Return the reports folder path for the device"""
+    return os.path.join(self._root_dir,
+                        LOCAL_DEVICES_DIR,
+                        device.device_folder, 'reports')
+
   def delete_report(self, device: Device, timestamp):
     LOGGER.debug(f'Deleting test report for device {device.model} ' +
                  f'at {timestamp}')
 
     # Locate reports folder
-    reports_folder = os.path.join(self._root_dir,
-                                  LOCAL_DEVICES_DIR,
-                                  device.device_folder, 'reports')
-
-    # Check if reports folder exists (device may have no reports)
-    if not os.path.exists(reports_folder):
-      return False
+    reports_folder = self.get_reports_folder(device)
 
     for report_folder in os.listdir(reports_folder):
       if report_folder == timestamp:
