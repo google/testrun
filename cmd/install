@@ -37,12 +37,11 @@ if [[ -z "${TESTRUN_DIR}" ]]; then
 else
   TESTRUN_DIR="${TESTRUN_DIR}"
 
-  # Check that user is in docker group
-  if ! (id -nGz "$USER" | grep -qzxF "docker"); then
+  # Check that user is in docker group or sudo user
+  if ! (id -nGz "$USER" | grep -qzxF "docker") && [ "$EUID" -ne 0 ]; then
     echo User is not in docker group. Follow https://docs.docker.com/engine/install/linux-postinstall/ to finish setting up docker.
     exit 1
   fi
-
 fi
 
 echo Installing Testrun at $TESTRUN_DIR
