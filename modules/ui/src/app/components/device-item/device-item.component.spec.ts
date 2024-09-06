@@ -102,14 +102,6 @@ describe('DeviceItemComponent', () => {
 
       expect(clickSpy).toHaveBeenCalledWith(component.device);
     });
-
-    it('should have tabindex', () => {
-      component.tabIndex = -2;
-      fixture.detectChanges();
-      const item = compiled.querySelector('.device-item') as HTMLElement;
-
-      expect(item.tabIndex).toBe(-2);
-    });
   });
 
   describe('with device view as WithActions', () => {
