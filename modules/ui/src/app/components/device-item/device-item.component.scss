@@ -102,6 +102,22 @@ $border-radius: 12px;
   }
 }
 
+.device-item:not(.non-interective):hover {
+  border-color: mat.m2-get-color-from-palette($color-primary, 600);
+}
+
+.device-item-with-actions:not(.device-item-outdated):has(
+    .button-edit:not(:disabled):hover
+  ) {
+  border-color: mat.m2-get-color-from-palette($color-primary, 600);
+}
+
+.device-item-with-actions:not(.device-item-outdated):has(
+    .button-start:not(:disabled):hover
+  ) {
+  border-color: mat.m2-get-color-from-palette($color-primary, 600);
+}
+
 .item-status {
   margin-right: 16px;
   grid-area: status;
