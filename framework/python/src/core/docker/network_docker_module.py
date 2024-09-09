@@ -19,13 +19,16 @@ from docker.types import Mount
 RUNTIME_DIR = 'runtime'
 RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR, 'test')
 DEFAULT_TIMEOUT = 60  # time in seconds
+DEFAULT_DOCKER_NETWORK = 'none'
 
 
 class NetworkModule(Module):
   """Represents a test module."""
 
   def __init__(self, module_config_file, session):
-    super().__init__(module_config_file=module_config_file, session=session)
+    super().__init__(module_config_file=module_config_file,
+                     docker_network=DEFAULT_DOCKER_NETWORK,
+                     session=session)
 
   def setup_module(self, module_json):
     self.template = module_json['config']['docker'].get('template', False)
