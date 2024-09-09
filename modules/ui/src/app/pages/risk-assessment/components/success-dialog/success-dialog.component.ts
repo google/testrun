@@ -21,7 +21,11 @@ import {
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
-import { Profile, RiskResultClassName } from '../../../../model/profile';
+import {
+  Profile,
+  ProfileRisk,
+  RiskResultClassName,
+} from '../../../../model/profile';
 import { TestRunService } from '../../../../services/test-run.service';
 import { CommonModule } from '@angular/common';
 
@@ -51,5 +55,11 @@ export class SuccessDialogComponent extends EscapableDialogComponent {
 
   public getRiskClass(riskResult: string): RiskResultClassName {
     return this.testRunService.getRiskClass(riskResult);
+  }
+
+  getRiskExplanation(risk: string | undefined) {
+    return risk === ProfileRisk.LIMITED
+      ? 'This means that your device might be eligible for most networks.'
+      : 'This means that your device might be eligible only for some networks.';
   }
 }

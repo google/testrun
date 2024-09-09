@@ -20,6 +20,7 @@ import { TestRunService } from '../../../../services/test-run.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { PROFILE_MOCK } from '../../../../mocks/profile.mock';
+import { ProfileRisk } from '../../../../model/profile';
 
 describe('SuccessDialogComponent', () => {
   let component: SuccessDialogComponent;
@@ -66,5 +67,14 @@ describe('SuccessDialogComponent', () => {
     expect(closeSpy).toHaveBeenCalled();
 
     closeSpy.calls.reset();
+  });
+
+  it('should return proper text for risk', () => {
+    expect(component.getRiskExplanation(ProfileRisk.LIMITED)).toEqual(
+      'This means that your device might be eligible for most networks.'
+    );
+    expect(component.getRiskExplanation(ProfileRisk.HIGH)).toEqual(
+      'This means that your device might be eligible only for some networks.'
+    );
   });
 });
