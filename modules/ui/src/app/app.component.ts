@@ -145,7 +145,9 @@ export class AppComponent {
   }
 
   navigateToRiskAssessment(): void {
-    this.route.navigate([Routes.RiskAssessment]);
+    this.route.navigate([Routes.RiskAssessment]).then(() => {
+      this.appStore.setFocusOnPage();
+    });
   }
 
   async closeCertificates(): Promise<void> {
