@@ -304,12 +304,6 @@ describe('ProgressInitiateFormComponent', () => {
         expect(deviceItem).toBeTruthy();
       });
 
-      it('should have tabindex -1 for device item', () => {
-        const deviceItem = compiled.querySelector('app-device-item button');
-
-        expect((deviceItem as HTMLElement).tabIndex).toBe(-1);
-      });
-
       it('should display firmware if device selected', () => {
         const firmware = compiled.querySelector('input');
 

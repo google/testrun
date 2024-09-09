@@ -17,6 +17,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  HostListener,
   Inject,
   OnDestroy,
   OnInit,
@@ -63,10 +64,10 @@ import { DynamicFormComponent } from '../../../../components/dynamic-form/dynami
 import { filter, skip, Subject, takeUntil, timer } from 'rxjs';
 import { FormAction, FormResponse } from '../../devices.component';
 import { DeviceItemComponent } from '../../../../components/device-item/device-item.component';
-import { QualificationIconComponent } from '../../../../components/qualification-icon/qualification-icon.component';
-import { PilotIconComponent } from '../../../../components/pilot-icon/pilot-icon.component';
+import { ProgramTypeIconComponent } from '../../../../components/program-type-icon/program-type-icon.component';
 import { Question } from '../../../../model/profile';
 import { FormControlType } from '../../../../model/question';
+import { ProgramType } from '../../../../model/program-type';
 import { FocusManagerService } from '../../../../services/focus-manager.service';
 
 const MAC_ADDRESS_PATTERN =
@@ -106,8 +107,7 @@ interface DialogData {
     MatRadioButton,
     DynamicFormComponent,
     DeviceItemComponent,
-    QualificationIconComponent,
-    PilotIconComponent,
+    ProgramTypeIconComponent,
   ],
   providers: [provideNgxMask(), DevicesStore],
   templateUrl: './device-qualification-from.component.html',
@@ -116,8 +116,10 @@ interface DialogData {
 export class DeviceQualificationFromComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
+  readonly FORM_HEIGHT = 993;
   readonly TestingType = TestingType;
   readonly DeviceView = DeviceView;
+  readonly ProgramType = ProgramType;
   @ViewChild('stepper') public stepper!: StepperComponent;
   testModules: TestModule[] = [];
   deviceQualificationForm: FormGroup = this.fb.group({});
@@ -163,12 +165,6 @@ export class DeviceQualificationFromComponent
     return this.getStep(0).controls['test_modules'] as FormArray;
   }
 
-  get formPristine() {
-    return (
-      this.deviceQualificationForm.get('steps') as FormArray
-    ).controls.every(control => (control as FormGroup).pristine);
-  }
-
   get formValid() {
     return (
       this.deviceQualificationForm.get('steps') as FormArray
@@ -177,6 +173,11 @@ export class DeviceQualificationFromComponent
 
   deviceHasNoChanges(device1: Device | undefined, device2: Device | undefined) {
     return device1 && device2 && this.compareDevices(device1, device2);
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.setDialogHeight();
   }
 
   constructor(
@@ -258,7 +259,11 @@ export class DeviceQualificationFromComponent
   }
 
   delete(): void {
-    this.dialogRef.close({ action: FormAction.Delete } as FormResponse);
+    this.dialogRef.close({
+      action: FormAction.Delete,
+      device: this.createDeviceFromForm(),
+      index: this.stepper.selectedIndex,
+    } as FormResponse);
   }
 
   closeForm(): void {
@@ -555,5 +560,14 @@ export class DeviceQualificationFromComponent
       return false;
     }
     return true;
+  }
+
+  private setDialogHeight(): void {
+    const windowHeight = window.innerHeight;
+    if (windowHeight < this.FORM_HEIGHT) {
+      this.element.nativeElement.style.height = '100vh';
+    } else {
+      this.element.nativeElement.style.height = this.FORM_HEIGHT + 'px';
+    }
   }
 }

@@ -236,10 +236,13 @@ describe('RiskAssessmentComponent', () => {
         });
 
         it('should call store saveProfile when it is new profile', () => {
-          expect(mockRiskAssessmentStore.saveProfile).toHaveBeenCalledWith({
+          const args = mockRiskAssessmentStore.saveProfile.calls.argsFor(0);
+          // @ts-expect-error config is in object
+          expect(args[0].profile).toEqual({
             name: 'test',
             questions: [],
           });
+          expect(mockRiskAssessmentStore.saveProfile).toHaveBeenCalled();
         });
 
         it('should close the form', () => {
@@ -301,9 +304,10 @@ describe('RiskAssessmentComponent', () => {
 
           tick();
 
-          expect(mockRiskAssessmentStore.saveProfile).toHaveBeenCalledWith(
-            NEW_PROFILE_MOCK
-          );
+          const args = mockRiskAssessmentStore.saveProfile.calls.argsFor(0);
+          // @ts-expect-error config is in object
+          expect(args[0].profile).toEqual(NEW_PROFILE_MOCK);
+          expect(mockRiskAssessmentStore.saveProfile).toHaveBeenCalled();
         }));
 
         it('should close the form', fakeAsync(() => {

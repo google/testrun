@@ -29,7 +29,7 @@ import {
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
-import { fetchRiskProfiles, setRiskProfiles } from '../../store/actions';
+import { setRiskProfiles } from '../../store/actions';
 
 describe('RiskAssessmentStore', () => {
   let riskAssessmentStore: RiskAssessmentStore;
@@ -230,10 +230,18 @@ describe('RiskAssessmentStore', () => {
     });
 
     describe('saveProfile', () => {
-      it('should dispatch fetchRiskProfiles', () => {
-        riskAssessmentStore.saveProfile(NEW_PROFILE_MOCK);
+      it('should dispatch setRiskProfiles', () => {
+        const onSave = jasmine.createSpy('onSave');
+        mockService.fetchProfiles.and.returnValue(of([NEW_PROFILE_MOCK]));
+        riskAssessmentStore.saveProfile({
+          profile: NEW_PROFILE_MOCK,
+          onSave,
+        });
 
-        expect(store.dispatch).toHaveBeenCalledWith(fetchRiskProfiles());
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setRiskProfiles({ riskProfiles: [NEW_PROFILE_MOCK] })
+        );
+        expect(onSave).toHaveBeenCalled();
       });
     });
   });

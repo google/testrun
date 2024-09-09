@@ -90,6 +90,7 @@ class Api:
                                methods=["POST"])
     self._router.add_api_route("/system/version", self.get_version)
     self._router.add_api_route("/system/modules", self.get_test_modules)
+    self._router.add_api_route("/system/testpacks", self.get_test_packs)
 
     # Report endpoints
     self._router.add_api_route("/reports", self.get_reports)
@@ -260,6 +261,12 @@ class Api:
 
     device = self._session.get_device(body_json["device"]["mac_addr"])
 
+    # Check if requested device is known in the device repository
+    if device is None:
+      response.status_code = status.HTTP_404_NOT_FOUND
+      return self._generate_msg(
+          False, "A device with that MAC address could not be found")
+
     # Check if device is fully configured
     if device.status != "Valid":
       response.status_code = status.HTTP_400_BAD_REQUEST
@@ -276,12 +283,6 @@ class Api:
       return self._generate_msg(
           False, "Testrun cannot be started " +
           "whilst a test is running on another device")
-
-    # Check if requested device is known in the device repository
-    if device is None:
-      response.status_code = status.HTTP_404_NOT_FOUND
-      return self._generate_msg(
-          False, "A device with that MAC address could not be found")
 
     device.firmware = body_json["device"]["firmware"]
 
@@ -474,6 +475,14 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Could not find device")
 
+    # Assign the reports folder path from testrun
+    reports_folder = self._testrun.get_reports_folder(device)
+
+    # Check if reports folder exists
+    if not os.path.exists(reports_folder):
+      response.status_code = 404
+      return self._generate_msg(False, "Report not found")
+
     if self._testrun.delete_report(device, timestamp_formatted):
       return self._generate_msg(True, "Deleted report")
 
@@ -652,6 +661,7 @@ class Api:
       device.mac_addr = device_json.get(DEVICE_MAC_ADDR_KEY).lower()
       device.manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
       device.model = device_json.get(DEVICE_MODEL_KEY)
+      device.test_pack = device_json.get(DEVICE_TEST_PACK_KEY)
       device.type = device_json.get(DEVICE_TYPE_KEY)
       device.technology = device_json.get(DEVICE_TECH_KEY)
       device.additional_info = device_json.get(DEVICE_ADDITIONAL_INFO_KEY)
@@ -1015,3 +1025,9 @@ class Api:
       if module.enabled and module.enable_container:
         modules.append(module.display_name)
     return modules
+
+  def get_test_packs(self):
+    test_packs: list[str] = []
+    for test_pack in self._test_run.get_test_orc().get_test_packs():
+      test_packs.append(test_pack.name)
+    return test_packs

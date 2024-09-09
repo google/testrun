@@ -16,7 +16,6 @@
         "name": "dns.network.hostname_resolution",
         "test_description": "Verify the device sends DNS requests",
         "expected_behavior": "The device sends DNS requests.",
-        "required_result": "Required",
         "recommendations": [
           "Install a supported DNS client",
           "Ensure DNS servers have been set correctly",
@@ -27,7 +26,6 @@
         "name": "dns.network.from_dhcp",
         "test_description": "Verify the device allows for a DNS server to be entered automatically", 
         "expected_behavior": "The device sends DNS requests to the DNS server provided by the DHCP server",
-        "required_result": "Informational",
         "recommendations": [
           "Install a DNS client that supports fetching DNS servers from DHCP options"
         ]
@@ -35,8 +33,7 @@
       {
         "name": "dns.mdns",
         "test_description": "Does the device has MDNS (or any kind of IP multicast)",
-        "expected_behavior": "Device may send MDNS requests",
-        "required_result": "Informational"
+        "expected_behavior": "Device may send MDNS requests"
       }
     ]
   }
