@@ -16,7 +16,6 @@
 # pylint: disable=redefined-outer-name
 
 from collections.abc import Callable
-import copy
 import json
 import os
 import re
@@ -56,10 +55,16 @@ def pretty_print(dictionary: dict):
   """ Pretty print dictionary """
   print(json.dumps(dictionary, indent=4))
 
-def query_system_status() -> str:
-  """ Query system status from API and returns this """
+def query_system_status():
+  """ Query system/status endpoint and returns 'status' value """
+
+  # Send the get request
   r = requests.get(f"{API}/system/status", timeout=5)
+
+  # Parse the json response
   response = r.json()
+
+  # return the system status
   return response["status"]
 
 def query_test_count() -> int:
@@ -68,12 +73,23 @@ def query_test_count() -> int:
   response = r.json()
   return len(response["tests"]["results"])
 
+@pytest.fixture
+def testing_devices():
+  """ Use devices from the testing/devices directory """
+  delete_all_devices()
+  shutil.copytree(
+      os.path.join(os.path.dirname(__file__), TESTING_DEVICES),
+      os.path.join(DEVICES_DIRECTORY),
+      dirs_exist_ok=True,
+  )
+  return get_all_devices()
+
 def start_test_device(
-    device_name, mac_address, image_name="test-run/ci_device_1", args=""
+    device_name, mac_addr, image_name="test-run/ci_device_1", args=""
 ):
   """ Start test device container with given name """
   cmd = subprocess.run(
-      f"docker run -d --network=endev0 --mac-address={mac_address}"
+      f"docker run -d --network=endev0 --mac-address={mac_addr}"
       f" --cap-add=NET_ADMIN -v /tmp:/out --privileged --name={device_name}"
       f" {image_name} {args}",
       shell=True,
@@ -308,7 +324,7 @@ def test_update_sys_config(testrun, restore_sys_config): # pylint: disable=W0613
   # Check if 'internet_intf' has been updated
   assert updated_internet_intf == local_internet_intf
 
-def test_update_sys_config_invalid_payload(testrun): # pylint: disable=W0613
+def test_update_sys_config_invalid_json(testrun): # pylint: disable=W0613
   """ Test invalid payload for update system configuration (400) """
 
   # Empty payload
@@ -372,6 +388,50 @@ def test_get_sys_config(testrun): # pylint: disable=W0613
   # Check if the internet interface in the local config matches the API config
   assert api_internet_intf == local_internet_intf
 
+@pytest.fixture()
+def start_test():
+  """ Starts a testrun test """  
+
+  # Load the device (payload) using load_json utility method
+  device = load_json("device_config.json", directory=DEVICE_1_PATH)
+
+  # Assign the mac address
+  mac_addr = device["mac_addr"]
+
+  # Assign the test modules
+  test_modules = device["test_modules"]
+
+  # Payload with device details
+  payload = {
+    "device": {
+      "mac_addr": mac_addr,
+      "firmware": "test",
+      "test_modules": test_modules
+    }
+  }
+
+  # Send the post request (start test)
+  r = requests.post(f"{API}/system/start",
+                    data=json.dumps(payload),
+                    timeout=10)
+
+  # Exception if status code is not 200
+  if r.status_code != 200:
+    raise ValueError(f"API request failed with code: {r.status_code}")
+
+@pytest.fixture()
+def stop_test():
+  """ Stops a testrun test """ 
+
+  # Send the post request to stop the test
+  r = requests.post(f"{API}/system/stop", timeout=10)
+
+  # Exception if status code is not 200
+  if r.status_code != 200:
+    raise ValueError(f"API request failed with code: {r.status_code}")
+
+  # Validate system status
+
 def test_start_testrun_success(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
   """ Test for testrun started successfully (200) """
 
@@ -379,7 +439,7 @@ def test_start_testrun_success(empty_devices_dir, add_one_device, testrun): # py
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Assign the device mac address
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
   # Assign device modules
   test_modules = device["test_modules"]
@@ -387,7 +447,7 @@ def test_start_testrun_success(empty_devices_dir, add_one_device, testrun): # py
   # Payload with device details
   payload = {
     "device": {
-      "mac_addr": mac_address,
+      "mac_addr": mac_addr,
       "firmware": "test",
       "test_modules": test_modules
     }
@@ -443,14 +503,14 @@ def test_start_testrun_invalid_json(testrun): # pylint: disable=W0613
   assert "error" in response
 
 def test_start_testrun_already_started(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                                                testrun): # pylint: disable=W0613
+                                                    testrun, start_test): # pylint: disable=W0613
   """ Test for testrun already started (409) """
 
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Assign the device mac address
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
   # Assign the test modules
   test_modules = device["test_modules"]
@@ -458,19 +518,13 @@ def test_start_testrun_already_started(empty_devices_dir, add_one_device, # pyli
   # Payload with device details
   payload = {
     "device": {
-      "mac_addr": mac_address,
+      "mac_addr": mac_addr,
       "firmware": "test",
       "test_modules": test_modules
     }
   }
 
   # Send the post request (start test)
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
-
-  # Check if the response status code is 200 (OK)
-  assert r.status_code == 200
-
-  # Send the second post request (start test again)
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
 
   # Parse the json response
@@ -512,7 +566,7 @@ def test_start_testrun_error(empty_devices_dir, add_one_device, # pylint: disabl
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Assign the mac address
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
   # Assign the test modules
   test_modules = device["test_modules"]
@@ -520,7 +574,7 @@ def test_start_testrun_error(empty_devices_dir, add_one_device, # pylint: disabl
   # Payload with device details
   payload = { "device":
                 {
-                "mac_addr": mac_address,
+                "mac_addr": mac_addr,
                 "firmware": "test",
                 "test_modules": test_modules
                 }
@@ -538,30 +592,9 @@ def test_start_testrun_error(empty_devices_dir, add_one_device, # pylint: disabl
   # Check if 'error' in response
   assert "error" in response
 
-def test_stop_running_testrun(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
+def test_stop_running_testrun(empty_devices_dir, add_one_device, # pylint: disable=W0613
+                                           testrun, start_test): # pylint: disable=W0613
   """ Test for successfully stop testrun when test is running (200) """
-
-  # Load the device and mac address using add_device utility method
-  device = load_json("device_config.json", directory=DEVICE_1_PATH)
-
-  mac_address = device["mac_addr"]
-
-  test_modules = device["test_modules"]
-
-  # Payload with device details
-  payload = {
-            "device": {
-              "mac_addr": mac_address,
-              "firmware": "test",
-              "test_modules": test_modules
-              }
-            }
-
-  # Send the post request
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
-
-  # Check if the response status code is 200 (OK)
-  assert r.status_code == 200
 
   # Send the post request to stop the test
   r = requests.post(f"{API}/system/stop", timeout=10)
@@ -575,19 +608,8 @@ def test_stop_running_testrun(empty_devices_dir, add_one_device, testrun): # pyl
   # Check if error in response
   assert "success" in response
 
-  # Validate system status
-
-  # Send the get request to retrieve system status
-  r = requests.get(f"{API}/system/status", timeout=5)
-
-  # Parse the json response
-  response = r.json()
-
-  # Check if status is 'Cancelled'
-  assert response["status"] == "Cancelled"
-
 def test_stop_testrun_not_running(testrun): # pylint: disable=W0613
-  """Test for stop testrun when is not running"""
+  """ Test for stop testrun when is not running (404) """
 
   # Send the post request to stop the test
   r = requests.post(f"{API}/system/stop", timeout=10)
@@ -601,8 +623,8 @@ def test_stop_testrun_not_running(testrun): # pylint: disable=W0613
   # Check if error in response
   assert "error" in response
 
-def test_system_shutdown(testrun): # pylint: disable=W0613
-  """Test for testrun shutdown endpoint (200)"""
+def test_sys_shutdown(testrun): # pylint: disable=W0613
+  """ Test for testrun shutdown endpoint (200) """
 
   # Send a POST request to initiate the system shutdown
   r = requests.post(f"{API}/system/shutdown", timeout=5)
@@ -616,34 +638,9 @@ def test_system_shutdown(testrun): # pylint: disable=W0613
   # Check if null in response
   assert response is None
 
-def test_system_shutdown_in_progress(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                     testrun): # pylint: disable=W0613
+def test_sys_shutdown_in_progress(empty_devices_dir, add_one_device, # pylint: disable=W0613
+                                     testrun, start_test): # pylint: disable=W0613
   """ Test system shutdown during an in-progress test (400) """
-
-  # Load the device using load_json utility method
-  device = load_json("device_config.json", directory=DEVICE_1_PATH)
-
-  # Assign the device mac address
-  mac_address = device["mac_addr"]
-
-  # Assign the test modules
-  test_modules = device["test_modules"]
-
-  # Payload with device details
-  payload = {
-    "device": {
-      "mac_addr": mac_address,
-      "firmware": "test",
-      "test_modules": test_modules
-    }
-  }
-
-  # Start a test
-  r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
-
-  # Check if status code is not 200 (OK)
-  if r.status_code != 200:
-    raise ValueError(f"Api request failed with code: {r.status_code}")
 
   # Attempt to shutdown while the test is running
   r = requests.post(f"{API}/system/shutdown", timeout=5)
@@ -657,13 +654,49 @@ def test_system_shutdown_in_progress(empty_devices_dir, add_one_device, # pylint
   # Check if 'error' in response
   assert "error" in response
 
-def test_status_idle(testrun): # pylint: disable=W0613
-  """Test system status 'idle' endpoint (/system/status)"""
-  until_true(
-      lambda: query_system_status().lower() == "idle",
-      "system status is `idle`",
-      30,
-  )
+def test_sys_status_idle(testrun): # pylint: disable=W0613
+  """ Test for system status 'Idle' (200) """
+
+  # Send the get request
+  r = requests.get(f"{API}/system/status", timeout=5)
+
+  # Check if the response status code is 200 (OK)
+  assert r.status_code == 200
+
+  # Parse the json response
+  response = r.json()
+
+  # Check if system status is 'Idle'
+  assert response["status"] == "Idle"
+
+def test_sys_status_cancelled(empty_devices_dir, add_one_device, # pylint: disable=W0613
+                                testrun, start_test, stop_test): # pylint: disable=W0613
+  """ Test for system status 'cancelled' (200) """
+
+  # Send the get request to retrieve system status
+  r = requests.get(f"{API}/system/status", timeout=5)
+
+  # Parse the json response
+  response = r.json()
+
+  # Check if status is 'Cancelled'
+  assert response["status"] == "Cancelled"
+
+def test_sys_status_waiting(empty_devices_dir, add_one_device, # pylint: disable=W0613
+                                         testrun, start_test): # pylint: disable=W0613
+  """ Test for system status 'Waiting for Device' (200) """
+
+  # Send the get request
+  r = requests.get(f"{API}/system/status", timeout=5)
+
+  # Check if the response status code is 200 (OK)
+  assert r.status_code == 200
+
+  # Parse the json response
+  response = r.json()
+
+  # Check if system status is 'Waiting for Device'
+  assert response["status"] == "Waiting for Device"
 
 def test_system_version(testrun): # pylint: disable=W0613
   """Test for testrun version endpoint"""
@@ -715,20 +748,20 @@ def test_get_test_modules(testrun): # pylint: disable=W0613
 def create_report_folder(): # pylint: disable=W0613
   """Fixture to create the reports folder in local/devices"""
 
-  def _create_report_folder(device_name, mac_address, timestamp):
+  def _create_report_folder(device_name, mac_addr, timestamp):
 
     # Create the device folder path
     main_folder = os.path.join(DEVICES_DIRECTORY, device_name)
 
     # Remove the ":" from mac address for the folder structure
-    mac_address = mac_address.replace(":", "")
+    mac_addr = mac_addr.replace(":", "")
 
     # Change the timestamp format for the folder structure
     timestamp = timestamp.replace(" ", "T")
 
     # Create the report folder path
     report_folder = os.path.join(main_folder, "reports", timestamp,
-                                 "test", mac_address)
+                                 "test", mac_addr)
 
     # Ensure the report folder exists
     os.makedirs(report_folder, exist_ok=True)
@@ -777,17 +810,17 @@ def test_delete_report_success(empty_devices_dir, add_one_device, # pylint: disa
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Assign the device mac address
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
   # Assign the device name
   device_name = f'{device["manufacturer"]} {device["model"]}'
 
   # Create the report directory
-  report_folder = create_report_folder(device_name, mac_address, TIMESTAMP)
+  report_folder = create_report_folder(device_name, mac_addr, TIMESTAMP)
 
   # Payload
   delete_data = {
-    "mac_addr": mac_address,
+    "mac_addr": mac_addr,
     "timestamp": TIMESTAMP
   }
 
@@ -833,13 +866,13 @@ def test_delete_report_invalid_payload(empty_devices_dir, add_one_device, # pyli
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Assign the device mac address
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
   # Assign the device name
   device_name = f'{device["manufacturer"]} {device["model"]}'
 
   # Create the report directory
-  create_report_folder(device_name, mac_address, TIMESTAMP)
+  create_report_folder(device_name, mac_addr, TIMESTAMP)
 
   # Empty payload
   delete_data = {}
@@ -867,7 +900,7 @@ def test_delete_report_invalid_timestamp(empty_devices_dir, add_one_device, # py
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Assign the device mac address
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
   # Assign the device name
   device_name = f'{device["manufacturer"]} {device["model"]}'
@@ -876,11 +909,11 @@ def test_delete_report_invalid_timestamp(empty_devices_dir, add_one_device, # py
   timestamp = "2024-01-01 invalid"
 
   # Create the report.json
-  create_report_folder(device_name, mac_address, timestamp)
+  create_report_folder(device_name, mac_addr, timestamp)
 
   # Payload
   delete_data = {
-    "mac_addr": mac_address,
+    "mac_addr": mac_addr,
     "timestamp": timestamp
   }
 
@@ -930,11 +963,11 @@ def test_delete_report_no_report(empty_devices_dir, add_one_device, testrun): # 
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Assign the device mac address
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
   # Prepare the payload for the DELETE request
   delete_data = {
-      "mac_addr": mac_address,
+      "mac_addr": mac_addr,
       "timestamp": TIMESTAMP
   }
 
@@ -963,7 +996,7 @@ def test_get_report_success(empty_devices_dir, add_one_device, # pylint: disable
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Assign the device mac address
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
   # Assign the device name
   device_name = f'{device["manufacturer"]} {device["model"]}'
@@ -972,7 +1005,7 @@ def test_get_report_success(empty_devices_dir, add_one_device, # pylint: disable
   timestamp = TIMESTAMP.replace(" ", "T")
 
   # Create the report for the device
-  create_report_folder(device_name, mac_address, timestamp)
+  create_report_folder(device_name, mac_addr, timestamp)
 
   # Send the get request
   r = requests.get(f"{API}/report/{device_name}/{timestamp}", timeout=5)
@@ -1032,12 +1065,12 @@ def test_export_report_device_not_found(empty_devices_dir, testrun, # pylint: di
                                  create_report_folder):
   """Test for export the report result when the device could not be found"""
 
-  # Assign the non-existing device name, mac_address
+  # Assign the non-existing device name, mac_addr
   device_name = "non existing device"
-  mac_address = "00:1e:42:35:73:c4"
+  mac_addr = "00:1e:42:35:73:c4"
 
   # Create the report for the non-existing device
-  create_report_folder(device_name, mac_address, TIMESTAMP)
+  create_report_folder(device_name, mac_addr, TIMESTAMP)
 
   # Send the post request
   r = requests.post(f"{API}/export/{device_name}/{TIMESTAMP}", timeout=5)
@@ -1062,13 +1095,13 @@ def test_export_report_profile_not_found(empty_devices_dir, add_one_device, # py
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Assign the device mac address
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
   # Assign the device name
   device_name = f'{device["manufacturer"]} {device["model"]}'
 
   # Create the report for the device
-  create_report_folder(device_name, mac_address, TIMESTAMP)
+  create_report_folder(device_name, mac_addr, TIMESTAMP)
 
   # Add a non existing profile into the payload
   payload = {"profile": "non_existent_profile"}
@@ -1126,7 +1159,7 @@ def test_export_report_with_profile(empty_devices_dir, add_one_device, # pylint:
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Assign the device mac address
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
   # Assign the device name
   device_name = f'{device["manufacturer"]} {device["model"]}'
@@ -1135,7 +1168,7 @@ def test_export_report_with_profile(empty_devices_dir, add_one_device, # pylint:
   timestamp = TIMESTAMP.replace(" ", "T")
 
   # Create the report for the device
-  create_report_folder(device_name, mac_address, timestamp)
+  create_report_folder(device_name, mac_addr, timestamp)
 
   # Send the post request
   r = requests.post(f"{API}/export/{device_name}/{timestamp}",
@@ -1159,13 +1192,13 @@ def test_export_results_with_no_profile(empty_devices_dir, add_one_device, # pyl
   device_name = f'{device["manufacturer"]} {device["model"]}'
 
   # Assign the device mac address
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
   # Assign the timestamp and change the format
   timestamp = TIMESTAMP.replace(" ", "T")
 
   # Create the report for the device
-  create_report_folder(device_name, mac_address, timestamp)
+  create_report_folder(device_name, mac_addr, timestamp)
 
   # Send the post request
   r = requests.post(f"{API}/export/{device_name}/{timestamp}", timeout=5)
@@ -1320,21 +1353,10 @@ def device_exists(device_mac):
   # Return if mac address is in the list of devices
   return any(p["mac_addr"] == device_mac for p in devices)
 
-@pytest.fixture
-def testing_devices():
-  """ Use devices from the testing/devices directory """
-  delete_all_devices()
-  shutil.copytree(
-      os.path.join(os.path.dirname(__file__), TESTING_DEVICES),
-      os.path.join(DEVICES_DIRECTORY),
-      dirs_exist_ok=True,
-  )
-  return get_all_devices()
-
 def test_get_devices_no_devices(empty_devices_dir, testrun): # pylint: disable=W0613
   """ Test for get devices endpoint when no devices are available (200) """
 
-  # Check if there are no devices in local/devices
+  # Error handling if there are devices in local/devices
   if len(get_all_devices()) != 0:
     raise Exception("Expected no devices in local/devices")
 
@@ -1359,7 +1381,7 @@ def test_get_devices_no_devices(empty_devices_dir, testrun): # pylint: disable=W
 def test_get_devices_one_device(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
   """ Test for get devices endpoint when one device is created (200) """
 
-  # Check if there is one device in local/devices
+  # Error handling if there is not one device in local/devices
   if len(get_all_devices()) != 1:
     raise Exception("Expected one device in local/devices")
 
@@ -1378,7 +1400,7 @@ def test_get_devices_one_device(empty_devices_dir, add_one_device, testrun): # p
 def test_get_devices_two_devices(empty_devices_dir, add_two_devices, testrun): # pylint: disable=W0613
   """ Test for get devices endpoint when two devices are created (200) """
 
-  # Check if there are two devices in local/devices
+  # Error handling if there are not two devices in local/devices
   if len(get_all_devices()) != 2:
     raise Exception("Expected two devices in local/devices")
 
@@ -1406,14 +1428,11 @@ def test_get_devices_two_devices(empty_devices_dir, add_two_devices, testrun): #
     "test_modules",
   ]
 
-  # Iterate over all devices
-  for device in response:
+  # Iterate over all expected_fields list
+  for field in expected_fields:
 
-    # Iterate over all expected fields list
-    for field in expected_fields:
-
-      # Check if the device has all the expected fields
-      assert field in device
+    # Check if both devices have the expected fields
+    assert all(field in r for r in response)
 
 def test_create_device(empty_devices_dir, testrun): # pylint: disable=W0613
   """ Test for successfully create device endpoint (201) """
@@ -1421,10 +1440,11 @@ def test_create_device(empty_devices_dir, testrun): # pylint: disable=W0613
   # Load the first device using load_json utility method
   device_1 = load_json("device_config.json", directory=DEVICE_1_PATH)
 
+  # Assign the mac address for the first device
+  mac_addr_1 = device_1["mac_addr"]
+
   # Send the post request to the '/device' endpoint
-  r = requests.post(f"{API}/device",
-                    data=json.dumps(device_1),
-                    timeout=5)
+  r = requests.post(f"{API}/device", data=json.dumps(device_1), timeout=5)
 
   # Check if status code is 201 (Created)
   assert r.status_code == 201
@@ -1432,13 +1452,14 @@ def test_create_device(empty_devices_dir, testrun): # pylint: disable=W0613
   # Check if there is one device in 'local/devices'
   assert len(get_all_devices()) == 1
 
-  # Load the first device using load_json utility method
+  # Load the second device using load_json utility method
   device_2 = load_json("device_config.json", directory=DEVICE_2_PATH)
 
+  # Assign the mac address for the second device
+  mac_addr_2 = device_2["mac_addr"]
+
   # Send the post request to the '/device' endpoint
-  r = requests.post(f"{API}/device",
-                    data=json.dumps(device_2),
-                    timeout=5)
+  r = requests.post(f"{API}/device", data=json.dumps(device_2), timeout=5)
 
   # Check if status code is 201 (Created)
   assert r.status_code == 201
@@ -1452,209 +1473,313 @@ def test_create_device(empty_devices_dir, testrun): # pylint: disable=W0613
   # Parse the json response (devices)
   response = r.json()
 
-  # Assign the expected fields from device
-  expected_fields = [
-    "mac_addr",
-    "manufacturer",
-    "model",
-    "type",
-    "technology",
-    "test_pack",
-    "additional_info",
-    "test_modules",
+  # Iterate through all the devices to find the device based on the "mac_addr"
+  created_devices = [
+    d for d in response
+    if d["mac_addr"] in {mac_addr_1, mac_addr_2}
   ]
 
-  # Iterate over all expected_fields list
-  for field in expected_fields:
+  # Check if both devices have been found
+  assert len(created_devices) == 2
 
-    # If the field is 'additional_info' compare lists
-    if field == "additional_info":
-      assert response[0][field] == device_1[field]
-      assert response[1][field] == device_2[field]
+def test_create_device_already_exists(empty_devices_dir, add_one_device, # pylint: disable=W0613
+                                                               testrun): # pylint: disable=W0613
+  """ Test for crete device when device already exists (409) """
 
-    # If the field is 'test_modules' compare dictionaries
-    elif field == "test_modules":
-      assert response[0][field] == device_1[field]
-      assert response[1][field] == device_2[field]
+  # Error handling if there is not one devices in local/devices
+  if len(get_all_devices()) != 1:
+    raise Exception("Expected one device in local/devices")
 
-    # For the other fields check if the created device has the given values
-    else:
-      assert set([response[0][field], response[1][field]]) == set(
-        [device_1[field], device_2[field]])
+  # Load the device (payload) using load_json utility method
+  device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
-  # Check if 'status' in api response
-  assert all("status" in r for r in response)
+  # Send the post request to create the device
+  r = requests.post(f"{API}/device", data=json.dumps(device), timeout=5)
 
-def test_create_device_already_exists(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
-
-  device_1 = load_json("device_config.json", directory=DEVICE_1_PATH)
-
-  r = requests.post(f"{API}/device",
-                    data=json.dumps(device_1),
-                    timeout=5)
-  assert r.status_code == 201
-  assert len(get_all_devices()) == 1
-
-  r = requests.post(f"{API}/device",
-                    data=json.dumps(device_1),
-                    timeout=5)
+  # Check if status code is 409 (conflict)
   assert r.status_code == 409
 
-def test_create_device_invalid_json(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+  # Parse the json response (devices)
+  response = r.json()
 
-  device_1 = {}
+  # Check if 'error' in response
+  assert "error" in response
 
-  r = requests.post(f"{API}/device",
-                    data=json.dumps(device_1),
-                    timeout=5)
+  # Check if 'local/device' has only one device
+  assert len(get_all_devices()) == 1
+
+def test_create_device_invalid_json(empty_devices_dir, testrun): # pylint: disable=W0613
+  """ Test for create device invalid json payload """
+
+  # Error handling if there are devices in local/devices
+  if len(get_all_devices()) != 0:
+    raise Exception("Expected no device in local/devices")
+
+  # Empty payload
+  device = {}
+
+  # Send the post request
+  r = requests.post(f"{API}/device", data=json.dumps(device), timeout=5)
+
+  # Check if status code is 400 (bad request)
   assert r.status_code == 400
 
-def test_create_device_invalid_request(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+  # Parse the json response (devices)
+  response = r.json()
 
-  r = requests.post(f"{API}/device",
-                    data=None,
-                    timeout=5)
+  # Check if 'error' in response
+  assert "error" in response
+
+  # Check if 'local/device' has no devices
+  assert len(get_all_devices()) == 0
+
+def test_create_device_invalid_request(empty_devices_dir, testrun): # pylint: disable=W0613
+  """ Test for create device when no payload is added """
+
+  # Send the post request with no payload
+  r = requests.post(f"{API}/device", data=None, timeout=5)
+
+  # Check if status code is 400 (bad request)
   assert r.status_code == 400
 
-def test_device_edit_device(
-    testing_devices, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
-  with open(
-      testing_devices[1], encoding="utf-8"
-  ) as f:
-    local_device = json.load(f)
+  # Parse the json response (devices)
+  response = r.json()
 
-  mac_addr = local_device["mac_addr"]
-  new_model = "Alphabet"
+  # Check if 'error' in response
+  assert "error" in response
 
-  r = requests.get(f"{API}/devices", timeout=5)
-  all_devices = r.json()
+  # Check if 'local/device' has no devices
+  assert len(get_all_devices()) == 0
 
-  api_device = next(x for x in all_devices if x["mac_addr"] == mac_addr)
+def test_edit_device(empty_devices_dir, add_one_device,  # pylint: disable=W0613
+                                              testrun): # pylint: disable=W0613
+  """ Test for successfully edit device (200) """
 
-  updated_device = copy.deepcopy(api_device)
-  updated_device["model"] = new_model
+  # Error handling if there is not one devices in local/devices
+  if len(get_all_devices()) != 1:
+    raise Exception("Expected one device in local/devices")
 
-  new_test_modules = {
-      k: {"enabled": not v["enabled"]}
-      for k, v in updated_device["test_modules"].items()
-  }
-  updated_device["test_modules"] = new_test_modules
+  # Load the device (payload) using load_json utility method
+  device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
-  updated_device_payload = {}
-  updated_device_payload["device"] = updated_device
-  updated_device_payload["mac_addr"] = mac_addr
+  # Assign the mac address
+  mac_addr = device["mac_addr"]
 
-  print("updated_device")
-  pretty_print(updated_device)
-  print("api_device")
-  pretty_print(api_device)
+  # Update the manufacturer and model values
+  device["manufacturer"] = "Updated Manufacturer"
+  device["model"] = "Updated Model"
 
-  # update device
-  r = requests.post(f"{API}/device/edit",
-                    data=json.dumps(updated_device_payload),
-                    timeout=5)
+  # Payload with the updated device name
+  updated_device = {
+    "mac_addr": mac_addr,
+    "device": device 
+    }
 
+  # Exception if the device is not found
+  if not device_exists(mac_addr):
+    raise ValueError(f"Device with mac address:{mac_addr} not found")
+
+  # Send the post request to update the device
+  r = requests.post(
+      f"{API}/device/edit",
+      data=json.dumps(updated_device),
+      timeout=5)
+
+  # Check if status code is 200 (OK)
   assert r.status_code == 200
 
-  r = requests.get(f"{API}/devices", timeout=5)
-  all_devices = r.json()
-  updated_device_api = next(x for x in all_devices if x["mac_addr"] == mac_addr)
-
-  assert updated_device_api["model"] == new_model
-  assert updated_device_api["test_modules"] == new_test_modules
-
-def test_edit_device_not_found(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
-
-  device_1 = load_json("device_config.json", directory=DEVICE_1_PATH)
-
-  r = requests.post(f"{API}/device",
-                    data=json.dumps(device_1),
-                    timeout=5)
-  assert r.status_code == 201
+  # Check if 'local/device' still has only one device
   assert len(get_all_devices()) == 1
 
-  updated_device = copy.deepcopy(device_1)
+  # Send a get request to verify device update
+  r = requests.get(f"{API}/devices", timeout=5)
 
-  updated_device_payload = {}
-  updated_device_payload["device"] = updated_device
-  updated_device_payload["mac_addr"] = "00:1e:42:35:73:c6"
-  updated_device_payload["model"] = "Alphabet"
+  # Check if status code is 200 (OK)
+  assert r.status_code == 200
 
+  # Parse the response (devices list)
+  response = r.json()
 
-  r = requests.post(f"{API}/device/edit",
-                      data=json.dumps(updated_device_payload),
-                      timeout=5)
+  # Iterate through the devices to find the device based on "mac_addr"
+  updated_device = next(
+    (d for d in response if d["mac_addr"] == mac_addr),
+    None
+  )
 
+  # Error handling if the device is not being found
+  if updated_device is None:
+    raise Exception("The device could not be found")
+
+  # Check if device "manufacturer" was updated
+  assert device["manufacturer"] == updated_device["manufacturer"]
+
+  # Check if device "manufacturer" was updated
+  assert device["model"] == updated_device["model"]
+
+def test_edit_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
+
+  """ Test for edit device when device is not found (404) """
+
+  # Error handling if there are devices in local/devices
+  if len(get_all_devices()) != 0:
+    raise Exception("Expected no device in local/devices")
+
+  # Load the device (payload) using load_json utility method
+  device = load_json("device_config.json", directory=DEVICE_1_PATH)
+
+  # Assign the mac address
+  mac_addr = device["mac_addr"]
+
+  # Update the manufacturer and model values
+  device["manufacturer"] = "Updated manufacturer"
+  device["model"] = "Updated model"
+
+  # Payload with the updated device name
+  updated_device = {
+    "mac_addr": mac_addr,
+    "device": device 
+    }
+
+  # Exception if the device is found
+  if device_exists(mac_addr):
+    raise ValueError(f"Device with mac address:{mac_addr} found")
+
+  # Send the post request to update the device
+  r = requests.post(
+      f"{API}/device/edit",
+      data=json.dumps(updated_device),
+      timeout=5)
+
+  # Check if status code is 404 (not found)
   assert r.status_code == 404
 
-def test_edit_device_incorrect_json_format(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+  # Parse the json response (devices)
+  response = r.json()
 
-  device_1 = load_json("device_config.json", directory=DEVICE_1_PATH)
+  # Check if 'error' in response
+  assert "error" in response
 
-  r = requests.post(f"{API}/device",
-                    data=json.dumps(device_1),
-                    timeout=5)
-  assert r.status_code == 201
-  assert len(get_all_devices()) == 1
+  # Check if 'local/device' still has no devices
+  assert len(get_all_devices()) == 0
 
-  updated_device_payload = {}
+def test_edit_device_invalid_json(empty_devices_dir, testrun): # pylint: disable=W0613
+  """ Test for edit device invalid json (400) """
 
+  # Empty payload
+  payload = {}
 
+  # Send the post request to update the device
   r = requests.post(f"{API}/device/edit",
-                      data=json.dumps(updated_device_payload),
+                      data=json.dumps(payload),
                       timeout=5)
 
+  # Check if status code is 400 (bad request)
   assert r.status_code == 400
 
-def test_edit_device_with_mac_already_exists(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+  # Parse the json response (devices)
+  response = r.json()
 
+  # Check if 'error' in response
+  assert "error" in response
+
+def test_edit_device_mac_already_exists( empty_devices_dir, add_two_devices, # pylint: disable=W0613
+                                                                  testrun): # pylint: disable=W0613
+  """ Test for edit device when the mac address already exists (409) """
+
+  # Load the first device (payload) using load_json utility method
   device_1 = load_json("device_config.json", directory=DEVICE_1_PATH)
 
-  r = requests.post(f"{API}/device",
-                    data=json.dumps(device_1),
-                    timeout=5)
+  # Assign the device_1 initial mac address
+  mac_addr_1 = device_1["mac_addr"]
 
-  assert r.status_code == 201
-
-  assert len(get_all_devices()) == 1
-
+  # Load the second device using load_json utility method
   device_2 = load_json("device_config.json", directory=DEVICE_2_PATH)
 
-  r = requests.post(f"{API}/device",
-                    data=json.dumps(device_2),
+  # Update the device_1 mac address with device_2 mac address
+  device_1["mac_addr"] = device_2["mac_addr"]
+
+  # Payload with the updated device mac address
+  updated_device = {
+    "mac_addr": mac_addr_1,
+    "device": device_1 
+    }
+
+  # Exception if the device is not found
+  if not device_exists(mac_addr_1):
+    raise ValueError(f"Device with mac address:{mac_addr_1} not found")
+
+  # Send the post request to update the device
+  r = requests.post(f"{API}/device/edit",
+                    data=json.dumps(updated_device),
                     timeout=5)
 
-  assert r.status_code == 201
-
-  assert len(get_all_devices()) == 2
-
-  updated_device = copy.deepcopy(device_1)
-
-  updated_device_payload = {}
-
-  updated_device_payload["device"] = updated_device
-  updated_device_payload["mac_addr"] = "00:1e:42:35:73:c6"
-  updated_device_payload["model"] = "Alphabet"
-
-
-  r = requests.post(f"{API}/device/edit",
-                      data=json.dumps(updated_device_payload),
-                      timeout=5)
-
+  # Check if status code is 409 (conflict)
   assert r.status_code == 409
+
+  # Parse the json response (devices)
+  response = r.json()
+
+  # Check if 'error' in response
+  assert "error" in response
+
+def test_edit_device_test_in_progress(empty_devices_dir, add_one_device,  # pylint: disable=W0613
+                                                   testrun, start_test): # pylint: disable=W0613
+  """ Test for edit device when a test is in progress (403) """
+
+  # Load the device (payload) using load_json utility method
+  device = load_json("device_config.json", directory=DEVICE_1_PATH)
+
+  # Assign the mac address
+  mac_addr = device["mac_addr"]
+
+  # Update the manufacturer and model values
+  device["manufacturer"] = "Updated Manufacturer"
+  device["model"] = "Updated Model"
+
+  # Payload with the updated device name
+  updated_device = {
+    "mac_addr": mac_addr,
+    "device": device 
+    }
+
+  # Exception if the device is not found
+  if not device_exists(mac_addr):
+    raise ValueError(f"Device with mac address:{mac_addr} not found")
+
+  # Send the post request to update the device
+  r = requests.post(
+      f"{API}/device/edit",
+      data=json.dumps(updated_device),
+      timeout=5)
+
+  # Check if status code is 403 (forbidden)
+  assert r.status_code == 403
+
+  # Send a get request to verify that device was not updated
+  r = requests.get(f"{API}/devices", timeout=5)
+
+  # Exception if status code is not 200
+  if r.status_code != 200:
+    raise ValueError(f"API request failed with code: {r.status_code}")
+
+  # Parse the response (devices list)
+  response = r.json()
+
+  # Iterate through the devices to find the device based on "mac_addr"
+  updated_device = next(
+    (d for d in response if d["mac_addr"] == mac_addr),
+    None
+  )
+
+  # Error handling if the device is not being found
+  if updated_device is None:
+    raise Exception("The device could not be found")
+
+  # Check that device "manufacturer" was not updated
+  assert device["manufacturer"] != updated_device["manufacturer"]
+
+  # Check that device "manufacturer" was not updated
+  assert device["model"] != updated_device["model"]
 
 def test_edit_device_invalid_manufacturer(empty_devices_dir, add_one_device, # pylint: disable=W0613
                                                                    testrun): # pylint: disable=W0613
@@ -1726,15 +1851,16 @@ def test_edit_long_chars(empty_devices_dir, testrun): # pylint: disable=W0613
 def test_delete_device(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
   """ Test for succesfully delete device endpoint (200) """
 
+  # Load the device
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Assign the mac address
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
-  # Assign the payload with device to be deleted mac address
-  payload = { "mac_addr": mac_address }
+  # Assign the payload with device to be deleted
+  payload = { "mac_addr": mac_addr }
 
-  # Test that device_1 deletes
+  # Send the delete request
   r = requests.delete(f"{API}/device/",
               data=json.dumps(payload),
                             timeout=5)
@@ -1760,7 +1886,7 @@ def test_delete_device(empty_devices_dir, add_one_device, testrun): # pylint: di
 
   # Iterate through the devices to find the device based on the 'mac address'
   deleted_device = next(
-      (d for d in device if d["mac_addr"] == mac_address),
+      (d for d in device if d["mac_addr"] == mac_addr),
       None
   )
 
@@ -1811,39 +1937,24 @@ def test_delete_device_no_mac(empty_devices_dir, add_one_device, testrun): # pyl
   assert len(get_all_devices()) == 1
 
 def test_delete_device_testrun_in_progress(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                                                    testrun): # pylint: disable=W0613
+                                                        testrun, start_test): # pylint: disable=W0613
   """ Test for delete device when testrun is in progress (403) """
 
   # Load the device details
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
   # Assign the mac address
-  mac_address = device["mac_addr"]
-
-  # Assign the test modules
-  test_modules = device["test_modules"]
-
-  # Payload with device details
-  payload = {
-    "device": {
-      "mac_addr": mac_address,
-      "firmware": "test",
-      "test_modules": test_modules
-    }
-  }
-
-  # Send the post request to start a test
-  requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
+  mac_addr = device["mac_addr"]
 
   # Assign the payload with device to be deleted mac address
-  payload = { "mac_addr": mac_address }
+  payload = { "mac_addr": mac_addr }
 
   # Send the delete request
   r = requests.delete(f"{API}/device/",
               data=json.dumps(payload),
                             timeout=5)
 
-  # Check if status code is 403 (Forbidden)
+  # Check if status code is 403 (forbidden)
   assert r.status_code == 403
 
   # Parse the JSON response
@@ -2789,14 +2900,14 @@ def test_stop_running_test(empty_devices_dir, add_one_device, testrun): # pylint
   # Load the device and mac address using add_device utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
 
-  mac_address = device["mac_addr"]
+  mac_addr = device["mac_addr"]
 
   test_modules = device["test_modules"]
 
   # Payload with device details
   payload = {
             "device": {
-              "mac_addr": mac_address,
+              "mac_addr": mac_addr,
               "firmware": "test",
               "test_modules": test_modules
               }
