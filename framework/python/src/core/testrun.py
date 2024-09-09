@@ -502,12 +502,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     self._stop_ui()
 
     LOGGER.info('Starting UI')
-
-    # Passing "single interface" mode to the FE
-    envs = os.environ
-    envs['TESTRUN_SINGLE_INTF'] = str(int(single_intf))
-
-    client = docker.from_env(environment=envs)
+    client = docker.from_env()
 
     try:
       client.containers.run(
@@ -518,7 +513,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
             detach=True,
             ports={
               '80': 8080
-            }
+            },
+            environment={'TESTRUN_SINGLE_INTF': str(int(single_intf))}
       )
     except ImageNotFound as ie:
       LOGGER.error('An error occured whilst starting the UI. ' +
