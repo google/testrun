@@ -39,10 +39,8 @@ import {
 } from './selectors';
 import {
   IDLE_STATUS,
-  IResult,
   StatusOfTestrun,
   TestrunStatus,
-  TestsData,
 } from '../model/testrun-status';
 import {
   fetchSystemStatus,
@@ -281,20 +279,8 @@ export class AppEffects {
           // for app - requires only status
           if (systemStatus.status !== status?.status) {
             this.store.dispatch(setStatus({ status: systemStatus.status }));
-            this.store.dispatch(
-              setTestrunStatus({ systemStatus: systemStatus })
-            );
-          } else if (
-            systemStatus.finished !== status?.finished ||
-            (systemStatus.tests as TestsData)?.results?.length !==
-              (status?.tests as TestsData)?.results?.length ||
-            (systemStatus.tests as IResult[])?.length !==
-              (status?.tests as IResult[])?.length
-          ) {
-            this.store.dispatch(
-              setTestrunStatus({ systemStatus: systemStatus })
-            );
           }
+          this.store.dispatch(setTestrunStatus({ systemStatus: systemStatus }));
         })
       );
     },
