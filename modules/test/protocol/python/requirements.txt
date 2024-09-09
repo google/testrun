@@ -1,3 +1,12 @@
+# Dependencies to user defined packages
+# Package dependencies should always be defined before the user defined
+# packages to prevent auto-upgrades of stable dependencies
+bacpypes==0.18.7
+colorama==0.4.6
+pymodbus==3.7.0
+pytz==2024.1
+
+# User defined packages
 # Required for BACnet protocol tests
 netifaces==0.11.0
 BAC0==23.7.3
