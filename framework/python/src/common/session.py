@@ -82,6 +82,7 @@ class TestrunSession():
     self._root_dir = root_dir
 
     self._status = TestrunStatus.IDLE
+    self._description = None
 
     # Target test device
     self._device = None
@@ -238,8 +239,6 @@ class TestrunSession():
           ORG_NAME_KEY
         )
 
-      LOGGER.debug(self._config)
-
   def _load_version(self):
     version_cmd = util.run_command(
         'dpkg-query --showformat=\'${Version}\' --show testrun')
@@ -356,6 +355,9 @@ class TestrunSession():
   def set_status(self, status):
     self._status = status
 
+  def set_description(self, desc: str):
+    self._description = desc
+
   def get_test_results(self):
     return self._results
 
@@ -381,10 +383,30 @@ class TestrunSession():
       # result type is TestCase object
       if test_result.name == result.name:
 
-        # Just update the result and description
-        test_result.result = result.result
-        test_result.description = result.description
-        test_result.recommendations = result.recommendations
+        # Just update the result, description and recommendations
+
+        if result.result is not None:
+
+          # Any informational test should always report informational
+          if (test_result.required_result == 'Informational' and
+              result.result in [
+                TestResult.COMPLIANT,
+                TestResult.NON_COMPLIANT,
+                TestResult.FEATURE_NOT_DETECTED
+              ]):
+            test_result.result = TestResult.INFORMATIONAL
+          else:
+            test_result.result = result.result
+
+        if len(result.description) != 0:
+          test_result.description = result.description
+
+        if result.recommendations is not None:
+          test_result.recommendations = result.recommendations
+
+          if len(result.recommendations) == 0:
+            test_result.recommendations = None
+
         updated = True
 
     if not updated:
@@ -699,6 +721,7 @@ question {question.get('question')}''')
 
   def reset(self):
     self.set_status(TestrunStatus.IDLE)
+    self.set_description(None)
     self.set_target_device(None)
     self._report_url = None
     self._total_tests = 0
@@ -730,6 +753,9 @@ question {question.get('question')}''')
 
     if self._report_url is not None:
       session_json['report'] = self.get_report_url()
+
+    if self._description is not None:
+      session_json['description'] = self._description
 
     return session_json
 

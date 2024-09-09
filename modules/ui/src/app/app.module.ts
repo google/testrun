@@ -54,7 +54,7 @@ import { WifiComponent } from './components/wifi/wifi.component';
 import { MqttModule, IMqttServiceOptions } from 'ngx-mqtt';
 
 export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
-  hostname: 'localhost',
+  hostname: window.location.hostname,
   port: 9001,
 };
 
