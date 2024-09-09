@@ -344,7 +344,18 @@ class TestOrchestrator:
           LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
           timestamp)
 
-      test_report = device.get_reports()[0]
+      # Parse string timestamp
+      date_timestamp: datetime.datetime = datetime.strptime(
+        timestamp, "%Y-%m-%dT%H:%M:%S")
+
+      test_report = None
+      for report in device.get_reports():
+        if report.get_started() == date_timestamp:
+          test_report = report
+
+      # This should not happen as the timestamp is checked in api.py first
+      if test_report is None:
+        return None
 
       # Write the pdf report
       with open(os.path.join(src_path, "report.pdf"), "wb") as f:
