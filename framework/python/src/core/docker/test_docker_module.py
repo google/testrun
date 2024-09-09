@@ -57,11 +57,12 @@ class TestModule(Module):
           test_case = TestCase(
               name=test_case_json['name'],
               description=test_case_json['test_description'],
-              expected_behavior=test_case_json['expected_behavior'],
-              required_result=test_case_json['required_result'])
+              expected_behavior=test_case_json['expected_behavior'])
 
+          # Check if steps to resolve have been specified
           if 'recommendations' in test_case_json:
             test_case.recommendations = test_case_json['recommendations']
+
           self.tests.append(test_case)
         except Exception as error:  # pylint: disable=W0718
           self.logger.error('Failed to load test case. See error for details')
