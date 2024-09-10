@@ -1,9 +1,7 @@
 {
-  "name": "new_profile_1",
+  "name": "draft_profile",
   "version": "1.4",
   "created": "2024-09-03",
-  "status": "Valid",
-  "risk": "High",
   "questions": [
     {
       "question": "How will this device be used at Google?",
@@ -11,43 +9,27 @@
     },
     {
       "question": "Is this device going to be managed by Google or a third party?",
-      "answer": "Google",
-      "risk": "Limited"
+      "answer": "Google"
     },
     {
       "question": "Will the third-party device administrator be able to grant access to authorized Google personnel upon request?",
-      "answer": "N/A",
-      "risk": "Limited"
+      "answer": ""
     },
     {
       "question": "Which of the following statements are true about this device?",
-      "answer": [
-        0
-      ],
-      "risk": "High"
+      "answer": []
     },
     {
       "question": "Does the network protocol assure server-to-client identity verification?",
-      "answer": "Yes",
-      "risk": "Limited"
+      "answer": "Yes"
     },
     {
       "question": "Click the statements that best describe the characteristics of this device.",
-      "answer": [
-        0
-      ],
-      "risk": "High"
+      "answer": []
     },
     {
       "question": "Are any of the following statements true about this device?",
-      "answer": [
-        0
-      ],
-      "risk": "High"  
-    },
-    {
-      "question": "Comments",
-      "answer": ""
+      "answer": []
     }
-  ]
+    ]
 }

@@ -414,7 +414,7 @@ def test_get_sys_config(testrun): # pylint: disable=W0613
 
 @pytest.fixture()
 def start_test():
-  """ Starts a testrun test """  
+  """ Starts a testrun test using the API """  
 
   # Load the device (payload) using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
@@ -445,7 +445,7 @@ def start_test():
 
 @pytest.fixture()
 def stop_test():
-  """ Stops a testrun test """ 
+  """ Stops a testrun test using the API """ 
 
   # Send the post request to stop the test
   r = requests.post(f"{API}/system/stop", timeout=10)
@@ -770,7 +770,7 @@ def test_get_test_modules(testrun): # pylint: disable=W0613
 
 @pytest.fixture
 def create_report_folder(): # pylint: disable=W0613
-  """Fixture to create the reports folder in local/devices"""
+  """ Fixture to create the device reports folder in local/devices """
 
   def _create_report_folder(device_name, mac_addr, timestamp):
 
@@ -824,11 +824,9 @@ def test_get_reports_no_reports(testrun): # pylint: disable=W0613
   # Check if the response is an empty list
   assert response == []
 
-def test_delete_report_success(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                  create_report_folder, testrun): # pylint: disable=W0613
+def test_delete_report(empty_devices_dir, add_one_device, # pylint: disable=W0613
+                          create_report_folder, testrun): # pylint: disable=W0613
   """Test for succesfully delete a report (200)"""
-
-  r = requests.get(f"{API}/devices", timeout=5)
 
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
@@ -1014,7 +1012,7 @@ def test_delete_report_no_report(empty_devices_dir, add_one_device, testrun): # 
 
 def test_get_report_success(empty_devices_dir, add_one_device, # pylint: disable=W0613
                                create_report_folder, testrun): # pylint: disable=W0613
-  """Test get report when report exists (200)"""
+  """Test for successfully get report when report exists (200)"""
 
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
@@ -1177,7 +1175,7 @@ def test_export_report_with_profile(empty_devices_dir, add_one_device, # pylint:
   """Test export results with existing profile when report exists (200)"""
 
   # Load the profile using load_json utility method
-  profile = load_json("new_profile_1.json", directory=PROFILES_PATH)
+  profile = load_json("valid_profile.json", directory=PROFILES_PATH)
 
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
@@ -2056,7 +2054,7 @@ def test_create_long_chars(empty_devices_dir, testrun): # pylint: disable=W0613
 # Tests for certificates endpoints
 
 def delete_all_certs():
-  """Utility method to delete all certificates from root_certs folder"""
+  """ Delete all certificates from root_certs folder """
 
   try:
 
@@ -2091,7 +2089,7 @@ def delete_all_certs():
     print(f"Error removing {item}: {err}")
 
 def load_certificate_file(cert_filename):
-  """Utility method to load a certificate file in binary read mode."""
+  """ Utility method to load a certificate file in binary read mode """
 
   # Construct the full file path
   cert_path = os.path.join(CERTS_PATH, cert_filename)
@@ -2102,24 +2100,9 @@ def load_certificate_file(cert_filename):
     # Return the certificate file
     return cert_file.read()
 
-def upload_cert(filename):
-  """Utility method to upload a certificate"""
-
-  # Load the certificate using the utility method
-  cert_file = load_certificate_file(filename)
-
-  # Send a POST request to the API endpoint to upload the certificate
-  response = requests.post(
-      f"{API}/system/config/certs",
-      files={"file": (filename, cert_file, "application/x-x509-ca-cert")},
-      timeout=5)
-
-  # Return the response
-  return response
-
 @pytest.fixture()
 def reset_certs():
-  """Delete the certificates before and after each test"""
+  """ Delete the certificates before and after each test """
 
   # Delete before the test
   delete_all_certs()
@@ -2131,13 +2114,28 @@ def reset_certs():
 
 @pytest.fixture()
 def add_cert():
-  """Fixture to upload certificates during tests."""
+  """ Upload certificates during tests """
+
+  # Utility method to upload a certificate
+  def _upload_cert(filename):
+
+    # Load the certificate using the utility method
+    cert_file = load_certificate_file(filename)
+
+    # Send a POST request to the API endpoint to upload the certificate
+    response = requests.post(
+        f"{API}/system/config/certs",
+        files={"file": (filename, cert_file, "application/x-x509-ca-cert")},
+        timeout=5)
+
+    # Return the response
+    return response
 
   # Returning the reference to upload_certificate
-  return upload_cert
+  return _upload_cert
 
-def test_get_certificates_no_certificates(testrun, reset_certs): # pylint: disable=W0613
-  """Test for get certificates when no certificates have been uploaded"""
+def test_get_certs_no_certs(reset_certs, testrun): # pylint: disable=W0613
+  """ Test for get certificate when no certificates are available (200) """
 
   # Send the get request to "/system/config/certs" endpoint
   r = requests.get(f"{API}/system/config/certs", timeout=5)
@@ -2154,8 +2152,8 @@ def test_get_certificates_no_certificates(testrun, reset_certs): # pylint: disab
   # Check if the list is empty
   assert len(response) == 0
 
-def test_get_certificates(testrun, reset_certs, add_cert): # pylint: disable=W0613
-  """Test for get certificates when two certificates have been uploaded"""
+def test_get_certs(testrun, reset_certs, add_cert): # pylint: disable=W0613
+  """ Test for get certificates (one and two certificates) (200) """
 
   # Use add_cert fixture to upload the first certificate
   add_cert("crt.pem")
@@ -2193,8 +2191,8 @@ def test_get_certificates(testrun, reset_certs, add_cert): # pylint: disable=W06
   # Check if response contains two certificates
   assert len(response) == 2
 
-def test_upload_certificate(testrun, reset_certs): # pylint: disable=W0613
-  """Test for upload certificate successfully"""
+def test_upload_cert(testrun, reset_certs): # pylint: disable=W0613
+  """ Test for upload certificate successfully (200) """
 
   # Load the first certificate file content using the utility method
   cert_file = load_certificate_file("crt.pem")
@@ -2252,8 +2250,8 @@ def test_upload_certificate(testrun, reset_certs): # pylint: disable=W0613
   # Check if "WR2.pem" exists
   assert any(cert["filename"] == "WR2.pem" for cert in response)
 
-def test_upload_invalid_certificate_format(testrun, reset_certs): # pylint: disable=W0613
-  """Test for upload an invalid certificate format """
+def test_upload_invalid_cert_format(testrun, reset_certs): # pylint: disable=W0613
+  """ Test for upload an invalid certificate format (400) """
 
   # Load the first certificate file content using the utility method
   cert_file = load_certificate_file("invalid.pem")
@@ -2274,8 +2272,8 @@ def test_upload_invalid_certificate_format(testrun, reset_certs): # pylint: disa
   # Check if "error" key is in response
   assert "error" in response
 
-def test_upload_invalid_certificate_name(testrun, reset_certs): # pylint: disable=W0613
-  """Test for upload a valid certificate with invalid filename"""
+def test_upload_invalid_cert_name(testrun, reset_certs): # pylint: disable=W0613
+  """ Test for upload a valid certificate with invalid filename (400) """
 
   # Assign the invalid certificate name to a variable
   cert_name = "invalidname1234567891234.pem"
@@ -2299,8 +2297,8 @@ def test_upload_invalid_certificate_name(testrun, reset_certs): # pylint: disabl
   # Check if "error" key is in response
   assert "error" in response
 
-def test_upload_existing_certificate(testrun, reset_certs): # pylint: disable=W0613
-  """Test for upload an existing certificate"""
+def test_upload_existing_cert(testrun, reset_certs): # pylint: disable=W0613
+  """ Test for upload an existing certificate (409) """
 
   # Load the first certificate file content using the utility method
   cert_file = load_certificate_file("crt.pem")
@@ -2343,8 +2341,8 @@ def test_upload_existing_certificate(testrun, reset_certs): # pylint: disable=W0
   # Check if "error" key is in response
   assert "error" in response
 
-def test_delete_certificate_success(testrun, reset_certs, add_cert): # pylint: disable=W0613
-  """Test for successfully deleting an existing certificate"""
+def test_delete_cert(testrun, reset_certs, add_cert): # pylint: disable=W0613
+  """ Test for successfully deleting an existing certificate (200) """
 
   # Use the add_cert fixture to upload the first certificate
   add_cert("crt.pem")
@@ -2381,10 +2379,10 @@ def test_delete_certificate_success(testrun, reset_certs, add_cert): # pylint: d
   # Check that the certificate is no longer listed
   assert not any(cert["filename"] == "crt.pem" for cert in response)
 
-def test_delete_certificate_bad_request(testrun, reset_certs, add_cert): # pylint: disable=W0613
-  """Test for delete a certificate without providing the name"""
+def test_delete_cert_bad_request(testrun, reset_certs, add_cert): # pylint: disable=W0613
+  """ Test for delete a certificate without providing the name (400)"""
 
-  # Use the add_cert fixture to upload the first certificate
+  # Use the add_cert fixture to upload the certificate
   add_cert("crt.pem")
 
    # Empty payload
@@ -2404,11 +2402,11 @@ def test_delete_certificate_bad_request(testrun, reset_certs, add_cert): # pylin
   # Check if error in response
   assert "error" in response
 
-def test_delete_certificate_not_found(testrun, reset_certs): # pylint: disable=W0613
-  """Test for delete certificate when does not exist"""
+def test_delete_cert_not_found(testrun, reset_certs): # pylint: disable=W0613
+  """ Test for delete certificate when does not exist (404) """
 
   # Attempt to delete a certificate with a name that doesn't exist
-  delete_payload = {"name": "non_existing"}
+  delete_payload = {"name": "non existing"}
 
   # Send the delete request
   r = requests.delete(f"{API}/system/config/certs",
@@ -2428,17 +2426,17 @@ def test_delete_certificate_not_found(testrun, reset_certs): # pylint: disable=W
 
 @pytest.fixture()
 def add_one_profile():
-  """Fixture to create one profile during tests"""
+  """ Create one profile during tests """
 
   # Construct full path of the profile from 'testing/api/profiles' folder
-  source_path = os.path.join(PROFILES_PATH, "new_profile_1.json")
+  source_path = os.path.join(PROFILES_PATH, "valid_profile.json")
 
   # Copy the profile from 'testing/api/profiles' to 'local/risk_profiles'
   shutil.copy(source_path, PROFILES_DIRECTORY)
 
 @pytest.fixture()
 def add_two_profiles():
-  """Fixture to create two profiles during tests"""
+  """ Create two profiles during tests """
 
   # Iterate over the files from 'testing/api/profiles' folder
   for profile in os.listdir(PROFILES_PATH):
@@ -2486,7 +2484,7 @@ def delete_all_profiles():
 
 @pytest.fixture()
 def empty_profiles_dir():
-  """Delete the profiles before and after each test"""
+  """ Delete all the profiles before and after test """
 
   # Delete before the test
   delete_all_profiles()
@@ -2497,7 +2495,7 @@ def empty_profiles_dir():
   delete_all_profiles()
 
 def profile_exists(profile_name):
-  """Utility method to check if profile exists"""
+  """ Utility method to check if profile exists """
 
   # Send the get request
   r = requests.get(f"{API}/profiles", timeout=5)
@@ -2513,7 +2511,7 @@ def profile_exists(profile_name):
   return any(p["name"] == profile_name for p in profiles)
 
 def test_get_profiles_format(testrun): # pylint: disable=W0613
-  """Test profiles format"""
+  """ Test for profiles format (200) """
 
   # Send the get request
   r = requests.get(f"{API}/profiles/format", timeout=5)
@@ -2533,7 +2531,7 @@ def test_get_profiles_format(testrun): # pylint: disable=W0613
     assert "type" in item
 
 def test_get_profiles_no_profiles(empty_profiles_dir, testrun): # pylint: disable=W0613
-  """Test for get profiles when no profiles created (200)"""
+  """ Test for get profiles when no profiles created (200) """
 
   # Send the get request to "/profiles" endpoint
   r = requests.get(f"{API}/profiles", timeout=5)
@@ -2551,7 +2549,7 @@ def test_get_profiles_no_profiles(empty_profiles_dir, testrun): # pylint: disabl
   assert len(response) == 0
 
 def test_get_profiles_one_profile(empty_profiles_dir, add_one_profile, testrun): # pylint: disable=W0613
-  """Test for get profiles when one profile is created (200)"""
+  """ Test for get profiles when one profile is created (200) """
 
   # Send get request to the "/profiles" endpoint
   r = requests.get(f"{API}/profiles", timeout=5)
@@ -2593,7 +2591,7 @@ def test_get_profiles_one_profile(empty_profiles_dir, add_one_profile, testrun):
 
 def test_get_profiles_two_profiles(empty_profiles_dir, add_two_profiles, # pylint: disable=W0613
                                    testrun): # pylint: disable=W0613
-  """Test for get profiles when two profiles are created (200)"""
+  """ Test for get profiles when two profiles are created (200) """
 
   # Send the get request to "/profiles" endpoint
   r = requests.get(f"{API}/profiles", timeout=5)
@@ -2611,10 +2609,10 @@ def test_get_profiles_two_profiles(empty_profiles_dir, add_two_profiles, # pylin
   assert len(response) == 2
 
 def test_create_profile(testrun): # pylint: disable=W0613
-  """Test for create profile when profile does not exist (201)"""
+  """ Test for create profile when profile does not exist (201) """
 
   # Load the profile
-  new_profile = load_json("new_profile_1.json", directory=PROFILES_PATH)
+  new_profile = load_json("valid_profile.json", directory=PROFILES_PATH)
 
   # Assign the profile name to profile_name
   profile_name = new_profile["name"]
@@ -2653,22 +2651,25 @@ def test_create_profile(testrun): # pylint: disable=W0613
   assert created_profile is not None
 
 def test_update_profile(empty_profiles_dir, add_one_profile, testrun): # pylint: disable=W0613
-  """Test for update profile when profile already exists (200)"""
+  """ Test for update profile when profile already exists (200) """
 
   # Load the profile using load_json utility method
-  new_profile = load_json("new_profile_1.json", directory=PROFILES_PATH)
+  new_profile = load_json("valid_profile.json", directory=PROFILES_PATH)
 
   # Assign the new_profile name
   profile_name = new_profile["name"]
 
+  # Assign the profile questions
+  profile_questions = new_profile["questions"]
+
   # Assign the updated_profile name
-  updated_profile_name = "updated_profile_1"
+  updated_profile_name = "updated_valid_profile"
 
   # Payload with the updated device name
   updated_profile = {
     "name": profile_name,
     "rename" : updated_profile_name,
-    "questions": new_profile["questions"]   
+    "questions": profile_questions    
     }
 
   # Exception if the profile does not exists
@@ -2709,7 +2710,7 @@ def test_update_profile(empty_profiles_dir, add_one_profile, testrun): # pylint:
 
 def test_update_profile_invalid_json(empty_profiles_dir, add_one_profile, # pylint: disable=W0613
                                      testrun): # pylint: disable=W0613
-  """Test for update profile invalid JSON payload (400)"""
+  """ Test for update profile invalid JSON payload (400) """
 
   # Invalid JSON
   updated_profile = {}
@@ -2730,7 +2731,7 @@ def test_update_profile_invalid_json(empty_profiles_dir, add_one_profile, # pyli
   assert "error" in response
 
 def test_create_profile_invalid_json(empty_profiles_dir, testrun): # pylint: disable=W0613
-  """Test for create profile invalid JSON payload (400) """
+  """ Test for create profile invalid JSON payload (400) """
 
   # Invalid JSON
   new_profile = {}
@@ -2751,10 +2752,10 @@ def test_create_profile_invalid_json(empty_profiles_dir, testrun): # pylint: dis
   assert "error" in response
 
 def test_delete_profile(empty_profiles_dir, add_one_profile, testrun): # pylint: disable=W0613
-  """Test for successfully delete profile (200)"""
+  """ Test for successfully delete profile (200) """
 
   # Load the profile using load_json utility method
-  profile_to_delete = load_json("new_profile_1.json", directory=PROFILES_PATH)
+  profile_to_delete = load_json("valid_profile.json", directory=PROFILES_PATH)
 
   # Assign the profile name
   profile_name = profile_to_delete["name"]
@@ -2793,10 +2794,10 @@ def test_delete_profile(empty_profiles_dir, add_one_profile, testrun): # pylint:
   assert deleted_profile is None
 
 def test_delete_profile_no_profile(empty_profiles_dir, testrun): # pylint: disable=W0613
-  """Test delete profile if the profile does not exists (404)"""
+  """ Test delete profile if the profile does not exists (404) """
 
   # Assign the profile to delete
-  profile_to_delete = {"name": "New Profile"}
+  profile_to_delete = {"name": "non existing"}
 
   # Delete the profile
   r = requests.delete(
@@ -2807,8 +2808,14 @@ def test_delete_profile_no_profile(empty_profiles_dir, testrun): # pylint: disab
   # Check if status code is 404 (Profile does not exist)
   assert r.status_code == 404
 
+  # Parse the response
+  response = r.json()
+
+  # Check if "error" key in response
+  assert "error" in response
+
 def test_delete_profile_invalid_json(empty_profiles_dir, testrun): # pylint: disable=W0613
-  """Test for delete profile invalid JSON payload (400)"""
+  """ Test for delete profile invalid JSON payload (400) """
 
   # Invalid payload
   profile_to_delete = {}
@@ -2819,11 +2826,11 @@ def test_delete_profile_invalid_json(empty_profiles_dir, testrun): # pylint: dis
       data=json.dumps(profile_to_delete),
       timeout=5)
 
-  # Parse the response
-  response = r.json()
-
   # Check if status code is 400 (bad request)
   assert r.status_code == 400
+
+  # Parse the response
+  response = r.json()
 
   # Check if "error" key in response
   assert "error" in response
@@ -2837,21 +2844,21 @@ def test_delete_profile_invalid_json(empty_profiles_dir, testrun): # pylint: dis
       data=json.dumps(profile_to_delete_2),
       timeout=5)
 
-  # Parse the response
-  response = r.json()
-
   # Check if status code is 400 (bad request)
   assert r.status_code == 400
+
+  # Parse the response
+  response = r.json()
 
   # Check if "error" key in response
   assert "error" in response
 
 def test_delete_profile_server_error(empty_profiles_dir, add_one_profile, # pylint: disable=W0613
                                      testrun): # pylint: disable=W0613
-  """Test for delete profile causing internal server error (500)"""
+  """ Test for delete profile causing internal server error (500) """
 
   # Assign the profile from the fixture
-  profile_to_delete = load_json("new_profile_1.json", directory=PROFILES_PATH)
+  profile_to_delete = load_json("valid_profile.json", directory=PROFILES_PATH)
 
   # Assign the profile name to profile_name
   profile_name = profile_to_delete["name"]
