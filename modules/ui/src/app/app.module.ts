@@ -52,6 +52,7 @@ import { LOADER_TIMEOUT_CONFIG_TOKEN } from './services/loaderConfig';
 import { WifiComponent } from './components/wifi/wifi.component';
 
 import { MqttModule, IMqttServiceOptions } from 'ngx-mqtt';
+import { DynamicTopDirective } from './components/callout/dynamic-top.directive';
 
 export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
   hostname: window.location.hostname,
@@ -89,6 +90,7 @@ export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
     CertificatesComponent,
     MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
     WifiComponent,
+    DynamicTopDirective,
   ],
   providers: [
     WindowProvider,

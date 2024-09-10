@@ -125,7 +125,10 @@ limitations under the License.
       </mat-toolbar>
       <div class="app-content-main" role="main" id="main">
         <ng-container *ngIf="vm.settingMissedError as error">
-          <app-callout [type]="CalloutType.Error" *ngIf="error.isSettingMissed">
+          <app-callout
+            appDynamicTop
+            [type]="CalloutType.Error"
+            *ngIf="error.isSettingMissed">
             <ng-container
               *ngIf="
                 error.devicePortMissed && error.internetPortMissed;
@@ -155,6 +158,7 @@ limitations under the License.
           </app-callout>
         </ng-container>
         <app-callout
+          appDynamicTop
           [type]="CalloutType.Info"
           *ngIf="vm.hasConnectionSettings === false">
           Step 1: To perform a device test, please, select ports in
@@ -171,6 +175,7 @@ limitations under the License.
           panel.
         </app-callout>
         <app-callout
+          appDynamicTop
           [type]="CalloutType.Info"
           *ngIf="
             vm.hasConnectionSettings === true &&
@@ -192,6 +197,7 @@ limitations under the License.
           first.
         </app-callout>
         <app-callout
+          appDynamicTop
           [type]="CalloutType.Info"
           *ngIf="
             vm.hasConnectionSettings === true &&
@@ -214,6 +220,7 @@ limitations under the License.
           >.
         </app-callout>
         <app-callout
+          appDynamicTop
           role="alert"
           aria-live="assertive"
           [type]="CalloutType.Check"
