@@ -137,6 +137,8 @@ def load_json(file_name, directory):
 @pytest.fixture
 def testrun(request): # pylint: disable=W0613
   """ Start instance of testrun """
+
+  # Launch the Testrun in a new process group
   # pylint: disable=W1509
   with subprocess.Popen(
       "bin/testrun",
@@ -146,42 +148,63 @@ def testrun(request): # pylint: disable=W0613
       preexec_fn=os.setsid
   ) as proc:
 
+    # Wait until the API is ready to accept requests or timeout
     while True:
+
       try:
+
+        # Capture the process output
         outs = proc.communicate(timeout=1)[0]
+
       except subprocess.TimeoutExpired as e:
+
+        # If output is captured during timeout, decode and check
         if e.output is not None:
           output = e.output.decode("utf-8")
+        
           if re.search("API waiting for requests", output):
             break
-      except Exception:
-        pytest.fail("testrun terminated")
 
+      except Exception:
+        # Fail if the Testrun process unexpectedly terminates
+        pytest.fail("Testrun terminated")
+
+    # Wait for two of seconds before yielding
     time.sleep(2)
 
     yield
 
+    # Terminate the Testrun process group
     os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
     try:
+
+      # Wait up to 60 seconds for clean termination of the Testrun process
       outs = proc.communicate(timeout=60)[0]
+
+    # If termination exceeds the timeout, force to kill the process
     except subprocess.TimeoutExpired as e:
       print(e.output)
       os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
       pytest.exit(
-          "waited 60s but Testrun did not cleanly exit .. terminating all tests"
+          "Waited 60s but Testrun did not cleanly exit .. terminating all tests"
       )
 
   print(outs)
 
+  # Stop any left Docker containers after the test
   cmd = subprocess.run(
       "docker stop $(docker ps -a -q)", shell=True,
       capture_output=True, check=False
   )
+
   print(cmd.stdout)
+
+  # Remove the stopped Docker containers 
   cmd = subprocess.run(
       "docker rm  $(docker ps -a -q)", shell=True,
       capture_output=True, check=False
   )
+
   print(cmd.stdout)
 
 def until_true(func: Callable, message: str, timeout: int):
