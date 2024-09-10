@@ -161,7 +161,8 @@ def testrun(request): # pylint: disable=W0613
         # If output is captured during timeout, decode and check
         if e.output is not None:
           output = e.output.decode("utf-8")
-        
+
+          # Check if the output contains the message indicating the API is ready
           if re.search("API waiting for requests", output):
             break
 
@@ -199,7 +200,7 @@ def testrun(request): # pylint: disable=W0613
 
   print(cmd.stdout)
 
-  # Remove the stopped Docker containers 
+  # Remove the stopped Docker containers
   cmd = subprocess.run(
       "docker rm  $(docker ps -a -q)", shell=True,
       capture_output=True, check=False
