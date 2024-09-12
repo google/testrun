@@ -101,6 +101,12 @@ export const sharedReducer = createReducer(
       systemStatus,
     };
   }),
+  on(Actions.setIsTestingComplete, (state, { isTestingComplete }) => {
+    return {
+      ...state,
+      isTestingComplete,
+    };
+  }),
   on(Actions.setIsOpenStartTestrun, (state, { isOpenStartTestrun }) => {
     return {
       ...state,
