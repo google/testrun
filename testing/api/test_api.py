@@ -2051,6 +2051,21 @@ def test_create_long_chars(empty_devices_dir, testrun): # pylint: disable=W0613
   # Check if 'error' in response
   assert "error" in response
 
+def test_sys_testpacks(testrun): # pylint: disable=W0613
+  """ Test for system testpack endpoint (200) """
+
+  # Send the get request to the API
+  r = requests.get(f"{API}/system/testpacks", timeout=5)
+
+  # Check if status code is 200 (ok)
+  assert r.status_code == 200
+
+  # Parse the response
+  response = r.json()
+
+  # Check if the response is a list
+  assert isinstance(response, list)
+
 # Tests for certificates endpoints
 
 def delete_all_certs():
