@@ -20,9 +20,13 @@ import { TestRunService } from '../../services/test-run.service';
 import { Routes } from '../../model/routes';
 import { RouterLink } from '@angular/router';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
+import { TestrunStatus, StatusOfTestrun } from '../../model/testrun-status';
+import { DownloadReportComponent } from '../download-report/download-report.component';
 
 interface DialogData {
   profiles: Profile[];
+  testrunStatus?: TestrunStatus;
+  isTestingComplete?: boolean;
 }
 
 @Component({
@@ -41,6 +45,7 @@ interface DialogData {
     RouterLink,
     MatTooltip,
     MatTooltipModule,
+    DownloadReportComponent,
   ],
   templateUrl: './download-zip-modal.component.html',
   styleUrl: './download-zip-modal.component.scss',
@@ -52,6 +57,7 @@ export class DownloadZipModalComponent extends EscapableDialogComponent {
     questions: [],
   } as Profile;
   public readonly Routes = Routes;
+  public readonly StatusOfTestrun = StatusOfTestrun;
   profiles: Profile[] = [];
   selectedProfile: Profile;
   constructor(
@@ -75,6 +81,7 @@ export class DownloadZipModalComponent extends EscapableDialogComponent {
   cancel(profile?: Profile | null) {
     if (profile === null) {
       this.dialogRef.close(null);
+      return;
     }
     let value = profile?.name;
     if (profile && profile?.name === this.NO_PROFILE.name) {

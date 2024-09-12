@@ -51,6 +51,7 @@ export interface SharedState {
   //app, testrun
   status: string | null;
   systemStatus: TestrunStatus | null;
+  isTestingComplete: boolean;
   //app, settings
   hasConnectionSettings: boolean | null;
   // app, devices
@@ -89,6 +90,7 @@ export const initialSharedState: SharedState = {
   hasRiskProfiles: false,
   isOpenStartTestrun: false,
   systemStatus: null,
+  isTestingComplete: false,
   status: null,
   reports: [],
   testModules: [],
