@@ -132,6 +132,11 @@ export const setStatus = createAction(
   props<{ status: string }>()
 );
 
+export const setIsTestingComplete = createAction(
+  '[Shared] Set Is Open Testing Complete',
+  props<{ isTestingComplete: boolean }>()
+);
+
 export const stopInterval = createAction('[Shared] Stop Interval');
 
 export const fetchRiskProfiles = createAction('[Shared] Fetch risk profiles');

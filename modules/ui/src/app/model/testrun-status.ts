@@ -18,6 +18,7 @@ import { Device } from './device';
 export interface TestrunStatus {
   mac_addr: string | null;
   status: string;
+  description?: string;
   device: IDevice;
   started: string | null;
   finished: string | null;

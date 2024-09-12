@@ -61,8 +61,10 @@ import {
   selectIsAllDevicesOutdated,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
+  selectIsTestingComplete,
   selectMenuOpened,
   selectReports,
+  selectRiskProfiles,
   selectStatus,
   selectSystemStatus,
 } from './store/selectors';
@@ -76,6 +78,8 @@ import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { MOCK_ADAPTERS } from './mocks/settings.mock';
 import { WifiComponent } from './components/wifi/wifi.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Profile } from './model/profile';
+import { TestrunStatus } from './model/testrun-status';
 
 const windowMock = {
   location: {
@@ -175,6 +179,8 @@ describe('AppComponent', () => {
             { selector: selectHasRiskProfiles, value: false },
             { selector: selectStatus, value: null },
             { selector: selectSystemStatus, value: null },
+            { selector: selectIsTestingComplete, value: false },
+            { selector: selectRiskProfiles, value: [] },
             { selector: selectIsOpenStartTestrun, value: false },
             { selector: selectIsOpenWaitSnackBar, value: false },
             { selector: selectReports, value: [] },
@@ -189,6 +195,7 @@ describe('AppComponent', () => {
         FakeSpinnerComponent,
         FakeShutdownAppComponent,
         FakeVersionComponent,
+        FakeTestingCompleteComponent,
       ],
     });
 
@@ -454,6 +461,21 @@ describe('AppComponent', () => {
     const internet = compiled.querySelector('app-wifi');
 
     expect(internet).toBeTruthy();
+  });
+
+  describe('Testing complete', () => {
+    beforeEach(() => {
+      store.overrideSelector(selectIsTestingComplete, true);
+      fixture.detectChanges();
+    });
+
+    it('should have testing complete component', () => {
+      const testingCompleteComp = compiled.querySelector(
+        'app-testing-complete'
+      );
+
+      expect(testingCompleteComp).toBeTruthy();
+    });
   });
 
   describe('Callout component visibility', () => {
@@ -866,4 +888,13 @@ class FakeShutdownAppComponent {
 class FakeVersionComponent {
   @Input() consentShown!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
+}
+
+@Component({
+  selector: 'app-testing-complete',
+  template: '<div></div>',
+})
+class FakeTestingCompleteComponent {
+  @Input() profiles: Profile[] = [];
+  @Input() data!: TestrunStatus | null;
 }

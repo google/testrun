@@ -296,6 +296,10 @@ limitations under the License.
     <app-certificates
       (closeCertificatedEvent)="closeCertificates()"></app-certificates>
   </mat-drawer>
+  <app-testing-complete
+    *ngIf="vm.isTestingComplete"
+    [data]="vm.testrunStatus"
+    [profiles]="vm.riskProfiles"></app-testing-complete>
 </ng-container>
 
 <ng-template

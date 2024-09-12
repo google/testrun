@@ -27,6 +27,7 @@ import {
   setIsOpenAddDevice,
   setIsOpenStartTestrun,
   setIsOpenWaitSnackBar,
+  setIsTestingComplete,
   setReports,
   setRiskProfiles,
   setStatus,
@@ -255,6 +256,23 @@ describe('Reducer', () => {
       const newState = {
         ...initialState,
         ...{ systemStatus: MOCK_PROGRESS_DATA_CANCELLING },
+      };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setIsTestingComplete action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setIsTestingComplete({
+        isTestingComplete: true,
+      });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = {
+        ...initialState,
+        ...{ isTestingComplete: true },
       };
 
       expect(state).toEqual(newState);

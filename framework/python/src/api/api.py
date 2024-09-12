@@ -1028,6 +1028,6 @@ class Api:
 
   def get_test_packs(self):
     test_packs: list[str] = []
-    for test_pack in self._test_run.get_test_orc().get_test_packs():
+    for test_pack in self._testrun.get_test_orc().get_test_packs():
       test_packs.append(test_pack.name)
     return test_packs
