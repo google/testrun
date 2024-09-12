@@ -401,7 +401,8 @@ class TestrunSession():
         if len(result.description) != 0:
           test_result.description = result.description
 
-        if result.recommendations is not None:
+        if (result.recommendations is not None
+          and test_result.result == TestResult.NON_COMPLIANT):
           test_result.recommendations = result.recommendations
 
           if len(result.recommendations) == 0:

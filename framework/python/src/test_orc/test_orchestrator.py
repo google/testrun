@@ -496,12 +496,9 @@ class TestOrchestrator:
               name=test_result["name"],
               result=test_result["result"])
 
-          # Add steps to resolve if test is non-compliant
-          if (test_case.result == TestResult.NON_COMPLIANT and
-              "recommendations" in test_result):
+          # Add steps to resolve
+          if "recommendations" in test_result:
             test_case.recommendations = test_result["recommendations"]
-          else:
-            test_case.recommendations = []
 
           self.get_session().add_test_result(test_case)
 
