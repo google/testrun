@@ -1,5 +1,4 @@
 import { AfterViewInit, Directive, Renderer2, ElementRef } from '@angular/core';
-import { fromEvent } from 'rxjs';
 
 @Directive({
   selector: '[appDynamicTop]',
@@ -10,7 +9,11 @@ export class DynamicTopDirective implements AfterViewInit {
     private renderer: Renderer2,
     private element: ElementRef
   ) {
-    fromEvent(window, 'resize').subscribe(() => this.setTop());
+    const resizeObserver = new ResizeObserver(() => {
+      this.setTop();
+    });
+
+    resizeObserver.observe(element.nativeElement);
   }
 
   ngAfterViewInit() {
