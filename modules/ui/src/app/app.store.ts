@@ -26,9 +26,12 @@ import {
   selectInterfaces,
   selectInternetConnection,
   selectIsAllDevicesOutdated,
+  selectIsTestingComplete,
   selectMenuOpened,
   selectReports,
+  selectRiskProfiles,
   selectStatus,
+  selectSystemStatus,
 } from './store/selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from './store/state';
@@ -53,6 +56,7 @@ import {
 import { FocusManagerService } from './services/focus-manager.service';
 import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { NotificationService } from './services/notification.service';
+import { Profile } from './model/profile';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export const CALLOUT_STATE_KEY = 'CALLOUT_STATE';
@@ -82,6 +86,12 @@ export class AppStore extends ComponentStore<AppComponentState> {
   private settingMissedError$: Observable<SettingMissedError | null> =
     this.store.select(selectError);
   systemStatus$: Observable<string | null> = this.store.select(selectStatus);
+  testrunStatus$: Observable<TestrunStatus | null> =
+    this.store.select(selectSystemStatus);
+  isTestingComplete$: Observable<boolean> = this.store.select(
+    selectIsTestingComplete
+  );
+  riskProfiles$: Observable<Profile[]> = this.store.select(selectRiskProfiles);
 
   viewModel$ = this.select({
     consentShown: this.consentShown$,
@@ -92,6 +102,9 @@ export class AppStore extends ComponentStore<AppComponentState> {
     reports: this.reports$,
     isStatusLoaded: this.isStatusLoaded$,
     systemStatus: this.systemStatus$,
+    testrunStatus: this.testrunStatus$,
+    isTestingComplete: this.isTestingComplete$,
+    riskProfiles: this.riskProfiles$,
     hasConnectionSettings: this.hasConnectionSetting$,
     isMenuOpen: this.isMenuOpen$,
     interfaces: this.interfaces$,

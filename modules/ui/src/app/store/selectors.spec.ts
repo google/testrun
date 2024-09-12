@@ -36,6 +36,7 @@ import {
   selectHasExpiredDevices,
   selectInternetConnection,
   selectIsAllDevicesOutdated,
+  selectIsTestingComplete,
 } from './selectors';
 
 describe('Selectors', () => {
@@ -63,6 +64,7 @@ describe('Selectors', () => {
       systemStatus: null,
       deviceInProgress: null,
       status: null,
+      isTestingComplete: false,
       reports: [],
       testModules: [],
       adapters: {},
@@ -128,6 +130,11 @@ describe('Selectors', () => {
   it('should select systemStatus', () => {
     const result = selectSystemStatus.projector(initialState);
     expect(result).toEqual(null);
+  });
+
+  it('should select isTestingComplete', () => {
+    const result = selectIsTestingComplete.projector(initialState);
+    expect(result).toEqual(false);
   });
 
   it('should select isOpenStartTestrun', () => {
