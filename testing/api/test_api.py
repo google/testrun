@@ -64,7 +64,7 @@ def query_system_status():
   # Parse the json response
   response = r.json()
 
-  # return the system status
+  # Return the system status
   return response["status"]
 
 def query_test_count() -> int:
@@ -170,7 +170,7 @@ def testrun(request): # pylint: disable=W0613
         # Fail if the Testrun process unexpectedly terminates
         pytest.fail("Testrun terminated")
 
-    # Wait for two of seconds before yielding
+    # Wait for two seconds before yielding
     time.sleep(2)
 
     yield
@@ -192,7 +192,7 @@ def testrun(request): # pylint: disable=W0613
 
   print(outs)
 
-  # Stop any left Docker containers after the test
+  # Stop any remaining Docker containers after the test
   cmd = subprocess.run(
       "docker stop $(docker ps -a -q)", shell=True,
       capture_output=True, check=False
@@ -230,7 +230,7 @@ def dict_paths(thing: dict, stem: str = ""):
     else:
       yield path
 
-def get_network_interfaces():
+def get_network_interfaces() -> str:
   """ Return list of network interfaces on machine
 
   Uses /sys/class/net rather than interfaces as testrun uses the latter
