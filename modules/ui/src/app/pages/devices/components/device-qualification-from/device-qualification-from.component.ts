@@ -306,7 +306,8 @@ export class DeviceQualificationFromComponent
     return steps;
   }
 
-  goToStep(index: number) {
+  goToStep(index: number, event?: Event) {
+    event?.preventDefault();
     this.stepper.selectedIndex = index;
   }
 

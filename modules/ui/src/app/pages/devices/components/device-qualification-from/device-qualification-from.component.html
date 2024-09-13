@@ -281,9 +281,9 @@ limitations under the License.
                       class="step-link"
                       tabindex="0"
                       role="link"
-                      (keydown.enter)="goToStep(step)"
-                      (keydown.space)="goToStep(step)"
-                      (click)="goToStep(step)"
+                      (keydown.enter)="goToStep(step, $event)"
+                      (keydown.space)="goToStep(step, $event)"
+                      (click)="goToStep(step, $event)"
                       >Step {{ step + 1 }}</a
                     ></ng-container
                   >.
