@@ -35,6 +35,7 @@ import { AppStore } from './app.store';
 import { TestRunService } from './services/test-run.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { filter, take } from 'rxjs/operators';
+import { ConfigLoaderService } from './services/config-loader.service';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
@@ -77,8 +78,10 @@ export class AppComponent {
     private readonly focusManagerService: FocusManagerService,
     private testRunService: TestRunService,
     public appStore: AppStore,
+    private config: ConfigLoaderService,
     private liveAnnouncer: LiveAnnouncer
   ) {
+    this.getConfig();
     this.appStore.getDevices();
     this.appStore.getRiskProfiles();
     this.appStore.getSystemStatus();
@@ -129,6 +132,11 @@ export class AppComponent {
 
   get isRiskAssessmentRoute(): boolean {
     return this.route.url === Routes.RiskAssessment;
+  }
+
+  getConfig(): void {
+    const config = this.config.configuration;
+    console.log('config', config);
   }
 
   navigateToDeviceRepository(): void {
