@@ -46,6 +46,14 @@
           "required_result": "Required"
         },
         {
+          "name": "connection.dhcp_disconnect",
+          "required_result": "Required"
+        },
+        {
+          "name": "connection.dhcp_disconnect_ip_change",
+          "required_result": "Required"
+        },
+        {
           "name": "connection.single_ip",
           "required_result": "Required"
         },
