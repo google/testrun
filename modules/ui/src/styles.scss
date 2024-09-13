@@ -260,29 +260,22 @@ body:has(.filter-dialog-content)
   opacity: 0;
 }
 
-body
-  #main:has(app-callout)
-  app-device-repository:not(:has(.device-repository-content-empty)),
-body #main:has(app-callout) app-history:not(:has(.results-content-empty)),
-body #main:has(app-callout) app-progress:not(:has(.progress-content-empty)),
-body #main:has(app-callout) app-risk-assessment .risk-assessment-container {
-  margin-top: 96px;
+body #main:has(> app-callout) {
+  & app-device-repository:not(:has(.device-repository-content-empty)),
+  & app-history:not(:has(.results-content-empty)),
+  & app-progress:not(:has(.progress-content-empty)),
+  & app-risk-assessment .risk-assessment-container {
+    margin-top: 96px;
+  }
 }
 
-body
-  #main:has(app-callout + app-callout)
-  app-device-repository:not(:has(.device-repository-content-empty)),
-body
-  #main:has(app-callout + app-callout)
-  app-history:not(:has(.results-content-empty)),
-body
-  #main:has(app-callout + app-callout)
-  app-progress:not(:has(.progress-content-empty)),
-body
-  #main:has(app-callout + app-callout)
-  app-risk-assessment
-  .risk-assessment-container {
-  margin-top: 156px;
+body #main:has(> app-callout + app-callout) {
+  & app-device-repository:not(:has(.device-repository-content-empty)),
+  & app-history:not(:has(.results-content-empty)),
+  & app-progress:not(:has(.progress-content-empty)),
+  & app-risk-assessment .risk-assessment-container {
+    margin-top: 156px;
+  }
 }
 
 body:has(app-risk-assessment .profiles-drawer) #main app-callout {
