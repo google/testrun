@@ -11,3 +11,7 @@ RUN pip3 install -r /usr/src/app/python/requirements.txt
 
 #set work directory
 WORKDIR /usr/src/app/python/src
+
+EXPOSE 8001
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8001", "app:app"]
