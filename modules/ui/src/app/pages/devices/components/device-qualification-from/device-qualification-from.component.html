@@ -230,7 +230,9 @@ limitations under the License.
             </section>
             <section
               *ngIf="
-                formValid && !deviceHasNoChanges(data.initialDevice, device)
+                formValid &&
+                !deviceHasNoChanges(data.initialDevice, device) &&
+                data.isCreate
               "
               class="device-qualification-form-instructions">
               <span
