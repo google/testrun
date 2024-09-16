@@ -33,6 +33,11 @@ export const TEST_DATA_RESULT: IResult[] = [
       'The device should use the DNS server provided by the DHCP server',
     result: 'Non-Compliant',
   },
+  {
+    name: 'dns.mdns',
+    description: 'Does the device has MDNS (or any kind of IP multicast)',
+    result: 'Not Started',
+  },
 ];
 
 export const TEST_DATA_RESULT_WITH_RECOMMENDATIONS: IResult[] = [
@@ -50,7 +55,7 @@ export const TEST_DATA_RESULT_WITH_RECOMMENDATIONS: IResult[] = [
 
 export const TEST_DATA_TABLE_RESULT: IResult[] = [
   ...TEST_DATA_RESULT,
-  ...new Array(24).fill(null).map(() => ({}) as IResult),
+  ...new Array(23).fill(null).map(() => ({}) as IResult),
 ];
 
 export const EMPTY_RESULT = new Array(100)
