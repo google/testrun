@@ -71,10 +71,10 @@ describe('SuccessDialogComponent', () => {
 
   it('should return proper text for risk', () => {
     expect(component.getRiskExplanation(ProfileRisk.LIMITED)).toEqual(
-      'This means that your device might be eligible for most networks.'
+      'This means that your device is eligible for most networks.'
     );
     expect(component.getRiskExplanation(ProfileRisk.HIGH)).toEqual(
-      'This means that your device might be eligible only for some networks.'
+      'This means that your device is eligible only for some networks.'
     );
   });
 });
