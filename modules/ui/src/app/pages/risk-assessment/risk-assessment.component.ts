@@ -162,7 +162,9 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.store.saveProfile({
       profile,
       onSave: (profile: Profile) => {
-        this.openSuccessDialog(profile);
+        if (profile.status === ProfileStatus.VALID) {
+          this.openSuccessDialog(profile);
+        }
       },
     });
     this.isOpenProfileForm = false;
