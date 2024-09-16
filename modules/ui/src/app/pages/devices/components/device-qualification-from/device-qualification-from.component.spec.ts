@@ -574,6 +574,32 @@ describe('DeviceQualificationFromComponent', () => {
           expect(instructions).toBeTruthy();
         });
 
+        it('should not have instructions when device is editing', () => {
+          component.data = {
+            devices: [device],
+            testModules: MOCK_TEST_MODULES,
+            device: {
+              status: DeviceStatus.VALID,
+              manufacturer: 'Delta',
+              model: 'O3-DIN-CPU',
+              mac_addr: '00:1e:42:35:73:c4',
+              test_modules: {
+                udmi: {
+                  enabled: true,
+                },
+              },
+            },
+            isCreate: false,
+            index: 0,
+          };
+          fixture.detectChanges();
+
+          const instructions = compiled.querySelector(
+            '.device-qualification-form-instructions'
+          );
+          expect(instructions).toBeNull();
+        });
+
         it('should save device', () => {
           const saveSpy = spyOn(component.devicesStore, 'saveDevice');
 
