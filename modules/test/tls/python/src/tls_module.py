@@ -281,16 +281,18 @@ class TLSModule(TestModule):
       tls_1_1_valid = self._validate_tls_client(self._device_ipv4_addr, '1.1')
       tls_1_2_valid = self._validate_tls_client(self._device_ipv4_addr, '1.2')
       tls_1_3_valid = self._validate_tls_client(self._device_ipv4_addr, '1.3')
-      states = [tls_1_0_valid[0], tls_1_1_valid[0], tls_1_2_valid[0], tls_1_3_valid[0]]
+      states = [
+          tls_1_0_valid[0], tls_1_1_valid[0], tls_1_2_valid[0], tls_1_3_valid[0]
+      ]
       if any(state is True for state in states):
         # If any state is True, return True
         result_state = True
-      elif all(state == "Feature not Detected" for state in states):
-        # If all states are "Feature not Detected", return "Feature not Detected"
-        result_state = "Feature not Detected"
-      elif all(state == "Error" for state in states):
-        # If all states are "Error", return "Error"
-        result_state = "Error"
+      elif all(state == 'Feature not Detected' for state in states):
+        # If all states are "Feature not Detected"
+        result_state = 'Feature not Detected'
+      elif all(state == 'Error' for state in states):
+        # If all states are "Error"
+        result_state = 'Error'
       else:
         result_state = False
       LOGGER.info(f'Result State: {result_state}')
