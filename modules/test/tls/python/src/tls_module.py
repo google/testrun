@@ -276,7 +276,22 @@ class TLSModule(TestModule):
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      return self._validate_tls_client(self._device_ipv4_addr, '1.0')
+      tls_1_0_valid = self._validate_tls_client(self._device_ipv4_addr, '1.0')
+      tls_1_1_valid = self._validate_tls_client(self._device_ipv4_addr, '1.1')
+      tls_1_2_valid = self._validate_tls_client(self._device_ipv4_addr, '1.2')
+      tls_1_3_valid = self._validate_tls_client(self._device_ipv4_addr, '1.3')
+      result_state = tls_1_0_valid[0] or tls_1_1_valid[0] or tls_1_2_valid[0] or tls_1_3_valid[0]
+      if result_state:
+        result_message = 'TLS 1.0 or higher detected'
+      else:
+        result_message = 'TLS 1.0 or higher was not detected'
+      result_details = tls_1_0_valid[2] + tls_1_1_valid[2] + tls_1_2_valid[2] + tls_1_3_valid[2]
+      result_tags = []
+      result_tags.extend(tls_1_0_valid[3])
+      result_tags.extend(tls_1_1_valid[3])
+      result_tags.extend(tls_1_2_valid[3])
+      result_tags.extend(tls_1_3_valid[3])
+      return result_state, result_message, result_details, result_tags
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'
@@ -286,7 +301,7 @@ class TLSModule(TestModule):
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      return self._validate_tls_client(self._device_ipv4_addr, '1.2')
+      return self._validate_tls_client(self._device_ipv4_addr, '1.2', unsupported_versions=['1.0','1.1'])
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'
@@ -296,18 +311,19 @@ class TLSModule(TestModule):
     self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
     if self._device_ipv4_addr is not None:
-      return self._validate_tls_client(self._device_ipv4_addr, '1.3')
+      return self._validate_tls_client(self._device_ipv4_addr, '1.3', unsupported_versions=['1.0','1.1'])
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'
 
-  def _validate_tls_client(self, client_ip, tls_version):
+  def _validate_tls_client(self, client_ip, tls_version, unsupported_versions=[]):
     client_results = self._tls_util.validate_tls_client(
         client_ip=client_ip,
         tls_version=tls_version,
         capture_files=[
             MONITOR_CAPTURE_FILE, STARTUP_CAPTURE_FILE, TLS_CAPTURE_FILE
-        ])
+        ],
+        unsupported_versions=unsupported_versions)
 
     # Generate results based on the state
     result_state = None
