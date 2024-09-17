@@ -24,6 +24,7 @@ export interface TestrunStatus {
   finished: string | null;
   tests?: TestsResponse;
   report: string;
+  tags: string[];
 }
 
 export interface HistoryTestrun extends TestrunStatus {
@@ -100,6 +101,7 @@ export const IDLE_STATUS = {
     total: 0,
     results: [],
   },
+  tags: [],
 } as TestrunStatus;
 
 export type TestrunStatusKey = keyof typeof StatusOfTestrun;

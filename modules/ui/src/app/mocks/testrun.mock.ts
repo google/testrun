@@ -87,6 +87,7 @@ const PROGRESS_DATA_RESPONSE = (
     finished,
     tests,
     report,
+    tags: ['VSA', 'Other tag', 'And one more'],
   };
 };
 

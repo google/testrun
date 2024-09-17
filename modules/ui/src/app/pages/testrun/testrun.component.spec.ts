@@ -281,6 +281,14 @@ describe('TestrunComponent', () => {
       component = fixture.componentInstance;
     });
 
+    it('should have tags', () => {
+      const tags = fixture.nativeElement.querySelector(
+        '.toolbar-tag-container'
+      );
+
+      expect(tags).toBeTruthy();
+    });
+
     describe('with not devices$ data', () => {
       beforeEach(() => {
         store.overrideSelector(selectSystemStatus, null);
