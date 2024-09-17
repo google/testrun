@@ -58,6 +58,15 @@ else
   exit 1
 fi
 
+# Build pdf image
+echo Building PDF image
+if docker build -t testrun/pdf -f modules/pdf/pdf.Dockerfile . ; then
+  echo Successully built the PDF image
+else
+  echo An error occured whilst building the PDF image
+  exit 1
+fi
+
 # Build network modules
 echo Building network modules
 for dir in modules/network/* ; do
