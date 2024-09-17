@@ -551,7 +551,7 @@ class TLSUtil():
                   f'\nAllowing {protocol_name} traffic to {packet["dst_ip"]}')
               client_hello_results['valid'].append(packet)
     else:
-      # No cipher check for TLS 1.3
+      # No cipher check for TLS 1.0, 1.1 or TLS 1.3
       client_hello_results['valid'] = hello_packets
     return client_hello_results
 
@@ -760,13 +760,16 @@ class TLSUtil():
           LOGGER.info(f'''TLS connection detected to {ip}.
                        Ignoring non-TLS traffic detected to this IP''')
 
-    unsupported_tls_ips = self.get_unsupported_tls_ips(client_ip, capture_files)
-    if len(unsupported_tls_ips) > 0:
-      tls_client_valid = False
-      for ip, tls_versions in unsupported_tls_ips.items():
-        for version in tls_versions:
-          tls_client_details += f'''\nUnsupported TLS {version}
-          connection detected to {ip}'''
+    if tls_version == '1.2' || tls_version == '1.3':
+      # Only check TLS 1.0 and 1.1 as unsupported if we're validating
+      # higher TLS versions
+      unsupported_tls_ips = self.get_unsupported_tls_ips(client_ip, capture_files)
+      if len(unsupported_tls_ips) > 0:
+        tls_client_valid = False
+        for ip, tls_versions in unsupported_tls_ips.items():
+          for version in tls_versions:
+            tls_client_details += f'''\nUnsupported TLS {version}
+            connection detected to {ip}'''
     return tls_client_valid, tls_client_details
 
   def is_ecdh_and_ecdsa(self, ciphers):

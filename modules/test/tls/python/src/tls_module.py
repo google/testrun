@@ -271,6 +271,16 @@ class TLSModule(TestModule):
       LOGGER.error('Could not resolve device IP address')
       return 'Error', 'Could not resolve device IP address'
 
+  def _security_tls_v1_0_client(self):
+    LOGGER.info('Running security.tls.v1_0_client')
+    self._resolve_device_ip()
+    # If the ipv4 address wasn't resolved yet, try again
+    if self._device_ipv4_addr is not None:
+      return self._validate_tls_client(self._device_ipv4_addr, '1.0')
+    else:
+      LOGGER.error('Could not resolve device IP address. Skipping')
+      return 'Error', 'Could not resolve device IP address'
+
   def _security_tls_v1_2_client(self):
     LOGGER.info('Running security.tls.v1_2_client')
     self._resolve_device_ip()
