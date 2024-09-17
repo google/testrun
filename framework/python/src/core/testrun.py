@@ -122,6 +122,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # Init MQTT client
     self._mqtt_client = mqtt.MQTT()
 
+    # Start PDF server
+    self.start_pdf()
+
     if self._no_ui:
 
       # Check Testrun is able to start
@@ -402,6 +405,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     self.stop()
     self._stop_ui()
     self._stop_ws()
+    self._stop_pdf()
 
   def _exit_handler(self, signum, arg):  # pylint: disable=unused-argument
     LOGGER.debug('Exit signal received: ' + str(signum))
@@ -562,6 +566,40 @@ class Testrun:  # pylint: disable=too-few-public-methods
     client = docker.from_env()
     try:
       container = client.containers.get('tr-ws')
+      if container is not None:
+        container.kill()
+    except docker.errors.NotFound:
+      pass
+
+  def start_pdf(self):
+
+    self._stop_pdf()
+
+    LOGGER.info('Starting PDF server')
+
+    client = docker.from_env()
+
+    try:
+      client.containers.run(
+            image='testrun/pdf',
+            auto_remove=True,
+            name='tr-pdf',
+            detach=True,
+            ports={
+              '8001': 8001,
+            }
+      )
+    except ImageNotFound as ie:
+      LOGGER.error('An error occured whilst starting the PDF server. ' +
+                    'Please investigate and try again.')
+      LOGGER.error(ie)
+      sys.exit(1)
+
+  def _stop_pdf(self):
+    LOGGER.info('Stopping PDF server')
+    client = docker.from_env()
+    try:
+      container = client.containers.get('tr-pdf')
       if container is not None:
         container.kill()
     except docker.errors.NotFound:
