@@ -64,6 +64,7 @@ import {
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from '../../services/notification.service';
 import { Profile } from '../../model/profile';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 describe('TestrunComponent', () => {
   let component: TestrunComponent;
@@ -141,6 +142,7 @@ describe('TestrunComponent', () => {
           MatDialogModule,
           SpinnerComponent,
           BrowserAnimationsModule,
+          MatTooltipModule,
         ],
       })
         .overrideComponent(TestrunComponent, {
@@ -260,6 +262,7 @@ describe('TestrunComponent', () => {
           MatDialogModule,
           SpinnerComponent,
           BrowserAnimationsModule,
+          MatTooltipModule,
         ],
       })
         .overrideComponent(TestrunComponent, {
@@ -279,14 +282,6 @@ describe('TestrunComponent', () => {
       );
       spyOn(store, 'dispatch').and.callFake(() => {});
       component = fixture.componentInstance;
-    });
-
-    it('should have tags', () => {
-      const tags = fixture.nativeElement.querySelector(
-        '.toolbar-tag-container'
-      );
-
-      expect(tags).toBeTruthy();
     });
 
     describe('with not devices$ data', () => {
@@ -436,6 +431,14 @@ describe('TestrunComponent', () => {
         const downloadComp = compiled.querySelector('app-download-options');
 
         expect(downloadComp).toBeNull();
+      });
+
+      it('should have tags', () => {
+        const tags = fixture.nativeElement.querySelector(
+          '.toolbar-tag-container'
+        );
+
+        expect(tags).toBeTruthy();
       });
     });
 
