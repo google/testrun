@@ -186,7 +186,7 @@ $nav-open-btn-width: 210px;
 .app-content-main {
   position: relative;
   display: grid;
-  grid-template-rows: 0 auto;
+  grid-template-rows: auto 0 1fr;
   overflow: hidden;
 }
 
