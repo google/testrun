@@ -117,6 +117,7 @@ limitations under the License.
     <app-download-report
       *ngIf="data.testrunStatus"
       [data]="data.testrunStatus"
+      [tabindex]="-1"
       [href]="data.testrunStatus.report">
       <button
         (click)="cancel(undefined)"

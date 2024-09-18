@@ -24,7 +24,7 @@ export interface TestrunStatus {
   finished: string | null;
   tests?: TestsResponse;
   report: string;
-  tags: string[];
+  tags: string[] | null;
 }
 
 export interface HistoryTestrun extends TestrunStatus {

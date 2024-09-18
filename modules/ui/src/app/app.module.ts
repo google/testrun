@@ -53,7 +53,6 @@ import { WifiComponent } from './components/wifi/wifi.component';
 import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
 
 import { MqttModule, IMqttServiceOptions } from 'ngx-mqtt';
-import { DynamicTopDirective } from './components/callout/dynamic-top.directive';
 
 export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
   hostname: window.location.hostname,
@@ -91,7 +90,6 @@ export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
     CertificatesComponent,
     MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
     WifiComponent,
-    DynamicTopDirective,
     TestingCompleteComponent,
   ],
   providers: [
