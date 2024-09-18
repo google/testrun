@@ -1,6 +1,6 @@
 FROM python:3.12-alpine
 
-RUN apk add -u cairo cairo-gobject pango gdk-pixbuf py3-brotli py3-lxml py3-cffi py3-pillow msttcorefonts-installer fontconfig zopfli \
+RUN apk add -u pango gdk-pixbuf msttcorefonts-installer fontconfig zopfli \
     && update-ms-fonts && fc-cache -f
 
 # # copy source code
