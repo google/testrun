@@ -41,7 +41,9 @@ limitations under the License.
                 data.device.firmware
               }}
             </h2>
-            <span *ngIf="data.tags.length" class="toolbar-tag-container">
+            <span
+              *ngIf="data.tags && data.tags.length"
+              class="toolbar-tag-container">
               <span
                 tabindex="0"
                 class="toolbar-tag"
