@@ -17,7 +17,7 @@ from dateutil.relativedelta import relativedelta
 from weasyprint import HTML
 from io import BytesIO
 import base64
-from common import logger
+from common import logger, report
 import json
 import os
 from jinja2 import Template
@@ -388,10 +388,9 @@ class RiskProfile():
 
   def to_pdf(self, device):
 
-    # Resolve the data as html first
-    html = self.to_html(device)
-
-    # Convert HTML to PDF in memory using weasyprint
-    pdf_bytes = BytesIO()
-    HTML(string=html).write_pdf(pdf_bytes)
-    return pdf_bytes
+    pdf = report.html_to_pdf(self.to_html(device), 'risk_report.pdf')
+    if pdf is None:
+      LOGGER.error(
+        'An error occured whilst generating risk profile report.'
+        )
+    return pdf
