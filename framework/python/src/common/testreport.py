@@ -16,7 +16,7 @@
 from datetime import datetime
 from weasyprint import HTML
 from io import BytesIO
-from common import util
+from common import util, report
 from common.statuses import TestrunStatus
 import base64
 import os
@@ -172,12 +172,8 @@ class TestReport():
   # Create a pdf file in memory and return the bytes
   def to_pdf(self):
     # Resolve the data as html first
-    report_html = self.to_html()
-
-    # Convert HTML to PDF in memory using weasyprint
-    pdf_bytes = BytesIO()
-    HTML(string=report_html).write_pdf(pdf_bytes)
-    return pdf_bytes
+    pdf = report.html_to_pdf(self.to_html(), 'test_report.pdf')
+    return pdf
 
   def to_html(self):
 
