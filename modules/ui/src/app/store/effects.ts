@@ -274,11 +274,12 @@ export class AppEffects {
           ) {
             this.showSnackBar();
           }
-          if (
-            systemStatus?.status !== StatusOfTestrun.WaitingForDevice &&
-            isOpenWaitSnackBar
-          ) {
-            this.notificationService.dismissWithTimout();
+          if (systemStatus?.status !== StatusOfTestrun.WaitingForDevice) {
+            if (isOpenWaitSnackBar) {
+              this.notificationService.dismissWithTimout();
+            } else {
+              this.destroyWaitDeviceInterval$.next(true);
+            }
           }
         }),
         tap(([{ systemStatus }, , status]) => {
