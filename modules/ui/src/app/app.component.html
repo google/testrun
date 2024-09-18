@@ -158,6 +158,33 @@ limitations under the License.
             </app-callout>
           </ng-container>
           <app-callout
+            id="outdated_devices_callout"
+            role="alert"
+            aria-live="assertive"
+            [closable]="true"
+            [type]="CalloutType.Error"
+            (calloutClosed)="calloutClosed($event)"
+            *ngIf="
+              vm.hasExpiredDevices &&
+              !vm.calloutState.get('outdated_devices_callout')
+            ">
+            Further information is required in your device configurations.
+            <ng-container *ngIf="!isDevicesRoute"
+              >Please update your
+              <a
+                (click)="navigateToDeviceRepository()"
+                (keydown.enter)="navigateToDeviceRepository()"
+                (keydown.space)="navigateToDeviceRepository()"
+                aria-label="The Devices link redirects to the device repository page."
+                tabindex="0"
+                role="link"
+                class="message-link"
+                >Devices</a
+              >
+              to continue testing.
+            </ng-container>
+          </app-callout>
+          <app-callout
             [type]="CalloutType.Info"
             *ngIf="vm.hasConnectionSettings === false">
             Step 1: To perform a device test, please, select ports in
@@ -243,31 +270,6 @@ limitations under the License.
               class="message-link"
               >Risk Assessment questionnaire</a
             >?
-          </app-callout>
-          <app-callout
-            id="outdated_devices_callout"
-            role="alert"
-            aria-live="assertive"
-            [closable]="true"
-            [type]="CalloutType.Error"
-            (calloutClosed)="calloutClosed($event)"
-            *ngIf="
-              vm.hasExpiredDevices &&
-              !vm.calloutState.get('outdated_devices_callout')
-            ">
-            Further information is required in your device configurations.
-            Please update your
-            <a
-              (click)="navigateToDeviceRepository()"
-              (keydown.enter)="navigateToDeviceRepository()"
-              (keydown.space)="navigateToDeviceRepository()"
-              aria-label="The Devices link redirects to the device repository page."
-              tabindex="0"
-              role="link"
-              class="message-link"
-              >Devices</a
-            >
-            to continue testing.
           </app-callout>
         </div>
         <router-outlet></router-outlet>
