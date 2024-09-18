@@ -34,6 +34,9 @@ export class DownloadReportComponent extends ReportActionComponent {
   @Input() title!: string;
 
   getReportTitle(data: TestrunStatus) {
+    if (!data.device) {
+      return '';
+    }
     return `${data.device.manufacturer} ${data.device.model} ${
       data.device.firmware
     } ${data.status} ${this.getFormattedDateString(data.started)}`
