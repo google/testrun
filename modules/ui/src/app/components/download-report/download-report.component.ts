@@ -32,6 +32,7 @@ export class DownloadReportComponent extends ReportActionComponent {
   @Input() href: string | undefined;
   @Input() class!: string;
   @Input() title!: string;
+  @Input() tabindex = 0;
 
   getReportTitle(data: TestrunStatus) {
     if (!data.device) {
