@@ -23,8 +23,9 @@ def html_to_pdf(html: str, file_name: str):
   """ Generating PDF from HTML"""
   try:
     resp = requests.post(
-                        f'http://localhost:8001/pdf/{file_name}',
-                        data={'html': html}, timeout=10
+                        f'http://127.0.0.1:8001/pdf/{file_name}',
+                        data={'html': html},
+                        timeout=10
                         )
     if resp.status_code == 200:
       return BytesIO(resp.content)
