@@ -215,7 +215,7 @@ class TestOrchestrator:
 
     # Write the pdf report
     with open(os.path.join(out_dir, "report.pdf"), "wb") as f:
-      f.write(test_report.to_pdf().getvalue())
+      f.write(test_report.to_pdf().read())
 
     util.run_command(f"chown -R {self._host_user} {out_dir}")
 
