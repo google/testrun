@@ -1,6 +1,6 @@
 FROM python:3.12-alpine
 
-RUN apk add -u pango gdk-pixbuf msttcorefonts-installer fontconfig zopfli \
+RUN apk add -u pango gdk-pixbuf msttcorefonts-installer fontconfig zopfli font-dejavu\
     && update-ms-fonts && fc-cache -f
 
 # # copy source code
