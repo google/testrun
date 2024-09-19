@@ -15,6 +15,7 @@
 from fastapi import (FastAPI, APIRouter, Response, Request, status, UploadFile)
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from datetime import datetime
 import json
 from json import JSONDecodeError
@@ -49,6 +50,7 @@ DEVICE_QUESTIONS_FILE_NAME = "device_profile.json"
 
 LATEST_RELEASE_CHECK = ("https://api.github.com/repos/google/" +
                         "testrun/releases/latest")
+STATIC_FOLDER = "static"
 
 
 class Api:
@@ -68,6 +70,11 @@ class Api:
     # Load device profile questions
     self._device_profile = self._load_json(device_resources,
                                            DEVICE_QUESTIONS_FILE_NAME)
+
+    # Static folder path
+    static_folder = os.path.join(self._testrun.get_root_dir(),
+                                RESOURCES_PATH,
+                                STATIC_FOLDER)
 
     # Fetch Testrun session
     self._session = self._testrun.get_session()
@@ -153,6 +160,8 @@ class Api:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    self._app.mount("/static", StaticFiles(directory=static_folder), name="static")
 
     # Use separate thread for API
     self._api_thread = threading.Thread(target=self._start,
