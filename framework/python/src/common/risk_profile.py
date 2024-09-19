@@ -14,8 +14,6 @@
 """Stores additional information about a device's risk"""
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from weasyprint import HTML
-from io import BytesIO
 import base64
 from common import logger, report
 import json
