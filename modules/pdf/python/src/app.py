@@ -13,7 +13,7 @@ def health():
 # generate PDF from html
 @app.post('/pdf/<filename>')
 def generate_pdf(filename):
-  html_content = request.forms.get('html')
+  html_content = request.forms.getunicode('html')
 
   if not html_content:
     response.status = 400
