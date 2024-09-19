@@ -28,6 +28,7 @@ limitations under the License.
         ? EXPIRED_TOOLTIP
         : profile.status
     }}"
+    [attr.aria-label]="getProfileItemLabel(profile)"
     (click)="profileClicked.emit(profile)"
     (keydown.enter)="enterProfileItem(profile)">
     <span
