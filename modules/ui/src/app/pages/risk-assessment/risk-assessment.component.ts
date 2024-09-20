@@ -120,8 +120,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
 
   saveProfileClicked(profile: Profile, selectedProfile: Profile | null): void {
     if (!selectedProfile) {
-      this.saveProfile(profile);
-      this.store.setFocusOnCreateButton();
+      this.saveProfile(profile, this.store.setFocusOnCreateButton);
     } else {
       this.openSaveDialog(
         selectedProfile.name,
@@ -130,8 +129,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe(saveProfile => {
           if (saveProfile) {
-            this.saveProfile(profile);
-            this.store.setFocusOnSelectedProfile();
+            this.saveProfile(profile, this.store.setFocusOnSelectedProfile);
           }
         });
     }
@@ -158,12 +156,14 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     }
   }
 
-  private saveProfile(profile: Profile) {
+  private saveProfile(profile: Profile, focusElement: () => void) {
     this.store.saveProfile({
       profile,
       onSave: (profile: Profile) => {
         if (profile.status === ProfileStatus.VALID) {
-          this.openSuccessDialog(profile);
+          this.openSuccessDialog(profile, focusElement);
+        } else {
+          focusElement();
         }
       },
     });
@@ -200,8 +200,8 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     return dialogRef?.afterClosed();
   }
 
-  private openSuccessDialog(profile: Profile): void {
-    this.dialog.open(SuccessDialogComponent, {
+  private openSuccessDialog(profile: Profile, focusElement: () => void): void {
+    const dialogRef = this.dialog.open(SuccessDialogComponent, {
       ariaLabel: 'Risk Assessment Profile Completed',
       data: {
         profile,
@@ -211,5 +211,12 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       disableClose: true,
       panelClass: 'simple-dialog',
     });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        focusElement();
+      });
   }
 }
