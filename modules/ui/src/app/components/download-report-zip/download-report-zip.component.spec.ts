@@ -15,6 +15,7 @@
  */
 import {
   ComponentFixture,
+  discardPeriodicTasks,
   fakeAsync,
   TestBed,
   tick,
@@ -30,6 +31,7 @@ import { Routes } from '../../model/routes';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
+import { FocusManagerService } from '../../services/focus-manager.service';
 
 describe('DownloadReportZipComponent', () => {
   let component: DownloadReportZipComponent;
@@ -39,6 +41,8 @@ describe('DownloadReportZipComponent', () => {
 
   const testrunServiceMock: jasmine.SpyObj<TestRunService> =
     jasmine.createSpyObj('testrunServiceMock', ['downloadZip']);
+  const focusServiceMock: jasmine.SpyObj<FocusManagerService> =
+    jasmine.createSpyObj('focusServiceMock', ['focusFirstElementInContainer']);
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -48,7 +52,10 @@ describe('DownloadReportZipComponent', () => {
         ]),
         DownloadReportZipComponent,
       ],
-      providers: [{ provide: TestRunService, useValue: testrunServiceMock }],
+      providers: [
+        { provide: TestRunService, useValue: testrunServiceMock },
+        { provide: FocusManagerService, useValue: focusServiceMock },
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(DownloadReportZipComponent);
     router = TestBed.get(Router);
@@ -112,14 +119,19 @@ describe('DownloadReportZipComponent', () => {
             panelClass: 'initiate-test-run-dialog',
           });
 
-          tick();
+          tick(100);
 
           expect(router.url).toBe(Routes.RiskAssessment);
+          expect(
+            focusServiceMock.focusFirstElementInContainer
+          ).toHaveBeenCalled();
+
           openSpy.calls.reset();
+          discardPeriodicTasks();
         });
       }));
 
-      it('should do nothing if profile is undefined', fakeAsync(() => {
+      it('should focus first element on page if profile is undefined', fakeAsync(() => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(undefined),
         } as MatDialogRef<typeof DownloadZipModalComponent>);
@@ -139,6 +151,9 @@ describe('DownloadReportZipComponent', () => {
 
         tick();
 
+        expect(
+          focusServiceMock.focusFirstElementInContainer
+        ).toHaveBeenCalled();
         expect(testrunServiceMock.downloadZip).not.toHaveBeenCalled();
         openSpy.calls.reset();
       }));
