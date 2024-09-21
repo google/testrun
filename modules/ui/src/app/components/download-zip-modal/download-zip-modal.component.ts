@@ -19,7 +19,6 @@ import { MatOptionModule } from '@angular/material/core';
 import { TestRunService } from '../../services/test-run.service';
 import { Routes } from '../../model/routes';
 import { RouterLink } from '@angular/router';
-import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { TestrunStatus, StatusOfTestrun } from '../../model/testrun-status';
 import { DownloadReportComponent } from '../download-report/download-report.component';
 
@@ -43,8 +42,6 @@ interface DialogData {
     MatSelectModule,
     MatOptionModule,
     RouterLink,
-    MatTooltip,
-    MatTooltipModule,
     DownloadReportComponent,
   ],
   templateUrl: './download-zip-modal.component.html',

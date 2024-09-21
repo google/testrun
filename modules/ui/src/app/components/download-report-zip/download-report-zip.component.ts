@@ -25,13 +25,14 @@ import {
 import { CommonModule, DatePipe } from '@angular/common';
 import { Profile } from '../../model/profile';
 import { MatDialog } from '@angular/material/dialog';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, timer } from 'rxjs';
 import { Routes } from '../../model/routes';
 import { DownloadZipModalComponent } from '../download-zip-modal/download-zip-modal.component';
 import { TestRunService } from '../../services/test-run.service';
 import { Router } from '@angular/router';
 import { ReportActionComponent } from '../report-action/report-action.component';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
+import { FocusManagerService } from '../../services/focus-manager.service';
 
 @Component({
   selector: 'app-download-report-zip',
@@ -73,10 +74,17 @@ export class DownloadReportZipComponent
       .pipe(takeUntil(this.destroy$))
       .subscribe(profile => {
         if (profile === undefined) {
+          this.focusManagerService.focusFirstElementInContainer();
           return;
         }
         if (profile === null) {
-          this.route.navigate([Routes.RiskAssessment]);
+          this.route.navigate([Routes.RiskAssessment]).then(() =>
+            timer(100)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe(() => {
+                this.focusManagerService.focusFirstElementInContainer();
+              })
+          );
         } else if (this.url != null) {
           this.testrunService.downloadZip(this.getZipLink(this.url), profile);
         }
@@ -114,7 +122,8 @@ export class DownloadReportZipComponent
     public dialog: MatDialog,
     private testrunService: TestRunService,
     private route: Router,
-    public tooltip: MatTooltip
+    public tooltip: MatTooltip,
+    private focusManagerService: FocusManagerService
   ) {
     super(datePipe);
   }
