@@ -48,6 +48,7 @@ describe('RiskAssessmentComponent', () => {
 
   const mockLiveAnnouncer: SpyObj<LiveAnnouncer> = jasmine.createSpyObj([
     'announce',
+    'clear',
   ]);
   let compiled: HTMLElement;
 
