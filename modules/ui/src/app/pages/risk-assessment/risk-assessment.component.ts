@@ -119,6 +119,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   }
 
   saveProfileClicked(profile: Profile, selectedProfile: Profile | null): void {
+    this.liveAnnouncer.clear();
     if (!selectedProfile || this.compareProfiles(profile, selectedProfile)) {
       this.saveProfile(profile, this.store.setFocusOnCreateButton);
     } else {
@@ -180,6 +181,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   }
 
   discard(selectedProfile: Profile | null) {
+    this.liveAnnouncer.clear();
     this.isOpenProfileForm = false;
     if (selectedProfile) {
       this.store.setFocusOnSelectedProfile();
