@@ -21,7 +21,12 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Device, DeviceView, TestModule } from '../../model/device';
+import {
+  Device,
+  DeviceStatus,
+  DeviceView,
+  TestModule,
+} from '../../model/device';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
@@ -72,7 +77,11 @@ export class DevicesComponent implements OnInit, OnDestroy {
     ])
       .pipe(takeUntil(this.destroy$))
       .subscribe(([devices, isOpenAddDevice, testModules]) => {
-        if (!devices?.length && isOpenAddDevice) {
+        if (
+          !devices?.filter(device => device.status === DeviceStatus.VALID)
+            .length &&
+          isOpenAddDevice
+        ) {
           this.openDialog(devices, testModules);
         }
       });

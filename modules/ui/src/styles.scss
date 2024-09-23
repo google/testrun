@@ -260,33 +260,23 @@ body:has(.filter-dialog-content)
   opacity: 0;
 }
 
-body
-  #main:has(app-callout)
-  app-device-repository:not(:has(.device-repository-content-empty)),
-body #main:has(app-callout) app-history:not(:has(.results-content-empty)),
-body #main:has(app-callout) app-progress:not(:has(.progress-content-empty)),
-body #main:has(app-callout) app-risk-assessment .risk-assessment-container {
-  margin-top: 96px;
-}
+body #main {
+  &:has(.device-repository-content-empty),
+  &:has(.results-content-empty),
+  &:has(.progress-content-empty),
+  &:has(.risk-assessment-content-empty) {
+    .app-callout-container {
+      position: absolute;
+      width: 100%;
+      z-index: 2;
+    }
+  }
 
-body
-  #main:has(app-callout + app-callout)
-  app-device-repository:not(:has(.device-repository-content-empty)),
-body
-  #main:has(app-callout + app-callout)
-  app-history:not(:has(.results-content-empty)),
-body
-  #main:has(app-callout + app-callout)
-  app-progress:not(:has(.progress-content-empty)),
-body
-  #main:has(app-callout + app-callout)
-  app-risk-assessment
-  .risk-assessment-container {
-  margin-top: 156px;
-}
-
-body:has(app-risk-assessment .profiles-drawer) #main app-callout {
-  width: calc(100% - $profiles-drawer-width);
+  &:has(app-risk-assessment .profiles-drawer) {
+    .app-callout-container {
+      width: calc(100% - $profiles-drawer-width);
+    }
+  }
 }
 
 .text-nowrap {
@@ -317,4 +307,8 @@ body:has(app-risk-assessment .profiles-drawer) #main app-callout {
 
 .certificate-notification .mat-mdc-snack-bar-label {
   white-space: pre-line;
+}
+
+.mdc-tooltip--multiline .mat-mdc-tooltip-surface {
+  text-align: center !important;
 }

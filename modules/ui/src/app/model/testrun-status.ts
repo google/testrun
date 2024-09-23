@@ -18,11 +18,13 @@ import { Device } from './device';
 export interface TestrunStatus {
   mac_addr: string | null;
   status: string;
+  description?: string;
   device: IDevice;
   started: string | null;
   finished: string | null;
   tests?: TestsResponse;
   report: string;
+  tags: string[] | null;
 }
 
 export interface HistoryTestrun extends TestrunStatus {
@@ -99,6 +101,7 @@ export const IDLE_STATUS = {
     total: 0,
     results: [],
   },
+  tags: [],
 } as TestrunStatus;
 
 export type TestrunStatusKey = keyof typeof StatusOfTestrun;

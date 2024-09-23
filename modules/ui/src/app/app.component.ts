@@ -131,6 +131,10 @@ export class AppComponent {
     return this.route.url === Routes.RiskAssessment;
   }
 
+  get isDevicesRoute(): boolean {
+    return this.route.url === Routes.Devices;
+  }
+
   navigateToDeviceRepository(): void {
     this.route.navigate([Routes.Devices]);
   }

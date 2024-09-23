@@ -50,6 +50,7 @@ import { WindowProvider } from './providers/window.provider';
 import { CertificatesComponent } from './pages/certificates/certificates.component';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from './services/loaderConfig';
 import { WifiComponent } from './components/wifi/wifi.component';
+import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
 
 import { MqttModule, IMqttServiceOptions } from 'ngx-mqtt';
 
@@ -89,6 +90,7 @@ export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
     CertificatesComponent,
     MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
     WifiComponent,
+    TestingCompleteComponent,
   ],
   providers: [
     WindowProvider,

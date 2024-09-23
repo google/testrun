@@ -17,7 +17,7 @@
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
-import { catchError, delay, EMPTY, exhaustMap, throwError } from 'rxjs';
+import { catchError, delay, EMPTY, exhaustMap, throwError, timer } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
 import { Profile, ProfileFormat } from '../../model/profile';
 import { FocusManagerService } from '../../services/focus-manager.service';
@@ -76,13 +76,15 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
       return trigger$.pipe(
         withLatestFrom(this.profiles$),
         tap(([{ nextItem, firstItem }, profiles]) => {
-          if (nextItem) {
-            this.focusManagerService.focusFirstElementInContainer(nextItem);
-          } else if (profiles.length > 1) {
-            this.focusManagerService.focusFirstElementInContainer(firstItem);
-          } else {
-            this.focusManagerService.focusFirstElementInContainer();
-          }
+          timer(100).subscribe(() => {
+            if (nextItem) {
+              this.focusManagerService.focusFirstElementInContainer(nextItem);
+            } else if (profiles.length > 1) {
+              this.focusManagerService.focusFirstElementInContainer(firstItem);
+            } else {
+              this.focusManagerService.focusFirstElementInContainer();
+            }
+          });
         })
       );
     }

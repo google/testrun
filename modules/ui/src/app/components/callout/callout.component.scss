@@ -21,16 +21,6 @@
   width: 100%;
 }
 
-:host:has(.callout-container.info),
-:host:has(.callout-container.error),
-:host:has(.callout-container.check_circle) {
-  position: absolute;
-}
-
-:host + ::ng-deep app-callout {
-  top: 60px;
-}
-
 :host .info-pilot ::ng-deep app-program-type-icon {
   padding-right: 1px;
 
@@ -38,18 +28,6 @@
     width: 18px;
     height: 18px;
     line-height: 18px;
-  }
-}
-
-@media (width < 742px) {
-  :host + ::ng-deep app-callout {
-    top: 80px;
-  }
-}
-
-@media (width < 490px) {
-  :host + ::ng-deep app-callout {
-    top: 100px;
   }
 }
 

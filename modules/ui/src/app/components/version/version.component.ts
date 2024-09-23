@@ -76,10 +76,17 @@ export class VersionComponent implements OnInit, OnDestroy {
     );
   }
 
-  getVersionButtonLabel(installedVersion: string): string {
-    return installedVersion === UNAVAILABLE_VERSION.installed_version
-      ? 'Version temporarily unavailable. Click to open the Welcome modal'
-      : `${installedVersion} New version is available. Click to update`;
+  getVersionButtonLabel(installedVersion: Version): string {
+    if (
+      installedVersion.installed_version ===
+      UNAVAILABLE_VERSION.installed_version
+    ) {
+      return 'Version temporarily unavailable. Click to open the Welcome modal';
+    }
+    if (installedVersion.update_available) {
+      return `${installedVersion.installed_version} New version is available. Click to update`;
+    }
+    return `${installedVersion.installed_version}. Click to open the Welcome modal`;
   }
 
   openConsentDialog(version: Version) {

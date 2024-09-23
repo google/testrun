@@ -45,6 +45,7 @@ import {
 import {
   fetchSystemStatus,
   fetchSystemStatusSuccess,
+  setIsTestingComplete,
   setReports,
   setStatus,
   setTestrunStatus,
@@ -248,6 +249,11 @@ export class AppEffects {
       return this.actions$.pipe(
         ofType(AppActions.fetchSystemStatusSuccess),
         tap(({ systemStatus }) => {
+          this.store.dispatch(
+            setIsTestingComplete({
+              isTestingComplete: this.isTestrunFinished(systemStatus.status),
+            })
+          );
           if (this.testrunService.testrunInProgress(systemStatus.status)) {
             this.pullingSystemStatusData();
             this.fetchInternetConnection();
@@ -268,11 +274,12 @@ export class AppEffects {
           ) {
             this.showSnackBar();
           }
-          if (
-            systemStatus?.status !== StatusOfTestrun.WaitingForDevice &&
-            isOpenWaitSnackBar
-          ) {
-            this.notificationService.dismissWithTimout();
+          if (systemStatus?.status !== StatusOfTestrun.WaitingForDevice) {
+            if (isOpenWaitSnackBar) {
+              this.notificationService.dismissWithTimout();
+            } else {
+              this.destroyWaitDeviceInterval$.next(true);
+            }
           }
         }),
         tap(([{ systemStatus }, , status]) => {

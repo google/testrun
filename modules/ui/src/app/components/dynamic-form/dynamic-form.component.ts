@@ -99,7 +99,9 @@ export class DynamicFormComponent implements OnInit {
     formControlName: string
   ) {
     if (optionIndex === optionLength - 1) {
-      this.getControl(formControlName).markAsDirty();
+      this.getControl(formControlName).markAsDirty({
+        onlySelf: true,
+      });
     }
   }
 
