@@ -282,6 +282,10 @@ class TestrunSession():
   def get_device_interface(self):
     return self._config.get(NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
 
+  def get_device_interface_mac_addr(self):
+    iface = self.get_device_interface()
+    return IPControl.get_iface_mac_address(iface=iface)
+
   def get_internet_interface(self):
     return self._config.get(NETWORK_KEY, {}).get(INTERNET_INTF_KEY)
 
