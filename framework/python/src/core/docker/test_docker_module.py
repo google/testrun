@@ -102,6 +102,7 @@ class TestModule(Module):
         'IPV4_SUBNET': self.get_session().get_ipv4_subnet(),
         'IPV6_SUBNET': self.get_session().get_ipv6_subnet(),
         'DEV_IFACE': self.get_session().get_device_interface(),
+        'DEV_IFACE_MAC': self.get_session().get_device_interface_mac_addr()
     }
     return environment
 
