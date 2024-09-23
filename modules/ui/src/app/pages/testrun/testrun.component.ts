@@ -108,7 +108,7 @@ export class TestrunComponent implements OnInit, OnDestroy {
     this.sendCloseRequest();
   }
 
-  private getTestRunName(systemStatus: TestrunStatus): string {
+  getTestRunName(systemStatus: TestrunStatus): string {
     if (systemStatus?.device) {
       const device = systemStatus.device;
       return `${device.manufacturer} ${device.model} v${device.firmware}`;

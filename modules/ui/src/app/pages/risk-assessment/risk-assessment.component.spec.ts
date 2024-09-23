@@ -48,6 +48,7 @@ describe('RiskAssessmentComponent', () => {
 
   const mockLiveAnnouncer: SpyObj<LiveAnnouncer> = jasmine.createSpyObj([
     'announce',
+    'clear',
   ]);
   let compiled: HTMLElement;
 
@@ -296,7 +297,7 @@ describe('RiskAssessmentComponent', () => {
         }));
 
         it('should call store saveProfile', fakeAsync(() => {
-          spyOn(component.dialog, 'open').and.returnValue({
+          const openSpy = spyOn(component.dialog, 'open').and.returnValue({
             afterClosed: () => of(true),
           } as MatDialogRef<typeof SimpleDialogComponent>);
 
@@ -308,6 +309,19 @@ describe('RiskAssessmentComponent', () => {
           // @ts-expect-error config is in object
           expect(args[0].profile).toEqual(NEW_PROFILE_MOCK);
           expect(mockRiskAssessmentStore.saveProfile).toHaveBeenCalled();
+          openSpy.calls.reset();
+        }));
+
+        it('should call store saveProfile and should not open save draft profile modal when profile does not have changes', fakeAsync(() => {
+          const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+            afterClosed: () => of(true),
+          } as MatDialogRef<typeof SimpleDialogComponent>);
+
+          component.saveProfileClicked(PROFILE_MOCK, PROFILE_MOCK);
+
+          expect(openSpy).not.toHaveBeenCalled();
+          expect(mockRiskAssessmentStore.saveProfile).toHaveBeenCalled();
+          openSpy.calls.reset();
         }));
 
         it('should close the form', fakeAsync(() => {
