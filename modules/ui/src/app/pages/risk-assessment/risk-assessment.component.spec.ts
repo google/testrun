@@ -355,15 +355,16 @@ describe('RiskAssessmentComponent', () => {
       });
 
       describe('with selected profile', () => {
-        beforeEach(() => {
+        beforeEach(fakeAsync(() => {
           component.discard(PROFILE_MOCK);
-        });
+          tick(100);
+        }));
 
-        it('should call setFocusOnCreateButton', () => {
+        it('should call setFocusOnCreateButton', fakeAsync(() => {
           expect(
             mockRiskAssessmentStore.setFocusOnSelectedProfile
           ).toHaveBeenCalled();
-        });
+        }));
 
         it('should update selected profile', () => {
           expect(
