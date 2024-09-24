@@ -41,6 +41,7 @@ class TestModule:
     self._ipv4_addr = os.environ.get('IPV4_ADDR', '')
     self._ipv4_subnet = os.environ.get('IPV4_SUBNET', '')
     self._ipv6_subnet = os.environ.get('IPV6_SUBNET', '')
+    self._dev_iface_mac = os.environ.get('DEV_IFACE_MAC', '')
     self._add_logger(log_name=log_name,
                      module_name=module_name,
                      log_dir=log_dir)

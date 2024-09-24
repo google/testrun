@@ -21,7 +21,7 @@ import {
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Profile, ProfileStatus } from '../../model/profile';
@@ -119,9 +119,9 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   }
 
   saveProfileClicked(profile: Profile, selectedProfile: Profile | null): void {
-    if (!selectedProfile) {
-      this.saveProfile(profile);
-      this.store.setFocusOnCreateButton();
+    this.liveAnnouncer.clear();
+    if (!selectedProfile || this.compareProfiles(profile, selectedProfile)) {
+      this.saveProfile(profile, this.store.setFocusOnCreateButton);
     } else {
       this.openSaveDialog(
         selectedProfile.name,
@@ -130,18 +130,64 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe(saveProfile => {
           if (saveProfile) {
-            this.saveProfile(profile);
-            this.store.setFocusOnSelectedProfile();
+            this.saveProfile(profile, this.store.setFocusOnSelectedProfile);
           }
         });
     }
   }
 
+  private compareProfiles(profile1: Profile, profile2: Profile) {
+    if (profile1.name !== profile2.name) {
+      return false;
+    }
+    if (
+      profile1.rename === profile1.name &&
+      profile1.rename !== profile2.name
+    ) {
+      return false;
+    }
+    if (profile1.status !== profile2.status) {
+      return false;
+    }
+
+    for (const question of profile1.questions) {
+      const answer1 = question.answer;
+      const answer2 = profile2.questions?.find(
+        question2 => question2.question === question.question
+      )?.answer;
+      if (answer1 !== undefined && answer2 !== undefined) {
+        if (typeof question.answer === 'string') {
+          if (answer1 !== answer2) {
+            return false;
+          }
+        } else {
+          //the type of answer is array
+          if (answer1?.length !== answer2?.length) {
+            return false;
+          }
+          if (
+            (answer1 as number[]).some(
+              answer => !(answer2 as number[]).includes(answer)
+            )
+          )
+            return false;
+        }
+      } else {
+        return !!answer1 == !!answer2;
+      }
+    }
+
+    return true;
+  }
+
   discard(selectedProfile: Profile | null) {
+    this.liveAnnouncer.clear();
     this.isOpenProfileForm = false;
     if (selectedProfile) {
-      this.store.setFocusOnSelectedProfile();
-      this.store.updateSelectedProfile(null);
+      timer(100).subscribe(() => {
+        this.store.setFocusOnSelectedProfile();
+        this.store.updateSelectedProfile(null);
+      });
     } else {
       this.store.setFocusOnCreateButton();
     }
@@ -158,12 +204,14 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     }
   }
 
-  private saveProfile(profile: Profile) {
+  private saveProfile(profile: Profile, focusElement: () => void) {
     this.store.saveProfile({
       profile,
       onSave: (profile: Profile) => {
         if (profile.status === ProfileStatus.VALID) {
-          this.openSuccessDialog(profile);
+          this.openSuccessDialog(profile, focusElement);
+        } else {
+          focusElement();
         }
       },
     });
@@ -200,8 +248,8 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     return dialogRef?.afterClosed();
   }
 
-  private openSuccessDialog(profile: Profile): void {
-    this.dialog.open(SuccessDialogComponent, {
+  private openSuccessDialog(profile: Profile, focusElement: () => void): void {
+    const dialogRef = this.dialog.open(SuccessDialogComponent, {
       ariaLabel: 'Risk Assessment Profile Completed',
       data: {
         profile,
@@ -211,5 +259,12 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       disableClose: true,
       panelClass: 'simple-dialog',
     });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        focusElement();
+      });
   }
 }
