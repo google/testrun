@@ -14,8 +14,6 @@
 """Store previous Testrun information."""
 
 from datetime import datetime
-from weasyprint import HTML
-from io import BytesIO
 from common import util, report
 from common.statuses import TestrunStatus
 import base64
