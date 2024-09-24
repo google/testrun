@@ -1,10 +1,16 @@
 FROM python:3.12-alpine
 
-RUN apk add -u pango gdk-pixbuf msttcorefonts-installer fontconfig zopfli font-dejavu\
-    && update-ms-fonts && fc-cache -f
+# Fonts path
+ARG FONTS_PATH=/usr/local/fonts/
+ENV FONTS_PATH=$FONTS_PATH
 
-# # copy source code
+RUN apk --no-cache add pango-dev ttf-dejavu
+
+# Copy source code
 COPY modules/pdf/python /usr/src/app/python
+
+# Copy local fonts into the container
+COPY modules/pdf/fonts $FONTS_PATH
 
 # install python dependencies
 RUN pip3 install -r /usr/src/app/python/requirements.txt
