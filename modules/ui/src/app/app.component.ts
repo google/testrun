@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  QueryList,
+  ViewChild,
+  ViewChildren,
+} from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatDrawer } from '@angular/material/sidenav';
@@ -35,6 +42,7 @@ import { AppStore } from './app.store';
 import { TestRunService } from './services/test-run.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { filter, take } from 'rxjs/operators';
+import { skip } from 'rxjs';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
@@ -53,7 +61,7 @@ const QUALIFICATION_URL = '/assets/icons/qualification.svg';
   styleUrls: ['./app.component.scss'],
   providers: [AppStore],
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   public readonly CalloutType = CalloutType;
   public readonly StatusOfTestrun = StatusOfTestrun;
   public readonly Routes = Routes;
@@ -66,6 +74,8 @@ export class AppComponent {
   public toggleCertificatesBtn!: HTMLButtonElement;
   @ViewChild('navigation') public navigation!: ElementRef;
   @ViewChild('settings') public settings!: SettingsComponent;
+  @ViewChildren('riskAssessmentLink')
+  riskAssessmentLink!: QueryList<ElementRef>;
   viewModel$ = this.appStore.viewModel$;
 
   constructor(
@@ -125,6 +135,26 @@ export class AppComponent {
       'qualification',
       this.domSanitizer.bypassSecurityTrustResourceUrl(QUALIFICATION_URL)
     );
+  }
+
+  ngAfterViewInit() {
+    this.viewModel$
+      .pipe(
+        filter(({ isStatusLoaded }) => isStatusLoaded === true),
+        take(1)
+      )
+      .subscribe(({ systemStatus }) => {
+        let skipCount = 0;
+        if (systemStatus === StatusOfTestrun.InProgress) {
+          // link should not be focused after page is just loaded
+          skipCount = 1;
+        }
+        this.riskAssessmentLink.changes.pipe(skip(skipCount)).subscribe(() => {
+          if (this.riskAssessmentLink.length > 0) {
+            this.riskAssessmentLink.first.nativeElement.focus();
+          }
+        });
+      });
   }
 
   get isRiskAssessmentRoute(): boolean {
