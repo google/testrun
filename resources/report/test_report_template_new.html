@@ -16,15 +16,37 @@
   {% set page_index.value = page_index.value+1 %}
   <div class="page">
     {% if loop.first %}
-    <div class="header">
-      <h1>Testrun report</h1>
+    <div class="header first-page">
+      <div class="header-info">
+        <!-- Badge -->
+        <p class="header-info-badge">
+          <!-- if pilot assessment-->
+            <!-- <img src="data:image/png;base64, {{ pilot-icon }}" alt=""> -->
+            <!-- <span>Pilot Assessment</span> -->
+          <!-- if device qualification-->
+           <!-- <img src="data:image/png;base64, {{ qualification-icon }}" alt="">-->
+           <!-- <span>Device Qualification</span> -->
+        </p>
+        <h1>Testrun report</h1>
+      </div>
       <h2 style="top: 50%;max-width:700px">
         {{ device['manufacturer'] }}
         {{ device['model']}}
       </h2>
     {% else %}
-    <div class="header" style="margin-bottom:1px solid #DADCE0">
-      <h1>Testrun report</h1>
+    <div class="header" style="border-bottom:1px solid #DADCE0">
+      <div class="header-info">
+        <!-- Badge -->
+        <p class="header-info-badge">
+          <!-- if pilot assessment-->
+          <!-- <img src="data:image/png;base64, {{ pilot-icon }}" alt=""> -->
+          <!-- <span>Pilot Assessment</span> -->
+          <!-- if device qualification-->
+          <!-- <img src="data:image/png;base64, {{ qualification-icon }}" alt="">-->
+          <!-- <span>Device Qualification</span> -->
+        </p>
+        <h1>Testrun report</h1>
+      </div>
       <h3 style="margin-top:0;max-width:700px"> 
         {{ device['manufacturer'] }}
         {{ device['model']}}
@@ -126,8 +148,19 @@
   {% if steps_to_resolve|length > 0 %}
   {% set page_index.value = page_index.value+1 %}
   <div class="page">
-    <div class="header" style="margin-bottom:1px solid #DADCE0">
-      <h1>Testrun report</h1>
+    <div class="header" style="border-bottom:1px solid #DADCE0">
+      <div class="header-info">
+        <!-- Badge -->
+        <p class="header-info-badge">
+          <!-- if pilot assessment-->
+          <!-- <img src="data:image/png;base64, {{ pilot-icon }}" alt=""> -->
+          <!-- <span>Pilot Assessment</span> -->
+          <!-- if device qualification-->
+          <!-- <img src="data:image/png;base64, {{ qualification-icon }}" alt="">-->
+          <!-- <span>Device Qualification</span> -->
+        </p>
+        <h1>Testrun report</h1>
+      </div>
       <h3 style="margin-top:0;max-width:700px"> 
         {{ device['manufacturer'] }}
         {{ device['model']}}
@@ -164,8 +197,19 @@
   {% for module in module_reports %}
   {% set page_index.value = page_index.value+1 %}
   <div class="page">
-    <div class="header" style="margin-bottom:1px solid #DADCE0">
-      <h1>Testrun report</h1>
+    <div class="header" style="border-bottom:1px solid #DADCE0">
+      <div class="header-info">
+        <!-- Badge -->
+        <p class="header-info-badge">
+          <!-- if pilot assessment-->
+          <!-- <img src="data:image/png;base64, {{ pilot-icon }}" alt=""> -->
+          <!-- <span>Pilot Assessment</span> -->
+          <!-- if device qualification-->
+          <!-- <img src="data:image/png;base64, {{ qualification-icon }}" alt="">-->
+          <!-- <span>Device Qualification</span> -->
+        </p>
+        <h1>Testrun report</h1>
+      </div>
       <h3 style="margin-top:0;max-width:700px"> 
         {{ device['manufacturer'] }}
         {{ device['model']}}
@@ -182,5 +226,130 @@
   </div>
   <div style="break-after:page"></div>
   {% endfor %}
+
+
+  <!--  Device profile -->
+  <div class="page">
+    <div class="header" style="border-bottom:1px solid #DADCE0">
+      <div class="header-info">
+        <!-- Badge -->
+        <p class="header-info-badge">
+          <!-- if pilot assessment-->
+          <!-- <img src="data:image/png;base64, {{ pilot-icon }}" alt=""> -->
+          <!-- <span>Pilot Assessment</span> -->
+          <!-- if device qualification-->
+          <!-- <img src="data:image/png;base64, {{ qualification-icon }}" alt="">-->
+          <!-- <span>Device Qualification</span> -->
+        </p>
+        <h1>Device profile</h1>
+      </div>
+      <h3 style="margin-top:0;max-width:700px">
+        { device['manufacturer'] }}
+        {{ device['model']}}
+      </h3>
+      <img src="data:image/png;base64, {{ logo }}" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+    </div>
+    <div class="device-profile-content">
+      <div class="device-profile-head">
+        <div class="device-profile-head-question">Question</div>
+        <div class="device-profile-head-answer">Answer</div>
+      </div>
+      <!--{% for question in page %}-->
+      <div class="device-profile-row">
+        <div class="device-profile-number">
+          <!-- {{ question['index'] }}. -->
+        </div>
+        <div class="device-profile-question">
+          <!-- {{ question['question'] }} -->
+        </div>
+        <div class="device-profile-answer">
+          <!-- {% if question['answer'] is string %} -->
+          <!-- {{ question['answer'] }} -->
+          <!-- {% elif question['answer'] is sequence %} -->
+          <ul>
+            <!-- {% for answer in question['answer'] %} -->
+            <li>
+              <!-- {{ answer }} -->
+            </li>
+      <!-- {% endfor %} -->
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="footer-label">Testrun {{ version }}</div>
+      <div class="footer-label" style="right: 0px">Page {{ page_index.value }}/{{ total_pages }}</div>
+    </div>
+  </div>
+  <div style="break-after:page"></div>
+
+
+
+  <!-- Device Qualification steps to resolve ONLY for Pilot Program -->
+
+  <!-- {# Steps to resolve #}-->
+  <!-- {% if steps_to_resolve|length > 0 %}-->
+  <!-- {% set page_index.value = page_index.value+1 %}-->
+  <div class="page">
+    <div class="header" style="border-bottom:1px solid #DADCE0">
+      <div class="header-info">
+        <!-- Badge -->
+        <p class="header-info-badge">
+          <!-- if pilot assessment-->
+          <!-- <img src="data:image/png;base64, {{ pilot-icon }}" alt=""> -->
+          <!-- <span>Pilot Assessment</span> -->
+          <!-- if device qualification-->
+          <!-- <img src="data:image/png;base64, {{ qualification-icon }}" alt="">-->
+          <!-- <span>Device Qualification</span> -->
+        </p>
+        <h1>Testrun report</h1>
+      </div>
+      <h3 style="margin-top:0;max-width:700px">
+        {{ device['manufacturer'] }}
+        {{ device['model']}}
+      </h3>
+      <img src="data:image/png;base64, {{ logo }}" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+    </div>
+    <div class="steps-to-resolve-info">
+      <p class="steps-to-resolve-info-heading">Attention</p>
+      <p class="steps-to-resolve-info-content">
+        The following recommendations are required solely for full device qualification.
+        They are optional for the pilot assessment.
+        But you may find it valuable to understand what will be required in the future
+        and our recommendations for your device.
+      </p>
+    </div>
+    <!-- {% for step in steps_to_resolve %} -->
+    <div class="steps-to-resolve">
+      <div class="steps-to-resolve-row">
+        <span class="steps-to-resolve-index">
+          <!-- {{ loop.index }}. -->
+        </span>
+        <div class="steps-to-resolve-test-name">
+          <span class="steps-to-resolve subtitle">Name</span><br>
+            <!-- {{ step['name'] }} -->
+        </div>
+        <div class="steps-to-resolve-description">
+          <span class="steps-to-resolve subtitle">Description</span><br>
+            <!-- {{ step["description"] }} -->
+        </div>
+      </div>
+      <div class="steps-to-resolve-row" style="margin-left: 70px;">
+        <span class="steps-to-resolve subtitle">Steps to resolve</span>
+          <!-- {% for recommedtation in step['recommendations'] %} -->
+        <br>
+        <span style="font-size: 14px">
+          <!-- {{ loop.index }}. {{ recommedtation }} -->
+        </span>
+        <!-- {% endfor %} -->
+      </div>
+    </div>
+    <!-- {% endfor %} -->
+    <div class="footer">
+      <div class="footer-label">Testrun {{ version }}</div>
+      <div class="footer-label" style="right: 0px">Page {{ page_index.value }}/{{ total_pages }}</div>
+    </div>
+  </div><div style="break-after:page"></div>
+  <!-- {% endif %} -->
 </body>
 </html>
