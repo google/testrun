@@ -20,6 +20,7 @@ export interface SystemConfig {
   } | null;
   log_level?: string;
   monitor_period?: number;
+  single_intf?: boolean;
 }
 
 export interface InterfacesValidation {
