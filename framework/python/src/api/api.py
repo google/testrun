@@ -161,7 +161,11 @@ class Api:
         allow_headers=["*"],
     )
 
-    self._app.mount("/static", StaticFiles(directory=static_folder), name="static")
+    self._app.mount(
+                    "/static",
+                    StaticFiles(directory=static_folder),
+                    name="static"
+                    )
 
     # Use separate thread for API
     self._api_thread = threading.Thread(target=self._start,
