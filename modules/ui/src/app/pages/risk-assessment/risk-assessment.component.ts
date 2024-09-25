@@ -21,7 +21,7 @@ import {
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Profile, ProfileStatus } from '../../model/profile';
@@ -119,7 +119,8 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   }
 
   saveProfileClicked(profile: Profile, selectedProfile: Profile | null): void {
-    if (!selectedProfile) {
+    this.liveAnnouncer.clear();
+    if (!selectedProfile || this.compareProfiles(profile, selectedProfile)) {
       this.saveProfile(profile, this.store.setFocusOnCreateButton);
     } else {
       this.openSaveDialog(
@@ -135,11 +136,58 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     }
   }
 
+  private compareProfiles(profile1: Profile, profile2: Profile) {
+    if (profile1.name !== profile2.name) {
+      return false;
+    }
+    if (
+      profile1.rename === profile1.name &&
+      profile1.rename !== profile2.name
+    ) {
+      return false;
+    }
+    if (profile1.status !== profile2.status) {
+      return false;
+    }
+
+    for (const question of profile1.questions) {
+      const answer1 = question.answer;
+      const answer2 = profile2.questions?.find(
+        question2 => question2.question === question.question
+      )?.answer;
+      if (answer1 !== undefined && answer2 !== undefined) {
+        if (typeof question.answer === 'string') {
+          if (answer1 !== answer2) {
+            return false;
+          }
+        } else {
+          //the type of answer is array
+          if (answer1?.length !== answer2?.length) {
+            return false;
+          }
+          if (
+            (answer1 as number[]).some(
+              answer => !(answer2 as number[]).includes(answer)
+            )
+          )
+            return false;
+        }
+      } else {
+        return !!answer1 == !!answer2;
+      }
+    }
+
+    return true;
+  }
+
   discard(selectedProfile: Profile | null) {
+    this.liveAnnouncer.clear();
     this.isOpenProfileForm = false;
     if (selectedProfile) {
-      this.store.setFocusOnSelectedProfile();
-      this.store.updateSelectedProfile(null);
+      timer(100).subscribe(() => {
+        this.store.setFocusOnSelectedProfile();
+        this.store.updateSelectedProfile(null);
+      });
     } else {
       this.store.setFocusOnCreateButton();
     }

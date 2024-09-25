@@ -52,6 +52,7 @@ import {
 import { FormControlType } from '../../../model/question';
 import { ProfileValidators } from './profile.validators';
 import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-profile-form',
@@ -70,6 +71,7 @@ import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-f
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss',
+  hostDirectives: [CdkTrapFocus],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileFormComponent implements OnInit, AfterViewInit {
