@@ -63,6 +63,7 @@ const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
 @Injectable()
 export class AppEffects {
+  private isSinglePortMode: boolean | undefined = false;
   private statusSubscription: Subscription | undefined;
   private internetSubscription: Subscription | undefined;
   private destroyWaitDeviceInterval$: Subject<boolean> = new Subject<boolean>();
@@ -121,6 +122,9 @@ export class AppEffects {
   onFetchSystemConfigSuccess$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(AppActions.fetchSystemConfigSuccess),
+      tap(
+        ({ systemConfig }) => (this.isSinglePortMode = systemConfig.single_intf)
+      ),
       map(({ systemConfig }) =>
         AppActions.setHasConnectionSettings({
           hasConnectionSettings:
@@ -274,11 +278,12 @@ export class AppEffects {
           ) {
             this.showSnackBar();
           }
-          if (
-            systemStatus?.status !== StatusOfTestrun.WaitingForDevice &&
-            isOpenWaitSnackBar
-          ) {
-            this.notificationService.dismissWithTimout();
+          if (systemStatus?.status !== StatusOfTestrun.WaitingForDevice) {
+            if (isOpenWaitSnackBar) {
+              this.notificationService.dismissWithTimout();
+            } else {
+              this.destroyWaitDeviceInterval$.next(true);
+            }
           }
         }),
         tap(([{ systemStatus }, , status]) => {
@@ -383,6 +388,9 @@ export class AppEffects {
   }
 
   private fetchInternetConnection() {
+    if (this.isSinglePortMode) {
+      return;
+    }
     if (
       this.internetSubscription === undefined ||
       this.internetSubscription?.closed

@@ -56,18 +56,18 @@ describe('VersionComponent', () => {
   });
 
   it('should get correct aria label for version button', () => {
-    const labelUnavailableVersion = component.getVersionButtonLabel(
-      UNAVAILABLE_VERSION.installed_version
-    );
+    const labelUnavailableVersion =
+      component.getVersionButtonLabel(UNAVAILABLE_VERSION);
 
-    const labelAvailableVersion = component.getVersionButtonLabel(
-      VERSION.installed_version
-    );
+    const labelAvailableVersion = component.getVersionButtonLabel(NEW_VERSION);
+
+    const labelVersion = component.getVersionButtonLabel(VERSION);
 
     expect(labelUnavailableVersion).toContain(
       'Version temporarily unavailable.'
     );
     expect(labelAvailableVersion).toContain('New version is available.');
+    expect(labelVersion).toEqual('v1. Click to open the Welcome modal');
   });
 
   it('should open consent window on start', () => {

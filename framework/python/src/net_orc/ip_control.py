@@ -89,6 +89,16 @@ class IPControl:
     else:
       return None
 
+  @staticmethod
+  def get_iface_mac_address(iface):
+    net_if_addrs = psutil.net_if_addrs()
+    if iface in net_if_addrs:
+      for addr_info in net_if_addrs[iface]:
+        # AF_LINK corresponds to the MAC address
+        if addr_info.family == psutil.AF_LINK:
+          return addr_info.address
+    return None
+
   def get_iface_port_stats(self, iface):
     """Extract information about packets connection"""
     response = util.run_command(f'ethtool -S {iface}')

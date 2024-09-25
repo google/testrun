@@ -246,7 +246,8 @@ class ConnectionModule(TestModule):
         if self._get_dhcp_type(packet) == 3:
           mac_address = packet[Ether].src
           LOGGER.info('DHCPREQUEST detected MAC address: ' + mac_address)
-          if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
+          if (not mac_address.startswith(TR_CONTAINER_MAC_PREFIX)
+              and mac_address != self._dev_iface_mac):
             mac_addresses.add(mac_address.upper())
 
     # Check if the device mac address is in the list of DHCPREQUESTs

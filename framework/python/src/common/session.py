@@ -187,7 +187,8 @@ class TestrunSession():
         'max_device_reports': 0,
         'api_url': 'http://localhost',
         'api_port': 8000,
-        'org_name': ''
+        'org_name': '',
+        'single_intf': False,
     }
 
   def get_config(self):
@@ -243,7 +244,7 @@ class TestrunSession():
     version_cmd = util.run_command(
         'dpkg-query --showformat=\'${Version}\' --show testrun')
     # index 1 of response is the stderr byte stream so if
-    # it has any data in it, there was an error and we
+    # it has any data in it, there was an error and wen
     # did not resolve the version and we'll use the fallback
     if len(version_cmd[1]) == 0:
       version = version_cmd[0]
@@ -277,10 +278,16 @@ class TestrunSession():
     return self._runtime_params
 
   def add_runtime_param(self, param):
+    if param == 'single_intf':
+      self._config['single_intf'] = True
     self._runtime_params.append(param)
 
   def get_device_interface(self):
     return self._config.get(NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
+
+  def get_device_interface_mac_addr(self):
+    iface = self.get_device_interface()
+    return IPControl.get_iface_mac_address(iface=iface)
 
   def get_internet_interface(self):
     return self._config.get(NETWORK_KEY, {}).get(INTERNET_INTF_KEY)

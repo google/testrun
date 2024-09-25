@@ -16,6 +16,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
   IResult,
+  StatusOfTestResult,
   StatusOfTestrun,
   TestrunStatus,
   TestsData,
@@ -65,11 +66,11 @@ export class TestrunStatusCardComponent {
         (data.tests as TestsData)?.results?.length &&
         (data.tests as TestsData)?.total
       ) {
-        return `${(data.tests as TestsData)?.results?.length}/${
+        return `${(data.tests as TestsData)?.results?.filter(result => result.result !== StatusOfTestResult.NotStarted).length}/${
           (data.tests as TestsData)?.total
         }`;
       } else if ((data.tests as IResult[])?.length) {
-        return `${(data.tests as IResult[])?.length}/${
+        return `${(data.tests as IResult[])?.filter(result => result.result !== StatusOfTestResult.NotStarted).length}/${
           (data.tests as IResult[])?.length
         }`;
       }
@@ -99,7 +100,13 @@ export class TestrunStatusCardComponent {
     const testData = data.tests as TestsData;
 
     if (testData && testData.total && testData.results?.length) {
-      return Math.round((testData.results.length / testData.total) * 100);
+      return Math.round(
+        (testData.results.filter(
+          result => result.result !== StatusOfTestResult.NotStarted
+        ).length /
+          testData.total) *
+          100
+      );
     }
     return 0;
   }

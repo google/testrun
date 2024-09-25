@@ -37,10 +37,22 @@ limitations under the License.
           </div>
           <div class="toolbar-row bottom">
             <h2 class="title progress-title" tabindex="-1">
-              {{ data.device.manufacturer }} {{ data.device.model }} v{{
-                data.device.firmware
-              }}
+              {{ getTestRunName(data) }}
             </h2>
+            <span *ngIf="data.tags?.length" class="toolbar-tag-container">
+              <span
+                tabindex="0"
+                class="toolbar-tag"
+                *ngFor="let tag of data.tags"
+                [attr.aria-label]="tag"
+                [matTooltip]="
+                  tag === 'VSA'
+                    ? 'Device qualification requires Vendor Security Assessment'
+                    : tag
+                "
+                >{{ tag }}</span
+              >
+            </span>
             <button
               *ngIf="isTestrunInProgress(data.status)"
               (click)="openStopTestrunDialog(vm.systemStatus)"
