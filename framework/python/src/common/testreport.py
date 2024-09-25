@@ -151,6 +151,9 @@ class TestReport():
     if 'test_pack' in json_file['device']:
       self._device['test_pack'] = json_file['device']['test_pack']
 
+    if 'additional_info' in json_file['device']:
+      self._device['device_profile'] = json_file['device']['additional_info']
+
     self._status = json_file['status']
     self._started = datetime.strptime(json_file['started'], DATE_TIME_FORMAT)
     self._finished = datetime.strptime(json_file['finished'], DATE_TIME_FORMAT)
