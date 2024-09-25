@@ -42,7 +42,7 @@ import { AppStore } from './app.store';
 import { TestRunService } from './services/test-run.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { filter, take } from 'rxjs/operators';
-import { skip } from 'rxjs';
+import { skip, timer } from 'rxjs';
 
 const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
@@ -260,6 +260,9 @@ export class AppComponent implements AfterViewInit {
   calloutClosed(id: string | null) {
     if (id) {
       this.appStore.setCloseCallout(id);
+      timer(100).subscribe(() => {
+        this.focusManagerService.focusFirstElementInContainer();
+      });
     }
   }
 }
