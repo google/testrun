@@ -42,6 +42,8 @@ root_dir = os.path.dirname(
 report_resource_dir = os.path.join(root_dir, RESOURCES_DIR)
 
 test_run_img_file = os.path.join(report_resource_dir, 'testrun.png')
+qualification_icon = os.path.join(report_resource_dir, 'qualification-icon.png')
+pilot_icon = os.path.join(report_resource_dir, 'pilot-icon.png')
 
 
 class TestReport():
@@ -195,7 +197,14 @@ class TestReport():
       styles = style_file.read()
     with open(test_run_img_file, 'rb') as f:
       logo = base64.b64encode(f.read()).decode('utf-8')
+
     json_data=self.to_json()
+
+    # Icons
+    with open(qualification_icon, 'rb') as f:
+      icon_qualification = base64.b64encode(f.read()).decode('utf-8')
+    with open(qualification_icon, 'rb') as f:
+      icon_pilot = base64.b64encode(f.read()).decode('utf-8')
 
     # Convert the timestamp strings to datetime objects
     start_time = datetime.strptime(json_data['started'], '%Y-%m-%d %H:%M:%S')
@@ -218,6 +227,8 @@ class TestReport():
 
     return template.render(styles=styles,
                            logo=logo,
+                           icon_qualification=icon_qualification,
+                           icon_pilot=icon_pilot,
                            version=self._version,
                            json_data=json_data,
                            device=json_data['device'],

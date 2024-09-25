@@ -16,15 +16,39 @@
   {% set page_index.value = page_index.value+1 %}
   <div class="page">
     {% if loop.first %}
-    <div class="header">
-      <h1>Testrun report</h1>
+    <div class="header first-page">
+      <div class="header-info">
+        {# Badge #}
+        <p class="header-info-badge">
+          {% if json_data['device']['test_pack'] == 'Device Qualification' %}
+             <img src="data:image/png;base64, {{ icon_qualification }}" alt="">
+             <span>Device Qualification</span>
+          {% else %}
+            <img src="data:image/png;base64, {{ icon_pilot }}" alt="">
+            <span>Pilot Assessment</span>
+          {% endif %}
+        </p>
+        <h1>Testrun report</h1>
+      </div>
       <h2 style="top: 50%;max-width:700px">
         {{ device['manufacturer'] }}
         {{ device['model']}}
       </h2>
     {% else %}
     <div class="header" style="margin-bottom:1px solid #DADCE0">
-      <h1>Testrun report</h1>
+      <div class="header-info">
+        {# Badge #}
+        <p class="header-info-badge">
+          {% if json_data['device']['test_pack'] == 'Device Qualification' %}
+             <img src="data:image/png;base64, {{ icon_qualification }}" alt="">
+             <span>Device Qualification</span>
+          {% else %}
+            <img src="data:image/png;base64, {{ icon_pilot }}" alt="">
+            <span>Pilot Assessment</span>
+          {% endif %}
+        </p>
+        <h1>Testrun report</h1>
+      </div>
       <h3 style="margin-top:0;max-width:700px"> 
         {{ device['manufacturer'] }}
         {{ device['model']}}
@@ -127,7 +151,19 @@
   {% set page_index.value = page_index.value+1 %}
   <div class="page">
     <div class="header" style="margin-bottom:1px solid #DADCE0">
-      <h1>Testrun report</h1>
+      <div class="header-info">
+        {# Badge #}
+        <p class="header-info-badge">
+          {% if json_data['device']['test_pack'] == 'Device Qualification' %}
+             <img src="data:image/png;base64, {{ icon_qualification }}" alt="">
+             <span>Device Qualification</span>
+          {% else %}
+            <img src="data:image/png;base64, {{ icon_pilot }}" alt="">
+            <span>Pilot Assessment</span>
+          {% endif %}
+        </p>
+        <h1>Testrun report</h1>
+      </div>
       <h3 style="margin-top:0;max-width:700px"> 
         {{ device['manufacturer'] }}
         {{ device['model']}}
@@ -165,7 +201,19 @@
   {% set page_index.value = page_index.value+1 %}
   <div class="page">
     <div class="header" style="margin-bottom:1px solid #DADCE0">
-      <h1>Testrun report</h1>
+      <div class="header-info">
+        {# Badge #}
+        <p class="header-info-badge">
+          {% if json_data['device']['test_pack'] == 'Device Qualification' %}
+             <img src="data:image/png;base64, {{ icon_qualification }}" alt="">
+             <span>Device Qualification</span>
+          {% else %}
+            <img src="data:image/png;base64, {{ icon_pilot }}" alt="">
+            <span>Pilot Assessment</span>
+          {% endif %}
+        </p>
+        <h1>Testrun report</h1>
+      </div>
       <h3 style="margin-top:0;max-width:700px"> 
         {{ device['manufacturer'] }}
         {{ device['model']}}
