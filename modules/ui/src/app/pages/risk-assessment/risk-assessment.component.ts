@@ -141,7 +141,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       return false;
     }
     if (
-      profile1.rename === profile1.name &&
+      profile1.rename !== profile1.name ||
       profile1.rename !== profile2.name
     ) {
       return false;
