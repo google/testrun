@@ -21,7 +21,7 @@ import {
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Profile, ProfileStatus } from '../../model/profile';
@@ -119,6 +119,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   }
 
   saveProfileClicked(profile: Profile, selectedProfile: Profile | null): void {
+    this.liveAnnouncer.clear();
     if (!selectedProfile || this.compareProfiles(profile, selectedProfile)) {
       this.saveProfile(profile, this.store.setFocusOnCreateButton);
     } else {
@@ -180,10 +181,13 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   }
 
   discard(selectedProfile: Profile | null) {
+    this.liveAnnouncer.clear();
     this.isOpenProfileForm = false;
     if (selectedProfile) {
-      this.store.setFocusOnSelectedProfile();
-      this.store.updateSelectedProfile(null);
+      timer(100).subscribe(() => {
+        this.store.setFocusOnSelectedProfile();
+        this.store.updateSelectedProfile(null);
+      });
     } else {
       this.store.setFocusOnCreateButton();
     }
