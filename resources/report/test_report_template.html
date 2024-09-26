@@ -146,21 +146,16 @@
     </div>
     <div style="break-after:page"></div>
   {% endfor %}
-  {# Steps to resolve #}
-  {% if steps_to_resolve|length > 0 %}
+  {# Steps to resolve Device qualification #}
+  {% if steps_to_resolve|length > 0 and json_data['device']['test_pack'] == 'Device Qualification' %}
   {% set page_index.value = page_index.value+1 %}
   <div class="page">
     <div class="header" style="margin-bottom:1px solid #DADCE0">
       <div class="header-info">
         {# Badge #}
         <p class="header-info-badge">
-          {% if json_data['device']['test_pack'] == 'Device Qualification' %}
-             <img src="data:image/png;base64, {{ icon_qualification }}" alt="">
-             <span>Device Qualification</span>
-          {% else %}
-            <img src="data:image/png;base64, {{ icon_pilot }}" alt="">
-            <span>Pilot Assessment</span>
-          {% endif %}
+          <img src="data:image/png;base64, {{ icon_qualification }}" alt="">
+          <span>Device Qualification</span>
         </p>
         <h1>Testrun report</h1>
       </div>
