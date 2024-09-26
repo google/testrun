@@ -230,5 +230,57 @@
   </div>
   <div style="break-after:page"></div>
   {% endfor %}
+  {% set page_index.value = page_index.value+1 %}
+  <div class="page">
+    <div class="header" style="margin-bottom:1px solid #DADCE0">
+      <div class="header-info">
+        {# Badge #}
+        <p class="header-info-badge">
+          {% if json_data['device']['test_pack'] == 'Device Qualification' %}
+             <img src="data:image/png;base64, {{ icon_qualification }}" alt="">
+             <span>Device Qualification</span>
+          {% else %}
+            <img src="data:image/png;base64, {{ icon_pilot }}" alt="">
+            <span>Pilot Assessment</span>
+          {% endif %}
+        </p>
+        <h1>Device profile</h1>
+      </div>
+      <h3 style="margin-top:0;max-width:700px"> 
+        {{ device['manufacturer'] }}
+        {{ device['model']}}
+      </h3> 
+      <img src="data:image/png;base64, {{ logo }}" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+    </div>
+
+    <div class="device-profile-content">
+      <div class="device-profile-head">
+        <div class="device-profile-head-question">Question</div>
+        <div class="device-profile-head-answer">Answer</div>
+      </div>
+      {% for question in json_data['device']['device_profile'] %}
+      <div class="device-profile-row">
+        <div class="device-profile-number">{{loop.index}}.</div>
+        <div class="device-profile-question">{{ question['question'] }}</div>
+        <div class="device-profile-answer">
+          {% if question['answer'] is string %}
+            {{ question['answer'] }}
+          {% elif question['answer'] is sequence %}
+            <ul style="padding-left: 20px">
+              {% for answer in question['answer'] %}
+                <li>{{ answer }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  <div class="footer">
+    <div class="footer-label">Testrun {{ version }}</div>
+    <div class="footer-label" style="right: 0px">Page {{ page_index.value }}/{{ total_pages }}</div>
+  </div>
+  </div>
+  <div style="break-after:page"></div>
 </body>
 </html>

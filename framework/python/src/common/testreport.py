@@ -224,7 +224,7 @@ class TestReport():
 
     module_reports = self._get_module_pages()
     pages_num = self._pages_num(json_data)
-    total_pages = pages_num + len(module_reports)
+    total_pages = pages_num + len(module_reports) + 1
     if len(steps_to_resolve) > 0:
       total_pages += 1
 
