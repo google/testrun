@@ -51,3 +51,10 @@
 .discard-button:not(.mat-mdc-button-disabled) {
   color: $primary;
 }
+
+.save-profile-button:not(.mat-mdc-button-disabled),
+.save-draft-button:not(.mat-mdc-button-disabled),
+.discard-button:not(.mat-mdc-button-disabled) {
+  cursor: pointer;
+  pointer-events: auto;
+}

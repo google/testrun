@@ -1632,6 +1632,60 @@ def test_device_edit_device_with_mac_already_exists(
 
   assert r.status_code == 409
 
+def test_get_devices_format(testrun): # pylint: disable=W0613
+  """ Test for get devices format (200) """
+
+  # Send the get request
+  r = requests.get(f"{API}/devices/format", timeout=5)
+
+  # Check if status code is 200 (OK)
+  assert r.status_code == 200
+
+  # Parse the JSON response
+  response = r.json()
+
+  # Check if the response is a list
+  assert isinstance(response, list)
+
+  # Store the expected main keys and types
+  response_keys = {
+    "step": int,
+    "title": str, 
+    "questions": list
+  }
+
+  # Store the 'questions' field expected keys and types
+  questions_keys = {
+    "id": int,
+    "question": str,
+    "type": str,
+    "options": list
+  }
+
+  # Iterate over the response items
+  for item in response:
+
+    # Iterate over the 'response_keys' dict keys and values
+    for key, key_type in response_keys.items():
+
+      # Check if the key is in the response item
+      assert key in item
+
+      # Check if the key has the expected data type
+      assert isinstance(item[key], key_type)
+
+      # Iterate over the 'questions' field
+      for questions in item["questions"]:
+
+        # Iterate over the 'questions_keys' dict keys and values
+        for key, key_type in questions_keys.items():
+
+          # Check if the key is in 'questions' field
+          assert key in questions
+
+          # Check if the key has the expected data type
+          assert isinstance(questions[key], key_type)
+
 def test_invalid_path_get(testrun): # pylint: disable=W0613
   r = requests.get(f"{API}/blah/blah", timeout=5)
   response = r.json()

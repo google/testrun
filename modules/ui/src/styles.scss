@@ -355,3 +355,8 @@ body #main {
     width: 100%;
   }
 }
+
+button:not(.mat-mdc-button-disabled) {
+  cursor: pointer;
+  pointer-events: auto;
+}
