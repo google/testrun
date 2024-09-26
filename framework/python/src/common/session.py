@@ -187,7 +187,8 @@ class TestrunSession():
         'max_device_reports': 0,
         'api_url': 'http://localhost',
         'api_port': 8000,
-        'org_name': ''
+        'org_name': '',
+        'single_intf': False,
     }
 
   def get_config(self):
@@ -243,7 +244,7 @@ class TestrunSession():
     version_cmd = util.run_command(
         'dpkg-query --showformat=\'${Version}\' --show testrun')
     # index 1 of response is the stderr byte stream so if
-    # it has any data in it, there was an error and we
+    # it has any data in it, there was an error and wen
     # did not resolve the version and we'll use the fallback
     if len(version_cmd[1]) == 0:
       version = version_cmd[0]
@@ -277,6 +278,8 @@ class TestrunSession():
     return self._runtime_params
 
   def add_runtime_param(self, param):
+    if param == 'single_intf':
+      self._config['single_intf'] = True
     self._runtime_params.append(param)
 
   def get_device_interface(self):
@@ -388,20 +391,6 @@ class TestrunSession():
       if test_result.name == result.name:
 
         # Just update the result, description and recommendations
-
-        if result.result is not None:
-
-          # Any informational test should always report informational
-          if (test_result.required_result == 'Informational' and
-              result.result in [
-                TestResult.COMPLIANT,
-                TestResult.NON_COMPLIANT,
-                TestResult.FEATURE_NOT_DETECTED
-              ]):
-            test_result.result = TestResult.INFORMATIONAL
-          else:
-            test_result.result = result.result
-
         if len(result.description) != 0:
           test_result.description = result.description
 
@@ -410,6 +399,17 @@ class TestrunSession():
 
           if len(result.recommendations) == 0:
             test_result.recommendations = None
+
+        if result.result is not None:
+
+          # Any informational test should always report informational
+          if test_result.required_result == 'Informational':
+            test_result.result = TestResult.INFORMATIONAL
+
+            # Remove recommendations from informational tests
+            test_result.recommendations = None
+          else:
+            test_result.result = result.result
 
         updated = True
 

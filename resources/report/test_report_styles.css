@@ -27,8 +27,8 @@
     /* Define some common body formatting*/
     body {
       font-family: 'Google Sans', sans-serif;
-      margin: 0px;
-      padding: 0px;
+      margin: 0;
+      padding: 0;
     }
 
     /* Use this for various section breaks*/
@@ -60,6 +60,63 @@
     /* Define the  header related css elements*/
     .header {
       position: relative;
+      padding-left: 0.2in;
+    }
+
+    .header-info {
+      max-width: 700px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 8px;
+      color: #202124;
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    .first-page .header-info {
+      font-size: 18px;
+      gap: 16px;
+    }
+
+    .header-info-badge {
+      display: flex;
+      align-items: center;
+      margin: 0;
+      padding: 5px 15px;
+      border: 1px solid #202124;
+      border-radius: 4px;
+      font-weight: 500;
+      letter-spacing: 0.64px;
+      gap: 10px;
+    }
+
+    .first-page .header-info-badge {
+      padding: 15px 30px;
+      letter-spacing: 1px;
+    }
+
+    .header-info-badge img {
+      width: 9px;
+      height: 9px;
+    }
+
+    .first-page .header-info-badge img {
+      width: 16px;
+      height: 16px;
+    }
+
+    .header-info h1 {
+      margin: 0;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1px;
+    }
+
+    .first-page .header-info h1 {
+      font-size: 18px;
+      letter-spacing: 1px;
     }
 
     h1 {
@@ -69,7 +126,7 @@
     }
 
     h2 {
-      margin: 0px;
+      margin: 0;
       font-size: 48px;
       font-weight: 700;
     }
@@ -257,8 +314,8 @@
     /* CSS for the color box */
     .summary-color-box {
       position: absolute;
-      right: 0in;
-      top: 0in;
+      right: 0;
+      top: 0;
       width: 2.6in;
       height: 100%;
     }
@@ -308,11 +365,10 @@
     }
 
     .result-line-result {
-      border-top: 0px;
+      border-top: 0;
     }
 
     .result-list-header-label {
-      font-weight: 500;
       position: absolute;
       font-size: 12px;
       font-weight: bold;
@@ -387,7 +443,7 @@
       position: absolute;
       height: 30px;
       width: 8.5in;
-      bottom: 0in;
+      bottom: 0;
       border-top: 1px solid #D3D3D3;
     }
 
@@ -414,14 +470,14 @@
     .markdown-header-h1 {
       margin-top:20px;
       margin-bottom:20px;
-      margin-right:0px;
+      margin-right:0;
       font-size: 2em;
     }
 
     .markdown-header-h2 {
-      margin-top:20px;
-      margin-bottom:20px;
-      margin-right:0px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      margin-right: 0;
       font-size: 1.5em;
     }
 
@@ -439,6 +495,97 @@
 
     .module-page-content h1 {
       font-size: 32px;
+    }
+
+    /* CSS for Device profile */
+    .device-profile-content {
+      width: 100%;
+      margin-top: 40px;
+      text-align: left;
+      color: #3C4043;
+      font-size: 14px;
+    }
+
+    .device-profile-head {
+      margin-bottom: 15px;
+    }
+
+    .device-profile-head-question {
+      display: inline-block;
+      margin-left: 70px;
+      font-weight: bold;
+    }
+
+    .device-profile-head-answer {
+      display: inline-block;
+      margin-left: 325px;
+      font-weight: bold;
+    }
+
+    .device-profile-row {
+      margin-bottom: 8px;
+      background-color: #F8F9FA;
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+    }
+
+    .device-profile-number {
+      padding: 15px 20px;
+      width: 10px;
+      display: inline-block;
+      vertical-align: top;
+      position: relative;
+    }
+
+    .device-profile-question {
+      padding: 15px 20px;
+      display: inline-block;
+      width: 350px;
+      vertical-align: top;
+      position: relative;
+      height: 100%;
+    }
+
+    .device-profile-answer {
+      background-color: #E8F0FE;
+      padding: 15px 20px;
+      display: inline-block;
+      width: 340px;
+      position: relative;
+      height: 100%;
+    }
+
+    .device-profile-answer ul {
+      margin-top: 0;
+      padding-left: 20px;
+    }
+
+    /* CSS for Steps to resolve to meet full device qualification in Pilot program */
+    .steps-to-resolve-info {
+      display: flex;
+      flex-direction: column;
+      margin: 30px 0;
+      padding: 30px 45px;
+      background: #E8F0FE;
+      color: #174EA6;
+      gap: 15px;
+    }
+
+    .steps-to-resolve-info-heading {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 500;
+      line-height: 16px;
+      letter-spacing: 0.64px;
+      text-transform: uppercase;
+    }
+
+    .steps-to-resolve-info-content {
+      margin: 0;
+      font-size: 16px;
+      line-height: normal;
+      letter-spacing: 0.64px;
     }
 
     @media print {
