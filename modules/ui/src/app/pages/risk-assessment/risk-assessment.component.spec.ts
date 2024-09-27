@@ -172,15 +172,13 @@ describe('RiskAssessmentComponent', () => {
         tick();
 
         expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
-          ariaLabel: 'Delete risk profile',
           data: {
             title: 'Delete risk profile?',
             content: `You are about to delete ${PROFILE_MOCK.name}. Are you sure?`,
           },
-          autoFocus: true,
+          autoFocus: 'dialog',
           hasBackdrop: true,
           disableClose: true,
-          panelClass: 'simple-dialog',
         });
 
         openSpy.calls.reset();
@@ -260,15 +258,13 @@ describe('RiskAssessmentComponent', () => {
           component.saveProfileClicked(NEW_PROFILE_MOCK, PROFILE_MOCK);
 
           expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
-            ariaLabel: 'Save profile',
             data: {
               title: 'Save profile',
               content: `You are about to save changes in Primary profile. Are you sure?`,
             },
-            autoFocus: true,
+            autoFocus: 'dialog',
             hasBackdrop: true,
             disableClose: true,
-            panelClass: 'simple-dialog',
           });
 
           openSpy.calls.reset();
@@ -282,15 +278,13 @@ describe('RiskAssessmentComponent', () => {
           component.saveProfileClicked(NEW_PROFILE_MOCK_DRAFT, PROFILE_MOCK);
 
           expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
-            ariaLabel: 'Save draft profile',
             data: {
               title: 'Save draft profile',
               content: `You are about to save changes in Primary profile. Are you sure?`,
             },
-            autoFocus: true,
+            autoFocus: 'dialog',
             hasBackdrop: true,
             disableClose: true,
-            panelClass: 'simple-dialog',
           });
 
           openSpy.calls.reset();
