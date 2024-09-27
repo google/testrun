@@ -120,8 +120,10 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
 
   saveProfileClicked(profile: Profile, selectedProfile: Profile | null): void {
     this.liveAnnouncer.clear();
-    if (!selectedProfile || this.compareProfiles(profile, selectedProfile)) {
+    if (!selectedProfile) {
       this.saveProfile(profile, this.store.setFocusOnCreateButton);
+    } else if (this.compareProfiles(profile, selectedProfile)) {
+      this.saveProfile(profile, this.store.setFocusOnSelectedProfile);
     } else {
       this.openSaveDialog(
         selectedProfile.name,
