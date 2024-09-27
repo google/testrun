@@ -391,20 +391,6 @@ class TestrunSession():
       if test_result.name == result.name:
 
         # Just update the result, description and recommendations
-
-        if result.result is not None:
-
-          # Any informational test should always report informational
-          if (test_result.required_result == 'Informational' and
-              result.result in [
-                TestResult.COMPLIANT,
-                TestResult.NON_COMPLIANT,
-                TestResult.FEATURE_NOT_DETECTED
-              ]):
-            test_result.result = TestResult.INFORMATIONAL
-          else:
-            test_result.result = result.result
-
         if len(result.description) != 0:
           test_result.description = result.description
 
@@ -413,6 +399,17 @@ class TestrunSession():
 
           if len(result.recommendations) == 0:
             test_result.recommendations = None
+
+        if result.result is not None:
+
+          # Any informational test should always report informational
+          if test_result.required_result == 'Informational':
+            test_result.result = TestResult.INFORMATIONAL
+
+            # Remove recommendations from informational tests
+            test_result.recommendations = None
+          else:
+            test_result.result = result.result
 
         updated = True
 
