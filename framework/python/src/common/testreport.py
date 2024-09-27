@@ -21,7 +21,7 @@ from common.statuses import TestrunStatus
 import base64
 import os
 from test_orc.test_case import TestCase
-from jinja2 import Template
+from jinja2 import Template, BaseLoader, Environment, FileSystemLoader
 from collections import OrderedDict
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -187,17 +187,15 @@ class TestReport():
   def to_html(self):
 
     # Jinja template
-    with open(os.path.join(report_resource_dir, TEST_REPORT_TEMPLATE),
-                            'r',
-                            encoding='UTF-8'
-                            ) as template_file:
-      template = Template(template_file.read())
+    template_env = Environment(loader=FileSystemLoader(report_resource_dir))
+    template = template_env.get_template(TEST_REPORT_TEMPLATE)
     with open(os.path.join(report_resource_dir,
                            TEST_REPORT_STYLES),
                            'r',
                            encoding='UTF-8'
                            ) as style_file:
       styles = style_file.read()
+
     with open(test_run_img_file, 'rb') as f:
       logo = base64.b64encode(f.read()).decode('utf-8')
 
