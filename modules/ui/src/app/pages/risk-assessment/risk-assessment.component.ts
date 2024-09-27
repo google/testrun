@@ -18,6 +18,7 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  ViewContainerRef,
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
@@ -43,7 +44,8 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   constructor(
     private store: RiskAssessmentStore,
     public dialog: MatDialog,
-    private liveAnnouncer: LiveAnnouncer
+    private liveAnnouncer: LiveAnnouncer,
+    public element: ViewContainerRef
   ) {}
 
   ngOnInit() {
@@ -95,15 +97,13 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     selectedProfile: Profile | null
   ): void {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: 'Delete risk profile',
       data: {
         title: 'Delete risk profile?',
         content: `You are about to delete ${profileName}. Are you sure?`,
       },
-      autoFocus: true,
+      autoFocus: 'dialog',
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
     });
 
     dialogRef
@@ -114,6 +114,8 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
           this.store.deleteProfile(profileName);
           this.closeFormAfterDelete(profileName, selectedProfile);
           this.setFocus(index);
+        } else {
+          this.store.setFocusOnSelectedProfile();
         }
       });
   }
@@ -234,15 +236,13 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     draft: boolean = false
   ): Observable<boolean> {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: `Save ${draft ? 'draft profile' : 'profile'}`,
       data: {
         title: `Save ${draft ? 'draft profile' : 'profile'}`,
         content: `You are about to save changes in ${profileName}. Are you sure?`,
       },
-      autoFocus: true,
+      autoFocus: 'dialog',
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
     });
 
     return dialogRef?.afterClosed();
