@@ -120,6 +120,10 @@ class TestReport():
       if test.recommendations is not None and len(test.recommendations) > 0:
         test_dict['recommendations'] = test.recommendations
 
+      if (test.optional_recommendations is not None
+        and len(test.optional_recommendations) > 0):
+        test_dict['optional_recommendations'] = test.optional_recommendations
+
       test_results.append(test_dict)
 
     report_json['tests'] = {'total': self._total_tests,
@@ -165,8 +169,18 @@ class TestReport():
         expected_behavior=test_result['expected_behavior'],
         required_result=test_result['required_result'],
         result=test_result['result'])
+
+      # Add test recommendations
       if 'recommendations' in test_result:
         test_case.recommendations = test_result['recommendations']
+
+      # Add optional test recommendations
+      if 'optional_recommendations' in test_result:
+        test_case.optional_recommendations = test_result[
+          'optional_recommendations']
+        print("Loaded optional test recommendations from json:")
+        print(test_case.optional_recommendations)
+
       self.add_test(test_case)
 
   # Create a pdf file in memory and return the bytes
@@ -187,12 +201,16 @@ class TestReport():
                             encoding='UTF-8'
                             ) as template_file:
       template = Template(template_file.read())
+
+    # Load styles
     with open(os.path.join(report_resource_dir,
                            TEST_REPORT_STYLES),
                            'r',
                            encoding='UTF-8'
                            ) as style_file:
       styles = style_file.read()
+
+    # Load Testrun logo to base64
     with open(test_run_img_file, 'rb') as f:
       logo = base64.b64encode(f.read()).decode('utf-8')
     json_data=self.to_json()
@@ -200,19 +218,26 @@ class TestReport():
     # Convert the timestamp strings to datetime objects
     start_time = datetime.strptime(json_data['started'], '%Y-%m-%d %H:%M:%S')
     end_time = datetime.strptime(json_data['finished'], '%Y-%m-%d %H:%M:%S')
+
     # Calculate the duration
     duration = end_time - start_time
 
+    # Calculate number of successful tests
     successful_tests = 0
     for test in json_data['tests']['results']:
       if test['result'] != 'Error':
         successful_tests += 1
 
+    # Obtain the steps to resolve
     steps_to_resolve = self._get_steps_to_resolve(json_data)
+
+    # Obtain optional recommendations
+    optional_steps_to_resolve = self._get_optional_steps_to_resolve(json_data)
 
     module_reports = self._get_module_pages()
     pages_num = self._pages_num(json_data)
     total_pages = pages_num + len(module_reports)
+
     if len(steps_to_resolve) > 0:
       total_pages += 1
 
@@ -228,6 +253,7 @@ class TestReport():
                            total_tests=self._total_tests,
                            test_results=json_data['tests']['results'],
                            steps_to_resolve=steps_to_resolve,
+                           optional_steps_to_resolve=optional_steps_to_resolve,
                            module_reports=module_reports,
                            pages_num=pages_num,
                            total_pages=total_pages,
@@ -280,6 +306,16 @@ class TestReport():
     # Collect all tests with recommendations
     for test in json_data['tests']['results']:
       if 'recommendations' in test:
+        tests_with_recommendations.append(test)
+
+    return tests_with_recommendations
+
+  def _get_optional_steps_to_resolve(self, json_data):
+    tests_with_recommendations = []
+
+    # Collect all tests with recommendations
+    for test in json_data['tests']['results']:
+      if 'optional_recommendations' in test:
         tests_with_recommendations.append(test)
 
     return tests_with_recommendations
