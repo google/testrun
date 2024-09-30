@@ -551,18 +551,24 @@ class TestrunSession():
 
           questions: list[dict] = json_data.get('questions')
 
+          # Store valid questions
+          valid_questions = []
+
           # Remove any additional (outdated questions from the profile)
           for question in questions:
 
             # Check if question exists in the profile format
             if self.get_profile_format_question(
-              question=question.get('question')) is None:
+              question=question.get('question')) is not None:
 
-              # Remove question from profile
-              questions.remove(question)
+              # Add the question to the valid_questions
+              valid_questions.append(question)
 
-          # Pass questions back to the risk profile
-          json_data['questions'] = questions
+            else:
+              LOGGER.debug(f'Removed unrecognised question: {question}')
+
+          # Pass only the valid questions to the risk profile
+          json_data['questions'] = valid_questions
 
           # Pass JSON to populate risk profile
           risk_profile.load(profile_json=json_data,
