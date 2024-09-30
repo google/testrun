@@ -178,8 +178,6 @@ class TestReport():
       if 'optional_recommendations' in test_result:
         test_case.optional_recommendations = test_result[
           'optional_recommendations']
-        print("Loaded optional test recommendations from json:")
-        print(test_case.optional_recommendations)
 
       self.add_test(test_case)
 

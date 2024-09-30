@@ -417,9 +417,7 @@ class TestrunSession():
               test_result.result = result.result
 
             # Copy any test recommendations to optional
-            print("Copying recommendations to optional recommendations")
             test_result.optional_recommendations = result.recommendations
-            print(test_result.optional_recommendations)
 
             # Remove recommendations from informational tests
             test_result.recommendations = None
