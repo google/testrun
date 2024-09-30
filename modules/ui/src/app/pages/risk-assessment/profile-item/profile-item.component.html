@@ -89,9 +89,9 @@ limitations under the License.
     mat-icon-button
     attr.aria-label="Delete {{ profile.name }}"
     matTooltip="Delete {{ profile.name }}"
-    (click)="deleteButtonClicked.emit(profile.name)"
-    (keydown.enter)="deleteButtonClicked.emit(profile.name)"
-    (keydown.space)="deleteButtonClicked.emit(profile.name)">
+    (click)="delete($event, profile.name)"
+    (keydown.enter)="delete($event, profile.name)"
+    (keydown.space)="delete($event, profile.name)">
     <mat-icon fontSet="material-symbols-outlined"> delete </mat-icon>
   </button>
 </div>
