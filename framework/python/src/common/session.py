@@ -42,6 +42,8 @@ CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 STATUS_TOPIC = 'status'
 
+MAKE_CONTROL_DIR =  'make/DEBIAN/control'
+
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
 PROFILES_DIR = 'local/risk_profiles'
 
@@ -252,9 +254,29 @@ class TestrunSession():
     else:
       LOGGER.debug('Failed getting the version from dpkg-query')
       # Try getting the version from the make control file
+
+      # Check if MAKE_CONTROL_DIR exists
+      if not os.path.exists(MAKE_CONTROL_DIR):
+        LOGGER.error('make/DEBIAN/control file path not found')
+        self._version = 'Unknown'
+        return
+
       try:
-        version = util.run_command(
-            '$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
+        # Run the grep command to find the version line
+        grep_cmd = util.run_command(f'grep -R "Version: " {MAKE_CONTROL_DIR}')
+
+        if grep_cmd[0] and len(grep_cmd[1]) == 0:
+          # Extract the version number from grep
+          version = grep_cmd[0].split()[1]
+          self._version = version
+          LOGGER.debug(f'Testrun version is: {self._version}')
+
+        else:
+          # Error handling if grep can't find the version line
+          self._version = 'Unknown'
+          LOGGER.debug(f'Testrun version is {self._version}')
+          raise Exception('Version line not found in make control file')
+
       except Exception as e: # pylint: disable=W0703
         LOGGER.debug('Failed getting the version from make control file')
         LOGGER.error(e)
