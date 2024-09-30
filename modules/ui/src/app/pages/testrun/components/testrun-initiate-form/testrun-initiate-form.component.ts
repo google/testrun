@@ -38,7 +38,7 @@ import {
 } from '@angular/forms';
 import { DeviceValidators } from '../../../devices/components/device-form/device.validators';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
-import { take } from 'rxjs';
+import { take, timer } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../../../store/state';
 import { selectDevices } from '../../../../store/selectors';
@@ -127,9 +127,11 @@ export class TestrunInitiateFormComponent
       this.changeDetectorRef.detectChanges();
     }
     if (this.setFirmwareFocus) {
-      this.firmwareInput?.nativeElement.focus();
-      this.setFirmwareFocus = false;
-      this.changeDetectorRef.detectChanges();
+      timer(100).subscribe(() => {
+        this.firmwareInput?.nativeElement.focus();
+        this.setFirmwareFocus = false;
+        this.changeDetectorRef.detectChanges();
+      });
     }
   }
 
