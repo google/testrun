@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
 import { TestrunInitiateFormComponent } from './testrun-initiate-form.component';
 import {
@@ -231,7 +236,7 @@ describe('ProgressInitiateFormComponent', () => {
         expect(buttonSpy).toHaveBeenCalled();
       });
 
-      it('should focus firmware', () => {
+      it('should focus firmware', fakeAsync(() => {
         component.selectedDevice = device;
         component.setFirmwareFocus = true;
         const firmwareSpy = spyOn(
@@ -240,9 +245,10 @@ describe('ProgressInitiateFormComponent', () => {
         );
         component.ngAfterViewChecked();
         fixture.detectChanges();
+        tick(100);
 
         expect(firmwareSpy).toHaveBeenCalled();
-      });
+      }));
     });
 
     it('should focus element on focusButton ', () => {
