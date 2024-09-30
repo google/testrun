@@ -343,7 +343,7 @@ describe('DevicesComponent', () => {
             device: device,
             testModules: MOCK_TEST_MODULES,
           },
-          autoFocus: true,
+          autoFocus: 'dialog',
           hasBackdrop: true,
           disableClose: true,
           panelClass: 'initiate-test-run-dialog',

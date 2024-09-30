@@ -854,6 +854,15 @@ describe('AppComponent', () => {
 
     expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
   });
+
+  it('should set focus to first focusable elem when close callout', fakeAsync(() => {
+    component.calloutClosed('mockId');
+    tick(100);
+
+    expect(
+      mockFocusManagerService.focusFirstElementInContainer
+    ).toHaveBeenCalled();
+  }));
 });
 
 @Component({

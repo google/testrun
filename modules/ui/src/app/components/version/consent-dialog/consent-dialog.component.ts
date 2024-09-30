@@ -26,6 +26,8 @@ import { CalloutType } from '../../../model/callout-type';
 import { NgIf } from '@angular/common';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
+import { FocusManagerService } from '../../../services/focus-manager.service';
+import { timer } from 'rxjs';
 
 type DialogData = {
   version: Version;
@@ -49,6 +51,7 @@ export class ConsentDialogComponent {
   public readonly CalloutType = CalloutType;
   optOut = false;
   constructor(
+    private readonly focusManagerService: FocusManagerService,
     public dialogRef: MatDialogRef<ConsentDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {}
@@ -59,5 +62,8 @@ export class ConsentDialogComponent {
       grant: !optOut,
     };
     this.dialogRef.close(dialogResult);
+    timer(100).subscribe(() => {
+      this.focusManagerService.focusFirstElementInContainer();
+    });
   }
 }

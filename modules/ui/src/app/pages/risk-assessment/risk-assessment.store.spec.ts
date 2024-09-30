@@ -128,33 +128,35 @@ describe('RiskAssessmentStore', () => {
       const mockFirstItem = document.createElement('section') as HTMLElement;
       const mockNullEL = window.document.querySelector(`.mock`) as HTMLElement;
 
-      it('should set focus to the next profile item when available', () => {
+      it('should set focus to the next profile item when available', fakeAsync(() => {
         const mockData = {
           nextItem: mockNextItem,
           firstItem: mockFirstItem,
         };
 
         riskAssessmentStore.setFocus(mockData);
+        tick(100);
 
         expect(
           mockFocusManagerService.focusFirstElementInContainer
         ).toHaveBeenCalledWith(mockNextItem);
-      });
+      }));
 
-      it('should set focus to the first profile item when available and no next item', () => {
+      it('should set focus to the first profile item when available and no next item', fakeAsync(() => {
         const mockData = {
           nextItem: mockNullEL,
           firstItem: mockFirstItem,
         };
 
         riskAssessmentStore.setFocus(mockData);
+        tick(100);
 
         expect(
           mockFocusManagerService.focusFirstElementInContainer
         ).toHaveBeenCalledWith(mockFirstItem);
-      });
+      }));
 
-      it('should set focus to the first element in the main when no items', () => {
+      it('should set focus to the first element in the main when no items', fakeAsync(() => {
         const mockData = {
           nextItem: mockNullEL,
           firstItem: mockFirstItem,
@@ -164,11 +166,12 @@ describe('RiskAssessmentStore', () => {
         store.refreshState();
 
         riskAssessmentStore.setFocus(mockData);
+        tick(100);
 
         expect(
           mockFocusManagerService.focusFirstElementInContainer
         ).toHaveBeenCalledWith();
-      });
+      }));
     });
 
     describe('setFocusOnCreateButton', () => {

@@ -87,4 +87,9 @@ export class ProfileItemComponent {
   getProfileItemLabel(profile: Profile) {
     return `${profile.status} ${profile.risk} risk ${profile.name} ${this.datePipe.transform(profile.created, 'dd MMM yyyy')}`;
   }
+
+  delete(event: Event, name: string) {
+    event.preventDefault();
+    this.deleteButtonClicked.emit(name);
+  }
 }

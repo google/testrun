@@ -18,10 +18,11 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  ViewContainerRef,
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Profile, ProfileStatus } from '../../model/profile';
@@ -43,7 +44,8 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   constructor(
     private store: RiskAssessmentStore,
     public dialog: MatDialog,
-    private liveAnnouncer: LiveAnnouncer
+    private liveAnnouncer: LiveAnnouncer,
+    public element: ViewContainerRef
   ) {}
 
   ngOnInit() {
@@ -95,15 +97,13 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     selectedProfile: Profile | null
   ): void {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: 'Delete risk profile',
       data: {
         title: 'Delete risk profile?',
         content: `You are about to delete ${profileName}. Are you sure?`,
       },
-      autoFocus: true,
+      autoFocus: 'dialog',
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
     });
 
     dialogRef
@@ -114,13 +114,18 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
           this.store.deleteProfile(profileName);
           this.closeFormAfterDelete(profileName, selectedProfile);
           this.setFocus(index);
+        } else {
+          this.store.setFocusOnSelectedProfile();
         }
       });
   }
 
   saveProfileClicked(profile: Profile, selectedProfile: Profile | null): void {
-    if (!selectedProfile || this.compareProfiles(profile, selectedProfile)) {
+    this.liveAnnouncer.clear();
+    if (!selectedProfile) {
       this.saveProfile(profile, this.store.setFocusOnCreateButton);
+    } else if (this.compareProfiles(profile, selectedProfile)) {
+      this.saveProfile(profile, this.store.setFocusOnSelectedProfile);
     } else {
       this.openSaveDialog(
         selectedProfile.name,
@@ -140,8 +145,8 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       return false;
     }
     if (
-      profile1.rename === profile1.name &&
-      profile1.rename !== profile2.name
+      profile1.rename &&
+      (profile1.rename !== profile1.name || profile1.rename !== profile2.name)
     ) {
       return false;
     }
@@ -180,10 +185,13 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   }
 
   discard(selectedProfile: Profile | null) {
+    this.liveAnnouncer.clear();
     this.isOpenProfileForm = false;
     if (selectedProfile) {
-      this.store.setFocusOnSelectedProfile();
-      this.store.updateSelectedProfile(null);
+      timer(100).subscribe(() => {
+        this.store.setFocusOnSelectedProfile();
+        this.store.updateSelectedProfile(null);
+      });
     } else {
       this.store.setFocusOnCreateButton();
     }
@@ -230,15 +238,13 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     draft: boolean = false
   ): Observable<boolean> {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: `Save ${draft ? 'draft profile' : 'profile'}`,
       data: {
         title: `Save ${draft ? 'draft profile' : 'profile'}`,
         content: `You are about to save changes in ${profileName}. Are you sure?`,
       },
-      autoFocus: true,
+      autoFocus: 'dialog',
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
     });
 
     return dialogRef?.afterClosed();
