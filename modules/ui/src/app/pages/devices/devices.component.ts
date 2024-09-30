@@ -104,7 +104,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
         device: selectedDevice,
         testModules,
       },
-      autoFocus: true,
+      autoFocus: 'dialog',
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'initiate-test-run-dialog',
