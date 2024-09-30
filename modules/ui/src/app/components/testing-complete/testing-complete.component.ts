@@ -61,12 +61,16 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe(profile => {
         if (profile === undefined) {
-          this.focusManagerService.focusFirstElementInContainer();
+          timer(1000)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+              this.focusManagerService.focusFirstElementInContainer();
+            });
           return;
         }
         if (profile === null) {
           this.route.navigate([Routes.RiskAssessment]).then(() =>
-            timer(100)
+            timer(1000)
               .pipe(takeUntil(this.destroy$))
               .subscribe(() => {
                 this.focusManagerService.focusFirstElementInContainer();

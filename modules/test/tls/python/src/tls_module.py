@@ -353,9 +353,6 @@ class TLSModule(TestModule):
     result_tags = []
 
     if client_results[0] is not None:
-      # Tag for a VSA requirement if there are any connections
-      # detected regardless of validity
-      result_tags.append('VSA')
       result_details = client_results[1]
       if client_results[0]:
         result_state = True
