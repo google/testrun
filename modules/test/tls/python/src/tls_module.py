@@ -287,18 +287,17 @@ class TLSModule(TestModule):
       if any(state is True for state in states):
         # If any state is True, return True
         result_state = True
-      elif all(state == 'Feature not Detected' for state in states):
+        result_message = 'TLS 1.0 or higher detected'
+      elif all(state == 'Feature Not Detected' for state in states):
         # If all states are "Feature not Detected"
-        result_state = 'Feature not Detected'
+        result_state = 'Feature Not Detected'
+        result_message = tls_1_0_valid[1]
       elif all(state == 'Error' for state in states):
         # If all states are "Error"
         result_state = 'Error'
+        result_message = ''
       else:
         result_state = False
-      LOGGER.info(f'Result State: {result_state}')
-      if result_state:
-        result_message = 'TLS 1.0 or higher detected'
-      else:
         result_message = 'TLS 1.0 or higher was not detected'
       result_details = tls_1_0_valid[2] + tls_1_1_valid[2] + tls_1_2_valid[
           2] + tls_1_3_valid[2]
