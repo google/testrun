@@ -230,7 +230,9 @@ limitations under the License.
             mat-row
             #rowElement
             [class.report-selected]="rowElement === vm.selectedRow"
-            (click)="selectRow(rowElement)"></tr>
+            (click)="selectRow(rowElement)"
+            (keydown.enter)="selectRow(rowElement)"
+            (keydown.space)="selectRow(rowElement)"></tr>
         </table>
       </div>
     </ng-container>
