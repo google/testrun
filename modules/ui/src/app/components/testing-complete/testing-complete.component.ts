@@ -35,7 +35,9 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
   ) {}
 
   ngOnInit() {
-    this.openTestingCompleteModal();
+    timer(1000).subscribe(() => {
+      this.openTestingCompleteModal();
+    });
   }
   ngOnDestroy() {
     this.destroy$.next(true);
@@ -50,7 +52,8 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
         testrunStatus: this.data,
         isTestingComplete: true,
       },
-      autoFocus: true,
+      autoFocus: 'first-tabbable',
+      ariaDescribedBy: 'testing-result-main-info',
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'initiate-test-run-dialog',
