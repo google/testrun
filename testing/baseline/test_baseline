@@ -22,8 +22,6 @@ ifconfig
 sudo apt-get update
 sudo apt-get install openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils isc-dhcp-client
 
-pip3 install pytest==7.4.4
-
 # Setup device network
 sudo ip link add dev endev0a type veth peer name endev0b
 sudo ip link set dev endev0a up
@@ -74,6 +72,11 @@ echo "Done baseline test"
 
 more $TESTRUN_OUT
 
-pytest testing/baseline/test_baseline.py
+# Needs to be sudo because this invokes bin/testrun 
+sudo venv/bin/python3 -m pytest -v testing/baseline/test_baseline.py
+
+# Clean the device network
+sudo ip link del dev endev0a
+sudo docker network rm endev0
 
 exit $?
