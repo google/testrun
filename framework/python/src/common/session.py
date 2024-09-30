@@ -416,6 +416,7 @@ class TestrunSession():
         if len(result.description) != 0:
           test_result.description = result.description
 
+        # Add recommendations if provided
         if result.recommendations is not None:
           test_result.recommendations = result.recommendations
 
@@ -426,7 +427,19 @@ class TestrunSession():
 
           # Any informational test should always report informational
           if test_result.required_result == 'Informational':
-            test_result.result = TestResult.INFORMATIONAL
+
+            # Set test result to informational
+            if result.result in [
+              TestResult.NON_COMPLIANT,
+              TestResult.COMPLIANT,
+              TestResult.INFORMATIONAL
+            ]:
+              test_result.result = TestResult.INFORMATIONAL
+            else:
+              test_result.result = result.result
+
+            # Copy any test recommendations to optional
+            test_result.optional_recommendations = result.recommendations
 
             # Remove recommendations from informational tests
             test_result.recommendations = None
