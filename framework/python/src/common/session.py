@@ -549,26 +549,11 @@ class TestrunSession():
           # Instantiate a new risk profile
           risk_profile: RiskProfile = RiskProfile()
 
+          # Assign the profile questions
           questions: list[dict] = json_data.get('questions')
 
-          # Store valid questions
-          valid_questions = []
-
-          # Remove any additional (outdated questions from the profile)
-          for question in questions:
-
-            # Check if question exists in the profile format
-            if self.get_profile_format_question(
-              question=question.get('question')) is not None:
-
-              # Add the question to the valid_questions
-              valid_questions.append(question)
-
-            else:
-              LOGGER.debug(f'Removed unrecognised question: {question}')
-
           # Pass only the valid questions to the risk profile
-          json_data['questions'] = valid_questions
+          json_data['questions'] = self._remove_invalid_questions(questions)
 
           # Pass JSON to populate risk profile
           risk_profile.load(profile_json=json_data,
@@ -616,6 +601,12 @@ class TestrunSession():
     profile_json['version'] = self.get_version()
     profile_json['created'] = datetime.datetime.now().strftime('%Y-%m-%d')
 
+    # Assign the profile questions
+    questions: list[dict] = profile_json.get('questions')
+
+    # Pass only the valid questions to the risk profile
+    profile_json['questions'] = self._remove_invalid_questions(questions)
+
     # Check if profile already exists
     risk_profile = self.get_profile(profile_name)
     if risk_profile is None:
@@ -644,6 +635,28 @@ class TestrunSession():
       f.write(risk_profile.to_json(pretty=True))
 
     return risk_profile
+
+  def _remove_invalid_questions(self, questions: list[dict]) -> list[dict]:
+    """Remove unrecognised questions from the profile"""
+
+    # Store valid questions
+    valid_questions = []
+
+    # Remove any additional (outdated questions from the profile)
+    for question in questions:
+
+      # Check if question exists in the profile format
+      if self.get_profile_format_question(
+        question=question['question']) is not None:
+
+        # Add the question to the valid_questions
+        valid_questions.append(question)
+
+      else:
+        LOGGER.debug(f'Removed unrecognised question: {question["question"]}')
+
+    # Return the list of valid questions
+    return valid_questions
 
   def validate_profile_json(self, profile_json):
     """Validate properties in profile update requests"""
@@ -681,12 +694,12 @@ class TestrunSession():
         LOGGER.error('A question is missing from "question" field')
         return False
 
-      # Check if question is a recognized question
+      # Check if question is a recognised question
       format_q = self.get_profile_format_question(
         question.get('question'))
 
       if format_q is None:
-        LOGGER.error(f'Unrecognized question: {question.get("question")}')
+        LOGGER.error(f'Unrecognised question: {question.get("question")}')
         # Just ignore additional questions
         continue
 
