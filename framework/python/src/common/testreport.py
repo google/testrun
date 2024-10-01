@@ -217,7 +217,7 @@ class TestReport():
     # Icons
     with open(qualification_icon, 'rb') as f:
       icon_qualification = base64.b64encode(f.read()).decode('utf-8')
-    with open(qualification_icon, 'rb') as f:
+    with open(pilot_icon, 'rb') as f:
       icon_pilot = base64.b64encode(f.read()).decode('utf-8')
 
     # Convert the timestamp strings to datetime objects
@@ -243,6 +243,10 @@ class TestReport():
     pages_num = self._pages_num(json_data)
     total_pages = pages_num + len(module_reports) + 1
     if len(steps_to_resolve) > 0:
+      total_pages += 1
+    if (len(optional_steps_to_resolve) > 0
+        and json_data['device']['test_pack'] == 'Pilot Assessment'
+        ):
       total_pages += 1
 
     return template.render(styles=styles,
