@@ -516,6 +516,7 @@ class TLSModuleTest(unittest.TestCase):
   def download_public_cert(self, hostname, port=443):
     # Set up an SSL context to connect securely
     context = ssl.create_default_context()
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
 
     # Establish a connection to the server
     with socket.create_connection((hostname, port)) as sock:
