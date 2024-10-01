@@ -236,8 +236,7 @@ class TLSUtil():
     ca_issuer_cert, cert_file_path = self.get_ca_issuer(certificate)
     if ca_issuer_cert is not None and cert_file_path is not None:
       LOGGER.info('CA Issuer resolved')
-      cert_text = crypto.dump_certificate(crypto.FILETYPE_TEXT,
-                                          ca_issuer_cert).decode()
+      cert_text = ca_issuer_cert.public_bytes(encoding=serialization.Encoding.PEM).decode()
       LOGGER.info(cert_text)
       return self.validate_trusted_ca_signature_chain(
           device_cert_path=device_cert_path,

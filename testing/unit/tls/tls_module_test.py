@@ -24,6 +24,9 @@ import ssl
 import shutil
 import logging
 import socket
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 
 MODULE = 'tls'
 # Define the file paths
@@ -476,6 +479,7 @@ class TLSModuleTest(unittest.TestCase):
 
   def tls_module_trusted_ca_cert_chain_test(self):
     print('\ntls_module_trusted_ca_cert_chain_test')
+    self.download_public_cert('google.com')
     cert_path = os.path.join(CERT_DIR, '_.google.com.crt')
     cert_valid = TLS_UTIL.validate_cert_chain(device_cert_path=cert_path)
     self.assertEqual(cert_valid, True)
@@ -510,6 +514,26 @@ class TLSModuleTest(unittest.TestCase):
       device_cert_path=cert_path)
     self.assertEqual(cert_valid[0], True)
 
+  def download_public_cert(self, hostname, port=443):
+      # Set up an SSL context to connect securely
+      context = ssl.create_default_context()
+
+      # Establish a connection to the server
+      with socket.create_connection((hostname, port)) as sock:
+          with context.wrap_socket(sock, server_hostname=hostname) as ssock:
+              # Get the server certificate in DER format
+              der_cert = ssock.getpeercert(binary_form=True)
+
+      # Load the certificate using cryptography's x509 module
+      cert = x509.load_der_x509_certificate(der_cert, backend=default_backend())
+
+      # Convert the certificate to PEM format
+      pem_cert = cert.public_bytes(encoding=serialization.Encoding.PEM)
+
+      # Write the PEM certificate to a file
+      cert_path = os.path.join(CERT_DIR, '_.google.com.crt')
+      with open(cert_path, 'w') as cert_file:
+        cert_file.write(pem_cert.decode())
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
