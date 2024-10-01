@@ -24,6 +24,7 @@ import ssl
 import shutil
 import logging
 import socket
+import sys
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -576,9 +577,9 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
 
   runner = unittest.TextTestRunner()
-  result = runner.run(suite)
+  test_result = runner.run(suite)
 
   # Check if the tests failed and exit with the appropriate code
-  if not result.wasSuccessful():
-      exit(1)  # Return a non-zero exit code for failures
-  exit(0)  # Return zero for success
+  if not test_result.wasSuccessful():
+    sys.exit(1)  # Return a non-zero exit code for failures
+  sys.exit(0)  # Return zero for success

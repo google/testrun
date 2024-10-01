@@ -15,6 +15,7 @@
 from services_module import ServicesModule
 import unittest
 import os
+import sys
 import shutil
 # from testreport import TestReport
 
@@ -98,9 +99,10 @@ if __name__ == '__main__':
   suite.addTest(ServicesTest('services_module_report_all_closed_test'))
 
   runner = unittest.TextTestRunner()
-  result = runner.run(suite)
+  test_result = runner.run(suite)
 
   # Check if the tests failed and exit with the appropriate code
-  if not result.wasSuccessful():
-      exit(1)  # Return a non-zero exit code for failures
-  exit(0)  # Return zero for success
+  if not test_result.wasSuccessful():
+    sys.exit(1)  # Return a non-zero exit code for failures
+  sys.exit(0)  # Return zero for success
+  
