@@ -21,7 +21,7 @@ from common.statuses import TestrunStatus
 import base64
 import os
 from test_orc.test_case import TestCase
-from jinja2 import Template, BaseLoader, Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader
 from collections import OrderedDict
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
