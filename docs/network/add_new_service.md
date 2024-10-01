@@ -1,3 +1,5 @@
+<img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
+
 # Add a new network service
 
 The Testrun framework allows you to easily add your own network services. You can use the template network service at [modules/network/template](https://github.com/google/testrun/blob/main/modules/network/template). To add a new network service, follow these steps: 
