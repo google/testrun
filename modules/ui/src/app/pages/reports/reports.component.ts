@@ -28,7 +28,7 @@ import {
 } from '../../model/testrun-status';
 import { DatePipe } from '@angular/common';
 import { MatSort, Sort } from '@angular/material/sort';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, timer } from 'rxjs';
 import { MatRow } from '@angular/material/table';
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -152,13 +152,17 @@ export class ReportsComponent implements OnInit, OnDestroy {
       '.report-selected + tr a'
     ) as HTMLButtonElement;
     if (next) {
-      next.focus();
+      timer(50).subscribe(() => {
+        next.focus();
+      });
     } else {
       // If next interactive element doest not exist, add menu reports button should be focused
       const menuButton = window.document.querySelector(
         '.app-sidebar-button-reports'
       ) as HTMLButtonElement;
-      menuButton?.focus();
+      timer(50).subscribe(() => {
+        menuButton?.focus();
+      });
     }
   }
 
