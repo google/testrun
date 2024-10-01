@@ -43,11 +43,18 @@ run_test() {
   # Add the container image and entry point
   DOCKER_CMD="$DOCKER_CMD testrun/${MODULE_NAME}-test $UNIT_TEST_FILE_DST"
   
-  echo "Docker CMD: $DOCKER_CMD"
+  # Temporarily disable 'set -e' to capture exit code
+  set +e
 
   # Execute the Docker command
   echo "Running test for ${MODULE_NAME}..."
   eval $DOCKER_CMD
+
+  # Capture the exit code
+  local exit_code=$?
+
+  # Return the captured exit code to the caller
+  return $exit_code
 }
 
 # Check if the script received any arguments
@@ -58,3 +65,16 @@ fi
 
 # Call the run_test function with the provided arguments
 run_test "$@"
+
+# Capture the exit code from the run_test function
+exit_code=$?
+
+# If the exit code is not zero, print an error message
+if [ $exit_code -ne 0 ]; then
+    echo "Tests failed with exit code $exit_code"
+else
+    echo "All tests passed successfully."
+fi
+
+# Exit with the captured exit code
+exit $exit_code
