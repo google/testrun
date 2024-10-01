@@ -29,7 +29,7 @@ import {
 } from '../../../model/profile';
 import { MatIcon } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { TestRunService } from '../../../services/test-run.service';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
@@ -38,7 +38,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
   selector: 'app-profile-item',
   standalone: true,
   imports: [MatIcon, MatButtonModule, CommonModule, MatTooltipModule],
-  providers: [MatTooltip],
+  providers: [MatTooltip, DatePipe],
   templateUrl: './profile-item.component.html',
   styleUrl: './profile-item.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,7 +63,8 @@ export class ProfileItemComponent {
 
   constructor(
     private readonly testRunService: TestRunService,
-    private liveAnnouncer: LiveAnnouncer
+    private liveAnnouncer: LiveAnnouncer,
+    private datePipe: DatePipe
   ) {}
 
   public getRiskClass(riskResult: string): RiskResultClassName {
@@ -81,5 +82,14 @@ export class ProfileItemComponent {
     } else {
       this.profileClicked.emit(profile);
     }
+  }
+
+  getProfileItemLabel(profile: Profile) {
+    return `${profile.status} ${profile.risk} risk ${profile.name} ${this.datePipe.transform(profile.created, 'dd MMM yyyy')}`;
+  }
+
+  delete(event: Event, name: string) {
+    event.preventDefault();
+    this.deleteButtonClicked.emit(name);
   }
 }

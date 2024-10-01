@@ -5,7 +5,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { TestRunService } from '../../services/test-run.service';
 import { Router } from '@angular/router';
@@ -13,6 +13,7 @@ import { DownloadZipModalComponent } from '../download-zip-modal/download-zip-mo
 import { Routes } from '../../model/routes';
 import { Profile } from '../../model/profile';
 import { TestrunStatus } from '../../model/testrun-status';
+import { FocusManagerService } from '../../services/focus-manager.service';
 
 @Component({
   selector: 'app-testing-complete',
@@ -29,11 +30,14 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
   constructor(
     public dialog: MatDialog,
     private testrunService: TestRunService,
-    private route: Router
+    private route: Router,
+    private focusManagerService: FocusManagerService
   ) {}
 
   ngOnInit() {
-    this.openTestingCompleteModal();
+    timer(1000).subscribe(() => {
+      this.openTestingCompleteModal();
+    });
   }
   ngOnDestroy() {
     this.destroy$.next(true);
@@ -48,7 +52,8 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
         testrunStatus: this.data,
         isTestingComplete: true,
       },
-      autoFocus: true,
+      autoFocus: 'first-tabbable',
+      ariaDescribedBy: 'testing-result-main-info',
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'initiate-test-run-dialog',
@@ -59,10 +64,21 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe(profile => {
         if (profile === undefined) {
+          timer(1000)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+              this.focusManagerService.focusFirstElementInContainer();
+            });
           return;
         }
         if (profile === null) {
-          this.route.navigate([Routes.RiskAssessment]);
+          this.route.navigate([Routes.RiskAssessment]).then(() =>
+            timer(1000)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe(() => {
+                this.focusManagerService.focusFirstElementInContainer();
+              })
+          );
         } else if (this.data?.report != null) {
           this.testrunService.downloadZip(
             this.getZipLink(this.data?.report),

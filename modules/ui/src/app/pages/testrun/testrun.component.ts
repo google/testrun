@@ -98,6 +98,9 @@ export class TestrunComponent implements OnInit, OnDestroy {
       .subscribe(stopTestrun => {
         if (stopTestrun) {
           this.stopTestrun();
+          timer(100).subscribe(() => {
+            this.focusManagerService.focusFirstElementInContainer();
+          });
         }
       });
   }

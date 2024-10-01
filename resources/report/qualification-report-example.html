@@ -1,0 +1,898 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testrun Report</title>
+  <link rel="stylesheet" type="text/css" href="test_report_styles.css" />
+</head>
+  
+<body>
+  <div class="page">
+    
+    <div class="header first-page">
+      <div class="header-info">
+        <!-- Badge -->
+        <!-- if pilot assessment-->
+<!--        <p class="header-info-badge">-->
+<!--          <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGtSURBVHgBjVI9TgJREB4NNRdgC01s3EJjhYXGRiz4aaQQpFETiZWagNoTG7WQ1RrWRi2AA8DSAwdAD7DrAVgO8NxvyGyWRSJf8vJm5r35+WZmSXmgBeG6Y+oPBuQ4jie7pGkaRRZxdJwfMs03arZaHEQQjUaJ1D+o1U21sbmlVlbX1FG+oNrtjrJtW5XKt2yLhEvsWBZpsRjpuk6G8UJ1L7Our9PT4wPfgrFHAXokWGb+uMB3EGenJ5RI7HNglKxpMbb3+wNKHCQmFGzbUTu7e1wqSpTyKpV7foOMk0xlmFaj2WK93bYUiTMMw+GXHwxHgksA2MLv9Fw1pj7kcgWW8VHQaLTUefGCExS9G++9Xn8SQLLgk1QipYZRvrnj96qXVDAzRqmo7PVBgARSWSlgB2bGeH11ybJhvPKNbaub5tQCTSG8LMg8Grkq2BssEDgnU2m/eT4F6TJ4y/gQEBB9OPzmBiJJuD8kM0UGCYb5A3CCjs7DWcYYxLLVsZiKZXUplc6wnM0e8o1V3Y7HvS3s8hZ+frz7m+gDvMJcg4D+V2afQq1m8ic0bh7mOQO/OPVTIwsGopoAAAAASUVORK5CYII=" alt="">-->
+<!--          <span>Pilot Assessment</span>-->
+<!--        </p>-->
+        <!-- if device qualification-->
+         <p class="header-info-badge">
+         <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFBSURBVHgBlVPtUcJAEH0LKYASVgP/LQErkA4MFQQrYOwAO4glWAGxA/ytTq6EFMCw7t1e0JCYIW8mcx/Z927f7R4x8wxIMgA6Xgtxzn0XfpaAkr2OdxgFAnMKL5JEcg2hJ4yDswxMsXbus7iGZZaD3dqvJxiBQPaWKan07M0ogTPZLB+A465XgA2zQbIc77UMXQueCZr6FPeNyBC5I6A/HATvIdhEeIjca0Frm0HkNYpUl2Tm+ZJv0kr7IN6BiNPOavmOIi9hISjbJxPHL6x9H7zplwPTlY7FHxFfpg06kIc4KaOFiZEI2+B5AHy7yDVuZW/hywS0Aw+WLoUK/CfCafqocTtLgtbNPp0D/KUQ5bZLBU7yYT5Fywif9tLIsm5eYkvARBYZ6LS1S7q0Hjw/N6n3CvwKzZew8sVHQ2Ww2oMffu6VgcZObX4AAAAASUVORK5CYII=" alt="">
+         <span>Device Qualification</span>
+         </p>
+        <h1>Testrun report</h1>
+      </div>
+      <h2 style="top: 50%;max-width:700px">
+        dell
+        wyse
+      </h2>
+       
+      <img src="data:image/png;base64, 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" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+    </div>
+    
+    <div class="summary-content">
+      <div class="device-information">
+        <div style="padding-right:0.1in;">
+          <div class="summary-item-label"><h4>Manufacturer</h4></div>
+          <div class="summary-item-value">dell</div>
+          <div class="summary-item-space"></div>
+          <div class="summary-item-label"><h4>Model</h4></div>
+          <div class="summary-item-value">wyse</div>
+          <div class="summary-item-space"></div>
+          <div class="summary-item-label"><h4>Firmware</h4></div>
+          <div class="summary-item-value">123</div>
+          <div class="summary-item-space"></div>
+          <div class="summary-item-label"><h4>MAC Address</h4></div>
+          <div class="summary-item-value">f0:d4:e2:f2:f5:41</div>
+        </div>
+      </div>
+        <div class="summary-device-modules">
+          <div class="summary-item-label" style="margin-bottom:10px;">
+            <h4>Device Configuration</h4>
+          </div>
+          
+          <div class="summary-device-module-label">
+            
+            <span style="color:#34a853">✔ </span>
+            
+            Protocol
+          </div>
+          
+          <div class="summary-device-module-label">
+            
+            <span style="color:#34a853">✔ </span>
+            
+            Connection
+          </div>
+          
+          <div class="summary-device-module-label">
+            
+            <span style="color:#34a853">✔ </span>
+            
+            TLS
+          </div>
+          
+          <div class="summary-device-module-label">
+            
+            <span style="color:#34a853">✔ </span>
+            
+            DNS
+          </div>
+          
+          <div class="summary-device-module-label">
+            
+            <span style="color:#34a853">✔ </span>
+            
+            Services
+          </div>
+          
+          <div class="summary-device-module-label">
+            
+            <span style="color:#34a853">✔ </span>
+            
+            NTP
+          </div>
+          
+        </div>
+        
+        <div class ="summary-color-box summary-box-non-compliant">
+        
+          <div class="summary-box-label">Test Status</div>
+          <div class="summary-box-value">Complete</div>
+          <div class="summary-box-label">Test Result</div>
+          <div style="color: white; font-size:24px; font-weight: 700;" class="summary-box-value">Non-Compliant</div>
+          <div class="summary-box-label">Started</div>
+          <div class="summary-box-value">2024-09-17 15:16:21</div>
+          <div class="summary-box-label">Duration</div>
+          <div class="summary-box-value">0:11:08</div>
+      </div>
+    </div>
+    
+      
+        
+        
+      
+      <div class="result-list">
+        <h3>Results List <small>(35/41)</small></h3>
+        <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
+          <div class="result-list-header-label" style="left: .1in">Name</div>
+          <div class="result-list-header-label" style="left: 2.8in">Description</div>
+          <div class="result-list-header-label" style="left: 7.3in">Result</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">protocol.valid_bacnet</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">BACnet device could not be discovered</div>
+          
+            <div class="result-test-label result-test-result result-test-result-feature-not-detected">
+          
+          Feature Not Detected</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">protocol.bacnet.version</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device did not respond to BACnet discovery</div>
+          
+            <div class="result-test-label result-test-result result-test-result-feature-not-detected">
+          
+          Feature Not Detected</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">protocol.valid_modbus</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device did not respond to Modbus connection</div>
+          
+            <div class="result-test-label result-test-result result-test-result-feature-not-detected">
+          
+          Feature Not Detected</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.port_link</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Port stats not available</div>
+          
+            <div class="result-test-label result-test-result result-test-result-error">
+          
+          Error</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.port_speed</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Interface not configured for auto-negotiation</div>
+          
+            <div class="result-test-label result-test-result result-test-result-non-compliant">
+          
+          Non-Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.port_duplex</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Interface not configured for auto-negotiation</div>
+          
+            <div class="result-test-label result-test-result result-test-result-non-compliant">
+          
+          Non-Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.switch.arp_inspection</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device uses ARP</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.switch.dhcp_snooping</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device does not act as a DHCP server</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.dhcp_address</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device responded to leased ip address</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.mac_address</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">MAC address found: f0:d4:e2:f2:f5:41</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.mac_oui</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">OUI Manufacturer found: Dell Inc.</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+      </div>
+      <div class="footer">
+        <div class="footer-label">Testrun 2.0-a</div>
+        <div class="footer-label" style="right: 0px">Page 1/7</div>
+      </div>
+    </div>
+    <div style="break-after:page"></div>
+  
+  
+  <div class="page">
+    
+    <div class="header" style="border-bottom:1px solid #DADCE0">
+      <div class="header-info">
+        <!-- Badge -->
+        <!-- if pilot assessment-->
+<!--        <p class="header-info-badge">-->
+<!--          <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGtSURBVHgBjVI9TgJREB4NNRdgC01s3EJjhYXGRiz4aaQQpFETiZWagNoTG7WQ1RrWRi2AA8DSAwdAD7DrAVgO8NxvyGyWRSJf8vJm5r35+WZmSXmgBeG6Y+oPBuQ4jie7pGkaRRZxdJwfMs03arZaHEQQjUaJ1D+o1U21sbmlVlbX1FG+oNrtjrJtW5XKt2yLhEvsWBZpsRjpuk6G8UJ1L7Our9PT4wPfgrFHAXokWGb+uMB3EGenJ5RI7HNglKxpMbb3+wNKHCQmFGzbUTu7e1wqSpTyKpV7foOMk0xlmFaj2WK93bYUiTMMw+GXHwxHgksA2MLv9Fw1pj7kcgWW8VHQaLTUefGCExS9G++9Xn8SQLLgk1QipYZRvrnj96qXVDAzRqmo7PVBgARSWSlgB2bGeH11ybJhvPKNbaub5tQCTSG8LMg8Grkq2BssEDgnU2m/eT4F6TJ4y/gQEBB9OPzmBiJJuD8kM0UGCYb5A3CCjs7DWcYYxLLVsZiKZXUplc6wnM0e8o1V3Y7HvS3s8hZ+frz7m+gDvMJcg4D+V2afQq1m8ic0bh7mOQO/OPVTIwsGopoAAAAASUVORK5CYII=" alt="">-->
+<!--          <span>Pilot Assessment</span>-->
+<!--        </p>-->
+        <!-- if device qualification-->
+         <p class="header-info-badge">
+           <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFBSURBVHgBlVPtUcJAEH0LKYASVgP/LQErkA4MFQQrYOwAO4glWAGxA/ytTq6EFMCw7t1e0JCYIW8mcx/Z927f7R4x8wxIMgA6Xgtxzn0XfpaAkr2OdxgFAnMKL5JEcg2hJ4yDswxMsXbus7iGZZaD3dqvJxiBQPaWKan07M0ogTPZLB+A465XgA2zQbIc77UMXQueCZr6FPeNyBC5I6A/HATvIdhEeIjca0Frm0HkNYpUl2Tm+ZJv0kr7IN6BiNPOavmOIi9hISjbJxPHL6x9H7zplwPTlY7FHxFfpg06kIc4KaOFiZEI2+B5AHy7yDVuZW/hywS0Aw+WLoUK/CfCafqocTtLgtbNPp0D/KUQ5bZLBU7yYT5Fywif9tLIsm5eYkvARBYZ6LS1S7q0Hjw/N6n3CvwKzZew8sVHQ2Ww2oMffu6VgcZObX4AAAAASUVORK5CYII=" alt="">
+           <span>Device Qualification</span>
+         </p>
+        <h1>Testrun report</h1>
+      </div>
+      <h3 style="margin-top:0;max-width:700px"> 
+        dell
+        wyse
+      </h3>
+       
+      <img src="data:image/png;base64, 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" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+    </div>
+    
+      
+        
+        
+      
+      <div class="result-list">
+        <h3>Results List <small>(35/41)</small></h3>
+        <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
+          <div class="result-list-header-label" style="left: .1in">Name</div>
+          <div class="result-list-header-label" style="left: 2.8in">Description</div>
+          <div class="result-list-header-label" style="left: 7.3in">Result</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.private_address</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">All subnets are supported</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.shared_address</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">All subnets are supported</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.dhcp_disconnect</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device received a DHCP lease after disconnect</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.dhcp_disconnect_ip_change</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device received expected IP address after disconnect</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.single_ip</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device is using a single IP address</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.target_ping</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device responds to ping</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.ipaddr.ip_change</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device has accepted an IP address change</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.ipaddr.dhcp_failover</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device has no current DHCP lease</div>
+          
+            <div class="result-test-label result-test-result result-test-result-error">
+          
+          Error</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.ipv6_slaac</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device has formed SLAAC address fd10:77be:4186:0:f2d4:e2ff:fef2:f541</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">connection.ipv6_ping</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device responds to IPv6 ping on fd10:77be:4186:0:f2d4:e2ff:fef2:f541</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.tls.v1_2_server</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Could not resolve device IP address</div>
+          
+            <div class="result-test-label result-test-result result-test-result-error">
+          
+          Error</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.tls.v1_2_client</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Could not resolve device IP address</div>
+          
+            <div class="result-test-label result-test-result result-test-result-error">
+          
+          Error</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.tls.v1_3_server</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Could not resolve device IP address</div>
+          
+            <div class="result-test-label result-test-result result-test-result-error">
+          
+          Error</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.tls.v1_3_client</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Could not resolve device IP address</div>
+          
+            <div class="result-test-label result-test-result result-test-result-error">
+          
+          Error</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">dns.network.hostname_resolution</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No DNS traffic detected from the device</div>
+          
+            <div class="result-test-label result-test-result result-test-result-non-compliant">
+          
+          Non-Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">dns.network.from_dhcp</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No DNS traffic detected from the device</div>
+          
+            <div class="result-test-label result-test-result result-test-result-informational">
+          
+          Informational</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">dns.mdns</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No MDNS traffic detected from the device</div>
+          
+            <div class="result-test-label result-test-result result-test-result-informational">
+          
+          Informational</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.services.ftp</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No FTP server found</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.ssh.version</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No SSH server found</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.services.telnet</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No telnet server found</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+      </div>
+      <div class="footer">
+        <div class="footer-label">Testrun 2.0-a</div>
+        <div class="footer-label" style="right: 0px">Page 2/7</div>
+      </div>
+    </div>
+    <div style="break-after:page"></div>
+  
+  
+  <div class="page">
+    
+    <div class="header" style="border-bottom:1px solid #DADCE0">
+      <div class="header-info">
+        <!-- Badge -->
+        <!-- if pilot assessment-->
+        <!-- <p class="header-info-badge">-->
+        <!-- <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGtSURBVHgBjVI9TgJREB4NNRdgC01s3EJjhYXGRiz4aaQQpFETiZWagNoTG7WQ1RrWRi2AA8DSAwdAD7DrAVgO8NxvyGyWRSJf8vJm5r35+WZmSXmgBeG6Y+oPBuQ4jie7pGkaRRZxdJwfMs03arZaHEQQjUaJ1D+o1U21sbmlVlbX1FG+oNrtjrJtW5XKt2yLhEvsWBZpsRjpuk6G8UJ1L7Our9PT4wPfgrFHAXokWGb+uMB3EGenJ5RI7HNglKxpMbb3+wNKHCQmFGzbUTu7e1wqSpTyKpV7foOMk0xlmFaj2WK93bYUiTMMw+GXHwxHgksA2MLv9Fw1pj7kcgWW8VHQaLTUefGCExS9G++9Xn8SQLLgk1QipYZRvrnj96qXVDAzRqmo7PVBgARSWSlgB2bGeH11ybJhvPKNbaub5tQCTSG8LMg8Grkq2BssEDgnU2m/eT4F6TJ4y/gQEBB9OPzmBiJJuD8kM0UGCYb5A3CCjs7DWcYYxLLVsZiKZXUplc6wnM0e8o1V3Y7HvS3s8hZ+frz7m+gDvMJcg4D+V2afQq1m8ic0bh7mOQO/OPVTIwsGopoAAAAASUVORK5CYII=" alt="">-->
+        <!-- <span>Pilot Assessment</span>-->
+        <!-- </p>-->
+        <!-- if device qualification-->
+         <p class="header-info-badge">
+           <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFBSURBVHgBlVPtUcJAEH0LKYASVgP/LQErkA4MFQQrYOwAO4glWAGxA/ytTq6EFMCw7t1e0JCYIW8mcx/Z927f7R4x8wxIMgA6Xgtxzn0XfpaAkr2OdxgFAnMKL5JEcg2hJ4yDswxMsXbus7iGZZaD3dqvJxiBQPaWKan07M0ogTPZLB+A465XgA2zQbIc77UMXQueCZr6FPeNyBC5I6A/HATvIdhEeIjca0Frm0HkNYpUl2Tm+ZJv0kr7IN6BiNPOavmOIi9hISjbJxPHL6x9H7zplwPTlY7FHxFfpg06kIc4KaOFiZEI2+B5AHy7yDVuZW/hywS0Aw+WLoUK/CfCafqocTtLgtbNPp0D/KUQ5bZLBU7yYT5Fywif9tLIsm5eYkvARBYZ6LS1S7q0Hjw/N6n3CvwKzZew8sVHQ2Ww2oMffu6VgcZObX4AAAAASUVORK5CYII=" alt="">
+           <span>Device Qualification</span>
+         </p>
+        <h1>Testrun report</h1>
+      </div>
+      <h3 style="margin-top:0;max-width:700px"> 
+        dell
+        wyse
+      </h3>
+       
+      <img src="data:image/png;base64, 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" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+    </div>
+    
+      
+        
+        
+      
+      <div class="result-list">
+        <h3>Results List <small>(35/41)</small></h3>
+        <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
+          <div class="result-list-header-label" style="left: .1in">Name</div>
+          <div class="result-list-header-label" style="left: 2.8in">Description</div>
+          <div class="result-list-header-label" style="left: 7.3in">Result</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.services.smtp</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No SMTP server found</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.services.http</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No HTTP server found</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.services.pop</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No POP server found</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.services.imap</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No IMAP server found</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.services.snmpv3</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No SNMP server found</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.services.vnc</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No VNC server found</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">security.services.tftp</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No TFTP server found</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">ntp.network.ntp_server</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">No NTP server found</div>
+          
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          
+          Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">ntp.network.ntp_support</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device has not sent any NTP requests</div>
+          
+            <div class="result-test-label result-test-result result-test-result-non-compliant">
+          
+          Non-Compliant</div>
+        </div>
+        
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">ntp.network.ntp_dhcp</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">Device has not sent any NTP requests</div>
+          
+            <div class="result-test-label result-test-result result-test-result-feature-not-detected">
+          
+          Feature Not Detected</div>
+        </div>
+        
+      </div>
+      <div class="footer">
+        <div class="footer-label">Testrun 2.0-a</div>
+        <div class="footer-label" style="right: 0px">Page 3/7</div>
+      </div>
+    </div>
+    <div style="break-after:page"></div>
+  
+  
+  
+  
+  <div class="page">
+    <div class="header" style="border-bottom:1px solid #DADCE0">
+      <div class="header-info">
+        <!-- Badge -->
+        <!-- if pilot assessment-->
+        <!--  <p class="header-info-badge">-->
+        <!--   <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGtSURBVHgBjVI9TgJREB4NNRdgC01s3EJjhYXGRiz4aaQQpFETiZWagNoTG7WQ1RrWRi2AA8DSAwdAD7DrAVgO8NxvyGyWRSJf8vJm5r35+WZmSXmgBeG6Y+oPBuQ4jie7pGkaRRZxdJwfMs03arZaHEQQjUaJ1D+o1U21sbmlVlbX1FG+oNrtjrJtW5XKt2yLhEvsWBZpsRjpuk6G8UJ1L7Our9PT4wPfgrFHAXokWGb+uMB3EGenJ5RI7HNglKxpMbb3+wNKHCQmFGzbUTu7e1wqSpTyKpV7foOMk0xlmFaj2WK93bYUiTMMw+GXHwxHgksA2MLv9Fw1pj7kcgWW8VHQaLTUefGCExS9G++9Xn8SQLLgk1QipYZRvrnj96qXVDAzRqmo7PVBgARSWSlgB2bGeH11ybJhvPKNbaub5tQCTSG8LMg8Grkq2BssEDgnU2m/eT4F6TJ4y/gQEBB9OPzmBiJJuD8kM0UGCYb5A3CCjs7DWcYYxLLVsZiKZXUplc6wnM0e8o1V3Y7HvS3s8hZ+frz7m+gDvMJcg4D+V2afQq1m8ic0bh7mOQO/OPVTIwsGopoAAAAASUVORK5CYII=" alt="">-->
+        <!--   <span>Pilot Assessment</span>-->
+        <!-- </p>-->
+        <!-- if device qualification-->
+         <p class="header-info-badge">
+           <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFBSURBVHgBlVPtUcJAEH0LKYASVgP/LQErkA4MFQQrYOwAO4glWAGxA/ytTq6EFMCw7t1e0JCYIW8mcx/Z927f7R4x8wxIMgA6Xgtxzn0XfpaAkr2OdxgFAnMKL5JEcg2hJ4yDswxMsXbus7iGZZaD3dqvJxiBQPaWKan07M0ogTPZLB+A465XgA2zQbIc77UMXQueCZr6FPeNyBC5I6A/HATvIdhEeIjca0Frm0HkNYpUl2Tm+ZJv0kr7IN6BiNPOavmOIi9hISjbJxPHL6x9H7zplwPTlY7FHxFfpg06kIc4KaOFiZEI2+B5AHy7yDVuZW/hywS0Aw+WLoUK/CfCafqocTtLgtbNPp0D/KUQ5bZLBU7yYT5Fywif9tLIsm5eYkvARBYZ6LS1S7q0Hjw/N6n3CvwKzZew8sVHQ2Ww2oMffu6VgcZObX4AAAAASUVORK5CYII=" alt="">
+           <span>Device Qualification</span>
+         </p>
+        <h1>Testrun report</h1>
+      </div>
+      <h3 style="margin-top:0;max-width:700px"> 
+        dell
+        wyse
+      </h3> 
+      <img src="data:image/png;base64, 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" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+    </div>
+    <h1>Steps to Resolve</h1>
+    
+    <div class="steps-to-resolve">
+      <div class="steps-to-resolve-row">
+        <span class="steps-to-resolve-index">1.</span>
+        <div class="steps-to-resolve-test-name">
+          <span class="steps-to-resolve subtitle">Name</span><br>dns.network.hostname_resolution
+        </div>
+        <div class="steps-to-resolve-description">
+          <span class="steps-to-resolve subtitle">Description</span><br>No DNS traffic detected from the device
+        </div>
+      </div>
+      <div class="steps-to-resolve-row" style="margin-left: 70px;">
+        <span class="steps-to-resolve subtitle">Steps to resolve</span>
+        
+          <br><span style="font-size: 14px">1. Install a supported DNS client</span>
+        
+          <br><span style="font-size: 14px">2. Ensure DNS servers have been set correctly</span>
+        
+          <br><span style="font-size: 14px">3. Ensure the gateway IP has been set and the device has internet access</span>
+        
+      </div>
+    </div>
+    
+    <div class="steps-to-resolve">
+      <div class="steps-to-resolve-row">
+        <span class="steps-to-resolve-index">2.</span>
+        <div class="steps-to-resolve-test-name">
+          <span class="steps-to-resolve subtitle">Name</span><br>ntp.network.ntp_support
+        </div>
+        <div class="steps-to-resolve-description">
+          <span class="steps-to-resolve subtitle">Description</span><br>Device has not sent any NTP requests
+        </div>
+      </div>
+      <div class="steps-to-resolve-row" style="margin-left: 70px;">
+        <span class="steps-to-resolve subtitle">Steps to resolve</span>
+        
+          <br><span style="font-size: 14px">1. Set the NTP version to v4 in the NTP client</span>
+        
+          <br><span style="font-size: 14px">2. Install an NTP client that supports NTPv4</span>
+        
+      </div>
+    </div>
+    
+  <div class="footer">
+    <div class="footer-label">Testrun 2.0-a</div>
+    <div class="footer-label" style="right: 0px">Page 4/7</div>
+  </div>
+  </div><div style="break-after:page"></div>
+  
+  
+  
+  
+  <div class="page">
+    <div class="header" style="border-bottom:1px solid #DADCE0">
+      <div class="header-info">
+        <!-- Badge -->
+        <!-- if pilot assessment-->
+        <!-- <p class="header-info-badge">-->
+        <!--    <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGtSURBVHgBjVI9TgJREB4NNRdgC01s3EJjhYXGRiz4aaQQpFETiZWagNoTG7WQ1RrWRi2AA8DSAwdAD7DrAVgO8NxvyGyWRSJf8vJm5r35+WZmSXmgBeG6Y+oPBuQ4jie7pGkaRRZxdJwfMs03arZaHEQQjUaJ1D+o1U21sbmlVlbX1FG+oNrtjrJtW5XKt2yLhEvsWBZpsRjpuk6G8UJ1L7Our9PT4wPfgrFHAXokWGb+uMB3EGenJ5RI7HNglKxpMbb3+wNKHCQmFGzbUTu7e1wqSpTyKpV7foOMk0xlmFaj2WK93bYUiTMMw+GXHwxHgksA2MLv9Fw1pj7kcgWW8VHQaLTUefGCExS9G++9Xn8SQLLgk1QipYZRvrnj96qXVDAzRqmo7PVBgARSWSlgB2bGeH11ybJhvPKNbaub5tQCTSG8LMg8Grkq2BssEDgnU2m/eT4F6TJ4y/gQEBB9OPzmBiJJuD8kM0UGCYb5A3CCjs7DWcYYxLLVsZiKZXUplc6wnM0e8o1V3Y7HvS3s8hZ+frz7m+gDvMJcg4D+V2afQq1m8ic0bh7mOQO/OPVTIwsGopoAAAAASUVORK5CYII=" alt="">-->
+        <!--    <span>Pilot Assessment</span>-->
+        <!-- </p>-->
+        <!-- if device qualification-->
+         <p class="header-info-badge">
+         <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFBSURBVHgBlVPtUcJAEH0LKYASVgP/LQErkA4MFQQrYOwAO4glWAGxA/ytTq6EFMCw7t1e0JCYIW8mcx/Z927f7R4x8wxIMgA6Xgtxzn0XfpaAkr2OdxgFAnMKL5JEcg2hJ4yDswxMsXbus7iGZZaD3dqvJxiBQPaWKan07M0ogTPZLB+A465XgA2zQbIc77UMXQueCZr6FPeNyBC5I6A/HATvIdhEeIjca0Frm0HkNYpUl2Tm+ZJv0kr7IN6BiNPOavmOIi9hISjbJxPHL6x9H7zplwPTlY7FHxFfpg06kIc4KaOFiZEI2+B5AHy7yDVuZW/hywS0Aw+WLoUK/CfCafqocTtLgtbNPp0D/KUQ5bZLBU7yYT5Fywif9tLIsm5eYkvARBYZ6LS1S7q0Hjw/N6n3CvwKzZew8sVHQ2Ww2oMffu6VgcZObX4AAAAASUVORK5CYII=" alt="">
+         <span>Device Qualification</span>
+         </p>
+        <h1>Testrun report</h1>
+      </div>
+      <h3 style="margin-top:0;max-width:700px"> 
+        dell
+        wyse
+      </h3> 
+      <img src="data:image/png;base64, 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" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+    </div>
+    <div class="module-page-content">
+      <h1>DNS Module</h1>
+      <table class="module-summary">
+        <thead>
+          <tr>
+            <th>Requests to local DNS server</th>
+            <th>Requests to external DNS servers</th>
+            <th>Total DNS requests</th>
+            <th>Total DNS responses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>   
+          </tr>
+      </table>
+                     
+        <div class="callout-container info">
+          <div class="icon"></div>
+          No DNS traffic detected from the device
+        </div>
+  
+    </div>
+  <div class="footer">
+    <div class="footer-label">Testrun 2.0-a</div>
+    <div class="footer-label" style="right: 0px">Page 5/7</div>
+  </div>
+  </div>
+  <div style="break-after:page"></div>
+  
+  
+  <div class="page">
+    <div class="header" style="border-bottom:1px solid #DADCE0">
+      <div class="header-info">
+        <!-- Badge -->
+        <!-- if pilot assessment-->
+        <!-- <p class="header-info-badge">-->
+        <!--   <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGtSURBVHgBjVI9TgJREB4NNRdgC01s3EJjhYXGRiz4aaQQpFETiZWagNoTG7WQ1RrWRi2AA8DSAwdAD7DrAVgO8NxvyGyWRSJf8vJm5r35+WZmSXmgBeG6Y+oPBuQ4jie7pGkaRRZxdJwfMs03arZaHEQQjUaJ1D+o1U21sbmlVlbX1FG+oNrtjrJtW5XKt2yLhEvsWBZpsRjpuk6G8UJ1L7Our9PT4wPfgrFHAXokWGb+uMB3EGenJ5RI7HNglKxpMbb3+wNKHCQmFGzbUTu7e1wqSpTyKpV7foOMk0xlmFaj2WK93bYUiTMMw+GXHwxHgksA2MLv9Fw1pj7kcgWW8VHQaLTUefGCExS9G++9Xn8SQLLgk1QipYZRvrnj96qXVDAzRqmo7PVBgARSWSlgB2bGeH11ybJhvPKNbaub5tQCTSG8LMg8Grkq2BssEDgnU2m/eT4F6TJ4y/gQEBB9OPzmBiJJuD8kM0UGCYb5A3CCjs7DWcYYxLLVsZiKZXUplc6wnM0e8o1V3Y7HvS3s8hZ+frz7m+gDvMJcg4D+V2afQq1m8ic0bh7mOQO/OPVTIwsGopoAAAAASUVORK5CYII=" alt="">-->
+        <!--   <span>Pilot Assessment</span>-->
+        <!-- </p>-->
+        <!-- if device qualification-->
+         <p class="header-info-badge">
+           <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFBSURBVHgBlVPtUcJAEH0LKYASVgP/LQErkA4MFQQrYOwAO4glWAGxA/ytTq6EFMCw7t1e0JCYIW8mcx/Z927f7R4x8wxIMgA6Xgtxzn0XfpaAkr2OdxgFAnMKL5JEcg2hJ4yDswxMsXbus7iGZZaD3dqvJxiBQPaWKan07M0ogTPZLB+A465XgA2zQbIc77UMXQueCZr6FPeNyBC5I6A/HATvIdhEeIjca0Frm0HkNYpUl2Tm+ZJv0kr7IN6BiNPOavmOIi9hISjbJxPHL6x9H7zplwPTlY7FHxFfpg06kIc4KaOFiZEI2+B5AHy7yDVuZW/hywS0Aw+WLoUK/CfCafqocTtLgtbNPp0D/KUQ5bZLBU7yYT5Fywif9tLIsm5eYkvARBYZ6LS1S7q0Hjw/N6n3CvwKzZew8sVHQ2Ww2oMffu6VgcZObX4AAAAASUVORK5CYII=" alt="">
+           <span>Device Qualification</span>
+         </p>
+        <h1>Testrun report</h1>
+      </div>
+      <h3 style="margin-top:0;max-width:700px"> 
+        dell
+        wyse
+      </h3> 
+      <img src="data:image/png;base64, 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" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+    </div>
+    <div class="module-page-content">
+      <h1>Services Module</h1>
+      <table class="module-summary">
+        <thead>
+          <tr>
+            <th>TCP ports open</th>
+            <th>UDP ports open</th>
+            <th>Total ports open</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+          </tr>
+      </table>
+                     
+        <div class="callout-container info">
+          <div class="icon"></div>
+          No open ports detected
+        </div>
+  
+    </div>
+    <div class="footer">
+      <div class="footer-label">Testrun 2.0-a</div>
+      <div class="footer-label" style="right: 0px">Page 6/7</div>
+    </div>
+  </div>
+  <div style="break-after:page"></div>
+  
+  
+  <div class="page">
+    <div class="header" style="border-bottom:1px solid #DADCE0">
+      <div class="header-info">
+        <!-- Badge -->
+        <!-- if pilot assessment-->
+        <!-- <p class="header-info-badge">-->
+        <!--   <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGtSURBVHgBjVI9TgJREB4NNRdgC01s3EJjhYXGRiz4aaQQpFETiZWagNoTG7WQ1RrWRi2AA8DSAwdAD7DrAVgO8NxvyGyWRSJf8vJm5r35+WZmSXmgBeG6Y+oPBuQ4jie7pGkaRRZxdJwfMs03arZaHEQQjUaJ1D+o1U21sbmlVlbX1FG+oNrtjrJtW5XKt2yLhEvsWBZpsRjpuk6G8UJ1L7Our9PT4wPfgrFHAXokWGb+uMB3EGenJ5RI7HNglKxpMbb3+wNKHCQmFGzbUTu7e1wqSpTyKpV7foOMk0xlmFaj2WK93bYUiTMMw+GXHwxHgksA2MLv9Fw1pj7kcgWW8VHQaLTUefGCExS9G++9Xn8SQLLgk1QipYZRvrnj96qXVDAzRqmo7PVBgARSWSlgB2bGeH11ybJhvPKNbaub5tQCTSG8LMg8Grkq2BssEDgnU2m/eT4F6TJ4y/gQEBB9OPzmBiJJuD8kM0UGCYb5A3CCjs7DWcYYxLLVsZiKZXUplc6wnM0e8o1V3Y7HvS3s8hZ+frz7m+gDvMJcg4D+V2afQq1m8ic0bh7mOQO/OPVTIwsGopoAAAAASUVORK5CYII=" alt="">-->
+        <!--   <span>Pilot Assessment</span>-->
+        <!-- </p>-->
+        <!-- if device qualification-->
+         <p class="header-info-badge">
+           <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFBSURBVHgBlVPtUcJAEH0LKYASVgP/LQErkA4MFQQrYOwAO4glWAGxA/ytTq6EFMCw7t1e0JCYIW8mcx/Z927f7R4x8wxIMgA6Xgtxzn0XfpaAkr2OdxgFAnMKL5JEcg2hJ4yDswxMsXbus7iGZZaD3dqvJxiBQPaWKan07M0ogTPZLB+A465XgA2zQbIc77UMXQueCZr6FPeNyBC5I6A/HATvIdhEeIjca0Frm0HkNYpUl2Tm+ZJv0kr7IN6BiNPOavmOIi9hISjbJxPHL6x9H7zplwPTlY7FHxFfpg06kIc4KaOFiZEI2+B5AHy7yDVuZW/hywS0Aw+WLoUK/CfCafqocTtLgtbNPp0D/KUQ5bZLBU7yYT5Fywif9tLIsm5eYkvARBYZ6LS1S7q0Hjw/N6n3CvwKzZew8sVHQ2Ww2oMffu6VgcZObX4AAAAASUVORK5CYII=" alt="">
+           <span>Device Qualification</span>
+         </p>
+        <h1>Testrun report</h1>
+      </div>
+      <h3 style="margin-top:0;max-width:700px"> 
+        dell
+        wyse
+      </h3> 
+      <img src="data:image/png;base64, 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" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+    </div>
+    <div class="module-page-content">
+      <h1>NTP Module</h1>
+      <table class="module-summary">
+        <thead>
+          <tr>
+            <th>Requests to local NTP server</th>
+            <th>Requests to external NTP servers</th>
+            <th>Total NTP requests</th>
+            <th>Total NTP responses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>   
+          </tr>
+        </tbody>
+      </table>
+      
+        <div class="callout-container info">
+          <div class="icon"></div>
+          No NTP traffic detected from the device
+        </div>
+  
+    </div>
+    <div class="footer">
+      <div class="footer-label">Testrun 2.0-a</div>
+      <div class="footer-label" style="right: 0px">Page 7/7</div>
+    </div>
+  </div>
+  <div style="break-after:page"></div>
+
+    <!--  Device profile-->
+    <div class="page">
+      <div class="header" style="border-bottom:1px solid #DADCE0">
+        <div class="header-info">
+          <!-- Badge -->
+          <!-- if pilot assessment-->
+          <!-- <p class="header-info-badge">-->
+          <!--   <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGtSURBVHgBjVI9TgJREB4NNRdgC01s3EJjhYXGRiz4aaQQpFETiZWagNoTG7WQ1RrWRi2AA8DSAwdAD7DrAVgO8NxvyGyWRSJf8vJm5r35+WZmSXmgBeG6Y+oPBuQ4jie7pGkaRRZxdJwfMs03arZaHEQQjUaJ1D+o1U21sbmlVlbX1FG+oNrtjrJtW5XKt2yLhEvsWBZpsRjpuk6G8UJ1L7Our9PT4wPfgrFHAXokWGb+uMB3EGenJ5RI7HNglKxpMbb3+wNKHCQmFGzbUTu7e1wqSpTyKpV7foOMk0xlmFaj2WK93bYUiTMMw+GXHwxHgksA2MLv9Fw1pj7kcgWW8VHQaLTUefGCExS9G++9Xn8SQLLgk1QipYZRvrnj96qXVDAzRqmo7PVBgARSWSlgB2bGeH11ybJhvPKNbaub5tQCTSG8LMg8Grkq2BssEDgnU2m/eT4F6TJ4y/gQEBB9OPzmBiJJuD8kM0UGCYb5A3CCjs7DWcYYxLLVsZiKZXUplc6wnM0e8o1V3Y7HvS3s8hZ+frz7m+gDvMJcg4D+V2afQq1m8ic0bh7mOQO/OPVTIwsGopoAAAAASUVORK5CYII=" alt="">-->
+          <!--   <span>Pilot Assessment</span>-->
+          <!-- </p>-->
+          <!-- if device qualification-->
+           <p class="header-info-badge">
+             <img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFBSURBVHgBlVPtUcJAEH0LKYASVgP/LQErkA4MFQQrYOwAO4glWAGxA/ytTq6EFMCw7t1e0JCYIW8mcx/Z927f7R4x8wxIMgA6Xgtxzn0XfpaAkr2OdxgFAnMKL5JEcg2hJ4yDswxMsXbus7iGZZaD3dqvJxiBQPaWKan07M0ogTPZLB+A465XgA2zQbIc77UMXQueCZr6FPeNyBC5I6A/HATvIdhEeIjca0Frm0HkNYpUl2Tm+ZJv0kr7IN6BiNPOavmOIi9hISjbJxPHL6x9H7zplwPTlY7FHxFfpg06kIc4KaOFiZEI2+B5AHy7yDVuZW/hywS0Aw+WLoUK/CfCafqocTtLgtbNPp0D/KUQ5bZLBU7yYT5Fywif9tLIsm5eYkvARBYZ6LS1S7q0Hjw/N6n3CvwKzZew8sVHQ2Ww2oMffu6VgcZObX4AAAAASUVORK5CYII=" alt="">
+             <span>Device Qualification</span>
+           </p>
+          <h1>Device profile</h1>
+        </div>
+        <h3 style="margin-top:0;max-width:700px">
+          dell
+          wyse
+        </h3>
+        <img src="data:image/png;base64, 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" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
+      </div>
+      <div class="device-profile-content">
+        <div class="device-profile-head">
+          <div class="device-profile-head-question">Question</div>
+          <div class="device-profile-head-answer">Answer</div>
+        </div>
+        <!--{% for question in page %}-->
+        <div class="device-profile-row">
+          <div class="device-profile-number">1.</div>
+          <div class="device-profile-question">What type of device do you need reviewed?</div>
+          <div class="device-profile-answer">
+            <!-- {% if question['answer'] is string %} -->
+            Robotic arm for loading and unloading dishwashers
+          </div>
+        </div>
+        <div class="device-profile-row">
+          <div class="device-profile-number">2.</div>
+          <div class="device-profile-question">What features does the device have?</div>
+          <div class="device-profile-answer">
+            <!-- {% elif question['answer'] is sequence %} -->
+            <ul>
+              <!-- {% for answer in question['answer'] %} -->
+              <li>Wi-Fi</li>
+              <li>ZigBee / Z-Wave / Thread / Matter</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="footer-label">Testrun 2.0-a</div>
+        <div class="footer-label" style="right: 0px">Page 7/7</div>
+      </div>
+    </div>
+    <div style="break-after:page"></div>
+</body>
+</html>
