@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { DevicesComponent } from './devices.component';
-import { CanDeactivateGuard } from '../../guards/can-deactivate.guard';
+import { TestBed } from '@angular/core/testing';
 
-const routes: Routes = [
-  {
-    path: '',
-    component: DevicesComponent,
-    canDeactivate: [CanDeactivateGuard],
-  },
-];
+import { CanDeactivateGuard } from './can-deactivate.guard';
 
-@NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule],
-})
-export class DevicesRoutingModule {}
+describe('CanDeactivateGuard', () => {
+  let guard: CanDeactivateGuard;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    guard = TestBed.inject(CanDeactivateGuard);
+  });
+
+  it('should be created', () => {
+    expect(guard).toBeTruthy();
+  });
+});
