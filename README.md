@@ -4,11 +4,11 @@
 [![CodeQL](https://github.com/google/testrun/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)](https://github.com/google/testrun/actions/workflows/github-code-scanning/codeql)
 [![Testrun test suite](https://github.com/google/testrun/actions/workflows/testing.yml/badge.svg?branch=main&event=push)](https://github.com/google/testrun/actions/workflows/testing.yml)
 
-# Introduction
+# Introduction :wave:
 
 Testrun automates specific test cases to verify network and security functionality in IoT devices. It's an open-source tool that manufacturers use to test their IP-capable devices for the purpose of device qualification within Google's Building Operating System  (BOS) program.
 
-# Motivation
+# Motivation :bulb:
 
 Test labs and engineers often need to maintain a large and complex network coupled with dynamic configuration files and constant software updates. Testrun helps address major issues like:
 
@@ -16,7 +16,7 @@ Test labs and engineers often need to maintain a large and complex network coupl
 -  The time required to perform testing of network functionality
 -  The accuracy and consistency of testing network functionality
 
-# How it works
+# How it works :triangular_ruler:
 
 Testrun creates an isolated and controlled network environment on a Linux machine. This removes the necessity for complex hardware, advanced knowledge, and networking experience while enabling test engineers to validate device behavior against Google's BOS requirements.
 
@@ -30,7 +30,7 @@ Automated testing of the device under test (DUT) begins once the device is opera
 
 Testrun provides the network and assistive tools for engineers when manual testing or configuration changes are required, reducing the need to maintain a separate but identical lab network. Testrun handles packet captures and logs for each network service for further debugging.
 
-# Minimum requirements
+# Minimum requirements :computer:
 
 ## Hardware
 
@@ -46,27 +46,27 @@ Testrun requires Docker. Refer to the [installation guide](https://docs.docker.c
 
 The DUT must be able to obtain an IP address via DHCP.
 
-# Get started
+# Get started :arrow_forward:
 
 Once you meet the hardware and software requirements, follow the Testrun [Get started guide](https://github.com/google/testrun/blob/main/docs/get_started.md). Additional guidance is available in the [docs directory](https://github.com/google/testrun/blob/main/docs).
 
-# Roadmap
+# Roadmap :chart_with_upwards_trend:
 
-Testrun continually evolves to further support end users by automating device network behavior against industry standards. For information on upcoming features, check out the [Roadmap](https://github.com/google/testrun/blob/main/docs/roadmap.pdf).
+Testrun continually evolves to further support end users by automating device network behavior against industry standards. For information on upcoming features, check out the [Roadmap](/docs/roadmap.pdf).
 
-# Accessibility
+# Accessibility :busts_in_silhouette:
 
 We're proud of our tool and strive to provide an enjoyable experience for everyone. Testrun goes through rigorous accessibility testing at each release. Download the [Testrun: Accessible features](https://github.com/google/testrun/raw/main/docs/ui/accessibility.mp4) video to learn more.You're welcome to [submit a new issue](https://github.com/google/testrun/issues) and provide feedback on our implementations. To learn more about Google's [Belonging initiative](https://www.google.co.uk/accessibility) and their approach to accessibility, visit their site.
 
-# Issue reporting
+# Issue reporting :triangular_flag_on_post:
 
 If you encounter a problem during setup or use, raise an issue under the [Issues tab](https://github.com/google/testrun/issues). Issue templates exist for both bug reports and feature requests. If neither of these apply, raise a blank issue instead.
 
-# Contributing
+# Contributing :keyboard:
 
-We strongly encourage contributions from the community. Review the requirements on the  ["How to Contribute" page](https://github.com/google/testrun/blob/main/CONTRIBUTING.md), then follow the [developer guidelines](https://github.com/google/testrun/blob/main/docs/dev/README.md). 
+We strongly encourage contributions from the community. Review the requirements on the  ["How to Contribute" page](CONTRIBUTING.md), then follow the [developer guidelines](/docs/dev/README.md). 
 
-# FAQ
+# FAQ :raising_hand:
 
 #### 1. What should I do if I have an issue while installing or upgrading Testrun?
 
@@ -94,4 +94,4 @@ Note that this list is likely to change over time.
 
 #### 4. Can I run Testrun on a virtual machine?
 
-Testrun can be virtualized if the 2x Ethernet adapters are passed through to a VirtualBox VM as a USB device rather than managed network adapters. Visit the [virtual machine guide](https://github.com/google/testrun/blob/main/docs/virtual_machine.md) for additional details.
+Testrun can be virtualized if the 2x Ethernet adapters are passed through to a VirtualBox VM as a USB device rather than managed network adapters. Visit the [virtual machine guide](/docs/virtual_machine.md) for additional details.
