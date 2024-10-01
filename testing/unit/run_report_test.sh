@@ -28,10 +28,19 @@ run_test(){
 	# Set the python path with all sources
 	export PYTHONPATH
 
+	# Temporarily disable 'set -e' to capture exit code
+    set +e
+
 	# Run all host level unit tests from within the venv
 	python3 $REPORT_TEST_FILE
 
+	# Capture the exit code
+    local exit_code=$?
+
 	deactivate
+
+	# Return the captured exit code to the caller
+    return $exit_code
 }
 
 
@@ -43,3 +52,16 @@ fi
 
 # Call the run_test function with the provided arguments
 run_test "$@"
+
+# Capture the exit code from the run_test function
+exit_code=$?
+
+# If the exit code is not zero, print an error message
+if [ $exit_code -ne 0 ]; then
+    echo "Tests failed with exit code $exit_code"
+else
+    echo "All tests passed successfully."
+fi
+
+# Exit with the captured exit code
+exit $exit_code
