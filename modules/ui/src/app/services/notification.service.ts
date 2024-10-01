@@ -104,8 +104,10 @@ export class NotificationService {
 
     this.snackBarCompRef
       .afterDismissed()
-      .pipe(take(1))
-      .subscribe(() => this.focusManagerService.focusFirstElementInContainer());
+      .pipe(take(1), delay(1000))
+      .subscribe(() => {
+        this.focusManagerService.focusFirstElementInContainer();
+      });
   }
 
   dismissSnackBar() {
