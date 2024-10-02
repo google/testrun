@@ -97,9 +97,7 @@ describe('DynamicFormComponent', () => {
     it('should have label', () => {
       const labels = compiled.querySelectorAll('.field-label');
 
-      const label = item?.validation?.required
-        ? item.question + ' *'
-        : item.question;
+      const label = item.question;
       expect(labels[index].textContent?.trim()).toEqual(label);
     });
 
