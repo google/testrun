@@ -37,9 +37,9 @@ limitations under the License.
   let-description="description"
   let-options="options"
   let-formControlName="formControlName">
-  <label class="field-label" for="{{ formControlName }}-group"
-    >{{ label }} <span *ngIf="required">*</span></label
-  >
+  <label class="field-label" for="{{ formControlName }}-group">
+    {{ label }}
+  </label>
   <ng-container [ngSwitch]="type">
     <ng-container *ngSwitchCase="FormControlType.TEXT">
       <ng-container
