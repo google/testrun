@@ -69,7 +69,6 @@
       display: flex;
       align-items: center;
       margin-bottom: 8px;
-      gap: 8px;
       color: #202124;
       font-size: 9px;
       text-transform: uppercase;
@@ -77,7 +76,14 @@
 
     .first-page .header-info {
       font-size: 18px;
-      gap: 16px;
+    }
+
+    .header-info .header-info-badge {
+      margin-right: 8px;
+    }
+
+    .first-page .header-info .header-info-badge {
+      margin-right: 16px;
     }
 
     .header-info-badge {
@@ -89,17 +95,20 @@
       border-radius: 4px;
       font-weight: 500;
       letter-spacing: 0.64px;
-      gap: 10px;
+      box-sizing: border-box;
+      min-width: 132px;
     }
 
     .first-page .header-info-badge {
       padding: 15px 30px;
       letter-spacing: 1px;
+      min-width: 243px;
     }
 
     .header-info-badge img {
       width: 9px;
       height: 9px;
+      margin-right: 10px;
     }
 
     .first-page .header-info-badge img {

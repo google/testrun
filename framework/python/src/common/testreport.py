@@ -21,7 +21,7 @@ from common.statuses import TestrunStatus
 import base64
 import os
 from test_orc.test_case import TestCase
-from jinja2 import Template
+from jinja2 import Environment, FileSystemLoader
 from collections import OrderedDict
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -42,6 +42,8 @@ root_dir = os.path.dirname(
 report_resource_dir = os.path.join(root_dir, RESOURCES_DIR)
 
 test_run_img_file = os.path.join(report_resource_dir, 'testrun.png')
+qualification_icon = os.path.join(report_resource_dir, 'qualification-icon.png')
+pilot_icon = os.path.join(report_resource_dir, 'pilot-icon.png')
 
 
 class TestReport():
@@ -153,6 +155,9 @@ class TestReport():
     if 'test_pack' in json_file['device']:
       self._device['test_pack'] = json_file['device']['test_pack']
 
+    if 'additional_info' in json_file['device']:
+      self._device['device_profile'] = json_file['device']['additional_info']
+
     self._status = json_file['status']
     self._started = datetime.strptime(json_file['started'], DATE_TIME_FORMAT)
     self._finished = datetime.strptime(json_file['finished'], DATE_TIME_FORMAT)
@@ -194,13 +199,8 @@ class TestReport():
   def to_html(self):
 
     # Jinja template
-    with open(os.path.join(report_resource_dir, TEST_REPORT_TEMPLATE),
-                            'r',
-                            encoding='UTF-8'
-                            ) as template_file:
-      template = Template(template_file.read())
-
-    # Load styles
+    template_env = Environment(loader=FileSystemLoader(report_resource_dir))
+    template = template_env.get_template(TEST_REPORT_TEMPLATE)
     with open(os.path.join(report_resource_dir,
                            TEST_REPORT_STYLES),
                            'r',
@@ -211,7 +211,14 @@ class TestReport():
     # Load Testrun logo to base64
     with open(test_run_img_file, 'rb') as f:
       logo = base64.b64encode(f.read()).decode('utf-8')
+
     json_data=self.to_json()
+
+    # Icons
+    with open(qualification_icon, 'rb') as f:
+      icon_qualification = base64.b64encode(f.read()).decode('utf-8')
+    with open(pilot_icon, 'rb') as f:
+      icon_pilot = base64.b64encode(f.read()).decode('utf-8')
 
     # Convert the timestamp strings to datetime objects
     start_time = datetime.strptime(json_data['started'], '%Y-%m-%d %H:%M:%S')
@@ -234,13 +241,18 @@ class TestReport():
 
     module_reports = self._get_module_pages()
     pages_num = self._pages_num(json_data)
-    total_pages = pages_num + len(module_reports)
-
+    total_pages = pages_num + len(module_reports) + 1
     if len(steps_to_resolve) > 0:
+      total_pages += 1
+    if (len(optional_steps_to_resolve) > 0
+        and json_data['device']['test_pack'] == 'Pilot Assessment'
+        ):
       total_pages += 1
 
     return template.render(styles=styles,
                            logo=logo,
+                           icon_qualification=icon_qualification,
+                           icon_pilot=icon_pilot,
                            version=self._version,
                            json_data=json_data,
                            device=json_data['device'],
