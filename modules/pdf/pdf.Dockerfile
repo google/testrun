@@ -1,5 +1,7 @@
 FROM python:3.12-alpine
 
+ARG COMMON_DIR=framework/python/src/common
+
 # Fonts path
 ARG FONTS_PATH=/usr/local/fonts/
 ENV FONTS_PATH=$FONTS_PATH
@@ -8,6 +10,9 @@ RUN apk --no-cache add pango-dev ttf-dejavu
 
 # Copy source code
 COPY modules/pdf/python /usr/src/app/python
+
+# Install common python modules
+COPY $COMMON_DIR/ /usr/src/app/python/src/common
 
 # Copy local fonts into the container
 COPY modules/pdf/fonts $FONTS_PATH

@@ -215,7 +215,10 @@ class TestOrchestrator:
 
     # Write the pdf report
     with open(os.path.join(out_dir, "report.pdf"), "wb") as f:
-      f.write(test_report.to_pdf().read())
+      try:
+        f.write(test_report.to_pdf().read())
+      except AttributeError:
+        LOGGER.error("PDF was not generated due to PDF generation error")
 
     util.run_command(f"chown -R {self._host_user} {out_dir}")
 

@@ -5,6 +5,9 @@ import re
 from bottle import Bottle, request, response
 from weasyprint import HTML
 from weasyprint.text.fonts import FontConfiguration
+from common import logger
+
+LOGGER = logger.get_logger('pdf_module')
 
 FONTS_PATH=os.environ.get('FONTS_PATH')
 
@@ -83,8 +86,10 @@ def generate_pdf(filename):
     pdf = HTML(
       string=replace_fontface_urls_in_html(html_content, fonts_dict)
       ).write_pdf(font_config=font_config)
+    LOGGER.debug('PDF was succesfully generated.')
   except Exception as e:
     response.status = 500
+    LOGGER.error(e)
     return f'Error generating PDF: {e}'
 
   # Return the PDF as a response

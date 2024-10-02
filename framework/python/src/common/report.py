@@ -17,7 +17,7 @@ import requests
 from io import BytesIO
 from common import logger
 
-LOGGER = logger.get_logger('report')
+LOGGER = logger.get_logger('pdf_report')
 
 def html_to_pdf(html: str, file_name: str):
   """ Generating PDF from HTML"""
@@ -29,6 +29,9 @@ def html_to_pdf(html: str, file_name: str):
                         )
     if resp.status_code == 200:
       return BytesIO(resp.content)
+    if resp.status_code == 500:
+      LOGGER.error(str(resp.text))
+      return
     raise requests.exceptions.RequestException
   except requests.exceptions.RequestException:
     LOGGER.error('An error occured whilst generating PDF report.')
