@@ -234,12 +234,14 @@ limitations under the License.
                 !deviceHasNoChanges(data.initialDevice, device) &&
                 data.isCreate
               "
+              role="status"
+              aria-live="assertive"
               class="device-qualification-form-instructions">
               <span
                 >Select Save to create your new device. You will then be able to
                 carry on your device testing journey:</span
               >
-              <ul>
+              <ul aria-live="off">
                 <li>
                   Run Testrun against your device until you achieve a compliant
                   result

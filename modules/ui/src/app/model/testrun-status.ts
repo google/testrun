@@ -87,6 +87,7 @@ export interface StatusResultClassName {
   green: boolean;
   red: boolean;
   blue: boolean;
+  cyan: boolean;
   grey: boolean;
 }
 
