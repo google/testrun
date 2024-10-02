@@ -29,19 +29,16 @@
         "expected_behavior": "When the ethernet cable is connected to the port, the device autonegotiates a full-duplex connection."
       },
       {
-        "enabled": false,
         "name": "connection.switch.arp_inspection",
         "test_description": "The device implements ARP correctly as per RFC826",
         "expected_behavior": "Device continues to operate correctly when ARP inspection is enabled on the switch.  No functionality is lost with ARP inspection enabled."
       },
       {
-        "enabled": false,
         "name": "connection.switch.dhcp_snooping",
         "test_description": "The device operates as a DHCP client and operates correctly when DHCP snooping is enabled on a switch.",
         "expected_behavior": "Device continues to operate correctly when DHCP snooping is enabled on the switch."
       },
       {
-        "enabled": false,
         "name": "connection.dhcp_address",
         "test_description": "The device under test has received an IP address from the DHCP server and responds to an ICMP echo (ping) request",
         "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.",
@@ -51,7 +48,6 @@
         ]
       },
       {
-        "enabled": false,
         "name": "connection.mac_address",
         "test_description": "Check and note device physical address.",
         "expected_behavior": "N/A",
@@ -60,7 +56,6 @@
         ]
       },
       {
-        "enabled": false,
         "name": "connection.mac_oui",
         "test_description": "The device under test has a MAC address prefix that is registered against a known manufacturer.",
         "expected_behavior": "The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database.",
@@ -69,7 +64,6 @@
         ]
       },
       {
-        "enabled": false,
         "name": "connection.private_address",
         "test_description": "The device under test accepts an IP address that is compliant with RFC 1918 Address Allocation for Private Internets.",
         "expected_behavior": "The device under test accepts IP addresses within all ranges specified in RFC 1918 and communicates using these addresses.  The Internet Assigned Numbers Authority (IANA) has reserved the following three blocks of the IP address space for private internets.  10.0.0.0 - 10.255.255.255.255 (10/8 prefix). 172.16.0.0 - 172.31.255.255 (172.16/12 prefix).  192.168.0.0 - 192.168.255.255 (192.168/16 prefix)",
@@ -95,7 +89,6 @@
         ]
       },
       {
-        "enabled": false,
         "name": "connection.shared_address",
         "test_description": "Ensure the device supports RFC 6598 IANA-Reserved IPv4 Prefix for Shared Address Space",
         "expected_behavior": "The device under test accepts IP addresses within the ranges specified in RFC 6598 and communicates using these addresses",
@@ -125,7 +118,6 @@
         "required_result": "Required"
       },
       {
-        "enabled": false,
         "name": "connection.single_ip",
         "test_description": "The network switch port connected to the device reports only one IP address for the device under test.",
         "expected_behavior": "The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible.",
@@ -135,7 +127,6 @@
         ]
       },
       {
-        "enabled": false,
         "name": "connection.target_ping",
         "test_description": "The device under test responds to an ICMP echo (ping) request.",
         "expected_behavior": "The device under test responds to an ICMP echo (ping) request.",
@@ -145,7 +136,6 @@
         ]
       },
       {
-        "enabled": false,
         "name": "connection.ipaddr.ip_change",
         "test_description": "The device responds to a ping (ICMP echo request) to the new IP address it has received after the initial DHCP lease has expired.",
         "expected_behavior": "If the lease expires before the client receiveds a DHCPACK, the client moves to INIT state, MUST immediately stop any other network processing and requires network initialization parameters as if the client were uninitialized.  If the client then receives a DHCPACK allocating the client its previous network addres, the client SHOULD continue network processing.  If the client is given a new network address, it MUST NOT continue using the previous network address and SHOULD notify the local users of the problem.",
@@ -157,7 +147,6 @@
         ]
       },
       {
-        "enabled": false,
         "name": "connection.ipaddr.dhcp_failover",
         "test_description": "The device has requested a DHCPREQUEST/REBIND to the DHCP failover server after the primary DHCP server has been brought down.",
         "expected_behavior": "",
@@ -169,7 +158,6 @@
         ]
       },
       {
-        "enabled": false,
         "name": "connection.ipv6_slaac",
         "test_description": "The device forms a valid IPv6 address as a combination of the IPv6 router prefix and the device interface identifier",
         "expected_behavior": "The device under test complies with RFC4862 and forms a valid IPv6 SLAAC address",
@@ -179,7 +167,6 @@
         ]
       },
       {
-        "enabled": false,
         "name": "connection.ipv6_ping",
         "test_description": "The device responds to an IPv6 ping (ICMPv6 Echo) request to the SLAAC address",
         "expected_behavior": "The device responds to the ping as per RFC4443",
