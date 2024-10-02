@@ -8,7 +8,7 @@ jobs:
   testrun_baseline:
     permissions: {}
     name:  Baseline
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
       - name: Checkout source
@@ -27,7 +27,7 @@ jobs:
   testrun_api:
     permissions: {}
     name:  API
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
       - name: Checkout source
@@ -56,7 +56,7 @@ jobs:
   testrun_unit:
     permissions: {}
     name:  Unit
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - name: Checkout source
@@ -92,10 +92,9 @@ jobs:
       - name: Run tests for risk profiles
         shell: bash {0}
         run: bash testing/unit/run_report_test.sh testing/unit/risk_profile/risk_profile_test.py
-      # Disable report tests until rewritten to work with jinja and templates
-      # - name: Run tests for reports
-      #   shell: bash {0}
-      #   run: bash testing/unit/run_report_test.sh testing/unit/report/report_test.py
+      - name: Run tests for reports
+        shell: bash {0}
+        run: bash testing/unit/run_report_test.sh testing/unit/report/report_test.py
 
   pylint:
     permissions: {}
