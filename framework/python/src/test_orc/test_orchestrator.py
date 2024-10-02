@@ -167,8 +167,6 @@ class TestOrchestrator:
     report = TestReport()
 
     generated_report_json = self._generate_report()
-    print("Generated report:")
-    print(generated_report_json)
     report.from_json(generated_report_json)
     report.add_module_reports(self.get_session().get_module_reports())
     device.add_report(report)
