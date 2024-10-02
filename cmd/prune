@@ -25,17 +25,16 @@ fi
 
 # Remove docker images
 echo Removing docker images
-docker_images=$(sudo docker images --filter=reference="test-run/*" -q)
+docker_images=$(sudo docker images --filter=reference="testrun/*" -q)
 
 if [ -z "$docker_images" ]; then
   echo No docker images to delete
 else
-  sudo docker rmi $docker_images > /dev/null
+  sudo docker rmi $docker_images
 fi
 
 # Remove docker networks
 echo Removing docker networks
-sudo docker network rm endev0 > /dev/null
-# Private network not used, add cleanup
-# back in if/when implemented
-#sudo docker network rm tr-private-net > /dev/null
+sudo docker network rm endev0 || true
+
+echo Successfully pruned Testrun resources

@@ -25,7 +25,7 @@ import sys
 import time
 from common import logger, util, mqtt
 from common.device import Device
-from common.session import TestrunSession
+from session import TestrunSession
 from common.testreport import TestReport
 from common.statuses import TestrunStatus
 from api.api import Api

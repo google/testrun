@@ -26,7 +26,8 @@ import threading
 import uvicorn
 from urllib.parse import urlparse
 
-from common import logger, tasks
+from core import tasks
+from common import logger
 from common.device import Device
 from common.statuses import TestrunStatus
 

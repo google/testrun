@@ -59,7 +59,7 @@ source venv/bin/activate
 pip3 install -r framework/requirements.txt
 
 # Copy the default configuration
-cp -n local/system.json.example local/system.json
+cp --update=none local/system.json.example local/system.json
 
 # Exit out of python virtual environment
 deactivate
@@ -68,15 +68,13 @@ deactivate
 cmd/build
 
 # Create local folders
-mkdir -p local/devices
-mkdir -p local/root_certs
-mkdir -p local/risk_profiles
+mkdir -p local/{devices,root_certs,risk_profiles}
 
 # Set file permissions on local
 # This does not work on GitHub actions
 if logname ; then
   USER_NAME=$(logname)
-  sudo chown -R "$USER_NAME" local
+  sudo chown -R "$USER_NAME" local || true
 fi
 
 echo Finished installing Testrun
