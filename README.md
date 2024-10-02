@@ -48,7 +48,7 @@ The DUT must be able to obtain an IP address via DHCP.
 
 # Get started :arrow_forward:
 
-Once you meet the hardware and software requirements, follow the Testrun [Get started guide](https://github.com/google/testrun/blob/main/docs/get_started.md). Additional guidance is available in the [docs directory](https://github.com/google/testrun/blob/main/docs).
+Once you meet the hardware and software requirements, follow the Testrun [Get started guide](/docs/get_started.md). Additional guidance is available in the [docs directory](/docs).
 
 # Roadmap :chart_with_upwards_trend:
 
@@ -56,7 +56,7 @@ Testrun continually evolves to further support end users by automating device ne
 
 # Accessibility :busts_in_silhouette:
 
-We're proud of our tool and strive to provide an enjoyable experience for everyone. Testrun goes through rigorous accessibility testing at each release. Download the [Testrun: Accessible features](https://github.com/google/testrun/raw/main/docs/ui/accessibility.mp4) video to learn more.You're welcome to [submit a new issue](https://github.com/google/testrun/issues) and provide feedback on our implementations. To learn more about Google's [Belonging initiative](https://www.google.co.uk/accessibility) and their approach to accessibility, visit their site.
+We're proud of our tool and strive to provide an enjoyable experience for everyone. Testrun goes through rigorous accessibility testing at each release. Download the [Testrun: Accessible features](/raw/docs/ui/accessibility.mp4) video to learn more.You're welcome to [submit a new issue](https://github.com/google/testrun/issues) and provide feedback on our implementations. To learn more about Google's [Belonging initiative](https://www.google.co.uk/accessibility) and their approach to accessibility, visit their site.
 
 # Issue reporting :triangular_flag_on_post:
 
@@ -71,9 +71,8 @@ We strongly encourage contributions from the community. Review the requirements 
 #### 1. What should I do if I have an issue while installing or upgrading Testrun?
 
  You can resolve most issues by reinstalling Testrun using these commands:
-
-    -  sudo docker system prune -a
-    -  sudo apt install ./testrun-*.deb
+- `sudo docker system prune -a`
+- `sudo apt install ./testrun-*.deb`
 
 If this doesn't resolve the problem, [raise an issue](https://github.com/google/testrun/issues).
 

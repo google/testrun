@@ -4,15 +4,12 @@
 
 -  [Get started](/docs/get_started.md)
     -  [Run on a virtual machine](/docs/virtual_machine.md)
-
 -  [Network](/docs/network/README.md)
     -  [Network addresses](/docs/network/addresses.md)
     -  [Add a new network service](/docs/network/add_new_service.md)
-
 -  [Testing](/docs/test/README.md)
     -  [Test modules](/docs/test/modules.md)
     -  [Test results](/docs/test/statuses.md)
-
 -  [Developer guidelines](/docs/dev/README.md)
 -  [Accessibility](/docs/ui/accessibility.md)
 -  [Roadmap](/docs/roadmap.pdf)

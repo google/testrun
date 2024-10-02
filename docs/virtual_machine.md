@@ -30,7 +30,7 @@ As part of installation, you must add the default user to the sudo group:
 1. Enter your password when prompted.
 1. Add the default user to the sudo group by running `adduser {username} sudo`.
 1. Restart the virtual machine.
-1. Follow the steps in the [Get started guide](https://github.com/google/testrun/blob/main/docs/get_started.md) to complete the installation.
+1. Follow the steps in the [Get started guide](/docs/get_started.md) to complete the installation.
 
 # Start Testrun
 
