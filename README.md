@@ -56,7 +56,7 @@ Testrun continually evolves to further support end users by automating device ne
 
 # Accessibility :busts_in_silhouette:
 
-We're proud of our tool and strive to provide an enjoyable experience for everyone. Testrun goes through rigorous accessibility testing at each release. Download the [Testrun: Accessible features](/raw/docs/ui/accessibility.mp4) video to learn more.You're welcome to [submit a new issue](https://github.com/google/testrun/issues) and provide feedback on our implementations. To learn more about Google's [Belonging initiative](https://www.google.co.uk/accessibility) and their approach to accessibility, visit their site.
+We're proud of our tool and strive to provide an enjoyable experience for everyone. Testrun goes through rigorous accessibility testing at each release. Download the [Testrun: Accessible features](https://github.com/google/testrun/raw/refs/heads/main/docs/ui/accessibility.mp4) video to learn more.You're welcome to [submit a new issue](https://github.com/google/testrun/issues) and provide feedback on our implementations. To learn more about Google's [Belonging initiative](https://www.google.co.uk/accessibility) and their approach to accessibility, visit their site.
 
 # Issue reporting :triangular_flag_on_post:
 

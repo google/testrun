@@ -4,8 +4,8 @@
 
 This page provides an overview of Testrun's network services. Visit these pages for additional information: 
 
--  Network [addresses](https://github.com/google/testrun/blob/main/docs/network/addresses.md)
--  [Add a new network service](https://github.com/google/testrun/blob/main/docs/network/add_new_service.md)
+-  [Network addresses](/docs/network/addresses.md)
+-  [Add a new network service](/docs/network/add_new_service.md)
 
 Testrun provides several built-in network services you can use for testing purposes. These services don't require any additional configuration. Below is a list and brief description of the network services provided.
 

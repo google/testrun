@@ -6,10 +6,11 @@ Testrun outputs the result and a description of each automated test. The table b
 
 | Result name           | Description              | What next?               |
 | --------------------- | ------------------------ | ------------------------ |
-| Compliant             | The device implements the required feature correctly.   | Nothing.                 |
-| Non-Compliant         | The device doesn’t support the specified requirements for the test.      | Modify or implement the required functionality on the device.  |
-| Feature Not Detected  | The device doesn’t implement a feature covered by the test.   | You may implement the functionality but it’s not required.   |
-| Error                 | An error occurred while running the test.  | Create a bug report requesting additional support to diagnose the issue.      |
+| Compliant             | The device implements the required feature correctly. | Nothing. |
+| Non-Compliant         | The device doesn’t support the specified requirements for the test. | Modify or implement the required functionality on the device. |
+| Informational         | Extra information about the device under test | Nothing. |
+| Feature Not Detected  | The device doesn’t implement a feature covered by the test. | You may implement the functionality but it’s not required. |
+| Error                 | An error occurred while running the test. | Create a bug report requesting additional support to diagnose the issue. |
 
 
 # Test requirements
@@ -28,3 +29,4 @@ Once testing is complete, the program produces an overall status for the test at
 -  Compliant: All required tests are implemented correctly, and all required if applicable tests are implemented correctly (where the feature is implemented).
 -  Non-Compliant: One or more of the required tests (or Required If Applicable tests) produced a Non-Compliant result.
 -  Error: One or more of the required tests (or Required If Applicable tests) didn't execute correctly. This doesn't necessarily indicate that the device is Compliant or Non-Compliant.
+-  Cancelled: Either the device was disconnected during testing or the user requested to cancel the test attempt.

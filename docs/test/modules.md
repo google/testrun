@@ -16,11 +16,11 @@ Testrun provides some pre-built modules you can use when testing your own device
 | TLS          | Determine TLS client and server behavior     | [TLS module]                  |
 
 
-[Base module]: https://github.com/google/testrun/blob/main/modules/test/base/README.md
-[Baseline module]: https://github.com/google/testrun/blob/main/modules/test/baseline/README.md
-[Connection module]: https://github.com/google/testrun/blob/main/modules/test/conn/README.md
-[DNS module]: https://github.com/google/testrun/blob/main/modules/test/dns/README.md
-[Services module]: https://github.com/google/testrun/blob/main/modules/test/services/README.md
-[NTP module]: https://github.com/google/testrun/blob/main/modules/test/ntp/README.md
-[Protocol Module]: https://github.com/google/testrun/blob/main/modules/test/protocol/README.md
-[TLS module]: https://github.com/google/testrun/blob/main/modules/test/tls/README.md
+[Base module]: /modules/test/base/README.md
+[Baseline module]: /modules/test/baseline/README.md
+[Connection module]: /modules/test/conn/README.md
+[DNS module]: /modules/test/dns/README.md
+[Services module]: /modules/test/services/README.md
+[NTP module]: /modules/test/ntp/README.md
+[Protocol Module]: /modules/test/protocol/README.md
+[TLS module]: /modules/test/tls/README.md

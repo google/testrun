@@ -2,4 +2,4 @@
 
 # Testing
 
-Testrun provides modules for you to test your own device. You can learn more about the requirements for each on the [Test modules page](https://github.com/google/testrun/blob/main/docs/test/modules.md). The [Test results page](https://github.com/google/testrun/blob/main/docs/test/statuses.md) outlines possible results and how to interpret them.
+Testrun provides modules for you to test your own device. You can learn more about the requirements for each on the [Test modules page](/docs/test/modules.md). The [Test results page](/docs/test/statuses.md) outlines possible results and how to interpret them.

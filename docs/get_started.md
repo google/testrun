@@ -41,7 +41,7 @@ Install Docker on your Ubuntu LTS PC using [the installation guide](https://docs
 
 ## Device
 
-You can test any device with an Ethernet connection and support for IPv4 DHCP. However, to achieve a compliant test outcome, you must configure your device correctly and implement the required security features. The [Application Security Requirements for IoT Devices](https://partner-security.withgoogle.com/docs/iot_requirements) outlines these standards. Additional details are available on the [Test modules page](https://github.com/google/testrun/blob/main/docs/test/modules.md).
+You can test any device with an Ethernet connection and support for IPv4 DHCP. However, to achieve a compliant test outcome, you must configure your device correctly and implement the required security features. The [Application Security Requirements for IoT Devices](https://partner-security.withgoogle.com/docs/iot_requirements) outlines these standards. Additional details are available on the [Test modules page](/docs/test/modules.md).
 
 # Installation
 

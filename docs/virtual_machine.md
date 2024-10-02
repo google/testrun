@@ -2,7 +2,7 @@
 
 # Run on a virtual machine
 
-This page provides steps to use Testrun within a virtual machine in VirtualBox. VMWare and other providers haven't been tested yet. You should use these instructions alongside the [Get started guide](https://github.com/google/testrun/blob/main/docs/get_started.md).
+This page provides steps to use Testrun within a virtual machine in VirtualBox. VMWare and other providers haven't been tested yet. You should use these instructions alongside the [Get started guide](/docs/get_started.md).
 
 # Prerequisites
 
