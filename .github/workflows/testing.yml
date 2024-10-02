@@ -2,9 +2,7 @@ name: Testrun test suite
 permissions: {}
 
 on:
-  pull_request:
-  schedule:
-    - cron: '0 13 * * *'
+  push:
 
 jobs:
   testrun_baseline:
