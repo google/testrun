@@ -18,6 +18,7 @@ import os
 import json
 import shutil
 from jinja2 import Template
+import re
 
 MODULE = 'report'
 
@@ -147,16 +148,18 @@ class ReportTest(unittest.TestCase):
     with open(CSS_PATH, 'r', encoding='UTF-8') as css_file:
       styles = css_file.read()
 
+    # Load the html file
+    with open(HTML_PATH, 'r', encoding='UTF-8') as html_file:
+      html_content = html_file.read()
+
+      # Search for head content using regex
+      head = re.search(r'<head.*?>.*?</head>', html_content, re.DOTALL).group(0)
+
     # Define the html template
-    html_template = '''
+    html_template = f'''
     <!DOCTYPE html>
     <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Testrun Report</title>
-      <style>{{ styles }}</style>
-    </head>
+    {head}
     <body>
       {{ body }}
     </body>
