@@ -104,10 +104,10 @@ class ReportTest(unittest.TestCase):
     # Loop through each items from UNIT_TEST_DIR
     for test in unit_tests:
 
-      # If the module name inside the test_modules list 
+      # If the module name inside the test_modules list
       if test in test_modules:
 
-        # Construct the module path of outpit dir for the module 
+        # Construct the module path of outpit dir for the module
         output_dir = os.path.join(UNIT_TEST_DIR,test,'output')
 
         # Check if output dir exists
