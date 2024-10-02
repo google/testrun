@@ -332,6 +332,7 @@ describe('ReportsComponent', () => {
           green: false,
           red: true,
           blue: false,
+          cyan: false,
           grey: false,
         });
         component.ngOnInit();

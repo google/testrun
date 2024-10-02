@@ -158,11 +158,9 @@ export class TestrunComponent implements OnInit, OnDestroy {
           this.testrunStore.setStatus(status);
         }
         this.testrunStore.setIsOpenStartTestrun(false);
-        timer(10)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe(() => {
-            this.focusManagerService.focusFirstElementInContainer();
-          });
+        timer(1000).subscribe(() => {
+          this.focusManagerService.focusFirstElementInContainer();
+        });
       });
   }
 

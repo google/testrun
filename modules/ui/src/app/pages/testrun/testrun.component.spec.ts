@@ -366,7 +366,7 @@ describe('TestrunComponent', () => {
             systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
           })
         );
-        tick(10);
+        tick(1000);
         expect(
           stateServiceMock.focusFirstElementInContainer
         ).toHaveBeenCalled();
