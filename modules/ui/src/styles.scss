@@ -172,6 +172,11 @@ mat-hint {
     color: mat.m2-get-color-from-palette($color-primary, 800);
   }
 
+  &.cyan {
+    background: $cyan-50;
+    color: $cyan-900;
+  }
+
   &.grey {
     background: $color-background-grey;
     color: $grey-800;
