@@ -305,9 +305,12 @@ $form-min-width: 732px;
   background: $white;
 }
 
-.manufacturer-field:has(.error-multiline),
-.model-field:has(.error-multiline) {
-  padding-bottom: 14px;
+:host mat-form-field {
+  &::ng-deep.mat-mdc-form-field-subscript-wrapper:has(
+      mat-error.error-multiline
+    ) {
+    height: 46px;
+  }
 }
 
 .device-qualification-form-test-modules-container-error
