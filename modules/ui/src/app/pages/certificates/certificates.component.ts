@@ -104,7 +104,7 @@ export class CertificatesComponent implements OnDestroy {
     } else {
       // If next interactive element doest not exist, close button will be focused
       const menuButton = window.document.querySelector(
-        '.certificates-drawer-content .close-button'
+        '.certificates-drawer-header .certificates-drawer-header-button'
       ) as HTMLButtonElement;
       menuButton?.focus();
     }
