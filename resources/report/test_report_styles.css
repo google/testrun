@@ -367,7 +367,8 @@
       font-size: 18px;
     }
 
-    .result-list h3 {
+    .result-list h3,
+    .page-heading {
       padding-left: 0.2in;
       margin: 0.2in 0;
       font-size: 32px;
@@ -592,7 +593,7 @@
     }
 
     .steps-to-resolve-info-heading {
-      margin: 0 0 15px;
+      margin: 0 0 10px;
       font-size: 24px;
       font-weight: 500;
       line-height: 16px;
