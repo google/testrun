@@ -15,7 +15,7 @@
 """Session methods tests"""
 
 from unittest.mock import patch
-from common import session
+from core import session
 
 
 class MockUtil:
