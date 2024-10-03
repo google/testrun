@@ -128,7 +128,6 @@ class ReportTest(unittest.TestCase):
               # Open the html file in read mode
               with open(report_out_path, 'r', encoding='utf-8') as f:
                 report_out = f.read()
-
                 # Add the formatting
                 formatted_report = self.add_html_formatting(report_out)
 
@@ -154,18 +153,16 @@ class ReportTest(unittest.TestCase):
 
       # Search for head content using regex
       head = re.search(r'<head.*?>.*?</head>', html_content, re.DOTALL).group(0)
-
     # Define the html template
     html_template = f'''
     <!DOCTYPE html>
     <html lang="en">
     {head}
     <body>
-      {{ body }}
+      {body}
     </body>
     </html>
     '''
-
     # Create a Jinja2 template from the string
     template = Template(html_template)
 
