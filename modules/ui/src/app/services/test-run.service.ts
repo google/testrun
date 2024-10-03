@@ -148,8 +148,8 @@ export class TestRunService {
         result === StatusOfTestResult.Error,
       blue:
         result === StatusOfTestResult.SmartReady ||
-        result === StatusOfTestResult.Info ||
         result === StatusOfTestResult.InProgress,
+      cyan: result === StatusOfTestResult.Info,
       grey:
         result === StatusOfTestResult.NotDetected ||
         result === StatusOfTestResult.NotStarted ||
