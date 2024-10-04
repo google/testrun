@@ -431,7 +431,8 @@ class NetworkOrchestrator:
 
     for module_dir in os.listdir(net_modules_dir):
 
-      if self._get_network_module(module_dir) is None:
+      if (self._get_network_module(module_dir) is None and
+          module_dir != 'template'):
         loaded_module = self._load_network_module(module_dir)
         loaded_modules += loaded_module.dir_name + ' '
 
@@ -443,6 +444,7 @@ class NetworkOrchestrator:
     # Make sure we only load each module once since some modules will
     # depend on the same module
     if not any(m.dir_name == module_dir for m in self._net_modules):
+
       LOGGER.debug(f'Loading network module {module_dir}')
 
       modules_dir = os.path.join(self._path, NETWORK_MODULES_DIR)
