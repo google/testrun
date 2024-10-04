@@ -30,7 +30,7 @@ LOGGER = None
 class TLSModule(TestModule):
   """The TLS testing module."""
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                module,
                log_dir=None,
                conf_file=None,

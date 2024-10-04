@@ -41,7 +41,7 @@ LEASE_WAIT_TIME_DEFAULT = 60
 class ConnectionModule(TestModule):
   """Connection Test module"""
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                module,
                log_dir=None,
                conf_file=None,

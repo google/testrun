@@ -32,7 +32,7 @@ LOGGER = logger.get_logger("runner")
 class TestRunner:
   """Controls and starts the Test Run application."""
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                config_file=None,
                validate=False,
                net_only=False,

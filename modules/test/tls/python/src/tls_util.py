@@ -44,7 +44,7 @@ DEFAULT_ALLOWED_PROTOCOLS = ['quic']
 class TLSUtil():
   """Helper class for various tests concerning TLS communications"""
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                logger,
                bin_dir=DEFAULT_BIN_DIR,
                cert_out_dir=DEFAULT_CERTS_OUT_DIR,

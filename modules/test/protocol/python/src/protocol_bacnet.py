@@ -33,7 +33,7 @@ DEFAULT_BIN_DIR = '/testrun/bin'
 class BACnet():
   """BACnet Test module"""
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                log,
                captures_dir=DEFAULT_CAPTURES_DIR,
                capture_file=DEFAULT_CAPTURE_FILE,

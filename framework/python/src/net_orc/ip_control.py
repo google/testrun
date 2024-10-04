@@ -185,7 +185,7 @@ class IPControl:
         ns_clean = self.delete_namespace
     return link_clean and ns_clean
 
-  def configure_container_interface(self,
+  def configure_container_interface(self, # pylint: disable=R0917
                                     bridge_intf,
                                     container_intf,
                                     namespace_intf,

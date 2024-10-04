@@ -29,7 +29,7 @@ CONF_FILE = '/testrun/conf/module_config.json'
 class TestModule:
   """An example test module."""
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                module_name,
                log_name,
                log_dir=None,

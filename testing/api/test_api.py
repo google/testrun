@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Test assertions for CI network baseline test"""
-# pylint: disable=redefined-outer-name
+# pylint: disable=redefined-outer-name,R0917,W0613
 
 from collections.abc import Callable
 import copy
@@ -138,7 +138,7 @@ def testing_devices():
   return local_get_devices()
 
 @pytest.fixture
-def testrun(request): # pylint: disable=W0613
+def testrun(request):
   """ Start intstance of testrun """
   # pylint: disable=W1509
   with subprocess.Popen(
@@ -251,7 +251,7 @@ def restore_config():
   if os.path.exists(SYSTEM_CONFIG_RESTORE_PATH):
     shutil.copy(SYSTEM_CONFIG_RESTORE_PATH, SYSTEM_CONFIG_PATH)
 
-def test_get_system_interfaces(testrun): # pylint: disable=W0613
+def test_get_system_interfaces(testrun):
   """Tests API system interfaces against actual local interfaces"""
 
   # Send a GET request to the API to retrieve system interfaces
@@ -271,7 +271,7 @@ def test_get_system_interfaces(testrun): # pylint: disable=W0613
   # Ensure that all values in the response are strings
   assert all(isinstance(x, str) for x in response)
 
-def test_update_system_config(testrun, restore_config): # pylint: disable=W0613
+def test_update_system_config(testrun, restore_config):
   """Test update system configuration endpoint ('/system/config')"""
 
   # Configuration data to update
@@ -312,7 +312,7 @@ def test_update_system_config(testrun, restore_config): # pylint: disable=W0613
     == updated_system_config["log_level"]
   )
 
-def test_update_system_config_invalid_config(testrun, restore_config): # pylint: disable=W0613
+def test_update_system_config_invalid_config(testrun, restore_config):
   """Test invalid configuration file for update system configuration"""
 
   # Configuration data to update with missing "log_level" field
@@ -331,7 +331,7 @@ def test_update_system_config_invalid_config(testrun, restore_config): # pylint:
   # Check if status code is 400 (Invalid config)
   assert r.status_code == 400
 
-def test_get_system_config(testrun): # pylint: disable=W0613
+def test_get_system_config(testrun):
   """Tests get system configuration endpoint ('/system/config')"""
 
   # Send a GET request to the API to retrieve system configuration
@@ -363,7 +363,7 @@ def test_get_system_config(testrun): # pylint: disable=W0613
       == api_config["network"]["internet_intf"]
   )
 
-def test_start_testrun_success(empty_devices_dir, testrun, add_device): # pylint: disable=W0613
+def test_start_testrun_success(empty_devices_dir, testrun, add_device):
   """Test for testrun started successfully """
 
   _, mac_address = add_device()
@@ -399,7 +399,7 @@ def test_start_testrun_success(empty_devices_dir, testrun, add_device): # pylint
   # Check that firmware in response
   assert "firmware" in response["device"]
 
-def test_start_testrun_missing_device(testing_devices, testrun): # pylint: disable=W0613
+def test_start_testrun_missing_device(testing_devices, testrun):
   """Test for missing device when testrun is started """
 
   # Payload empty dict (no device)
@@ -417,7 +417,7 @@ def test_start_testrun_missing_device(testing_devices, testrun): # pylint: disab
   # Check if 'error' in response
   assert "error" in response
 
-def test_start_testrun_already_started(empty_devices_dir, testrun, add_device): # pylint: disable=W0613
+def test_start_testrun_already_started(empty_devices_dir, testrun, add_device):
   """Test for testrun already started """
 
   _, mac_address = add_device()
@@ -453,7 +453,7 @@ def test_start_testrun_already_started(empty_devices_dir, testrun, add_device): 
   # Check if 'error' in response
   assert "error" in response
 
-def test_start_testrun_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
+def test_start_testrun_device_not_found(empty_devices_dir, testrun):
   """Test for start testrun device not found """
 
   # Payload with device details with no mac address assigned
@@ -477,7 +477,7 @@ def test_start_testrun_device_not_found(empty_devices_dir, testrun): # pylint: d
 
 # Currently not working due to blocking during monitoring period
 @pytest.mark.skip()
-def test_status_in_progress(testing_devices, testrun): # pylint: disable=W0613
+def test_status_in_progress(testing_devices, testrun):
 
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
@@ -500,8 +500,8 @@ def test_status_in_progress(testing_devices, testrun): # pylint: disable=W0613
 # Currently not working due to blocking during monitoring period
 @pytest.mark.skip()
 def test_start_testrun_already_in_progress(
-  testing_devices, # pylint: disable=W0613
-  testrun): # pylint: disable=W0613
+  testing_devices,
+  testrun):
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
 
@@ -522,7 +522,7 @@ def test_start_testrun_already_in_progress(
   assert r.status_code == 409
 
 @pytest.mark.skip()
-def test_trigger_run(testing_devices, testrun): # pylint: disable=W0613
+def test_trigger_run(testing_devices, testrun):
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
   assert r.status_code == 200
@@ -574,7 +574,7 @@ def test_trigger_run(testing_devices, testrun): # pylint: disable=W0613
   assert results["baseline.compliant"]["result"] == "Compliant"
 
 @pytest.mark.skip()
-def test_stop_running_test(testing_devices, testrun): # pylint: disable=W0613
+def test_stop_running_test(testing_devices, testrun):
   payload = {"device": {"mac_addr": ALL_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload),
                     timeout=10)
@@ -610,7 +610,7 @@ def test_stop_running_test(testing_devices, testrun): # pylint: disable=W0613
 
   assert response["status"] == "Cancelled"
 
-def test_stop_running_not_running(testrun): # pylint: disable=W0613
+def test_stop_running_not_running(testrun):
   # Validate response
   r = requests.post(f"{API}/system/stop",
                     timeout=10)
@@ -621,7 +621,7 @@ def test_stop_running_not_running(testrun): # pylint: disable=W0613
   assert response["error"] == "Testrun is not currently running"
 
 @pytest.mark.skip()
-def test_multiple_runs(testing_devices, testrun): # pylint: disable=W0613
+def test_multiple_runs(testing_devices, testrun):
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload),
                     timeout=10)
@@ -678,7 +678,7 @@ def test_multiple_runs(testing_devices, testrun): # pylint: disable=W0613
 
   stop_test_device("x123")
 
-def test_status_idle(testrun): # pylint: disable=W0613
+def test_status_idle(testrun):
   """Test system status 'idle' endpoint (/system/status)"""
   until_true(
       lambda: query_system_status().lower() == "idle",
@@ -686,7 +686,7 @@ def test_status_idle(testrun): # pylint: disable=W0613
       30,
   )
 
-def test_system_shutdown(testrun): # pylint: disable=W0613
+def test_system_shutdown(testrun):
   """Test the shutdown system endpoint"""
   # Send a POST request to initiate the system shutdown
   r = requests.post(f"{API}/system/shutdown", timeout=5)
@@ -694,7 +694,7 @@ def test_system_shutdown(testrun): # pylint: disable=W0613
   # Check if the response status code is 200 (OK)
   assert r.status_code == 200, f"Expected status code 200, got {r.status_code}"
 
-def test_system_shutdown_in_progress(empty_devices_dir, testrun, add_device): # pylint: disable=W0613
+def test_system_shutdown_in_progress(empty_devices_dir, testrun, add_device):
   """Test system shutdown during an in-progress test"""
 
   _, mac_address = add_device()
@@ -725,7 +725,7 @@ def test_system_shutdown_in_progress(empty_devices_dir, testrun, add_device): # 
   # Check if the response status code is 400 (test in progress)
   assert r.status_code == 400
 
-def test_system_version(testrun): # pylint: disable=W0613
+def test_system_version(testrun):
   """Test for testrun version endpoint"""
 
   # Send the get request to the API
@@ -757,7 +757,7 @@ def test_system_version(testrun): # pylint: disable=W0613
 # Tests for reports endpoints
 
 @pytest.fixture
-def create_report_folder(): # pylint: disable=W0613
+def create_report_folder():
   """Fixture to create the reports folder in local/devices"""
   def _create_report_folder(device_name, mac_address, timestamp):
 
@@ -821,7 +821,7 @@ def add_device():
   # Returning the reference to create_device
   return create_and_get_device
 
-def test_get_reports_no_reports(testrun): # pylint: disable=W0613
+def test_get_reports_no_reports(testrun):
   """Test get reports when no reports exist"""
 
   # Send a GET request to the /reports endpoint
@@ -839,7 +839,7 @@ def test_get_reports_no_reports(testrun): # pylint: disable=W0613
   # Check if the response is an empty list
   assert response == []
 
-def test_delete_report_success(empty_devices_dir, testrun, # pylint: disable=W0613
+def test_delete_report_success(empty_devices_dir, testrun,
                         add_device, create_report_folder):
   """Test for succesfully delete a report (200)"""
 
@@ -872,8 +872,8 @@ def test_delete_report_success(empty_devices_dir, testrun, # pylint: disable=W06
   # Check if report folder has been deleted
   assert not os.path.exists(report_folder)
 
-def test_delete_report_no_payload(empty_devices_dir, testrun, # pylint: disable=W0613
-                           add_device, create_report_folder): # pylint: disable=W0613
+def test_delete_report_no_payload(empty_devices_dir, testrun,
+                           add_device, create_report_folder):
   """Test delete report bad request when the payload is missing (400)"""
 
   # Send a DELETE request to remove the report without the payload
@@ -891,7 +891,7 @@ def test_delete_report_no_payload(empty_devices_dir, testrun, # pylint: disable=
   # Check if the correct error message returned
   assert "Invalid request received, missing body" in response["error"]
 
-def test_delete_report_invalid_payload(empty_devices_dir, testrun, # pylint: disable=W0613
+def test_delete_report_invalid_payload(empty_devices_dir, testrun,
                                 add_device, create_report_folder):
   """Test delete report bad request, mac addr and timestamp are missing (400)"""
 
@@ -919,7 +919,7 @@ def test_delete_report_invalid_payload(empty_devices_dir, testrun, # pylint: dis
   # Check if the correct error message returned
   assert "Missing mac address or timestamp" in response["error"]
 
-def test_delete_report_invalid_timestamp(empty_devices_dir, testrun, # pylint: disable=W0613
+def test_delete_report_invalid_timestamp(empty_devices_dir, testrun,
                                   add_device, create_report_folder):
   """Test delete report bad request when timestamp format is not valid (400)"""
 
@@ -953,7 +953,7 @@ def test_delete_report_invalid_timestamp(empty_devices_dir, testrun, # pylint: d
   # Check if the correct error message returned
   assert "Incorrect timestamp format" in response["error"]
 
-def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=W0613
+def test_delete_report_no_device(empty_devices_dir, testrun):
   """Test delete report when device does not exist (404)"""
 
   # Payload to be deleted for a non existing device
@@ -977,7 +977,7 @@ def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=
   # Check if the correct error message returned
   assert "Could not find device" in response["error"]
 
-def test_delete_report_no_report(empty_devices_dir, testrun, add_device): # pylint: disable=W0613
+def test_delete_report_no_report(empty_devices_dir, testrun, add_device):
   """Test for delete report when report does not exist (404)"""
 
   # Load the device_name and mac_address from add_device fixture
@@ -1006,7 +1006,7 @@ def test_delete_report_no_report(empty_devices_dir, testrun, add_device): # pyli
   # Check if the correct error message is returned
   assert "Report not found" in response["error"]
 
-def test_get_report_success(empty_devices_dir, testrun, # pylint: disable=W0613
+def test_get_report_success(empty_devices_dir, testrun,
                      add_device, create_report_folder):
   """Test get report when report exists (200)"""
 
@@ -1028,7 +1028,7 @@ def test_get_report_success(empty_devices_dir, testrun, # pylint: disable=W0613
   # Check if the response is a PDF
   assert r.headers["Content-Type"] == "application/pdf"
 
-def test_get_report_not_found(empty_devices_dir, testrun, add_device): # pylint: disable=W0613
+def test_get_report_not_found(empty_devices_dir, testrun, add_device):
   """Test get report when report doesn't exist (404)"""
 
   # Load the device_name and ignore mac_address from add_device fixture
@@ -1049,7 +1049,7 @@ def test_get_report_not_found(empty_devices_dir, testrun, add_device): # pylint:
   # Check if the correct error message returned
   assert "Report could not be found" in response["error"]
 
-def test_get_report_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
+def test_get_report_device_not_found(empty_devices_dir, testrun):
   """Test getting a report when the device is not found (404)"""
 
   # Assign device name and timestamp
@@ -1070,7 +1070,7 @@ def test_get_report_device_not_found(empty_devices_dir, testrun): # pylint: disa
   # Check if the correct error message is returned
   assert "Device not found" in response["error"]
 
-def test_export_report_device_not_found(empty_devices_dir, testrun, # pylint: disable=W0613
+def test_export_report_device_not_found(empty_devices_dir, testrun,
                                  create_report_folder):
   """Test for export the report result when the device could not be found"""
 
@@ -1096,7 +1096,7 @@ def test_export_report_device_not_found(empty_devices_dir, testrun, # pylint: di
   # Check if the correct error message returned
   assert "A device with that name could not be found" in response["error"]
 
-def test_export_report_profile_not_found(empty_devices_dir, testrun, # pylint: disable=W0613
+def test_export_report_profile_not_found(empty_devices_dir, testrun,
                             add_device, create_report_folder):
   """Test for export report result when the profile is not found"""
 
@@ -1126,7 +1126,7 @@ def test_export_report_profile_not_found(empty_devices_dir, testrun, # pylint: d
   # Check if the correct error message returned
   assert "A profile with that name could not be found" in response["error"]
 
-def test_export_report_not_found(empty_devices_dir, testrun, add_device): # pylint: disable=W0613
+def test_export_report_not_found(empty_devices_dir, testrun, add_device):
   """Test for export the report result when the report could not be found"""
 
   # Load the device_name and ignore mac_address from add_device fixture
@@ -1147,8 +1147,8 @@ def test_export_report_not_found(empty_devices_dir, testrun, add_device): # pyli
   # Check if the correct error message is returned
   assert "Report could not be found" in response["error"]
 
-def test_export_report_with_profile(empty_devices_dir, testrun, add_device, # pylint: disable=W0613
-                        create_report_folder, reset_profiles, add_profile): # pylint: disable=W0613
+def test_export_report_with_profile(empty_devices_dir, testrun, add_device,
+                        create_report_folder, reset_profiles, add_profile):
   """Test export results with existing profile when report exists (200)"""
 
   # Create a profile using the add_profile fixture
@@ -1174,7 +1174,7 @@ def test_export_report_with_profile(empty_devices_dir, testrun, add_device, # py
   # Check if the response is a zip file
   assert r.headers["Content-Type"] == "application/zip"
 
-def test_export_results_with_no_profile(empty_devices_dir, testrun, # pylint: disable=W0613
+def test_export_results_with_no_profile(empty_devices_dir, testrun,
                                         add_device, create_report_folder):
   """Test export results with no profile when report exists (200)"""
 
@@ -1199,7 +1199,7 @@ def test_export_results_with_no_profile(empty_devices_dir, testrun, # pylint: di
 # Tests for device endpoints
 
 @pytest.mark.skip()
-def test_status_non_compliant(testing_devices, testrun): # pylint: disable=W0613
+def test_status_non_compliant(testing_devices, testrun):
 
   r = requests.get(f"{API}/devices", timeout=5)
   all_devices = r.json()
@@ -1230,7 +1230,7 @@ def test_status_non_compliant(testing_devices, testrun): # pylint: disable=W0613
 
   stop_test_device("x123")
 
-def test_create_get_devices(empty_devices_dir, testrun): # pylint: disable=W0613
+def test_create_get_devices(empty_devices_dir, testrun):
 
   device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
@@ -1272,7 +1272,7 @@ def test_create_get_devices(empty_devices_dir, testrun): # pylint: disable=W0613
         [device_1[key], device_2[key]]
     )
 
-def test_delete_device_success(empty_devices_dir, testrun): # pylint: disable=W0613
+def test_delete_device_success(empty_devices_dir, testrun):
 
   device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
@@ -1329,7 +1329,7 @@ def test_delete_device_success(empty_devices_dir, testrun): # pylint: disable=W0
         [device_2[key]]
     )
 
-def test_delete_device_not_found(empty_devices_dir, testrun): # pylint: disable=W0613
+def test_delete_device_not_found(empty_devices_dir, testrun):
 
   payload = {"mac_addr": "non_existing"}
 
@@ -1342,7 +1342,7 @@ def test_delete_device_not_found(empty_devices_dir, testrun): # pylint: disable=
 
   assert len(local_get_devices()) == 0
 
-def test_delete_device_no_mac(empty_devices_dir, testrun): # pylint: disable=W0613
+def test_delete_device_no_mac(empty_devices_dir, testrun):
 
   device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
@@ -1367,7 +1367,7 @@ def test_delete_device_no_mac(empty_devices_dir, testrun): # pylint: disable=W06
 
 # Currently not working due to blocking during monitoring period
 @pytest.mark.skip()
-def test_delete_device_testrun_running(testing_devices, testrun): # pylint: disable=W0613
+def test_delete_device_testrun_running(testing_devices, testrun):
 
   payload = {"device": {"mac_addr": BASELINE_MAC_ADDR, "firmware": "asd"}}
   r = requests.post(f"{API}/system/start", data=json.dumps(payload), timeout=10)
@@ -1405,8 +1405,8 @@ def test_delete_device_testrun_running(testing_devices, testrun): # pylint: disa
   assert r.status_code == 403
 
 def test_start_system_not_configured_correctly(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+    empty_devices_dir,
+    testrun):
 
   device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
@@ -1423,8 +1423,8 @@ def test_start_system_not_configured_correctly(
 
   assert r.status_code == 500
 
-def test_start_device_not_found(empty_devices_dir, # pylint: disable=W0613
-                                testrun): # pylint: disable=W0613
+def test_start_device_not_found(empty_devices_dir,
+                                testrun):
 
   device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
@@ -1445,8 +1445,8 @@ def test_start_device_not_found(empty_devices_dir, # pylint: disable=W0613
   assert r.status_code == 404
 
 def test_start_missing_device_information(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+    empty_devices_dir,
+    testrun):
 
   device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
@@ -1462,8 +1462,8 @@ def test_start_missing_device_information(
   assert r.status_code == 400
 
 def test_create_device_already_exists(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+    empty_devices_dir,
+    testrun):
 
   device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
@@ -1479,8 +1479,8 @@ def test_create_device_already_exists(
   assert r.status_code == 409
 
 def test_create_device_invalid_json(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+    empty_devices_dir,
+    testrun):
 
   device_1 = {}
 
@@ -1490,8 +1490,8 @@ def test_create_device_invalid_json(
   assert r.status_code == 400
 
 def test_create_device_invalid_request(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+    empty_devices_dir,
+    testrun):
 
   r = requests.post(f"{API}/device",
                     data=None,
@@ -1499,8 +1499,8 @@ def test_create_device_invalid_request(
   assert r.status_code == 400
 
 def test_device_edit_device(
-    testing_devices, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+    testing_devices,
+    testrun):
   with open(
       testing_devices[1], encoding="utf-8"
   ) as f:
@@ -1547,8 +1547,8 @@ def test_device_edit_device(
   assert updated_device_api["test_modules"] == new_test_modules
 
 def test_device_edit_device_not_found(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+    empty_devices_dir,
+    testrun):
 
   device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
@@ -1573,8 +1573,8 @@ def test_device_edit_device_not_found(
   assert r.status_code == 404
 
 def test_device_edit_device_incorrect_json_format(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+    empty_devices_dir,
+    testrun):
 
   device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
@@ -1594,8 +1594,8 @@ def test_device_edit_device_incorrect_json_format(
   assert r.status_code == 400
 
 def test_device_edit_device_with_mac_already_exists(
-    empty_devices_dir, # pylint: disable=W0613
-    testrun): # pylint: disable=W0613
+    empty_devices_dir,
+    testrun):
 
   device_1 = load_json("device_1.json", directory=DEVICES_PATH)
 
@@ -1632,7 +1632,7 @@ def test_device_edit_device_with_mac_already_exists(
 
   assert r.status_code == 409
 
-def test_get_devices_format(testrun): # pylint: disable=W0613
+def test_get_devices_format(testrun):
   """ Test for get devices format (200) """
 
   # Send the get request
@@ -1686,7 +1686,7 @@ def test_get_devices_format(testrun): # pylint: disable=W0613
           # Check if the key has the expected data type
           assert isinstance(questions[key], key_type)
 
-def test_invalid_path_get(testrun): # pylint: disable=W0613
+def test_invalid_path_get(testrun):
   r = requests.get(f"{API}/blah/blah", timeout=5)
   response = r.json()
   assert r.status_code == 404
@@ -1699,7 +1699,7 @@ def test_invalid_path_get(testrun): # pylint: disable=W0613
   # validate structure
   assert set(dict_paths(mockito)) == set(dict_paths(response))
 
-def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W0613
+def test_create_invalid_chars(empty_devices_dir, testrun):
   # local_delete_devices(ALL_DEVICES)
   # We must start test run with no devices in local/devices for this test
   # to function as expected
@@ -1724,7 +1724,7 @@ def test_create_invalid_chars(empty_devices_dir, testrun): # pylint: disable=W06
   print(r.text)
   print(r.status_code)
 
-def test_get_test_modules(testrun): # pylint: disable=W0613
+def test_get_test_modules(testrun):
   """Test the /system/modules endpoint to get the test modules"""
 
   # Send a GET request to the API endpoint
@@ -1739,7 +1739,7 @@ def test_get_test_modules(testrun): # pylint: disable=W0613
   # Check if the response is a list
   assert isinstance(response, list)
 
-def test_sys_testpacks(testrun): # pylint: disable=W0613
+def test_sys_testpacks(testrun):
   """ Test for system testpack endpoint (200) """
 
   # Send the get request to the API
@@ -1837,7 +1837,7 @@ def add_cert():
   # Returning the reference to upload_certificate
   return upload_cert
 
-def test_get_certificates_no_certificates(testrun, reset_certs): # pylint: disable=W0613
+def test_get_certificates_no_certificates(testrun, reset_certs):
   """Test for get certificates when no certificates have been uploaded"""
 
   # Send the get request to "/system/config/certs" endpoint
@@ -1855,7 +1855,7 @@ def test_get_certificates_no_certificates(testrun, reset_certs): # pylint: disab
   # Check if the list is empty
   assert len(response) == 0
 
-def test_get_certificates(testrun, reset_certs, add_cert): # pylint: disable=W0613
+def test_get_certificates(testrun, reset_certs, add_cert):
   """Test for get certificates when two certificates have been uploaded"""
 
   # Use add_cert fixture to upload the first certificate
@@ -1894,7 +1894,7 @@ def test_get_certificates(testrun, reset_certs, add_cert): # pylint: disable=W06
   # Check if response contains two certificates
   assert len(response) == 2
 
-def test_upload_certificate(testrun, reset_certs): # pylint: disable=W0613
+def test_upload_certificate(testrun, reset_certs):
   """Test for upload certificate successfully"""
 
   # Load the first certificate file content using the utility method
@@ -1953,7 +1953,7 @@ def test_upload_certificate(testrun, reset_certs): # pylint: disable=W0613
   # Check if "WR2.pem" exists
   assert any(cert["filename"] == "WR2.pem" for cert in response)
 
-def test_upload_invalid_certificate_format(testrun, reset_certs): # pylint: disable=W0613
+def test_upload_invalid_certificate_format(testrun, reset_certs):
   """Test for upload an invalid certificate format """
 
   # Load the first certificate file content using the utility method
@@ -1975,7 +1975,7 @@ def test_upload_invalid_certificate_format(testrun, reset_certs): # pylint: disa
   # Check if "error" key is in response
   assert "error" in response
 
-def test_upload_invalid_certificate_name(testrun, reset_certs): # pylint: disable=W0613
+def test_upload_invalid_certificate_name(testrun, reset_certs):
   """Test for upload a valid certificate with invalid filename"""
 
   # Assign the invalid certificate name to a variable
@@ -2000,7 +2000,7 @@ def test_upload_invalid_certificate_name(testrun, reset_certs): # pylint: disabl
   # Check if "error" key is in response
   assert "error" in response
 
-def test_upload_existing_certificate(testrun, reset_certs): # pylint: disable=W0613
+def test_upload_existing_certificate(testrun, reset_certs):
   """Test for upload an existing certificate"""
 
   # Load the first certificate file content using the utility method
@@ -2044,7 +2044,7 @@ def test_upload_existing_certificate(testrun, reset_certs): # pylint: disable=W0
   # Check if "error" key is in response
   assert "error" in response
 
-def test_delete_certificate_success(testrun, reset_certs, add_cert): # pylint: disable=W0613
+def test_delete_certificate_success(testrun, reset_certs, add_cert):
   """Test for successfully deleting an existing certificate"""
 
   # Use the add_cert fixture to upload the first certificate
@@ -2082,7 +2082,7 @@ def test_delete_certificate_success(testrun, reset_certs, add_cert): # pylint: d
   # Check that the certificate is no longer listed
   assert not any(cert["filename"] == "crt.pem" for cert in response)
 
-def test_delete_certificate_bad_request(testrun, reset_certs, add_cert): # pylint: disable=W0613
+def test_delete_certificate_bad_request(testrun, reset_certs, add_cert):
   """Test for delete a certificate without providing the name"""
 
   # Use the add_cert fixture to upload the first certificate
@@ -2105,7 +2105,7 @@ def test_delete_certificate_bad_request(testrun, reset_certs, add_cert): # pylin
   # Check if error in response
   assert "error" in response
 
-def test_delete_certificate_not_found(testrun, reset_certs): # pylint: disable=W0613
+def test_delete_certificate_not_found(testrun, reset_certs):
   """Test for delete certificate when does not exist"""
 
   # Attempt to delete a certificate with a name that doesn't exist
@@ -2223,7 +2223,7 @@ def profile_exists(profile_name):
   # Return if name is in the list of profiles
   return any(p["name"] == profile_name for p in profiles)
 
-def test_get_profiles_format(testrun): # pylint: disable=W0613
+def test_get_profiles_format(testrun):
   """Test profiles format"""
 
   # Send the get request
@@ -2243,7 +2243,7 @@ def test_get_profiles_format(testrun): # pylint: disable=W0613
     assert "question" in item
     assert "type" in item
 
-def test_get_profiles(testrun, reset_profiles, add_profile): # pylint: disable=W0613
+def test_get_profiles(testrun, reset_profiles, add_profile):
   """Test for get profiles (no profile, one profile, two profiles)"""
 
   # Test for no profile
@@ -2326,7 +2326,7 @@ def test_get_profiles(testrun, reset_profiles, add_profile): # pylint: disable=W
   # Check if response contains two profiles
   assert len(response) == 2
 
-def test_create_profile(testrun, reset_profiles): # pylint: disable=W0613
+def test_create_profile(testrun, reset_profiles):
   """Test for create profile when profile does not exist"""
 
   # Load the profile
@@ -2368,7 +2368,7 @@ def test_create_profile(testrun, reset_profiles): # pylint: disable=W0613
   # Check if profile was created
   assert created_profile is not None
 
-def test_update_profile(testrun, reset_profiles, add_profile): # pylint: disable=W0613
+def test_update_profile(testrun, reset_profiles, add_profile):
   """Test for update profile when profile already exists"""
 
   # Load the new profile using add_profile fixture
@@ -2420,7 +2420,7 @@ def test_update_profile(testrun, reset_profiles, add_profile): # pylint: disable
   # Check if profile was updated
   assert updated_profile_check is not None
 
-def test_update_profile_invalid_json(testrun, reset_profiles, add_profile): # pylint: disable=W0613
+def test_update_profile_invalid_json(testrun, reset_profiles, add_profile):
   """Test for update profile invalid JSON payload (no 'name')"""
 
   # Load the new profile using add_profile fixture
@@ -2444,7 +2444,7 @@ def test_update_profile_invalid_json(testrun, reset_profiles, add_profile): # py
   # Check if "error" key in response
   assert "error" in response
 
-def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable=W0613
+def test_create_profile_invalid_json(testrun, reset_profiles):
   """Test for create profile invalid JSON payload """
 
   # Invalid JSON
@@ -2465,7 +2465,7 @@ def test_create_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   # Check if "error" key in response
   assert "error" in response
 
-def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable=W0613
+def test_delete_profile(testrun, reset_profiles, add_profile):
   """Test for delete profile"""
 
   # Assign the profile from the fixture
@@ -2507,7 +2507,7 @@ def test_delete_profile(testrun, reset_profiles, add_profile): # pylint: disable
   # Check if profile was deleted
   assert deleted_profile is None
 
-def test_delete_profile_no_profile(testrun, reset_profiles): # pylint: disable=W0613
+def test_delete_profile_no_profile(testrun, reset_profiles):
   """Test delete profile if the profile does not exists"""
 
   # Assign the profile to delete
@@ -2522,7 +2522,7 @@ def test_delete_profile_no_profile(testrun, reset_profiles): # pylint: disable=W
   # Check if status code is 404 (Profile does not exist)
   assert r.status_code == 404
 
-def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable=W0613
+def test_delete_profile_invalid_json(testrun, reset_profiles):
   """Test for delete profile wrong JSON payload"""
 
   # Invalid payload
@@ -2561,7 +2561,7 @@ def test_delete_profile_invalid_json(testrun, reset_profiles): # pylint: disable
   # Check if "error" key in response
   assert "error" in response
 
-def test_delete_profile_server_error(testrun, reset_profiles, # pylint: disable=W0613
+def test_delete_profile_server_error(testrun, reset_profiles,
                                      add_profile):
   """Test for delete profile causing internal server error"""
 

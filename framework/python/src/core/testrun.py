@@ -62,7 +62,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
   orchestrator and user interface.
   """
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                config_file,
                validate=False,
                net_only=False,
