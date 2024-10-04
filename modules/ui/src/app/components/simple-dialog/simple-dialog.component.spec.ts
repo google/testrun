@@ -38,6 +38,8 @@ describe('DeleteFormComponent', () => {
           useValue: {
             keydownEvents: () => of(new KeyboardEvent('keydown', { code: '' })),
             close: () => ({}),
+            afterOpened: () => of(void 0),
+            beforeClosed: () => of(void 0),
           },
         },
         { provide: MAT_DIALOG_DATA, useValue: {} },

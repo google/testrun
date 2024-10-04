@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
 import { ReportsComponent } from './reports.component';
 import { TestRunService } from '../../services/test-run.service';
@@ -247,7 +252,7 @@ describe('ReportsComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should focus next active element if exist', () => {
+      it('should focus next active element if exist', fakeAsync(() => {
         const row = window.document.querySelector('tbody tr') as HTMLElement;
         row.classList.add('report-selected');
         const nextButton = window.document.querySelector(
@@ -257,10 +262,12 @@ describe('ReportsComponent', () => {
 
         component.focusNextButton();
 
-        expect(buttonFocusSpy).toHaveBeenCalled();
-      });
+        tick(50);
 
-      it('should focus navigation button if next active element does not exist', () => {
+        expect(buttonFocusSpy).toHaveBeenCalled();
+      }));
+
+      it('should focus navigation button if next active element does not exist', fakeAsync(() => {
         const button = document.createElement('BUTTON');
         button.classList.add('app-sidebar-button-reports');
         document.querySelector('body')?.appendChild(button);
@@ -268,8 +275,10 @@ describe('ReportsComponent', () => {
 
         component.focusNextButton();
 
+        tick(50);
+
         expect(buttonFocusSpy).toHaveBeenCalled();
-      });
+      }));
     });
 
     it('#removeDevice should call delete report', () => {
@@ -323,6 +332,7 @@ describe('ReportsComponent', () => {
           green: false,
           red: true,
           blue: false,
+          cyan: false,
           grey: false,
         });
         component.ngOnInit();
