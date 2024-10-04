@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Testrun config"""
+"""Enums for Testrun"""
 
 
 class TestrunStatus:
@@ -34,6 +34,3 @@ class TestResult:
   INFORMATIONAL = "Informational"
   NOT_STARTED = "Not Started"
   DISABLED = "Disabled"
-
-
-

@@ -72,10 +72,8 @@ class RiskProfile():
     self._device = None
     self._profile_format = profile_format
 
-
     self._validate(profile_json, profile_format)
     self.update_risk(profile_format)
-
 
   # Load a profile without modifying the created date
   # but still validate the profile
@@ -111,6 +109,7 @@ class RiskProfile():
     self.risk = new_profile.risk
 
   def get_file_path(self):
+    """Returns the file path for the current risk profile json"""
     return os.path.join(PROFILES_PATH,
                         self.name + '.json')
 
@@ -127,6 +126,7 @@ class RiskProfile():
       self.status = 'Draft'
 
   def update_risk(self, profile_format):
+    """Update the calculated risk for the risk profile"""
 
     if self.status == 'Valid':
 
@@ -300,6 +300,7 @@ class RiskProfile():
     return today > expiry_date
 
   def to_json(self, pretty=False):
+    """Returns the current risk profile in JSON format"""
     json_dict = {
         'name': self.name,
         'version': self.version,
@@ -312,6 +313,7 @@ class RiskProfile():
     return json.dumps(json_dict, indent=indent)
 
   def to_html(self, device):
+    """Returns the current risk profile in HTML format"""
 
     self._device = device
     high_risk_message = '''The device has been assessed to be high
@@ -322,6 +324,7 @@ class RiskProfile():
                                  the device functionality.'''
     with open(test_run_img_file, 'rb') as f:
       logo_img_b64 = base64.b64encode(f.read()).decode('utf-8')
+
     pages = self._generate_report_pages()
     return self._template.render(
                                 styles=self._template_styles,
@@ -387,6 +390,7 @@ class RiskProfile():
     return pages
 
   def to_pdf(self, device):
+    """Returns the current risk profile in PDF format"""
 
     # Resolve the data as html first
     html = self.to_html(device)

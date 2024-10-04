@@ -140,6 +140,7 @@ describe('DevicesComponent', () => {
     it('should open device dialog on "add device button" click', () => {
       const openSpy = spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
+        beforeClosed: () => of(true),
       } as MatDialogRef<typeof DeviceQualificationFromComponent>);
       fixture.detectChanges();
       const button = compiled.querySelector(
@@ -172,7 +173,7 @@ describe('DevicesComponent', () => {
     describe('#openDialog', () => {
       it('should open device dialog on item click', () => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
-          afterClosed: () => of(true),
+          beforeClosed: () => of(true),
         } as MatDialogRef<typeof DeviceQualificationFromComponent>);
         fixture.detectChanges();
 
@@ -209,7 +210,7 @@ describe('DevicesComponent', () => {
 
   it('should call setIsOpenAddDevice if dialog closes with null', () => {
     spyOn(component.dialog, 'open').and.returnValue({
-      afterClosed: () => of(null),
+      beforeClosed: () => of(null),
     } as MatDialogRef<typeof DeviceQualificationFromComponent>);
 
     component.openDialog([], MOCK_TEST_MODULES);
@@ -237,7 +238,7 @@ describe('DevicesComponent', () => {
     it('should open device dialog when dialog return null', () => {
       const openDeviceDialogSpy = spyOn(component, 'openDialog');
       spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of(null),
+        beforeClosed: () => of(null),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
       component.openCloseDialog([device], MOCK_TEST_MODULES, device);
@@ -255,7 +256,7 @@ describe('DevicesComponent', () => {
 
   it('should delete device if dialog closes with object, action delete and selected device', () => {
     spyOn(component.dialog, 'open').and.returnValue({
-      afterClosed: () =>
+      beforeClosed: () =>
         of({
           device,
           action: FormAction.Delete,
@@ -280,7 +281,7 @@ describe('DevicesComponent', () => {
 
     it('should delete device when dialog return true', () => {
       spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of(true),
+        beforeClosed: () => of(true),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
       component.openDeleteDialog(
@@ -302,7 +303,7 @@ describe('DevicesComponent', () => {
     it('should open device dialog when dialog return null', () => {
       const openDeviceDialogSpy = spyOn(component, 'openDialog');
       spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of(null),
+        beforeClosed: () => of(null),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
       component.openDeleteDialog(

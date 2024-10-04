@@ -267,11 +267,9 @@ class NTPModule(TestModule):
     result = False, 'Device has not sent any NTP requests'
 
     if device_sends_ntp3 and device_sends_ntp4:
-      result = False, ('Device sent NTPv3 and NTPv4 packets. ' +
-                       'NTPv3 is not allowed')
+      result = False, ('Device sent NTPv3 and NTPv4 packets')
     elif device_sends_ntp3:
-      result = False, ('Device sent NTPv3 packets. '
-                       'NTPv3 is not allowed')
+      result = False, ('Device sent NTPv3 packets')
     elif device_sends_ntp4:
       result = True, 'Device sent NTPv4 packets'
 
