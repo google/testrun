@@ -110,6 +110,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
       self._session,
       self._net_orc)
 
+    # Runtime containers
+    self._runtime_containers = set()
+
     # Load device repository
     self.load_all_devices()
 
@@ -389,6 +392,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     self._stop_tests()
     self._stop_network(kill=True)
+    self._verify_all_containers_stopped()
     self.get_session().set_status(TestrunStatus.CANCELLED)
 
   def _register_exits(self):
@@ -509,6 +513,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
               '80': 8080
             }
       )
+      self._runtime_containers.add('tr-ui')
     except ImageNotFound as ie:
       LOGGER.error('An error occured whilst starting the UI. ' +
                    'Please investigate and try again.')
@@ -519,14 +524,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     LOGGER.info('User interface is ready on http://localhost:8080')
 
   def _stop_ui(self):
-    LOGGER.info('Stopping user interface')
-    client = docker.from_env()
-    try:
-      container = client.containers.get('tr-ui')
-      if container is not None:
-        container.kill()
-    except docker.errors.NotFound:
-      pass
+    self._stop_container('tr-ui', 'Stopping user interface')
 
   def start_ws(self):
 
@@ -547,6 +545,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
               '1883': 1883
             }
       )
+      self._runtime_containers.add('tr-ws')
     except ImageNotFound as ie:
       LOGGER.error('An error occured whilst starting the websockets server. ' +
                    'Please investigate and try again.')
@@ -554,11 +553,37 @@ class Testrun:  # pylint: disable=too-few-public-methods
       sys.exit(1)
 
   def _stop_ws(self):
-    LOGGER.info('Stopping websockets server')
-    client = docker.from_env()
+    self._stop_container('tr-ws', 'Stopping websockets server')
+
+  def _stop_container(self, container_name, message=None):
+    if message is not None:
+      LOGGER.info(message)
+    container = self._get_coontainer_by_name(container_name)
+    if container is not None:
+      container.kill()
     try:
-      container = client.containers.get('tr-ws')
-      if container is not None:
-        container.kill()
-    except docker.errors.NotFound:
+      self._runtime_containers.remove(container_name)
+    except KeyError:
       pass
+    return container
+
+  def _get_coontainer_by_name(self, container_name):
+    container = None
+    try:
+      client = docker.from_env()
+      container = client.containers.get(container_name)
+    except (docker.errors.NotFound, docker.errors.APIError):
+      pass
+    return container
+
+  def _verify_all_containers_stopped(self):
+    client = client = docker.from_env()
+    containers = client.containers.list()
+    while containers:
+      container = containers.pop()
+      if (container.name.startswith('tr')
+          and container.name not in self._runtime_containers
+          ):
+        container = self._stop_container(container_name=container.name)
+        if container:
+          containers.append(container)
