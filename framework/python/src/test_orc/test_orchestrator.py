@@ -138,7 +138,6 @@ class TestOrchestrator:
 
         # Set the required result from the correct test pack
         required_result = test_pack.get_required_result(test.name)
-        LOGGER.debug(f"Required result for {test.name} is {required_result}")
 
         test_copy.required_result = required_result
 
@@ -166,7 +165,9 @@ class TestOrchestrator:
       return TestrunStatus.CANCELLED
 
     report = TestReport()
-    report.from_json(self._generate_report())
+
+    generated_report_json = self._generate_report()
+    report.from_json(generated_report_json)
     report.add_module_reports(self.get_session().get_module_reports())
     device.add_report(report)
 

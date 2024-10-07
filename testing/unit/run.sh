@@ -42,7 +42,7 @@ run_test() {
   done
 
   # Add the container image and entry point
-  DOCKER_CMD="$DOCKER_CMD test-run/${MODULE_NAME}-test $UNIT_TEST_FILE_DST"
+  DOCKER_CMD="$DOCKER_CMD testrun/${MODULE_NAME}-test $UNIT_TEST_FILE_DST"
   
   # Execute the docker command
   eval $DOCKER_CMD

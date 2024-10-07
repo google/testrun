@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { NgModule } from '@angular/core';
+import { importProvidersFrom, NgModule } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
@@ -53,6 +53,7 @@ import { WifiComponent } from './components/wifi/wifi.component';
 import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
 
 import { MqttModule, IMqttServiceOptions } from 'ngx-mqtt';
+import { MatNativeDateModule } from '@angular/material/core';
 
 export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
   hostname: window.location.hostname,
@@ -105,6 +106,7 @@ export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
       multi: true,
     },
     { provide: LOADER_TIMEOUT_CONFIG_TOKEN, useValue: 1000 },
+    importProvidersFrom(MatNativeDateModule),
   ],
   bootstrap: [AppComponent],
 })

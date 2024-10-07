@@ -35,7 +35,9 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
   ) {}
 
   ngOnInit() {
-    this.openTestingCompleteModal();
+    timer(1000).subscribe(() => {
+      this.openTestingCompleteModal();
+    });
   }
   ngOnDestroy() {
     this.destroy$.next(true);
@@ -50,7 +52,8 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
         testrunStatus: this.data,
         isTestingComplete: true,
       },
-      autoFocus: true,
+      autoFocus: 'first-tabbable',
+      ariaDescribedBy: 'testing-result-main-info',
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'initiate-test-run-dialog',
@@ -61,27 +64,32 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe(profile => {
         if (profile === undefined) {
-          timer(1000)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => {
-              this.focusManagerService.focusFirstElementInContainer();
-            });
+          // close modal
+          this.focusFirstElement();
           return;
         }
         if (profile === null) {
-          this.route.navigate([Routes.RiskAssessment]).then(() =>
-            timer(1000)
-              .pipe(takeUntil(this.destroy$))
-              .subscribe(() => {
-                this.focusManagerService.focusFirstElementInContainer();
-              })
-          );
+          this.navigateToRiskAssessment();
         } else if (this.data?.report != null) {
           this.testrunService.downloadZip(
             this.getZipLink(this.data?.report),
             profile
           );
         }
+      });
+  }
+
+  private navigateToRiskAssessment(): void {
+    this.route.navigate([Routes.RiskAssessment]).then(() => {
+      this.focusFirstElement();
+    });
+  }
+
+  private focusFirstElement() {
+    timer(1000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.focusManagerService.focusFirstElementInContainer();
       });
   }
 

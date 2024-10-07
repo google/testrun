@@ -37,9 +37,9 @@ limitations under the License.
   let-description="description"
   let-options="options"
   let-formControlName="formControlName">
-  <label class="field-label" for="{{ formControlName }}-group"
-    >{{ label }} <span *ngIf="required">*</span></label
-  >
+  <label class="field-label" for="{{ formControlName }}-group">
+    {{ label }}
+  </label>
   <ng-container [ngSwitch]="type">
     <ng-container *ngSwitchCase="FormControlType.TEXT">
       <ng-container
@@ -260,7 +260,9 @@ limitations under the License.
       description
     }}</mat-hint>
     <mat-error *ngIf="getControl(formControlName).hasError('required')">
-      <span>The field is required</span>
+      <span role="alert" aria-live="assertive" [attr.aria-label]="label">
+        The field is required
+      </span>
     </mat-error>
   </mat-form-field>
 </ng-template>

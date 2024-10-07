@@ -25,9 +25,9 @@ import sys
 import time
 from common import logger, util, mqtt
 from common.device import Device
-from common.session import TestrunSession
 from common.testreport import TestReport
 from common.statuses import TestrunStatus
+from session import TestrunSession
 from api.api import Api
 from net_orc.listener import NetworkEvent
 from net_orc import network_orchestrator as net_orc
@@ -35,7 +35,7 @@ from test_orc import test_orchestrator as test_orc
 
 from docker.errors import ImageNotFound
 
-LOGGER = logger.get_logger('test_run')
+LOGGER = logger.get_logger('testrun')
 
 DEFAULT_CONFIG_FILE = 'local/system.json'
 EXAMPLE_CONFIG_FILE = 'local/system.json.example'

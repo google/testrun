@@ -59,6 +59,7 @@ describe('TestingCompleteComponent', () => {
       } as MatDialogRef<typeof DownloadZipModalComponent>);
 
       component.ngOnInit();
+      tick(1000);
 
       expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
         ariaLabel: 'Testing complete',
@@ -67,7 +68,8 @@ describe('TestingCompleteComponent', () => {
           testrunStatus: MOCK_PROGRESS_DATA_COMPLIANT,
           isTestingComplete: true,
         },
-        autoFocus: true,
+        autoFocus: 'first-tabbable',
+        ariaDescribedBy: 'testing-result-main-info',
         hasBackdrop: true,
         disableClose: true,
         panelClass: 'initiate-test-run-dialog',

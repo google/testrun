@@ -18,7 +18,9 @@ limitations under the License.
     class="delete-report-button"
     href="#"
     matTooltip="Delete report for Testrun # {{ getTestRunId(data) }}"
-    (click)="deleteReport($event)">
+    (click)="deleteReport($event)"
+    (keydown.enter)="deleteReport($event)"
+    (keydown.space)="deleteReport($event)">
     <ng-content></ng-content>
   </a>
 </ng-container>

@@ -42,6 +42,8 @@ CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 STATUS_TOPIC = 'status'
 
+MAKE_CONTROL_DIR =  'make/DEBIAN/control'
+
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
 PROFILES_DIR = 'local/risk_profiles'
 
@@ -252,9 +254,29 @@ class TestrunSession():
     else:
       LOGGER.debug('Failed getting the version from dpkg-query')
       # Try getting the version from the make control file
+
+      # Check if MAKE_CONTROL_DIR exists
+      if not os.path.exists(MAKE_CONTROL_DIR):
+        LOGGER.error('make/DEBIAN/control file path not found')
+        self._version = 'Unknown'
+        return
+
       try:
-        version = util.run_command(
-            '$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
+        # Run the grep command to find the version line
+        grep_cmd = util.run_command(f'grep -R "Version: " {MAKE_CONTROL_DIR}')
+
+        if grep_cmd[0] and len(grep_cmd[1]) == 0:
+          # Extract the version number from grep
+          version = grep_cmd[0].split()[1]
+          self._version = version
+          LOGGER.debug(f'Testrun version is: {self._version}')
+
+        else:
+          # Error handling if grep can't find the version line
+          self._version = 'Unknown'
+          LOGGER.debug(f'Testrun version is {self._version}')
+          raise Exception('Version line not found in make control file')
+
       except Exception as e: # pylint: disable=W0703
         LOGGER.debug('Failed getting the version from make control file')
         LOGGER.error(e)
@@ -391,28 +413,38 @@ class TestrunSession():
       if test_result.name == result.name:
 
         # Just update the result, description and recommendations
-
-        if result.result is not None:
-
-          # Any informational test should always report informational
-          if (test_result.required_result == 'Informational' and
-              result.result in [
-                TestResult.COMPLIANT,
-                TestResult.NON_COMPLIANT,
-                TestResult.FEATURE_NOT_DETECTED
-              ]):
-            test_result.result = TestResult.INFORMATIONAL
-          else:
-            test_result.result = result.result
-
         if len(result.description) != 0:
           test_result.description = result.description
 
+        # Add recommendations if provided
         if result.recommendations is not None:
           test_result.recommendations = result.recommendations
 
           if len(result.recommendations) == 0:
             test_result.recommendations = None
+
+        if result.result is not None:
+
+          # Any informational test should always report informational
+          if test_result.required_result == 'Informational':
+
+            # Set test result to informational
+            if result.result in [
+              TestResult.NON_COMPLIANT,
+              TestResult.COMPLIANT,
+              TestResult.INFORMATIONAL
+            ]:
+              test_result.result = TestResult.INFORMATIONAL
+            else:
+              test_result.result = result.result
+
+            # Copy any test recommendations to optional
+            test_result.optional_recommendations = result.recommendations
+
+            # Remove recommendations from informational tests
+            test_result.recommendations = None
+          else:
+            test_result.result = result.result
 
         updated = True
 
