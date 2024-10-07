@@ -34,7 +34,7 @@ import { tap } from 'rxjs/internal/operators/tap';
 import { Observable } from 'rxjs/internal/Observable';
 import { Subject } from 'rxjs/internal/Subject';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
-import { filter } from 'rxjs';
+import { filter, timer } from 'rxjs';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -64,8 +64,10 @@ export class VersionComponent implements OnInit, OnDestroy {
       filter(version => version !== null),
       tap(version => {
         if (!this.consentShown) {
-          this.openConsentDialog(version);
-          this.consentShownEvent.emit();
+          timer(2000).subscribe(() => {
+            this.openConsentDialog(version);
+            this.consentShownEvent.emit();
+          });
         }
         // @ts-expect-error data layer is not null
         window.dataLayer.push({
