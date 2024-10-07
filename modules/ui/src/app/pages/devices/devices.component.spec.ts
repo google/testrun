@@ -241,7 +241,15 @@ describe('DevicesComponent', () => {
         beforeClosed: () => of(null),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openCloseDialog([device], MOCK_TEST_MODULES, device);
+      component.openCloseDialog(
+        [device],
+        MOCK_TEST_MODULES,
+        device,
+        undefined,
+        false,
+        0,
+        0
+      );
 
       expect(openDeviceDialogSpy).toHaveBeenCalledWith(
         [device],
@@ -249,6 +257,7 @@ describe('DevicesComponent', () => {
         device,
         undefined,
         false,
+        0,
         0
       );
     });

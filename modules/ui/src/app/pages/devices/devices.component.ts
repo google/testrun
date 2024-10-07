@@ -235,7 +235,8 @@ export class DevicesComponent
           initialDevice,
           device,
           isEditDevice,
-          index
+          index,
+          deviceIndex
         );
       } else if (deviceIndex !== undefined) {
         this.focusSelectedButton(deviceIndex);
