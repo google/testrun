@@ -131,7 +131,7 @@ describe('DownloadReportZipComponent', () => {
         });
       }));
 
-      it('should focus first element on page if profile is undefined', fakeAsync(() => {
+      it('should not call service to download zip if profile is undefined', fakeAsync(() => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(undefined),
         } as MatDialogRef<typeof DownloadZipModalComponent>);
@@ -151,9 +151,6 @@ describe('DownloadReportZipComponent', () => {
 
         tick();
 
-        expect(
-          focusServiceMock.focusFirstElementInContainer
-        ).toHaveBeenCalled();
         expect(testrunServiceMock.downloadZip).not.toHaveBeenCalled();
         openSpy.calls.reset();
       }));
