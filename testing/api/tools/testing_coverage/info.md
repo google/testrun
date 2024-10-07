@@ -1,6 +1,4 @@
-# Testrun API tests coverage
-
-This tool creates CSV Files and Pie Charts for api.py against test_api.py and postman file data
+This tool creates CSV Files and Pie Charts for api.py against test_api.py and postman file data.
 
 ## Features
 
