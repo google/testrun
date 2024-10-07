@@ -7,16 +7,16 @@ import pandas as pd
 from counter import test_api_counter
 from counter import api_counter
 
-def calculate_percentages(postman_responses_count, api_responses_count):
+def calculate_percentages(test_api_responses_count, api_responses_count):
   """ Calculates DONE and TO DO percentages """
 
-  # Check if postman_responses_count is zero
-  if postman_responses_count == 0:
+  # Check if test_api_responses_count is zero
+  if test_api_responses_count == 0:
     return 0.00, 100.00
 
   # Calculate DONE percentage with 2 decimal places
   done_percentage = round(
-    (postman_responses_count / api_responses_count) * 100, 2
+    (test_api_responses_count / api_responses_count) * 100, 2
   )
 
   # Calculate TO DO percentage
@@ -59,7 +59,7 @@ def create_api_test_api_csv(test_api_file, api_file, csv_filename, results_dir):
     )
 
     # Load the response codes tested and total responses from test_api.py
-    responses_tested, postman_responses_count = (
+    responses_tested, test_api_responses_count = (
       test_api_counter.test_api_counter(
         test_api_endpoints,
         endpoint,
@@ -69,7 +69,7 @@ def create_api_test_api_csv(test_api_file, api_file, csv_filename, results_dir):
 
     # Calculate done and to do percentages
     done_percentage, todo_percentage = (
-      calculate_percentages(postman_responses_count, api_responses_count)
+      calculate_percentages(test_api_responses_count, api_responses_count)
     )
 
     # Calculate the response codes not tested
@@ -80,7 +80,7 @@ def create_api_test_api_csv(test_api_file, api_file, csv_filename, results_dir):
       not_tested_responses = ""
 
     # Not tested endpoints
-    not_tested = api_responses_count - postman_responses_count
+    not_tested = api_responses_count - test_api_responses_count
 
     # Construct the dictionary which represents a row in the table
     row = {
@@ -90,7 +90,7 @@ def create_api_test_api_csv(test_api_file, api_file, csv_filename, results_dir):
       "TEST API FILE RESPONSES": responses_tested,
       "NOT TESTED RESPONSES": not_tested_responses,
       "TOTAL API RESPONSES": api_responses_count,
-      "TOTAL TEST API RESPONSES": postman_responses_count,
+      "TOTAL TEST API RESPONSES": test_api_responses_count,
       "NOT TESTED": not_tested,
       "DONE (%)": done_percentage, 
       "TO DO (%)": todo_percentage,
