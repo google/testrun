@@ -1816,7 +1816,7 @@ def extract_name(cert_data):
 
 @pytest.fixture()
 def add_one_cert():
-  """ Utility method to upload one certificate to local/root_certs """
+  """ Upload one certificate to local/root_certs """
 
   # Construct full path for certificate from 'testing/api/certificates' folder
   source_path = os.path.join(CERTS_PATH, "crt.pem")
@@ -1826,7 +1826,7 @@ def add_one_cert():
 
 @pytest.fixture()
 def add_two_certs():
-  """ Utility method to upload two certificates to local/root_certs """
+  """ Upload two certificates to local/root_certs """
 
   # Certs names to be uploaded
   certs = ["crt.pem", "WR2.pem"]
