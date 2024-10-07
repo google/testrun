@@ -1888,7 +1888,7 @@ def test_get_certs_one_cert(reset_certs, add_one_cert, testrun): # pylint: disab
   # Check if response contains one certificate
   assert len(response) == 1
 
-def test_get_two_certs(reset_certs, add_two_certs, testrun): # pylint: disable=W0613
+def test_get_certs_two_certs(reset_certs, add_two_certs, testrun): # pylint: disable=W0613
   """ Test for get certs when two certs have been uploaded (200) """
 
   # Send the get request to "/system/config/certs" endpoint
