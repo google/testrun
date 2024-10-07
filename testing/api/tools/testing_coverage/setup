@@ -1,0 +1,18 @@
+# Make the 'generate_results' script executable
+echo "Making 'generate_results' script executable"
+chmod +x testing/api/tools/testing_coverage/src/generate_results
+
+# Add the root directory to PATH
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+if [[ ":$PATH:" != *":$SCRIPT_DIR:"* ]]; then
+  BASH_CONFIG="$HOME/.bashrc"
+  echo "Adding script directory to PATH"
+  echo "export PATH=\$PATH:$SCRIPT_DIR" >> "$BASH_CONFIG"
+  source "$BASH_CONFIG"
+  echo "The directory $SCRIPT_DIR has been added to the PATH"
+  echo "Please restart your terminal or run 'source $BASH_CONFIG' to apply the changes"
+else 
+  echo "The directory $SCRIPT_DIR already added to the PATH"
+fi
+
