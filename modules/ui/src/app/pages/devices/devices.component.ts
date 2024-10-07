@@ -159,7 +159,7 @@ export class DevicesComponent
         index,
         isCreate: !isEditDevice,
       },
-      autoFocus: true,
+      autoFocus: 'first-tabbable',
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'device-form-dialog',
