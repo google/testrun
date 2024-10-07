@@ -9,7 +9,7 @@ def plot_test_coverage(rows, chart_filename, title, results_dir):
   """ Plot the test coverage as a pie chart for 'Done' and 'To Do' """
 
   # Sum up all 'Done' percentages
-  total_done = sum(float(row["DONE"].rstrip(" %")) for row in rows)
+  total_done = sum(float(row["DONE (%)"]) for row in rows)
 
   # Total number of endpoints
   total_count = len(rows)

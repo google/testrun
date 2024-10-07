@@ -12,16 +12,16 @@ def calculate_percentages(tested_count, unique_responses_count):
 
   # Check if tested_count is zero
   if tested_count == 0:
-    return "0.00 %", "100.00 %"
+    return 0.00, 100.00
 
-  # Calculate DONE percentage
-  done_percentage = (tested_count / unique_responses_count) * 100
+  # Calculate DONE percentage with 2 decimal places
+  done_percentage = round((tested_count / unique_responses_count) * 100, 2)
 
   # Calculate TO DO percentage
   todo_percentage = 100 - done_percentage
 
   # return DONE and TO DO percentages as strings
-  return f"{done_percentage:.2f} %", f"{todo_percentage:.2f} %"
+  return done_percentage, todo_percentage
 
 def create_api_postman_csv(postman_file, api_file, csv_filename, results_dir):
   """ Create the api vs postman CSV file """
@@ -90,8 +90,8 @@ def create_api_postman_csv(postman_file, api_file, csv_filename, results_dir):
       "TOTAL API RESPONSES": api_responses_count,
       "TOTAL POSTMAN RESPONSES": postman_responses_count,
       "NOT TESTED": not_tested,
-      "DONE": done_percentage, 
-      "TO DO": todo_percentage,
+      "DONE (%)": done_percentage, 
+      "TO DO (%)": todo_percentage,
     }
 
     # Append the row to the list
