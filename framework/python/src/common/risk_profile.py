@@ -325,7 +325,7 @@ class RiskProfile():
     with open(test_run_img_file, 'rb') as f:
       logo_img_b64 = base64.b64encode(f.read()).decode('utf-8')
 
-    pages = self._generate_report_pages()
+    pages = self._generate_report_pages(device)
     return self._template.render(
                                 styles=self._template_styles,
                                 manufacturer=self._device.manufacturer,
@@ -339,14 +339,17 @@ class RiskProfile():
                                 created_at=self.created.strftime('%d.%m.%Y')
                                 )
 
-  def _generate_report_pages(self):
+  def _generate_report_pages(self, device):
     max_page_height = 350
     height = 0
     pages = []
     current_page = []
     index = 1
 
-    for question in self.questions:
+    questions = deepcopy(device.additional_info)
+    questions.extend(self.questions)
+
+    for question in questions:
 
       if height > max_page_height:
         pages.append(current_page)
