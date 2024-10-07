@@ -29,9 +29,7 @@ def html_to_pdf(html: str, file_name: str):
                         )
     if resp.status_code == 200:
       return BytesIO(resp.content)
-    if resp.status_code == 500:
-      LOGGER.error(str(resp.text))
-      return
-    raise requests.exceptions.RequestException
+    LOGGER.error(str(resp.text))
+    return
   except requests.exceptions.RequestException:
     LOGGER.error('An error occured whilst generating PDF report.')

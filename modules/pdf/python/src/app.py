@@ -2,10 +2,13 @@
 
 import os
 import re
-from bottle import Bottle, request, response
+from bottle import Bottle, request, response, BaseRequest
 from weasyprint import HTML
 from weasyprint.text.fonts import FontConfiguration
 from common import logger
+
+# Increase the maximum request size to 50MB
+BaseRequest.MEMFILE_MAX = 50 * 1024 * 1024
 
 LOGGER = logger.get_logger('pdf_module')
 
