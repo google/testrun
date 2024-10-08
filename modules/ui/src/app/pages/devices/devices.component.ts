@@ -134,7 +134,11 @@ export class DevicesComponent
           window.dataLayer.push({
             event: 'successful_testrun_initiation',
           });
-          this.route.navigate([Routes.Testing]);
+          this.route.navigate([Routes.Testing]).then(() =>
+            timer(100).subscribe(() => {
+              this.focusManagerService.focusFirstElementInContainer();
+            })
+          );
         }
       });
   }
