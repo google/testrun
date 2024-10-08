@@ -54,7 +54,7 @@ class NTPModule(TestModule):
     # Extract NTP data from the pcap file
     ntp_table_data = self.extract_ntp_data()
 
-    html_content = '<h1>NTP Module</h1>'
+    html_content = '<h3>NTP Module</h3>'
 
     # Set the summary variables
     local_requests = sum(
