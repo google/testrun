@@ -98,9 +98,6 @@ export class TestrunComponent implements OnInit, OnDestroy {
       .subscribe(stopTestrun => {
         if (stopTestrun) {
           this.stopTestrun();
-          timer(100).subscribe(() => {
-            this.focusManagerService.focusFirstElementInContainer();
-          });
         }
       });
   }
@@ -121,6 +118,9 @@ export class TestrunComponent implements OnInit, OnDestroy {
   }
   private setCancellingStatus() {
     this.testrunStore.setCancellingStatus();
+    timer(2000).subscribe(() => {
+      this.focusManagerService.focusFirstElementInContainer();
+    });
   }
   private showLoading() {
     this.testrunStore.showLoading();
