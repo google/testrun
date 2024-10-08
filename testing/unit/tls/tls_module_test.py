@@ -13,6 +13,7 @@
 # limitations under the License.
 """Module run all the TLS related unit tests"""
 from tls_util import TLSUtil
+from tls_module import TLSModule
 import os
 import unittest
 from common import logger
@@ -319,77 +320,71 @@ class TLSModuleTest(unittest.TestCase):
     print(str(test_results))
     self.assertTrue(test_results[0])
 
-  # Commented out whilst TLS report is recreated
-  # def tls_module_report_test(self):
-  #   print('\ntls_module_report_test')
-  #   os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
-  #   pcap_file = os.path.join(CAPTURES_DIR, 'tls.pcap')
-  #   tls = TLSModule(module=MODULE,
-  #                   log_dir=OUTPUT_DIR,
-  #                   conf_file=CONF_FILE,
-  #                   results_dir=OUTPUT_DIR,
-  #                   startup_capture_file=pcap_file,
-  #                   monitor_capture_file=pcap_file,
-  #                   tls_capture_file=pcap_file)
-  #   report_out_path = tls.generate_module_report()
+  def tls_module_report_test(self):
+    print('\ntls_module_report_test')
+    os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
+    pcap_file = os.path.join(CAPTURES_DIR, 'tls.pcap')
+    tls = TLSModule(module=MODULE,
+                    log_dir=OUTPUT_DIR,
+                    results_dir=OUTPUT_DIR,
+                    startup_capture_file=pcap_file,
+                    monitor_capture_file=pcap_file,
+                    tls_capture_file=pcap_file)
+    report_out_path = tls.generate_module_report()
 
-  #   with open(report_out_path, 'r', encoding='utf-8') as file:
-  #     report_out = file.read()
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
 
-  #   # Read the local good report
-  #   with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
-  #     report_local = file.read()
+    # Read the local good report
+    with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
+      report_local = file.read()
 
-  #   self.assertEqual(report_out, report_local)
+    self.assertEqual(report_out, report_local)
 
-  # Commented out whilst TLS report is recreated
-  # def tls_module_report_ext_test(self):
-  #   print('\ntls_module_report_ext_test')
-  #   os.environ['DEVICE_MAC'] = '28:29:86:27:d6:05'
-  #   pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
-  #   tls = TLSModule(module=MODULE,
-  #                   log_dir=OUTPUT_DIR,
-  #                   conf_file=CONF_FILE,
-  #                   results_dir=OUTPUT_DIR,
-  #                   startup_capture_file=pcap_file,
-  #                   monitor_capture_file=pcap_file,
-  #                   tls_capture_file=pcap_file)
-  #   report_out_path = tls.generate_module_report()
+  def tls_module_report_ext_test(self):
+    print('\ntls_module_report_ext_test')
+    os.environ['DEVICE_MAC'] = '28:29:86:27:d6:05'
+    pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
+    tls = TLSModule(module=MODULE,
+                    log_dir=OUTPUT_DIR,
+                    results_dir=OUTPUT_DIR,
+                    startup_capture_file=pcap_file,
+                    monitor_capture_file=pcap_file,
+                    tls_capture_file=pcap_file)
+    report_out_path = tls.generate_module_report()
 
-  #   # Read the generated report
-  #   with open(report_out_path, 'r', encoding='utf-8') as file:
-  #     report_out = file.read()
+    # Read the generated report
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
 
-  #   # Read the local good report
-  #   with open(LOCAL_REPORT_EXT, 'r', encoding='utf-8') as file:
-  #     report_local = file.read()
+    # Read the local good report
+    with open(LOCAL_REPORT_EXT, 'r', encoding='utf-8') as file:
+      report_local = file.read()
 
-  #   self.assertEqual(report_out, report_local)
+    self.assertEqual(report_out, report_local)
 
-  # Commented out whilst TLS report is recreated
-  # def tls_module_report_no_cert_test(self):
-  #   print('\ntls_module_report_no_cert_test')
-  #   os.environ['DEVICE_MAC'] = ''
-  #   pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
-  #   tls = TLSModule(module=MODULE,
-  #                   log_dir=OUTPUT_DIR,
-  #                   conf_file=CONF_FILE,
-  #                   results_dir=OUTPUT_DIR,
-  #                   startup_capture_file=pcap_file,
-  #                   monitor_capture_file=pcap_file,
-  #                   tls_capture_file=pcap_file)
+  def tls_module_report_no_cert_test(self):
+    print('\ntls_module_report_no_cert_test')
+    os.environ['DEVICE_MAC'] = ''
+    pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
+    tls = TLSModule(module=MODULE,
+                    log_dir=OUTPUT_DIR,
+                    results_dir=OUTPUT_DIR,
+                    startup_capture_file=pcap_file,
+                    monitor_capture_file=pcap_file,
+                    tls_capture_file=pcap_file)
 
-  #   report_out_path = tls.generate_module_report()
+    report_out_path = tls.generate_module_report()
 
-  #   # Read the generated report
-  #   with open(report_out_path, 'r', encoding='utf-8') as file:
-  #     report_out = file.read()
+    # Read the generated report
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
 
-  #   # Read the local good report
-  #   with open(LOCAL_REPORT_NO_CERT, 'r', encoding='utf-8') as file:
-  #     report_local = file.read()
+    # Read the local good report
+    with open(LOCAL_REPORT_NO_CERT, 'r', encoding='utf-8') as file:
+      report_local = file.read()
 
-  #   self.assertEqual(report_out, report_local)
+    self.assertEqual(report_out, report_local)
 
   def generate_tls_traffic(self,
                            capture_file,
@@ -564,10 +559,10 @@ if __name__ == '__main__':
   # Test the results options for tls server tests
   suite.addTest(TLSModuleTest('security_tls_server_results_test'))
 
-  # # Test various report module outputs
-  # suite.addTest(TLSModuleTest('tls_module_report_test'))
-  # suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
-  # suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
+  # Test various report module outputs
+  suite.addTest(TLSModuleTest('tls_module_report_test'))
+  suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
+  suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
 
   # Test signature validation methods
   suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
