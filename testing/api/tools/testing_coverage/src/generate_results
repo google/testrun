@@ -1,5 +1,8 @@
-# Run the Python Script
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Store the 'testing/api/tools/testing_coverage/src' directory path
+SRC_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 echo "Creating the files..."
-python3 "$SCRIPT_DIR/generate_results.py"
+
+# Run the script generate_results.py
+python3 "$TESTING_COVERAGE_DIR/generate_results.py"
 

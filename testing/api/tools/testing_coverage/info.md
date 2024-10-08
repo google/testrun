@@ -24,10 +24,10 @@ chmod +x testing/api/tools/testing_coverage/setup
 testing/api/tools/testing_coverage/setup
 ```
 
-### 3. Running the Script
+### 3. Running the tool to generate the tesst coverage files
 
 ``` bash
- testing/api/tools/testing_coverage/src/generate_results
+testing/api/tools/testing_coverage/src/generate_results
 ```
 
-### 8. The csv files and the pie charts will be created in the 'testing/api/testing_coverage/results' folder
+### 4. The csv files and the pie charts will be created in the 'testing/api/testing_coverage/results' folder
