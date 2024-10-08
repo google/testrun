@@ -161,7 +161,7 @@ describe('DevicesComponent', () => {
           index: 0,
           isCreate: true,
         },
-        autoFocus: true,
+        autoFocus: 'first-tabbable',
         hasBackdrop: true,
         disableClose: true,
         panelClass: 'device-form-dialog',
@@ -191,7 +191,7 @@ describe('DevicesComponent', () => {
             index: 0,
             isCreate: false,
           },
-          autoFocus: true,
+          autoFocus: 'first-tabbable',
           hasBackdrop: true,
           disableClose: true,
           panelClass: 'device-form-dialog',
@@ -241,7 +241,15 @@ describe('DevicesComponent', () => {
         beforeClosed: () => of(null),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openCloseDialog([device], MOCK_TEST_MODULES, device);
+      component.openCloseDialog(
+        [device],
+        MOCK_TEST_MODULES,
+        device,
+        undefined,
+        false,
+        0,
+        0
+      );
 
       expect(openDeviceDialogSpy).toHaveBeenCalledWith(
         [device],
@@ -249,6 +257,7 @@ describe('DevicesComponent', () => {
         device,
         undefined,
         false,
+        0,
         0
       );
     });
@@ -350,11 +359,15 @@ describe('DevicesComponent', () => {
           panelClass: 'initiate-test-run-dialog',
         });
 
-        tick();
+        tick(100);
+
         expect(router.url).toBe(Routes.Testing);
         expect(mockDevicesStore.setStatus).toHaveBeenCalledWith(
           MOCK_PROGRESS_DATA_IN_PROGRESS
         );
+        expect(
+          stateServiceMock.focusFirstElementInContainer
+        ).toHaveBeenCalled();
 
         openSpy.calls.reset();
       });
