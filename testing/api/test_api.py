@@ -1815,30 +1815,23 @@ def extract_name(cert_data):
   return cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)[0].value
 
 @pytest.fixture()
-def add_one_cert():
-  """ Upload one certificate to local/root_certs """
+def add_certs(request):
+  """ Upload specified certificates to local/root_certs """
 
-  # Construct full path for certificate from 'testing/api/certificates' folder
-  source_path = os.path.join(CERTS_PATH, "crt.pem")
+  # Access the parameter (certs list) provided to the fixture
+  certs = request.param
 
-  # Copy the certificate from 'testing/api/certificates' to 'local/root_certs'
-  shutil.copy(source_path, CERTS_DIRECTORY)
-
-@pytest.fixture()
-def add_two_certs():
-  """ Upload two certificates to local/root_certs """
-
-  # Certs names to be uploaded
-  certs = ["crt.pem", "WR2.pem"]
-
-  # Iterate over the certs names
+  # Iterate over the certificate names provided
   for cert in certs:
 
-    # Construct full path for the cert from 'testing/api/certificates' folder
+    # Construct the full path for cert from 'testing/api/certificates'
     source_path = os.path.join(CERTS_PATH, cert)
 
     # Copy the cert from 'testing/api/certificates' to 'local/root_certs'
     shutil.copy(source_path, CERTS_DIRECTORY)
+
+  # Return the list with certs name
+  return certs
 
 @pytest.fixture()
 def reset_certs():
@@ -1852,13 +1845,19 @@ def reset_certs():
   # Delete after the test
   delete_all_certs()
 
-def test_get_certs_no_certs(testrun, reset_certs): # pylint: disable=W0613
-  """ Test for get certificate when no certificates are available (200) """
+# Use parametrize to create a test suite for 3 scenarios
+@pytest.mark.parametrize("add_certs", [
+  [],
+  ["crt.pem"],
+  ["crt.pem", "WR2.pem"],
+], indirect=True)
+def test_get_certs(reset_certs, add_certs, testrun): # pylint: disable=W0613
+  """ Test for get certs when none, one or two certs are available (200) """
 
-  # Send the get request to "/system/config/certs" endpoint
+  # Send the GET request to "/system/config/certs" endpoint
   r = requests.get(f"{API}/system/config/certs", timeout=5)
 
-  # Check if status code is 200 (OK)
+  # Check if the status code is 200 (OK)
   assert r.status_code == 200
 
   # Parse the response (certificates)
@@ -1867,44 +1866,8 @@ def test_get_certs_no_certs(testrun, reset_certs): # pylint: disable=W0613
   # Check if response is a list
   assert isinstance(response, list)
 
-  # Check if the list is empty
-  assert len(response) == 0
-
-def test_get_certs_one_cert(reset_certs, add_one_cert, testrun): # pylint: disable=W0613
-  """ Test for get certs when one cert has been uploaded (200) """
-
-  # Send the get request to "/system/config/certs" endpoint
-  r = requests.get(f"{API}/system/config/certs", timeout=5)
-
-  # Check if status code is 200 (OK)
-  assert r.status_code == 200
-
-  # Parse the response (certificates)
-  response = r.json()
-
-  # Check if response is a list
-  assert isinstance(response, list)
-
-  # Check if response contains one certificate
-  assert len(response) == 1
-
-def test_get_certs_two_certs(reset_certs, add_two_certs, testrun): # pylint: disable=W0613
-  """ Test for get certs when two certs have been uploaded (200) """
-
-  # Send the get request to "/system/config/certs" endpoint
-  r = requests.get(f"{API}/system/config/certs", timeout=5)
-
-  # Check if status code is 200 (OK)
-  assert r.status_code == 200
-
-  # Parse the response (certificates)
-  response = r.json()
-
-  # Check if response is a list
-  assert isinstance(response, list)
-
-  # Check if response contains two certificates
-  assert len(response) == 2
+  # Check if the number of certs matches the number of certs available
+  assert len(response) == len(add_certs)
 
 def test_upload_cert(reset_certs, testrun): # pylint: disable=W0613
   """ Test for upload certificate successfully (200) """
@@ -2012,7 +1975,8 @@ def test_upload_invalid_cert_name(reset_certs, testrun): # pylint: disable=W0613
   # Check if "error" key is in response
   assert "error" in response
 
-def test_upload_existing_cert(reset_certs, add_one_cert, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_certs", [["crt.pem"]], indirect=True)
+def test_upload_existing_cert(reset_certs, add_certs, testrun): # pylint: disable=W0613
   """ Test for upload an existing certificate (409) """
 
   # Load the cert file content using the utility method
@@ -2034,7 +1998,8 @@ def test_upload_existing_cert(reset_certs, add_one_cert, testrun): # pylint: dis
   # Check if "error" key is in response
   assert "error" in response
 
-def test_delete_cert_success(reset_certs, add_two_certs, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_certs", [["crt.pem", "WR2.pem"]], indirect=True)
+def test_delete_cert_success(reset_certs, add_certs, testrun): # pylint: disable=W0613
   """ Test for successfully deleting an existing certificate (200) """
 
   # Load the first cert details to extract the 'name' value
@@ -2089,7 +2054,8 @@ def test_delete_cert_success(reset_certs, add_two_certs, testrun): # pylint: dis
   # Check that the certificate is no longer listed
   assert not any(cert["filename"] == "WR2.pem" for cert in response)
 
-def test_delete_cert_bad_request(reset_certs, add_one_cert, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_certs", [["crt.pem"]], indirect=True)
+def test_delete_cert_bad_request(reset_certs, add_certs, testrun): # pylint: disable=W0613
   """ Test for delete a certificate without providing the name (400)"""
 
    # Empty payload
