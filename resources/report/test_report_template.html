@@ -114,7 +114,7 @@
     <h2 class="page-heading">Non-complaint tests and suggested steps to resolve</h2>
     {% for step in steps_to_resolve %}
     <div class="steps-to-resolve">
-      <div class="steps-to-resolve-row heading">
+      <div class="steps-to-resolve-row">
         <span class="steps-to-resolve-index">{{ loop.index }}.</span>
         <div class="steps-to-resolve-test-name">
           <span class="steps-to-resolve subtitle">Name</span><br>{{ step['name'] }}
@@ -203,7 +203,7 @@
     </div>
     {% for step in optional_steps_to_resolve %}
     <div class="steps-to-resolve">
-      <div class="steps-to-resolve-row heading">
+      <div class="steps-to-resolve-row">
         <span class="steps-to-resolve-index">
           {{ loop.index }}.
         </span>

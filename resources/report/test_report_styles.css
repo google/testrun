@@ -225,10 +225,6 @@
       vertical-align: top;
     }
 
-    .steps-to-resolve-row.heading {
-      display: flex;
-    }
-
     .steps-to-resolve-row.content {
       margin-left: 70px;
     }
@@ -238,13 +234,12 @@
       margin-left: 70px;
       margin-right: 10px;
       margin-bottom: 20px;
-      width: 50%;
+      width: 250px;
       vertical-align: top;
     }
 
     .steps-to-resolve-description {
       display: inline-block;
-      width: 50%;
     }
 
     .steps-to-resolve.subtitle {
