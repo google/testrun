@@ -301,7 +301,10 @@ class NetworkOrchestrator:
       time.sleep(1)
 
       # Check Testrun hasn't been cancelled
-      if self._session.get_status() == TestrunStatus.CANCELLED:
+      if self._session.get_status() in (
+                                        TestrunStatus.STOPPING,
+                                        TestrunStatus.CANCELLED
+                                        ):
         sniffer.stop()
         return
 

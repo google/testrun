@@ -74,7 +74,6 @@ export class DownloadReportZipComponent
       .pipe(takeUntil(this.destroy$))
       .subscribe(profile => {
         if (profile === undefined) {
-          this.focusManagerService.focusFirstElementInContainer();
           return;
         }
         if (profile === null) {
