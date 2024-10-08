@@ -66,11 +66,11 @@ export class TestrunStatusCardComponent {
         (data.tests as TestsData)?.results?.length &&
         (data.tests as TestsData)?.total
       ) {
-        return `${(data.tests as TestsData)?.results?.filter(result => result.result !== StatusOfTestResult.NotStarted).length}/${
+        return `${(data.tests as TestsData)?.results?.filter(result => result.result !== StatusOfTestResult.NotStarted && result.result !== StatusOfTestResult.Error).length}/${
           (data.tests as TestsData)?.total
         }`;
       } else if ((data.tests as IResult[])?.length) {
-        return `${(data.tests as IResult[])?.filter(result => result.result !== StatusOfTestResult.NotStarted).length}/${
+        return `${(data.tests as IResult[])?.filter(result => result.result !== StatusOfTestResult.NotStarted && result.result !== StatusOfTestResult.Error).length}/${
           (data.tests as IResult[])?.length
         }`;
       }
