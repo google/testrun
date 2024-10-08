@@ -19,4 +19,3 @@ else
   # If the directory is already in the PATH print a message
   echo "The directory $TESTING_COVERAGE_DIR already added to the PATH"
 fi
-

@@ -4,5 +4,5 @@ SRC_DIR="$(cd "$(dirname "$0")" && pwd)"
 echo "Creating the files..."
 
 # Run the script generate_results.py
-python3 "$TESTING_COVERAGE_DIR/generate_results.py"
+python3 "$SRC_DIR/generate_results.py"
 
