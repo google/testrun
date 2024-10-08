@@ -67,6 +67,10 @@ def create_api_test_api_csv(test_api_file, api_file, csv_filename, results_dir):
       )
     )
 
+    # If no endpoint is tested the cell is left empy
+    if len(responses_tested) == 0:
+      responses_tested = ""
+
     # Calculate done and to do percentages
     done_percentage, todo_percentage = (
       calculate_percentages(test_api_responses_count, api_responses_count)

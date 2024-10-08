@@ -65,6 +65,10 @@ def create_api_postman_csv(postman_file, api_file, csv_filename, results_dir):
       )
     )
 
+    # If postman responses are not tested the cell is left empy
+    if len(postman_responses) == 0:
+      postman_responses = ""
+
     # Calculate done and to do percentages
     done_percentage, todo_percentage = (
       calculate_percentages(postman_responses_count, api_responses_count)
