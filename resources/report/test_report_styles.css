@@ -378,6 +378,7 @@
 
     .result-list-title {
       font-size: 24px;
+      color: black;
     }
 
     .result-list {
@@ -391,6 +392,7 @@
       margin: 0.2in 0;
       font-size: 30px;
       font-weight: normal;
+      color: black;
     }
 
     .result-line {
