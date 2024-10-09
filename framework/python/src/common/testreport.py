@@ -258,7 +258,7 @@ class TestReport():
                            device=json_data['device'],
                            modules=self._device_modules(json_data['device']),
                            test_status=json_data['status'],
-                           duration=str(duration),
+                           duration=duration,
                            successful_tests=successful_tests,
                            total_tests=self._total_tests,
                            test_results=json_data['tests']['results'],

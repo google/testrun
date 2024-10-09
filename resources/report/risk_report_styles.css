@@ -120,7 +120,7 @@
 
     .risk-table {
       width: 100%;
-      margin-top: 40px;
+      margin-top: 20px;
       text-align: left;
       color: #3C4043;
       font-size: 14px;
@@ -128,6 +128,9 @@
 
     .risk-table-head {
       margin-bottom: 15px;
+      font-size: 14px;
+      margin-top: 40px;
+      text-align: left;
     }
 
     .risk-table-head-question {
