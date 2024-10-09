@@ -36,11 +36,11 @@
 
 
     {# Risk table #}
+    <div class="risk-table-head">
+      <div class="risk-table-head-question">Question</div>
+      <div class="risk-table-head-answer">Answer</div>
+    </div>
     <div class="risk-table">
-      <div class="risk-table-head">
-        <div class="risk-table-head-question">Question</div>
-        <div class="risk-table-head-answer">Answer</div>
-      </div>
       {% for question in page %}
       <div class="risk-table-row">
         <div class="risk-question-no">{{ question['index'] }}.</div>
