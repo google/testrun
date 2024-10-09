@@ -2516,6 +2516,25 @@ def add_two_profiles():
     # Copy the file_name from 'testing/api/profiles' to 'local/risk_profiles'
     shutil.copy(source_path, PROFILES_DIRECTORY)
 
+@pytest.fixture()
+def add_profile(request):
+  """ Upload specified profile to local/risk_profiles """
+
+  # Access the parameter (certs list) provided to the fixture
+  profiles = request.param
+
+  # Iterate over the profile names provided
+  for profile in profiles:
+
+    # Construct full path of the file from 'testing/api/profiles' folder
+    source_path = os.path.join(PROFILES_PATH, profile)
+
+    # Copy the file_name from 'testing/api/profiles' to 'local/risk_profiles'
+    shutil.copy(source_path, PROFILES_DIRECTORY)
+
+  # Return the list with profiles name
+  return profiles
+
 def delete_all_profiles():
   """Utility method to delete all profiles from local/risk_profiles"""
 
@@ -2578,6 +2597,33 @@ def profile_exists(profile_name):
 
   # Return if name is in the list of profiles
   return any(p["name"] == profile_name for p in profiles)
+
+@pytest.fixture()
+def remove_risk_assessment():
+  """ Fixture to remove and restore risk_assessment.json """
+
+  # Path to the risk_assessment.json file
+  risk_assessment_path = os.path.join("resources", "risk_assessment.json")
+
+  # Backup path for the risk_assessment.json file
+  backup_path = os.path.join("resources", "risk_assessment_backup.json")
+
+  # Create a backup of the risk_assessment.json file
+  if os.path.exists(risk_assessment_path):
+    shutil.copy(risk_assessment_path, backup_path)
+
+  # Delete the risk_assessment.json file
+  if os.path.exists(risk_assessment_path):
+    os.remove(risk_assessment_path)
+
+  # Run the test
+  yield
+
+  # Restore the risk assessment file after the test
+  if os.path.exists(backup_path):
+    shutil.copy(backup_path, risk_assessment_path)
+    os.remove(backup_path)
+
 
 def test_get_profiles_format(testrun): # pylint: disable=W0613
   """ Test for profiles format (200) """
@@ -2776,6 +2822,30 @@ def test_update_profile(empty_profiles_dir, add_one_profile, testrun): # pylint:
   )
   # Check if profile was updated
   assert updated_profile_check is not None
+
+def test_update_profile_no_profiles_format(empty_profiles_dir, # pylint: disable=W0613
+                              remove_risk_assessment, testrun): # pylint: disable=W0613
+  """Test for profile update when profiles format is not available (501)"""
+
+  # Prepare a valid profile update request
+  profile_update = load_json("valid_profile.json", directory=PROFILES_PATH)
+
+  # Send a POST request to update the profile
+  r = requests.post(f"{API}/profiles",
+                    data=json.dumps(profile_update),
+                    timeout=5)
+
+  # Check if the response status code is 501 (Not Implemented)
+  assert r.status_code == 501
+
+  # Parse the response
+  response = r.json()
+
+  # Check if "error" key is present in the response
+  assert "error" in response
+
+  # Check if the error message matches the expected response
+  assert response["error"] == "Risk profiles are not available right now"
 
 def test_update_profile_invalid_json(empty_profiles_dir, add_one_profile, # pylint: disable=W0613
                                      testrun): # pylint: disable=W0613
