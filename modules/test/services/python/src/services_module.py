@@ -83,7 +83,7 @@ class ServicesModule(TestModule):
         else:
           udp_open += 1
 
-    html_content = '<h1>Services Module</h1>'
+    html_content = '<h4 class="page-heading">Services Module</h4>'
 
     # Add summary table
     html_content += (f'''

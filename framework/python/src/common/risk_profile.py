@@ -28,6 +28,7 @@ LOGGER = logger.get_logger('risk_profile')
 RESOURCES_DIR = 'resources/report'
 TEMPLATE_FILE = 'risk_report_template.html'
 TEMPLATE_STYLES = 'risk_report_styles.css'
+DEVICE_FORMAT_PATH = 'resources/devices/device_profile.json'
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -59,6 +60,21 @@ class RiskProfile():
                            encoding='UTF-8'
                            ) as style_file:
       self._template_styles = style_file.read()
+
+    # Device profile format
+    self._device_format = []
+    try:
+      with open(os.path.join(root_dir, DEVICE_FORMAT_PATH),
+                'r',
+                encoding='utf-8') as device_format_file:
+        device_format_json = json.load(device_format_file)
+        for step in device_format_json:
+          self._device_format.extend(step['questions'])
+    except (IOError, ValueError) as e:
+      LOGGER.error(
+          'An error occurred whilst loading the device profile format')
+      LOGGER.debug(e)
+
 
     if profile_json is None or profile_format is None:
       return
@@ -195,6 +211,15 @@ class RiskProfile():
 
     self.risk = risk
 
+  def _update_risk_by_device(self):
+    risk = self.risk
+    if self._device and self.status == 'Valid':
+      for question in self._device.additional_info:
+        if 'risk' in question and question['risk'] == 'High':
+          risk = 'High'
+          break
+    return risk
+
   def _get_format_question(self, question: str, profile_format: dict):
 
     for q in profile_format:
@@ -315,7 +340,6 @@ class RiskProfile():
   def to_html(self, device):
     """Returns the current risk profile in HTML format"""
 
-    self._device = device
     high_risk_message = '''The device has been assessed to be high
                                risk due to the nature of the answers provided
                                  about the device functionality.'''
@@ -325,16 +349,18 @@ class RiskProfile():
     with open(test_run_img_file, 'rb') as f:
       logo_img_b64 = base64.b64encode(f.read()).decode('utf-8')
 
+    self._device = self._format_device_profile(device)
     pages = self._generate_report_pages()
     return self._template.render(
                                 styles=self._template_styles,
                                 manufacturer=self._device.manufacturer,
                                 model=self._device.model,
                                 logo=logo_img_b64,
-                                risk=self.risk,
+                                risk=self._update_risk_by_device(),
                                 high_risk_message=high_risk_message,
                                 limited_risk_message=limited_risk_message,
                                 pages=pages,
+                                total_pages=len(pages),
                                 version=self.version,
                                 created_at=self.created.strftime('%d.%m.%Y')
                                 )
@@ -346,7 +372,10 @@ class RiskProfile():
     current_page = []
     index = 1
 
-    for question in self.questions:
+    questions = deepcopy(self._device.additional_info)
+    questions.extend(self.questions)
+
+    for question in questions:
 
       if height > max_page_height:
         pages.append(current_page)
@@ -399,3 +428,21 @@ class RiskProfile():
     pdf_bytes = BytesIO()
     HTML(string=html).write_pdf(pdf_bytes)
     return pdf_bytes
+
+  # Adding risks to device profile questions
+  def _format_device_profile(self, device):
+    device_copy = deepcopy(device)
+    risk_map = {
+      question['question']: {
+          option['text']: option.get('risk', None)
+          for option in question['options'] if 'risk' in option
+      }
+      for question in self._device_format
+    }
+    for question in device_copy.additional_info:
+      risk = risk_map.get(
+        question['question'], {}
+        ).get(question['answer'], None)
+      if risk:
+        question['risk'] = risk
+    return device_copy

@@ -76,7 +76,7 @@
         {% set results_to = [results_from + tests_per_page, test_results|length]|min %}
       {% endif %}
       <div class="result-list">
-        <h3>Results List <small>({{ successful_tests }}/{{ total_tests }})</small></h3>
+        <h4 class="result-list-title">Results List <small>({{ successful_tests }}/{{ total_tests }})</small></h4>
         <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
           <div class="result-list-header-label" style="left: .1in">Name</div>
           <div class="result-list-header-label" style="left: 2.8in">Description</div>
@@ -160,7 +160,7 @@
   {% set page_index.value = page_index.value+1 %}
   <div class="page">
     {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
-    <h2 class="page-heading">Device profile</h2>
+    <h4 class="page-heading">Device profile</h4>
     <div class="device-profile-content">
       <div class="device-profile-head">
         <div class="device-profile-head-question">Question</div>
@@ -195,7 +195,7 @@
   {% set page_index.value = page_index.value + 1 %}
   <div class="page">
     {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
-    <h2 class="page-heading">Recommendations for Device Qualification</h2>
+    <h4 class="page-heading">Recommendations for Device Qualification</h4>
     <div class="steps-to-resolve-info">
       <p class="steps-to-resolve-info-heading">Attention</p>
       <p class="steps-to-resolve-info-content">
