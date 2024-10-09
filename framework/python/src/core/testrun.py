@@ -381,11 +381,12 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
   def stop(self):
 
+    # First, change the status to stopping
+    self.get_session().stop()
+
     # Prevent discovering new devices whilst stopping
     if self.get_net_orc().get_listener() is not None:
       self.get_net_orc().get_listener().stop_listener()
-
-    self.get_session().stop()
 
     self._stop_tests()
     self._stop_network(kill=True)

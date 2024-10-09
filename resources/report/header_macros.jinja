@@ -14,10 +14,10 @@
       </p>
       <h1>{{ title }}</h1>
     </div>
-    <h2 style="top: 50%;max-width:700px">
+    <p class="header-info-device">
       {{ device['manufacturer'] }}
       {{ device['model']}}
-    </h2>
+    </p>
   {% else %}
   <div class="header">
     <div class="header-info">
@@ -33,10 +33,10 @@
       </p>
       <h1>{{ title }}</h1>
     </div>
-    <h3 style="margin-top:0;max-width:700px"> 
+    <p class="header-info-device">
       {{ device['manufacturer'] }}
       {{ device['model']}}
-    </h3>
+    </p>
   {% endif %}   
     <img src="data:image/png;base64, {{ logo }}" alt="Testrun" width="90" style="position: absolute;top: 40%; right: 0px;"></img>
   </div>
