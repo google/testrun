@@ -16,10 +16,13 @@ from test_module import TestModule
 from tls_util import TLSUtil
 import os
 import pyshark
+from binascii import hexlify
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, dsa, ec
+from cryptography.x509 import AuthorityKeyIdentifier, SubjectKeyIdentifier, BasicConstraints, KeyUsage
+from cryptography.x509 import GeneralNames, DNSName, ExtendedKeyUsage, ObjectIdentifier, SubjectAlternativeName
 
 LOG_NAME = 'test_tls'
 MODULE_REPORT_FILE_NAME = 'tls_report.html'
@@ -211,14 +214,14 @@ class TLSModule(TestModule):
                 ext_table += f'''
                     <tr>
                       <td>{extension.oid._name}</td> 
-                      <td>{extension_value.value}</td>
+                      <td>{self.format_extension_value(extension_value.value)}</td>
                     </tr> 
                   '''
             else:
               ext_table += f'''
                     <tr>
                       <td>{extension.oid._name}</td> 
-                      <td>{extension.value}</td>
+                      <td>{self.format_extension_value(extension.value)}</td>
                     </tr> 
                   '''
           ext_table += '''
@@ -268,6 +271,55 @@ class TLSModule(TestModule):
 
     LOGGER.info('Module report generated at: ' + str(report_path))
     return report_path
+
+  def format_extension_value(self, value):
+    if isinstance(value, bytes):
+      # Convert byte sequences to hex strings
+      return hexlify(value).decode()
+    elif isinstance(value, (list, tuple)):
+      # Format lists/tuples for HTML output
+      return ', '.join([self.format_extension_value(v) for v in value])
+    elif isinstance(value, ExtendedKeyUsage):
+      # Handle ExtendedKeyUsage extension
+      return ', '.join(
+          [oid._name or f'Unknown OID ({oid.dotted_string})' for oid in value])
+    elif isinstance(value, GeneralNames):
+      # Handle GeneralNames (used in SubjectAlternativeName)
+      return ', '.join(
+          [name.value for name in value if isinstance(name, DNSName)])
+    elif isinstance(value, SubjectAlternativeName):
+      # Extract and format the GeneralNames (which contains DNSName,
+      #IPAddress, etc.)
+      return self.format_extension_value(value.get_values_for_type(DNSName))
+
+    elif isinstance(value, ObjectIdentifier):
+      # Handle ObjectIdentifier directly
+      return value._name or f'Unknown OID ({value.dotted_string})'
+    elif hasattr(value, '_name'):
+      # Extract the name for OIDs (Object Identifiers)
+      return value._name
+    elif isinstance(value, AuthorityKeyIdentifier):
+      # Handle AuthorityKeyIdentifier extension
+      key_id = self.format_extension_value(value.key_identifier)
+      cert_issuer = value.authority_cert_issuer
+      cert_serial = value.authority_cert_serial_number
+
+      return (f'key_identifier={key_id}, '
+              f'authority_cert_issuer={cert_issuer}, '
+              f'authority_cert_serial_number={cert_serial}')
+    elif isinstance(value, SubjectKeyIdentifier):
+      # Handle SubjectKeyIdentifier extension
+      return f'digest={self.format_extension_value(value.digest)}'
+    elif isinstance(value, BasicConstraints):
+      # Handle BasicConstraints extension
+      return f'ca={value.ca}, path_length={value.path_length}'
+    elif isinstance(value, KeyUsage):
+      # Handle KeyUsage extension
+      return (f'digital_signature={value.digital_signature}, '
+              f'key_cert_sign={value.key_cert_sign}, '
+              f'key_encipherment={value.key_encipherment}, '
+              f'crl_sign={value.crl_sign}')
+    return str(value)  # Fallback to string conversion
 
   def extract_certificates_from_pcap(self, pcap_files, mac_address):
     # Initialize a list to store packets
