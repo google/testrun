@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """TLS test module"""
+# pylint: disable=W0212
+
 from test_module import TestModule
 from tls_util import TLSUtil
 import os
@@ -84,14 +86,14 @@ class TLSModule(TestModule):
         '''
 
       cert_tables = []
-      for cert_num, ((ip_address, port),
+      for cert_num, ((ip_address, port), # pylint: disable=W0612
                      cert) in enumerate(certificates.items()):
 
         # Extract certificate data
         not_valid_before = cert.not_valid_before
         not_valid_after = cert.not_valid_after
         version_value = f'{cert.version.value + 1} ({hex(cert.version.value)})'
-        signature_alg_value = cert.signature_algorithm_oid._name  # pylint: disable=W0212
+        signature_alg_value = cert.signature_algorithm_oid._name
         not_before = str(not_valid_before)
         not_after = str(not_valid_after)
         public_key = cert.public_key()
@@ -209,7 +211,6 @@ class TLSModule(TestModule):
 
           for extension in cert.extensions:
             if isinstance(extension.value, list):
-              # pylint: disable=W0212
               for extension_value in extension.value:
                 ext_table += f'''
                     <tr>
