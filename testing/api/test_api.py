@@ -2202,7 +2202,6 @@ def add_certs(request):
 @pytest.fixture()
 def reset_certs():
   """ Delete the certificates before and after each test """
-  """ Delete the certificates before and after each test """
 
   # Delete before the test
   delete_all_certs()
