@@ -243,26 +243,27 @@ class Testrun:  # pylint: disable=too-few-public-methods
       return
 
     for report_folder in os.listdir(reports_folder):
+
+      report_folder_path = os.path.join(
+        reports_folder,
+        report_folder
+      )
+
+      report_test_folder_path = os.path.join(
+        report_folder_path,
+        'test',
+        device.mac_addr.replace(':', '')
+      )
+
       # 1.3 file path
       report_json_file_path = os.path.join(
-        reports_folder,
-        report_folder,
-        'test',
-        device.mac_addr.replace(':',''),
+        report_test_folder_path,
         'report.json')
 
       if not os.path.isfile(report_json_file_path):
         # Revert to pre 1.3 file path
         report_json_file_path = os.path.join(
-          reports_folder,
-          report_folder,
-          'report.json')
-
-      if not os.path.isfile(report_json_file_path):
-        # Revert to pre 1.3 file path
-        report_json_file_path = os.path.join(
-          reports_folder,
-          report_folder,
+          report_folder_path,
           'report.json')
 
       # Check if the report.json file exists
@@ -270,11 +271,48 @@ class Testrun:  # pylint: disable=too-few-public-methods
         # Some error may have occured during this test run
         continue
 
+      test_report = TestReport()
+
+      # Load from report.json
       with open(report_json_file_path, encoding='utf-8') as report_json_file:
         report_json = json.load(report_json_file)
-        test_report = TestReport()
         test_report.from_json(report_json)
         test_report.set_mac_addr(device.mac_addr)
+
+      if os.path.exists(report_test_folder_path):
+
+        for test_module in os.listdir(report_test_folder_path):
+
+          # Skip if not a directory
+          if not os.path.isdir(os.path.join(
+            report_test_folder_path,
+            test_module)):
+            continue
+
+          # Get the markdown report from the module if generated
+          markdown_file = os.path.join(
+            report_test_folder_path,
+            test_module,
+            test_module + '_report.md')
+          try:
+            with open(markdown_file, 'r', encoding='utf-8') as f:
+              module_report = f.read()
+              test_report.add_module_report(module_report)
+          except (FileNotFoundError, PermissionError):
+            pass
+
+          # Get the HTML report from the module if generated
+          html_file = os.path.join(
+            report_test_folder_path,
+            test_module,
+            test_module + '_report.html')
+          try:
+            with open(html_file, 'r', encoding='utf-8') as f:
+              module_report = f.read()
+              test_report.add_module_report(module_report)
+          except (FileNotFoundError, PermissionError):
+            pass
+
         device.add_report(test_report)
 
   def get_reports_folder(self, device):

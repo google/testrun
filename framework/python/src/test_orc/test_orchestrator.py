@@ -210,10 +210,6 @@ class TestOrchestrator:
     with open(os.path.join(out_dir, "report.json"), "w", encoding="utf-8") as f:
       json.dump(test_report.to_json(), f, indent=2)
 
-    # Write the html report
-    with open(os.path.join(out_dir, "report.html"), "w", encoding="utf-8") as f:
-      f.write(test_report.to_html())
-
     # Write the pdf report
     with open(os.path.join(out_dir, "report.pdf"), "wb") as f:
       f.write(test_report.to_pdf().getvalue())
@@ -340,7 +336,7 @@ class TestOrchestrator:
 
     return completed_results_dir
 
-  def zip_results(self, device, timestamp, profile):
+  def zip_results(self, device, timestamp: str, profile):
 
     try:
       LOGGER.debug("Archiving test results")
@@ -348,6 +344,23 @@ class TestOrchestrator:
       src_path = os.path.join(
           LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
           timestamp)
+
+      # Parse string timestamp
+      date_timestamp: datetime.datetime = datetime.strptime(
+        timestamp, "%Y-%m-%dT%H:%M:%S")
+
+      test_report = None
+      for report in device.get_reports():
+        if report.get_started() == date_timestamp:
+          test_report = report
+
+      # This should not happen as the timestamp is checked in api.py first
+      if test_report is None:
+        return None
+
+      # Write the pdf report
+      with open(os.path.join(src_path, "report.pdf"), "wb") as f:
+        f.write(test_report.to_pdf().getvalue())
 
       # Define temp directory to store files before zipping
       results_dir = os.path.join(f"/tmp/testrun/{time.time()}")
