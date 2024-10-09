@@ -53,7 +53,7 @@ class DNSModule(TestModule):
     # Extract DNS data from the pcap file
     dns_table_data = self.extract_dns_data()
 
-    html_content = '<h1>DNS Module</h1>'
+    html_content = '<h4 class="page-heading">DNS Module</h4>'
 
     # Set the summary variables
     local_requests = sum(
