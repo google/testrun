@@ -359,11 +359,15 @@ describe('DevicesComponent', () => {
           panelClass: 'initiate-test-run-dialog',
         });
 
-        tick();
+        tick(100);
+
         expect(router.url).toBe(Routes.Testing);
         expect(mockDevicesStore.setStatus).toHaveBeenCalledWith(
           MOCK_PROGRESS_DATA_IN_PROGRESS
         );
+        expect(
+          stateServiceMock.focusFirstElementInContainer
+        ).toHaveBeenCalled();
 
         openSpy.calls.reset();
       });
