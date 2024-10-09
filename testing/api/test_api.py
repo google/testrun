@@ -2500,7 +2500,7 @@ def test_delete_cert_not_found(testrun, reset_certs): # pylint: disable=W0613
 def add_profiles(request):
   """ Upload specified profile to local/risk_profiles """
 
-  # Access the parameter (certs list) provided to the fixture
+  # Access the parameter (profiles list) provided to the fixture
   profiles = request.param
 
   # Iterate over the profile names provided
