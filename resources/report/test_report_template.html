@@ -60,7 +60,11 @@
           <div class="summary-box-label">Started</div>
           <div class="summary-box-value">{{ json_data['started']}}</div>
           <div class="summary-box-label">Duration</div>
-          <div class="summary-box-value">{{ duration }}</div>
+          <div class="summary-box-value">
+            {% if duration.seconds//3600 > 0 %}{{ duration.seconds//3600 }}h {% endif %}
+            {% if duration.seconds//60 > 0 %}{{ duration.seconds//60 }}m {% endif %}
+            {{ duration.seconds%60 }}s
+          </div>
       </div>
     </div>
     {% endif %}
@@ -72,11 +76,11 @@
         {% set results_to = [results_from + tests_per_page, test_results|length]|min %}
       {% endif %}
       <div class="result-list">
-        <h3>Results List <small>({{ successful_tests }}/{{ total_tests }})</small></h3>
+        <h4 class="result-list-title">Results List <small>({{ successful_tests }}/{{ total_tests }})</small></h4>
         <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
           <div class="result-list-header-label" style="left: .1in">Name</div>
           <div class="result-list-header-label" style="left: 2.8in">Description</div>
-          <div class="result-list-header-label" style="left: 7.3in">Result</div>
+          <div class="result-list-header-label" style="left: 6.85in">Result</div>
         </div>
         {% for i in range(results_from, results_to) %}
         <div class="result-line result-line-result">
@@ -111,7 +115,7 @@
   {% set page_index.value = page_index.value+1 %}
   <div class="page">
     {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
-    <h1 class="page-heading">Steps to Resolve</h1>
+    <h2 class="page-heading">Non-complaint tests and suggested steps to resolve</h2>
     {% for step in steps_to_resolve %}
     <div class="steps-to-resolve">
       <div class="steps-to-resolve-row">
@@ -123,7 +127,7 @@
           <span class="steps-to-resolve subtitle">Description</span><br>{{ step["description"] }}
         </div>
       </div>
-      <div class="steps-to-resolve-row" style="margin-left: 70px;">
+      <div class="steps-to-resolve-row content">
         <span class="steps-to-resolve subtitle">Steps to resolve</span>
         {% for recommedtation in step['recommendations'] %}
           <br><span style="font-size: 14px">{{ loop.index }}. {{ recommedtation }}</span>
@@ -155,7 +159,8 @@
   {# Device profile #}
   {% set page_index.value = page_index.value+1 %}
   <div class="page">
-    {{ header_macros.header(False, "Device profile", json_data, device, logo, icon_qualification, icon_pilot)}}
+    {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
+    <h4 class="page-heading">Device profile</h4>
     <div class="device-profile-content">
       <div class="device-profile-head">
         <div class="device-profile-head-question">Question</div>
@@ -190,6 +195,7 @@
   {% set page_index.value = page_index.value + 1 %}
   <div class="page">
     {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
+    <h4 class="page-heading">Recommendations for Device Qualification</h4>
     <div class="steps-to-resolve-info">
       <p class="steps-to-resolve-info-heading">Attention</p>
       <p class="steps-to-resolve-info-content">
@@ -214,7 +220,7 @@
             {{ step["description"] }}
         </div>
       </div>
-      <div class="steps-to-resolve-row" style="margin-left: 70px;">
+      <div class="steps-to-resolve-row content">
         <span class="steps-to-resolve subtitle">Steps to resolve</span>
           {% for recommedtation in step['optional_recommendations'] %}
           <br>
