@@ -360,6 +360,7 @@ class RiskProfile():
                                 high_risk_message=high_risk_message,
                                 limited_risk_message=limited_risk_message,
                                 pages=pages,
+                                total_pages=len(pages),
                                 version=self.version,
                                 created_at=self.created.strftime('%d.%m.%Y')
                                 )
