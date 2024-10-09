@@ -770,7 +770,7 @@ def test_get_test_modules(testrun): # pylint: disable=W0613
 def get_timestamp(formatted=False):
   """ Returns timestamp value from 'started' field from the report
       found at 'testing/api/reports/report.json'
-      By default will return the raw format or iso if formatted=True
+      By default it will return the raw time format or iso if formatted=True
   """
 
   # Load the report.json using load_json utility method
@@ -907,6 +907,9 @@ def test_delete_report(empty_devices_dir, add_one_device, # pylint: disable=W061
   # Assign the device mac address
   mac_addr = device["mac_addr"]
 
+  # Assign the device name
+  device_name = f'{device["manufacturer"]} {device["model"]}'
+
   # Payload
   delete_data = {
     "mac_addr": mac_addr,
@@ -925,8 +928,11 @@ def test_delete_report(empty_devices_dir, add_one_device, # pylint: disable=W061
   # Check if "success" in response
   assert "success" in response
 
-  # Check if report folder has been deleted
-  # assert not os.path.exists(report_folder)
+  # Construct the 'reports' folder path
+  reports_folder = os.path.join(device_name, "reports")
+
+  # Check if reports folder has been deleted
+  assert not os.path.exists(reports_folder)
 
 def test_delete_report_no_payload(empty_devices_dir, add_one_device, # pylint: disable=W0613
                            create_report_folder, testrun): # pylint: disable=W0613
