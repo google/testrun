@@ -29,7 +29,7 @@ import {
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
-import { fetchRiskProfiles, setRiskProfiles } from '../../store/actions';
+import { setRiskProfiles } from '../../store/actions';
 
 describe('RiskAssessmentStore', () => {
   let riskAssessmentStore: RiskAssessmentStore;
@@ -128,33 +128,35 @@ describe('RiskAssessmentStore', () => {
       const mockFirstItem = document.createElement('section') as HTMLElement;
       const mockNullEL = window.document.querySelector(`.mock`) as HTMLElement;
 
-      it('should set focus to the next profile item when available', () => {
+      it('should set focus to the next profile item when available', fakeAsync(() => {
         const mockData = {
           nextItem: mockNextItem,
           firstItem: mockFirstItem,
         };
 
         riskAssessmentStore.setFocus(mockData);
+        tick(100);
 
         expect(
           mockFocusManagerService.focusFirstElementInContainer
         ).toHaveBeenCalledWith(mockNextItem);
-      });
+      }));
 
-      it('should set focus to the first profile item when available and no next item', () => {
+      it('should set focus to the first profile item when available and no next item', fakeAsync(() => {
         const mockData = {
           nextItem: mockNullEL,
           firstItem: mockFirstItem,
         };
 
         riskAssessmentStore.setFocus(mockData);
+        tick(100);
 
         expect(
           mockFocusManagerService.focusFirstElementInContainer
         ).toHaveBeenCalledWith(mockFirstItem);
-      });
+      }));
 
-      it('should set focus to the first element in the main when no items', () => {
+      it('should set focus to the first element in the main when no items', fakeAsync(() => {
         const mockData = {
           nextItem: mockNullEL,
           firstItem: mockFirstItem,
@@ -164,11 +166,12 @@ describe('RiskAssessmentStore', () => {
         store.refreshState();
 
         riskAssessmentStore.setFocus(mockData);
+        tick(100);
 
         expect(
           mockFocusManagerService.focusFirstElementInContainer
         ).toHaveBeenCalledWith();
-      });
+      }));
     });
 
     describe('setFocusOnCreateButton', () => {
@@ -230,10 +233,18 @@ describe('RiskAssessmentStore', () => {
     });
 
     describe('saveProfile', () => {
-      it('should dispatch fetchRiskProfiles', () => {
-        riskAssessmentStore.saveProfile(NEW_PROFILE_MOCK);
+      it('should dispatch setRiskProfiles', () => {
+        const onSave = jasmine.createSpy('onSave');
+        mockService.fetchProfiles.and.returnValue(of([NEW_PROFILE_MOCK]));
+        riskAssessmentStore.saveProfile({
+          profile: NEW_PROFILE_MOCK,
+          onSave,
+        });
 
-        expect(store.dispatch).toHaveBeenCalledWith(fetchRiskProfiles());
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setRiskProfiles({ riskProfiles: [NEW_PROFILE_MOCK] })
+        );
+        expect(onSave).toHaveBeenCalled();
       });
     });
   });

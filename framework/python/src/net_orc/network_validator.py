@@ -106,7 +106,7 @@ class NetworkValidator:
       device.dir_name = module_dir
       device.build_file = module_dir + '.Dockerfile'
       device.container_name = 'tr-ct-' + device.dir_name
-      device.image_name = 'test-run/' + device.dir_name
+      device.image_name = 'testrun/' + device.dir_name
 
       runtime_source = os.path.join(os.getcwd(), OUTPUT_DIR, device.name)
       conf_source = os.path.join(os.getcwd(), CONF_DIR)

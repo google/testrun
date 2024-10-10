@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/faux-dev
-FROM test-run/base:latest
+# Image name: testrun/faux-dev
+FROM testrun/base:latest
 
 ARG MODULE_NAME=faux-dev
 ARG MODULE_DIR=modules/devices/$MODULE_NAME
+ARG COMMON_DIR=framework/python/src/common
 
-#Update and get all additional requirements not contained in the base image
+# Update and get all additional requirements not contained in the base image
 RUN apt-get update --fix-missing
 
 # NTP requireds interactive installation so we're going to turn that off

@@ -41,7 +41,7 @@ CONF=`cat $CONF_FILE`
 
 if [[ -z $CONF ]]
 then
-	echo "No config file present at $CONF_FILE.  Exiting startup."
+	echo "No config file present at $CONF_FILE. Exiting startup."
 	exit 1
 fi
 

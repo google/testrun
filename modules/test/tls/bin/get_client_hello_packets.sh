@@ -21,13 +21,21 @@ TLS_VERSION="$3"
 TSHARK_OUTPUT="-T json -e ip.src -e tcp.dstport -e ip.dst"
 TSHARK_FILTER="ssl.handshake.type==1 and ip.src==$SRC_IP"
 
-if [[ $TLS_VERSION == '1.2' || -z $TLS_VERSION ]];then
+if [[ $TLS_VERSION == '1.0' ]]; then
+  TSHARK_FILTER="$TSHARK_FILTER and ssl.handshake.version==0x0301"
+elif [[ $TLS_VERSION == '1.1' ]]; then
+  TSHARK_FILTER="$TSHARK_FILTER and ssl.handshake.version==0x0302"
+elif [[ $TLS_VERSION == '1.2' || -z $TLS_VERSION ]]; then
   TSHARK_FILTER="$TSHARK_FILTER and ssl.handshake.version==0x0303"
-elif [ $TLS_VERSION == '1.3' ];then
+elif [[ $TLS_VERSION == '1.3' ]]; then
   TSHARK_FILTER="$TSHARK_FILTER and (ssl.handshake.version==0x0304 or tls.handshake.extensions.supported_version==0x0304)"
+else
+  echo "Unsupported TLS version: $TLS_VERSION"
+  exit 1
 fi
 
 response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT $TSHARK_FILTER)
 
 echo "$response"
+
   	

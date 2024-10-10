@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides basic utilities for the network orchestrator."""
+"""Provides basic utilities for Testrun."""
 import getpass
 import os
 import subprocess
@@ -52,12 +52,15 @@ def run_command(cmd, output=True, timeout=None):
 
 
 def interface_exists(interface):
+  """Checks whether an interface is available"""
   return interface in netifaces.interfaces()
 
 def prettify(mac_string):
+  """Formats a MAC address with colons"""
   return ':'.join([f'{ord(b):02x}' for b in mac_string])
 
 def get_host_user():
+  """Returns the username of the host user"""
   user = get_os_user()
 
   # If primary method failed, try secondary
@@ -67,6 +70,7 @@ def get_host_user():
   return user
 
 def get_os_user():
+  """Attempts to get the username using os library"""
   user = None
   try:
     user = os.getlogin()
@@ -79,6 +83,7 @@ def get_os_user():
   return user
 
 def get_user():
+  """Attempts to get the host user using the getpass library"""
   user = None
   try:
     user = getpass.getuser()
@@ -97,9 +102,11 @@ def get_user():
   return user
 
 def set_file_owner(path, owner):
+  """Change the owner of a file"""
   run_command(f'chown -R {owner} {path}')
 
 def get_module_display_name(search):
+  """Returns the display name of a test module"""
   modules = {
     'ntp': 'NTP',
     'dns': 'DNS',

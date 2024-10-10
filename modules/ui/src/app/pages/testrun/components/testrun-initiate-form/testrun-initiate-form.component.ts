@@ -24,7 +24,12 @@ import {
 } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TestRunService } from '../../../../services/test-run.service';
-import { Device, TestModule, DeviceView } from '../../../../model/device';
+import {
+  Device,
+  TestModule,
+  DeviceStatus,
+  DeviceView,
+} from '../../../../model/device';
 import {
   AbstractControl,
   FormArray,
@@ -33,7 +38,7 @@ import {
 } from '@angular/forms';
 import { DeviceValidators } from '../../../devices/components/device-form/device.validators';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
-import { take } from 'rxjs';
+import { take, timer } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../../../store/state';
 import { selectDevices } from '../../../../store/selectors';
@@ -61,6 +66,7 @@ export class TestrunInitiateFormComponent
   testModules: TestModule[] = [];
   prevDevice: Device | null = null;
   setFirmwareFocus = false;
+  readonly DeviceStatus = DeviceStatus;
   readonly DeviceView = DeviceView;
   error$: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(
     null
@@ -121,9 +127,11 @@ export class TestrunInitiateFormComponent
       this.changeDetectorRef.detectChanges();
     }
     if (this.setFirmwareFocus) {
-      this.firmwareInput?.nativeElement.focus();
-      this.setFirmwareFocus = false;
-      this.changeDetectorRef.detectChanges();
+      timer(100).subscribe(() => {
+        this.firmwareInput?.nativeElement.focus();
+        this.setFirmwareFocus = false;
+        this.changeDetectorRef.detectChanges();
+      });
     }
   }
 

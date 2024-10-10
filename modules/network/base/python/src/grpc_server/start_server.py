@@ -46,6 +46,5 @@ def run():
   print('gRPC server starting on port ' + port)
   serve(port)
 
-
 if __name__ == '__main__':
   run()

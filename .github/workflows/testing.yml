@@ -10,7 +10,7 @@ jobs:
   testrun_baseline:
     permissions: {}
     name:  Baseline
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
       - name: Checkout source
@@ -29,7 +29,7 @@ jobs:
   testrun_api:
     permissions: {}
     name:  API
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
       - name: Checkout source
@@ -58,7 +58,7 @@ jobs:
   testrun_unit:
     permissions: {}
     name:  Unit
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - name: Checkout source
@@ -73,9 +73,40 @@ jobs:
         shell: bash {0}
         run: cmd/build
         timeout-minutes: 10
-      - name: Run tests
+      - name: Run tests for conn module
         shell: bash {0}
-        run: bash testing/unit/run.sh
+        run: bash testing/unit/run_test_module.sh conn captures ethtool output
+      - name: Run tests for dns module
+        shell: bash {0}
+        run: bash testing/unit/run_test_module.sh dns captures reports output
+      - name: Run tests for ntp module
+        shell: bash {0}
+        run: bash testing/unit/run_test_module.sh ntp captures reports output
+      - name: Run tests for protocol module
+        shell: bash {0}
+        run: bash testing/unit/run_test_module.sh protocol captures output        
+      - name: Run tests for services module
+        shell: bash {0}
+        run: bash testing/unit/run_test_module.sh services reports results output  
+      - name: Run tests for tls module
+        shell: bash {0}
+        run: bash testing/unit/run_test_module.sh tls captures certAuth certs reports root_certs output
+      - name: Run tests for risk profiles
+        shell: bash {0}
+        run: bash testing/unit/run_report_test.sh testing/unit/risk_profile/risk_profile_test.py
+      - name: Run tests for reports
+        shell: bash {0}
+        run: bash testing/unit/run_report_test.sh testing/unit/report/report_test.py
+      - name: Archive HTML reports for modules
+        if: ${{ always() }}
+        run: sudo tar --exclude-vcs -czf html_reports.tgz testing/unit/report/output/
+      - name: Upload HTML reports
+        uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
+        if: ${{ always() }}
+        with:
+          if-no-files-found: error
+          name: html-reports_${{ github.run_id }}
+          path: html_reports.tgz
 
   pylint:
     permissions: {}
@@ -98,7 +129,7 @@ jobs:
     - name: Install Node
       uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
       with:
-        node-version: 18.18.0
+        node-version: 18.19.0
     - name: Install Chromium Browser
       run: sudo apt install chromium-browser
     - name: Install dependencies
@@ -121,7 +152,7 @@ jobs:
     - name: Install Node
       uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
       with:
-        node-version: 18.18.0
+        node-version: 18.19.0
     - name: Install dependencies
       run: npm install && npm ci
       working-directory: ./modules/ui

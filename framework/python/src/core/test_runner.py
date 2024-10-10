@@ -39,7 +39,7 @@ class TestRunner:
                single_intf=False,
                no_ui=False):
     self._register_exits()
-    self.test_run = Testrun(config_file=config_file,
+    self._testrun = Testrun(config_file=config_file,
                             validate=validate,
                             net_only=net_only,
                             single_intf=single_intf,
@@ -62,7 +62,7 @@ class TestRunner:
       sys.exit(1)
 
   def stop(self):
-    self.test_run.stop()
+    self._testrun.stop()
 
 
 def parse_args():

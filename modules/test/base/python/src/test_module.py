@@ -19,6 +19,8 @@ import util
 from datetime import datetime
 import traceback
 
+from common.statuses import TestResult
+
 LOGGER = None
 RESULTS_DIR = '/runtime/output/'
 CONF_FILE = '/testrun/conf/module_config.json'
@@ -39,6 +41,7 @@ class TestModule:
     self._ipv4_addr = os.environ.get('IPV4_ADDR', '')
     self._ipv4_subnet = os.environ.get('IPV4_SUBNET', '')
     self._ipv6_subnet = os.environ.get('IPV6_SUBNET', '')
+    self._dev_iface_mac = os.environ.get('DEV_IFACE_MAC', '')
     self._add_logger(log_name=log_name,
                      module_name=module_name,
                      log_dir=log_dir)
@@ -116,25 +119,25 @@ class TestModule:
             LOGGER.error(e)
             traceback.print_exc()
         else:
-          LOGGER.info(f'Test {test["name"]} not implemented. Skipping')
-          test['result'] = 'Error'
-          test['description'] = 'This test could not be found'
+          LOGGER.error(f'Test {test["name"]} has not been implemented')
+          result = TestResult.ERROR, 'This test could not be found'
       else:
         LOGGER.debug(f'Test {test["name"]} is disabled')
+        result = (TestResult.DISABLED,
+                  'This test did not run because it is disabled')
 
-        # To be added in v1.3.2
-        # result = 'Disabled', 'This test is disabled and did not run'
-
+      # Check if the test module has returned a result
       if result is not None:
+
         # Compliant or non-compliant as a boolean only
         if isinstance(result, bool):
-          test['result'] = 'Compliant' if result else 'Non-Compliant'
+          test['result'] = (TestResult.COMPLIANT
+                            if result else TestResult.NON_COMPLIANT)
           test['description'] = 'No description was provided for this test'
         else:
-          # TODO: This is assuming that result is an array but haven't checked
           # Error result
           if result[0] is None:
-            test['result'] = 'Error'
+            test['result'] = TestResult.ERROR
             if len(result) > 1:
               test['description'] = result[1]
             else:
@@ -142,13 +145,14 @@ class TestModule:
 
           # Compliant / Non-Compliant result
           elif isinstance(result[0], bool):
-            test['result'] = 'Compliant' if result[0] else 'Non-Compliant'
+            test['result'] = (TestResult.COMPLIANT
+                              if result[0] else TestResult.NON_COMPLIANT)
           # Result may be a string, e.g Error, Feature Not Detected
           elif isinstance(result[0], str):
             test['result'] = result[0]
           else:
             LOGGER.error(f'Unknown result detected: {result[0]}')
-            test['result'] = 'Error'
+            test['result'] = TestResult.ERROR
 
           # Check that description is a string
           if isinstance(result[1], str):
@@ -159,12 +163,17 @@ class TestModule:
           # Check if details were provided
           if len(result)>2:
             test['details'] = result[2]
+
+          # Check if tags were provided
+          if len(result)>3:
+            test['tags'] = result[3]
       else:
-        test['result'] = 'Error'
+        LOGGER.debug('No result was returned from the test module')
+        test['result'] = TestResult.ERROR
         test['description'] = 'An error occured whilst running this test'
 
       # Remove the steps to resolve if compliant already
-      if (test['result'] == 'Compliant' and 'recommendations' in test):
+      if (test['result'] == TestResult.COMPLIANT and 'recommendations' in test):
         test.pop('recommendations')
 
       test['end'] = datetime.now().isoformat()

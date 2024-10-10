@@ -15,6 +15,7 @@
 from protocol_bacnet import BACnet
 import unittest
 import os
+import sys
 from common import logger
 import inspect
 
@@ -102,4 +103,9 @@ if __name__ == '__main__':
   suite.addTest(ProtocolModuleTest('bacnet_protocol_validate_device_fail_test'))
 
   runner = unittest.TextTestRunner()
-  runner.run(suite)
+  test_result = runner.run(suite)
+
+  # Check if the tests failed and exit with the appropriate code
+  if not test_result.wasSuccessful():
+    sys.exit(1)  # Return a non-zero exit code for failures
+  sys.exit(0)  # Return zero for success

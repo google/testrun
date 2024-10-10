@@ -55,6 +55,7 @@ describe('ProgressTableComponent', () => {
         green: false,
         red: true,
         blue: false,
+        cyan: false,
         grey: false,
       };
 

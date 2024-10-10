@@ -21,6 +21,9 @@ import {
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { EscapableDialogComponent } from '../escapable-dialog/escapable-dialog.component';
+import { ComponentWithAnnouncement } from '../component-with-announcement';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { FocusManagerService } from '../../services/focus-manager.service';
 
 interface DialogData {
   title?: string;
@@ -34,12 +37,17 @@ interface DialogData {
   standalone: true,
   imports: [MatDialogModule, MatButtonModule],
 })
-export class SimpleDialogComponent extends EscapableDialogComponent {
+export class SimpleDialogComponent extends ComponentWithAnnouncement(
+  EscapableDialogComponent
+) {
   constructor(
     public override dialogRef: MatDialogRef<SimpleDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    public liveAnnouncer: LiveAnnouncer,
+    public override focusService: FocusManagerService
   ) {
-    super(dialogRef);
+    // @ts-expect-error ComponentWithAnnouncement should have 4 arguments
+    super(dialogRef, data.title, liveAnnouncer, focusService);
   }
 
   confirm() {

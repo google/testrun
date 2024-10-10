@@ -80,6 +80,16 @@ export const setHasDevices = createAction(
   props<{ hasDevices: boolean }>()
 );
 
+export const setHasExpiredDevices = createAction(
+  '[Shared] Set Has Expired Devices',
+  props<{ hasExpiredDevices: boolean }>()
+);
+
+export const setIsAllDevicesOutdated = createAction(
+  '[Shared] Set Is All Devices Outdated',
+  props<{ isAllDevicesOutdated: boolean }>()
+);
+
 export const setDevices = createAction(
   '[Shared] Set Devices',
   props<{ devices: Device[] }>()
@@ -120,6 +130,11 @@ export const fetchSystemStatusSuccess = createAction(
 export const setStatus = createAction(
   '[Shared] Set Status',
   props<{ status: string }>()
+);
+
+export const setIsTestingComplete = createAction(
+  '[Shared] Set Is Open Testing Complete',
+  props<{ isTestingComplete: boolean }>()
 );
 
 export const stopInterval = createAction('[Shared] Stop Interval');

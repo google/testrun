@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use '@angular/material' as mat;
 @import '../../../theming/colors';
+@import '../../../theming/variables';
 
 :host {
   display: grid;
@@ -31,6 +33,7 @@
 }
 
 .risk-profile-select-form-content {
+  margin: 14px 0 6px;
   font-family: Roboto, sans-serif;
   font-size: 14px;
   line-height: 20px;
@@ -49,8 +52,14 @@
 }
 
 .risk-profile-select-form-actions {
+  justify-content: flex-end;
   min-height: 30px;
   padding: 16px 0 0;
+  gap: 8px;
+
+  &:has(app-download-report) {
+    justify-content: space-between;
+  }
 }
 
 .profile-select {
@@ -83,4 +92,82 @@
   vertical-align: middle;
   align-self: center;
   margin-right: 16px;
+}
+.testing-result-heading {
+  margin: 16px 0;
+}
+.testing-result-title {
+  margin: 0;
+  font-size: 32px;
+  line-height: 40px;
+  text-align: center;
+  color: $grey-900;
+}
+
+.testing-result-subtitle {
+  margin: 0;
+  font-family: $font-secondary;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+  text-align: center;
+  color: $grey-800;
+}
+
+.testing-result {
+  display: flex;
+  height: auto;
+  min-height: 176px;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 10px;
+  border-radius: 8px;
+}
+
+.testing-result-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1 0 0;
+  min-width: 208px;
+  width: fit-content;
+  height: 100%;
+  min-height: 176px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 16px;
+  border-radius: 8px;
+  color: $white;
+  font-size: 24px;
+  line-height: 32px;
+  background: red;
+}
+
+.testing-result-description {
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px 24px;
+  color: $grey-800;
+  font-family: $font-secondary;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+}
+
+.failed-result {
+  background: $red-50;
+
+  .testing-result-status {
+    background: $red-800;
+  }
+}
+
+.success-result {
+  background: $green-50;
+
+  .testing-result-status {
+    background: mat.m2-get-color-from-palette($color-accent, 700);
+  }
 }

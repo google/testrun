@@ -35,6 +35,7 @@ import { DownloadReportComponent } from '../../components/download-report/downlo
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { CalloutComponent } from '../../components/callout/callout.component';
 import { DownloadOptionsComponent } from './components/download-options/download-options.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   declarations: [
@@ -60,6 +61,7 @@ import { DownloadOptionsComponent } from './components/download-options/download
     SpinnerComponent,
     CalloutComponent,
     DownloadOptionsComponent,
+    MatTooltipModule,
   ],
 })
 export class TestrunModule {}

@@ -16,6 +16,7 @@ from ntp_module import NTPModule
 import unittest
 from scapy.all import rdpcap, NTP, wrpcap
 import os
+import sys
 
 MODULE = 'ntp'
 
@@ -120,4 +121,10 @@ if __name__ == '__main__':
   suite.addTest(NTPModuleTest('ntp_module_report_no_ntp_test'))
 
   runner = unittest.TextTestRunner()
-  runner.run(suite)
+  test_result = runner.run(suite)
+
+  # Check if the tests failed and exit with the appropriate code
+  if not test_result.wasSuccessful():
+    sys.exit(1)  # Return a non-zero exit code for failures
+  sys.exit(0)  # Return zero for success
+  

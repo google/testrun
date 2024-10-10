@@ -1,10 +1,11 @@
 {
   "network": {
-    "device_intf": "enx123456789123",
-    "internet_intf": "enx123456789124"
+    "device_intf": "",
+    "internet_intf": ""
   },
   "log_level": "INFO",
   "startup_timeout": 60,
   "monitor_period": 300,
-  "max_device_reports": 0
+  "max_device_reports": 0,
+  "org_name": ""
 }

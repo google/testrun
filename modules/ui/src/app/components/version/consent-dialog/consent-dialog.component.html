@@ -81,24 +81,12 @@ limitations under the License.
       </p>
     </app-callout>
   </section>
-  <section class="section-container" *ngIf="data.hasRiskProfiles === false">
-    <app-callout [type]="CalloutType.Check">
-      <span class="section-title">Risk Assessment feature added!</span>
-      <p class="section-content risk-assessment">
-        Now you can answer a short questionnaire, create a security profile and
-        attach it to the Testrun result to complete a device verification. Also,
-        it will speed up the process a lot!
-      </p>
-      <p class="section-action-container">
-        <button
-          (click)="confirm(optOut, true)"
-          class="risk-assessment-button"
-          color="primary"
-          mat-button
-          aria-label="Go to Risk Assessment page"
-          type="button">
-          Go to Risk Assessment
-        </button>
+  <section class="section-container-pilot">
+    <app-callout [type]="CalloutType.InfoPilot">
+      <span class="section-title">Pilot Assessment</span>
+      <p class="section-content">
+        Pilot project support is now offered through Testrun. Follow the
+        instructions set out to get your pilot recommendation.
       </p>
     </app-callout>
   </section>

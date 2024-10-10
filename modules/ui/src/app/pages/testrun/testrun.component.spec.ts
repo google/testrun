@@ -49,6 +49,7 @@ import {
   selectDevices,
   selectHasDevices,
   selectHasRiskProfiles,
+  selectIsAllDevicesOutdated,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectRiskProfiles,
@@ -63,6 +64,7 @@ import {
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from '../../services/notification.service';
 import { Profile } from '../../model/profile';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 describe('TestrunComponent', () => {
   let component: TestrunComponent;
@@ -120,6 +122,7 @@ describe('TestrunComponent', () => {
           provideMockStore({
             selectors: [
               { selector: selectHasDevices, value: false },
+              { selector: selectIsAllDevicesOutdated, value: false },
               { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
               { selector: selectHasRiskProfiles, value: false },
@@ -139,6 +142,7 @@ describe('TestrunComponent', () => {
           MatDialogModule,
           SpinnerComponent,
           BrowserAnimationsModule,
+          MatTooltipModule,
         ],
       })
         .overrideComponent(TestrunComponent, {
@@ -238,6 +242,7 @@ describe('TestrunComponent', () => {
             selectors: [
               { selector: selectDevices, value: [] },
               { selector: selectHasDevices, value: false },
+              { selector: selectIsAllDevicesOutdated, value: false },
               { selector: selectIsOpenStartTestrun, value: false },
               { selector: selectIsOpenWaitSnackBar, value: false },
               { selector: selectHasRiskProfiles, value: false },
@@ -257,6 +262,7 @@ describe('TestrunComponent', () => {
           MatDialogModule,
           SpinnerComponent,
           BrowserAnimationsModule,
+          MatTooltipModule,
         ],
       })
         .overrideComponent(TestrunComponent, {
@@ -282,6 +288,23 @@ describe('TestrunComponent', () => {
       beforeEach(() => {
         store.overrideSelector(selectSystemStatus, null);
         store.overrideSelector(selectHasDevices, false);
+        fixture.detectChanges();
+      });
+
+      it('should have disabled "Start" button', () => {
+        const startBtn = compiled.querySelector(
+          '.start-button'
+        ) as HTMLButtonElement;
+
+        expect(startBtn.disabled).toBeTrue();
+      });
+    });
+
+    describe('with all devices outdated', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectSystemStatus, null);
+        store.overrideSelector(selectHasDevices, true);
+        store.overrideSelector(selectIsAllDevicesOutdated, true);
         fixture.detectChanges();
       });
 
@@ -343,7 +366,7 @@ describe('TestrunComponent', () => {
             systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
           })
         );
-        tick(10);
+        tick(1000);
         expect(
           stateServiceMock.focusFirstElementInContainer
         ).toHaveBeenCalled();
@@ -408,6 +431,14 @@ describe('TestrunComponent', () => {
         const downloadComp = compiled.querySelector('app-download-options');
 
         expect(downloadComp).toBeNull();
+      });
+
+      it('should have tags', () => {
+        const tags = fixture.nativeElement.querySelector(
+          '.toolbar-tag-container'
+        );
+
+        expect(tags).toBeTruthy();
       });
     });
 

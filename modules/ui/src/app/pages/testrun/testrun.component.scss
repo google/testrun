@@ -15,6 +15,7 @@
  */
 @use 'node_modules/@angular/material/index' as mat;
 @import 'src/theming/colors';
+@import 'src/theming/variables';
 
 :host {
   display: flex;
@@ -24,6 +25,9 @@
 }
 
 .progress-content-empty {
+  position: absolute;
+  top: 0;
+  width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
@@ -88,6 +92,31 @@
   text-overflow: ellipsis;
 }
 
+.toolbar-tag-container {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: -10px;
+}
+
+.toolbar-tag {
+  background-color: mat.m2-get-color-from-palette($color-primary, 800);
+  color: $white;
+  font-family: $font-primary;
+  font-size: 8px;
+  font-weight: 500;
+  height: 16px;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  text-align: center;
+  padding: 0 4px 0 4px;
+  border-radius: 2px;
+  &:hover {
+    cursor: pointer;
+  }
+}
+
 .report-button,
 .stop-button,
 .start-button {
@@ -96,8 +125,8 @@
 }
 
 .report-button {
-  background-color: mat.get-color-from-palette($color-primary, 50);
-  color: mat.get-color-from-palette($color-primary, 700);
+  background-color: mat.m2-get-color-from-palette($color-primary, 50);
+  color: mat.m2-get-color-from-palette($color-primary, 700);
   & ::ng-deep .mat-mdc-button-touch-target {
     height: auto;
   }

@@ -20,14 +20,15 @@ limitations under the License.
       <ng-container *ngTemplateOutlet="addDeviceButton"></ng-container>
     </mat-toolbar>
     <div class="device-repository-content">
-      <ng-container *ngFor="let device of vm.devices">
+      <ng-container *ngFor="let device of vm.devices; index as i">
         <app-device-item
-          (itemClicked)="openDialog(vm.devices, vm.testModules, $event)"
+          (itemClicked)="
+            openDialog(vm.devices, vm.testModules, $event, $event, true, 0, i)
+          "
           (startTestrunClicked)="
             openStartTestrun($event, vm.devices, vm.testModules)
           "
           [deviceView]="DeviceView.WithActions"
-          [class.device-item-selected]="device === vm.selectedDevice"
           [device]="device"
           [disabled]="
             device?.mac_addr === vm.deviceInProgress?.mac_addr

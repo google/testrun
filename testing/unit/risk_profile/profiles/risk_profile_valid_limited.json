@@ -1,52 +1,61 @@
 {
-  "name": "Primary profile",
-  "version": "1.3-alpha",
-  "created": "2024-07-01",
+  "name": "Primary Profile Limited Risk",
+  "version": "1.4-a",
+  "created": "2024-10-01",
   "status": "Valid",
+  "risk": "Limited",
   "questions": [
     {
       "question": "What type of device is this?",
-      "answer": "Sensor - Lighting"
+      "answer": "Controller - Lighting",
+      "risk": "Limited"
     },
     {
       "question": "How will this device be used at Google?",
-      "answer": "sakjdhaskjdh"
+      "answer": "Controlling Lights"
     },
     {
       "question": "Is this device going to be managed by Google or a third party?",
-      "answer": "Google"
+      "answer": "Google",
+      "risk": "Limited"
     },
     {
       "question": "Will the third-party device administrator be able to grant access to authorized Google personnel upon request?",
-      "answer": "N/A"
+      "answer": "N/A",
+      "risk": "Limited"
     },
     {
       "question": "Are any of the following statements true about your device?",
       "answer": [
         3
-      ]
+      ],
+      "risk": "Limited"
     },
     {
       "question": "Which of the following statements are true about this device?",
       "answer": [
         5
-      ]
+      ],
+      "risk": "Limited"
     },
     {
       "question": "Does the network protocol assure server-to-client identity verification?",
-      "answer": "Yes"
+      "answer": "Yes",
+      "risk": "Limited"
     },
     {
       "question": "Click the statements that best describe the characteristics of this device.",
       "answer": [
         5
-      ]
+      ],
+      "risk": "Limited"
     },
     {
       "question": "Are any of the following statements true about this device?",
       "answer": [
         6
-      ]
+      ],
+      "risk": "Limited"
     },
     {
       "question": "Comments",

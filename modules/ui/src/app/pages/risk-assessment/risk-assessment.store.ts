@@ -17,14 +17,14 @@
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
-import { delay, exhaustMap } from 'rxjs';
+import { catchError, delay, EMPTY, exhaustMap, throwError, timer } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
 import { Profile, ProfileFormat } from '../../model/profile';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
-import { fetchRiskProfiles, setRiskProfiles } from '../../store/actions';
+import { setRiskProfiles } from '../../store/actions';
 
 export interface AppComponentState {
   selectedProfile: Profile | null;
@@ -76,13 +76,15 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
       return trigger$.pipe(
         withLatestFrom(this.profiles$),
         tap(([{ nextItem, firstItem }, profiles]) => {
-          if (nextItem) {
-            this.focusManagerService.focusFirstElementInContainer(nextItem);
-          } else if (profiles.length > 1) {
-            this.focusManagerService.focusFirstElementInContainer(firstItem);
-          } else {
-            this.focusManagerService.focusFirstElementInContainer();
-          }
+          timer(100).subscribe(() => {
+            if (nextItem) {
+              this.focusManagerService.focusFirstElementInContainer(nextItem);
+            } else if (profiles.length > 1) {
+              this.focusManagerService.focusFirstElementInContainer(firstItem);
+            } else {
+              this.focusManagerService.focusFirstElementInContainer();
+            }
+          });
         })
       );
     }
@@ -131,14 +133,30 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  saveProfile = this.effect<Profile>(trigger$ => {
+  saveProfile = this.effect<{
+    profile: Profile;
+    onSave: ((profile: Profile) => void) | undefined;
+  }>(trigger$ => {
     return trigger$.pipe(
-      exhaustMap((name: Profile) => {
-        return this.testRunService.saveProfile(name).pipe(
-          tap(saved => {
+      exhaustMap(({ profile, onSave }) => {
+        return this.testRunService.saveProfile(profile).pipe(
+          exhaustMap(saved => {
             if (saved) {
-              this.store.dispatch(fetchRiskProfiles());
+              return this.testRunService.fetchProfiles();
             }
+            return throwError('Failed to upload profile');
+          }),
+          tap(newProfiles => {
+            this.store.dispatch(setRiskProfiles({ riskProfiles: newProfiles }));
+            const uploadedProfile = newProfiles.find(
+              p => p.name === profile.name || p.name === profile.rename
+            );
+            if (onSave && uploadedProfile) {
+              onSave(uploadedProfile);
+            }
+          }),
+          catchError(() => {
+            return EMPTY;
           })
         );
       })

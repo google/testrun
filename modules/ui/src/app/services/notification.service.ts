@@ -53,6 +53,7 @@ export class NotificationService {
     timeout = TIMEOUT_MS,
     container?: Document | Element | null
   ) {
+    const previousActiveElement = document.activeElement;
     const panelClasses = ['test-run-notification'];
     if (panelClass) {
       panelClasses.push(panelClass);
@@ -72,9 +73,13 @@ export class NotificationService {
     this.snackBarRef
       .afterDismissed()
       .pipe(take(1))
-      .subscribe(() =>
-        this.focusManagerService.focusFirstElementInContainer(container)
-      );
+      .subscribe(() => {
+        if (previousActiveElement) {
+          (previousActiveElement as HTMLElement).focus();
+        } else {
+          this.focusManagerService.focusFirstElementInContainer(container);
+        }
+      });
   }
   dismiss() {
     this.snackBar.dismiss();
@@ -99,8 +104,10 @@ export class NotificationService {
 
     this.snackBarCompRef
       .afterDismissed()
-      .pipe(take(1))
-      .subscribe(() => this.focusManagerService.focusFirstElementInContainer());
+      .pipe(take(1), delay(1000))
+      .subscribe(() => {
+        this.focusManagerService.focusFirstElementInContainer();
+      });
   }
 
   dismissSnackBar() {

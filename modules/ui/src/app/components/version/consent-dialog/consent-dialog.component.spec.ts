@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
 import { ConsentDialogComponent } from './consent-dialog.component';
 import {
@@ -24,15 +29,28 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { of } from 'rxjs';
 import { NEW_VERSION, VERSION } from '../../../mocks/version.mock';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { FocusManagerService } from '../../../services/focus-manager.service';
+import SpyObj = jasmine.SpyObj;
 
 describe('ConsentDialogComponent', () => {
   let component: ConsentDialogComponent;
   let fixture: ComponentFixture<ConsentDialogComponent>;
   let compiled: HTMLElement;
+  let mockFocusManagerService: SpyObj<FocusManagerService>;
 
   beforeEach(() => {
+    mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
+      'focusFirstElementInContainer',
+    ]);
+
     TestBed.configureTestingModule({
-      imports: [ConsentDialogComponent, MatDialogModule, MatButtonModule],
+      imports: [
+        ConsentDialogComponent,
+        MatDialogModule,
+        MatButtonModule,
+        MatIconTestingModule,
+      ],
       providers: [
         {
           provide: MatDialogRef,
@@ -42,11 +60,12 @@ describe('ConsentDialogComponent', () => {
           },
         },
         { provide: MAT_DIALOG_DATA, useValue: {} },
+        { provide: FocusManagerService, useValue: mockFocusManagerService },
       ],
     });
     fixture = TestBed.createComponent(ConsentDialogComponent);
     component = fixture.componentInstance;
-    component.data = { version: NEW_VERSION, hasRiskProfiles: false };
+    component.data = { version: NEW_VERSION };
     component.optOut = false;
     fixture.detectChanges();
     compiled = fixture.nativeElement as HTMLElement;
@@ -61,7 +80,7 @@ describe('ConsentDialogComponent', () => {
     const confirmButton = compiled.querySelector(
       '.confirm-button'
     ) as HTMLButtonElement;
-    const dialogRes = { grant: true, isNavigateToRiskAssessment: undefined };
+    const dialogRes = { grant: true };
 
     confirmButton?.click();
 
@@ -77,7 +96,7 @@ describe('ConsentDialogComponent', () => {
     const confirmButton = compiled.querySelector(
       '.confirm-button'
     ) as HTMLButtonElement;
-    const dialogRes = { grant: false, isNavigateToRiskAssessment: undefined };
+    const dialogRes = { grant: false };
 
     confirmButton?.click();
 
@@ -97,9 +116,18 @@ describe('ConsentDialogComponent', () => {
     expect(closeSpy).toHaveBeenCalledTimes(0);
   });
 
+  it('should set focus to first focusable elem when close dialog', fakeAsync(() => {
+    component.confirm(true);
+    tick(100);
+
+    expect(
+      mockFocusManagerService.focusFirstElementInContainer
+    ).toHaveBeenCalled();
+  }));
+
   describe('with new version available', () => {
     beforeEach(() => {
-      component.data = { version: NEW_VERSION, hasRiskProfiles: false };
+      component.data = { version: NEW_VERSION };
       fixture.detectChanges();
     });
 
@@ -122,60 +150,13 @@ describe('ConsentDialogComponent', () => {
 
   describe('with no new version available', () => {
     beforeEach(() => {
-      component.data = { version: VERSION, hasRiskProfiles: false };
+      component.data = { version: VERSION };
       fixture.detectChanges();
     });
 
     it('should not has consent content', () => {
       const content = compiled.querySelector(
         '.section-content.consent'
-      ) as HTMLElement;
-
-      expect(content).toBeNull();
-    });
-  });
-
-  describe('with no risk assessment profiles', () => {
-    beforeEach(() => {
-      component.data = { version: VERSION, hasRiskProfiles: false };
-      fixture.detectChanges();
-    });
-
-    it('should has risk-assessment content', () => {
-      const content = compiled.querySelector(
-        '.section-content.risk-assessment'
-      ) as HTMLElement;
-
-      const innerContent = content.innerHTML.trim();
-      expect(innerContent).toContain(
-        'Now you can answer a short questionnaire'
-      );
-    });
-
-    it('should close dialog with isNavigateToRiskAssessment as true when click "confirm"', () => {
-      const closeSpy = spyOn(component.dialogRef, 'close');
-      const riskAssessmentBtn = compiled.querySelector(
-        '.risk-assessment-button'
-      ) as HTMLButtonElement;
-      const dialogRes = { grant: true, isNavigateToRiskAssessment: true };
-
-      riskAssessmentBtn?.click();
-
-      expect(closeSpy).toHaveBeenCalledWith(dialogRes);
-
-      closeSpy.calls.reset();
-    });
-  });
-
-  describe('with risk assessment profiles', () => {
-    beforeEach(() => {
-      component.data = { version: VERSION, hasRiskProfiles: true };
-      fixture.detectChanges();
-    });
-
-    it('should not has risk-assessment content', () => {
-      const content = compiled.querySelector(
-        '.section-content.risk-assessment'
       ) as HTMLElement;
 
       expect(content).toBeNull();

@@ -28,8 +28,7 @@ class MQTTException(Exception):
 
 
 class MQTT:
-  """ MQTT client class
-  """
+  """ MQTT client class"""
   def __init__(self) -> None:
     self._host = WEBSOCKETS_HOST
     self._client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2)
@@ -37,7 +36,7 @@ class MQTT:
     self._client.enable_logger(LOGGER)
 
   def _connect(self):
-    """Establish connection to Mosquitto server
+    """Establish connection to MQTT broker
 
     Raises:
       MQTTException: Raises exception on connection error
@@ -46,8 +45,8 @@ class MQTT:
       try:
         self._client.connect(self._host, WEBSOCKETS_PORT, 60)
       except (ValueError, ConnectionRefusedError) as e:
-        LOGGER.error("Can't connect to host")
-        raise MQTTException("Connection to the Mosquitto server failed") from e
+        LOGGER.error("Cannot connect to host")
+        raise MQTTException("Connection to the MQTT broker") from e
 
   def send_message(self, topic: str, message: t.Union[str, dict]) -> None:
     """Send message to specific topic

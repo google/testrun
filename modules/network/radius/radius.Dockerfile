@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/radius
-FROM test-run/base:latest
+# Image name: testrun/radius
+FROM testrun/base:latest
 
 ARG MODULE_NAME=radius
 ARG MODULE_DIR=modules/network/$MODULE_NAME
@@ -25,7 +25,8 @@ RUN apt-get update && apt-get install -y openssl freeradius git
 RUN git clone --branch 0.0.25 https://github.com/faucetsdn/chewie
 
 # Install chewie as Python module
-RUN pip3 install chewie/
+# --break-system-packages flag used to bypass PEP668
+RUN pip3 install --break-system-packages chewie/
 
 EXPOSE 1812/udp
 EXPOSE 1813/udp
@@ -40,4 +41,5 @@ COPY $MODULE_DIR/bin /testrun/bin
 COPY $MODULE_DIR/python /testrun/python
 
 # Install all python requirements for the module
-RUN pip3 install -r /testrun/python/requirements.txt
+# --break-system-packages flag used to bypass PEP668
+RUN pip3 install --break-system-packages -r /testrun/python/requirements.txt

@@ -16,7 +16,6 @@
         "name": "security.services.ftp",
         "test_description": "Check FTP port 20/21 is disabled and FTP is not running on any port",
         "expected_behavior": "There is no FTP service running on any port",
-        "required_result": "Required",
         "config": {
           "services": [
             "ftp",
@@ -50,7 +49,6 @@
         "name": "security.ssh.version",
         "test_description": "If the device is running a SSH server ensure it is SSHv2",
         "expected_behavior": "SSH server is not running or server is SSHv2",
-        "required_result": "Required",
         "config": {
           "services": ["ssh"],
           "ports": [
@@ -70,7 +68,6 @@
         "name": "security.services.telnet",
         "test_description": "Check TELNET port 23 is disabled and TELNET is not running on any port",
         "expected_behavior": "There is no Telnet service running on any port",
-        "required_result": "Required",
         "config": {
           "services": [
             "telnet"
@@ -95,7 +92,6 @@
         "name": "security.services.smtp",
         "test_description": "Check SMTP ports 25, 465 and 587 are not enabled and SMTP is not running on any port.",
         "expected_behavior": "There is no SMTP service running on any port",
-        "required_result": "Required",
         "config": {
           "services": [
             "smtp"
@@ -123,7 +119,6 @@
         "name": "security.services.http",
         "test_description": "Check that there is no HTTP server running on any port",
         "expected_behavior": "Device is unreachable on port 80 (or any other port) and only responds to HTTPS requests on port 443 (or any other port if HTTP is used at all)",
-        "required_result": "Required",
         "config": {
           "services": [
             "http"
@@ -158,7 +153,6 @@
         "name": "security.services.pop",
         "test_description": "Check POP ports 109 and 110 are disabled and POP is not running on any port",
         "expected_behavior": "There is no POP service running on any port",
-        "required_result": "Required",
         "config": {
           "services": [
             "pop2",
@@ -200,7 +194,6 @@
         "name": "security.services.imap",
         "test_description": "Check IMAP port 143 is disabled and IMAP is not running on any port",
         "expected_behavior": "There is no IMAP service running on any port",
-        "required_result": "Required",
         "config": {
           "services": [
             "imap",
@@ -250,7 +243,6 @@
         "name": "security.services.snmpv3",
         "test_description": "Check SNMP port 161/162 is disabled.  If SNMP is an essential service, check it supports version 3",
         "expected_behavior": "Device is unreachable on port 161 (or any other port) and device is unreachable on port 162 (or any other port) unless SNMP is essential in which case it is SNMPv3 is used.",
-        "required_result": "Required",
         "config": {
           "services": [
             "snmp"
@@ -275,7 +267,6 @@
         "name": "security.services.vnc",
         "test_description": "Check VNC is disabled on any port",
         "expected_behavior": "Device cannot be accessed / connected to via VNC on any port",
-        "required_result": "Required",
         "config": {
           "services": [
             "vnc",
@@ -330,7 +321,6 @@
         "name": "security.services.tftp",
         "test_description": "Check TFTP port 69 is disabled (UDP)",
         "expected_behavior": "There is no TFTP service running on any port",
-        "required_result": "Required",
         "config": {
           "services": [
             "tftp",
@@ -363,7 +353,6 @@
         "name": "ntp.network.ntp_server",
         "test_description": "Check NTP port 123 is disabled and the device is not operating as an NTP server",
         "expected_behavior": "The device does not respond to NTP requests when it's IP is set as the NTP server on another device",
-        "required_result": "Required",
         "config": {
           "services": [
             "ntp"

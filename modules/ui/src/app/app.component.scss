@@ -59,8 +59,8 @@ $nav-open-btn-width: 210px;
   }
 
   .app-sidebar-button-active {
-    border: 1px solid mat.get-color-from-palette($color-primary, 50);
-    background-color: mat.get-color-from-palette($color-primary, 50);
+    border: 1px solid mat.m2-get-color-from-palette($color-primary, 50);
+    background-color: mat.m2-get-color-from-palette($color-primary, 50);
   }
 
   .app-sidebar-button-active > .mat-icon,
@@ -133,8 +133,8 @@ $nav-open-btn-width: 210px;
 }
 
 .app-sidebar-button-active {
-  border: 1px solid mat.get-color-from-palette($color-primary, 500);
-  background-color: mat.get-color-from-palette($color-primary, 500);
+  border: 1px solid mat.m2-get-color-from-palette($color-primary, 500);
+  background-color: mat.m2-get-color-from-palette($color-primary, 500);
 }
 
 .app-sidebar-button-active > .mat-icon {
@@ -186,7 +186,7 @@ $nav-open-btn-width: 210px;
 .app-content-main {
   position: relative;
   display: grid;
-  grid-template-rows: 0 auto;
+  grid-template-rows: auto 0 1fr;
   overflow: hidden;
 }
 

@@ -33,7 +33,10 @@ import {
   selectStatus,
   selectSystemStatus,
   selectTestModules,
+  selectHasExpiredDevices,
   selectInternetConnection,
+  selectIsAllDevicesOutdated,
+  selectIsTestingComplete,
 } from './selectors';
 
 describe('Selectors', () => {
@@ -48,8 +51,10 @@ describe('Selectors', () => {
     },
     shared: {
       hasConnectionSettings: false,
+      isAllDevicesOutdated: false,
       devices: [],
       hasDevices: false,
+      hasExpiredDevices: false,
       isOpenAddDevice: false,
       riskProfiles: [],
       hasRiskProfiles: false,
@@ -59,6 +64,7 @@ describe('Selectors', () => {
       systemStatus: null,
       deviceInProgress: null,
       status: null,
+      isTestingComplete: false,
       reports: [],
       testModules: [],
       adapters: {},
@@ -96,6 +102,16 @@ describe('Selectors', () => {
     expect(result).toEqual(false);
   });
 
+  it('should select hasExpiredDevices', () => {
+    const result = selectHasExpiredDevices.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select isAllDevicesOutdated', () => {
+    const result = selectIsAllDevicesOutdated.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
   it('should select riskProfiles', () => {
     const result = selectRiskProfiles.projector(initialState);
     expect(result).toEqual([]);
@@ -114,6 +130,11 @@ describe('Selectors', () => {
   it('should select systemStatus', () => {
     const result = selectSystemStatus.projector(initialState);
     expect(result).toEqual(null);
+  });
+
+  it('should select isTestingComplete', () => {
+    const result = selectIsTestingComplete.projector(initialState);
+    expect(result).toEqual(false);
   });
 
   it('should select isOpenStartTestrun', () => {

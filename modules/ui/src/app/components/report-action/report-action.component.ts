@@ -15,6 +15,9 @@ export class ReportActionComponent {
   constructor(private datePipe: DatePipe) {}
 
   getTestRunId(data: TestrunStatus) {
+    if (!data.device) {
+      return '';
+    }
     return `${data.device.manufacturer} ${data.device.model} ${
       data.device.firmware
     } ${this.getFormattedDateString(data.started)}`;

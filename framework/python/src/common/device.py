@@ -14,7 +14,7 @@
 
 """Track device object information."""
 
-from typing import Dict, List
+from typing import List, Dict
 from dataclasses import dataclass, field
 from common.testreport import TestReport
 from datetime import datetime
@@ -23,17 +23,21 @@ from datetime import datetime
 class Device():
   """Represents a physical device and it's configuration."""
 
+  status: str = 'Valid'
   folder_url: str = None
   mac_addr: str = None
   manufacturer: str = None
   model: str = None
+  type: str = None
+  technology: str = None
+  test_pack: str = 'Device Qualification'
+  additional_info: List[dict] = field(default_factory=list)
   test_modules: Dict = field(default_factory=dict)
   ip_addr: str = None
   firmware: str = None
   device_folder: str = None
   reports: List[TestReport] = field(default_factory=list)
   max_device_reports: int = None
-  reports: List[TestReport] = field(default_factory=list)
 
   def add_report(self, report):
     self.reports.append(report)
@@ -54,11 +58,18 @@ class Device():
     """Returns the device as a python dictionary. This is used for the
     system status API endpoint and in the report."""
     device_json = {}
+    device_json['status'] = self.status
     device_json['mac_addr'] = self.mac_addr
     device_json['manufacturer'] = self.manufacturer
     device_json['model'] = self.model
+    device_json['type'] = self.type
+    device_json['technology'] = self.technology
+    device_json['test_pack'] = self.test_pack
+    device_json['additional_info'] = self.additional_info
+
     if self.firmware is not None:
       device_json['firmware'] = self.firmware
+
     device_json['test_modules'] = self.test_modules
     return device_json
 
@@ -69,5 +80,9 @@ class Device():
     device_json['mac_addr'] = self.mac_addr
     device_json['manufacturer'] = self.manufacturer
     device_json['model'] = self.model
+    device_json['type'] = self.type
+    device_json['technology'] = self.technology
+    device_json['test_pack'] = self.test_pack
     device_json['test_modules'] = self.test_modules
+    device_json['additional_info'] = self.additional_info
     return device_json

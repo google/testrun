@@ -1,0 +1,134 @@
+{
+  "testrun": {
+    "version": "1.3.1"
+  },
+  "mac_addr": null,
+  "device": {
+    "mac_addr": "00:1e:42:35:73:c4",
+    "manufacturer": "Teltonika",
+    "model": "TRB140",
+    "firmware": "1.2.3",
+    "test_modules": {
+      "protocol": {
+        "enabled": true
+      },
+      "services": {
+        "enabled": false
+      },
+      "connection": {
+        "enabled": false
+      },
+      "tls": {
+        "enabled": true
+      },
+      "ntp": {
+        "enabled": true
+      },
+      "dns": {
+        "enabled": true
+      }
+    }
+  },
+  "status": "Non-Compliant",
+  "started": "2024-08-05 13:37:53",
+  "finished": "2024-08-05 13:39:35",
+  "tests": {
+    "total": 12,
+    "results": [
+      {
+        "name": "protocol.valid_bacnet",
+        "description": "BACnet device could not be discovered",
+        "expected_behavior": "BACnet traffic can be seen on the network and packets are valid and not malformed",
+        "required_result": "Recommended",
+        "result": "Feature Not Detected"
+      },
+      {
+        "name": "protocol.bacnet.version",
+        "description": "Device did not respond to BACnet discovery",
+        "expected_behavior": "The BACnet client implements an up to date version of BACnet",
+        "required_result": "Recommended",
+        "result": "Feature Not Detected"
+      },
+      {
+        "name": "protocol.valid_modbus",
+        "description": "Device did not respond to Modbus connection",
+        "expected_behavior": "Any Modbus functionality works as expected and valid Modbus traffic can be observed",
+        "required_result": "Recommended",
+        "result": "Feature Not Detected"
+      },
+      {
+        "name": "security.tls.v1_2_server",
+        "description": "TLS 1.2 certificate is invalid",
+        "expected_behavior": "TLS 1.2 certificate is issued to the web browser client when accessed",
+        "required_result": "Required if Applicable",
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Enable TLS 1.2 support in the web server configuration",
+          "Disable TLS 1.0 and 1.1",
+          "Sign the certificate used by the web server"
+        ]
+      },
+      {
+        "name": "security.tls.v1_2_client",
+        "description": "TLS 1.2 client connections valid",
+        "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers",
+        "required_result": "Required if Applicable",
+        "result": "Compliant"
+      },
+      {
+        "name": "security.tls.v1_3_server",
+        "description": "TLS 1.3 certificate is invalid",
+        "expected_behavior": "TLS 1.3 certificate is issued to the web browser client when accessed",
+        "required_result": "Informational",
+        "result": "Informational"
+      },
+      {
+        "name": "security.tls.v1_3_client",
+        "description": "TLS 1.3 client connections valid",
+        "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.3",
+        "required_result": "Informational",
+        "result": "Informational"
+      },
+      {
+        "name": "ntp.network.ntp_support",
+        "description": "Device sent NTPv3 packets. NTPv3 is not allowed",
+        "expected_behavior": "The device sends an NTPv4 request to the configured NTP server.",
+        "required_result": "Required",
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Set the NTP version to v4 in the NTP client",
+          "Install an NTP client that supports NTPv4"
+        ]
+      },
+      {
+        "name": "ntp.network.ntp_dhcp",
+        "description": "Device sent NTP request to non-DHCP provided server",
+        "expected_behavior": "Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)",
+        "required_result": "Roadmap",
+        "result": "Feature Not Detected"
+      },
+      {
+        "name": "dns.network.hostname_resolution",
+        "description": "DNS traffic detected from device",
+        "expected_behavior": "The device sends DNS requests.",
+        "required_result": "Required",
+        "result": "Compliant"
+      },
+      {
+        "name": "dns.network.from_dhcp",
+        "description": "DNS traffic detected only to DHCP provided server",
+        "expected_behavior": "The device sends DNS requests to the DNS server provided by the DHCP server",
+        "required_result": "Informational",
+        "result": "Informational"
+      },
+      {
+        "name": "dns.mdns",
+        "description": "No MDNS traffic detected from the device",
+        "expected_behavior": "Device may send MDNS requests",
+        "required_result": "Informational",
+        "result": "Informational"
+      }
+    ]
+  },
+  "report": "http://localhost:8000/report/Teltonika TRB140/2024-08-05T13:37:53"
+}

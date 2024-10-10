@@ -39,14 +39,13 @@ import {
 } from './selectors';
 import {
   IDLE_STATUS,
-  IResult,
   StatusOfTestrun,
   TestrunStatus,
-  TestsData,
 } from '../model/testrun-status';
 import {
   fetchSystemStatus,
   fetchSystemStatusSuccess,
+  setIsTestingComplete,
   setReports,
   setStatus,
   setTestrunStatus,
@@ -56,6 +55,7 @@ import {
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { NotificationService } from '../services/notification.service';
 import { Profile } from '../model/profile';
+import { DeviceStatus } from '../model/device';
 import { TestRunMqttService } from '../services/test-run-mqtt.service';
 import { InternetConnection } from '../model/topic';
 
@@ -63,6 +63,7 @@ const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
 @Injectable()
 export class AppEffects {
+  private isSinglePortMode: boolean | undefined = false;
   private statusSubscription: Subscription | undefined;
   private internetSubscription: Subscription | undefined;
   private destroyWaitDeviceInterval$: Subject<boolean> = new Subject<boolean>();
@@ -121,6 +122,9 @@ export class AppEffects {
   onFetchSystemConfigSuccess$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(AppActions.fetchSystemConfigSuccess),
+      tap(
+        ({ systemConfig }) => (this.isSinglePortMode = systemConfig.single_intf)
+      ),
       map(({ systemConfig }) =>
         AppActions.setHasConnectionSettings({
           hasConnectionSettings:
@@ -144,6 +148,32 @@ export class AppEffects {
       ofType(AppActions.setDevices),
       map(({ devices }) =>
         AppActions.setHasDevices({ hasDevices: devices.length > 0 })
+      )
+    );
+  });
+
+  onSetExpiredDevices$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setDevices),
+      map(({ devices }) =>
+        AppActions.setHasExpiredDevices({
+          hasExpiredDevices: devices.some(
+            device => device.status === DeviceStatus.INVALID
+          ),
+        })
+      )
+    );
+  });
+
+  onSetIsAllDevicesOutdated$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setDevices),
+      map(({ devices }) =>
+        AppActions.setIsAllDevicesOutdated({
+          isAllDevicesOutdated: devices.every(
+            device => device.status === DeviceStatus.INVALID
+          ),
+        })
       )
     );
   });
@@ -223,6 +253,11 @@ export class AppEffects {
       return this.actions$.pipe(
         ofType(AppActions.fetchSystemStatusSuccess),
         tap(({ systemStatus }) => {
+          this.store.dispatch(
+            setIsTestingComplete({
+              isTestingComplete: this.isTestrunFinished(systemStatus.status),
+            })
+          );
           if (this.testrunService.testrunInProgress(systemStatus.status)) {
             this.pullingSystemStatusData();
             this.fetchInternetConnection();
@@ -243,31 +278,20 @@ export class AppEffects {
           ) {
             this.showSnackBar();
           }
-          if (
-            systemStatus?.status !== StatusOfTestrun.WaitingForDevice &&
-            isOpenWaitSnackBar
-          ) {
-            this.notificationService.dismissWithTimout();
+          if (systemStatus?.status !== StatusOfTestrun.WaitingForDevice) {
+            if (isOpenWaitSnackBar) {
+              this.notificationService.dismissWithTimout();
+            } else {
+              this.destroyWaitDeviceInterval$.next(true);
+            }
           }
         }),
         tap(([{ systemStatus }, , status]) => {
           // for app - requires only status
           if (systemStatus.status !== status?.status) {
             this.store.dispatch(setStatus({ status: systemStatus.status }));
-            this.store.dispatch(
-              setTestrunStatus({ systemStatus: systemStatus })
-            );
-          } else if (
-            systemStatus.finished !== status?.finished ||
-            (systemStatus.tests as TestsData)?.results?.length !==
-              (status?.tests as TestsData)?.results?.length ||
-            (systemStatus.tests as IResult[])?.length !==
-              (status?.tests as IResult[])?.length
-          ) {
-            this.store.dispatch(
-              setTestrunStatus({ systemStatus: systemStatus })
-            );
           }
+          this.store.dispatch(setTestrunStatus({ systemStatus: systemStatus }));
         })
       );
     },
@@ -364,6 +388,9 @@ export class AppEffects {
   }
 
   private fetchInternetConnection() {
+    if (this.isSinglePortMode) {
+      return;
+    }
     if (
       this.internetSubscription === undefined ||
       this.internetSubscription?.closed

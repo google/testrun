@@ -146,3 +146,10 @@
     }
   }
 }
+
+.settings-drawer-header-button:not(.mat-mdc-button-disabled),
+.close-button:not(.mat-mdc-button-disabled),
+.save-button:not(.mat-mdc-button-disabled) {
+  cursor: pointer;
+  pointer-events: auto;
+}

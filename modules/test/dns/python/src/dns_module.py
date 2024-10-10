@@ -53,7 +53,7 @@ class DNSModule(TestModule):
     # Extract DNS data from the pcap file
     dns_table_data = self.extract_dns_data()
 
-    html_content = '<h1>DNS Module</h1>'
+    html_content = '<h4 class="page-heading">DNS Module</h4>'
 
     # Set the summary variables
     local_requests = sum(
@@ -97,6 +97,7 @@ class DNSModule(TestModule):
             <tr>
               <th>Source</th>
               <th>Destination</th>
+              <th>Resolved IP</th>
               <th>Type</th>
               <th>URL</th>
               <th>Count</th>
@@ -105,16 +106,16 @@ class DNSModule(TestModule):
           <tbody>'''
 
       # Count unique combinations
-      counter = Counter(
-          (row['Source'], row['Destination'], row['Type'], row['Data'])
-          for row in dns_table_data)
+      counter = Counter((row['Source'], row['Destination'], row['ResolvedIP'],
+                         row['Type'], row['Data']) for row in dns_table_data)
 
       # Generate the HTML table with the count column
-      for (src, dst, typ, dat), count in counter.items():
+      for (src, dst, res_ip, typ, dat), count in counter.items():
         table_content += f'''
               <tr>
                 <td>{src}</td>
                 <td>{dst}</td>
+                <td>{res_ip}</td>
                 <td>{typ}</td>
                 <td>{dat}</td>
                 <td>{count}</td>
@@ -122,8 +123,7 @@ class DNSModule(TestModule):
 
       table_content += '''
             </tbody>
-          </table>
-                       '''
+          </table>'''
 
       html_content += table_content
 
@@ -166,23 +166,38 @@ class DNSModule(TestModule):
           # 'qr' field indicates query (0) or response (1)
           dns_type = 'Query' if dns_layer.qr == 0 else 'Response'
 
-          # Check for the presence of DNS query name
-          if hasattr(dns_layer, 'qd') and dns_layer.qd is not None:
+          # Check if 'qd' (query data) exists and has at least one entry
+          if hasattr(dns_layer, 'qd') and dns_layer.qdcount > 0:
             qname = dns_layer.qd.qname.decode() if dns_layer.qd.qname else 'N/A'
           else:
             qname = 'N/A'
+
+          resolved_ip = 'N/A'
+          # If it's a response packet, extract the resolved IP address
+          # from the answer section
+          if dns_layer.qr == 1 and hasattr(dns_layer,
+                                           'an') and dns_layer.ancount > 0:
+            # Loop through all answers in the DNS response
+            for i in range(dns_layer.ancount):
+              answer = dns_layer.an[i]
+              # Check for IPv4 (A record) or IPv6 (AAAA record)
+              if answer.type == 1:  # Indicates an A record (IPv4 address)
+                resolved_ip = answer.rdata  # Extract IPv4 address
+                break  # Stop after finding the first valid resolved IP
+              elif answer.type == 28:  # Indicates an AAAA record (IPv6 address)
+                resolved_ip = answer.rdata  # Extract IPv6 address
+                break  # Stop after finding the first valid resolved IP
 
           dns_data.append({
               'Timestamp': float(packet.time),  # Timestamp of the DNS packet
               'Source': source_ip,
               'Destination': destination_ip,
+              'ResolvedIP': resolved_ip,  # Adding the resolved IP address
               'Type': dns_type,
               'Data': qname[:-1]
           })
 
     # Filter unique entries based on 'Timestamp'
-    # DNS Server will duplicate messages caught by
-    # startup and monitor
     filtered_unique_dns_data = []
     seen_timestamps = set()
 

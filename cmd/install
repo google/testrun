@@ -68,15 +68,13 @@ deactivate
 cmd/build
 
 # Create local folders
-mkdir -p local/devices
-mkdir -p local/root_certs
-mkdir -p local/risk_profiles
+mkdir -p local/{devices,root_certs,risk_profiles}
 
 # Set file permissions on local
 # This does not work on GitHub actions
 if logname ; then
   USER_NAME=$(logname)
-  sudo chown -R "$USER_NAME" local
+  sudo chown -R "$USER_NAME" local || true
 fi
 
 echo Finished installing Testrun

@@ -1,123 +1,121 @@
 <img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
 
+# Get started
 
-## Getting Started
+This page covers the following topics:
 
-It is recommended that you run Testrun on a standalone machine running a fresh install of Ubuntu 20.04, 22.04 or 24.04 LTS (laptop or desktop).
+-  [Prerequisites](#prerequisites)
+-  [Installation](#installation)
+-  [Testing](#testing)
+-  [Troubleshooting](#troubleshooting)
+-  [Review the report](#review-the-report)
+-  [Uninstall](#uninstall)
 
-## Prerequisites
+# Prerequisites
 
-### Hardware
+We recommend that you run Testrun on a stand-alone machine that has a fresh install of Ubuntu 20.04, 22.04, or 24.04 LTS (laptop or desktop).
 
-Before starting with Testrun, ensure you have the following hardware:
+## Hardware
 
-- PC running Ubuntu LTS (laptop or desktop)
-- 2x USB Ethernet adapter (one may be a built-in Ethernet port)
-- Internet connection
+Before you start, ensure you have the following hardware:
 
-![Visual representation of setup](setup/visual.png)
+-  PC running Ubuntu LTS (laptop or desktop)
+-  2x USB Ethernet adapter (one may be a built-in Ethernet port)
+-  Internet connection
 
-**NOTE: Running in a virtual machine? Checkout the virtual machine documentation [here](/docs/virtual_machine.md).**
+![Required hardware for Testrun](/docs/ui/getstarted--2dn8vrzsspe.png)
 
-### Software
+Note: If you're using Testrun in a virtual machine, follow the steps on the [Virtual machine page](/docs/virtual_machine.md).
 
-Ensure the following software is installed on your Ubuntu LTS PC:
-- Docker - installation guide: [https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
-- System dependencies (These will be installed automatically when installing Testrun if not already installed): 
-   - Python3-dev
-   - Python3-venv
-   - Openvswitch Common
-   - Openvswitch Switch
-   - Build Essential
-   - Net Tools
-   - Ethtool
+## Software
 
-### Device
-Any device with an ethernet connection, and support for IPv4 DHCP can be tested.
+Install Docker on your Ubuntu LTS PC using [the installation guide](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository). The following system dependencies install automatically when you install Testrun:
 
-However, to achieve a compliant test outcome, your device must be configured correctly and implement the required security features. These standards are outlined in the [Application Security Requirements for IoT Devices](https://partner-security.withgoogle.com/docs/iot_requirements). but further detail is available in [documentation for each test module](/docs/test/modules.md).
+-  Python3-dev
+-  Python3-venv
+-  Openvswitch Common
+-  Openvswitch Switch
+-  Build Essential
+-  Net Tools
+-  Ethtool
 
-## Installation
+## Device
 
-1. Download the latest version of the Testrun installer from the [releases page](https://github.com/google/testrun/releases)
+You can test any device with an Ethernet connection and support for IPv4 DHCP. However, to achieve a compliant test outcome, you must configure your device correctly and implement the required security features. The [Application Security Requirements for IoT Devices](https://partner-security.withgoogle.com/docs/iot_requirements) outlines these standards. Additional details are available on the [Test modules page](/docs/test/modules.md).
 
-2. Open a terminal and navigate to location of the Testrun installer (most likely your downloads folder)
+# Installation
 
-3. Install the package using ``sudo apt install ./testrun*.deb``
+Follow these steps to install Testrun:
 
- - Testrun will be installed under the /usr/local/testrun directory.
- - Testing data will be available in the ``local/devices/{device}/reports`` folders
+1. Download the latest version of the Testrun installer from the [Releases page](https://github.com/google/testrun/releases).
+2. Open a terminal and navigate to the location of the Testrun installer (most likely your Downloads folder).
+3. Install the package using `sudo apt install ./testrun*.deb`
 
-    **NOTE: Local CA certificates should be uploaded within Testrun to run TLS server testing**
+Testrun installs under the `/usr/local/testrun` directory. Testing data is available in the `local/devices/{device}/reports` folders.
 
-    ![Installing Testrun in terminal window](setup/install.gif)
+Note: Local CA certificates should be uploaded within Testrun to run TLS server testing.
+
+![Terminal during install](/docs/setup/install.gif)
+
+# Testing
 
 ## Start Testrun
 
-1. Attach network interfaces:
-   - Connect one USB Ethernet adapter to the internet source (e.g., router or switch) using an ethernet cable.
-   - Connect the other USB Ethernet adapter directly to the IoT device you want to test using an ethernet cable.
+Follow these steps to start Testrun:
+1. Attach the network interfaces.
+    -  Connect one USB Ethernet adapter to the internet source (e.g., router or switch) using an Ethernet cable.
+    -  Connect the other USB Ethernet adapter directly to the IoT device you want to test using an Ethernet cable.
 
-  Some things to remember:
-  - <strong>Both adapters should be disabled in the host system (IPv4, IPv6 and general). You can do this by going to Settings > Network</strong>
-  - The device under test should be powered off until prompted
-  - Struggling to identify the correct interfaces? See [this guide](network/identify_interfaces.md).
+Notes:
 
-2. Start Testrun.
+-  Disable both adapters in the host system (IPv4, IPv6, and general) by opening **Settings**, then **Network**.
+-  Keep the DUT powered off until prompted.
 
-Start Testrun with the command `sudo testrun`
+1. Start Testrun with the command `sudo testrun`
+    -  To run Testrun in network-only mode (without running any tests), use the `--net-only` option.
+    -  To run Testrun with just one interface (connected to the device), use the `--single-intf` option.
 
-   - To run Testrun in network-only mode (without running any tests), use the `--net-only` option.
 
-   - To run Testrun with just one interface (connected to the device), use the ``--single-intf`` option.
+## Test your device
 
-## Test Your Device
+Follow these steps to test your IoT device:
 
-1. Once Testrun has started, open your browser to http://localhost:8080.
+1. Open Testrun by navigating  to [http://localhost:8080](http://localhost:8080/) in your browser.
+2. Select the **Settings** menu in the top-right corner, then select your network interfaces. You can change the settings at any time.  
+     ![Settings menu button](/docs/ui/getstarted--7cfvdpdnc5o.png)
 
-2.  Configure your network interfaces under the settings menu - located in the top right corner of the application. Settings can be changed at any time.
+3. Select the **device repository** icon on the left panel to add a new device for testing.  
+     ![Device repository button](/docs/ui/getstarted--q5uw26tfod.png)
 
-    ![](/docs/ui/settings_icon.png)
+4. Select the **Add Device** button.
+5. Enter the MAC address, manufacturer name, and model number.
+6. Select the test modules you want to enable for this device.   
+Note: For qualification purposes, you must select all.
+7. Select **Save**.
+8. Select the Testrun progress icon, then select the **Testing** button.![Testing button](/docs/ui/getstarted--w09wecsry3.png)
 
-3. Navigate to the device repository icon to add a new device for testing.
-
-    ![](/docs/ui/device_icon.png)
-
-4. Click the button 'Add Device'.
-
-5. Enter the MAC address, manufacturer name and model number.
-
-6. Select the test modules you wish to enable for this device (Hint: All are required for qualification purposes) and click save.
-
-7. Navigate to the Testrun progress icon and click the button 'Start New Testrun'.
-
-    ![](/docs/ui/progress_icon.png)
-
-8. Select the device you would like to test.
-
-9. Enter the version number of the firmware running on the device.
-
-10. Click 'Start Testrun'
-
- - During testing, if you would like to stop Testrun, click 'Stop' next to the test name.
-
-11. Once the notification 'Waiting for Device' appears, power on the device under test.
-
-12. On completion of the test sequence, a report will appear under the history icon. 
-
-    ![](/docs/ui/history_icon.png)
+9. Select the device you want to test.
+10. Enter the version number of the firmware running on the device.
+11. Select **Start Testrun**.
+-  If you need to stop Testrun during testing, select **Stop** next to the test name.
+12. Once the Waiting for Device notification appears, power on the device under test. A report appears under the Reports icon once the test sequence is complete.  
+     ![Reports button](/docs/ui/getstarted--m4si1otdu5d.png)
 
 # Troubleshooting
 
-If you encounter any issues or need assistance, consider the following:
+If you encounter any issues, try the following:
 
-- Ensure that all hardware and software prerequisites are met.
-- Verify that the network interfaces are connected correctly.
-- Check the configuration settings.
-- Refer to the Testrun documentation or ask for assistance in the issues page: https://github.com/google/testrun/issues
+-  Ensure that your computer meets all hardware and software prerequisites.
+-  Verify that the network interfaces are connected correctly.
+-  Check the configuration settings.
+-  Refer to the [Testrun documentation](/docs).
 
-# Reviewing
-Once you have completed a test attempt, you may want to review the test report provided by Testrun. For more information about what Testrun looks for when testing, and what the output means, take a look at the testing documentation: [Testing](/docs/test/README.md).
+If you still need assistance, ask a question on the [Issues page](https://github.com/google/testrun/issues). 
+
+# Review the report
+
+Once you complete a test attempt, you can review the test report provided by Testrun. For more information on Testrun requirements and outputs, refer to the [Testing documentation](/docs/test/README.md).
 
 # Uninstall
-To uninstall Testrun, use the built-in dpkg uninstall command to remove Testrun correctly. For Testrun, this would be:  ```sudo apt-get remove testrun```. 
+
+To uninstall Testrun correctly, use the built-in dpkg uninstall command: `sudo apt-get remove testrun`

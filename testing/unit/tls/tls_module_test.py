@@ -24,6 +24,10 @@ import ssl
 import shutil
 import logging
 import socket
+import sys
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 
 MODULE = 'tls'
 # Define the file paths
@@ -52,10 +56,11 @@ class TLSModuleTest(unittest.TestCase):
   def setUpClass(cls):
     log = logger.get_logger('unit_test_' + MODULE)
     global TLS_UTIL
-    TLS_UTIL = TLSUtil(log,
-                       #bin_dir='modules/test/tls/bin',
-                       cert_out_dir=OUTPUT_DIR,
-                       root_certs_dir=ROOT_CERTS_DIR)
+    TLS_UTIL = TLSUtil(
+        log,
+        #bin_dir='modules/test/tls/bin',
+        cert_out_dir=OUTPUT_DIR,
+        root_certs_dir=ROOT_CERTS_DIR)
 
   # Test 1.2 server when only 1.2 connection is established
   def security_tls_v1_2_server_test(self):
@@ -476,6 +481,7 @@ class TLSModuleTest(unittest.TestCase):
 
   def tls_module_trusted_ca_cert_chain_test(self):
     print('\ntls_module_trusted_ca_cert_chain_test')
+    self.download_public_cert('google.com')
     cert_path = os.path.join(CERT_DIR, '_.google.com.crt')
     cert_valid = TLS_UTIL.validate_cert_chain(device_cert_path=cert_path)
     self.assertEqual(cert_valid, True)
@@ -502,13 +508,33 @@ class TLSModuleTest(unittest.TestCase):
     cert_path = os.path.join(CERT_DIR, 'device_cert_local.crt')
     log = logger.get_logger('unit_test_' + MODULE)
     log.setLevel(logging.DEBUG)
-    tls_util = TLSUtil(log,
-                       cert_out_dir=OUTPUT_DIR,
-                       root_certs_dir=tmp_dir)
+    tls_util = TLSUtil(log, cert_out_dir=OUTPUT_DIR, root_certs_dir=tmp_dir)
 
     cert_valid = tls_util.validate_local_ca_signature(
-      device_cert_path=cert_path)
+        device_cert_path=cert_path)
     self.assertEqual(cert_valid[0], True)
+
+  def download_public_cert(self, hostname, port=443):
+    # Set up an SSL context to connect securely
+    context = ssl.create_default_context()
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+
+    # Establish a connection to the server
+    with socket.create_connection((hostname, port)) as sock:
+      with context.wrap_socket(sock, server_hostname=hostname) as ssock:
+        # Get the server certificate in DER format
+        der_cert = ssock.getpeercert(binary_form=True)
+
+    # Load the certificate using cryptography's x509 module
+    cert = x509.load_der_x509_certificate(der_cert, backend=default_backend())
+
+    # Convert the certificate to PEM format
+    pem_cert = cert.public_bytes(encoding=serialization.Encoding.PEM)
+
+    # Write the PEM certificate to a file
+    cert_path = os.path.join(CERT_DIR, '_.google.com.crt')
+    with open(cert_path, 'w', encoding='utf-8') as cert_file:
+      cert_file.write(pem_cert.decode())
 
 
 if __name__ == '__main__':
@@ -551,4 +577,9 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
 
   runner = unittest.TextTestRunner()
-  runner.run(suite)
+  test_result = runner.run(suite)
+
+  # Check if the tests failed and exit with the appropriate code
+  if not test_result.wasSuccessful():
+    sys.exit(1)  # Return a non-zero exit code for failures
+  sys.exit(0)  # Return zero for success

@@ -26,6 +26,7 @@ import {
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_MONITORING,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
+  MOCK_PROGRESS_DATA_WITH_ERROR,
 } from '../../../../mocks/testrun.mock';
 import { TestrunModule } from '../../testrun.module';
 
@@ -129,7 +130,7 @@ describe('ProgressStatusCardComponent', () => {
       });
 
       it('should return correct test result if status "Compliant"', () => {
-        const expectedResult = '2/2';
+        const expectedResult = '2/3';
 
         const result = component.getTestsResult(MOCK_PROGRESS_DATA_COMPLIANT);
 
@@ -140,6 +141,14 @@ describe('ProgressStatusCardComponent', () => {
         const expectedResult = '2/26';
 
         const result = component.getTestsResult(MOCK_PROGRESS_DATA_CANCELLED);
+
+        expect(result).toEqual(expectedResult);
+      });
+
+      it('should not include Error and Not Started status in completed test result', () => {
+        const expectedResult = '1/3';
+
+        const result = component.getTestsResult(MOCK_PROGRESS_DATA_WITH_ERROR);
 
         expect(result).toEqual(expectedResult);
       });

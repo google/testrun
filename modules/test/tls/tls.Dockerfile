@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/tls-test
-FROM test-run/base-test:latest
+# Image name: testrun/tls-test
+FROM testrun/base-test:latest
 
 # Set DEBIAN_FRONTEND to noninteractive mode
 ENV DEBIAN_FRONTEND=noninteractive
@@ -41,7 +41,10 @@ RUN chmod u+x /testrun/bin/*
 COPY $MODULE_DIR/python /testrun/python
 
 # Install all python requirements for the module
-RUN pip3 install -r /testrun/python/requirements.txt
+RUN pip install -r /testrun/python/requirements.txt
+
+# Install all python requirements for the modules unit test
+RUN pip install -r /testrun/python/requirements-test.txt
 
 # Install all python requirements for the modules unit test
 RUN pip3 install -r /testrun/python/requirements-test.txt

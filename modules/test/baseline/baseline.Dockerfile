@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/baseline-test
-FROM test-run/base-test:latest
+# Image name: testrun/baseline-test
+FROM testrun/base-test:latest
 
 ARG MODULE_NAME=baseline
 ARG MODULE_DIR=modules/test/$MODULE_NAME

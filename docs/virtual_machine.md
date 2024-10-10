@@ -1,38 +1,41 @@
 <img width="200" alt="Testrun logo" src="https://user-images.githubusercontent.com/7399056/221927867-4190a4e8-a571-4e40-9c2b-65780ad9264c.png" alt="Testrun">
 
-## Virtual Machine
+# Run on a virtual machine
 
-This guide will provide steps to use Testrun within a virtual machine in virtual Box (VMWare and other providers have not yet been tested). You should use this guide alongside the [Get Started guide](/docs/get_started.md) - only differences will be outlined in this guide.
+This page provides steps to use Testrun within a virtual machine in VirtualBox. VMWare and other providers haven't been tested yet. You should use these instructions alongside the [Get started guide](/docs/get_started.md).
 
-## Prerequisites
+# Prerequisites
 
-### Hardware
+## Hardware
 
-Before starting with Testrun, ensure you have the following hardware:
-- PC running any OS that supports Virtual Box
-- 2x USB Ethernet adapter (built in ethernet connections are not supported)
-- Internet connection
+Before you start with Testrun, ensure you have the following hardware:
 
-### Software
+-  PC running any OS that supports VirtualBox
+-  2x USB Ethernet adapter (built-in Ethernet connections aren't supported)
+-  Internet connection
 
-Ensure the following software is installed on the host PC:
- - Virtual Box
+## Software
 
-Ensure the following software is installed on your virtual machine:
-- Ubuntu LTS (22.04 or 20.04)
-- Docker - installation guide: [https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
+Ensure you have VirtualBox installed on the host PC. Then, install the following software on your virtual machine:
 
-## Installation
+-  Ubuntu LTS (22.04 or 20.04)
+-  Docker
+    -  Refer to the [installation guide](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) as needed. 
 
-In addition to the install steps provided in the Get Started guide, the default user must be added to the sudo group.
-1. Open a terminal and run ```sudo su``` to login as root (you will be prompted for your password).
-2. Add the default user to the sudo group by running ```adduser {username} sudo```.
-3. Restart the virtual machine.
-4. Continue the installation as per the Get Started guide.
+# Installation
 
-## Start Testrun
+As part of installation, you must add the default user to the sudo group:
 
-Attaching USB ethernet adapters is different when working in a Virtual Machine. 
+1. Open a terminal and run `sudo su` to log in as root.
+1. Enter your password when prompted.
+1. Add the default user to the sudo group by running `adduser {username} sudo`.
+1. Restart the virtual machine.
+1. Follow the steps in the [Get started guide](/docs/get_started.md) to complete the installation.
+
+# Start Testrun
+
+Follow these steps to start Testrun. Keep in mind that attaching USB Ethernet adapters is different when working in a virtual machine.
+
 1. Ensure the 2x adapters are attached to the host PC.
-2. With the virtual machine running, right click the USB icon in the bottom right of the window.
-3. Select the 2x ethernet adapter names and check that these two adapters have now appeared in the virtual machine.
+1. With the virtual machine running, right-click the **USB** icon in the bottom-right of the window.
+1. Select the 2x Ethernet adapter names. The two adapters should now appear in the virtual machine.

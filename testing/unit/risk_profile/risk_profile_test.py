@@ -15,6 +15,7 @@
 import unittest
 import os
 import json
+import sys
 from risk_profile import RiskProfile
 
 SECONDS_IN_YEAR = 31536000
@@ -35,9 +36,9 @@ class RiskProfileTest(unittest.TestCase):
   def setUpClass(cls):
     # Create the output directories and ignore errors if it already exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    with open(os.path.join('resources',
-                           'risk_assessment.json'),
-                           'r', encoding='utf-8') as file:
+    with open(os.path.join('resources', 'risk_assessment.json'),
+              'r',
+              encoding='utf-8') as file:
       cls.profile_format = json.loads(file.read())
 
   def risk_profile_high_test(self):
@@ -80,7 +81,6 @@ class RiskProfileTest(unittest.TestCase):
                                      'risk_profile_valid_high.json')
     with open(risk_profile_path, 'r', encoding='utf-8') as file:
       risk_profile_json = json.loads(file.read())
-
 
     # Create the RiskProfile object from the json file
     risk_profile = RiskProfile(risk_profile_json, self.profile_format)
@@ -158,6 +158,7 @@ class RiskProfileTest(unittest.TestCase):
     # Risk should now be limited after update
     self.assertEqual(risk_profile.risk, 'Limited')
 
+
 if __name__ == '__main__':
   suite = unittest.TestSuite()
 
@@ -169,4 +170,9 @@ if __name__ == '__main__':
   suite.addTest(RiskProfileTest('risk_profile_update_risk_test'))
 
   runner = unittest.TextTestRunner()
-  runner.run(suite)
+  test_result = runner.run(suite)
+
+  # Check if the tests failed and exit with the appropriate code
+  if not test_result.wasSuccessful():
+    sys.exit(1)  # Return a non-zero exit code for failures
+  sys.exit(0)  # Return zero for success

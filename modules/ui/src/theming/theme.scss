@@ -16,6 +16,7 @@
 @use '@angular/material' as mat;
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
 @import 'colors';
+@import 'variables';
 
 @include mat.core();
 @include mat.strong-focus-indicators(
@@ -24,17 +25,17 @@
   )
 );
 
-$app-primary: mat.define-palette($color-primary);
-$app-accent: mat.define-palette($color-accent);
-$app-warn: mat.define-palette($color-warn);
-$app-secondary: mat.define-palette($color-secondary);
-$app-blue-light-palette: mat.define-palette($color-blue-light);
+$app-primary: mat.m2-define-palette($color-primary);
+$app-accent: mat.m2-define-palette($color-accent);
+$app-warn: mat.m2-define-palette($color-warn);
+$app-secondary: mat.m2-define-palette($color-secondary);
+$app-blue-light-palette: mat.m2-define-palette($color-blue-light);
 
-$app-typography: mat.define-typography-config(
-  $font-family: 'Open Sans',
+$app-typography: mat.m2-define-typography-config(
+  $font-family: $font-primary,
 );
 
-$brand-light-theme: mat.define-light-theme(
+$brand-light-theme: mat.m2-define-light-theme(
   (
     color: (
       primary: $app-primary,
@@ -46,7 +47,7 @@ $brand-light-theme: mat.define-light-theme(
   )
 );
 
-$brand-light-theme-secondary: mat.define-light-theme(
+$brand-light-theme-secondary: mat.m2-define-light-theme(
   (
     color: (
       primary: $app-primary,
@@ -61,7 +62,7 @@ $brand-light-theme-secondary: mat.define-light-theme(
 @include mat.all-component-themes($brand-light-theme);
 @include mat.radio-color($brand-light-theme-secondary);
 @include mat.snack-bar-typography(
-  mat.define-typography-config($font-family: 'Roboto, sans-serif')
+  mat.m2-define-typography-config($font-family: 'Roboto, sans-serif')
 );
 @include mat.snack-bar-color($brand-light-theme-secondary);
 @include mat.checkbox-color($brand-light-theme-secondary);

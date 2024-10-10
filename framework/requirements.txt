@@ -39,3 +39,6 @@ paho-mqtt==2.1.0
 
 # Requirements for background tasks
 APScheduler==3.10.4
+
+# Requirements for reports generation
+Jinja2==3.1.4

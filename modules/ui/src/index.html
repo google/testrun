@@ -28,6 +28,22 @@ limitations under the License.
         j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
         f.parentNode.insertBefore(j, f);
       })(window, document, 'script', 'dataLayer', 'GTM-NDFZ7L89');
+
+      Storage.prototype.setObject = function (key, value) {
+        if (value instanceof Map) {
+          this.setItem(
+            key,
+            JSON.stringify(Object.fromEntries(value.entries()))
+          );
+        } else {
+          this.setItem(key, JSON.stringify(value));
+        }
+      };
+
+      Storage.prototype.getObject = function (key) {
+        var value = this.getItem(key);
+        return value && JSON.parse(value);
+      };
     </script>
     <!-- End Google Tag Manager -->
     <!-- Google tag (gtag.js) -->
@@ -53,7 +69,7 @@ limitations under the License.
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500&family=Roboto&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500&family=Roboto:wght@400;500;600;700;800&&display=swap"
       rel="stylesheet" />
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined"

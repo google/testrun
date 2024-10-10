@@ -1,0 +1,91 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@import '../../../theming/colors';
+@import '../../../theming/variables';
+
+.form-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-header {
+  padding: 24px;
+}
+
+.form-content {
+  display: grid;
+  padding: 24px 8px;
+  gap: 10px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.form-footer {
+  margin-top: auto;
+  display: inline-block;
+  text-align: center;
+  height: 24px;
+  padding: 0 24px 24px 24px;
+}
+
+.form-steps {
+  display: inline-flex;
+  text-align: center;
+  align-items: center;
+  height: 100%;
+}
+
+.form-step {
+  border: 2px solid $lighter-grey;
+  width: 4px;
+  height: 4px;
+  display: inline-block;
+  border-radius: 100%;
+  margin: 0 8px;
+  &.step-active {
+    border-color: $secondary;
+    background: $secondary;
+  }
+}
+
+.form-button-back {
+  float: left;
+}
+
+.form-button-forward {
+  float: right;
+}
+
+.form-button-back,
+.form-button-forward {
+  height: $icon-size;
+  width: $icon-size;
+  min-width: $icon-size;
+  margin: 0;
+  padding: 0;
+  & mat-icon {
+    color: $secondary;
+    width: $icon-size;
+    height: $icon-size;
+    font-size: $icon-size;
+    margin: 0;
+  }
+
+  &.hidden {
+    visibility: hidden;
+  }
+}
