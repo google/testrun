@@ -14,7 +14,6 @@
 """Module run all the TLS related unit tests"""
 from tls_module import TLSModule
 from tls_util import TLSUtil
-from tls_module import TLSModule
 import os
 import unittest
 from common import logger
