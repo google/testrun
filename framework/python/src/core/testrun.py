@@ -418,9 +418,6 @@ class Testrun:  # pylint: disable=too-few-public-methods
     # Expand the config file to absolute pathing
     return os.path.abspath(config_file)
 
-  def get_root_dir(self):
-    return root_dir
-
   def get_config_file(self):
     return self._get_config_abs()
 
