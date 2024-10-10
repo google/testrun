@@ -191,6 +191,27 @@ class TLSModule(TestModule):
   # LOGGER.info('Module report generated at: ' + str(report_path))
   # return report_path
 
+  def generate_outbound_connection_table(self, ip_list):
+    """Generate just an HTML table from a list of IPs"""
+    html_content = """<table>
+    <thead>
+        <tr>
+            <th>Destination IP</th>
+        </tr>
+    </thead>
+    <tbody>"""
+
+    rows = [f'\t<tr><td>{ip}</td></tr>' for ip in ip_list]
+    html_content += '\n'.join(rows)
+
+    # Close the table
+    html_content += """
+    </tbody>
+    \r</table>
+    """
+
+    return html_content
+
   def extract_certificates_from_pcap(self, pcap_files, mac_address):
     # Initialize a list to store packets
     all_packets = []

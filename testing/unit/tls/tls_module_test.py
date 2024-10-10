@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module run all the TLS related unit tests"""
+from tls_module import TLSModule
 from tls_util import TLSUtil
 import os
 import unittest
@@ -319,6 +320,28 @@ class TLSModuleTest(unittest.TestCase):
     print(str(test_results))
     self.assertTrue(test_results[0])
 
+  def outbound_connections_test(self):
+    """ Test generation of the outbound connection ips"""
+    print('\noutbound_connections_test')
+    capture_file = os.path.join(CAPTURES_DIR, 'monitor.pcap')
+    ip_dst = TLS_UTIL.get_all_outbound_connections(
+        device_mac='70:b3:d5:96:c0:00', capture_files=[capture_file])
+    print(str(ip_dst))
+    # Compare as sets since returned order is not guaranteed
+    self.assertEqual(
+        set(ip_dst),
+        set(['8.8.8.8', '224.0.0.22', '18.140.82.197', '216.239.35.0']))
+
+  def outbound_connections_report_test(self):
+    """ Test generation of the outbound connection ips"""
+    print('\noutbound_connections_report_test')
+    capture_file = os.path.join(CAPTURES_DIR, 'monitor.pcap')
+    ip_dst = TLS_UTIL.get_all_outbound_connections(
+        device_mac='70:b3:d5:96:c0:00', capture_files=[capture_file])
+    tls = TLSModule(module=MODULE)
+    gen_html = tls.generate_outbound_connection_table(ip_dst)
+    print(gen_html)
+
   # Commented out whilst TLS report is recreated
   # def tls_module_report_test(self):
   #   print('\ntls_module_report_test')
@@ -575,6 +598,9 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
 
   suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
+
+  suite.addTest(TLSModuleTest('outbound_connections_test'))
+  suite.addTest(TLSModuleTest('outbound_connections_report_test'))
 
   runner = unittest.TextTestRunner()
   test_result = runner.run(suite)

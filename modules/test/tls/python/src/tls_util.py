@@ -25,6 +25,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from ipaddress import IPv4Address
+from scapy.all import rdpcap, IP, Ether
 
 LOG_NAME = 'tls_util'
 LOGGER = None
@@ -37,6 +38,7 @@ PRIVATE_SUBNETS = [
     ipaddress.ip_network('172.16.0.0/12'),
     ipaddress.ip_network('192.168.0.0/16')
 ]
+TR_CONTAINER_MAC_PREFIX = '9a:02:57:1e:8f:'
 #Define the allowed protocols as tshark filters
 DEFAULT_ALLOWED_PROTOCOLS = ['quic']
 
@@ -58,6 +60,42 @@ class TLSUtil():
     self._root_certs_dir = root_certs_dir
     if allowed_protocols is None:
       self._allowed_protocols = DEFAULT_ALLOWED_PROTOCOLS
+
+  def get_all_outbound_connections(self, device_mac, capture_files):
+    """Process multiple pcap files and combine unique IP destinations."""
+
+    ip_destinations = set()
+    for capture in capture_files:
+      ips = self.get_outbound_connections(device_mac=device_mac,
+                                          capture_file=capture)
+      ip_destinations.update(ips)
+    return list(ip_destinations)
+
+  def get_outbound_connections(self, device_mac, capture_file):
+    """Extract unique IP destinations from a single pcap file based on the 
+    known MAC address."""
+    packets = rdpcap(capture_file)
+    ip_destinations = set()
+    for packet in packets:
+      if Ether in packet and IP in packet:
+        if packet[Ether].src == device_mac:
+          ip_dst = packet[IP].dst
+          if self.is_external_ip(ip_dst):
+            ip_destinations.add(ip_dst)
+    return ip_destinations
+
+  def is_external_ip(self, ip):
+    """Check if the IP is an external (non-private) IP address."""
+    try:
+      # Convert the IP string into an IPv4Address object
+      ip_addr = ipaddress.ip_address(ip)
+
+      # Return True only if the IP is not in a private or reserved range
+      return not (ip_addr.is_private or ip_addr.is_loopback
+                  or ip_addr.is_link_local)
+    except ValueError:
+      # Return False if the IP is invalid or not IPv4
+      return False
 
   def get_public_certificate(self,
                              host,
