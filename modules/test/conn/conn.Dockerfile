@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Image name: test-run/conn-test
-FROM test-run/base-test:latest
+# Image name: testrun/conn-test
+FROM testrun/base-test:latest
 
 ARG MODULE_NAME=conn
 ARG MODULE_DIR=modules/test/$MODULE_NAME
@@ -27,7 +27,7 @@ RUN apt-get install -y wget
 COPY $MODULE_DIR/python/requirements.txt /testrun/python
 
 # Install all python requirements for the module
-RUN pip3 install -r /testrun/python/requirements.txt
+RUN pip install -r /testrun/python/requirements.txt
 
 # Copy over all configuration files
 COPY $MODULE_DIR/conf /testrun/conf

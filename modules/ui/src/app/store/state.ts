@@ -43,12 +43,15 @@ export interface SharedState {
   devices: Device[];
   //used in app, devices, testrun
   hasDevices: boolean;
+  hasExpiredDevices: boolean;
+  isAllDevicesOutdated: boolean;
   //app, risk-assessment, testrun, reports
   riskProfiles: Profile[];
   hasRiskProfiles: boolean;
   //app, testrun
   status: string | null;
   systemStatus: TestrunStatus | null;
+  isTestingComplete: boolean;
   //app, settings
   hasConnectionSettings: boolean | null;
   // app, devices
@@ -79,12 +82,15 @@ export const initialSharedState: SharedState = {
   isStopTestrun: false,
   isOpenWaitSnackBar: false,
   hasDevices: false,
+  hasExpiredDevices: false,
+  isAllDevicesOutdated: false,
   devices: [],
   deviceInProgress: null,
   riskProfiles: [],
   hasRiskProfiles: false,
   isOpenStartTestrun: false,
   systemStatus: null,
+  isTestingComplete: false,
   status: null,
   reports: [],
   testModules: [],

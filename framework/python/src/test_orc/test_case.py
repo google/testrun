@@ -14,6 +14,7 @@
 
 """Represents an individual test case."""
 from dataclasses import dataclass, field
+from  common.statuses import TestResult
 
 
 @dataclass
@@ -24,25 +25,25 @@ class TestCase:  # pylint: disable=too-few-public-methods,too-many-instance-attr
   description: str = ""
   expected_behavior: str = ""
   required_result: str = "Recommended"
-  result: str = "Non-Compliant"
+  result: str = TestResult.NON_COMPLIANT
   recommendations: list = field(default_factory=lambda: [])
+  optional_recommendations: list = field(default_factory=lambda: [])
 
   def to_dict(self):
 
-    if self.recommendations is not None and len(self.recommendations) > 0:
-      return {
-        "name": self.name,
-        "description": self.description,
-        "expected_behavior": self.expected_behavior,
-        "required_result": self.required_result,
-        "result": self.result,
-        "recommendations": self.recommendations
-      }
+    test_dict = {
+      "name": self.name,
+      "description": self.description,
+      "expected_behavior": self.expected_behavior,
+      "required_result": self.required_result,
+      "result": self.result
+    }
 
-    return {
-        "name": self.name,
-        "description": self.description,
-        "expected_behavior": self.expected_behavior,
-        "required_result": self.required_result,
-        "result": self.result
-      }
+    if self.recommendations is not None and len(self.recommendations) > 0:
+      test_dict["recommendations"] = self.recommendations
+
+    if (self.optional_recommendations is not None
+      and len(self.optional_recommendations) > 0):
+      test_dict["optional_recommendations"] = self.optional_recommendations
+
+    return test_dict

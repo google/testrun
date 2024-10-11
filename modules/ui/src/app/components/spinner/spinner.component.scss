@@ -18,7 +18,7 @@
 .loader {
   width: 36px;
   height: 36px;
-  border: 4px solid mat.get-color-from-palette($color-primary, 500);
+  border: 4px solid mat.m2-get-color-from-palette($color-primary, 500);
   border-bottom-color: transparent;
   border-radius: 50%;
   display: inline-block;

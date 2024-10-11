@@ -1,0 +1,56 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<section class="form-container">
+  <header class="form-header" *ngIf="header">
+    <ng-container [ngTemplateOutlet]="header"></ng-container>
+  </header>
+
+  <div class="form-content">
+    <ng-container
+      [ngTemplateOutlet]="selected ? selected.content : null"></ng-container>
+  </div>
+
+  <footer class="form-footer">
+    <button
+      class="form-button-back"
+      [class.hidden]="backButtonHidden()"
+      cdkStepperPrevious
+      mat-button
+      [matTooltip]="getNavigationLabel(selectedIndex)"
+      [attr.aria-label]="getNavigationLabel(selectedIndex)">
+      <mat-icon fontSet="material-symbols-outlined"> arrow_back </mat-icon>
+    </button>
+    <div class="form-steps">
+      <div
+        *ngFor="let step of steps; let i = index"
+        class="form-step"
+        [tabindex]="selectedIndex === i ? 0 : -1"
+        [class.step-active]="selectedIndex === i"
+        [matTooltip]="getStepLabel(selectedIndex === i)"
+        [attr.aria-label]="getStepLabel(selectedIndex === i)"></div>
+    </div>
+    <button
+      class="form-button-forward"
+      [class.hidden]="forwardButtonHidden()"
+      (click)="nextClick()"
+      cdkStepperNext
+      mat-button
+      [matTooltip]="getNavigationLabel(selectedIndex + 2)"
+      [attr.aria-label]="getNavigationLabel(selectedIndex + 2)">
+      <mat-icon fontSet="material-symbols-outlined"> arrow_forward </mat-icon>
+    </button>
+  </footer>
+</section>

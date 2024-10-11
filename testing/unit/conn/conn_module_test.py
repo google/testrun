@@ -15,6 +15,7 @@
 from port_stats_util import PortStatsUtil
 from connection_module import ConnectionModule
 import os
+import sys
 import unittest
 from common import logger
 
@@ -163,4 +164,9 @@ if __name__ == '__main__':
       ConnectionModuleTest('connection_switch_dhcp_snooping_icmp_test'))
 
   runner = unittest.TextTestRunner()
-  runner.run(suite)
+  test_result = runner.run(suite)
+
+  # Check if the tests failed and exit with the appropriate code
+  if not test_result.wasSuccessful():
+    sys.exit(1)  # Return a non-zero exit code for failures
+  sys.exit(0)  # Return zero for success

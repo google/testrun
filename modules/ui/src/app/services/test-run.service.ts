@@ -17,7 +17,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
-import { Device, TestModule } from '../model/device';
+import { Device, DeviceQuestionnaireSection } from '../model/device';
 import { catchError, map, of, retry } from 'rxjs';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
 import {
@@ -49,39 +49,6 @@ export const UNAVAILABLE_VERSION = {
   providedIn: 'root',
 })
 export class TestRunService {
-  private readonly testModules: TestModule[] = [
-    {
-      displayName: 'Connection',
-      name: 'connection',
-      enabled: true,
-    },
-    {
-      displayName: 'NTP',
-      name: 'ntp',
-      enabled: true,
-    },
-    {
-      displayName: 'DNS',
-      name: 'dns',
-      enabled: true,
-    },
-    {
-      displayName: 'Services',
-      name: 'services',
-      enabled: true,
-    },
-    {
-      displayName: 'TLS',
-      name: 'tls',
-      enabled: true,
-    },
-    {
-      displayName: 'Protocol',
-      name: 'protocol',
-      enabled: true,
-    },
-  ];
-
   private version = new BehaviorSubject<Version | null>(null);
 
   constructor(private http: HttpClient) {}
@@ -181,8 +148,8 @@ export class TestRunService {
         result === StatusOfTestResult.Error,
       blue:
         result === StatusOfTestResult.SmartReady ||
-        result === StatusOfTestResult.Info ||
         result === StatusOfTestResult.InProgress,
+      cyan: result === StatusOfTestResult.Info,
       grey:
         result === StatusOfTestResult.NotDetected ||
         result === StatusOfTestResult.NotStarted ||
@@ -307,6 +274,12 @@ export class TestRunService {
 
   fetchProfilesFormat(): Observable<ProfileFormat[]> {
     return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
+  }
+
+  fetchQuestionnaireFormat(): Observable<DeviceQuestionnaireSection[]> {
+    return this.http.get<DeviceQuestionnaireSection[]>(
+      `${API_URL}/devices/format`
+    );
   }
 
   saveProfile(profile: Profile): Observable<boolean> {

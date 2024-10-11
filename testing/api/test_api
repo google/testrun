@@ -37,14 +37,15 @@ sudo docker build ./testing/docker/ci_test_device1 -t test-run/ci_device_1 -f  .
 sudo chown -R $USER local
 
 # Copy configuration to testrun
-sudo cp testing/api/system.json local/system.json
+sudo cp testing/api/sys_config/system.json local/system.json
 
 # Needs to be sudo because this invokes bin/testrun 
 sudo venv/bin/python3 -m pytest -v testing/api/test_api.py
+return_code=$?
 
 # Clean up network interfaces after use
 sudo docker network rm endev0
 sudo ip link del dev endev0a
 sudo ip link del dev dummynet
 
-exit $?
+exit $return_code

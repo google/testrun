@@ -108,7 +108,7 @@ export class TestrunComponent implements OnInit, OnDestroy {
     this.sendCloseRequest();
   }
 
-  private getTestRunName(systemStatus: TestrunStatus): string {
+  getTestRunName(systemStatus: TestrunStatus): string {
     if (systemStatus?.device) {
       const device = systemStatus.device;
       return `${device.manufacturer} ${device.model} v${device.firmware}`;
@@ -118,6 +118,9 @@ export class TestrunComponent implements OnInit, OnDestroy {
   }
   private setCancellingStatus() {
     this.testrunStore.setCancellingStatus();
+    timer(2000).subscribe(() => {
+      this.focusManagerService.focusFirstElementInContainer();
+    });
   }
   private showLoading() {
     this.testrunStore.showLoading();
@@ -155,11 +158,9 @@ export class TestrunComponent implements OnInit, OnDestroy {
           this.testrunStore.setStatus(status);
         }
         this.testrunStore.setIsOpenStartTestrun(false);
-        timer(10)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe(() => {
-            this.focusManagerService.focusFirstElementInContainer();
-          });
+        timer(1000).subscribe(() => {
+          this.focusManagerService.focusFirstElementInContainer();
+        });
       });
   }
 

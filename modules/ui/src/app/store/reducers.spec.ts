@@ -21,10 +21,13 @@ import {
   setDevices,
   setHasConnectionSettings,
   setHasDevices,
+  setHasExpiredDevices,
   setHasRiskProfiles,
+  setIsAllDevicesOutdated,
   setIsOpenAddDevice,
   setIsOpenStartTestrun,
   setIsOpenWaitSnackBar,
+  setIsTestingComplete,
   setReports,
   setRiskProfiles,
   setStatus,
@@ -165,6 +168,30 @@ describe('Reducer', () => {
     });
   });
 
+  describe('setHasExpiredDevices action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setHasExpiredDevices({ hasExpiredDevices: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ hasExpiredDevices: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setIsAllDevicesOutdated action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setIsAllDevicesOutdated({ isAllDevicesOutdated: true });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = { ...initialState, ...{ isAllDevicesOutdated: true } };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
   describe('setDevices action', () => {
     it('should update state', () => {
       const initialState = initialSharedState;
@@ -229,6 +256,23 @@ describe('Reducer', () => {
       const newState = {
         ...initialState,
         ...{ systemStatus: MOCK_PROGRESS_DATA_CANCELLING },
+      };
+
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('setIsTestingComplete action', () => {
+    it('should update state', () => {
+      const initialState = initialSharedState;
+      const action = setIsTestingComplete({
+        isTestingComplete: true,
+      });
+      const state = fromReducer.sharedReducer(initialState, action);
+      const newState = {
+        ...initialState,
+        ...{ isTestingComplete: true },
       };
 
       expect(state).toEqual(newState);

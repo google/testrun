@@ -21,12 +21,17 @@ import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
   selectInternetConnection,
+  selectIsAllDevicesOutdated,
+  selectIsTestingComplete,
   selectMenuOpened,
   selectReports,
+  selectRiskProfiles,
   selectStatus,
+  selectSystemStatus,
 } from './store/selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from './store/state';
@@ -51,19 +56,25 @@ import {
 import { FocusManagerService } from './services/focus-manager.service';
 import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { NotificationService } from './services/notification.service';
+import { Profile } from './model/profile';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
+export const CALLOUT_STATE_KEY = 'CALLOUT_STATE';
 export interface AppComponentState {
   consentShown: boolean;
   isStatusLoaded: boolean;
   systemStatus: TestrunStatus | null;
+  calloutState: Map<string, boolean>;
 }
 @Injectable()
 export class AppStore extends ComponentStore<AppComponentState> {
   private consentShown$ = this.select(state => state.consentShown);
+  private calloutState$ = this.select(state => state.calloutState);
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
   private hasInternetConnection$ = this.store.select(selectInternetConnection);
   private hasDevices$ = this.store.select(selectHasDevices);
+  private isAllDevicesOutdated$ = this.store.select(selectIsAllDevicesOutdated);
+  private hasExpiredDevices$ = this.store.select(selectHasExpiredDevices);
   private hasRiskProfiles$ = this.store.select(selectHasRiskProfiles);
   private reports$ = this.store.select(selectReports);
   private hasConnectionSetting$ = this.store.select(
@@ -75,18 +86,30 @@ export class AppStore extends ComponentStore<AppComponentState> {
   private settingMissedError$: Observable<SettingMissedError | null> =
     this.store.select(selectError);
   systemStatus$: Observable<string | null> = this.store.select(selectStatus);
+  testrunStatus$: Observable<TestrunStatus | null> =
+    this.store.select(selectSystemStatus);
+  isTestingComplete$: Observable<boolean> = this.store.select(
+    selectIsTestingComplete
+  );
+  riskProfiles$: Observable<Profile[]> = this.store.select(selectRiskProfiles);
 
   viewModel$ = this.select({
     consentShown: this.consentShown$,
     hasDevices: this.hasDevices$,
+    isAllDevicesOutdated: this.isAllDevicesOutdated$,
+    hasExpiredDevices: this.hasExpiredDevices$,
     hasRiskProfiles: this.hasRiskProfiles$,
     reports: this.reports$,
     isStatusLoaded: this.isStatusLoaded$,
     systemStatus: this.systemStatus$,
+    testrunStatus: this.testrunStatus$,
+    isTestingComplete: this.isTestingComplete$,
+    riskProfiles: this.riskProfiles$,
     hasConnectionSettings: this.hasConnectionSetting$,
     isMenuOpen: this.isMenuOpen$,
     interfaces: this.interfaces$,
     settingMissedError: this.settingMissedError$,
+    calloutState: this.calloutState$,
     hasInternetConnection: this.hasInternetConnection$,
   });
 
@@ -94,6 +117,17 @@ export class AppStore extends ComponentStore<AppComponentState> {
     ...state,
     consentShown,
   }));
+
+  updateCalloutState = this.updater((state, callout: string) => {
+    const calloutState = state.calloutState;
+    calloutState.set(callout, true);
+    // @ts-expect-error property is defined in index.html
+    sessionStorage.setObject(CALLOUT_STATE_KEY, calloutState);
+    return {
+      ...state,
+      calloutState: new Map(calloutState),
+    };
+  });
 
   updateIsStatusLoaded = this.updater((state, isStatusLoaded: boolean) => ({
     ...state,
@@ -217,6 +251,14 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
+  setCloseCallout = this.effect<string>(trigger$ => {
+    return trigger$.pipe(
+      tap((id: string) => {
+        this.updateCalloutState(id);
+      })
+    );
+  });
+
   constructor(
     private store: Store<AppState>,
     private testRunService: TestRunService,
@@ -224,10 +266,16 @@ export class AppStore extends ComponentStore<AppComponentState> {
     private focusManagerService: FocusManagerService,
     private notificationService: NotificationService
   ) {
+    // @ts-expect-error get object is defined in index.html
+    const calloutState = sessionStorage.getObject(CALLOUT_STATE_KEY);
+
     super({
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,
       isStatusLoaded: false,
       systemStatus: null,
+      calloutState: calloutState
+        ? new Map(Object.entries(calloutState))
+        : new Map(),
     });
   }
 }

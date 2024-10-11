@@ -1,0 +1,268 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<ng-container *ngFor="let control of format; index as i">
+  <ng-container
+    *ngTemplateOutlet="
+      formField;
+      context: {
+        label: control.question,
+        type: control.type,
+        formControlName: i,
+        formGroup: formGroup,
+        required: control.validation?.required,
+        options: control.options,
+        description: control.description,
+      }
+    "></ng-container>
+</ng-container>
+
+<ng-template
+  #formField
+  let-type="type"
+  let-label="label"
+  let-required="required"
+  let-description="description"
+  let-options="options"
+  let-formControlName="formControlName">
+  <label class="field-label" for="{{ formControlName }}-group">
+    {{ label }}
+  </label>
+  <ng-container [ngSwitch]="type">
+    <ng-container *ngSwitchCase="FormControlType.TEXT">
+      <ng-container
+        *ngTemplateOutlet="
+          text;
+          context: {
+            formControlName: formControlName,
+            description: description,
+          }
+        "></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="FormControlType.TEXTAREA">
+      <ng-container
+        *ngTemplateOutlet="
+          textarea;
+          context: {
+            formControlName: formControlName,
+            description: description,
+          }
+        "></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="FormControlType.EMAIL_MULTIPLE">
+      <ng-container
+        *ngTemplateOutlet="
+          emailMultiple;
+          context: {
+            formControlName: formControlName,
+            description: description,
+          }
+        "></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="FormControlType.SELECT">
+      <ng-container
+        *ngTemplateOutlet="
+          select;
+          context: {
+            formControlName: formControlName,
+            options: options,
+            description: description,
+            label: label,
+          }
+        "></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="FormControlType.SELECT_MULTIPLE">
+      <ng-container
+        *ngTemplateOutlet="
+          selectMultiple;
+          context: {
+            formControlName: formControlName,
+            options: options,
+            description: description,
+          }
+        "></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchDefault>
+      <ng-container
+        *ngTemplateOutlet="
+          text;
+          context: {
+            formControlName: formControlName,
+            description: description,
+          }
+        "></ng-container>
+    </ng-container>
+  </ng-container>
+</ng-template>
+
+<ng-template
+  #text
+  let-formControlName="formControlName"
+  let-description="description">
+  <mat-form-field
+    appearance="outline"
+    floatLabel="always"
+    class="form-field"
+    [formGroup]="formGroup">
+    <input
+      matInput
+      id="{{ formControlName }}-group"
+      [formControlName]="formControlName" />
+    <mat-hint *ngIf="description">{{ description }}</mat-hint>
+    <mat-error
+      *ngIf="getControl(formControlName).hasError('invalid_format')"
+      role="alert"
+      aria-live="assertive">
+      <span>Please, check. “ and \ are not allowed.</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('maxlength')">
+      <span
+        >The field must be a maximum of
+        {{ getControl(formControlName).getError('maxlength').requiredLength }}
+        characters.</span
+      >
+    </mat-error>
+  </mat-form-field>
+</ng-template>
+
+<ng-template
+  #textarea
+  let-formControlName="formControlName"
+  let-description="description">
+  <mat-form-field
+    appearance="outline"
+    floatLabel="always"
+    class="form-field"
+    [formGroup]="formGroup">
+    <textarea
+      matInput
+      cdkTextareaAutosize
+      id="{{ formControlName }}-group"
+      [formControlName]="formControlName"></textarea>
+    <mat-hint *ngIf="description">{{ description }}</mat-hint>
+    <mat-error
+      *ngIf="getControl(formControlName).hasError('invalid_format')"
+      role="alert"
+      aria-live="assertive">
+      <span>Please, check. “ and \ are not allowed.</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('maxlength')">
+      <span
+        >The field must be a maximum of
+        {{ getControl(formControlName).getError('maxlength').requiredLength }}
+        characters.</span
+      >
+    </mat-error>
+  </mat-form-field>
+</ng-template>
+
+<ng-template
+  #emailMultiple
+  let-formControlName="formControlName"
+  let-description="description">
+  <mat-form-field
+    appearance="outline"
+    floatLabel="always"
+    class="form-field"
+    [formGroup]="formGroup">
+    <input
+      matInput
+      id="{{ formControlName }}-group"
+      [formControlName]="formControlName" />
+    <mat-hint *ngIf="description">{{ description }}</mat-hint>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span>The field is required</span>
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('invalid_format')">
+      <span
+        >Please, check the email address. Valid e-mail can contain only latin
+        letters, numbers, &#64; and . (dot).</span
+      >
+    </mat-error>
+    <mat-error *ngIf="getControl(formControlName).hasError('maxlength')">
+      <span
+        >The field must be a maximum of
+        {{ getControl(formControlName).getError('maxlength').requiredLength }}
+        characters.</span
+      >
+    </mat-error>
+  </mat-form-field>
+</ng-template>
+
+<ng-template
+  #selectMultiple
+  let-formControlName="formControlName"
+  let-options="options"
+  let-description="description">
+  <section
+    class="field-select-multiple form-field"
+    [formGroup]="getFormGroup(formControlName)">
+    <p
+      *ngFor="let option of options; let i = index"
+      class="field-select-checkbox">
+      <mat-checkbox
+        [formControlName]="i"
+        (keydown.tab)="markSectionAsDirty(i, options.length, formControlName)">
+        {{ getOptionValue(option) }}
+      </mat-checkbox>
+    </p>
+    <mat-hint *ngIf="description" class="field-hint">{{
+      description
+    }}</mat-hint>
+  </section>
+</ng-template>
+
+<ng-template
+  #select
+  let-formControlName="formControlName"
+  let-label="label"
+  let-options="options"
+  let-description="description">
+  <mat-form-field
+    appearance="outline"
+    floatLabel="always"
+    class="form-field"
+    [formGroup]="formGroup">
+    <mat-select
+      aria-label="{{ label }}"
+      id="{{ formControlName }}-group"
+      [formControlName]="formControlName">
+      <mat-option
+        *ngFor="let option of options; let i = index"
+        [value]="getOptionValue(option)">
+        {{ getOptionValue(option) }}
+      </mat-option>
+    </mat-select>
+    <mat-hint *ngIf="description" class="field-hint">{{
+      description
+    }}</mat-hint>
+    <mat-error *ngIf="getControl(formControlName).hasError('required')">
+      <span role="alert" aria-live="assertive" [attr.aria-label]="label">
+        The field is required
+      </span>
+    </mat-error>
+  </mat-form-field>
+</ng-template>

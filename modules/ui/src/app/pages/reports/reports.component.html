@@ -44,7 +44,7 @@ limitations under the License.
                   context: {
                     name: FilterName.Started,
                     filterOpened: vm.filterOpened,
-                    activeFilter: vm.activeFilter
+                    activeFilter: vm.activeFilter,
                   }
                 ">
               </ng-container>
@@ -82,7 +82,7 @@ limitations under the License.
                   context: {
                     name: FilterName.DeviceInfo,
                     filterOpened: vm.filterOpened,
-                    activeFilter: vm.activeFilter
+                    activeFilter: vm.activeFilter,
                   }
                 ">
               </ng-container>
@@ -104,12 +104,26 @@ limitations under the License.
                   context: {
                     name: FilterName.DeviceFirmware,
                     filterOpened: vm.filterOpened,
-                    activeFilter: vm.activeFilter
+                    activeFilter: vm.activeFilter,
                   }
                 ">
               </ng-container>
             </th>
             <td *matCellDef="let data" mat-cell>{{ data.deviceFirmware }}</td>
+          </ng-container>
+
+          <!-- Assessment type Column -->
+          <ng-container matColumnDef="program">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header
+              sortActionDescription="Sort by assessment type">
+              Assessment type
+            </th>
+            <td *matCellDef="let data" mat-cell>
+              {{ data.program }}
+            </td>
           </ng-container>
 
           <!-- Result Column -->
@@ -126,7 +140,7 @@ limitations under the License.
                   context: {
                     name: FilterName.Results,
                     filterOpened: vm.filterOpened,
-                    activeFilter: vm.activeFilter
+                    activeFilter: vm.activeFilter,
                   }
                 ">
               </ng-container>
@@ -204,7 +218,7 @@ limitations under the License.
                     context: {
                       header:
                         'Sorry, there are no reports matching the search criteria.',
-                      message: 'Please consider change or clear filters.'
+                      message: 'Please consider change or clear filters.',
                     }
                   "></ng-container>
               </div>
@@ -216,7 +230,9 @@ limitations under the License.
             mat-row
             #rowElement
             [class.report-selected]="rowElement === vm.selectedRow"
-            (click)="selectRow(rowElement)"></tr>
+            (click)="selectRow(rowElement)"
+            (keydown.enter)="selectRow(rowElement)"
+            (keydown.space)="selectRow(rowElement)"></tr>
         </table>
       </div>
     </ng-container>
@@ -231,7 +247,7 @@ limitations under the License.
         context: {
           header: 'Sorry, there are no reports yet!',
           message:
-            'Reports will automatically generate following a test attempt completion.'
+            'Reports will automatically generate following a test attempt completion.',
         }
       "></ng-container>
   </div>

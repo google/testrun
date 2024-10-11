@@ -28,7 +28,7 @@ import {
   StatusOfTestrun,
   TestrunStatus,
 } from '../model/testrun-status';
-import { device, MOCK_MODULES } from '../mocks/device.mock';
+import { device, DEVICES_FORM, MOCK_MODULES } from '../mocks/device.mock';
 import { NEW_VERSION, VERSION } from '../mocks/version.mock';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../store/state';
@@ -245,6 +245,7 @@ describe('TestRunService', () => {
       green: false,
       red: false,
       blue: false,
+      cyan: false,
       grey: false,
     };
 
@@ -256,9 +257,10 @@ describe('TestRunService', () => {
 
     const statusesForBlueRes = [
       StatusOfTestResult.SmartReady,
-      StatusOfTestResult.Info,
       StatusOfTestResult.InProgress,
     ];
+
+    const statusesForCyanRes = [StatusOfTestResult.Info];
 
     const statusesForRedRes = [
       StatusOfTestResult.NonCompliant,
@@ -285,6 +287,16 @@ describe('TestRunService', () => {
     statusesForBlueRes.forEach(testCase => {
       it(`should return class "blue" if test result is "${testCase}"`, () => {
         const expectedResult = { ...availableResultClasses, blue: true };
+
+        const result = service.getResultClass(testCase);
+
+        expect(result).toEqual(expectedResult);
+      });
+    });
+
+    statusesForCyanRes.forEach(testCase => {
+      it(`should return class "cyan" if test result is "${testCase}"`, () => {
+        const expectedResult = { ...availableResultClasses, cyan: true };
 
         const result = service.getResultClass(testCase);
 
@@ -659,6 +671,22 @@ describe('TestRunService', () => {
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(JSON.stringify(NEW_PROFILE_MOCK));
       req.flush(data, mockErrorResponse);
+    });
+  });
+
+  describe('fetchQuestionnaireFormat', () => {
+    it('should get system status data with no changes', () => {
+      const result = { ...DEVICES_FORM };
+
+      service.fetchQuestionnaireFormat().subscribe(res => {
+        expect(res).toEqual(result);
+      });
+
+      const req = httpTestingController.expectOne(
+        'http://localhost:8000/devices/format'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(result);
     });
   });
 });

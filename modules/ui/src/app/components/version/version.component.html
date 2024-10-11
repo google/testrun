@@ -18,7 +18,7 @@ limitations under the License.
     mat-button
     class="version-content"
     [class.version-content-update]="version.update_available"
-    [attr.aria-label]="getVersionButtonLabel(version.installed_version)"
+    [attr.aria-label]="getVersionButtonLabel(version)"
     (click)="openConsentDialog(version)">
     {{ version?.installed_version }}
     <span

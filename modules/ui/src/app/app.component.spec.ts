@@ -54,13 +54,17 @@ import {
   selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
   selectInternetConnection,
+  selectIsAllDevicesOutdated,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
+  selectIsTestingComplete,
   selectMenuOpened,
   selectReports,
+  selectRiskProfiles,
   selectStatus,
   selectSystemStatus,
 } from './store/selectors';
@@ -74,6 +78,8 @@ import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { MOCK_ADAPTERS } from './mocks/settings.mock';
 import { WifiComponent } from './components/wifi/wifi.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Profile } from './model/profile';
+import { TestrunStatus } from './model/testrun-status';
 
 const windowMock = {
   location: {
@@ -168,9 +174,13 @@ describe('AppComponent', () => {
             { selector: selectError, value: null },
             { selector: selectMenuOpened, value: false },
             { selector: selectHasDevices, value: false },
+            { selector: selectIsAllDevicesOutdated, value: false },
+            { selector: selectHasExpiredDevices, value: false },
             { selector: selectHasRiskProfiles, value: false },
             { selector: selectStatus, value: null },
             { selector: selectSystemStatus, value: null },
+            { selector: selectIsTestingComplete, value: false },
+            { selector: selectRiskProfiles, value: [] },
             { selector: selectIsOpenStartTestrun, value: false },
             { selector: selectIsOpenWaitSnackBar, value: false },
             { selector: selectReports, value: [] },
@@ -185,6 +195,7 @@ describe('AppComponent', () => {
         FakeSpinnerComponent,
         FakeShutdownAppComponent,
         FakeVersionComponent,
+        FakeTestingCompleteComponent,
       ],
     });
 
@@ -450,6 +461,21 @@ describe('AppComponent', () => {
     const internet = compiled.querySelector('app-wifi');
 
     expect(internet).toBeTruthy();
+  });
+
+  describe('Testing complete', () => {
+    beforeEach(() => {
+      store.overrideSelector(selectIsTestingComplete, true);
+      fixture.detectChanges();
+    });
+
+    it('should have testing complete component', () => {
+      const testingCompleteComp = compiled.querySelector(
+        'app-testing-complete'
+      );
+
+      expect(testingCompleteComp).toBeTruthy();
+    });
   });
 
   describe('Callout component visibility', () => {
@@ -768,6 +794,31 @@ describe('AppComponent', () => {
         });
       });
     });
+
+    describe('with expired devices', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasExpiredDevices, true);
+        fixture.detectChanges();
+      });
+
+      it('should have callout component', () => {
+        const callouts = compiled.querySelectorAll('app-callout');
+        let hasExpiredDeviceCallout = false;
+        callouts.forEach(callout => {
+          if (
+            callout?.innerHTML
+              .trim()
+              .includes(
+                'Further information is required in your device configurations.'
+              )
+          ) {
+            hasExpiredDeviceCallout = true;
+          }
+        });
+
+        expect(hasExpiredDeviceCallout).toBeTrue();
+      });
+    });
   });
 
   it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {
@@ -803,6 +854,15 @@ describe('AppComponent', () => {
 
     expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
   });
+
+  it('should set focus to first focusable elem when close callout', fakeAsync(() => {
+    component.calloutClosed('mockId');
+    tick(100);
+
+    expect(
+      mockFocusManagerService.focusFirstElementInContainer
+    ).toHaveBeenCalled();
+  }));
 });
 
 @Component({
@@ -836,7 +896,14 @@ class FakeShutdownAppComponent {
 })
 class FakeVersionComponent {
   @Input() consentShown!: boolean;
-  @Input() hasRiskProfiles!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
-  @Output() navigateToRiskAssessmentEvent = new EventEmitter<void>();
+}
+
+@Component({
+  selector: 'app-testing-complete',
+  template: '<div></div>',
+})
+class FakeTestingCompleteComponent {
+  @Input() profiles: Profile[] = [];
+  @Input() data!: TestrunStatus | null;
 }
