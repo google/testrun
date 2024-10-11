@@ -25,7 +25,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from ipaddress import IPv4Address
-from scapy.all import rdpcap, IP, Ether
+from scapy.all import rdpcap, IP, Ether, TCP, UDP
 
 LOG_NAME = 'tls_util'
 LOGGER = None
@@ -64,25 +64,34 @@ class TLSUtil():
   def get_all_outbound_connections(self, device_mac, capture_files):
     """Process multiple pcap files and combine unique IP destinations."""
 
-    ip_destinations = set()
+    outbound_conns = set()
     for capture in capture_files:
       ips = self.get_outbound_connections(device_mac=device_mac,
                                           capture_file=capture)
-      ip_destinations.update(ips)
-    return list(ip_destinations)
+      outbound_conns.update(ips)
+    return list(outbound_conns)
 
   def get_outbound_connections(self, device_mac, capture_file):
-    """Extract unique IP destinations from a single pcap file based on the 
-    known MAC address."""
+    """Extract unique IP and port destinations from a single pcap file 
+      based on the known MAC address."""
     packets = rdpcap(capture_file)
-    ip_destinations = set()
+    outbound_conns = set()
     for packet in packets:
       if Ether in packet and IP in packet:
         if packet[Ether].src == device_mac:
           ip_dst = packet[IP].dst
+          port_dst = 'Unknown'
+
+          # Check if the packet has TCP or UDP layer to get the destination port
+          if TCP in packet:
+            port_dst = packet[TCP].dport
+          elif UDP in packet:
+            port_dst = packet[UDP].dport
+
           if self.is_external_ip(ip_dst):
-            ip_destinations.add(ip_dst)
-    return ip_destinations
+            outbound_conns.add((ip_dst, port_dst))
+
+    return outbound_conns
 
   def is_external_ip(self, ip):
     """Check if the IP is an external (non-private) IP address."""
