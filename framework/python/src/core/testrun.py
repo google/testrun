@@ -388,8 +388,13 @@ class Testrun:  # pylint: disable=too-few-public-methods
       self.get_net_orc().get_listener().stop_listener()
 
     self._stop_tests()
-    self._stop_network(kill=True)
+
     self.get_session().set_status(TestrunStatus.CANCELLED)
+
+    # Disconnect before WS server stops to prevent error
+    self._mqtt_client.disconnect()
+
+    self._stop_network(kill=True)
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
