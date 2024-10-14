@@ -70,11 +70,9 @@ describe('SuccessDialogComponent', () => {
   });
 
   it('should return proper text for risk', () => {
-    expect(component.getRiskExplanation(ProfileRisk.LIMITED)).toEqual(
-      'Your device is eligible for most networks.'
-    );
+    expect(component.getRiskExplanation(ProfileRisk.LIMITED)).toEqual('');
     expect(component.getRiskExplanation(ProfileRisk.HIGH)).toEqual(
-      'Your device is eligible only for some networks.'
+      'An additional assessment may be required.'
     );
   });
 });
