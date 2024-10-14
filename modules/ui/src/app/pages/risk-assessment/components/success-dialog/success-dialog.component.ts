@@ -58,8 +58,8 @@ export class SuccessDialogComponent extends EscapableDialogComponent {
   }
 
   getRiskExplanation(risk: string | undefined) {
-    return risk === ProfileRisk.LIMITED
-      ? 'Your device is eligible for most networks.'
-      : 'Your device is eligible only for some networks.';
+    return risk === ProfileRisk.HIGH
+      ? 'An additional assessment may be required.'
+      : '';
   }
 }
