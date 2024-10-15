@@ -22,108 +22,103 @@ export const selectAppState = createFeatureSelector<AppState>(
   fromApp.appFeatureKey
 );
 
-export const selectMenuOpened = createSelector(
-  selectAppState,
-  (state: AppState) => state.appComponent.isMenuOpen
-);
-
 export const selectInterfaces = createSelector(
   selectAppState,
-  (state: AppState) => state.appComponent.interfaces
+  (state: AppState) => state.interfaces
 );
 
 export const selectHasConnectionSettings = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.hasConnectionSettings
+  (state: AppState) => state.hasConnectionSettings
 );
 
 export const selectIsOpenAddDevice = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.isOpenAddDevice
+  (state: AppState) => state.isOpenAddDevice
 );
 
 export const selectHasDevices = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.hasDevices
+  (state: AppState) => state.hasDevices
 );
 
 export const selectHasExpiredDevices = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.hasExpiredDevices
+  (state: AppState) => state.hasExpiredDevices
 );
 export const selectIsAllDevicesOutdated = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.isAllDevicesOutdated
+  (state: AppState) => state.isAllDevicesOutdated
 );
 
 export const selectDevices = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.devices
+  (state: AppState) => state.devices
 );
 
 export const selectDeviceInProgress = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.deviceInProgress
+  (state: AppState) => state.deviceInProgress
 );
 
 export const selectHasRiskProfiles = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.hasRiskProfiles
+  (state: AppState) => state.hasRiskProfiles
 );
 
 export const selectRiskProfiles = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.riskProfiles
-);
-
-export const selectError = createSelector(
-  selectAppState,
-  (state: AppState) => state.appComponent.settingMissedError
+  (state: AppState) => state.riskProfiles
 );
 
 export const selectSystemStatus = createSelector(
   selectAppState,
   (state: AppState) => {
-    return state.shared.systemStatus;
+    return state.systemStatus;
   }
 );
 
 export const selectIsTestingComplete = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.isTestingComplete
+  (state: AppState) => state.isTestingComplete
 );
 
 export const selectIsOpenWaitSnackBar = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.isOpenWaitSnackBar
+  (state: AppState) => state.isOpenWaitSnackBar
 );
 
 export const selectIsOpenStartTestrun = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.isOpenStartTestrun
+  (state: AppState) => state.isOpenStartTestrun
 );
 
 export const selectStatus = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.status
+  (state: AppState) => state.status
 );
 
 export const selectReports = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.reports
+  (state: AppState) => state.reports
 );
 
 export const selectTestModules = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.testModules
+  (state: AppState) => state.testModules
 );
 
 export const selectAdapters = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.adapters
+  (state: AppState) => state.adapters
 );
 
 export const selectInternetConnection = createSelector(
   selectAppState,
-  (state: AppState) => state.shared.internetConnection
+  (state: AppState) => state.internetConnection
+);
+
+export const selectSystemConfig = createSelector(
+  selectAppState,
+  (state: AppState) => state.systemConfig
 );
