@@ -91,7 +91,10 @@ export class ProfileValidators {
     profiles: Profile[]
   ): boolean {
     return (
-      profiles.some(profile => profile.name === profileName?.trim()) || false
+      profiles.some(
+        profile =>
+          profile.name.toLowerCase() === profileName?.trim().toLowerCase()
+      ) || false
     );
   }
 }
