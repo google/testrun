@@ -19,15 +19,12 @@ import {
   selectAdapters,
   selectDeviceInProgress,
   selectDevices,
-  selectError,
   selectHasConnectionSettings,
   selectHasDevices,
   selectHasRiskProfiles,
-  selectInterfaces,
   selectIsOpenAddDevice,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
-  selectMenuOpened,
   selectReports,
   selectRiskProfiles,
   selectStatus,
@@ -37,45 +34,34 @@ import {
   selectInternetConnection,
   selectIsAllDevicesOutdated,
   selectIsTestingComplete,
+  selectInterfaces,
+  selectSystemConfig,
 } from './selectors';
 
 describe('Selectors', () => {
   const initialState: AppState = {
-    appComponent: {
-      isMenuOpen: false,
-      interfaces: {},
-      isStatusLoaded: false,
-      devicesLength: 0,
-      focusNavigation: false,
-      settingMissedError: null,
-    },
-    shared: {
-      hasConnectionSettings: false,
-      isAllDevicesOutdated: false,
-      devices: [],
-      hasDevices: false,
-      hasExpiredDevices: false,
-      isOpenAddDevice: false,
-      riskProfiles: [],
-      hasRiskProfiles: false,
-      isStopTestrun: false,
-      isOpenWaitSnackBar: false,
-      isOpenStartTestrun: false,
-      systemStatus: null,
-      deviceInProgress: null,
-      status: null,
-      isTestingComplete: false,
-      reports: [],
-      testModules: [],
-      adapters: {},
-      internetConnection: null,
-    },
+    hasConnectionSettings: false,
+    isAllDevicesOutdated: false,
+    devices: [],
+    hasDevices: false,
+    hasExpiredDevices: false,
+    isOpenAddDevice: false,
+    riskProfiles: [],
+    hasRiskProfiles: false,
+    isStopTestrun: false,
+    isOpenWaitSnackBar: false,
+    isOpenStartTestrun: false,
+    systemStatus: null,
+    deviceInProgress: null,
+    status: null,
+    isTestingComplete: false,
+    reports: [],
+    testModules: [],
+    adapters: {},
+    internetConnection: null,
+    interfaces: {},
+    systemConfig: { network: {} },
   };
-
-  it('should select the is menu opened', () => {
-    const result = selectMenuOpened.projector(initialState);
-    expect(result).toEqual(false);
-  });
 
   it('should select interfaces', () => {
     const result = selectInterfaces.projector(initialState);
@@ -85,11 +71,6 @@ describe('Selectors', () => {
   it('should select has connection settings', () => {
     const result = selectHasConnectionSettings.projector(initialState);
     expect(result).toEqual(false);
-  });
-
-  it('should select settingMissedError', () => {
-    const result = selectError.projector(initialState);
-    expect(result).toEqual(null);
   });
 
   it('should select devices', () => {
@@ -175,5 +156,10 @@ describe('Selectors', () => {
   it('should select internetConnection', () => {
     const result = selectInternetConnection.projector(initialState);
     expect(result).toEqual(null);
+  });
+
+  it('should select systemConfig', () => {
+    const result = selectSystemConfig.projector(initialState);
+    expect(result).toEqual({ network: {} });
   });
 });
