@@ -66,6 +66,7 @@ describe('TestingCompleteComponent', () => {
           testrunStatus: MOCK_PROGRESS_DATA_COMPLIANT,
           isTestingComplete: true,
           url: 'https://api.testrun.io/report.pdf',
+          isPilot: false,
         },
         autoFocus: 'first-tabbable',
         ariaDescribedBy: 'testing-result-main-info',
