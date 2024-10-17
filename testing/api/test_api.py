@@ -1217,11 +1217,11 @@ def test_export_report_not_found(empty_devices_dir, add_devices, testrun): # pyl
   # Check if the correct error message is returned
   assert "Report could not be found" in response["error"]
 
-@pytest.mark.parametrize("add_devices", [
-  ["device_1"]
-],indirect=True)
+@pytest.mark.parametrize("add_devices, add_profiles", [
+    (["device_1"], ["valid_profile.json"])
+], indirect=True)
 def test_export_report_with_profile(empty_devices_dir, add_devices, # pylint: disable=W0613
-                               empty_profiles_dir, add_one_profile, # pylint: disable=W0613
+                                  empty_profiles_dir, add_profiles, # pylint: disable=W0613
                                     create_report_folder, testrun): # pylint: disable=W0613
   """Test export results with existing profile when report exists (200)"""
 
@@ -2527,27 +2527,23 @@ def test_delete_cert_not_found(testrun, reset_certs): # pylint: disable=W0613
 # Tests for profile endpoints
 
 @pytest.fixture()
-def add_one_profile():
-  """ Create one profile during tests """
+def add_profiles(request):
+  """ Upload specified profile to local/risk_profiles """
 
-  # Construct full path of the profile from 'testing/api/profiles' folder
-  source_path = os.path.join(PROFILES_PATH, "valid_profile.json")
+  # Access the parameter (profiles list) provided to the fixture
+  profiles = request.param
 
-  # Copy the profile from 'testing/api/profiles' to 'local/risk_profiles'
-  shutil.copy(source_path, PROFILES_DIRECTORY)
-
-@pytest.fixture()
-def add_two_profiles():
-  """ Create two profiles during tests """
-
-  # Iterate over the files from 'testing/api/profiles' folder
-  for profile in os.listdir(PROFILES_PATH):
+  # Iterate over the profile names provided
+  for profile in profiles:
 
     # Construct full path of the file from 'testing/api/profiles' folder
     source_path = os.path.join(PROFILES_PATH, profile)
 
     # Copy the file_name from 'testing/api/profiles' to 'local/risk_profiles'
     shutil.copy(source_path, PROFILES_DIRECTORY)
+
+  # Return the list with profiles name
+  return profiles
 
 def delete_all_profiles():
   """Utility method to delete all profiles from local/risk_profiles"""
@@ -2612,6 +2608,32 @@ def profile_exists(profile_name):
   # Return if name is in the list of profiles
   return any(p["name"] == profile_name for p in profiles)
 
+@pytest.fixture()
+def remove_risk_assessment():
+  """ Fixture to remove and restore risk_assessment.json """
+
+  # Path to the risk_assessment.json file
+  risk_assessment_path = os.path.join("resources", "risk_assessment.json")
+
+  # Backup path for the risk_assessment.json file
+  backup_path = os.path.join("resources", "risk_assessment_backup.json")
+
+  # Create a backup of the risk_assessment.json file
+  if os.path.exists(risk_assessment_path):
+    shutil.copy(risk_assessment_path, backup_path)
+
+  # Delete the risk_assessment.json file
+  if os.path.exists(risk_assessment_path):
+    os.remove(risk_assessment_path)
+
+  # Run the test
+  yield
+
+  # Restore the risk assessment file after the test
+  if os.path.exists(backup_path):
+    shutil.copy(backup_path, risk_assessment_path)
+    os.remove(backup_path)
+
 def test_get_profiles_format(testrun): # pylint: disable=W0613
   """ Test for profiles format (200) """
 
@@ -2632,31 +2654,19 @@ def test_get_profiles_format(testrun): # pylint: disable=W0613
     assert "question" in item
     assert "type" in item
 
-def test_get_profiles_no_profiles(empty_profiles_dir, testrun): # pylint: disable=W0613
-  """ Test for get profiles when no profiles created (200) """
-
-  # Send the get request to "/profiles" endpoint
-  r = requests.get(f"{API}/profiles", timeout=5)
-
-  # Check if status code is 200 (OK)
-  assert r.status_code == 200
-
-  # Parse the response (profiles)
-  response = r.json()
-
-  # Check if response is a list
-  assert isinstance(response, list)
-
-  # Check if the list is empty
-  assert len(response) == 0
-
-def test_get_profiles_one_profile(empty_profiles_dir, add_one_profile, testrun): # pylint: disable=W0613
-  """ Test for get profiles when one profile is created (200) """
+# Use parametrize to create a test suite for 3 scenarios
+@pytest.mark.parametrize("add_profiles", [
+  [],
+  ["valid_profile.json"],
+  ["valid_profile.json", "draft_profile.json"],
+], indirect=True)
+def test_get_profiles(empty_profiles_dir, add_profiles, testrun): # pylint: disable=W0613
+  """ Test get profiles when none, one or two profiles are available (200) """
 
   # Send get request to the "/profiles" endpoint
   r = requests.get(f"{API}/profiles", timeout=5)
 
-  # Check if status code is 200 (OK)
+  # Check if the status code is 200 (OK)
   assert r.status_code == 200
 
   # Parse the response (profiles)
@@ -2665,50 +2675,43 @@ def test_get_profiles_one_profile(empty_profiles_dir, add_one_profile, testrun):
   # Check if response is a list
   assert isinstance(response, list)
 
-  # Check if response contains one profile
-  assert len(response) == 1
+  # Check if the number of profiles matches the number of profiles available
+  assert len(response) == len(add_profiles)
 
-  # Check that each profile has the expected fields
-  for profile in response:
-    for field in ["name", "status", "created", "version", "questions", "risk"]:
-      assert field in profile
+  # Assign the expected profile fields
+  expected_fields = [
+    "name", "status", "created", "version", "questions", "risk"
+  ]
 
-    # Assign profile["questions"]
-    profile_questions = profile["questions"]
+  # Check if profile exist
+  if len(add_profiles) > 0:
 
-    # Check if "questions" value is a list
-    assert isinstance(profile_questions, list)
+    # Iterate through profiles
+    for profile in response:
 
-    # Check that "questions" value has the expected fields
-    for element in profile_questions:
+      # Iterate through expected_fields list
+      for field in expected_fields:
 
-      # Check if each element is dict
-      assert isinstance(element, dict)
+        # Check if the field is in profile
+        assert field in profile
 
-      # Check if "question" key is in dict element
-      assert "question" in element
+      # Assign profile["questions"]
+      profile_questions = profile["questions"]
 
-      # Check if "asnswer" key is in dict element
-      assert "answer" in element
+      # Check if "questions" value is a list
+      assert isinstance(profile_questions, list)
 
-def test_get_profiles_two_profiles(empty_profiles_dir, add_two_profiles, # pylint: disable=W0613
-                                   testrun): # pylint: disable=W0613
-  """ Test for get profiles when two profiles are created (200) """
+      # Check that "questions" value has the expected fields
+      for element in profile_questions:
 
-  # Send the get request to "/profiles" endpoint
-  r = requests.get(f"{API}/profiles", timeout=5)
+        # Check if each element is dict
+        assert isinstance(element, dict)
 
-  # Parse the response (profiles)
-  response = r.json()
+        # Check if "question" key is in dict element
+        assert "question" in element
 
-  # Check if status code is 200 (OK)
-  assert r.status_code == 200
-
-  # Check if response is a list
-  assert isinstance(response, list)
-
-  # Check if response contains two profiles
-  assert len(response) == 2
+        # Check if "asnswer" key is in dict element
+        assert "answer" in element
 
 def test_create_profile(testrun): # pylint: disable=W0613
   """ Test for create profile when profile does not exist (201) """
@@ -2752,7 +2755,10 @@ def test_create_profile(testrun): # pylint: disable=W0613
   # Check if profile was created
   assert created_profile is not None
 
-def test_update_profile(empty_profiles_dir, add_one_profile, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_profiles", [
+  ["valid_profile.json"]
+], indirect=True)
+def test_update_profile(empty_profiles_dir, add_profiles, testrun): # pylint: disable=W0613
   """ Test for update profile when profile already exists (200) """
 
   # Load the profile using load_json utility method
@@ -2810,7 +2816,34 @@ def test_update_profile(empty_profiles_dir, add_one_profile, testrun): # pylint:
   # Check if profile was updated
   assert updated_profile_check is not None
 
-def test_update_profile_invalid_json(empty_profiles_dir, add_one_profile, # pylint: disable=W0613
+def test_update_profile_no_profiles_format(empty_profiles_dir, # pylint: disable=W0613
+                              remove_risk_assessment, testrun): # pylint: disable=W0613
+  """Test for profile update when profiles format is not available (501)"""
+
+  # Prepare a valid profile update request
+  profile_update = load_json("valid_profile.json", directory=PROFILES_PATH)
+
+  # Send a POST request to update the profile
+  r = requests.post(f"{API}/profiles",
+                    data=json.dumps(profile_update),
+                    timeout=5)
+
+  # Check if the response status code is 501 (Not Implemented)
+  assert r.status_code == 501
+
+  # Parse the response
+  response = r.json()
+
+  # Check if "error" key is present in the response
+  assert "error" in response
+
+  # Check if the error message matches the expected response
+  assert response["error"] == "Risk profiles are not available right now"
+
+@pytest.mark.parametrize("add_profiles", [
+  ["valid_profile.json"]
+], indirect=True)
+def test_update_profile_invalid_json(empty_profiles_dir, add_profiles, # pylint: disable=W0613
                                      testrun): # pylint: disable=W0613
   """ Test for update profile invalid JSON payload (400) """
 
@@ -2853,7 +2886,10 @@ def test_create_profile_invalid_json(empty_profiles_dir, testrun): # pylint: dis
   # Check if "error" key in response
   assert "error" in response
 
-def test_delete_profile(empty_profiles_dir, add_one_profile, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_profiles", [
+  ["valid_profile.json"]
+], indirect=True)
+def test_delete_profile(empty_profiles_dir, add_profiles, testrun): # pylint: disable=W0613
   """ Test for successfully delete profile (200) """
 
   # Load the profile using load_json utility method
@@ -2955,7 +2991,10 @@ def test_delete_profile_invalid_json(empty_profiles_dir, testrun): # pylint: dis
   # Check if "error" key in response
   assert "error" in response
 
-def test_delete_profile_server_error(empty_profiles_dir, add_one_profile, # pylint: disable=W0613
+@pytest.mark.parametrize("add_profiles", [
+  ["valid_profile.json"]
+], indirect=True)
+def test_delete_profile_server_error(empty_profiles_dir, add_profiles, # pylint: disable=W0613
                                      testrun): # pylint: disable=W0613
   """ Test for delete profile causing internal server error (500) """
 
