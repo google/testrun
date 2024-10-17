@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { NotificationService } from './notification.service';
 import {
@@ -25,6 +25,8 @@ import { of } from 'rxjs/internal/observable/of';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from '../store/state';
 import { SnackBarComponent } from '../components/snack-bar/snack-bar.component';
+import { setIsOpenWaitSnackBar } from '../store/actions';
+import { FocusManagerService } from './focus-manager.service';
 
 describe('NotificationService', () => {
   let service: NotificationService;
@@ -36,10 +38,14 @@ describe('NotificationService', () => {
     openFromComponent: () => ({}),
   };
 
+  const focusServiceMock: jasmine.SpyObj<FocusManagerService> =
+    jasmine.createSpyObj('focusServiceMock', ['focusFirstElementInContainer']);
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
         { provide: MatSnackBar, useValue: mockMatSnackBar },
+        { provide: FocusManagerService, useValue: focusServiceMock },
         provideMockStore({}),
       ],
     });
@@ -84,6 +90,22 @@ describe('NotificationService', () => {
         politeness: 'assertive',
       });
     });
+
+    it('should open snackbar with addition panelClass', () => {
+      const openSpy = spyOn(service.snackBar, 'open').and.returnValues({
+        afterOpened: () => of(void 0),
+        afterDismissed: () => of({ dismissedByAction: true }),
+      } as MatSnackBarRef<TextOnlySnackBar>);
+
+      service.notify('something good happened', 1500, 'mock-class');
+
+      expect(openSpy).toHaveBeenCalledWith('something good happened', 'OK', {
+        horizontalPosition: 'center',
+        panelClass: ['test-run-notification', 'mock-class'],
+        duration: 1500,
+        politeness: 'assertive',
+      });
+    });
   });
 
   describe('openSnackBar', () => {
@@ -103,6 +125,18 @@ describe('NotificationService', () => {
         panelClass: 'snack-bar-info',
       });
     });
+
+    it('should call focusFirstElementInContainer', fakeAsync(() => {
+      spyOn(service.snackBar, 'openFromComponent').and.returnValues({
+        afterOpened: () => of(void 0),
+        afterDismissed: () => of({ dismissedByAction: true }),
+      } as MatSnackBarRef<SnackBarComponent>);
+
+      service.openSnackBar();
+      tick(8000);
+
+      expect(focusServiceMock.focusFirstElementInContainer).toHaveBeenCalled();
+    }));
   });
 
   describe('dismiss', () => {
@@ -114,4 +148,21 @@ describe('NotificationService', () => {
       expect(matSnackBarSpy).toHaveBeenCalled();
     });
   });
+
+  it('#dismissSnackBar should dispatch setIsOpenWaitSnackBar action', () => {
+    service.dismissSnackBar();
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      setIsOpenWaitSnackBar({ isOpenWaitSnackBar: false })
+    );
+  });
+
+  it('#dismissWithTimout should call dismissSnackBar after timer', fakeAsync(() => {
+    const dismissSnackBarSpy = spyOn(service, 'dismissSnackBar').and.stub();
+
+    service.dismissWithTimout();
+    tick(5000);
+
+    expect(dismissSnackBarSpy).toHaveBeenCalledWith();
+  }));
 });

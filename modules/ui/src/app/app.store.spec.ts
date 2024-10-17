@@ -19,7 +19,6 @@ import { AppStore, CALLOUT_STATE_KEY, CONSENT_SHOWN_KEY } from './app.store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from './store/state';
 import {
-  selectError,
   selectHasConnectionSettings,
   selectHasDevices,
   selectHasExpiredDevices,
@@ -29,10 +28,10 @@ import {
   selectIsAllDevicesOutdated,
   selectIsOpenWaitSnackBar,
   selectIsTestingComplete,
-  selectMenuOpened,
   selectReports,
   selectRiskProfiles,
   selectStatus,
+  selectSystemConfig,
   selectSystemStatus,
   selectTestModules,
 } from './store/selectors';
@@ -53,6 +52,7 @@ import { NotificationService } from './services/notification.service';
 import { FocusManagerService } from './services/focus-manager.service';
 import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { MOCK_ADAPTERS } from './mocks/settings.mock';
+import { TestingType } from './model/device';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -112,6 +112,8 @@ describe('AppStore', () => {
             { selector: selectSystemStatus, value: null },
             { selector: selectIsTestingComplete, value: false },
             { selector: selectRiskProfiles, value: [] },
+            { selector: selectSystemConfig, value: { network: {} } },
+            { selector: selectInterfaces, value: {} },
           ],
         }),
         { provide: TestRunService, useValue: mockService },
@@ -130,9 +132,7 @@ describe('AppStore', () => {
     store.overrideSelector(selectHasRiskProfiles, false);
     store.overrideSelector(selectReports, []);
     store.overrideSelector(selectHasConnectionSettings, true);
-    store.overrideSelector(selectMenuOpened, true);
     store.overrideSelector(selectInterfaces, {});
-    store.overrideSelector(selectError, null);
     store.overrideSelector(selectStatus, null);
 
     spyOn(store, 'dispatch').and.callFake(() => {});
@@ -182,9 +182,14 @@ describe('AppStore', () => {
           isTestingComplete: false,
           riskProfiles: [],
           hasConnectionSettings: true,
-          isMenuOpen: true,
+          isMenuOpen: false,
           interfaces: {},
-          settingMissedError: null,
+          focusNavigation: false,
+          settingMissedError: {
+            isSettingMissed: true,
+            devicePortMissed: true,
+            internetPortMissed: true,
+          },
           calloutState: new Map(),
           hasInternetConnection: false,
         });
@@ -343,6 +348,178 @@ describe('AppStore', () => {
         appStore.setCloseCallout('test');
 
         expect(mock.getObject(CALLOUT_STATE_KEY)).toBeTruthy();
+      });
+    });
+
+    describe('checkInterfacesInConfig', () => {
+      it('should update settingMissedError with all false if all ports are present', done => {
+        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
+          expect(store.settingMissedError).toEqual({
+            isSettingMissed: false,
+            devicePortMissed: false,
+            internetPortMissed: false,
+          });
+          done();
+        });
+
+        store.overrideSelector(selectInterfaces, {
+          enx00e04c020fa8: '00:e0:4c:02:0f:a8',
+          enx207bd26205e9: '20:7b:d2:62:05:e9',
+        });
+        store.overrideSelector(selectSystemConfig, {
+          network: {
+            device_intf: 'enx00e04c020fa8',
+            internet_intf: 'enx207bd26205e9',
+          },
+        });
+        store.refreshState();
+      });
+
+      it('should update settingMissedError with all true if all ports are missing', done => {
+        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
+          expect(store.settingMissedError).toEqual({
+            isSettingMissed: true,
+            devicePortMissed: true,
+            internetPortMissed: true,
+          });
+          done();
+        });
+
+        store.overrideSelector(selectInterfaces, {
+          enx00e04c020fa9: '00:e0:4c:02:0f:a8',
+          enx207bd26205e8: '20:7b:d2:62:05:e9',
+        });
+        store.overrideSelector(selectSystemConfig, {
+          network: {
+            device_intf: 'enx00e04c020fa8',
+            internet_intf: 'enx207bd26205e9',
+          },
+        });
+        store.refreshState();
+      });
+
+      it('should update settingMissedError with devicePortMissed true if device port is missing', done => {
+        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
+          expect(store.settingMissedError).toEqual({
+            isSettingMissed: true,
+            devicePortMissed: true,
+            internetPortMissed: false,
+          });
+          done();
+        });
+
+        store.overrideSelector(selectInterfaces, {
+          enx00e04c020fa9: '00:e0:4c:02:0f:a8',
+          enx207bd26205e8: '20:7b:d2:62:05:e9',
+        });
+        store.overrideSelector(selectSystemConfig, {
+          network: {
+            device_intf: 'enx00e04c020fa8',
+            internet_intf: 'enx207bd26205e8',
+          },
+        });
+        store.refreshState();
+      });
+
+      it('should update settingMissedError with internetPortMissed true if device internet is missing', done => {
+        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
+          expect(store.settingMissedError).toEqual({
+            isSettingMissed: true,
+            devicePortMissed: false,
+            internetPortMissed: true,
+          });
+          done();
+        });
+
+        store.overrideSelector(selectInterfaces, {
+          enx00e04c020fa9: '00:e0:4c:02:0f:a8',
+          enx207bd26205e8: '20:7b:d2:62:05:e9',
+        });
+        store.overrideSelector(selectSystemConfig, {
+          network: {
+            device_intf: 'enx00e04c020fa9',
+            internet_intf: 'enx207bd26205e9',
+          },
+        });
+        store.refreshState();
+      });
+
+      it('should update settingMissedError with all false if interface are not empty and config is not set', done => {
+        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
+          expect(store.settingMissedError).toEqual({
+            isSettingMissed: false,
+            devicePortMissed: false,
+            internetPortMissed: false,
+          });
+          done();
+        });
+
+        store.overrideSelector(selectInterfaces, {
+          enx00e04c020fa8: '00:e0:4c:02:0f:a8',
+          enx207bd26205e9: '20:7b:d2:62:05:e9',
+        });
+        store.overrideSelector(selectSystemConfig, {
+          network: {
+            device_intf: '',
+            internet_intf: '',
+          },
+        });
+        store.refreshState();
+      });
+
+      it('should update settingMissedError with all false if interface are empty and config is not set', done => {
+        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
+          expect(store.settingMissedError).toEqual({
+            isSettingMissed: false,
+            devicePortMissed: false,
+            internetPortMissed: false,
+          });
+          done();
+        });
+
+        store.overrideSelector(selectInterfaces, {});
+        store.overrideSelector(selectSystemConfig, {
+          network: {
+            device_intf: '',
+            internet_intf: '',
+          },
+        });
+        store.refreshState();
+      });
+
+      it('should send GA event', done => {
+        // @ts-expect-error data layer should be defined
+        window.dataLayer = window.dataLayer || [];
+
+        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(() => {
+          expect(
+            // @ts-expect-error data layer should be defined
+            window.dataLayer.some(event => event.event === 'pilot_is_compliant')
+          ).toBeTrue();
+          done();
+        });
+
+        store.overrideSelector(selectIsTestingComplete, true);
+        store.overrideSelector(selectSystemStatus, {
+          status: 'Compliant',
+          mac_addr: '00:1e:42:35:73:c4',
+          device: {
+            manufacturer: 'Delta',
+            model: '03-DIN-CPU',
+            mac_addr: '00:1e:42:35:73:c4',
+            firmware: '1.2.2',
+            test_pack: TestingType.Pilot,
+          },
+          started: '2023-06-22T09:20:00.123Z',
+          finished: '2023-06-22T09:26:00.123Z',
+          report: 'https://api.testrun.io/report.pdf',
+          tags: [],
+          tests: {
+            total: 3,
+            results: [],
+          },
+        });
+        store.refreshState();
       });
     });
   });

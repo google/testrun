@@ -31,12 +31,7 @@ import { Routes } from './model/routes';
 import { FocusManagerService } from './services/focus-manager.service';
 import { State, Store } from '@ngrx/store';
 import { AppState } from './store/state';
-import {
-  setIsOpenAddDevice,
-  toggleMenu,
-  updateFocusNavigation,
-} from './store/actions';
-import { appFeatureKey } from './store/reducers';
+import { setIsOpenAddDevice } from './store/actions';
 import { SettingsComponent } from './pages/settings/settings.component';
 import { AppStore } from './app.store';
 import { TestRunService } from './services/test-run.service';
@@ -205,19 +200,19 @@ export class AppComponent implements AfterViewInit {
 
   public toggleMenu(event: MouseEvent) {
     event.stopPropagation();
-    this.store.dispatch(toggleMenu());
+    this.appStore.toggleMenu();
   }
 
   /**
    * When side menu is opened
    */
-  skipToNavigation(event: Event) {
-    if (this.state.getValue()[appFeatureKey].appComponent.focusNavigation) {
+  skipToNavigation(event: Event, focusNavigation: boolean) {
+    if (focusNavigation) {
       event.preventDefault(); // if not prevented, second element will be focused
       this.focusManagerService.focusFirstElementInContainer(
         this.navigation.nativeElement
       );
-      this.store.dispatch(updateFocusNavigation({ focusNavigation: false })); // user will be navigated according to normal flow on tab
+      this.appStore.updateFocusNavigation(false); // user will be navigated according to normal flow on tab
     }
   }
 
