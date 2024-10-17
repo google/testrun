@@ -52,10 +52,6 @@ $form-min-width: 732px;
   color: $primary;
 }
 
-.device-form-mac-address-error {
-  white-space: nowrap;
-}
-
 .hidden {
   display: none;
 }
@@ -306,10 +302,9 @@ $form-min-width: 732px;
 }
 
 :host mat-form-field {
-  &::ng-deep.mat-mdc-form-field-subscript-wrapper:has(
-      mat-error.error-multiline
-    ) {
-    height: 46px;
+  &::ng-deep.mat-mdc-form-field-error-wrapper {
+    margin-top: -20px;
+    position: static;
   }
 }
 

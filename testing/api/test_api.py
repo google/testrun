@@ -456,7 +456,10 @@ def stop_test():
 
   # Validate system status
 
-def test_start_testrun_success(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_start_testrun_success(empty_devices_dir, add_devices, testrun): # pylint: disable=W0613
   """ Test for testrun started successfully (200) """
 
   # Load the device using load_json utility method
@@ -526,7 +529,10 @@ def test_start_testrun_invalid_json(testrun): # pylint: disable=W0613
   # Check if 'error' in response
   assert "error" in response
 
-def test_start_testrun_already_started(empty_devices_dir, add_one_device, # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_start_testrun_already_started(empty_devices_dir, add_devices, # pylint: disable=W0613
                                                     testrun, start_test): # pylint: disable=W0613
   """ Test for testrun already started (409) """
 
@@ -582,7 +588,10 @@ def test_start_testrun_device_not_found(empty_devices_dir, testrun): # pylint: d
   # Check if 'error' in response
   assert "error" in response
 
-def test_start_testrun_error(empty_devices_dir, add_one_device, # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_start_testrun_error(empty_devices_dir, add_devices, # pylint: disable=W0613
                update_sys_config, testrun, restore_sys_config): # pylint: disable=W0613
   """ Test for start testrun internal server error (500) """
 
@@ -616,8 +625,11 @@ def test_start_testrun_error(empty_devices_dir, add_one_device, # pylint: disabl
   # Check if 'error' in response
   assert "error" in response
 
-def test_stop_running_testrun(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                           testrun, start_test): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_stop_running_testrun(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                        testrun, start_test): # pylint: disable=W0613
   """ Test for successfully stop testrun when test is running (200) """
 
   # Send the post request to stop the test
@@ -662,8 +674,11 @@ def test_sys_shutdown(testrun): # pylint: disable=W0613
   # Check if null in response
   assert response is None
 
-def test_sys_shutdown_in_progress(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                     testrun, start_test): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_sys_shutdown_in_progress(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                            testrun, start_test): # pylint: disable=W0613
   """ Test system shutdown during an in-progress test (400) """
 
   # Attempt to shutdown while the test is running
@@ -693,8 +708,11 @@ def test_sys_status_idle(testrun): # pylint: disable=W0613
   # Check if system status is 'Idle'
   assert response["status"] == "Idle"
 
-def test_sys_status_cancelled(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                testrun, start_test, stop_test): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_sys_status_cancelled(empty_devices_dir, add_devices, # pylint: disable=W0613
+                             testrun, start_test, stop_test): # pylint: disable=W0613
   """ Test for system status 'cancelled' (200) """
 
   # Send the get request to retrieve system status
@@ -706,8 +724,11 @@ def test_sys_status_cancelled(empty_devices_dir, add_one_device, # pylint: disab
   # Check if status is 'Cancelled'
   assert response["status"] == "Cancelled"
 
-def test_sys_status_waiting(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                         testrun, start_test): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_sys_status_waiting(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                      testrun, start_test): # pylint: disable=W0613
   """ Test for system status 'Waiting for Device' (200) """
 
   # Send the get request
@@ -824,9 +845,12 @@ def test_get_reports_no_reports(testrun): # pylint: disable=W0613
   # Check if the response is an empty list
   assert response == []
 
-def test_delete_report(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                          create_report_folder, testrun): # pylint: disable=W0613
-  """Test for succesfully delete a report (200)"""
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_delete_report(empty_devices_dir, add_devices, # pylint: disable=W0613
+                       create_report_folder, testrun): # pylint: disable=W0613
+  """ Test for succesfully delete a report (200) """
 
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
@@ -861,9 +885,12 @@ def test_delete_report(empty_devices_dir, add_one_device, # pylint: disable=W061
   # Check if report folder has been deleted
   assert not os.path.exists(report_folder)
 
-def test_delete_report_no_payload(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                           create_report_folder, testrun): # pylint: disable=W0613
-  """Test delete report bad request when the payload is missing (400)"""
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_delete_report_no_payload(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                  create_report_folder, testrun): # pylint: disable=W0613
+  """ Test delete report bad request when the payload is missing (400) """
 
   # Send a DELETE request to remove the report without the payload
   r = requests.delete(f"{API}/report", timeout=5)
@@ -880,9 +907,12 @@ def test_delete_report_no_payload(empty_devices_dir, add_one_device, # pylint: d
   # Check if the correct error message returned
   assert "Invalid request received, missing body" in response["error"]
 
-def test_delete_report_invalid_payload(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                          create_report_folder, testrun): # pylint: disable=W0613
-  """Test delete report bad request, mac addr and timestamp are missing (400)"""
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_delete_report_invalid_payload(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                       create_report_folder, testrun): # pylint: disable=W0613
+  """ Test delete report bad request missing mac addr or timestamp (400) """
 
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
@@ -914,9 +944,12 @@ def test_delete_report_invalid_payload(empty_devices_dir, add_one_device, # pyli
   # Check if the correct error message returned
   assert "Missing mac address or timestamp" in response["error"]
 
-def test_delete_report_invalid_timestamp(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                            create_report_folder, testrun): # pylint: disable=W0613
-  """Test delete report bad request when timestamp format is not valid (400)"""
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_delete_report_invalid_timestamp(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                         create_report_folder, testrun): # pylint: disable=W0613
+  """ Test delete report bad request if timestamp format is not valid (400) """
 
   # Load the device using load_json utility method
   device = load_json("device_config.json", directory=DEVICE_1_PATH)
@@ -955,7 +988,7 @@ def test_delete_report_invalid_timestamp(empty_devices_dir, add_one_device, # py
   assert "Incorrect timestamp format" in response["error"]
 
 def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=W0613
-  """Test delete report when device does not exist (404)"""
+  """ Test delete report when device does not exist (404) """
 
   # Payload to be deleted for a non existing device
   delete_data = {
@@ -978,7 +1011,10 @@ def test_delete_report_no_device(empty_devices_dir, testrun): # pylint: disable=
   # Check if the correct error message returned
   assert "Could not find device" in response["error"]
 
-def test_delete_report_no_report(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_delete_report_no_report(empty_devices_dir, add_devices, testrun): # pylint: disable=W0613
   """Test for delete report when report does not exist (404)"""
 
   # Load the device using load_json utility method
@@ -1010,8 +1046,11 @@ def test_delete_report_no_report(empty_devices_dir, add_one_device, testrun): # 
   # Check if the correct error message is returned
   assert "Report not found" in response["error"]
 
-def test_get_report_success(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                               create_report_folder, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_get_report_success(empty_devices_dir, add_devices, # pylint: disable=W0613
+                            create_report_folder, testrun): # pylint: disable=W0613
   """Test for successfully get report when report exists (200)"""
 
   # Load the device using load_json utility method
@@ -1038,7 +1077,10 @@ def test_get_report_success(empty_devices_dir, add_one_device, # pylint: disable
   # Check if the response is a PDF
   assert r.headers["Content-Type"] == "application/pdf"
 
-def test_get_report_not_found(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_get_report_not_found(empty_devices_dir, add_devices, testrun): # pylint: disable=W0613
   """Test get report when report doesn't exist (404)"""
 
   # Load the device using load_json utility method
@@ -1109,8 +1151,11 @@ def test_export_report_device_not_found(empty_devices_dir, testrun, # pylint: di
   # Check if the correct error message returned
   assert "A device with that name could not be found" in response["error"]
 
-def test_export_report_profile_not_found(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                            create_report_folder, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_export_report_profile_not_found(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                         create_report_folder, testrun): # pylint: disable=W0613
   """Test for export report result when the profile is not found"""
 
   # Load the device using load_json utility method
@@ -1145,7 +1190,10 @@ def test_export_report_profile_not_found(empty_devices_dir, add_one_device, # py
   # Check if the correct error message returned
   assert "A profile with that name could not be found" in response["error"]
 
-def test_export_report_not_found(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_export_report_not_found(empty_devices_dir, add_devices, testrun): # pylint: disable=W0613
   """Test for export the report result when the report could not be found"""
 
   # Load the device using load_json utility method
@@ -1169,9 +1217,12 @@ def test_export_report_not_found(empty_devices_dir, add_one_device, testrun): # 
   # Check if the correct error message is returned
   assert "Report could not be found" in response["error"]
 
-def test_export_report_with_profile(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                  empty_profiles_dir, add_one_profile, # pylint: disable=W0613
-                                       create_report_folder, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_export_report_with_profile(empty_devices_dir, add_devices, # pylint: disable=W0613
+                               empty_profiles_dir, add_one_profile, # pylint: disable=W0613
+                                    create_report_folder, testrun): # pylint: disable=W0613
   """Test export results with existing profile when report exists (200)"""
 
   # Load the profile using load_json utility method
@@ -1203,8 +1254,11 @@ def test_export_report_with_profile(empty_devices_dir, add_one_device, # pylint:
   # Check if the response is a zip file
   assert r.headers["Content-Type"] == "application/zip"
 
-def test_export_results_with_no_profile(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                         create_report_folder, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_export_results_with_no_profile(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                        create_report_folder, testrun): # pylint: disable=W0613
   """Test export results with no profile when report exists (200)"""
 
   # Load the device using load_json utility method
@@ -1232,58 +1286,39 @@ def test_export_results_with_no_profile(empty_devices_dir, add_one_device, # pyl
   assert r.headers["Content-Type"] == "application/zip"
 
 # Tests for device endpoints
-
 @pytest.fixture()
-def add_one_device():
-  """Fixture to create one device during tests"""
+def add_devices(request):
+  """ Upload specified device to local/devices """
 
-  # Load the device configurations using load_json utility method
-  device = load_json("device_config.json", directory=DEVICE_1_PATH)
+  # Access the parameter (devices list) provided to the fixture
+  devices = request.param
 
-  # Assign the device name
-  device_name = f'{device["manufacturer"]} {device["model"]}'
-
-  # Construct full path of the device from 'testing/api/devices/device_1'
-  source_path = os.path.join(DEVICE_1_PATH, "device_config.json")
-
-  # Construct full path where the device will be copied
-  target_path = os.path.join(DEVICES_DIRECTORY, device_name)
-
-  # Create the target directory if it doesn't exist
-  os.makedirs(target_path, exist_ok=True)
-
-  # Copy device_config from 'testing/api/devices/device_1' to 'local/devices'
-  shutil.copy(source_path, target_path)
-
-@pytest.fixture()
-def add_two_devices():
-  """Fixture to create two devices during tests"""
-
-  # List of device folders from 'testing/api/devices'
-  devices = ["device_1", "device_2"]
-
-  for file in devices:
+  # Iterate over the device names provided
+  for device in devices:
 
     # Construct the full path for the device_config.json
-    device_path = os.path.join(DEVICES_PATH, file)
+    device_path = os.path.join(DEVICES_PATH, device)
 
     # Load the device configurations using load_json utility method
     device = load_json("device_config.json", directory=device_path)
 
-    # Assign the device name
-    device_name = f'{device["manufacturer"]} {device["model"]}'
+    # Assign the device name for the target directory
+    target_device_name = f'{device["manufacturer"]} {device["model"]}'
 
     # Construct the source path of the device config file
     source_path = os.path.join(device_path, "device_config.json")
 
-    # Construct the target path where the profile will be copied
-    target_path = os.path.join(DEVICES_DIRECTORY, device_name)
+    # Construct the target path where the device config will be copied
+    target_path = os.path.join(DEVICES_DIRECTORY, target_device_name)
 
     # Create the target directory if it doesn't exist
     os.makedirs(target_path, exist_ok=True)
 
-    # Copy the profile from source to target
+    # Copy the device config from source to target
     shutil.copy(source_path, target_path)
+
+  # Return the list with devices names
+  return devices
 
 def delete_all_devices():
   """Utility method to delete all devices from local/devices"""
@@ -1333,7 +1368,7 @@ def empty_devices_dir():
   delete_all_devices()
 
 def get_all_devices():
-  """ Returns list with paths to all devices from local/devices"""
+  """ Returns list with paths to all devices from local/devices """
 
   # List to store the paths of all 'device_config.json' files
   devices = []
@@ -1360,7 +1395,7 @@ def get_all_devices():
   return devices
 
 def device_exists(device_mac):
-  """Utility method to check if device exists"""
+  """ Utility method to check if device exists """
 
   # Send the get request
   r = requests.get(f"{API}/devices", timeout=5)
@@ -1375,12 +1410,17 @@ def device_exists(device_mac):
   # Return if mac address is in the list of devices
   return any(p["mac_addr"] == device_mac for p in devices)
 
-def test_get_devices_no_devices(empty_devices_dir, testrun): # pylint: disable=W0613
-  """ Test for get devices endpoint when no devices are available (200) """
-
-  # Error handling if there are devices in local/devices
-  if len(get_all_devices()) != 0:
-    raise Exception("Expected no devices in local/devices")
+@pytest.mark.parametrize(
+  "add_devices",
+  [
+    [],
+    ["device_1"],
+    ["device_1", "device_2"]
+  ],
+  indirect=True
+)
+def test_get_devices(empty_devices_dir, add_devices, testrun): # pylint: disable=W0613
+  """ Test get devices when none, one or two devices are available (200) """
 
   # Send the get request to retrieve all devices
   r = requests.get(f"{API}/devices", timeout=5)
@@ -1394,51 +1434,10 @@ def test_get_devices_no_devices(empty_devices_dir, testrun): # pylint: disable=W
   # Check if response is a list
   assert isinstance(response, list)
 
-  # Check if the list is empty
-  assert len(response) == 0
+  # Check if the number of devices matches the number of devices available
+  assert len(response) == len(add_devices)
 
-  # Check if there are no devices in local/devices
-  assert len(get_all_devices()) == 0
-
-def test_get_devices_one_device(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
-  """ Test for get devices endpoint when one device is created (200) """
-
-  # Error handling if there is not one device in local/devices
-  if len(get_all_devices()) != 1:
-    raise Exception("Expected one device in local/devices")
-
-  # Send get request to the "/devices" endpoint
-  r = requests.get(f"{API}/devices", timeout=5)
-
-  # Check if status code is 200 (OK)
-  assert r.status_code == 200
-
-  # Parse the json response (devices)
-  response = r.json()
-
-  # Check if response contains one device
-  assert len(response) == 1
-
-def test_get_devices_two_devices(empty_devices_dir, add_two_devices, testrun): # pylint: disable=W0613
-  """ Test for get devices endpoint when two devices are created (200) """
-
-  # Error handling if there are not two devices in local/devices
-  if len(get_all_devices()) != 2:
-    raise Exception("Expected two devices in local/devices")
-
-  # Send get request to the "/devices" endpoint
-  r = requests.get(f"{API}/devices", timeout=5)
-
-  # Check if status code is 200 (OK)
-  assert r.status_code == 200
-
-  # Parse the response (devices)
-  response = r.json()
-
-  # Check if response contains one device
-  assert len(response) == 2
-
-  # Assign the expected fields from device
+  # Assign the expected device fields
   expected_fields = [
     "status",
     "mac_addr",
@@ -1450,11 +1449,14 @@ def test_get_devices_two_devices(empty_devices_dir, add_two_devices, testrun): #
     "test_modules",
   ]
 
-  # Iterate over all expected_fields list
-  for field in expected_fields:
+  # If devices are in the list
+  if len(add_devices) > 0:
 
-    # Check if both devices have the expected fields
-    assert all(field in r for r in response)
+    # Iterate over all expected_fields list
+    for field in expected_fields:
+
+      # Check if devices have the expected fields
+      assert all(field in device for device in response)
 
 def test_create_device(empty_devices_dir, testrun): # pylint: disable=W0613
   """ Test for successfully create device endpoint (201) """
@@ -1504,7 +1506,10 @@ def test_create_device(empty_devices_dir, testrun): # pylint: disable=W0613
   # Check if both devices have been found
   assert len(created_devices) == 2
 
-def test_create_device_already_exists(empty_devices_dir, add_one_device, # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_create_device_already_exists(empty_devices_dir, add_devices, # pylint: disable=W0613
                                                                testrun): # pylint: disable=W0613
   """ Test for crete device when device already exists (409) """
 
@@ -1573,8 +1578,11 @@ def test_create_device_invalid_request(empty_devices_dir, testrun): # pylint: di
   # Check if 'local/device' has no devices
   assert len(get_all_devices()) == 0
 
-def test_edit_device(empty_devices_dir, add_one_device,  # pylint: disable=W0613
-                                              testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_edit_device(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                           testrun): # pylint: disable=W0613
   """ Test for successfully edit device (200) """
 
   # Error handling if there is not one devices in local/devices
@@ -1704,8 +1712,15 @@ def test_edit_device_invalid_json(empty_devices_dir, testrun): # pylint: disable
   # Check if 'error' in response
   assert "error" in response
 
-def test_edit_device_mac_already_exists( empty_devices_dir, add_two_devices, # pylint: disable=W0613
-                                                                  testrun): # pylint: disable=W0613
+@pytest.mark.parametrize(
+  "add_devices",
+  [
+    ["device_1", "device_2"]
+  ],
+  indirect=True
+)
+def test_edit_device_mac_already_exists( empty_devices_dir, add_devices, # pylint: disable=W0613
+                                                               testrun): # pylint: disable=W0613
   """ Test for edit device when the mac address already exists (409) """
 
   # Load the first device (payload) using load_json utility method
@@ -1744,8 +1759,11 @@ def test_edit_device_mac_already_exists( empty_devices_dir, add_two_devices, # p
   # Check if 'error' in response
   assert "error" in response
 
-def test_edit_device_test_in_progress(empty_devices_dir, add_one_device,  # pylint: disable=W0613
-                                                   testrun, start_test): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_edit_device_test_in_progress(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                                testrun, start_test): # pylint: disable=W0613
   """ Test for edit device when a test is in progress (403) """
 
   # Load the device (payload) using load_json utility method
@@ -1803,8 +1821,11 @@ def test_edit_device_test_in_progress(empty_devices_dir, add_one_device,  # pyli
   # Check that device "manufacturer" was not updated
   assert device["model"] != updated_device["model"]
 
-def test_edit_device_invalid_manufacturer(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                                                   testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_edit_device_invalid_manufacturer(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                                                testrun): # pylint: disable=W0613
   """ Test for edit device invalid chars in 'manufacturer' field (400) """
 
   # Load the device
@@ -1826,7 +1847,10 @@ def test_edit_device_invalid_manufacturer(empty_devices_dir, add_one_device, # p
   # Check if 'error' in response
   assert "error" in response
 
-def test_edit_device_invalid_model(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_edit_device_invalid_model(empty_devices_dir, add_devices, testrun): # pylint: disable=W0613
   """ Test for edit device invalid chars in 'model' field (400) """
 
   # Load the device
@@ -1870,7 +1894,10 @@ def test_edit_long_chars(empty_devices_dir, testrun): # pylint: disable=W0613
   # Check if 'error' in response
   assert "error" in response
 
-def test_delete_device(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_delete_device(empty_devices_dir, add_devices, testrun): # pylint: disable=W0613
   """ Test for succesfully delete device endpoint (200) """
 
   # Load the device
@@ -1935,7 +1962,10 @@ def test_delete_device_not_found(empty_devices_dir, testrun): # pylint: disable=
   # Check if error in response
   assert "error" in response
 
-def test_delete_device_no_mac(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_delete_device_no_mac(empty_devices_dir, add_devices, testrun): # pylint: disable=W0613
   """ Test for delete device when no mac address in payload (400) """
 
   # Assign an empty payload (no mac address)
@@ -1958,8 +1988,11 @@ def test_delete_device_no_mac(empty_devices_dir, add_one_device, testrun): # pyl
   # Check that device wasn't deleted from 'local/devices'
   assert len(get_all_devices()) == 1
 
-def test_delete_device_testrun_in_progress(empty_devices_dir, add_one_device, # pylint: disable=W0613
-                                                        testrun, start_test): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_delete_device_testrun_in_progress(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                                     testrun, start_test): # pylint: disable=W0613
   """ Test for delete device when testrun is in progress (403) """
 
   # Load the device details
@@ -2994,7 +3027,10 @@ def test_delete_device_testrun_running(testing_devices, testrun): # pylint: disa
   assert r.status_code == 403
 
 @pytest.mark.skip()
-def test_stop_running_test(empty_devices_dir, add_one_device, testrun): # pylint: disable=W0613
+@pytest.mark.parametrize("add_devices", [
+  ["device_1"]
+],indirect=True)
+def test_stop_running_test(empty_devices_dir, add_devices, testrun): # pylint: disable=W0613
   """ Test for successfully stop testrun when test is running (200) """
 
   # Load the device and mac address using add_device utility method
