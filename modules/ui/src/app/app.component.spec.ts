@@ -42,16 +42,10 @@ import {
 import { Routes } from './model/routes';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { State } from '@ngrx/store';
-import { appFeatureKey } from './store/reducers';
 import { FocusManagerService } from './services/focus-manager.service';
 import { AppState } from './store/state';
+import { setIsOpenAddDevice } from './store/actions';
 import {
-  setIsOpenAddDevice,
-  toggleMenu,
-  updateFocusNavigation,
-} from './store/actions';
-import {
-  selectError,
   selectHasConnectionSettings,
   selectHasDevices,
   selectHasExpiredDevices,
@@ -62,10 +56,10 @@ import {
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
   selectIsTestingComplete,
-  selectMenuOpened,
   selectReports,
   selectRiskProfiles,
   selectStatus,
+  selectSystemConfig,
   selectSystemStatus,
 } from './store/selectors';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
@@ -94,7 +88,6 @@ describe('AppComponent', () => {
   let router: Router;
   let mockService: SpyObj<TestRunService>;
   let store: MockStore<AppState>;
-  let focusNavigation = true;
   let mockFocusManagerService: SpyObj<FocusManagerService>;
   let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
   let mockMqttService: SpyObj<TestRunMqttService>;
@@ -156,23 +149,14 @@ describe('AppComponent', () => {
         { provide: TestRunMqttService, useValue: mockMqttService },
         {
           provide: State,
-          useValue: {
-            getValue: () => ({
-              [appFeatureKey]: {
-                appComponent: {
-                  focusNavigation: focusNavigation,
-                },
-              },
-            }),
-          },
+          useValue: {},
         },
         provideMockStore({
           selectors: [
             { selector: selectInterfaces, value: {} },
             { selector: selectHasConnectionSettings, value: true },
             { selector: selectInternetConnection, value: true },
-            { selector: selectError, value: null },
-            { selector: selectMenuOpened, value: false },
+            { selector: selectSystemConfig, value: { network: {} } },
             { selector: selectHasDevices, value: false },
             { selector: selectIsAllDevicesOutdated, value: false },
             { selector: selectHasExpiredDevices, value: false },
@@ -206,6 +190,7 @@ describe('AppComponent', () => {
     router = TestBed.get(Router);
     compiled = fixture.nativeElement as HTMLElement;
     spyOn(store, 'dispatch').and.callFake(() => {});
+    component.appStore.updateSettingMissedError(null);
   });
 
   it('should create the app', () => {
@@ -397,17 +382,21 @@ describe('AppComponent', () => {
     });
 
     it('should dispatch toggleMenu action', () => {
+      spyOn(component.appStore, 'toggleMenu');
+
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
       ) as HTMLButtonElement;
 
       menuBtn.click();
 
-      expect(store.dispatch).toHaveBeenCalledWith(toggleMenu());
+      expect(component.appStore.toggleMenu).toHaveBeenCalled();
     });
 
     it('should focus navigation on tab press if menu button was clicked', () => {
-      focusNavigation = true;
+      component.appStore.updateFocusNavigation(true);
+      fixture.detectChanges();
+      spyOn(component.appStore, 'updateFocusNavigation');
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
       ) as HTMLButtonElement;
@@ -415,8 +404,8 @@ describe('AppComponent', () => {
       menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
       const navigation = compiled.querySelector('.app-sidebar');
 
-      expect(store.dispatch).toHaveBeenCalledWith(
-        updateFocusNavigation({ focusNavigation: false })
+      expect(component.appStore.updateFocusNavigation).toHaveBeenCalledWith(
+        false
       );
       expect(
         mockFocusManagerService.focusFirstElementInContainer
@@ -424,7 +413,8 @@ describe('AppComponent', () => {
     });
 
     it('should not focus navigation button on tab press if menu button was not clicked', () => {
-      focusNavigation = false;
+      component.appStore.updateFocusNavigation(false);
+      fixture.detectChanges();
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
       ) as HTMLButtonElement;
@@ -712,7 +702,7 @@ describe('AppComponent', () => {
       });
     });
 
-    describe('with devices setted, without systemStatus data, but run the tests ', () => {
+    describe('with devices setted, without systemStatus data, but run the tests', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
@@ -745,7 +735,7 @@ describe('AppComponent', () => {
     describe('error', () => {
       describe('with settingMissedError with one port is missed', () => {
         beforeEach(() => {
-          store.overrideSelector(selectError, {
+          component.appStore.updateSettingMissedError({
             isSettingMissed: true,
             devicePortMissed: true,
             internetPortMissed: false,
@@ -764,7 +754,7 @@ describe('AppComponent', () => {
 
       describe('with settingMissedError with two ports are missed', () => {
         beforeEach(() => {
-          store.overrideSelector(selectError, {
+          component.appStore.updateSettingMissedError({
             isSettingMissed: true,
             devicePortMissed: true,
             internetPortMissed: true,
@@ -783,7 +773,7 @@ describe('AppComponent', () => {
 
       describe('with no settingMissedError', () => {
         beforeEach(() => {
-          store.overrideSelector(selectError, null);
+          component.appStore.updateSettingMissedError(null);
           store.overrideSelector(selectHasDevices, true);
           fixture.detectChanges();
         });

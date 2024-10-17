@@ -28,6 +28,7 @@ import { MatIcon } from '@angular/material/icon';
       padding-right: 4px;
     }
     .icon {
+      display: flex;
       width: 16px;
       height: 16px;
       line-height: 16px;

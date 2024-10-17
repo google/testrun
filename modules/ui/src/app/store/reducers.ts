@@ -13,34 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { combineReducers, createReducer, on } from '@ngrx/store';
+import { createReducer, on } from '@ngrx/store';
 import * as Actions from './actions';
-import { initialAppComponentState, initialSharedState } from './state';
+import { initialState } from './state';
 
 export const appFeatureKey = 'app';
 
-export const appComponentReducer = createReducer(
-  initialAppComponentState,
-  on(Actions.toggleMenu, state => ({
-    ...state,
-    isMenuOpen: !state.isMenuOpen,
-  })),
-  on(Actions.fetchInterfacesSuccess, (state, { interfaces }) => ({
-    ...state,
-    interfaces,
-  })),
-  on(Actions.updateFocusNavigation, (state, { focusNavigation }) => ({
-    ...state,
-    focusNavigation,
-  })),
-  on(Actions.updateError, (state, { settingMissedError }) => ({
-    ...state,
-    settingMissedError,
-  }))
-);
-
 export const sharedReducer = createReducer(
-  initialSharedState,
+  initialState,
   on(Actions.setHasConnectionSettings, (state, { hasConnectionSettings }) => {
     return {
       ...state,
@@ -148,10 +128,15 @@ export const sharedReducer = createReducer(
       ...state,
       internetConnection,
     };
-  })
+  }),
+  on(Actions.fetchInterfacesSuccess, (state, { interfaces }) => ({
+    ...state,
+    interfaces,
+  })),
+  on(Actions.fetchSystemConfigSuccess, (state, { systemConfig }) => ({
+    ...state,
+    systemConfig,
+  }))
 );
 
-export const rootReducer = combineReducers({
-  appComponent: appComponentReducer,
-  shared: sharedReducer,
-});
+export const rootReducer = sharedReducer;
