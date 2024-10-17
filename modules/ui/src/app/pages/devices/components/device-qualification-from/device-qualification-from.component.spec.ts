@@ -51,6 +51,7 @@ import { DeviceStatus, TestingType } from '../../../../model/device';
 import { Component, Input } from '@angular/core';
 import { QuestionFormat } from '../../../../model/question';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { selectDevices } from '../../../../store/selectors';
 
 describe('DeviceQualificationFromComponent', () => {
   let component: DeviceQualificationFromComponent;
@@ -123,7 +124,9 @@ describe('DeviceQualificationFromComponent', () => {
         { provide: MAT_DIALOG_DATA, useValue: {} },
         { provide: TestRunService, useValue: testrunServiceMock },
         provideNgxMask(),
-        provideMockStore({}),
+        provideMockStore({
+          selectors: [{ selector: selectDevices, value: [device, device] }],
+        }),
       ],
     }).compileComponents();
 
