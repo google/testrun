@@ -33,52 +33,65 @@ echo $DHCP_TPID
 
 # Services Module
 
-# Start FTP service (non-compliant)
-echo "Starting FTP on ports 20, 21 (non-compliant)"
+# Start FTP service 
+echo "Starting FTP on ports 20, 21"
 nc -nvlt -p 20 &
 nc -nvlt -p 21 &
 
-# Start Telnet service (non-compliant)
-echo "Starting Telnet on port 23 (non-compliant)"
+# Start Telnet service 
+echo "Starting Telnet on port 23"
 nc -nvlt -p 23 &
 
-# Start SMTP service (non-compliant)
-echo "Starting SMTP on ports 25, 465, and 587 (non-compliant)"
+# Start SMTP service
+echo "Starting SMTP on ports 25, 465, and 587"
 nc -nvlt -p 25 &
 nc -nvlt -p 465 &
 nc -nvlt -p 587 &
 
-# Start HTTP service (non-compliant)
-echo "Starting HTTP on port 80 (non-compliant)"
+# Start HTTP service 
+echo "Starting HTTP on port 80 "
 nc -nvlt -p 80 &
 
-# Start POP service (non-compliant)
-echo "Starting POP on ports 109 and 110 (non-compliant)"
+# Start POP service 
+echo "Starting POP on ports 109 and 110 "
 nc -nvlt -p 109 &
 nc -nvlt -p 110 &
 
-# Start IMAP service (non-compliant)
-echo "Starting IMAP on port 143 (non-compliant)"
+# Start IMAP service 
+echo "Starting IMAP on port 143 "
 nc -nvlt -p 143 &
 
-# Start SSHv1 service (non-compliant)
-echo "Starting non-compliant SSHv1 service"
-echo 'Protocol 1' >> /usr/local/etc/sshd_config
-/usr/local/sbin/sshd
+# Start SSHv1 service 
+echo "Configuring SSH for Protocol 1 only"
+mkdir -p /run/sshd
+chmod 0755 /run/sshd
 
-# Start SNMPv2 service (non-compliant)
-echo "Starting SNMPv2 on ports 161/162 (non-compliant)"
+# Force only SSHv1 and disable SSHv2
+echo 'Protocol 1' > /etc/ssh/sshd_config
+echo 'Port 22' >> /etc/ssh/sshd_config
+echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
+echo 'UsePrivilegeSeparation no' >> /etc/ssh/sshd_config
+echo 'HostKey /etc/ssh/ssh_host_rsa_key' >> /etc/ssh/sshd_config
+echo 'LogLevel VERBOSE' >> /etc/ssh/sshd_config
+echo 'PermitEmptyPasswords yes' >> /etc/ssh/sshd_config
+
+# Restart SSH with Protocol 1
+echo "Restarting SSH service with Protocol 1"
+service ssh restart
+
+# Start SNMPv2 service 
+echo "Starting SNMPv2 on ports 161/162 "
 (while true; do echo -ne " \x02\x01\ " | nc -u -l -w 1 161; done) &
 
-# VNC (non-compliant) [Assumed to be disabled as you didn't specify ports]
-echo "VNC service is running (non-compliant)"
+# VNC  [Assumed to be disabled as you didn't specify ports]
+echo "VNC service is running "
 
-# Start TFTP service (non-compliant)
-echo "Starting TFTP on port 69 (non-compliant)"
+# Start TFTP service 
+echo "Starting TFTP on port 69 "
 (while true; do echo -ne "\0\x05\0\0\x07\0" | nc -u -l -w 1 69; done) &
 
-# Start NTP service (non-compliant)
-echo "Starting NTP service on port 123 (non-compliant)"
+# Start NTP service 
+echo "Starting NTP service on port 123 "
 (while true; do ntpdate -q -p 1 10.10.10.1; sleep 5; done) &
 
 # Keep network monitoring (can refactor later for other network modules)

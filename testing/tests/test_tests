@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o xtrace
+set +o xtrace
 ip a
 TEST_DIR=/tmp/results
 TESTRUN_DIR=/usr/local/testrun
@@ -59,10 +59,6 @@ sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
 TESTERS=$(jq -r 'keys[]' $MATRIX)
 for tester in $TESTERS; do
 
-  if [ -n $1 ] && [ $1 != $tester ]; then
-    continue
-  fi
-
   # Log file paths
   testrun_log=$TEST_DIR/${tester}_testrun.log
   device_log=$TEST_DIR/${tester}_device.log
@@ -71,7 +67,6 @@ for tester in $TESTERS; do
   image=$(jq -r .$tester.image $MATRIX)
   ethmac=$(jq -r .$tester.ethmac $MATRIX)
  
-
   # Start the testrun
   touch $testrun_log
   sudo timeout 900 testrun --single-intf --no-ui > $testrun_log 2>&1 &
@@ -101,14 +96,17 @@ for tester in $TESTERS; do
       exit 1
   fi
 
-  # Stop and remove any running container for this tester
-  sudo docker stop $tester && sudo docker rm $tester
+  # Check if container is running before trying to stop and remove it
+  if sudo docker ps -a --format '{{.Names}}' | grep -Eq "^${tester}\$"; then
+    sudo docker stop $tester && sudo docker rm $tester
+  fi
 
   # Ensure entrypoint.sh is executable
   sudo chmod +x ./testing/docker/ci_test_device1/compliant/entrypoint.sh
   sudo chmod +x ./testing/docker/ci_test_device1/non_compliant/entrypoint.sh
   
-  
+  echo Running container $tester
+
   # Run the test container
   sudo docker run -d \
     --network=endev0 \
@@ -137,6 +135,7 @@ for tester in $TESTERS; do
 
   sudo docker logs $tester | cat 
   sudo docker kill $tester && sudo docker rm $tester
+  echo Stopping container $tester
 
   cp $TESTRUN_DIR/runtime/test/${ethmac//:/}/report.json $TEST_DIR/$tester.json
   more $TEST_DIR/$tester.json | cat 
