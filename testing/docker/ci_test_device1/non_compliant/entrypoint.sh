@@ -17,10 +17,13 @@ function wout(){
     jq "$key+=\"$value\"" $OUT | sponge $OUT
 }
 
+# Check if the interface is up
+ip link show $INTF | grep "state UP" || echo "Warning: $INTF is not up"
 
+# Test DNS resolution
 dig @8.8.8.8 +short www.google.com
 
-# DHCP
+# DHCP setup
 ip addr flush dev $INTF
 PID_FILE=/var/run/dhclient.pid
 if [ -f $PID_FILE ]; then
@@ -61,29 +64,20 @@ nc -nvlt -p 110 &
 echo "Starting IMAP on port 143 "
 nc -nvlt -p 143 &
 
-# Start SSHv1 service 
-echo "Configuring SSH for Protocol 1 only"
-mkdir -p /run/sshd
-chmod 0755 /run/sshd
-
-# Force only SSHv1 and disable SSHv2
-echo 'Protocol 1' > /etc/ssh/sshd_config
-echo 'Port 22' >> /etc/ssh/sshd_config
-echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
-echo 'UsePrivilegeSeparation no' >> /etc/ssh/sshd_config
-echo 'HostKey /etc/ssh/ssh_host_rsa_key' >> /etc/ssh/sshd_config
-echo 'LogLevel VERBOSE' >> /etc/ssh/sshd_config
-echo 'PermitEmptyPasswords yes' >> /etc/ssh/sshd_config
-
-# Restart SSH with Protocol 1
-echo "Restarting SSH service with Protocol 1"
-service ssh restart
+# Simulate SSHv1 service on port 22 using netcat
+echo "Simulating SSHv1 service on port 22"
+while true; do
+  echo -e "SSH-1.5-OpenSSH_2.9\nProtocol mismatch.\n" | nc -l -p 22 -q 1;
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to bind to port 22 for SSHv1 simulation" >&2
+  fi
+done &
 
 # Start SNMPv2 service 
 echo "Starting SNMPv2 on ports 161/162 "
 (while true; do echo -ne " \x02\x01\ " | nc -u -l -w 1 161; done) &
 
-# VNC  [Assumed to be disabled as you didn't specify ports]
+# VNC
 echo "VNC service is running "
 
 # Start TFTP service 
