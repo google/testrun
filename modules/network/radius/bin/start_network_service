@@ -27,7 +27,7 @@ cp $CONF_DIR/ca.crt /etc/ssl/certs/ca-certificates.crt
 
 python3 -u $PYTHON_SRC_DIR/authenticator.py &
 
-#Create and set permissions on the log file
+# Create and set permissions on the log file
 touch $LOG_FILE
 chown $HOST_USER $LOG_FILE
 
