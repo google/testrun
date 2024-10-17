@@ -35,6 +35,7 @@ interface DialogData {
   testrunStatus?: TestrunStatus;
   isTestingComplete?: boolean;
   url: string | null;
+  isPilot?: boolean;
 }
 
 export enum DialogCloseAction {
@@ -122,6 +123,12 @@ export class DownloadZipModalComponent
             this.getZipLink(this.data.url),
             result.profile
           );
+          if (this.data.isPilot) {
+            // @ts-expect-error data layer is not null
+            window.dataLayer.push({
+              event: 'pilot_download_zip',
+            });
+          }
         }
       });
   }
