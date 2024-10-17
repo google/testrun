@@ -27,6 +27,8 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
 
 describe('DownloadZipModalComponent', () => {
+  // @ts-expect-error data layer should be defined
+  window.dataLayer = window.dataLayer || [];
   let component: DownloadZipModalComponent;
   let fixture: ComponentFixture<DownloadZipModalComponent>;
   let router: Router;
@@ -77,6 +79,7 @@ describe('DownloadZipModalComponent', () => {
         useValue: {
           profiles: [PROFILE_MOCK_2, PROFILE_MOCK, PROFILE_MOCK_3],
           url: 'localhost:8080',
+          isPilot: true,
         },
       });
 
@@ -163,6 +166,29 @@ describe('DownloadZipModalComponent', () => {
       expect(closeSpy).toHaveBeenCalledWith(result);
       expect(testRunServiceMock.downloadZip).toHaveBeenCalled();
       expect(router.url).not.toBe(Routes.RiskAssessment);
+      closeSpy.calls.reset();
+    });
+
+    it('should send GA event if report is for Pilot program', async () => {
+      const result = {
+        action: DialogCloseAction.Download,
+        profile: '',
+      };
+      actionBehaviorSubject$.next(result);
+      fixture.detectChanges();
+      const closeSpy = spyOn(component.dialogRef, 'close');
+      const downloadButton = fixture.nativeElement.querySelector(
+        '.download-button'
+      ) as HTMLButtonElement;
+
+      downloadButton.click();
+
+      expect(
+        // @ts-expect-error data layer should be defined
+        window.dataLayer.some(
+          (item: { event: string }) => item.event === 'pilot_download_zip'
+        )
+      ).toBeTruthy();
       closeSpy.calls.reset();
     });
 

@@ -27,6 +27,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DownloadZipModalComponent } from '../download-zip-modal/download-zip-modal.component';
 import { ReportActionComponent } from '../report-action/report-action.component';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
+import { TestingType } from '../../model/device';
 
 @Component({
   selector: 'app-download-report-zip',
@@ -56,6 +57,7 @@ export class DownloadReportZipComponent
       data: {
         profiles: this.profiles,
         url: this.url,
+        isPilot: this.data?.device.test_pack === TestingType.Pilot,
       },
       autoFocus: true,
       hasBackdrop: true,

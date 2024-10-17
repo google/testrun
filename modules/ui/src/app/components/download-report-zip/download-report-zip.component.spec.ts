@@ -65,6 +65,7 @@ describe('DownloadReportZipComponent', () => {
           data: {
             profiles: [],
             url: 'localhost:8080',
+            isPilot: false,
           },
           autoFocus: true,
           hasBackdrop: true,

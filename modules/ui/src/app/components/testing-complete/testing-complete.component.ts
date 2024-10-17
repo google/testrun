@@ -15,6 +15,7 @@ import {
 import { Profile } from '../../model/profile';
 import { TestrunStatus } from '../../model/testrun-status';
 import { FocusManagerService } from '../../services/focus-manager.service';
+import { TestingType } from '../../model/device';
 
 @Component({
   selector: 'app-testing-complete',
@@ -51,6 +52,7 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
         testrunStatus: this.data,
         isTestingComplete: true,
         url: this.data?.report,
+        isPilot: this.data?.device.test_pack === TestingType.Pilot,
       },
       autoFocus: 'first-tabbable',
       ariaDescribedBy: 'testing-result-main-info',
