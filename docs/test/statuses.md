@@ -21,6 +21,7 @@ Testrun determines whether the device needs each test to receive an overall comp
 -  Recommended: The device should implement the feature but won't receive an overall Non-Compliant if it's not implemented.
 -  Roadmap: The device should implement this feature in the future, but it's not required at the moment.
 -  Required If Applicable: If the device implements this feature, it must be implemented correctly (per the test requirements).
+-  Informational: Regardless whether the device implements the feature or not, the test will receive an Informational result.
 
 # Testrun statuses
 
