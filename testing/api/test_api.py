@@ -1217,12 +1217,12 @@ def test_export_report_not_found(empty_devices_dir, add_devices, testrun): # pyl
   # Check if the correct error message is returned
   assert "Report could not be found" in response["error"]
 
-@pytest.mark.parametrize("add_profiles", [
-  ["valid_profile.json"]
+@pytest.mark.parametrize("add_devices, add_profiles", [
+    (["device_1"], ["valid_profile.json"])
 ], indirect=True)
-def test_export_report_with_profile(empty_devices_dir, add_one_device, # pylint: disable=W0613
+def test_export_report_with_profile(empty_devices_dir, add_devices, # pylint: disable=W0613
                                   empty_profiles_dir, add_profiles, # pylint: disable=W0613
-                                       create_report_folder, testrun): # pylint: disable=W0613
+                                    create_report_folder, testrun): # pylint: disable=W0613
   """Test export results with existing profile when report exists (200)"""
 
   # Load the profile using load_json utility method
