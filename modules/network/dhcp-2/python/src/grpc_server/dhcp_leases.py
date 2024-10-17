@@ -57,8 +57,8 @@ class DHCPLeases:
   def get_leases(self):
     leases = []
     lease_list_raw = self._get_lease_list()
-    LOGGER.info('Raw Leases:\n' + str(lease_list_raw) + '\n')
-    lease_list_start = lease_list_raw.find('=========',0)
+    LOGGER.info('Raw leases:\n' + str(lease_list_raw) + '\n')
+    lease_list_start = lease_list_raw.find('=========', 0)
     lease_list_start = lease_list_raw.find('\n',lease_list_start)
     lease_list = lease_list_raw[lease_list_start+1:]
     lines = lease_list.split('\n')
@@ -66,10 +66,9 @@ class DHCPLeases:
       try:
         lease = DHCPLease(line)
         leases.append(lease)
-      except Exception as e:  # pylint: disable=W0718
+      except Exception:  # pylint: disable=W0718
         # Let non lease lines file without extra checks
-        LOGGER.error('Making Lease Error: ' + str(e))
-        LOGGER.error('Not a valid lease line: ' + line)
+        LOGGER.info('Not a valid lease line: ' + line)
     return leases
 
   def delete_lease(self, ip_addr):

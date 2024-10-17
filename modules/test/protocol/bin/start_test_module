@@ -38,9 +38,7 @@ else
 fi
 
 # Create and set permissions on the log files
-LOG_FILE=/runtime/output/$MODULE_NAME.log
 RESULT_FILE=/runtime/output/$MODULE_NAME-result.json
-touch $LOG_FILE
 touch $RESULT_FILE
 chown $HOST_USER $LOG_FILE
 chown $HOST_USER $RESULT_FILE
