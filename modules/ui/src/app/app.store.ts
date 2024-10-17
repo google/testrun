@@ -43,7 +43,7 @@ import {
   Observable,
   skip,
 } from 'rxjs';
-import { Device, TestModule } from './model/device';
+import { Device, TestingType, TestModule } from './model/device';
 import {
   setDevices,
   setIsOpenStartTestrun,
@@ -53,7 +53,7 @@ import {
   setTestModules,
   updateAdapters,
 } from './store/actions';
-import { TestrunStatus } from './model/testrun-status';
+import { StatusOfTestrun, TestrunStatus } from './model/testrun-status';
 import {
   Adapters,
   SettingMissedError,
@@ -320,6 +320,23 @@ export class AppStore extends ComponentStore<AppComponentState> {
           isSettingMissed: !deviceValid || !internetValid,
           devicePortMissed: !deviceValid,
           internetPortMissed: !internetValid,
+        });
+      })
+    );
+  });
+
+  sendGAEvent = this.effect(() => {
+    return combineLatest([this.isTestingComplete$, this.testrunStatus$]).pipe(
+      filter(([isTestingComplete]) => isTestingComplete === true),
+      filter(
+        ([, testrunStatus]) =>
+          testrunStatus?.status === StatusOfTestrun.Compliant &&
+          testrunStatus?.device.test_pack === TestingType.Pilot
+      ),
+      tap(() => {
+        // @ts-expect-error data layer is not null
+        window.dataLayer.push({
+          event: 'pilot_is_compliant',
         });
       })
     );

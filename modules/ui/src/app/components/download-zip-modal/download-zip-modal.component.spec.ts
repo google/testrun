@@ -1,6 +1,15 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  discardPeriodicTasks,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
-import { DownloadZipModalComponent } from './download-zip-modal.component';
+import {
+  DialogCloseAction,
+  DownloadZipModalComponent,
+} from './download-zip-modal.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   PROFILE_MOCK,
@@ -10,31 +19,54 @@ import {
 import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TestRunService } from '../../services/test-run.service';
+import { Routes } from '../../model/routes';
+import { Router } from '@angular/router';
+import { FocusManagerService } from '../../services/focus-manager.service';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { RouterTestingModule } from '@angular/router/testing';
+import { Component } from '@angular/core';
 
 describe('DownloadZipModalComponent', () => {
   let component: DownloadZipModalComponent;
   let fixture: ComponentFixture<DownloadZipModalComponent>;
-
-  const testRunServiceMock = jasmine.createSpyObj(['getRiskClass']);
+  let router: Router;
+  const testRunServiceMock = jasmine.createSpyObj('testRunServiceMock', [
+    'getRiskClass',
+    'downloadZip',
+  ]);
+  const focusServiceMock: jasmine.SpyObj<FocusManagerService> =
+    jasmine.createSpyObj('focusServiceMock', ['focusFirstElementInContainer']);
+  const actionBehaviorSubject$ = new BehaviorSubject({
+    action: DialogCloseAction.Close,
+  });
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DownloadZipModalComponent, NoopAnimationsModule],
+      imports: [
+        RouterTestingModule.withRoutes([
+          { path: 'risk-assessment', component: FakeRiskAssessmentComponent },
+        ]),
+        DownloadZipModalComponent,
+        NoopAnimationsModule,
+      ],
       providers: [
         {
           provide: MatDialogRef,
           useValue: {
             keydownEvents: () => of(new KeyboardEvent('keydown', { code: '' })),
             close: () => ({}),
+            beforeClosed: () => actionBehaviorSubject$.asObservable(),
           },
         },
         {
           provide: MAT_DIALOG_DATA,
           useValue: {
             profiles: [PROFILE_MOCK_2, PROFILE_MOCK],
+            url: 'localhost:8080',
           },
         },
         { provide: TestRunService, useValue: testRunServiceMock },
+        { provide: FocusManagerService, useValue: focusServiceMock },
       ],
     });
   });
@@ -44,11 +76,13 @@ describe('DownloadZipModalComponent', () => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
         useValue: {
           profiles: [PROFILE_MOCK_2, PROFILE_MOCK, PROFILE_MOCK_3],
+          url: 'localhost:8080',
         },
       });
 
       TestBed.compileComponents();
       fixture = TestBed.createComponent(DownloadZipModalComponent);
+      router = TestBed.get(Router);
       component = fixture.componentInstance;
       fixture.detectChanges();
     });
@@ -65,33 +99,60 @@ describe('DownloadZipModalComponent', () => {
       );
     });
 
-    it('should close with null on redirect button click', async () => {
+    it('should close with Redirect action on redirect button click', fakeAsync(() => {
+      const result = {
+        action: DialogCloseAction.Redirect,
+      };
+      actionBehaviorSubject$.next(result);
+      fixture.detectChanges();
+
+      fixture.ngZone?.run(() => {
+        const closeSpy = spyOn(component.dialogRef, 'close');
+        const redirectLink = fixture.nativeElement.querySelector(
+          '.redirect-link'
+        ) as HTMLAnchorElement;
+
+        redirectLink.click();
+
+        tick(2000);
+
+        expect(router.url).toBe(Routes.RiskAssessment);
+        expect(
+          focusServiceMock.focusFirstElementInContainer
+        ).toHaveBeenCalled();
+        expect(closeSpy).toHaveBeenCalledWith(result);
+
+        closeSpy.calls.reset();
+        discardPeriodicTasks();
+      });
+    }));
+
+    it('should close with Close action on cancel button click', async () => {
+      const result = {
+        action: DialogCloseAction.Close,
+      };
       const closeSpy = spyOn(component.dialogRef, 'close');
-      const redirectLink = fixture.nativeElement.querySelector(
-        '.redirect-link'
-      ) as HTMLAnchorElement;
+      actionBehaviorSubject$.next(result);
+      fixture.detectChanges();
 
-      redirectLink.click();
-
-      expect(closeSpy).toHaveBeenCalledWith(null);
-
-      closeSpy.calls.reset();
-    });
-
-    it('should close with undefined on cancel button click', async () => {
-      const closeSpy = spyOn(component.dialogRef, 'close');
       const cancelButton = fixture.nativeElement.querySelector(
         '.cancel-button'
       ) as HTMLButtonElement;
 
       cancelButton.click();
 
-      expect(closeSpy).toHaveBeenCalledWith(undefined);
+      expect(closeSpy).toHaveBeenCalledWith(result);
 
       closeSpy.calls.reset();
     });
 
-    it('should close with profile on download button click', async () => {
+    it('should close with Download action and profile on download button click', async () => {
+      const result = {
+        action: DialogCloseAction.Download,
+        profile: '',
+      };
+      actionBehaviorSubject$.next(result);
+      fixture.detectChanges();
       const closeSpy = spyOn(component.dialogRef, 'close');
       const downloadButton = fixture.nativeElement.querySelector(
         '.download-button'
@@ -99,8 +160,9 @@ describe('DownloadZipModalComponent', () => {
 
       downloadButton.click();
 
-      expect(closeSpy).toHaveBeenCalledWith('');
-
+      expect(closeSpy).toHaveBeenCalledWith(result);
+      expect(testRunServiceMock.downloadZip).toHaveBeenCalled();
+      expect(router.url).not.toBe(Routes.RiskAssessment);
       closeSpy.calls.reset();
     });
 
@@ -132,11 +194,13 @@ describe('DownloadZipModalComponent', () => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
         useValue: {
           profiles: [],
+          url: 'localhost:8080',
         },
       });
 
       TestBed.compileComponents();
       fixture = TestBed.createComponent(DownloadZipModalComponent);
+      router = TestBed.get(Router);
       component = fixture.componentInstance;
       fixture.detectChanges();
     });
@@ -147,20 +211,35 @@ describe('DownloadZipModalComponent', () => {
       expect(select.classList.contains('mat-mdc-select-disabled')).toBeTruthy();
     });
 
-    it('should close with null on redirect button click', async () => {
-      const closeSpy = spyOn(component.dialogRef, 'close');
-      const redirectLink = fixture.nativeElement.querySelector(
-        '.redirect-link'
-      ) as HTMLAnchorElement;
+    it('should close with Redirect action on redirect button click', fakeAsync(() => {
+      const result = {
+        action: DialogCloseAction.Redirect,
+      };
+      actionBehaviorSubject$.next(result);
+      fixture.detectChanges();
 
-      redirectLink.click();
+      fixture.ngZone?.run(() => {
+        const closeSpy = spyOn(component.dialogRef, 'close');
+        const redirectLink = fixture.nativeElement.querySelector(
+          '.redirect-link'
+        ) as HTMLAnchorElement;
 
-      expect(closeSpy).toHaveBeenCalledWith(null);
+        redirectLink.click();
 
-      closeSpy.calls.reset();
-    });
+        tick(2000);
 
-    it('should close with undefined on cancel button click', async () => {
+        expect(router.url).toBe(Routes.RiskAssessment);
+        expect(
+          focusServiceMock.focusFirstElementInContainer
+        ).toHaveBeenCalled();
+        expect(closeSpy).toHaveBeenCalledWith(result);
+
+        closeSpy.calls.reset();
+        discardPeriodicTasks();
+      });
+    }));
+
+    it('should close with Close action on cancel button click', async () => {
       const closeSpy = spyOn(component.dialogRef, 'close');
       const cancelButton = fixture.nativeElement.querySelector(
         '.cancel-button'
@@ -168,7 +247,9 @@ describe('DownloadZipModalComponent', () => {
 
       cancelButton.click();
 
-      expect(closeSpy).toHaveBeenCalledWith(undefined);
+      expect(closeSpy).toHaveBeenCalledWith({
+        action: DialogCloseAction.Close,
+      });
 
       closeSpy.calls.reset();
     });
@@ -181,9 +262,18 @@ describe('DownloadZipModalComponent', () => {
 
       downloadButton.click();
 
-      expect(closeSpy).toHaveBeenCalledWith('');
+      expect(closeSpy).toHaveBeenCalledWith({
+        action: DialogCloseAction.Download,
+        profile: '',
+      });
 
       closeSpy.calls.reset();
     });
   });
 });
+
+@Component({
+  selector: 'app-fake-risk-assessment-component',
+  template: '',
+})
+class FakeRiskAssessmentComponent {}

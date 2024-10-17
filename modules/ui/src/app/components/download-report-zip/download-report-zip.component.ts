@@ -19,20 +19,14 @@ import {
   HostBinding,
   HostListener,
   Input,
-  OnDestroy,
   OnInit,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Profile } from '../../model/profile';
 import { MatDialog } from '@angular/material/dialog';
-import { Subject, takeUntil, timer } from 'rxjs';
-import { Routes } from '../../model/routes';
 import { DownloadZipModalComponent } from '../download-zip-modal/download-zip-modal.component';
-import { TestRunService } from '../../services/test-run.service';
-import { Router } from '@angular/router';
 import { ReportActionComponent } from '../report-action/report-action.component';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
-import { FocusManagerService } from '../../services/focus-manager.service';
 
 @Component({
   selector: 'app-download-report-zip',
@@ -45,9 +39,8 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 })
 export class DownloadReportZipComponent
   extends ReportActionComponent
-  implements OnDestroy, OnInit
+  implements OnInit
 {
-  private destroy$: Subject<boolean> = new Subject<boolean>();
   @Input() profiles: Profile[] = [];
   @Input() url: string | null | undefined = null;
 
@@ -58,36 +51,17 @@ export class DownloadReportZipComponent
     event.preventDefault();
     event.stopPropagation();
 
-    const dialogRef = this.dialog.open(DownloadZipModalComponent, {
+    this.dialog.open(DownloadZipModalComponent, {
       ariaLabel: 'Download zip',
       data: {
         profiles: this.profiles,
+        url: this.url,
       },
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
       panelClass: 'initiate-test-run-dialog',
     });
-
-    dialogRef
-      ?.afterClosed()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(profile => {
-        if (profile === undefined) {
-          return;
-        }
-        if (profile === null) {
-          this.route.navigate([Routes.RiskAssessment]).then(() =>
-            timer(100)
-              .pipe(takeUntil(this.destroy$))
-              .subscribe(() => {
-                this.focusManagerService.focusFirstElementInContainer();
-              })
-          );
-        } else if (this.url != null) {
-          this.testrunService.downloadZip(this.getZipLink(this.url), profile);
-        }
-      });
   }
 
   @HostBinding('tabIndex')
@@ -105,11 +79,6 @@ export class DownloadReportZipComponent
     this.tooltip.hide();
   }
 
-  ngOnDestroy() {
-    this.destroy$.next(true);
-    this.destroy$.unsubscribe();
-  }
-
   ngOnInit() {
     if (this.data) {
       this.tooltip.message = `Download zip for Testrun # ${this.getTestRunId(this.data)}`;
@@ -119,15 +88,8 @@ export class DownloadReportZipComponent
   constructor(
     datePipe: DatePipe,
     public dialog: MatDialog,
-    private testrunService: TestRunService,
-    private route: Router,
-    public tooltip: MatTooltip,
-    private focusManagerService: FocusManagerService
+    public tooltip: MatTooltip
   ) {
     super(datePipe);
-  }
-
-  private getZipLink(reportURL: string): string {
-    return reportURL.replace('report', 'export');
   }
 }

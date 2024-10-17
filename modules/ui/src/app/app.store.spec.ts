@@ -52,6 +52,7 @@ import { NotificationService } from './services/notification.service';
 import { FocusManagerService } from './services/focus-manager.service';
 import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { MOCK_ADAPTERS } from './mocks/settings.mock';
+import { TestingType } from './model/device';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -481,6 +482,41 @@ describe('AppStore', () => {
           network: {
             device_intf: '',
             internet_intf: '',
+          },
+        });
+        store.refreshState();
+      });
+
+      it('should send GA event', done => {
+        // @ts-expect-error data layer should be defined
+        window.dataLayer = window.dataLayer || [];
+
+        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(() => {
+          expect(
+            // @ts-expect-error data layer should be defined
+            window.dataLayer.some(event => event.event === 'pilot_is_compliant')
+          ).toBeTrue();
+          done();
+        });
+
+        store.overrideSelector(selectIsTestingComplete, true);
+        store.overrideSelector(selectSystemStatus, {
+          status: 'Compliant',
+          mac_addr: '00:1e:42:35:73:c4',
+          device: {
+            manufacturer: 'Delta',
+            model: '03-DIN-CPU',
+            mac_addr: '00:1e:42:35:73:c4',
+            firmware: '1.2.2',
+            test_pack: TestingType.Pilot,
+          },
+          started: '2023-06-22T09:20:00.123Z',
+          finished: '2023-06-22T09:26:00.123Z',
+          report: 'https://api.testrun.io/report.pdf',
+          tags: [],
+          tests: {
+            total: 3,
+            results: [],
           },
         });
         store.refreshState();
