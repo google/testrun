@@ -15,31 +15,13 @@
  */
 import { TestrunStatus } from '../model/testrun-status';
 import { Device, TestModule } from '../model/device';
-import {
-  Adapters,
-  SettingMissedError,
-  SystemInterfaces,
-} from '../model/setting';
+import { Adapters, SystemConfig, SystemInterfaces } from '../model/setting';
 import { Profile } from '../model/profile';
 
 export interface AppState {
-  appComponent: AppComponentState;
-  shared: SharedState;
-}
-
-export interface AppComponentState {
-  isMenuOpen: boolean;
+  // app, settings
   interfaces: SystemInterfaces;
-  /**
-   * Indicates, if side menu should be focused on keyboard navigation after menu is opened
-   */
-  focusNavigation: boolean;
-  settingMissedError: SettingMissedError | null;
-  isStatusLoaded: boolean; // TODO should be updated in effect when fetch status
-  devicesLength: number; // TODO should be renamed to focusToggleSettingsBtn (true when devices.length > 0) and updated in effect when fetch device
-}
-
-export interface SharedState {
+  systemConfig: SystemConfig;
   devices: Device[];
   //used in app, devices, testrun
   hasDevices: boolean;
@@ -67,16 +49,7 @@ export interface SharedState {
   internetConnection: boolean | null;
 }
 
-export const initialAppComponentState: AppComponentState = {
-  isMenuOpen: false,
-  interfaces: {},
-  focusNavigation: false,
-  isStatusLoaded: false,
-  devicesLength: 0,
-  settingMissedError: null,
-};
-
-export const initialSharedState: SharedState = {
+export const initialState: AppState = {
   hasConnectionSettings: null,
   isOpenAddDevice: false,
   isStopTestrun: false,
@@ -96,4 +69,6 @@ export const initialSharedState: SharedState = {
   testModules: [],
   adapters: {},
   internetConnection: null,
+  interfaces: {},
+  systemConfig: { network: {} },
 };

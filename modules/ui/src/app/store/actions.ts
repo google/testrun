@@ -15,40 +15,20 @@
  */
 
 import { createAction, props } from '@ngrx/store';
-import {
-  Adapters,
-  InterfacesValidation,
-  SettingMissedError,
-  SystemConfig,
-} from '../model/setting';
+import { Adapters, InterfacesValidation, SystemConfig } from '../model/setting';
 import { SystemInterfaces } from '../model/setting';
 import { Device, TestModule } from '../model/device';
 import { TestrunStatus } from '../model/testrun-status';
 import { Profile } from '../model/profile';
-
-// App component
-export const toggleMenu = createAction('[App Component] Toggle Menu');
-
-export const fetchInterfaces = createAction('[App Component] Fetch Interfaces');
 
 export const fetchInterfacesSuccess = createAction(
   '[App Component] Fetch interfaces Success',
   props<{ interfaces: SystemInterfaces }>()
 );
 
-export const updateFocusNavigation = createAction(
-  '[App Component] update focus navigation',
-  props<{ focusNavigation: boolean }>()
-);
-
 export const updateValidInterfaces = createAction(
   '[App Component] Update Valid Interfaces',
   props<{ validInterfaces: InterfacesValidation }>()
-);
-
-export const updateError = createAction(
-  '[App Component] Update Setting Missed Error',
-  props<{ settingMissedError: SettingMissedError }>()
 );
 
 // Settings
