@@ -1,24 +1,7 @@
 {
-    "tester1": {
-        "image": "test-run/ci_test1",
-        "args": "oddservices dns_static",
+    "compliant_test": {
+        "image": "testrun/compliant",
         "ethmac": "02:42:aa:00:00:01",
-        "expected_results": {
-            "dns.network.hostname_resolution": "Non-Compliant",
-            "security.services.ftp": "Non-Compliant",
-            "security.services.tftp": "Non-Compliant",
-            "security.services.smtp": "Non-Compliant",
-            "security.services.pop": "Non-Compliant",
-            "security.services.imap": "Non-Compliant",
-            "ntp.network.ntp_support": "Non-Compliant",
-            "ntp.network.ntp_dhcp": "Non-Compliant"
-        }
-    },
-    "tester2": {
-        "description": "expected to pass most things",
-        "image": "test-run/ci_test1",
-        "args": "ntpv4_dhcp dns_dhcp",
-        "ethmac": "02:42:aa:00:00:02",
         "expected_results": {
             "security.services.ftp": "Compliant",
             "security.ssh.version": "Compliant",
@@ -30,13 +13,25 @@
             "security.services.snmpv3": "Compliant",
             "security.services.vnc": "Compliant",
             "security.services.tftp": "Compliant",
-            "ntp.network.ntp_server": "Compliant",
-            "connection.shared_address": "Compliant",
-            "connection.dhcp_address": "Compliant",
-            "connection.mac_address": "Compliant",
-            "connection.target_ping": "Compliant",
-            "connection.single_ip": "Compliant",
-            "connection.ipaddr.ip_change": "Compliant"
+            "ntp.network.ntp_server": "Compliant"
+        }
+    },
+
+    "non_compliant_test": {
+        "image": "testrun/non_compliant",
+        "ethmac": "02:42:aa:00:00:02",
+        "expected_results": {
+            "security.services.ftp": "Non-Compliant",
+            "security.ssh.version": "Non-Compliant",
+            "security.services.telnet": "Non-Compliant",
+            "security.services.smtp": "Non-Compliant",
+            "security.services.http": "Non-Compliant",
+            "security.services.pop": "Non-Compliant",
+            "security.services.imap": "Non-Compliant",
+            "security.services.snmpv3": "Non-Compliant",
+            "security.services.vnc": "Non-Compliant",
+            "security.services.tftp": "Non-Compliant",
+            "ntp.network.ntp_server": "Non-Compliant"
         }
     }
     

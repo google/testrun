@@ -19,6 +19,8 @@ ip a
 TEST_DIR=/tmp/results
 TESTRUN_DIR=/usr/local/testrun
 MATRIX=testing/tests/test_tests.json
+COMPLIANT_IMAGE="testrun/compliant"
+NON_COMPLIANT_IMAGE="testrun/non_compliant"
 
 rm -rf $TEST_DIR/
 mkdir -p $TEST_DIR
@@ -41,7 +43,11 @@ sudo docker network create -d macvlan -o parent=endev0b endev0
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 # Build Test Container
-sudo docker build ./testing/docker/ci_test_device1 -t ci_test_device1 -f  ./testing/docker/ci_test_device1/Dockerfile
+# sudo docker build ./testing/docker/ci_test_device1 -t ci_test_device1 -f  ./testing/docker/ci_test_device1/Dockerfile
+
+# Build the Test Containers (Compliant and Non-Compliant)
+sudo docker build ./testing/docker/ci_test_device1/compliant -t $COMPLIANT_IMAGE -f ./testing/docker/ci_test_device1/compliant/Dockerfile
+sudo docker build ./testing/docker/ci_test_device1/non_compliant -t $NON_COMPLIANT_IMAGE -f ./testing/docker/ci_test_device1/non_compliant/Dockerfile
 
 # Copy configuration to testrun
 sudo cp testing/tests/system.json $TESTRUN_DIR/local/system.json
@@ -49,18 +55,24 @@ sudo cp testing/tests/system.json $TESTRUN_DIR/local/system.json
 # Copy device configs to testrun
 sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
 
+# Extract tester information from the JSON file
 TESTERS=$(jq -r 'keys[]' $MATRIX)
 for tester in $TESTERS; do
+
   if [ -n $1 ] && [ $1 != $tester ]; then
     continue
   fi
+
+  # Log file paths
   testrun_log=$TEST_DIR/${tester}_testrun.log
   device_log=$TEST_DIR/${tester}_device.log
 
+  # Extract details from JSON
   image=$(jq -r .$tester.image $MATRIX)
   ethmac=$(jq -r .$tester.ethmac $MATRIX)
-  args=$(jq -r .$tester.args $MATRIX)
+ 
 
+  # Start the testrun
   touch $testrun_log
   sudo timeout 900 testrun --single-intf --no-ui > $testrun_log 2>&1 &
   TPID=$!
@@ -76,7 +88,7 @@ for tester in $TESTERS; do
 
       if [[ ! -d /proc/$TPID ]]; then
           cat $testrun_log
-          echo "Error encountered starting test run"
+          echo "Error encountered starting testrun"
           exit 1
       fi
     
@@ -89,10 +101,15 @@ for tester in $TESTERS; do
       exit 1
   fi
 
-  # helps unclean exits when running locally
+  # Stop and remove any running container for this tester
   sudo docker stop $tester && sudo docker rm $tester
+
+  # Ensure entrypoint.sh is executable
+  sudo chmod +x ./testing/docker/ci_test_device1/compliant/entrypoint.sh
+  sudo chmod +x ./testing/docker/ci_test_device1/non_compliant/entrypoint.sh
   
-  # Load Test Container
+  
+  # Run the test container
   sudo docker run -d \
     --network=endev0 \
     --mac-address=$ethmac \
@@ -100,8 +117,9 @@ for tester in $TESTERS; do
     -v /tmp:/out \
     --privileged \
     --name=$tester \
-    ci_test_device1 $args
+    $image
   
+  # Wait for test completion
   WAITING=600
   for i in `seq 1 $WAITING`; do
     tail -1 $testrun_log
@@ -117,13 +135,6 @@ for tester in $TESTERS; do
       sleep 1
     done
 
-
-  # Following line indicates that tests are completed but wait till it exits
-  # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
-  # Change this line! - LOGGER.info(f"""Completed running test modules on device
-  #          with mac addr {device.mac_addr}""")
-
-  #more runtime/network/*.log | cat 
   sudo docker logs $tester | cat 
   sudo docker kill $tester && sudo docker rm $tester
 

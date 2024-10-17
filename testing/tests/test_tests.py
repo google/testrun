@@ -29,33 +29,31 @@ TEST_MATRIX = 'test_tests.json'
 RESULTS_PATH = '/tmp/results/*.json'
 
 
-#TODO add reason
+# Define an immutable data class to store test results
 @dataclass(frozen=True)
 class TestResult:
+  # Test name
   name: str
+  # Test result
   result: str
+  # Disable pytest to avoid recognising the class as a test
   __test__ = False
-
-
-def collect_expected_results(expected_results):
-  """ Yields results from expected_results property of the test matrix"""
-  for name, result in expected_results.items():
-    yield TestResult(name, result)
-
-
-def collect_actual_results(results_dict):
-  """ Yields results from an already loaded testrun results file """
-  # "module"."results".[list]."result"
-  for test in results_dict.get('tests', {}).get('results', []):
-    yield TestResult(test['name'], test['result'])
-
 
 @pytest.fixture
 def test_matrix():
+  """ Load the test test_tests.json file """
   basedir = os.path.dirname(os.path.abspath(__file__))
   with open(os.path.join(basedir, TEST_MATRIX), encoding='utf-8') as f:
     return json.load(f)
 
+def collect_expected_results(expected_results):
+  """ Collect the expected results from test_matrix fixture """
+
+  # Iterate over the expected test results
+  for name, result in expected_results.items():
+
+    # Create a TestResult object for each test
+    yield TestResult(name, result)
 
 @pytest.fixture
 def results():
@@ -65,14 +63,32 @@ def results():
       results[file.stem] = json.load(f)
   return results
 
+def collect_actual_results(results_dict):
+  """ Collect actual results from loaded testrun results file """
+
+  # Iterate over the 'results'
+  for test in results_dict.get('tests', {}).get('results', []):
+
+    # Create a TestResult object for each test
+    yield TestResult(test['name'], test['result'])
 
 def test_tests(results, test_matrix):
   """ Check if each testers expect results were obtained """
   for tester, props in test_matrix.items():
     expected = set(collect_expected_results(props['expected_results']))
     actual = set(collect_actual_results(results[tester]))
-    assert expected & actual == expected
 
+    missing_in_actual = expected - actual
+    extra_in_actual = actual - expected
+
+    print(f'\nTester: {tester}')
+
+    if missing_in_actual:
+      print(f'Missing in actual results: {missing_in_actual}')
+    if extra_in_actual:
+      print(f'Extra in actual results: {extra_in_actual}')
+
+    assert expected & actual == expected
 
 def test_list_tests(capsys, results, test_matrix):
   all_tests = set(

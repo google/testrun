@@ -1,27 +1,52 @@
-{
+{ 
+  "mac_addr": "02:42:aa:00:00:01",
   "manufacturer": "Google",
   "model": "Tester 1",
-  "mac_addr": "02:42:aa:00:00:01",
+  "type": "IoT Gateway",
+  "technology": "Hardware - Access Control",
+  "additional_info": [
+    {
+      "question": "What type of device is this?",
+      "answer": "IoT Gateway"
+    },
+    {
+      "question": "Please select the technology this device falls into",
+      "answer": "Hardware - Access Control"
+    },
+    {
+      "question": "Does your device process any sensitive information?",
+      "answer": "Yes"
+    },
+    {
+      "question": "Can all non-essential services be disabled on your device?",
+      "answer": "Yes"
+    },
+    {
+      "question": "Is there a second IP port on the device?",
+      "answer": "Yes"
+    },
+    {
+      "question": "Can the second IP port on your device be disabled?",
+      "answer": "Yes"
+    }
+  ],
   "test_modules": {
-    "dns": {
+    "protocol": {
+      "enabled": false
+    },
+    "services": {
       "enabled": true
+    },
+    "ntp": {
+      "enabled": false
+    },
+    "tls": {
+      "enabled": false
     },
     "connection": {
       "enabled": false
     },
-    "ntp": {
-      "enabled": true
-    },
-    "baseline": {
-      "enabled": true
-    },
-    "nmap": {
-      "enabled": true
-    },
-    "protocol": {
-      "enabled": false
-    },
-    "tls": {
+    "dns": {
       "enabled": false
     }
   } 
