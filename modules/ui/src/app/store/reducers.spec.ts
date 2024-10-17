@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 import * as fromReducer from './reducers';
-import { initialAppComponentState, initialSharedState } from './state';
+import { initialState as initialAppState } from './state';
 import {
   fetchInterfacesSuccess,
+  fetchSystemConfigSuccess,
   setDeviceInProgress,
   setDevices,
   setHasConnectionSettings,
@@ -33,10 +34,7 @@ import {
   setStatus,
   setTestModules,
   setTestrunStatus,
-  toggleMenu,
   updateAdapters,
-  updateError,
-  updateFocusNavigation,
   updateInternetConnection,
 } from './actions';
 import { device, MOCK_TEST_MODULES } from '../mocks/device.mock';
@@ -48,11 +46,11 @@ import { MOCK_ADAPTERS } from '../mocks/settings.mock';
 describe('Reducer', () => {
   describe('unknown action', () => {
     it('should return the default state', () => {
-      const initialState = initialAppComponentState;
+      const initialState = initialAppState;
       const action = {
         type: 'Unknown',
       };
-      const state = fromReducer.appComponentReducer(initialState, action);
+      const state = fromReducer.rootReducer(initialState, action);
 
       expect(state).toBe(initialState);
     });
@@ -60,13 +58,13 @@ describe('Reducer', () => {
 
   describe('fetchInterfacesSuccess action', () => {
     it('should update state', () => {
-      const initialState = initialAppComponentState;
+      const initialState = initialAppState;
       const newInterfaces = {
         enx00e04c020fa8: '00:e0:4c:02:0f:a8',
         enx207bd26205e9: '20:7b:d2:62:05:e9',
       };
       const action = fetchInterfacesSuccess({ interfaces: newInterfaces });
-      const state = fromReducer.appComponentReducer(initialState, action);
+      const state = fromReducer.rootReducer(initialState, action);
 
       const newState = { ...initialState, ...{ interfaces: newInterfaces } };
       expect(state).toEqual(newState);
@@ -74,33 +72,9 @@ describe('Reducer', () => {
     });
   });
 
-  describe('updateFocusNavigation action', () => {
-    it('should update state', () => {
-      const initialState = initialAppComponentState;
-      const action = updateFocusNavigation({ focusNavigation: true });
-      const state = fromReducer.appComponentReducer(initialState, action);
-
-      const newState = { ...initialState, ...{ focusNavigation: true } };
-      expect(state).toEqual(newState);
-      expect(state).not.toBe(initialState);
-    });
-  });
-
-  describe('toggleMenu action', () => {
-    it('should update state', () => {
-      const initialState = initialAppComponentState;
-      const action = toggleMenu();
-      const state = fromReducer.appComponentReducer(initialState, action);
-
-      const newState = { ...initialState, ...{ isMenuOpen: true } };
-      expect(state).toEqual(newState);
-      expect(state).not.toBe(initialState);
-    });
-  });
-
   describe('setHasConnectionSettings action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setHasConnectionSettings({ hasConnectionSettings: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ hasConnectionSettings: true } };
@@ -110,31 +84,9 @@ describe('Reducer', () => {
     });
   });
 
-  describe('updateError action', () => {
-    it('should update state', () => {
-      const mockSettingMissedError = {
-        isSettingMissed: true,
-        devicePortMissed: true,
-        internetPortMissed: true,
-      };
-      const initialState = initialAppComponentState;
-      const action = updateError({
-        settingMissedError: mockSettingMissedError,
-      });
-      const state = fromReducer.appComponentReducer(initialState, action);
-      const newState = {
-        ...initialState,
-        ...{ settingMissedError: mockSettingMissedError },
-      };
-
-      expect(state).toEqual(newState);
-      expect(state).not.toBe(initialState);
-    });
-  });
-
   describe('setIsOpenAddDevice action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setIsOpenAddDevice({ isOpenAddDevice: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ isOpenAddDevice: true } };
@@ -146,7 +98,7 @@ describe('Reducer', () => {
 
   describe('setIsOpenWaitSnackBar action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setIsOpenWaitSnackBar({ isOpenWaitSnackBar: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ isOpenWaitSnackBar: true } };
@@ -158,7 +110,7 @@ describe('Reducer', () => {
 
   describe('setHasDevices action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setHasDevices({ hasDevices: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ hasDevices: true } };
@@ -170,7 +122,7 @@ describe('Reducer', () => {
 
   describe('setHasExpiredDevices action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setHasExpiredDevices({ hasExpiredDevices: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ hasExpiredDevices: true } };
@@ -182,7 +134,7 @@ describe('Reducer', () => {
 
   describe('setIsAllDevicesOutdated action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setIsAllDevicesOutdated({ isAllDevicesOutdated: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ isAllDevicesOutdated: true } };
@@ -194,7 +146,7 @@ describe('Reducer', () => {
 
   describe('setDevices action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const devices = [device, device];
       const action = setDevices({ devices });
       const state = fromReducer.sharedReducer(initialState, action);
@@ -207,7 +159,7 @@ describe('Reducer', () => {
 
   describe('setHasRiskProfiles action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setHasRiskProfiles({ hasRiskProfiles: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ hasRiskProfiles: true } };
@@ -219,7 +171,7 @@ describe('Reducer', () => {
 
   describe('setRiskProfiles action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const riskProfiles = [PROFILE_MOCK];
       const action = setRiskProfiles({ riskProfiles });
       const state = fromReducer.sharedReducer(initialState, action);
@@ -232,7 +184,7 @@ describe('Reducer', () => {
 
   describe('setDeviceInProgress action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const deviceInProgress = device;
       const action = setDeviceInProgress({ device: deviceInProgress });
       const state = fromReducer.sharedReducer(initialState, action);
@@ -248,7 +200,7 @@ describe('Reducer', () => {
 
   describe('setTestrunStatus action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setTestrunStatus({
         systemStatus: MOCK_PROGRESS_DATA_CANCELLING,
       });
@@ -265,7 +217,7 @@ describe('Reducer', () => {
 
   describe('setIsTestingComplete action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setIsTestingComplete({
         isTestingComplete: true,
       });
@@ -282,7 +234,7 @@ describe('Reducer', () => {
 
   describe('setIsOpenStartTestrun action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setIsOpenStartTestrun({ isOpenStartTestrun: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ isOpenStartTestrun: true } };
@@ -294,7 +246,7 @@ describe('Reducer', () => {
 
   describe('setStatus action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setStatus({
         status: MOCK_PROGRESS_DATA_CANCELLING.status,
       });
@@ -311,7 +263,7 @@ describe('Reducer', () => {
 
   describe('setReports action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setReports({
         reports: HISTORY,
       });
@@ -328,7 +280,7 @@ describe('Reducer', () => {
 
   describe('setTestModules action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = setTestModules({
         testModules: MOCK_TEST_MODULES,
       });
@@ -345,7 +297,7 @@ describe('Reducer', () => {
 
   describe('updateAdapters action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = updateAdapters({
         adapters: MOCK_ADAPTERS,
       });
@@ -362,11 +314,29 @@ describe('Reducer', () => {
 
   describe('updateInternetConnection action', () => {
     it('should update state', () => {
-      const initialState = initialSharedState;
+      const initialState = initialAppState;
       const action = updateInternetConnection({ internetConnection: true });
       const state = fromReducer.sharedReducer(initialState, action);
       const newState = { ...initialState, ...{ internetConnection: true } };
 
+      expect(state).toEqual(newState);
+      expect(state).not.toBe(initialState);
+    });
+  });
+
+  describe('fetchSystemConfigSuccess action', () => {
+    it('should update state', () => {
+      const initialState = initialAppState;
+
+      const action = fetchSystemConfigSuccess({
+        systemConfig: { network: {} },
+      });
+      const state = fromReducer.rootReducer(initialState, action);
+
+      const newState = {
+        ...initialState,
+        ...{ systemConfig: { network: {} } },
+      };
       expect(state).toEqual(newState);
       expect(state).not.toBe(initialState);
     });

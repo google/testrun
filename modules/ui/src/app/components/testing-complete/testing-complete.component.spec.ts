@@ -6,25 +6,25 @@ import {
 } from '@angular/core/testing';
 
 import { TestingCompleteComponent } from './testing-complete.component';
-import { TestRunService } from '../../services/test-run.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
 import { of } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
-import { DownloadZipModalComponent } from '../download-zip-modal/download-zip-modal.component';
-import { Routes } from '../../model/routes';
+import {
+  DialogCloseAction,
+  DownloadZipModalComponent,
+} from '../download-zip-modal/download-zip-modal.component';
+import { FocusManagerService } from '../../services/focus-manager.service';
 
 describe('TestingCompleteComponent', () => {
   let component: TestingCompleteComponent;
   let fixture: ComponentFixture<TestingCompleteComponent>;
-  let router: Router;
-
-  const testrunServiceMock: jasmine.SpyObj<TestRunService> =
-    jasmine.createSpyObj('testrunServiceMock', ['downloadZip']);
-
+  const mockFocusManagerService = jasmine.createSpyObj(
+    'mockFocusManagerService',
+    ['focusFirstElementInContainer']
+  );
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
@@ -34,12 +34,13 @@ describe('TestingCompleteComponent', () => {
         TestingCompleteComponent,
         BrowserAnimationsModule,
       ],
-      providers: [{ provide: TestRunService, useValue: testrunServiceMock }],
+      providers: [
+        { provide: FocusManagerService, useValue: mockFocusManagerService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestingCompleteComponent);
     component = fixture.componentInstance;
-    router = TestBed.get(Router);
     component.data = MOCK_PROGRESS_DATA_COMPLIANT;
     fixture.detectChanges();
   });
@@ -49,16 +50,13 @@ describe('TestingCompleteComponent', () => {
   });
 
   describe('#onInit', () => {
-    beforeEach(() => {
-      testrunServiceMock.downloadZip.calls.reset();
-    });
-
-    it('should call downloadZip on service if profile is a string', fakeAsync(() => {
+    it('should focus first element in container when dialog closes with Close action', fakeAsync(() => {
       const openSpy = spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of(''),
+        afterClosed: () => of({ action: DialogCloseAction.Close }),
       } as MatDialogRef<typeof DownloadZipModalComponent>);
 
       component.ngOnInit();
+
       tick(1000);
 
       expect(openSpy).toHaveBeenCalledWith(DownloadZipModalComponent, {
@@ -67,6 +65,8 @@ describe('TestingCompleteComponent', () => {
           profiles: [],
           testrunStatus: MOCK_PROGRESS_DATA_COMPLIANT,
           isTestingComplete: true,
+          url: 'https://api.testrun.io/report.pdf',
+          isPilot: false,
         },
         autoFocus: 'first-tabbable',
         ariaDescribedBy: 'testing-result-main-info',
@@ -75,10 +75,11 @@ describe('TestingCompleteComponent', () => {
         panelClass: 'initiate-test-run-dialog',
       });
 
-      tick();
+      tick(1000);
 
-      expect(testrunServiceMock.downloadZip).toHaveBeenCalled();
-      expect(router.url).not.toBe(Routes.RiskAssessment);
+      expect(
+        mockFocusManagerService.focusFirstElementInContainer
+      ).toHaveBeenCalled();
       openSpy.calls.reset();
     }));
   });

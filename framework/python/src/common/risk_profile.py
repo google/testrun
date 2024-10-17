@@ -22,6 +22,7 @@ import json
 import os
 from jinja2 import Template
 from copy import deepcopy
+import math
 
 PROFILES_PATH = 'local/risk_profiles'
 LOGGER = logger.get_logger('risk_profile')
@@ -366,7 +367,25 @@ class RiskProfile():
                                 )
 
   def _generate_report_pages(self):
-    max_page_height = 350
+
+    # Text block heght
+    block_height = 18
+    # Table row padding
+    block_padding = 30
+    # Margin bottom list answer
+    margin_list = 14
+    # margin after table row
+    margin_row = 8
+
+    height_first_page = 760
+    height_page = 980
+
+    # Average text block width in characters
+    # for a 14px font size (average width of one character is 8px).
+    letters_in_line_str = 38
+    letters_in_line_q = 40
+    letters_in_line_list = 36
+
     height = 0
     pages = []
     current_page = []
@@ -377,46 +396,54 @@ class RiskProfile():
 
     for question in questions:
 
-      if height > max_page_height:
-        pages.append(current_page)
-        height = 0
-        current_page = []
-
       page_item = deepcopy(question)
+      answer_height = 0
 
+      # Question height calculation
+      question_height = math.ceil(len(page_item['question'])
+                                   / letters_in_line_q
+                                   ) * block_height
+      question_height += block_padding + margin_row
       if isinstance(page_item['answer'], str):
-
-        if len(page_item['answer']) > 400:
-          height += 160
-        elif len(page_item['answer']) > 300:
-          height += 140
-        elif len(page_item['answer']) > 200:
-          height += 120
-        elif len(page_item['answer']) > 100:
-          height += 70
-        else:
-          height += 53
-
-      # Select multiple answers
-      elif isinstance(page_item['answer'], list):
+        # Answer height for string
+        answer_height = math.ceil(len(page_item['answer'])
+                                   / letters_in_line_str
+                                   ) * block_height
+        answer_height += block_padding + margin_row
+      else:
         text_answers = []
-
         options = self._get_format_question(
           question=page_item['question'],
           profile_format=self._profile_format)['options']
-
         options_dict = dict(enumerate(options))
-
         for answer_index in page_item['answer']:
           height += 40
           text_answers.append(options_dict[answer_index]['text'])
         page_item['answer'] = text_answers
+        # Answer height for list
+        for answer in options:
+          answer_height += math.ceil(len(answer)
+                                     / letters_in_line_list
+                                     ) * block_height
+        answer_height += block_padding + margin_row + margin_list
       page_item['index'] = index
+      row_height = max(question_height, answer_height)
+
+      if (
+        (len(pages) == 0 and row_height + height > height_first_page)
+        or (len(pages) > 0 and row_height + height > height_page)
+        ):
+        pages.append(current_page)
+        height = 0
+        current_page = [page_item]
+      else:
+        height += row_height
+        current_page.append(page_item)
       index += 1
-      current_page.append(page_item)
     pages.append(current_page)
 
     return pages
+
 
   def to_pdf(self, device):
     """Returns the current risk profile in PDF format"""

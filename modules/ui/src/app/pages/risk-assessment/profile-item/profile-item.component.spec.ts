@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
 import { ProfileItemComponent } from './profile-item.component';
 import {
@@ -96,6 +101,32 @@ describe('ProfileItemComponent', () => {
     profileName.click();
 
     expect(profileClickedSpy).toHaveBeenCalledWith(PROFILE_MOCK);
+  });
+
+  it('should change tooltip on focusout', fakeAsync(() => {
+    component.profile = EXPIRED_PROFILE_MOCK;
+    fixture.detectChanges();
+
+    fixture.nativeElement.dispatchEvent(new Event('focusout'));
+    tick();
+
+    expect(component.tooltip.message).toEqual(
+      'Expired. Please, create a new Risk profile.'
+    );
+  }));
+
+  it('#getRiskClass should call getRiskClass on testRunService', () => {
+    const MOCK_RISK = 'mock value';
+    component.getRiskClass(MOCK_RISK);
+    expect(testRunServiceMock.getRiskClass).toHaveBeenCalledWith(MOCK_RISK);
+  });
+
+  it('#enterProfileItem should emit profileClicked', () => {
+    const profileClickedSpy = spyOn(component.profileClicked, 'emit');
+
+    component.enterProfileItem(PROFILE_MOCK);
+
+    expect(profileClickedSpy).toHaveBeenCalled();
   });
 
   describe('with Expired profile', () => {
