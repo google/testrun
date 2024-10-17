@@ -40,7 +40,6 @@ fi
 # Create and set permissions on the log files
 RESULT_FILE=/runtime/output/$MODULE_NAME-result.json
 touch $RESULT_FILE
-chown $HOST_USER $LOG_FILE
 chown $HOST_USER $RESULT_FILE
 
 # Run the python script that will execute the tests for this module
