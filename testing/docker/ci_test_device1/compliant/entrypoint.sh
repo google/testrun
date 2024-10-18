@@ -31,7 +31,7 @@ dhclient -v $INTF
 DHCP_TPID=$!
 echo $DHCP_TPID
 
-# Services Module
+# SERVICES MODULE
 
 # No FTP, SSH, Telnet, SMTP, HTTP, POP, IMAP services
 echo "FTP, SSH, Telnet, SMTP, HTTP, POP, IMAP, SNMP, VNC, TFTP, NTP services not running"

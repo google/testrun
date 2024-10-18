@@ -5,7 +5,7 @@ ip a
 
 # Set paths and servers
 OUT=/out/testrun_ci.json
-NTP_SERVER=10.10.10.5
+NTP_SERVER=invalid.ntp.server
 DNS_SERVER=10.10.10.4
 INTF=eth0
 
@@ -34,7 +34,7 @@ dhclient -v $INTF
 DHCP_TPID=$!
 echo $DHCP_TPID
 
-# Services Module
+# SERVICES MODULE
 
 # Start FTP service 
 echo "Starting FTP on ports 20, 21"
@@ -64,31 +64,22 @@ nc -nvlt -p 110 &
 echo "Starting IMAP on port 143 "
 nc -nvlt -p 143 &
 
-# Simulate SSHv1 service on port 22 using netcat
-echo "Simulating SSHv1 service on port 22"
-while true; do
-  echo -e "SSH-1.5-OpenSSH_2.9\nProtocol mismatch.\n" | sudo nc -l -p 22 -q 1;
-  if [ $? -ne 0 ]; then
-    echo "Error: Failed to bind to port 22" >&2
-  fi
-done &
-
 # Start SNMPv2 service 
 echo "Starting SNMPv2 on ports 161/162 "
 (while true; do echo -ne " \x02\x01\ " | nc -u -l -w 1 161; done) &
-
-# VNC
-echo "VNC service is running "
 
 # Start TFTP service 
 echo "Starting TFTP on port 69 "
 (while true; do echo -ne "\0\x05\0\0\x07\0" | nc -u -l -w 1 69; done) &
 
-# Start NTP service 
-echo "Starting NTP service on port 123 "
-(while true; do ntpdate -q -p 1 10.10.10.1; sleep 5; done) &
+# Misconfigure NTP to be non-compliant for network module
+echo "server $NTP_SERVER" > /etc/ntp.conf
 
-# Keep network monitoring (can refactor later for other network modules)
+# Start NTP service 
+echo "Starting NTP service"
+service ntp start
+
+# Keep network monitoring
 (while true; do arping 10.10.10.1; sleep 10; done) &
 (while true; do ip a | cat; sleep 10; done) &
 

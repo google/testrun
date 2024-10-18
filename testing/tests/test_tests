@@ -22,6 +22,7 @@ MATRIX=testing/tests/test_tests.json
 COMPLIANT_IMAGE="testrun/compliant"
 NON_COMPLIANT_IMAGE="testrun/non_compliant"
 
+# Remove and recreate results directory
 rm -rf $TEST_DIR/
 mkdir -p $TEST_DIR
 

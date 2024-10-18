@@ -3,6 +3,10 @@
         "image": "testrun/compliant",
         "ethmac": "02:42:aa:00:00:01",
         "expected_results": {
+            "protocol.valid_bacnet": "Feature Not Detected",
+            "protocol.bacnet.version": "Feature Not Detected",
+            "protocol.valid_modbus": "Feature Not Detected",
+
             "security.services.ftp": "Compliant",
             "security.ssh.version": "Compliant",
             "security.services.telnet": "Compliant",
@@ -13,7 +17,39 @@
             "security.services.snmpv3": "Compliant",
             "security.services.vnc": "Compliant",
             "security.services.tftp": "Compliant",
-            "ntp.network.ntp_server": "Compliant"
+            "ntp.network.ntp_server": "Compliant",
+
+            "connection.port_link": "Error",
+            "connection.port_speed": "Non-Compliant",
+            "connection.port_duplex": "Non-Compliant",
+            "connection.switch.arp_inspection": "Non-Compliant",
+            "connection.switch.dhcp_snooping": "Compliant",
+            "connection.dhcp_address": "Compliant",
+            "connection.mac_address": "Compliant",
+            "connection.mac_oui": "Non-Compliant",
+            "connection.private_address": "Compliant",
+            "connection.shared_address": "Compliant",
+            "connection.dhcp_disconnect": "Error",
+            "connection.dhcp_disconnect_ip_change": "Error",
+            "connection.single_ip": "Compliant",
+            "connection.target_ping": "Compliant",
+            "connection.ipaddr.ip_change": "Compliant",
+            "connection.ipaddr.dhcp_failover": "Compliant",
+            "connection.ipv6_slaac": "Non-Compliant",
+            "connection.ipv6_ping": "Non-Compliant",
+
+            "security.tls.v1_0_client": "Feature Not Detected",
+            "security.tls.v1_2_server": "Error",
+            "security.tls.v1_2_client": "Feature Not Detected",
+            "security.tls.v1_3_server": "Error",
+            "security.tls.v1_3_client": "Feature Not Detected",
+
+            "ntp.network.ntp_support": "Non-Compliant",
+            "ntp.network.ntp_dhcp": "Feature Not Detected",
+
+            "dns.network.hostname_resolution": "Non-Compliant",
+            "dns.network.from_dhcp": "Informational",
+            "dns.mdns": "Informational"
         }
     },
 
@@ -21,17 +57,51 @@
         "image": "testrun/non_compliant",
         "ethmac": "02:42:aa:00:00:02",
         "expected_results": {
+            "protocol.valid_bacnet": "Feature Not Detected",
+            "protocol.bacnet.version": "Feature Not Detected",
+            "protocol.valid_modbus": "Feature Not Detected",
+
             "security.services.ftp": "Non-Compliant",
-            "security.ssh.version": "Non-Compliant",
             "security.services.telnet": "Non-Compliant",
             "security.services.smtp": "Non-Compliant",
             "security.services.http": "Non-Compliant",
             "security.services.pop": "Non-Compliant",
             "security.services.imap": "Non-Compliant",
             "security.services.snmpv3": "Non-Compliant",
-            "security.services.vnc": "Non-Compliant",
             "security.services.tftp": "Non-Compliant",
-            "ntp.network.ntp_server": "Non-Compliant"
+            "ntp.network.ntp_server": "Non-Compliant",
+
+            "connection.port_link": "Error",
+            "connection.port_speed": "Non-Compliant",
+            "connection.port_duplex": "Non-Compliant",
+            "connection.switch.arp_inspection": "Non-Compliant",
+            "connection.switch.dhcp_snooping": "Compliant",
+            "connection.dhcp_address": "Compliant",
+            "connection.mac_address": "Compliant",
+            "connection.mac_oui": "Non-Compliant",
+            "connection.private_address": "Compliant",
+            "connection.shared_address": "Compliant",
+            "connection.dhcp_disconnect": "Error",
+            "connection.dhcp_disconnect_ip_change": "Error",
+            "connection.single_ip": "Compliant",
+            "connection.target_ping": "Compliant",
+            "connection.ipaddr.ip_change": "Compliant",
+            "connection.ipaddr.dhcp_failover": "Compliant",
+            "connection.ipv6_slaac": "Non-Compliant",
+            "connection.ipv6_ping": "Non-Compliant",
+
+            "security.tls.v1_0_client": "Feature Not Detected",
+            "security.tls.v1_2_server": "Error",
+            "security.tls.v1_2_client": "Feature Not Detected",
+            "security.tls.v1_3_server": "Error",
+            "security.tls.v1_3_client": "Feature Not Detected",
+
+            "ntp.network.ntp_support": "Compliant",
+            "ntp.network.ntp_dhcp": "Compliant",
+
+            "dns.network.hostname_resolution": "Non-Compliant",
+            "dns.network.from_dhcp": "Informational",
+            "dns.mdns": "Informational"
         }
     }
     
