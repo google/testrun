@@ -96,10 +96,6 @@ for tester in $TESTERS; do
     sudo docker stop $tester && sudo docker rm $tester
   fi
 
-  # # Ensure entrypoint.sh is executable
-  # sudo chmod +x ./testing/docker/ci_test_device1/compliant/entrypoint.sh
-  # sudo chmod +x ./testing/docker/ci_test_device1/non_compliant/entrypoint.sh
-  
   echo Running container $tester
 
   # Run the test container
