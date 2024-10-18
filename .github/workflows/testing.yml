@@ -21,7 +21,7 @@ jobs:
         run: cmd/prepare
       - name: Install Testrun
         shell: bash {0}
-        run: . cmd/install
+        run: TESTRUN_DIR=. cmd/install
         timeout-minutes: 30
       - name: Run tests
         shell: bash {0}
