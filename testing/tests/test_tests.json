@@ -1,25 +1,9 @@
 {
-    "tester1": {
-        "image": "test-run/ci_test1",
-        "args": "oddservices dns_static",
-        "ethmac": "02:42:aa:00:00:01",
+    "tester4": {
+        "description": "Expected to pass every test",
+        "ethmac": "60:70:6c:00:00:04",
         "expected_results": {
-            "dns.network.hostname_resolution": "Non-Compliant",
-            "security.services.ftp": "Non-Compliant",
-            "security.services.tftp": "Non-Compliant",
-            "security.services.smtp": "Non-Compliant",
-            "security.services.pop": "Non-Compliant",
-            "security.services.imap": "Non-Compliant",
-            "ntp.network.ntp_support": "Non-Compliant",
-            "ntp.network.ntp_dhcp": "Non-Compliant"
-        }
-    },
-    "tester2": {
-        "description": "expected to pass most things",
-        "image": "test-run/ci_test1",
-        "args": "ntpv4_dhcp dns_dhcp",
-        "ethmac": "02:42:aa:00:00:02",
-        "expected_results": {
+            "dns.network.hostname_resolution": "Compliant",
             "security.services.ftp": "Compliant",
             "security.ssh.version": "Compliant",
             "security.services.telnet": "Compliant",
@@ -36,8 +20,55 @@
             "connection.mac_address": "Compliant",
             "connection.target_ping": "Compliant",
             "connection.single_ip": "Compliant",
-            "connection.ipaddr.ip_change": "Compliant"
+            "connection.ipaddr.ip_change": "Compliant",
+            "connection.private_address": "Compliant",
+            "connection.ipaddr.dhcp_failover": "Compliant",
+            "connection.ipv6_slaac": "Compliant",
+            "connection.ipv6_ping": "Compliant",
+            "connection.mac_oui": "Compliant",
+            "ntp.network.ntp_support": "Compliant",
+            "ntp.network.ntp_dhcp": "Compliant",
+            "protocol.valid_bacnet": "Compliant",
+            "protocol.bacnet.version": "Compliant",
+            "protocol.valid_modbus": "Compliant",
+            "security.tls.v1_2_server": "Compliant",
+            "security.tls.v1_2_client": "Compliant"
+        }
+    },
+    "tester5": {
+        "description": "Expected to fail every test",
+        "ethmac": "02:42:aa:00:00:05",
+        "expected_results": {
+            "dns.network.hostname_resolution": "Non-Compliant",
+            "security.services.ftp": "Non-Compliant",
+            "security.ssh.version": "Non-Compliant",
+            "security.services.telnet": "Non-Compliant",
+            "security.services.smtp": "Non-Compliant",
+            "security.services.http": "Non-Compliant",
+            "security.services.pop": "Non-Compliant",
+            "security.services.imap": "Non-Compliant",
+            "security.services.snmpv3": "Non-Compliant",
+            "security.services.vnc": "Non-Compliant",
+            "security.services.tftp": "Non-Compliant",
+            "ntp.network.ntp_server": "Non-Compliant",
+            "connection.shared_address": "Non-Compliant",
+            "connection.dhcp_address": "Non-Compliant",
+            "connection.mac_address": "Non-Compliant",
+            "connection.target_ping": "Non-Compliant",
+            "connection.single_ip": "Non-Compliant",
+            "connection.ipaddr.ip_change": "Non-Compliant",
+            "connection.private_address": "Non-Compliant",
+            "connection.ipaddr.dhcp_failover": "Non-Compliant",
+            "connection.ipv6_slaac": "Non-Compliant",
+            "connection.ipv6_ping": "Non-Compliant",
+            "connection.mac_oui": "Non-Compliant",
+            "ntp.network.ntp_support": "Non-Compliant",
+            "ntp.network.ntp_dhcp": "Non-Compliant",
+            "protocol.valid_bacnet": "Non-Compliant",
+            "protocol.bacnet.version": "Non-Compliant",
+            "protocol.valid_modbus": "Non-Compliant",
+            "security.tls.v1_2_server": "Non-Compliant",
+            "security.tls.v1_2_client": "Non-Compliant"
         }
     }
-    
 }
