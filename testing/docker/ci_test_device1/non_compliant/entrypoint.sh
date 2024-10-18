@@ -67,9 +67,9 @@ nc -nvlt -p 143 &
 # Simulate SSHv1 service on port 22 using netcat
 echo "Simulating SSHv1 service on port 22"
 while true; do
-  echo -e "SSH-1.5-OpenSSH_2.9\nProtocol mismatch.\n" | nc -l -p 22 -q 1;
+  echo -e "SSH-1.5-OpenSSH_2.9\nProtocol mismatch.\n" | sudo nc -l -p 22 -q 1;
   if [ $? -ne 0 ]; then
-    echo "Error: Failed to bind to port 22 for SSHv1 simulation" >&2
+    echo "Error: Failed to bind to port 22" >&2
   fi
 done &
 
