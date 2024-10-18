@@ -21,6 +21,7 @@ import {
   MOCK_PROGRESS_DATA_COMPLIANT,
   MOCK_PROGRESS_DATA_NON_COMPLIANT,
 } from '../../mocks/testrun.mock';
+import { TestrunStatus } from '../../model/testrun-status';
 
 describe('DownloadReportComponent', () => {
   let component: DownloadReportComponent;
@@ -39,13 +40,26 @@ describe('DownloadReportComponent', () => {
       expect(component).toBeTruthy();
     });
 
-    it('#getReportTitle should return data for download property of link', () => {
-      const expectedResult =
-        'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20';
+    describe('#getReportTitle', () => {
+      it('should return data for download property of link', () => {
+        const expectedResult =
+          'delta_03-din-cpu_1.2.2_compliant_22_jun_2023_9:20';
 
-      const result = component.getReportTitle(MOCK_PROGRESS_DATA_COMPLIANT);
+        const result = component.getReportTitle(MOCK_PROGRESS_DATA_COMPLIANT);
 
-      expect(result).toEqual(expectedResult);
+        expect(result).toEqual(expectedResult);
+      });
+
+      it('should return empty string if no device data', () => {
+        const MOCK_DATA_WITHOUT_DEVICE = {
+          ...MOCK_PROGRESS_DATA_COMPLIANT,
+          device: undefined as unknown,
+        } as TestrunStatus;
+
+        const result = component.getReportTitle(MOCK_DATA_WITHOUT_DEVICE);
+
+        expect(result).toEqual('');
+      });
     });
 
     describe('#getClass', () => {
