@@ -24,6 +24,10 @@ pytest-timeout==2.2.0
 responses==0.25.3
 
 
+# Requirements for testing_coverage tool
+matplotlib==3.7.5
+pandas==2.2.2
+
 # Requirements for the report
 markdown==3.5.2
 
