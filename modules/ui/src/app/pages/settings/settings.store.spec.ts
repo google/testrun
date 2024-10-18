@@ -13,12 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  DEFAULT_INTERNET_OPTION,
-  LOG_LEVELS,
-  MONITORING_PERIOD,
-  SettingsStore,
-} from './settings.store';
+import { LOG_LEVELS, MONITORING_PERIOD, SettingsStore } from './settings.store';
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { TestBed } from '@angular/core/testing';
@@ -39,11 +34,11 @@ import {
   MOCK_DEVICE_VALUE,
   MOCK_INTERFACE_VALUE,
   MOCK_INTERFACES,
-  MOCK_INTERNET_OPTIONS,
   MOCK_LOG_VALUE,
   MOCK_PERIOD_VALUE,
   MOCK_SYSTEM_CONFIG_WITH_DATA,
   MOCK_SYSTEM_CONFIG_WITH_NO_DATA,
+  MOCK_SYSTEM_CONFIG_WITH_SINGLE_PORT,
 } from '../../mocks/settings.mock';
 
 describe('SettingsStore', () => {
@@ -120,7 +115,6 @@ describe('SettingsStore', () => {
         expect(store.interfaces).toEqual(MOCK_INTERFACES);
         expect(store.deviceOptions).toEqual(MOCK_INTERFACES);
         expect(store.internetOptions).toEqual({
-          '': 'Not specified',
           mockDeviceKey: 'mockDeviceValue',
           mockInternetKey: 'mockInternetValue',
         });
@@ -193,7 +187,7 @@ describe('SettingsStore', () => {
         settingsStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
           expect(store.interfaces).toEqual(interfaces);
           expect(store.deviceOptions).toEqual(interfaces);
-          expect(store.internetOptions).toEqual(MOCK_INTERNET_OPTIONS);
+          expect(store.internetOptions).toEqual(interfaces);
           done();
         });
 
@@ -279,6 +273,27 @@ describe('SettingsStore', () => {
         });
       });
 
+      describe('with single port mode', () => {
+        beforeEach(() => {
+          settingsStore.setSystemConfig(MOCK_SYSTEM_CONFIG_WITH_SINGLE_PORT);
+          settingsStore.setInterfaces(MOCK_INTERFACES);
+        });
+
+        it('should disable internet control', () => {
+          const form = fb.group({
+            device_intf: ['value'],
+            internet_intf: [''],
+            log_level: [''],
+            monitor_period: ['value'],
+          });
+          settingsStore.setDefaultFormValues(form);
+
+          expect(
+            (form.get(FormKey.INTERNET) as FormControl).disabled
+          ).toBeTrue();
+        });
+      });
+
       describe('when values are empty', () => {
         beforeEach(() => {
           settingsStore.setSystemConfig(MOCK_SYSTEM_CONFIG_WITH_NO_DATA);
@@ -300,7 +315,7 @@ describe('SettingsStore', () => {
           });
           expect((form.get(FormKey.INTERNET) as FormControl).value).toEqual({
             key: '',
-            value: DEFAULT_INTERNET_OPTION[''],
+            value: undefined,
           });
           expect((form.get(FormKey.LOG_LEVEL) as FormControl).value).toEqual({
             key: 'INFO',
@@ -322,7 +337,6 @@ describe('SettingsStore', () => {
         mockNewInternetKey: 'mockNewInternetValue',
       };
       const updateInternetOptions = {
-        '': 'Not specified',
         mockDeviceKey: 'mockDeviceValue',
         mockNewInternetKey: 'mockNewInternetValue',
       };
