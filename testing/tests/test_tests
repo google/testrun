@@ -17,7 +17,6 @@
 set +o xtrace
 ip a
 TEST_DIR=/tmp/results
-TESTRUN_DIR=/usr/local/testrun
 MATRIX=testing/tests/test_tests.json
 COMPLIANT_IMAGE="testrun/compliant"
 NON_COMPLIANT_IMAGE="testrun/non_compliant"
