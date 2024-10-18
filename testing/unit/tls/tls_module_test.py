@@ -39,9 +39,10 @@ CAPTURES_DIR = os.path.join(TEST_FILES_DIR, 'captures/')
 CERT_DIR = os.path.join(TEST_FILES_DIR, 'certs/')
 ROOT_CERTS_DIR = os.path.join(TEST_FILES_DIR, 'root_certs')
 
-LOCAL_REPORT = os.path.join(REPORTS_DIR, 'tls_report_local.md')
-LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR, 'tls_report_ext_local.md')
-LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR, 'tls_report_no_cert_local.md')
+LOCAL_REPORT = os.path.join(REPORTS_DIR, 'tls_report_local.html')
+LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR, 'tls_report_ext_local.html')
+LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR,
+  'tls_report_no_cert_local.html')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 INTERNET_IFACE = 'eth0'
