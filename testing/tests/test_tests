@@ -30,9 +30,6 @@ mkdir -p $TEST_DIR
 sudo apt-get update
 sudo apt-get install -y openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils isc-dhcp-client
 
-pip3 install pytest==7.4.4
-
-# Start OVS
 # Setup device network
 sudo ip link add dev xyz type dummy
 sudo ip link add dev endev0a type veth peer name endev0b
@@ -41,6 +38,7 @@ sudo ip link set dev endev0b up
 sudo docker network remove endev0
 sudo docker network create -d macvlan -o parent=endev0b endev0
 
+# Start OVS
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 # Build the Test Containers (Compliant and Non-Compliant)
@@ -48,10 +46,10 @@ sudo docker build ./testing/docker/ci_test_device1/compliant -t $COMPLIANT_IMAGE
 sudo docker build ./testing/docker/ci_test_device1/non_compliant -t $NON_COMPLIANT_IMAGE -f ./testing/docker/ci_test_device1/non_compliant/Dockerfile
 
 # Copy configuration to testrun
-sudo cp testing/tests/system.json $TESTRUN_DIR/local/system.json
+sudo cp testing/tests/system.json local/system.json
 
 # Copy device configs to testrun
-sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
+sudo cp -r testing/device_configs/* local/devices
 
 # Extract tester information from the JSON file
 TESTERS=$(jq -r 'keys[]' $MATRIX)
@@ -67,11 +65,11 @@ for tester in $TESTERS; do
  
   # Start the testrun
   touch $testrun_log
-  sudo timeout 900 testrun --single-intf --no-ui > $testrun_log 2>&1 &
+  sudo timeout 900 bin/testrun --single-intf --no-ui > $testrun_log 2>&1 &
   TPID=$!
 
   # Time to wait for testrun to be ready
-  WAITING=700
+  WAITING=750
 
   for i in `seq 1 $WAITING`; do
     tail -1 $testrun_log
@@ -99,9 +97,9 @@ for tester in $TESTERS; do
     sudo docker stop $tester && sudo docker rm $tester
   fi
 
-  # Ensure entrypoint.sh is executable
-  sudo chmod +x ./testing/docker/ci_test_device1/compliant/entrypoint.sh
-  sudo chmod +x ./testing/docker/ci_test_device1/non_compliant/entrypoint.sh
+  # # Ensure entrypoint.sh is executable
+  # sudo chmod +x ./testing/docker/ci_test_device1/compliant/entrypoint.sh
+  # sudo chmod +x ./testing/docker/ci_test_device1/non_compliant/entrypoint.sh
   
   echo Running container $tester
 
@@ -135,12 +133,13 @@ for tester in $TESTERS; do
   sudo docker kill $tester && sudo docker rm $tester
   echo Stopping container $tester
 
-  cp $TESTRUN_DIR/runtime/test/${ethmac//:/}/report.json $TEST_DIR/$tester.json
+  cp runtime/test/${ethmac//:/}/report.json $TEST_DIR/$tester.json
   more $TEST_DIR/$tester.json | cat 
   more $testrun_log | cat 
 
 done
 
-pytest -v testing/tests/test_tests.py
+# Needs to be sudo because this invokes bin/testrun 
+sudo venv/bin/python3 -m pytest -v testing/tests/test_tests.py
 
 exit $?
