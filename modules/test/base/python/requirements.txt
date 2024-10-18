@@ -1,3 +1,3 @@
-grpcio
-grpcio-tools
-netifaces
+grpcio==1.67.0 --hash=sha256:fe89295219b9c9e47780a0f1c75ca44211e706d1c598242249fe717af3385ec8
+grpcio-tools==1.67.0
+netifaces==0.11.0

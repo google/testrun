@@ -37,7 +37,7 @@ COPY $COMMON_DIR/ /testrun/python/src/common
 COPY $MODULE_DIR/python /testrun/python
 
 # Install all python requirements for the module
-RUN pip install -r /testrun/python/requirements.txt
+RUN pip install --require-hashes -r /testrun/python/requirements.txt
 
 # Copy over all binary files
 COPY $MODULE_DIR/bin /testrun/bin
