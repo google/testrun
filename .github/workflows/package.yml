@@ -48,11 +48,14 @@ jobs:
         run: sudo apt install ./testrun*.deb
       - name: Start Testrun
         shell: bash {0}
-        run: sudo testrun
-      - name: Verify Testrun is running
-        shell: bash {0}
-        run: ps aux | grep testrun
-
+        run:  |
+          if ! sudo testrun | grep -q "API waiting for requests"; then
+            echo "Testrun did not start correctly."
+            exit 1
+          else
+            echo "Testrun started successfully."
+          fi
+  
   install_package_22:
     permissions: {}
     needs: create_package
@@ -74,10 +77,14 @@ jobs:
         run: sudo apt install ./testrun*.deb
       - name: Start Testrun
         shell: bash {0}
-        run: sudo testrun
-      - name: Verify Testrun is running
-        shell: bash {0}
-        run: ps aux | grep testrun
+        run:  |
+          if ! sudo testrun | grep -q "API waiting for requests"; then
+            echo "Testrun did not start correctly."
+            exit 1
+          else
+            echo "Testrun started successfully."
+          fi
+  
 
   install_package_24:
     permissions: {}
@@ -100,7 +107,11 @@ jobs:
         run: sudo apt install ./testrun*.deb
       - name: Start Testrun
         shell: bash {0}
-        run: sudo testrun
-      - name: Verify Testrun is running
-        shell: bash {0}
-        run: ps aux | grep testrun
+        run:  |
+          if ! sudo testrun | grep -q "API waiting for requests"; then
+            echo "Testrun did not start correctly."
+            exit 1
+          else
+            echo "Testrun started successfully."
+          fi
+  
