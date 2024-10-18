@@ -5,9 +5,6 @@ on:
     branches:
       - '**'
   push:
-    branches:
-      - 'dev'
-      - 'release/*'
 
 permissions:
   contents: read
@@ -49,6 +46,12 @@ jobs:
       - name: Install package
         shell: bash {0}
         run: sudo apt install ./testrun*.deb
+      - name: Start Testrun
+        shell: bash {0}
+        run: sudo testrun
+      - name: Verify Testrun is running
+        shell: bash {0}
+        run: ps aux | grep testrun
 
   install_package_22:
     permissions: {}
@@ -69,6 +72,12 @@ jobs:
       - name: Install package
         shell: bash {0}
         run: sudo apt install ./testrun*.deb
+      - name: Start Testrun
+        shell: bash {0}
+        run: sudo testrun
+      - name: Verify Testrun is running
+        shell: bash {0}
+        run: ps aux | grep testrun
 
   install_package_24:
     permissions: {}
@@ -89,3 +98,9 @@ jobs:
       - name: Install package
         shell: bash {0}
         run: sudo apt install ./testrun*.deb
+      - name: Start Testrun
+        shell: bash {0}
+        run: sudo testrun
+      - name: Verify Testrun is running
+        shell: bash {0}
+        run: ps aux | grep testrun
