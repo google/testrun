@@ -31,14 +31,12 @@ class ServicesModule(TestModule):
 
   def __init__(self,
                module,
-               log_dir=None,
                conf_file=None,
                results_dir=None,
                run=True,
                nmap_scan_results_path=None):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
-                     log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
     self._scan_tcp_results = None

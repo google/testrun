@@ -30,7 +30,6 @@ class NTPModule(TestModule):
 
   def __init__(self,
                module,
-               log_dir=None,
                conf_file=None,
                results_dir=None,
                ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE,
@@ -38,7 +37,6 @@ class NTPModule(TestModule):
                monitor_capture_file=MONITOR_CAPTURE_FILE):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
-                     log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
     self.ntp_server_capture_file = ntp_server_capture_file

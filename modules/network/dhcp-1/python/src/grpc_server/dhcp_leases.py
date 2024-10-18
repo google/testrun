@@ -68,8 +68,8 @@ class DHCPLeases:
         leases.append(lease)
       except Exception as e:  # pylint: disable=W0718
         # Let non lease lines file without extra checks
-        LOGGER.error('Making Lease Error: ' + str(e))
-        LOGGER.error('Not a valid lease line: ' + line)
+        LOGGER.info('Not a valid lease line: ' + line)
+        LOGGER.error('Get lease error: ' + str(e))
     return leases
 
   def delete_lease(self, ip_addr):

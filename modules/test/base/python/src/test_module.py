@@ -32,7 +32,6 @@ class TestModule:
   def __init__(self,
                module_name,
                log_name,
-               log_dir=None,
                conf_file=CONF_FILE,
                results_dir=RESULTS_DIR):
     self._module_name = module_name
@@ -42,19 +41,15 @@ class TestModule:
     self._ipv4_subnet = os.environ.get('IPV4_SUBNET', '')
     self._ipv6_subnet = os.environ.get('IPV6_SUBNET', '')
     self._dev_iface_mac = os.environ.get('DEV_IFACE_MAC', '')
-    self._add_logger(log_name=log_name,
-                     module_name=module_name,
-                     log_dir=log_dir)
+    self._add_logger(log_name=log_name)
     self._config = self._read_config(
         conf_file=conf_file if conf_file is not None else CONF_FILE)
     self._device_ipv4_addr = None
     self._device_ipv6_addr = None
 
-  def _add_logger(self, log_name, module_name, log_dir=None):
+  def _add_logger(self, log_name):
     global LOGGER
-    LOGGER = logger.get_logger(name=log_name, # pylint: disable=E1123
-                               log_file=module_name,
-                               log_dir=log_dir)
+    LOGGER = logger.get_logger(name=log_name)
 
   def generate_module_report(self):
     pass
