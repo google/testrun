@@ -42,6 +42,8 @@ CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 STATUS_TOPIC = 'status'
 
+MAKE_CONTROL_DIR =  'make/DEBIAN/control'
+
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
 PROFILES_DIR = 'local/risk_profiles'
 
@@ -127,7 +129,6 @@ class TestrunSession():
 
     # System network interfaces
     self._ifaces = {}
-
     # Loading methods
     self._load_version()
     self._load_config()
@@ -187,7 +188,8 @@ class TestrunSession():
         'max_device_reports': 0,
         'api_url': 'http://localhost',
         'api_port': 8000,
-        'org_name': ''
+        'org_name': '',
+        'single_intf': False,
     }
 
   def get_config(self):
@@ -243,7 +245,7 @@ class TestrunSession():
     version_cmd = util.run_command(
         'dpkg-query --showformat=\'${Version}\' --show testrun')
     # index 1 of response is the stderr byte stream so if
-    # it has any data in it, there was an error and we
+    # it has any data in it, there was an error and wen
     # did not resolve the version and we'll use the fallback
     if len(version_cmd[1]) == 0:
       version = version_cmd[0]
@@ -251,9 +253,29 @@ class TestrunSession():
     else:
       LOGGER.debug('Failed getting the version from dpkg-query')
       # Try getting the version from the make control file
+
+      # Check if MAKE_CONTROL_DIR exists
+      if not os.path.exists(MAKE_CONTROL_DIR):
+        LOGGER.error('make/DEBIAN/control file path not found')
+        self._version = 'Unknown'
+        return
+
       try:
-        version = util.run_command(
-            '$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
+        # Run the grep command to find the version line
+        grep_cmd = util.run_command(f'grep -R "Version: " {MAKE_CONTROL_DIR}')
+
+        if grep_cmd[0] and len(grep_cmd[1]) == 0:
+          # Extract the version number from grep
+          version = grep_cmd[0].split()[1]
+          self._version = version
+          LOGGER.debug(f'Testrun version is: {self._version}')
+
+        else:
+          # Error handling if grep can't find the version line
+          self._version = 'Unknown'
+          LOGGER.debug(f'Testrun version is {self._version}')
+          raise Exception('Version line not found in make control file')
+
       except Exception as e: # pylint: disable=W0703
         LOGGER.debug('Failed getting the version from make control file')
         LOGGER.error(e)
@@ -277,6 +299,8 @@ class TestrunSession():
     return self._runtime_params
 
   def add_runtime_param(self, param):
+    if param == 'single_intf':
+      self._config['single_intf'] = True
     self._runtime_params.append(param)
 
   def get_device_interface(self):
@@ -388,28 +412,38 @@ class TestrunSession():
       if test_result.name == result.name:
 
         # Just update the result, description and recommendations
-
-        if result.result is not None:
-
-          # Any informational test should always report informational
-          if (test_result.required_result == 'Informational' and
-              result.result in [
-                TestResult.COMPLIANT,
-                TestResult.NON_COMPLIANT,
-                TestResult.FEATURE_NOT_DETECTED
-              ]):
-            test_result.result = TestResult.INFORMATIONAL
-          else:
-            test_result.result = result.result
-
         if len(result.description) != 0:
           test_result.description = result.description
 
+        # Add recommendations if provided
         if result.recommendations is not None:
           test_result.recommendations = result.recommendations
 
           if len(result.recommendations) == 0:
             test_result.recommendations = None
+
+        if result.result is not None:
+
+          # Any informational test should always report informational
+          if test_result.required_result == 'Informational':
+
+            # Set test result to informational
+            if result.result in [
+              TestResult.NON_COMPLIANT,
+              TestResult.COMPLIANT,
+              TestResult.INFORMATIONAL
+            ]:
+              test_result.result = TestResult.INFORMATIONAL
+            else:
+              test_result.result = result.result
+
+            # Copy any test recommendations to optional
+            test_result.optional_recommendations = result.recommendations
+
+            # Remove recommendations from informational tests
+            test_result.recommendations = None
+          else:
+            test_result.result = result.result
 
         updated = True
 
@@ -514,20 +548,11 @@ class TestrunSession():
           # Instantiate a new risk profile
           risk_profile: RiskProfile = RiskProfile()
 
+          # Assign the profile questions
           questions: list[dict] = json_data.get('questions')
 
-          # Remove any additional (outdated questions from the profile)
-          for question in questions:
-
-            # Check if question exists in the profile format
-            if self.get_profile_format_question(
-              question=question.get('question')) is None:
-
-              # Remove question from profile
-              questions.remove(question)
-
-          # Pass questions back to the risk profile
-          json_data['questions'] = questions
+          # Pass only the valid questions to the risk profile
+          json_data['questions'] = self._remove_invalid_questions(questions)
 
           # Pass JSON to populate risk profile
           risk_profile.load(profile_json=json_data,
@@ -575,6 +600,12 @@ class TestrunSession():
     profile_json['version'] = self.get_version()
     profile_json['created'] = datetime.datetime.now().strftime('%Y-%m-%d')
 
+    # Assign the profile questions
+    questions: list[dict] = profile_json.get('questions')
+
+    # Pass only the valid questions to the risk profile
+    profile_json['questions'] = self._remove_invalid_questions(questions)
+
     # Check if profile already exists
     risk_profile = self.get_profile(profile_name)
     if risk_profile is None:
@@ -603,6 +634,28 @@ class TestrunSession():
       f.write(risk_profile.to_json(pretty=True))
 
     return risk_profile
+
+  def _remove_invalid_questions(self, questions: list[dict]) -> list[dict]:
+    """Remove unrecognised questions from the profile"""
+
+    # Store valid questions
+    valid_questions = []
+
+    # Remove any additional (outdated questions from the profile)
+    for question in questions:
+
+      # Check if question exists in the profile format
+      if self.get_profile_format_question(
+        question=question['question']) is not None:
+
+        # Add the question to the valid_questions
+        valid_questions.append(question)
+
+      else:
+        LOGGER.debug(f'Removed unrecognised question: {question["question"]}')
+
+    # Return the list of valid questions
+    return valid_questions
 
   def validate_profile_json(self, profile_json):
     """Validate properties in profile update requests"""
@@ -640,12 +693,12 @@ class TestrunSession():
         LOGGER.error('A question is missing from "question" field')
         return False
 
-      # Check if question is a recognized question
+      # Check if question is a recognised question
       format_q = self.get_profile_format_question(
         question.get('question'))
 
       if format_q is None:
-        LOGGER.error(f'Unrecognized question: {question.get("question")}')
+        LOGGER.error(f'Unrecognised question: {question.get("question")}')
         # Just ignore additional questions
         continue
 

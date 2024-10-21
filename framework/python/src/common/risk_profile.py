@@ -22,12 +22,14 @@ import json
 import os
 from jinja2 import Template
 from copy import deepcopy
+import math
 
 PROFILES_PATH = 'local/risk_profiles'
 LOGGER = logger.get_logger('risk_profile')
 RESOURCES_DIR = 'resources/report'
 TEMPLATE_FILE = 'risk_report_template.html'
 TEMPLATE_STYLES = 'risk_report_styles.css'
+DEVICE_FORMAT_PATH = 'resources/devices/device_profile.json'
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -60,6 +62,21 @@ class RiskProfile():
                            ) as style_file:
       self._template_styles = style_file.read()
 
+    # Device profile format
+    self._device_format = []
+    try:
+      with open(os.path.join(root_dir, DEVICE_FORMAT_PATH),
+                'r',
+                encoding='utf-8') as device_format_file:
+        device_format_json = json.load(device_format_file)
+        for step in device_format_json:
+          self._device_format.extend(step['questions'])
+    except (IOError, ValueError) as e:
+      LOGGER.error(
+          'An error occurred whilst loading the device profile format')
+      LOGGER.debug(e)
+
+
     if profile_json is None or profile_format is None:
       return
 
@@ -72,10 +89,8 @@ class RiskProfile():
     self._device = None
     self._profile_format = profile_format
 
-
     self._validate(profile_json, profile_format)
     self.update_risk(profile_format)
-
 
   # Load a profile without modifying the created date
   # but still validate the profile
@@ -111,6 +126,7 @@ class RiskProfile():
     self.risk = new_profile.risk
 
   def get_file_path(self):
+    """Returns the file path for the current risk profile json"""
     return os.path.join(PROFILES_PATH,
                         self.name + '.json')
 
@@ -127,6 +143,7 @@ class RiskProfile():
       self.status = 'Draft'
 
   def update_risk(self, profile_format):
+    """Update the calculated risk for the risk profile"""
 
     if self.status == 'Valid':
 
@@ -194,6 +211,15 @@ class RiskProfile():
       risk = None
 
     self.risk = risk
+
+  def _update_risk_by_device(self):
+    risk = self.risk
+    if self._device and self.status == 'Valid':
+      for question in self._device.additional_info:
+        if 'risk' in question and question['risk'] == 'High':
+          risk = 'High'
+          break
+    return risk
 
   def _get_format_question(self, question: str, profile_format: dict):
 
@@ -300,6 +326,7 @@ class RiskProfile():
     return today > expiry_date
 
   def to_json(self, pretty=False):
+    """Returns the current risk profile in JSON format"""
     json_dict = {
         'name': self.name,
         'version': self.version,
@@ -312,8 +339,8 @@ class RiskProfile():
     return json.dumps(json_dict, indent=indent)
 
   def to_html(self, device):
+    """Returns the current risk profile in HTML format"""
 
-    self._device = device
     high_risk_message = '''The device has been assessed to be high
                                risk due to the nature of the answers provided
                                  about the device functionality.'''
@@ -322,71 +349,104 @@ class RiskProfile():
                                  the device functionality.'''
     with open(test_run_img_file, 'rb') as f:
       logo_img_b64 = base64.b64encode(f.read()).decode('utf-8')
+
+    self._device = self._format_device_profile(device)
     pages = self._generate_report_pages()
     return self._template.render(
                                 styles=self._template_styles,
                                 manufacturer=self._device.manufacturer,
                                 model=self._device.model,
                                 logo=logo_img_b64,
-                                risk=self.risk,
+                                risk=self._update_risk_by_device(),
                                 high_risk_message=high_risk_message,
                                 limited_risk_message=limited_risk_message,
                                 pages=pages,
+                                total_pages=len(pages),
                                 version=self.version,
                                 created_at=self.created.strftime('%d.%m.%Y')
                                 )
 
   def _generate_report_pages(self):
-    max_page_height = 350
+
+    # Text block heght
+    block_height = 18
+    # Table row padding
+    block_padding = 30
+    # Margin bottom list answer
+    margin_list = 14
+    # margin after table row
+    margin_row = 8
+
+    height_first_page = 760
+    height_page = 980
+
+    # Average text block width in characters
+    # for a 14px font size (average width of one character is 8px).
+    letters_in_line_str = 38
+    letters_in_line_q = 40
+    letters_in_line_list = 36
+
     height = 0
     pages = []
     current_page = []
     index = 1
 
-    for question in self.questions:
+    questions = deepcopy(self._device.additional_info)
+    questions.extend(self.questions)
 
-      if height > max_page_height:
-        pages.append(current_page)
-        height = 0
-        current_page = []
+    for question in questions:
 
       page_item = deepcopy(question)
+      answer_height = 0
 
+      # Question height calculation
+      question_height = math.ceil(len(page_item['question'])
+                                   / letters_in_line_q
+                                   ) * block_height
+      question_height += block_padding + margin_row
       if isinstance(page_item['answer'], str):
-
-        if len(page_item['answer']) > 400:
-          height += 160
-        elif len(page_item['answer']) > 300:
-          height += 140
-        elif len(page_item['answer']) > 200:
-          height += 120
-        elif len(page_item['answer']) > 100:
-          height += 70
-        else:
-          height += 53
-
-      # Select multiple answers
-      elif isinstance(page_item['answer'], list):
+        # Answer height for string
+        answer_height = math.ceil(len(page_item['answer'])
+                                   / letters_in_line_str
+                                   ) * block_height
+        answer_height += block_padding + margin_row
+      else:
         text_answers = []
-
         options = self._get_format_question(
           question=page_item['question'],
           profile_format=self._profile_format)['options']
-
         options_dict = dict(enumerate(options))
-
         for answer_index in page_item['answer']:
           height += 40
           text_answers.append(options_dict[answer_index]['text'])
         page_item['answer'] = text_answers
+        # Answer height for list
+        for answer in options:
+          answer_height += math.ceil(len(answer)
+                                     / letters_in_line_list
+                                     ) * block_height
+        answer_height += block_padding + margin_row + margin_list
       page_item['index'] = index
+      row_height = max(question_height, answer_height)
+
+      if (
+        (len(pages) == 0 and row_height + height > height_first_page)
+        or (len(pages) > 0 and row_height + height > height_page)
+        ):
+        pages.append(current_page)
+        height = 0
+        current_page = [page_item]
+      else:
+        height += row_height
+        current_page.append(page_item)
       index += 1
-      current_page.append(page_item)
     pages.append(current_page)
 
     return pages
 
+
   def to_pdf(self, device):
+    """Returns the current risk profile in PDF format"""
 
     # Resolve the data as html first
     html = self.to_html(device)
@@ -395,3 +455,21 @@ class RiskProfile():
     pdf_bytes = BytesIO()
     HTML(string=html).write_pdf(pdf_bytes)
     return pdf_bytes
+
+  # Adding risks to device profile questions
+  def _format_device_profile(self, device):
+    device_copy = deepcopy(device)
+    risk_map = {
+      question['question']: {
+          option['text']: option.get('risk', None)
+          for option in question['options'] if 'risk' in option
+      }
+      for question in self._device_format
+    }
+    for question in device_copy.additional_info:
+      risk = risk_map.get(
+        question['question'], {}
+        ).get(question['answer'], None)
+      if risk:
+        question['risk'] = risk
+    return device_copy

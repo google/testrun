@@ -19,15 +19,21 @@ SRC_IP="$2"
 DST_IP="$3"
 TLS_VERSION="$4"
 
-TSHARK_FILTER="ip.src==$SRC_IP and ip.dst==$DST_IP "
+TSHARK_FILTER="ip.src==$SRC_IP and ip.dst==$DST_IP"
 
-if [[ $TLS_VERSION == '1.2' || -z $TLS_VERSION ]];then
-	TSHARK_FILTER=$TSHARK_FILTER " and ssl.handshake.type==2 and tls.handshake.type==14 "
-elif [ $TLS_VERSION == '1.2' ];then
-	TSHARK_FILTER=$TSHARK_FILTER "and ssl.handshake.type==2 and tls.handshake.extensions.supported_version==0x0304"
+if [[ $TLS_VERSION == '1.0' ]]; then
+  TSHARK_FILTER=$TSHARK_FILTER "and ssl.handshake.type==2 and tls.handshake.type==14"
+elif [[ $TLS_VERSION == '1.1' ]]; then
+  TSHARK_FILTER=$TSHARK_FILTER "and ssl.handshake.type==2 and tls.handshake.type==14"
+elif [[ $TLS_VERSION == '1.2' || -z $TLS_VERSION ]]; then
+  TSHARK_FILTER=$TSHARK_FILTER "and ssl.handshake.type==2 and tls.handshake.type==14"
+elif [[ $TLS_VERSION == '1.3' ]]; then
+  TSHARK_FILTER=$TSHARK_FILTER "and ssl.handshake.type==2 and tls.handshake.extensions.supported_version==0x0304"
+else
+  echo "Unsupported TLS version: $TLS_VERSION"
+  exit 1
 fi
 
 response=$(tshark -r "$CAPTURE_FILE" $TSHARK_FILTER)
 
 echo "$response"
-  	

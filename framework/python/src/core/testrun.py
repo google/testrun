@@ -25,9 +25,9 @@ import sys
 import time
 from common import logger, util, mqtt
 from common.device import Device
-from common.session import TestrunSession
 from common.testreport import TestReport
 from common.statuses import TestrunStatus
+from session import TestrunSession
 from api.api import Api
 from net_orc.listener import NetworkEvent
 from net_orc import network_orchestrator as net_orc
@@ -35,7 +35,7 @@ from test_orc import test_orchestrator as test_orc
 
 from docker.errors import ImageNotFound
 
-LOGGER = logger.get_logger('test_run')
+LOGGER = logger.get_logger('testrun')
 
 DEFAULT_CONFIG_FILE = 'local/system.json'
 EXAMPLE_CONFIG_FILE = 'local/system.json.example'
@@ -85,7 +85,6 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     self._net_only = net_only
     self._single_intf = single_intf
-
     # Network only option only works if UI is also
     # disbled so need to set no_ui if net_only is selected
     self._no_ui = no_ui or net_only
@@ -135,7 +134,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
     else:
 
       # Start UI container
-      self.start_ui(self._single_intf)
+      self.start_ui()
 
       self._api = Api(self)
       self._api.start()
@@ -381,15 +380,21 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
   def stop(self):
 
+    # First, change the status to stopping
+    self.get_session().stop()
+
     # Prevent discovering new devices whilst stopping
     if self.get_net_orc().get_listener() is not None:
       self.get_net_orc().get_listener().stop_listener()
 
-    self.get_session().stop()
-
     self._stop_tests()
-    self._stop_network(kill=True)
+
     self.get_session().set_status(TestrunStatus.CANCELLED)
+
+    # Disconnect before WS server stops to prevent error
+    self._mqtt_client.disconnect()
+
+    self._stop_network(kill=True)
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
@@ -490,17 +495,13 @@ class Testrun:  # pylint: disable=too-few-public-methods
   def _set_status(self, status):
     self.get_session().set_status(status)
 
-  def start_ui(self, single_intf):
+  def start_ui(self):
 
     self._stop_ui()
 
     LOGGER.info('Starting UI')
 
-    # Passing "single interface" mode to the FE
-    envs = os.environ
-    envs['TESTRUN_SINGLE_INTF'] = str(int(single_intf))
-
-    client = docker.from_env(environment=envs)
+    client = docker.from_env()
 
     try:
       client.containers.run(

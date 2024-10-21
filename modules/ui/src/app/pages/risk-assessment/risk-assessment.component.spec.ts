@@ -172,15 +172,13 @@ describe('RiskAssessmentComponent', () => {
         tick();
 
         expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
-          ariaLabel: 'Delete risk profile',
           data: {
             title: 'Delete risk profile?',
             content: `You are about to delete ${PROFILE_MOCK.name}. Are you sure?`,
           },
-          autoFocus: true,
+          autoFocus: 'dialog',
           hasBackdrop: true,
           disableClose: true,
-          panelClass: 'simple-dialog',
         });
 
         openSpy.calls.reset();
@@ -230,6 +228,24 @@ describe('RiskAssessmentComponent', () => {
       });
     });
 
+    it('#profileClicked should call openForm with profile', fakeAsync(() => {
+      spyOn(component, 'openForm');
+
+      component.profileClicked(PROFILE_MOCK);
+      tick();
+
+      expect(component.openForm).toHaveBeenCalledWith(PROFILE_MOCK);
+    }));
+
+    it('#copyProfileAndOpenForm should call openForm with copy of profile', fakeAsync(() => {
+      spyOn(component, 'openForm');
+
+      component.copyProfileAndOpenForm(PROFILE_MOCK);
+      tick();
+
+      expect(component.openForm).toHaveBeenCalledWith(COPY_PROFILE_MOCK);
+    }));
+
     describe('#saveProfile', () => {
       describe('with no profile selected', () => {
         beforeEach(() => {
@@ -260,15 +276,13 @@ describe('RiskAssessmentComponent', () => {
           component.saveProfileClicked(NEW_PROFILE_MOCK, PROFILE_MOCK);
 
           expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
-            ariaLabel: 'Save profile',
             data: {
               title: 'Save profile',
               content: `You are about to save changes in Primary profile. Are you sure?`,
             },
-            autoFocus: true,
+            autoFocus: 'dialog',
             hasBackdrop: true,
             disableClose: true,
-            panelClass: 'simple-dialog',
           });
 
           openSpy.calls.reset();
@@ -282,15 +296,13 @@ describe('RiskAssessmentComponent', () => {
           component.saveProfileClicked(NEW_PROFILE_MOCK_DRAFT, PROFILE_MOCK);
 
           expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
-            ariaLabel: 'Save draft profile',
             data: {
               title: 'Save draft profile',
               content: `You are about to save changes in Primary profile. Are you sure?`,
             },
-            autoFocus: true,
+            autoFocus: 'dialog',
             hasBackdrop: true,
             disableClose: true,
-            panelClass: 'simple-dialog',
           });
 
           openSpy.calls.reset();
@@ -355,15 +367,16 @@ describe('RiskAssessmentComponent', () => {
       });
 
       describe('with selected profile', () => {
-        beforeEach(() => {
+        beforeEach(fakeAsync(() => {
           component.discard(PROFILE_MOCK);
-        });
+          tick(100);
+        }));
 
-        it('should call setFocusOnCreateButton', () => {
+        it('should call setFocusOnCreateButton', fakeAsync(() => {
           expect(
             mockRiskAssessmentStore.setFocusOnSelectedProfile
           ).toHaveBeenCalled();
-        });
+        }));
 
         it('should update selected profile', () => {
           expect(
@@ -389,6 +402,7 @@ class FakeProfileItemComponent {
 })
 class FakeProfileFormComponent {
   @Input() profiles!: Profile[];
+  @Input() isCopyProfile!: boolean;
   @Input() selectedProfile!: Profile;
   @Input() profileFormat!: ProfileFormat[];
 }

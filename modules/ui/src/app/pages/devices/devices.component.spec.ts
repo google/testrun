@@ -140,6 +140,7 @@ describe('DevicesComponent', () => {
     it('should open device dialog on "add device button" click', () => {
       const openSpy = spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
+        beforeClosed: () => of(true),
       } as MatDialogRef<typeof DeviceQualificationFromComponent>);
       fixture.detectChanges();
       const button = compiled.querySelector(
@@ -160,7 +161,7 @@ describe('DevicesComponent', () => {
           index: 0,
           isCreate: true,
         },
-        autoFocus: true,
+        autoFocus: 'first-tabbable',
         hasBackdrop: true,
         disableClose: true,
         panelClass: 'device-form-dialog',
@@ -172,7 +173,7 @@ describe('DevicesComponent', () => {
     describe('#openDialog', () => {
       it('should open device dialog on item click', () => {
         const openSpy = spyOn(component.dialog, 'open').and.returnValue({
-          afterClosed: () => of(true),
+          beforeClosed: () => of(true),
         } as MatDialogRef<typeof DeviceQualificationFromComponent>);
         fixture.detectChanges();
 
@@ -190,7 +191,7 @@ describe('DevicesComponent', () => {
             index: 0,
             isCreate: false,
           },
-          autoFocus: true,
+          autoFocus: 'first-tabbable',
           hasBackdrop: true,
           disableClose: true,
           panelClass: 'device-form-dialog',
@@ -209,7 +210,7 @@ describe('DevicesComponent', () => {
 
   it('should call setIsOpenAddDevice if dialog closes with null', () => {
     spyOn(component.dialog, 'open').and.returnValue({
-      afterClosed: () => of(null),
+      beforeClosed: () => of(null),
     } as MatDialogRef<typeof DeviceQualificationFromComponent>);
 
     component.openDialog([], MOCK_TEST_MODULES);
@@ -237,10 +238,18 @@ describe('DevicesComponent', () => {
     it('should open device dialog when dialog return null', () => {
       const openDeviceDialogSpy = spyOn(component, 'openDialog');
       spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of(null),
+        beforeClosed: () => of(null),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openCloseDialog([device], MOCK_TEST_MODULES, device);
+      component.openCloseDialog(
+        [device],
+        MOCK_TEST_MODULES,
+        device,
+        undefined,
+        false,
+        0,
+        0
+      );
 
       expect(openDeviceDialogSpy).toHaveBeenCalledWith(
         [device],
@@ -248,6 +257,7 @@ describe('DevicesComponent', () => {
         device,
         undefined,
         false,
+        0,
         0
       );
     });
@@ -255,7 +265,7 @@ describe('DevicesComponent', () => {
 
   it('should delete device if dialog closes with object, action delete and selected device', () => {
     spyOn(component.dialog, 'open').and.returnValue({
-      afterClosed: () =>
+      beforeClosed: () =>
         of({
           device,
           action: FormAction.Delete,
@@ -280,7 +290,7 @@ describe('DevicesComponent', () => {
 
     it('should delete device when dialog return true', () => {
       spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of(true),
+        beforeClosed: () => of(true),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
       component.openDeleteDialog(
@@ -302,7 +312,7 @@ describe('DevicesComponent', () => {
     it('should open device dialog when dialog return null', () => {
       const openDeviceDialogSpy = spyOn(component, 'openDialog');
       spyOn(component.dialog, 'open').and.returnValue({
-        afterClosed: () => of(null),
+        beforeClosed: () => of(null),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
       component.openDeleteDialog(
@@ -343,17 +353,21 @@ describe('DevicesComponent', () => {
             device: device,
             testModules: MOCK_TEST_MODULES,
           },
-          autoFocus: true,
+          autoFocus: 'dialog',
           hasBackdrop: true,
           disableClose: true,
           panelClass: 'initiate-test-run-dialog',
         });
 
-        tick();
+        tick(100);
+
         expect(router.url).toBe(Routes.Testing);
         expect(mockDevicesStore.setStatus).toHaveBeenCalledWith(
           MOCK_PROGRESS_DATA_IN_PROGRESS
         );
+        expect(
+          stateServiceMock.focusFirstElementInContainer
+        ).toHaveBeenCalled();
 
         openSpy.calls.reset();
       });

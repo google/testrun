@@ -336,12 +336,12 @@
           {
             "id": 1,
             "text": "Yes",
-            "risk": "Limited"
+            "risk": "High"
           },
           {
             "id": 2,
             "text": "No",
-            "risk": "High"
+            "risk": "Limited"
           },
           {
             "id": 3,

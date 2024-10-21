@@ -24,7 +24,6 @@ import { AppState } from './state';
 import { TestRunService } from '../services/test-run.service';
 import {
   filter,
-  combineLatest,
   Subject,
   timer,
   take,
@@ -32,11 +31,7 @@ import {
   EMPTY,
   Subscription,
 } from 'rxjs';
-import {
-  selectIsOpenWaitSnackBar,
-  selectMenuOpened,
-  selectSystemStatus,
-} from './selectors';
+import { selectIsOpenWaitSnackBar, selectSystemStatus } from './selectors';
 import {
   IDLE_STATUS,
   StatusOfTestrun,
@@ -63,79 +58,23 @@ const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
 @Injectable()
 export class AppEffects {
+  private isSinglePortMode: boolean | undefined = false;
   private statusSubscription: Subscription | undefined;
   private internetSubscription: Subscription | undefined;
   private destroyWaitDeviceInterval$: Subject<boolean> = new Subject<boolean>();
 
-  checkInterfacesInConfig$ = createEffect(() =>
-    combineLatest([
-      this.actions$.pipe(ofType(AppActions.fetchInterfacesSuccess)),
-      this.actions$.pipe(ofType(AppActions.fetchSystemConfigSuccess)),
-    ]).pipe(
-      filter(
-        ([
-          ,
-          {
-            systemConfig: { network },
-          },
-        ]) => network !== null
-      ),
-      map(
-        ([
-          { interfaces },
-          {
-            systemConfig: { network },
-          },
-        ]) =>
-          AppActions.updateValidInterfaces({
-            validInterfaces: {
-              deviceValid:
-                network?.device_intf == '' ||
-                (!!network?.device_intf && !!interfaces[network.device_intf]),
-              internetValid:
-                network?.internet_intf == '' ||
-                (!!network?.internet_intf &&
-                  !!interfaces[network.internet_intf]),
-            },
-          })
-      )
-    )
-  );
-
-  onValidateInterfaces$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(AppActions.updateValidInterfaces),
-      map(({ validInterfaces }) =>
-        AppActions.updateError({
-          settingMissedError: {
-            isSettingMissed:
-              !validInterfaces.deviceValid || !validInterfaces.internetValid,
-            devicePortMissed: !validInterfaces.deviceValid,
-            internetPortMissed: !validInterfaces.internetValid,
-          },
-        })
-      )
-    );
-  });
-
   onFetchSystemConfigSuccess$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(AppActions.fetchSystemConfigSuccess),
+      tap(
+        ({ systemConfig }) => (this.isSinglePortMode = systemConfig.single_intf)
+      ),
       map(({ systemConfig }) =>
         AppActions.setHasConnectionSettings({
           hasConnectionSettings:
             systemConfig.network != null && !!systemConfig.network.device_intf,
         })
       )
-    );
-  });
-
-  onMenuOpened$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(AppActions.toggleMenu),
-      withLatestFrom(this.store.select(selectMenuOpened)),
-      filter(([, opened]) => opened === true),
-      map(() => AppActions.updateFocusNavigation({ focusNavigation: true })) // user will be navigated to side menu on tab
     );
   });
 
@@ -342,7 +281,9 @@ export class AppEffects {
           false
         );
       }),
-      map(() => AppActions.setTestrunStatus({ systemStatus: IDLE_STATUS }))
+      map(() =>
+        AppActions.fetchSystemStatusSuccess({ systemStatus: IDLE_STATUS })
+      )
     );
   });
 
@@ -384,6 +325,9 @@ export class AppEffects {
   }
 
   private fetchInternetConnection() {
+    if (this.isSinglePortMode) {
+      return;
+    }
     if (
       this.internetSubscription === undefined ||
       this.internetSubscription?.closed

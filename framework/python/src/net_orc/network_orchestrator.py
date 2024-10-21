@@ -17,6 +17,7 @@ import ipaddress
 import json
 import os
 from scapy.all import sniff, wrpcap, BOOTP, AsyncSniffer
+from scapy.error import Scapy_Exception
 import shutil
 import subprocess
 import sys
@@ -300,15 +301,22 @@ class NetworkOrchestrator:
       time.sleep(1)
 
       # Check Testrun hasn't been cancelled
-      if self._session.get_status() == TestrunStatus.CANCELLED:
+      if self._session.get_status() in (
+                                        TestrunStatus.STOPPING,
+                                        TestrunStatus.CANCELLED
+                                        ):
         sniffer.stop()
         return
 
       if not self._ip_ctrl.check_interface_status(
           self._session.get_device_interface()):
-        sniffer.stop()
-        self._session.set_status(TestrunStatus.CANCELLED)
-        LOGGER.error('Device interface disconnected, cancelling Testrun')
+        try:
+          sniffer.stop()
+        except Scapy_Exception:
+          LOGGER.error('Device adapter disconnected whilst monitoring.')
+        finally:
+          self._session.set_status(TestrunStatus.CANCELLED)
+          LOGGER.error('Device interface disconnected, cancelling Testrun')
 
     LOGGER.debug('Writing packets to monitor.pcap')
     wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'),
@@ -426,7 +434,8 @@ class NetworkOrchestrator:
 
     for module_dir in os.listdir(net_modules_dir):
 
-      if self._get_network_module(module_dir) is None:
+      if (self._get_network_module(module_dir) is None and
+          module_dir != 'template'):
         loaded_module = self._load_network_module(module_dir)
         loaded_modules += loaded_module.dir_name + ' '
 
@@ -438,6 +447,7 @@ class NetworkOrchestrator:
     # Make sure we only load each module once since some modules will
     # depend on the same module
     if not any(m.dir_name == module_dir for m in self._net_modules):
+
       LOGGER.debug(f'Loading network module {module_dir}')
 
       modules_dir = os.path.join(self._path, NETWORK_MODULES_DIR)

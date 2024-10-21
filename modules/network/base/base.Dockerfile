@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Image name: testrun/base
-FROM ubuntu@sha256:e6173d4dc55e76b87c4af8db8821b1feae4146dd47341e4d431118c7dd060a74
+FROM ubuntu@sha256:77d57fd89366f7d16615794a5b53e124d742404e20f035c22032233f1826bd6a
 
 RUN apt-get update
 
@@ -30,8 +30,9 @@ COPY $COMMON_DIR/ /testrun/python/src/common
 # Setup the base python requirements
 COPY $MODULE_DIR/python /testrun/python
 
-# Install all python requirements for the module
-RUN pip3 install -r /testrun/python/requirements.txt
+# Install all python requirements for the module 
+# --break-system-packages flag used to bypass PEP668
+RUN pip3 install --break-system-packages -r /testrun/python/requirements.txt
 
 # Add the bin files
 COPY $MODULE_DIR/bin /testrun/bin

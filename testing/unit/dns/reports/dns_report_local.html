@@ -1,1 +1,97 @@
-<h1>DNS Module</h1>      <table class="module-summary">        <thead>          <tr>            <th>Requests to local DNS server</th>            <th>Requests to external DNS servers</th>            <th>Total DNS requests</th>            <th>Total DNS responses</th>          </tr>        </thead>        <tbody>          <tr>            <td>71</td>            <td>0</td>            <td>71</td>            <td>84</td>             </tr>      </table>                             <table class="module-data">          <thead>            <tr>              <th>Source</th>              <th>Destination</th>              <th>Type</th>              <th>URL</th>              <th>Count</th>            </tr>          </thead>          <tbody>              <tr>                <td>10.10.10.14</td>                <td>10.10.10.4</td>                <td>Query</td>                <td>mqtt.googleapis.com</td>                <td>64</td>              </tr>              <tr>                <td>10.10.10.4</td>                <td>10.10.10.14</td>                <td>Response</td>                <td>mqtt.googleapis.com</td>                <td>76</td>              </tr>              <tr>                <td>10.10.10.14</td>                <td>10.10.10.4</td>                <td>Query</td>                <td>pool.ntp.org</td>                <td>7</td>              </tr>              <tr>                <td>10.10.10.4</td>                <td>10.10.10.14</td>                <td>Response</td>                <td>pool.ntp.org</td>                <td>8</td>              </tr>            </tbody>          </table>                       
+<h4 class="page-heading">DNS Module</h4>
+      <table class="module-summary">
+        <thead>
+          <tr>
+            <th>Requests to local DNS server</th>
+            <th>Requests to external DNS servers</th>
+            <th>Total DNS requests</th>
+            <th>Total DNS responses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>71</td>
+            <td>0</td>
+            <td>71</td>
+            <td>84</td>   
+          </tr>
+      </table>
+                     
+        <table class="module-data">
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Destination</th>
+              <th>Resolved IP</th>
+              <th>Type</th>
+              <th>URL</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+              <tr>
+                <td>10.10.10.14</td>
+                <td>10.10.10.4</td>
+                <td>N/A</td>
+                <td>Query</td>
+                <td>mqtt.googleapis.com</td>
+                <td>64</td>
+              </tr>
+              <tr>
+                <td>10.10.10.4</td>
+                <td>10.10.10.14</td>
+                <td>173.194.195.206</td>
+                <td>Response</td>
+                <td>mqtt.googleapis.com</td>
+                <td>38</td>
+              </tr>
+              <tr>
+                <td>10.10.10.4</td>
+                <td>10.10.10.14</td>
+                <td>2607:f8b0:4001:c11::ce</td>
+                <td>Response</td>
+                <td>mqtt.googleapis.com</td>
+                <td>32</td>
+              </tr>
+              <tr>
+                <td>10.10.10.14</td>
+                <td>10.10.10.4</td>
+                <td>N/A</td>
+                <td>Query</td>
+                <td>pool.ntp.org</td>
+                <td>7</td>
+              </tr>
+              <tr>
+                <td>10.10.10.4</td>
+                <td>10.10.10.14</td>
+                <td>N/A</td>
+                <td>Response</td>
+                <td>pool.ntp.org</td>
+                <td>4</td>
+              </tr>
+              <tr>
+                <td>10.10.10.4</td>
+                <td>10.10.10.14</td>
+                <td>5.78.89.3</td>
+                <td>Response</td>
+                <td>pool.ntp.org</td>
+                <td>2</td>
+              </tr>
+              <tr>
+                <td>10.10.10.4</td>
+                <td>10.10.10.14</td>
+                <td>199.68.201.234</td>
+                <td>Response</td>
+                <td>pool.ntp.org</td>
+                <td>2</td>
+              </tr>
+              <tr>
+                <td>10.10.10.4</td>
+                <td>10.10.10.14</td>
+                <td>2607:f8b0:4001:c08::ce</td>
+                <td>Response</td>
+                <td>mqtt.googleapis.com</td>
+                <td>6</td>
+              </tr>
+            </tbody>
+          </table>

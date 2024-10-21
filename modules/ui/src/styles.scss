@@ -172,6 +172,11 @@ mat-hint {
     color: mat.m2-get-color-from-palette($color-primary, 800);
   }
 
+  &.cyan {
+    background: $cyan-50;
+    color: $cyan-900;
+  }
+
   &.grey {
     background: $color-background-grey;
     color: $grey-800;
@@ -311,4 +316,66 @@ body #main {
 
 .mdc-tooltip--multiline .mat-mdc-tooltip-surface {
   text-align: center !important;
+}
+
+@media (max-width: 1110px) {
+  $profiles-drawer-width-xs: 200px;
+  .active-menu {
+    .app-sidebar {
+      width: 214px !important;
+    }
+  }
+
+  .profiles-drawer {
+    width: $profiles-drawer-width-xs !important;
+  }
+
+  .profile-item-container {
+    gap: 4px !important;
+    padding: 16px 4px !important;
+    grid-template-columns: minmax(100px, 1fr) repeat(2, 24px) !important;
+    overflow: hidden;
+  }
+
+  .profile-item-info {
+    gap: 4px !important;
+  }
+
+  app-risk-assessment:has(.profiles-drawer) {
+    .risk-assessment-content-empty {
+      width: calc(100% - $profiles-drawer-width-xs) !important;
+    }
+  }
+
+  app-risk-assessment .main-content {
+    width: auto !important;
+    padding: 16px 4px !important;
+  }
+
+  .risk-assessment-content {
+    padding-right: $profiles-drawer-width-xs !important;
+  }
+
+  app-dynamic-form {
+    width: 100%;
+  }
+}
+
+button:not(.mat-mdc-button-disabled) {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.visually-hidden {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

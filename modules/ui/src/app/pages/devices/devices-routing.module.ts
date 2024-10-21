@@ -16,8 +16,15 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DevicesComponent } from './devices.component';
+import { CanDeactivateGuard } from '../../guards/can-deactivate.guard';
 
-const routes: Routes = [{ path: '', component: DevicesComponent }];
+const routes: Routes = [
+  {
+    path: '',
+    component: DevicesComponent,
+    canDeactivate: [CanDeactivateGuard],
+  },
+];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],

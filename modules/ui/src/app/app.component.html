@@ -79,7 +79,7 @@ limitations under the License.
           class="app-toolbar-button app-toolbar-button-menu"
           aria-label="Menu"
           (click)="toggleMenu($event)"
-          (keydown.tab)="skipToNavigation($event)">
+          (keydown.tab)="skipToNavigation($event, vm.focusNavigation)">
           <mat-icon>menu</mat-icon>
         </button>
         <a
@@ -261,6 +261,7 @@ limitations under the License.
             The device is now being tested. Why not take the time to complete
             the device
             <a
+              #riskAssessmentLink
               (click)="navigateToRiskAssessment()"
               (keydown.enter)="navigateToRiskAssessment()"
               (keydown.space)="navigateToRiskAssessment()"
