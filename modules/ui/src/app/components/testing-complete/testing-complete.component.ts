@@ -7,13 +7,15 @@ import {
 } from '@angular/core';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
-import { TestRunService } from '../../services/test-run.service';
-import { Router } from '@angular/router';
-import { DownloadZipModalComponent } from '../download-zip-modal/download-zip-modal.component';
-import { Routes } from '../../model/routes';
+import {
+  DialogCloseAction,
+  DialogCloseResult,
+  DownloadZipModalComponent,
+} from '../download-zip-modal/download-zip-modal.component';
 import { Profile } from '../../model/profile';
 import { TestrunStatus } from '../../model/testrun-status';
 import { FocusManagerService } from '../../services/focus-manager.service';
+import { TestingType } from '../../model/device';
 
 @Component({
   selector: 'app-testing-complete',
@@ -29,15 +31,15 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
 
   constructor(
     public dialog: MatDialog,
-    private testrunService: TestRunService,
-    private route: Router,
     private focusManagerService: FocusManagerService
   ) {}
 
   ngOnInit() {
-    timer(1000).subscribe(() => {
-      this.openTestingCompleteModal();
-    });
+    timer(1000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.openTestingCompleteModal();
+      });
   }
   ngOnDestroy() {
     this.destroy$.next(true);
@@ -51,6 +53,8 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
         profiles: this.profiles,
         testrunStatus: this.data,
         isTestingComplete: true,
+        url: this.data?.report,
+        isPilot: this.data?.device.test_pack === TestingType.Pilot,
       },
       autoFocus: 'first-tabbable',
       ariaDescribedBy: 'testing-result-main-info',
@@ -62,27 +66,12 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
     dialogRef
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(profile => {
-        if (profile === undefined) {
-          // close modal
+      .subscribe((result: DialogCloseResult) => {
+        if (result.action === DialogCloseAction.Close) {
           this.focusFirstElement();
           return;
         }
-        if (profile === null) {
-          this.navigateToRiskAssessment();
-        } else if (this.data?.report != null) {
-          this.testrunService.downloadZip(
-            this.getZipLink(this.data?.report),
-            profile
-          );
-        }
       });
-  }
-
-  private navigateToRiskAssessment(): void {
-    this.route.navigate([Routes.RiskAssessment]).then(() => {
-      this.focusFirstElement();
-    });
   }
 
   private focusFirstElement() {
@@ -91,9 +80,5 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
       .subscribe(() => {
         this.focusManagerService.focusFirstElementInContainer();
       });
-  }
-
-  private getZipLink(reportURL: string): string {
-    return reportURL.replace('report', 'export');
   }
 }
