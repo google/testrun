@@ -226,7 +226,7 @@ limitations under the License.
       <mat-checkbox
         [formControlName]="i"
         (keydown.tab)="markSectionAsDirty(i, options.length, formControlName)">
-        {{ getOptionValue(option) }}
+        <span [innerHTML]="getOptionValue(option)"></span>
       </mat-checkbox>
     </p>
     <mat-hint *ngIf="description" class="field-hint">{{
