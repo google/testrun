@@ -35,9 +35,11 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
   ) {}
 
   ngOnInit() {
-    timer(1000).subscribe(() => {
-      this.openTestingCompleteModal();
-    });
+    timer(1000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.openTestingCompleteModal();
+      });
   }
   ngOnDestroy() {
     this.destroy$.next(true);
