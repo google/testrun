@@ -281,7 +281,9 @@ export class AppEffects {
           false
         );
       }),
-      map(() => AppActions.setTestrunStatus({ systemStatus: IDLE_STATUS }))
+      map(() =>
+        AppActions.fetchSystemStatusSuccess({ systemStatus: IDLE_STATUS })
+      )
     );
   });
 
