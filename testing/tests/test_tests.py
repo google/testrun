@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ Test assertions for CI testing of tests """
-# Temporarily disabled because using Pytest fixtures
-# TODO refactor fixtures to not trigger error
+
 # pylint: disable=redefined-outer-name
 
 import json
