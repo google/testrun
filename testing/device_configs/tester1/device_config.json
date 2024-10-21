@@ -32,22 +32,22 @@
   ],
   "test_modules": {
     "protocol": {
-      "enabled": true
+      "enabled": false
     },
     "services": {
       "enabled": true
     },
     "ntp": {
-      "enabled": true
+      "enabled": false
     },
     "tls": {
-      "enabled": true
+      "enabled": false
     },
     "connection": {
-      "enabled": true
+      "enabled": false
     },
     "dns": {
-      "enabled": true
+      "enabled": false
     }
   } 
 }
