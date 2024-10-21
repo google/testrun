@@ -85,7 +85,6 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     self._net_only = net_only
     self._single_intf = single_intf
-
     # Network only option only works if UI is also
     # disbled so need to set no_ui if net_only is selected
     self._no_ui = no_ui or net_only
@@ -389,8 +388,13 @@ class Testrun:  # pylint: disable=too-few-public-methods
       self.get_net_orc().get_listener().stop_listener()
 
     self._stop_tests()
-    self._stop_network(kill=True)
+
     self.get_session().set_status(TestrunStatus.CANCELLED)
+
+    # Disconnect before WS server stops to prevent error
+    self._mqtt_client.disconnect()
+
+    self._stop_network(kill=True)
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
