@@ -5,10 +5,8 @@ ip a
 
 # Set paths and servers
 NTP_SERVER=10.10.10.5
-DNS_SERVER=10.10.10.4
+DNS_SERVER=8.8.8.8
 INTF=eth0
-
-dig @8.8.8.8 +short www.google.com
 
 # DHCP
 ip addr flush dev $INTF
@@ -25,6 +23,12 @@ echo $DHCP_TPID
 
 # No FTP, SSH, Telnet, SMTP, HTTP, POP, IMAP services
 echo "FTP, SSH, Telnet, SMTP, HTTP, POP, IMAP, SNMP, VNC, TFTP, NTP services not running"
+
+# DNS MODULE
+
+# Test DNS resolution
+echo "Sending DNS request to $DNS_SERVER"
+dig @$DNS_SERVER +short www.google.com
 
 # Keep network monitoring (can refactor later for other network modules)
 (while true; do arping 10.10.10.1; sleep 10; done) &

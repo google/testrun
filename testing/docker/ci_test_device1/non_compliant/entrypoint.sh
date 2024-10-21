@@ -5,14 +5,11 @@ ip a
 
 # Set paths and servers
 NTP_SERVER=10.10.10.5
-DNS_SERVER=10.10.10.4
+DNS_SERVER="nonexistent.dns.server"
 INTF=eth0
 
 # Check if the interface is up
 ip link show $INTF | grep "state UP" || echo "Warning: $INTF is not up"
-
-# Test DNS resolution
-dig @8.8.8.8 +short www.google.com
 
 # DHCP setup
 ip addr flush dev $INTF
@@ -66,6 +63,12 @@ echo "Starting TFTP on port 69 "
 # Start NTP service 
 echo "Starting NTP service"
 service ntp start
+
+# DNS MODULE
+
+# Test DNS resolution - Non-compliant behavior
+echo "Sending DNS request to non existing $DNS_SERVER"
+dig @$DNS_SERVER +short www.google.com || echo "DNS resolution failed"
 
 # Keep network monitoring
 (while true; do arping 10.10.10.1; sleep 10; done) &

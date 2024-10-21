@@ -47,7 +47,7 @@
       "enabled": false
     },
     "dns": {
-      "enabled": false
+      "enabled": true
     }
   } 
 }
