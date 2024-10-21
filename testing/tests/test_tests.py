@@ -21,7 +21,6 @@ import os
 import glob
 import itertools
 
-from pathlib import Path
 from dataclasses import dataclass
 
 TEST_MATRIX = 'test_tests.json'
@@ -40,9 +39,18 @@ class TestResult:
 
 @pytest.fixture
 def test_matrix():
-  """ Load the test test_tests.json file """
+  """ Load the test_tests.json file """
+
+  # Get the directory of the current file
   basedir = os.path.dirname(os.path.abspath(__file__))
-  with open(os.path.join(basedir, TEST_MATRIX), encoding='utf-8') as f:
+
+  # Construct the full file path
+  filepath = os.path.join(basedir, TEST_MATRIX)
+
+  # Open the JSON file
+  with open(filepath, 'r', encoding='utf-8') as f:
+
+    # Return the loaded JSON content
     return json.load(f)
 
 def collect_expected_results(expected_results):
@@ -56,10 +64,24 @@ def collect_expected_results(expected_results):
 
 @pytest.fixture
 def results():
+  """ Load the test results from /tmp/results/ """
+
+  # Dict to store results
   results = {}
-  for file in [Path(x) for x in glob.glob(RESULTS_PATH)]:
+
+  # Iterate through result files using module glob
+  for file in glob.glob(RESULTS_PATH):
+
+    # Get the file name without the extension
+    file_name = os.path.splitext(os.path.basename(file))[0]
+
+    # Open each result file
     with open(file, encoding='utf-8') as f:
-      results[file.stem] = json.load(f)
+
+      # Load the JSON content and store it with file name as key
+      results[file_name] = json.load(f)
+
+  # Return the loaded results
   return results
 
 def collect_actual_results(results_dict):
@@ -72,51 +94,81 @@ def collect_actual_results(results_dict):
     yield TestResult(test['name'], test['result'])
 
 def test_tests(results, test_matrix):
-  """ Check if each testers expect results were obtained """
+  """ Test to check if expected results were obtained """
+
+  # Iterate through each tester from test_tests.json
   for tester, props in test_matrix.items():
+
+    # Collect expected results
     expected = set(collect_expected_results(props['expected_results']))
+
+    # Collect actual results
     actual = set(collect_actual_results(results[tester]))
 
+    # Tests missing in actual results for debugging
     missing_in_actual = expected - actual
+
+    # Extra tests present in actual results for debugging
     extra_in_actual = actual - expected
 
-    print(f'\nTester: {tester}')
+    # Print tester name
+    print(f'\nTest: {tester}')
 
+    # Print missing tests if any for debugging
     if missing_in_actual:
       print(f'Missing in actual results: {missing_in_actual}')
+
+     # Print extra tests if any for debugging
     if extra_in_actual:
       print(f'Extra in actual results: {extra_in_actual}')
 
+    # Check if all expected results are present in actual results
     assert expected & actual == expected
 
 def test_list_tests(capsys, results, test_matrix):
+  """ List all tests done and categorise based on compliance """
+
+  # Collect all actual test results
   all_tests = set(
       itertools.chain.from_iterable(
           [collect_actual_results(results[x]) for x in results.keys()]))
 
+  # Collect all 'Compliant' tests
   ci_pass = set(
       test for testers in test_matrix.values()
       for test, result in testers['expected_results'].items()
       if result == 'Compliant'
   )
 
+  # Collect all 'Non-Compliant' tests
   ci_fail = set(
       test for testers in test_matrix.values()
       for test, result in testers['expected_results'].items()
       if result == 'Non-Compliant'
   )
 
+  # Disable pytest's capture system to allow direct printing of test information
   with capsys.disabled():
     # TODO: print matching the JSON schema for easy copy/paste
     print('============')
     print('============')
+
+    # Print all tests collected in 'all_tests')
     print('tests seen:')
     print('\n'.join(set(x.name for x in all_tests)))
+
+    # Print compliant tests
     print('\ntesting for pass:')
     print('\n'.join(ci_pass))
+
+    # Print non-compliant tests
     print('\ntesting for fail:')
     print('\n'.join(ci_fail))
+
+    # Print each test results
     print('\ntester results')
+
+    # Iterate over all testers in the test_tests.json
     for tester in test_matrix.keys():
       print(f'\n{tester}:')
       print('  expected results:')
