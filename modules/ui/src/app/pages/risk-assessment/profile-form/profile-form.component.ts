@@ -84,6 +84,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   @ViewChildren(CdkTextareaAutosize)
   autosize!: QueryList<CdkTextareaAutosize>;
   @Input() profileFormat!: ProfileFormat[];
+  @Input() isCopyProfile!: boolean;
   @Input()
   set profiles(profiles: Profile[]) {
     this.profileList = profiles;
@@ -212,7 +213,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     const request: any = {
       questions: [],
     };
-    if (profile) {
+    if (profile && !this.isCopyProfile) {
       request.name = profile.name;
       request.rename = this.nameControl.value?.trim();
     } else {
