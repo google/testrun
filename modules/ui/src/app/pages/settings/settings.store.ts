@@ -46,10 +46,6 @@ export interface SettingsComponentState {
   monitoringPeriodOptions: SystemInterfaces;
 }
 
-export const DEFAULT_INTERNET_OPTION = {
-  '': 'Not specified',
-};
-
 export const LOG_LEVELS = {
   DEBUG: 'Every event will be logged',
   INFO: 'Normal events and issues',
@@ -118,10 +114,7 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
       ...state,
       interfaces,
       deviceOptions: interfaces,
-      internetOptions: {
-        ...DEFAULT_INTERNET_OPTION,
-        ...interfaces,
-      },
+      internetOptions: interfaces,
       isLessThanOneInterface: Object.keys(interfaces).length < 1,
     };
   });
@@ -180,14 +173,19 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
         this.systemConfig$.pipe(
           withLatestFrom(this.deviceOptions$, this.internetOptions$),
           tap(([config, deviceOptions, internetOptions]) => {
+            if (config.single_intf) {
+              this.disableInternetInterface(formGroup);
+            } else {
+              this.setDefaultInternetInterfaceValue(
+                config.network?.internet_intf,
+                internetOptions,
+                formGroup
+              );
+            }
+
             this.setDefaultDeviceInterfaceValue(
               config.network?.device_intf,
               deviceOptions,
-              formGroup
-            );
-            this.setDefaultInternetInterfaceValue(
-              config.network?.internet_intf,
-              internetOptions,
               formGroup
             );
             this.setDefaultLogLevelValue(
@@ -298,6 +296,11 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
       options,
       formGroup.get(FormKey.MONITOR_PERIOD) as FormControl
     );
+  }
+
+  private disableInternetInterface(formGroup: FormGroup) {
+    const internetControl = formGroup.get(FormKey.INTERNET) as FormControl;
+    internetControl.disable();
   }
 
   private setDefaultValue(

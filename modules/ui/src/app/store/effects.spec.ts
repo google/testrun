@@ -425,7 +425,7 @@ describe('Effects', () => {
 
       effects.checkStatusInReports$.subscribe(action => {
         expect(action).toEqual(
-          actions.setTestrunStatus({ systemStatus: IDLE_STATUS })
+          actions.fetchSystemStatusSuccess({ systemStatus: IDLE_STATUS })
         );
         done();
       });

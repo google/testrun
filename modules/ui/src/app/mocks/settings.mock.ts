@@ -33,16 +33,21 @@ export const MOCK_SYSTEM_CONFIG_WITH_DATA: SystemConfig = {
   monitor_period: 600,
 };
 
+export const MOCK_SYSTEM_CONFIG_WITH_SINGLE_PORT: SystemConfig = {
+  network: {
+    device_intf: 'mockDeviceKey',
+    internet_intf: '',
+  },
+  log_level: 'DEBUG',
+  monitor_period: 600,
+  single_intf: true,
+};
+
 export const MOCK_INTERFACES: SystemInterfaces = {
   mockDeviceKey: 'mockDeviceValue',
   mockInternetKey: 'mockInternetValue',
 };
 
-export const MOCK_INTERNET_OPTIONS: SystemInterfaces = {
-  '': 'Not specified',
-  mockDeviceKey: 'mockDeviceValue',
-  mockInternetKey: 'mockInternetValue',
-};
 export const MOCK_DEVICE_VALUE: SystemInterfaces = {
   key: 'mockDeviceKey',
   value: 'mockDeviceValue',

@@ -228,6 +228,24 @@ describe('RiskAssessmentComponent', () => {
       });
     });
 
+    it('#profileClicked should call openForm with profile', fakeAsync(() => {
+      spyOn(component, 'openForm');
+
+      component.profileClicked(PROFILE_MOCK);
+      tick();
+
+      expect(component.openForm).toHaveBeenCalledWith(PROFILE_MOCK);
+    }));
+
+    it('#copyProfileAndOpenForm should call openForm with copy of profile', fakeAsync(() => {
+      spyOn(component, 'openForm');
+
+      component.copyProfileAndOpenForm(PROFILE_MOCK);
+      tick();
+
+      expect(component.openForm).toHaveBeenCalledWith(COPY_PROFILE_MOCK);
+    }));
+
     describe('#saveProfile', () => {
       describe('with no profile selected', () => {
         beforeEach(() => {
@@ -384,6 +402,7 @@ class FakeProfileItemComponent {
 })
 class FakeProfileFormComponent {
   @Input() profiles!: Profile[];
+  @Input() isCopyProfile!: boolean;
   @Input() selectedProfile!: Profile;
   @Input() profileFormat!: ProfileFormat[];
 }
