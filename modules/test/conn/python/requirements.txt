@@ -1,3 +1,12 @@
-pyOpenSSL
-scapy
-python-dateutil
+# Dependencies to user defined packages
+# Package dependencies should always be defined before the user defined
+# packages to prevent auto-upgrades of stable dependencies
+cffi==1.17.1
+cryptography==43.0.1
+pycparser==2.22
+six==1.16.0
+
+# User defined packages
+pyOpenSSL==24.2.1
+scapy==2.5.0
+python-dateutil==2.9.0.post0
