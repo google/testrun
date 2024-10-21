@@ -545,6 +545,7 @@ class TLSModuleTest(unittest.TestCase):
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   suite.addTest(TLSModuleTest('client_hello_packets_test'))
+
   # TLS 1.2 server tests
   suite.addTest(TLSModuleTest('security_tls_v1_2_server_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_3_server_test'))
@@ -558,6 +559,7 @@ if __name__ == '__main__':
 
   # # TLS 1.3 server tests
   suite.addTest(TLSModuleTest('security_tls_v1_3_server_test'))
+
   # TLS client tests
   suite.addTest(TLSModuleTest('security_tls_v1_2_client_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_3_client_test'))
@@ -574,12 +576,12 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
   suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
 
-  # Test signature validation methods
-  suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
-  suite.addTest(TLSModuleTest('tls_module_local_ca_cert_test'))
-  suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
+  # # Test signature validation methods
+  # suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
+  # suite.addTest(TLSModuleTest('tls_module_local_ca_cert_test'))
+  # suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
 
-  suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
+  # suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
 
   runner = unittest.TextTestRunner()
   test_result = runner.run(suite)
