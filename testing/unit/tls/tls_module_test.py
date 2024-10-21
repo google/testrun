@@ -332,7 +332,6 @@ class TLSModuleTest(unittest.TestCase):
                     monitor_capture_file=pcap_file,
                     tls_capture_file=pcap_file)
     report_out_path = tls.generate_module_report()
-
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
 
@@ -362,6 +361,11 @@ class TLSModuleTest(unittest.TestCase):
     with open(LOCAL_REPORT_EXT, 'r', encoding='utf-8') as file:
       report_local = file.read()
 
+    # Copy the generated html report to a new file
+    new_report_name = 'tls_report_ext_local.html'
+    new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
+    shutil.copy(report_out_path, new_report_path)
+
     self.assertEqual(report_out, report_local)
 
   def tls_module_report_no_cert_test(self):
@@ -384,6 +388,11 @@ class TLSModuleTest(unittest.TestCase):
     # Read the local good report
     with open(LOCAL_REPORT_NO_CERT, 'r', encoding='utf-8') as file:
       report_local = file.read()
+
+    # Copy the generated html report to a new file
+    new_report_name = 'tls_report_no_cert_local.html'
+    new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
+    shutil.copy(report_out_path, new_report_path)
 
     self.assertEqual(report_out, report_local)
 
