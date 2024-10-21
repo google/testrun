@@ -192,6 +192,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   discard(selectedProfile: Profile | null) {
     this.liveAnnouncer.clear();
     this.isOpenProfileForm = false;
+    this.isCopyProfile = false;
     if (selectedProfile) {
       timer(100).subscribe(() => {
         this.store.setFocusOnSelectedProfile();
