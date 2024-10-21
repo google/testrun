@@ -4,18 +4,9 @@
 ip a
 
 # Set paths and servers
-OUT=/out/testrun_ci.json
-NTP_SERVER=invalid.ntp.server
+NTP_SERVER=10.10.10.5
 DNS_SERVER=10.10.10.4
 INTF=eth0
-
-function wout(){
-    temp=${1//./\".\"}
-    key=${temp:1}\"
-    echo $key
-    value=$2
-    jq "$key+=\"$value\"" $OUT | sponge $OUT
-}
 
 # Check if the interface is up
 ip link show $INTF | grep "state UP" || echo "Warning: $INTF is not up"
@@ -71,9 +62,6 @@ echo "Starting SNMPv2 on ports 161/162 "
 # Start TFTP service 
 echo "Starting TFTP on port 69 "
 (while true; do echo -ne "\0\x05\0\0\x07\0" | nc -u -l -w 1 69; done) &
-
-# Misconfigure NTP to be non-compliant for network module
-echo "server $NTP_SERVER" > /etc/ntp.conf
 
 # Start NTP service 
 echo "Starting NTP service"

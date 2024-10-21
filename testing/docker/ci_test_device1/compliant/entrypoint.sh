@@ -4,19 +4,9 @@
 ip a
 
 # Set paths and servers
-OUT=/out/testrun_ci.json
 NTP_SERVER=10.10.10.5
 DNS_SERVER=10.10.10.4
 INTF=eth0
-
-function wout(){
-    temp=${1//./\".\"}
-    key=${temp:1}\"
-    echo $key
-    value=$2
-    jq "$key+=\"$value\"" $OUT | sponge $OUT
-}
-
 
 dig @8.8.8.8 +short www.google.com
 
