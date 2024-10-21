@@ -66,8 +66,8 @@ service ntp start
 
 # DNS MODULE
 
-# Test DNS resolution - Non-compliant behavior
-echo "Sending DNS request to non existing $DNS_SERVER"
+# Test DNS resolution
+echo "Sending DNS request to $DNS_SERVER"
 dig @$DNS_SERVER +short www.google.com || echo "DNS resolution failed"
 
 # Keep network monitoring
