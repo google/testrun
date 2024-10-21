@@ -149,32 +149,34 @@ def test_list_tests(capsys, results, test_matrix):
 
   # Disable pytest's capture system to allow direct printing of test information
   with capsys.disabled():
-    # TODO: print matching the JSON schema for easy copy/paste
-    print('============')
-    print('============')
 
     # Print all tests collected in 'all_tests')
     print('tests seen:')
     print('\n'.join(set(x.name for x in all_tests)))
 
     # Print compliant tests
-    print('\ntesting for pass:')
+    print('\ntesting for compliant:')
     print('\n'.join(ci_pass))
 
     # Print non-compliant tests
-    print('\ntesting for fail:')
+    print('\ntesting for non-compliant:')
     print('\n'.join(ci_fail))
 
-    # Print each test results
-    print('\ntester results')
+    # Print each tester results
+    print('\nTester results')
 
     # Iterate over all testers in the test_tests.json
     for tester in test_matrix.keys():
+
       print(f'\n{tester}:')
+
+      # Iterate through expected results
       print('  expected results:')
       for test in collect_expected_results(
         test_matrix[tester]['expected_results']):
         print(f'    {test.name}: {test.result}')
+
+      # Iterate through actual results
       print('  actual results:')
       for test in collect_actual_results(results[tester]):
         if test.name in test_matrix[tester]['expected_results']:
