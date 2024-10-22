@@ -17,7 +17,7 @@
 @import 'src/theming/colors';
 @import 'src/theming/variables';
 
-::ng-deep .field-label {
+.field-label {
   margin: 0;
   color: $grey-800;
   font-size: 18px;

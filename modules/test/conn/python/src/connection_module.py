@@ -577,8 +577,13 @@ class ConnectionModule(TestModule):
 
   def _has_slaac_addres(self):
     packet_capture = (rdpcap(self.startup_capture_file) +
-                      rdpcap(self.monitor_capture_file) +
-                      rdpcap(DHCP_CAPTURE_FILE))
+                      rdpcap(self.monitor_capture_file))
+
+    try:
+      packet_capture += rdpcap(DHCP_CAPTURE_FILE)
+    except FileNotFoundError:
+      LOGGER.error('dhcp-1.pcap not found, ignoring')
+
     sends_ipv6 = False
     for packet_number, packet in enumerate(packet_capture, start=1):
       if IPv6 in packet and packet.src == self._device_mac:
