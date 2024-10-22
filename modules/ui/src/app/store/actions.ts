@@ -15,40 +15,20 @@
  */
 
 import { createAction, props } from '@ngrx/store';
-import {
-  Adapters,
-  InterfacesValidation,
-  SettingMissedError,
-  SystemConfig,
-} from '../model/setting';
+import { Adapters, InterfacesValidation, SystemConfig } from '../model/setting';
 import { SystemInterfaces } from '../model/setting';
 import { Device, TestModule } from '../model/device';
 import { TestrunStatus } from '../model/testrun-status';
 import { Profile } from '../model/profile';
-
-// App component
-export const toggleMenu = createAction('[App Component] Toggle Menu');
-
-export const fetchInterfaces = createAction('[App Component] Fetch Interfaces');
 
 export const fetchInterfacesSuccess = createAction(
   '[App Component] Fetch interfaces Success',
   props<{ interfaces: SystemInterfaces }>()
 );
 
-export const updateFocusNavigation = createAction(
-  '[App Component] update focus navigation',
-  props<{ focusNavigation: boolean }>()
-);
-
 export const updateValidInterfaces = createAction(
   '[App Component] Update Valid Interfaces',
   props<{ validInterfaces: InterfacesValidation }>()
-);
-
-export const updateError = createAction(
-  '[App Component] Update Setting Missed Error',
-  props<{ settingMissedError: SettingMissedError }>()
 );
 
 // Settings
@@ -78,6 +58,16 @@ export const setIsOpenWaitSnackBar = createAction(
 export const setHasDevices = createAction(
   '[Shared] Set Has Devices',
   props<{ hasDevices: boolean }>()
+);
+
+export const setHasExpiredDevices = createAction(
+  '[Shared] Set Has Expired Devices',
+  props<{ hasExpiredDevices: boolean }>()
+);
+
+export const setIsAllDevicesOutdated = createAction(
+  '[Shared] Set Is All Devices Outdated',
+  props<{ isAllDevicesOutdated: boolean }>()
 );
 
 export const setDevices = createAction(
@@ -122,6 +112,11 @@ export const setStatus = createAction(
   props<{ status: string }>()
 );
 
+export const setIsTestingComplete = createAction(
+  '[Shared] Set Is Open Testing Complete',
+  props<{ isTestingComplete: boolean }>()
+);
+
 export const stopInterval = createAction('[Shared] Stop Interval');
 
 export const fetchRiskProfiles = createAction('[Shared] Fetch risk profiles');
@@ -141,4 +136,9 @@ export const setReports = createAction(
 export const setTestModules = createAction(
   '[Shared] Set Test Modules',
   props<{ testModules: TestModule[] }>()
+);
+
+export const updateInternetConnection = createAction(
+  '[Shared] Fetch internet connection',
+  props<{ internetConnection: boolean | null }>()
 );

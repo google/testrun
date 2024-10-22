@@ -9,14 +9,13 @@
     "docker": {
       "depends_on": "base",
       "enable_container": true,
-      "timeout": 30
+      "timeout": 60
     },
     "tests":[
       {
         "name": "ntp.network.ntp_support",
         "test_description": "Does the device request network time sync as client as per RFC 5905 - Network Time Protocol Version 4: Protocol and Algorithms Specification",
         "expected_behavior": "The device sends an NTPv4 request to the configured NTP server.",
-        "required_result": "Required",
         "recommendations": [
           "Set the NTP version to v4 in the NTP client",
           "Install an NTP client that supports NTPv4"
@@ -26,7 +25,6 @@
         "name": "ntp.network.ntp_dhcp",
         "test_description": "Accept NTP address over DHCP",
         "expected_behavior": "Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)",
-        "required_result": "Roadmap",
         "recommendations": [
           "Install an NTP client that supports fetching the NTP servers from DHCP options"
         ]

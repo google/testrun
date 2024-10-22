@@ -15,10 +15,12 @@
 import util
 import time
 import traceback
-from scapy.all import rdpcap, DHCP, ARP, Ether, IPv6, ICMPv6ND_NS
+import os
+from scapy.all import rdpcap, DHCP, ARP, Ether, ICMP, IPv6, ICMPv6ND_NS
 from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
 from dhcp2.client import Client as DHCPClient2
+from host.client import Client as HostClient
 from dhcp_util import DHCPUtil
 from port_stats_util import PortStatsUtil
 
@@ -39,7 +41,14 @@ LEASE_WAIT_TIME_DEFAULT = 60
 class ConnectionModule(TestModule):
   """Connection Test module"""
 
-  def __init__(self, module, log_dir=None, conf_file=None, results_dir=None):
+  def __init__(self,
+               module,
+               log_dir=None,
+               conf_file=None,
+               results_dir=None,
+               startup_capture_file=STARTUP_CAPTURE_FILE,
+               monitor_capture_file=MONITOR_CAPTURE_FILE):
+
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
                      log_dir=log_dir,
@@ -47,9 +56,12 @@ class ConnectionModule(TestModule):
                      results_dir=results_dir)
     global LOGGER
     LOGGER = self._get_logger()
+    self.startup_capture_file = startup_capture_file
+    self.monitor_capture_file = monitor_capture_file
     self._port_stats = PortStatsUtil(logger=LOGGER)
     self.dhcp1_client = DHCPClient1()
     self.dhcp2_client = DHCPClient2()
+    self.host_client = HostClient()
     self._dhcp_util = DHCPUtil(self.dhcp1_client, self.dhcp2_client, LOGGER)
     self._lease_wait_time_sec = LEASE_WAIT_TIME_DEFAULT
 
@@ -106,7 +118,8 @@ class ConnectionModule(TestModule):
     no_arp = True
 
     # Read all the pcap files
-    packets = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
+    packets = rdpcap(self.startup_capture_file) + rdpcap(
+        self.monitor_capture_file)
     for packet in packets:
 
       # We are not interested in packets unless they are ARP packets
@@ -123,12 +136,8 @@ class ConnectionModule(TestModule):
 
       # Check MAC address matches IP address
       if (arp_packet.hwsrc == self._device_mac
-          and (arp_packet.psrc not in (
-            self._device_ipv4_addr,
-            '0.0.0.0'
-          )) and not arp_packet.psrc.startswith(
-            '169.254'
-          )):
+          and (arp_packet.psrc not in (self._device_ipv4_addr, '0.0.0.0'))
+          and not arp_packet.psrc.startswith('169.254')):
         LOGGER.info(f'Bad ARP packet detected for MAC: {self._device_mac}')
         LOGGER.info(f'''ARP packet from IP {arp_packet.psrc}
                     does not match {self._device_ipv4_addr}''')
@@ -145,7 +154,8 @@ class ConnectionModule(TestModule):
     disallowed_dhcp_types = [2, 4, 5, 6, 9, 10, 12, 13, 15, 17]
 
     # Read all the pcap files
-    packets = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
+    packets = rdpcap(self.startup_capture_file) + rdpcap(
+        self.monitor_capture_file)
     for packet in packets:
 
       # We are not interested in packets unless they are DHCP packets
@@ -158,6 +168,11 @@ class ConnectionModule(TestModule):
 
       dhcp_type = self._get_dhcp_type(packet)
       if dhcp_type in disallowed_dhcp_types:
+
+        # Check if packet is responding with port unreachable
+        if ICMP in packet and packet[ICMP].type == 3:
+          continue
+
         return False, 'Device has sent disallowed DHCP message'
 
     return True, 'Device does not act as a DHCP server'
@@ -220,7 +235,8 @@ class ConnectionModule(TestModule):
       return result, 'No MAC address found.'
 
     # Read all the pcap files containing DHCP packet information
-    packets = rdpcap(STARTUP_CAPTURE_FILE) + rdpcap(MONITOR_CAPTURE_FILE)
+    packets = rdpcap(self.startup_capture_file) + rdpcap(
+        self.monitor_capture_file)
 
     # Extract MAC addresses from DHCP packets
     mac_addresses = set()
@@ -230,7 +246,8 @@ class ConnectionModule(TestModule):
         if self._get_dhcp_type(packet) == 3:
           mac_address = packet[Ether].src
           LOGGER.info('DHCPREQUEST detected MAC address: ' + mac_address)
-          if not mac_address.startswith(TR_CONTAINER_MAC_PREFIX):
+          if (not mac_address.startswith(TR_CONTAINER_MAC_PREFIX)
+              and mac_address != self._dev_iface_mac):
             mac_addresses.add(mac_address.upper())
 
     # Check if the device mac address is in the list of DHCPREQUESTs
@@ -366,6 +383,171 @@ class ConnectionModule(TestModule):
       result = None, 'Network is not ready for this test'
     return result
 
+  def _connection_dhcp_disconnect(self):
+    LOGGER.info('Running connection.dhcp.disconnect')
+    result = None
+    description = ''
+    dev_iface = os.getenv('DEV_IFACE')
+    iface_status = self.host_client.check_interface_status(dev_iface)
+    if iface_status.code == 200:
+      LOGGER.info('Successfully resolved iface status')
+      if iface_status.status:
+        lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
+                                              timeout=self._lease_wait_time_sec)
+        if lease is not None:
+          LOGGER.info('Current device lease resolved')
+          if self._dhcp_util.is_lease_active(lease):
+
+            # Disable the device interface
+            iface_down = self.host_client.set_iface_down(dev_iface)
+            if iface_down:
+              LOGGER.info('Device interface set to down state')
+
+              # Wait for the lease to expire
+              self._dhcp_util.wait_for_lease_expire(lease,
+                                                    self._lease_wait_time_sec)
+
+              # Wait an additonal 10 seconds to better test a true disconnect
+              # state
+              LOGGER.info('Waiting 10 seconds before bringing iface back up')
+              time.sleep(10)
+
+              # Enable the device interface
+              iface_up = self.host_client.set_iface_up(dev_iface)
+              if iface_up:
+                LOGGER.info('Device interface set to up state')
+
+                # Confirm device receives a new lease
+                if self._dhcp_util.get_cur_lease(
+                    mac_address=self._device_mac,
+                    timeout=self._lease_wait_time_sec):
+                  if self._dhcp_util.is_lease_active(lease):
+                    result = True
+                    description = (
+                        'Device received a DHCP lease after disconnect')
+                  else:
+                    result = False
+                    description = (
+                        'Could not confirm DHCP lease active after disconnect')
+                else:
+                  result = False
+                  description = (
+                      'Device did not recieve a DHCP lease after disconnect')
+              else:
+                result = 'Error'
+                description = 'Failed to set device interface to up state'
+            else:
+              result = 'Error'
+              description = 'Failed to set device interface to down state'
+        else:
+          result = 'Error'
+          description = 'No active lease available for device'
+      else:
+        result = 'Error'
+        description = 'Device interface is down'
+    else:
+      result = 'Error'
+      description = 'Device interface could not be resolved'
+    return result, description
+
+  def _connection_dhcp_disconnect_ip_change(self):
+    LOGGER.info('Running connection.dhcp.disconnect_ip_change')
+    result = None
+    description = ''
+    reserved_lease = None
+    dev_iface = os.getenv('DEV_IFACE')
+    if self._dhcp_util.setup_single_dhcp_server():
+      iface_status = self.host_client.check_interface_status(dev_iface)
+      if iface_status.code == 200:
+        LOGGER.info('Successfully resolved iface status')
+        if iface_status.status:
+          lease = self._dhcp_util.get_cur_lease(
+              mac_address=self._device_mac, timeout=self._lease_wait_time_sec)
+          if lease is not None:
+            LOGGER.info('Current device lease resolved')
+            if self._dhcp_util.is_lease_active(lease):
+
+              # Add a reserved lease with a different IP
+              ip_address = '10.10.10.30'
+              reserved_lease = self._dhcp_util.add_reserved_lease(
+                  lease['hostname'], self._device_mac, ip_address)
+
+              # Disable the device interface
+              iface_down = self.host_client.set_iface_down(dev_iface)
+              if iface_down:
+                LOGGER.info('Device interface set to down state')
+
+                # Wait for the lease to expire
+                self._dhcp_util.wait_for_lease_expire(lease,
+                                                      self._lease_wait_time_sec)
+
+                if reserved_lease:
+                  # Wait an additonal 10 seconds to better test a true
+                  # disconnect state
+                  LOGGER.info(
+                      'Waiting 10 seconds before bringing iface back up')
+                  time.sleep(10)
+
+                  # Enable the device interface
+                  iface_up = self.host_client.set_iface_up(dev_iface)
+                  if iface_up:
+                    LOGGER.info('Device interface set to up state')
+                    # Confirm device receives a new lease
+                    reserved_lease_accepted = False
+                    LOGGER.info('Checking device accepted new ip')
+                    for _ in range(5):
+                      LOGGER.info('Pinging device at IP: ' + ip_address)
+                      if self._ping(ip_address):
+                        LOGGER.debug('Ping success')
+                        LOGGER.debug(
+                            'Reserved lease confirmed active in device')
+                        reserved_lease_accepted = True
+                        break
+                      else:
+                        LOGGER.info('Device did not respond to ping')
+                        time.sleep(5)  # Wait 5 seconds before trying again
+
+                    if reserved_lease_accepted:
+                      result = True
+                      description = ('Device received expected IP address '
+                                     'after disconnect')
+                    else:
+                      result = False
+                      description = (
+                          'Could not confirm DHCP lease active after disconnect'
+                      )
+                  else:
+                    result = 'Error'
+                    description = 'Failed to set device interface to up state'
+                else:
+                  result = 'Error'
+                  description = 'Failed to set reserved address in DHCP server'
+              else:
+                result = 'Error'
+                description = 'Failed to set device interface to down state'
+          else:
+            result = 'Error'
+            description = 'No active lease available for device'
+        else:
+          result = 'Error'
+          description = 'Device interface is down'
+      else:
+        result = 'Error'
+        description = 'Device interface could not be resolved'
+    else:
+      result = 'Error'
+      description = 'Failed to configure network for test'
+    if reserved_lease:
+      self._dhcp_util.delete_reserved_lease(self._device_mac)
+
+    # Restore the network
+    self._dhcp_util.restore_failover_dhcp_server()
+    LOGGER.info('Waiting 30 seconds for reserved lease to expire')
+    time.sleep(30)
+    self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
+                                  timeout=self._lease_wait_time_sec)
+    return result, description
+
   def _get_oui_manufacturer(self, mac_address):
     # Do some quick fixes on the format of the mac_address
     # to match the oui file pattern
@@ -394,8 +576,14 @@ class ConnectionModule(TestModule):
     return result
 
   def _has_slaac_addres(self):
-    packet_capture = (rdpcap(STARTUP_CAPTURE_FILE) +
-                      rdpcap(MONITOR_CAPTURE_FILE) + rdpcap(DHCP_CAPTURE_FILE))
+    packet_capture = (rdpcap(self.startup_capture_file) +
+                      rdpcap(self.monitor_capture_file))
+
+    try:
+      packet_capture += rdpcap(DHCP_CAPTURE_FILE)
+    except FileNotFoundError:
+      LOGGER.error('dhcp-1.pcap not found, ignoring')
+
     sends_ipv6 = False
     for packet_number, packet in enumerate(packet_capture, start=1):
       if IPv6 in packet and packet.src == self._device_mac:
@@ -432,7 +620,7 @@ class ConnectionModule(TestModule):
     cmd += ' -6 ' if ipv6 else ''
     cmd += str(host)
     #cmd = 'ping -c 1 ' + str(host)
-    success = util.run_command(cmd, output=False) # pylint: disable=E1120
+    success = util.run_command(cmd, output=False)  # pylint: disable=E1120
     return success
 
   def restore_failover_dhcp_server(self, subnet):

@@ -18,20 +18,32 @@ import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import {
-  selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
-  selectMenuOpened,
+  selectInternetConnection,
+  selectIsAllDevicesOutdated,
+  selectIsTestingComplete,
   selectReports,
+  selectRiskProfiles,
   selectStatus,
+  selectSystemConfig,
+  selectSystemStatus,
 } from './store/selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from './store/state';
 import { TestRunService } from './services/test-run.service';
-import { delay, exhaustMap, Observable, skip } from 'rxjs';
-import { Device, TestModule } from './model/device';
+import {
+  combineLatest,
+  delay,
+  exhaustMap,
+  filter,
+  Observable,
+  skip,
+} from 'rxjs';
+import { Device, TestingType, TestModule } from './model/device';
 import {
   setDevices,
   setIsOpenStartTestrun,
@@ -41,55 +53,81 @@ import {
   setTestModules,
   updateAdapters,
 } from './store/actions';
-import { TestrunStatus } from './model/testrun-status';
+import { StatusOfTestrun, TestrunStatus } from './model/testrun-status';
 import {
   Adapters,
   SettingMissedError,
+  SystemConfig,
   SystemInterfaces,
 } from './model/setting';
 import { FocusManagerService } from './services/focus-manager.service';
 import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { NotificationService } from './services/notification.service';
+import { Profile } from './model/profile';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
+export const CALLOUT_STATE_KEY = 'CALLOUT_STATE';
 export interface AppComponentState {
   consentShown: boolean;
   isStatusLoaded: boolean;
-  hasInternetConnection: boolean | null;
   systemStatus: TestrunStatus | null;
+  calloutState: Map<string, boolean>;
+  isMenuOpen: boolean;
+  /**
+   * Indicates, if side menu should be focused on keyboard navigation after menu is opened
+   */
+  focusNavigation: boolean;
+  settingMissedError: SettingMissedError | null;
 }
 @Injectable()
 export class AppStore extends ComponentStore<AppComponentState> {
   private consentShown$ = this.select(state => state.consentShown);
+  private calloutState$ = this.select(state => state.calloutState);
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
-  private hasInternetConnection$ = this.select(
-    state => state.hasInternetConnection
-  );
+  private hasInternetConnection$ = this.store.select(selectInternetConnection);
   private hasDevices$ = this.store.select(selectHasDevices);
+  private isAllDevicesOutdated$ = this.store.select(selectIsAllDevicesOutdated);
+  private hasExpiredDevices$ = this.store.select(selectHasExpiredDevices);
   private hasRiskProfiles$ = this.store.select(selectHasRiskProfiles);
   private reports$ = this.store.select(selectReports);
   private hasConnectionSetting$ = this.store.select(
     selectHasConnectionSettings
   );
-  private isMenuOpen$ = this.store.select(selectMenuOpened);
+  private isMenuOpened$ = this.select(state => state.isMenuOpen);
+  private focusNavigation$ = this.select(state => state.focusNavigation);
   private interfaces$: Observable<SystemInterfaces> =
     this.store.select(selectInterfaces);
+  private systemConfig$: Observable<SystemConfig> =
+    this.store.select(selectSystemConfig);
   private settingMissedError$: Observable<SettingMissedError | null> =
-    this.store.select(selectError);
+    this.select(state => state.settingMissedError);
   systemStatus$: Observable<string | null> = this.store.select(selectStatus);
+  testrunStatus$: Observable<TestrunStatus | null> =
+    this.store.select(selectSystemStatus);
+  isTestingComplete$: Observable<boolean> = this.store.select(
+    selectIsTestingComplete
+  );
+  riskProfiles$: Observable<Profile[]> = this.store.select(selectRiskProfiles);
 
   viewModel$ = this.select({
     consentShown: this.consentShown$,
     hasDevices: this.hasDevices$,
+    isAllDevicesOutdated: this.isAllDevicesOutdated$,
+    hasExpiredDevices: this.hasExpiredDevices$,
     hasRiskProfiles: this.hasRiskProfiles$,
     reports: this.reports$,
     isStatusLoaded: this.isStatusLoaded$,
     systemStatus: this.systemStatus$,
+    testrunStatus: this.testrunStatus$,
+    isTestingComplete: this.isTestingComplete$,
+    riskProfiles: this.riskProfiles$,
     hasConnectionSettings: this.hasConnectionSetting$,
-    isMenuOpen: this.isMenuOpen$,
+    isMenuOpen: this.isMenuOpened$,
     interfaces: this.interfaces$,
     settingMissedError: this.settingMissedError$,
+    calloutState: this.calloutState$,
     hasInternetConnection: this.hasInternetConnection$,
+    focusNavigation: this.focusNavigation$,
   });
 
   updateConsent = this.updater((state, consentShown: boolean) => ({
@@ -97,15 +135,36 @@ export class AppStore extends ComponentStore<AppComponentState> {
     consentShown,
   }));
 
+  updateCalloutState = this.updater((state, callout: string) => {
+    const calloutState = state.calloutState;
+    calloutState.set(callout, true);
+    // @ts-expect-error property is defined in index.html
+    sessionStorage.setObject(CALLOUT_STATE_KEY, calloutState);
+    return {
+      ...state,
+      calloutState: new Map(calloutState),
+    };
+  });
+
   updateIsStatusLoaded = this.updater((state, isStatusLoaded: boolean) => ({
     ...state,
     isStatusLoaded,
   }));
 
-  updateHasInternetConnection = this.updater(
-    (state, hasInternetConnection: boolean | null) => ({
+  updateFocusNavigation = this.updater((state, focusNavigation: boolean) => ({
+    ...state,
+    focusNavigation,
+  }));
+
+  updateIsMenuOpened = this.updater((state, isMenuOpen: boolean) => ({
+    ...state,
+    isMenuOpen,
+  }));
+
+  updateSettingMissedError = this.updater(
+    (state, settingMissedError: SettingMissedError | null) => ({
       ...state,
-      hasInternetConnection,
+      settingMissedError,
     })
   );
 
@@ -170,19 +229,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  getInternetConnection = this.effect(trigger$ => {
-    return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunMqttService.getInternetConnection().pipe(
-          withLatestFrom(this.hasInternetConnection$),
-          tap(([{ connection }]) => {
-            this.updateHasInternetConnection(connection);
-          })
-        );
-      })
-    );
-  });
-
   private notifyAboutTheAdapters(adapters: SystemInterfaces) {
     this.notificationService.notify(
       `New network adapter(s) ${Object.keys(adapters).join(', ')} has been detected. You can switch to using it in the System settings menu`
@@ -239,6 +285,63 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
+  setCloseCallout = this.effect<string>(trigger$ => {
+    return trigger$.pipe(
+      tap((id: string) => {
+        this.updateCalloutState(id);
+      })
+    );
+  });
+
+  toggleMenu = this.effect(trigger$ => {
+    return trigger$.pipe(
+      withLatestFrom(this.isMenuOpened$),
+      tap(([, opened]) => {
+        this.updateIsMenuOpened(!opened);
+        if (!opened) {
+          this.updateFocusNavigation(true);
+        }
+      })
+    );
+  });
+
+  checkInterfacesInConfig = this.effect(() => {
+    return combineLatest([this.interfaces$, this.systemConfig$]).pipe(
+      filter(([, { network }]) => network !== null),
+      tap(([interfaces, { network, single_intf }]) => {
+        const deviceValid =
+          network?.device_intf == '' ||
+          (!!network?.device_intf && !!interfaces[network.device_intf]);
+        const internetValid = single_intf
+          ? true
+          : network?.internet_intf == '' ||
+            (!!network?.internet_intf && !!interfaces[network.internet_intf]);
+        this.updateSettingMissedError({
+          isSettingMissed: !deviceValid || !internetValid,
+          devicePortMissed: !deviceValid,
+          internetPortMissed: !internetValid,
+        });
+      })
+    );
+  });
+
+  sendGAEvent = this.effect(() => {
+    return combineLatest([this.isTestingComplete$, this.testrunStatus$]).pipe(
+      filter(([isTestingComplete]) => isTestingComplete === true),
+      filter(
+        ([, testrunStatus]) =>
+          testrunStatus?.status === StatusOfTestrun.Compliant &&
+          testrunStatus?.device.test_pack === TestingType.Pilot
+      ),
+      tap(() => {
+        // @ts-expect-error data layer is not null
+        window.dataLayer.push({
+          event: 'pilot_is_compliant',
+        });
+      })
+    );
+  });
+
   constructor(
     private store: Store<AppState>,
     private testRunService: TestRunService,
@@ -246,11 +349,19 @@ export class AppStore extends ComponentStore<AppComponentState> {
     private focusManagerService: FocusManagerService,
     private notificationService: NotificationService
   ) {
+    // @ts-expect-error get object is defined in index.html
+    const calloutState = sessionStorage.getObject(CALLOUT_STATE_KEY);
+
     super({
       consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,
       isStatusLoaded: false,
       systemStatus: null,
-      hasInternetConnection: null,
+      calloutState: calloutState
+        ? new Map(Object.entries(calloutState))
+        : new Map(),
+      isMenuOpen: false,
+      focusNavigation: false,
+      settingMissedError: null,
     });
   }
 }

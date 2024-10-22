@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
 import { TestrunInitiateFormComponent } from './testrun-initiate-form.component';
 import {
@@ -23,7 +28,7 @@ import {
 } from '@angular/material/dialog';
 import { TestRunService } from '../../../../services/test-run.service';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { Device } from '../../../../model/device';
+import { Device, DeviceStatus } from '../../../../model/device';
 import { DeviceItemComponent } from '../../../../components/device-item/device-item.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
@@ -196,6 +201,7 @@ describe('ProgressInitiateFormComponent', () => {
           component.startTestRun();
 
           expect(testRunServiceMock.startTestrun).toHaveBeenCalledWith({
+            status: DeviceStatus.VALID,
             manufacturer: 'Delta',
             model: 'O3-DIN-CPU',
             mac_addr: '00:1e:42:35:73:c4',
@@ -230,7 +236,7 @@ describe('ProgressInitiateFormComponent', () => {
         expect(buttonSpy).toHaveBeenCalled();
       });
 
-      it('should focus firmware', () => {
+      it('should focus firmware', fakeAsync(() => {
         component.selectedDevice = device;
         component.setFirmwareFocus = true;
         const firmwareSpy = spyOn(
@@ -239,9 +245,10 @@ describe('ProgressInitiateFormComponent', () => {
         );
         component.ngAfterViewChecked();
         fixture.detectChanges();
+        tick(100);
 
         expect(firmwareSpy).toHaveBeenCalled();
-      });
+      }));
     });
 
     it('should focus element on focusButton ', () => {
@@ -301,12 +308,6 @@ describe('ProgressInitiateFormComponent', () => {
         const deviceItem = compiled.querySelector('app-device-item');
 
         expect(deviceItem).toBeTruthy();
-      });
-
-      it('should have tabindex -1 for device item', () => {
-        const deviceItem = compiled.querySelector('app-device-item button');
-
-        expect((deviceItem as HTMLElement).tabIndex).toBe(-1);
       });
 
       it('should display firmware if device selected', () => {

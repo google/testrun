@@ -19,55 +19,49 @@ import {
   selectAdapters,
   selectDeviceInProgress,
   selectDevices,
-  selectError,
   selectHasConnectionSettings,
   selectHasDevices,
   selectHasRiskProfiles,
-  selectInterfaces,
   selectIsOpenAddDevice,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
-  selectMenuOpened,
   selectReports,
   selectRiskProfiles,
   selectStatus,
   selectSystemStatus,
   selectTestModules,
+  selectHasExpiredDevices,
+  selectInternetConnection,
+  selectIsAllDevicesOutdated,
+  selectIsTestingComplete,
+  selectInterfaces,
+  selectSystemConfig,
 } from './selectors';
 
 describe('Selectors', () => {
   const initialState: AppState = {
-    appComponent: {
-      isMenuOpen: false,
-      interfaces: {},
-      isStatusLoaded: false,
-      devicesLength: 0,
-      focusNavigation: false,
-      settingMissedError: null,
-    },
-    shared: {
-      hasConnectionSettings: false,
-      devices: [],
-      hasDevices: false,
-      isOpenAddDevice: false,
-      riskProfiles: [],
-      hasRiskProfiles: false,
-      isStopTestrun: false,
-      isOpenWaitSnackBar: false,
-      isOpenStartTestrun: false,
-      systemStatus: null,
-      deviceInProgress: null,
-      status: null,
-      reports: [],
-      testModules: [],
-      adapters: {},
-    },
+    hasConnectionSettings: false,
+    isAllDevicesOutdated: false,
+    devices: [],
+    hasDevices: false,
+    hasExpiredDevices: false,
+    isOpenAddDevice: false,
+    riskProfiles: [],
+    hasRiskProfiles: false,
+    isStopTestrun: false,
+    isOpenWaitSnackBar: false,
+    isOpenStartTestrun: false,
+    systemStatus: null,
+    deviceInProgress: null,
+    status: null,
+    isTestingComplete: false,
+    reports: [],
+    testModules: [],
+    adapters: {},
+    internetConnection: null,
+    interfaces: {},
+    systemConfig: { network: {} },
   };
-
-  it('should select the is menu opened', () => {
-    const result = selectMenuOpened.projector(initialState);
-    expect(result).toEqual(false);
-  });
 
   it('should select interfaces', () => {
     const result = selectInterfaces.projector(initialState);
@@ -79,11 +73,6 @@ describe('Selectors', () => {
     expect(result).toEqual(false);
   });
 
-  it('should select settingMissedError', () => {
-    const result = selectError.projector(initialState);
-    expect(result).toEqual(null);
-  });
-
   it('should select devices', () => {
     const result = selectDevices.projector(initialState);
     expect(result).toEqual([]);
@@ -91,6 +80,16 @@ describe('Selectors', () => {
 
   it('should select hasDevices', () => {
     const result = selectHasDevices.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select hasExpiredDevices', () => {
+    const result = selectHasExpiredDevices.projector(initialState);
+    expect(result).toEqual(false);
+  });
+
+  it('should select isAllDevicesOutdated', () => {
+    const result = selectIsAllDevicesOutdated.projector(initialState);
     expect(result).toEqual(false);
   });
 
@@ -112,6 +111,11 @@ describe('Selectors', () => {
   it('should select systemStatus', () => {
     const result = selectSystemStatus.projector(initialState);
     expect(result).toEqual(null);
+  });
+
+  it('should select isTestingComplete', () => {
+    const result = selectIsTestingComplete.projector(initialState);
+    expect(result).toEqual(false);
   });
 
   it('should select isOpenStartTestrun', () => {
@@ -147,5 +151,15 @@ describe('Selectors', () => {
   it('should select adapters', () => {
     const result = selectAdapters.projector(initialState);
     expect(result).toEqual({});
+  });
+
+  it('should select internetConnection', () => {
+    const result = selectInternetConnection.projector(initialState);
+    expect(result).toEqual(null);
+  });
+
+  it('should select systemConfig', () => {
+    const result = selectSystemConfig.projector(initialState);
+    expect(result).toEqual({ network: {} });
   });
 });

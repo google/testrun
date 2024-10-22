@@ -1,0 +1,241 @@
+{% import 'header_macros.jinja' as header_macros %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testrun Report</title>
+  <style>{{ styles }}</style>
+</head>
+  
+<body>
+  {% set page_index = namespace(value=0) %}
+  {# Test Results #}
+  {% for page in range(pages_num) %}
+  {% set page_index.value = page_index.value+1 %}
+  <div class="page">
+    {{ header_macros.header(loop.first, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
+    {% if loop.first %}
+    <div class="summary-content">
+      <div class="device-information">
+        <div style="padding-right:0.1in;">
+          <div class="summary-item-label"><h4>Manufacturer</h4></div>
+          <div class="summary-item-value">{{ device['manufacturer']}}</div>
+          <div class="summary-item-space"></div>
+          <div class="summary-item-label"><h4>Model</h4></div>
+          <div class="summary-item-value">{{ device['model'] }}</div>
+          <div class="summary-item-space"></div>
+          <div class="summary-item-label"><h4>Firmware</h4></div>
+          <div class="summary-item-value">{{ device['firmware']}}</div>
+          <div class="summary-item-space"></div>
+          <div class="summary-item-label"><h4>MAC Address</h4></div>
+          <div class="summary-item-value">{{ device['mac_addr'] }}</div>
+        </div>
+      </div>
+        <div class="summary-device-modules">
+          <div class="summary-item-label" style="margin-bottom:10px;">
+            <h4>Device Configuration</h4>
+          </div>
+          {% for module, enabled in modules.items() %}
+          <div class="summary-device-module-label">
+            {% if enabled %}
+            <span style="color:#34a853">✔ </span>
+            {% else %}
+            <span style="color:#ea4335">✖ </span>
+            {% endif %}
+            {{ module }}
+          </div>
+          {% endfor %}
+        </div>
+        {% if test_status == 'Compliant' %}
+        <div class ="summary-color-box summary-box-compliant">
+        {% else %}
+        <div class ="summary-color-box summary-box-non-compliant">
+        {% endif %}
+          <div class="summary-box-label">Test Status</div>
+          <div class="summary-box-value">Complete</div>
+          <div class="summary-box-label">Test Result</div>
+          <div style="color: white; font-size:24px; font-weight: 700;" class="summary-box-value">{{ test_status }}</div>
+          <div class="summary-box-label">Started</div>
+          <div class="summary-box-value">{{ json_data['started']}}</div>
+          <div class="summary-box-label">Duration</div>
+          <div class="summary-box-value">
+            {% if duration.seconds//3600 > 0 %}{{ duration.seconds//3600 }}h {% endif %}
+            {% if duration.seconds//60 > 0 %}{{ duration.seconds//60 }}m {% endif %}
+            {{ duration.seconds%60 }}s
+          </div>
+      </div>
+    </div>
+    {% endif %}
+      {% if loop.first %}
+        {% set results_from = 0 %}
+        {% set results_to = [tests_first_page, test_results|length]|min %}
+      {% else %}
+        {% set results_from = tests_first_page + (loop.index0 - 1) * tests_per_page %}
+        {% set results_to = [results_from + tests_per_page, test_results|length]|min %}
+      {% endif %}
+      <div class="result-list">
+        <h4 class="result-list-title">Results List <small>({{ successful_tests }}/{{ total_tests }})</small></h4>
+        <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
+          <div class="result-list-header-label" style="left: .1in">Name</div>
+          <div class="result-list-header-label" style="left: 2.8in">Description</div>
+          <div class="result-list-header-label" style="left: 6.85in">Result</div>
+        </div>
+        {% for i in range(results_from, results_to) %}
+        <div class="result-line result-line-result">
+          <div class="result-test-label" style="left: .1in;">{{ test_results[i]['name'] }}</div>
+          <div class="result-test-label result-test-description" style="left: 2.8in;">{{ test_results[i]['description'] }}</div>
+          {% if test_results[i]['result'] == 'Non-Compliant' %}
+            <div class="result-test-label result-test-result result-test-result-non-compliant">
+          {% elif test_results[i]['result'] == 'Compliant' %}
+            <div class="result-test-label result-test-result result-test-result-compliant">
+          {% elif  test_results[i]['result'] == 'Error' %}
+            <div class="result-test-label result-test-result result-test-result-error">
+          {% elif test_results[i]['result'] == 'Feature Not Detected' %}
+            <div class="result-test-label result-test-result result-test-result-feature-not-detected">
+          {% elif test_results[i]['result'] == 'Informational' %}
+            <div class="result-test-label result-test-result result-test-result-informational">
+          {% else %}
+            <div class="result-test-label result-test-result result-test-result-skipped">
+          {% endif %}
+          {{ test_results[i]['result'] }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="footer">
+        <div class="footer-label">Testrun {{ version }}</div>
+        <div class="footer-label" style="right: 0px">Page {{ page_index.value }}/{{ total_pages }}</div>
+      </div>
+    </div>
+    <div style="break-after:page"></div>
+  {% endfor %}
+  {# Steps to resolve Device qualification #}
+  {% if steps_to_resolve|length > 0 and json_data['device']['test_pack'] == 'Device Qualification' %}
+  {% set page_index.value = page_index.value+1 %}
+  <div class="page">
+    {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
+    <h2 class="page-heading">Non-compliant tests and suggested steps to resolve</h2>
+    {% for step in steps_to_resolve %}
+    <div class="steps-to-resolve">
+      <div class="steps-to-resolve-row">
+        <span class="steps-to-resolve-index">{{ loop.index }}.</span>
+        <div class="steps-to-resolve-test-name">
+          <span class="steps-to-resolve subtitle">Name</span><br>{{ step['name'] }}
+        </div>
+        <div class="steps-to-resolve-description">
+          <span class="steps-to-resolve subtitle">Description</span><br>{{ step["description"] }}
+        </div>
+      </div>
+      <div class="steps-to-resolve-row content">
+        <span class="steps-to-resolve subtitle">Steps to resolve</span>
+        {% for recommedtation in step['recommendations'] %}
+          <br><span style="font-size: 14px">{{ loop.index }}. {{ recommedtation }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  <div class="footer">
+    <div class="footer-label">Testrun {{ version }}</div>
+    <div class="footer-label" style="right: 0px">Page {{ page_index.value }}/{{ total_pages }}</div>
+  </div>
+  </div><div style="break-after:page"></div>
+  {% endif %}
+  {# Modules reports #}
+  {% for module in module_reports %}
+  {% set page_index.value = page_index.value+1 %}
+  <div class="page">
+    {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
+    <div class="module-page-content">
+      {{ module }}  
+    </div>
+  <div class="footer">
+    <div class="footer-label">Testrun {{ version }}</div>
+    <div class="footer-label" style="right: 0px">Page {{ page_index.value }}/{{ total_pages }}</div>
+  </div>
+  </div>
+  <div style="break-after:page"></div>
+  {% endfor %}
+  {# Device profile #}
+  {% set page_index.value = page_index.value+1 %}
+  <div class="page">
+    {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
+    <h4 class="page-heading">Device profile</h4>
+    <div class="device-profile-content">
+      <div class="device-profile-head">
+        <div class="device-profile-head-question">Question</div>
+        <div class="device-profile-head-answer">Answer</div>
+      </div>
+      {% for question in json_data['device']['device_profile'] %}
+      <div class="device-profile-row">
+        <div class="device-profile-number">{{loop.index}}.</div>
+        <div class="device-profile-question">{{ question['question'] }}</div>
+        <div class="device-profile-answer">
+          {% if question['answer'] is string %}
+            {{ question['answer'] }}
+          {% elif question['answer'] is sequence %}
+            <ul style="padding-left: 20px">
+              {% for answer in question['answer'] %}
+                <li>{{ answer }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  <div class="footer">
+    <div class="footer-label">Testrun {{ version }}</div>
+    <div class="footer-label" style="right: 0px">Page {{ page_index.value }}/{{ total_pages }}</div>
+  </div>
+  </div>
+  <div style="break-after:page"></div>
+  {# Pilot steps to resolve#}
+  {% if json_data['device']['test_pack'] == 'Pilot Assessment' and optional_steps_to_resolve|length > 0 %}
+  {% set page_index.value = page_index.value + 1 %}
+  <div class="page">
+    {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
+    <h4 class="page-heading">Recommendations for Device Qualification</h4>
+    <div class="steps-to-resolve-info">
+      <p class="steps-to-resolve-info-heading">Attention</p>
+      <p class="steps-to-resolve-info-content">
+        The following recommendations are required solely for full device qualification.
+        They are optional for the pilot assessment.
+        But you may find it valuable to understand what will be required in the future
+        and our recommendations for your device.
+      </p>
+    </div>
+    {% for step in optional_steps_to_resolve %}
+    <div class="steps-to-resolve">
+      <div class="steps-to-resolve-row">
+        <span class="steps-to-resolve-index">
+          {{ loop.index }}.
+        </span>
+        <div class="steps-to-resolve-test-name">
+          <span class="steps-to-resolve subtitle">Name</span><br>
+            {{ step['name'] }}
+        </div>
+        <div class="steps-to-resolve-description">
+          <span class="steps-to-resolve subtitle">Description</span><br>
+            {{ step["description"] }}
+        </div>
+      </div>
+      <div class="steps-to-resolve-row content">
+        <span class="steps-to-resolve subtitle">Steps to resolve</span>
+          {% for recommedtation in step['optional_recommendations'] %}
+          <br>
+          <span style="font-size: 14px">
+            {{ loop.index }}. {{ recommedtation }}
+          </span>
+          {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+    <div class="footer">
+      <div class="footer-label">Testrun {{ version }}</div>
+      <div class="footer-label" style="right: 0px">Page {{ page_index.value }}/{{ total_pages }}</div>
+    </div>
+  </div><div style="break-after:page"></div>
+  {% endif %}
+</body>
+</html>

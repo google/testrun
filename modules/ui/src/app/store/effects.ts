@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
@@ -24,99 +24,51 @@ import { AppState } from './state';
 import { TestRunService } from '../services/test-run.service';
 import {
   filter,
-  combineLatest,
-  interval,
   Subject,
   timer,
   take,
   catchError,
   EMPTY,
+  Subscription,
 } from 'rxjs';
-import {
-  selectIsOpenWaitSnackBar,
-  selectMenuOpened,
-  selectSystemStatus,
-} from './selectors';
+import { selectIsOpenWaitSnackBar, selectSystemStatus } from './selectors';
 import {
   IDLE_STATUS,
-  IResult,
   StatusOfTestrun,
   TestrunStatus,
-  TestsData,
 } from '../model/testrun-status';
 import {
   fetchSystemStatus,
+  fetchSystemStatusSuccess,
+  setIsTestingComplete,
   setReports,
   setStatus,
   setTestrunStatus,
   stopInterval,
+  updateInternetConnection,
 } from './actions';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { NotificationService } from '../services/notification.service';
 import { Profile } from '../model/profile';
+import { DeviceStatus } from '../model/device';
+import { TestRunMqttService } from '../services/test-run-mqtt.service';
+import { InternetConnection } from '../model/topic';
 
 const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
 @Injectable()
 export class AppEffects {
-  private startInterval = false;
-  private destroyInterval$: Subject<boolean> = new Subject<boolean>();
+  private isSinglePortMode: boolean | undefined = false;
+  private statusSubscription: Subscription | undefined;
+  private internetSubscription: Subscription | undefined;
   private destroyWaitDeviceInterval$: Subject<boolean> = new Subject<boolean>();
-
-  checkInterfacesInConfig$ = createEffect(() =>
-    combineLatest([
-      this.actions$.pipe(ofType(AppActions.fetchInterfacesSuccess)),
-      this.actions$.pipe(ofType(AppActions.fetchSystemConfigSuccess)),
-    ]).pipe(
-      filter(
-        ([
-          ,
-          {
-            systemConfig: { network },
-          },
-        ]) => network !== null
-      ),
-      map(
-        ([
-          { interfaces },
-          {
-            systemConfig: { network },
-          },
-        ]) =>
-          AppActions.updateValidInterfaces({
-            validInterfaces: {
-              deviceValid:
-                network?.device_intf == '' ||
-                (!!network?.device_intf && !!interfaces[network.device_intf]),
-              internetValid:
-                network?.internet_intf == '' ||
-                (!!network?.internet_intf &&
-                  !!interfaces[network.internet_intf]),
-            },
-          })
-      )
-    )
-  );
-
-  onValidateInterfaces$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(AppActions.updateValidInterfaces),
-      map(({ validInterfaces }) =>
-        AppActions.updateError({
-          settingMissedError: {
-            isSettingMissed:
-              !validInterfaces.deviceValid || !validInterfaces.internetValid,
-            devicePortMissed: !validInterfaces.deviceValid,
-            internetPortMissed: !validInterfaces.internetValid,
-          },
-        })
-      )
-    );
-  });
 
   onFetchSystemConfigSuccess$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(AppActions.fetchSystemConfigSuccess),
+      tap(
+        ({ systemConfig }) => (this.isSinglePortMode = systemConfig.single_intf)
+      ),
       map(({ systemConfig }) =>
         AppActions.setHasConnectionSettings({
           hasConnectionSettings:
@@ -126,20 +78,37 @@ export class AppEffects {
     );
   });
 
-  onMenuOpened$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(AppActions.toggleMenu),
-      withLatestFrom(this.store.select(selectMenuOpened)),
-      filter(([, opened]) => opened === true),
-      map(() => AppActions.updateFocusNavigation({ focusNavigation: true })) // user will be navigated to side menu on tab
-    );
-  });
-
   onSetDevices$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(AppActions.setDevices),
       map(({ devices }) =>
         AppActions.setHasDevices({ hasDevices: devices.length > 0 })
+      )
+    );
+  });
+
+  onSetExpiredDevices$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setDevices),
+      map(({ devices }) =>
+        AppActions.setHasExpiredDevices({
+          hasExpiredDevices: devices.some(
+            device => device.status === DeviceStatus.INVALID
+          ),
+        })
+      )
+    );
+  });
+
+  onSetIsAllDevicesOutdated$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.setDevices),
+      map(({ devices }) =>
+        AppActions.setIsAllDevicesOutdated({
+          isAllDevicesOutdated: devices.every(
+            device => device.status === DeviceStatus.INVALID
+          ),
+        })
       )
     );
   });
@@ -206,8 +175,8 @@ export class AppEffects {
       return this.actions$.pipe(
         ofType(AppActions.stopInterval),
         tap(() => {
-          this.startInterval = false;
-          this.destroyInterval$.next(true);
+          this.statusSubscription?.unsubscribe();
+          this.internetSubscription?.unsubscribe();
         })
       );
     },
@@ -219,11 +188,14 @@ export class AppEffects {
       return this.actions$.pipe(
         ofType(AppActions.fetchSystemStatusSuccess),
         tap(({ systemStatus }) => {
-          if (
-            this.testrunService.testrunInProgress(systemStatus.status) &&
-            !this.startInterval
-          ) {
+          this.store.dispatch(
+            setIsTestingComplete({
+              isTestingComplete: this.isTestrunFinished(systemStatus.status),
+            })
+          );
+          if (this.testrunService.testrunInProgress(systemStatus.status)) {
             this.pullingSystemStatusData();
+            this.fetchInternetConnection();
           } else if (
             !this.testrunService.testrunInProgress(systemStatus.status)
           ) {
@@ -241,35 +213,20 @@ export class AppEffects {
           ) {
             this.showSnackBar();
           }
-          if (
-            systemStatus?.status !== StatusOfTestrun.WaitingForDevice &&
-            isOpenWaitSnackBar
-          ) {
-            this.notificationService.dismissWithTimout();
+          if (systemStatus?.status !== StatusOfTestrun.WaitingForDevice) {
+            if (isOpenWaitSnackBar) {
+              this.notificationService.dismissWithTimout();
+            } else {
+              this.destroyWaitDeviceInterval$.next(true);
+            }
           }
         }),
         tap(([{ systemStatus }, , status]) => {
           // for app - requires only status
           if (systemStatus.status !== status?.status) {
-            this.ngZone.run(() => {
-              this.store.dispatch(setStatus({ status: systemStatus.status }));
-              this.store.dispatch(
-                setTestrunStatus({ systemStatus: systemStatus })
-              );
-            });
-          } else if (
-            systemStatus.finished !== status?.finished ||
-            (systemStatus.tests as TestsData)?.results?.length !==
-              (status?.tests as TestsData)?.results?.length ||
-            (systemStatus.tests as IResult[])?.length !==
-              (status?.tests as IResult[])?.length
-          ) {
-            this.ngZone.run(() => {
-              this.store.dispatch(
-                setTestrunStatus({ systemStatus: systemStatus })
-              );
-            });
+            this.store.dispatch(setStatus({ status: systemStatus.status }));
           }
+          this.store.dispatch(setTestrunStatus({ systemStatus: systemStatus }));
         })
       );
     },
@@ -324,7 +281,9 @@ export class AppEffects {
           false
         );
       }),
-      map(() => AppActions.setTestrunStatus({ systemStatus: IDLE_STATUS }))
+      map(() =>
+        AppActions.fetchSystemStatusSuccess({ systemStatus: IDLE_STATUS })
+      )
     );
   });
 
@@ -353,22 +312,43 @@ export class AppEffects {
   }
 
   private pullingSystemStatusData(): void {
-    this.ngZone.runOutsideAngular(() => {
-      this.startInterval = true;
-      interval(5000)
-        .pipe(
-          takeUntil(this.destroyInterval$),
-          tap(() => this.store.dispatch(fetchSystemStatus()))
-        )
-        .subscribe();
-    });
+    if (
+      this.statusSubscription === undefined ||
+      this.statusSubscription?.closed
+    ) {
+      this.statusSubscription = this.testrunMqttService
+        .getStatus()
+        .subscribe(systemStatus => {
+          this.store.dispatch(fetchSystemStatusSuccess({ systemStatus }));
+        });
+    }
+  }
+
+  private fetchInternetConnection() {
+    if (this.isSinglePortMode) {
+      return;
+    }
+    if (
+      this.internetSubscription === undefined ||
+      this.internetSubscription?.closed
+    ) {
+      this.internetSubscription = this.testrunMqttService
+        .getInternetConnection()
+        .subscribe((internetConnection: InternetConnection) => {
+          this.store.dispatch(
+            updateInternetConnection({
+              internetConnection: internetConnection.connection,
+            })
+          );
+        });
+    }
   }
 
   constructor(
     private actions$: Actions,
     private testrunService: TestRunService,
+    private testrunMqttService: TestRunMqttService,
     private store: Store<AppState>,
-    private ngZone: NgZone,
     private notificationService: NotificationService
   ) {}
 }

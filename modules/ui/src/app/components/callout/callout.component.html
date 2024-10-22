@@ -15,12 +15,23 @@ limitations under the License.
 -->
 <div class="callout-container" [ngClass]="type">
   <mat-icon
+    *ngIf="type !== CalloutType.InfoPilot"
     class="callout-icon"
     fontSet="material-icons-outlined"
     color="primary">
     {{ type }}
   </mat-icon>
+  <span *ngIf="type === CalloutType.InfoPilot" class="callout-icon info-pilot">
+    <app-program-type-icon [type]="ProgramType.Pilot"></app-program-type-icon
+  ></span>
   <p class="callout-context">
     <ng-content></ng-content>
   </p>
+  <button
+    *ngIf="closable"
+    class="callout-close-button"
+    mat-button
+    (click)="calloutClosed.emit(id)">
+    Dismiss
+  </button>
 </div>

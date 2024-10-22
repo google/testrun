@@ -33,7 +33,6 @@ import { LoaderService } from '../../services/loader.service';
 import { SettingsStore } from './settings.store';
 import {
   MOCK_INTERFACES,
-  MOCK_INTERNET_OPTIONS,
   MOCK_SYSTEM_CONFIG_WITH_DATA,
 } from '../../mocks/settings.mock';
 import { SettingsDropdownComponent } from './components/settings-dropdown/settings-dropdown.component';
@@ -331,7 +330,7 @@ describe('GeneralSettingsComponent', () => {
         isLessThanOneInterface: false,
         interfaces: MOCK_INTERFACES,
         deviceOptions: MOCK_INTERFACES,
-        internetOptions: MOCK_INTERNET_OPTIONS,
+        internetOptions: MOCK_INTERFACES,
         logLevelOptions: {},
         monitoringPeriodOptions: {},
       });

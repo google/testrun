@@ -33,11 +33,11 @@
   padding: 16px 32px;
 
   &.progress {
-    background-color: mat.get-color-from-palette($color-primary, 700);
+    background-color: mat.m2-get-color-from-palette($color-primary, 700);
   }
 
   &.completed-success {
-    background-color: mat.get-color-from-palette($color-accent, 700);
+    background-color: mat.m2-get-color-from-palette($color-accent, 700);
   }
 
   &.completed-failed {

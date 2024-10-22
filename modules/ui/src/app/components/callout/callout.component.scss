@@ -21,25 +21,13 @@
   width: 100%;
 }
 
-:host:has(.callout-container.info),
-:host:has(.callout-container.error),
-:host:has(.callout-container.check_circle) {
-  position: absolute;
-}
+:host .info-pilot ::ng-deep app-program-type-icon {
+  padding-right: 1px;
 
-:host + ::ng-deep app-callout {
-  top: 60px;
-}
-
-@media (width < 742px) {
-  :host + ::ng-deep app-callout {
-    top: 80px;
-  }
-}
-
-@media (width < 490px) {
-  :host + ::ng-deep app-callout {
-    top: 100px;
+  .icon {
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
   }
 }
 
@@ -61,10 +49,16 @@
 
 .callout-container.info {
   margin: 24px 32px;
-  background-color: mat.get-color-from-palette($color-primary, 50);
+  background-color: mat.m2-get-color-from-palette($color-primary, 50);
 
   .callout-icon {
-    color: mat.get-color-from-palette($color-primary, 700);
+    color: mat.m2-get-color-from-palette($color-primary, 700);
+  }
+
+  .info-pilot {
+    width: 24px;
+    display: flex;
+    justify-content: center;
   }
 }
 
@@ -116,4 +110,10 @@
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
+}
+
+.callout-close-button {
+  margin-left: auto;
+  margin-right: -20px;
+  color: $warn;
 }

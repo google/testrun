@@ -42,25 +42,24 @@ import {
 import { Routes } from './model/routes';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { State } from '@ngrx/store';
-import { appFeatureKey } from './store/reducers';
 import { FocusManagerService } from './services/focus-manager.service';
 import { AppState } from './store/state';
+import { setIsOpenAddDevice } from './store/actions';
 import {
-  setIsOpenAddDevice,
-  toggleMenu,
-  updateFocusNavigation,
-} from './store/actions';
-import {
-  selectError,
   selectHasConnectionSettings,
   selectHasDevices,
+  selectHasExpiredDevices,
   selectHasRiskProfiles,
   selectInterfaces,
+  selectInternetConnection,
+  selectIsAllDevicesOutdated,
   selectIsOpenStartTestrun,
   selectIsOpenWaitSnackBar,
-  selectMenuOpened,
+  selectIsTestingComplete,
   selectReports,
+  selectRiskProfiles,
   selectStatus,
+  selectSystemConfig,
   selectSystemStatus,
 } from './store/selectors';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
@@ -73,6 +72,8 @@ import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { MOCK_ADAPTERS } from './mocks/settings.mock';
 import { WifiComponent } from './components/wifi/wifi.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Profile } from './model/profile';
+import { TestrunStatus } from './model/testrun-status';
 
 const windowMock = {
   location: {
@@ -87,7 +88,6 @@ describe('AppComponent', () => {
   let router: Router;
   let mockService: SpyObj<TestRunService>;
   let store: MockStore<AppState>;
-  let focusNavigation = true;
   let mockFocusManagerService: SpyObj<FocusManagerService>;
   let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
   let mockMqttService: SpyObj<TestRunMqttService>;
@@ -124,10 +124,7 @@ describe('AppComponent', () => {
       'focusFirstElementInContainer',
     ]);
     mockLiveAnnouncer = jasmine.createSpyObj('mockLiveAnnouncer', ['announce']);
-    mockMqttService = jasmine.createSpyObj([
-      'getNetworkAdapters',
-      'getInternetConnection',
-    ]);
+    mockMqttService = jasmine.createSpyObj(['getNetworkAdapters']);
 
     TestBed.configureTestingModule({
       imports: [
@@ -152,26 +149,22 @@ describe('AppComponent', () => {
         { provide: TestRunMqttService, useValue: mockMqttService },
         {
           provide: State,
-          useValue: {
-            getValue: () => ({
-              [appFeatureKey]: {
-                appComponent: {
-                  focusNavigation: focusNavigation,
-                },
-              },
-            }),
-          },
+          useValue: {},
         },
         provideMockStore({
           selectors: [
             { selector: selectInterfaces, value: {} },
             { selector: selectHasConnectionSettings, value: true },
-            { selector: selectError, value: null },
-            { selector: selectMenuOpened, value: false },
+            { selector: selectInternetConnection, value: true },
+            { selector: selectSystemConfig, value: { network: {} } },
             { selector: selectHasDevices, value: false },
+            { selector: selectIsAllDevicesOutdated, value: false },
+            { selector: selectHasExpiredDevices, value: false },
             { selector: selectHasRiskProfiles, value: false },
             { selector: selectStatus, value: null },
             { selector: selectSystemStatus, value: null },
+            { selector: selectIsTestingComplete, value: false },
+            { selector: selectRiskProfiles, value: [] },
             { selector: selectIsOpenStartTestrun, value: false },
             { selector: selectIsOpenWaitSnackBar, value: false },
             { selector: selectReports, value: [] },
@@ -186,6 +179,7 @@ describe('AppComponent', () => {
         FakeSpinnerComponent,
         FakeShutdownAppComponent,
         FakeVersionComponent,
+        FakeTestingCompleteComponent,
       ],
     });
 
@@ -196,6 +190,7 @@ describe('AppComponent', () => {
     router = TestBed.get(Router);
     compiled = fixture.nativeElement as HTMLElement;
     spyOn(store, 'dispatch').and.callFake(() => {});
+    component.appStore.updateSettingMissedError(null);
   });
 
   it('should create the app', () => {
@@ -387,17 +382,21 @@ describe('AppComponent', () => {
     });
 
     it('should dispatch toggleMenu action', () => {
+      spyOn(component.appStore, 'toggleMenu');
+
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
       ) as HTMLButtonElement;
 
       menuBtn.click();
 
-      expect(store.dispatch).toHaveBeenCalledWith(toggleMenu());
+      expect(component.appStore.toggleMenu).toHaveBeenCalled();
     });
 
     it('should focus navigation on tab press if menu button was clicked', () => {
-      focusNavigation = true;
+      component.appStore.updateFocusNavigation(true);
+      fixture.detectChanges();
+      spyOn(component.appStore, 'updateFocusNavigation');
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
       ) as HTMLButtonElement;
@@ -405,8 +404,8 @@ describe('AppComponent', () => {
       menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
       const navigation = compiled.querySelector('.app-sidebar');
 
-      expect(store.dispatch).toHaveBeenCalledWith(
-        updateFocusNavigation({ focusNavigation: false })
+      expect(component.appStore.updateFocusNavigation).toHaveBeenCalledWith(
+        false
       );
       expect(
         mockFocusManagerService.focusFirstElementInContainer
@@ -414,7 +413,8 @@ describe('AppComponent', () => {
     });
 
     it('should not focus navigation button on tab press if menu button was not clicked', () => {
-      focusNavigation = false;
+      component.appStore.updateFocusNavigation(false);
+      fixture.detectChanges();
       const menuBtn = compiled.querySelector(
         '.app-toolbar-button-menu'
       ) as HTMLButtonElement;
@@ -451,6 +451,21 @@ describe('AppComponent', () => {
     const internet = compiled.querySelector('app-wifi');
 
     expect(internet).toBeTruthy();
+  });
+
+  describe('Testing complete', () => {
+    beforeEach(() => {
+      store.overrideSelector(selectIsTestingComplete, true);
+      fixture.detectChanges();
+    });
+
+    it('should have testing complete component', () => {
+      const testingCompleteComp = compiled.querySelector(
+        'app-testing-complete'
+      );
+
+      expect(testingCompleteComp).toBeTruthy();
+    });
   });
 
   describe('Callout component visibility', () => {
@@ -687,7 +702,7 @@ describe('AppComponent', () => {
       });
     });
 
-    describe('with devices setted, without systemStatus data, but run the tests ', () => {
+    describe('with devices setted, without systemStatus data, but run the tests', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
         fixture.detectChanges();
@@ -720,7 +735,7 @@ describe('AppComponent', () => {
     describe('error', () => {
       describe('with settingMissedError with one port is missed', () => {
         beforeEach(() => {
-          store.overrideSelector(selectError, {
+          component.appStore.updateSettingMissedError({
             isSettingMissed: true,
             devicePortMissed: true,
             internetPortMissed: false,
@@ -739,7 +754,7 @@ describe('AppComponent', () => {
 
       describe('with settingMissedError with two ports are missed', () => {
         beforeEach(() => {
-          store.overrideSelector(selectError, {
+          component.appStore.updateSettingMissedError({
             isSettingMissed: true,
             devicePortMissed: true,
             internetPortMissed: true,
@@ -758,7 +773,7 @@ describe('AppComponent', () => {
 
       describe('with no settingMissedError', () => {
         beforeEach(() => {
-          store.overrideSelector(selectError, null);
+          component.appStore.updateSettingMissedError(null);
           store.overrideSelector(selectHasDevices, true);
           fixture.detectChanges();
         });
@@ -767,6 +782,31 @@ describe('AppComponent', () => {
 
           expect(callout).toBeNull();
         });
+      });
+    });
+
+    describe('with expired devices', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasExpiredDevices, true);
+        fixture.detectChanges();
+      });
+
+      it('should have callout component', () => {
+        const callouts = compiled.querySelectorAll('app-callout');
+        let hasExpiredDeviceCallout = false;
+        callouts.forEach(callout => {
+          if (
+            callout?.innerHTML
+              .trim()
+              .includes(
+                'Further information is required in your device configurations.'
+              )
+          ) {
+            hasExpiredDeviceCallout = true;
+          }
+        });
+
+        expect(hasExpiredDeviceCallout).toBeTrue();
       });
     });
   });
@@ -804,6 +844,15 @@ describe('AppComponent', () => {
 
     expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
   });
+
+  it('should set focus to first focusable elem when close callout', fakeAsync(() => {
+    component.calloutClosed('mockId');
+    tick(100);
+
+    expect(
+      mockFocusManagerService.focusFirstElementInContainer
+    ).toHaveBeenCalled();
+  }));
 });
 
 @Component({
@@ -837,7 +886,14 @@ class FakeShutdownAppComponent {
 })
 class FakeVersionComponent {
   @Input() consentShown!: boolean;
-  @Input() hasRiskProfiles!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
-  @Output() navigateToRiskAssessmentEvent = new EventEmitter<void>();
+}
+
+@Component({
+  selector: 'app-testing-complete',
+  template: '<div></div>',
+})
+class FakeTestingCompleteComponent {
+  @Input() profiles: Profile[] = [];
+  @Input() data!: TestrunStatus | null;
 }

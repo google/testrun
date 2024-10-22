@@ -17,6 +17,7 @@ import typing as t
 from common import logger
 from common import util
 import re
+import socket
 
 LOGGER = logger.get_logger('ip_ctrl')
 
@@ -45,10 +46,7 @@ class IPControl:
 
   def check_interface_status(self, interface_name):
     output = util.run_command(cmd=f'ip link show {interface_name}', output=True)
-    if 'state DOWN ' in output[0]:
-      return False
-    else:
-      return True
+    return 'state UP ' in output[0]
 
   def delete_link(self, interface_name):
     """Delete an ip link"""
@@ -91,6 +89,16 @@ class IPControl:
     else:
       return None
 
+  @staticmethod
+  def get_iface_mac_address(iface):
+    net_if_addrs = psutil.net_if_addrs()
+    if iface in net_if_addrs:
+      for addr_info in net_if_addrs[iface]:
+        # AF_LINK corresponds to the MAC address
+        if addr_info.family == psutil.AF_LINK:
+          return addr_info.address
+    return None
+
   def get_iface_port_stats(self, iface):
     """Extract information about packets connection"""
     response = util.run_command(f'ethtool -S {iface}')
@@ -98,6 +106,14 @@ class IPControl:
       return response[0]
     else:
       return None
+
+  def get_ip_address(self, iface):
+    addrs = psutil.net_if_addrs()
+    if iface in addrs:
+      for addr in addrs[iface]:
+        if addr.family == socket.AF_INET:
+          return addr.address
+    return None
 
   def get_namespaces(self):
     result = util.run_command('ip netns list')
@@ -242,7 +258,7 @@ class IPControl:
 
   def ping_via_gateway(self, host):
     """Ping the host trough the gateway container"""
-    command = f'docker exec tr-ct-gateway ping -W 1 -c 1 {host}'
+    command = f'timeout 3 docker exec tr-ct-gateway ping -W 1 -c 1 {host}'
     output = util.run_command(command)
     if '0% packet loss' in output[0]:
       return True

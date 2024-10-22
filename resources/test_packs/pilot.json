@@ -1,0 +1,169 @@
+{
+    "name": "Pilot Assessment",
+    "language": {
+      "compliant_description": "Your device has met the initial pilot assessment requirements. Please send your Testrun ZIP file to the qualification lab for verification. The lab will then contact you with further instructions.",
+      "non_compliant_description": "Your device didn't quite meet the initial pilot assessment requirements. The Testrun report will provide guidance on how to resolve any issues. If you require further support, please get in touch with the qualification lab."
+    },
+    "tests": [
+      {
+        "name": "connection.port_link",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.port_speed",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.port_duplex",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.switch.arp_inspection",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.switch.dhcp_snooping",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.dhcp_address",
+        "required_result": "Required"
+      },
+      {
+        "name": "connection.mac_address",
+        "required_result": "Required"
+      },
+      {
+        "name": "connection.mac_oui",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.private_address",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.shared_address",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.single_ip",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.target_ping",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.ipaddr.ip_change",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.ipaddr.dhcp_failover",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.ipv6_slaac",
+        "required_result": "Informational"
+      },
+      {
+        "name": "connection.ipv6_ping",
+        "required_result": "Informational"
+      },
+      {
+        "name": "dns.network.hostname_resolution",
+        "required_result": "Informational"
+      },
+      {
+        "name": "dns.network.from_dhcp",
+        "required_result": "Informational"
+      },
+      {
+        "name": "dns.mdns",
+        "required_result": "Informational"
+      },
+      {
+        "name": "ntp.network.ntp_support",
+        "required_result": "Informational"
+      },
+      {
+        "name": "ntp.network.ntp_dhcp",
+        "required_result": "Informational"
+      },
+      {
+        "name": "protocol.valid_bacnet",
+        "required_result": "Informational"
+      },
+      {
+        "name": "protocol.bacnet.version",
+        "required_result": "Informational"
+      },
+      {
+        "name": "protocol.valid_modbus",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.services.ftp",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.ssh.version",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.services.telnet",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.services.smtp",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.services.http",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.services.pop",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.services.imap",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.services.snmpv3",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.services.vnc",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.services.tftp",
+        "required_result": "Informational"
+      },
+      {
+        "name": "ntp.network.ntp_server",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.tls.v1_0_client",
+        "required_result": "Required if Applicable"
+      },
+      {
+        "name": "security.tls.v1_2_server",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.tls.v1_2_client",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.tls.v1_3_server",
+        "required_result": "Informational"
+      },
+      {
+        "name": "security.tls.v1_3_client",
+        "required_result": "Informational"
+      }
+    ]
+  }

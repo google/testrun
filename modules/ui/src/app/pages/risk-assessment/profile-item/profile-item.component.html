@@ -22,16 +22,23 @@ limitations under the License.
     class="profile-item-info"
     role="button"
     tabindex="0"
+    #tooltip="matTooltip"
     matTooltip="{{
       profile.status === ProfileStatus.EXPIRED
-        ? 'Expired. Please, create a new Risk profile.'
+        ? EXPIRED_TOOLTIP
         : profile.status
     }}"
+    [attr.aria-label]="getProfileItemLabel(profile)"
     (click)="profileClicked.emit(profile)"
-    (keydown.enter)="profileClicked.emit(profile)">
+    (keydown.enter)="enterProfileItem(profile)"
+    (keydown.space)="enterProfileItem(profile)">
     <span
       class="profile-item-icon-container"
-      [attr.aria-label]="profile.status">
+      [attr.aria-label]="
+        profile.status === ProfileStatus.EXPIRED
+          ? EXPIRED_TOOLTIP
+          : profile.status
+      ">
       <mat-icon
         *ngIf="profile.status === ProfileStatus.VALID"
         class="profile-item-icon"
@@ -72,7 +79,9 @@ limitations under the License.
     mat-icon-button
     attr.aria-label="Copy {{ profile.name }}"
     matTooltip="Copy {{ profile.name }}"
-    (click)="copyProfileClicked.emit(profile)">
+    (click)="copyProfileClicked.emit(profile)"
+    (keydown.enter)="copyProfileClicked.emit(profile)"
+    (keydown.space)="copyProfileClicked.emit(profile)">
     <mat-icon fontSet="material-symbols-outlined"> content_copy </mat-icon>
   </button>
   <button
@@ -80,7 +89,9 @@ limitations under the License.
     mat-icon-button
     attr.aria-label="Delete {{ profile.name }}"
     matTooltip="Delete {{ profile.name }}"
-    (click)="deleteButtonClicked.emit(profile.name)">
+    (click)="delete($event, profile.name)"
+    (keydown.enter)="delete($event, profile.name)"
+    (keydown.space)="delete($event, profile.name)">
     <mat-icon fontSet="material-symbols-outlined"> delete </mat-icon>
   </button>
 </div>

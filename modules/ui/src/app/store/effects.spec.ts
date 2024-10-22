@@ -28,12 +28,8 @@ import { Action } from '@ngrx/store';
 import * as actions from './actions';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { AppState } from './state';
-import {
-  selectIsOpenWaitSnackBar,
-  selectMenuOpened,
-  selectSystemStatus,
-} from './selectors';
-import { device } from '../mocks/device.mock';
+import { selectIsOpenWaitSnackBar, selectSystemStatus } from './selectors';
+import { device, expired_device } from '../mocks/device.mock';
 import {
   MOCK_PROGRESS_DATA_CANCELLING,
   MOCK_PROGRESS_DATA_COMPLIANT,
@@ -42,6 +38,7 @@ import {
 } from '../mocks/testrun.mock';
 import {
   fetchSystemStatus,
+  fetchSystemStatusSuccess,
   setReports,
   setStatus,
   setTestrunStatus,
@@ -52,6 +49,7 @@ import { throwError } from 'rxjs/internal/observable/throwError';
 import { HttpErrorResponse } from '@angular/common/http';
 import { IDLE_STATUS } from '../model/testrun-status';
 import { HISTORY } from '../mocks/reports.mock';
+import { TestRunMqttService } from '../services/test-run-mqtt.service';
 
 describe('Effects', () => {
   let actions$ = new Observable<Action>();
@@ -63,6 +61,11 @@ describe('Effects', () => {
     jasmine.createSpyObj('notificationServiceMock', [
       'dismissWithTimout',
       'openSnackBar',
+    ]);
+  const mockMqttService: jasmine.SpyObj<TestRunMqttService> =
+    jasmine.createSpyObj('mockMqttService', [
+      'getStatus',
+      'getInternetConnection',
     ]);
 
   beforeEach(() => {
@@ -84,12 +87,20 @@ describe('Effects', () => {
     );
     testRunServiceMock.fetchProfiles.and.returnValue(of([]));
     testRunServiceMock.getHistory.and.returnValue(of([]));
+    mockMqttService.getInternetConnection.and.returnValue(
+      of({ connection: false })
+    );
+
+    mockMqttService.getStatus.and.returnValue(
+      of(MOCK_PROGRESS_DATA_IN_PROGRESS)
+    );
 
     TestBed.configureTestingModule({
       providers: [
         AppEffects,
         { provide: TestRunService, useValue: testRunServiceMock },
         { provide: NotificationService, useValue: notificationServiceMock },
+        { provide: TestRunMqttService, useValue: mockMqttService },
         provideMockActions(() => actions$),
         provideMockStore({}),
       ],
@@ -141,6 +152,30 @@ describe('Effects', () => {
     });
   });
 
+  it('onSetExpiredDevices$ should call setHasExpiredDevices', done => {
+    actions$ = of(actions.setDevices({ devices: [device, expired_device] }));
+
+    effects.onSetExpiredDevices$.subscribe(action => {
+      expect(action).toEqual(
+        actions.setHasExpiredDevices({ hasExpiredDevices: true })
+      );
+      done();
+    });
+  });
+
+  it('onSetIsAllDevicesOutdated$ should call setIsAllDevicesOutdated', done => {
+    actions$ = of(
+      actions.setDevices({ devices: [expired_device, expired_device] })
+    );
+
+    effects.onSetIsAllDevicesOutdated$.subscribe(action => {
+      expect(action).toEqual(
+        actions.setIsAllDevicesOutdated({ isAllDevicesOutdated: true })
+      );
+      done();
+    });
+  });
+
   it('onSetRiskProfiles$ should call setHasRiskProfiles', done => {
     actions$ = of(actions.setRiskProfiles({ riskProfiles: [PROFILE_MOCK] }));
 
@@ -149,191 +184,6 @@ describe('Effects', () => {
         actions.setHasRiskProfiles({ hasRiskProfiles: true })
       );
       done();
-    });
-  });
-
-  it('onMenuOpened$ should call updateFocusNavigation', done => {
-    actions$ = of(actions.toggleMenu());
-    store.overrideSelector(selectMenuOpened, true);
-
-    effects.onMenuOpened$.subscribe(action => {
-      expect(action).toEqual(
-        actions.updateFocusNavigation({ focusNavigation: true })
-      );
-      done();
-    });
-  });
-
-  describe('onValidateInterfaces$', () => {
-    it('should call updateError and set false if interfaces are not missed', done => {
-      actions$ = of(
-        actions.updateValidInterfaces({
-          validInterfaces: {
-            deviceValid: true,
-            internetValid: true,
-          },
-        })
-      );
-
-      effects.onValidateInterfaces$.subscribe(action => {
-        expect(action).toEqual(
-          actions.updateError({
-            settingMissedError: {
-              isSettingMissed: false,
-              devicePortMissed: false,
-              internetPortMissed: false,
-            },
-          })
-        );
-        done();
-      });
-    });
-
-    it('should call updateError and set true if interfaces are missed', done => {
-      actions$ = of(
-        actions.updateValidInterfaces({
-          validInterfaces: {
-            deviceValid: false,
-            internetValid: false,
-          },
-        })
-      );
-
-      effects.onValidateInterfaces$.subscribe(action => {
-        expect(action).toEqual(
-          actions.updateError({
-            settingMissedError: {
-              isSettingMissed: true,
-              devicePortMissed: true,
-              internetPortMissed: true,
-            },
-          })
-        );
-        done();
-      });
-    });
-  });
-
-  describe('checkInterfacesInConfig$', () => {
-    it('should call updateValidInterfaces and set deviceValid as false if device interface is no longer available', done => {
-      actions$ = of(
-        actions.fetchInterfacesSuccess({
-          interfaces: {
-            enx00e04c020fa8: '00:e0:4c:02:0f:a8',
-            enx207bd26205e9: '20:7b:d2:62:05:e9',
-          },
-        }),
-        actions.fetchSystemConfigSuccess({
-          systemConfig: {
-            network: {
-              device_intf: 'enx00e04c020fa2',
-              internet_intf: 'enx207bd26205e9',
-            },
-          },
-        })
-      );
-
-      effects.checkInterfacesInConfig$.subscribe(action => {
-        expect(action).toEqual(
-          actions.updateValidInterfaces({
-            validInterfaces: {
-              deviceValid: false,
-              internetValid: true,
-            },
-          })
-        );
-        done();
-      });
-    });
-
-    it('should call updateValidInterfaces and set all true if interface is set and valid', done => {
-      actions$ = of(
-        actions.fetchInterfacesSuccess({
-          interfaces: {
-            enx00e04c020fa8: '00:e0:4c:02:0f:a8',
-            enx207bd26205e9: '20:7b:d2:62:05:e9',
-          },
-        }),
-        actions.fetchSystemConfigSuccess({
-          systemConfig: {
-            network: {
-              device_intf: 'enx00e04c020fa8',
-              internet_intf: 'enx207bd26205e9',
-            },
-          },
-        })
-      );
-
-      effects.checkInterfacesInConfig$.subscribe(action => {
-        expect(action).toEqual(
-          actions.updateValidInterfaces({
-            validInterfaces: {
-              deviceValid: true,
-              internetValid: true,
-            },
-          })
-        );
-        done();
-      });
-    });
-
-    it('should call updateValidInterfaces and set all true if interface are empty and config is not set', done => {
-      actions$ = of(
-        actions.fetchInterfacesSuccess({
-          interfaces: {},
-        }),
-        actions.fetchSystemConfigSuccess({
-          systemConfig: {
-            network: {
-              device_intf: '',
-              internet_intf: '',
-            },
-          },
-        })
-      );
-
-      effects.checkInterfacesInConfig$.subscribe(action => {
-        expect(action).toEqual(
-          actions.updateValidInterfaces({
-            validInterfaces: {
-              deviceValid: true,
-              internetValid: true,
-            },
-          })
-        );
-        done();
-      });
-    });
-
-    it('should call updateValidInterfaces and set all true if interface are not empty and config is not set', done => {
-      actions$ = of(
-        actions.fetchInterfacesSuccess({
-          interfaces: {
-            enx00e04c020fa8: '00:e0:4c:02:0f:a8',
-            enx207bd26205e9: '20:7b:d2:62:05:e9',
-          },
-        }),
-        actions.fetchSystemConfigSuccess({
-          systemConfig: {
-            network: {
-              device_intf: '',
-              internet_intf: '',
-            },
-          },
-        })
-      );
-
-      effects.checkInterfacesInConfig$.subscribe(action => {
-        expect(action).toEqual(
-          actions.updateValidInterfaces({
-            validInterfaces: {
-              deviceValid: true,
-              internetValid: true,
-            },
-          })
-        );
-        done();
-      });
     });
   });
 
@@ -399,14 +249,15 @@ describe('Effects', () => {
         );
       });
 
-      it('should call fetchSystemStatus for status "in progress"', fakeAsync(() => {
+      it('should call fetchSystemStatus for status "in progress"', () => {
         effects.onFetchSystemStatusSuccess$.subscribe(() => {
-          tick(5000);
-
-          expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
-          discardPeriodicTasks();
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            fetchSystemStatusSuccess({
+              systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
+            })
+          );
         });
-      }));
+      });
 
       it('should dispatch status and systemStatus', done => {
         effects.onFetchSystemStatusSuccess$.subscribe(() => {
@@ -435,6 +286,12 @@ describe('Effects', () => {
           done();
         });
       });
+
+      it('should call fetchInternetConnection for status "in progress"', () => {
+        effects.onFetchSystemStatusSuccess$.subscribe(() => {
+          expect(mockMqttService.getInternetConnection).toHaveBeenCalled();
+        });
+      });
     });
 
     describe('with status "waiting for device"', () => {
@@ -451,14 +308,15 @@ describe('Effects', () => {
         );
       });
 
-      it('should call fetchSystemStatus for status "waiting for device"', fakeAsync(() => {
+      it('should call fetchSystemStatus for status "waiting for device"', () => {
         effects.onFetchSystemStatusSuccess$.subscribe(() => {
-          tick(5000);
-
-          expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
-          discardPeriodicTasks();
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            fetchSystemStatusSuccess({
+              systemStatus: MOCK_PROGRESS_DATA_IN_PROGRESS,
+            })
+          );
         });
-      }));
+      });
 
       it('should open snackbar when waiting for device is too long', fakeAsync(() => {
         effects.onFetchSystemStatusSuccess$.subscribe(() => {
@@ -567,7 +425,7 @@ describe('Effects', () => {
 
       effects.checkStatusInReports$.subscribe(action => {
         expect(action).toEqual(
-          actions.setTestrunStatus({ systemStatus: IDLE_STATUS })
+          actions.fetchSystemStatusSuccess({ systemStatus: IDLE_STATUS })
         );
         done();
       });
