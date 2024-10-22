@@ -23,6 +23,7 @@ class TestrunStatus:
   COMPLIANT =  "Compliant"
   NON_COMPLIANT = "Non-Compliant"
   STOPPING = "Stopping"
+  VALIDATING = "Validating Network"
 
 
 class TestResult:

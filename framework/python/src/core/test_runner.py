@@ -98,7 +98,7 @@ def parse_args():
 if __name__ == "__main__":
   args = parse_args()
   runner = TestRunner(config_file=args.config_file,
-                      validate=args.  validate,
+                      validate=args.validate,
                       net_only=args.net_only,
                       single_intf=args.single_intf,
                       no_ui=args.no_ui)

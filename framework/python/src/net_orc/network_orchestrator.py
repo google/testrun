@@ -139,7 +139,7 @@ class NetworkOrchestrator:
     try:
       if 'validate' in self._session.get_runtime_params():
         # Start the validator after network is ready
-        self._session.set_status('Validating Network')
+        self._session.set_status(TestrunStatus.VALIDATING)
         self.validator.start()
         self.validator.stop()
     except Exception as e:
