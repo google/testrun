@@ -66,6 +66,7 @@ export enum StatusOfTestrun {
   Idle = 'Idle',
   Monitoring = 'Monitoring',
   Error = 'Error',
+  Validating = 'Validating Network',
 }
 
 export enum StatusOfTestResult {

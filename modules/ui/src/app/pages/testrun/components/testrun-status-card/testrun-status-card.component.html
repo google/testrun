@@ -28,6 +28,10 @@ limitations under the License.
     </div>
     <div *ngIf="!data.finished" [ngSwitch]="data.status">
       <ng-container
+        *ngSwitchCase="StatusOfTestrun.Validating"
+        [ngTemplateOutlet]="Validating">
+      </ng-container>
+      <ng-container
         *ngSwitchCase="StatusOfTestrun.WaitingForDevice"
         [ngTemplateOutlet]="WaitingForDevice">
       </ng-container>
@@ -101,6 +105,14 @@ limitations under the License.
   <div>
     <p class="progress-card-result-title">
       Please connect and power on your device
+    </p>
+  </div>
+</ng-template>
+
+<ng-template #Validating>
+  <div>
+    <p class="progress-card-result-title">
+      Validating virtual network
     </p>
   </div>
 </ng-template>
