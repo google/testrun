@@ -36,7 +36,10 @@ limitations under the License.
         *ngIf="(vm.interfaces | keyvalue).length > 0; else warning_message">
         <app-callout
           [type]="CalloutType.Warning"
-          *ngIf="(vm.interfaces | keyvalue).length === 1"
+          *ngIf="
+            (vm.interfaces | keyvalue).length === 1 &&
+            !isInternetControlDisabled
+          "
           class="two-ports-message">
           Warning! Testrun requires two ports to operate correctly.
         </app-callout>

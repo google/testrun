@@ -36,13 +36,13 @@ export class ProfileValidators {
     profile: Profile | null
   ): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      const value = control.value?.trim();
+      const value = control.value?.trim().toLowerCase();
       if (
         value &&
         profiles.length &&
         (!profile ||
           !profile.created ||
-          (profile.created && profile?.name !== value))
+          (profile.created && profile?.name.toLowerCase() !== value))
       ) {
         const isSameProfileName = this.hasSameProfileName(value, profiles);
         return isSameProfileName ? { has_same_profile_name: true } : null;
@@ -91,7 +91,8 @@ export class ProfileValidators {
     profiles: Profile[]
   ): boolean {
     return (
-      profiles.some(profile => profile.name === profileName?.trim()) || false
+      profiles.some(profile => profile.name.toLowerCase() === profileName) ||
+      false
     );
   }
 }
