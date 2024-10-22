@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, inject, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  Input,
+  OnInit,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   FormControlType,
   OptionType,
@@ -44,6 +50,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { DeviceValidators } from '../../pages/devices/components/device-form/device.validators';
 import { ProfileValidators } from '../../pages/risk-assessment/profile-form/profile.validators';
+import { DomSanitizer } from '@angular/platform-browser';
 @Component({
   selector: 'app-dynamic-form',
   standalone: true,
@@ -68,6 +75,7 @@ import { ProfileValidators } from '../../pages/risk-assessment/profile-form/prof
   ],
   templateUrl: './dynamic-form.component.html',
   styleUrl: './dynamic-form.component.scss',
+  encapsulation: ViewEncapsulation.None,
 })
 export class DynamicFormComponent implements OnInit {
   public readonly FormControlType = FormControlType;
@@ -83,7 +91,8 @@ export class DynamicFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private deviceValidators: DeviceValidators,
-    private profileValidators: ProfileValidators
+    private profileValidators: ProfileValidators,
+    private domSanitizer: DomSanitizer
   ) {}
   getControl(name: string | number) {
     return this.formGroup.get(name.toString()) as AbstractControl;
@@ -163,9 +172,12 @@ export class DynamicFormComponent implements OnInit {
 
   getOptionValue(option: OptionType) {
     if (this.optionKey && typeof option === 'object') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (option as any)[this.optionKey];
+      return this.domSanitizer.bypassSecurityTrustHtml(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (option as any)[this.optionKey]
+      );
     }
-    return option;
+    // @ts-expect-error option type is string
+    return this.domSanitizer.bypassSecurityTrustHtml(option);
   }
 }

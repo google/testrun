@@ -178,7 +178,14 @@ class Testrun:  # pylint: disable=too-few-public-methods
       # Open device config file
       with open(device_config_file_path,
                 encoding='utf-8') as device_config_file:
-        device_config_json = json.load(device_config_file)
+
+        try:
+          device_config_json = json.load(device_config_file)
+        except json.decoder.JSONDecodeError as e:
+          LOGGER.error('Invalid JSON found in ' +
+            f'device configuration {device_config_file_path}')
+          LOGGER.debug(e)
+          continue
 
         device_manufacturer = device_config_json.get(DEVICE_MANUFACTURER)
         device_model = device_config_json.get(DEVICE_MODEL)
