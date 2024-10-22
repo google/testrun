@@ -51,15 +51,6 @@ export const selectIsAllDevicesOutdated = createSelector(
   (state: AppState) => state.isAllDevicesOutdated
 );
 
-export const selectHasExpiredDevices = createSelector(
-  selectAppState,
-  (state: AppState) => state.shared.hasExpiredDevices
-);
-export const selectIsAllDevicesOutdated = createSelector(
-  selectAppState,
-  (state: AppState) => state.shared.isAllDevicesOutdated
-);
-
 export const selectDevices = createSelector(
   selectAppState,
   (state: AppState) => state.devices
@@ -130,24 +121,4 @@ export const selectInternetConnection = createSelector(
 export const selectSystemConfig = createSelector(
   selectAppState,
   (state: AppState) => state.systemConfig
-);
-
-export const selectReports = createSelector(
-  selectAppState,
-  (state: AppState) => state.shared.reports
-);
-
-export const selectTestModules = createSelector(
-  selectAppState,
-  (state: AppState) => state.shared.testModules
-);
-
-export const selectAdapters = createSelector(
-  selectAppState,
-  (state: AppState) => state.shared.adapters
-);
-
-export const selectInternetConnection = createSelector(
-  selectAppState,
-  (state: AppState) => state.shared.internetConnection
 );
