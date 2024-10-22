@@ -1,7 +1,7 @@
 [
   {
     "question": "How will this device be used at Google?",
-    "description": "Desribe your use case. Add links to user journey diagrams and TDD if available.",
+    "description": "Describe your use case. Add links to user journey diagrams and TDD if available.",
     "type": "text-long",
     "validation": {
       "max": "512",
@@ -60,7 +60,7 @@
         "risk": "High"
       },
       {
-        "text": "A failure in data transmission would likely have a substantial negative impact (https://www.rra.rocks/docs/standard_levels#levels-definitions)",
+        "text": "A failure in data transmission would likely have a substantial negative impact (<a href='https://www.rra.rocks/docs/standard_levels#levels-definitions' target='_blank'>https://www.rra.rocks/docs/standard_levels#levels-definitions</a>)",
         "risk": "High"
       },
       {

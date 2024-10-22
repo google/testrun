@@ -226,7 +226,7 @@ limitations under the License.
       <mat-checkbox
         [formControlName]="i"
         (keydown.tab)="markSectionAsDirty(i, options.length, formControlName)">
-        {{ getOptionValue(option) }}
+        <span [innerHTML]="getOptionValue(option)"></span>
       </mat-checkbox>
     </p>
     <mat-hint *ngIf="description" class="field-hint">{{
@@ -252,8 +252,8 @@ limitations under the License.
       [formControlName]="formControlName">
       <mat-option
         *ngFor="let option of options; let i = index"
-        [value]="getOptionValue(option)">
-        {{ getOptionValue(option) }}
+        [value]="getOptionValue(option)"
+        [innerHTML]="getOptionValue(option)">
       </mat-option>
     </mat-select>
     <mat-hint *ngIf="description" class="field-hint">{{
