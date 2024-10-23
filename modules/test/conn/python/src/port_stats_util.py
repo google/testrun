@@ -41,7 +41,7 @@ class PortStatsUtil():
     self.conn_stats = self._read_stats_file(self.ethtool_conn_stats_file)
 
   def is_autonegotiate(self):
-    auto_negotiation = False
+    auto_negotiation = None
     auto_negotiation_status = self._get_stat_option(stats=self.conn_stats,
                                                     option='Auto-negotiation:')
     if auto_negotiation_status is not None:
@@ -91,7 +91,10 @@ class PortStatsUtil():
     result = None
     description = ''
     details = ''
-    if not auto_negotiation:
+    if auto_negotiation is None:
+      result = 'Error'
+      description = 'Port stats not available'
+    elif not auto_negotiation:
       result = False
       description = 'Interface not configured for auto-negotiation'
     else:
@@ -112,7 +115,10 @@ class PortStatsUtil():
     result = None
     description = ''
     details = ''
-    if not auto_negotiation:
+    if auto_negotiation is None:
+      result = 'Error'
+      description = 'Port stats not available'
+    elif not auto_negotiation:
       result = False
       description = 'Interface not configured for auto-negotiation'
     else:
