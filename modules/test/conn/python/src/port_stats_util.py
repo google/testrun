@@ -66,6 +66,14 @@ class PortStatsUtil():
                                             option='rx_errors:')
       rx_errors_post = self._get_stat_option(stats=stats_post,
                                              option='rx_errors:')
+
+      # Check that the above have been resolved correctly
+      if (tx_errors_pre is None or tx_errors_post is None or
+        rx_errors_pre is None or rx_errors_post is None):
+        result = 'Error'
+        description = 'Port stats not available'
+        return result, description, details
+
       tx_errors = int(tx_errors_post) - int(tx_errors_pre)
       rx_errors = int(rx_errors_post) - int(rx_errors_pre)
       if tx_errors > 0 or rx_errors > 0:
