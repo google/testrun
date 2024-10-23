@@ -105,7 +105,7 @@ def parse_args():
 
   parsed_args = parser.parse_known_args()[0]
 
-  if (parsed_args.no_ui
+  if (parsed_args.no_ui and not parsed_args.net_only
       and (parsed_args.target is None or parsed_args.firmware is None)):
     parser.error("--target and --firmware required when --no-ui is specified")
 
