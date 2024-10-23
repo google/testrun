@@ -37,13 +37,17 @@ class TestRunner:
                validate=False,
                net_only=False,
                single_intf=False,
-               no_ui=False):
+               no_ui=False,
+               target=None,
+               firmware=None):
     self._register_exits()
     self._testrun = Testrun(config_file=config_file,
                             validate=validate,
                             net_only=net_only,
                             single_intf=single_intf,
-                            no_ui=no_ui)
+                            no_ui=no_ui,
+                            target_mac=target,
+                            firmware=firmware)
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
@@ -91,7 +95,23 @@ def parse_args():
                       default=False,
                       action="store_true",
                       help="Do not launch the user interface")
+  parser.add_argument("--target",
+                      default=None,
+                      type=str,
+                      help="MAC address of the target device")
+  parser.add_argument("-fw",
+                      "--firmware",
+                      default=None,
+                      type=str,
+                      help="Firmware version to be tested")
+
+
   parsed_args = parser.parse_known_args()[0]
+
+  if (parsed_args.no_ui 
+    and (parsed_args.target is None or parsed_args.firmware is None)):
+    parser.error("--target and --firmware required when --no-ui is specified")
+
   return parsed_args
 
 
@@ -101,4 +121,6 @@ if __name__ == "__main__":
                       validate=args.validate,
                       net_only=args.net_only,
                       single_intf=args.single_intf,
-                      no_ui=args.no_ui)
+                      no_ui=args.no_ui,
+                      target=args.target,
+                      firmware=args.firmware)

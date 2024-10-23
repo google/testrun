@@ -67,7 +67,9 @@ class Testrun:  # pylint: disable=too-few-public-methods
                validate=False,
                net_only=False,
                single_intf=False,
-               no_ui=False):
+               no_ui=False,
+               target_mac=None,
+               firmware=None):
 
     # Locate parent directory
     current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -111,6 +113,16 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     # Load device repository
     self.load_all_devices()
+
+    # If no_ui selected and not network only mode, 
+    # load the target device into the session
+    if self._no_ui and not net_only:
+      target_device = self._session.get_device(target_mac)
+      if target_device is not None:
+        target_device.firmware=firmware
+        self._session.set_target_device(target_device)
+      else:
+        raise Exception('Target device specified does not exist in device registry')
 
     # Load test modules
     self._test_orc.start()
