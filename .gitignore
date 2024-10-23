@@ -18,6 +18,9 @@ testing/unit/report/output/
 testing/unit/risk_profile/output/
 testing/unit/services/output/
 
+# Ignore generated files by testing_coverage tool
+testing/api/tools/testing_coverage/results
+
 *.deb
 make/DEBIAN/postinst
 
