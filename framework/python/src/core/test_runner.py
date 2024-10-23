@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Wrapper for the Testrun that simplifies
 virtual testing procedure by allowing direct calling
 from the command line.
@@ -77,8 +76,7 @@ def parse_args():
       "-f",
       "--config-file",
       default=None,
-      help="Define the configuration file for Testrun and Network Orchestrator"
-  )
+      help="Define the configuration file for Testrun and Network Orchestrator")
   parser.add_argument(
       "--validate",
       default=False,
@@ -105,11 +103,10 @@ def parse_args():
                       type=str,
                       help="Firmware version to be tested")
 
-
   parsed_args = parser.parse_known_args()[0]
 
-  if (parsed_args.no_ui 
-    and (parsed_args.target is None or parsed_args.firmware is None)):
+  if (parsed_args.no_ui
+      and (parsed_args.target is None or parsed_args.firmware is None)):
     parser.error("--target and --firmware required when --no-ui is specified")
 
   return parsed_args
