@@ -72,17 +72,16 @@ class PortStatsUtil():
         rx_errors_pre is None or rx_errors_post is None):
         result = 'Error'
         description = 'Port stats not available'
-        return result, description, details
-
-      tx_errors = int(tx_errors_post) - int(tx_errors_pre)
-      rx_errors = int(rx_errors_post) - int(rx_errors_pre)
-      if tx_errors > 0 or rx_errors > 0:
-        result = False
-        description = 'Port errors detected'
-        details = f'TX errors: {tx_errors}, RX errors: {rx_errors}'
       else:
-        result = True
-        description = 'No port errors detected'
+        tx_errors = int(tx_errors_post) - int(tx_errors_pre)
+        rx_errors = int(rx_errors_post) - int(rx_errors_pre)
+        if tx_errors > 0 or rx_errors > 0:
+          result = False
+          description = 'Port errors detected'
+          details = f'TX errors: {tx_errors}, RX errors: {rx_errors}'
+        else:
+          result = True
+          description = 'No port errors detected'
     return result, description, details
 
   def connection_port_duplex_test(self):
