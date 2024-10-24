@@ -211,6 +211,8 @@
       font-weight: 400;
       border-top: 1px solid #DADCE0;
       font-family: 'Roboto Mono', monospace;
+      word-wrap: break-word;
+      word-break: break-word;
     }
 
     div.steps-to-resolve {
