@@ -172,12 +172,15 @@ export class DynamicFormComponent implements OnInit {
 
   getOptionValue(option: OptionType) {
     if (this.optionKey && typeof option === 'object') {
-      return this.domSanitizer.bypassSecurityTrustHtml(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (option as any)[this.optionKey]
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (option as any)[this.optionKey];
     }
-    // @ts-expect-error option type is string
-    return this.domSanitizer.bypassSecurityTrustHtml(option);
+    return option;
+  }
+
+  getSanitizedOptionValue(option: OptionType) {
+    return this.domSanitizer.bypassSecurityTrustHtml(
+      this.getOptionValue(option)
+    );
   }
 }
