@@ -250,10 +250,13 @@ limitations under the License.
       aria-label="{{ label }}"
       id="{{ formControlName }}-group"
       [formControlName]="formControlName">
+      <mat-select-trigger>
+        {{ getControl(formControlName).value }}
+      </mat-select-trigger>
       <mat-option
         *ngFor="let option of options; let i = index"
         [value]="getOptionValue(option)"
-        [innerHTML]="getOptionValue(option)">
+        [innerHTML]="getSanitizedOptionValue(option)">
       </mat-option>
     </mat-select>
     <mat-hint *ngIf="description" class="field-hint">{{
