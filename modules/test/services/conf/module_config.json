@@ -310,6 +310,10 @@
             {
               "number": 5903,
               "type": "tcp"
+            },
+            {
+              "number": 6001,
+              "type": "tcp"
             }
           ]
         },
