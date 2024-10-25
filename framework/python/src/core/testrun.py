@@ -119,8 +119,11 @@ class Testrun:  # pylint: disable=too-few-public-methods
         target_device.firmware = firmware
         self._session.set_target_device(target_device)
       else:
-        raise ValueError(
-            'Target device specified does not exist in device registry')
+        print(
+            f'Target device specified does not exist in device registry: '
+            f'{target_mac}',
+            file=sys.stderr)
+        sys.exit(1)
 
     # Load test modules
     self._test_orc.start()
