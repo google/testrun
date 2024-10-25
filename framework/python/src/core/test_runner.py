@@ -24,6 +24,7 @@ import sys
 from testrun import Testrun
 from common import logger
 import signal
+import io
 
 LOGGER = logger.get_logger("runner")
 
@@ -107,7 +108,23 @@ def parse_args():
 
   if (parsed_args.no_ui and not parsed_args.net_only
       and (parsed_args.target is None or parsed_args.firmware is None)):
-    parser.error("--target and --firmware required when --no-ui is specified")
+    # Capture help text
+    help_text = io.StringIO()
+    parser.print_help(file=help_text)
+
+    # Get help text as lines and find where "Testrun" starts (skip usage)
+    help_lines = help_text.getvalue().splitlines()
+    start_index = next(
+        (i for i, line in enumerate(help_lines) if "Testrun" in line), 0)
+
+    # Join only lines starting from "Testrun" and print without extra newlines
+    help_message = "\n".join(line.rstrip() for line in help_lines[start_index:])
+    print(help_message)
+
+    print(
+        "Error: --target and --firmware are required when --no-ui is specified",
+        file=sys.stderr)
+    sys.exit(1)
 
   return parsed_args
 
