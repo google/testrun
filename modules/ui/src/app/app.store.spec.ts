@@ -185,11 +185,7 @@ describe('AppStore', () => {
           isMenuOpen: false,
           interfaces: {},
           focusNavigation: false,
-          settingMissedError: {
-            isSettingMissed: true,
-            devicePortMissed: true,
-            internetPortMissed: true,
-          },
+          settingMissedError: null,
           calloutState: new Map(),
           hasInternetConnection: false,
         });
@@ -353,7 +349,7 @@ describe('AppStore', () => {
 
     describe('checkInterfacesInConfig', () => {
       it('should update settingMissedError with all false if all ports are present', done => {
-        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
+        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
           expect(store.settingMissedError).toEqual({
             isSettingMissed: false,
             devicePortMissed: false,
@@ -376,7 +372,7 @@ describe('AppStore', () => {
       });
 
       it('should update settingMissedError with all true if all ports are missing', done => {
-        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
+        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
           expect(store.settingMissedError).toEqual({
             isSettingMissed: true,
             devicePortMissed: true,
@@ -399,7 +395,7 @@ describe('AppStore', () => {
       });
 
       it('should update settingMissedError with devicePortMissed true if device port is missing', done => {
-        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
+        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
           expect(store.settingMissedError).toEqual({
             isSettingMissed: true,
             devicePortMissed: true,
@@ -422,7 +418,7 @@ describe('AppStore', () => {
       });
 
       it('should update settingMissedError with internetPortMissed true if device internet is missing', done => {
-        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
+        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
           expect(store.settingMissedError).toEqual({
             isSettingMissed: true,
             devicePortMissed: false,
@@ -445,7 +441,7 @@ describe('AppStore', () => {
       });
 
       it('should update settingMissedError with all false if interface are not empty and config is not set', done => {
-        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
+        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
           expect(store.settingMissedError).toEqual({
             isSettingMissed: false,
             devicePortMissed: false,
@@ -468,7 +464,7 @@ describe('AppStore', () => {
       });
 
       it('should update settingMissedError with all false if interface are empty and config is not set', done => {
-        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
+        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
           expect(store.settingMissedError).toEqual({
             isSettingMissed: false,
             devicePortMissed: false,
@@ -491,7 +487,7 @@ describe('AppStore', () => {
         // @ts-expect-error data layer should be defined
         window.dataLayer = window.dataLayer || [];
 
-        appStore.viewModel$.pipe(skip(3), take(1)).subscribe(() => {
+        appStore.viewModel$.pipe(skip(1), take(1)).subscribe(() => {
           expect(
             // @ts-expect-error data layer should be defined
             window.dataLayer.some(event => event.event === 'pilot_is_compliant')

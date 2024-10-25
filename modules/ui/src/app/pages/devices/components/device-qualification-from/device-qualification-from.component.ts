@@ -501,7 +501,7 @@ export class DeviceQualificationFromComponent
     for (const key of keys1) {
       const val1 = device1.test_modules![key];
       const val2 = device2.test_modules![key];
-      if (val1.enabled !== val2.enabled) {
+      if (val1?.enabled !== val2?.enabled) {
         return false;
       }
     }
