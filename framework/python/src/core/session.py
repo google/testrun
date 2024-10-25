@@ -129,7 +129,6 @@ class TestrunSession():
 
     # System network interfaces
     self._ifaces = {}
-
     # Loading methods
     self._load_version()
     self._load_config()
@@ -636,7 +635,7 @@ class TestrunSession():
 
     return risk_profile
 
-  def _remove_invalid_questions(self, questions: list[dict]) -> list[dict]:
+  def _remove_invalid_questions(self, questions):
     """Remove unrecognised questions from the profile"""
 
     # Store valid questions

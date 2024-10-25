@@ -16,9 +16,8 @@
 
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
-import { tap } from 'rxjs/operators';
+import { tap, withLatestFrom } from 'rxjs/operators';
 import {
-  selectError,
   selectHasConnectionSettings,
   selectHasDevices,
   selectHasExpiredDevices,
@@ -27,17 +26,24 @@ import {
   selectInternetConnection,
   selectIsAllDevicesOutdated,
   selectIsTestingComplete,
-  selectMenuOpened,
   selectReports,
   selectRiskProfiles,
   selectStatus,
+  selectSystemConfig,
   selectSystemStatus,
 } from './store/selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from './store/state';
 import { TestRunService } from './services/test-run.service';
-import { delay, exhaustMap, Observable, skip } from 'rxjs';
-import { Device, TestModule } from './model/device';
+import {
+  combineLatest,
+  delay,
+  exhaustMap,
+  filter,
+  Observable,
+  skip,
+} from 'rxjs';
+import { Device, TestingType, TestModule } from './model/device';
 import {
   setDevices,
   setIsOpenStartTestrun,
@@ -47,10 +53,11 @@ import {
   setTestModules,
   updateAdapters,
 } from './store/actions';
-import { TestrunStatus } from './model/testrun-status';
+import { StatusOfTestrun, TestrunStatus } from './model/testrun-status';
 import {
   Adapters,
   SettingMissedError,
+  SystemConfig,
   SystemInterfaces,
 } from './model/setting';
 import { FocusManagerService } from './services/focus-manager.service';
@@ -65,6 +72,12 @@ export interface AppComponentState {
   isStatusLoaded: boolean;
   systemStatus: TestrunStatus | null;
   calloutState: Map<string, boolean>;
+  isMenuOpen: boolean;
+  /**
+   * Indicates, if side menu should be focused on keyboard navigation after menu is opened
+   */
+  focusNavigation: boolean;
+  settingMissedError: SettingMissedError | null;
 }
 @Injectable()
 export class AppStore extends ComponentStore<AppComponentState> {
@@ -80,11 +93,14 @@ export class AppStore extends ComponentStore<AppComponentState> {
   private hasConnectionSetting$ = this.store.select(
     selectHasConnectionSettings
   );
-  private isMenuOpen$ = this.store.select(selectMenuOpened);
+  private isMenuOpened$ = this.select(state => state.isMenuOpen);
+  private focusNavigation$ = this.select(state => state.focusNavigation);
   private interfaces$: Observable<SystemInterfaces> =
     this.store.select(selectInterfaces);
+  private systemConfig$: Observable<SystemConfig> =
+    this.store.select(selectSystemConfig);
   private settingMissedError$: Observable<SettingMissedError | null> =
-    this.store.select(selectError);
+    this.select(state => state.settingMissedError);
   systemStatus$: Observable<string | null> = this.store.select(selectStatus);
   testrunStatus$: Observable<TestrunStatus | null> =
     this.store.select(selectSystemStatus);
@@ -106,11 +122,12 @@ export class AppStore extends ComponentStore<AppComponentState> {
     isTestingComplete: this.isTestingComplete$,
     riskProfiles: this.riskProfiles$,
     hasConnectionSettings: this.hasConnectionSetting$,
-    isMenuOpen: this.isMenuOpen$,
+    isMenuOpen: this.isMenuOpened$,
     interfaces: this.interfaces$,
     settingMissedError: this.settingMissedError$,
     calloutState: this.calloutState$,
     hasInternetConnection: this.hasInternetConnection$,
+    focusNavigation: this.focusNavigation$,
   });
 
   updateConsent = this.updater((state, consentShown: boolean) => ({
@@ -133,6 +150,23 @@ export class AppStore extends ComponentStore<AppComponentState> {
     ...state,
     isStatusLoaded,
   }));
+
+  updateFocusNavigation = this.updater((state, focusNavigation: boolean) => ({
+    ...state,
+    focusNavigation,
+  }));
+
+  updateIsMenuOpened = this.updater((state, isMenuOpen: boolean) => ({
+    ...state,
+    isMenuOpen,
+  }));
+
+  updateSettingMissedError = this.updater(
+    (state, settingMissedError: SettingMissedError | null) => ({
+      ...state,
+      settingMissedError,
+    })
+  );
 
   setContent = this.effect<void>(trigger$ => {
     return trigger$.pipe(
@@ -259,6 +293,58 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
+  toggleMenu = this.effect(trigger$ => {
+    return trigger$.pipe(
+      withLatestFrom(this.isMenuOpened$),
+      tap(([, opened]) => {
+        this.updateIsMenuOpened(!opened);
+        if (!opened) {
+          this.updateFocusNavigation(true);
+        }
+      })
+    );
+  });
+
+  checkInterfacesInConfig = this.effect(() => {
+    return combineLatest([
+      this.interfaces$.pipe(skip(1)),
+      this.systemConfig$.pipe(skip(1)),
+    ]).pipe(
+      filter(([, { network }]) => network !== null),
+      tap(([interfaces, { network, single_intf }]) => {
+        const deviceValid =
+          network?.device_intf == '' ||
+          (!!network?.device_intf && !!interfaces[network.device_intf]);
+        const internetValid = single_intf
+          ? true
+          : network?.internet_intf == '' ||
+            (!!network?.internet_intf && !!interfaces[network.internet_intf]);
+        this.updateSettingMissedError({
+          isSettingMissed: !deviceValid || !internetValid,
+          devicePortMissed: !deviceValid,
+          internetPortMissed: !internetValid,
+        });
+      })
+    );
+  });
+
+  sendGAEvent = this.effect(() => {
+    return combineLatest([this.isTestingComplete$, this.testrunStatus$]).pipe(
+      filter(([isTestingComplete]) => isTestingComplete === true),
+      filter(
+        ([, testrunStatus]) =>
+          testrunStatus?.status === StatusOfTestrun.Compliant &&
+          testrunStatus?.device.test_pack === TestingType.Pilot
+      ),
+      tap(() => {
+        // @ts-expect-error data layer is not null
+        window.dataLayer.push({
+          event: 'pilot_is_compliant',
+        });
+      })
+    );
+  });
+
   constructor(
     private store: Store<AppState>,
     private testRunService: TestRunService,
@@ -276,6 +362,9 @@ export class AppStore extends ComponentStore<AppComponentState> {
       calloutState: calloutState
         ? new Map(Object.entries(calloutState))
         : new Map(),
+      isMenuOpen: false,
+      focusNavigation: false,
+      settingMissedError: null,
     });
   }
 }

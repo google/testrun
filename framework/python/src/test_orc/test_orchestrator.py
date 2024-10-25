@@ -70,7 +70,6 @@ class TestOrchestrator:
         os.path.dirname(
             os.path.dirname(
                 os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
-
     self._test_modules_running = []
     self._current_module = 0
 

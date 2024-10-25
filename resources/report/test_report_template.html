@@ -115,7 +115,7 @@
   {% set page_index.value = page_index.value+1 %}
   <div class="page">
     {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
-    <h2 class="page-heading">Non-complaint tests and suggested steps to resolve</h2>
+    <h2 class="page-heading">Non-compliant tests and suggested steps to resolve</h2>
     {% for step in steps_to_resolve %}
     <div class="steps-to-resolve">
       <div class="steps-to-resolve-row">

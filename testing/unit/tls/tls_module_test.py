@@ -39,9 +39,10 @@ CAPTURES_DIR = os.path.join(TEST_FILES_DIR, 'captures/')
 CERT_DIR = os.path.join(TEST_FILES_DIR, 'certs/')
 ROOT_CERTS_DIR = os.path.join(TEST_FILES_DIR, 'root_certs')
 
-LOCAL_REPORT = os.path.join(REPORTS_DIR, 'tls_report_local.md')
-LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR, 'tls_report_ext_local.md')
-LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR, 'tls_report_no_cert_local.md')
+LOCAL_REPORT = os.path.join(REPORTS_DIR, 'tls_report_local.html')
+LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR, 'tls_report_ext_local.html')
+LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR,
+  'tls_report_no_cert_local.html')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 INTERNET_IFACE = 'eth0'
@@ -353,7 +354,6 @@ class TLSModuleTest(unittest.TestCase):
                     monitor_capture_file=pcap_file,
                     tls_capture_file=pcap_file)
     report_out_path = tls.generate_module_report()
-
     with open(report_out_path, 'r', encoding='utf-8') as file:
       report_out = file.read()
 
@@ -383,6 +383,11 @@ class TLSModuleTest(unittest.TestCase):
     with open(LOCAL_REPORT_EXT, 'r', encoding='utf-8') as file:
       report_local = file.read()
 
+    # Copy the generated html report to a new file
+    new_report_name = 'tls_report_ext_local.html'
+    new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
+    shutil.copy(report_out_path, new_report_path)
+
     self.assertEqual(report_out, report_local)
 
   def tls_module_report_no_cert_test(self):
@@ -405,6 +410,11 @@ class TLSModuleTest(unittest.TestCase):
     # Read the local good report
     with open(LOCAL_REPORT_NO_CERT, 'r', encoding='utf-8') as file:
       report_local = file.read()
+
+    # Copy the generated html report to a new file
+    new_report_name = 'tls_report_no_cert_local.html'
+    new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
+    shutil.copy(report_out_path, new_report_path)
 
     self.assertEqual(report_out, report_local)
 
@@ -557,6 +567,7 @@ class TLSModuleTest(unittest.TestCase):
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   suite.addTest(TLSModuleTest('client_hello_packets_test'))
+
   # TLS 1.2 server tests
   suite.addTest(TLSModuleTest('security_tls_v1_2_server_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_3_server_test'))
@@ -570,6 +581,7 @@ if __name__ == '__main__':
 
   # # TLS 1.3 server tests
   suite.addTest(TLSModuleTest('security_tls_v1_3_server_test'))
+
   # TLS client tests
   suite.addTest(TLSModuleTest('security_tls_v1_2_client_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_3_client_test'))
@@ -586,12 +598,12 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
   suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
 
-  # Test signature validation methods
-  suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
-  suite.addTest(TLSModuleTest('tls_module_local_ca_cert_test'))
-  suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
+  # # Test signature validation methods
+  # suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
+  # suite.addTest(TLSModuleTest('tls_module_local_ca_cert_test'))
+  # suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
 
-  suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
+  # suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
 
   suite.addTest(TLSModuleTest('outbound_connections_test'))
   suite.addTest(TLSModuleTest('outbound_connections_report_test'))

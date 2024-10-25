@@ -16,6 +16,7 @@ from ntp_module import NTPModule
 import unittest
 from scapy.all import rdpcap, NTP, wrpcap
 import os
+import shutil
 import sys
 
 MODULE = 'ntp'
@@ -62,6 +63,11 @@ class NTPModuleTest(unittest.TestCase):
     # Read the local good report
     with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
       report_local = file.read()
+
+    # Copy the generated html report to a new file
+    new_report_name = 'ntp_local.html'
+    new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
+    shutil.copy(report_out_path, new_report_path)
 
     self.assertEqual(report_out, report_local)
 
@@ -111,6 +117,11 @@ class NTPModuleTest(unittest.TestCase):
     # Read the local good report
     with open(LOCAL_REPORT_NO_NTP, 'r', encoding='utf-8') as file:
       report_local = file.read()
+
+    # Copy the generated html report to a new file
+    new_report_name = 'ntp_no_ntp.html'
+    new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
+    shutil.copy(report_out_path, new_report_path)
 
     self.assertEqual(report_out, report_local)
 

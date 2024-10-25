@@ -59,7 +59,7 @@ class TLSModule(TestModule):
     self._tls_util = TLSUtil(LOGGER)
 
   def generate_module_report(self):
-    html_content = '<h1>TLS Module</h1>'
+    html_content = '<h4 class="page-heading">TLS Module</h4>'
 
     # List of capture files to scan
     pcap_files = [
@@ -68,28 +68,40 @@ class TLSModule(TestModule):
     ]
     certificates = self.extract_certificates_from_pcap(pcap_files,
                                                        self._device_mac)
-    if len(certificates) > 0:
 
-      # Add summary table
-      summary_table = '''
-        <table class="module-data">
-          <thead>
-            <tr>
-              <th>Expiry</th>
-              <th>Length</th>
-              <th>Type</th>
-              <th>Port number</th>
-              <th>Signed by</th>
-            </tr>
-          </thead>
-          <tbody>
-        '''
+    if len(certificates) > 0:
 
       cert_tables = []
       # pylint: disable=W0612
       for cert_num, (
           (ip_address, port),
           cert) in enumerate(certificates.items()):
+
+        # Add summary table
+        summary_table = '''
+          <table class="module-summary" style="width:100%;">
+            <thead>
+              <tr>
+                <th>Expiry</th>
+                <th>Length</th>
+                <th>Type</th>
+                <th>Port number</th>
+                <th>Signed by</th>
+              </tr>
+            </thead>
+            <tbody>
+          '''
+
+        # Generate the certificate table
+        cert_table = '''
+          <table class="module-data">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>'''
 
         # Extract certificate data
         not_valid_before = cert.not_valid_before
@@ -100,6 +112,7 @@ class TLSModule(TestModule):
         not_after = str(not_valid_after)
         public_key = cert.public_key()
         signed_by = 'None'
+
         if isinstance(public_key, rsa.RSAPublicKey):
           public_key_type = 'RSA'
         elif isinstance(public_key, dsa.DSAPublicKey):
@@ -108,13 +121,34 @@ class TLSModule(TestModule):
           public_key_type = 'EC'
         else:
           public_key_type = 'Unknown'
+
         # Calculate certificate length
         cert_length = len(
             cert.public_bytes(encoding=serialization.Encoding.DER))
 
-        # Generate the Certificate table
-        cert_table = f'''
-          <h1>Certificate</h1>
+        # Append certification information
+        cert_table += f'''
+          <tr>
+            <td>Version</td>
+            <td>{version_value}</td>
+          </tr>
+          <tr>
+            <td>Signature Alg.</td>
+            <td>{signature_alg_value}</td>
+          </tr>
+          <tr>
+            <td>Validity from</td>
+            <td>{not_before}</td>
+          </tr>
+          <tr>
+            <td>Valid to</td>
+            <td>{not_after}</td>
+          </tr>
+        </tbody>
+      </table>
+        '''
+
+        subject_table = '''
           <table class="module-data">
             <thead>
               <tr>
@@ -122,94 +156,43 @@ class TLSModule(TestModule):
                 <th>Value</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td>Version</td>
-                <td>{version_value}</td>
-              </tr>
-              <tr>
-                <td>Signature Alg.</td>
-                <td>{signature_alg_value}</td>
-              </tr>
-              <tr>
-                <td>Validity from</td>
-                <td>{not_before}</td>
-              </tr>
-              <tr>
-                <td>Valid to</td>
-                <td>{not_after}</td>
-              </tr>
-            </tbody>
-          </table>
-        '''
+            <tbody>'''
 
-        # Generate the Subject table
-        subj_table = '''
-          <h1>Subject</h1>
-          <table class="module-data">
-            <thead>
-              <tr>
-                <th>Distinguished Name</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-        '''
-
+        # Append the subject information
         for val in cert.subject.rdns:
           dn = val.rfc4514_string().split('=')
-          subj_table += f'''
+          subject_table += f'''
             <tr>
               <td>{dn[0]}</td>
               <td>{dn[1]}</td>
             </tr>
           '''
-        subj_table += '''
-            </tbody>
-          </table>
-        '''
 
-        # Generate the Subject table
-        iss_table = '''
-          <h1>Issuer</h1>
-          <table class="module-data">
-            <thead>
-              <tr>
-                <th>Distinguished Name</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-        '''
+        subject_table += '''
+          </tbody>
+        </table>'''
 
+        # Append issuer information
         for val in cert.issuer.rdns:
           dn = val.rfc4514_string().split('=')
-          iss_table += f'''
-            <tr>
-              <td>{dn[0]}</td>
-              <td>{dn[1]}</td>
-            </tr>
-          '''
           if 'CN' in dn[0]:
             signed_by = dn[1]
-        iss_table += '''
-            </tbody>
-          </table>
-        '''
 
-        ext_table = None
+        ext_table = ''
+
+        # Append extensions information
         if cert.extensions:
+
           ext_table = '''
-            <h1>Extensions</h1>
+            <h5>Certificate Extensions</h5>
             <table class="module-data">
-                <thead>
-                  <tr>
-                    <th>Extension</th>
-                    <th>Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-            '''
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>'''
 
           for extension in cert.extensions:
             if isinstance(extension.value, list):
@@ -227,17 +210,12 @@ class TLSModule(TestModule):
                       <td>{self.format_extension_value(extension.value)}</td>
                     </tr> 
                   '''
-          ext_table += '''
-                </tbody>
-              </table>
-            '''
-        cert_table = f'\n{cert_table}'
-        cert_table += f'\n\n{subj_table}'
-        cert_table += f'\n\n{iss_table}'
-        if ext_table is not None:
-          cert_table += f'\n\n{ext_table}'
-        cert_tables.append(cert_table)
 
+          ext_table += '''
+            </tbody>
+          </table>'''
+
+        # Add summary table row
         summary_table += f'''
               <tr>
                 <td>{not_after}</td>
@@ -246,12 +224,29 @@ class TLSModule(TestModule):
                 <td>{port}</td>
                 <td>{signed_by}</td>
               </tr>
-            '''
+            </tbody>
+          </table>
+        '''
 
-      summary_table += '''
-          </tbody>
-        </table>
-      '''
+        # Merge all table HTML
+        summary_table = f'\n{summary_table}'
+
+        summary_table += f'''
+        <div style="display:flex;justify-content:space-between;">
+          <div>
+            <h5>Certificate Information</h5>
+            {cert_table}
+          </div>
+          <div>
+            <h5>Subject Information</h5>
+            {subject_table}
+          </div>
+        </div>'''
+
+        if ext_table is not None:
+          summary_table += f'\n\n{ext_table}'
+
+        cert_tables.append(summary_table)
 
       outbound_conns = self._tls_util.get_all_outbound_connections(
           device_mac=self._device_mac, capture_files=pcap_files)
