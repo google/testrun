@@ -44,7 +44,8 @@
         "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.",
         "recommendations": [
           "Enable DHCP",
-          "Install a DHCP client"
+          "Install a DHCP client",
+          "Ensure that your DHCP client renews its lease at the correct time"
         ]
       },
       {
