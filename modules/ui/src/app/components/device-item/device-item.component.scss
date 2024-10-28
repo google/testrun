@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
+@use 'src/theming/m3-theme' as *;
 @import '../../../theming/colors';
 @import '../../../theming/variables';
 
@@ -103,19 +104,19 @@ $border-radius: 12px;
 }
 
 .device-item:not(.non-interective):hover {
-  border-color: mat.m2-get-color-from-palette($color-primary, 600);
+  border-color: mat.get-theme-color($light-theme, primary, 35);
 }
 
 .device-item-with-actions:not(.device-item-outdated):has(
     .button-edit:not(:disabled):hover
   ) {
-  border-color: mat.m2-get-color-from-palette($color-primary, 600);
+  border-color: mat.get-theme-color($light-theme, primary, 35);
 }
 
 .device-item-with-actions:not(.device-item-outdated):has(
     .button-start:not(:disabled):hover
   ) {
-  border-color: mat.m2-get-color-from-palette($color-primary, 600);
+  border-color: mat.get-theme-color($light-theme, primary, 35);
 }
 
 .item-status {
@@ -199,13 +200,13 @@ $border-radius: 12px;
   grid-area: start;
   width: $icon-width;
   height: 100%;
-  background-color: mat.m2-get-color-from-palette($color-primary, 50);
+  background-color: mat.get-theme-color($light-theme, primary, 95);
   justify-self: end;
   border-radius: 0 $border-radius $border-radius 0;
 
   &:hover,
   &:focus-visible {
-    background-color: mat.m2-get-color-from-palette($color-primary, 600);
+    background-color: mat.get-theme-color($light-theme, primary, 35);
 
     .button-start-icon {
       color: $white;

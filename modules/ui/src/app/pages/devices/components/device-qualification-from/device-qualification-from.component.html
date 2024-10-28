@@ -317,14 +317,14 @@ limitations under the License.
         <div class="device-qualification-form-actions">
           <button
             *ngIf="!data.isCreate"
-            mat-flat-button
+            mat-raised-button
             type="button"
             class="delete-button"
             (click)="delete()">
             Delete
           </button>
           <button
-            mat-flat-button
+            mat-raised-button
             type="button"
             class="close-button"
             (click)="closeForm()">
@@ -332,7 +332,6 @@ limitations under the License.
           </button>
           <button
             mat-flat-button
-            color="primary"
             class="save-button"
             [disabled]="
               deviceHasNoChanges(data.initialDevice, device) || !formValid

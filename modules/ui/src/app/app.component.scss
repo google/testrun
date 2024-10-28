@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
+@use 'src/theming/m3-theme' as *;
 @import '../theming/colors';
 @import '../theming/variables';
 
@@ -47,11 +48,11 @@ $nav-open-btn-width: 210px;
   }
 
   .app-sidebar-button {
+    --mat-text-button-with-icon-horizontal-padding: 24px;
     width: $nav-open-btn-width;
     height: $toolbar-height;
     border-radius: 0 100px 100px 0;
     margin: 0;
-    padding: 0 24px;
   }
 
   .app-sidebar-button:first-child {
@@ -59,8 +60,8 @@ $nav-open-btn-width: 210px;
   }
 
   .app-sidebar-button-active {
-    border: 1px solid mat.m2-get-color-from-palette($color-primary, 50);
-    background-color: mat.m2-get-color-from-palette($color-primary, 50);
+    border: 1px solid mat.get-theme-color($light-theme, primary, 95);
+    background-color: mat.get-theme-color($light-theme, primary, 95);
   }
 
   .app-sidebar-button-active > .mat-icon,
@@ -99,6 +100,8 @@ $nav-open-btn-width: 210px;
 }
 
 .app-sidebar-button {
+  --mat-text-button-with-icon-horizontal-padding: 8px;
+
   width: $nav-close-btn-width;
   display: flex;
   justify-content: flex-start;
@@ -133,8 +136,8 @@ $nav-open-btn-width: 210px;
 }
 
 .app-sidebar-button-active {
-  border: 1px solid mat.m2-get-color-from-palette($color-primary, 500);
-  background-color: mat.m2-get-color-from-palette($color-primary, 500);
+  border: 1px solid mat.get-theme-color($light-theme, primary, 40);
+  background-color: mat.get-theme-color($light-theme, primary, 40);
 }
 
 .app-sidebar-button-active > .mat-icon {

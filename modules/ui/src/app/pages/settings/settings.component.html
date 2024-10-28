@@ -89,14 +89,14 @@ limitations under the License.
     </mat-error>
     <div class="setting-drawer-footer">
       <button
-        mat-flat-button
+        mat-raised-button
         (click)="closeSetting(EventType.Close)"
         [disabled]="!isFormValues || vm.hasConnectionSettings !== true"
         class="close-button">
         Cancel
       </button>
       <button
-        mat-raised-button
+        mat-flat-button
         class="save-button"
         color="primary"
         (click)="saveSetting()"

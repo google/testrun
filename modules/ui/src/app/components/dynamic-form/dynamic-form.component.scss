@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
+@use 'src/theming/m3-theme' as *;
 @import 'src/theming/colors';
 @import 'src/theming/variables';
 
@@ -26,7 +27,7 @@
   padding-bottom: 16px;
   display: inline-block;
   &:has(+ .field-select-multiple.ng-invalid.ng-dirty) {
-    color: mat.m2-get-color-from-palette($color-warn, 700);
+    color: mat.get-theme-color($light-theme, error, 40);
   }
 }
 mat-form-field {
@@ -52,7 +53,7 @@ mat-form-field {
 .field-select-multiple {
   .field-select-checkbox {
     &:has(::ng-deep .mat-mdc-checkbox-checked) {
-      background: mat.m2-get-color-from-palette($color-primary, 50);
+      background: mat.get-theme-color($light-theme, primary, 95);
     }
     ::ng-deep .mdc-checkbox__ripple {
       display: none;
