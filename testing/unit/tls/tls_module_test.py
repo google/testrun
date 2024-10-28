@@ -380,7 +380,6 @@ class TLSModuleTest(unittest.TestCase):
     os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
     pcap_file = os.path.join(CAPTURES_DIR, 'tls.pcap')
     tls = TLSModule(module=MODULE,
-                    log_dir=OUTPUT_DIR,
                     results_dir=OUTPUT_DIR,
                     startup_capture_file=pcap_file,
                     monitor_capture_file=pcap_file,
