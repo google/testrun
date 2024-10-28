@@ -306,16 +306,19 @@ export class AppStore extends ComponentStore<AppComponentState> {
   });
 
   checkInterfacesInConfig = this.effect(() => {
-    return combineLatest([this.interfaces$, this.systemConfig$]).pipe(
+    return combineLatest([
+      this.interfaces$.pipe(skip(1)),
+      this.systemConfig$.pipe(skip(1)),
+    ]).pipe(
       filter(([, { network }]) => network !== null),
-      tap(([interfaces, { network }]) => {
+      tap(([interfaces, { network, single_intf }]) => {
         const deviceValid =
           network?.device_intf == '' ||
           (!!network?.device_intf && !!interfaces[network.device_intf]);
-        const internetValid =
-          network?.internet_intf == '' ||
-          (!!network?.internet_intf && !!interfaces[network.internet_intf]);
-
+        const internetValid = single_intf
+          ? true
+          : network?.internet_intf == '' ||
+            (!!network?.internet_intf && !!interfaces[network.internet_intf]);
         this.updateSettingMissedError({
           isSettingMissed: !deviceValid || !internetValid,
           devicePortMissed: !deviceValid,

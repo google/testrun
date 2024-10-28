@@ -141,7 +141,7 @@ describe('ProfileFormComponent', () => {
 
         expect(error).toBeTruthy();
         expect(nameError).toContain(
-          'This Profile name is already used for another Risk Assessment profile'
+          'This Profile name is already used for another profile'
         );
       });
     });

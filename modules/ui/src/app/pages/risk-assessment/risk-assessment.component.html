@@ -23,6 +23,7 @@ limitations under the License.
         <div class="main-content">
           <app-profile-form
             [selectedProfile]="vm.selectedProfile"
+            [isCopyProfile]="isCopyProfile"
             [profiles]="vm.profiles"
             [profileFormat]="vm.profileFormat"
             (saveProfile)="saveProfileClicked($event, vm.selectedProfile)"

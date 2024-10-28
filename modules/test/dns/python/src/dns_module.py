@@ -121,8 +121,7 @@ class DNSModule(TestModule):
 
       table_content += '''
             </tbody>
-          </table>
-                       '''
+          </table>'''
 
       html_content += table_content
 
