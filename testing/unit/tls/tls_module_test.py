@@ -361,7 +361,6 @@ class TLSModuleTest(unittest.TestCase):
     monitor_pcap_file = os.path.join(CAPTURES_DIR, 'multi_page_monitor.pcap')
     tls_pcap_file = os.path.join(CAPTURES_DIR, 'multi_page_tls.pcap')
     tls = TLSModule(module=MODULE,
-                    log_dir=OUTPUT_DIR,
                     results_dir=OUTPUT_DIR,
                     startup_capture_file=startup_pcap_file,
                     monitor_capture_file=monitor_pcap_file,
@@ -401,7 +400,6 @@ class TLSModuleTest(unittest.TestCase):
     os.environ['DEVICE_MAC'] = '28:29:86:27:d6:05'
     pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
     tls = TLSModule(module=MODULE,
-                    log_dir=OUTPUT_DIR,
                     results_dir=OUTPUT_DIR,
                     startup_capture_file=pcap_file,
                     monitor_capture_file=pcap_file,
@@ -428,7 +426,6 @@ class TLSModuleTest(unittest.TestCase):
     os.environ['DEVICE_MAC'] = ''
     pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
     tls = TLSModule(module=MODULE,
-                    log_dir=OUTPUT_DIR,
                     results_dir=OUTPUT_DIR,
                     startup_capture_file=pcap_file,
                     monitor_capture_file=pcap_file,
