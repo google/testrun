@@ -73,9 +73,8 @@ class TLSModule(TestModule):
 
       cert_tables = []
       # pylint: disable=W0612
-      for cert_num, (
-          (ip_address, port),
-          cert) in enumerate(certificates.items()):
+      for cert_num, ((ip_address, port),
+                     cert) in enumerate(certificates.items()):
 
         # Add summary table
         summary_table = '''
@@ -385,7 +384,9 @@ class TLSModule(TestModule):
             port = packet.tcp.srcport if 'tcp' in packet else packet.udp.srcport
             # Store certificate in dictionary with IP address and port as key
             certificates[(ip_address, port)] = certificate
-    return certificates
+    sorted_keys = sorted(certificates.keys(), key=lambda x: (x[0], x[1]))
+    sorted_certificates = {k: certificates[k] for k in sorted_keys}
+    return sorted_certificates
 
   def _security_tls_v1_2_server(self):
     LOGGER.info('Running security.tls.v1_2_server')

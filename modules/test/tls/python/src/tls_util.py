@@ -62,20 +62,25 @@ class TLSUtil():
       self._allowed_protocols = DEFAULT_ALLOWED_PROTOCOLS
 
   def get_all_outbound_connections(self, device_mac, capture_files):
-    """Process multiple pcap files and combine unique IP destinations."""
+    """Process multiple pcap files and combine unique IP destinations in the 
+    order of first appearance."""
 
-    outbound_conns = set()
+    all_outbound_conns = []
     for capture in capture_files:
       ips = self.get_outbound_connections(device_mac=device_mac,
                                           capture_file=capture)
-      outbound_conns.update(ips)
-    return list(outbound_conns)
+      all_outbound_conns.extend(ips)  # Collect all connections sequentially
+
+    # Remove duplicates while preserving the first-seen order
+    unique_ordered_conns = list(dict.fromkeys(all_outbound_conns))
+    return unique_ordered_conns
 
   def get_outbound_connections(self, device_mac, capture_file):
     """Extract unique IP and port destinations from a single pcap file 
-      based on the known MAC address."""
+       based on the known MAC address, preserving the order of appearance."""
     packets = rdpcap(capture_file)
-    outbound_conns = set()
+    outbound_conns = []
+
     for packet in packets:
       if Ether in packet and IP in packet:
         if packet[Ether].src == device_mac:
@@ -89,9 +94,12 @@ class TLSUtil():
             port_dst = packet[UDP].dport
 
           if self.is_external_ip(ip_dst):
-            outbound_conns.add((ip_dst, port_dst))
+            # Add to list as a tuple
+            outbound_conns.append((ip_dst, port_dst))
 
-    return outbound_conns
+    # Use dict.fromkeys to remove duplicates while preserving insertion order
+    unique_conns = list(dict.fromkeys(outbound_conns))
+    return unique_conns
 
   def is_external_ip(self, ip):
     """Check if the IP is an external (non-private) IP address."""

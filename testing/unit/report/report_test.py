@@ -61,6 +61,7 @@ class ReportTest(unittest.TestCase):
 
     # Load each module html report
     reports_md = []
+    reports_md.append(self.get_module_html_report('tls'))
     reports_md.append(self.get_module_html_report('dns'))
     reports_md.append(self.get_module_html_report('services'))
     reports_md.append(self.get_module_html_report('ntp'))

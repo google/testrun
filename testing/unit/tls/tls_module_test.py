@@ -40,9 +40,10 @@ CERT_DIR = os.path.join(TEST_FILES_DIR, 'certs/')
 ROOT_CERTS_DIR = os.path.join(TEST_FILES_DIR, 'root_certs')
 
 LOCAL_REPORT = os.path.join(REPORTS_DIR, 'tls_report_local.html')
+LOCAL_REPORT_SINGLE = os.path.join(REPORTS_DIR, 'tls_report_single.html')
 LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR, 'tls_report_ext_local.html')
 LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR,
-  'tls_report_no_cert_local.html')
+                                    'tls_report_no_cert_local.html')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 INTERNET_IFACE = 'eth0'
@@ -343,6 +344,28 @@ class TLSModuleTest(unittest.TestCase):
     gen_html = tls.generate_outbound_connection_table(ip_dst)
     print(gen_html)
 
+  def tls_module_report_multi_page_test(self):
+    print('\ntls_module_report_test')
+    os.environ['DEVICE_MAC'] = '68:5e:1c:cb:6e:cb'
+    startup_pcap_file = os.path.join(CAPTURES_DIR, 'multi_page_startup.pcap')
+    monitor_pcap_file = os.path.join(CAPTURES_DIR, 'multi_page_monitor.pcap')
+    tls_pcap_file = os.path.join(CAPTURES_DIR, 'multi_page_tls.pcap')
+    tls = TLSModule(module=MODULE,
+                    log_dir=OUTPUT_DIR,
+                    results_dir=OUTPUT_DIR,
+                    startup_capture_file=startup_pcap_file,
+                    monitor_capture_file=monitor_pcap_file,
+                    tls_capture_file=tls_pcap_file)
+    report_out_path = tls.generate_module_report()
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
+
+    # Read the local good report
+    with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
+      report_local = file.read()
+
+    self.assertEqual(report_out, report_local)
+
   def tls_module_report_test(self):
     print('\ntls_module_report_test')
     os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
@@ -358,7 +381,7 @@ class TLSModuleTest(unittest.TestCase):
       report_out = file.read()
 
     # Read the local good report
-    with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
+    with open(LOCAL_REPORT_SINGLE, 'r', encoding='utf-8') as file:
       report_local = file.read()
 
     self.assertEqual(report_out, report_local)
@@ -597,13 +620,14 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('tls_module_report_test'))
   suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
   suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
+  suite.addTest(TLSModuleTest('tls_module_report_multi_page_test'))
 
-  # # Test signature validation methods
-  # suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
-  # suite.addTest(TLSModuleTest('tls_module_local_ca_cert_test'))
-  # suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
+  # Test signature validation methods
+  suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
+  suite.addTest(TLSModuleTest('tls_module_local_ca_cert_test'))
+  suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
 
-  # suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
+  suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
 
   suite.addTest(TLSModuleTest('outbound_connections_test'))
   suite.addTest(TLSModuleTest('outbound_connections_report_test'))
