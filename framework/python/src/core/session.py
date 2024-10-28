@@ -835,8 +835,15 @@ question {question.get('question')}''')
       if common_name == cur_cert['name']:
         raise ValueError('A certificate with that name already exists')
 
-    issuer = cert.issuer.get_attributes_for_oid(
-        NameOID.ORGANIZATION_NAME)[0].value
+    # Retrieve the list of attributes
+    issuer_attr = cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)
+
+    # Raise an error if the organization name attribute is missing
+    if not issuer_attr:
+      raise ValueError('Certificate is missing the organization name')
+
+    # Extract the organization name value
+    issuer = issuer_attr[0].value
 
     status = 'Valid'
     if now > cert.not_valid_after_utc:

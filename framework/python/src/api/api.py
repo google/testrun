@@ -975,6 +975,13 @@ class Api:
           False, "A certificate with that common name already exists."
         )
 
+      # Returned when
+      elif str(e) == "Certificate is missing the organization name":
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(
+          False, "The certificate must contain the organization name"
+        )
+
       # Returned when unable to load PEM file
       else:
         response.status_code = status.HTTP_400_BAD_REQUEST
