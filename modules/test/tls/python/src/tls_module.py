@@ -40,7 +40,6 @@ class TLSModule(TestModule):
 
   def __init__(self,
                module,
-               log_dir=None,
                conf_file=None,
                results_dir=None,
                startup_capture_file=STARTUP_CAPTURE_FILE,
@@ -48,7 +47,6 @@ class TLSModule(TestModule):
                tls_capture_file=TLS_CAPTURE_FILE):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
-                     log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
     self.startup_capture_file = startup_capture_file

@@ -48,7 +48,6 @@ class NTPModuleTest(unittest.TestCase):
   # Test the module report generation
   def ntp_module_report_test(self):
     ntp_module = NTPModule(module=MODULE,
-                           log_dir=OUTPUT_DIR,
                            results_dir=OUTPUT_DIR,
                            ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE,
                            startup_capture_file=STARTUP_CAPTURE_FILE,
@@ -102,7 +101,6 @@ class NTPModuleTest(unittest.TestCase):
     wrpcap(monitor_cap_file, packets_monitor)
 
     ntp_module = NTPModule(module='dns',
-                           log_dir=OUTPUT_DIR,
                            results_dir=OUTPUT_DIR,
                            ntp_server_capture_file=ntp_server_cap_file,
                            startup_capture_file=startup_cap_file,
