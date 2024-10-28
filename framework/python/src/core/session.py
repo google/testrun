@@ -826,16 +826,22 @@ question {question.get('question')}''')
     # Parse bytes into x509 object
     cert = x509.load_pem_x509_certificate(content, default_backend())
 
-    # Extract required properties
-    common_name = cert.subject.get_attributes_for_oid(
-        NameOID.COMMON_NAME)[0].value
+    # Retrieve the subject list of attributes
+    common_name_attr = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
+
+    # Raise an error if the common name attribute is missing
+    if not common_name_attr:
+      raise ValueError('Certificate is missing the common name')
+
+    # Extract the organization name value
+    common_name = common_name_attr[0].value
 
     # Check if any existing certificates have the same common name
     for cur_cert in self._certs:
       if common_name == cur_cert['name']:
         raise ValueError('A certificate with that name already exists')
 
-    # Retrieve the list of attributes
+    # Retrieve the issuer list of attributes
     issuer_attr = cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)
 
     # Raise an error if the organization name attribute is missing
