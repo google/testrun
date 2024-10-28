@@ -72,8 +72,10 @@ class TLSModule(TestModule):
     if len(certificates) > 0:
 
       cert_tables = []
-      for cert_num, ((ip_address, port), # pylint: disable=W0612
-                     cert) in enumerate(certificates.items()):
+      # pylint: disable=W0612
+      for cert_num, (
+          (ip_address, port),
+          cert) in enumerate(certificates.items()):
 
         # Add summary table
         summary_table = '''
@@ -246,7 +248,13 @@ class TLSModule(TestModule):
 
         cert_tables.append(summary_table)
 
-      html_content += '\n'.join('\n' + tables for tables in cert_tables)
+      outbound_conns = self._tls_util.get_all_outbound_connections(
+          device_mac=self._device_mac, capture_files=pcap_files)
+      conn_table = self.generate_outbound_connection_table(outbound_conns)
+
+      html_content += summary_table + '\n'.join('\n' + tables
+                                                for tables in cert_tables)
+      html_content += conn_table
 
     else:
       html_content += ('''
@@ -315,6 +323,34 @@ class TLSModule(TestModule):
               f'key_encipherment={value.key_encipherment}, '
               f'crl_sign={value.crl_sign}')
     return str(value)  # Fallback to string conversion
+
+  def generate_outbound_connection_table(self, outbound_conns):
+    """Generate just an HTML table from a list of IPs"""
+    html_content = '''
+    <h1>Outbound Connections</h1>
+    <table class="module-data">
+      <thead>
+          <tr>
+              <th>Destination IP</th>
+              <th>Port</th>
+          </tr>
+      </thead>
+    <tbody>
+    '''
+
+    rows = [
+        f'\t<tr><td>{ip}</td><td>{port}</td></tr>'
+        for ip, port in outbound_conns
+    ]
+    html_content += '\n'.join(rows)
+
+    # Close the table
+    html_content += """
+    </tbody>
+    \r</table>
+    """
+
+    return html_content
 
   def extract_certificates_from_pcap(self, pcap_files, mac_address):
     # Initialize a list to store packets
