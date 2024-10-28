@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @use 'node_modules/@angular/material/index' as mat;
+@use 'src/theming/m3-theme' as *;
 @import 'src/theming/colors';
 
 .filter-dialog-content {
@@ -40,7 +41,7 @@
     min-width: 38px;
     margin: 0;
     padding: 0 8px;
-    color: mat.m2-get-color-from-palette($color-primary, 600);
+    color: mat.get-theme-color($light-theme, primary, 35);
     font-weight: 500;
     line-height: 20px;
     letter-spacing: 0.25px;

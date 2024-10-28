@@ -15,6 +15,7 @@
  */
 
 @use 'node_modules/@angular/material/index' as mat;
+@use 'src/theming/m3-theme' as *;
 @import 'src/theming/colors';
 
 $option-width: 170px;
@@ -22,7 +23,7 @@ $option-height: 36px;
 
 .download-options-field {
   width: $option-width;
-  background: mat.m2-get-color-from-palette($color-primary, 50);
+  background: mat.get-theme-color($light-theme, primary, 95);
 
   ::ng-deep.mat-mdc-text-field-wrapper {
     padding: 0 16px;
@@ -39,7 +40,7 @@ $option-height: 36px;
   }
 
   ::ng-deep.mat-mdc-select-placeholder {
-    color: mat.m2-get-color-from-palette($color-primary, 700);
+    color: mat.get-theme-color($light-theme, primary, 30);
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
@@ -48,11 +49,11 @@ $option-height: 36px;
   }
 
   ::ng-deep.mat-mdc-select-arrow {
-    color: mat.m2-get-color-from-palette($color-primary, 700);
+    color: mat.get-theme-color($light-theme, primary, 30);
   }
 
   ::ng-deep .mat-mdc-text-field-wrapper .mdc-notched-outline > * {
-    border-color: mat.m2-get-color-from-palette($color-primary, 50);
+    border-color: mat.get-theme-color($light-theme, primary, 95);
   }
 
   ::ng-deep

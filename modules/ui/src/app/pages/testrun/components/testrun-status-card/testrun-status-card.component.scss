@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @use 'node_modules/@angular/material/index' as mat;
+@use 'src/theming/m3-theme' as *;
 @import 'src/theming/colors';
 
 :host {
@@ -33,11 +34,11 @@
   padding: 16px 32px;
 
   &.progress {
-    background-color: mat.m2-get-color-from-palette($color-primary, 700);
+    background-color: mat.get-theme-color($light-theme, primary, 30);
   }
 
   &.completed-success {
-    background-color: mat.m2-get-color-from-palette($color-accent, 700);
+    background-color: #188038; /* TODO update with variable*/
   }
 
   &.completed-failed {

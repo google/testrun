@@ -1,0 +1,17 @@
+@mixin dialog {
+  display: grid;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: var(--mat-dialog-container-max-width);
+}
+
+@mixin content-empty {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

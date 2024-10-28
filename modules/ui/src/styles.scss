@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import './theming/theme';
+@use 'src/theming/m3-theme' as *;
 @import 'src/theming/variables';
+@import 'src/theming/colors';
 
 @font-face {
   font-family: 'Google Sans';
@@ -25,6 +26,11 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
     U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
     U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --mat-sidenav-container-width: auto;
+  --mat-sidenav-container-shape: 0;
 }
 
 html,
@@ -145,7 +151,7 @@ mat-hint {
 }
 
 .filter-button.active .filter-icon path {
-  fill: mat.m2-get-color-from-palette($color-primary, 600);
+  fill: mat.get-theme-color($light-theme, primary, 35);
 }
 
 .cell-result-text {
@@ -168,8 +174,8 @@ mat-hint {
   }
 
   &.blue {
-    background-color: mat.m2-get-color-from-palette($color-primary, 50);
-    color: mat.m2-get-color-from-palette($color-primary, 800);
+    background-color: mat.get-theme-color($light-theme, primary, 95);
+    color: mat.get-theme-color($light-theme, primary, 25);
   }
 
   &.cyan {
@@ -215,14 +221,14 @@ mat-hint {
 }
 
 .message-link {
-  color: mat.m2-get-color-from-palette($color-primary, 700);
+  color: mat.get-theme-color($light-theme, primary, 30);
   text-decoration: none;
   cursor: pointer;
   font-weight: 500;
 }
 
 .message-link:hover {
-  color: mat.m2-get-color-from-palette($color-primary, 800);
+  color: mat.get-theme-color($light-theme, primary, 25);
 }
 
 .mat-mdc-snack-bar-container {

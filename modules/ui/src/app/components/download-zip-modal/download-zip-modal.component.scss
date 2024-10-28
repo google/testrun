@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import '../../../theming/colors';
-@import '../../../theming/variables';
+@import 'src/theming/colors';
+@import 'src/theming/variables';
+@import 'src/theming/mixins';
+
+::ng-deep :root {
+  --mat-dialog-container-max-width: 570px;
+}
 
 :host {
-  display: grid;
-  overflow: hidden;
-  box-sizing: border-box;
-  width: 570px;
+  @include dialog;
   padding: 24px 24px 16px 24px;
   gap: 10px;
 }
@@ -168,6 +170,6 @@
   background: $green-50;
 
   .testing-result-status {
-    background: mat.m2-get-color-from-palette($color-accent, 700);
+    background: #188038; /* TODO update with variable*/
   }
 }

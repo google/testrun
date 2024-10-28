@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 @use 'node_modules/@angular/material/index' as mat;
+@use 'src/theming/m3-theme' as *;
 @import 'src/theming/colors';
 @import 'src/theming/variables';
+@import 'src/theming/mixins';
 
 :host {
   display: flex;
@@ -25,13 +27,7 @@
 }
 
 .progress-content-empty {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include content-empty;
 }
 
 .progress-toolbar {
@@ -101,7 +97,7 @@
 }
 
 .toolbar-tag {
-  background-color: mat.m2-get-color-from-palette($color-primary, 800);
+  background-color: mat.get-theme-color($light-theme, primary, 25);
   color: $white;
   font-family: $font-primary;
   font-size: 8px;
@@ -125,8 +121,8 @@
 }
 
 .report-button {
-  background-color: mat.m2-get-color-from-palette($color-primary, 50);
-  color: mat.m2-get-color-from-palette($color-primary, 700);
+  background-color: mat.get-theme-color($light-theme, primary, 95);
+  color: mat.get-theme-color($light-theme, primary, 30);
   & ::ng-deep .mat-mdc-button-touch-target {
     height: auto;
   }

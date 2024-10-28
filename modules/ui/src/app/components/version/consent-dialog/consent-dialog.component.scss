@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import '../../../../theming/colors';
+@import 'src/theming/colors';
+@import 'src/theming/mixins';
+
+::ng-deep :root {
+  --mat-dialog-container-max-width: 570px;
+}
 
 :host {
-  display: grid;
-  overflow: hidden;
-  width: 570px;
+  @include dialog;
   padding: 16px;
   gap: 16px;
 }

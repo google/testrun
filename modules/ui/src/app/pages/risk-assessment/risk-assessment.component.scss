@@ -15,6 +15,7 @@
  */
 @import 'src/theming/colors';
 @import 'src/theming/variables';
+@import 'src/theming/mixins';
 
 :host {
   overflow: hidden;
@@ -22,13 +23,7 @@
 }
 
 .risk-assessment-content-empty {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: calc(100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include content-empty;
 }
 
 :host:has(.profiles-drawer) {

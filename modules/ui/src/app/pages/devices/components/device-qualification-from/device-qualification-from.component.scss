@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
+@use 'src/theming/m3-theme' as *;
 @import 'src/theming/colors';
 @import 'src/theming/variables';
+@import 'src/theming/mixins';
 
-$form-min-width: 732px;
+::ng-deep :root {
+  --mat-dialog-container-max-width: 732px;
+}
+
+$form-max-width: var(--mat-dialog-container-max-width);
+$form-min-width: 285px;
 
 :host {
   container-type: size;
@@ -26,7 +33,7 @@ $form-min-width: 732px;
   display: grid;
   grid-template-rows: 1fr;
   overflow: auto;
-  grid-template-columns: minmax(285px, $form-max-width);
+  grid-template-columns: minmax($form-min-width, $form-max-width);
   height: 100vh;
   max-height: 978px;
 }
@@ -46,10 +53,6 @@ $form-min-width: 732px;
   p {
     margin: 8px 0;
   }
-}
-
-.close-button {
-  color: $primary;
 }
 
 .hidden {
@@ -188,7 +191,7 @@ $form-min-width: 732px;
 
 .device-qualification-form-summary {
   border-radius: 12px;
-  background: mat.m2-get-color-from-palette($color-primary, 50);
+  background: mat.get-theme-color($light-theme, primary, 95);
   padding: 24px;
   width: max-content;
   margin-left: auto;
@@ -213,7 +216,6 @@ $form-min-width: 732px;
     border: 1px solid $lighter-grey;
   }
   .delete-button {
-    color: $primary;
     float: left;
   }
   .close-button {

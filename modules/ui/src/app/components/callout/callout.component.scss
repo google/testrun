@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
+@use 'src/theming/m3-theme' as *;
 @import '../../../theming/colors';
 @import '../../../theming/variables';
 
@@ -49,10 +50,10 @@
 
 .callout-container.info {
   margin: 24px 32px;
-  background-color: mat.m2-get-color-from-palette($color-primary, 50);
+  background-color: mat.get-theme-color($light-theme, primary, 95);
 
   .callout-icon {
-    color: mat.m2-get-color-from-palette($color-primary, 700);
+    color: mat.get-theme-color($light-theme, primary, 30);
   }
 
   .info-pilot {
