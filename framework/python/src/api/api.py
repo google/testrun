@@ -975,7 +975,7 @@ class Api:
           False, "A certificate with that common name already exists."
         )
 
-      # Returned when
+      # Returned when organization name is missing
       elif str(e) == "Certificate is missing the organization name":
         response.status_code = status.HTTP_400_BAD_REQUEST
         return self._generate_msg(
