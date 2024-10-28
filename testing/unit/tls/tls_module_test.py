@@ -329,10 +329,20 @@ class TLSModuleTest(unittest.TestCase):
     ip_dst = TLS_UTIL.get_all_outbound_connections(
         device_mac='70:b3:d5:96:c0:00', capture_files=[capture_file])
     print(str(ip_dst))
+    # Expected set of IPs and ports in tuple format
+    expected_ips = {
+        ('216.239.35.0', 123),
+        ('8.8.8.8', 'Unknown'),
+        ('8.8.8.8', 53),
+        ('18.140.82.197', 443),
+        ('18.140.82.197', 22),
+        ('224.0.0.22', 'Unknown'),
+        ('18.140.82.197', 80)
+    }
     # Compare as sets since returned order is not guaranteed
     self.assertEqual(
         set(ip_dst),
-        set(['8.8.8.8', '224.0.0.22', '18.140.82.197', '216.239.35.0']))
+        expected_ips)
 
   def outbound_connections_report_test(self):
     """ Test generation of the outbound connection ips"""
