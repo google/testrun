@@ -77,7 +77,7 @@
       },
       {
         "name": "connection.switch.arp_inspection",
-        "description": "Device uses ARP",
+        "description": "Device uses ARP correctly",
         "expected_behavior": "Device continues to operate correctly when ARP inspection is enabled on the switch.  No functionality is lost with ARP inspection enabled.",
         "required_result": "Required",
         "result": "Compliant"

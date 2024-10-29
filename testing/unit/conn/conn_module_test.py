@@ -133,7 +133,6 @@ class ConnectionModuleTest(unittest.TestCase):
   def connection_switch_dhcp_snooping_icmp_test(self):
     LOGGER.info('connection_switch_dhcp_snooping_icmp_test')
     conn_module = ConnectionModule(module=MODULE,
-                           log_dir=OUTPUT_DIR,
                            results_dir=OUTPUT_DIR,
                            startup_capture_file=STARTUP_CAPTURE_FILE,
                            monitor_capture_file=MONITOR_CAPTURE_FILE)
