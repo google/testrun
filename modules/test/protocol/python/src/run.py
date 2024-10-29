@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Run Baseline module"""
+"""Run protocol module"""
 import argparse
 import signal
 import sys
