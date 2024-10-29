@@ -17,6 +17,8 @@ import json
 import typing as t
 import paho.mqtt.client as mqtt_client
 from common import logger
+import socket
+
 
 LOGGER = logger.get_logger("mqtt")
 WEBSOCKETS_HOST = "localhost"
@@ -30,8 +32,11 @@ class MQTTException(Exception):
 class MQTT:
   """ MQTT client class"""
   def __init__(self) -> None:
-    self._host = WEBSOCKETS_HOST
     self._client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2)
+
+    # Resolve Testrun host IP
+    self._host = socket.gethostbyname(socket.gethostname())
+
     self._client.enable_logger(LOGGER)
     LOGGER.setLevel(logger.logging.INFO)
 
