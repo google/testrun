@@ -325,7 +325,6 @@ class TLSModuleTest(unittest.TestCase):
   #   os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
   #   pcap_file = os.path.join(CAPTURES_DIR, 'tls.pcap')
   #   tls = TLSModule(module=MODULE,
-  #                   log_dir=OUTPUT_DIR,
   #                   conf_file=CONF_FILE,
   #                   results_dir=OUTPUT_DIR,
   #                   startup_capture_file=pcap_file,
@@ -348,7 +347,6 @@ class TLSModuleTest(unittest.TestCase):
   #   os.environ['DEVICE_MAC'] = '28:29:86:27:d6:05'
   #   pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
   #   tls = TLSModule(module=MODULE,
-  #                   log_dir=OUTPUT_DIR,
   #                   conf_file=CONF_FILE,
   #                   results_dir=OUTPUT_DIR,
   #                   startup_capture_file=pcap_file,
@@ -372,7 +370,6 @@ class TLSModuleTest(unittest.TestCase):
   #   os.environ['DEVICE_MAC'] = ''
   #   pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
   #   tls = TLSModule(module=MODULE,
-  #                   log_dir=OUTPUT_DIR,
   #                   conf_file=CONF_FILE,
   #                   results_dir=OUTPUT_DIR,
   #                   startup_capture_file=pcap_file,
