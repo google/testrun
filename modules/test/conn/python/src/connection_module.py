@@ -43,7 +43,6 @@ class ConnectionModule(TestModule):
 
   def __init__(self,
                module,
-               log_dir=None,
                conf_file=None,
                results_dir=None,
                startup_capture_file=STARTUP_CAPTURE_FILE,
@@ -51,7 +50,6 @@ class ConnectionModule(TestModule):
 
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
-                     log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
     global LOGGER
@@ -146,7 +144,7 @@ class ConnectionModule(TestModule):
     if no_arp:
       return None, 'No ARP packets from the device found'
 
-    return True, 'Device uses ARP'
+    return True, 'Device uses ARP correctly'
 
   def _connection_switch_dhcp_snooping(self):
     LOGGER.info('Running connection.switch.dhcp_snooping')
@@ -204,8 +202,10 @@ class ConnectionModule(TestModule):
         LOGGER.info('No IP information found in lease: ' + self._device_mac)
         return False, 'No IP information found in lease: ' + self._device_mac
     else:
-      LOGGER.info('No DHCP lease could be found: ' + self._device_mac)
-      return False, 'No DHCP lease could be found: ' + self._device_mac
+      LOGGER.info('No DHCP lease could be found for MAC ' + self._device_mac +
+        ' at the time of this test')
+      return (False, 'No DHCP lease could be found for MAC ' +
+        self._device_mac + ' at the time of this test')
 
   def _connection_mac_address(self):
     LOGGER.info('Running connection.mac_address')
@@ -323,8 +323,10 @@ class ConnectionModule(TestModule):
         else:
           result = None, 'Failed to create reserved lease for device'
       else:
-        LOGGER.info('Device has no current DHCP lease')
-        result = None, 'Device has no current DHCP lease'
+        LOGGER.info('Device has no current DHCP lease so ' +
+          'this test could not be run')
+        result = None, ('Device has no current DHCP lease so ' +
+          'this test could not be run')
       # Restore the network
       self._dhcp_util.restore_failover_dhcp_server()
       LOGGER.info('Waiting 30 seconds for reserved lease to expire')
@@ -377,7 +379,8 @@ class ConnectionModule(TestModule):
         else:
           result = False, 'Device did not respond to ping'
       else:
-        result = None, 'Device has no current DHCP lease'
+        result = (None,
+          'Device has no current DHCP lease so this test could not be run')
     else:
       LOGGER.error('Network is not ready for this test. Skipping')
       result = None, 'Network is not ready for this test'
@@ -577,8 +580,13 @@ class ConnectionModule(TestModule):
 
   def _has_slaac_addres(self):
     packet_capture = (rdpcap(self.startup_capture_file) +
-                      rdpcap(self.monitor_capture_file) +
-                      rdpcap(DHCP_CAPTURE_FILE))
+                      rdpcap(self.monitor_capture_file))
+
+    try:
+      packet_capture += rdpcap(DHCP_CAPTURE_FILE)
+    except FileNotFoundError:
+      LOGGER.error('dhcp-1.pcap not found, ignoring')
+
     sends_ipv6 = False
     for packet_number, packet in enumerate(packet_capture, start=1):
       if IPv6 in packet and packet.src == self._device_mac:
@@ -683,6 +691,7 @@ class ConnectionModule(TestModule):
     return start_int <= ip_int <= end_int
 
   def _run_subnet_test(self, config):
+
     # Resolve the configured dhcp subnet ranges
     ranges = None
     if 'ranges' in config:
@@ -697,6 +706,7 @@ class ConnectionModule(TestModule):
 
     response = self.dhcp1_client.get_dhcp_range()
     cur_range = {}
+
     if response.code == 200:
       cur_range['start'] = response.start
       cur_range['end'] = response.end
@@ -709,16 +719,20 @@ class ConnectionModule(TestModule):
 
     results = []
     dhcp_setup = self.setup_single_dhcp_server()
+
     if dhcp_setup[0]:
       LOGGER.info(dhcp_setup[1])
       lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
                                             timeout=self._lease_wait_time_sec)
+
       if lease is not None:
         if self._dhcp_util.is_lease_active(lease):
           results = self.test_subnets(ranges)
       else:
-        LOGGER.info('Failed to confirm a valid active lease for the device')
-        return None, 'Failed to confirm a valid active lease for the device'
+        LOGGER.info('Device has no current DHCP lease ' +
+          'so this test could not be run')
+        return (None,
+          'Device has no current DHCP lease so this test could not be run')
     else:
       LOGGER.error(dhcp_setup[1])
       return None, 'Failed to setup DHCP server for test'
@@ -745,10 +759,17 @@ class ConnectionModule(TestModule):
       # Wait for the current lease to expire
       lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
                                             timeout=self._lease_wait_time_sec)
-      self._dhcp_util.wait_for_lease_expire(lease, self._lease_wait_time_sec)
+
+      # Check if lease is active
+      if lease is not None:
+        self._dhcp_util.wait_for_lease_expire(lease, self._lease_wait_time_sec)
+      else:
+        # If not, wait for 30 seconds as a fallback
+        time.sleep(30)
 
       # Wait for a new lease to be provided before exiting test
       # to prevent other test modules from failing
+
       LOGGER.info('Checking for new lease')
       # Subnet changes tend to take longer to pick up so we'll allow
       # for twice the lease wait time

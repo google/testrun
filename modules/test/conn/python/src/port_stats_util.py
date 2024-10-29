@@ -41,7 +41,7 @@ class PortStatsUtil():
     self.conn_stats = self._read_stats_file(self.ethtool_conn_stats_file)
 
   def is_autonegotiate(self):
-    auto_negotiation = False
+    auto_negotiation = None
     auto_negotiation_status = self._get_stat_option(stats=self.conn_stats,
                                                     option='Auto-negotiation:')
     if auto_negotiation_status is not None:
@@ -66,15 +66,22 @@ class PortStatsUtil():
                                             option='rx_errors:')
       rx_errors_post = self._get_stat_option(stats=stats_post,
                                              option='rx_errors:')
-      tx_errors = int(tx_errors_post) - int(tx_errors_pre)
-      rx_errors = int(rx_errors_post) - int(rx_errors_pre)
-      if tx_errors > 0 or rx_errors > 0:
-        result = False
-        description = 'Port errors detected'
-        details = f'TX errors: {tx_errors}, RX errors: {rx_errors}'
+
+      # Check that the above have been resolved correctly
+      if (tx_errors_pre is None or tx_errors_post is None or
+        rx_errors_pre is None or rx_errors_post is None):
+        result = 'Error'
+        description = 'Port stats not available'
       else:
-        result = True
-        description = 'No port errors detected'
+        tx_errors = int(tx_errors_post) - int(tx_errors_pre)
+        rx_errors = int(rx_errors_post) - int(rx_errors_pre)
+        if tx_errors > 0 or rx_errors > 0:
+          result = False
+          description = 'Port errors detected'
+          details = f'TX errors: {tx_errors}, RX errors: {rx_errors}'
+        else:
+          result = True
+          description = 'No port errors detected'
     return result, description, details
 
   def connection_port_duplex_test(self):
@@ -83,7 +90,10 @@ class PortStatsUtil():
     result = None
     description = ''
     details = ''
-    if not auto_negotiation:
+    if auto_negotiation is None:
+      result = 'Error'
+      description = 'Port stats not available'
+    elif not auto_negotiation:
       result = False
       description = 'Interface not configured for auto-negotiation'
     else:
@@ -104,7 +114,10 @@ class PortStatsUtil():
     result = None
     description = ''
     details = ''
-    if not auto_negotiation:
+    if auto_negotiation is None:
+      result = 'Error'
+      description = 'Port stats not available'
+    elif not auto_negotiation:
       result = False
       description = 'Interface not configured for auto-negotiation'
     else:
