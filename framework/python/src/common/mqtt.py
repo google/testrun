@@ -36,13 +36,11 @@ class MQTT:
     # Resolve Testrun host IP
     self._host = socket.gethostbyname(socket.gethostname())
 
-    self._client.enable_logger(LOGGER)
-    LOGGER.setLevel(logger.logging.INFO)
-
   def _connect(self):
     """Establish connection to MQTT broker"""
     if not self._client.is_connected():
       try:
+        LOGGER.debug(f"Connecting to broker {self._host}:{WEBSOCKETS_PORT}")
         self._client.connect(self._host, WEBSOCKETS_PORT, 60)
       except (ValueError, ConnectionRefusedError):
         LOGGER.error("Cannot connect to MQTT broker")
@@ -50,6 +48,7 @@ class MQTT:
   def disconnect(self):
     """Disconnect the local client from the MQTT broker"""
     if self._client.is_connected():
+      LOGGER.debug("Disconnecting from broker")
       self._client.disconnect()
 
   def send_message(self, topic: str, message: t.Union[str, dict]) -> None:
