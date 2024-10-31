@@ -5,7 +5,7 @@ requests==2.32.3
 docker==7.1.0
 ipaddress==1.0.23
 netifaces==0.11.0
-scapy==2.5.0
+scapy==2.6.0
 
 # Requirments for the test_orc module
 weasyprint==61.2
