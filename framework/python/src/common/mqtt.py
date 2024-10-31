@@ -21,7 +21,6 @@ import socket
 
 
 LOGGER = logger.get_logger("mqtt")
-WEBSOCKETS_HOST = "localhost"
 WEBSOCKETS_PORT = 1883
 
 class MQTTException(Exception):
