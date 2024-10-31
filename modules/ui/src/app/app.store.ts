@@ -306,7 +306,10 @@ export class AppStore extends ComponentStore<AppComponentState> {
   });
 
   checkInterfacesInConfig = this.effect(() => {
-    return combineLatest([this.interfaces$, this.systemConfig$]).pipe(
+    return combineLatest([
+      this.interfaces$.pipe(skip(1)),
+      this.systemConfig$.pipe(skip(1)),
+    ]).pipe(
       filter(([, { network }]) => network !== null),
       tap(([interfaces, { network, single_intf }]) => {
         const deviceValid =

@@ -34,16 +34,6 @@ limitations under the License.
     <section class="setting-drawer-content-inputs">
       <ng-container
         *ngIf="(vm.interfaces | keyvalue).length > 0; else warning_message">
-        <app-callout
-          [type]="CalloutType.Warning"
-          *ngIf="
-            (vm.interfaces | keyvalue).length === 1 &&
-            !isInternetControlDisabled
-          "
-          class="two-ports-message">
-          Warning! Testrun requires two ports to operate correctly.
-        </app-callout>
-
         <app-settings-dropdown
           [controlName]="FormKey.DEVICE"
           groupLabel="Device port"

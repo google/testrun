@@ -44,7 +44,8 @@
         "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.",
         "recommendations": [
           "Enable DHCP",
-          "Install a DHCP client"
+          "Install a DHCP client",
+          "Ensure that your DHCP client renews its lease at the correct time"
         ]
       },
       {
@@ -114,8 +115,7 @@
       {
         "name": "connection.dhcp_disconnect_ip_change",
         "test_description": "When device is disconnected,  update device IP on the DHCP server and reconnect the device.  Ensure device received new IP address",
-        "expected_behavior": "If IP address for a device was changed on the DHCP server while the device was disconnected then the device shoiuld request and update the new IP upon reconnecting to the network",
-        "required_result": "Required"
+        "expected_behavior": "If IP address for a device was changed on the DHCP server while the device was disconnected then the device should request and update the new IP upon reconnecting to the network"
       },
       {
         "name": "connection.single_ip",
