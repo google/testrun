@@ -49,7 +49,6 @@ class ServicesTest(unittest.TestCase):
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
     services_module = ServicesModule(module=MODULE,
-                             log_dir=OUTPUT_DIR,
                              results_dir=OUTPUT_DIR,
                              run=False,
                              nmap_scan_results_path=OUTPUT_DIR)
@@ -75,7 +74,6 @@ class ServicesTest(unittest.TestCase):
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
     services_module = ServicesModule(module=MODULE,
-                             log_dir=OUTPUT_DIR,
                              results_dir=OUTPUT_DIR,
                              run=False,
                              nmap_scan_results_path=OUTPUT_DIR)
