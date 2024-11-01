@@ -37,7 +37,6 @@ class MQTT:
     """Establish connection to MQTT broker"""
     if not self._client.is_connected():
       try:
-        LOGGER.debug(f"Connecting to broker {self._host}:{WEBSOCKETS_PORT}")
         self._client.connect(self._host, WEBSOCKETS_PORT, 60)
       except (ValueError, ConnectionRefusedError):
         LOGGER.error("Cannot connect to MQTT broker")
