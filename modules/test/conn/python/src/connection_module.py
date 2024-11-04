@@ -727,7 +727,7 @@ class ConnectionModule(TestModule):
       response = util.run_command(command)
       packets = json.loads(response[0].strip())
       # Combine results
-      combined_results['multicast']['from'] += packets['multicas']['from']
+      combined_results['multicast']['from'] += packets['multicast']['from']
       combined_results['multicast']['to'] += packets['multicast']['to']
       combined_results['broadcast']['from'] += packets['broadcast']['from']
       combined_results['broadcast']['to'] += packets['broadcast']['to']
