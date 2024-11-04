@@ -9,7 +9,7 @@
     "docker": {
       "depends_on": "base",
       "enable_container": true,
-      "timeout": 600
+      "timeout": 900
     },
     "tests": [
       {
@@ -309,6 +309,10 @@
             },
             {
               "number": 5903,
+              "type": "tcp"
+            },
+            {
+              "number": 6001,
               "type": "tcp"
             }
           ]
