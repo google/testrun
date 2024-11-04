@@ -68,7 +68,7 @@ RUN wget https://standards-oui.ieee.org/oui.txt -O /usr/local/etc/oui.txt || ech
 FROM python:3.10-slim
 
 # Install common software
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq net-tools iputils-ping tzdata tcpdump iproute2 jq dos2unix nmap wget --fix-missing
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq net-tools iputils-ping tzdata tcpdump iproute2 jq dos2unix nmap wget procps --fix-missing
 
 # Get the virtual environment from builder stage
 COPY --from=builder /opt/venv /opt/venv
