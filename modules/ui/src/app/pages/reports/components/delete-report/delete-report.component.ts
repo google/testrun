@@ -62,7 +62,7 @@ export class DeleteReportComponent
       ariaLabel: 'Delete report',
       data: {
         title: 'Delete report?',
-        content: this.getTestRunId(this.data),
+        content: `You are about to delete ${this.getTestRunId(this.data)}. Are you sure?`,
       },
       autoFocus: true,
       hasBackdrop: true,
