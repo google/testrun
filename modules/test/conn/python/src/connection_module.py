@@ -24,9 +24,11 @@ from dhcp2.client import Client as DHCPClient2
 from host.client import Client as HostClient
 from dhcp_util import DHCPUtil
 from port_stats_util import PortStatsUtil
+import json
 
 LOG_NAME = 'test_connection'
 OUI_FILE = '/usr/local/etc/oui.txt'
+DEFAULT_BIN_DIR = '/testrun/bin'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 DHCP_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
@@ -47,7 +49,8 @@ class ConnectionModule(TestModule):
                conf_file=None,
                results_dir=None,
                startup_capture_file=STARTUP_CAPTURE_FILE,
-               monitor_capture_file=MONITOR_CAPTURE_FILE):
+               monitor_capture_file=MONITOR_CAPTURE_FILE,
+               bin_dir=DEFAULT_BIN_DIR):
 
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
@@ -63,6 +66,7 @@ class ConnectionModule(TestModule):
     self.host_client = HostClient()
     self._dhcp_util = DHCPUtil(self.dhcp1_client, self.dhcp2_client, LOGGER)
     self._lease_wait_time_sec = LEASE_WAIT_TIME_DEFAULT
+    self._bin_dir = bin_dir
 
     # ToDo: Move this into some level of testing, leave for
     # reference until tests are implemented with these calls
@@ -204,9 +208,9 @@ class ConnectionModule(TestModule):
         return False, 'No IP information found in lease: ' + self._device_mac
     else:
       LOGGER.info('No DHCP lease could be found for MAC ' + self._device_mac +
-        ' at the time of this test')
+                  ' at the time of this test')
       return (False, 'No DHCP lease could be found for MAC ' +
-        self._device_mac + ' at the time of this test')
+              self._device_mac + ' at the time of this test')
 
   def _connection_mac_address(self):
     LOGGER.info('Running connection.mac_address')
@@ -325,9 +329,9 @@ class ConnectionModule(TestModule):
           result = None, 'Failed to create reserved lease for device'
       else:
         LOGGER.info('Device has no current DHCP lease so ' +
-          'this test could not be run')
+                    'this test could not be run')
         result = None, ('Device has no current DHCP lease so ' +
-          'this test could not be run')
+                        'this test could not be run')
       # Restore the network
       self._dhcp_util.restore_failover_dhcp_server()
       LOGGER.info('Waiting 30 seconds for reserved lease to expire')
@@ -380,8 +384,9 @@ class ConnectionModule(TestModule):
         else:
           result = False, 'Device did not respond to ping'
       else:
-        result = (None,
-          'Device has no current DHCP lease so this test could not be run')
+        result = (
+            None,
+            'Device has no current DHCP lease so this test could not be run')
     else:
       LOGGER.error('Network is not ready for this test. Skipping')
       result = None, 'Network is not ready for this test'
@@ -673,6 +678,67 @@ class ConnectionModule(TestModule):
     else:
       return False, 'Secondary DHCP server stop command failed'
 
+  def _communication_network_type(self):
+    try:
+      result = 'Informational'
+      description = ''
+      details = ''
+      packets = self.get_network_packet_types()
+      details = packets
+      # Initialize a list for detected packet types
+      packet_types = []
+
+      # Check for the presence of each packet type and append to the list
+      if (packets['multicast']['from'] > 0) or (packets['multicast']['to'] > 0):
+        packet_types.append('Multicast')
+      if (packets['broadcast']['from'] > 0) or (packets['broadcast']['to'] > 0):
+        packet_types.append('Broadcast')
+      if (packets['unicast']['from'] > 0) or (packets['unicast']['to'] > 0):
+        packet_types.append('Unicast')
+
+      # Construct the description if any packet types were detected
+      if packet_types:
+        description = 'Packet types detected: ' + ', '.join(packet_types)
+      else:
+        description = 'No multicast, broadcast or unicast detected'
+
+    except Exception as e:  # pylint: disable=W0718
+      LOGGER.error(e)
+      result = 'Error'
+    return result, description, details
+
+  def get_network_packet_types(self):
+    combined_results = {
+        'mac_address': self._device_mac,
+        'multicast': {
+            'from': 0,
+            'to': 0
+        },
+        'broadcast': {
+            'from': 0,
+            'to': 0
+        },
+        'unicast': {
+            'from': 0,
+            'to': 0
+        },
+    }
+    capture_files = [self.startup_capture_file, self.monitor_capture_file]
+    for capture_file in capture_files:
+      bin_file = self._bin_dir + '/get_packet_counts.sh'
+      args = f'"{capture_file}" "{self._device_mac}"'
+      command = f'{bin_file} {args}'
+      response = util.run_command(command)
+      packets = json.loads(response[0].strip())
+      # Combine results
+      combined_results['multicast']['from'] += packets['multicast']['from']
+      combined_results['multicast']['to'] += packets['multicast']['to']
+      combined_results['broadcast']['from'] += packets['broadcast']['from']
+      combined_results['broadcast']['to'] += packets['broadcast']['to']
+      combined_results['unicast']['from'] += packets['unicast']['from']
+      combined_results['unicast']['to'] += packets['unicast']['to']
+    return combined_results
+
   def enable_failover(self):
     # Move primary DHCP server to primary failover
     LOGGER.info('Configuring primary failover DHCP server')
@@ -734,9 +800,10 @@ class ConnectionModule(TestModule):
           results = self.test_subnets(ranges)
       else:
         LOGGER.info('Device has no current DHCP lease ' +
-          'so this test could not be run')
-        return (None,
-          'Device has no current DHCP lease so this test could not be run')
+                    'so this test could not be run')
+        return (
+            None,
+            'Device has no current DHCP lease so this test could not be run')
     else:
       LOGGER.error(dhcp_setup[1])
       return None, 'Failed to setup DHCP server for test'
