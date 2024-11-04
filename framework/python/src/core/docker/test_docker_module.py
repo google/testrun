@@ -39,11 +39,9 @@ class TestModule(Module):
     # Set the defaults
     self.network = True
     self.total_tests = 0
-    self.time = DEFAULT_TIMEOUT
     self.tests: list = []
 
-    if 'timeout' in module_json['config']['docker']:
-      self.timeout = module_json['config']['docker']['timeout']
+    self.timeout = self._get_module_timeout(module_json)
 
     # Determine if this module needs network access
     if 'network' in module_json['config']:
@@ -133,3 +131,18 @@ class TestModule(Module):
               read_only=True)
     ]
     return mounts
+
+  def _get_module_timeout(self, module_json):
+    timeout = DEFAULT_TIMEOUT
+    try:
+      timeout = DEFAULT_TIMEOUT
+      test_modules = self.get_session().get_config().get('test_modules', {})
+      test_config = test_modules.get(self.name, {})
+      sys_timeout = test_config.get('timeout', None)
+
+      if sys_timeout is not None:
+        timeout = sys_timeout
+      elif 'timeout' in module_json['config']['docker']:
+        timeout = module_json['config']['docker']['timeout']
+    finally:
+      return timeout # pylint: disable=W0150
