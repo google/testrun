@@ -144,5 +144,7 @@ class TestModule(Module):
         timeout = sys_timeout
       elif 'timeout' in module_json['config']['docker']:
         timeout = module_json['config']['docker']['timeout']
-    finally:
-      return timeout # pylint: disable=W0150
+    except Exception: # pylint: disable=W0718
+      # Ignore errors, just use default
+      timeout = DEFAULT_TIMEOUT
+    return timeout # pylint: disable=W0150
