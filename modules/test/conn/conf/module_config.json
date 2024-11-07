@@ -115,8 +115,7 @@
       {
         "name": "connection.dhcp_disconnect_ip_change",
         "test_description": "When device is disconnected,  update device IP on the DHCP server and reconnect the device.  Ensure device received new IP address",
-        "expected_behavior": "If IP address for a device was changed on the DHCP server while the device was disconnected then the device shoiuld request and update the new IP upon reconnecting to the network",
-        "required_result": "Required"
+        "expected_behavior": "If IP address for a device was changed on the DHCP server while the device was disconnected then the device should request and update the new IP upon reconnecting to the network"
       },
       {
         "name": "connection.single_ip",
@@ -175,6 +174,11 @@
           "Enable ping response to IPv6 ICMP requests in network manager settings",
           "Create a firewall exception to allow ICMPv6 via LAN"
         ]
+      },
+      {
+        "name": "communication.network.type",
+        "test_description": "How does the devie communicate (flow type) - Unicast, multicast broadcast?",
+        "expected_behavior": "Informational - One or more of these flow types are used"
       }
     ]
   }

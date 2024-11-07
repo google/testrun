@@ -32,8 +32,6 @@ class MQTT:
   def __init__(self) -> None:
     self._host = WEBSOCKETS_HOST
     self._client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2)
-    self._client.enable_logger(LOGGER)
-    LOGGER.setLevel(logger.logging.INFO)
 
   def _connect(self):
     """Establish connection to MQTT broker"""
@@ -46,6 +44,7 @@ class MQTT:
   def disconnect(self):
     """Disconnect the local client from the MQTT broker"""
     if self._client.is_connected():
+      LOGGER.debug("Disconnecting from broker")
       self._client.disconnect()
 
   def send_message(self, topic: str, message: t.Union[str, dict]) -> None:
