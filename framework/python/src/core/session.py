@@ -38,6 +38,7 @@ API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 ORG_NAME_KEY = 'org_name'
+TEST_CONFIG_KEY = 'test_modules'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 STATUS_TOPIC = 'status'
@@ -239,6 +240,11 @@ class TestrunSession():
       if ORG_NAME_KEY in config_file_json:
         self._config[ORG_NAME_KEY] = config_file_json.get(
           ORG_NAME_KEY
+        )
+
+      if TEST_CONFIG_KEY in config_file_json:
+        self._config[TEST_CONFIG_KEY] = config_file_json.get(
+          TEST_CONFIG_KEY
         )
 
   def _load_version(self):
@@ -635,7 +641,7 @@ class TestrunSession():
 
     return risk_profile
 
-  def _remove_invalid_questions(self, questions: list[dict]) -> list[dict]:
+  def _remove_invalid_questions(self, questions):
     """Remove unrecognised questions from the profile"""
 
     # Store valid questions
@@ -826,17 +832,30 @@ question {question.get('question')}''')
     # Parse bytes into x509 object
     cert = x509.load_pem_x509_certificate(content, default_backend())
 
-    # Extract required properties
-    common_name = cert.subject.get_attributes_for_oid(
-        NameOID.COMMON_NAME)[0].value
+    # Retrieve the common name attributes from the subject
+    common_name_attr = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
+
+    # Raise an error if the common name attribute is missing
+    if not common_name_attr:
+      raise ValueError('Certificate is missing the common name')
+
+    # Extract the organization name value
+    common_name = common_name_attr[0].value
 
     # Check if any existing certificates have the same common name
     for cur_cert in self._certs:
       if common_name == cur_cert['name']:
         raise ValueError('A certificate with that name already exists')
 
-    issuer = cert.issuer.get_attributes_for_oid(
-        NameOID.ORGANIZATION_NAME)[0].value
+    # Retrieve the organization name attributes from issuer
+    issuer_attr = cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)
+
+    # Raise an error if the organization name attribute is missing
+    if not issuer_attr:
+      raise ValueError('Certificate is missing the organization name')
+
+    # Extract the organization name value
+    issuer = issuer_attr[0].value
 
     status = 'Valid'
     if now > cert.not_valid_after_utc:

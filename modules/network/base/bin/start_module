@@ -22,7 +22,7 @@ DEFAULT_IFACE=veth0
 
 # Create a local user that matches the same as the host
 # to be used for correct file ownership for various logs
-# HOST_USER mapped in via docker container environemnt variables
+# HOST_USER mapped in via docker container environment variables
 useradd $HOST_USER
 
 # Enable IPv6 for all containers

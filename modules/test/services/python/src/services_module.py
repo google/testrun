@@ -31,14 +31,12 @@ class ServicesModule(TestModule):
 
   def __init__(self,
                module,
-               log_dir=None,
                conf_file=None,
                results_dir=None,
                run=True,
                nmap_scan_results_path=None):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
-                     log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
     self._scan_tcp_results = None
@@ -198,7 +196,7 @@ class ServicesModule(TestModule):
       self._scan_results.update(self._scan_udp_results)
 
   def _scan_tcp_ports(self):
-    max_port = 1000
+    max_port = 10000
     LOGGER.info('Running nmap TCP port scan')
     nmap_results = util.run_command( # pylint: disable=E1120
         f'''nmap --open -sT -sV -Pn -v -p 1-{max_port}

@@ -16,6 +16,7 @@ import util
 import time
 import traceback
 import os
+from scapy.error import Scapy_Exception
 from scapy.all import rdpcap, DHCP, ARP, Ether, ICMP, IPv6, ICMPv6ND_NS
 from test_module import TestModule
 from dhcp1.client import Client as DHCPClient1
@@ -23,9 +24,11 @@ from dhcp2.client import Client as DHCPClient2
 from host.client import Client as HostClient
 from dhcp_util import DHCPUtil
 from port_stats_util import PortStatsUtil
+import json
 
 LOG_NAME = 'test_connection'
 OUI_FILE = '/usr/local/etc/oui.txt'
+DEFAULT_BIN_DIR = '/testrun/bin'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 DHCP_CAPTURE_FILE = '/runtime/network/dhcp-1.pcap'
@@ -43,15 +46,14 @@ class ConnectionModule(TestModule):
 
   def __init__(self,
                module,
-               log_dir=None,
                conf_file=None,
                results_dir=None,
                startup_capture_file=STARTUP_CAPTURE_FILE,
-               monitor_capture_file=MONITOR_CAPTURE_FILE):
+               monitor_capture_file=MONITOR_CAPTURE_FILE,
+               bin_dir=DEFAULT_BIN_DIR):
 
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
-                     log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
     global LOGGER
@@ -64,6 +66,7 @@ class ConnectionModule(TestModule):
     self.host_client = HostClient()
     self._dhcp_util = DHCPUtil(self.dhcp1_client, self.dhcp2_client, LOGGER)
     self._lease_wait_time_sec = LEASE_WAIT_TIME_DEFAULT
+    self._bin_dir = bin_dir
 
     # ToDo: Move this into some level of testing, leave for
     # reference until tests are implemented with these calls
@@ -146,7 +149,7 @@ class ConnectionModule(TestModule):
     if no_arp:
       return None, 'No ARP packets from the device found'
 
-    return True, 'Device uses ARP'
+    return True, 'Device uses ARP correctly'
 
   def _connection_switch_dhcp_snooping(self):
     LOGGER.info('Running connection.switch.dhcp_snooping')
@@ -204,8 +207,10 @@ class ConnectionModule(TestModule):
         LOGGER.info('No IP information found in lease: ' + self._device_mac)
         return False, 'No IP information found in lease: ' + self._device_mac
     else:
-      LOGGER.info('No DHCP lease could be found: ' + self._device_mac)
-      return False, 'No DHCP lease could be found: ' + self._device_mac
+      LOGGER.info('No DHCP lease could be found for MAC ' + self._device_mac +
+                  ' at the time of this test')
+      return (False, 'No DHCP lease could be found for MAC ' +
+              self._device_mac + ' at the time of this test')
 
   def _connection_mac_address(self):
     LOGGER.info('Running connection.mac_address')
@@ -323,8 +328,10 @@ class ConnectionModule(TestModule):
         else:
           result = None, 'Failed to create reserved lease for device'
       else:
-        LOGGER.info('Device has no current DHCP lease')
-        result = None, 'Device has no current DHCP lease'
+        LOGGER.info('Device has no current DHCP lease so ' +
+                    'this test could not be run')
+        result = None, ('Device has no current DHCP lease so ' +
+                        'this test could not be run')
       # Restore the network
       self._dhcp_util.restore_failover_dhcp_server()
       LOGGER.info('Waiting 30 seconds for reserved lease to expire')
@@ -377,7 +384,9 @@ class ConnectionModule(TestModule):
         else:
           result = False, 'Device did not respond to ping'
       else:
-        result = None, 'Device has no current DHCP lease'
+        result = (
+            None,
+            'Device has no current DHCP lease so this test could not be run')
     else:
       LOGGER.error('Network is not ready for this test. Skipping')
       result = None, 'Network is not ready for this test'
@@ -566,7 +575,9 @@ class ConnectionModule(TestModule):
     slac_test, sends_ipv6 = self._has_slaac_addres()
     if slac_test:
       result = True, f'Device has formed SLAAC address {self._device_ipv6_addr}'
-    if result is None:
+    elif slac_test is None:
+      result = 'Error', 'An error occurred whilst running this test'
+    else:
       if sends_ipv6:
         LOGGER.info('Device does not support IPv6 SLAAC')
         result = False, 'Device does not support IPv6 SLAAC'
@@ -577,8 +588,14 @@ class ConnectionModule(TestModule):
 
   def _has_slaac_addres(self):
     packet_capture = (rdpcap(self.startup_capture_file) +
-                      rdpcap(self.monitor_capture_file) +
-                      rdpcap(DHCP_CAPTURE_FILE))
+                      rdpcap(self.monitor_capture_file))
+
+    try:
+      packet_capture += rdpcap(DHCP_CAPTURE_FILE)
+    except (FileNotFoundError, Scapy_Exception):
+      LOGGER.error('dhcp-1.pcap not found or empty, ignoring')
+      return None, False
+
     sends_ipv6 = False
     for packet_number, packet in enumerate(packet_capture, start=1):
       if IPv6 in packet and packet.src == self._device_mac:
@@ -661,6 +678,67 @@ class ConnectionModule(TestModule):
     else:
       return False, 'Secondary DHCP server stop command failed'
 
+  def _communication_network_type(self):
+    try:
+      result = 'Informational'
+      description = ''
+      details = ''
+      packets = self.get_network_packet_types()
+      details = packets
+      # Initialize a list for detected packet types
+      packet_types = []
+
+      # Check for the presence of each packet type and append to the list
+      if (packets['multicast']['from'] > 0) or (packets['multicast']['to'] > 0):
+        packet_types.append('Multicast')
+      if (packets['broadcast']['from'] > 0) or (packets['broadcast']['to'] > 0):
+        packet_types.append('Broadcast')
+      if (packets['unicast']['from'] > 0) or (packets['unicast']['to'] > 0):
+        packet_types.append('Unicast')
+
+      # Construct the description if any packet types were detected
+      if packet_types:
+        description = 'Packet types detected: ' + ', '.join(packet_types)
+      else:
+        description = 'No multicast, broadcast or unicast detected'
+
+    except Exception as e:  # pylint: disable=W0718
+      LOGGER.error(e)
+      result = 'Error'
+    return result, description, details
+
+  def get_network_packet_types(self):
+    combined_results = {
+        'mac_address': self._device_mac,
+        'multicast': {
+            'from': 0,
+            'to': 0
+        },
+        'broadcast': {
+            'from': 0,
+            'to': 0
+        },
+        'unicast': {
+            'from': 0,
+            'to': 0
+        },
+    }
+    capture_files = [self.startup_capture_file, self.monitor_capture_file]
+    for capture_file in capture_files:
+      bin_file = self._bin_dir + '/get_packet_counts.sh'
+      args = f'"{capture_file}" "{self._device_mac}"'
+      command = f'{bin_file} {args}'
+      response = util.run_command(command)
+      packets = json.loads(response[0].strip())
+      # Combine results
+      combined_results['multicast']['from'] += packets['multicast']['from']
+      combined_results['multicast']['to'] += packets['multicast']['to']
+      combined_results['broadcast']['from'] += packets['broadcast']['from']
+      combined_results['broadcast']['to'] += packets['broadcast']['to']
+      combined_results['unicast']['from'] += packets['unicast']['from']
+      combined_results['unicast']['to'] += packets['unicast']['to']
+    return combined_results
+
   def enable_failover(self):
     # Move primary DHCP server to primary failover
     LOGGER.info('Configuring primary failover DHCP server')
@@ -683,6 +761,7 @@ class ConnectionModule(TestModule):
     return start_int <= ip_int <= end_int
 
   def _run_subnet_test(self, config):
+
     # Resolve the configured dhcp subnet ranges
     ranges = None
     if 'ranges' in config:
@@ -697,6 +776,7 @@ class ConnectionModule(TestModule):
 
     response = self.dhcp1_client.get_dhcp_range()
     cur_range = {}
+
     if response.code == 200:
       cur_range['start'] = response.start
       cur_range['end'] = response.end
@@ -709,16 +789,21 @@ class ConnectionModule(TestModule):
 
     results = []
     dhcp_setup = self.setup_single_dhcp_server()
+
     if dhcp_setup[0]:
       LOGGER.info(dhcp_setup[1])
       lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
                                             timeout=self._lease_wait_time_sec)
+
       if lease is not None:
         if self._dhcp_util.is_lease_active(lease):
           results = self.test_subnets(ranges)
       else:
-        LOGGER.info('Failed to confirm a valid active lease for the device')
-        return None, 'Failed to confirm a valid active lease for the device'
+        LOGGER.info('Device has no current DHCP lease ' +
+                    'so this test could not be run')
+        return (
+            None,
+            'Device has no current DHCP lease so this test could not be run')
     else:
       LOGGER.error(dhcp_setup[1])
       return None, 'Failed to setup DHCP server for test'
@@ -745,10 +830,17 @@ class ConnectionModule(TestModule):
       # Wait for the current lease to expire
       lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
                                             timeout=self._lease_wait_time_sec)
-      self._dhcp_util.wait_for_lease_expire(lease, self._lease_wait_time_sec)
+
+      # Check if lease is active
+      if lease is not None:
+        self._dhcp_util.wait_for_lease_expire(lease, self._lease_wait_time_sec)
+      else:
+        # If not, wait for 30 seconds as a fallback
+        time.sleep(30)
 
       # Wait for a new lease to be provided before exiting test
       # to prevent other test modules from failing
+
       LOGGER.info('Checking for new lease')
       # Subnet changes tend to take longer to pick up so we'll allow
       # for twice the lease wait time
