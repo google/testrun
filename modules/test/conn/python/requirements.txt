@@ -8,5 +8,5 @@ six==1.16.0
 
 # User defined packages
 pyOpenSSL==24.2.1
-scapy==2.5.0
+scapy==2.6.0
 python-dateutil==2.9.0.post0
