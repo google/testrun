@@ -27,12 +27,20 @@ class TestPack:  # pylint: disable=too-few-public-methods,too-many-instance-attr
   tests: List[dict] = field(default_factory=lambda: [])
   language: Dict = field(default_factory=lambda: defaultdict(dict))
 
-  def get_required_result(self, test_name: str) -> str:
+  def get_test(self, test_name: str) -> str:
+    """Get details of a test from the test pack"""
 
     for test in self.tests:
       if "name" in test and test["name"].lower() == test_name.lower():
-        if "required_result" in test:
-          return test["required_result"]
+        return test
+
+  def get_required_result(self, test_name: str) -> str:
+    """Fetch the required result of the test"""
+
+    test = self.get_test(test_name)
+
+    if test is not None and "required_result" in test:
+      return test["required_result"]
 
     return "Informational"
 

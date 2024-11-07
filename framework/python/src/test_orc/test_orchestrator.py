@@ -128,6 +128,10 @@ class TestOrchestrator:
         # Duplicate test obj so we don't alter the source
         test_copy = copy.deepcopy(test)
 
+        # Do not add test if it is not enabled
+        if not self._is_test_enabled(test_copy.name, device):
+          continue
+
         # Set result to Not Started
         test_copy.result = TestResult.NOT_STARTED
 
@@ -146,7 +150,7 @@ class TestOrchestrator:
       # Increment number of tests that will be run
       self.get_session().add_total_tests(len(module.tests))
 
-    # Store enabled test modules in the TestsOrchectrator object
+    # Store enabled test modules in the TestOrchectrator object
     self._test_modules_running = test_modules
     self._current_module = 0
 
@@ -399,6 +403,7 @@ class TestOrchestrator:
 
     # Enable module as fallback
     enabled = True
+
     if device.test_modules is not None:
       test_modules = device.test_modules
       if module.name in test_modules:
@@ -409,6 +414,13 @@ class TestOrchestrator:
         enabled = module.enabled
 
     return enabled
+
+  def _is_test_enabled(self, test, device):
+
+    test_pack_name = device.test_pack
+    test_pack = self.get_test_pack(test_pack_name)
+
+    return test_pack.get_test(test) is not None
 
   def _run_test_module(self, module):
     """Start the test container and extract the results."""
@@ -441,7 +453,9 @@ class TestOrchestrator:
       if hasattr(test_copy, "recommendations"):
         test_copy.recommendations = None
 
-      self.get_session().add_test_result(test_copy)
+      # Only add/update the test if it is enabled
+      if self._is_test_enabled(test_copy.name, device):
+        self.get_session().add_test_result(test_copy)
 
     # Start the test module
     module.start(device)
