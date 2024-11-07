@@ -1,10 +1,10 @@
 # Dependencies to user defined packages
 # Package dependencies should always be defined before the user defined
 # packages to prevent auto-upgrades of stable dependencies
-protobuf==5.28.0
+protobuf==5.28.3
 
 # User defined packages
-grpcio==1.66.1
-grpcio-tools==1.66.1
+grpcio==1.67.1
+grpcio-tools==1.67.1
 netifaces==0.11.0
 

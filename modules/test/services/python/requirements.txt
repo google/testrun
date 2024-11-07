@@ -3,4 +3,4 @@
 # packages to prevent auto-upgrades of stable dependencies
 
 # User defined packages
-xmltodict==0.13.0
+xmltodict==0.14.2
