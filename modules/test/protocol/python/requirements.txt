@@ -10,7 +10,7 @@ pytz==2024.1
 # Required for BACnet protocol tests
 netifaces==0.11.0
 BAC0==23.7.3
-pytz==2024.1
+pytz==2024.9.20
 
 # Required for Modbus protocol tests
-pymodbus==3.7.0
+pymodbus==3.7.4

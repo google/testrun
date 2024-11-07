@@ -3,4 +3,4 @@
 # packages to prevent auto-upgrades of stable dependencies
 
 # User defined packages
-scapy==2.5.0
+scapy==2.6.0
