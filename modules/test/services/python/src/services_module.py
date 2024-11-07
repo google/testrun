@@ -420,3 +420,15 @@ class ServicesModule(TestModule):
           else:
             return (False,
                     f"SSH server found running {open_port_info['version']}")
+
+  def _protocol_services_bacnet(self, config):
+    LOGGER.info('Running protocol.services.bacnet')
+
+    open_ports = self._check_results(config['ports'], config['services'])
+    if len(open_ports) == 0:
+      return False, 'No BACnet server found'
+    else:
+      return (
+        True,
+        f'''Found BACnet server running on port {', '.join(open_ports)}'''
+      )
