@@ -224,7 +224,7 @@ class ServicesModule(TestModule):
     if len(ports) > 0:
       port_list = ','.join(ports)
       LOGGER.info('Running nmap UDP port scan')
-      LOGGER.debug('UDP ports: ' + str(port_list))
+      LOGGER.info('UDP ports: ' + str(port_list))
       nmap_results = util.run_command( # pylint: disable=E1120
           f'nmap -sU -sV -p {port_list} -oX - {self._ipv4_addr}')[0]
       LOGGER.info('UDP port scan complete')
