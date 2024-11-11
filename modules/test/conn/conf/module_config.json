@@ -177,7 +177,7 @@
       },
       {
         "name": "communication.network.type",
-        "test_description": "How does the devie communicate (flow type) - Unicast, multicast broadcast?",
+        "test_description": "How does the device communicate (flow type) - Unicast, multicast broadcast?",
         "expected_behavior": "Informational - One or more of these flow types are used"
       }
     ]
