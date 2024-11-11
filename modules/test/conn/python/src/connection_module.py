@@ -461,7 +461,7 @@ class ConnectionModule(TestModule):
         description = 'Device interface could not be resolved'
 
     except Exception:
-      LOGGER.error('Unable to connect to RPC server')
+      LOGGER.error('Unable to connect to gRPC server')
       result = 'Error'
       description = (
         'Check if UFW firewall is enabled and blocking the port 5001'
@@ -556,7 +556,7 @@ class ConnectionModule(TestModule):
           result = 'Error'
           description = 'Device interface could not be resolved'
       except Exception:
-        LOGGER.error('Unable to connect to RPC server')
+        LOGGER.error('Unable to connect to gRPC server')
         result = 'Error'
         description = (
         'Check if UFW firewall is enabled and blocking the port 5001'
