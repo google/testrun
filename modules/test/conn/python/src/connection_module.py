@@ -464,7 +464,7 @@ class ConnectionModule(TestModule):
       LOGGER.error('Unable to connect to gRPC server')
       result = 'Error'
       description = (
-        'Check if UFW firewall is enabled and blocking the port 5001'
+        'Unable to connect to gRPC server. Check the firewall'
       )
     return result, description
 
@@ -559,7 +559,7 @@ class ConnectionModule(TestModule):
         LOGGER.error('Unable to connect to gRPC server')
         result = 'Error'
         description = (
-        'Check if UFW firewall is enabled and blocking the port 5001'
+        'Unable to connect to gRPC server. Check the firewall'
         )
     else:
       result = 'Error'
