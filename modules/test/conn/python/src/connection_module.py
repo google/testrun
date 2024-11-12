@@ -594,7 +594,6 @@ class ConnectionModule(TestModule):
       packet_capture += rdpcap(DHCP_CAPTURE_FILE)
     except (FileNotFoundError, Scapy_Exception):
       LOGGER.error('dhcp-1.pcap not found or empty, ignoring')
-      return None, False
 
     sends_ipv6 = False
     for packet_number, packet in enumerate(packet_capture, start=1):
