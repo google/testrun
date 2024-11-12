@@ -53,6 +53,14 @@ export class TestRunService {
 
   constructor(private http: HttpClient) {}
 
+  changeReportURL(url: string): string {
+    if (!url) {
+      return '';
+    }
+    // replace url part before '/report' from static to dynamic API URL
+    return url.replace(/^.*(?=\/report)/, `${API_URL}`);
+  }
+
   fetchDevices(): Observable<Device[]> {
     return this.http.get<Device[]>(`${API_URL}/devices`);
   }
@@ -72,7 +80,15 @@ export class TestRunService {
   }
 
   fetchSystemStatus() {
-    return this.http.get<TestrunStatus>(`${API_URL}/system/status`);
+    return this.http.get<TestrunStatus>(`${API_URL}/system/status`).pipe(
+      map(result => {
+        result.report = this.changeReportURL(result.report);
+        return result;
+      }),
+      catchError(() => {
+        return of({} as TestrunStatus);
+      })
+    );
   }
 
   stopTestrun(): Observable<boolean> {
@@ -134,7 +150,14 @@ export class TestRunService {
   }
 
   getHistory(): Observable<TestrunStatus[] | null> {
-    return this.http.get<TestrunStatus[]>(`${API_URL}/reports`);
+    return this.http.get<TestrunStatus[]>(`${API_URL}/reports`).pipe(
+      map(result => {
+        result.forEach(
+          item => (item.report = this.changeReportURL(item.report))
+        );
+        return result;
+      })
+    );
   }
 
   public getResultClass(result: string): StatusResultClassName {
