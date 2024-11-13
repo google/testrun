@@ -162,8 +162,8 @@ mat-hint {
   }
 
   &.red {
-    background-color: mat.get-theme-color($light-theme, primary, 90);
-    color: mat.get-theme-color($light-theme, primary, 35);
+    background-color: mat.get-theme-color($light-theme, error, 90);
+    color: mat.get-theme-color($light-theme, error, 35);
   }
 
   &.blue {
