@@ -54,22 +54,10 @@
 .history-content table {
   --mat-table-header-headline-font: #{$font-text};
   --mat-table-row-item-label-text-font: #{$font-text};
-  --mat-table-background-color: #{$white};
-  --mat-table-header-headline-color: #{mat.get-theme-color(
-      $light-theme,
-      neutral,
-      30
-    )};
-  --mat-table-row-item-label-text-color: #{mat.get-theme-color(
-      $light-theme,
-      neutral,
-      30
-    )};
-  --mat-table-row-item-outline-color: #{mat.get-theme-color(
-      $light-theme,
-      neutral,
-      80
-    )};
+  --mat-table-background-color: #{$surface};
+  --mat-table-header-headline-color: #{$on-surface-variant};
+  --mat-table-row-item-label-text-color: #{$on-surface-variant};
+  --mat-table-row-item-outline-color: #{$outline-variant};
 
   .table-cell-actions-container {
     display: flex;
