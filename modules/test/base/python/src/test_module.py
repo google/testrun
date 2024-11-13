@@ -48,8 +48,6 @@ class TestModule:
     self._device_ipv4_addr = None
     self._device_ipv6_addr = None
 
-    print(self._device_test_pack)
-
   def _add_logger(self, log_name):
     global LOGGER
     LOGGER = logger.get_logger(name=log_name)
@@ -72,13 +70,13 @@ class TestModule:
     if device_test_module is not None:
       # Do not run any tests if module is disabled for this device
       if not device_test_module['enabled']:
-        print("Test module is not enabled for the device")
         return []
+
+    # Tests that will be removed because they are not in the test pack
+    remove_tests = []
 
     # Check if all tests are in the test pack and enabled for the device
     for test in tests_to_run:
-
-      print("Test to run: " + test['name'])
 
       # Resolve device specific configurations for the test if it exists
       # and update module test config with device config options
@@ -98,17 +96,14 @@ class TestModule:
       # Search for the module test in the test pack
       found = False
       for test_pack_test in self._device_test_pack['tests']:
-        print("Checking test name " + test_pack_test['name'])
         if test_pack_test['name'] == test['name']:
           # Test is in the test pack
-          print("Found the test in this module")
           found = True
 
       if not found:
-        tests_to_run.remove(test)
-
-    print("Tests to run:")
-    print(tests_to_run)
+        remove_tests.append(test)
+    for test in remove_tests:
+      tests_to_run.remove(test)
 
     return tests_to_run
 
