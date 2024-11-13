@@ -35,7 +35,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   standalone: true,
   imports: [CommonModule, MatButtonModule, MatIcon, MatTooltipModule],
   templateUrl: './shutdown-app.component.html',
-  styleUrl: './shutdown-app.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShutdownAppComponent implements OnDestroy {

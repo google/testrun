@@ -374,59 +374,6 @@ describe('AppComponent', () => {
     expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
   });
 
-  describe('menu button', () => {
-    beforeEach(() => {
-      mockFocusManagerService.focusFirstElementInContainer.calls.reset();
-      store.overrideSelector(selectHasDevices, false);
-      fixture.detectChanges();
-    });
-
-    it('should dispatch toggleMenu action', () => {
-      spyOn(component.appStore, 'toggleMenu');
-
-      const menuBtn = compiled.querySelector(
-        '.app-toolbar-button-menu'
-      ) as HTMLButtonElement;
-
-      menuBtn.click();
-
-      expect(component.appStore.toggleMenu).toHaveBeenCalled();
-    });
-
-    it('should focus navigation on tab press if menu button was clicked', () => {
-      component.appStore.updateFocusNavigation(true);
-      fixture.detectChanges();
-      spyOn(component.appStore, 'updateFocusNavigation');
-      const menuBtn = compiled.querySelector(
-        '.app-toolbar-button-menu'
-      ) as HTMLButtonElement;
-
-      menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
-      const navigation = compiled.querySelector('.app-sidebar');
-
-      expect(component.appStore.updateFocusNavigation).toHaveBeenCalledWith(
-        false
-      );
-      expect(
-        mockFocusManagerService.focusFirstElementInContainer
-      ).toHaveBeenCalledWith(navigation);
-    });
-
-    it('should not focus navigation button on tab press if menu button was not clicked', () => {
-      component.appStore.updateFocusNavigation(false);
-      fixture.detectChanges();
-      const menuBtn = compiled.querySelector(
-        '.app-toolbar-button-menu'
-      ) as HTMLButtonElement;
-
-      menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
-
-      expect(
-        mockFocusManagerService.focusFirstElementInContainer
-      ).not.toHaveBeenCalled();
-    });
-  });
-
   it('should have spinner', () => {
     const spinner = compiled.querySelector('app-spinner');
 

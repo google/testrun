@@ -23,7 +23,11 @@ import { MatButton, MatIconButton } from '@angular/material/button';
   standalone: true,
   imports: [MatIcon, MatTooltip, MatButton, MatIconButton],
   templateUrl: './wifi.component.html',
-  styleUrl: './wifi.component.scss',
+  styles: `
+    .wifi-button.disabled {
+      opacity: 0.6;
+    }
+  `,
 })
 export class WifiComponent {
   @Input() on: boolean | null = null;
