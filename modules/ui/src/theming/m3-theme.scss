@@ -29,7 +29,7 @@
 );
 
 // Note: Color palettes are generated from primary: #1967d2, secondary: #5f6368, tertiary: #8ab4f8, neutral: #ffffff
-$_palettes: (
+$palettes: (
   primary: (
     0: #000000,
     10: #001a41,
@@ -95,13 +95,13 @@ $_palettes: (
     22: #333535,
     24: #383a3a,
     25: #3a3c3c,
-    30: #454747,
+    30: #444746,
     35: #515353,
     40: #5d5f5f,
     50: #767777,
     60: #909191,
     70: #aaabab,
-    80: #c6c6c7,
+    80: #c4c7c5,
     87: #dadada,
     90: #e2e2e2,
     92: #e8e8e8,
@@ -136,13 +136,13 @@ $_palettes: (
     20: #690005,
     25: #7e0007,
     30: #93000a,
-    35: #a80710,
+    35: #8c1d18,
     40: #ba1a1a,
     /* 700 */ 50: #de3730,
     60: #ff5449,
     70: #ff897d,
     80: #ffb4ab,
-    90: #ffdad6,
+    90: #f9dedc,
     95: #ffedea,
     98: #fff8f7,
     99: #fffbff,
@@ -153,7 +153,7 @@ $_palettes: (
     10: #002200,
     20: #003a00,
     25: #004600,
-    30: #005300,
+    30: #0f5223,
     35: #006100,
     40: #006e00,
     50: #008b00,
@@ -161,7 +161,7 @@ $_palettes: (
     70: #4fc23e,
     80: #6bdf57,
     90: #87fd71,
-    95: #caffb8,
+    95: #c4eed0,
     98: #edffe1,
     99: #f7ffee,
     100: #ffffff,
@@ -169,13 +169,13 @@ $_palettes: (
 );
 
 $_rest: (
-  secondary: map.get($_palettes, secondary),
-  neutral: map.get($_palettes, neutral),
-  neutral-variant: map.get($_palettes, neutral-variant),
-  error: map.get($_palettes, error),
+  secondary: map.get($palettes, secondary),
+  neutral: map.get($palettes, neutral),
+  neutral-variant: map.get($palettes, neutral-variant),
+  error: map.get($palettes, error),
 );
-$_primary: map.merge(map.get($_palettes, primary), $_rest);
-$_tertiary: map.merge(map.get($_palettes, tertiary), $_rest);
+$_primary: map.merge(map.get($palettes, primary), $_rest);
+$_tertiary: map.merge(map.get($palettes, tertiary), $_rest);
 
 $light-theme: mat.define-theme(
   (

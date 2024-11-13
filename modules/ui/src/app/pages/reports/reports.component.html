@@ -157,36 +157,38 @@ limitations under the License.
           <ng-container matColumnDef="report">
             <th *matHeaderCellDef mat-header-cell>Actions</th>
             <td *matCellDef="let data" class="table-cell-actions" mat-cell>
-              <app-download-report-pdf *ngIf="data?.device" [data]="data">
-                <mat-icon
-                  class="download-report-icon"
-                  fontSet="material-symbols-outlined">
-                  lab_profile
-                </mat-icon>
-              </app-download-report-pdf>
-              <app-download-report-zip
-                *ngIf="data?.device"
-                [data]="data"
-                [url]="data.report"
-                [profiles]="vm.profiles">
-                <span class="download-report-zip-icon-container">
+              <div class="table-cell-actions-container">
+                <app-download-report-pdf *ngIf="data?.device" [data]="data">
                   <mat-icon
                     class="download-report-icon"
                     fontSet="material-symbols-outlined">
-                    archive
+                    lab_profile
                   </mat-icon>
-                </span>
-              </app-download-report-zip>
-              <app-delete-report
-                *ngIf="data?.device"
-                [data]="data"
-                (removeDevice)="removeDevice(data)">
-                <mat-icon
-                  class="delete-report-icon"
-                  fontSet="material-symbols-outlined">
-                  delete
-                </mat-icon>
-              </app-delete-report>
+                </app-download-report-pdf>
+                <app-download-report-zip
+                  *ngIf="data?.device"
+                  [data]="data"
+                  [url]="data.report"
+                  [profiles]="vm.profiles">
+                  <span class="download-report-zip-icon-container">
+                    <mat-icon
+                      class="download-report-icon"
+                      fontSet="material-symbols-outlined">
+                      archive
+                    </mat-icon>
+                  </span>
+                </app-download-report-zip>
+                <app-delete-report
+                  *ngIf="data?.device"
+                  [data]="data"
+                  (removeDevice)="removeDevice(data)">
+                  <mat-icon
+                    class="delete-report-icon"
+                    fontSet="material-symbols-outlined">
+                    delete
+                  </mat-icon>
+                </app-delete-report>
+              </div>
             </td>
           </ng-container>
 
