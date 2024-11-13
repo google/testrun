@@ -13,20 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use 'sass:map';
 @use '@angular/material' as mat;
 @use 'src/theming/m3-theme' as *;
 @import 'src/theming/variables';
 @import 'src/theming/colors';
-
-@font-face {
-  font-family: 'Google Sans';
-  font-style: normal;
-  src: url(https://fonts.gstatic.com/s/googlesans/v58/4Ua_rENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iqcsih3SAyH6cAwhX9RFD48TE63OOYKtrwEIJllpyk.woff2)
-    format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
-    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
 
 :root {
   --mat-sidenav-container-width: auto;
@@ -155,22 +146,24 @@ mat-hint {
 }
 
 .cell-result-text {
+  font-family: #{$font-text};
+  font-weight: 500;
   margin: 0;
-  padding: 4px;
-  border-radius: 2px;
-  font-size: 12px;
-  line-height: 16px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
   letter-spacing: 0.3px;
   white-space: nowrap;
 
   &.green {
-    background: $green-50;
-    color: $green-800;
+    background: map.get($palettes, accent, 95);
+    color: map.get($palettes, accent, 30);
   }
 
   &.red {
-    background: $red-50;
-    color: $red-700;
+    background-color: mat.get-theme-color($light-theme, primary, 90);
+    color: mat.get-theme-color($light-theme, primary, 35);
   }
 
   &.blue {
@@ -384,4 +377,67 @@ button:not(.mat-mdc-button-disabled) {
   clip: rect(1px, 1px, 1px, 1px);
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+.history-content .mdc-data-table__row:last-child .mat-mdc-cell {
+  border-bottom-color: var(
+    --mat-table-row-item-outline-color,
+    var(--mat-app-outline, rgba(0, 0, 0, 0.12))
+  );
+  border-bottom-width: var(--mat-table-row-item-outline-width, 1px);
+  border-bottom-style: solid;
+}
+
+.mat-sort-header-arrow[style] {
+  // Hide default arrow stem
+  .mat-sort-header-stem {
+    display: none;
+  }
+  .mat-sort-header-indicator {
+    opacity: 1;
+    color: black;
+    font-weight: bold;
+
+    // Hide default arrow as its composed of left, right and middle
+    .mat-sort-header-pointer-left,
+    .mat-sort-header-pointer-right,
+    .mat-sort-header-pointer-middle {
+      display: none;
+    }
+  }
+}
+
+.mat-sort-header-arrow {
+  .mat-sort-header-indicator {
+    &::before {
+      font-family: #{$font-symbols};
+      position: absolute;
+      color: var(--mat-table-header-headline-color);
+      font-size: 19px;
+      font-weight: 400;
+    }
+  }
+}
+
+[aria-sort='ascending'] {
+  .mat-sort-header-arrow {
+    .mat-sort-header-indicator {
+      &::before {
+        content: 'arrow_upward';
+        top: -0em;
+        line-height: 12px;
+      }
+    }
+  }
+}
+
+[aria-sort='descending'] {
+  .mat-sort-header-arrow {
+    .mat-sort-header-indicator {
+      &::before {
+        content: 'arrow_downward';
+        top: -14px;
+      }
+    }
+  }
 }
