@@ -464,7 +464,7 @@ class ConnectionModule(TestModule):
       LOGGER.error('Unable to connect to gRPC server')
       result = 'Error'
       description = (
-        'Unable to connect to gRPC server. Check the firewall'
+        'Unable to connect to gRPC server'
       )
     return result, description
 
@@ -559,7 +559,7 @@ class ConnectionModule(TestModule):
         LOGGER.error('Unable to connect to gRPC server')
         result = 'Error'
         description = (
-        'Unable to connect to gRPC server. Check the firewall'
+        'Unable to connect to gRPC server'
         )
     else:
       result = 'Error'
