@@ -84,8 +84,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   get isFormValues(): boolean {
     return (
-      this.deviceControl?.value.value &&
-      (this.isInternetControlDisabled || this.internetControl?.value.value)
+      this.deviceControl?.value?.value &&
+      (this.isInternetControlDisabled || this.internetControl?.value?.value)
     );
   }
 

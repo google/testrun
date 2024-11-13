@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "3d270980-478e-4243-9130-ee5cab278ed5",
+		"_postman_id": "f42dd4c6-e1a3-4ae3-a991-24cceb4d2627",
 		"name": "Testrun",
+		"description": "API endpoints for the Testrun API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "28312403"
+		"_exporter_id": "37950585"
 	},
 	"item": [
 		{
@@ -21,11 +22,12 @@
 						"system",
 						"interfaces"
 					]
-				}
+				},
+				"description": "Obtain a list of applicable and available network adapters for use in testing"
 			},
 			"response": [
 				{
-					"name": "Interfaces",
+					"name": "Interfaces Available (200)",
 					"originalRequest": {
 						"method": "GET",
 						"header": [],
@@ -43,10 +45,100 @@
 					},
 					"status": "OK",
 					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
 					"cookie": [],
 					"body": "{\n    \"enx00e04c020fa8\": \"00:e0:4c:02:0f:a8\",\n    \"enx207bd26205e9\": \"20:7b:d2:62:05:e9\"\n}"
+				},
+				{
+					"name": "No interfaces (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/system/interfaces",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"interfaces"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{}"
+				}
+			]
+		},
+		{
+			"name": "Get Configuration",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/system/config",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"system",
+						"config"
+					]
+				},
+				"description": "Get the current system configuration"
+			},
+			"response": [
+				{
+					"name": "Get Configuration (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/system/config",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"network\": {\n        \"device_intf\": \"enx207bd2620617\",\n        \"internet_intf\": \"enx207bd26205e9\"\n    },\n    \"log_level\": \"INFO\",\n    \"startup_timeout\": 60,\n    \"monitor_period\": 60,\n    \"runtime\": 120\n}"
 				}
 			]
 		},
@@ -57,7 +149,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"network\": {\n        \"device_intf\": \"enx207bd2620617\",\n        \"internet_intf\": \"enx207bd26205e9\"\n    },\n    \"log_level\": \"DEBUG\",\n    \"startup_timeout\": 60,\n    \"monitor_period\": 20,\n    \"runtime\": 120\n}",
+					"raw": "{\n    \"network\": {\n        \"device_intf\": \"enx207bd2620617\",\n        \"internet_intf\": \"enx207bd26205e9\"\n    },\n    \"log_level\": \"DEBUG\",\n    \"startup_timeout\": 60,\n    \"monitor_period\": 20,\n    \"runtime\": 120,\n    \"org_name\": \"Google\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -74,17 +166,18 @@
 						"system",
 						"config"
 					]
-				}
+				},
+				"description": "Update the current system configuration"
 			},
 			"response": [
 				{
-					"name": "Configuration Set",
+					"name": "Configuration Set (200)",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"network\": {\n        \"device_intf\": \"enx00e04c020fa8\",\n        \"internet_intf\": \"enx207bd26205e9\"\n    },\n    \"log_level\": \"DEBUG\",\n    \"runtime\": 120,\n    \"startup_timeout\": 60,\n    \"monitor_period\": 60 \n}",
+							"raw": "{\n    \"network\": {\n        \"device_intf\": \"enx00e04c020fa8\",\n        \"internet_intf\": \"enx207bd26205e9\"\n    },\n    \"log_level\": \"DEBUG\",\n    \"runtime\": 120, // Optional\n    \"startup_timeout\": 60, // Optional\n    \"monitor_period\": 60 // Optional\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -105,13 +198,20 @@
 					},
 					"status": "OK",
 					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
 					"cookie": [],
-					"body": "{\n    \"network\": {\n        \"device_intf\": \"enx00e04c020fa8\",\n        \"internet_intf\": \"enx207bd26205e9\"\n    },\n    \"log_level\": \"DEBUG\",\n    \"runtime\": 120,\n    \"startup_timeout\": 60,\n    \"monitor_period\": 60 \n}"
+					"body": "{\n    \"network\": {\n        \"device_intf\": \"enx00e04c020fa8\",\n        \"internet_intf\": \"enx207bd26205e9\"\n    },\n    \"log_level\": \"DEBUG\",\n    \"runtime\": 120,\n    \"startup_timeout\": 60,\n    \"monitor_period\": 60\n}"
 				},
 				{
-					"name": "Invalid JSON",
+					"name": "Invalid JSON (400)",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
@@ -138,8 +238,15 @@
 					},
 					"status": "Bad Request",
 					"code": 400,
-					"_postman_previewlanguage": null,
-					"header": null,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
 					"cookie": [],
 					"body": "{\n    \"error\": \"Invalid JSON received\"\n}"
 				}
@@ -152,7 +259,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"device\": {\n        \"mac_addr\": \"00:1e:42:35:73:c4\",\n        \"firmware\": \"1.2.2\"\n    }\n}",
+					"raw": "{\n    \"device\": {\n        \"mac_addr\": \"aa:bb:cc:dd:ee:ff\",\n        \"firmware\": \"1.2.2\",\n        \"test_modules\": {\n            \"protocol\": {\n                \"enabled\": true\n            },\n            \"services\": {\n                \"enabled\": false\n            },\n            \"ntp\": {\n                \"enabled\": true\n            },\n            \"tls\": {\n                \"enabled\": false\n            },\n            \"connection\": {\n                \"enabled\": true\n            },\n            \"dns\": {\n                \"enabled\": true\n            }\n        }\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -169,11 +276,52 @@
 						"system",
 						"start"
 					]
-				}
+				},
+				"description": "Start Testrun against a target device"
 			},
 			"response": [
 				{
-					"name": "Invalid request",
+					"name": "Starting (200)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"device\": {\n        \"mac_addr\": \"aa:bb:cc:dd:ee:ff\",\n        \"firmware\": \"1.2.2\",\n        \"test_modules\": {\n            \"protocol\": {\n                \"enabled\": true\n            },\n            \"services\": {\n                \"enabled\": false\n            },\n            \"ntp\": {\n                \"enabled\": true\n            },\n            \"tls\": {\n                \"enabled\": false\n            },\n            \"connection\": {\n                \"enabled\": true\n            },\n            \"dns\": {\n                \"enabled\": true\n            }\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/system/start",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"start"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"Waiting for Device\",\n  \"device\": {\n    \"mac_addr\": \"aa:bb:cc:dd:ee:ff\",\n    \"manufacturer\": \"Teltonika\",\n    \"model\": \"TRB140\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-07-18T11:14:42.917670\",\n  \"finished\": null, \n  \"report\": null,\n  \"tests\": {\n    \"total\": 0,\n    \"results\": []\n  }\n}"
+				},
+				{
+					"name": "Invalid Request (400)",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
@@ -200,79 +348,20 @@
 					},
 					"status": "Bad Request",
 					"code": 400,
-					"_postman_previewlanguage": null,
-					"header": null,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
 					"cookie": [],
 					"body": "{\n    \"error\": \"Invalid request received\"\n}"
 				},
 				{
-					"name": "Starting",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"device\": {\n        \"mac_addr\": \"aa:bb:cc:dd:ee:ff\",\n        \"firmware\": \"1.2.2\"\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8000/system/start",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"system",
-								"start"
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": "{\n    \"status\": \"Starting\",\n    \"device\": {\n        \"mac_addr\": \"00:1e:42:35:73:c4\",\n        \"manufacturer\": \"Teltonika\",\n        \"model\": \"TRB 140\",\n        \"test_modules\": {\n        \"dns\": {\n            \"enabled\": false\n        },\n        \"connection\": {\n            \"enabled\": true\n        },\n        \"ntp\": {\n            \"enabled\": false\n        },\n        \"baseline\": {\n            \"enabled\": false\n        },\n        \"nmap\": {\n            \"enabled\": false\n        }\n        }\n    }\n    \"started\": \"2023-07-18T11:14:42.917670\",\n    \"finished\": null,\n    \"tests\": {\n        \"total\": 0,\n        \"results\": []\n    }\n}"
-				},
-				{
-					"name": "Device Not Found",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"device\": {\n        \"mac_addr\": \"aa:bb:cc:dd:ee:99\",\n        \"firmware\": \"1.2.2\"\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8000/system/start",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"system",
-								"start"
-							]
-						}
-					},
-					"status": "Not Found",
-					"code": 404,
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": "{\n    \"error\": \"Device not found\"\n}"
-				},
-				{
-					"name": "Invalid JSON",
+					"name": "Invalid JSON (400)",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
@@ -299,10 +388,97 @@
 					},
 					"status": "Bad Request",
 					"code": 400,
-					"_postman_previewlanguage": null,
-					"header": null,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
 					"cookie": [],
 					"body": "{\n    \"error\": \"Invalid JSON received\"\n}"
+				},
+				{
+					"name": "Device Not Found (404)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"device\": {\n        \"mac_addr\": \"aa:bb:cc:dd:ee:99\",\n        \"firmware\": \"1.2.2\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/system/start",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"start"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A device with that MAC address could not be found\"\n}"
+				},
+				{
+					"name": "Testrun Already in Progress (409)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"device\": {\n        \"mac_addr\": \"00:1e:42:35:73:c4\",\n        \"firmware\": \"1.2.2\",\n        \"test_modules\": {\n            \"dns\": {\n                \"enabled\": true\n            },\n            \"ntp\": {\n                \"enabled\": false\n            }\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/system/start",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"start"
+							]
+						}
+					},
+					"status": "Conflict",
+					"code": 409,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Testrun cannot be started whilst a test is running on another device\"\n}"
 				}
 			]
 		},
@@ -330,44 +506,12 @@
 						"system",
 						"stop"
 					]
-				}
+				},
+				"description": "Stop Testrun from running against a device"
 			},
 			"response": [
 				{
-					"name": "Not Running",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8000/system/stop",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"system",
-								"stop"
-							]
-						}
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": "{\n    \"error\": \"Test Run is not running\"\n}"
-				},
-				{
-					"name": "Stopped",
+					"name": "Stopped (200)",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
@@ -394,119 +538,57 @@
 					},
 					"status": "OK",
 					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": "{\n    \"success\": \"Test Run has stopped\"\n}"
-				}
-			]
-		},
-		{
-			"name": "Get Devices",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:8000/devices",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"devices"
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "Devices",
-					"originalRequest": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "localhost:8000/devices",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"devices"
-							]
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
 						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
+					],
 					"cookie": [],
-					"body": "[\n  {\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"manufacturer\": \"Teltonika\",\n    \"model\": \"TRB 140\",\n    \"test_modules\": {\n      \"dns\": {\n        \"enabled\": false\n      },\n      \"connection\": {\n        \"enabled\": true\n      },\n      \"ntp\": {\n        \"enabled\": false\n      },\n      \"baseline\": {\n        \"enabled\": false\n      },\n      \"nmap\": {\n        \"enabled\": false\n      }\n    }\n  },\n  {\n    \"mac_addr\": \"aa:bb:cc:dd:ee:ff\",\n    \"manufacturer\": \"Manufacturer X\",\n    \"model\": \"Device X\",\n    \"test_modules\": {\n      \"dns\": {\n        \"enabled\": true\n      },\n      \"connection\": {\n        \"enabled\": true\n      },\n      \"ntp\": {\n        \"enabled\": true\n      },\n      \"baseline\": {\n        \"enabled\": false\n      },\n      \"nmap\": {\n        \"enabled\": true\n      }\n    }\n  }\n]"
+					"body": "{\n    \"success\": \"Testrun stopped\"\n}"
 				},
 				{
-					"name": "No Devices",
+					"name": "Not Running (404)",
 					"originalRequest": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "localhost:8000/devices",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"devices"
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": "[\n\n]"
-				}
-			]
-		},
-		{
-			"name": "Get Configuration",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:8000/system/config",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"system",
-						"config"
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "Configuration",
-					"originalRequest": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "localhost:8000/system/config",
+							"raw": "localhost:8000/system/stop",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
 								"system",
-								"config"
+								"stop"
 							]
 						}
 					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
 					"cookie": [],
-					"body": "{\n    \"network\": {\n        \"device_intf\": \"enx207bd2620617\",\n        \"internet_intf\": \"enx207bd26205e9\"\n    },\n    \"log_level\": \"INFO\",\n    \"startup_timeout\": 60,\n    \"monitor_period\": 60,\n    \"runtime\": 120\n}"
+					"body": "{\n    \"error\": \"Testrun is not currently running\"\n}"
 				}
 			]
 		},
@@ -537,23 +619,15 @@
 						"system",
 						"status"
 					]
-				}
+				},
+				"description": "Get the current status of Testrun. Suggested that this is called every 5 seconds to capture most events"
 			},
 			"response": [
 				{
-					"name": "Test In Progress",
+					"name": "Monitoring (200)",
 					"originalRequest": {
 						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
 							"raw": "localhost:8000/system/status",
 							"host": [
@@ -568,25 +642,23 @@
 					},
 					"status": "OK",
 					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
 					"cookie": [],
-					"body": "{\n  \"status\": \"In Progress\",\n  \"device\": {\n    \"manufacturer\": \"Delta\",\n    \"model\": \"03-DIN-CPU\",\n    \"mac_addr\": \"01:02:03:04:05:06\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": null,\n  \"tests\": {\n    \"total\": 26,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",\n        \"result\": \"Compliant\"\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Non-Compliant\"\n      } \n    ]\n  }\n}"
+					"body": "{\n    \"status\": \"Monitoring\",\n    \"device\": {\n        \"manufacturer\": \"Delta\",\n        \"model\": \"03-DIN-CPU\",\n        \"mac_addr\": \"01:02:03:04:05:06\",\n        \"firmware\": \"1.2.2\"\n    },\n    \"started\": \"2023-06-22T09:20:00.123Z\",\n    \"finished\": null,\n    \"report\": null,\n    \"tests\": {\n        \"total\": 0,\n        \"results\": []\n    }\n}"
 				},
 				{
-					"name": "Not Running",
+					"name": "Test in Progress (200)",
 					"originalRequest": {
 						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
 							"raw": "localhost:8000/system/status",
 							"host": [
@@ -601,10 +673,327 @@
 					},
 					"status": "OK",
 					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
 					"cookie": [],
-					"body": "{\n  \"status\": \"Idle\",\n  \"device\": null,\n  \"started\": null,\n  \"finished\": null,\n  \"tests\": {\n    \"total\": 0,\n    \"results\": [\n    ]\n  }\n}"
+					"body": "{\n    \"status\": \"In Progress\",\n    \"device\": {\n        \"manufacturer\": \"Delta\",\n        \"model\": \"03-DIN-CPU\",\n        \"mac_addr\": \"01:02:03:04:05:06\",\n        \"firmware\": \"1.2.2\"\n    },\n    \"started\": \"2023-06-22T09:20:00.123Z\",\n    \"finished\": null,\n    \"tests\": {\n        \"total\": 26,\n        \"results\": [\n            {\n                \"name\": \"dns.network.hostname_resolution\",\n                \"description\": \"The device should resolve hostnames\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"dns.network.from_dhcp\",\n                \"description\": \"The device should use the DNS server provided by the DHCP server\",\n                \"result\": \"Non-Compliant\"\n            }\n        ]\n    }\n}"
+				},
+				{
+					"name": "Cancelled (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/system/status",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"status"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"Cancelled\",\n    \"device\": {\n        \"manufacturer\": \"Delta\",\n        \"model\": \"03-DIN-CPU\",\n        \"mac_addr\": \"01:02:03:04:05:06\",\n        \"firmware\": \"1.2.2\"\n    },\n    \"started\": \"2023-06-22T09:20:00.123Z\",\n    \"finished\": \"2023-06-22T09:24:00.123Z\",\n    \"report\": null,\n    \"tests\": {\n        \"total\": 22,\n        \"results\": [\n            {\n                \"name\": \"dns.network.hostname_resolution\",\n                \"description\": \"The device should resolve hostnames\",\n                \"result\": \"Compliant\",\n                \"required_result\": \"Required\"\n            },\n            {\n                \"name\": \"dns.network.from_dhcp\",\n                \"description\": \"The device should use the DNS server provided by the DHCP server\",\n                \"result\": \"Feature Not Present\",\n                \"required_result\": \"Roadmap\"\n            }\n        ]\n    }\n}"
+				},
+				{
+					"name": "Waiting for Device (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/system/status",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"status"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"Waiting for Device\",\n    \"device\": {\n        \"manufacturer\": \"Delta\",\n        \"model\": \"03-DIN-CPU\",\n        \"mac_addr\": \"01:02:03:04:05:06\",\n        \"firmware\": \"1.2.2\"\n    },\n    \"started\": \"2023-06-22T09:20:00.123Z\",\n    \"finished\": null,\n    \"report\": null,\n    \"tests\": {\n        \"total\": 0,\n        \"results\": []\n    }\n}"
+				},
+				{
+					"name": "Non-Compliant (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/system/status",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"status"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"Non-Compliant\",\n  \"device\": {\n    \"manufacturer\": \"Delta\",\n    \"model\": \"03-DIN-CPU\",\n    \"mac_addr\": \"01:02:03:04:05:06\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": \"2023-06-22T09:26:00.123Z\",\n  \"report\": \"https://api.testrun.io/report.pdf\",\n  \"tests\": {\n    \"total\": 26,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",\n        \"result\": \"Non-Compliant\",\n        \"required_result\": \"Compliant\"\n        \"recommendations\": [\n          \"An example of a step to resolve\",\n          \"Disable any running NTP server\"\n        ]\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Roadmap\"\n      },\n      {\n        \"name\": \"security.services.ftp\",\n        \"description\": \"FTP server should not be available\",\n        \"result\": \"Compliant\",\n        \"required_result\": \"Required\"\n      }\n    ]\n  }\n}"
+				},
+				{
+					"name": "Compliant (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/system/status",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"status"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"Compliant\",\n    \"device\": {\n        \"manufacturer\": \"Delta\",\n        \"model\": \"03-DIN-CPU\",\n        \"mac_addr\": \"01:02:03:04:05:06\",\n        \"firmware\": \"1.2.2\"\n    },\n    \"started\": \"2023-06-22T09:20:00.123Z\",\n    \"finished\": \"2023-06-22T09:26:00.123Z\",\n    \"report\": \"https://api.testrun.io/report.pdf\",\n    \"tests\": {\n        \"total\": 3,\n        \"results\": [\n            {\n                \"name\": \"dns.network.hostname_resolution\",\n                \"description\": \"The device should resolve hostnames\",\n                \"result\": \"Compliant\",\n                \"required_result\": \"Required\"\n            },\n            {\n                \"name\": \"dns.network.from_dhcp\",\n                \"description\": \"The device should use the DNS server provided by the DHCP server\",\n                \"result\": \"Feature Not Present\",\n                \"required_result\": \"Roadmap\"\n            },\n            {\n                \"name\": \"security.services.ftp\",\n                \"description\": \"FTP server should not be available\",\n                \"result\": \"Compliant\",\n                \"required_result\": \"Required\"\n            }\n        ]\n    }\n}"
+				},
+				{
+					"name": "Not Running - Idle (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/system/status",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"status"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"Idle\",\n    \"device\": null,\n    \"started\": null,\n    \"finished\": null,\n    \"tests\": {\n        \"total\": 0,\n        \"results\": []\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Shutdown Testrun",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/system/shutdown",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"system",
+						"shutdown"
+					]
+				},
+				"description": "Stop the Testrun framework"
+			},
+			"response": [
+				{
+					"name": "Shutdown Testrun (200)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/system/shutdown",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"shutdown"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "null"
+				},
+				{
+					"name": "Test in Progress (400)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"device\": {\n        \"mac_addr\": \"00:1e:42:35:73:c4\",\n        \"firmware\": \"1.2.2\",\n        \"test_modules\": {\n            \"dns\": {\n                \"enabled\": true\n            },\n            \"ntp\": {\n                \"enabled\": false\n            }\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/shutdown",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"shutdown"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Unable to shutdown. A test is currently in progress.\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Get Version",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/system/version",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"system",
+						"version"
+					]
+				},
+				"description": "Get the current Testrun version and check if a software update is available"
+			},
+			"response": [
+				{
+					"name": "Get Version (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/system/version",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"version"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"installed_version\": \"v2.0\",\n    \"update_available\": false,\n    \"latest_version\": \"v2.0\",\n    \"latest_version_url\": \"https://github.com/google/testrun/releases/tag/v2.0\"\n}"
 				}
 			]
 		},
@@ -634,259 +1023,88 @@
 					"path": [
 						"reports"
 					]
-				}
+				},
+				"description": "Get all previous Testrun reports"
 			},
 			"response": [
 				{
-					"name": "Test In Progress",
+					"name": "Get Test Reports (200)",
 					"originalRequest": {
 						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://localhost:8000",
+								"type": "text"
 							}
-						},
+						],
 						"url": {
-							"raw": "localhost:8000/system/status",
+							"raw": "localhost:8000/reports",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
-								"system",
-								"status"
+								"reports"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
 							]
 						}
 					},
 					"status": "OK",
 					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
 					"cookie": [],
-					"body": "{\n  \"status\": \"In Progress\",\n  \"device\": {\n    \"manufacturer\": \"Delta\",\n    \"model\": \"03-DIN-CPU\",\n    \"mac_addr\": \"01:02:03:04:05:06\",\n    \"firmware\": \"1.2.2\"\n  },\n  \"started\": \"2023-06-22T09:20:00.123Z\",\n  \"finished\": null,\n  \"tests\": {\n    \"total\": 26,\n    \"results\": [\n      {\n        \"name\": \"dns.network.hostname_resolution\",\n        \"description\": \"The device should resolve hostnames\",\n        \"result\": \"Compliant\"\n      },\n      {\n        \"name\": \"dns.network.from_dhcp\",\n        \"description\": \"The device should use the DNS server provided by the DHCP server\",\n        \"result\": \"Non-Compliant\"\n      } \n    ]\n  }\n}"
+					"body": "[\n    {\n        \"testrun\": {\n            \"version\": \"2.0\"\n        },\n        \"mac_addr\": \"00:1e:42:28:9e:4a\",\n        \"device\": {\n            \"mac_addr\": \"00:1e:42:28:9e:4a\",\n            \"manufacturer\": \"Teltonika\",\n            \"model\": \"TRB140\",\n            \"firmware\": \"test\",\n            \"test_modules\": {\n                \"protocol\": {\n                    \"enabled\": true\n                },\n                \"services\": {\n                    \"enabled\": true\n                },\n                \"ntp\": {\n                    \"enabled\": true\n                },\n                \"tls\": {\n                    \"enabled\": true\n                },\n                \"connection\": {\n                    \"enabled\": true\n                },\n                \"dns\": {\n                    \"enabled\": true\n                }\n            }\n        },\n        \"status\": \"Non-Compliant\",\n        \"started\": \"2000-01-01 00:00:00\",\n        \"finished\": \"2000-01-01 00:30:00\",\n        \"tests\": {\n            \"total\": 40,\n            \"results\": [\n                {\n                    \"name\": \"protocol.valid_bacnet\",\n                    \"description\": \"BACnet device could not be discovered\",\n                    \"expected_behavior\": \"BACnet traffic can be seen on the network and packets are valid and not malformed\",\n                    \"required_result\": \"Recommended\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"protocol.bacnet.version\",\n                    \"description\": \"Device did not respond to BACnet discovery\",\n                    \"expected_behavior\": \"The BACnet client implements an up to date version of BACnet\",\n                    \"required_result\": \"Recommended\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"protocol.valid_modbus\",\n                    \"description\": \"Device did not respond to Modbus connection\",\n                    \"expected_behavior\": \"Any Modbus functionality works as expected and valid Modbus traffic can be observed\",\n                    \"required_result\": \"Recommended\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"security.services.ftp\",\n                    \"description\": \"No FTP server found\",\n                    \"expected_behavior\": \"There is no FTP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.ssh.version\",\n                    \"description\": \"SSH server found running  protocol 2.0\",\n                    \"expected_behavior\": \"SSH server is not running or server is SSHv2\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.telnet\",\n                    \"description\": \"No telnet server found\",\n                    \"expected_behavior\": \"There is no Telnet service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.smtp\",\n                    \"description\": \"No SMTP server found\",\n                    \"expected_behavior\": \"There is no SMTP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.http\",\n                    \"description\": \"Found HTTP server running on port 80/tcp\",\n                    \"expected_behavior\": \"Device is unreachable on port 80 (or any other port) and only responds to HTTPS requests on port 443 (or any other port if HTTP is used at all)\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Disable all unsecure HTTP servers\",\n                        \"Setup TLS on the web server\"\n                    ]\n                },\n                {\n                    \"name\": \"security.services.pop\",\n                    \"description\": \"No POP server found\",\n                    \"expected_behavior\": \"There is no POP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.imap\",\n                    \"description\": \"No IMAP server found\",\n                    \"expected_behavior\": \"There is no IMAP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.snmpv3\",\n                    \"description\": \"No SNMP server found\",\n                    \"expected_behavior\": \"Device is unreachable on port 161 (or any other port) and device is unreachable on port 162 (or any other port) unless SNMP is essential in which case it is SNMPv3 is used.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.vnc\",\n                    \"description\": \"No VNC server found\",\n                    \"expected_behavior\": \"Device cannot be accessed / connected to via VNC on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.tftp\",\n                    \"description\": \"No TFTP server found\",\n                    \"expected_behavior\": \"There is no TFTP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"ntp.network.ntp_server\",\n                    \"description\": \"No NTP server found\",\n                    \"expected_behavior\": \"The device does not respond to NTP requests when it's IP is set as the NTP server on another device\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.port_link\",\n                    \"description\": \"No port errors detected\",\n                    \"expected_behavior\": \"When the etherent cable is connected to the port, the device triggers the port to its enabled \\\"Link UP\\\" (LEDs illuminate on device and switch ports if present) state, and the switch shows no errors with the LEDs and when interrogated with a \\\"show interface\\\" command on most network switches.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.port_speed\",\n                    \"description\": \"Succesfully auto-negotiated speeds above 10 Mbps\",\n                    \"expected_behavior\": \"When the ethernet cable is connected to the port, the device autonegotiates a speed that can be checked with the \\\"show interface\\\" command on most network switches.  The output of this command must also show that the \\\"configured speed\\\" is set to \\\"auto\\\".\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.port_duplex\",\n                    \"description\": \"Succesfully auto-negotiated full duplex\",\n                    \"expected_behavior\": \"When the ethernet cable is connected to the port, the device autonegotiates a full-duplex connection.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.switch.arp_inspection\",\n                    \"description\": \"Device uses ARP\",\n                    \"expected_behavior\": \"Device continues to operate correctly when ARP inspection is enabled on the switch.  No functionality is lost with ARP inspection enabled.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.switch.dhcp_snooping\",\n                    \"description\": \"Device does not act as a DHCP server\",\n                    \"expected_behavior\": \"Device continues to operate correctly when DHCP snooping is enabled on the switch.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.dhcp_address\",\n                    \"description\": \"Device responded to leased ip address\",\n                    \"expected_behavior\": \"The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.mac_address\",\n                    \"description\": \"MAC address found: 00:1e:42:28:9e:4a\",\n                    \"expected_behavior\": \"N/A\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.mac_oui\",\n                    \"description\": \"OUI Manufacturer found: Teltonika\",\n                    \"expected_behavior\": \"The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.private_address\",\n                    \"description\": \"All subnets are supported\",\n                    \"expected_behavior\": \"The device under test accepts IP addresses within all ranges specified in RFC 1918 and communicates using these addresses.  The Internet Assigned Numbers Authority (IANA) has reserved the following three blocks of the IP address space for private internets.  10.0.0.0 - 10.255.255.255.255 (10/8 prefix). 172.16.0.0 - 172.31.255.255 (172.16/12 prefix).  192.168.0.0 - 192.168.255.255 (192.168/16 prefix)\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.shared_address\",\n                    \"description\": \"All subnets are supported\",\n                    \"expected_behavior\": \"The device under test accepts IP addresses within the ranges specified in RFC 6598 and communicates using these addresses\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.dhcp_disconnect\",\n                    \"description\": \"An error occured whilst running this test\",\n                    \"expected_behavior\": \"A client SHOULD use DHCP to reacquire or verify its IP address and network parameters whenever the local network parameters may have changed; e.g., at system boot time or after a disconnection from the local network, as the local network configuration may change without the client's or user's knowledge. If a client has knowledge ofa  previous network address and is unable to contact a local DHCP server, the client may continue to use the previous network addres until the lease for that address expires.  If the lease expires before the client can contact a DHCP server, the client must immediately discontinue use of the previous network address and may inform local users of the problem.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Error\"\n                },\n                {\n                    \"name\": \"connection.single_ip\",\n                    \"description\": \"Device is using multiple IP addresses\",\n                    \"expected_behavior\": \"The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Ensure that all ports on the device are isolated\",\n                        \"Ensure only one DHCP client is running\"\n                    ]\n                },\n                {\n                    \"name\": \"connection.target_ping\",\n                    \"description\": \"Device responds to ping\",\n                    \"expected_behavior\": \"The device under test responds to an ICMP echo (ping) request.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.ipaddr.ip_change\",\n                    \"description\": \"Device has accepted an IP address change\",\n                    \"expected_behavior\": \"If the lease expires before the client receiveds a DHCPACK, the client moves to INIT state, MUST immediately stop any other network processing and requires network initialization parameters as if the client were uninitialized.  If the client then receives a DHCPACK allocating the client its previous network addres, the client SHOULD continue network processing.  If the client is given a new network address, it MUST NOT continue using the previous network address and SHOULD notify the local users of the problem.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.ipaddr.dhcp_failover\",\n                    \"description\": \"Secondary DHCP server lease confirmed active in device\",\n                    \"expected_behavior\": \"\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.ipv6_slaac\",\n                    \"description\": \"Device does not support IPv6 SLAAC\",\n                    \"expected_behavior\": \"The device under test complies with RFC4862 and forms a valid IPv6 SLAAC address\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Install a network manager that supports IPv6\",\n                        \"Disable DHCPv6\"\n                    ]\n                },\n                {\n                    \"name\": \"connection.ipv6_ping\",\n                    \"description\": \"No IPv6 SLAAC address found. Cannot ping\",\n                    \"expected_behavior\": \"The device responds to the ping as per RFC4443\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Enable ping response to IPv6 ICMP requests in network manager settings\",\n                        \"Create a firewall exception to allow ICMPv6 via LAN\"\n                    ]\n                },\n                {\n                    \"name\": \"security.tls.v1_2_server\",\n                    \"description\": \"TLS 1.2 certificate is invalid\",\n                    \"expected_behavior\": \"TLS 1.2 certificate is issued to the web browser client when accessed\",\n                    \"required_result\": \"Required if Applicable\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Enable TLS 1.2 support in the web server configuration\",\n                        \"Disable TLS 1.0 and 1.1\",\n                        \"Sign the certificate used by the web server\"\n                    ]\n                },\n                {\n                    \"name\": \"security.tls.v1_2_client\",\n                    \"description\": \"No outbound connections were found\",\n                    \"expected_behavior\": \"The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers\",\n                    \"required_result\": \"Required if Applicable\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"security.tls.v1_3_server\",\n                    \"description\": \"TLS 1.3 certificate is invalid\",\n                    \"expected_behavior\": \"TLS 1.3 certificate is issued to the web browser client when accessed\",\n                    \"required_result\": \"Informational\",\n                    \"result\": \"Informational\"\n                },\n                {\n                    \"name\": \"security.tls.v1_3_client\",\n                    \"description\": \"No outbound connections were found\",\n                    \"expected_behavior\": \"The packet indicates a TLS connection with at least TLS 1.3\",\n                    \"required_result\": \"Informational\",\n                    \"result\": \"Informational\"\n                },\n                {\n                    \"name\": \"ntp.network.ntp_support\",\n                    \"description\": \"Device has not sent any NTP requests\",\n                    \"expected_behavior\": \"The device sends an NTPv4 request to the configured NTP server.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Set the NTP version to v4 in the NTP client\",\n                        \"Install an NTP client that supports NTPv4\"\n                    ]\n                },\n                {\n                    \"name\": \"ntp.network.ntp_dhcp\",\n                    \"description\": \"Device has not sent any NTP requests\",\n                    \"expected_behavior\": \"Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)\",\n                    \"required_result\": \"Roadmap\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"dns.network.hostname_resolution\",\n                    \"description\": \"DNS traffic detected from device\",\n                    \"expected_behavior\": \"The device sends DNS requests.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"dns.network.from_dhcp\",\n                    \"description\": \"DNS traffic detected only to DHCP provided server\",\n                    \"expected_behavior\": \"The device sends DNS requests to the DNS server provided by the DHCP server\",\n                    \"required_result\": \"Informational\",\n                    \"result\": \"Informational\"\n                },\n                {\n                    \"name\": \"dns.mdns\",\n                    \"description\": \"No MDNS traffic detected from the device\",\n                    \"expected_behavior\": \"Device may send MDNS requests\",\n                    \"required_result\": \"Informational\",\n                    \"result\": \"Informational\"\n                }\n            ]\n        },\n        \"report\": \"http://localhost:8000/report/Teltonika TRB140/2024-09-10T13:19:24\"\n    }\n]"
 				},
 				{
-					"name": "Not Running",
+					"name": "No Test Reports (200)",
 					"originalRequest": {
 						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://localhost:8000",
+								"type": "text"
 							}
-						},
+						],
 						"url": {
-							"raw": "localhost:8000/system/status",
+							"raw": "localhost:8000/reports",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
-								"system",
-								"status"
+								"reports"
 							]
 						}
 					},
 					"status": "OK",
 					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": "{\n  \"status\": \"Idle\",\n  \"device\": null,\n  \"started\": null,\n  \"finished\": null,\n  \"tests\": {\n    \"total\": 0,\n    \"results\": [\n    ]\n  }\n}"
-				}
-			]
-		},
-		{
-			"name": "Create Device",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"manufacturer\": \"Delta\",\n    \"mac_addr\": \"00:1e:42:35:73:c1\",\n    \"model\": \"O3-DIN-CPU\",\n    \"test_modules\": {\n        \"connection\": {\n            \"enabled\": true\n        },\n        \"nmap\": {\n            \"enabled\": false\n        },\n        \"dns\": {\n            \"enabled\": false\n        },\n        \"ntp\": {\n            \"enabled\": false\n        },\n        \"baseline\": {\n            \"enabled\": false\n        },\n        \"tls\": {\n            \"enabled\": false\n        }\n    }\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
 						}
-					}
-				},
-				"url": {
-					"raw": "localhost:8000/device",
-					"host": [
-						"localhost"
 					],
-					"port": "8000",
-					"path": [
-						"device"
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "Create Device",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"manufacturer\": \"Delta\",\n    \"model\": \"O3-DIN-CPU\",\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"test_modules\": {\n        \"dns\": {\n            \"enabled\": false\n        },\n        \"nmap\": {\n            \"enabled\": true\n        },\n        \"dhcp\": {\n            \"enabled\": false\n        }\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8000/device",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"device"
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
 					"cookie": [],
-					"body": "{\n  \"manufacturer\": \"Delta\",\n  \"model\": \"O3-DIN-CPU\",\n  \"mac_addr\": \"00:1e:42:35:73:c4\",\n  \"test_modules\": [\n        \"dns\": {\n        \"enabled\": false\n        },\n        \"nmap\": {\n        \"enabled\": true\n        },\n        \"dhcp\": {\n        \"enabled\": false\n        }\n  ]\n}"
-				},
-				{
-					"name": "Invalid JSON",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"manufacturer\": \"Delta\",\n    \"model\": \"O3-DIN-CPU\",\n    \"mac_addr\": \"00:1e:42:35:73:c4\"\n    \"test_modules\": {\n        \"dns\": {\n            \"enabled\": false\n        },\n        \"nmap\": {\n            \"enabled\": true\n        },\n        \"dhcp\": {\n            \"enabled\": false\n        }\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8000/device",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"device"
-							]
-						}
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": "{\n    \"error\": \"Invalid JSON received\"\n}"
-				}
-			]
-		},
-		{
-			"name": "Edit Device",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"device\": {\n        \"mac_addr\": \"00:1e:42:35:73:c1\",\n        \"manufacturer\": \"Teltonika\",\n        \"model\": \"TRB140\",\n        \"test_modules\": {\n            \"connection\": {\n                \"enabled\": true\n            },\n            \"nmap\": {\n                \"enabled\": false\n            },\n            \"dns\": {\n                \"enabled\": false\n            },\n            \"ntp\": {\n                \"enabled\": false\n            },\n            \"baseline\": {\n                \"enabled\": false\n            },\n            \"tls\": {\n                \"enabled\": false\n            }\n        }\n    }\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "localhost:8000/device/edit",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"device",
-						"edit"
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "Create Device",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"manufacturer\": \"Delta\",\n    \"model\": \"O3-DIN-CPU\",\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"test_modules\": {\n        \"dns\": {\n            \"enabled\": false\n        },\n        \"nmap\": {\n            \"enabled\": true\n        },\n        \"dhcp\": {\n            \"enabled\": false\n        }\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8000/device",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"device"
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": "{\n  \"manufacturer\": \"Delta\",\n  \"model\": \"O3-DIN-CPU\",\n  \"mac_addr\": \"00:1e:42:35:73:c4\",\n  \"test_modules\": [\n        \"dns\": {\n        \"enabled\": false\n        },\n        \"nmap\": {\n        \"enabled\": true\n        },\n        \"dhcp\": {\n        \"enabled\": false\n        }\n  ]\n}"
-				},
-				{
-					"name": "Invalid JSON",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"manufacturer\": \"Delta\",\n    \"model\": \"O3-DIN-CPU\",\n    \"mac_addr\": \"00:1e:42:35:73:c4\"\n    \"test_modules\": {\n        \"dns\": {\n            \"enabled\": false\n        },\n        \"nmap\": {\n            \"enabled\": true\n        },\n        \"dhcp\": {\n            \"enabled\": false\n        }\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8000/device",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"device"
-							]
-						}
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": "{\n    \"error\": \"Invalid JSON received\"\n}"
+					"body": "[]"
 				}
 			]
 		},
@@ -914,29 +1132,131 @@
 					"path": [
 						"report"
 					]
-				}
+				},
+				"description": "Delete a previous Testrun report"
 			},
-			"response": []
-		},
-		{
-			"name": "Get Version",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8000/system/version",
-					"protocol": "http",
-					"host": [
-						"localhost"
+			"response": [
+				{
+					"name": "Report Deleted (200)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"timestamp\": \"2024-08-05 13:37:53\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/report",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"report"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
 					],
-					"port": "8000",
-					"path": [
-						"system",
-						"version"
-					]
+					"cookie": [],
+					"body": "{\n    \"success\": \"Deleted report\"\n}"
+				},
+				{
+					"name": "Invalid JSON (400)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/report",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"report"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Invalid request received\"\n}"
+				},
+				{
+					"name": "Report Not Found (404))",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"timestamp\": \"2023-10-10 16:53:47\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/report",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"report"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Report not found\"\n}"
 				}
-			},
-			"response": []
+			]
 		},
 		{
 			"name": "Get Report",
@@ -955,15 +1275,92 @@
 						"{device_name}",
 						"{timestamp}"
 					]
-				}
+				},
+				"description": "Get the PDF report for a specific device and timestamp"
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Get Report (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/report/Teltonika TRB140/2000-01-01T00:00:00",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"report",
+								"Teltonika TRB140",
+								"2000-01-01T00:00:00"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/pdf",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "report.pdf"
+				},
+				{
+					"name": "Report Not Found (404)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/report/Teltonika TRB140/2024-05-05 13:37:53",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"report",
+								"Teltonika TRB140",
+								"2024-05-05 13:37:53"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Report could not be found\"\n}"
+				}
+			]
 		},
 		{
-			"name": "Get Export",
+			"name": "Export",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"profile\": \"Primary profile\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "http://localhost:8000/export/{device_name}/{timestamp}",
 					"protocol": "http",
@@ -975,10 +1372,1054 @@
 						"export",
 						"{device_name}",
 						"{timestamp}"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
 					]
-				}
+				},
+				"description": "Export the ZIP file of a specific device testing report"
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Export without profile (200)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/export/Teltonika TRB140/2024-08-05T13:37:53",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"export",
+								"Teltonika TRB140",
+								"2024-08-05T13:37:53"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/zip",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "report.zip"
+				},
+				{
+					"name": "Export with profile (200)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/export/Teltonika TRB140/2024-08-05T13:37:53",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"export",
+								"Teltonika TRB140",
+								"2024-08-05T13:37:53"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "Text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/zip",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "report.zip"
+				},
+				{
+					"name": "Profile Not Found (404)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"profile\": \"Non-existing profile\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/export/Teltonika TRB140/2024-06-13T11:31:28",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"export",
+								"Teltonika TRB140",
+								"2024-06-13T11:31:28"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A profile with that name could not be found\"\n}"
+				},
+				{
+					"name": "Report Not Found (404)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/export/Teltonika TRB140/2020-08-05T13:37:53",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"export",
+								"Teltonika TRB140",
+								"2020-08-05T13:37:53"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Report not found\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Get Devices",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/devices",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"devices"
+					]
+				},
+				"description": "Obtain the list of devices from the device repository"
+			},
+			"response": [
+				{
+					"name": "Get Devices (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/devices",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"devices"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"folder_url\": \"local/devices/Teltonika TRB140\",\n        \"mac_addr\": \"00:1e:42:35:73:c4\",\n        \"manufacturer\": \"Teltonika\",\n        \"model\": \"TRB140\",\n        \"test_modules\": {\n            \"protocol\": {\n                \"enabled\": true\n            },\n            \"services\": {\n                \"enabled\": false\n            },\n            \"connection\": {\n                \"enabled\": false\n            },\n            \"tls\": {\n                \"enabled\": true\n            },\n            \"ntp\": {\n                \"enabled\": true\n            },\n            \"dns\": {\n                \"enabled\": true\n            }\n        },\n        \"ip_addr\": null,\n        \"firmware\": null,\n        \"device_folder\": \"Teltonika TRB140\",\n        \"reports\": [\n            {\n                \"_device\": {\n                    \"mac_addr\": \"00:1e:42:35:73:c4\",\n                    \"manufacturer\": \"Teltonika\",\n                    \"model\": \"TRB140\",\n                    \"firmware\": \"1.2.3\",\n                    \"test_modules\": {\n                        \"protocol\": {\n                            \"enabled\": true\n                        },\n                        \"services\": {\n                            \"enabled\": false\n                        },\n                        \"connection\": {\n                            \"enabled\": false\n                        },\n                        \"tls\": {\n                            \"enabled\": true\n                        },\n                        \"ntp\": {\n                            \"enabled\": true\n                        },\n                        \"dns\": {\n                            \"enabled\": true\n                        }\n                    }\n                },\n                \"_mac_addr\": \"00:1e:42:35:73:c4\",\n                \"_status\": \"Non-Compliant\",\n                \"_started\": \"2024-08-05T13:37:53\",\n                \"_finished\": \"2024-08-05T13:39:35\",\n                \"_total_tests\": 12,\n                \"_results\": [\n                    {\n                        \"name\": \"protocol.valid_bacnet\",\n                        \"description\": \"BACnet device could not be discovered\",\n                        \"expected_behavior\": \"BACnet traffic can be seen on the network and packets are valid and not malformed\",\n                        \"required_result\": \"Recommended\",\n                        \"result\": \"Feature Not Detected\",\n                        \"recommendations\": []\n                    },\n                    {\n                        \"name\": \"protocol.bacnet.version\",\n                        \"description\": \"Device did not respond to BACnet discovery\",\n                        \"expected_behavior\": \"The BACnet client implements an up to date version of BACnet\",\n                        \"required_result\": \"Recommended\",\n                        \"result\": \"Feature Not Detected\",\n                        \"recommendations\": []\n                    },\n                    {\n                        \"name\": \"protocol.valid_modbus\",\n                        \"description\": \"Device did not respond to Modbus connection\",\n                        \"expected_behavior\": \"Any Modbus functionality works as expected and valid Modbus traffic can be observed\",\n                        \"required_result\": \"Recommended\",\n                        \"result\": \"Feature Not Detected\",\n                        \"recommendations\": []\n                    },\n                    {\n                        \"name\": \"security.tls.v1_2_server\",\n                        \"description\": \"TLS 1.2 certificate is invalid\",\n                        \"expected_behavior\": \"TLS 1.2 certificate is issued to the web browser client when accessed\",\n                        \"required_result\": \"Required if Applicable\",\n                        \"result\": \"Non-Compliant\",\n                        \"recommendations\": [\n                            \"Enable TLS 1.2 support in the web server configuration\",\n                            \"Disable TLS 1.0 and 1.1\",\n                            \"Sign the certificate used by the web server\"\n                        ]\n                    },\n                    {\n                        \"name\": \"security.tls.v1_2_client\",\n                        \"description\": \"TLS 1.2 client connections valid\",\n                        \"expected_behavior\": \"The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers\",\n                        \"required_result\": \"Required if Applicable\",\n                        \"result\": \"Compliant\",\n                        \"recommendations\": []\n                    },\n                    {\n                        \"name\": \"security.tls.v1_3_server\",\n                        \"description\": \"TLS 1.3 certificate is invalid\",\n                        \"expected_behavior\": \"TLS 1.3 certificate is issued to the web browser client when accessed\",\n                        \"required_result\": \"Informational\",\n                        \"result\": \"Informational\",\n                        \"recommendations\": []\n                    },\n                    {\n                        \"name\": \"security.tls.v1_3_client\",\n                        \"description\": \"TLS 1.3 client connections valid\",\n                        \"expected_behavior\": \"The packet indicates a TLS connection with at least TLS 1.3\",\n                        \"required_result\": \"Informational\",\n                        \"result\": \"Informational\",\n                        \"recommendations\": []\n                    },\n                    {\n                        \"name\": \"ntp.network.ntp_support\",\n                        \"description\": \"Device sent NTPv3 packets. NTPv3 is not allowed\",\n                        \"expected_behavior\": \"The device sends an NTPv4 request to the configured NTP server.\",\n                        \"required_result\": \"Required\",\n                        \"result\": \"Non-Compliant\",\n                        \"recommendations\": [\n                            \"Set the NTP version to v4 in the NTP client\",\n                            \"Install an NTP client that supports NTPv4\"\n                        ]\n                    },\n                    {\n                        \"name\": \"ntp.network.ntp_dhcp\",\n                        \"description\": \"Device sent NTP request to non-DHCP provided server\",\n                        \"expected_behavior\": \"Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)\",\n                        \"required_result\": \"Roadmap\",\n                        \"result\": \"Feature Not Detected\",\n                        \"recommendations\": []\n                    },\n                    {\n                        \"name\": \"dns.network.hostname_resolution\",\n                        \"description\": \"DNS traffic detected from device\",\n                        \"expected_behavior\": \"The device sends DNS requests.\",\n                        \"required_result\": \"Required\",\n                        \"result\": \"Compliant\",\n                        \"recommendations\": []\n                    },\n                    {\n                        \"name\": \"dns.network.from_dhcp\",\n                        \"description\": \"DNS traffic detected only to DHCP provided server\",\n                        \"expected_behavior\": \"The device sends DNS requests to the DNS server provided by the DHCP server\",\n                        \"required_result\": \"Informational\",\n                        \"result\": \"Informational\",\n                        \"recommendations\": []\n                    },\n                    {\n                        \"name\": \"dns.mdns\",\n                        \"description\": \"No MDNS traffic detected from the device\",\n                        \"expected_behavior\": \"Device may send MDNS requests\",\n                        \"required_result\": \"Informational\",\n                        \"result\": \"Informational\",\n                        \"recommendations\": []\n                    }\n                ],\n                \"_module_reports\": [],\n                \"_report_url\": \"http://localhost:8000/report/Teltonika TRB140/2024-08-05T13:37:53\",\n                \"_cur_page\": 0,\n                \"_version\": \"1.3.1\"\n            }\n        ],\n        \"max_device_reports\": null\n    },\n    {\n        \"folder_url\": \"local/devices/Google First\",\n        \"mac_addr\": \"00:0e:12:15:13:c8\",\n        \"manufacturer\": \"Google\",\n        \"model\": \"First\",\n        \"test_modules\": null,\n        \"ip_addr\": null,\n        \"firmware\": null,\n        \"device_folder\": \"Google First\",\n        \"reports\": [],\n        \"max_device_reports\": null\n    },\n    {\n        \"folder_url\": \"local/devices/Delta O3-DIN-CPU\",\n        \"mac_addr\": \"00:1e:42:35:73:c4\",\n        \"manufacturer\": \"Delta\",\n        \"model\": \"O3-DIN-CPU\",\n        \"test_modules\": {\n            \"dns\": {\n                \"enabled\": true\n            },\n            \"connection\": {\n                \"enabled\": true\n            },\n            \"ntp\": {\n                \"enabled\": false\n            },\n            \"baseline\": {\n                \"enabled\": true\n            },\n            \"nmap\": {\n                \"enabled\": false\n            }\n        },\n        \"ip_addr\": null,\n        \"firmware\": null,\n        \"device_folder\": \"Delta O3-DIN-CPU\",\n        \"reports\": [],\n        \"max_device_reports\": null\n    }\n]"
+				},
+				{
+					"name": "No Devices (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/devices",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"devices"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "[]"
+				}
+			]
+		},
+		{
+			"name": "Create Device",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"mac_addr\": \"00:1e:42:35:73:55\",\n  \"manufacturer\": \"TEST\",\n  \"model\": \"Stest2\",\n  \"type\": \"IoT Gateway\",\n  \"technology\": \"Hardware - Access Control\",\n  \"test_pack\": \"Device Qualification\",\n  \"additional_info\": [\n  {\n    \"question\": \"What type of device is this?\",\n    \"answer\": \"IoT Gateway\"\n  },\n  {\n    \"question\": \"Please select the technology this device falls into\",\n    \"answer\": \"Hardware - Access Control\"\n  },\n  {\n      \"question\": \"Does your device process any sensitive information? \",\n      \"answer\": \"Yes\"\n  },\n  {\n    \"question\": \"Can all non-essential services be disabled on your device?\",\n    \"answer\": \"Yes\"\n  },\n  {\n    \"question\": \"Is there a second IP port on the device?\",\n    \"answer\": \"Yes\"\n  },\n  {\n    \"question\": \"Can the second IP port on your device be disabled?\",\n    \"answer\": \"Yes\"\n  }\n  ],\n  \"test_modules\": {\n      \"protocol\": { \"enabled\": true },\n      \"services\": { \"enabled\": true },\n      \"ntp\": { \"enabled\": true },\n      \"tls\": { \"enabled\": true },\n      \"connection\": { \"enabled\": true },\n      \"dns\": { \"enabled\": true }\n      }}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/device",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"device"
+					]
+				},
+				"description": "Create a new device to test"
+			},
+			"response": [
+				{
+					"name": "Create Device (201)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"manufacturer\": \"Delta\",\n    \"model\": \"O3-DIN-CPU\",\n    \"mac_addr\": \"00:1e:42:35:73:c4\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device"
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"manufacturer\": \"Delta\",\n    \"model\": \"O3-DIN-CPU\",\n    \"test_modules\": null\n}"
+				},
+				{
+					"name": "Already Exists (409)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"manufacturer\": \"Delta\",\n    \"model\": \"O3-DIN-CPU\",\n    \"mac_addr\": \"00:1e:42:35:73:c4\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device"
+							]
+						}
+					},
+					"status": "Conflict",
+					"code": 409,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A device with that MAC address already exists\"\n}"
+				},
+				{
+					"name": "Invalid JSON (400)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"manufacturer\": \"Delta\",\n    \"model\": \"O3-DIN-CPU\"\n    \"mac_addr\": \"00:1e:42:35:73:c4\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Invalid JSON received\"\n}"
+				},
+				{
+					"name": "Invalid Request (400)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Invalid JSON received\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Delete device",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/device",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"device"
+					]
+				},
+				"description": "Create a new device to test"
+			},
+			"response": [
+				{
+					"name": "Delete device (200)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully deleted the device\"\n}"
+				},
+				{
+					"name": "Not Found (404)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mac_addr\": \"non-existing\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Device not found\"\n}"
+				},
+				{
+					"name": "No Mac (400)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Invalid request received\"\n}"
+				},
+				{
+					"name": "Testrun in Progress (403)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device"
+							]
+						}
+					},
+					"status": "Forbidden",
+					"code": 403,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Cannot delete this device whilst it is being tested\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Edit Device",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"device\": {\n        \"mac_addr\": \"00:1e:42:35:73:c1\",\n        \"manufacturer\": \"Teltonika\",\n        \"model\": \"TRB140\",\n        \"test_modules\": {\n            \"connection\": {\n                \"enabled\": true\n            },\n            \"nmap\": {\n                \"enabled\": false\n            },\n            \"dns\": {\n                \"enabled\": false\n            },\n            \"ntp\": {\n                \"enabled\": false\n            },\n            \"baseline\": {\n                \"enabled\": false\n            },\n            \"tls\": {\n                \"enabled\": false\n            }\n        }\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/device/edit",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"device",
+						"edit"
+					]
+				},
+				"description": "Update the configuration for a device"
+			},
+			"response": [
+				{
+					"name": "Edit Device (200)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"device\": {\n        \"mac_addr\": \"00:1e:42:35:73:c4\",\n        \"manufacturer\": \"Delta\",\n        \"model\": \"O3-DIN-CPU\",\n        \"test_modules\": {\n            \"dns\": {\"enabled\": true},\n            \"connection\": {\"enabled\": true},\n            \"ntp\": {\"enabled\": false},\n            \"baseline\": {\"enabled\": true},\n            \"nmap\": {\"enabled\": false}\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device/edit",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device",
+								"edit"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"manufacturer\": \"Delta\",\n    \"model\": \"O3-DIN-CPU\",\n    \"test_modules\": {\n        \"dns\": {\n            \"enabled\": true\n        },\n        \"connection\": {\n            \"enabled\": true\n        },\n        \"ntp\": {\n            \"enabled\": false\n        },\n        \"baseline\": {\n            \"enabled\": true\n        },\n        \"nmap\": {\n            \"enabled\": false\n        }\n    }\n}"
+				},
+				{
+					"name": "Not Found (404)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mac_addr\": \"non-existing\",\n    \"device\": {\n        \"mac_addr\": \"00:1e:42:35:73:c4\",\n        \"manufacturer\": \"Delta\",\n        \"model\": \"O3-DIN-CPU\",\n        \"test_modules\": {\n            \"dns\": {\"enabled\": true},\n            \"connection\": {\"enabled\": true},\n            \"ntp\": {\"enabled\": false},\n            \"baseline\": {\"enabled\": true},\n            \"nmap\": {\"enabled\": false}\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device/edit",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device",
+								"edit"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A device with that MAC address could not be found\"\n}"
+				},
+				{
+					"name": "Mac Address in Use (409)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"device\": {\n        \"mac_addr\": \"00:0e:12:15:13:c8\",\n        \"manufacturer\": \"Delta\",\n        \"model\": \"O3-DIN-CPU\",\n        \"test_modules\": {\n            \"dns\": {\"enabled\": true},\n            \"connection\": {\"enabled\": true},\n            \"ntp\": {\"enabled\": false},\n            \"baseline\": {\"enabled\": true},\n            \"nmap\": {\"enabled\": false}\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device/edit",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device",
+								"edit"
+							]
+						}
+					},
+					"status": "Conflict",
+					"code": 409,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A device with that MAC address already exists\"\n}"
+				},
+				{
+					"name": "Device is Being Tested (403)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"device\": {\n        \"mac_addr\": \"00:0e:12:15:13:c8\",\n        \"manufacturer\": \"Delta\",\n        \"model\": \"O3-DIN-CPU\",\n        \"test_modules\": {\n            \"dns\": {\"enabled\": true},\n            \"connection\": {\"enabled\": true},\n            \"ntp\": {\"enabled\": false},\n            \"baseline\": {\"enabled\": true},\n            \"nmap\": {\"enabled\": false}\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device/edit",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device",
+								"edit"
+							]
+						}
+					},
+					"status": "Forbidden",
+					"code": 403,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Cannot edit this device whilst it is being tested\"\n}"
+				},
+				{
+					"name": "Invalid JSON (400)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mac_addr\": \"00:1e:42:35:73:c4\",\n    \"device\": {\n        \"mac_addr\": \"00:1e:42:35:73:c4\"\n        \"model\": \"O3-DIN-CPU\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/device/edit",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"device",
+								"edit"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Invalid request received\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Get Devices Format",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/devices/format",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"devices",
+						"format"
+					]
+				},
+				"description": "Obtain the list of devices from the device repository"
+			},
+			"response": [
+				{
+					"name": "Get Devices Format (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/devices/format",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"devices",
+								"format"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"step\": 1,\n        \"title\": \"Select device type & technology\",\n        \"description\": \"Before your device can go through testing, tell us more about your device and its functionality. It is important that we fully understand your device before a thorough assessment can be made.\",\n        \"questions\": [\n            {\n                \"id\": 1,\n                \"question\": \"What type of device is this?\",\n                \"validation\": {\n                    \"required\": true\n                },\n                \"type\": \"select\",\n                \"options\": [\n                    {\n                        \"text\": \"Building Automation Gateway\",\n                        \"risk\": \"High\",\n                        \"id\": 1\n                    },\n                    {\n                        \"text\": \"IoT Gateway\",\n                        \"risk\": \"High\",\n                        \"id\": 2\n                    },\n                    {\n                        \"text\": \"Controller - AHU\",\n                        \"risk\": \"High\",\n                        \"id\": 3\n                    },\n                    {\n                        \"text\": \"Controller - Boiler\",\n                        \"risk\": \"High\",\n                        \"id\": 4\n                    },\n                    {\n                        \"text\": \"Controller - Chiller\",\n                        \"risk\": \"High\",\n                        \"id\": 5\n                    },\n                    {\n                        \"text\": \"Controller - FCU\",\n                        \"risk\": \"Limited\",\n                        \"id\": 6\n                    },\n                    {\n                        \"text\": \"Controller - Pump\",\n                        \"risk\": \"Limited\",\n                        \"id\": 7\n                    },\n                    {\n                        \"text\": \"Controller - CRAC\",\n                        \"risk\": \"High\",\n                        \"id\": 8\n                    },\n                    {\n                        \"text\": \"Controller - VAV\",\n                        \"risk\": \"Limited\",\n                        \"id\": 9\n                    },\n                    {\n                        \"text\": \"Controller - VRF\",\n                        \"risk\": \"Limited\",\n                        \"id\": 10\n                    },\n                    {\n                        \"text\": \"Controller - Multiple\",\n                        \"risk\": \"High\",\n                        \"id\": 11\n                    },\n                    {\n                        \"text\": \"Controller - Other\",\n                        \"risk\": \"High\",\n                        \"id\": 12\n                    },\n                    {\n                        \"text\": \"Controller - Lighting\",\n                        \"risk\": \"Limited\",\n                        \"id\": 13\n                    },\n                    {\n                        \"text\": \"Controller - Blinds/Facades\",\n                        \"risk\": \"High\",\n                        \"id\": 14\n                    },\n                    {\n                        \"text\": \"Controller - Lifts/Elevators\",\n                        \"risk\": \"High\",\n                        \"id\": 15\n                    },\n                    {\n                        \"text\": \"Controller - UPS\",\n                        \"risk\": \"High\",\n                        \"id\": 16\n                    },\n                    {\n                        \"text\": \"Sensor - Air Quality\",\n                        \"risk\": \"Limited\",\n                        \"id\": 17\n                    },\n                    {\n                        \"text\": \"Sensor - Vibration\",\n                        \"risk\": \"Limited\",\n                        \"id\": 18\n                    },\n                    {\n                        \"text\": \"Sensor - Humidity\",\n                        \"risk\": \"Limited\",\n                        \"id\": 19\n                    },\n                    {\n                        \"text\": \"Sensor - Water\",\n                        \"risk\": \"Limited\",\n                        \"id\": 20\n                    },\n                    {\n                        \"text\": \"Sensor - Occupancy\",\n                        \"risk\": \"High\",\n                        \"id\": 21\n                    },\n                    {\n                        \"text\": \"Sensor - Volume\",\n                        \"risk\": \"Limited\",\n                        \"id\": 22\n                    },\n                    {\n                        \"text\": \"Sensor - Weight\",\n                        \"risk\": \"Limited\",\n                        \"id\": 23\n                    },\n                    {\n                        \"text\": \"Sensor - Weather\",\n                        \"risk\": \"Limited\",\n                        \"id\": 24\n                    },\n                    {\n                        \"text\": \"Sensor - Steam\",\n                        \"risk\": \"High\",\n                        \"id\": 25\n                    },\n                    {\n                        \"text\": \"Sensor - Air Flow\",\n                        \"risk\": \"Limited\",\n                        \"id\": 26\n                    },\n                    {\n                        \"text\": \"Sensor - Lighting\",\n                        \"risk\": \"Limited\",\n                        \"id\": 27\n                    },\n                    {\n                        \"text\": \"Sensor - Other\",\n                        \"risk\": \"High\",\n                        \"id\": 28\n                    },\n                    {\n                        \"text\": \"Sensor - Air Quality\",\n                        \"risk\": \"Limited\",\n                        \"id\": 29\n                    },\n                    {\n                        \"text\": \"Monitoring - Fire System\",\n                        \"risk\": \"Limited\",\n                        \"id\": 30\n                    },\n                    {\n                        \"text\": \"Monitoring - Emergency Lighting\",\n                        \"risk\": \"Limited\",\n                        \"id\": 31\n                    },\n                    {\n                        \"text\": \"Monitoring - Other\",\n                        \"risk\": \"High\",\n                        \"id\": 32\n                    },\n                    {\n                        \"text\": \"Monitoring - UPS\",\n                        \"risk\": \"Limited\",\n                        \"id\": 33\n                    },\n                    {\n                        \"text\": \"Meter - Water\",\n                        \"risk\": \"Limited\",\n                        \"id\": 34\n                    },\n                    {\n                        \"text\": \"Meter - Gas\",\n                        \"risk\": \"Limited\",\n                        \"id\": 35\n                    },\n                    {\n                        \"text\": \"Meter - Electricity\",\n                        \"risk\": \"Limited\",\n                        \"id\": 36\n                    },\n                    {\n                        \"text\": \"Meter - Other\",\n                        \"risk\": \"High\",\n                        \"id\": 37\n                    },\n                    {\n                        \"text\": \"Other\",\n                        \"risk\": \"High\",\n                        \"id\": 38\n                    },\n                    {\n                        \"text\": \"Data - Storage\",\n                        \"risk\": \"High\",\n                        \"id\": 39\n                    },\n                    {\n                        \"text\": \"Data - Processing\",\n                        \"risk\": \"High\",\n                        \"id\": 40\n                    },\n                    {\n                        \"text\": \"Tablet\",\n                        \"risk\": \"High\",\n                        \"id\": 41\n                    }\n                ]\n            },\n            {\n                \"id\": 2,\n                \"question\": \"Please select the technology this device falls into\",\n                \"validation\": {\n                    \"required\": true\n                },\n                \"type\": \"select\",\n                \"options\": [\n                    {\n                        \"id\": 1,\n                        \"text\": \"Hardware - Access Control\"\n                    },\n                    {\n                        \"id\": 2,\n                        \"text\": \"Hardware - Air quality\"\n                    },\n                    {\n                        \"id\": 3,\n                        \"text\": \"Hardware - Asset location tracking\"\n                    },\n                    {\n                        \"id\": 4,\n                        \"text\": \"Hardware - Audio Visual\"\n                    },\n                    {\n                        \"id\": 5,\n                        \"text\": \"Hardware - Blinds/Facade\"\n                    },\n                    {\n                        \"id\": 6,\n                        \"text\": \"Hardware - Cameras\"\n                    },\n                    {\n                        \"id\": 7,\n                        \"text\": \"Hardware - Catering\"\n                    },\n                    {\n                        \"id\": 8,\n                        \"text\": \"Hardware - Data Ingestion/Managment\"\n                    },\n                    {\n                        \"id\": 9,\n                        \"text\": \"Hardware - EV Charging\"\n                    },\n                    {\n                        \"id\": 10,\n                        \"text\": \"Hardware - Fitness\"\n                    },\n                    {\n                        \"id\": 11,\n                        \"text\": \"Hardware - HVAC\"\n                    },\n                    {\n                        \"id\": 12,\n                        \"text\": \"Hardware - Irrigation\"\n                    },\n                    {\n                        \"id\": 13,\n                        \"text\": \"Hardware - Leak Detection\"\n                    },\n                    {\n                        \"id\": 14,\n                        \"text\": \"Hardware - Lifts/Elevators\"\n                    },\n                    {\n                        \"id\": 15,\n                        \"text\": \"Hardware - Lighting\"\n                    },\n                    {\n                        \"id\": 16,\n                        \"text\": \"Hardware - Metering\"\n                    },\n                    {\n                        \"id\": 17,\n                        \"text\": \"Hardware - Monitoring\"\n                    },\n                    {\n                        \"id\": 18,\n                        \"text\": \"Hardware - Occupancy\"\n                    },\n                    {\n                        \"id\": 19,\n                        \"text\": \"Hardware - System Integration\"\n                    },\n                    {\n                        \"id\": 20,\n                        \"text\": \"Hardware - Time Management\"\n                    },\n                    {\n                        \"id\": 21,\n                        \"text\": \"Hardware - UPS\"\n                    },\n                    {\n                        \"id\": 22,\n                        \"text\": \"Hardware - Waste Management\"\n                    },\n                    {\n                        \"id\": 23,\n                        \"text\": \"Building Automation\"\n                    },\n                    {\n                        \"id\": 24,\n                        \"text\": \"Other\"\n                    }\n                ]\n            },\n            {\n                \"id\": 3,\n                \"question\": \"Does your device process any sensitive information? \",\n                \"validation\": {\n                    \"required\": true\n                },\n                \"type\": \"select\",\n                \"options\": [\n                    {\n                        \"id\": 1,\n                        \"text\": \"Yes\",\n                        \"risk\": \"Limited\"\n                    },\n                    {\n                        \"id\": 2,\n                        \"text\": \"No\",\n                        \"risk\": \"High\"\n                    },\n                    {\n                        \"id\": 3,\n                        \"text\": \"I don't know\",\n                        \"risk\": \"High\"\n                    }\n                ]\n            }\n        ]\n    },\n    {\n        \"step\": 2,\n        \"title\": \"Tell us more about your device\",\n        \"description\": \"Before your device can go through testing, tell us more about your device and its functionality. It is important that we fully understand your device before a thorough assessment can be made.\",\n        \"questions\": [\n            {\n                \"id\": 1,\n                \"question\": \"Can all non-essential services be disabled on your device?\",\n                \"validation\": {\n                    \"required\": true\n                },\n                \"type\": \"select\",\n                \"options\": [\n                    {\n                        \"text\": \"Yes\",\n                        \"id\": 1\n                    },\n                    {\n                        \"text\": \"No\",\n                        \"id\": 2\n                    }\n                ]\n            },\n            {\n                \"id\": 2,\n                \"question\": \"Is there a second IP port on the device?\",\n                \"validation\": {\n                    \"required\": true\n                },\n                \"type\": \"select\",\n                \"options\": [\n                    {\n                        \"text\": \"Yes\",\n                        \"id\": 1\n                    },\n                    {\n                        \"text\": \"No\",\n                        \"id\": 2\n                    }\n                ]\n            },\n            {\n                \"id\": 3,\n                \"question\": \"Can the second IP port on your device be disabled?\",\n                \"validation\": {\n                    \"required\": true\n                },\n                \"type\": \"select\",\n                \"options\": [\n                    {\n                        \"text\": \"Yes\",\n                        \"id\": 1\n                    },\n                    {\n                        \"text\": \"No\",\n                        \"id\": 2\n                    },\n                    {\n                        \"text\": \"N/A\",\n                        \"id\": 3\n                    }\n                ]\n            }\n        ]\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Get System Modules",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/system/modules",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"system",
+						"modules"
+					]
+				},
+				"description": "Get a list of all root CA certificates that have been loaded into Testrun"
+			},
+			"response": [
+				{
+					"name": "Get System Modules (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/system/modules",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"modules"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    \"Protocol\",\n    \"Services\",\n    \"Connection\",\n    \"TLS\",\n    \"NTP\",\n    \"DNS\"\n]"
+				}
+			]
+		},
+		{
+			"name": "Get System Testpacks",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/system/testpacks",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"system",
+						"testpacks"
+					]
+				},
+				"description": "Obtain a list of applicable and available network adapters for use in testing"
+			},
+			"response": [
+				{
+					"name": "System Testpacks (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/system/testpacks",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"testpacks"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    \"Pilot Assessment\",\n    \"Device Qualification\"\n]"
+				}
+			]
 		},
 		{
 			"name": "List Certificates",
@@ -986,7 +2427,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/system/config/certs/list",
+					"raw": "http://localhost:8000/system/config/certs",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -995,12 +2436,80 @@
 					"path": [
 						"system",
 						"config",
-						"certs",
-						"list"
+						"certs"
 					]
-				}
+				},
+				"description": "Get a list of all root CA certificates that have been loaded into Testrun"
 			},
-			"response": []
+			"response": [
+				{
+					"name": "List Certificates (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"name\": \"GTS Root R1\",\n        \"status\": \"Valid\",\n        \"organisation\": \"Google Trust Services LLC\",\n        \"expires\": \"2036-06-22T00:00:00+00:00\",\n        \"filename\": \"crt.pem\"\n    },\n    {\n        \"name\": \"WR2\",\n        \"status\": \"Valid\",\n        \"organisation\": \"Google Trust Services LLC\",\n        \"expires\": \"2029-02-20T14:00:00+00:00\",\n        \"filename\": \"WR2.pem\"\n    }\n]"
+				},
+				{
+					"name": "No Certificates (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "[]"
+				}
+			]
 		},
 		{
 			"name": "Upload Certificate",
@@ -1008,11 +2517,17 @@
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "file",
-					"file": {}
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "NH1mNzqEQ/1c3.pem"
+						}
+					]
 				},
 				"url": {
-					"raw": "http://localhost:8000/system/config/certs/upload",
+					"raw": "http://localhost:8000/system/config/certs",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -1021,12 +2536,145 @@
 					"path": [
 						"system",
 						"config",
-						"certs",
-						"upload"
+						"certs"
 					]
-				}
+				},
+				"description": "Upload a new root CA certificate into Testrun"
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Upload Certificate (201)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "NH1mNzqEQ/1c3.pem"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"name\": \"GTS Root R1\",\n    \"status\": \"Valid\",\n    \"organisation\": \"Google Trust Services LLC\",\n    \"expires\": \"2036-06-22T00:00:00+00:00\",\n    \"filename\": \"crt.pem\"\n}"
+				},
+				{
+					"name": "Duplicate (409)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "NH1mNzqEQ/1c3.pem"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "Conflict",
+					"code": 409,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A certificate with that file name already exists.\"\n}"
+				},
+				{
+					"name": "Invalid Cert (400)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "postman-cloud:///1ef5fb1a-6342-44e0-b35f-700d496e0cc5"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Failed to upload certificate. Is it in the correct format?\"\n}"
+				}
+			]
 		},
 		{
 			"name": "Delete Certificate",
@@ -1035,7 +2683,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"iot.bms.google.com\"\n}",
+					"raw": "{\n    \"name\": \"GTS CA 1C3\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1043,7 +2691,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8000/system/config/certs/delete",
+					"raw": "http://localhost:8000/system/config/certs",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -1052,12 +2700,663 @@
 					"path": [
 						"system",
 						"config",
-						"certs",
-						"delete"
+						"certs"
 					]
-				}
+				},
+				"description": "Delete a root CA certificate"
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Delete Certificate (200)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"GTS Root R1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully deleted the certificate\"\n}"
+				},
+				{
+					"name": "Not Found (404)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"non-existing name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A certificate with that name could not be found\"\n}"
+				},
+				{
+					"name": "Invalid JSON (400)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Received a bad request\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Get Profile Format",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/profiles/format",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profiles",
+						"format"
+					]
+				},
+				"description": "Obtain the current format of the risk assessment questionnaire"
+			},
+			"response": [
+				{
+					"name": "Get Profile Format (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/profiles/format",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles",
+								"format"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": ""
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"question\": \"How will this device be used at Google?\",\n        \"description\": \"Desribe your use case. Add links to user journey diagrams and TDD if available.\",\n        \"type\": \"text-long\",\n        \"validation\": {\n            \"max\": \"512\",\n            \"required\": true\n        }\n    },\n    {\n        \"question\": \"Is this device going to be managed by Google or a third party?\",\n        \"description\": \"A manufacturer or supplier is considered third party in this case\",\n        \"type\": \"select\",\n        \"options\": [\n            \"Google\",\n            \"Third Party\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n        \"type\": \"select\",\n        \"options\": [\n            \"Yes\",\n            \"No\",\n            \"N/A\"\n        ],\n        \"default\": \"N/A\",\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"category\": \"Data Transmission\",\n        \"question\": \"Which of the following statements are true about this device?\",\n        \"description\": \"This tells us about the types of data that are transmitted from this device and how the transmission is performed from a technical standpoint.\",\n        \"type\": \"select-multiple\",\n        \"options\": [\n            \"PII/PHI, confidential/sensitive business data, Intellectual Property and Trade Secrets, Critical Infrastructure and Identity Assets to a domain outside Alphabet's ownership\",\n            \"Data transmission occurs across less-trusted networks (e.g. the internet).\",\n            \"A failure in data transmission would likely have a substantial negative impact (https://www.rra.rocks/docs/standard_levels#levels-definitions)\",\n            \"A confidentiality breach during transmission would have a substantial negative impact\",\n            \"The device does not encrypt data during transmission\",\n            \"None of the above\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"category\": \"Data Transmission\",\n        \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n        \"type\": \"select\",\n        \"options\": [\n            \"Yes\",\n            \"No\",\n            \"I don't know\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"category\": \"Remote Operation\",\n        \"question\": \"Click the statements that best describe the characteristics of this device.\",\n        \"description\": \"This tells us about how this device is managed remotely.\",\n        \"type\": \"select-multiple\",\n        \"options\": [\n            \"PII/PHI, or confidential business data is accessible from the device without authentication\",\n            \"Unrecoverable actions (e.g. disk wipe) can be performed remotely\",\n            \"Authentication is not required for remote access\",\n            \"The management interface is accessible from the public internet\",\n            \"Static credentials are used for administration\",\n            \"None of the above\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"category\": \"Operating Environment\",\n        \"question\": \"Are any of the following statements true about this device?\",\n        \"description\": \"This informs us about what other systems and processes this device is a part of.\",\n        \"type\": \"select-multiple\",\n        \"options\": [\n            \"The device monitors an environment for active risks to human life.\",\n            \"The device is used to convey people, or critical property.\",\n            \"The device controls robotics in human-accessible spaces.\",\n            \"The device controls physical access systems.\",\n            \"The device is involved in processes required by regulations, or compliance. (ex. privacy, security, safety regulations)\",\n            \"The device's failure would cause faults in other high-criticality processes.\",\n            \"None of the above\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"question\": \"Comments\",\n        \"description\": \"Anything else to share?\",\n        \"type\": \"text-long\",\n        \"validation\": {\n            \"max\": \"512\"\n        }\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "List Profiles",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/profiles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profiles"
+					]
+				},
+				"description": "Get a list of risk assessment profiles saved by the user"
+			},
+			"response": [
+				{
+					"name": "List Profiles (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": ""
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]"
+				},
+				{
+					"name": "No Profiles (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": ""
+						}
+					],
+					"cookie": [],
+					"body": "[\n    \n]"
+				}
+			]
+		},
+		{
+			"name": "Update Profile",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Testing\",\n    \"status\": \"Valid\",\n    \"questions\": [\n        {\n            \"question\": \"What type of device is this?\",\n            \"answer\": \"IoT Gateway\"\n        },\n        {\n            \"question\": \"How will this device be used at Google?\",\n            \"answer\": \"asdasd\"\n        },\n        {\n            \"question\": \"Is this device going to be managed by Google or a third party?\",\n            \"answer\": \"Google\"\n        },\n        {\n            \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n            \"answer\": \"N/A\"\n        },\n        {\n            \"question\": \"Are any of the following statements true about your device?\",\n            \"answer\": [\n                3\n            ]\n        },\n        {\n            \"question\": \"Which of the following statements are true about this device?\",\n            \"answer\": [\n                5\n            ]\n        },\n        {\n            \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n            \"answer\": \"Yes\"\n        },\n        {\n            \"question\": \"Click the statements that best describe the characteristics of this device.\",\n            \"answer\": [\n                5\n            ]\n        },\n        {\n            \"question\": \"Are any of the following statements true about this device?\",\n            \"answer\": [\n                6\n            ]\n        },\n        {\n            \"question\": \"Comments\",\n            \"answer\": \"\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/profiles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profiles"
+					]
+				},
+				"description": "Create or update a risk assessment questionnaire response"
+			},
+			"response": [
+				{
+					"name": "Update Profile (200)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully updated that profile\"\n}"
+				},
+				{
+					"name": "Create Profile (201)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully created a new profile\"\n}"
+				},
+				{
+					"name": "Invalid JSON (400)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Invalid request received\"\n}"
+				},
+				{
+					"name": "Not Implemented (501)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Not Implemented",
+					"code": 501,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Risk profiles are not available right now\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Delete Profile",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"New Profile\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/profiles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profiles"
+					]
+				},
+				"description": "Delete an existing risk assessment questionaire response"
+			},
+			"response": [
+				{
+					"name": "Delete Profile (200)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"New Profile\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully deleted that profile\"\n}"
+				},
+				{
+					"name": "Not Found (404)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"non-existing profile\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A profile with that name could not be found\"\n}"
+				},
+				{
+					"name": "Internal Serves Error (500)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"non-existing profile\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"An error occurred whilst deleting that profile\"\n}"
+				},
+				{
+					"name": "Invalid JSON (400)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Invalid request received\"\n}"
+				}
+			]
 		}
 	]
 }

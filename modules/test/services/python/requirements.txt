@@ -1,1 +1,6 @@
-xmltodict==0.13.0
+# Dependencies to user defined packages
+# Package dependencies should always be defined before the user defined
+# packages to prevent auto-upgrades of stable dependencies
+
+# User defined packages
+xmltodict==0.14.2

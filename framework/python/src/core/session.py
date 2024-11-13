@@ -38,6 +38,7 @@ API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 ORG_NAME_KEY = 'org_name'
+TEST_CONFIG_KEY = 'test_modules'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 STATUS_TOPIC = 'status'
@@ -239,6 +240,11 @@ class TestrunSession():
       if ORG_NAME_KEY in config_file_json:
         self._config[ORG_NAME_KEY] = config_file_json.get(
           ORG_NAME_KEY
+        )
+
+      if TEST_CONFIG_KEY in config_file_json:
+        self._config[TEST_CONFIG_KEY] = config_file_json.get(
+          TEST_CONFIG_KEY
         )
 
   def _load_version(self):
