@@ -157,8 +157,8 @@ mat-hint {
   white-space: nowrap;
 
   &.green {
-    background: map.get($palettes, accent, 95);
-    color: map.get($palettes, accent, 30);
+    background: map.get($palettes, tertiary, 90);
+    color: map.get($palettes, tertiary, 30);
   }
 
   &.red {

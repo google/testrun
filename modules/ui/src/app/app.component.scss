@@ -26,13 +26,9 @@ $nav-open-width: 236px;
 $nav-close-btn-width: 48px;
 $nav-open-btn-width: 210px;
 
-// TODO: move colors to the theming colors
-$baseline-on-surface: #1f1f1f;
-$surf-container-low: #f8fafd;
-
 .app-container {
   height: 100%;
-  background-color: $surf-container-low;
+  background-color: $surface-container-low;
 }
 
 .spacer {
@@ -106,7 +102,7 @@ $surf-container-low: #f8fafd;
 }
 
 .logo-link {
-  color: $baseline-on-surface;
+  color: $on-surface;
   text-decoration: none;
   font-size: 22px;
   display: flex;
@@ -143,7 +139,7 @@ $surf-container-low: #f8fafd;
   z-index: 3;
   height: $toolbar-height;
   padding: 0 16px;
-  background-color: $surf-container-low;
+  background-color: $surface-container-low;
   color: $grey-800;
   width: calc(100% - $nav-close-width);
 }
