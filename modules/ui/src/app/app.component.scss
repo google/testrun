@@ -18,63 +18,25 @@
 @import '../theming/colors';
 @import '../theming/variables';
 
-$toolbar-height: 56px;
-$nav-close-width: 80px;
+$toolbar-height: 64px;
+$content-padding-top: 18px;
+$content-padding-bottom: 16px;
+$nav-close-width: 96px;
 $nav-open-width: 236px;
 $nav-close-btn-width: 48px;
 $nav-open-btn-width: 210px;
 
+// TODO: move colors to the theming colors
+$baseline-on-surface: #1f1f1f;
+$surf-container-low: #f8fafd;
+
 .app-container {
   height: 100%;
+  background-color: $surf-container-low;
 }
 
 .spacer {
   flex: 1 1 auto;
-}
-
-.mat-drawer-content {
-  height: calc(100% - 56px);
-  background: $white;
-}
-
-.mat-drawer-side {
-  margin-top: $toolbar-height;
-}
-
-.active-menu {
-  .app-sidebar {
-    width: $nav-open-width;
-    align-items: start;
-  }
-
-  .app-sidebar-button {
-    --mat-text-button-with-icon-horizontal-padding: 24px;
-    width: $nav-open-btn-width;
-    height: $toolbar-height;
-    border-radius: 0 100px 100px 0;
-    margin: 0;
-  }
-
-  .app-sidebar-button:first-child {
-    margin-top: 8px;
-  }
-
-  .app-sidebar-button-active {
-    border: 1px solid mat.get-theme-color($light-theme, primary, 95);
-    background-color: mat.get-theme-color($light-theme, primary, 95);
-  }
-
-  .app-sidebar-button-active > .mat-icon,
-  .sidebar-button-label {
-    color: $grey-800;
-  }
-
-  .sidebar-button-label {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 20px;
-    letter-spacing: 0.25px;
-  }
 }
 
 .app-sidebar {
@@ -87,8 +49,7 @@ $nav-open-btn-width: 210px;
   align-items: center;
 }
 
-.app-sidebar-button,
-.app-toolbar-button {
+.app-sidebar-button {
   border-radius: 20px;
   border: 1px solid transparent;
   min-width: 48px;
@@ -145,45 +106,66 @@ $nav-open-btn-width: 210px;
 }
 
 .logo-link {
-  color: $grey-800;
+  color: $baseline-on-surface;
   text-decoration: none;
-  font-size: 18px;
+  font-size: 22px;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  width: 120px;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 4px;
+  border: 1px solid transparent;
+
+  &:focus-visible {
+    outline: none;
+    border: 1px solid $black;
+    border-radius: 4px;
+  }
 }
 
 .logo-link .mat-icon {
-  width: 36px;
-  height: 23px;
-  line-height: 18px !important;
+  width: 40px;
+  height: 26px;
+  flex-shrink: 0;
+  line-height: 22px !important;
 }
 
 .main-heading {
-  font-size: 18px;
+  font-size: 22px;
   line-height: 24px;
 }
 
 .app-toolbar {
   position: absolute;
   top: 0;
-  left: 0;
+  left: $nav-close-width;
   z-index: 3;
   height: $toolbar-height;
-  padding: 0;
-  background-color: $white;
-  border-bottom: 1px solid $light-grey;
+  padding: 0 16px;
+  background-color: $surf-container-low;
   color: $grey-800;
+  width: calc(100% - $nav-close-width);
+}
+
+.app-bar-buttons {
+  display: flex;
+  padding: 4px 0 4px 24px;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
 }
 
 .app-content {
   position: static;
   display: grid;
   grid-template-rows: 1fr;
-  margin-top: $toolbar-height;
+  margin-top: calc($toolbar-height + $content-padding-top);
+  height: calc(
+    100% - $toolbar-height - $content-padding-top - $content-padding-bottom
+  );
+  border-radius: $corner-large;
+  background: $white;
 }
 
 .app-content-main {
@@ -199,10 +181,6 @@ $nav-open-btn-width: 210px;
   border-left: 1px solid $light-grey;
 }
 
-.app-toolbar-button.app-toolbar-button-certificates {
-  margin-left: 72px;
-}
-
 app-version {
   margin-top: auto;
   margin-bottom: 16px;
@@ -210,10 +188,4 @@ app-version {
   width: $nav-close-width;
   display: flex;
   justify-content: center;
-}
-
-.separator {
-  width: 1px;
-  height: 28px;
-  background-color: $light-grey;
 }

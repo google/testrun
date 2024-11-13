@@ -67,7 +67,6 @@ export class AppComponent implements AfterViewInit {
   @ViewChild('toggleSettingsBtn') public toggleSettingsBtn!: HTMLButtonElement;
   @ViewChild('toggleCertificatesBtn')
   public toggleCertificatesBtn!: HTMLButtonElement;
-  @ViewChild('navigation') public navigation!: ElementRef;
   @ViewChild('settings') public settings!: SettingsComponent;
   @ViewChildren('riskAssessmentLink')
   riskAssessmentLink!: QueryList<ElementRef>;
@@ -196,24 +195,6 @@ export class AppComponent implements AfterViewInit {
 
   async openSetting(isSettingsDisabled: boolean): Promise<void> {
     return await this.openGeneralSettings(false, isSettingsDisabled);
-  }
-
-  public toggleMenu(event: MouseEvent) {
-    event.stopPropagation();
-    this.appStore.toggleMenu();
-  }
-
-  /**
-   * When side menu is opened
-   */
-  skipToNavigation(event: Event, focusNavigation: boolean) {
-    if (focusNavigation) {
-      event.preventDefault(); // if not prevented, second element will be focused
-      this.focusManagerService.focusFirstElementInContainer(
-        this.navigation.nativeElement
-      );
-      this.appStore.updateFocusNavigation(false); // user will be navigated according to normal flow on tab
-    }
   }
 
   async openGeneralSettings(
