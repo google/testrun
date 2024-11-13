@@ -48,3 +48,11 @@ class TestPack:  # pylint: disable=too-few-public-methods,too-many-instance-attr
     if name in self.language:
       return self.language[name]
     return "Message not found"
+
+  def to_dict(self):
+    return {
+      "name": self.name,
+      "description": self.description,
+      "tests": self.tests,
+      "language": self.language
+    }

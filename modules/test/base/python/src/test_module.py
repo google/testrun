@@ -41,11 +41,14 @@ class TestModule:
     self._ipv4_subnet = os.environ.get('IPV4_SUBNET', '')
     self._ipv6_subnet = os.environ.get('IPV6_SUBNET', '')
     self._dev_iface_mac = os.environ.get('DEV_IFACE_MAC', '')
+    self._device_test_pack = json.loads(os.environ.get('DEVICE_TEST_PACK', ''))
     self._add_logger(log_name=log_name)
     self._config = self._read_config(
         conf_file=conf_file if conf_file is not None else CONF_FILE)
     self._device_ipv4_addr = None
     self._device_ipv6_addr = None
+
+    print(self._device_test_pack)
 
   def _add_logger(self, log_name):
     global LOGGER
@@ -63,22 +66,51 @@ class TestModule:
 
   def _get_device_tests(self, device_test_module):
     module_tests = self._config['config']['tests']
-    if device_test_module is None:
-      return module_tests
-    elif not device_test_module['enabled']:
-      return []
-    else:
-      for test in module_tests:
-        # Resolve device specific configurations for the test if it exists
-        # and update module test config with device config options
-        if 'tests' in device_test_module:
-          if test['name'] in device_test_module['tests']:
-            dev_test_config = device_test_module['tests'][test['name']]
-            if 'enabled' in dev_test_config:
-              test['enabled'] = dev_test_config['enabled']
-            if 'config' in test and 'config' in dev_test_config:
-              test['config'].update(dev_test_config['config'])
-      return module_tests
+    tests_to_run = module_tests
+
+    # If no device specific tests have been provided, add all
+    if device_test_module is not None:
+      # Do not run any tests if module is disabled for this device
+      if not device_test_module['enabled']:
+        print("Test module is not enabled for the device")
+        return []
+
+    # Check if all tests are in the test pack and enabled for the device
+    for test in tests_to_run:
+
+      print("Test to run: " + test['name'])
+
+      # Resolve device specific configurations for the test if it exists
+      # and update module test config with device config options
+      if 'tests' in device_test_module:
+
+        if test['name'] in device_test_module['tests']:
+          dev_test_config = device_test_module['tests'][test['name']]
+
+          # Check if the test is enabled in the device config
+          if 'enabled' in dev_test_config:
+            test['enabled'] = dev_test_config['enabled']
+
+          # Copy over any device specific test configuration
+          if 'config' in test and 'config' in dev_test_config:
+            test['config'].update(dev_test_config['config'])
+
+      # Search for the module test in the test pack
+      found = False
+      for test_pack_test in self._device_test_pack['tests']:
+        print("Checking test name " + test_pack_test['name'])
+        if test_pack_test['name'] == test['name']:
+          # Test is in the test pack
+          print("Found the test in this module")
+          found = True
+
+      if not found:
+        tests_to_run.remove(test)
+
+    print("Tests to run:")
+    print(tests_to_run)
+
+    return tests_to_run
 
   def _get_device_test_module(self):
     if 'DEVICE_TEST_MODULES' in os.environ:

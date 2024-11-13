@@ -120,6 +120,8 @@ class TestOrchestrator:
       if not self._is_module_enabled(module, device):
         continue
 
+      num_tests = 0
+
       # Add module to list of modules to run
       test_modules.append(module)
 
@@ -147,8 +149,11 @@ class TestOrchestrator:
         # Add test result to the session
         self.get_session().add_test_result(test_copy)
 
+        # Increment number of tests being run by this module
+        num_tests += 1
+
       # Increment number of tests that will be run
-      self.get_session().add_total_tests(len(module.tests))
+      self.get_session().add_total_tests(num_tests)
 
     # Store enabled test modules in the TestOrchectrator object
     self._test_modules_running = test_modules
@@ -651,7 +656,10 @@ class TestOrchestrator:
       module_conf_file = os.path.join(self._root_path, modules_dir, module_dir,
                                       MODULE_CONFIG)
 
-      module = TestModule(module_conf_file, self.get_session(), extra_hosts)
+      module = TestModule(module_conf_file,
+                          self,
+                          self.get_session(),
+                          extra_hosts)
       if module.depends_on is not None:
         self._load_test_module(module.depends_on)
       self._test_modules.append(module)
