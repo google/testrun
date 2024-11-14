@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@use 'sass:map';
 @use '@angular/material' as mat;
 @use 'src/theming/m3-theme' as *;
 @import 'src/theming/variables';
@@ -157,8 +156,8 @@ mat-hint {
   white-space: nowrap;
 
   &.green {
-    background: map.get($palettes, tertiary, 90);
-    color: map.get($palettes, tertiary, 30);
+    background: mat.get-theme-color($light-theme, tertiary, 90);
+    color: mat.get-theme-color($light-theme, tertiary, 30);
   }
 
   &.red {
