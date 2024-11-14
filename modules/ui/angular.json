@@ -24,13 +24,15 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": ["src/favicon.ico", "src/assets"],
-            "styles": ["src/styles.scss", "src/theming/m3-theme.scss", "src/theming/colors.scss"],
+            "styles": [
+              "src/styles.scss",
+              "src/theming/m3-theme.scss",
+              "src/theming/colors.scss"
+            ],
             "scripts": [],
             "allowedCommonJsDependencies": ["mqtt-browser"],
             "stylePreprocessorOptions": {
-              "includePaths": [
-                "src/theming/"
-              ]
+              "includePaths": ["src/theming/"]
             },
             "optimization": {
               "scripts": true,
