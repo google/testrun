@@ -16,7 +16,7 @@
       {
         "name": "connection.port_link",
         "test_description": "The network switch port connected to the device has an active link without errors",
-        "expected_behavior": "When the etherent cable is connected to the port, the device triggers the port to its enabled \"Link UP\" (LEDs illuminate on device and switch ports if present) state, and the switch shows no errors with the LEDs and when interrogated with a \"show interface\" command on most network switches."
+        "expected_behavior": "When the ethernet cable is connected to the port, the device triggers the port to its enabled \"Link UP\" (LEDs illuminate on device and switch ports if present) state, and the switch shows no errors with the LEDs and when interrogated with a \"show interface\" command on most network switches."
       },
       {
         "name": "connection.port_speed",
@@ -41,7 +41,7 @@
       {
         "name": "connection.dhcp_address",
         "test_description": "The device under test has received an IP address from the DHCP server and responds to an ICMP echo (ping) request",
-        "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.",
+        "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds successfully to an ICMP echo (ping) request.",
         "recommendations": [
           "Enable DHCP",
           "Install a DHCP client",
@@ -109,19 +109,18 @@
       },
       {
         "name": "connection.dhcp_disconnect",
-        "test_description": "The device under test issues a new DHCPREQUEST packet after a port ph ysical disconnection and reconnection",
-        "expected_behavior": "A client SHOULD use DHCP to reacquire or verify its IP address and network parameters whenever the local network parameters may have changed; e.g., at system boot time or after a disconnection from the local network, as the local network configuration may change without the client's or user's knowledge. If a client has knowledge ofa  previous network address and is unable to contact a local DHCP server, the client may continue to use the previous network addres until the lease for that address expires.  If the lease expires before the client can contact a DHCP server, the client must immediately discontinue use of the previous network address and may inform local users of the problem."
+        "test_description": "The device under test issues a new DHCPREQUEST packet after a port physical disconnection and reconnection",
+        "expected_behavior": "A client SHOULD use DHCP to reacquire or verify its IP address and network parameters whenever the local network parameters may have changed; e.g., at system boot time or after a disconnection from the local network, as the local network configuration may change without the client's or user's knowledge. If a client has knowledge ofa  previous network address and is unable to contact a local DHCP server, the client may continue to use the previous network address until the lease for that address expires.  If the lease expires before the client can contact a DHCP server, the client must immediately discontinue use of the previous network address and may inform local users of the problem."
       },
       {
         "name": "connection.dhcp_disconnect_ip_change",
         "test_description": "When device is disconnected,  update device IP on the DHCP server and reconnect the device.  Ensure device received new IP address",
-        "expected_behavior": "If IP address for a device was changed on the DHCP server while the device was disconnected then the device shoiuld request and update the new IP upon reconnecting to the network",
-        "required_result": "Required"
+        "expected_behavior": "If IP address for a device was changed on the DHCP server while the device was disconnected then the device should request and update the new IP upon reconnecting to the network"
       },
       {
         "name": "connection.single_ip",
         "test_description": "The network switch port connected to the device reports only one IP address for the device under test.",
-        "expected_behavior": "The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible.",
+        "expected_behavior": "The device under test does not behave as a network switch and only requests one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible.",
         "recommendations": [
           "Ensure that all ports on the device are isolated",
           "Ensure only one DHCP client is running"
@@ -139,7 +138,7 @@
       {
         "name": "connection.ipaddr.ip_change",
         "test_description": "The device responds to a ping (ICMP echo request) to the new IP address it has received after the initial DHCP lease has expired.",
-        "expected_behavior": "If the lease expires before the client receiveds a DHCPACK, the client moves to INIT state, MUST immediately stop any other network processing and requires network initialization parameters as if the client were uninitialized.  If the client then receives a DHCPACK allocating the client its previous network addres, the client SHOULD continue network processing.  If the client is given a new network address, it MUST NOT continue using the previous network address and SHOULD notify the local users of the problem.",
+        "expected_behavior": "If the lease expires before the client receives a DHCPACK, the client moves to INIT state, MUST immediately stop any other network processing and requires network initialization parameters as if the client were uninitialized.  If the client then receives a DHCPACK allocating the client its previous network address, the client SHOULD continue network processing.  If the client is given a new network address, it MUST NOT continue using the previous network address and SHOULD notify the local users of the problem.",
         "config":{
           "lease_wait_time_sec": 60
         },
@@ -175,6 +174,11 @@
           "Enable ping response to IPv6 ICMP requests in network manager settings",
           "Create a firewall exception to allow ICMPv6 via LAN"
         ]
+      },
+      {
+        "name": "communication.network.type",
+        "test_description": "How does the device communicate (flow type) - Unicast, multicast broadcast?",
+        "expected_behavior": "Informational - One or more of these flow types are used"
       }
     ]
   }
