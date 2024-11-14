@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import 'src/theming/colors';
-@import 'src/theming/variables';
+@import 'colors';
+@import 'variables';
 
 :host {
   height: 100%;

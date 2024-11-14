@@ -15,8 +15,8 @@
  */
 @use '@angular/material' as mat;
 @use 'src/theming/m3-theme' as *;
-@import 'src/theming/colors';
-@import 'src/theming/variables';
+@import 'colors';
+@import 'variables';
 
 .field-label {
   margin: 0;
