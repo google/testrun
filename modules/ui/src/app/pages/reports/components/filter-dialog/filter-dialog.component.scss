@@ -15,7 +15,7 @@
  */
 @use 'node_modules/@angular/material/index' as mat;
 @use 'src/theming/m3-theme' as *;
-@import 'src/theming/colors';
+@import 'colors';
 
 .filter-dialog-content {
   display: flex;

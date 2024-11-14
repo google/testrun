@@ -24,9 +24,25 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": ["src/favicon.ico", "src/assets"],
-            "styles": ["src/styles.scss", "src/theming/m3-theme.scss"],
+            "styles": ["src/styles.scss", "src/theming/m3-theme.scss", "src/theming/colors.scss"],
             "scripts": [],
-            "allowedCommonJsDependencies": ["mqtt-browser"]
+            "allowedCommonJsDependencies": ["mqtt-browser"],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/theming/"
+              ]
+            },
+            "optimization": {
+              "scripts": true,
+              "styles": true,
+              "fonts": true
+            },
+            "sourceMap": {
+              "scripts": true,
+              "styles": false,
+              "hidden": true,
+              "vendor": true
+            }
           },
           "configurations": {
             "production": {

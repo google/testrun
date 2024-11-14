@@ -15,9 +15,9 @@
  */
 @use '@angular/material' as mat;
 @use 'src/theming/m3-theme' as *;
-@import 'src/theming/colors';
-@import 'src/theming/variables';
-@import 'src/theming/mixins';
+@import 'colors';
+@import 'variables';
+@import 'mixins';
 
 ::ng-deep :root {
   --mat-dialog-container-max-width: 732px;

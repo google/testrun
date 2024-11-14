@@ -15,8 +15,8 @@
  */
 @use '@angular/material' as mat;
 @use 'src/theming/m3-theme' as *;
-@import 'src/theming/variables';
-@import 'src/theming/colors';
+@import 'variables';
+@import 'colors';
 
 :root {
   --mat-sidenav-container-width: auto;
