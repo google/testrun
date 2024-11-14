@@ -19,7 +19,6 @@
 $black: #000000;
 $white: #ffffff;
 
-$primary: mat.get-theme-color($light-theme, primary, 40);
 $blue-300: mat.get-theme-color($light-theme, primary, 70);
 
 $color-background-grey: mat.get-theme-color($light-theme, secondary, 80);
@@ -29,7 +28,6 @@ $grey-900: mat.get-theme-color($light-theme, secondary, 10);
 $grey-100: mat.get-theme-color($light-theme, secondary, 80);
 $light-grey: mat.get-theme-color($light-theme, secondary, 90);
 $lighter-grey: mat.get-theme-color($light-theme, secondary, 95);
-$secondary: $grey-700;
 $dark-grey: $grey-800;
 
 $red-50: mat.get-theme-color($light-theme, error, 90);
@@ -41,8 +39,61 @@ $warn: $red-700;
 /* CUSTOM */
 $green-50: #e6f4ea;
 $green-800: #137333;
-$accent: #008b00;
 $orange-700: #a85d00;
 $yellow-50: #fef7e0;
 $cyan-50: #e4f7fb;
 $cyan-900: #007b83;
+
+$primary: mat.get-theme-color($light-theme, primary, 40);
+$secondary: mat.get-theme-color($light-theme, secondary, 40);
+$tertiary: mat.get-theme-color($light-theme, tertiary, 40);
+$error: mat.get-theme-color($light-theme, error, 40);
+
+$on-primary: mat.get-theme-color($light-theme, primary, 100);
+$on-secondary: mat.get-theme-color($light-theme, secondary, 100);
+$on-tertiary: mat.get-theme-color($light-theme, tertiary, 100);
+$on-error: mat.get-theme-color($light-theme, error, 100);
+
+$primary-container: mat.get-theme-color($light-theme, primary, 90);
+$secondary-container: mat.get-theme-color($light-theme, secondary, 90);
+$tertiary-container: mat.get-theme-color($light-theme, tertiary, 90);
+$error-container: mat.get-theme-color($light-theme, error, 90);
+
+$on-primary-container: mat.get-theme-color($light-theme, primary, 30);
+$on-secondary-container: mat.get-theme-color($light-theme, secondary, 30);
+$on-tertiary-container: mat.get-theme-color($light-theme, tertiary, 30);
+$on-error-container: mat.get-theme-color($light-theme, error, 30);
+
+$primary-fixed: mat.get-theme-color($light-theme, primary, 90);
+$primary-fixed-dim: mat.get-theme-color($light-theme, primary, 80);
+$on-primary-fixed: mat.get-theme-color($light-theme, primary, 10);
+$on-primary-fixed-variant: mat.get-theme-color($light-theme, primary, 30);
+
+$secondary-fixed: mat.get-theme-color($light-theme, secondary, 90);
+$secondary-fixed-dim: mat.get-theme-color($light-theme, secondary, 80);
+$on-secondary-fixed: mat.get-theme-color($light-theme, secondary, 10);
+$on-secondary-fixed-variant: mat.get-theme-color($light-theme, secondary, 30);
+
+$tertiary-fixed: mat.get-theme-color($light-theme, tertiary, 90);
+$tertiary-fixed-dim: mat.get-theme-color($light-theme, tertiary, 80);
+$on-tertiary-fixed: mat.get-theme-color($light-theme, tertiary, 10);
+$on-tertiary-fixed-variant: mat.get-theme-color($light-theme, tertiary, 30);
+
+$surface-dim: #d3dbe5;
+$surface: mat.get-theme-color($light-theme, neutral, 100);
+$surface-bright: mat.get-theme-color($light-theme, neutral, 100);
+$surface-container-lowest: mat.get-theme-color($light-theme, neutral, 100);
+$surface-container-low: #f8fafd;
+$surface-container: #f0f4f9;
+$surface-container-high: #e9eef6;
+$surface-container-highest: #dde3ea;
+$on-surface: mat.get-theme-color($light-theme, neutral, 10);
+$on-surface-variant: mat.get-theme-color($light-theme, neutral-variant, 30);
+$outline: mat.get-theme-color($light-theme, neutral-variant, 50);
+$outline-variant: mat.get-theme-color($light-theme, neutral-variant, 80);
+
+$inverse-surface: mat.get-theme-color($light-theme, neutral, 20);
+$inverse-on-surface: mat.get-theme-color($light-theme, neutral, 95);
+$inverse-primary: mat.get-theme-color($light-theme, neutral, 80);
+$scrim: mat.get-theme-color($light-theme, neutral, 0);
+$shadow: mat.get-theme-color($light-theme, neutral, 0);
