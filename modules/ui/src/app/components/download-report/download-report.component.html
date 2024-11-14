@@ -17,6 +17,7 @@ limitations under the License.
   <a
     class="download-report-link {{ getClass(data) }}"
     [download]="getReportTitle(data)"
+    [attr.aria-label]="getReportTitle(data)"
     [href]="href"
     [tabIndex]="tabindex"
     target="_blank"
