@@ -1,6 +1,6 @@
 @use '@angular/material' as mat;
-@import '../../../../../theming/colors';
-@import '../../../../../theming/variables';
+@import 'colors';
+@import 'variables';
 
 :host {
   padding-top: 16px;

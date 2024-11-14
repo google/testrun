@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 @use 'node_modules/@angular/material/index' as mat;
-@use 'src/theming/m3-theme' as *;
+@use 'm3-theme' as *;
 @import 'colors';
 
 :host {
