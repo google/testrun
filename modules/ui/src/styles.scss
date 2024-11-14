@@ -410,23 +410,14 @@ button:not(.mat-mdc-button-disabled) {
 .mat-sort-header-arrow {
   .mat-sort-header-indicator {
     &::before {
+      content: 'arrow_upward';
+      top: -0em;
+      line-height: 12px;
       font-family: #{$font-symbols};
       position: absolute;
       color: var(--mat-table-header-headline-color);
       font-size: 19px;
       font-weight: 400;
-    }
-  }
-}
-
-[aria-sort='ascending'] {
-  .mat-sort-header-arrow {
-    .mat-sort-header-indicator {
-      &::before {
-        content: 'arrow_upward';
-        top: -0em;
-        line-height: 12px;
-      }
     }
   }
 }
@@ -437,6 +428,7 @@ button:not(.mat-mdc-button-disabled) {
       &::before {
         content: 'arrow_downward';
         top: -14px;
+        line-height: 20px;
       }
     }
   }
