@@ -1,6 +1,6 @@
 @use '@angular/material' as mat;
-@use 'src/theming/m3-theme' as *;
-@import '../../../theming/colors';
+@use 'm3-theme' as *;
+@import 'colors';
 
 .spinner-container {
   position: absolute;
