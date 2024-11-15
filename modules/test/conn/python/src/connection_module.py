@@ -397,89 +397,17 @@ class ConnectionModule(TestModule):
     result = None
     description = ''
     dev_iface = os.getenv('DEV_IFACE')
-    iface_status = self.host_client.check_interface_status(dev_iface)
-    if iface_status.code == 200:
-      LOGGER.info('Successfully resolved iface status')
-      if iface_status.status:
-        lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
-                                              timeout=self._lease_wait_time_sec)
-        if lease is not None:
-          LOGGER.info('Current device lease resolved')
-          if self._dhcp_util.is_lease_active(lease):
 
-            # Disable the device interface
-            iface_down = self.host_client.set_iface_down(dev_iface)
-            if iface_down:
-              LOGGER.info('Device interface set to down state')
-
-              # Wait for the lease to expire
-              self._dhcp_util.wait_for_lease_expire(lease,
-                                                    self._lease_wait_time_sec)
-
-              # Wait an additonal 10 seconds to better test a true disconnect
-              # state
-              LOGGER.info('Waiting 10 seconds before bringing iface back up')
-              time.sleep(10)
-
-              # Enable the device interface
-              iface_up = self.host_client.set_iface_up(dev_iface)
-              if iface_up:
-                LOGGER.info('Device interface set to up state')
-
-                # Confirm device receives a new lease
-                if self._dhcp_util.get_cur_lease(
-                    mac_address=self._device_mac,
-                    timeout=self._lease_wait_time_sec):
-                  if self._dhcp_util.is_lease_active(lease):
-                    result = True
-                    description = (
-                        'Device received a DHCP lease after disconnect')
-                  else:
-                    result = False
-                    description = (
-                        'Could not confirm DHCP lease active after disconnect')
-                else:
-                  result = False
-                  description = (
-                      'Device did not recieve a DHCP lease after disconnect')
-              else:
-                result = 'Error'
-                description = 'Failed to set device interface to up state'
-            else:
-              result = 'Error'
-              description = 'Failed to set device interface to down state'
-        else:
-          result = 'Error'
-          description = 'No active lease available for device'
-      else:
-        result = 'Error'
-        description = 'Device interface is down'
-    else:
-      result = 'Error'
-      description = 'Device interface could not be resolved'
-    return result, description
-
-  def _connection_dhcp_disconnect_ip_change(self):
-    LOGGER.info('Running connection.dhcp.disconnect_ip_change')
-    result = None
-    description = ''
-    reserved_lease = None
-    dev_iface = os.getenv('DEV_IFACE')
-    if self._dhcp_util.setup_single_dhcp_server():
+    try:
       iface_status = self.host_client.check_interface_status(dev_iface)
       if iface_status.code == 200:
         LOGGER.info('Successfully resolved iface status')
         if iface_status.status:
-          lease = self._dhcp_util.get_cur_lease(
-              mac_address=self._device_mac, timeout=self._lease_wait_time_sec)
+          lease = self._dhcp_util.get_cur_lease(mac_address=self._device_mac,
+                                            timeout=self._lease_wait_time_sec)
           if lease is not None:
             LOGGER.info('Current device lease resolved')
             if self._dhcp_util.is_lease_active(lease):
-
-              # Add a reserved lease with a different IP
-              ip_address = '10.10.10.30'
-              reserved_lease = self._dhcp_util.add_reserved_lease(
-                  lease['hostname'], self._device_mac, ip_address)
 
               # Disable the device interface
               iface_down = self.host_client.set_iface_down(dev_iface)
@@ -490,47 +418,35 @@ class ConnectionModule(TestModule):
                 self._dhcp_util.wait_for_lease_expire(lease,
                                                       self._lease_wait_time_sec)
 
-                if reserved_lease:
-                  # Wait an additonal 10 seconds to better test a true
-                  # disconnect state
-                  LOGGER.info(
-                      'Waiting 10 seconds before bringing iface back up')
-                  time.sleep(10)
+                # Wait an additonal 10 seconds to better test a true disconnect
+                # state
+                LOGGER.info('Waiting 10 seconds before bringing iface back up')
+                time.sleep(10)
 
-                  # Enable the device interface
-                  iface_up = self.host_client.set_iface_up(dev_iface)
-                  if iface_up:
-                    LOGGER.info('Device interface set to up state')
-                    # Confirm device receives a new lease
-                    reserved_lease_accepted = False
-                    LOGGER.info('Checking device accepted new ip')
-                    for _ in range(5):
-                      LOGGER.info('Pinging device at IP: ' + ip_address)
-                      if self._ping(ip_address):
-                        LOGGER.debug('Ping success')
-                        LOGGER.debug(
-                            'Reserved lease confirmed active in device')
-                        reserved_lease_accepted = True
-                        break
-                      else:
-                        LOGGER.info('Device did not respond to ping')
-                        time.sleep(5)  # Wait 5 seconds before trying again
+                # Enable the device interface
+                iface_up = self.host_client.set_iface_up(dev_iface)
+                if iface_up:
+                  LOGGER.info('Device interface set to up state')
 
-                    if reserved_lease_accepted:
+                  # Confirm device receives a new lease
+                  if self._dhcp_util.get_cur_lease(
+                      mac_address=self._device_mac,
+                      timeout=self._lease_wait_time_sec):
+                    if self._dhcp_util.is_lease_active(lease):
                       result = True
-                      description = ('Device received expected IP address '
-                                     'after disconnect')
+                      description = (
+                          'Device received a DHCP lease after disconnect')
                     else:
                       result = False
                       description = (
-                          'Could not confirm DHCP lease active after disconnect'
-                      )
+                        'Could not confirm DHCP lease active after disconnect')
                   else:
-                    result = 'Error'
-                    description = 'Failed to set device interface to up state'
+                    result = False
+                    description = (
+                      'Device did not recieve a DHCP lease after disconnect')
                 else:
                   result = 'Error'
-                  description = 'Failed to set reserved address in DHCP server'
+                  description = 'Failed to set device interface to up state'
               else:
                 result = 'Error'
                 description = 'Failed to set device interface to down state'
@@ -543,9 +459,112 @@ class ConnectionModule(TestModule):
       else:
         result = 'Error'
         description = 'Device interface could not be resolved'
+
+    except Exception:
+      LOGGER.error('Unable to connect to gRPC server')
+      result = 'Error'
+      description = (
+        'Unable to connect to gRPC server'
+      )
+    return result, description
+
+  def _connection_dhcp_disconnect_ip_change(self):
+    LOGGER.info('Running connection.dhcp.disconnect_ip_change')
+    result = None
+    description = ''
+    reserved_lease = None
+    dev_iface = os.getenv('DEV_IFACE')
+    if self._dhcp_util.setup_single_dhcp_server():
+      try:
+        iface_status = self.host_client.check_interface_status(dev_iface)
+        if iface_status.code == 200:
+          LOGGER.info('Successfully resolved iface status')
+          if iface_status.status:
+            lease = self._dhcp_util.get_cur_lease(
+                mac_address=self._device_mac, timeout=self._lease_wait_time_sec)
+            if lease is not None:
+              LOGGER.info('Current device lease resolved')
+              if self._dhcp_util.is_lease_active(lease):
+
+                # Add a reserved lease with a different IP
+                ip_address = '10.10.10.30'
+                reserved_lease = self._dhcp_util.add_reserved_lease(
+                    lease['hostname'], self._device_mac, ip_address)
+
+                # Disable the device interface
+                iface_down = self.host_client.set_iface_down(dev_iface)
+                if iface_down:
+                  LOGGER.info('Device interface set to down state')
+
+                  # Wait for the lease to expire
+                  self._dhcp_util.wait_for_lease_expire(lease,
+                                                    self._lease_wait_time_sec)
+
+                  if reserved_lease:
+                    # Wait an additonal 10 seconds to better test a true
+                    # disconnect state
+                    LOGGER.info(
+                        'Waiting 10 seconds before bringing iface back up')
+                    time.sleep(10)
+
+                    # Enable the device interface
+                    iface_up = self.host_client.set_iface_up(dev_iface)
+                    if iface_up:
+                      LOGGER.info('Device interface set to up state')
+                      # Confirm device receives a new lease
+                      reserved_lease_accepted = False
+                      LOGGER.info('Checking device accepted new ip')
+                      for _ in range(5):
+                        LOGGER.info('Pinging device at IP: ' + ip_address)
+                        if self._ping(ip_address):
+                          LOGGER.debug('Ping success')
+                          LOGGER.debug(
+                              'Reserved lease confirmed active in device')
+                          reserved_lease_accepted = True
+                          break
+                        else:
+                          LOGGER.info('Device did not respond to ping')
+                          time.sleep(5)  # Wait 5 seconds before trying again
+
+                      if reserved_lease_accepted:
+                        result = True
+                        description = ('Device received expected IP address '
+                                      'after disconnect')
+                      else:
+                        result = False
+                        description = (
+                          'Could not confirm DHCP lease active after disconnect'
+                        )
+                    else:
+                      result = 'Error'
+                      description = 'Failed to set device interface to up state'
+                  else:
+                    result = 'Error'
+                    description = (
+                      'Failed to set reserved address in DHCP server'
+                    )
+                else:
+                  result = 'Error'
+                  description = 'Failed to set device interface to down state'
+            else:
+              result = 'Error'
+              description = 'No active lease available for device'
+          else:
+            result = 'Error'
+            description = 'Device interface is down'
+        else:
+          result = 'Error'
+          description = 'Device interface could not be resolved'
+      except Exception:
+        LOGGER.error('Unable to connect to gRPC server')
+        result = 'Error'
+        description = (
+        'Unable to connect to gRPC server'
+        )
     else:
       result = 'Error'
       description = 'Failed to configure network for test'
+
     if reserved_lease:
       self._dhcp_util.delete_reserved_lease(self._device_mac)
 
@@ -572,7 +591,7 @@ class ConnectionModule(TestModule):
     LOGGER.info('Running connection.ipv6_slaac')
     result = None
 
-    slac_test, sends_ipv6 = self._has_slaac_addres()
+    slac_test, sends_ipv6 = self._has_slaac_address()
     if slac_test:
       result = True, f'Device has formed SLAAC address {self._device_ipv6_addr}'
     elif slac_test is None:
@@ -586,7 +605,7 @@ class ConnectionModule(TestModule):
         result = False, 'Device does not support IPv6'
     return result
 
-  def _has_slaac_addres(self):
+  def _has_slaac_address(self):
     packet_capture = (rdpcap(self.startup_capture_file) +
                       rdpcap(self.monitor_capture_file))
 
@@ -594,7 +613,6 @@ class ConnectionModule(TestModule):
       packet_capture += rdpcap(DHCP_CAPTURE_FILE)
     except (FileNotFoundError, Scapy_Exception):
       LOGGER.error('dhcp-1.pcap not found or empty, ignoring')
-      return None, False
 
     sends_ipv6 = False
     for packet_number, packet in enumerate(packet_capture, start=1):
