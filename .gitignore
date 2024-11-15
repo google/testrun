@@ -21,6 +21,11 @@ testing/unit/services/output/
 # Ignore generated files by testing_coverage tool
 testing/api/tools/testing_coverage/results
 
+# Ignore generated files from requirements generation
+*requirements_freeze.txt
+*unique_freeze.txt
+*requirements_gen.txt
+
 *.deb
 make/DEBIAN/postinst
 

@@ -9,17 +9,23 @@ import { MOCK_ADAPTERS } from '../mocks/settings.mock';
 import { Topic } from '../model/topic';
 import { MOCK_INTERNET } from '../mocks/topic.mock';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../mocks/testrun.mock';
+import { TestRunService } from './test-run.service';
 
 describe('TestRunMqttService', () => {
   let service: TestRunMqttService;
   let mockService: SpyObj<MqttService>;
+  let testRunServiceMock: SpyObj<TestRunService>;
 
   beforeEach(() => {
     mockService = jasmine.createSpyObj(['observe']);
+    testRunServiceMock = jasmine.createSpyObj(['changeReportURL']);
 
     TestBed.configureTestingModule({
       imports: [MqttModule.forRoot(MQTT_SERVICE_OPTIONS)],
-      providers: [{ provide: MqttService, useValue: mockService }],
+      providers: [
+        { provide: MqttService, useValue: mockService },
+        { provide: TestRunService, useValue: testRunServiceMock },
+      ],
     });
     service = TestBed.inject(TestRunMqttService);
   });
@@ -75,6 +81,7 @@ describe('TestRunMqttService', () => {
       mockService.observe.and.returnValue(
         of(getResponse(MOCK_PROGRESS_DATA_IN_PROGRESS))
       );
+      testRunServiceMock.changeReportURL.and.returnValue('');
     });
 
     it('should subscribe the topic', done => {
