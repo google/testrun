@@ -56,14 +56,22 @@ body {
     }
   }
 }
-
+// app-sidebar
 .app-sidebar-button-active .mat-icon path {
   fill: $white;
+  //fill: #004A77
 }
-
+// app-sidebar
 .app-sidebar-button.mat-mdc-icon-button .mat-mdc-button-persistent-ripple,
 .app-toolbar-button.mat-mdc-icon-button .mat-mdc-button-persistent-ripple {
   border-radius: inherit;
+}
+
+.app-sidebar-button-active {
+    font-variation-settings: 'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24
 }
 
 .consent-dialog,
@@ -110,35 +118,45 @@ mat-hint {
 .mat-sort-header-container.mat-focus-indicator:focus::before {
   content: none;
 }
-
+// app-sidebar
 .app-sidebar-button {
-  .mdc-button__label {
-    position: relative;
-    left: -999px;
-    overflow: hidden;
+  //.mdc-button__label {
+  //  position: relative;
+  //  left: -999px;
+  //  overflow: hidden;
+  //}
+  &.mat-mdc-button:has(.material-icons,mat-icon,[matButtonIcon]) {
+    padding: 6px;
+  }
+
+  &.mat-mdc-button .mat-mdc-button-persistent-ripple {
+    top: 6px;
+    left: calc(50% - 28px);
+    height: 32px;
+    width: 56px;
   }
 }
 
-.active-menu {
-  .app-sidebar-button {
-    .mdc-button__label {
-      left: 8px;
-      display: inline;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-    }
-  }
-
-  .app-sidebar-button-active .mat-icon path {
-    fill: $grey-800;
-  }
-
-  app-version {
-    min-width: 80px;
-    width: auto !important;
-  }
-}
+//.active-menu {
+//  .app-sidebar-button {
+//    .mdc-button__label {
+//      left: 8px;
+//      display: inline;
+//      white-space: nowrap;
+//      text-overflow: ellipsis;
+//      overflow: hidden;
+//    }
+//  }
+//
+//  .app-sidebar-button-active .mat-icon path {
+//    fill: $grey-800;
+//  }
+//
+//  app-version {
+//    min-width: 80px;
+//    width: auto !important;
+//  }
+//}
 
 .filter-button.active .filter-icon path {
   fill: mat.get-theme-color($light-theme, primary, 35);
@@ -236,6 +254,12 @@ mat-hint {
 
 .mat-mdc-form-field {
   --mdc-outlined-text-field-focus-label-text-color: #1a73e8;
+}
+
+.mat-mdc-button .mat-mdc-button-persistent-ripple::before {
+  --mat-text-button-state-layer-color: #1F1F1F;
+     //background-color: var(--mat-text-button-state-layer-color, var(--mat-app-primary));
+     //background-color: #1F1F1F;
 }
 
 .setting-field {

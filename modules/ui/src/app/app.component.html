@@ -18,50 +18,52 @@ limitations under the License.
   <mat-drawer-container hasBackdrop="false" class="app-container" autosize>
     <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
       <div class="app-sidebar" #navigation>
-        <ng-container
-          *ngTemplateOutlet="
-            navButtonRoute;
-            context: {
-              route: Routes.Testing,
-              svgIcon: 'testrun_logo_small',
-              label: 'Testing',
-              name: 'testrun',
-            }
-          ">
-        </ng-container>
-        <ng-container
-          *ngTemplateOutlet="
-            navButtonRoute;
-            context: {
-              route: Routes.Devices,
-              svgIcon: 'devices',
-              label: 'Devices',
-              name: 'devices',
-            }
-          ">
-        </ng-container>
-        <ng-container
-          *ngTemplateOutlet="
-            navButtonRoute;
-            context: {
-              route: Routes.Reports,
-              svgIcon: 'reports',
-              label: 'Reports',
-              name: 'reports',
-            }
-          ">
-        </ng-container>
-        <ng-container
-          *ngTemplateOutlet="
-            navButtonRoute;
-            context: {
-              route: Routes.RiskAssessment,
-              svgIcon: 'risk_assessment',
-              label: 'Risk Assessment',
-              name: 'risk-assessment',
-            }
-          ">
-        </ng-container>
+        <div class="nav-items-container">
+          <ng-container
+            *ngTemplateOutlet="
+              navButtonRoute;
+              context: {
+                route: Routes.Testing,
+                svgIcon: 'testrun_logo_small',
+                label: 'Testing',
+                name: 'testrun',
+              }
+            ">
+          </ng-container>
+          <ng-container
+            *ngTemplateOutlet="
+              navButtonRoute;
+              context: {
+                route: Routes.Devices,
+                svgIcon: 'devices',
+                label: 'Devices',
+                name: 'devices',
+              }
+            ">
+          </ng-container>
+          <ng-container
+            *ngTemplateOutlet="
+              navButtonRoute;
+              context: {
+                route: Routes.Reports,
+                icon: 'problem',
+                label: 'Reports',
+                name: 'reports',
+              }
+            ">
+          </ng-container>
+          <ng-container
+            *ngTemplateOutlet="
+              navButtonRoute;
+              context: {
+                route: Routes.RiskAssessment,
+                svgIcon: 'risk_assessment',
+                label: 'Risk Assessment',
+                name: 'risk-assessment',
+              }
+            ">
+          </ng-container>
+        </div>
         <app-version
           [consentShown]="vm.consentShown"
           (consentShownEvent)="consentShown()"></app-version>
@@ -310,7 +312,7 @@ limitations under the License.
     [matTooltip]="label"
     (keydown.enter)="onNavigationClick()">
     <mat-icon *ngIf="svgIcon" svgIcon="{{ svgIcon }}"></mat-icon>
-    <mat-icon *ngIf="icon">{{ icon }}</mat-icon>
+    <mat-icon *ngIf="icon" class="material-symbols-outlined">{{ icon }}</mat-icon>
     <span class="sidebar-button-label">{{ label }}</span>
   </button>
 </ng-template>

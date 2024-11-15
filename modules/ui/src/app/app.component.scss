@@ -38,35 +38,60 @@ $nav-open-btn-width: 210px;
 .app-sidebar {
   display: flex;
   flex-direction: column;
-  background-color: $white;
+  background-color: $surface-container-low;
   height: 100%;
   gap: 8px;
   width: $nav-close-width;
   align-items: center;
 }
 
+.nav-items-container {
+  height: calc(100% - $nav-button-height);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
 .app-sidebar-button {
-  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
   border: 1px solid transparent;
   min-width: 48px;
   padding: 0;
   box-sizing: border-box;
   height: 34px;
-  margin: 11px 0;
+  padding: 10px;
   line-height: 50% !important;
+
+  justify-content: center;
+  gap: 4px;
+  align-self: stretch;
+  height: unset;
+  width: 86px;
+  margin: 0 auto;
 }
 
 .app-sidebar-button {
   --mat-text-button-with-icon-horizontal-padding: 8px;
 
-  width: $nav-close-btn-width;
-  display: flex;
-  justify-content: flex-start;
   padding-inline: 8px;
 }
 
-.app-sidebar-button:first-child {
-  margin-top: 19px;
+.sidebar-button-label {
+
+  color: $on-surface-variant;
+  text-align: center;
+  /* GM3/Static/label/medium */
+  font-family: $font-text;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.1px;
 }
 
 .app-toolbar-button-menu {
@@ -82,24 +107,34 @@ $nav-open-btn-width: 210px;
   margin-right: 0;
   width: 24px;
   font-size: 24px;
-  color: $dark-grey;
+  color: $on-surface-variant;
   height: 24px;
 }
 
 .app-sidebar-button > .mat-icon {
-  margin: 0 3px;
+  margin: 4px;
   min-width: 24px;
-  line-height: 18px !important;
+  //line-height: 18px !important;
 }
+
 
 .app-sidebar-button-active {
-  border: 1px solid mat.get-theme-color($light-theme, primary, 40);
-  background-color: mat.get-theme-color($light-theme, primary, 40);
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24
+  }
 }
+//
+//.app-sidebar-button-active {
+//  border: 1px solid mat.get-theme-color($light-theme, primary, 40);
+//  background-color: mat.get-theme-color($light-theme, primary, 40);
+//}
 
-.app-sidebar-button-active > .mat-icon {
-  color: $white;
-}
+//.app-sidebar-button-active > .mat-icon {
+//  color: $white;
+//}
 
 .logo-link {
   color: $on-surface;

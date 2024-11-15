@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 @import 'colors';
+@import 'variables';
 
 :host {
   position: relative;
@@ -22,7 +23,7 @@
 .version-content,
 .version-content-update {
   min-width: 48px;
-  height: 34px;
+  height: $nav-button-height;
   max-width: 100%;
   background: $color-background-grey;
   border-radius: 20px;
