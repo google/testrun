@@ -169,6 +169,5 @@
 }
 
 .download-report-zip-icon-container {
-  display: inline-block;
-  padding-top: 5px;
+  @include report-action;
 }
