@@ -35,7 +35,7 @@ limitations under the License.
               navButtonRoute;
               context: {
                 route: Routes.Devices,
-                svgIcon: 'devices',
+                icon: 'home_iot_device',
                 label: 'Devices',
                 name: 'devices',
               }
@@ -57,7 +57,7 @@ limitations under the License.
               navButtonRoute;
               context: {
                 route: Routes.RiskAssessment,
-                svgIcon: 'risk_assessment',
+                icon: 'rule',
                 label: 'Risk Assessment',
                 name: 'risk-assessment',
               }
@@ -309,10 +309,11 @@ limitations under the License.
     mat-button
     routerLink="{{ route }}"
     routerLinkActive="app-sidebar-button-active"
-    [matTooltip]="label"
     (keydown.enter)="onNavigationClick()">
     <mat-icon *ngIf="svgIcon" svgIcon="{{ svgIcon }}"></mat-icon>
-    <mat-icon *ngIf="icon" class="material-symbols-outlined">{{ icon }}</mat-icon>
+    <mat-icon *ngIf="icon" class="material-symbols-outlined">{{
+      icon
+    }}</mat-icon>
     <span class="sidebar-button-label">{{ label }}</span>
   </button>
 </ng-template>

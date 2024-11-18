@@ -21,10 +21,7 @@
 $toolbar-height: 64px;
 $content-padding-top: 18px;
 $content-padding-bottom: 16px;
-$nav-close-width: 96px;
-$nav-open-width: 236px;
-$nav-close-btn-width: 48px;
-$nav-open-btn-width: 210px;
+$nav-width: 96px;
 
 .app-container {
   height: 100%;
@@ -41,7 +38,7 @@ $nav-open-btn-width: 210px;
   background-color: $surface-container-low;
   height: 100%;
   gap: 8px;
-  width: $nav-close-width;
+  width: $nav-width;
   align-items: center;
 }
 
@@ -58,15 +55,12 @@ $nav-open-btn-width: 210px;
 .app-sidebar-button {
   display: flex;
   flex-direction: column;
-  border-radius: 16px;
+  border-radius: $corner-large;
   border: 1px solid transparent;
   min-width: 48px;
-  padding: 0;
   box-sizing: border-box;
-  height: 34px;
   padding: 10px;
   line-height: 50% !important;
-
   justify-content: center;
   gap: 4px;
   align-self: stretch;
@@ -82,20 +76,13 @@ $nav-open-btn-width: 210px;
 }
 
 .sidebar-button-label {
-
   color: $on-surface-variant;
   text-align: center;
-  /* GM3/Static/label/medium */
   font-family: $font-text;
   font-size: 12px;
-  font-style: normal;
   font-weight: 500;
   line-height: 16px;
   letter-spacing: 0.1px;
-}
-
-.app-toolbar-button-menu {
-  margin: 11px 17px 11px 16px;
 }
 
 .app-sidebar-button:disabled {
@@ -114,27 +101,29 @@ $nav-open-btn-width: 210px;
 .app-sidebar-button > .mat-icon {
   margin: 4px;
   min-width: 24px;
-  //line-height: 18px !important;
 }
-
 
 .app-sidebar-button-active {
   .material-symbols-outlined {
-    font-variation-settings: 'FILL' 1,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24
+    font-variation-settings:
+      'FILL' 1,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24;
+  }
+
+  & > .mat-icon {
+    color: $on-secondary-fixed-variant;
+  }
+  .sidebar-button-label {
+    color: $secondary;
+  }
+
+  .mat-mdc-button-persistent-ripple::before {
+    opacity: 1;
+    background: $secondary-fixed;
   }
 }
-//
-//.app-sidebar-button-active {
-//  border: 1px solid mat.get-theme-color($light-theme, primary, 40);
-//  background-color: mat.get-theme-color($light-theme, primary, 40);
-//}
-
-//.app-sidebar-button-active > .mat-icon {
-//  color: $white;
-//}
 
 .logo-link {
   color: $on-surface;
@@ -170,13 +159,13 @@ $nav-open-btn-width: 210px;
 .app-toolbar {
   position: absolute;
   top: 0;
-  left: $nav-close-width;
+  left: $nav-width;
   z-index: 3;
   height: $toolbar-height;
   padding: 0 16px;
   background-color: $surface-container-low;
   color: $grey-800;
-  width: calc(100% - $nav-close-width);
+  width: calc(100% - $nav-width);
 }
 
 .app-bar-buttons {
@@ -216,7 +205,7 @@ app-version {
   margin-top: auto;
   margin-bottom: 16px;
   max-width: 100%;
-  width: $nav-close-width;
+  width: $nav-width;
   display: flex;
   justify-content: center;
 }
