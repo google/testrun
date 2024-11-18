@@ -39,10 +39,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { filter, take } from 'rxjs/operators';
 import { skip, timer } from 'rxjs';
 
-const DEVICES_LOGO_URL = '/assets/icons/devices.svg';
 const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
-const REPORTS_LOGO_URL = '/assets/icons/reports.svg';
-const RISK_ASSESSMENT_LOGO_URL = '/assets/icons/risk-assessment.svg';
 const TESTRUN_LOGO_URL = '/assets/icons/testrun_logo_small.svg';
 const TESTRUN_LOGO_COLOR_URL = '/assets/icons/testrun_logo_color.svg';
 const CLOSE_URL = '/assets/icons/close.svg';
@@ -90,20 +87,8 @@ export class AppComponent implements AfterViewInit {
     this.appStore.getTestModules();
     this.appStore.getNetworkAdapters();
     this.matIconRegistry.addSvgIcon(
-      'devices',
-      this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_LOGO_URL)
-    );
-    this.matIconRegistry.addSvgIcon(
       'device_run',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_RUN_URL)
-    );
-    this.matIconRegistry.addSvgIcon(
-      'reports',
-      this.domSanitizer.bypassSecurityTrustResourceUrl(REPORTS_LOGO_URL)
-    );
-    this.matIconRegistry.addSvgIcon(
-      'risk_assessment',
-      this.domSanitizer.bypassSecurityTrustResourceUrl(RISK_ASSESSMENT_LOGO_URL)
     );
     this.matIconRegistry.addSvgIcon(
       'testrun_logo_small',

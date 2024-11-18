@@ -57,10 +57,6 @@ body {
   }
 }
 
-.app-sidebar-button-active .mat-icon path {
-  fill: $white;
-}
-
 .app-sidebar-button.mat-mdc-icon-button .mat-mdc-button-persistent-ripple,
 .app-toolbar-button.mat-mdc-icon-button .mat-mdc-button-persistent-ripple {
   border-radius: inherit;
@@ -111,32 +107,37 @@ mat-hint {
   content: none;
 }
 
-.app-sidebar-button {
-  .mdc-button__label {
-    position: relative;
-    left: -999px;
-    overflow: hidden;
+.app-sidebar {
+  .mat-mdc-button .mat-mdc-button-ripple {
+    display: none;
   }
 }
+.app-sidebar-button {
+  &.mat-mdc-button:has(.material-icons, mat-icon, [matButtonIcon]) {
+    padding: 6px;
+  }
 
-.active-menu {
-  .app-sidebar-button {
-    .mdc-button__label {
-      left: 8px;
-      display: inline;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
+  &.mat-mdc-button .mat-mdc-button-persistent-ripple {
+    top: 6px;
+    left: calc(50% - 28px);
+    height: 32px;
+    width: 56px;
+  }
+  &.app-sidebar-button-active {
+    .mat-mdc-button-persistent-ripple::before {
+      opacity: 1;
+      background: $light-grey;
     }
-  }
 
-  .app-sidebar-button-active .mat-icon path {
-    fill: $grey-800;
-  }
-
-  app-version {
-    min-width: 80px;
-    width: auto !important;
+    &.mat-mdc-button {
+      &:hover,
+      &:focus-visible {
+        .mat-mdc-button-persistent-ripple::before {
+          opacity: 0.6;
+          background: $grey-100;
+        }
+      }
+    }
   }
 }
 
@@ -236,6 +237,10 @@ mat-hint {
 
 .mat-mdc-form-field {
   --mdc-outlined-text-field-focus-label-text-color: #1a73e8;
+}
+
+.mat-mdc-button .mat-mdc-button-persistent-ripple::before {
+  --mat-text-button-state-layer-color: #1f1f1f;
 }
 
 .setting-field {
