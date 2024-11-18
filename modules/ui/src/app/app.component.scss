@@ -159,13 +159,13 @@ $nav-width: 96px;
 .app-toolbar {
   position: absolute;
   top: 0;
-  left: $nav-width;
+  left: 0;
   z-index: 3;
   height: $toolbar-height;
   padding: 0 16px;
   background-color: $surface-container-low;
   color: $grey-800;
-  width: calc(100% - $nav-width);
+  width: 100%;
 }
 
 .app-bar-buttons {
