@@ -87,6 +87,8 @@ describe('AppStore', () => {
   let mockMqttService: SpyObj<TestRunMqttService>;
 
   beforeEach(() => {
+    window.sessionStorage.clear();
+
     mockService = jasmine.createSpyObj('mockService', [
       'fetchDevices',
       'getTestModules',
