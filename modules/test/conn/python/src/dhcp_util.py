@@ -273,9 +273,11 @@ class DHCPUtil():
 
       LOGGER.info('Time until lease expiration: ' + str(wait_time))
       LOGGER.info('Waiting for current lease to expire: ' + str(expiration))
+
       if wait_time > 0:
         time.sleep(wait_time)
       LOGGER.info('Current lease expired')
+
     except TypeError:
       LOGGER.error('Device does not have an active lease')
 
