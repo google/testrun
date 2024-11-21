@@ -27,10 +27,12 @@ DEFAULT_TIMEOUT = 60  # time in seconds
 class TestModule(Module):
   """Represents a test module."""
 
-  def __init__(self, module_config_file, session, extra_hosts):
+  def __init__(self, module_config_file, test_orc, session, extra_hosts):
     super().__init__(module_config_file=module_config_file,
                      session=session,
                      extra_hosts=extra_hosts)
+
+    self._test_orc = test_orc
 
     # Set IP Index for all test modules
     self.ip_index = 9
@@ -91,12 +93,17 @@ class TestModule(Module):
     util.run_command(f'chown -R {host_user} {self.device_monitor_capture}')
 
   def get_environment(self, device):
+
+    # Obtain the test pack
+    test_pack = self._test_orc.get_test_pack(device.test_pack)
+
     environment = {
         'TZ': self.get_session().get_timezone(),
         'HOST_USER': self.get_session().get_host_user(),
         'DEVICE_MAC': device.mac_addr,
         'IPV4_ADDR': device.ip_addr,
         'DEVICE_TEST_MODULES': json.dumps(device.test_modules),
+        'DEVICE_TEST_PACK': json.dumps(test_pack.to_dict()),
         'IPV4_SUBNET': self.get_session().get_ipv4_subnet(),
         'IPV6_SUBNET': self.get_session().get_ipv6_subnet(),
         'DEV_IFACE': self.get_session().get_device_interface(),
