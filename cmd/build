@@ -63,7 +63,7 @@ echo Building network modules
 for dir in modules/network/* ; do
   module=$(basename $dir)
   echo Building network module $module...
-  if docker build -f modules/network/$module/$module.Dockerfile -t testrun/$module . ; then
+  if docker build --no-cache -f modules/network/$module/$module.Dockerfile -t testrun/$module . ; then
     echo Successfully built container for network $module
   else
     echo An error occured whilst building container for network module $module
@@ -89,7 +89,7 @@ echo Building test modules
 for dir in modules/test/* ; do
   module=$(basename $dir)
   echo Building test module $module...
-  if docker build -f modules/test/$module/$module.Dockerfile -t testrun/$module-test . ; then
+  if docker build --no-cache -f modules/test/$module/$module.Dockerfile -t testrun/$module-test . ; then
     echo Successfully built container for test module $module
   else
     echo An error occured whilst building container for test module $module
