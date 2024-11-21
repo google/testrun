@@ -835,7 +835,7 @@ class ConnectionModule(TestModule):
       else:
         if result['result'] is not None:
           final_result &= result['result']
-        if result['result']:
+        if not result['result']:
           final_result_details += result['details'] + '\n'
 
     if final_result:
