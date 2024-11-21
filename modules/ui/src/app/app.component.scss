@@ -142,6 +142,11 @@ $nav-width: 96px;
     border: 1px solid $black;
     border-radius: 4px;
   }
+
+  &:focus {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
 }
 
 .logo-link .mat-icon {
