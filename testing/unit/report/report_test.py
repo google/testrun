@@ -78,7 +78,7 @@ class ReportTest(unittest.TestCase):
     with open(report_html_file, 'w', encoding='utf-8') as file:
       file.write(report.to_html())
 
-    with open(report_pdf_file, 'wb', encoding='utf-8') as file:
+    with open(report_pdf_file, 'wb') as file:
       file.write(report.to_pdf().getvalue())
 
   def report_compliant_test(self):
