@@ -82,8 +82,10 @@ class BACnet():
         for device in self.devices:
           object_id = str(device[3])  # BACnet Object ID
           LOGGER.info('Checking device: ' + str(device))
-          result &= self.validate_bacnet_source(
+          device_valid = self.validate_bacnet_source(
               object_id=object_id, device_hw_addr=self.device_hw_addr)
+          if device_valid is not None:
+            result &= device_valid
         description = ('BACnet device discovered' if result else
                        'BACnet device was found but was not device under test')
       else:
@@ -91,7 +93,7 @@ class BACnet():
         description = 'BACnet device could not be discovered'
       LOGGER.info(description)
     except Exception: # pylint: disable=W0718
-      LOGGER.error('Error occured when validating device', exc_info=True)
+      LOGGER.error('Error occured when validating device')
     return result, description
 
 
@@ -131,7 +133,7 @@ class BACnet():
           else:
             LOGGER.debug('BACnet detected for wrong MAC address')
             src = packet['_source']['layers']['eth.src'][0]
-            dst = packet['_source']['layers']['eth.dst'][0]
+            dst = packet['_source']['layers']['eth.dst'][0] 
             LOGGER.debug(f'From: {src} To: {dst} Expected: {device_hw_addr}')
             valid = False
       return valid
