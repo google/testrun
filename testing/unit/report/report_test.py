@@ -79,7 +79,7 @@ class ReportTest(unittest.TestCase):
       file.write(report.to_html())
 
     with open(report_pdf_file, 'w', encoding='utf-8') as file:
-      file.write(report.to_pdf())
+      file.write(report.to_pdf().get_value())
 
   def report_compliant_test(self):
     """Generate a report for the compliant test"""
