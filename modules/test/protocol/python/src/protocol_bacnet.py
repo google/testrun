@@ -93,7 +93,7 @@ class BACnet():
         description = 'BACnet device could not be discovered'
       LOGGER.info(description)
     except Exception: # pylint: disable=W0718
-      LOGGER.error('Error occured when validating device')
+      LOGGER.error('Error occured when validating device', exc_info=True)
     return result, description
 
 
