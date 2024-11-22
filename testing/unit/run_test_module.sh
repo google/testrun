@@ -15,6 +15,10 @@
 # limitations under the License.
 
 # Must be run from the root directory of Testrun
+
+# Read the JSON file into a variable
+DEVICE_TEST_PACK=$(<resources/test_packs/qualification.json)
+
 # Function to run tests inside Docker
 run_test() {
   local MODULE_NAME=$1
@@ -29,26 +33,24 @@ run_test() {
   local UNIT_TEST_DIR_DST="/testing/unit/$MODULE_NAME"
   local UNIT_TEST_FILE_DST="/testrun/python/src/module_test.py"
 
-  # Build the docker run command
-  local DOCKER_CMD="sudo docker run --rm --name ${MODULE_NAME}-unit-test"
-
-  # Add volume mount for the main test file
-  DOCKER_CMD="$DOCKER_CMD -v $UNIT_TEST_FILE_SRC:$UNIT_TEST_FILE_DST"
+  # Build the docker run command using an array
+  DOCKER_CMD=(
+    sudo docker run --rm --name "${MODULE_NAME}-unit-test"
+    -e "DEVICE_TEST_PACK=$DEVICE_TEST_PACK"
+    -v "$UNIT_TEST_FILE_SRC:$UNIT_TEST_FILE_DST"
+  )
 
   # Add volume mounts for additional directories if provided
   for DIR in "${DIRS[@]}"; do
-    DOCKER_CMD="$DOCKER_CMD -v $UNIT_TEST_DIR_SRC/$DIR:$UNIT_TEST_DIR_DST/$DIR"
+    DOCKER_CMD+=("-v" "$UNIT_TEST_DIR_SRC/$DIR:$UNIT_TEST_DIR_DST/$DIR")
   done
 
   # Add the container image and entry point
-  DOCKER_CMD="$DOCKER_CMD testrun/${MODULE_NAME}-test $UNIT_TEST_FILE_DST"
-  
-  # Temporarily disable 'set -e' to capture exit code
-  set +e
+  DOCKER_CMD+=("testrun/${MODULE_NAME}-test" "$UNIT_TEST_FILE_DST")
 
-  # Execute the Docker command
+  # Run the Docker command
   echo "Running test for ${MODULE_NAME}..."
-  eval $DOCKER_CMD
+  "${DOCKER_CMD[@]}"
 
   # Capture the exit code
   local exit_code=$?

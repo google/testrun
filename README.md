@@ -72,7 +72,7 @@ We strongly encourage contributions from the community. Review the requirements 
 
  You can resolve most issues by reinstalling Testrun using these commands:
 - `sudo docker system prune -a`
-- `sudo apt install ./testrun-*.deb`
+- `sudo apt install ./testrun*.deb`
 
 If this doesn't resolve the problem, [raise an issue](https://github.com/google/testrun/issues).
 

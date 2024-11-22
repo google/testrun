@@ -1,3 +1,11 @@
-eventlet
-pbr
-transitions
+# Dependencies to user defined packages
+# Package dependencies should always be defined before the user defined
+# packages to prevent auto-upgrades of stable dependencies
+dnspython==2.6.1
+greenlet==3.0.3
+six==1.16.0
+
+# User defined packages
+eventlet==0.36.1
+pbr==6.1.0
+transitions==0.9.2

@@ -49,7 +49,6 @@ class TLSModuleTest(unittest.TestCase):
   # Test the module report generation
   def dns_module_report_test(self):
     dns_module = DNSModule(module=MODULE,
-                           log_dir=OUTPUT_DIR,
                            results_dir=OUTPUT_DIR,
                            dns_server_capture_file=DNS_SERVER_CAPTURE_FILE,
                            startup_capture_file=STARTUP_CAPTURE_FILE,
@@ -98,7 +97,6 @@ class TLSModuleTest(unittest.TestCase):
     wrpcap(monitor_cap_file, packets_monitor)
 
     dns_module = DNSModule(module='dns',
-                           log_dir=OUTPUT_DIR,
                            results_dir=OUTPUT_DIR,
                            dns_server_capture_file=dns_server_cap_file,
                            startup_capture_file=startup_cap_file,

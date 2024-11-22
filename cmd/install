@@ -74,7 +74,7 @@ mkdir -p local/{devices,root_certs,risk_profiles}
 # This does not work on GitHub actions
 if logname ; then
   USER_NAME=$(logname)
-  sudo chown -R "$USER_NAME" local || true
+  sudo chown -R "$USER_NAME" local resources || true
 fi
 
 echo Finished installing Testrun

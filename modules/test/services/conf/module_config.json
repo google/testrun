@@ -9,7 +9,7 @@
     "docker": {
       "depends_on": "base",
       "enable_container": true,
-      "timeout": 600
+      "timeout": 900
     },
     "tests": [
       {
@@ -310,6 +310,10 @@
             {
               "number": 5903,
               "type": "tcp"
+            },
+            {
+              "number": 6001,
+              "type": "tcp"
             }
           ]
         },
@@ -368,6 +372,22 @@
           "Disable the NTP server",
           "Drop traffic entering port 123/udp"
         ]
+      },
+      {
+        "name": "protocol.services.bacnet",
+        "test_description": "Report whether the device is running a BACnet server",
+        "expected_behavior": "The device may or may not be running a BACnet server",
+        "config": {
+          "services": [
+            "bacnet"
+          ],
+          "ports": [
+            {
+              "number": 47808,
+              "type": "udp"
+            }
+          ]
+        }
       }
     ]
   }

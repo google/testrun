@@ -32,7 +32,6 @@ class TLSModule(TestModule):
 
   def __init__(self,
                module,
-               log_dir=None,
                conf_file=None,
                results_dir=None,
                startup_capture_file=STARTUP_CAPTURE_FILE,
@@ -40,7 +39,6 @@ class TLSModule(TestModule):
                tls_capture_file=TLS_CAPTURE_FILE):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
-                     log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
     self.startup_capture_file = startup_capture_file
@@ -239,13 +237,16 @@ class TLSModule(TestModule):
           tls_1_2_results, tls_1_3_results)
       # Determine results and return proper messaging and details
       description = ''
-      if results[0] is None:
+      result = results[0]
+      details = results[1]
+      if result is None:
+        result = 'Feature Not Detected'
         description = 'TLS 1.2 certificate could not be validated'
-      elif results[0]:
+      elif result:
         description = 'TLS 1.2 certificate is valid'
       else:
         description = 'TLS 1.2 certificate is invalid'
-      return results[0], description, results[1]
+      return result, description, details
 
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
@@ -260,13 +261,17 @@ class TLSModule(TestModule):
                                                    tls_version='1.3')
       # Determine results and return proper messaging and details
       description = ''
-      if results[0] is None:
+      result = results[0]
+      details = results[1]
+      description = ''
+      if result is None:
+        result = 'Feature Not Detected'
         description = 'TLS 1.3 certificate could not be validated'
       elif results[0]:
         description = 'TLS 1.3 certificate is valid'
       else:
         description = 'TLS 1.3 certificate is invalid'
-      return results[0], description, results[1]
+      return result, description, details
 
     else:
       LOGGER.error('Could not resolve device IP address')

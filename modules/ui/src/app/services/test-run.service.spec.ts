@@ -154,6 +154,8 @@ describe('TestRunService', () => {
   });
 
   describe('fetchSystemStatus', () => {
+    const systemStatusUrl = 'http://localhost:8000/system/status';
+
     it('should get system status data with no changes', () => {
       const result = { ...MOCK_PROGRESS_DATA_IN_PROGRESS };
 
@@ -161,11 +163,21 @@ describe('TestRunService', () => {
         expect(res).toEqual(result);
       });
 
-      const req = httpTestingController.expectOne(
-        'http://localhost:8000/system/status'
-      );
+      const req = httpTestingController.expectOne(systemStatusUrl);
       expect(req.request.method).toBe('GET');
       req.flush(result);
+    });
+
+    it('should get system status as empty object if error happens', () => {
+      const mockError = { error: 'someError' } as ErrorEvent;
+
+      service.fetchSystemStatus().subscribe(res => {
+        expect(res).toEqual({} as TestrunStatus);
+      });
+
+      const req = httpTestingController.expectOne(systemStatusUrl);
+
+      req.error(mockError);
     });
   });
 
