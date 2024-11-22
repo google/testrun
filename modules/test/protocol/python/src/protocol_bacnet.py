@@ -133,7 +133,7 @@ class BACnet():
           else:
             LOGGER.debug('BACnet detected for wrong MAC address')
             src = packet['_source']['layers']['eth.src'][0]
-            dst = packet['_source']['layers']['eth.dst'][0] 
+            dst = packet['_source']['layers']['eth.dst'][0]
             LOGGER.debug(f'From: {src} To: {dst} Expected: {device_hw_addr}')
             valid = False
       return valid
