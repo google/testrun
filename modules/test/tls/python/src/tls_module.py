@@ -182,7 +182,7 @@ class TLSModule(TestModule):
 
           ext_table = '''
             <h5>Certificate Extensions</h5>
-            <table class="module-data">
+            <table class="module-data" style="margin-bottom:20px;">
               <thead>
                 <tr>
                   <th>Property</th>
@@ -230,7 +230,7 @@ class TLSModule(TestModule):
 
         summary_table += f'''
         <div style="display:flex;justify-content:space-between;">
-          <div>
+          <div style="margin-right: 20px;">
             <h5>Certificate Information</h5>
             {cert_table}
           </div>
