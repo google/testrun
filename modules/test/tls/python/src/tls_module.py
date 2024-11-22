@@ -399,13 +399,16 @@ class TLSModule(TestModule):
           tls_1_2_results, tls_1_3_results)
       # Determine results and return proper messaging and details
       description = ''
-      if results[0] is None:
+      result = results[0]
+      details = results[1]
+      if result is None:
+        result = 'Feature Not Detected'
         description = 'TLS 1.2 certificate could not be validated'
-      elif results[0]:
+      elif result:
         description = 'TLS 1.2 certificate is valid'
       else:
         description = 'TLS 1.2 certificate is invalid'
-      return results[0], description, results[1]
+      return result, description, details
 
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
@@ -420,13 +423,17 @@ class TLSModule(TestModule):
                                                    tls_version='1.3')
       # Determine results and return proper messaging and details
       description = ''
-      if results[0] is None:
+      result = results[0]
+      details = results[1]
+      description = ''
+      if result is None:
+        result = 'Feature Not Detected'
         description = 'TLS 1.3 certificate could not be validated'
       elif results[0]:
         description = 'TLS 1.3 certificate is valid'
       else:
         description = 'TLS 1.3 certificate is invalid'
-      return results[0], description, results[1]
+      return result, description, details
 
     else:
       LOGGER.error('Could not resolve device IP address')
