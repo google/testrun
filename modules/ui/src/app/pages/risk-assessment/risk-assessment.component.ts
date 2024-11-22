@@ -18,10 +18,11 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  ViewContainerRef,
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Profile, ProfileStatus } from '../../model/profile';
@@ -39,11 +40,13 @@ import { SuccessDialogComponent } from './components/success-dialog/success-dial
 export class RiskAssessmentComponent implements OnInit, OnDestroy {
   viewModel$ = this.store.viewModel$;
   isOpenProfileForm = false;
+  isCopyProfile = false;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   constructor(
     private store: RiskAssessmentStore,
     public dialog: MatDialog,
-    private liveAnnouncer: LiveAnnouncer
+    private liveAnnouncer: LiveAnnouncer,
+    public element: ViewContainerRef
   ) {}
 
   ngOnInit() {
@@ -69,6 +72,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   }
 
   async copyProfileAndOpenForm(profile: Profile) {
+    this.isCopyProfile = true;
     await this.openForm(this.getCopyOfProfile(profile));
   }
 
@@ -95,15 +99,13 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     selectedProfile: Profile | null
   ): void {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: 'Delete risk profile',
       data: {
         title: 'Delete risk profile?',
         content: `You are about to delete ${profileName}. Are you sure?`,
       },
-      autoFocus: true,
+      autoFocus: 'dialog',
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
     });
 
     dialogRef
@@ -114,14 +116,21 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
           this.store.deleteProfile(profileName);
           this.closeFormAfterDelete(profileName, selectedProfile);
           this.setFocus(index);
+        } else {
+          this.store.setFocusOnSelectedProfile();
         }
       });
   }
 
   saveProfileClicked(profile: Profile, selectedProfile: Profile | null): void {
+    this.liveAnnouncer.clear();
     if (!selectedProfile) {
-      this.saveProfile(profile);
-      this.store.setFocusOnCreateButton();
+      this.saveProfile(profile, this.store.setFocusOnCreateButton);
+    } else if (
+      this.compareProfiles(profile, selectedProfile) ||
+      this.isCopyProfile
+    ) {
+      this.saveProfile(profile, this.store.setFocusOnSelectedProfile);
     } else {
       this.openSaveDialog(
         selectedProfile.name,
@@ -130,18 +139,65 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe(saveProfile => {
           if (saveProfile) {
-            this.saveProfile(profile);
-            this.store.setFocusOnSelectedProfile();
+            this.saveProfile(profile, this.store.setFocusOnSelectedProfile);
           }
         });
     }
   }
 
+  private compareProfiles(profile1: Profile, profile2: Profile) {
+    if (profile1.name !== profile2.name) {
+      return false;
+    }
+    if (
+      profile1.rename &&
+      (profile1.rename !== profile1.name || profile1.rename !== profile2.name)
+    ) {
+      return false;
+    }
+    if (profile1.status !== profile2.status) {
+      return false;
+    }
+
+    for (const question of profile1.questions) {
+      const answer1 = question.answer;
+      const answer2 = profile2.questions?.find(
+        question2 => question2.question === question.question
+      )?.answer;
+      if (answer1 !== undefined && answer2 !== undefined) {
+        if (typeof question.answer === 'string') {
+          if (answer1 !== answer2) {
+            return false;
+          }
+        } else {
+          //the type of answer is array
+          if (answer1?.length !== answer2?.length) {
+            return false;
+          }
+          if (
+            (answer1 as number[]).some(
+              answer => !(answer2 as number[]).includes(answer)
+            )
+          )
+            return false;
+        }
+      } else {
+        return !!answer1 == !!answer2;
+      }
+    }
+
+    return true;
+  }
+
   discard(selectedProfile: Profile | null) {
+    this.liveAnnouncer.clear();
     this.isOpenProfileForm = false;
+    this.isCopyProfile = false;
     if (selectedProfile) {
-      this.store.setFocusOnSelectedProfile();
-      this.store.updateSelectedProfile(null);
+      timer(100).subscribe(() => {
+        this.store.setFocusOnSelectedProfile();
+        this.store.updateSelectedProfile(null);
+      });
     } else {
       this.store.setFocusOnCreateButton();
     }
@@ -158,14 +214,19 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     }
   }
 
-  private saveProfile(profile: Profile) {
+  private saveProfile(profile: Profile, focusElement: () => void) {
     this.store.saveProfile({
       profile,
       onSave: (profile: Profile) => {
-        this.openSuccessDialog(profile);
+        if (profile.status === ProfileStatus.VALID) {
+          this.openSuccessDialog(profile, focusElement);
+        } else {
+          focusElement();
+        }
       },
     });
     this.isOpenProfileForm = false;
+    this.isCopyProfile = false;
   }
 
   private setFocus(index: number): void {
@@ -184,22 +245,20 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     draft: boolean = false
   ): Observable<boolean> {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: `Save ${draft ? 'draft profile' : 'profile'}`,
       data: {
         title: `Save ${draft ? 'draft profile' : 'profile'}`,
         content: `You are about to save changes in ${profileName}. Are you sure?`,
       },
-      autoFocus: true,
+      autoFocus: 'dialog',
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
     });
 
     return dialogRef?.afterClosed();
   }
 
-  private openSuccessDialog(profile: Profile): void {
-    this.dialog.open(SuccessDialogComponent, {
+  private openSuccessDialog(profile: Profile, focusElement: () => void): void {
+    const dialogRef = this.dialog.open(SuccessDialogComponent, {
       ariaLabel: 'Risk Assessment Profile Completed',
       data: {
         profile,
@@ -209,5 +268,12 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       disableClose: true,
       panelClass: 'simple-dialog',
     });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        focusElement();
+      });
   }
 }

@@ -83,7 +83,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   get isFormValues(): boolean {
-    return this.internetControl?.value.value && this.deviceControl?.value.value;
+    return (
+      this.deviceControl?.value?.value &&
+      (this.isInternetControlDisabled || this.internetControl?.value?.value)
+    );
+  }
+
+  get isInternetControlDisabled(): boolean {
+    return this.internetControl?.disabled;
   }
 
   get isFormError(): boolean {
@@ -102,7 +109,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.createSettingForm();
     this.cleanFormErrorMessage();
     this.settingsStore.getInterfaces();
-    this.settingsStore.getSystemConfig();
+    this.getSystemConfig();
     this.setDefaultFormValues();
   }
 
@@ -112,7 +119,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
     this.showLoading();
     this.getSystemInterfaces();
-    this.settingsStore.getSystemConfig();
+    this.getSystemConfig();
     this.setDefaultFormValues();
   }
   closeSetting(message: string): void {
@@ -177,7 +184,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const data: SystemConfig = {
       network: {
         device_intf: device_intf.key,
-        internet_intf: internet_intf.key,
+        internet_intf: this.isInternetControlDisabled ? '' : internet_intf.key,
       },
       log_level: log_level.key,
       monitor_period: Number(monitor_period.key),

@@ -22,6 +22,8 @@
 }
 
 .risk-assessment-content-empty {
+  position: absolute;
+  top: 0;
   height: 100%;
   width: calc(100%);
   display: flex;

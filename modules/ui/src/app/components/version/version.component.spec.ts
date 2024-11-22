@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
 import { VersionComponent } from './version.component';
 import {
@@ -56,31 +61,32 @@ describe('VersionComponent', () => {
   });
 
   it('should get correct aria label for version button', () => {
-    const labelUnavailableVersion = component.getVersionButtonLabel(
-      UNAVAILABLE_VERSION.installed_version
-    );
+    const labelUnavailableVersion =
+      component.getVersionButtonLabel(UNAVAILABLE_VERSION);
 
-    const labelAvailableVersion = component.getVersionButtonLabel(
-      VERSION.installed_version
-    );
+    const labelAvailableVersion = component.getVersionButtonLabel(NEW_VERSION);
+
+    const labelVersion = component.getVersionButtonLabel(VERSION);
 
     expect(labelUnavailableVersion).toContain(
       'Version temporarily unavailable.'
     );
     expect(labelAvailableVersion).toContain('New version is available.');
+    expect(labelVersion).toEqual('v1. Click to open the Welcome modal');
   });
 
-  it('should open consent window on start', () => {
+  it('should open consent window on start', fakeAsync(() => {
     const openSpy = spyOn(component.dialog, 'open').and.returnValue({
-      afterClosed: () => of(true),
+      afterClosed: () => of({ grant: null }),
     } as MatDialogRef<typeof ConsentDialogComponent>);
     versionBehaviorSubject$.next(VERSION);
     mockService.getVersion.and.returnValue(versionBehaviorSubject$);
     fixture.detectChanges();
     component.ngOnInit();
+    tick(2000);
 
     expect(openSpy).toHaveBeenCalled();
-  });
+  }));
 
   it('should open consent window when button clicked', () => {
     const openSpy = spyOn(component.dialog, 'open').and.returnValue({

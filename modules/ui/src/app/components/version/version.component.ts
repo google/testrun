@@ -34,7 +34,7 @@ import { tap } from 'rxjs/internal/operators/tap';
 import { Observable } from 'rxjs/internal/Observable';
 import { Subject } from 'rxjs/internal/Subject';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
-import { filter } from 'rxjs';
+import { filter, timer } from 'rxjs';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -64,8 +64,10 @@ export class VersionComponent implements OnInit, OnDestroy {
       filter(version => version !== null),
       tap(version => {
         if (!this.consentShown) {
-          this.openConsentDialog(version);
-          this.consentShownEvent.emit();
+          timer(2000).subscribe(() => {
+            this.openConsentDialog(version);
+            this.consentShownEvent.emit();
+          });
         }
         // @ts-expect-error data layer is not null
         window.dataLayer.push({
@@ -76,10 +78,17 @@ export class VersionComponent implements OnInit, OnDestroy {
     );
   }
 
-  getVersionButtonLabel(installedVersion: string): string {
-    return installedVersion === UNAVAILABLE_VERSION.installed_version
-      ? 'Version temporarily unavailable. Click to open the Welcome modal'
-      : `${installedVersion} New version is available. Click to update`;
+  getVersionButtonLabel(installedVersion: Version): string {
+    if (
+      installedVersion.installed_version ===
+      UNAVAILABLE_VERSION.installed_version
+    ) {
+      return 'Version temporarily unavailable. Click to open the Welcome modal';
+    }
+    if (installedVersion.update_available) {
+      return `${installedVersion.installed_version} New version is available. Click to update`;
+    }
+    return `${installedVersion.installed_version}. Click to open the Welcome modal`;
   }
 
   openConsentDialog(version: Version) {

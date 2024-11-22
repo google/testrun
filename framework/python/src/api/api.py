@@ -26,7 +26,8 @@ import threading
 import uvicorn
 from urllib.parse import urlparse
 
-from common import logger, tasks
+from core import tasks
+from common import logger
 from common.device import Device
 from common.statuses import TestrunStatus
 
@@ -90,6 +91,7 @@ class Api:
                                methods=["POST"])
     self._router.add_api_route("/system/version", self.get_version)
     self._router.add_api_route("/system/modules", self.get_test_modules)
+    self._router.add_api_route("/system/testpacks", self.get_test_packs)
 
     # Report endpoints
     self._router.add_api_route("/reports", self.get_reports)
@@ -660,6 +662,7 @@ class Api:
       device.mac_addr = device_json.get(DEVICE_MAC_ADDR_KEY).lower()
       device.manufacturer = device_json.get(DEVICE_MANUFACTURER_KEY)
       device.model = device_json.get(DEVICE_MODEL_KEY)
+      device.test_pack = device_json.get(DEVICE_TEST_PACK_KEY)
       device.type = device_json.get(DEVICE_TYPE_KEY)
       device.technology = device_json.get(DEVICE_TECH_KEY)
       device.additional_info = device_json.get(DEVICE_ADDITIONAL_INFO_KEY)
@@ -972,6 +975,20 @@ class Api:
           False, "A certificate with that common name already exists."
         )
 
+      # Returned when organization name is missing
+      elif str(e) == "Certificate is missing the organization name":
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(
+          False, "The certificate must contain the organization name"
+        )
+
+      # Returned when common name is missing
+      elif str(e) == "Certificate is missing the common name":
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(
+          False, "The certificate must contain the common name"
+        )
+
       # Returned when unable to load PEM file
       else:
         response.status_code = status.HTTP_400_BAD_REQUEST
@@ -1023,3 +1040,9 @@ class Api:
       if module.enabled and module.enable_container:
         modules.append(module.display_name)
     return modules
+
+  def get_test_packs(self):
+    test_packs: list[str] = []
+    for test_pack in self._testrun.get_test_orc().get_test_packs():
+      test_packs.append(test_pack.name)
+    return test_packs

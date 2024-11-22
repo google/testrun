@@ -16,6 +16,7 @@ from dns_module import DNSModule
 import unittest
 from scapy.all import rdpcap, DNS, wrpcap
 import os
+import sys
 
 MODULE = 'dns'
 
@@ -48,7 +49,6 @@ class TLSModuleTest(unittest.TestCase):
   # Test the module report generation
   def dns_module_report_test(self):
     dns_module = DNSModule(module=MODULE,
-                           log_dir=OUTPUT_DIR,
                            results_dir=OUTPUT_DIR,
                            dns_server_capture_file=DNS_SERVER_CAPTURE_FILE,
                            startup_capture_file=STARTUP_CAPTURE_FILE,
@@ -97,7 +97,6 @@ class TLSModuleTest(unittest.TestCase):
     wrpcap(monitor_cap_file, packets_monitor)
 
     dns_module = DNSModule(module='dns',
-                           log_dir=OUTPUT_DIR,
                            results_dir=OUTPUT_DIR,
                            dns_server_capture_file=dns_server_cap_file,
                            startup_capture_file=startup_cap_file,
@@ -122,4 +121,9 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('dns_module_report_no_dns_test'))
 
   runner = unittest.TextTestRunner()
-  runner.run(suite)
+  test_result = runner.run(suite)
+
+  # Check if the tests failed and exit with the appropriate code
+  if not test_result.wasSuccessful():
+    sys.exit(1)  # Return a non-zero exit code for failures
+  sys.exit(0)  # Return zero for success

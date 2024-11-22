@@ -22,7 +22,7 @@ LOGGER = None
 
 
 class ProtocolModule(TestModule):
-  """Protocol Test module"""
+  """Protocol test module"""
 
   def __init__(self, module):
     self._supports_bacnet = False

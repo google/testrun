@@ -36,14 +36,12 @@ limitations under the License.
         <span>The Profile name is required</span>
       </mat-error>
       <mat-error *ngIf="nameControl.hasError('has_same_profile_name')">
-        <span
-          >This Profile name is already used for another Risk Assessment
-          profile</span
-        >
+        <span>This Profile name is already used for another profile</span>
       </mat-error>
     </mat-form-field>
 
-    <app-dynamic-form [format]="profileFormat"> </app-dynamic-form>
+    <app-dynamic-form [format]="profileFormat" optionKey="text">
+    </app-dynamic-form>
   </div>
 </form>
 <div class="form-actions">

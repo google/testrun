@@ -31,14 +31,12 @@ class ServicesModule(TestModule):
 
   def __init__(self,
                module,
-               log_dir=None,
                conf_file=None,
                results_dir=None,
                run=True,
                nmap_scan_results_path=None):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
-                     log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
     self._scan_tcp_results = None
@@ -83,7 +81,7 @@ class ServicesModule(TestModule):
         else:
           udp_open += 1
 
-    html_content = '<h1>Services Module</h1>'
+    html_content = '<h4 class="page-heading">Services Module</h4>'
 
     # Add summary table
     html_content += (f'''
@@ -198,10 +196,9 @@ class ServicesModule(TestModule):
       self._scan_results.update(self._scan_udp_results)
 
   def _scan_tcp_ports(self):
-    max_port = 1000
     LOGGER.info('Running nmap TCP port scan')
     nmap_results = util.run_command( # pylint: disable=E1120
-        f'''nmap --open -sT -sV -Pn -v -p 1-{max_port}
+        f'''nmap --open -sT -sV -Pn -v -p 1-65535
       --version-intensity 7 -T4 -oX - {self._ipv4_addr}''')[0]
 
     LOGGER.info('TCP port scan complete')
@@ -227,7 +224,7 @@ class ServicesModule(TestModule):
     if len(ports) > 0:
       port_list = ','.join(ports)
       LOGGER.info('Running nmap UDP port scan')
-      LOGGER.debug('UDP ports: ' + str(port_list))
+      LOGGER.info('UDP ports: ' + str(port_list))
       nmap_results = util.run_command( # pylint: disable=E1120
           f'nmap -sU -sV -p {port_list} -oX - {self._ipv4_addr}')[0]
       LOGGER.info('UDP port scan complete')
@@ -423,3 +420,15 @@ class ServicesModule(TestModule):
           else:
             return (False,
                     f"SSH server found running {open_port_info['version']}")
+
+  def _protocol_services_bacnet(self, config):
+    LOGGER.info('Running protocol.services.bacnet')
+
+    open_ports = self._check_results(config['ports'], config['services'])
+    if len(open_ports) == 0:
+      return False, 'No BACnet server found'
+    else:
+      return (
+        True,
+        f'''Found BACnet server running on port {', '.join(open_ports)}'''
+      )

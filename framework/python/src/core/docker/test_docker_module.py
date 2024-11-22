@@ -27,10 +27,12 @@ DEFAULT_TIMEOUT = 60  # time in seconds
 class TestModule(Module):
   """Represents a test module."""
 
-  def __init__(self, module_config_file, session, extra_hosts):
+  def __init__(self, module_config_file, test_orc, session, extra_hosts):
     super().__init__(module_config_file=module_config_file,
                      session=session,
                      extra_hosts=extra_hosts)
+
+    self._test_orc = test_orc
 
     # Set IP Index for all test modules
     self.ip_index = 9
@@ -39,11 +41,9 @@ class TestModule(Module):
     # Set the defaults
     self.network = True
     self.total_tests = 0
-    self.time = DEFAULT_TIMEOUT
     self.tests: list = []
 
-    if 'timeout' in module_json['config']['docker']:
-      self.timeout = module_json['config']['docker']['timeout']
+    self.timeout = self._get_module_timeout(module_json)
 
     # Determine if this module needs network access
     if 'network' in module_json['config']:
@@ -57,11 +57,12 @@ class TestModule(Module):
           test_case = TestCase(
               name=test_case_json['name'],
               description=test_case_json['test_description'],
-              expected_behavior=test_case_json['expected_behavior'],
-              required_result=test_case_json['required_result'])
+              expected_behavior=test_case_json['expected_behavior'])
 
+          # Check if steps to resolve have been specified
           if 'recommendations' in test_case_json:
             test_case.recommendations = test_case_json['recommendations']
+
           self.tests.append(test_case)
         except Exception as error:  # pylint: disable=W0718
           self.logger.error('Failed to load test case. See error for details')
@@ -92,15 +93,21 @@ class TestModule(Module):
     util.run_command(f'chown -R {host_user} {self.device_monitor_capture}')
 
   def get_environment(self, device):
+
+    # Obtain the test pack
+    test_pack = self._test_orc.get_test_pack(device.test_pack)
+
     environment = {
         'TZ': self.get_session().get_timezone(),
         'HOST_USER': self.get_session().get_host_user(),
         'DEVICE_MAC': device.mac_addr,
         'IPV4_ADDR': device.ip_addr,
         'DEVICE_TEST_MODULES': json.dumps(device.test_modules),
+        'DEVICE_TEST_PACK': json.dumps(test_pack.to_dict()),
         'IPV4_SUBNET': self.get_session().get_ipv4_subnet(),
         'IPV6_SUBNET': self.get_session().get_ipv6_subnet(),
         'DEV_IFACE': self.get_session().get_device_interface(),
+        'DEV_IFACE_MAC': self.get_session().get_device_interface_mac_addr()
     }
     return environment
 
@@ -131,3 +138,20 @@ class TestModule(Module):
               read_only=True)
     ]
     return mounts
+
+  def _get_module_timeout(self, module_json):
+    timeout = DEFAULT_TIMEOUT
+    try:
+      timeout = DEFAULT_TIMEOUT
+      test_modules = self.get_session().get_config().get('test_modules', {})
+      test_config = test_modules.get(self.name, {})
+      sys_timeout = test_config.get('timeout', None)
+
+      if sys_timeout is not None:
+        timeout = sys_timeout
+      elif 'timeout' in module_json['config']['docker']:
+        timeout = module_json['config']['docker']['timeout']
+    except Exception: # pylint: disable=W0718
+      # Ignore errors, just use default
+      timeout = DEFAULT_TIMEOUT
+    return timeout # pylint: disable=W0150

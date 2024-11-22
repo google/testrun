@@ -14,6 +14,6 @@ Within the ```python/src``` directory, the below tests are executed.
 
 | ID | Description | Expected behavior | Required result
 |---|---|---|---|
-| protocol.valid_bacnet | Can valid BACnet traffic be seen | BACnet traffic can be seen on the network and packets are valid | Required if Applicable |
+| protocol.valid_bacnet | Can valid BACnet traffic be seen | BACnet traffic can be seen on the network and packets are valid | Recommended |
 | protocol.bacnet.version | Obtain the version of BACnet client used | The BACnet client implements an up to date version of BACnet | Recommended |
 | protocol.valid_modbus | Can valid Modbus traffic be seen | Any Modbus functionality works as expected and valid Modbus traffic can be observed | Recommended |

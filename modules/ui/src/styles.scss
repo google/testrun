@@ -172,6 +172,11 @@ mat-hint {
     color: mat.m2-get-color-from-palette($color-primary, 800);
   }
 
+  &.cyan {
+    background: $cyan-50;
+    color: $cyan-900;
+  }
+
   &.grey {
     background: $color-background-grey;
     color: $grey-800;
@@ -260,33 +265,23 @@ body:has(.filter-dialog-content)
   opacity: 0;
 }
 
-body
-  #main:has(app-callout)
-  app-device-repository:not(:has(.device-repository-content-empty)),
-body #main:has(app-callout) app-history:not(:has(.results-content-empty)),
-body #main:has(app-callout) app-progress:not(:has(.progress-content-empty)),
-body #main:has(app-callout) app-risk-assessment .risk-assessment-container {
-  margin-top: 96px;
-}
+body #main {
+  &:has(.device-repository-content-empty),
+  &:has(.results-content-empty),
+  &:has(.progress-content-empty),
+  &:has(.risk-assessment-content-empty) {
+    .app-callout-container {
+      position: absolute;
+      width: 100%;
+      z-index: 2;
+    }
+  }
 
-body
-  #main:has(app-callout + app-callout)
-  app-device-repository:not(:has(.device-repository-content-empty)),
-body
-  #main:has(app-callout + app-callout)
-  app-history:not(:has(.results-content-empty)),
-body
-  #main:has(app-callout + app-callout)
-  app-progress:not(:has(.progress-content-empty)),
-body
-  #main:has(app-callout + app-callout)
-  app-risk-assessment
-  .risk-assessment-container {
-  margin-top: 156px;
-}
-
-body:has(app-risk-assessment .profiles-drawer) #main app-callout {
-  width: calc(100% - $profiles-drawer-width);
+  &:has(app-risk-assessment .profiles-drawer) {
+    .app-callout-container {
+      width: calc(100% - $profiles-drawer-width);
+    }
+  }
 }
 
 .text-nowrap {
@@ -317,4 +312,70 @@ body:has(app-risk-assessment .profiles-drawer) #main app-callout {
 
 .certificate-notification .mat-mdc-snack-bar-label {
   white-space: pre-line;
+}
+
+.mdc-tooltip--multiline .mat-mdc-tooltip-surface {
+  text-align: center !important;
+}
+
+@media (max-width: 1110px) {
+  $profiles-drawer-width-xs: 200px;
+  .active-menu {
+    .app-sidebar {
+      width: 214px !important;
+    }
+  }
+
+  .profiles-drawer {
+    width: $profiles-drawer-width-xs !important;
+  }
+
+  .profile-item-container {
+    gap: 4px !important;
+    padding: 16px 4px !important;
+    grid-template-columns: minmax(100px, 1fr) repeat(2, 24px) !important;
+    overflow: hidden;
+  }
+
+  .profile-item-info {
+    gap: 4px !important;
+  }
+
+  app-risk-assessment:has(.profiles-drawer) {
+    .risk-assessment-content-empty {
+      width: calc(100% - $profiles-drawer-width-xs) !important;
+    }
+  }
+
+  app-risk-assessment .main-content {
+    width: auto !important;
+    padding: 16px 4px !important;
+  }
+
+  .risk-assessment-content {
+    padding-right: $profiles-drawer-width-xs !important;
+  }
+
+  app-dynamic-form {
+    width: 100%;
+  }
+}
+
+button:not(.mat-mdc-button-disabled) {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.visually-hidden {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

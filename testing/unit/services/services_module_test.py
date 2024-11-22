@@ -15,6 +15,7 @@
 from services_module import ServicesModule
 import unittest
 import os
+import sys
 import shutil
 # from testreport import TestReport
 
@@ -48,7 +49,6 @@ class ServicesTest(unittest.TestCase):
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
     services_module = ServicesModule(module=MODULE,
-                             log_dir=OUTPUT_DIR,
                              results_dir=OUTPUT_DIR,
                              run=False,
                              nmap_scan_results_path=OUTPUT_DIR)
@@ -74,7 +74,6 @@ class ServicesTest(unittest.TestCase):
     shutil.copy(src_scan_results_path, dst_scan_results_path)
 
     services_module = ServicesModule(module=MODULE,
-                             log_dir=OUTPUT_DIR,
                              results_dir=OUTPUT_DIR,
                              run=False,
                              nmap_scan_results_path=OUTPUT_DIR)
@@ -98,4 +97,10 @@ if __name__ == '__main__':
   suite.addTest(ServicesTest('services_module_report_all_closed_test'))
 
   runner = unittest.TextTestRunner()
-  runner.run(suite)
+  test_result = runner.run(suite)
+
+  # Check if the tests failed and exit with the appropriate code
+  if not test_result.wasSuccessful():
+    sys.exit(1)  # Return a non-zero exit code for failures
+  sys.exit(0)  # Return zero for success
+  

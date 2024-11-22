@@ -97,6 +97,9 @@ export class DownloadOptionsComponent {
   }
 
   getReportTitle(data: TestrunStatus) {
+    if (!data.device) {
+      return '';
+    }
     return `${data.device.manufacturer} ${data.device.model} ${
       data.device.firmware
     } ${data.status} ${this.getFormattedDateString(data.started)}`

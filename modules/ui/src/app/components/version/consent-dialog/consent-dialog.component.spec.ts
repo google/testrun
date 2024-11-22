@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
 import { ConsentDialogComponent } from './consent-dialog.component';
 import {
@@ -25,13 +30,20 @@ import { MatButtonModule } from '@angular/material/button';
 import { of } from 'rxjs';
 import { NEW_VERSION, VERSION } from '../../../mocks/version.mock';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { FocusManagerService } from '../../../services/focus-manager.service';
+import SpyObj = jasmine.SpyObj;
 
 describe('ConsentDialogComponent', () => {
   let component: ConsentDialogComponent;
   let fixture: ComponentFixture<ConsentDialogComponent>;
   let compiled: HTMLElement;
+  let mockFocusManagerService: SpyObj<FocusManagerService>;
 
   beforeEach(() => {
+    mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
+      'focusFirstElementInContainer',
+    ]);
+
     TestBed.configureTestingModule({
       imports: [
         ConsentDialogComponent,
@@ -48,6 +60,7 @@ describe('ConsentDialogComponent', () => {
           },
         },
         { provide: MAT_DIALOG_DATA, useValue: {} },
+        { provide: FocusManagerService, useValue: mockFocusManagerService },
       ],
     });
     fixture = TestBed.createComponent(ConsentDialogComponent);
@@ -102,6 +115,15 @@ describe('ConsentDialogComponent', () => {
 
     expect(closeSpy).toHaveBeenCalledTimes(0);
   });
+
+  it('should set focus to first focusable elem when close dialog', fakeAsync(() => {
+    component.confirm(true);
+    tick(100);
+
+    expect(
+      mockFocusManagerService.focusFirstElementInContainer
+    ).toHaveBeenCalled();
+  }));
 
   describe('with new version available', () => {
     beforeEach(() => {

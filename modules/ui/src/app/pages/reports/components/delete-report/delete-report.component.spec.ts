@@ -51,13 +51,27 @@ describe('DeleteReportComponent', () => {
 
     it('#deleteReport should open delete dialog', () => {
       const deviceRemovedSpy = spyOn(component.removeDevice, 'emit');
-      spyOn(component.dialog, 'open').and.returnValue({
+      const openSpy = spyOn(component.dialog, 'open').and.returnValue({
         afterClosed: () => of(true),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
       component.deleteReport(new Event('click'));
 
       expect(deviceRemovedSpy).toHaveBeenCalled();
+
+      expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
+        ariaLabel: 'Delete report',
+        data: {
+          title: 'Delete report?',
+          content:
+            'You are about to delete Delta 03-DIN-CPU 1.2.2 22 Jun 2023 9:20. Are you sure?',
+        },
+        autoFocus: true,
+        hasBackdrop: true,
+        disableClose: true,
+        panelClass: 'simple-dialog',
+      });
+      openSpy.calls.reset();
     });
   });
 

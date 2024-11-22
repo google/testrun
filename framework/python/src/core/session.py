@@ -38,9 +38,12 @@ API_URL_KEY = 'api_url'
 API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 ORG_NAME_KEY = 'org_name'
+TEST_CONFIG_KEY = 'test_modules'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 STATUS_TOPIC = 'status'
+
+MAKE_CONTROL_DIR =  'make/DEBIAN/control'
 
 PROFILE_FORMAT_PATH = 'resources/risk_assessment.json'
 PROFILES_DIR = 'local/risk_profiles'
@@ -82,6 +85,7 @@ class TestrunSession():
     self._root_dir = root_dir
 
     self._status = TestrunStatus.IDLE
+    self._description = None
 
     # Target test device
     self._device = None
@@ -126,7 +130,6 @@ class TestrunSession():
 
     # System network interfaces
     self._ifaces = {}
-
     # Loading methods
     self._load_version()
     self._load_config()
@@ -186,7 +189,8 @@ class TestrunSession():
         'max_device_reports': 0,
         'api_url': 'http://localhost',
         'api_port': 8000,
-        'org_name': ''
+        'org_name': '',
+        'single_intf': False,
     }
 
   def get_config(self):
@@ -238,13 +242,16 @@ class TestrunSession():
           ORG_NAME_KEY
         )
 
-      LOGGER.debug(self._config)
+      if TEST_CONFIG_KEY in config_file_json:
+        self._config[TEST_CONFIG_KEY] = config_file_json.get(
+          TEST_CONFIG_KEY
+        )
 
   def _load_version(self):
     version_cmd = util.run_command(
         'dpkg-query --showformat=\'${Version}\' --show testrun')
     # index 1 of response is the stderr byte stream so if
-    # it has any data in it, there was an error and we
+    # it has any data in it, there was an error and wen
     # did not resolve the version and we'll use the fallback
     if len(version_cmd[1]) == 0:
       version = version_cmd[0]
@@ -252,9 +259,29 @@ class TestrunSession():
     else:
       LOGGER.debug('Failed getting the version from dpkg-query')
       # Try getting the version from the make control file
+
+      # Check if MAKE_CONTROL_DIR exists
+      if not os.path.exists(MAKE_CONTROL_DIR):
+        LOGGER.error('make/DEBIAN/control file path not found')
+        self._version = 'Unknown'
+        return
+
       try:
-        version = util.run_command(
-            '$(grep -R "Version: " $MAKE_CONTROL_DIR | awk "{print $2}"')
+        # Run the grep command to find the version line
+        grep_cmd = util.run_command(f'grep -R "Version: " {MAKE_CONTROL_DIR}')
+
+        if grep_cmd[0] and len(grep_cmd[1]) == 0:
+          # Extract the version number from grep
+          version = grep_cmd[0].split()[1]
+          self._version = version
+          LOGGER.debug(f'Testrun version is: {self._version}')
+
+        else:
+          # Error handling if grep can't find the version line
+          self._version = 'Unknown'
+          LOGGER.debug(f'Testrun version is {self._version}')
+          raise Exception('Version line not found in make control file')
+
       except Exception as e: # pylint: disable=W0703
         LOGGER.debug('Failed getting the version from make control file')
         LOGGER.error(e)
@@ -278,10 +305,16 @@ class TestrunSession():
     return self._runtime_params
 
   def add_runtime_param(self, param):
+    if param == 'single_intf':
+      self._config['single_intf'] = True
     self._runtime_params.append(param)
 
   def get_device_interface(self):
     return self._config.get(NETWORK_KEY, {}).get(DEVICE_INTF_KEY)
+
+  def get_device_interface_mac_addr(self):
+    iface = self.get_device_interface()
+    return IPControl.get_iface_mac_address(iface=iface)
 
   def get_internet_interface(self):
     return self._config.get(NETWORK_KEY, {}).get(INTERNET_INTF_KEY)
@@ -356,6 +389,9 @@ class TestrunSession():
   def set_status(self, status):
     self._status = status
 
+  def set_description(self, desc: str):
+    self._description = desc
+
   def get_test_results(self):
     return self._results
 
@@ -381,10 +417,40 @@ class TestrunSession():
       # result type is TestCase object
       if test_result.name == result.name:
 
-        # Just update the result and description
-        test_result.result = result.result
-        test_result.description = result.description
-        test_result.recommendations = result.recommendations
+        # Just update the result, description and recommendations
+        if len(result.description) != 0:
+          test_result.description = result.description
+
+        # Add recommendations if provided
+        if result.recommendations is not None:
+          test_result.recommendations = result.recommendations
+
+          if len(result.recommendations) == 0:
+            test_result.recommendations = None
+
+        if result.result is not None:
+
+          # Any informational test should always report informational
+          if test_result.required_result == 'Informational':
+
+            # Set test result to informational
+            if result.result in [
+              TestResult.NON_COMPLIANT,
+              TestResult.COMPLIANT,
+              TestResult.INFORMATIONAL
+            ]:
+              test_result.result = TestResult.INFORMATIONAL
+            else:
+              test_result.result = result.result
+
+            # Copy any test recommendations to optional
+            test_result.optional_recommendations = result.recommendations
+
+            # Remove recommendations from informational tests
+            test_result.recommendations = None
+          else:
+            test_result.result = result.result
+
         updated = True
 
     if not updated:
@@ -488,20 +554,11 @@ class TestrunSession():
           # Instantiate a new risk profile
           risk_profile: RiskProfile = RiskProfile()
 
+          # Assign the profile questions
           questions: list[dict] = json_data.get('questions')
 
-          # Remove any additional (outdated questions from the profile)
-          for question in questions:
-
-            # Check if question exists in the profile format
-            if self.get_profile_format_question(
-              question=question.get('question')) is None:
-
-              # Remove question from profile
-              questions.remove(question)
-
-          # Pass questions back to the risk profile
-          json_data['questions'] = questions
+          # Pass only the valid questions to the risk profile
+          json_data['questions'] = self._remove_invalid_questions(questions)
 
           # Pass JSON to populate risk profile
           risk_profile.load(profile_json=json_data,
@@ -549,6 +606,12 @@ class TestrunSession():
     profile_json['version'] = self.get_version()
     profile_json['created'] = datetime.datetime.now().strftime('%Y-%m-%d')
 
+    # Assign the profile questions
+    questions: list[dict] = profile_json.get('questions')
+
+    # Pass only the valid questions to the risk profile
+    profile_json['questions'] = self._remove_invalid_questions(questions)
+
     # Check if profile already exists
     risk_profile = self.get_profile(profile_name)
     if risk_profile is None:
@@ -577,6 +640,28 @@ class TestrunSession():
       f.write(risk_profile.to_json(pretty=True))
 
     return risk_profile
+
+  def _remove_invalid_questions(self, questions):
+    """Remove unrecognised questions from the profile"""
+
+    # Store valid questions
+    valid_questions = []
+
+    # Remove any additional (outdated questions from the profile)
+    for question in questions:
+
+      # Check if question exists in the profile format
+      if self.get_profile_format_question(
+        question=question['question']) is not None:
+
+        # Add the question to the valid_questions
+        valid_questions.append(question)
+
+      else:
+        LOGGER.debug(f'Removed unrecognised question: {question["question"]}')
+
+    # Return the list of valid questions
+    return valid_questions
 
   def validate_profile_json(self, profile_json):
     """Validate properties in profile update requests"""
@@ -614,12 +699,12 @@ class TestrunSession():
         LOGGER.error('A question is missing from "question" field')
         return False
 
-      # Check if question is a recognized question
+      # Check if question is a recognised question
       format_q = self.get_profile_format_question(
         question.get('question'))
 
       if format_q is None:
-        LOGGER.error(f'Unrecognized question: {question.get("question")}')
+        LOGGER.error(f'Unrecognised question: {question.get("question")}')
         # Just ignore additional questions
         continue
 
@@ -699,6 +784,7 @@ question {question.get('question')}''')
 
   def reset(self):
     self.set_status(TestrunStatus.IDLE)
+    self.set_description(None)
     self.set_target_device(None)
     self._report_url = None
     self._total_tests = 0
@@ -731,6 +817,9 @@ question {question.get('question')}''')
     if self._report_url is not None:
       session_json['report'] = self.get_report_url()
 
+    if self._description is not None:
+      session_json['description'] = self._description
+
     return session_json
 
   def get_timezone(self):
@@ -743,17 +832,30 @@ question {question.get('question')}''')
     # Parse bytes into x509 object
     cert = x509.load_pem_x509_certificate(content, default_backend())
 
-    # Extract required properties
-    common_name = cert.subject.get_attributes_for_oid(
-        NameOID.COMMON_NAME)[0].value
+    # Retrieve the common name attributes from the subject
+    common_name_attr = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
+
+    # Raise an error if the common name attribute is missing
+    if not common_name_attr:
+      raise ValueError('Certificate is missing the common name')
+
+    # Extract the organization name value
+    common_name = common_name_attr[0].value
 
     # Check if any existing certificates have the same common name
     for cur_cert in self._certs:
       if common_name == cur_cert['name']:
         raise ValueError('A certificate with that name already exists')
 
-    issuer = cert.issuer.get_attributes_for_oid(
-        NameOID.ORGANIZATION_NAME)[0].value
+    # Retrieve the organization name attributes from issuer
+    issuer_attr = cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)
+
+    # Raise an error if the organization name attribute is missing
+    if not issuer_attr:
+      raise ValueError('Certificate is missing the organization name')
+
+    # Extract the organization name value
+    issuer = issuer_attr[0].value
 
     status = 'Valid'
     if now > cert.not_valid_after_utc:

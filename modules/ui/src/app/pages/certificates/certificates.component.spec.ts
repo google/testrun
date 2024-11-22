@@ -89,20 +89,6 @@ describe('CertificatesComponent', () => {
       expect(component.closeCertificatedEvent.emit).toHaveBeenCalled();
     });
 
-    it('should emit closeSettingEvent when close button clicked', () => {
-      const headerCloseButton = fixture.nativeElement.querySelector(
-        '.close-button'
-      ) as HTMLButtonElement;
-      spyOn(component.closeCertificatedEvent, 'emit');
-
-      headerCloseButton.click();
-
-      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-        'The certificates panel is closed.'
-      );
-      expect(component.closeCertificatedEvent.emit).toHaveBeenCalled();
-    });
-
     it('should have upload file button', () => {
       const uploadCertificatesButton = fixture.nativeElement.querySelector(
         '.browse-files-button'
@@ -166,9 +152,9 @@ describe('CertificatesComponent', () => {
         flush();
       }));
 
-      it('should focus navigation button if next active element does not exist', fakeAsync(() => {
+      it('should focus navigation close button if next active element does not exist', fakeAsync(() => {
         const nextButton = window.document.querySelector(
-          '.certificates-drawer-content .close-button'
+          '.certificates-drawer-header .certificates-drawer-header-button'
         ) as HTMLButtonElement;
         const buttonFocusSpy = spyOn(nextButton, 'focus');
 

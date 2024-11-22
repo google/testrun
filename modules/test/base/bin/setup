@@ -23,10 +23,20 @@ export BIN_DIR="/testrun/bin"
 # Default interface should be veth0 for all containers
 export IFACE=veth0
 
+# Assign the current host user
+export HOST_USER=$(whoami)
+
 # Create a local user that matches the same as the host
 # to be used for correct file ownership for various logs
-# HOST_USER mapped in via docker container environemnt variables
-useradd $HOST_USER
+# HOST_USER mapped in via docker container environment variables
+if ! id "$HOST_USER" &>/dev/null; then
+    useradd "$HOST_USER"
+else
+    echo User $HOST_USER already exists
+fi
+
+# Create the output directory
+mkdir -p "$OUTPUT_DIR"
 
 # Set permissions on the output files
 chown -R $HOST_USER $OUTPUT_DIR
@@ -41,7 +51,7 @@ CONF=`cat $CONF_FILE`
 
 if [[ -z $CONF ]]
 then
-	echo "No config file present at $CONF_FILE.  Exiting startup."
+	echo "No config file present at $CONF_FILE. Exiting startup."
 	exit 1
 fi
 

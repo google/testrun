@@ -16,20 +16,17 @@
       {
         "name": "baseline.compliant",
         "test_description": "Simulate a compliant test",
-        "expected_behavior": "A compliant test result is generated",
-        "required_result": "Required"
+        "expected_behavior": "A compliant test result is generated"
       },
       {
         "name": "baseline.non_compliant",
         "test_description": "Simulate a non-compliant test",
-        "expected_behavior": "A non-compliant test result is generated",
-        "required_result": "Recommended"
+        "expected_behavior": "A non-compliant test result is generated"
       },
       {
         "name": "baseline.skipped",
         "test_description": "Simulate a skipped test",
-        "expected_behavior": "A skipped test result is generated",
-        "required_result": "Skipped"
+        "expected_behavior": "A skipped test result is generated"
       }
     ]
   }

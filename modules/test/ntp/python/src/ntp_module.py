@@ -30,7 +30,6 @@ class NTPModule(TestModule):
 
   def __init__(self,
                module,
-               log_dir=None,
                conf_file=None,
                results_dir=None,
                ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE,
@@ -38,7 +37,6 @@ class NTPModule(TestModule):
                monitor_capture_file=MONITOR_CAPTURE_FILE):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
-                     log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
     self.ntp_server_capture_file = ntp_server_capture_file
@@ -54,7 +52,7 @@ class NTPModule(TestModule):
     # Extract NTP data from the pcap file
     ntp_table_data = self.extract_ntp_data()
 
-    html_content = '<h1>NTP Module</h1>'
+    html_content = '<h4 class="page-heading">NTP Module</h4>'
 
     # Set the summary variables
     local_requests = sum(
@@ -267,11 +265,9 @@ class NTPModule(TestModule):
     result = False, 'Device has not sent any NTP requests'
 
     if device_sends_ntp3 and device_sends_ntp4:
-      result = False, ('Device sent NTPv3 and NTPv4 packets. ' +
-                       'NTPv3 is not allowed')
+      result = False, ('Device sent NTPv3 and NTPv4 packets')
     elif device_sends_ntp3:
-      result = False, ('Device sent NTPv3 packets. '
-                       'NTPv3 is not allowed')
+      result = False, ('Device sent NTPv3 packets')
     elif device_sends_ntp4:
       result = True, 'Device sent NTPv4 packets'
 

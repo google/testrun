@@ -37,9 +37,9 @@ limitations under the License.
   let-description="description"
   let-options="options"
   let-formControlName="formControlName">
-  <label class="field-label" for="{{ formControlName }}-group"
-    >{{ label }} <span *ngIf="required">*</span></label
-  >
+  <label class="field-label" for="{{ formControlName }}-group">
+    {{ label }}
+  </label>
   <ng-container [ngSwitch]="type">
     <ng-container *ngSwitchCase="FormControlType.TEXT">
       <ng-container
@@ -226,7 +226,7 @@ limitations under the License.
       <mat-checkbox
         [formControlName]="i"
         (keydown.tab)="markSectionAsDirty(i, options.length, formControlName)">
-        {{ getOptionValue(option) }}
+        <span [innerHTML]="getOptionValue(option)"></span>
       </mat-checkbox>
     </p>
     <mat-hint *ngIf="description" class="field-hint">{{
@@ -250,17 +250,22 @@ limitations under the License.
       aria-label="{{ label }}"
       id="{{ formControlName }}-group"
       [formControlName]="formControlName">
+      <mat-select-trigger>
+        {{ getControl(formControlName).value }}
+      </mat-select-trigger>
       <mat-option
         *ngFor="let option of options; let i = index"
-        [value]="getOptionValue(option)">
-        {{ getOptionValue(option) }}
+        [value]="getOptionValue(option)"
+        [innerHTML]="getSanitizedOptionValue(option)">
       </mat-option>
     </mat-select>
     <mat-hint *ngIf="description" class="field-hint">{{
       description
     }}</mat-hint>
     <mat-error *ngIf="getControl(formControlName).hasError('required')">
-      <span>The field is required</span>
+      <span role="alert" aria-live="assertive" [attr.aria-label]="label">
+        The field is required
+      </span>
     </mat-error>
   </mat-form-field>
 </ng-template>

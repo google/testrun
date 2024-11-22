@@ -15,6 +15,7 @@
 from port_stats_util import PortStatsUtil
 from connection_module import ConnectionModule
 import os
+import sys
 import unittest
 from common import logger
 
@@ -44,6 +45,7 @@ STARTUP_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'startup.pcap')
 MONITOR_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'monitor.pcap')
 
 LOGGER = None
+
 
 class ConnectionModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning Connection 
@@ -132,13 +134,41 @@ class ConnectionModuleTest(unittest.TestCase):
   def connection_switch_dhcp_snooping_icmp_test(self):
     LOGGER.info('connection_switch_dhcp_snooping_icmp_test')
     conn_module = ConnectionModule(module=MODULE,
-                           log_dir=OUTPUT_DIR,
-                           results_dir=OUTPUT_DIR,
-                           startup_capture_file=STARTUP_CAPTURE_FILE,
-                           monitor_capture_file=MONITOR_CAPTURE_FILE)
-    result = conn_module._connection_switch_dhcp_snooping() # pylint: disable=W0212
+                                   results_dir=OUTPUT_DIR,
+                                   startup_capture_file=STARTUP_CAPTURE_FILE,
+                                   monitor_capture_file=MONITOR_CAPTURE_FILE)
+    result = conn_module._connection_switch_dhcp_snooping()  # pylint: disable=W0212
     LOGGER.info(result)
     self.assertEqual(result[0], True)
+
+  def communication_network_type_test(self):
+    LOGGER.info('communication_network_type_test')
+    conn_module = ConnectionModule(module=MODULE,
+                                   results_dir=OUTPUT_DIR,
+                                   startup_capture_file=STARTUP_CAPTURE_FILE,
+                                   monitor_capture_file=MONITOR_CAPTURE_FILE)
+    result = conn_module._communication_network_type()  # pylint: disable=W0212
+    details_expected = {
+        'mac_address': '98:f0:7b:d1:87:06',
+        'multicast': {
+            'from': 11,
+            'to': 0
+        },
+        'broadcast': {
+            'from': 13,
+            'to': 0
+        },
+        'unicast': {
+            'from': 0,
+            'to': 0
+        }
+    }
+    LOGGER.info(result)
+    self.assertEqual(result[0], 'Informational')
+    self.assertEqual(result[1], 'Packet types detected: Multicast, Broadcast')
+    self.assertEqual(result[2], details_expected)
+    #self.assertEqual(result[0], True)
+
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
@@ -162,5 +192,13 @@ if __name__ == '__main__':
   suite.addTest(
       ConnectionModuleTest('connection_switch_dhcp_snooping_icmp_test'))
 
+  # DHCP Snooping related tests
+  suite.addTest(ConnectionModuleTest('communication_network_type_test'))
+
   runner = unittest.TextTestRunner()
-  runner.run(suite)
+  test_result = runner.run(suite)
+
+  # Check if the tests failed and exit with the appropriate code
+  if not test_result.wasSuccessful():
+    sys.exit(1)  # Return a non-zero exit code for failures
+  sys.exit(0)  # Return zero for success

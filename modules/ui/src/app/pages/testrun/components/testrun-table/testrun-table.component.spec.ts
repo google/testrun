@@ -55,6 +55,7 @@ describe('ProgressTableComponent', () => {
         green: false,
         red: true,
         blue: false,
+        cyan: false,
         grey: false,
       };
 
@@ -72,6 +73,14 @@ describe('ProgressTableComponent', () => {
       expect(component.trackTest(1, TEST_DATA_RESULT[0])).toEqual(
         'dns.network.hostname_resolutionCompliant'
       );
+    });
+
+    it('#getAriaLabel should return valid message', () => {
+      component.isAllCollapsed = true;
+
+      const result = component.getAriaLabel();
+
+      expect(result).toEqual('Expand all rows');
     });
   });
 
@@ -141,6 +150,12 @@ describe('ProgressTableComponent', () => {
 
         expect(button).not.toBeNull();
         expect(button?.ariaLabel).toBe('Collapse row');
+      });
+
+      it('#checkAllCollapsed should return isAllCollapsed', () => {
+        component.checkAllCollapsed();
+
+        expect(component.isAllCollapsed).toBeFalse();
       });
     });
   });

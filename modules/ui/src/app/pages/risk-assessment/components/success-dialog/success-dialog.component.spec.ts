@@ -20,6 +20,7 @@ import { TestRunService } from '../../../../services/test-run.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { PROFILE_MOCK } from '../../../../mocks/profile.mock';
+import { ProfileRisk } from '../../../../model/profile';
 
 describe('SuccessDialogComponent', () => {
   let component: SuccessDialogComponent;
@@ -66,5 +67,12 @@ describe('SuccessDialogComponent', () => {
     expect(closeSpy).toHaveBeenCalled();
 
     closeSpy.calls.reset();
+  });
+
+  it('should return proper text for risk', () => {
+    expect(component.getRiskExplanation(ProfileRisk.LIMITED)).toEqual('');
+    expect(component.getRiskExplanation(ProfileRisk.HIGH)).toEqual(
+      'An additional assessment may be required.'
+    );
   });
 });
