@@ -82,8 +82,10 @@ class BACnet():
         for device in self.devices:
           object_id = str(device[3])  # BACnet Object ID
           LOGGER.info('Checking device: ' + str(device))
-          result &= self.validate_bacnet_source(
+          device_valid = self.validate_bacnet_source(
               object_id=object_id, device_hw_addr=self.device_hw_addr)
+          if device_valid is not None:
+            result &= device_valid
         description = ('BACnet device discovered' if result else
                        'BACnet device was found but was not device under test')
       else:
