@@ -75,7 +75,8 @@ limitations under the License.
         <a
           class="logo-link"
           routerLink="{{ Routes.Testing }}"
-          aria-label="Testrun ui logo">
+          aria-label="Testrun ui logo"
+          (keydown.enter)="onNavigationClick()">
           <mat-icon svgIcon="testrun_logo_color"></mat-icon>
           <h1 class="main-heading">Testrun</h1>
         </a>
