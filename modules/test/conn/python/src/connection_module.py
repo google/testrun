@@ -835,7 +835,7 @@ class ConnectionModule(TestModule):
       else:
         if result['result'] is not None:
           final_result &= result['result']
-        if result['result']:
+        if not result['result']:
           final_result_details += result['details'] + '\n'
 
     if final_result:
@@ -873,9 +873,8 @@ class ConnectionModule(TestModule):
       else:
         LOGGER.info('New lease not found. Waiting to check again')
 
-    except Exception as e:  # pylint: disable=W0718
-      LOGGER.error('Failed to restore DHCP server configuration: ' + str(e))
-      LOGGER.error(traceback.format_exc())
+    except Exception:  # pylint: disable=W0718
+      LOGGER.error('Failed to restore DHCP server configuration')
 
     return final_result, final_result_details
 
