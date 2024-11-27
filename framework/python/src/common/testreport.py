@@ -347,9 +347,15 @@ class TestReport():
           index = report.find('<table class="module-summary"', index + 1)
         pos = 0
         for i in indices[1:]:
-          reports_transformed.append(report[pos:i])
+          page = report[pos:i].replace(
+            '"module-summary"', '"module-summary not-first"'
+            )
+          reports_transformed.append(page)
           pos = i
-        reports_transformed.append(report[pos:])
+        page = report[pos:].replace(
+          '"module-summary"', '"module-summary not-first"'
+          )
+        reports_transformed.append(page)
       else:
         reports_transformed.append(report)
 
