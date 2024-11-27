@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import 'colors';
-@import 'mixins';
+@use 'colors';
+@use 'mixins';
 
 ::ng-deep :root {
   --mat-dialog-container-max-width: 570px;
 }
 
 :host {
-  @include dialog;
+  @include mixins.dialog;
   padding: 24px 16px 8px 24px;
   gap: 10px;
 }
 
 .modal-title {
-  color: $grey-900;
+  color: colors.$grey-900;
   font-size: 18px;
   line-height: 24px;
 }
@@ -37,7 +37,7 @@
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
-  color: $grey-800;
+  color: colors.$grey-800;
 }
 
 .modal-actions {

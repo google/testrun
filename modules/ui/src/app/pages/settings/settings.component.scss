@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import 'colors';
-@import 'variables';
+@use 'colors';
+@use 'variables';
 
 :host {
   display: flex;
@@ -36,7 +36,7 @@
     font-style: normal;
     font-weight: 400;
     line-height: 28px;
-    color: $dark-grey;
+    color: colors.$dark-grey;
   }
 
   &-button {
@@ -94,8 +94,8 @@
 .message {
   margin: 0;
   padding: 6px 0 12px 0;
-  color: $grey-800;
-  font-family: $font-secondary;
+  color: colors.$grey-800;
+  font-family: variables.$font-secondary;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;

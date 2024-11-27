@@ -16,7 +16,7 @@
 
 @use 'sass:map';
 @use '@angular/material' as mat;
-@import 'variables';
+@use 'variables';
 
 @include mat.core();
 @include mat.strong-focus-indicators(
@@ -151,8 +151,8 @@ $light-theme: mat.define-theme(
       tertiary: $_tertiary,
     ),
     typography: (
-      brand-family: $font-primary,
-      plain-family: $font-secondary,
+      brand-family: variables.$font-primary,
+      plain-family: variables.$font-secondary,
     ),
     density: (
       scale: 0,

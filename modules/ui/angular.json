@@ -75,12 +75,15 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "buildTarget": "test-run-ui:build"
+          },
           "configurations": {
             "production": {
-              "browserTarget": "test-run-ui:build:production"
+              "buildTarget": "test-run-ui:build:production"
             },
             "development": {
-              "browserTarget": "test-run-ui:build:development"
+              "buildTarget": "test-run-ui:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -88,7 +91,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "test-run-ui:build"
+            "buildTarget": "test-run-ui:build"
           }
         },
         "test": {

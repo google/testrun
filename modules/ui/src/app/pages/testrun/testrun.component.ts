@@ -47,6 +47,7 @@ import { combineLatest } from 'rxjs/internal/observable/combineLatest';
     { provide: LOADER_TIMEOUT_CONFIG_TOKEN, useValue: 0 },
     TestrunStore,
   ],
+  standalone: false,
 })
 export class TestrunComponent implements OnInit, OnDestroy {
   public readonly StatusOfTestrun = StatusOfTestrun;

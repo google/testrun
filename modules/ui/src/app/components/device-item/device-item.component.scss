@@ -15,25 +15,25 @@
  */
 @use '@angular/material' as mat;
 @use 'm3-theme' as *;
-@import 'colors';
-@import 'variables';
+@use 'colors';
+@use 'variables';
 
 $icon-width: 80px;
 $border-radius: 12px;
 
 .device-item {
   display: grid;
-  width: $device-item-width;
+  width: variables.$device-item-width;
   height: 80px;
   border-radius: $border-radius;
-  border: 1px solid $blue-300;
-  background: $white;
+  border: 1px solid colors.$blue-300;
+  background: colors.$white;
   box-sizing: border-box;
   grid-template-columns: 1fr 1fr;
   padding: 0;
   grid-column-gap: 8px;
   grid-row-gap: 4px;
-  font-family: $font-primary;
+  font-family: variables.$font-primary;
   grid-template-areas:
     'manufacturer manufacturer'
     'name address';
@@ -51,33 +51,33 @@ $border-radius: 12px;
 
 .device-item-with-actions {
   display: grid;
-  width: $device-item-width;
+  width: variables.$device-item-width;
   min-height: calc($icon-width - 2px);
   border-radius: $border-radius;
-  border: 1px solid $blue-300;
-  background: $white;
+  border: 1px solid colors.$blue-300;
+  background: colors.$white;
   box-sizing: border-box;
   grid-template-columns: 1fr $icon-width;
   grid-column-gap: 1px;
   padding: 0;
-  font-family: $font-primary;
+  font-family: variables.$font-primary;
   grid-template-areas: 'edit start';
 
   &.device-item-outdated {
-    border-color: $red-300;
+    border-color: colors.$red-300;
   }
 }
 
 .button-edit {
   display: grid;
   grid-area: edit;
-  background: $white;
+  background: colors.$white;
   box-sizing: border-box;
   grid-template-columns: 1fr 1fr;
   padding: 0 6px 0 0;
   grid-column-gap: 8px;
   grid-row-gap: 4px;
-  font-family: $font-primary;
+  font-family: variables.$font-primary;
   grid-template-areas:
     'manufacturer status'
     'name address';
@@ -130,8 +130,8 @@ $border-radius: 12px;
   text-transform: uppercase;
   max-width: 100%;
   border-radius: 2px;
-  background: $red-700;
-  color: $white;
+  background: colors.$red-700;
+  color: colors.$white;
   padding: 0px 4px;
 }
 
@@ -170,7 +170,7 @@ $border-radius: 12px;
   padding: 0 2px 0 16px;
   grid-area: name;
   justify-self: start;
-  color: $grey-800;
+  color: colors.$grey-800;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -188,7 +188,7 @@ $border-radius: 12px;
   padding-right: 16px;
   grid-area: address;
   justify-self: end;
-  color: $grey-700;
+  color: colors.$grey-700;
   font-family: Roboto, sans-serif;
   font-size: 12px;
   padding-top: 2px;
@@ -209,7 +209,7 @@ $border-radius: 12px;
     background-color: mat.get-theme-color($light-theme, primary, 35);
 
     .button-start-icon {
-      color: $white;
+      color: colors.$white;
     }
   }
   &:disabled {

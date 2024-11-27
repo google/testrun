@@ -41,6 +41,7 @@ import { LoaderService } from '../../services/loader.service';
   hostDirectives: [CdkTrapFocus],
   providers: [SettingsStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SettingsComponent implements OnInit, OnDestroy {
   @ViewChild('reloadSettingLink') public reloadSettingLink!: ElementRef;

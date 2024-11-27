@@ -15,9 +15,9 @@
  */
 @use '@angular/material' as mat;
 @use 'm3-theme' as *;
-@import 'colors';
-@import 'variables';
-@import 'mixins';
+@use 'colors';
+@use 'variables';
+@use 'mixins';
 
 ::ng-deep :root {
   --mat-dialog-container-max-width: 732px;
@@ -68,7 +68,7 @@ $form-min-width: 285px;
     font-style: normal;
     font-weight: 400;
     line-height: 40px;
-    color: $grey-800;
+    color: colors.$grey-800;
     text-align: center;
     padding: 38px 0;
     background-image: url(/assets/icons/create_device_header.svg);
@@ -99,13 +99,13 @@ $form-min-width: 285px;
 }
 
 .device-qualification-form-journey-label {
-  font-family: $font-secondary;
+  font-family: variables.$font-secondary;
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
   line-height: 24px;
   letter-spacing: 0.1px;
-  color: $grey-800;
+  color: colors.$grey-800;
   margin: 24px 16px 0 16px;
 }
 
@@ -118,13 +118,13 @@ $form-min-width: 285px;
 }
 
 .device-qualification-form-journey-button-label {
-  font-family: $font-secondary;
+  font-family: variables.$font-secondary;
   font-style: normal;
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
-  color: $grey-800;
+  color: colors.$grey-800;
 }
 
 .device-qualification-form-test-modules-container {
@@ -138,22 +138,22 @@ $form-min-width: 285px;
   font-size: 22px;
   line-height: 28px;
   text-align: center;
-  color: $grey-900;
+  color: colors.$grey-900;
   padding: 0 24px;
   display: inline-block;
   height: 28px;
 }
 
 .device-qualification-form-step-description {
-  font-family: $font-secondary;
+  font-family: variables.$font-secondary;
   text-align: center;
-  color: $grey-800;
+  color: colors.$grey-800;
   margin: 0;
   padding: 8px 16px 0 16px;
 }
 
 .step-link {
-  color: $primary;
+  color: colors.$primary;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -184,7 +184,7 @@ $form-min-width: 285px;
   ::ng-deep {
     .device-item,
     .device-qualification-form-summary-info {
-      width: $device-item-width;
+      width: variables.$device-item-width;
     }
   }
 }
@@ -198,12 +198,12 @@ $form-min-width: 285px;
   margin-right: auto;
   margin-top: 24px;
   &-error {
-    background: $red-50;
+    background: colors.$red-50;
   }
 }
 
 .device-qualification-form-actions {
-  width: $device-item-width;
+  width: variables.$device-item-width;
   text-align: center;
   padding: 8px 24px;
   justify-self: center;
@@ -213,7 +213,7 @@ $form-min-width: 285px;
   }
   .close-button,
   .delete-button {
-    border: 1px solid $lighter-grey;
+    border: 1px solid colors.$lighter-grey;
   }
   .delete-button {
     float: left;
@@ -238,29 +238,29 @@ $form-min-width: 285px;
     font-weight: 400;
     line-height: 24px;
     text-align: center;
-    color: $grey-900;
+    color: colors.$grey-900;
   }
   &-description {
-    font-family: $font-secondary;
+    font-family: variables.$font-secondary;
     font-size: 16px;
     font-weight: 400;
     line-height: 24px;
     text-align: center;
-    color: $grey-800;
+    color: colors.$grey-800;
   }
   .info-label {
     display: block;
-    font-family: $font-secondary;
+    font-family: variables.$font-secondary;
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
     text-align: left;
-    color: $secondary;
+    color: colors.$secondary;
   }
   .info-value {
     display: block;
-    color: $grey-800;
-    font-family: $font-secondary;
+    color: colors.$grey-800;
+    font-family: variables.$font-secondary;
     font-size: 16px;
     font-weight: 400;
     line-height: 24px;
@@ -274,19 +274,19 @@ $form-min-width: 285px;
   height: 48px;
   margin: auto;
   justify-content: center;
-  color: $red-800;
+  color: colors.$red-800;
   gap: 14px;
   ::ng-deep mat-icon {
-    color: $red-800;
+    color: colors.$red-800;
   }
 }
 
 .device-qualification-form-instructions {
   margin-top: auto;
   padding-top: 8px;
-  color: $grey-800;
+  color: colors.$grey-800;
   text-align: center;
-  font-family: $font-secondary;
+  font-family: variables.$font-secondary;
   font-size: 16px;
   width: 510px;
   ul {
@@ -300,7 +300,7 @@ $form-min-width: 285px;
 }
 
 ::ng-deep mat-error {
-  background: $white;
+  background: colors.$white;
 }
 
 :host mat-form-field {
@@ -313,7 +313,7 @@ $form-min-width: 285px;
 .device-qualification-form-test-modules-container-error
   ::ng-deep
   .device-tests-title {
-  color: $red-800;
+  color: colors.$red-800;
 }
 
 .device-qualification-form-test-modules-error {

@@ -17,7 +17,7 @@ import { Component, Input, TemplateRef } from '@angular/core';
 import { CdkStepper, CdkStepperModule } from '@angular/cdk/stepper';
 import { NgForOf, NgIf, NgTemplateOutlet } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
-import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatButton } from '@angular/material/button';
 import { FormGroup } from '@angular/forms';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
@@ -30,7 +30,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     CdkStepperModule,
     NgIf,
     MatIcon,
-    MatIconButton,
     MatButton,
     MatTooltipModule,
   ],

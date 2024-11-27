@@ -27,6 +27,7 @@ import {
   templateUrl: './testrun-status-card.component.html',
   styleUrls: ['./testrun-status-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TestrunStatusCardComponent {
   @Input() systemStatus!: TestrunStatus;

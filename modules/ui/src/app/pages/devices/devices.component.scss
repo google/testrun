@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import 'colors';
-@import 'variables';
-@import 'mixins';
+@use 'colors';
+@use 'variables';
+@use 'mixins';
 
 :host {
   overflow: hidden;
@@ -24,12 +24,12 @@
 }
 
 .device-repository-content-empty {
-  @include content-empty;
+  @include mixins.content-empty;
 }
 
 .device-repository-toolbar {
   gap: 16px;
-  background: $white;
+  background: colors.$white;
   height: 74px;
   padding: 24px 0 8px 32px;
 }
@@ -38,7 +38,7 @@
   align-content: start;
   padding: 24px 32px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, $device-item-width);
+  grid-template-columns: repeat(auto-fit, variables.$device-item-width);
   gap: 16px;
   overflow-y: auto;
 }

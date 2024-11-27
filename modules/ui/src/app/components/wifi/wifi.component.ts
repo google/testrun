@@ -16,12 +16,12 @@
 import { Component, Input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
-import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatIconButton } from '@angular/material/button';
 
 @Component({
   selector: 'app-wifi',
   standalone: true,
-  imports: [MatIcon, MatTooltip, MatButton, MatIconButton],
+  imports: [MatIcon, MatTooltip, MatIconButton],
   templateUrl: './wifi.component.html',
   styles: `
     .wifi-button.disabled {

@@ -1,6 +1,6 @@
 @use '@angular/material' as mat;
-@import 'colors';
-@import 'variables';
+@use 'colors';
+@use 'variables';
 
 :host {
   padding-top: 16px;
@@ -8,7 +8,7 @@
 
 .setting-form-label {
   font-size: 18px;
-  color: $dark-grey;
+  color: colors.$dark-grey;
 }
 
 :host:has(.two-ports-message) .internet-label {
@@ -16,12 +16,12 @@
 }
 
 .setting-label-description {
-  font-family: $font-secondary;
+  font-family: variables.$font-secondary;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
   margin: 8px 0;
-  color: $dark-grey;
+  color: colors.$dark-grey;
 }
 
 .setting-option-value {
@@ -38,11 +38,11 @@
   letter-spacing: 0.2px;
 
   &.top {
-    color: $grey-800;
+    color: colors.$grey-800;
   }
 
   &.bottom {
-    color: $grey-700;
+    color: colors.$grey-700;
   }
 }
 

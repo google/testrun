@@ -15,8 +15,8 @@
  */
 @use '@angular/material' as mat;
 @use 'm3-theme' as *;
-@import 'colors';
-@import 'variables';
+@use 'colors';
+@use 'variables';
 
 $toolbar-height: 64px;
 $content-padding-top: 18px;
@@ -25,7 +25,7 @@ $nav-width: 96px;
 
 .app-container {
   height: 100%;
-  background-color: $surface-container-low;
+  background-color: colors.$surface-container-low;
 }
 
 .spacer {
@@ -35,7 +35,7 @@ $nav-width: 96px;
 .app-sidebar {
   display: flex;
   flex-direction: column;
-  background-color: $surface-container-low;
+  background-color: colors.$surface-container-low;
   height: 100%;
   gap: 8px;
   width: $nav-width;
@@ -43,7 +43,7 @@ $nav-width: 96px;
 }
 
 .nav-items-container {
-  height: calc(100% - $nav-button-height);
+  height: calc(100% - #{variables.$nav-button-height});
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -55,7 +55,7 @@ $nav-width: 96px;
 .app-sidebar-button {
   display: flex;
   flex-direction: column;
-  border-radius: $corner-large;
+  border-radius: variables.$corner-large;
   border: 1px solid transparent;
   min-width: 48px;
   box-sizing: border-box;
@@ -76,9 +76,9 @@ $nav-width: 96px;
 }
 
 .sidebar-button-label {
-  color: $on-surface-variant;
+  color: colors.$on-surface-variant;
   text-align: center;
-  font-family: $font-text;
+  font-family: variables.$font-text;
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
@@ -94,7 +94,7 @@ $nav-width: 96px;
   margin-right: 0;
   width: 24px;
   font-size: 24px;
-  color: $on-surface-variant;
+  color: colors.$on-surface-variant;
   height: 24px;
 }
 
@@ -113,20 +113,20 @@ $nav-width: 96px;
   }
 
   & > .mat-icon {
-    color: $on-secondary-fixed-variant;
+    color: colors.$on-secondary-fixed-variant;
   }
   .sidebar-button-label {
-    color: $secondary;
+    color: colors.$secondary;
   }
 
   .mat-mdc-button-persistent-ripple::before {
     opacity: 1;
-    background: $secondary-fixed;
+    background: colors.$secondary-fixed;
   }
 }
 
 .logo-link {
-  color: $on-surface;
+  color: colors.$on-surface;
   text-decoration: none;
   font-size: 22px;
   display: flex;
@@ -139,7 +139,7 @@ $nav-width: 96px;
 
   &:focus-visible {
     outline: none;
-    border: 1px solid $black;
+    border: 1px solid colors.$black;
     border-radius: 4px;
   }
 
@@ -169,8 +169,8 @@ $nav-width: 96px;
   z-index: 3;
   height: $toolbar-height;
   padding: 0 16px;
-  background-color: $surface-container-low;
-  color: $grey-800;
+  background-color: colors.$surface-container-low;
+  color: colors.$grey-800;
   width: 100%;
 }
 
@@ -190,8 +190,8 @@ $nav-width: 96px;
   height: calc(
     100% - $toolbar-height - $content-padding-top - $content-padding-bottom
   );
-  border-radius: $corner-large;
-  background: $white;
+  border-radius: variables.$corner-large;
+  background: colors.$white;
 }
 
 .app-content-main {
@@ -204,7 +204,7 @@ $nav-width: 96px;
 .settings-drawer {
   width: 320px;
   box-shadow: none;
-  border-left: 1px solid $light-grey;
+  border-left: 1px solid colors.$light-grey;
 }
 
 app-version {

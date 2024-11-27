@@ -15,8 +15,8 @@
  */
 @use '@angular/material' as mat;
 @use 'm3-theme' as *;
-@import 'variables';
-@import 'colors';
+@use 'variables';
+@use 'colors';
 
 :root {
   --mat-sidenav-container-width: auto;
@@ -30,7 +30,7 @@ body {
 
 body {
   margin: 0;
-  font-family: $font-primary;
+  font-family: variables.$font-primary;
 }
 
 /* Custom Scroollbar */
@@ -40,19 +40,19 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: $secondary;
+  background: colors.$secondary;
   border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: $dark-grey;
+  background: colors.$dark-grey;
 }
 
 .button-start {
   &:hover,
   &:focus-visible {
     .button-start-icon path {
-      fill: $white;
+      fill: colors.$white;
     }
   }
 }
@@ -73,7 +73,7 @@ body {
   display: grid;
   grid-template-rows: 1fr;
   min-width: 300px;
-  width: $form-max-width;
+  width: variables.$form-max-width;
 }
 
 .device-form-dialog .mat-mdc-dialog-container {
@@ -82,14 +82,14 @@ body {
 }
 
 mat-hint {
-  color: $grey-700;
+  color: colors.$grey-700;
 }
 
 .mdc-button:focus-visible,
 .mdc-icon-button:focus-visible,
 .mdc-radio__native-control:focus-visible,
 .mdc-checkbox__native-control:focus-visible {
-  outline: $black solid 2px;
+  outline: colors.$black solid 2px;
 }
 
 .mdc-button .mat-mdc-focus-indicator,
@@ -134,7 +134,7 @@ mat-hint {
   &.app-sidebar-button-active {
     .mat-mdc-button-persistent-ripple::before {
       opacity: 1;
-      background: $light-grey;
+      background: colors.$light-grey;
     }
 
     &.mat-mdc-button {
@@ -142,7 +142,7 @@ mat-hint {
       &:focus-visible {
         .mat-mdc-button-persistent-ripple::before {
           opacity: 0.6;
-          background: $grey-100;
+          background: colors.$grey-100;
         }
       }
     }
@@ -154,7 +154,7 @@ mat-hint {
 }
 
 .cell-result-text {
-  font-family: #{$font-text};
+  font-family: #{variables.$font-text};
   font-weight: 500;
   margin: 0;
   padding: 6px 16px;
@@ -180,13 +180,13 @@ mat-hint {
   }
 
   &.cyan {
-    background: $cyan-50;
-    color: $cyan-900;
+    background: colors.$cyan-50;
+    color: colors.$cyan-900;
   }
 
   &.grey {
-    background: $color-background-grey;
-    color: $grey-800;
+    background: colors.$color-background-grey;
+    color: colors.$grey-800;
   }
 }
 
@@ -202,13 +202,13 @@ mat-hint {
   text-transform: uppercase;
 
   &.red {
-    background: $red-50;
-    color: $red-700;
+    background: colors.$red-50;
+    color: colors.$red-700;
   }
 
   &.cyan {
-    background: $cyan-50;
-    color: $cyan-900;
+    background: colors.$cyan-50;
+    color: colors.$cyan-900;
   }
 }
 
@@ -290,7 +290,7 @@ body #main {
 
   &:has(app-risk-assessment .profiles-drawer) {
     .app-callout-container {
-      width: calc(100% - $profiles-drawer-width);
+      width: calc(100% - #{variables.$profiles-drawer-width});
     }
   }
 }
@@ -425,7 +425,7 @@ button:not(.mat-mdc-button-disabled) {
       content: 'arrow_upward';
       top: -0em;
       line-height: 12px;
-      font-family: #{$font-symbols};
+      font-family: #{variables.$font-symbols};
       position: absolute;
       color: var(--mat-table-header-headline-color);
       font-size: 19px;

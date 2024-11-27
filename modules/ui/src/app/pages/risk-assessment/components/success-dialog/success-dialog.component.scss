@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import 'colors';
-@import 'variables';
-@import 'mixins';
+@use 'colors';
+@use 'variables';
+@use 'mixins';
 
 ::ng-deep :root {
   --mat-dialog-container-max-width: 570px;
 }
 
 :host {
-  @include dialog;
+  @include mixins.dialog;
   padding: 24px 0 8px 0;
   > * {
     padding: 0 16px 0 24px;
@@ -30,7 +30,7 @@
 }
 
 .simple-dialog-title {
-  font-family: $font-primary;
+  font-family: variables.$font-primary;
   font-size: 18px;
   font-weight: 400;
   line-height: 24px;
@@ -40,7 +40,7 @@
 .simple-dialog-title + .simple-dialog-content {
   margin-top: 0;
   padding-top: 0;
-  border-bottom: 1px solid $lighter-grey;
+  border-bottom: 1px solid colors.$lighter-grey;
 }
 
 .simple-dialog-content {
@@ -48,7 +48,7 @@
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
-  color: $grey-800;
+  color: colors.$grey-800;
   padding: 16px 16px 16px 24px;
   margin: 0;
 }
@@ -69,7 +69,7 @@
   align-items: center;
   height: 20px;
   margin-left: 2px;
-  font-family: $font-secondary;
+  font-family: variables.$font-secondary;
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.3px;

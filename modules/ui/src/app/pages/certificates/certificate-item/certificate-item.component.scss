@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import 'colors';
-@import 'variables';
+@use 'colors';
+@use 'variables';
 
 :host {
   ::ng-deep .mat-mdc-progress-bar {
@@ -23,7 +23,7 @@
 }
 
 :host:first-child .certificate-item-container {
-  border-top: 1px solid $lighter-grey;
+  border-top: 1px solid colors.$lighter-grey;
 }
 
 .certificate-item-container {
@@ -32,11 +32,11 @@
   gap: 16px;
   box-sizing: border-box;
   padding: 12px 0;
-  border-bottom: 1px solid $lighter-grey;
+  border-bottom: 1px solid colors.$lighter-grey;
 }
 
 .certificate-item-icon {
-  color: $grey-700;
+  color: colors.$grey-700;
 }
 
 .certificate-item-delete {
@@ -44,7 +44,7 @@
   height: 24px;
   width: 24px;
   border-radius: 4px;
-  color: $grey-700;
+  color: colors.$grey-700;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -60,7 +60,7 @@
 .certificate-item-information {
   overflow: hidden;
   p {
-    font-family: $font-secondary, sans-serif;
+    font-family: variables.$font-secondary, sans-serif;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -68,27 +68,27 @@
   }
   .certificate-item-name {
     font-size: 16px;
-    color: $grey-800;
+    color: colors.$grey-800;
     min-height: 24px;
   }
   .certificate-item-organisation,
   .certificate-item-expires {
     font-size: 14px;
-    color: $grey-700;
+    color: colors.$grey-700;
     min-height: 20px;
   }
 }
 
 .certificate-expired {
   .certificate-item-icon {
-    color: $red-700;
+    color: colors.$red-700;
   }
   .certificate-item-name {
-    color: $red-800;
+    color: colors.$red-800;
   }
 
   .certificate-item-organisation,
   .certificate-item-expires {
-    color: $red-700;
+    color: colors.$red-700;
   }
 }

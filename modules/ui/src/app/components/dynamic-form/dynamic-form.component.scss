@@ -15,12 +15,12 @@
  */
 @use '@angular/material' as mat;
 @use 'm3-theme' as *;
-@import 'colors';
-@import 'variables';
+@use 'colors';
+@use 'variables';
 
 .field-label {
   margin: 0;
-  color: $grey-800;
+  color: colors.$grey-800;
   font-size: 18px;
   line-height: 24px;
   padding-top: 24px;
@@ -34,7 +34,7 @@ mat-form-field {
   width: 100%;
 }
 .field-hint {
-  font-family: $font-secondary;
+  font-family: variables.$font-secondary;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;

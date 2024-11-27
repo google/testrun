@@ -56,6 +56,7 @@ export interface FormResponse {
   templateUrl: './devices.component.html',
   styleUrls: ['./devices.component.scss'],
   providers: [DevicesStore],
+  standalone: false,
 })
 export class DevicesComponent
   implements OnInit, OnDestroy, CanComponentDeactivate
