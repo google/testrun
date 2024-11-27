@@ -52,6 +52,7 @@ const QUALIFICATION_URL = '/assets/icons/qualification.svg';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   providers: [AppStore],
+  standalone: false,
 })
 export class AppComponent implements AfterViewInit {
   public readonly CalloutType = CalloutType;

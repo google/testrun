@@ -24,7 +24,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { TestRunService } from '../../services/test-run.service';
 import { Routes } from '../../model/routes';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { TestrunStatus, StatusOfTestrun } from '../../model/testrun-status';
 import { DownloadReportComponent } from '../download-report/download-report.component';
 import { Subject, takeUntil, timer } from 'rxjs';
@@ -62,7 +62,6 @@ export interface DialogCloseResult {
     MatFormField,
     MatSelectModule,
     MatOptionModule,
-    RouterLink,
     DownloadReportComponent,
   ],
   templateUrl: './download-zip-modal.component.html',

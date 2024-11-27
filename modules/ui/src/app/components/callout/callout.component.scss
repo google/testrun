@@ -15,8 +15,8 @@
  */
 @use '@angular/material' as mat;
 @use 'm3-theme' as *;
-@import 'colors';
-@import 'variables';
+@use 'colors';
+@use 'variables';
 
 :host {
   width: 100%;
@@ -64,38 +64,38 @@
 }
 
 .callout-container.warning_amber {
-  background-color: $yellow-50;
+  background-color: colors.$yellow-50;
 
   .callout-icon {
-    color: $orange-700;
+    color: colors.$orange-700;
   }
 }
 
 .callout-container.error {
   margin: 24px 32px;
-  background-color: $red-50;
+  background-color: colors.$red-50;
 
   .callout-icon {
-    color: $red-700;
+    color: colors.$red-700;
   }
 }
 
 .callout-container.check_circle {
   margin: 24px 32px;
-  background-color: $green-50;
+  background-color: colors.$green-50;
 
   .callout-icon {
-    color: $green-800;
+    color: colors.$green-800;
   }
 }
 
 .callout-container.error_outline {
   display: flex;
   align-items: flex-start;
-  background: $color-background-grey;
+  background: colors.$color-background-grey;
 
   .callout-icon {
-    color: $grey-700;
+    color: colors.$grey-700;
   }
 
   .callout-context {
@@ -106,8 +106,8 @@
 .callout-context {
   margin: 0;
   padding: 6px 0;
-  color: $grey-800;
-  font-family: $font-secondary;
+  color: colors.$grey-800;
+  font-family: variables.$font-secondary;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
@@ -116,5 +116,5 @@
 .callout-close-button {
   margin-left: auto;
   margin-right: -20px;
-  color: $warn;
+  color: colors.$warn;
 }

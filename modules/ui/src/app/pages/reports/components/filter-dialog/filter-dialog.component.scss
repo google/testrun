@@ -15,7 +15,7 @@
  */
 @use 'node_modules/@angular/material/index' as mat;
 @use 'm3-theme' as *;
-@import 'colors';
+@use 'colors';
 
 .filter-dialog-content {
   display: flex;
@@ -34,7 +34,7 @@
 }
 
 .filter-dialog-actions {
-  border-top: 1px solid $lighter-grey;
+  border-top: 1px solid colors.$lighter-grey;
   gap: 16px;
 
   button {

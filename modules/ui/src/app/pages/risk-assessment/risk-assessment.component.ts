@@ -36,6 +36,7 @@ import { SuccessDialogComponent } from './components/success-dialog/success-dial
   styleUrl: './risk-assessment.component.scss',
   providers: [RiskAssessmentStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RiskAssessmentComponent implements OnInit, OnDestroy {
   viewModel$ = this.store.viewModel$;

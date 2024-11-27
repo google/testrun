@@ -16,9 +16,9 @@
 @use 'node_modules/@angular/material/index' as mat;
 @use 'm3-theme' as *;
 
-@import 'colors';
-@import 'mixins';
-@import 'variables';
+@use 'colors';
+@use 'mixins';
+@use 'variables';
 
 :host {
   display: flex;
@@ -28,7 +28,7 @@
 }
 
 .progress-content-empty {
-  @include content-empty;
+  @include mixins.content-empty;
 }
 
 .progress-toolbar {
@@ -36,7 +36,7 @@
   justify-content: space-between;
   height: auto;
   padding: 0;
-  background: $white;
+  background: colors.$white;
 
   ::ng-deep .download-report-link {
     display: inline-block;
@@ -78,7 +78,7 @@
   .vertical-divider {
     width: 1px;
     height: 35px;
-    background-color: $lighter-grey;
+    background-color: colors.$lighter-grey;
     flex-shrink: 0;
   }
 }
@@ -100,8 +100,8 @@
 
 .toolbar-tag {
   background-color: mat.get-theme-color($light-theme, primary, 25);
-  color: $white;
-  font-family: $font-primary;
+  color: colors.$white;
+  font-family: variables.$font-primary;
   font-size: 8px;
   font-weight: 500;
   height: 16px;
@@ -134,7 +134,7 @@
   overflow-y: auto;
   margin: 10px 0;
   border-radius: 4px;
-  border: 1px solid $lighter-grey;
+  border: 1px solid colors.$lighter-grey;
 }
 
 .progress-table-progress-empty {

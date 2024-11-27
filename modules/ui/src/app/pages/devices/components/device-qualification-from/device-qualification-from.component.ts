@@ -55,7 +55,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TextFieldModule } from '@angular/cdk/text-field';
-import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { MatIcon } from '@angular/material/icon';
 import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { ProfileValidators } from '../../../risk-assessment/profile-form/profile.validators';
@@ -101,7 +101,6 @@ interface DialogData {
     MatCheckboxModule,
     TextFieldModule,
     NgxMaskDirective,
-    NgxMaskPipe,
     MatIcon,
     MatRadioGroup,
     MatRadioButton,

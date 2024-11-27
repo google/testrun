@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import 'colors';
-@import 'variables';
+@use 'colors';
+@use 'variables';
 
 $profile-draft-icon-size: 22px;
 $profile-icon-container-size: 24px;
@@ -22,7 +22,7 @@ $profile-item-container-gap: 16px;
 
 :host.selected {
   .profile-item-container {
-    background-color: $grey-100;
+    background-color: colors.$grey-100;
   }
 }
 
@@ -35,7 +35,7 @@ $profile-item-container-gap: 16px;
   gap: $profile-item-container-gap;
   box-sizing: border-box;
   padding: 12px 16px;
-  border-bottom: 1px solid $lighter-grey;
+  border-bottom: 1px solid colors.$lighter-grey;
   align-items: center;
   min-height: 92px;
   &-expired {
@@ -47,7 +47,7 @@ $profile-item-container-gap: 16px;
   .profile-item-icon,
   .profile-item-name,
   .profile-item-created {
-    color: $red-800;
+    color: colors.$red-800;
   }
 }
 .profile-item-icon-container {
@@ -59,7 +59,7 @@ $profile-item-container-gap: 16px;
 }
 
 .profile-item-icon {
-  color: $grey-700;
+  color: colors.$grey-700;
 }
 
 .profile-item-info {
@@ -75,7 +75,7 @@ $profile-item-container-gap: 16px;
 
   p {
     margin: 0;
-    font-family: $font-secondary, sans-serif;
+    font-family: variables.$font-secondary, sans-serif;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -88,13 +88,13 @@ $profile-item-container-gap: 16px;
 
   .profile-item-name {
     font-size: 16px;
-    color: $grey-800;
+    color: colors.$grey-800;
     min-height: 24px;
   }
 
   .profile-item-created {
     font-size: 14px;
-    color: $grey-700;
+    color: colors.$grey-700;
     min-height: 20px;
   }
 }
@@ -104,7 +104,7 @@ $profile-item-container-gap: 16px;
   height: 24px;
   width: 24px;
   border-radius: 4px;
-  color: $grey-700;
+  color: colors.$grey-700;
   display: flex;
   align-items: flex-start;
   justify-content: center;

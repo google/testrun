@@ -34,6 +34,7 @@ import { TestRunService } from '../../../../services/test-run.service';
   templateUrl: './testrun-table.component.html',
   styleUrls: ['./testrun-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TestrunTableComponent {
   @ViewChild(MatAccordion) accordion!: MatAccordion;

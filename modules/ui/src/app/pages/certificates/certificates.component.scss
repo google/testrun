@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import 'colors';
-@import 'variables';
+@use 'colors';
+@use 'variables';
 
 :host {
   display: flex;
@@ -36,7 +36,7 @@
     font-style: normal;
     font-weight: 400;
     line-height: 28px;
-    color: $dark-grey;
+    color: colors.$dark-grey;
   }
 
   &-button {
@@ -69,7 +69,7 @@
 
 .content-certificates {
   padding: 0 16px;
-  border-bottom: 1px solid $lighter-grey;
+  border-bottom: 1px solid colors.$lighter-grey;
   overflow-y: scroll;
 }
 

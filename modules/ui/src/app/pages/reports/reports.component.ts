@@ -41,6 +41,7 @@ import { ReportsStore } from './reports.store';
   templateUrl: './reports.component.html',
   styleUrls: ['./reports.component.scss'],
   providers: [ReportsStore],
+  standalone: false,
 })
 export class ReportsComponent implements OnInit, OnDestroy {
   public readonly FilterName = FilterName;

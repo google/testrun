@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import '../../../theming/colors';
-@import '../../../theming/variables';
+@use 'colors';
+@use 'variables';
 
 :host {
   overflow: hidden;
@@ -35,16 +35,16 @@
   margin: 20px 0 8px;
   font-size: 18px;
   line-height: 24px;
-  color: $grey-800;
+  color: colors.$grey-800;
 }
 
 .device-tests-description {
   margin: 0;
-  font-family: $font-secondary;
+  font-family: variables.$font-secondary;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
-  color: $grey-800;
+  color: colors.$grey-800;
 }
 
 .device-form-test-modules {

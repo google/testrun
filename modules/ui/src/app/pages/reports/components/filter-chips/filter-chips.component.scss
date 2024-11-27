@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import 'colors';
+@use 'colors';
 
 :host {
   display: flex;
@@ -25,33 +25,33 @@
   justify-content: center;
   padding: 0 8px;
   cursor: pointer;
-  color: $primary;
+  color: colors.$primary;
   font-weight: 400;
   height: 32px;
   margin: 4px 0 4px 8px;
   border-radius: 16px;
   flex-shrink: 0;
-  background: $white;
+  background: colors.$white;
   font-family: Roboto, sans-serif;
 }
 
 .filter-chip.mat-mdc-chip {
-  background: $white;
-  border: 1px solid $primary;
+  background: colors.$white;
+  border: 1px solid colors.$primary;
 }
 
 .filter-chip.mat-mdc-chip ::ng-deep .mat-mdc-chip-action-label {
-  color: $primary;
+  color: colors.$primary;
   font-weight: 500;
 }
 
 .filter-chip.mat-mdc-chip ::ng-deep .mat-mdc-chip-remove {
-  color: $primary;
+  color: colors.$primary;
 }
 
 .filter-chip.cdk-keyboard-focused,
 .filter-chip-remove:focus-visible {
-  outline: $black solid 2px;
+  outline: colors.$black solid 2px;
 }
 
 .filter-chip .filter-chip-remove {
@@ -64,7 +64,7 @@
 .mat-mdc-standard-chip:not(
     .mdc-evolution-chip--disabled
   ).filter-chip-clear-all {
-  background-color: $white;
+  background-color: colors.$white;
 
   & ::ng-deep .mat-mdc-chip-action {
     padding: 0;

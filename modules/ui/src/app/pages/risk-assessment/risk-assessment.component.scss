@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import 'colors';
-@import 'variables';
-@import 'mixins';
+@use 'colors';
+@use 'variables';
+@use 'mixins';
 
 :host {
   overflow: hidden;
@@ -23,18 +23,18 @@
 }
 
 .risk-assessment-content-empty {
-  @include content-empty;
+  @include mixins.content-empty;
 }
 
 :host:has(.profiles-drawer) {
   .risk-assessment-content-empty {
-    width: calc(100% - $profiles-drawer-width);
+    width: calc(100% - #{variables.$profiles-drawer-width});
   }
 }
 
 .risk-assessment-container,
 .risk-assessment-content {
-  background-color: $white;
+  background-color: colors.$white;
 }
 
 .risk-assessment-container {
@@ -53,19 +53,19 @@
 .risk-assessment-toolbar {
   height: 74px;
   padding: 24px 0 8px 32px;
-  background: $white;
+  background: colors.$white;
 }
 
 .main-content {
   padding: 16px 32px;
   overflow: hidden;
-  width: calc(100% - $profiles-drawer-width);
+  width: calc(100% - #{variables.$profiles-drawer-width});
 }
 
 .profiles-drawer {
-  width: $profiles-drawer-width;
+  width: variables.$profiles-drawer-width;
   box-shadow: none;
-  border-left: 1px solid $light-grey;
+  border-left: 1px solid colors.$light-grey;
 }
 
 .profiles-drawer-header {
@@ -78,5 +78,5 @@
   font-style: normal;
   font-weight: 400;
   line-height: 28px;
-  color: $dark-grey;
+  color: colors.$dark-grey;
 }

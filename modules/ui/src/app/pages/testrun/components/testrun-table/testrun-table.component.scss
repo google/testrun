@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import 'colors';
-@import 'variables';
+@use 'colors';
+@use 'variables';
 
 $header-row-height: 56px;
 $row-height: 48px;
@@ -26,7 +26,7 @@ $expander-button-size: 28px;
 
   &:focus-visible {
     outline: none;
-    border: 1px solid $black;
+    border: 1px solid colors.$black;
     border-radius: 4px;
   }
 
@@ -42,7 +42,7 @@ $expander-button-size: 28px;
 
 .tests-item-cell,
 .tests-header-cell {
-  font-family: $font-secondary;
+  font-family: variables.$font-secondary;
   font-size: 14px;
   line-height: 20px;
   overflow: hidden;
@@ -89,7 +89,7 @@ $expander-button-size: 28px;
   min-height: $row-height;
   height: auto;
   grid-template-columns: 1fr 2.2fr 160px 20px;
-  border-bottom: 1px solid $lighter-grey;
+  border-bottom: 1px solid colors.$lighter-grey;
 }
 
 .tests-header-row {
@@ -109,7 +109,7 @@ $expander-button-size: 28px;
   &::after {
     border-width: 0 3px 3px 0;
     padding: 3.5px;
-    color: $dark-grey;
+    color: colors.$dark-grey;
   }
 }
 
@@ -123,7 +123,7 @@ $expander-button-size: 28px;
     .expansion-panel-header:not([aria-disabled='true']):hover,
   .expansion-panel-header:hover,
   .expansion-panel-header:hover + ::ng-deep.mat-expansion-panel-content {
-    background: $color-background-grey;
+    background: colors.$color-background-grey;
   }
 }
 
@@ -152,7 +152,7 @@ $expander-button-size: 28px;
     width: $expander-button-size;
     height: $expander-button-size;
     font-size: $expander-button-size;
-    color: $dark-grey;
+    color: colors.$dark-grey;
   }
 }
 
@@ -183,7 +183,7 @@ $expander-button-size: 28px;
 
 .tests-header-row,
 .expansion-panel-row {
-  border-bottom: 1px solid $lighter-grey;
+  border-bottom: 1px solid colors.$lighter-grey;
 }
 
 .tests-container .expansion-panel-row {

@@ -54,6 +54,7 @@ interface DialogData {
   selector: 'app-testrun-initiate-form',
   templateUrl: './testrun-initiate-form.component.html',
   styleUrls: ['./testrun-initiate-form.component.scss'],
+  standalone: false,
 })
 export class TestrunInitiateFormComponent
   extends EscapableDialogComponent
