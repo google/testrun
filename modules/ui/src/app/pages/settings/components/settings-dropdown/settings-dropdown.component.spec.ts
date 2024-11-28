@@ -13,6 +13,7 @@ import { Component } from '@angular/core';
   template:
     '<form><app-settings-dropdown controlName="test">' +
     '</app-settings-dropdown></form>',
+  standalone: false,
 })
 class DummyComponent {
   public testForm!: FormGroup;

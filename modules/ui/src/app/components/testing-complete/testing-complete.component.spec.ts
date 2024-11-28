@@ -88,5 +88,6 @@ describe('TestingCompleteComponent', () => {
 @Component({
   selector: 'app-fake-risk-assessment-component',
   template: '',
+  standalone: false,
 })
 class FakeRiskAssessmentComponent {}

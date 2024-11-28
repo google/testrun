@@ -391,6 +391,7 @@ describe('RiskAssessmentComponent', () => {
 @Component({
   selector: 'app-profile-item',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeProfileItemComponent {
   @Input() profile!: Profile;
@@ -399,6 +400,7 @@ class FakeProfileItemComponent {
 @Component({
   selector: 'app-profile-form',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeProfileFormComponent {
   @Input() profiles!: Profile[];

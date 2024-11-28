@@ -596,6 +596,7 @@ describe('TestrunComponent', () => {
 @Component({
   selector: 'app-testrun-status-card',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeProgressStatusCardComponent {
   @Input() systemStatus!: TestrunStatus;
@@ -604,6 +605,7 @@ class FakeProgressStatusCardComponent {
 @Component({
   selector: 'app-testrun-table',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeProgressTableComponent {
   @Input() dataSource!: IResult[] | undefined;
@@ -613,6 +615,7 @@ class FakeProgressTableComponent {
 @Component({
   selector: 'app-download-options',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeDownloadOptionsComponent {
   @Input() data!: TestrunStatus;

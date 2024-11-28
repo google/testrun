@@ -164,6 +164,7 @@ describe('ProgressTableComponent', () => {
 @Component({
   selector: 'app-callout',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeCalloutComponent {
   @Input() type = '';

@@ -7,6 +7,7 @@ import { Component } from '@angular/core';
   template:
     '<div id="main"><button class="test-button">Test</button></div>' +
     '<div id="second"><button class="test-button">Test</button></div>',
+  standalone: false,
 })
 class DummyComponent {}
 
