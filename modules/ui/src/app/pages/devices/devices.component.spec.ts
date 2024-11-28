@@ -378,5 +378,6 @@ describe('DevicesComponent', () => {
 @Component({
   selector: 'app-fake-progress-component',
   template: '',
+  standalone: false,
 })
 class FakeProgressComponent {}

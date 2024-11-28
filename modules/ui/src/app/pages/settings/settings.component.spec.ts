@@ -360,12 +360,14 @@ describe('GeneralSettingsComponent', () => {
 @Component({
   selector: 'app-spinner',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeSpinnerComponent {}
 
 @Component({
   selector: 'app-callout',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeCalloutComponent {
   @Input() type = '';

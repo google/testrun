@@ -30,6 +30,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 @Component({
   template:
     '<form><app-dynamic-form #dynamicForm [format]="format"></app-dynamic-form></form>',
+  standalone: false,
 })
 class DummyComponent {
   @ViewChild('dynamicForm') public dynamicForm!: DynamicFormComponent;

@@ -805,6 +805,7 @@ describe('AppComponent', () => {
 @Component({
   selector: 'app-settings',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeGeneralSettingsComponent {
   @Input() settingsDisable = false;
@@ -816,12 +817,14 @@ class FakeGeneralSettingsComponent {
 @Component({
   selector: 'app-spinner',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeSpinnerComponent {}
 
 @Component({
   selector: 'app-shutdown-app',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeShutdownAppComponent {
   @Input() disable!: boolean;
@@ -830,6 +833,7 @@ class FakeShutdownAppComponent {
 @Component({
   selector: 'app-version',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeVersionComponent {
   @Input() consentShown!: boolean;
@@ -839,6 +843,7 @@ class FakeVersionComponent {
 @Component({
   selector: 'app-testing-complete',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeTestingCompleteComponent {
   @Input() profiles: Profile[] = [];

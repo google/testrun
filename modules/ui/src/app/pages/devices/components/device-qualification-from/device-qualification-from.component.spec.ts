@@ -877,6 +877,7 @@ describe('DeviceQualificationFromComponent', () => {
 @Component({
   selector: 'app-dynamic-form',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeDynamicFormComponent {
   @Input() format: QuestionFormat[] = [];
