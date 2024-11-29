@@ -25,6 +25,7 @@ import {
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
 import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
+import { FocusManagerService } from '../../services/focus-manager.service';
 
 describe('DownloadReportZipComponent', () => {
   let component: DownloadReportZipComponent;
