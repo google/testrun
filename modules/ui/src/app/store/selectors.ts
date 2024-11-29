@@ -122,23 +122,3 @@ export const selectSystemConfig = createSelector(
   selectAppState,
   (state: AppState) => state.systemConfig
 );
-
-export const selectReports = createSelector(
-  selectAppState,
-  (state: AppState) => state.shared.reports
-);
-
-export const selectTestModules = createSelector(
-  selectAppState,
-  (state: AppState) => state.shared.testModules
-);
-
-export const selectAdapters = createSelector(
-  selectAppState,
-  (state: AppState) => state.shared.adapters
-);
-
-export const selectInternetConnection = createSelector(
-  selectAppState,
-  (state: AppState) => state.shared.internetConnection
-);
