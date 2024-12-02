@@ -1,0 +1,39 @@
+<th mat-header-cell>
+  <div class="header-filter-container">
+    <span
+      *ngIf="hasSorting"
+      mat-sort-header
+      [sortActionDescription]="sortActionDescription"
+      >{{ headerText }}</span
+    >
+    <span *ngIf="!hasSorting">{{ headerText }}</span>
+    <ng-container
+      *ngTemplateOutlet="
+        filterButton;
+        context: {
+          name: filterName,
+          filterOpened: filterOpened,
+          activeFilter: activeFilter,
+        }
+      ">
+    </ng-container>
+  </div>
+</th>
+
+<ng-template
+  #filterButton
+  let-name="name"
+  let-filterOpened="filterOpened"
+  let-activeFilter="activeFilter">
+  <button
+    (click)="openFilter($event, name, filterOpened)"
+    (keydown.enter)="openFilter($event, name, filterOpened)"
+    (keydown.space)="openFilter($event, name, filterOpened)"
+    class="filter-button filter-button-{{ name }}"
+    [ngClass]="filterOpened && activeFilter === name ? 'active' : ''"
+    attr.aria-label="filter by {{ name }}">
+    <mat-icon fontSet="material-icons-outlined" class="filter-icon"
+      >filter_list</mat-icon
+    >
+  </button>
+</ng-template>

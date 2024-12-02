@@ -181,7 +181,11 @@ describe('ReportsComponent', () => {
       } as MatDialogRef<typeof FilterDialogComponent>);
       fixture.detectChanges();
 
-      component.openFilter(event, '', false);
+      component.openFilter({
+        event,
+        filter: '',
+        filterOpened: false,
+      });
 
       expect(openSpy).toHaveBeenCalled();
       expect(openSpy).toHaveBeenCalledWith(FilterDialogComponent, {
@@ -225,10 +229,26 @@ describe('ReportsComponent', () => {
       } as MatDialogRef<typeof FilterDialogComponent>);
       fixture.detectChanges();
 
-      component.openFilter(event, FilterName.Started, false);
-      component.openFilter(event, FilterName.Results, false);
-      component.openFilter(event, FilterName.DeviceFirmware, false);
-      component.openFilter(event, FilterName.DeviceInfo, false);
+      component.openFilter({
+        event,
+        filter: FilterName.Started,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
+        filter: FilterName.Results,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
+        filter: FilterName.DeviceFirmware,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
+        filter: FilterName.DeviceInfo,
+        filterOpened: false,
+      });
       expect(mockReportsStore.setFilteredValuesResults).toHaveBeenCalledWith(
         mockFilterResults
       );
