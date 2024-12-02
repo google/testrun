@@ -23,6 +23,9 @@ import os
 from test_orc.test_case import TestCase
 from jinja2 import Environment, FileSystemLoader
 from collections import OrderedDict
+import re
+from bs4 import BeautifulSoup
+
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 RESOURCES_DIR = 'resources/report'
@@ -330,12 +333,43 @@ class TestReport():
 
     return tests_with_recommendations
 
+
+  def _split_module_report_to_pages(self, reports):
+    """Split report to pages by headers"""
+    reports_transformed = []
+
+    for report in reports:
+      if len(re.findall('<table class="module-summary"', report)) > 1:
+        indices = []
+        index = report.find('<table class="module-summary"')
+        while index != -1:
+          indices.append(index)
+          index = report.find('<table class="module-summary"', index + 1)
+        pos = 0
+        for i in indices[1:]:
+          page = report[pos:i].replace(
+            '"module-summary"', '"module-summary not-first"'
+            )
+          reports_transformed.append(page)
+          pos = i
+        page = report[pos:].replace(
+          '"module-summary"', '"module-summary not-first"'
+          )
+        reports_transformed.append(page)
+      else:
+        reports_transformed.append(report)
+
+    return reports_transformed
+
+
   def _get_module_pages(self):
     content_max_size = 913
 
     reports = []
 
-    for module_reports in self._module_reports:
+    module_reports = self._split_module_report_to_pages(self._module_reports)
+
+    for module_report in module_reports:
       # ToDo: Figure out how to make this dynamic
       # Padding values  from CSS
       # Element sizes from inspection of rendered report
@@ -343,58 +377,71 @@ class TestReport():
       module_summary_padding = 50 # 25 top and 25 bottom
 
       # Reset values for each module report
-      data_table_active = False
-      data_rows_active = False
       page_content = ''
       content_size = 0
-      content = module_reports.split('\n')
 
-      for line in content:
-        if '<h1' in line:
-          content_size += 40 + h1_padding
-        elif 'module-summary' in line:
-          content_size += 85.333 + module_summary_padding
+      # Convert module report to list of html tags
+      soup = BeautifulSoup(module_report, features='html5lib')
+      children = list(
+                      filter(lambda el: el.name is not None, soup.body.children)
+                      )
 
-        # Track module-data table state
-        elif '<table class="module-data"' in line:
-          data_table_active=True
-        elif '</table>' in line and data_table_active:
-          data_table_active=False
-
-        # Add module-data header size, ignore rows, should
-        # only be one so only care about a header existence
-        elif '<thead>' in line and data_table_active:
-          content_size += 41.333
-
-        # Track module-data table state
-        elif '<tbody>' in line and data_table_active:
-          data_rows_active = True
-        elif '</tbody>' in line and data_rows_active:
-          data_rows_active = False
-
-        # Add appropriate content size for each data row
-        # update if CSS changes for this element
-        elif '<tr>' in line and data_rows_active:
-          content_size += 42
-
-        # If the current line is within the content size limit
-        # we'll add it to this page, otherweise, we'll put it on the next
-        # page. Also make sure that if there is less than 40 pixels
-        # left after a data row, start a new page or the row will get cut off.
-        # Current row size is 42 # adjust if we update the
-        # "module-data tbody tr" element.
-        if content_size >= content_max_size or (
-          data_rows_active and content_max_size - content_size < 42):
-          # If in the middle of a table, close the table
-          if data_rows_active:
-            page_content += '</tbody></table>'
-          reports.append(page_content)
-          content_size = 0
-          # If in the middle of a data table, restart
-          # it for the rest of the rows
-          page_content = ('<table class=module-data></tbody>\n'
-                          if data_rows_active else '')
-        page_content += line + '\n'
-      if len(page_content) > 0:
-        reports.append(page_content)
+      for index, el in enumerate(children):
+        current_size = 0
+        if el.name == 'h1':
+          current_size += 40 + h1_padding
+        # Calculating the height of paired tables
+        elif (el.name == 'div'
+              and el['style'] == 'display:flex;justify-content:space-between;'):
+          tables = el.findChildren('table', recursive=True)
+          current_size = max(
+                            map(lambda t: len(
+                              t.findChildren('tr', recursive=True)
+                              ), tables)
+                            ) * 42
+        # Table height
+        elif el.name == 'table':
+          if el['class'] == 'module-summary':
+            current_size = 85 + module_summary_padding
+          else:
+            current_size = len(el.findChildren('tr', recursive=True)) * 42
+        # Other elements height
+        else:
+          current_size = 50
+        # Moving tables to the next page.
+        # Completely transfer tables that are within the maximum
+        # allowable size, while splitting those that exceed the page size.
+        if (content_size + current_size) >= content_max_size:
+          str_el = ''
+          if current_size > (content_max_size - 85 - module_summary_padding):
+            rows = el.findChildren('tr', recursive=True)
+            table_header = str(rows.pop(0))
+            table_1 = table_2 = f'''
+                            <table class="module-data" style="width:100%">
+                            <thead>{table_header}</thead><tbody>'''
+            rows_count = (content_max_size - 85 - module_summary_padding) // 42
+            table_1 += ''.join(map(str, rows[:rows_count-1]))
+            table_1 += '</tbody></table>'
+            table_2 += ''.join(map(str, rows[rows_count-1:]))
+            table_2 += '</tbody></table>'
+            page_content += table_1
+            reports.append(page_content)
+            page_content = table_2
+            current_size = len(rows[rows_count:]) * 42
+          else:
+            if el.name == 'table':
+              el_header = children[index-1]
+              if el_header.name.startswith('h'):
+                page_content = ''.join(page_content.rsplit(str(el_header), 1))
+                str_el = str(el_header) + str(el)
+                content_size = current_size + 50
+              else:
+                str_el = str(el)
+                content_size = current_size
+            reports.append(page_content)
+            page_content = str_el
+        else:
+          page_content += str(el)
+          content_size += current_size
+      reports.append(page_content)
     return reports

@@ -61,6 +61,7 @@ class ReportTest(unittest.TestCase):
 
     # Load each module html report
     reports_md = []
+    reports_md.append(self.get_module_html_report('tls'))
     reports_md.append(self.get_module_html_report('dns'))
     reports_md.append(self.get_module_html_report('services'))
     reports_md.append(self.get_module_html_report('ntp'))
@@ -70,11 +71,15 @@ class ReportTest(unittest.TestCase):
 
     # Create the HTML filename based on the JSON name
     file_name = os.path.splitext(os.path.basename(results_file_path))[0]
-    report_out_file = os.path.join(OUTPUT_DIR, file_name + '.html')
+    report_html_file = os.path.join(OUTPUT_DIR, file_name + '.html')
+    report_pdf_file = os.path.join(OUTPUT_DIR, file_name + '.pdf')
 
      # Save report as HTML file
-    with open(report_out_file, 'w', encoding='utf-8') as file:
+    with open(report_html_file, 'w', encoding='utf-8') as file:
       file.write(report.to_html())
+
+    with open(report_pdf_file, 'wb') as file:
+      file.write(report.to_pdf().getvalue())
 
   def report_compliant_test(self):
     """Generate a report for the compliant test"""
