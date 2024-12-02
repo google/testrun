@@ -27,6 +27,7 @@ import { FilterChipsComponent } from './components/filter-chips/filter-chips.com
 import { DeleteReportComponent } from './components/delete-report/delete-report.component';
 import { DownloadReportZipComponent } from '../../components/download-report-zip/download-report-zip.component';
 import { DownloadReportPdfComponent } from '../../components/download-report-pdf/download-report-pdf.component';
+import { FilterHeaderComponent } from './components/filter-header/filter-header.component';
 
 @NgModule({
   declarations: [ReportsComponent],
@@ -43,6 +44,7 @@ import { DownloadReportPdfComponent } from '../../components/download-report-pdf
     DeleteReportComponent,
     DownloadReportZipComponent,
     DownloadReportPdfComponent,
+    FilterHeaderComponent,
   ],
   providers: [DatePipe],
 })

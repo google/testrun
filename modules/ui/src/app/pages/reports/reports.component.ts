@@ -35,6 +35,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { tap } from 'rxjs/internal/operators/tap';
 import { FilterName, Filters } from '../../model/filters';
 import { ReportsStore } from './reports.store';
+import { OpenFilterEvent } from './components/filter-header/filter-header.component';
 
 @Component({
   selector: 'app-history',
@@ -77,7 +78,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     return this.testRunService.getResultClass(status);
   }
 
-  openFilter(event: Event, filter: string, filterOpened: boolean) {
+  openFilter({ event, filter, filterOpened }: OpenFilterEvent) {
     event.stopPropagation();
     const target = new ElementRef(event.currentTarget);
 

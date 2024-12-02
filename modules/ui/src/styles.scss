@@ -423,13 +423,19 @@ button:not(.mat-mdc-button-disabled) {
   .mat-sort-header-indicator {
     &::before {
       content: 'arrow_upward';
-      top: -0em;
-      line-height: 12px;
+      line-height: 32px;
       font-family: #{variables.$font-symbols};
       position: absolute;
       color: var(--mat-table-header-headline-color);
       font-size: 19px;
       font-weight: 400;
+      background-color: rgba(68, 71, 70, 0.08);
+      border-radius: 50%;
+      height: 32px;
+      width: 32px;
+      top: -10px;
+      text-align: center;
+      margin-left: 2px;
     }
   }
 }
@@ -439,9 +445,25 @@ button:not(.mat-mdc-button-disabled) {
     .mat-sort-header-indicator {
       &::before {
         content: 'arrow_downward';
-        top: -14px;
-        line-height: 20px;
+        top: -20px;
       }
     }
   }
 }
+
+/*
+
+.mat-mdc-icon-button:hover .mat-mdc-button-persistent-ripple::before {
+    opacity: var(--mat-icon-button-hover-state-layer-opacity, var(--mat-sys-hover-state-layer-opacity));
+}
+<style>
+.mat-mdc-icon-button .mat-mdc-button-persistent-ripple::before {
+    background-color: var(--mat-icon-button-state-layer-color, var(--mat-sys-on-surface-variant));
+}
+<style>
+.mat-mdc-icon-button .mat-mdc-button-persistent-ripple::before {
+    content: "";
+    opacity: 0;
+}
+
+*/
