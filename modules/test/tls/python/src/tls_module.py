@@ -229,7 +229,7 @@ class TLSModule(TestModule):
         summary_table = f'\n{summary_table}'
 
         summary_table += f'''
-        <div style="display:flex;justify-content:space-between;">
+        <div id="tls_table" style="display:flex;justify-content:space-between;">
           <div style="margin-right:20px;">
             <h5>Certificate Information</h5>
             {cert_table}
