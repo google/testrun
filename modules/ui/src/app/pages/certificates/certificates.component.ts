@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  OnDestroy,
+  Output,
+  inject,
+} from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { CertificateItemComponent } from './certificate-item/certificate-item.component';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -27,7 +33,6 @@ import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-certificates',
-  standalone: true,
   imports: [
     MatIcon,
     CertificateItemComponent,
@@ -41,16 +46,16 @@ import { MatDialog } from '@angular/material/dialog';
   styleUrl: './certificates.component.scss',
 })
 export class CertificatesComponent implements OnDestroy {
+  private liveAnnouncer = inject(LiveAnnouncer);
+  private store = inject(CertificatesStore);
+  dialog = inject(MatDialog);
+
   viewModel$ = this.store.viewModel$;
   @Output() closeCertificatedEvent = new EventEmitter<void>();
 
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
-  constructor(
-    private liveAnnouncer: LiveAnnouncer,
-    private store: CertificatesStore,
-    public dialog: MatDialog
-  ) {
+  constructor() {
     this.store.getCertificates();
   }
 

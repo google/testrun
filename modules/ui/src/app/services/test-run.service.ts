@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
 import { Device, DeviceQuestionnaireSection } from '../model/device';
@@ -49,9 +49,9 @@ export const UNAVAILABLE_VERSION = {
   providedIn: 'root',
 })
 export class TestRunService {
-  private version = new BehaviorSubject<Version | null>(null);
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {}
+  private version = new BehaviorSubject<Version | null>(null);
 
   changeReportURL(url: string): string {
     if (!url) {

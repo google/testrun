@@ -281,7 +281,7 @@ describe('DeviceQualificationFromComponent', () => {
     fixture.detectChanges();
     component.goToStep(0);
 
-    expect(component.stepper.selectedIndex).toBe(0);
+    expect(component.stepper().selectedIndex).toBe(0);
   });
 
   it('should close dialog on "cancel" click', () => {

@@ -36,6 +36,8 @@ import {
   MOCK_SYSTEM_CONFIG_WITH_DATA,
 } from '../../mocks/settings.mock';
 import { SettingsDropdownComponent } from './components/settings-dropdown/settings-dropdown.component';
+import { CalloutComponent } from '../../components/callout/callout.component';
+import { SpinnerComponent } from '../../components/spinner/spinner.component';
 
 describe('GeneralSettingsComponent', () => {
   let component: SettingsComponent;
@@ -58,11 +60,6 @@ describe('GeneralSettingsComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      declarations: [
-        SettingsComponent,
-        FakeSpinnerComponent,
-        FakeCalloutComponent,
-      ],
       providers: [
         { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
         { provide: LoaderService, useValue: mockLoaderService },
@@ -70,6 +67,7 @@ describe('GeneralSettingsComponent', () => {
         provideMockStore(),
       ],
       imports: [
+        SettingsComponent,
         BrowserAnimationsModule,
         MatButtonModule,
         MatIconModule,
@@ -80,8 +78,19 @@ describe('GeneralSettingsComponent', () => {
         MatInputModule,
         MatSelectModule,
         SettingsDropdownComponent,
+        FakeSpinnerComponent,
+        FakeCalloutComponent,
       ],
-    }).compileComponents();
+    })
+      .overrideComponent(SettingsComponent, {
+        remove: {
+          imports: [CalloutComponent, SpinnerComponent],
+        },
+        add: {
+          imports: [FakeSpinnerComponent, FakeCalloutComponent],
+        },
+      })
+      .compileComponents();
 
     TestBed.overrideProvider(SettingsStore, { useValue: mockSettingsStore });
 
@@ -360,14 +369,12 @@ describe('GeneralSettingsComponent', () => {
 @Component({
   selector: 'app-spinner',
   template: '<div></div>',
-  standalone: false,
 })
 class FakeSpinnerComponent {}
 
 @Component({
   selector: 'app-callout',
   template: '<div></div>',
-  standalone: false,
 })
 class FakeCalloutComponent {
   @Input() type = '';

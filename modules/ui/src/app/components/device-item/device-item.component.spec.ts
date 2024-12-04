@@ -22,7 +22,6 @@ import {
 } from '../../model/device';
 
 import { DeviceItemComponent } from './device-item.component';
-import { DevicesModule } from '../../pages/devices/devices.module';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -34,7 +33,6 @@ describe('DeviceItemComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
-        DevicesModule,
         DeviceItemComponent,
         MatIconTestingModule,
         BrowserAnimationsModule,

@@ -18,7 +18,7 @@ import { KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-settings-dropdown',
-  standalone: true,
+
   imports: [
     ReactiveFormsModule,
     MatFormFieldModule,

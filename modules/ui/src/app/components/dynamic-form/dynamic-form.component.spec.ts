@@ -16,7 +16,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DynamicFormComponent } from './dynamic-form.component';
-import { Component, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, viewChild, inject } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -33,10 +33,13 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
   standalone: false,
 })
 class DummyComponent {
-  @ViewChild('dynamicForm') public dynamicForm!: DynamicFormComponent;
+  private readonly fb = inject(FormBuilder);
+
+  readonly dynamicForm =
+    viewChild.required<DynamicFormComponent>('dynamicForm');
   public testForm!: FormGroup;
   public format = PROFILE_FORM;
-  constructor(private readonly fb: FormBuilder) {
+  constructor() {
     this.testForm = this.fb.group({
       test: [''],
     });
@@ -69,7 +72,7 @@ describe('DynamicFormComponent', () => {
     dummy = fixture.componentInstance;
     compiled = fixture.nativeElement as HTMLElement;
     fixture.detectChanges();
-    component = dummy.dynamicForm;
+    component = dummy.dynamicForm();
   });
 
   it('should create', () => {

@@ -25,8 +25,7 @@ import {
   Input,
   OnInit,
   Output,
-  QueryList,
-  ViewChildren,
+  viewChildren,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatError, MatFormFieldModule } from '@angular/material/form-field';
@@ -56,7 +55,7 @@ import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-profile-form',
-  standalone: true,
+
   imports: [
     MatButtonModule,
     CommonModule,
@@ -75,14 +74,17 @@ import { CdkTrapFocus } from '@angular/cdk/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileFormComponent implements OnInit, AfterViewInit {
+  private deviceValidators = inject(DeviceValidators);
+  private profileValidators = inject(ProfileValidators);
+  private fb = inject(FormBuilder);
+
   private profile: Profile | null = null;
   private profileList!: Profile[];
   private injector = inject(Injector);
   private nameValidator!: ValidatorFn;
   public readonly ProfileStatus = ProfileStatus;
   profileForm: FormGroup = this.fb.group({});
-  @ViewChildren(CdkTextareaAutosize)
-  autosize!: QueryList<CdkTextareaAutosize>;
+  readonly autosize = viewChildren(CdkTextareaAutosize);
   @Input() profileFormat!: ProfileFormat[];
   @Input() isCopyProfile!: boolean;
   @Input()
@@ -109,11 +111,6 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
 
   @Output() saveProfile = new EventEmitter<Profile>();
   @Output() discard = new EventEmitter();
-  constructor(
-    private deviceValidators: DeviceValidators,
-    private profileValidators: ProfileValidators,
-    private fb: FormBuilder
-  ) {}
   ngOnInit() {
     this.profileForm = this.createProfileForm();
   }
@@ -248,7 +245,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     // Wait for content to render, then trigger textarea resize.
     afterNextRender(
       () => {
-        this.autosize?.forEach(item => item.resizeToFitContent(true));
+        this.autosize()?.forEach(item => item.resizeToFitContent(true));
       },
       {
         injector: this.injector,

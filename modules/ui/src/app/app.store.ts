@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap } from 'rxjs/operators';
 import {
@@ -76,6 +76,12 @@ export interface AppComponentState {
 }
 @Injectable()
 export class AppStore extends ComponentStore<AppComponentState> {
+  private store = inject<Store<AppState>>(Store);
+  private testRunService = inject(TestRunService);
+  private testRunMqttService = inject(TestRunMqttService);
+  private focusManagerService = inject(FocusManagerService);
+  private notificationService = inject(NotificationService);
+
   private consentShown$ = this.select(state => state.consentShown);
   private calloutState$ = this.select(state => state.calloutState);
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
@@ -314,13 +320,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  constructor(
-    private store: Store<AppState>,
-    private testRunService: TestRunService,
-    private testRunMqttService: TestRunMqttService,
-    private focusManagerService: FocusManagerService,
-    private notificationService: NotificationService
-  ) {
+  constructor() {
     // @ts-expect-error get object is defined in index.html
     const calloutState = sessionStorage.getObject(CALLOUT_STATE_KEY);
 

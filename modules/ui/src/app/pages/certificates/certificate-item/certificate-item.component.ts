@@ -8,7 +8,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 
 @Component({
   selector: 'app-certificate-item',
-  standalone: true,
+
   imports: [MatIcon, MatButtonModule, MatProgressBarModule, CommonModule],
   providers: [provideAnimations()],
   templateUrl: './certificate-item.component.html',

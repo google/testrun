@@ -18,7 +18,8 @@ import {
   ElementRef,
   OnDestroy,
   OnInit,
-  ViewChild,
+  viewChild,
+  inject,
 } from '@angular/core';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { TestRunService } from '../../services/test-run.service';
@@ -26,48 +27,73 @@ import {
   StatusResultClassName,
   TestrunStatus,
 } from '../../model/testrun-status';
-import { DatePipe } from '@angular/common';
-import { MatSort, Sort } from '@angular/material/sort';
+import { CommonModule, DatePipe } from '@angular/common';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { Subject, takeUntil, timer } from 'rxjs';
-import { MatRow } from '@angular/material/table';
-import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
+import { MatRow, MatTableModule } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { tap } from 'rxjs/internal/operators/tap';
 import { FilterName, FilterTitle, Filters } from '../../model/filters';
 import { ReportsStore } from './reports.store';
-import { OpenFilterEvent } from './components/filter-header/filter-header.component';
+import {
+  FilterHeaderComponent,
+  OpenFilterEvent,
+} from './components/filter-header/filter-header.component';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { FilterChipsComponent } from './components/filter-chips/filter-chips.component';
+import { DownloadReportZipComponent } from '../../components/download-report-zip/download-report-zip.component';
+import { DownloadReportPdfComponent } from '../../components/download-report-pdf/download-report-pdf.component';
+import { DeleteReportComponent } from './components/delete-report/delete-report.component';
+import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 
 @Component({
   selector: 'app-history',
   templateUrl: './reports.component.html',
   styleUrls: ['./reports.component.scss'],
-  providers: [ReportsStore],
-  standalone: false,
+  imports: [
+    CommonModule,
+    MatTableModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatSortModule,
+    FilterChipsComponent,
+    DeleteReportComponent,
+    DownloadReportZipComponent,
+    DownloadReportPdfComponent,
+    FilterHeaderComponent,
+  ],
+  providers: [ReportsStore, DatePipe],
 })
 export class ReportsComponent implements OnInit, OnDestroy {
+  private testRunService = inject(TestRunService);
+  private datePipe = inject(DatePipe);
+  private liveAnnouncer = inject(LiveAnnouncer);
+  dialog = inject(MatDialog);
+  private store = inject(ReportsStore);
+
   public readonly FilterName = FilterName;
   public readonly FilterTitle = FilterTitle;
   private destroy$: Subject<boolean> = new Subject<boolean>();
-  @ViewChild(MatSort, { static: false }) sort!: MatSort;
+  sort = viewChild(MatSort);
   viewModel$ = this.store.viewModel$;
-  constructor(
-    private testRunService: TestRunService,
-    private datePipe: DatePipe,
-    private liveAnnouncer: LiveAnnouncer,
-    public dialog: MatDialog,
-    private store: ReportsStore
-  ) {}
 
   ngOnInit() {
     this.store.getReports();
-    this.store.updateSort(this.sort);
+    const sort = this.sort();
+    if (sort) {
+      this.store.updateSort(sort);
+    }
   }
 
   getFormattedDateString(date: string | null) {
     return date ? this.datePipe.transform(date, 'd MMM y H:mm') : '';
   }
   sortData(sortState: Sort) {
-    this.store.updateSort(this.sort);
+    const sort = this.sort();
+    if (sort) {
+      this.store.updateSort(sort);
+    }
     if (sortState.direction) {
       this.liveAnnouncer.announce(`Sorted ${sortState.direction}ending`);
     } else {

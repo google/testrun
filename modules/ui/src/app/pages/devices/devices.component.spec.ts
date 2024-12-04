@@ -23,7 +23,6 @@ import { of } from 'rxjs';
 import { Device } from '../../model/device';
 
 import { DevicesComponent, FormAction } from './devices.component';
-import { DevicesModule } from './devices.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialogRef } from '@angular/material/dialog';
 import { device, MOCK_TEST_MODULES } from '../../mocks/device.mock';
@@ -66,15 +65,15 @@ describe('DevicesComponent', () => {
         RouterTestingModule.withRoutes([
           { path: 'testing', component: FakeProgressComponent },
         ]),
-        DevicesModule,
         BrowserAnimationsModule,
         MatIconTestingModule,
+        DevicesComponent,
+        FakeProgressComponent,
       ],
       providers: [
         { provide: DevicesStore, useValue: mockDevicesStore },
         { provide: FocusManagerService, useValue: stateServiceMock },
       ],
-      declarations: [DevicesComponent, FakeProgressComponent],
     }).compileComponents();
 
     TestBed.overrideProvider(DevicesStore, { useValue: mockDevicesStore });
@@ -378,6 +377,5 @@ describe('DevicesComponent', () => {
 @Component({
   selector: 'app-fake-progress-component',
   template: '',
-  standalone: false,
 })
 class FakeProgressComponent {}

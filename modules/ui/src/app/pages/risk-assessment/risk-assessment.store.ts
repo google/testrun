@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { catchError, delay, EMPTY, exhaustMap, throwError, timer } from 'rxjs';
@@ -33,6 +33,10 @@ export interface AppComponentState {
 }
 @Injectable()
 export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
+  private testRunService = inject(TestRunService);
+  private store = inject<Store<AppState>>(Store);
+  private focusManagerService = inject(FocusManagerService);
+
   profiles$ = this.store.select(selectRiskProfiles);
   profileFormat$ = this.select(state => state.profileFormat);
   selectedProfile$ = this.select(state => state.selectedProfile);
@@ -172,11 +176,7 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     this.store.dispatch(setRiskProfiles({ riskProfiles }));
   }
 
-  constructor(
-    private testRunService: TestRunService,
-    private store: Store<AppState>,
-    private focusManagerService: FocusManagerService
-  ) {
+  constructor() {
     super({
       profiles: [],
       profileFormat: [],

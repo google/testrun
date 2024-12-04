@@ -18,7 +18,7 @@ import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-program-type-icon',
-  standalone: true,
+
   imports: [MatIcon],
   template: ` <mat-icon [svgIcon]="type" class="icon"></mat-icon> `,
   styles: `

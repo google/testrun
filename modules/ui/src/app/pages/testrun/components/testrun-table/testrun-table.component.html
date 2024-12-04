@@ -25,7 +25,9 @@ limitations under the License.
           mat-icon-button
           class="expander-button"
           [attr.aria-label]="getAriaLabel()"
-          (click)="isAllCollapsed ? accordion.openAll() : accordion.closeAll()">
+          (click)="
+            isAllCollapsed ? accordion().openAll() : accordion().closeAll()
+          ">
           <mat-icon fontSet="material-icons-outlined">
             {{ isAllCollapsed ? 'keyboard_arrow_down' : 'keyboard_arrow_up' }}
           </mat-icon>

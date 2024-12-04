@@ -68,12 +68,13 @@ describe('RiskAssessmentComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      declarations: [
+      declarations: [FakeProfileItemComponent, FakeProfileFormComponent],
+      imports: [
         RiskAssessmentComponent,
-        FakeProfileItemComponent,
-        FakeProfileFormComponent,
+        MatToolbarModule,
+        MatSidenavModule,
+        BrowserAnimationsModule,
       ],
-      imports: [MatToolbarModule, MatSidenavModule, BrowserAnimationsModule],
       providers: [
         { provide: TestRunService, useValue: mockService },
         { provide: RiskAssessmentStore, useValue: mockRiskAssessmentStore },

@@ -22,9 +22,15 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  ViewChild,
+  viewChild,
+  inject,
 } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Subject, takeUntil, tap } from 'rxjs';
 import { OnlyDifferentValuesValidator } from './only-different-values.validator';
 import { CalloutType } from '../../model/callout-type';
@@ -33,18 +39,58 @@ import { EventType } from '../../model/event-type';
 import { FormKey, SystemConfig } from '../../model/setting';
 import { SettingsStore } from './settings.store';
 import { LoaderService } from '../../services/loader.service';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatInputModule } from '@angular/material/input';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { SpinnerComponent } from '../../components/spinner/spinner.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonModule } from '@angular/material/button';
+import { SettingsDropdownComponent } from './components/settings-dropdown/settings-dropdown.component';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatRadioModule } from '@angular/material/radio';
+import { CalloutComponent } from '../../components/callout/callout.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss'],
   hostDirectives: [CdkTrapFocus],
+  imports: [
+    MatButtonModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatSidenavModule,
+    MatButtonToggleModule,
+    MatRadioModule,
+    MatInputModule,
+    MatSelectModule,
+    MatTooltipModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatSnackBarModule,
+    SpinnerComponent,
+    CalloutComponent,
+    SettingsDropdownComponent,
+    CommonModule,
+  ],
   providers: [SettingsStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
 })
 export class SettingsComponent implements OnInit, OnDestroy {
-  @ViewChild('reloadSettingLink') public reloadSettingLink!: ElementRef;
+  private readonly fb = inject(FormBuilder);
+  private liveAnnouncer = inject(LiveAnnouncer);
+  private readonly onlyDifferentValuesValidator = inject(
+    OnlyDifferentValuesValidator
+  );
+  private settingsStore = inject(SettingsStore);
+  private readonly loaderService = inject(LoaderService);
+
+  readonly reloadSettingLink = viewChild<ElementRef>('reloadSettingLink');
   @Output() closeSettingEvent = new EventEmitter<void>();
 
   private isSettingsDisable = false;
@@ -98,14 +144,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return this.settingForm.hasError('hasSameValues');
   }
 
-  constructor(
-    private readonly fb: FormBuilder,
-    private liveAnnouncer: LiveAnnouncer,
-    private readonly onlyDifferentValuesValidator: OnlyDifferentValuesValidator,
-    private settingsStore: SettingsStore,
-    private readonly loaderService: LoaderService
-  ) {}
-
   ngOnInit() {
     this.createSettingForm();
     this.cleanFormErrorMessage();
@@ -143,12 +181,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   private disableSettings(): void {
     this.settingForm?.disable();
-    this.reloadSettingLink?.nativeElement.setAttribute('aria-disabled', 'true');
+    this.reloadSettingLink()?.nativeElement.setAttribute(
+      'aria-disabled',
+      'true'
+    );
   }
 
   private enableSettings(): void {
     this.settingForm?.enable();
-    this.reloadSettingLink?.nativeElement.removeAttribute('aria-disabled');
+    this.reloadSettingLink()?.nativeElement.removeAttribute('aria-disabled');
   }
 
   private createSettingForm() {

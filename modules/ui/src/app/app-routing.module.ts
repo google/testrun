@@ -13,34 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
+import { ReportsComponent } from './pages/reports/reports.component';
+import { DevicesComponent } from './pages/devices/devices.component';
+import { CanDeactivateGuard } from './guards/can-deactivate.guard';
+import { TestrunComponent } from './pages/testrun/testrun.component';
+import { RiskAssessmentComponent } from './pages/risk-assessment/risk-assessment.component';
 
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: 'testing',
-    loadChildren: () =>
-      import('./pages/testrun/testrun.module').then(m => m.TestrunModule),
+    component: TestrunComponent,
     title: 'Testrun',
   },
   {
     path: 'devices',
-    loadChildren: () =>
-      import('./pages/devices/devices.module').then(m => m.DevicesModule),
+    component: DevicesComponent,
+    canDeactivate: [CanDeactivateGuard],
     title: 'Testrun - Devices',
   },
   {
     path: 'reports',
-    loadChildren: () =>
-      import('./pages/reports/reports.module').then(m => m.ReportsModule),
+    component: ReportsComponent,
     title: 'Testrun - Reports',
   },
   {
     path: 'risk-assessment',
-    loadChildren: () =>
-      import('./pages/risk-assessment/risk-assessment.module').then(
-        m => m.RiskAssessmentModule
-      ),
+    component: RiskAssessmentComponent,
     title: 'Testrun - Risk Assessment',
   },
   {
@@ -49,9 +48,3 @@ const routes: Routes = [
     pathMatch: 'full',
   },
 ];
-
-@NgModule({
-  imports: [RouterModule.forRoot(routes, { useHash: true })],
-  exports: [RouterModule],
-})
-export class AppRoutingModule {}

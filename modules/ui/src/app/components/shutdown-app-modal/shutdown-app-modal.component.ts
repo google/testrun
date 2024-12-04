@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { EscapableDialogComponent } from '../escapable-dialog/escapable-dialog.component';
 import {
   MAT_DIALOG_DATA,
@@ -31,16 +31,20 @@ interface DialogData {
   selector: 'app-shutdown-app-modal',
   templateUrl: './shutdown-app-modal.component.html',
   styleUrl: './shutdown-app-modal.component.scss',
-  standalone: true,
+
   imports: [MatDialogModule, MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShutdownAppModalComponent extends EscapableDialogComponent {
-  constructor(
-    public override dialogRef: MatDialogRef<ShutdownAppModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
-  ) {
-    super(dialogRef);
+  override dialogRef: MatDialogRef<ShutdownAppModalComponent>;
+  data = inject<DialogData>(MAT_DIALOG_DATA);
+
+  constructor() {
+    const dialogRef =
+      inject<MatDialogRef<ShutdownAppModalComponent>>(MatDialogRef);
+
+    super();
+    this.dialogRef = dialogRef;
   }
 
   confirm() {

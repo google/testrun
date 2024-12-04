@@ -23,7 +23,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-stepper',
-  standalone: true,
   imports: [
     NgForOf,
     NgTemplateOutlet,

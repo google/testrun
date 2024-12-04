@@ -31,7 +31,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { AppRoutingModule } from './app-routing.module';
 import SpyObj = jasmine.SpyObj;
 import { BypassComponent } from './components/bypass/bypass.component';
 import { CalloutComponent } from './components/callout/callout.component';
@@ -74,6 +73,11 @@ import { WifiComponent } from './components/wifi/wifi.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Profile } from './model/profile';
 import { TestrunStatus } from './model/testrun-status';
+import { SettingsComponent } from './pages/settings/settings.component';
+import { SpinnerComponent } from './components/spinner/spinner.component';
+import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
+import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
+import { VersionComponent } from './components/version/version.component';
 
 const windowMock = {
   location: {
@@ -128,9 +132,10 @@ describe('AppComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [
+        FakeGeneralSettingsComponent,
+        AppComponent,
         RouterTestingModule,
         HttpClientTestingModule,
-        AppRoutingModule,
         MatButtonModule,
         BrowserAnimationsModule,
         MatIconModule,
@@ -142,6 +147,15 @@ describe('AppComponent', () => {
         CertificatesComponent,
         WifiComponent,
         MatTooltipModule,
+        FakeSpinnerComponent,
+        FakeShutdownAppComponent,
+        FakeVersionComponent,
+        FakeTestingCompleteComponent,
+        RouterTestingModule.withRoutes([
+          { path: 'devices', children: [] },
+          { path: 'testing', children: [] },
+          { path: 'reports', children: [] },
+        ]),
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
@@ -173,14 +187,25 @@ describe('AppComponent', () => {
         { provide: FocusManagerService, useValue: mockFocusManagerService },
         { provide: WINDOW, useValue: windowMock },
       ],
-      declarations: [
-        AppComponent,
-        FakeGeneralSettingsComponent,
-        FakeSpinnerComponent,
-        FakeShutdownAppComponent,
-        FakeVersionComponent,
-        FakeTestingCompleteComponent,
-      ],
+    }).overrideComponent(AppComponent, {
+      remove: {
+        imports: [
+          SettingsComponent,
+          SpinnerComponent,
+          ShutdownAppComponent,
+          TestingCompleteComponent,
+          VersionComponent,
+        ],
+      },
+      add: {
+        imports: [
+          FakeGeneralSettingsComponent,
+          FakeSpinnerComponent,
+          FakeShutdownAppComponent,
+          FakeVersionComponent,
+          FakeTestingCompleteComponent,
+        ],
+      },
     });
 
     mockMqttService.getNetworkAdapters.and.returnValue(of(MOCK_ADAPTERS));
@@ -292,23 +317,26 @@ describe('AppComponent', () => {
   it('should call toggleSettingsBtn focus when settingsDrawer close on closeSetting', fakeAsync(() => {
     fixture.detectChanges();
 
-    spyOn(component.settingsDrawer, 'close').and.returnValue(
+    spyOn(component.settingsDrawer(), 'close').and.returnValue(
       Promise.resolve('close')
     );
-    spyOn(component.toggleSettingsBtn, 'focus');
+    spyOn(component.toggleSettingsBtn(), 'focus');
 
     component.closeSetting(true);
     tick();
 
-    component.settingsDrawer.close().then(() => {
-      expect(component.toggleSettingsBtn.focus).toHaveBeenCalled();
-    });
+    component
+      .settingsDrawer()
+      .close()
+      .then(() => {
+        expect(component.toggleSettingsBtn().focus).toHaveBeenCalled();
+      });
   }));
 
   it('should call focusFirstElementInContainer if settingsDrawer opened not from toggleBtn', fakeAsync(() => {
     fixture.detectChanges();
 
-    spyOn(component.settingsDrawer, 'close').and.returnValue(
+    spyOn(component.settingsDrawer(), 'close').and.returnValue(
       Promise.resolve('close')
     );
 
@@ -317,39 +345,44 @@ describe('AppComponent', () => {
     component.closeSetting(false);
     flush();
 
-    component.settingsDrawer.close().then(() => {
-      expect(
-        mockFocusManagerService.focusFirstElementInContainer
-      ).toHaveBeenCalled();
-    });
+    component
+      .settingsDrawer()
+      .close()
+      .then(() => {
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalled();
+      });
   }));
 
   it('should update interfaces and config', () => {
     fixture.detectChanges();
 
-    spyOn(component.settings, 'getSystemInterfaces');
-    spyOn(component.settings, 'getSystemConfig');
+    const settings = component.settings();
+    spyOn(settings, 'getSystemInterfaces');
+    spyOn(settings, 'getSystemConfig');
 
     component.openGeneralSettings(false, false);
 
-    expect(component.settings.getSystemInterfaces).toHaveBeenCalled();
-    expect(component.settings.getSystemConfig).toHaveBeenCalled();
+    expect(settings.getSystemInterfaces).toHaveBeenCalled();
+    expect(settings.getSystemConfig).toHaveBeenCalled();
   });
 
   it('should call settingsDrawer open on openSetting', fakeAsync(() => {
     fixture.detectChanges();
-    spyOn(component.settingsDrawer, 'open');
+    const settingsDrawer = component.settingsDrawer();
+    spyOn(settingsDrawer, 'open');
 
     component.openSetting(false);
     tick();
 
-    expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
+    expect(settingsDrawer.open).toHaveBeenCalledTimes(1);
   }));
 
   it('should announce settingsDrawer disabled on openSetting and settings are disabled', fakeAsync(() => {
     fixture.detectChanges();
 
-    spyOn(component.settingsDrawer, 'open').and.returnValue(
+    spyOn(component.settingsDrawer(), 'open').and.returnValue(
       Promise.resolve('open')
     );
 
@@ -367,11 +400,12 @@ describe('AppComponent', () => {
     const settingsBtn = compiled.querySelector(
       '.app-toolbar-button-general-settings'
     ) as HTMLButtonElement;
-    spyOn(component.settingsDrawer, 'open');
+    const settingsDrawer = component.settingsDrawer();
+    spyOn(settingsDrawer, 'open');
 
     settingsBtn.click();
 
-    expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
+    expect(settingsDrawer.open).toHaveBeenCalledTimes(1);
   });
 
   it('should have spinner', () => {
@@ -761,10 +795,10 @@ describe('AppComponent', () => {
   it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {
     fixture.detectChanges();
 
-    spyOn(component.settingsDrawer, 'close').and.returnValue(
+    spyOn(component.settingsDrawer(), 'close').and.returnValue(
       Promise.resolve('close')
     );
-    const spyToggle = spyOn(component.toggleSettingsBtn, 'focus');
+    const spyToggle = spyOn(component.toggleSettingsBtn(), 'focus');
 
     await component.closeSetting(false);
 
@@ -785,11 +819,12 @@ describe('AppComponent', () => {
     const settingsBtn = compiled.querySelector(
       '.app-toolbar-button-certificates'
     ) as HTMLButtonElement;
-    spyOn(component.certDrawer, 'open');
+    const certDrawer = component.certDrawer();
+    spyOn(certDrawer, 'open');
 
     settingsBtn.click();
 
-    expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
+    expect(certDrawer.open).toHaveBeenCalledTimes(1);
   });
 
   it('should set focus to first focusable elem when close callout', fakeAsync(() => {
@@ -805,7 +840,6 @@ describe('AppComponent', () => {
 @Component({
   selector: 'app-settings',
   template: '<div></div>',
-  standalone: false,
 })
 class FakeGeneralSettingsComponent {
   @Input() settingsDisable = false;
@@ -817,14 +851,12 @@ class FakeGeneralSettingsComponent {
 @Component({
   selector: 'app-spinner',
   template: '<div></div>',
-  standalone: false,
 })
 class FakeSpinnerComponent {}
 
 @Component({
   selector: 'app-shutdown-app',
   template: '<div></div>',
-  standalone: false,
 })
 class FakeShutdownAppComponent {
   @Input() disable!: boolean;
@@ -833,7 +865,6 @@ class FakeShutdownAppComponent {
 @Component({
   selector: 'app-version',
   template: '<div></div>',
-  standalone: false,
 })
 class FakeVersionComponent {
   @Input() consentShown!: boolean;
@@ -843,7 +874,6 @@ class FakeVersionComponent {
 @Component({
   selector: 'app-testing-complete',
   template: '<div></div>',
-  standalone: false,
 })
 class FakeTestingCompleteComponent {
   @Input() profiles: Profile[] = [];

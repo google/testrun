@@ -18,9 +18,9 @@ import {
   Component,
   ElementRef,
   HostListener,
-  Inject,
   OnInit,
-  ViewChild,
+  viewChild,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -69,7 +69,7 @@ interface DialogData {
 
 @Component({
   selector: 'app-filter-dialog',
-  standalone: true,
+
   imports: [
     CommonModule,
     MatDialogModule,
@@ -97,6 +97,11 @@ export class FilterDialogComponent
   extends EscapableDialogComponent
   implements OnInit
 {
+  override dialogRef: MatDialogRef<FilterDialogComponent>;
+  private deviceValidators = inject(DeviceValidators);
+  data = inject<DialogData>(MAT_DIALOG_DATA);
+  private fb = inject(FormBuilder);
+
   resultList = [
     { value: StatusOfTestResult.Compliant, enabled: false },
     { value: StatusOfTestResult.NonCompliant, enabled: false },
@@ -120,17 +125,15 @@ export class FilterDialogComponent
     this.setDialogView();
   }
 
-  @ViewChild(MatCalendar) calendar!: MatCalendar<Date>;
-  @ViewChild('startDate') startDate!: NgModel;
-  @ViewChild('endDate') endDate!: NgModel;
+  readonly calendar = viewChild(MatCalendar);
+  readonly startDate = viewChild<NgModel>('startDate');
+  readonly endDate = viewChild<NgModel>('endDate');
 
-  constructor(
-    public override dialogRef: MatDialogRef<FilterDialogComponent>,
-    private deviceValidators: DeviceValidators,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData,
-    private fb: FormBuilder
-  ) {
-    super(dialogRef);
+  constructor() {
+    const dialogRef = inject<MatDialogRef<FilterDialogComponent>>(MatDialogRef);
+
+    super();
+    this.dialogRef = dialogRef;
   }
 
   get deviceInfo() {
@@ -202,8 +205,8 @@ export class FilterDialogComponent
   confirm(): void {
     if (
       this.filterForm?.invalid ||
-      this.startDate?.invalid ||
-      this.endDate?.invalid
+      this.startDate()?.invalid ||
+      this.endDate()?.invalid
     ) {
       return;
     }
@@ -247,8 +250,11 @@ export class FilterDialogComponent
       this.selectedRangeValue?.end || null
     );
     if (this.selectedRangeValue.start) {
-      this.calendar.activeDate = this.selectedRangeValue.start;
-      this.calendar.updateTodaysDate();
+      const calendar = this.calendar();
+      if (calendar) {
+        calendar.activeDate = this.selectedRangeValue.start;
+        calendar.updateTodaysDate();
+      }
     }
   }
 
@@ -263,8 +269,11 @@ export class FilterDialogComponent
       event.value
     );
     if (this.selectedRangeValue?.end) {
-      this.calendar.activeDate = this.selectedRangeValue.end;
-      this.calendar.updateTodaysDate();
+      const calendar = this.calendar();
+      if (calendar) {
+        calendar.activeDate = this.selectedRangeValue.end;
+        calendar.updateTodaysDate();
+      }
     }
   }
 }

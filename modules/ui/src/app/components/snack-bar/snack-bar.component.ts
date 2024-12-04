@@ -27,7 +27,7 @@ import { setIsOpenWaitSnackBar, setIsStopTestrun } from '../../store/actions';
 
 @Component({
   selector: 'app-snack-bar',
-  standalone: true,
+
   imports: [
     MatButtonModule,
     MatSnackBarLabel,
@@ -39,8 +39,9 @@ import { setIsOpenWaitSnackBar, setIsStopTestrun } from '../../store/actions';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SnackBarComponent {
+  private store = inject<Store<AppState>>(Store);
+
   snackBarRef = inject(MatSnackBarRef);
-  constructor(private store: Store<AppState>) {}
 
   wait(): void {
     this.snackBarRef.dismiss();

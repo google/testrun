@@ -31,7 +31,7 @@ import { ProgramType } from '../../model/program-type';
   selector: 'app-device-item',
   templateUrl: './device-item.component.html',
   styleUrls: ['./device-item.component.scss'],
-  standalone: true,
+
   imports: [
     CommonModule,
     MatButtonModule,

@@ -13,19 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { filter, take } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-escapable-dialog',
-  standalone: true,
+
   imports: [CommonModule],
   template: '',
 })
 export class EscapableDialogComponent {
-  constructor(public dialogRef: MatDialogRef<EscapableDialogComponent>) {
+  dialogRef = inject<MatDialogRef<EscapableDialogComponent>>(MatDialogRef);
+
+  constructor() {
+    const dialogRef = this.dialogRef;
+
     this.dialogRef
       .keydownEvents()
       .pipe(

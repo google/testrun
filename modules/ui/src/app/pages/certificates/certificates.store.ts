@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import { catchError, EMPTY, exhaustMap, of, throwError } from 'rxjs';
@@ -32,6 +32,10 @@ export interface AppComponentState {
 const SYMBOLS_PER_SECOND = 9.5;
 @Injectable()
 export class CertificatesStore extends ComponentStore<AppComponentState> {
+  private testRunService = inject(TestRunService);
+  private notificationService = inject(NotificationService);
+  private datePipe = inject(DatePipe);
+
   private certificates$ = this.select(state => state.certificates);
   private selectedCertificate$ = this.select(
     state => state.selectedCertificate
@@ -160,11 +164,7 @@ export class CertificatesStore extends ComponentStore<AppComponentState> {
     this.updateCertificates(certificates);
   }
 
-  constructor(
-    private testRunService: TestRunService,
-    private notificationService: NotificationService,
-    private datePipe: DatePipe
-  ) {
+  constructor() {
     super({
       certificates: [],
       selectedCertificate: '',

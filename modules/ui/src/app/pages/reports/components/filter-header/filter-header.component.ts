@@ -14,7 +14,7 @@ export interface OpenFilterEvent {
 
 @Component({
   selector: 'app-filter-header',
-  standalone: true,
+
   imports: [
     MatIconModule,
     MatButtonModule,

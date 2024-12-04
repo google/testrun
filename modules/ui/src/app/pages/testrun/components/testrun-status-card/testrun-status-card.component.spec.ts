@@ -28,7 +28,6 @@ import {
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
   MOCK_PROGRESS_DATA_WITH_ERROR,
 } from '../../../../mocks/testrun.mock';
-import { TestrunModule } from '../../testrun.module';
 
 describe('ProgressStatusCardComponent', () => {
   let component: TestrunStatusCardComponent;
@@ -37,7 +36,7 @@ describe('ProgressStatusCardComponent', () => {
   describe('Class tests', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
-        declarations: [TestrunStatusCardComponent],
+        imports: [TestrunStatusCardComponent],
       });
       fixture = TestBed.createComponent(TestrunStatusCardComponent);
       component = fixture.componentInstance;
@@ -225,8 +224,7 @@ describe('ProgressStatusCardComponent', () => {
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        declarations: [TestrunStatusCardComponent],
-        imports: [TestrunModule],
+        imports: [TestrunStatusCardComponent],
       }).compileComponents();
 
       fixture = TestBed.createComponent(TestrunStatusCardComponent);

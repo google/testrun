@@ -36,7 +36,7 @@ import { ProgramTypeIconComponent } from '../program-type-icon/program-type-icon
     ProgramTypeIconComponent,
   ],
   selector: 'app-callout',
-  standalone: true,
+
   styleUrls: ['./callout.component.scss'],
   templateUrl: './callout.component.html',
 })
