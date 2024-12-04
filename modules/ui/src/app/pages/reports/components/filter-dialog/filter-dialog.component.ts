@@ -64,6 +64,7 @@ import { DeviceValidators } from '../../../devices/components/device-form/device
 interface DialogData {
   trigger: ElementRef;
   filter: string;
+  title: string;
 }
 
 @Component({
@@ -108,6 +109,7 @@ export class FilterDialogComponent
   range: LocalDateRange = new LocalDateRange();
 
   topPosition = 0;
+  dialogTitle = 110;
 
   today = new Date();
 
@@ -149,12 +151,21 @@ export class FilterDialogComponent
     const rect = this.data.trigger?.nativeElement.getBoundingClientRect();
 
     matDialogConfig.position = {
-      left: `${rect.left - 80}px`,
-      top: `${rect.bottom + 0}px`,
+      left:
+        this.data.filter === FilterName.Results
+          ? `${rect.left - 240}px`
+          : `${rect.left}px`,
+      top: `${rect.bottom + 14}px`,
     };
 
     this.topPosition = rect.bottom + this.dialog_actions_height;
-    matDialogConfig.width = this.data.filter === 'results' ? '240px' : '328px';
+    if (this.data.filter === FilterName.Started) {
+      matDialogConfig.width = '360px';
+    } else if (this.data.filter === FilterName.Results) {
+      matDialogConfig.width = '240px';
+    } else {
+      matDialogConfig.width = '328px';
+    }
 
     this.dialogRef.updateSize(matDialogConfig.width);
     this.dialogRef.updatePosition(matDialogConfig.position);

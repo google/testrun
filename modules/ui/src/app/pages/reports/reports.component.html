@@ -37,8 +37,10 @@ limitations under the License.
               sortActionDescription="Sort by started date"
               headerText="Started"
               [filterName]="FilterName.Started"
+              [filterTitle]="FilterTitle.Started"
               [filterOpened]="vm.filterOpened"
               [activeFilter]="vm.activeFilter"
+              [filtered]="!!vm.filteredValues.dateRange"
               (emitOpenFilter)="openFilter($event)">
             </app-filter-header>
             <td *matCellDef="let data" class="text-nowrap" mat-cell>
@@ -67,8 +69,10 @@ limitations under the License.
               sortActionDescription="Sort by device"
               headerText="Device"
               [filterName]="FilterName.DeviceInfo"
+              [filterTitle]="FilterTitle.DeviceInfo"
               [filterOpened]="vm.filterOpened"
               [activeFilter]="vm.activeFilter"
+              [filtered]="!!vm.filteredValues.deviceInfo"
               (emitOpenFilter)="openFilter($event)">
             </app-filter-header>
             <td *matCellDef="let data" mat-cell>{{ data.deviceInfo }}</td>
@@ -81,8 +85,10 @@ limitations under the License.
               sortActionDescription="Sort by firmware"
               headerText="Firmware"
               [filterName]="FilterName.DeviceFirmware"
+              [filterTitle]="FilterTitle.DeviceFirmware"
               [filterOpened]="vm.filterOpened"
               [activeFilter]="vm.activeFilter"
+              [filtered]="!!vm.filteredValues.deviceFirmware"
               (emitOpenFilter)="openFilter($event)">
             </app-filter-header>
             <td *matCellDef="let data" mat-cell>{{ data.deviceFirmware }}</td>
@@ -109,8 +115,10 @@ limitations under the License.
               sortActionDescription="Sort by result"
               headerText="Result"
               [filterName]="FilterName.Results"
+              [filterTitle]="FilterTitle.Results"
               [filterOpened]="vm.filterOpened"
               [activeFilter]="vm.activeFilter"
+              [filtered]="!!vm.filteredValues.results.length"
               (emitOpenFilter)="openFilter($event)">
             </app-filter-header>
             <td *matCellDef="let data" mat-cell>

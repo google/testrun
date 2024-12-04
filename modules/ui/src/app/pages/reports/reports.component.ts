@@ -33,7 +33,7 @@ import { MatRow } from '@angular/material/table';
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { tap } from 'rxjs/internal/operators/tap';
-import { FilterName, Filters } from '../../model/filters';
+import { FilterName, FilterTitle, Filters } from '../../model/filters';
 import { ReportsStore } from './reports.store';
 import { OpenFilterEvent } from './components/filter-header/filter-header.component';
 
@@ -46,6 +46,7 @@ import { OpenFilterEvent } from './components/filter-header/filter-header.compon
 })
 export class ReportsComponent implements OnInit, OnDestroy {
   public readonly FilterName = FilterName;
+  public readonly FilterTitle = FilterTitle;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   @ViewChild(MatSort, { static: false }) sort!: MatSort;
   viewModel$ = this.store.viewModel$;
@@ -78,22 +79,27 @@ export class ReportsComponent implements OnInit, OnDestroy {
     return this.testRunService.getResultClass(status);
   }
 
-  openFilter({ event, filter, filterOpened }: OpenFilterEvent) {
+  openFilter({ event, filter, title, filterOpened }: OpenFilterEvent) {
     event.stopPropagation();
     const target = new ElementRef(event.currentTarget);
 
     if (!filterOpened) {
-      this.openFilterDialog(target, filter);
+      this.openFilterDialog(target, filter, title);
     }
   }
 
-  openFilterDialog(target: ElementRef<EventTarget | null>, filter: string) {
+  openFilterDialog(
+    target: ElementRef<EventTarget | null>,
+    filter: string,
+    title: string
+  ) {
     this.store.setFilterOpened(true);
     this.store.setActiveFiler(filter);
     const dialogRef = this.dialog.open(FilterDialogComponent, {
       ariaLabel: 'Filters',
       data: {
         filter,
+        title,
         trigger: target,
       },
       autoFocus: true,
