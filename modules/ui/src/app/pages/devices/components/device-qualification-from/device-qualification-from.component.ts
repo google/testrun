@@ -18,10 +18,10 @@ import {
   Component,
   ElementRef,
   HostListener,
-  Inject,
   OnDestroy,
   OnInit,
-  ViewChild,
+  viewChild,
+  inject,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -85,7 +85,7 @@ interface DialogData {
 
 @Component({
   selector: 'app-device-qualification-from',
-  standalone: true,
+
   imports: [
     CdkStep,
     StepperComponent,
@@ -115,11 +115,21 @@ interface DialogData {
 export class DeviceQualificationFromComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
+  private fb = inject(FormBuilder);
+  private deviceValidators = inject(DeviceValidators);
+  private profileValidators = inject(ProfileValidators);
+  dialogRef =
+    inject<MatDialogRef<DeviceQualificationFromComponent>>(MatDialogRef);
+  data = inject<DialogData>(MAT_DIALOG_DATA);
+  devicesStore = inject(DevicesStore);
+  private element = inject(ElementRef);
+  private focusService = inject(FocusManagerService);
+
   readonly FORM_HEIGHT = 993;
   readonly TestingType = TestingType;
   readonly DeviceView = DeviceView;
   readonly ProgramType = ProgramType;
-  @ViewChild('stepper') public stepper!: StepperComponent;
+  readonly stepper = viewChild.required<StepperComponent>('stepper');
   testModules: TestModule[] = [];
   deviceQualificationForm: FormGroup = this.fb.group({});
   device: Device | undefined;
@@ -179,16 +189,9 @@ export class DeviceQualificationFromComponent
     this.setDialogHeight();
   }
 
-  constructor(
-    private fb: FormBuilder,
-    private deviceValidators: DeviceValidators,
-    private profileValidators: ProfileValidators,
-    public dialogRef: MatDialogRef<DeviceQualificationFromComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData,
-    public devicesStore: DevicesStore,
-    private element: ElementRef,
-    private focusService: FocusManagerService
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.device = data.device;
   }
 
@@ -261,7 +264,7 @@ export class DeviceQualificationFromComponent
     this.dialogRef.close({
       action: FormAction.Delete,
       device: this.createDeviceFromForm(),
-      index: this.stepper.selectedIndex,
+      index: this.stepper().selectedIndex,
     } as FormResponse);
   }
 
@@ -277,7 +280,7 @@ export class DeviceQualificationFromComponent
       this.dialogRef.close({
         action: FormAction.Close,
         device: this.createDeviceFromForm(),
-        index: this.stepper.selectedIndex,
+        index: this.stepper().selectedIndex,
       } as FormResponse);
     }
   }
@@ -307,7 +310,7 @@ export class DeviceQualificationFromComponent
 
   goToStep(index: number, event?: Event) {
     event?.preventDefault();
-    this.stepper.selectedIndex = index;
+    this.stepper().selectedIndex = index;
   }
 
   private fillDeviceForm(

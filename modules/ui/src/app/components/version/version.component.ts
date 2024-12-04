@@ -20,6 +20,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -41,21 +42,19 @@ import { ConsentDialogComponent } from './consent-dialog/consent-dialog.componen
 declare const gtag: Function;
 @Component({
   selector: 'app-version',
-  standalone: true,
+
   imports: [CommonModule, MatButtonModule, MatDialogModule],
   templateUrl: './version.component.html',
   styleUrls: ['./version.component.scss'],
 })
 export class VersionComponent implements OnInit, OnDestroy {
+  private testRunService = inject(TestRunService);
+  dialog = inject(MatDialog);
+
   @Input() consentShown!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
   version$!: Observable<Version | null>;
   private destroy$: Subject<boolean> = new Subject<boolean>();
-
-  constructor(
-    private testRunService: TestRunService,
-    public dialog: MatDialog
-  ) {}
 
   ngOnInit() {
     this.testRunService.fetchVersion();

@@ -249,7 +249,9 @@ describe('FilterDialogComponent', () => {
     });
 
     it('should max date as today', () => {
-      expect(component.calendar.maxDate?.getDate()).toBe(new Date().getDate());
+      expect(component.calendar()?.maxDate?.getDate()).toBe(
+        new Date().getDate()
+      );
     });
   });
 });

@@ -15,10 +15,9 @@
  */
 import {
   ErrorHandler,
-  Inject,
   Injectable,
   InjectionToken,
-  Optional,
+  inject,
 } from '@angular/core';
 export const WINDOW_TOKEN = new InjectionToken('Window');
 
@@ -27,16 +26,14 @@ export const WINDOW_TOKEN = new InjectionToken('Window');
  */
 @Injectable()
 export class ErrorHandlerInterceptor implements ErrorHandler {
-  constructor(
-    @Optional()
-    @Inject(WINDOW_TOKEN)
-    private window: Window = window
-  ) {}
+  private _window = inject<Window>(WINDOW_TOKEN, { optional: true }) ?? window;
+
+  constructor() {}
   handleError(error: Error): void {
     const chunkFailedMessage = /Loading chunk [\d]+ failed/;
 
     if (chunkFailedMessage.test(error.message)) {
-      this.window.location.reload();
+      this._window.location.reload();
     }
   }
 }

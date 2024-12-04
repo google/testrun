@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, inject } from '@angular/core';
 import {
   HttpEvent,
   HttpHandler,
@@ -26,12 +26,10 @@ import { LoaderService } from '../services/loader.service';
 
 @Injectable()
 export class LoadingInterceptor implements HttpInterceptor {
-  private totalRequests = 0;
+  private loadingService = inject(LoaderService);
+  private zone = inject(NgZone);
 
-  constructor(
-    private loadingService: LoaderService,
-    private zone: NgZone
-  ) {}
+  private totalRequests = 0;
 
   intercept(
     request: HttpRequest<unknown>,

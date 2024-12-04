@@ -31,7 +31,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-device-tests',
-  standalone: true,
+
   imports: [CommonModule, MatCheckboxModule, ReactiveFormsModule],
   templateUrl: './device-tests.component.html',
   styleUrls: ['./device-tests.component.scss'],

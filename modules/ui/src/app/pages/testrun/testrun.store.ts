@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { AppState } from '../../store/state';
@@ -55,6 +55,10 @@ export interface TestrunComponentState {
 
 @Injectable()
 export class TestrunStore extends ComponentStore<TestrunComponentState> {
+  private store = inject<Store<AppState>>(Store);
+  private readonly focusManagerService = inject(FocusManagerService);
+  private readonly loaderService = inject(LoaderService);
+
   private dataSource$ = this.select(state => state.dataSource);
   private stepsToResolveCount$ = this.select(
     state => state.stepsToResolveCount
@@ -216,11 +220,7 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     this.loaderService.setLoading(false);
   }
 
-  constructor(
-    private store: Store<AppState>,
-    private readonly focusManagerService: FocusManagerService,
-    private readonly loaderService: LoaderService
-  ) {
+  constructor() {
     super({
       dataSource: undefined,
       stepsToResolveCount: 0,

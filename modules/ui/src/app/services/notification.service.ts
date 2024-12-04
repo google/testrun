@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, inject } from '@angular/core';
 import {
   MatSnackBar,
   MatSnackBarRef,
@@ -36,15 +36,13 @@ const WAIT_DISMISS_TIMEOUT_MS = 5000;
   providedIn: 'root',
 })
 export class NotificationService {
+  snackBar = inject(MatSnackBar);
+  private store = inject<Store<AppState>>(Store);
+  private focusManagerService = inject(FocusManagerService);
+  private zone = inject(NgZone);
+
   private snackBarRef!: MatSnackBarRef<TextOnlySnackBar>;
   public snackBarCompRef!: MatSnackBarRef<SnackBarComponent>;
-
-  constructor(
-    public snackBar: MatSnackBar,
-    private store: Store<AppState>,
-    private focusManagerService: FocusManagerService,
-    private zone: NgZone
-  ) {}
 
   notify(
     message: string,

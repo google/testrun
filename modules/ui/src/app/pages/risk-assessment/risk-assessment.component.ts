@@ -19,6 +19,7 @@ import {
   OnDestroy,
   OnInit,
   ViewContainerRef,
+  inject,
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
@@ -29,26 +30,56 @@ import { Profile, ProfileStatus } from '../../model/profile';
 import { Observable } from 'rxjs/internal/Observable';
 import { DeviceValidators } from '../devices/components/device-form/device.validators';
 import { SuccessDialogComponent } from './components/success-dialog/success-dialog.component';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { ProfileItemComponent } from './profile-item/profile-item.component';
+import {
+  MAT_FORM_FIELD_DEFAULT_OPTIONS,
+  MatFormFieldDefaultOptions,
+} from '@angular/material/form-field';
+import { CommonModule } from '@angular/common';
+import { MatInputModule } from '@angular/material/input';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { ProfileFormComponent } from './profile-form/profile-form.component';
+
+const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
+  hideRequiredMarker: true,
+};
 
 @Component({
   selector: 'app-risk-assessment',
   templateUrl: './risk-assessment.component.html',
   styleUrl: './risk-assessment.component.scss',
-  providers: [RiskAssessmentStore],
+  imports: [
+    CommonModule,
+    MatToolbarModule,
+    MatButtonModule,
+    ReactiveFormsModule,
+    MatInputModule,
+    MatSidenavModule,
+    ProfileFormComponent,
+    ProfileItemComponent,
+  ],
+  providers: [
+    RiskAssessmentStore,
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: matFormFieldDefaultOptions,
+    },
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
 })
 export class RiskAssessmentComponent implements OnInit, OnDestroy {
+  private store = inject(RiskAssessmentStore);
+  dialog = inject(MatDialog);
+  private liveAnnouncer = inject(LiveAnnouncer);
+  element = inject(ViewContainerRef);
+
   viewModel$ = this.store.viewModel$;
   isOpenProfileForm = false;
   isCopyProfile = false;
   private destroy$: Subject<boolean> = new Subject<boolean>();
-  constructor(
-    private store: RiskAssessmentStore,
-    public dialog: MatDialog,
-    private liveAnnouncer: LiveAnnouncer,
-    public element: ViewContainerRef
-  ) {}
 
   ngOnInit() {
     this.store.getProfilesFormat();

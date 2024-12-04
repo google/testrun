@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -35,7 +35,7 @@ type DialogData = {
 
 @Component({
   selector: 'app-consent-dialog',
-  standalone: true,
+
   imports: [
     MatDialogModule,
     MatButtonModule,
@@ -48,13 +48,12 @@ type DialogData = {
   styleUrl: './consent-dialog.component.scss',
 })
 export class ConsentDialogComponent {
+  private readonly focusManagerService = inject(FocusManagerService);
+  dialogRef = inject<MatDialogRef<ConsentDialogComponent>>(MatDialogRef);
+  data = inject<DialogData>(MAT_DIALOG_DATA);
+
   public readonly CalloutType = CalloutType;
   optOut = false;
-  constructor(
-    private readonly focusManagerService: FocusManagerService,
-    public dialogRef: MatDialogRef<ConsentDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
-  ) {}
 
   confirm(optOut: boolean) {
     // dialog should be closed with opposite value to grant or deny access to GA

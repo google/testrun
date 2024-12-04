@@ -24,7 +24,7 @@ import { MatButtonModule } from '@angular/material/button';
   selector: 'app-filter-chips',
   templateUrl: './filter-chips.component.html',
   styleUrls: ['./filter-chips.component.scss'],
-  standalone: true,
+
   imports: [
     MatIconModule,
     MatChipsModule,

@@ -21,13 +21,34 @@ import {
   TestrunStatus,
   TestsData,
 } from '../../../../model/testrun-status';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-testrun-status-card',
   templateUrl: './testrun-status-card.component.html',
   styleUrls: ['./testrun-status-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatProgressBarModule,
+    MatDialogModule,
+    MatInputModule,
+    MatExpansionModule,
+    ReactiveFormsModule,
+    MatTooltipModule,
+  ],
 })
 export class TestrunStatusCardComponent {
   @Input() systemStatus!: TestrunStatus;

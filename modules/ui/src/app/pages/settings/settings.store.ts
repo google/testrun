@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { TestRunService } from '../../services/test-run.service';
 import {
@@ -68,6 +68,9 @@ export const MONITORING_PERIOD = {
 };
 @Injectable()
 export class SettingsStore extends ComponentStore<SettingsComponentState> {
+  private testRunService = inject(TestRunService);
+  private store = inject<Store<AppState>>(Store);
+
   private static readonly DEFAULT_LOG_LEVEL = 'INFO';
   private static readonly DEFAULT_MONITORING_PERIOD = '300';
   private systemConfig$ = this.select(state => state.systemConfig);
@@ -328,10 +331,7 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
     };
   }
 
-  constructor(
-    private testRunService: TestRunService,
-    private store: Store<AppState>
-  ) {
+  constructor() {
     super({
       systemConfig: { network: {} },
       hasConnectionSettings: false,

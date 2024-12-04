@@ -20,7 +20,7 @@ import { MatIconButton } from '@angular/material/button';
 
 @Component({
   selector: 'app-wifi',
-  standalone: true,
+
   imports: [MatIcon, MatTooltip, MatIconButton],
   templateUrl: './wifi.component.html',
   styles: `

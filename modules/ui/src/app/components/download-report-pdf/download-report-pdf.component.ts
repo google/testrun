@@ -21,7 +21,7 @@ import { ReportActionComponent } from '../report-action/report-action.component'
 @Component({
   selector: 'app-download-report-pdf',
   templateUrl: './download-report-pdf.component.html',
-  standalone: true,
+
   imports: [CommonModule, DownloadReportComponent],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,

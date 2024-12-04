@@ -16,9 +16,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Inject,
   Input,
   OnDestroy,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -32,20 +32,19 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-shutdown-app',
-  standalone: true,
+
   imports: [CommonModule, MatButtonModule, MatIcon, MatTooltipModule],
   templateUrl: './shutdown-app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShutdownAppComponent implements OnDestroy {
+  dialog = inject(MatDialog);
+  private testRunService = inject(TestRunService);
+  private window = inject<Window>(WINDOW);
+
   @Input() disable: boolean = false;
 
   private destroy$: Subject<boolean> = new Subject<boolean>();
-  constructor(
-    public dialog: MatDialog,
-    private testRunService: TestRunService,
-    @Inject(WINDOW) private window: Window
-  ) {}
 
   openShutdownModal() {
     const dialogRef = this.dialog.open(ShutdownAppModalComponent, {

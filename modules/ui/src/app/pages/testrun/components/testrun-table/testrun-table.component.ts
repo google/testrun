@@ -17,38 +17,62 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  QueryList,
-  ViewChild,
-  ViewChildren,
+  viewChild,
+  viewChildren,
+  inject,
 } from '@angular/core';
-import { MatAccordion, MatExpansionPanel } from '@angular/material/expansion';
+import {
+  MatAccordion,
+  MatExpansionModule,
+  MatExpansionPanel,
+} from '@angular/material/expansion';
 import {
   IResult,
   StatusResultClassName,
 } from '../../../../model/testrun-status';
 import { CalloutType } from '../../../../model/callout-type';
 import { TestRunService } from '../../../../services/test-run.service';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { CalloutComponent } from '../../../../components/callout/callout.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-testrun-table',
   templateUrl: './testrun-table.component.html',
   styleUrls: ['./testrun-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatProgressBarModule,
+    MatDialogModule,
+    MatInputModule,
+    MatExpansionModule,
+    ReactiveFormsModule,
+    CalloutComponent,
+    MatTooltipModule,
+  ],
 })
 export class TestrunTableComponent {
-  @ViewChild(MatAccordion) accordion!: MatAccordion;
-  @ViewChildren(MatExpansionPanel) panels!: QueryList<MatExpansionPanel>;
+  private readonly testRunService = inject(TestRunService);
+
+  readonly accordion = viewChild.required(MatAccordion);
+  readonly panels = viewChildren(MatExpansionPanel);
   public readonly CalloutType = CalloutType;
   @Input() dataSource!: IResult[] | undefined;
   @Input() stepsToResolveCount = 0;
   isAllCollapsed!: boolean;
-
-  constructor(private readonly testRunService: TestRunService) {}
   public checkAllCollapsed(): void {
-    this.isAllCollapsed = this.panels
-      ?.toArray()
-      .every(panel => !panel.expanded);
+    this.isAllCollapsed = this.panels().every(panel => !panel.expanded);
   }
 
   public getResultClass(result: string): StatusResultClassName {

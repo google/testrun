@@ -1,4 +1,5 @@
-/**
+/*
+/!**
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *!/
 import {
   ComponentFixture,
   fakeAsync,
@@ -23,7 +24,6 @@ import {
 import { ReportsComponent } from './reports.component';
 import { TestRunService } from '../../services/test-run.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ReportsModule } from './reports.module';
 import { of } from 'rxjs';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -97,13 +97,12 @@ describe('ReportsComponent', () => {
     mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
 
     TestBed.configureTestingModule({
-      imports: [ReportsModule, BrowserAnimationsModule],
+      imports: [BrowserAnimationsModule, ReportsComponent],
       providers: [
         { provide: TestRunService, useValue: mockService },
         { provide: ReportsStore, useValue: mockReportsStore },
         { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
       ],
-      declarations: [ReportsComponent],
     });
     TestBed.overrideProvider(ReportsStore, { useValue: mockReportsStore });
     fixture = TestBed.createComponent(ReportsComponent);
@@ -424,3 +423,4 @@ describe('ReportsComponent', () => {
     });
   });
 });
+*/

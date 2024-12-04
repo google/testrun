@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-certificate-upload-button',
-  standalone: true,
+
   imports: [MatButtonModule],
   templateUrl: './certificate-upload-button.component.html',
   styleUrl: './certificate-upload-button.component.scss',

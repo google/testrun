@@ -18,7 +18,8 @@ import {
   Component,
   ElementRef,
   Input,
-  ViewChild,
+  viewChild,
+  inject,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -41,7 +42,6 @@ export enum DownloadOption {
   selector: 'app-download-options',
   templateUrl: './download-options.component.html',
   styleUrl: './download-options.component.scss',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
@@ -54,11 +54,13 @@ export enum DownloadOption {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DownloadOptionsComponent {
-  @ViewChild('downloadReportZip') downloadReportZip!: ElementRef;
+  private datePipe = inject(DatePipe);
+
+  readonly downloadReportZip =
+    viewChild.required<ElementRef>('downloadReportZip');
   @Input() profiles: Profile[] = [];
   @Input() data!: TestrunStatus;
   DownloadOption = DownloadOption;
-  constructor(private datePipe: DatePipe) {}
 
   onSelected(
     event: MatOptionSelectionChange,

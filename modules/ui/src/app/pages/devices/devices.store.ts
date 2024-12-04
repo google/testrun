@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { TestRunService } from '../../services/test-run.service';
 import { exhaustMap } from 'rxjs';
@@ -45,6 +45,9 @@ export interface DevicesComponentState {
 
 @Injectable()
 export class DevicesStore extends ComponentStore<DevicesComponentState> {
+  private testRunService = inject(TestRunService);
+  private store = inject<Store<AppState>>(Store);
+
   devices$ = this.store.select(selectDevices);
   isOpenAddDevice$ = this.store.select(selectIsOpenAddDevice);
   testModules$ = this.store.select(selectTestModules);
@@ -191,10 +194,7 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
     this.store.dispatch(setDevices({ devices }));
   }
 
-  constructor(
-    private testRunService: TestRunService,
-    private store: Store<AppState>
-  ) {
+  constructor() {
     super({
       devices: [],
       selectedDevice: null,

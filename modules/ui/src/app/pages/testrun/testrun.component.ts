@@ -18,6 +18,7 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  inject,
 } from '@angular/core';
 import {
   StatusOfTestrun,
@@ -25,7 +26,7 @@ import {
   TestsResponse,
 } from '../../model/testrun-status';
 import { Subject, takeUntil, timer } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { TestrunInitiateFormComponent } from './components/testrun-initiate-form/testrun-initiate-form.component';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { LoaderService } from '../../services/loader.service';
@@ -36,31 +37,57 @@ import { TestRunService } from '../../services/test-run.service';
 import { NotificationService } from '../../services/notification.service';
 import { TestModule } from '../../model/device';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatInputModule } from '@angular/material/input';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { ReactiveFormsModule } from '@angular/forms';
+import { SpinnerComponent } from '../../components/spinner/spinner.component';
+import { DownloadOptionsComponent } from './components/download-options/download-options.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { TestrunTableComponent } from './components/testrun-table/testrun-table.component';
+import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
 
 @Component({
   selector: 'app-progress',
   templateUrl: './testrun.component.html',
   styleUrls: ['./testrun.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatProgressBarModule,
+    MatDialogModule,
+    MatInputModule,
+    MatExpansionModule,
+    ReactiveFormsModule,
+    SpinnerComponent,
+    DownloadOptionsComponent,
+    MatTooltipModule,
+    TestrunTableComponent,
+    TestrunStatusCardComponent,
+  ],
   providers: [
     LoaderService,
     { provide: LOADER_TIMEOUT_CONFIG_TOKEN, useValue: 0 },
     TestrunStore,
   ],
-  standalone: false,
 })
 export class TestrunComponent implements OnInit, OnDestroy {
+  private readonly testRunService = inject(TestRunService);
+  private readonly notificationService = inject(NotificationService);
+  dialog = inject(MatDialog);
+  private readonly focusManagerService = inject(FocusManagerService);
+  testrunStore = inject(TestrunStore);
+
   public readonly StatusOfTestrun = StatusOfTestrun;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   viewModel$ = this.testrunStore.viewModel$;
-
-  constructor(
-    private readonly testRunService: TestRunService,
-    private readonly notificationService: NotificationService,
-    public dialog: MatDialog,
-    private readonly focusManagerService: FocusManagerService,
-    public testrunStore: TestrunStore
-  ) {}
 
   ngOnInit(): void {
     combineLatest([

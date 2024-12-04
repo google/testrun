@@ -110,7 +110,7 @@ describe('ProfileItemComponent', () => {
     fixture.nativeElement.dispatchEvent(new Event('focusout'));
     tick();
 
-    expect(component.tooltip.message).toEqual(
+    expect(component.tooltip().message).toEqual(
       'Expired. Please, create a new Risk profile.'
     );
   }));
@@ -135,7 +135,7 @@ describe('ProfileItemComponent', () => {
     });
 
     it('should change tooltip on enterProfileItem', () => {
-      expect(component.tooltip.message).toEqual(
+      expect(component.tooltip().message).toEqual(
         'This risk profile is outdated. Please create a new risk profile.'
       );
     });

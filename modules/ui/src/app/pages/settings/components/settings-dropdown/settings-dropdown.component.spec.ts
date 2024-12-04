@@ -7,7 +7,7 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 
 @Component({
   template:
@@ -16,8 +16,10 @@ import { Component } from '@angular/core';
   standalone: false,
 })
 class DummyComponent {
+  private readonly fb = inject(FormBuilder);
+
   public testForm!: FormGroup;
-  constructor(private readonly fb: FormBuilder) {
+  constructor() {
     this.testForm = this.fb.group({
       test: [''],
     });

@@ -65,6 +65,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from '../../services/notification.service';
 import { Profile } from '../../model/profile';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { DownloadOptionsComponent } from './components/download-options/download-options.component';
+import { TestrunTableComponent } from './components/testrun-table/testrun-table.component';
+import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
 
 describe('TestrunComponent', () => {
   let component: TestrunComponent;
@@ -103,12 +106,6 @@ describe('TestrunComponent', () => {
       window.dataLayer = window.dataLayer || [];
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
       TestBed.configureTestingModule({
-        declarations: [
-          TestrunComponent,
-          FakeProgressStatusCardComponent,
-          FakeProgressTableComponent,
-          FakeDownloadOptionsComponent,
-        ],
         providers: [
           TestrunStore,
           { provide: TestRunService, useValue: testRunServiceMock },
@@ -136,6 +133,10 @@ describe('TestrunComponent', () => {
           }),
         ],
         imports: [
+          TestrunComponent,
+          FakeProgressStatusCardComponent,
+          FakeProgressTableComponent,
+          FakeDownloadOptionsComponent,
           MatButtonModule,
           MatIconModule,
           MatToolbarModule,
@@ -149,6 +150,22 @@ describe('TestrunComponent', () => {
           set: {
             providers: [
               { provide: LoaderService, useValue: loaderServiceMock },
+            ],
+          },
+        })
+        .overrideComponent(TestrunComponent, {
+          remove: {
+            imports: [
+              TestrunStatusCardComponent,
+              TestrunTableComponent,
+              DownloadOptionsComponent,
+            ],
+          },
+          add: {
+            imports: [
+              FakeProgressStatusCardComponent,
+              FakeProgressTableComponent,
+              FakeDownloadOptionsComponent,
             ],
           },
         })
@@ -222,12 +239,6 @@ describe('TestrunComponent', () => {
       window.dataLayer = window.dataLayer || [];
 
       await TestBed.configureTestingModule({
-        declarations: [
-          TestrunComponent,
-          FakeProgressStatusCardComponent,
-          FakeProgressTableComponent,
-          FakeDownloadOptionsComponent,
-        ],
         providers: [
           TestrunStore,
           { provide: TestRunService, useValue: testRunServiceMock },
@@ -256,6 +267,10 @@ describe('TestrunComponent', () => {
           }),
         ],
         imports: [
+          TestrunComponent,
+          FakeProgressStatusCardComponent,
+          FakeProgressTableComponent,
+          FakeDownloadOptionsComponent,
           MatButtonModule,
           MatIconModule,
           MatToolbarModule,
@@ -269,6 +284,22 @@ describe('TestrunComponent', () => {
           set: {
             providers: [
               { provide: LoaderService, useValue: loaderServiceMock },
+            ],
+          },
+        })
+        .overrideComponent(TestrunComponent, {
+          remove: {
+            imports: [
+              TestrunStatusCardComponent,
+              TestrunTableComponent,
+              DownloadOptionsComponent,
+            ],
+          },
+          add: {
+            imports: [
+              FakeProgressStatusCardComponent,
+              FakeProgressTableComponent,
+              FakeDownloadOptionsComponent,
             ],
           },
         })
@@ -596,7 +627,6 @@ describe('TestrunComponent', () => {
 @Component({
   selector: 'app-testrun-status-card',
   template: '<div></div>',
-  standalone: false,
 })
 class FakeProgressStatusCardComponent {
   @Input() systemStatus!: TestrunStatus;
@@ -605,7 +635,6 @@ class FakeProgressStatusCardComponent {
 @Component({
   selector: 'app-testrun-table',
   template: '<div></div>',
-  standalone: false,
 })
 class FakeProgressTableComponent {
   @Input() dataSource!: IResult[] | undefined;
@@ -615,7 +644,6 @@ class FakeProgressTableComponent {
 @Component({
   selector: 'app-download-options',
   template: '<div></div>',
-  standalone: false,
 })
 class FakeDownloadOptionsComponent {
   @Input() data!: TestrunStatus;

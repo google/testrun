@@ -1,9 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Inject,
   OnDestroy,
   OnInit,
+  inject,
 } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
@@ -51,7 +51,7 @@ export interface DialogCloseResult {
 
 @Component({
   selector: 'app-download-zip-modal',
-  standalone: true,
+
   imports: [
     CommonModule,
     MatDialogActions,
@@ -72,6 +72,12 @@ export class DownloadZipModalComponent
   extends EscapableDialogComponent
   implements OnDestroy, OnInit
 {
+  private readonly testRunService = inject(TestRunService);
+  override dialogRef: MatDialogRef<DownloadZipModalComponent>;
+  data = inject<DialogData>(MAT_DIALOG_DATA);
+  private route = inject(Router);
+  private focusManagerService = inject(FocusManagerService);
+
   private destroy$: Subject<boolean> = new Subject<boolean>();
   readonly NO_PROFILE = {
     name: 'No Risk Profile selected',
@@ -81,14 +87,14 @@ export class DownloadZipModalComponent
   public readonly StatusOfTestrun = StatusOfTestrun;
   profiles: Profile[] = [];
   selectedProfile: Profile;
-  constructor(
-    private readonly testRunService: TestRunService,
-    public override dialogRef: MatDialogRef<DownloadZipModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData,
-    private route: Router,
-    private focusManagerService: FocusManagerService
-  ) {
-    super(dialogRef);
+  constructor() {
+    const dialogRef =
+      inject<MatDialogRef<DownloadZipModalComponent>>(MatDialogRef);
+
+    super();
+    this.dialogRef = dialogRef;
+    const data = this.data;
+
     this.profiles = data.profiles.filter(
       profile => profile.status === ProfileStatus.VALID
     );

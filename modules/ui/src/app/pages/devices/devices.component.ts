@@ -19,8 +19,13 @@ import {
   OnDestroy,
   OnInit,
   ChangeDetectorRef,
+  inject,
 } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import {
   Device,
   DeviceStatus,
@@ -38,6 +43,15 @@ import { DevicesStore } from './devices.store';
 import { DeviceQualificationFromComponent } from './components/device-qualification-from/device-qualification-from.component';
 import { Observable } from 'rxjs/internal/Observable';
 import { CanComponentDeactivate } from '../../guards/can-deactivate.guard';
+import { CommonModule } from '@angular/common';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatInputModule } from '@angular/material/input';
+import { DeviceItemComponent } from '../../components/device-item/device-item.component';
 
 export enum FormAction {
   Delete = 'Delete',
@@ -55,25 +69,34 @@ export interface FormResponse {
   selector: 'app-device-repository',
   templateUrl: './devices.component.html',
   styleUrls: ['./devices.component.scss'],
+  imports: [
+    CommonModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
+    ScrollingModule,
+    MatDialogModule,
+    ReactiveFormsModule,
+    MatCheckboxModule,
+    MatInputModule,
+    DeviceItemComponent,
+  ],
   providers: [DevicesStore],
-  standalone: false,
 })
 export class DevicesComponent
   implements OnInit, OnDestroy, CanComponentDeactivate
 {
+  private readonly focusManagerService = inject(FocusManagerService);
+  dialog = inject(MatDialog);
+  private element = inject(ElementRef);
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
+  private route = inject(Router);
+  private devicesStore = inject(DevicesStore);
+
   readonly DeviceView = DeviceView;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   viewModel$ = this.devicesStore.viewModel$;
   deviceDialog: MatDialogRef<DeviceQualificationFromComponent> | undefined;
-
-  constructor(
-    private readonly focusManagerService: FocusManagerService,
-    public dialog: MatDialog,
-    private element: ElementRef,
-    private readonly changeDetectorRef: ChangeDetectorRef,
-    private route: Router,
-    private devicesStore: DevicesStore
-  ) {}
 
   ngOnInit(): void {
     combineLatest([
