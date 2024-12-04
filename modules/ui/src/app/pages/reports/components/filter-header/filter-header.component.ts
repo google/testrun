@@ -8,6 +8,7 @@ import { MatSortModule } from '@angular/material/sort';
 export interface OpenFilterEvent {
   event: Event;
   filter: string;
+  title: string;
   filterOpened: boolean;
 }
 
@@ -28,16 +29,24 @@ export interface OpenFilterEvent {
 export class FilterHeaderComponent {
   @Output() emitOpenFilter = new EventEmitter<OpenFilterEvent>();
   @Input({ required: true }) filterName!: string;
+  @Input({ required: true }) filterTitle!: string;
   @Input({ required: true }) filterOpened!: boolean;
   @Input() hasSorting: boolean = true;
+  @Input() filtered: boolean = false;
   @Input({ required: true }) activeFilter!: string;
   @Input() sortActionDescription: string = '';
   @Input({ required: true }) headerText!: string;
 
-  openFilter(event: Event, filter: string, filterOpened: boolean): void {
+  openFilter(
+    event: Event,
+    filter: string,
+    title: string,
+    filterOpened: boolean
+  ): void {
     this.emitOpenFilter.emit({
       event,
       filter,
+      title,
       filterOpened,
     });
   }

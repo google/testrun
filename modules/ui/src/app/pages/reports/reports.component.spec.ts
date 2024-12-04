@@ -29,7 +29,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { ElementRef } from '@angular/core';
-import { FilterName } from '../../model/filters';
+import { FilterName, FilterTitle } from '../../model/filters';
 import SpyObj = jasmine.SpyObj;
 import { MatSort } from '@angular/material/sort';
 import { DATA_SOURCE_INITIAL_VALUE, ReportsStore } from './reports.store';
@@ -184,6 +184,7 @@ describe('ReportsComponent', () => {
       component.openFilter({
         event,
         filter: '',
+        title: '',
         filterOpened: false,
       });
 
@@ -192,6 +193,7 @@ describe('ReportsComponent', () => {
         ariaLabel: 'Filters',
         data: {
           filter: '',
+          title: '',
           trigger: new ElementRef(event.currentTarget),
         },
         autoFocus: true,
@@ -232,21 +234,25 @@ describe('ReportsComponent', () => {
       component.openFilter({
         event,
         filter: FilterName.Started,
+        title: FilterTitle.Started,
         filterOpened: false,
       });
       component.openFilter({
         event,
         filter: FilterName.Results,
+        title: FilterTitle.Results,
         filterOpened: false,
       });
       component.openFilter({
         event,
         filter: FilterName.DeviceFirmware,
+        title: FilterTitle.DeviceFirmware,
         filterOpened: false,
       });
       component.openFilter({
         event,
         filter: FilterName.DeviceInfo,
+        title: FilterTitle.DeviceInfo,
         filterOpened: false,
       });
       expect(mockReportsStore.setFilteredValuesResults).toHaveBeenCalledWith(

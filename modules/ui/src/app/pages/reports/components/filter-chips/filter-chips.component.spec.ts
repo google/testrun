@@ -73,7 +73,7 @@ describe('FilterChipsComponent', () => {
   describe('DOM tests', () => {
     describe('"Clear all filters" button', () => {
       it('should exist', () => {
-        const button = compiled.querySelector('.clear-all');
+        const button = compiled.querySelector('.clear-button');
 
         expect(button).toBeTruthy();
       });
@@ -81,7 +81,7 @@ describe('FilterChipsComponent', () => {
       it('should clear all filters on click', () => {
         const clearAllFiltersSpy = spyOn(component, 'clearAllFilters');
         const button = compiled.querySelector(
-          '.clear-all'
+          '.clear-button'
         ) as HTMLButtonElement;
         button.click();
 

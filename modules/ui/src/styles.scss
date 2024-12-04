@@ -21,6 +21,18 @@
 :root {
   --mat-sidenav-container-width: auto;
   --mat-sidenav-container-shape: 0;
+
+  @include mat.dialog-overrides(
+    (
+      container-color: colors.$surface-container-high,
+    )
+  );
+
+  @include mat.chips-overrides(
+    (
+      outline-color: transparent,
+    )
+  );
 }
 
 html,

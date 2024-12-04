@@ -16,7 +16,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
         <app-filter-header
           *matHeaderCellDef
           [filterName]="'testFilter'"
+          [filterTitle]="'testTitle'"
           [filterOpened]="false"
+          [filtered]="false"
           [activeFilter]="'testFilter'"
           [headerText]="'Test Header'"
           [hasSorting]="true"
@@ -85,6 +87,7 @@ describe('FilterHeaderComponent within mat-table', () => {
     expect(filterHeaderComponent.emitOpenFilter.emit).toHaveBeenCalledWith({
       event: new PointerEvent('event'),
       filter: 'testFilter',
+      title: 'testTitle',
       filterOpened: false,
     });
   });
