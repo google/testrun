@@ -243,14 +243,13 @@ class TLSModule(TestModule):
         if ext_table is not None:
           summary_table += f'\n\n{ext_table}'
 
-        # cert_tables.append(summary_table)
+        cert_tables.append(summary_table)
 
       outbound_conns = self._tls_util.get_all_outbound_connections(
           device_mac=self._device_mac, capture_files=pcap_files)
       conn_table = self.generate_outbound_connection_table(outbound_conns)
 
-      html_content += summary_table + '\n'.join('\n' + tables
-                                                for tables in cert_tables)
+      html_content += '\n'.join('\n' + tables for tables in cert_tables)
       html_content += conn_table
 
     else:
