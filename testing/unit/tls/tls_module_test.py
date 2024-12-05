@@ -391,7 +391,7 @@ class TLSModuleTest(unittest.TestCase):
     # Read the local good report
     with open(LOCAL_REPORT_SINGLE, 'r', encoding='utf-8') as file:
       report_local = file.read()
-
+    print(f"report out is: {report_out}")
     self.assertEqual(report_out, report_local)
 
   def tls_module_report_ext_test(self):
