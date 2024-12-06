@@ -83,7 +83,7 @@ Follow these steps to test your IoT device:
 2. Select the **Settings** menu in the top-right corner, then select your network interfaces. You can change the settings at any time.  
      ![Settings menu button](/docs/ui/getstarted--7cfvdpdnc5o.png)
 3. Select the **Certificates** menu in the top-right corner, then upload your local CA certificates for TLS server testing.
-     ![Certificates menu button](/docs/ui/getstarted-j21skepmx1.png)
+     ![Certificates menu button](/docs/ui/getstarted--j21skepmx1.png)
 5. Select the **Device Repository** icon on the left panel to add a new device for testing.  
      ![Device repository button](/docs/ui/getstarted--q5uw26tfod.png)
 6. Select the **Add Device** button.
