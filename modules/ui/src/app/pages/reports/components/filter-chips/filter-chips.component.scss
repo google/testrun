@@ -43,6 +43,12 @@
   }
 }
 
+.filter-chip-remove:focus {
+  &:before {
+    content: none;
+  }
+}
+
 .clear-button ::ng-deep .mat-focus-indicator {
   display: none;
 }
