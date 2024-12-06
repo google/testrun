@@ -59,6 +59,14 @@ class OVSControl:
     success = util.run_command(f'ovs-ofctl del-flows {bridge_name} \'{flow}\'')
     return success
 
+  def delete_port(self, bridge_name, port):
+    # Delete a port from the bridge using ovs-ofctl commands
+    success=True
+    if self.port_exists(bridge_name, port):
+      LOGGER.debug(f'Deleting port {port} from bridge: {bridge_name}')
+      success = util.run_command(f'ovs-vsctl del-port {bridge_name} \'{port}\'')
+    return success
+
   def get_bridge_ports(self, bridge_name):
     # Get a list of all the ports on a bridge
     response = util.run_command(f'ovs-vsctl list-ports {bridge_name}',

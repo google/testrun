@@ -136,10 +136,16 @@ class NetworkOrchestrator:
     self.create_net()
     self.start_network_services()
 
-    if 'validate' in self._session.get_runtime_params():
-      # Start the validator after network is ready
-      self.validator.start()
+    try:
+      if 'validate' in self._session.get_runtime_params():
+        # Start the validator after network is ready
+        self._session.set_status(TestrunStatus.VALIDATING)
+        self.validator.start()
+        self.validator.stop()
+    except Exception as e:
+      LOGGER.error(f'Validation failed {e}')
 
+    self._session.set_status('Waiting for Device')
     # Get network ready (via Network orchestrator)
     LOGGER.debug('Network is ready')
 
