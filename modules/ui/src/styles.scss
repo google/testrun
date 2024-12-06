@@ -35,6 +35,14 @@
   );
 }
 
+.filter-result {
+  @include mat.checkbox-overrides(
+    (
+      label-text-size: 16px,
+    )
+  );
+}
+
 html,
 body {
   height: 100%;
