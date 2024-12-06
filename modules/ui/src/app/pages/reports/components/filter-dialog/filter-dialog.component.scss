@@ -61,8 +61,24 @@
     display: none;
   }
 
+  &::ng-deep mat-year-view .mat-calendar-body-label[colspan='4'] {
+    display: none;
+  }
+
   &::ng-deep .mat-calendar-header {
     padding-top: 0;
+  }
+
+  ::ng-deep .mat-calendar-header button .mat-focus-indicator {
+    display: none;
+  }
+
+  ::ng-deep.mat-calendar-body-cell:focus .mat-focus-indicator::before {
+    content: none;
+  }
+
+  ::ng-deep.mat-calendar-body-cell:focus-visible .mat-focus-indicator::before {
+    content: '';
   }
 }
 
