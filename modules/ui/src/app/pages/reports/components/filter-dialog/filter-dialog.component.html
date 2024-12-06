@@ -62,7 +62,10 @@ limitations under the License.
         >
       </mat-error>
     </mat-form-field>
-    <div formArrayName="results" *ngIf="data.filter === FilterName.Results">
+    <div
+      class="filter-result"
+      formArrayName="results"
+      *ngIf="data.filter === FilterName.Results">
       <p
         *ngFor="let result of results.controls; let i = index"
         class="filter-result-item">

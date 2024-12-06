@@ -24,7 +24,7 @@ export enum FilterName {
 export enum FilterTitle {
   DeviceInfo = 'Enter device name',
   DeviceFirmware = 'Enter firmware name',
-  Results = 'Select result',
+  Results = 'Select status',
   Started = 'Select dates',
 }
 
