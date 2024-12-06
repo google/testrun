@@ -47,17 +47,12 @@ import { MatDialog } from '@angular/material/dialog';
 })
 export class CertificatesComponent implements OnDestroy {
   private liveAnnouncer = inject(LiveAnnouncer);
-  private store = inject(CertificatesStore);
+  store = inject(CertificatesStore);
   dialog = inject(MatDialog);
 
-  viewModel$ = this.store.viewModel$;
   @Output() closeCertificatedEvent = new EventEmitter<void>();
 
   private destroy$: Subject<boolean> = new Subject<boolean>();
-
-  constructor() {
-    this.store.getCertificates();
-  }
 
   ngOnDestroy() {
     this.destroy$.next(true);
