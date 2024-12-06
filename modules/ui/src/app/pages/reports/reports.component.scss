@@ -172,3 +172,8 @@
 .download-report-zip-icon-container {
   @include mixins.report-action;
 }
+
+::ng-deep .mat-sort-header-container {
+  padding-bottom: 4px;
+  height: variables.$reports-table-header-size;
+}
