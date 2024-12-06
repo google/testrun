@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { CommonModule, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
 
@@ -21,7 +21,6 @@ export interface OpenFilterEvent {
     CommonModule,
     MatTableModule,
     MatSortModule,
-    NgIf,
   ],
   templateUrl: './filter-header.component.html',
   styleUrl: './filter-header.component.scss',

@@ -1,6 +1,7 @@
 @use 'node_modules/@angular/material/index' as mat;
 @use 'src/theming/m3-theme' as *;
 @use 'colors';
+@use 'variables';
 
 :host {
   display: contents;
@@ -11,19 +12,14 @@ th {
   vertical-align: middle;
 }
 
-.header-filter-container {
-  display: flex;
-  align-items: center;
-}
-
 .filter-button {
   display: flex;
-  width: 32px;
-  height: 32px;
+  width: variables.$reports-table-header-size;
+  height: variables.$reports-table-header-size;
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
-  margin: 0 2px 0 38px;
+  margin-left: 8px;
   padding: 0;
   border: none;
   background: colors.$white;

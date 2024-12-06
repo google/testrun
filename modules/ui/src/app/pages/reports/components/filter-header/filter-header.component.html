@@ -1,24 +1,19 @@
-<th mat-header-cell>
-  <div class="header-filter-container">
-    <span
-      *ngIf="hasSorting"
-      mat-sort-header
-      [sortActionDescription]="sortActionDescription"
-      >{{ headerText }}</span
-    >
-    <span *ngIf="!hasSorting">{{ headerText }}</span>
-    <ng-container
-      *ngTemplateOutlet="
-        filterButton;
-        context: {
-          name: filterName,
-          title: filterTitle,
-          filterOpened: filterOpened,
-          activeFilter: activeFilter,
-        }
-      ">
-    </ng-container>
-  </div>
+<th
+  mat-header-cell
+  mat-sort-header
+  [sortActionDescription]="sortActionDescription">
+  <span>{{ headerText }}</span>
+  <ng-container
+    *ngTemplateOutlet="
+      filterButton;
+      context: {
+        name: filterName,
+        title: filterTitle,
+        filterOpened: filterOpened,
+        activeFilter: activeFilter,
+      }
+    ">
+  </ng-container>
 </th>
 
 <ng-template
