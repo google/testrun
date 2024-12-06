@@ -66,7 +66,7 @@ describe('FilterHeaderComponent within mat-table', () => {
     ) as HTMLElement;
     expect(filterHeader).toBeTruthy();
     const headerText = filterHeader?.querySelector(
-      '.header-filter-container span'
+      'th span'
     ) as HTMLSpanElement;
     expect(headerText?.textContent?.trim()).toBe('Test Header');
   });
