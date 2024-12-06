@@ -392,7 +392,7 @@ class TestReport():
           current_size += 40 + h1_padding
         # Calculating the height of paired tables
         elif (el.name == 'div'
-              and el['style'] == 'display:flex;justify-content:space-between;'):
+              and el.get('id') == 'tls_table'):
           tables = el.findChildren('table', recursive=True)
           current_size = max(
                             map(lambda t: len(
