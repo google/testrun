@@ -229,7 +229,7 @@ class TLSModule(TestModule):
         summary_table = f'\n{summary_table}'
 
         summary_table += f'''
-        <div style="display:flex;justify-content:space-between;">
+        <div id="tls_table" style="display:flex;justify-content:space-between;">
           <div style="margin-right:20px;">
             <h5>Certificate Information</h5>
             {cert_table}
@@ -249,8 +249,7 @@ class TLSModule(TestModule):
           device_mac=self._device_mac, capture_files=pcap_files)
       conn_table = self.generate_outbound_connection_table(outbound_conns)
 
-      html_content += summary_table + '\n'.join('\n' + tables
-                                                for tables in cert_tables)
+      html_content += '\n'.join('\n' + tables for tables in cert_tables)
       html_content += conn_table
 
     else:
