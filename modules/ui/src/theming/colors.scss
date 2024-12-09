@@ -94,6 +94,6 @@ $outline-variant: mat.get-theme-color($light-theme, neutral-variant, 80);
 
 $inverse-surface: mat.get-theme-color($light-theme, neutral, 20);
 $inverse-on-surface: mat.get-theme-color($light-theme, neutral, 95);
-$inverse-primary: mat.get-theme-color($light-theme, neutral, 80);
+$inverse-primary: mat.get-theme-color($light-theme, primary, 80);
 $scrim: mat.get-theme-color($light-theme, neutral, 0);
 $shadow: mat.get-theme-color($light-theme, neutral, 0);
