@@ -108,6 +108,7 @@ export const CertificatesStore = signalStore(
                 `File "${getShortCertificateName(file.name)}" is not added.`
               );
               notify(errors.join('\n'));
+              return EMPTY;
             }
             addCertificate(file.name, store.certificates());
             return testRunService.uploadCertificate(file).pipe(
