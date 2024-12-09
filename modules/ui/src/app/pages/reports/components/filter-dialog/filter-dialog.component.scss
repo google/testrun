@@ -37,7 +37,7 @@
   }
 
   &:has(.filter-result-item) {
-    padding: 0 24px;
+    padding: 0 16px;
   }
 }
 
@@ -108,13 +108,26 @@
   margin: 0 12px;
 }
 
-.filter-result-item {
-  padding: 4px 0;
-  margin: 0;
+.filter-result {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
 
-  &:first-child {
-    padding-top: 0;
+  ::ng-deep .mdc-checkbox__native-control:focus ~ .mat-focus-indicator::before {
+    content: none;
   }
+
+  ::ng-deep
+    .mdc-checkbox__native-control:focus-visible
+    ~ .mat-focus-indicator::before {
+    content: '';
+  }
+}
+
+.filter-result-item {
+  padding: 8px 0;
+  margin: 0;
 }
 
 .date-field,
