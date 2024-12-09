@@ -30,6 +30,8 @@
     "@angular/router": "^19.0.1",
     "@ngrx/component-store": "19.0.0-beta.0",
     "@ngrx/effects": "19.0.0-beta.0",
+    "@ngrx/operators": "^19.0.0-beta.0",
+    "@ngrx/signals": "^19.0.0-beta.0",
     "@ngrx/store": "19.0.0-beta.0",
     "ngx-mask": "^16.4.2",
     "ngx-mqtt": "^17.0.0",
