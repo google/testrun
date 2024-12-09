@@ -24,7 +24,11 @@ import { MqttModule } from 'ngx-mqtt';
 import { StoreModule } from '@ngrx/store';
 import { appFeatureKey, rootReducer } from './app/store/reducers';
 import { MatNativeDateModule } from '@angular/material/core';
-import { HTTP_INTERCEPTORS, provideHttpClient } from '@angular/common/http';
+import {
+  HTTP_INTERCEPTORS,
+  HttpClientModule,
+  provideHttpClient,
+} from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { WindowProvider } from './app/providers/window.provider';
 import { ErrorInterceptor } from './app/interceptors/error.interceptor';
@@ -45,7 +49,8 @@ bootstrapApplication(AppComponent, {
       StoreModule.forRoot({ [appFeatureKey]: rootReducer }),
       EffectsModule.forRoot([AppEffects]),
       MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
-      MatNativeDateModule
+      MatNativeDateModule,
+      HttpClientModule
     ),
     provideHttpClient(),
     WindowProvider,

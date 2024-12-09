@@ -33,6 +33,15 @@
       outline-color: transparent,
     )
   );
+
+  @include mat.snack-bar-overrides(
+    (
+      button-color: colors.$inverse-on-surface,
+      supporting-text-color: colors.$inverse-on-surface,
+      supporting-text-font: variables.$font-text,
+      supporting-text-size: 14px,
+    )
+  );
 }
 
 .filter-result {
@@ -250,11 +259,6 @@ mat-hint {
 
 .message-link:hover {
   color: mat.get-theme-color($light-theme, primary, 25);
-}
-
-.mat-mdc-snack-bar-container {
-  --mat-snack-bar-button-color: #ffffff;
-  --mdc-snackbar-supporting-text-color: #ffffff;
 }
 
 .mat-mdc-option {
@@ -484,4 +488,12 @@ button:not(.mat-mdc-button-disabled) {
       }
     }
   }
+}
+
+.mdc-snackbar__label  {
+  padding: 10px 8px 10px 16px !important;
+}
+
+.mat-mdc-snackbar-surface{
+  padding-right: 0 !important;
 }
