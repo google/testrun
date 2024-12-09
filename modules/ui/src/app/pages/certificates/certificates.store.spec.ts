@@ -6,7 +6,7 @@ import { DatePipe } from '@angular/common';
 import { of, throwError } from 'rxjs';
 import { Certificate } from '../../model/certificate';
 
-fdescribe('CertificatesStore', () => {
+describe('CertificatesStore', () => {
   // @ts-expect-error certificatesStore is a ReturnType of CertificatesStore
   let certificatesStore: ReturnType<typeof CertificatesStore>;
   const mockCertificates: Certificate[] = [
@@ -69,9 +69,7 @@ fdescribe('CertificatesStore', () => {
   });
 
   it('should upload a certificate and update the store', () => {
-    const mockFile = new File(['content'], 'Cert1.pdf', {
-      type: 'application/pdf',
-    });
+    const mockFile = new File(['content'], 'Cert1.crt');
     const uploadedCertificates: Certificate[] = [
       { name: 'Cert1', uploading: false },
     ];
