@@ -817,7 +817,8 @@ class TLSUtil():
           LOGGER.info(f'''TLS connection detected to {ip}.
                        Ignoring non-TLS traffic detected to this IP''')
 
-    unsupported_tls_ips = self.get_unsupported_tls_ips(client_mac, capture_files,
+    unsupported_tls_ips = self.get_unsupported_tls_ips(client_mac,
+                                                       capture_files,
                                                        unsupported_versions)
     if len(unsupported_tls_ips) > 0:
       tls_client_valid = False
