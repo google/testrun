@@ -16,8 +16,10 @@
 under test."""
 import threading
 from scapy.all import AsyncSniffer, DHCP, get_if_hwaddr
+from scapy.error import Scapy_Exception
 from net_orc.network_event import NetworkEvent
 from common import logger
+import time
 
 LOGGER = logger.get_logger('listener')
 
@@ -46,7 +48,7 @@ class Listener:
     """Start sniffing packets on the device interface."""
 
     # Don't start the listener if it is already running
-    if self._sniffer.running:
+    if self.is_running():
       LOGGER.debug('Listener was already running')
       return
 
@@ -58,8 +60,16 @@ class Listener:
 
   def stop_listener(self):
     """Stop sniffing packets on the device interface."""
-    if self._sniffer.running:
-      self._sniffer.stop()
+    for _ in range(5):
+      try:
+        if self.is_running():
+          self._sniffer.stop()
+          break
+      except Scapy_Exception as e:
+        LOGGER.error(f'Error stopping the listener: {e}')
+        time.sleep(1)
+    else:
+      LOGGER.error('Failed to stop the listener after 5 retries')
 
   def is_running(self):
     """Determine whether the sniffer is running."""
