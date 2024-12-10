@@ -416,9 +416,7 @@ class NetworkOrchestrator:
     # a use case is determined
     #self._create_private_net()
 
-    # Listener may have already been created. Only create if not
-    if self._listener is None:
-      self._listener = Listener(self._session)
+    self._listener = Listener(self._session)
 
     self.get_listener().register_callback(self._device_discovered,
                                           [NetworkEvent.DEVICE_DISCOVERED])

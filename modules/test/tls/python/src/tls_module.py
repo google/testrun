@@ -12,11 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """TLS test module"""
+# pylint: disable=W0212
+
 from test_module import TestModule
 from tls_util import TLSUtil
+import os
 import pyshark
+from binascii import hexlify
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa, dsa, ec
+from cryptography.x509 import AuthorityKeyIdentifier, SubjectKeyIdentifier, BasicConstraints, KeyUsage
+from cryptography.x509 import GeneralNames, DNSName, ExtendedKeyUsage, ObjectIdentifier, SubjectAlternativeName
 
 LOG_NAME = 'test_tls'
 MODULE_REPORT_FILE_NAME = 'tls_report.html'
@@ -48,146 +56,298 @@ class TLSModule(TestModule):
     LOGGER = self._get_logger()
     self._tls_util = TLSUtil(LOGGER)
 
-  # def generate_module_report(self):
-  # html_content = '<h1>TLS Module</h1>'
+  def generate_module_report(self):
+    html_content = '<h4 class="page-heading">TLS Module</h4>'
 
-  # # List of capture files to scan
-  # pcap_files = [
-  #     self.startup_capture_file, self.monitor_capture_file,
-  #     self.tls_capture_file
-  # ]
-  # certificates = self.extract_certificates_from_pcap(pcap_files,
-  #                                                    self._device_mac)
-  # if len(certificates) > 0:
+    # List of capture files to scan
+    pcap_files = [
+        self.startup_capture_file, self.monitor_capture_file,
+        self.tls_capture_file
+    ]
+    certificates = self.extract_certificates_from_pcap(pcap_files,
+                                                       self._device_mac)
 
-  #   # Add summary table
-  #   summary_table = '''
-  #     <table class="module-summary">
-  #       <thead>
-  #         <tr>
-  #           <th>Expiry</th>
-  #           <th>Length</th>
-  #           <th>Type</th>
-  #           <th>Port number</th>
-  #           <th>Signed by</th>
-  #         </tr>
-  #       </thead>
-  #       <tbody>
-  #     '''
+    if len(certificates) > 0:
 
-  #   # table_content = '''
-  #   #   <table class="module-data">
-  #   #     <thead>
-  #   #       <tr>
-  #   #         <th>Expiry</th>
-  #   #         <th>Length</th>
-  #   #         <th>Type</th>
-  #   #         <th>Port number</th>
-  #   #         <th>Signed by</th>
-  #   #       </tr>
-  #   #     </thead>
-  #   #     <tbody>'''
+      cert_tables = []
+      # pylint: disable=W0612
+      for cert_num, ((ip_address, port),
+                     cert) in enumerate(certificates.items()):
 
-  #   cert_tables = []
-  #   for cert_num, ((ip_address, port), cert) in enumerate(
-  #       certificates.items()):
+        # Add summary table
+        summary_table = '''
+          <table class="module-summary" style="width:100%;">
+            <thead>
+              <tr>
+                <th>Expiry</th>
+                <th>Length</th>
+                <th>Type</th>
+                <th>Port number</th>
+                <th>Signed by</th>
+              </tr>
+            </thead>
+            <tbody>
+          '''
 
-  #     # Extract certificate data
-  #     not_valid_before = cert.not_valid_before
-  #     not_valid_after = cert.not_valid_after
-  #     version_value = f'{cert.version.value + 1} ({hex(cert.version.value)})'
-  #     signature_alg_value = cert.signature_algorithm_oid._name  # pylint: disable=W0212
-  #     not_before = str(not_valid_before)
-  #     not_after = str(not_valid_after)
-  #     public_key = cert.public_key()
-  #     signed_by = 'None'
-  #     if isinstance(public_key, rsa.RSAPublicKey):
-  #       public_key_type = 'RSA'
-  #     elif isinstance(public_key, dsa.DSAPublicKey):
-  #       public_key_type = 'DSA'
-  #     elif isinstance(public_key, ec.EllipticCurvePublicKey):
-  #       public_key_type = 'EC'
-  #     else:
-  #       public_key_type = 'Unknown'
-  #     # Calculate certificate length
-  #     cert_length = len(cert.public_bytes(
-  #       encoding=serialization.Encoding.DER))
+        # Generate the certificate table
+        cert_table = '''
+          <table class="module-data">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>'''
 
-  #     # Generate the Certificate table
-  #     # cert_table = (f'| Property | Value |\n'
-  #     #               f'|---|---|\n'
-  #     #               f"| {'Version':<17} | {version_value:^25} |\n"
-  #     #               f"| {'Signature Alg.':<17} |
-  #                         {signature_alg_value:^25} |\n"
-  #     #               f"| {'Validity from':<17} | {not_before:^25} |\n"
-  #     #               f"| {'Valid to':<17} | {not_after:^25} |")
+        # Extract certificate data
+        not_valid_before = cert.not_valid_before
+        not_valid_after = cert.not_valid_after
+        version_value = f'{cert.version.value + 1} ({hex(cert.version.value)})'
+        signature_alg_value = cert.signature_algorithm_oid._name
+        not_before = str(not_valid_before)
+        not_after = str(not_valid_after)
+        public_key = cert.public_key()
+        signed_by = 'None'
 
-  #     # Generate the Subject table
-  #     subj_table = ('| Distinguished Name | Value |\n'
-  #                   '|---|---|')
-  #     for val in cert.subject.rdns:
-  #       dn = val.rfc4514_string().split('=')
-  #       subj_table += f'\n| {dn[0]} | {dn[1]}'
+        if isinstance(public_key, rsa.RSAPublicKey):
+          public_key_type = 'RSA'
+        elif isinstance(public_key, dsa.DSAPublicKey):
+          public_key_type = 'DSA'
+        elif isinstance(public_key, ec.EllipticCurvePublicKey):
+          public_key_type = 'EC'
+        else:
+          public_key_type = 'Unknown'
 
-  #     # Generate the Issuer table
-  #     iss_table = ('| Distinguished Name | Value |\n'
-  #                  '|---|---|')
-  #     for val in cert.issuer.rdns:
-  #       dn = val.rfc4514_string().split('=')
-  #       iss_table += f'\n| {dn[0]} | {dn[1]}'
-  #       if 'CN' in dn[0]:
-  #         signed_by = dn[1]
+        # Calculate certificate length
+        cert_length = len(
+            cert.public_bytes(encoding=serialization.Encoding.DER))
 
-  #     ext_table = None
-  #     # if cert.extensions:
-  #     #   ext_table = ('| Extension | Value |\n'
-  #     #                '|---|---|')
-  #     #   for extension in cert.extensions:
-  #     #     for extension_value in extension.value:
-  #     #       ext_table += f'''\n| {extension.oid._name} |
-  #     #       {extension_value.value}'''  # pylint: disable=W0212
-  #     # cert_table = f'### Certificate\n{cert_table}'
-  #     # cert_table += f'\n\n### Subject\n{subj_table}'
-  #     # cert_table += f'\n\n### Issuer\n{iss_table}'
-  #     # if ext_table is not None:
-  #     #   cert_table += f'\n\n### Extensions\n{ext_table}'
-  #     # cert_tables.append(cert_table)
+        # Append certification information
+        cert_table += f'''
+          <tr>
+            <td>Version</td>
+            <td>{version_value}</td>
+          </tr>
+          <tr>
+            <td>Signature Alg.</td>
+            <td>{signature_alg_value}</td>
+          </tr>
+          <tr>
+            <td>Validity from</td>
+            <td>{not_before}</td>
+          </tr>
+          <tr>
+            <td>Valid to</td>
+            <td>{not_after}</td>
+          </tr>
+        </tbody>
+      </table>
+        '''
 
-  #     summary_table += f'''
-  #           <tr>
-  #             <td>{not_after}</td>
-  #             <td>{cert_length}</td>
-  #             <td>{public_key_type}</td>
-  #             <td>{port}</td>
-  #             <td>{signed_by}</td>
-  #           </tr>
-  #         '''
+        subject_table = '''
+          <table class="module-data">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>'''
 
-  #   summary_table += '''
-  #       </tbody>
-  #     </table>
-  #   '''
+        # Append the subject information
+        for val in cert.subject.rdns:
+          dn = val.rfc4514_string().split('=')
+          subject_table += f'''
+            <tr>
+              <td>{dn[0]}</td>
+              <td>{dn[1]}</td>
+            </tr>
+          '''
 
-  #   html_content += summary_table
+        subject_table += '''
+          </tbody>
+        </table>'''
 
-  # else:
-  #   html_content += ('''
-  #     <div class="callout-container info">
-  #       <div class="icon"></div>
-  #       No TLS certificates found on the device
-  #     </div>''')
+        # Append issuer information
+        for val in cert.issuer.rdns:
+          dn = val.rfc4514_string().split('=')
+          if 'CN' in dn[0]:
+            signed_by = dn[1]
 
-  # LOGGER.debug('Module report:\n' + html_content)
+        ext_table = ''
 
-  # # Use os.path.join to create the complete file path
-  # report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
+        # Append extensions information
+        if cert.extensions:
 
-  # # Write the content to a file
-  # with open(report_path, 'w', encoding='utf-8') as file:
-  #   file.write(html_content)
+          ext_table = '''
+            <h5>Certificate Extensions</h5>
+            <table class="module-data" style="margin-bottom:20px;">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>'''
 
-  # LOGGER.info('Module report generated at: ' + str(report_path))
-  # return report_path
+          for extension in cert.extensions:
+            if isinstance(extension.value, list):
+              for extension_value in extension.value:
+                ext_table += f'''
+                    <tr>
+                      <td>{extension.oid._name}</td> 
+                      <td>{self.format_extension_value(extension_value.value)}</td>
+                    </tr> 
+                  '''
+            else:
+              ext_table += f'''
+                    <tr>
+                      <td>{extension.oid._name}</td> 
+                      <td>{self.format_extension_value(extension.value)}</td>
+                    </tr> 
+                  '''
+
+          ext_table += '''
+            </tbody>
+          </table>'''
+
+        # Add summary table row
+        summary_table += f'''
+              <tr>
+                <td>{not_after}</td>
+                <td>{cert_length}</td>
+                <td>{public_key_type}</td>
+                <td>{port}</td>
+                <td>{signed_by}</td>
+              </tr>
+            </tbody>
+          </table>
+        '''
+
+        # Merge all table HTML
+        summary_table = f'\n{summary_table}'
+
+        summary_table += f'''
+        <div style="display:flex;justify-content:space-between;">
+          <div style="margin-right:20px;">
+            <h5>Certificate Information</h5>
+            {cert_table}
+          </div>
+          <div>
+            <h5>Subject Information</h5>
+            {subject_table}
+          </div>
+        </div>'''
+
+        if ext_table is not None:
+          summary_table += f'\n\n{ext_table}'
+
+        cert_tables.append(summary_table)
+
+      outbound_conns = self._tls_util.get_all_outbound_connections(
+          device_mac=self._device_mac, capture_files=pcap_files)
+      conn_table = self.generate_outbound_connection_table(outbound_conns)
+
+      html_content += summary_table + '\n'.join('\n' + tables
+                                                for tables in cert_tables)
+      html_content += conn_table
+
+    else:
+      html_content += ('''
+        <div class="callout-container info">
+          <div class="icon"></div>
+          No TLS certificates found on the device
+        </div>''')
+
+    LOGGER.debug('Module report:\n' + html_content)
+
+    # Use os.path.join to create the complete file path
+    report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
+
+    # Write the content to a file
+    with open(report_path, 'w', encoding='utf-8') as file:
+      file.write(html_content)
+
+    LOGGER.info('Module report generated at: ' + str(report_path))
+    return report_path
+
+  def format_extension_value(self, value):
+    if isinstance(value, bytes):
+      # Convert byte sequences to hex strings
+      return hexlify(value).decode()
+    elif isinstance(value, (list, tuple)):
+      # Format lists/tuples for HTML output
+      return ', '.join([self.format_extension_value(v) for v in value])
+    elif isinstance(value, ExtendedKeyUsage):
+      # Handle ExtendedKeyUsage extension
+      return ', '.join(
+          [oid._name or f'Unknown OID ({oid.dotted_string})' for oid in value])
+    elif isinstance(value, GeneralNames):
+      # Handle GeneralNames (used in SubjectAlternativeName)
+      return ', '.join(
+          [name.value for name in value if isinstance(name, DNSName)])
+    elif isinstance(value, SubjectAlternativeName):
+      # Extract and format the GeneralNames (which contains DNSName,
+      #IPAddress, etc.)
+      return self.format_extension_value(value.get_values_for_type(DNSName))
+
+    elif isinstance(value, ObjectIdentifier):
+      # Handle ObjectIdentifier directly
+      return value._name or f'Unknown OID ({value.dotted_string})'
+    elif hasattr(value, '_name'):
+      # Extract the name for OIDs (Object Identifiers)
+      return value._name
+    elif isinstance(value, AuthorityKeyIdentifier):
+      # Handle AuthorityKeyIdentifier extension
+      key_id = self.format_extension_value(value.key_identifier)
+      cert_issuer = value.authority_cert_issuer
+      cert_serial = value.authority_cert_serial_number
+
+      return (f'key_identifier={key_id}, '
+              f'authority_cert_issuer={cert_issuer}, '
+              f'authority_cert_serial_number={cert_serial}')
+    elif isinstance(value, SubjectKeyIdentifier):
+      # Handle SubjectKeyIdentifier extension
+      return f'digest={self.format_extension_value(value.digest)}'
+    elif isinstance(value, BasicConstraints):
+      # Handle BasicConstraints extension
+      return f'ca={value.ca}, path_length={value.path_length}'
+    elif isinstance(value, KeyUsage):
+      # Handle KeyUsage extension
+      return (f'digital_signature={value.digital_signature}, '
+              f'key_cert_sign={value.key_cert_sign}, '
+              f'key_encipherment={value.key_encipherment}, '
+              f'crl_sign={value.crl_sign}')
+    return str(value)  # Fallback to string conversion
+
+  def generate_outbound_connection_table(self, outbound_conns):
+    """Generate just an HTML table from a list of IPs"""
+    html_content = '''
+    <h1>Outbound Connections</h1>
+    <table class="module-data">
+      <thead>
+          <tr>
+              <th>Destination IP</th>
+              <th>Port</th>
+          </tr>
+      </thead>
+    <tbody>
+    '''
+
+    rows = [
+        f'\t<tr><td>{ip}</td><td>{port}</td></tr>'
+        for ip, port in outbound_conns
+    ]
+    html_content += '\n'.join(rows)
+
+    # Close the table
+    html_content += """
+    </tbody>
+    \r</table>
+    """
+
+    return html_content
 
   def extract_certificates_from_pcap(self, pcap_files, mac_address):
     # Initialize a list to store packets
@@ -222,7 +382,9 @@ class TLSModule(TestModule):
             port = packet.tcp.srcport if 'tcp' in packet else packet.udp.srcport
             # Store certificate in dictionary with IP address and port as key
             certificates[(ip_address, port)] = certificate
-    return certificates
+    sorted_keys = sorted(certificates.keys(), key=lambda x: (x[0], x[1]))
+    sorted_certificates = {k: certificates[k] for k in sorted_keys}
+    return sorted_certificates
 
   def _security_tls_v1_2_server(self):
     LOGGER.info('Running security.tls.v1_2_server')

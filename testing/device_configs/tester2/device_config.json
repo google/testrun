@@ -4,6 +4,7 @@
   "model": "Tester 2",
   "type": "IoT Gateway",
   "technology": "Hardware - Access Control",
+  "test_pack": "Device Qualification",
   "additional_info": [
     {
       "question": "What type of device is this?",

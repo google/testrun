@@ -116,16 +116,13 @@ jobs:
       - name: Run tests for reports
         shell: bash {0}
         run: bash testing/unit/run_report_test.sh testing/unit/report/report_test.py
-      - name: Archive HTML reports for modules
-        if: ${{ always() }}
-        run: sudo tar --exclude-vcs -czf html_reports.tgz testing/unit/report/output/
-      - name: Upload HTML reports
+      - name: Upload reports
         uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
         if: ${{ always() }}
         with:
           if-no-files-found: error
-          name: html-reports_${{ github.run_id }}
-          path: html_reports.tgz
+          name: reports_${{ github.run_id }}
+          path: testing/unit/report/output
 
   pylint:
     permissions: {}
