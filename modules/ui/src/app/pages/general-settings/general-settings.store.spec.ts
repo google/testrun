@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LOG_LEVELS, MONITORING_PERIOD, SettingsStore } from './settings.store';
+import {
+  LOG_LEVELS,
+  MONITORING_PERIOD,
+  GeneralSettingsStore,
+} from './general-settings.store';
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { TestBed } from '@angular/core/testing';
@@ -41,8 +45,8 @@ import {
   MOCK_SYSTEM_CONFIG_WITH_SINGLE_PORT,
 } from '../../mocks/settings.mock';
 
-describe('SettingsStore', () => {
-  let settingsStore: SettingsStore;
+describe('GeneralSettingsStore', () => {
+  let settingsStore: GeneralSettingsStore;
   let mockService: SpyObj<TestRunService>;
   let store: MockStore<AppState>;
   let fb: FormBuilder;
@@ -56,7 +60,7 @@ describe('SettingsStore', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        SettingsStore,
+        GeneralSettingsStore,
         { provide: TestRunService, useValue: mockService },
         provideMockStore({
           selectors: [
@@ -68,7 +72,7 @@ describe('SettingsStore', () => {
       ],
     });
 
-    settingsStore = TestBed.inject(SettingsStore);
+    settingsStore = TestBed.inject(GeneralSettingsStore);
     store = TestBed.inject(MockStore);
     fb = TestBed.inject(FormBuilder);
     spyOn(store, 'dispatch').and.callFake(() => {});

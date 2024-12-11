@@ -42,6 +42,16 @@
       supporting-text-size: 14px,
     )
   );
+
+  @include mat.tabs-overrides(
+    (
+      inactive-label-text-color: colors.$on-surface-variant,
+      active-label-text-color: colors.$secondary,
+      active-focus-label-text-color: colors.$secondary,
+      label-text-font: variables.$font-text,
+      container-height: 20px,
+    )
+  );
 }
 
 .filter-result {
@@ -132,6 +142,15 @@ mat-hint {
   display: none;
 }
 
+.mat-mdc-tab.mat-focus-indicator {
+  &:focus::before {
+    content: none;
+  }
+  &:focus-visible {
+    border: 1px solid colors.$black;
+  }
+}
+
 .mat-sort-header-container.mat-focus-indicator:focus::before {
   content: none;
 }
@@ -149,6 +168,22 @@ mat-hint {
     display: none;
   }
 }
+
+.app-toolbar-button.app-sidebar-button-active {
+  .mat-mdc-button-persistent-ripple::before {
+    opacity: 1;
+    background: colors.$light-grey;
+  }
+
+  &:hover,
+  &:focus-visible {
+    .mat-mdc-button-persistent-ripple::before {
+      opacity: 0.6;
+      background: colors.$grey-100;
+    }
+  }
+}
+
 .app-sidebar-button {
   &.mat-mdc-button:has(.material-icons, mat-icon, [matButtonIcon]) {
     padding: 6px;
@@ -248,6 +283,7 @@ mat-hint {
   font-weight: 400;
   line-height: 40px;
   letter-spacing: 0;
+  color: colors.$on-surface;
 }
 
 .message-link {

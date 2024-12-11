@@ -67,7 +67,7 @@ export const MONITORING_PERIOD = {
   600: 'Very slow device',
 };
 @Injectable()
-export class SettingsStore extends ComponentStore<SettingsComponentState> {
+export class GeneralSettingsStore extends ComponentStore<SettingsComponentState> {
   private testRunService = inject(TestRunService);
   private store = inject<Store<AppState>>(Store);
 
@@ -282,7 +282,7 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
   ): void {
     this.setDefaultValue(
       value,
-      SettingsStore.DEFAULT_LOG_LEVEL,
+      GeneralSettingsStore.DEFAULT_LOG_LEVEL,
       options,
       formGroup.get(FormKey.LOG_LEVEL) as FormControl
     );
@@ -295,7 +295,7 @@ export class SettingsStore extends ComponentStore<SettingsComponentState> {
   ): void {
     this.setDefaultValue(
       value,
-      SettingsStore.DEFAULT_MONITORING_PERIOD,
+      GeneralSettingsStore.DEFAULT_MONITORING_PERIOD,
       options,
       formGroup.get(FormKey.MONITOR_PERIOD) as FormControl
     );
