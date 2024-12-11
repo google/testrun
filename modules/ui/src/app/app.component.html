@@ -98,9 +98,12 @@ limitations under the License.
             mat-icon-button
             aria-label="System settings"
             matTooltip="Settings"
-            (click)="
-              openGeneralSettings(true, isTestrunInProgress(vm.systemStatus))
-            ">
+            routerLink="{{ Routes.Settings }}"
+            routerLinkActive="app-sidebar-button-active"
+            (keydown.enter)="onNavigationClick()">
+            <!--            (click)="-->
+            <!--              openGeneralSettings(true, isTestrunInProgress(vm.systemStatus))-->
+            <!--            ">-->
             <mat-icon>tune</mat-icon>
           </button>
 
@@ -275,11 +278,11 @@ limitations under the License.
     position="end"
     autoFocus="#setting-panel-close-button"
     class="settings-drawer">
-    <app-settings
+    <app-general-settings
       #settings
       [settingsDisable]="isTestrunInProgress(vm.systemStatus)"
       (closeSettingEvent)="closeSetting(vm.hasDevices)">
-    </app-settings>
+    </app-general-settings>
   </mat-drawer>
 
   <mat-drawer

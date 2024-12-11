@@ -73,7 +73,7 @@ import { WifiComponent } from './components/wifi/wifi.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Profile } from './model/profile';
 import { TestrunStatus } from './model/testrun-status';
-import { SettingsComponent } from './pages/settings/settings.component';
+import { GeneralSettingsComponent } from './pages/general-settings/general-settings.component';
 import { SpinnerComponent } from './components/spinner/spinner.component';
 import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
 import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
@@ -153,6 +153,7 @@ describe('AppComponent', () => {
         FakeTestingCompleteComponent,
         RouterTestingModule.withRoutes([
           { path: 'devices', children: [] },
+          { path: 'settings', children: [] },
           { path: 'testing', children: [] },
           { path: 'reports', children: [] },
         ]),
@@ -190,7 +191,7 @@ describe('AppComponent', () => {
     }).overrideComponent(AppComponent, {
       remove: {
         imports: [
-          SettingsComponent,
+          GeneralSettingsComponent,
           SpinnerComponent,
           ShutdownAppComponent,
           TestingCompleteComponent,
@@ -368,15 +369,16 @@ describe('AppComponent', () => {
     expect(settings.getSystemConfig).toHaveBeenCalled();
   });
 
-  it('should call settingsDrawer open on openSetting', fakeAsync(() => {
+  it('should navigate to the settings when "settings" button is clicked', fakeAsync(() => {
     fixture.detectChanges();
-    const settingsDrawer = component.settingsDrawer();
-    spyOn(settingsDrawer, 'open');
 
-    component.openSetting(false);
+    const settingsButton = compiled.querySelector(
+      '.app-toolbar-button-general-settings'
+    ) as HTMLButtonElement;
+    settingsButton?.click();
     tick();
 
-    expect(settingsDrawer.open).toHaveBeenCalledTimes(1);
+    expect(router.url).toBe(Routes.Settings);
   }));
 
   it('should announce settingsDrawer disabled on openSetting and settings are disabled', fakeAsync(() => {
@@ -393,20 +395,6 @@ describe('AppComponent', () => {
       'The settings panel is disabled'
     );
   }));
-
-  it('should call settingsDrawer open on click settings button', () => {
-    fixture.detectChanges();
-
-    const settingsBtn = compiled.querySelector(
-      '.app-toolbar-button-general-settings'
-    ) as HTMLButtonElement;
-    const settingsDrawer = component.settingsDrawer();
-    spyOn(settingsDrawer, 'open');
-
-    settingsBtn.click();
-
-    expect(settingsDrawer.open).toHaveBeenCalledTimes(1);
-  });
 
   it('should have spinner', () => {
     const spinner = compiled.querySelector('app-spinner');
@@ -838,7 +826,7 @@ describe('AppComponent', () => {
 });
 
 @Component({
-  selector: 'app-settings',
+  selector: 'app-general-settings',
   template: '<div></div>',
 })
 class FakeGeneralSettingsComponent {

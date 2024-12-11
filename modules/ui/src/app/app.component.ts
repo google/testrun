@@ -32,7 +32,7 @@ import { FocusManagerService } from './services/focus-manager.service';
 import { State, Store } from '@ngrx/store';
 import { AppState } from './store/state';
 import { setIsOpenAddDevice } from './store/actions';
-import { SettingsComponent } from './pages/settings/settings.component';
+import { GeneralSettingsComponent } from './pages/general-settings/general-settings.component';
 import { AppStore } from './app.store';
 import { TestRunService } from './services/test-run.service';
 import { CdkTrapFocus, LiveAnnouncer } from '@angular/cdk/a11y';
@@ -92,7 +92,7 @@ const QUALIFICATION_URL = '/assets/icons/qualification.svg';
     CertificatesComponent,
     WifiComponent,
     TestingCompleteComponent,
-    SettingsComponent,
+    GeneralSettingsComponent,
     RouterModule,
     CommonModule,
   ],
@@ -118,7 +118,7 @@ export class AppComponent implements AfterViewInit {
   readonly certDrawer = viewChild.required<MatDrawer>('certDrawer');
   readonly toggleSettingsBtn =
     viewChild.required<HTMLButtonElement>('toggleSettingsBtn');
-  readonly settings = viewChild.required<SettingsComponent>('settings');
+  readonly settings = viewChild.required<GeneralSettingsComponent>('settings');
   viewModel$ = this.appStore.viewModel$;
 
   readonly riskAssessmentLink = viewChild<ElementRef>('riskAssessmentLink');

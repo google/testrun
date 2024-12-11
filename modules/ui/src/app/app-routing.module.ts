@@ -19,8 +19,14 @@ import { DevicesComponent } from './pages/devices/devices.component';
 import { CanDeactivateGuard } from './guards/can-deactivate.guard';
 import { TestrunComponent } from './pages/testrun/testrun.component';
 import { RiskAssessmentComponent } from './pages/risk-assessment/risk-assessment.component';
+import { SettingsComponent } from './pages/settings/settings.component';
 
 export const routes: Routes = [
+  {
+    path: 'settings',
+    component: SettingsComponent,
+    title: 'Testrun - Settings',
+  },
   {
     path: 'testing',
     component: TestrunComponent,
