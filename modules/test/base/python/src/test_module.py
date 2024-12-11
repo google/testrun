@@ -42,6 +42,8 @@ class TestModule:
     self._ipv6_subnet = os.environ.get('IPV6_SUBNET', '')
     self._dev_iface_mac = os.environ.get('DEV_IFACE_MAC', '')
     self._device_test_pack = json.loads(os.environ.get('DEVICE_TEST_PACK', ''))
+    self._report_template_folder = os.environ.get('REPORT_TEMPLATE_PATH')
+    self._base_template_file=os.environ.get('BASE_TEMPLATE_FILE')
     self._add_logger(log_name=log_name)
     self._config = self._read_config(
         conf_file=conf_file if conf_file is not None else CONF_FILE)

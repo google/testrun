@@ -1,0 +1,24 @@
+<div class="module-page-content">
+  {% if module_header %}
+    <h4 class="page-heading">{{ module_header }}</h4>
+    <table class="module-summary">
+  {% else %}
+    <table class="module-summary not-first">
+  {% endif %}
+    <thead>
+      <tr>
+        {% for header in summary_headers %}
+          <th>{{ header }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        {% for cell in summary_data %}
+          <td>{{ cell }}</td>
+        {% endfor %}
+      </tr>
+    </tbody>
+    </table>
+  {% block content %}{% endblock content %}
+</div>
