@@ -16,6 +16,7 @@ from test_module import TestModule
 from scapy.all import rdpcap, IP, IPv6, NTP, UDP, Ether
 import os
 from collections import defaultdict
+from jinja2 import Environment, FileSystemLoader
 
 LOG_NAME = 'test_ntp'
 MODULE_REPORT_FILE_NAME = 'ntp_report.html'
@@ -23,6 +24,7 @@ NTP_SERVER_CAPTURE_FILE = '/runtime/network/ntp.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 LOGGER = None
+REPORT_TEMPLATE_FILE = 'report_template.jinja2'
 
 
 class NTPModule(TestModule):
@@ -49,10 +51,19 @@ class NTPModule(TestModule):
     LOGGER = self._get_logger()
 
   def generate_module_report(self):
+    # Load Jinja2 template
+    loader=FileSystemLoader(self._report_template_folder)
+    template = Environment(loader=loader).get_template(REPORT_TEMPLATE_FILE)
+    module_header="NTP Module"
+    summmary_headers = [
+                        'Requests to local NTP server',
+                        'Requests to external NTP servers',
+                        'Total NTP requests',
+                        'Total NTP responses'
+                        ]
+    
     # Extract NTP data from the pcap file
     ntp_table_data = self.extract_ntp_data()
-
-    html_content = '<h4 class="page-heading">NTP Module</h4>'
 
     # Set the summary variables
     local_requests = sum(
@@ -66,6 +77,15 @@ class NTPModule(TestModule):
 
     total_responses = sum(1 for row in ntp_table_data
                           if row['Type'] == 'Server')
+
+    summary_data = [
+                    local_requests,
+                    external_requests,
+                    total_requests,
+                    total_responses
+                    ]
+    
+    html_content = '<h4 class="page-heading">NTP Module</h4>'
 
     # Initialize a dictionary to store timestamps for each unique combination
     timestamps = defaultdict(list)
