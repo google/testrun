@@ -21,7 +21,7 @@ We recommend that you run Testrun on a stand-alone machine that has a fresh inst
 Before you start, ensure you have the following hardware:
 
 -  PC running Ubuntu LTS (laptop or desktop)
--  2x USB Ethernet adapter (one may be a built-in Ethernet port)
+-  2x ethernet ports (USB ethernet adapters work too)
 -  Internet connection
 
 ![Required hardware for Testrun](/docs/ui/getstarted--2dn8vrzsspe.png)
