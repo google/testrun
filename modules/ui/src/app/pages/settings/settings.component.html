@@ -20,7 +20,10 @@ limitations under the License.
 <mat-tab-group
   mat-stretch-tabs="false"
   mat-align-tabs="start"
-  class="tab-group">
-  <mat-tab label="General" class="tab-item"> General content</mat-tab>
-  <mat-tab label="Certificates" class="tab-item"> Certificates content</mat-tab>
+  class="tab-group"
+  (selectedTabChange)="onTabChange($event)"
+  [selectedIndex]="selectedIndex">
+  <mat-tab label="General" class="tab-item"></mat-tab>
+  <mat-tab label="Certificates" class="tab-item"></mat-tab>
 </mat-tab-group>
+<router-outlet></router-outlet>

@@ -1,0 +1,30 @@
+@use 'variables';
+@use 'colors';
+
+.empty-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.empty-message-header {
+  font-weight: 400;
+  line-height: 28px;
+  font-size: 22px;
+  color: colors.$on-surface;
+}
+
+.empty-message-main {
+  font-family: variables.$font-secondary;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.1px;
+  color: colors.$on-surface-variant;
+}
+
+.empty-message-img {
+  width: 293px;
+  height: 154px;
+}

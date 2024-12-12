@@ -19,13 +19,32 @@ import { DevicesComponent } from './pages/devices/devices.component';
 import { CanDeactivateGuard } from './guards/can-deactivate.guard';
 import { TestrunComponent } from './pages/testrun/testrun.component';
 import { RiskAssessmentComponent } from './pages/risk-assessment/risk-assessment.component';
+import { CertificatesComponent } from './pages/certificates/certificates.component';
 import { SettingsComponent } from './pages/settings/settings.component';
+import { GeneralSettingsComponent } from './pages/general-settings/general-settings.component';
 
 export const routes: Routes = [
   {
     path: 'settings',
     component: SettingsComponent,
     title: 'Testrun - Settings',
+    children: [
+      {
+        path: '',
+        redirectTo: 'general',
+        pathMatch: 'full',
+      },
+      {
+        path: 'certificates',
+        component: CertificatesComponent,
+        title: 'Testrun - Certificates',
+      },
+      {
+        path: 'general',
+        component: GeneralSettingsComponent,
+        title: 'Testrun - General Settings',
+      },
+    ],
   },
   {
     path: 'testing',

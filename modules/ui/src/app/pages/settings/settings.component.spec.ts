@@ -17,6 +17,7 @@ import { SettingsComponent } from './settings.component';
  * limitations under the License.
  */
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
@@ -24,7 +25,7 @@ describe('SettingsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SettingsComponent, NoopAnimationsModule],
+      imports: [SettingsComponent, NoopAnimationsModule, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SettingsComponent);

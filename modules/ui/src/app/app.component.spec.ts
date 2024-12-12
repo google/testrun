@@ -62,7 +62,6 @@ import {
   selectSystemStatus,
 } from './store/selectors';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { CertificatesComponent } from './pages/certificates/certificates.component';
 import { of } from 'rxjs';
 import { WINDOW } from './providers/window.provider';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
@@ -119,11 +118,9 @@ describe('AppComponent', () => {
       'getTestModules',
       'testrunInProgress',
       'fetchProfiles',
-      'fetchCertificates',
       'getHistory',
     ]);
 
-    mockService.fetchCertificates.and.returnValue(of([]));
     mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
       'focusFirstElementInContainer',
     ]);
@@ -144,7 +141,6 @@ describe('AppComponent', () => {
         BypassComponent,
         CalloutComponent,
         MatIconTestingModule,
-        CertificatesComponent,
         WifiComponent,
         MatTooltipModule,
         FakeSpinnerComponent,
@@ -791,28 +787,6 @@ describe('AppComponent', () => {
     await component.closeSetting(false);
 
     expect(spyToggle).toHaveBeenCalledTimes(0);
-  });
-
-  it('should render certificates button', () => {
-    const generalSettingsButton = compiled.querySelector(
-      '.app-toolbar-button-certificates'
-    );
-
-    expect(generalSettingsButton).toBeDefined();
-  });
-
-  it('should call certificates open on click certificates button', () => {
-    fixture.detectChanges();
-
-    const settingsBtn = compiled.querySelector(
-      '.app-toolbar-button-certificates'
-    ) as HTMLButtonElement;
-    const certDrawer = component.certDrawer();
-    spyOn(certDrawer, 'open');
-
-    settingsBtn.click();
-
-    expect(certDrawer.open).toHaveBeenCalledTimes(1);
   });
 
   it('should set focus to first focusable elem when close callout', fakeAsync(() => {
