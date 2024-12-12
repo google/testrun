@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { inject } from '@angular/core';
+import { computed, inject } from '@angular/core';
 import { signalStore } from '@ngrx/signals';
 import { switchMap, tap } from 'rxjs/operators';
 import { catchError, EMPTY, exhaustMap, throwError } from 'rxjs';
@@ -23,9 +23,16 @@ import { TestRunService } from '../../services/test-run.service';
 import { NotificationService } from '../../services/notification.service';
 import { DatePipe } from '@angular/common';
 import { FILE_NAME_LENGTH, getValidationErrors } from './certificate.validator';
-import { withState, withHooks, withMethods, patchState } from '@ngrx/signals';
+import {
+  withState,
+  withHooks,
+  withMethods,
+  patchState,
+  withComputed,
+} from '@ngrx/signals';
 import { tapResponse } from '@ngrx/operators';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { MatTableDataSource } from '@angular/material/table';
 
 const SYMBOLS_PER_SECOND = 9.5;
 
@@ -33,7 +40,12 @@ export const CertificatesStore = signalStore(
   withState({
     certificates: [] as Certificate[],
     selectedCertificate: '',
+    displayedColumns: ['name', 'organisation', 'expires', 'status', 'actions'],
+    dataLoaded: false,
   }),
+  withComputed(({ certificates }) => ({
+    dataSource: computed(() => new MatTableDataSource(certificates())),
+  })),
   withMethods(
     (
       store,
@@ -79,7 +91,8 @@ export const CertificatesStore = signalStore(
           switchMap(() =>
             testRunService.fetchCertificates().pipe(
               tapResponse({
-                next: certificates => patchState(store, { certificates }),
+                next: certificates =>
+                  patchState(store, { certificates, dataLoaded: true }),
                 error: () => patchState(store, { certificates: [] }),
               })
             )

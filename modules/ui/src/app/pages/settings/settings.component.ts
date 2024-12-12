@@ -13,16 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { CommonModule } from '@angular/common';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Routes } from '../../model/routes';
 
 @Component({
   selector: 'app-settings',
-  imports: [CommonModule, MatToolbarModule, MatTabsModule],
+  imports: [CommonModule, MatToolbarModule, MatTabsModule, RouterModule],
   templateUrl: './settings.component.html',
-  styleUrl: './settings.component.scss',
+  styleUrls: ['./settings.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SettingsComponent {}
+export class SettingsComponent implements OnInit {
+  private routes = [Routes.General, Routes.Certificates];
+  selectedIndex = 0;
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit(): void {
+    const currentRoute = this.router.url;
+    this.selectedIndex = this.routes.findIndex(route =>
+      currentRoute.includes(route)
+    );
+  }
+
+  onTabChange(event: MatTabChangeEvent): void {
+    const index = event.index;
+    this.router.navigate([this.routes[index]], { relativeTo: this.route });
+  }
+}

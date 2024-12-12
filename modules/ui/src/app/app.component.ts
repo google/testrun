@@ -41,7 +41,6 @@ import { timer } from 'rxjs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { CertificatesComponent } from './pages/certificates/certificates.component';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
@@ -89,7 +88,6 @@ const QUALIFICATION_URL = '/assets/icons/qualification.svg';
     CalloutComponent,
     CdkTrapFocus,
     ShutdownAppComponent,
-    CertificatesComponent,
     WifiComponent,
     TestingCompleteComponent,
     GeneralSettingsComponent,
@@ -115,7 +113,6 @@ export class AppComponent implements AfterViewInit {
   private openedSettingFromToggleBtn = true;
 
   readonly settingsDrawer = viewChild.required<MatDrawer>('settingsDrawer');
-  readonly certDrawer = viewChild.required<MatDrawer>('certDrawer');
   readonly toggleSettingsBtn =
     viewChild.required<HTMLButtonElement>('toggleSettingsBtn');
   readonly settings = viewChild.required<GeneralSettingsComponent>('settings');
@@ -209,10 +206,6 @@ export class AppComponent implements AfterViewInit {
     });
   }
 
-  async closeCertificates(): Promise<void> {
-    await this.certDrawer().close();
-  }
-
   async closeSetting(hasDevices: boolean): Promise<void> {
     return await this.settingsDrawer()
       .close()
@@ -242,11 +235,6 @@ export class AppComponent implements AfterViewInit {
       await this.liveAnnouncer.announce('The settings panel is disabled');
     }
   }
-
-  async openCert() {
-    await this.certDrawer().open();
-  }
-
   consentShown() {
     this.appStore.setContent();
   }

@@ -1,25 +1,38 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CertificateItemComponent } from './certificate-item.component';
+import { CertificatesTableComponent } from './certificates-table.component';
+import { MatTableDataSource } from '@angular/material/table';
 import {
   certificate,
   certificate_uploading,
-} from '../../../mocks/certificate.mock';
+} from '../../../../mocks/certificate.mock';
 
-describe('CertificateItemComponent', () => {
-  let component: CertificateItemComponent;
-  let fixture: ComponentFixture<CertificateItemComponent>;
+describe('CertificatesTableComponent', () => {
   let compiled: HTMLElement;
+  let component: CertificatesTableComponent;
+  let fixture: ComponentFixture<CertificatesTableComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CertificateItemComponent],
+      imports: [CertificatesTableComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CertificateItemComponent);
-    compiled = fixture.nativeElement as HTMLElement;
+    fixture = TestBed.createComponent(CertificatesTableComponent);
     component = fixture.componentInstance;
-    component.certificate = certificate;
+    fixture.componentRef.setInput(
+      'dataSource',
+      new MatTableDataSource([certificate])
+    );
+    fixture.componentRef.setInput('selectedCertificate', '');
+    fixture.componentRef.setInput('dataLoaded', true);
+    fixture.componentRef.setInput('displayedColumns', [
+      'name',
+      'organisation',
+      'expires',
+      'status',
+      'actions',
+    ]);
+    compiled = fixture.nativeElement as HTMLElement;
     fixture.detectChanges();
   });
 
@@ -29,7 +42,7 @@ describe('CertificateItemComponent', () => {
 
   describe('DOM tests', () => {
     it('should have certificate name', () => {
-      const name = compiled.querySelector('.certificate-item-name');
+      const name = compiled.querySelector('.cdk-row .mat-column-name');
 
       expect(name?.textContent?.trim()).toEqual('iot.bms.google.com');
     });
@@ -37,14 +50,14 @@ describe('CertificateItemComponent', () => {
     describe('uploaded certificate', () => {
       it('should have certificate organization', () => {
         const organization = compiled.querySelector(
-          '.certificate-item-organisation'
+          '.cdk-row .mat-column-organisation'
         );
 
         expect(organization?.textContent?.trim()).toEqual('Google, Inc.');
       });
 
       it('should have certificate expire date', () => {
-        const date = compiled.querySelector('.certificate-item-expires');
+        const date = compiled.querySelector('.cdk-row .mat-column-expires');
 
         expect(date?.textContent?.trim()).toEqual('01 Sep 2024');
       });
@@ -76,14 +89,11 @@ describe('CertificateItemComponent', () => {
 
     describe('uploading certificate', () => {
       beforeEach(() => {
-        component.certificate = certificate_uploading;
+        fixture.componentRef.setInput(
+          'dataSource',
+          new MatTableDataSource([certificate_uploading])
+        );
         fixture.detectChanges();
-      });
-
-      it('should have loader', () => {
-        const loader = compiled.querySelector('mat-progress-bar');
-
-        expect(loader).not.toBeNull();
       });
 
       it('should have disabled delete button', () => {

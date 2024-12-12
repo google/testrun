@@ -20,4 +20,6 @@ export enum Routes {
   Testing = '/testing',
   Reports = '/reports',
   RiskAssessment = '/risk-assessment',
+  Certificates = 'certificates',
+  General = 'general',
 }

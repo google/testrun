@@ -83,16 +83,6 @@ limitations under the License.
         <span class="spacer"></span>
         <div class="app-bar-buttons">
           <button
-            class="app-toolbar-button app-toolbar-button-certificates"
-            mat-icon-button
-            aria-label="Certificates"
-            matTooltip="Certificates"
-            (click)="openCert()">
-            <mat-icon class="material-symbols-outlined filled"
-              >workspace_premium</mat-icon
-            >
-          </button>
-          <button
             #toggleSettingsBtn
             class="app-toolbar-button app-toolbar-button-general-settings"
             mat-icon-button
@@ -285,15 +275,6 @@ limitations under the License.
     </app-general-settings>
   </mat-drawer>
 
-  <mat-drawer
-    #certDrawer
-    mode="over"
-    position="end"
-    autoFocus="#setting-panel-close-button"
-    class="settings-drawer">
-    <app-certificates
-      (closeCertificatedEvent)="closeCertificates()"></app-certificates>
-  </mat-drawer>
   <app-testing-complete
     *ngIf="vm.isTestingComplete"
     [data]="vm.testrunStatus"
