@@ -18,6 +18,7 @@ import os
 import util
 from datetime import datetime
 import traceback
+import re
 
 from common.statuses import TestResult
 

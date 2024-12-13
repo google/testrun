@@ -16,12 +16,12 @@
 from datetime import datetime
 from weasyprint import HTML
 from io import BytesIO
-from common import util
+from common import util, logger
 from common.statuses import TestrunStatus
 import base64
 import os
 from test_orc.test_case import TestCase
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, BaseLoader
 from collections import OrderedDict
 import re
 from bs4 import BeautifulSoup
@@ -33,6 +33,8 @@ TESTS_FIRST_PAGE = 11
 TESTS_PER_PAGE = 20
 TEST_REPORT_STYLES = 'test_report_styles.css'
 TEST_REPORT_TEMPLATE = 'test_report_template.html'
+
+LOGGER = logger.get_logger('REPORT')
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -65,11 +67,15 @@ class TestReport():
     self._total_tests = total_tests
     self._results = []
     self._module_reports = []
+    self._module_templates = []
     self._report_url = ''
     self._cur_page = 0
 
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
+
+  def add_module_templates(self, module_templates):
+    self._module_templates = module_templates
 
   def get_status(self):
     return self._status
@@ -243,16 +249,20 @@ class TestReport():
     optional_steps_to_resolve = self._get_optional_steps_to_resolve(json_data)
 
     module_reports = self._get_module_pages()
+    env_module = Environment(loader=BaseLoader())
     pages_num = self._pages_num(json_data)
-    total_pages = pages_num + len(module_reports) + 1
-    if len(steps_to_resolve) > 0:
-      total_pages += 1
-    if (len(optional_steps_to_resolve) > 0
-        and json_data['device']['test_pack'] == 'Pilot Assessment'
-        ):
-      total_pages += 1
+    module_templates = [
+        env_module.from_string(s).render(
+          json_data=json_data,
+          device=json_data['device'],
+          logo=logo,
+          icon_qualification=icon_qualification,
+          icon_pilot=icon_pilot,
+          version=self._version,
+      ) for s in self._module_templates
+    ]
 
-    return template.render(styles=styles,
+    return self._add_page_counter(template.render(styles=styles,
                            logo=logo,
                            icon_qualification=icon_qualification,
                            icon_pilot=icon_pilot,
@@ -269,10 +279,19 @@ class TestReport():
                            optional_steps_to_resolve=optional_steps_to_resolve,
                            module_reports=module_reports,
                            pages_num=pages_num,
-                           total_pages=total_pages,
                            tests_first_page=TESTS_FIRST_PAGE,
                            tests_per_page=TESTS_PER_PAGE,
-                           )
+                           module_templates=module_templates
+                           ))
+
+  def _add_page_counter(self, html):
+    # Add page nums and total page
+    soup = BeautifulSoup(html, features='html5lib')
+    page_index_divs = soup.find_all('div', class_='page-index')
+    total_pages = len(page_index_divs)
+    for index, div in enumerate(page_index_divs):
+      div.string = f'Page {index+1}/{total_pages}'
+    return soup.prettify()
 
   def _pages_num(self, json_data):
 
@@ -391,7 +410,7 @@ class TestReport():
         if el.name == 'h1':
           current_size += 40 + h1_padding
         # Calculating the height of paired tables
-        elif (el.name == 'div'
+        elif (el.name == 'div' and el.has_attr('style')
               and el['style'] == 'display:flex;justify-content:space-between;'):
           tables = el.findChildren('table', recursive=True)
           current_size = max(
