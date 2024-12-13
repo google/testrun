@@ -16,13 +16,13 @@
 
 
 CAPTURE_FILE="$1"
-SRC_IP="$2"
+SRC_MAC="$2"
 TLS_VERSION="$3"
 
-TSHARK_OUTPUT="-T json -e ip.src -e tcp.dstport -e ip.dst"
+TSHARK_OUTPUT="-T json -e eth.src -e tcp.dstport -e ip.dst"
 # Handshakes will still report TLS version 1 even for TLS 1.2 connections
 # so we need to filter thes out
-TSHARK_FILTER="ip.src==$SRC_IP and ssl.handshake.type!=1"
+TSHARK_FILTER="eth.src==$SRC_MAC and ssl.handshake.type!=1"
 
 if [ $TLS_VERSION == '1.0' ];then
 	TSHARK_FILTER="$TSHARK_FILTER and ssl.record.version==0x0301"
@@ -37,4 +37,3 @@ fi
 response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT $TSHARK_FILTER)
 
 echo "$response"
-  	
