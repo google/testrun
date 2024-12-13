@@ -46,6 +46,7 @@ import { DownloadReportZipComponent } from '../../components/download-report-zip
 import { DownloadReportPdfComponent } from '../../components/download-report-pdf/download-report-pdf.component';
 import { DeleteReportComponent } from './components/delete-report/delete-report.component';
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
+import { EmptyMessageComponent } from '../../components/empty-message/empty-message.component';
 
 @Component({
   selector: 'app-history',
@@ -62,6 +63,7 @@ import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.
     DownloadReportZipComponent,
     DownloadReportPdfComponent,
     FilterHeaderComponent,
+    EmptyMessageComponent,
   ],
   providers: [ReportsStore, DatePipe],
 })
