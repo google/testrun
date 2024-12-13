@@ -471,13 +471,13 @@ class TLSModule(TestModule):
 
   def _security_tls_v1_2_client(self):
     LOGGER.info('Running security.tls.v1_2_client')
-    return self._validate_tls_client(self._device_ipv4_addr,
+    return self._validate_tls_client(self._device_mac,
                                       '1.2',
                                       unsupported_versions=['1.0', '1.1'])
 
   def _security_tls_v1_3_client(self):
     LOGGER.info('Running security.tls.v1_3_client')
-    return self._validate_tls_client(self._device_ipv4_addr,
+    return self._validate_tls_client(self._device_mac,
                                       '1.3',
                                       unsupported_versions=['1.0', '1.1'])
 

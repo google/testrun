@@ -515,13 +515,13 @@ class TLSUtil():
 
   # Resolve all connections from the device that use TLS
   def get_tls_client_connection_packetes(self,
-                                         client_ip,
+                                         client_mac,
                                          capture_files,
                                          protocol=None):
     combined_packets = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_tls_client_connections.sh'
-      args = f'"{capture_file}" {client_ip}'
+      args = f'"{capture_file}" {client_mac}'
       if protocol is not None:
         args += f' {protocol}'
       command = f'{bin_file} {args}'
@@ -534,16 +534,17 @@ class TLSUtil():
   # connections are established or any other validation only
   # that there is some level of connection attempt from the device
   # using the TLS version specified.
-  def get_tls_packets(self, capture_files, src_ip, tls_version):
+  def get_tls_packets(self, capture_files, src_mac, tls_version):
     combined_results = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_tls_packets.sh'
-      args = f'"{capture_file}" {src_ip} {tls_version}'
+      args = f'"{capture_file}" {src_mac} {tls_version}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
       packets = response[0].strip()
-      # Parse each packet and append key-value pairs to combined_results
-      result = self.parse_packets(json.loads(packets), capture_file)
+      parsed_json = json.loads(packets)
+        # Parse each packet and append key-value pairs to combined_results
+      result = self.parse_packets(parsed_json, capture_file)
       combined_results.extend(result)
     return combined_results
 
@@ -676,10 +677,10 @@ class TLSUtil():
 
   # Check if the device has made any outbound connections that use any
   # version of TLS.
-  def get_tls_client_connection_ips(self, client_ip, capture_files):
+  def get_tls_client_connection_ips(self, client_mac, capture_files):
     LOGGER.info('Checking client for TLS client connections')
     packets = self.get_tls_client_connection_packetes(
-        client_ip=client_ip, capture_files=capture_files)
+        client_mac=client_mac, capture_files=capture_files)
 
     tls_dst_ips = set()  # Store unique destination IPs
     for packet in packets:
@@ -689,13 +690,13 @@ class TLSUtil():
 
   # Check if the device has made any outbound connections that use any
   # allowed protocols that do not fit into a direct TLS packet inspection
-  def get_allowed_protocol_client_connection_ips(self, client_ip,
+  def get_allowed_protocol_client_connection_ips(self, client_mac,
                                                  capture_files):
     LOGGER.info('Checking client for TLS Protocol client connections')
     tls_dst_ips = {}  # Store unique destination IPs with the protocol name
     for protocol in self._allowed_protocols:
       packets = self.get_tls_client_connection_packetes(
-          client_ip=client_ip, capture_files=capture_files, protocol=protocol)
+          client_mac=client_mac, capture_files=capture_files, protocol=protocol)
 
       for packet in packets:
         dst_ip = ipaddress.ip_address(packet['_source']['layers']['ip.dst'][0])
