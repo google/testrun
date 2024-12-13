@@ -24,8 +24,8 @@ fi
 
 # Check that user is in docker group
 if ! (id -nGz "$USER" | grep -qzxF "docker"); then
-echo User is not in docker group. Follow https://docs.docker.com/engine/install/linux-postinstall/ to finish setting up docker.
-exit 1
+    echo User is not in docker group. Follow https://docs.docker.com/engine/install/linux-postinstall/ to finish setting up docker.
+    exit 1
 fi
 
 MAKE_SRC_DIR=make

@@ -543,7 +543,7 @@ class TLSUtil():
       response = util.run_command(command)
       packets = response[0].strip()
       parsed_json = json.loads(packets)
-        # Parse each packet and append key-value pairs to combined_results
+      # Parse each packet and append key-value pairs to combined_results
       result = self.parse_packets(parsed_json, capture_file)
       combined_results.extend(result)
     return combined_results
