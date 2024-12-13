@@ -667,7 +667,7 @@ class TestrunSession():
         valid_questions.append(question)
 
       else:
-        LOGGER.debug(f'Removed unrecognised question: {question["question"]}')
+        LOGGER.debug(f'Removed unrecognised question: {question["question"]}') # pylint: disable=W1405
 
     # Return the list of valid questions
     return valid_questions
@@ -713,7 +713,7 @@ class TestrunSession():
         question.get('question'))
 
       if format_q is None:
-        LOGGER.error(f'Unrecognised question: {question.get("question")}')
+        LOGGER.error(f'Unrecognised question: {question.get("question")}') # pylint: disable=W1405
         # Just ignore additional questions
         continue
 

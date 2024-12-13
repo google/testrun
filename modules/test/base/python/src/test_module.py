@@ -18,7 +18,6 @@ import os
 import util
 from datetime import datetime
 import traceback
-import re
 
 from common.statuses import TestResult
 
@@ -140,14 +139,14 @@ class TestModule:
             else:
               result = getattr(self, test_method_name)()
           except Exception as e:  # pylint: disable=W0718
-            LOGGER.error(f'An error occurred whilst running {test["name"]}')
+            LOGGER.error(f'An error occurred whilst running {test["name"]}') # pylint: disable=W1405
             LOGGER.error(e)
             traceback.print_exc()
         else:
-          LOGGER.error(f'Test {test["name"]} has not been implemented')
+          LOGGER.error(f'Test {test["name"]} has not been implemented') # pylint: disable=W1405
           result = TestResult.ERROR, 'This test could not be found'
       else:
-        LOGGER.debug(f'Test {test["name"]} is disabled')
+        LOGGER.debug(f'Test {test["name"]} is disabled') # pylint: disable=W1405
         result = (TestResult.DISABLED,
                   'This test did not run because it is disabled')
 

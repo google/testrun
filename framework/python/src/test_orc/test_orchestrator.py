@@ -553,8 +553,6 @@ class TestOrchestrator:
     # Get the Jinja report
     jinja_file = f"{module.container_runtime_dir}/{module.name}_report.jinja2"
     try:
-      import shutil
-      shutil.copy2(jinja_file, '/home/user/projects/testrun/runtime/example.jinja2')
       with open(jinja_file, "r", encoding="utf-8") as f:
         module_template = f.read()
         LOGGER.debug(f"Adding module template for module {module.name}")
