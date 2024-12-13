@@ -100,6 +100,9 @@ class TestrunSession():
     # All historical reports
     self._module_reports = []
 
+    # Module report templates
+    self._module_templates = []
+
     # Parameters specified when starting Testrun
     self._runtime_params = []
 
@@ -398,6 +401,9 @@ class TestrunSession():
   def get_module_reports(self):
     return self._module_reports
 
+  def get_module_templates(self):
+    return self._module_templates
+
   def get_report_tests(self):
     """Returns the current test results in JSON-friendly format
     (in Python dictionary)"""
@@ -464,6 +470,9 @@ class TestrunSession():
 
   def add_module_report(self, module_report):
     self._module_reports.append(module_report)
+
+  def add_module_template(self, module_template):
+    self._module_templates.append(module_template)
 
   def get_all_reports(self):
 
@@ -789,6 +798,7 @@ question {question.get('question')}''')
     self._report_url = None
     self._total_tests = 0
     self._module_reports = []
+    self._module_templates = []
     self._results = []
     self._started = None
     self._finished = None
