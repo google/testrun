@@ -19,17 +19,19 @@ import threading
 import xmltodict
 from test_module import TestModule
 import os
+from jinja2 import Environment, FileSystemLoader
 
 LOG_NAME = 'test_services'
-MODULE_REPORT_FILE_NAME = 'services_report.html'
+MODULE_REPORT_FILE_NAME = 'services_report.jinja2'
 NMAP_SCAN_RESULTS_SCAN_FILE = 'services_scan_results.json'
 LOGGER = None
+REPORT_TEMPLATE_FILE = 'report_template.jinja2'
 
 
 class ServicesModule(TestModule):
   """Services Test module"""
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                module,
                conf_file=None,
                results_dir=None,
@@ -52,6 +54,22 @@ class ServicesModule(TestModule):
       self._run_nmap()
 
   def generate_module_report(self):
+    # Load Jinja2 template
+    loader=FileSystemLoader(self._report_template_folder)
+    template = Environment(loader=loader).get_template(REPORT_TEMPLATE_FILE)
+    module_header = 'Services Module'
+    summary_headers = [
+                        'TCP ports open',
+                        'UDP ports open',
+                        'Total ports open',
+                      ]
+    module_data_headers = [
+                            'Port',
+                            'State',
+                            'Service',
+                            'Version',
+                          ]
+
     # Use os.path.join to create the complete file path
     nmap_scan_results_file = os.path.join(self._nmap_scan_results_path,
                                           NMAP_SCAN_RESULTS_SCAN_FILE)
@@ -81,65 +99,32 @@ class ServicesModule(TestModule):
         else:
           udp_open += 1
 
-    html_content = '<h4 class="page-heading">Services Module</h4>'
+    summary_data = [
+                    tcp_open,
+                    udp_open,
+                    tcp_open + udp_open,
+                    ]
 
-    # Add summary table
-    html_content += (f'''
-      <table class="module-summary">
-        <thead>
-          <tr>
-            <th>TCP ports open</th>
-            <th>UDP ports open</th>
-            <th>Total ports open</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{tcp_open}</td>
-            <td>{udp_open}</td>
-            <td>{tcp_open + udp_open}</td>
-          </tr>
-      </table>
-                     ''')
-
+    module_data = []
     if (tcp_open + udp_open) > 0:
-
-      table_content = '''
-        <table class="module-data">
-          <thead>
-            <tr>
-              <th>Port</th>
-              <th>State</th>
-              <th>Service</th>
-              <th>Version</th>
-            </tr>
-          </thead>
-          <tbody>'''
-
       for row in nmap_table_data:
+        port = row['Port']
+        type_ = row['Type']
+        module_data.append({
+                            'Port': f'{port}/{type_}',
+                            'State': row['State'],
+                            'Service': row['Service'],
+                            'Version': row['Version'],
+                            })
 
-        table_content += (f'''
-            <tr>
-              <td>{row['Port']}/{row['Type']}</td>
-              <td>{row['State']}</td>
-              <td>{row['Service']}</td>
-              <td>{row['Version']}</td>
-            </tr>''')
-
-      table_content += '''
-            </tbody>
-          </table>
-                       '''
-
-      html_content += table_content
-
-    else:
-
-      html_content += ('''
-        <div class="callout-container info">
-          <div class="icon"></div>
-          No open ports detected
-        </div>''')
+    html_content = template.render(
+                                base_template=self._base_template_file,
+                                module_header=module_header,
+                                summary_headers=summary_headers,
+                                summary_data=summary_data,
+                                module_data_headers=module_data_headers,
+                                module_data=module_data,
+                              )
 
     LOGGER.debug('Module report:\n' + html_content)
 
