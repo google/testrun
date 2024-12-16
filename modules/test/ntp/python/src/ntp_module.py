@@ -118,7 +118,7 @@ class NTPModule(TestModule):
 
     if total_requests + total_responses > 0:
       table_content = '''
-        <table class="module-data">
+        <table class="module-data" style="width:100%;">
           <thead>
             <tr>
               <th>Source</th>
