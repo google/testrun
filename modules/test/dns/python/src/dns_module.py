@@ -17,19 +17,21 @@ from scapy.all import rdpcap, DNS, IP, Ether
 from test_module import TestModule
 import os
 from collections import Counter
+from jinja2 import Environment, FileSystemLoader
 
 LOG_NAME = 'test_dns'
-MODULE_REPORT_FILE_NAME = 'dns_report.html'
+MODULE_REPORT_FILE_NAME = 'dns_report.jinja2'
 DNS_SERVER_CAPTURE_FILE = '/runtime/network/dns.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 LOGGER = None
+REPORT_TEMPLATE_FILE = 'report_template.jinja2'
 
 
 class DNSModule(TestModule):
   """DNS Test module"""
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                module,
                conf_file=None,
                results_dir=None,
@@ -48,10 +50,32 @@ class DNSModule(TestModule):
     LOGGER = self._get_logger()
 
   def generate_module_report(self):
+    # Load Jinja2 template
+    page_max_height = 910
+    header_height = 48
+    summary_height = 135
+    row_height = 42
+    loader=FileSystemLoader(self._report_template_folder)
+    template = Environment(loader=loader).get_template(REPORT_TEMPLATE_FILE)
+    module_header='DNS Module'
+    # Summary table headers
+    summary_headers = [
+                        'Requests to local DNS server',
+                        'Requests to external DNS servers',
+                        'Total DNS requests',
+                        'Total DNS responses',
+                        ]
+    # Module data Headers
+    module_data_headers = [
+                            'Source',
+                            'Destination',
+                            'Resolved IP', 
+                            'Type',
+                            'URL',
+                            'Count',
+                          ]
     # Extract DNS data from the pcap file
     dns_table_data = self.extract_dns_data()
-
-    html_content = '<h4 class="page-heading">DNS Module</h4>'
 
     # Set the summary variables
     local_requests = sum(
@@ -67,41 +91,15 @@ class DNSModule(TestModule):
                           if row['Type'] == 'Response')
 
     # Add summary table
-    html_content += (f'''
-      <table class="module-summary">
-        <thead>
-          <tr>
-            <th>Requests to local DNS server</th>
-            <th>Requests to external DNS servers</th>
-            <th>Total DNS requests</th>
-            <th>Total DNS responses</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{local_requests}</td>
-            <td>{external_requests}</td>
-            <td>{total_requests}</td>
-            <td>{total_responses}</td>   
-          </tr>
-      </table>
-                     ''')
+    summary_data = [
+                    local_requests,
+                    external_requests,
+                    total_requests,
+                    total_responses,
+                    ]
 
+    module_data = []
     if (total_requests + total_responses) > 0:
-
-      table_content = '''
-        <table class="module-data">
-          <thead>
-            <tr>
-              <th>Source</th>
-              <th>Destination</th>
-              <th>Resolved IP</th>
-              <th>Type</th>
-              <th>URL</th>
-              <th>Count</th>
-            </tr>
-          </thead>
-          <tbody>'''
 
       # Count unique combinations
       counter = Counter((row['Source'], row['Destination'], row['ResolvedIP'],
@@ -109,37 +107,43 @@ class DNSModule(TestModule):
 
       # Generate the HTML table with the count column
       for (src, dst, res_ip, typ, dat), count in counter.items():
-        table_content += f'''
-              <tr>
-                <td>{src}</td>
-                <td>{dst}</td>
-                <td>{res_ip}</td>
-                <td>{typ}</td>
-                <td>{dat}</td>
-                <td>{count}</td>
-              </tr>'''
+        module_data.append({
+                            'src': src,
+                            'dst': dst,
+                            'res_ip': res_ip,
+                            'typ': typ,
+                            'dat': dat,
+                            'count': count,
+                            })
+    # Handling the possible table split
+    table_height = (len(module_data) + 1) * row_height
+    page_useful_space = page_max_height - header_height - summary_height
+    pages = table_height // (page_useful_space)
+    rows_on_page = (page_useful_space) // row_height
+    start = 0
+    report_html = ''
+    for page in range(pages+1):
+      end = start + min(len(module_data), rows_on_page)
+      module_header_repr = module_header if page == 0 else None
+      page_html = template.render(
+                                base_template=self._base_template_file,
+                                module_header=module_header_repr,
+                                summary_headers=summary_headers,
+                                summary_data=summary_data,
+                                module_data_headers=module_data_headers,
+                                module_data=module_data[start:end]
+                              )
+      report_html += page_html
+      start = end
 
-      table_content += '''
-            </tbody>
-          </table>'''
-
-      html_content += table_content
-
-    else:
-      html_content += ('''
-        <div class="callout-container info">
-          <div class="icon"></div>
-          No DNS traffic detected from the device
-        </div>''')
-
-    LOGGER.debug('Module report:\n' + html_content)
+    LOGGER.debug('Module report:\n' + report_html)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
 
     # Write the content to a file
     with open(report_path, 'w', encoding='utf-8') as file:
-      file.write(html_content)
+      file.write(report_html)
 
     LOGGER.info('Module report generated at: ' + str(report_path))
 
