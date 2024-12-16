@@ -52,6 +52,18 @@
       container-height: 20px,
     )
   );
+
+  @include mat.select-overrides(
+    (
+      panel-background-color: colors.$surface-container,
+    )
+  );
+
+  @include mat.divider-overrides(
+    (
+      color: colors.$outline-variant,
+    )
+  );
 }
 
 .filter-result {
@@ -287,20 +299,20 @@ mat-hint {
 }
 
 .message-link {
-  color: mat.get-theme-color($light-theme, primary, 30);
+  color: colors.$blue-700;
   text-decoration: none;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .message-link:hover {
-  color: mat.get-theme-color($light-theme, primary, 25);
+  color: colors.$secondary;
 }
 
 .mat-mdc-option {
-  --mat-option-hover-state-layer-color: #e8f0fe;
-  --mat-option-focus-state-layer-color: #e8f0fe;
-  --mat-option-selected-state-layer-color: #e8f0fe;
+  --mat-option-hover-state-layer-color: #c2e7ff;
+  --mat-option-focus-state-layer-color: #c2e7ff;
+  --mat-option-selected-state-layer-color: #c2e7ff;
 }
 
 .mat-mdc-form-field {

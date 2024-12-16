@@ -43,6 +43,7 @@ $orange-700: #a85d00;
 $yellow-50: #fef7e0;
 $cyan-50: #e4f7fb;
 $cyan-900: #007b83;
+$blue-700: #1967d2;
 
 $primary: mat.get-theme-color($light-theme, primary, 40);
 $secondary: mat.get-theme-color($light-theme, secondary, 40);
@@ -91,6 +92,7 @@ $on-surface: mat.get-theme-color($light-theme, neutral, 10);
 $on-surface-variant: mat.get-theme-color($light-theme, neutral-variant, 30);
 $outline: mat.get-theme-color($light-theme, neutral-variant, 50);
 $outline-variant: mat.get-theme-color($light-theme, neutral-variant, 80);
+$schemes-outline: #757780;
 
 $inverse-surface: mat.get-theme-color($light-theme, neutral, 20);
 $inverse-on-surface: mat.get-theme-color($light-theme, neutral, 95);

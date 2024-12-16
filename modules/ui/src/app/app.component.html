@@ -91,9 +91,6 @@ limitations under the License.
             routerLink="{{ Routes.Settings }}"
             routerLinkActive="app-sidebar-button-active"
             (keydown.enter)="onNavigationClick()">
-            <!--            (click)="-->
-            <!--              openGeneralSettings(true, isTestrunInProgress(vm.systemStatus))-->
-            <!--            ">-->
             <mat-icon>tune</mat-icon>
           </button>
 
@@ -125,13 +122,9 @@ limitations under the License.
                 Selected port is missing! Please define a valid one using
               </ng-template>
               <a
-                (click)="openSetting(isTestrunInProgress(vm.systemStatus))"
-                (keydown.enter)="
-                  openSetting(isTestrunInProgress(vm.systemStatus))
-                "
-                (keydown.space)="
-                  openSetting(isTestrunInProgress(vm.systemStatus))
-                "
+                (click)="navigateToSettings()"
+                (keydown.enter)="navigateToSettings()"
+                (keydown.space)="navigateToSettings()"
                 aria-label="The System settings link opens the panel. No redirect to other pages."
                 tabindex="0"
                 role="link"
@@ -173,13 +166,9 @@ limitations under the License.
             *ngIf="vm.hasConnectionSettings === false">
             Step 1: To perform a device test, please, select ports in
             <a
-              (click)="openSetting(isTestrunInProgress(vm.systemStatus))"
-              (keydown.enter)="
-                openSetting(isTestrunInProgress(vm.systemStatus))
-              "
-              (keydown.space)="
-                openSetting(isTestrunInProgress(vm.systemStatus))
-              "
+              (click)="navigateToSettings()"
+              (keydown.enter)="navigateToSettings()"
+              (keydown.space)="navigateToSettings()"
               aria-label="The System settings link opens the panel. No redirect to other pages."
               tabindex="0"
               role="link"
@@ -261,19 +250,6 @@ limitations under the License.
       </div>
     </mat-drawer-content>
   </mat-drawer-container>
-
-  <mat-drawer
-    #settingsDrawer
-    mode="over"
-    position="end"
-    autoFocus="#setting-panel-close-button"
-    class="settings-drawer">
-    <app-general-settings
-      #settings
-      [settingsDisable]="isTestrunInProgress(vm.systemStatus)"
-      (closeSettingEvent)="closeSetting(vm.hasDevices)">
-    </app-general-settings>
-  </mat-drawer>
 
   <app-testing-complete
     *ngIf="vm.isTestingComplete"

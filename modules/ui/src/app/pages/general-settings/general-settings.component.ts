@@ -17,11 +17,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  EventEmitter,
   Input,
   OnDestroy,
   OnInit,
-  Output,
   viewChild,
   inject,
 } from '@angular/core';
@@ -29,12 +27,12 @@ import {
   FormBuilder,
   FormControl,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
 import { Subject, takeUntil, tap } from 'rxjs';
 import { OnlyDifferentValuesValidator } from './only-different-values.validator';
 import { CalloutType } from '../../model/callout-type';
-import { CdkTrapFocus, LiveAnnouncer } from '@angular/cdk/a11y';
 import { EventType } from '../../model/event-type';
 import { FormKey, SystemConfig } from '../../model/setting';
 import { GeneralSettingsStore } from './general-settings.store';
@@ -52,14 +50,18 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatDividerModule } from '@angular/material/divider';
 import { CalloutComponent } from '../../components/callout/callout.component';
 import { CommonModule } from '@angular/common';
+import { MatCheckbox } from '@angular/material/checkbox';
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+declare const gtag: Function;
 
 @Component({
   selector: 'app-general-settings',
   templateUrl: './general-settings.component.html',
   styleUrls: ['./general-settings.component.scss'],
-  hostDirectives: [CdkTrapFocus],
   imports: [
     MatButtonModule,
     MatIconModule,
@@ -73,6 +75,9 @@ import { CommonModule } from '@angular/common';
     ReactiveFormsModule,
     MatFormFieldModule,
     MatSnackBarModule,
+    MatDividerModule,
+    MatCheckbox,
+    FormsModule,
     SpinnerComponent,
     CalloutComponent,
     SettingsDropdownComponent,
@@ -82,8 +87,8 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GeneralSettingsComponent implements OnInit, OnDestroy {
+  optOut = false;
   private readonly fb = inject(FormBuilder);
-  private liveAnnouncer = inject(LiveAnnouncer);
   private readonly onlyDifferentValuesValidator = inject(
     OnlyDifferentValuesValidator
   );
@@ -91,7 +96,6 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   private readonly loaderService = inject(LoaderService);
 
   readonly reloadSettingLink = viewChild<ElementRef>('reloadSettingLink');
-  @Output() closeSettingEvent = new EventEmitter<void>();
 
   private isSettingsDisable = false;
   get settingsDisable(): boolean {
@@ -161,14 +165,6 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     this.getSystemConfig();
     this.setDefaultFormValues();
   }
-  closeSetting(message: string): void {
-    this.resetForm();
-    this.closeSettingEvent.emit();
-    this.liveAnnouncer.announce(
-      `The ${message} finished. The system settings panel is closed.`
-    );
-    this.setDefaultFormValues();
-  }
 
   saveSetting(): void {
     if (this.settingForm.invalid) {
@@ -233,9 +229,12 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     };
     this.settingsStore.updateSystemConfig({
       onSystemConfigUpdate: () => {
-        this.closeSetting(EventType.Save);
+        this.setDefaultFormValues();
       },
       config: data,
+    });
+    gtag('consent', 'update', {
+      analytics_storage: this.optOut ? 'denied' : 'granted',
     });
   }
 
