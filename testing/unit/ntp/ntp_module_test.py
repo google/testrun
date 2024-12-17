@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module run all the NTP related unit tests"""
+import unittest.mock
 from ntp_module import NTPModule
 import unittest
 from scapy.all import rdpcap, NTP, wrpcap
@@ -26,9 +27,15 @@ TEST_FILES_DIR = 'testing/unit/' + MODULE
 OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
 REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
 CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
+MODULE_FILES_DIR = 'modules/test/' + MODULE
+TEMPLATE_SOURCE = os.path.join(MODULE_FILES_DIR, 'resources')
+TEMPLATE_DIR = os.path.join(TEST_FILES_DIR, 'templates')
+TEMPLATE_FILE = 'report_template.jinja2'
+BASE_TEMPLATE_FILE = 'module_report_base.jinja2'
+BASE_TEMPLATE_SOURCE = os.path.join('resources/report', BASE_TEMPLATE_FILE)
 
-LOCAL_REPORT = os.path.join(REPORTS_DIR,'ntp_report_local.html')
-LOCAL_REPORT_NO_NTP = os.path.join(REPORTS_DIR,'ntp_report_local_no_ntp.html')
+LOCAL_REPORT = os.path.join(REPORTS_DIR,'ntp_report_local.jinja2')
+LOCAL_REPORT_NO_NTP = os.path.join(REPORTS_DIR,'ntp_report_local_no_ntp.jinja2')
 
 # Define the capture files to be used for the test
 NTP_SERVER_CAPTURE_FILE = os.path.join(CAPTURES_DIR,'ntp.pcap')
@@ -44,6 +51,23 @@ class NTPModuleTest(unittest.TestCase):
     # Create the output directories and ignore errors if it already exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     os.environ['DEVICE_MAC'] = '38:d1:35:09:01:8e'
+    # Copy template files
+    if not os.path.isdir(TEMPLATE_DIR):
+      os.makedirs(TEMPLATE_DIR)
+    shutil.copy(
+              os.path.join(TEMPLATE_SOURCE, TEMPLATE_FILE),
+              os.path.join(TEMPLATE_DIR, TEMPLATE_FILE)
+              )
+    shutil.copy(
+                BASE_TEMPLATE_SOURCE,
+                os.path.join(TEMPLATE_DIR, BASE_TEMPLATE_FILE)
+                )
+
+  @classmethod
+  def tearDownClass(cls):
+    # Delete templates dir
+    if os.path.isdir(TEMPLATE_DIR):
+      shutil.rmtree(TEMPLATE_DIR)
 
   # Test the module report generation
   def ntp_module_report_test(self):
@@ -52,6 +76,8 @@ class NTPModuleTest(unittest.TestCase):
                            ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE,
                            startup_capture_file=STARTUP_CAPTURE_FILE,
                            monitor_capture_file=MONITOR_CAPTURE_FILE)
+    setattr(ntp_module, '_report_template_folder', TEMPLATE_DIR)
+    setattr(ntp_module, '_base_template_file', BASE_TEMPLATE_FILE)
 
     report_out_path = ntp_module.generate_module_report()
 
@@ -64,10 +90,9 @@ class NTPModuleTest(unittest.TestCase):
       report_local = file.read()
 
     # Copy the generated html report to a new file
-    new_report_name = 'ntp_local.html'
+    new_report_name = 'ntp_local.jinja2'
     new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
     shutil.copy(report_out_path, new_report_path)
-
     self.assertEqual(report_out, report_local)
 
   # Test the module report generation if no DNS traffic
@@ -100,11 +125,14 @@ class NTPModuleTest(unittest.TestCase):
     wrpcap(startup_cap_file, packets_startup)
     wrpcap(monitor_cap_file, packets_monitor)
 
-    ntp_module = NTPModule(module='dns',
+    ntp_module = NTPModule(module=MODULE,
                            results_dir=OUTPUT_DIR,
                            ntp_server_capture_file=ntp_server_cap_file,
                            startup_capture_file=startup_cap_file,
                            monitor_capture_file=monitor_cap_file)
+   
+    setattr(ntp_module, '_report_template_folder', TEMPLATE_DIR)
+    setattr(ntp_module, '_base_template_file', BASE_TEMPLATE_FILE)
 
     report_out_path = ntp_module.generate_module_report()
 
@@ -117,7 +145,7 @@ class NTPModuleTest(unittest.TestCase):
       report_local = file.read()
 
     # Copy the generated html report to a new file
-    new_report_name = 'ntp_no_ntp.html'
+    new_report_name = 'ntp_no_ntp.jinja2'
     new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
     shutil.copy(report_out_path, new_report_path)
 
