@@ -32,23 +32,52 @@
   }
 }
 
+.check_circle {
+  border-color: colors.$on-tertiary-container;
+  color: colors.$on-tertiary-container;
+  background-color: rgba(20, 108, 46, 0.1);
+}
+
+.info {
+  border-color: colors.$primary;
+  color: colors.$primary;
+  background-color: rgba(127, 207, 255, 0.16);
+}
+
+.error,
+.error_outline {
+  border-color: colors.$on-error-container;
+  color: colors.$on-error-container;
+  background-color: rgba(179, 38, 30, 0.1);
+}
+
+.warning_amber {
+  border-color: colors.$orange-60;
+  color: colors.$orange-40;
+  background-color: colors.$orange-98;
+}
+
 .callout-container {
+  position: relative;
+  overflow: hidden;
   display: flex;
   box-sizing: border-box;
   height: auto;
   min-height: 48px;
-  padding: 6px 24px;
-  border-radius: 8px;
+  padding: 6px 6px 6px 16px;
+  border-radius: variables.$corner-medium;
   align-items: center;
   gap: 16px;
+  margin: 24px 32px;
 }
 
 .callout-icon {
   flex-shrink: 0;
   padding: 4px 0;
+  color: inherit;
 }
 
-.callout-container.info {
+/*.callout-container.info {
   margin: 24px 32px;
   background-color: mat.get-theme-color($light-theme, primary, 95);
 
@@ -73,11 +102,6 @@
 
 .callout-container.error {
   margin: 24px 32px;
-  background-color: colors.$red-50;
-
-  .callout-icon {
-    color: colors.$red-700;
-  }
 }
 
 .callout-container.check_circle {
@@ -101,20 +125,41 @@
   .callout-context {
     font-weight: bold;
   }
-}
+}*/
 
 .callout-context {
   margin: 0;
   padding: 6px 0;
-  color: colors.$grey-800;
+  color: colors.$on-surface-variant;
   font-family: variables.$font-secondary;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
 }
 
-.callout-close-button {
+.callout-action-container {
   margin-left: auto;
-  margin-right: -20px;
-  color: colors.$warn;
+}
+
+.callout-action {
+  color: inherit;
+  padding: 10px 16px;
+}
+
+.callout-action-link {
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: var(--mdc-text-button-label-text-size);
+  font-family: var(--mdc-text-button-label-text-font);
+}
+
+.callout-border {
+  display: block;
+  height: 3px;
+  border-bottom: 3px solid;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  margin-left: -16px;
 }

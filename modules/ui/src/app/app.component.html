@@ -83,7 +83,6 @@ limitations under the License.
         <span class="spacer"></span>
         <div class="app-bar-buttons">
           <button
-            #toggleSettingsBtn
             class="app-toolbar-button app-toolbar-button-general-settings"
             mat-icon-button
             aria-label="System settings"
@@ -105,147 +104,23 @@ limitations under the License.
         </div>
       </mat-toolbar>
       <div class="app-content-main" role="main" id="main">
-        <div class="app-callout-container">
-          <ng-container *ngIf="vm.settingMissedError as error">
-            <app-callout
-              [type]="CalloutType.Error"
-              *ngIf="error.isSettingMissed">
-              <ng-container
-                *ngIf="
-                  error.devicePortMissed && error.internetPortMissed;
-                  else onePortMissed
-                ">
-                No ports detected. Please connect and configure network and
-                device connections in the
-              </ng-container>
-              <ng-template #onePortMissed>
-                Selected port is missing! Please define a valid one using
-              </ng-template>
-              <a
-                (click)="navigateToSettings()"
-                (keydown.enter)="navigateToSettings()"
-                (keydown.space)="navigateToSettings()"
-                aria-label="The System settings link opens the panel. No redirect to other pages."
-                tabindex="0"
-                role="link"
-                class="message-link"
-                >System settings</a
-              >
-              panel.
-            </app-callout>
-          </ng-container>
-          <app-callout
-            id="outdated_devices_callout"
-            role="alert"
-            aria-live="assertive"
-            [closable]="true"
-            [type]="CalloutType.Error"
-            (calloutClosed)="calloutClosed($event)"
-            *ngIf="
-              vm.hasExpiredDevices &&
-              !vm.calloutState.get('outdated_devices_callout')
-            ">
-            Further information is required in your device configurations.
-            <ng-container *ngIf="!isDevicesRoute"
-              >Please update your
-              <a
-                (click)="navigateToDeviceRepository()"
-                (keydown.enter)="navigateToDeviceRepository()"
-                (keydown.space)="navigateToDeviceRepository()"
-                aria-label="The Devices link redirects to the device repository page."
-                tabindex="0"
-                role="link"
-                class="message-link"
-                >Devices</a
-              >
-              to continue testing.
-            </ng-container>
-          </app-callout>
-          <app-callout
-            [type]="CalloutType.Info"
-            *ngIf="vm.hasConnectionSettings === false">
-            Step 1: To perform a device test, please, select ports in
-            <a
-              (click)="navigateToSettings()"
-              (keydown.enter)="navigateToSettings()"
-              (keydown.space)="navigateToSettings()"
-              aria-label="The System settings link opens the panel. No redirect to other pages."
-              tabindex="0"
-              role="link"
-              class="message-link"
-              >System settings</a
-            >
-            panel.
-          </app-callout>
-          <app-callout
-            [type]="CalloutType.Info"
-            *ngIf="
-              vm.hasConnectionSettings === true &&
-              (vm.hasDevices === false ||
-                (!!vm.calloutState.get('outdated_devices_callout') &&
-                  vm.isAllDevicesOutdated))
-            ">
-            Step 2: To perform a device test please
-            <a
-              (click)="navigateToAddDevice()"
-              (keydown.enter)="navigateToAddDevice()"
-              (keydown.space)="navigateToAddDevice()"
-              aria-label="The Create a Device link redirects to the Devices page and opens the dialogue there."
-              tabindex="0"
-              role="link"
-              class="message-link"
-              >Create a Device</a
-            >
-            first.
-          </app-callout>
-          <app-callout
-            [type]="CalloutType.Info"
-            *ngIf="
-              vm.hasConnectionSettings === true &&
-              vm.hasDevices &&
-              (!vm.systemStatus || vm.systemStatus === StatusOfTestrun.Idle) &&
-              vm.isStatusLoaded === true &&
-              !vm.reports.length &&
-              !vm.isAllDevicesOutdated
-            ">
-            Step 3: Once device is created, you are able to
-            <a
-              (click)="navigateToRuntime()"
-              (keydown.enter)="navigateToRuntime()"
-              (keydown.space)="navigateToRuntime()"
-              aria-label="The start testing link redirects to the Testing page and opens the dialogue there."
-              tabindex="0"
-              role="link"
-              class="message-link"
-              >start testing</a
-            >.
-          </app-callout>
-          <app-callout
-            role="alert"
-            aria-live="assertive"
-            [type]="CalloutType.Check"
-            *ngIf="
-              vm.hasConnectionSettings === true &&
-              vm.hasDevices === true &&
-              vm.hasRiskProfiles === false &&
-              vm.systemStatus === StatusOfTestrun.InProgress &&
-              isRiskAssessmentRoute === false
-            ">
-            The device is now being tested. Why not take the time to complete
-            the device
-            <a
-              #riskAssessmentLink
-              (click)="navigateToRiskAssessment()"
-              (keydown.enter)="navigateToRiskAssessment()"
-              (keydown.space)="navigateToRiskAssessment()"
-              aria-label="The Risk Assessment questionnaire link redirects to the Risk Assessment page."
-              tabindex="0"
-              role="link"
-              class="message-link"
-              >Risk Assessment questionnaire</a
-            >?
-          </app-callout>
-        </div>
+        <ng-container
+          *ngTemplateOutlet="
+            callouts;
+            context: {
+              systemStatus: vm.systemStatus,
+              error: vm.settingMissedError,
+              hasExpiredDevices: vm.hasExpiredDevices,
+              calloutState: vm.calloutState,
+              hasConnectionSettings: vm.hasConnectionSettings,
+              hasRiskProfiles: vm.hasRiskProfiles,
+              isAllDevicesOutdated: vm.isAllDevicesOutdated,
+              isStatusLoaded: vm.isStatusLoaded,
+              reports: vm.reports,
+              hasDevices: vm.hasDevices,
+            }
+          ">
+        </ng-container>
         <router-outlet></router-outlet>
       </div>
     </mat-drawer-content>
@@ -279,3 +154,102 @@ limitations under the License.
 </ng-template>
 
 <app-spinner class="global-spinner"></app-spinner>
+
+<ng-template
+  #callouts
+  let-systemStatus="systemStatus"
+  let-error="error"
+  let-hasExpiredDevices="hasExpiredDevices"
+  let-calloutState="calloutState"
+  let-hasConnectionSettings="hasConnectionSettings"
+  let-isAllDevicesOutdated="isAllDevicesOutdated"
+  let-isStatusLoaded="isStatusLoaded"
+  let-reports="reports"
+  let-hasRiskProfiles="hasRiskProfiles"
+  let-hasDevices="hasDevices">
+  <div class="app-callout-container">
+    <app-callout
+      [type]="CalloutType.Error"
+      *ngIf="error && error.isSettingMissed"
+      action="System settings"
+      (onAction)="navigateToSettings()">
+      <ng-container
+        *ngIf="
+          error.devicePortMissed && error.internetPortMissed;
+          else onePortMissed
+        ">
+        No ports detected. Please connect and configure network and device
+        connections in the System settings panel.
+      </ng-container>
+      <ng-template #onePortMissed>
+        Selected port is missing! Please define a valid one using System
+        settings panel.
+      </ng-template>
+    </app-callout>
+    <app-callout
+      id="outdated_devices_callout"
+      role="alert"
+      aria-live="assertive"
+      [closable]="true"
+      [type]="CalloutType.Error"
+      (calloutClosed)="calloutClosed($event)"
+      *ngIf="hasExpiredDevices && !calloutState.get('outdated_devices_callout')"
+      [action]="!isDevicesRoute ? 'Devices' : ''"
+      (onAction)="navigateToDeviceRepository()">
+      Further information is required in your device configurations.
+      <ng-container *ngIf="!isDevicesRoute"
+        >Please update your Devices to continue testing.
+      </ng-container>
+    </app-callout>
+    <app-callout
+      [type]="CalloutType.Info"
+      *ngIf="hasConnectionSettings === false"
+      action="System settings"
+      (onAction)="navigateToSettings()">
+      Step 1: To perform a device test, please, select ports in System settings
+      panel.
+    </app-callout>
+    <app-callout
+      [type]="CalloutType.Info"
+      *ngIf="
+        hasConnectionSettings === true &&
+        (hasDevices === false ||
+          (!!calloutState.get('outdated_devices_callout') &&
+            isAllDevicesOutdated))
+      "
+      action="Devices"
+      (onAction)="navigateToAddDevice()">
+      Step 2: To perform a device test please Create a Device first.
+    </app-callout>
+    <app-callout
+      [type]="CalloutType.Info"
+      *ngIf="
+        hasConnectionSettings === true &&
+        hasDevices &&
+        (!systemStatus || systemStatus === StatusOfTestrun.Idle) &&
+        isStatusLoaded === true &&
+        !reports.length &&
+        !isAllDevicesOutdated
+      "
+      action="Testing"
+      (onAction)="navigateToRuntime()">
+      Step 3: Once device is created, you are able to start testing.
+    </app-callout>
+    <app-callout
+      role="alert"
+      aria-live="assertive"
+      [type]="CalloutType.Check"
+      *ngIf="
+        hasConnectionSettings === true &&
+        hasDevices === true &&
+        hasRiskProfiles === false &&
+        systemStatus === StatusOfTestrun.InProgress &&
+        isRiskAssessmentRoute === false
+      "
+      action="Create risk Assessment"
+      (onAction)="navigateToRiskAssessment()">
+      The device is now being tested. Why not take the time to complete the
+      device Risk Assessment questionnaire?
+    </app-callout>
+  </div>
+</ng-template>
