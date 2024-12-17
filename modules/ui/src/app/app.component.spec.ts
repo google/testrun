@@ -377,7 +377,7 @@ describe('AppComponent', () => {
 
       it('should have callout content with "System settings" link ', () => {
         const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+          '.callout-action-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
@@ -438,12 +438,12 @@ describe('AppComponent', () => {
       it('should have callout component with "Risk Assessment" link', () => {
         const callout = compiled.querySelector('app-callout');
         const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+          '.callout-action-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Risk Assessment');
+        expect(calloutLinkContent).toContain('Create risk Assessment');
       });
     });
 
@@ -470,12 +470,12 @@ describe('AppComponent', () => {
       it('should have callout component with "Risk Assessment" link', () => {
         const callout = compiled.querySelector('app-callout');
         const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+          '.callout-action-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Risk Assessment');
+        expect(calloutLinkContent).toContain('Create risk Assessment');
       });
     });
 
@@ -501,18 +501,18 @@ describe('AppComponent', () => {
 
       it('should have callout content with "Create a Device" link ', () => {
         const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+          '.callout-action-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(calloutLinkEl).toBeTruthy();
-        expect(calloutLinkContent).toContain('Create a Device');
+        expect(calloutLinkContent).toContain('Devices');
       });
 
       keyboardCases.forEach(testCase => {
         it(`should navigate to the device-repository on keydown ${testCase.name} "Create a Device" link`, fakeAsync(() => {
           const calloutLinkEl = compiled.querySelector(
-            '.message-link'
+            '.callout-action-link'
           ) as HTMLAnchorElement;
 
           calloutLinkEl.dispatchEvent(testCase.event);
@@ -524,7 +524,7 @@ describe('AppComponent', () => {
 
       it('should navigate to the device-repository on click "Create a Device" link', fakeAsync(() => {
         const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+          '.callout-action-link'
         ) as HTMLAnchorElement;
 
         calloutLinkEl.click();
@@ -558,18 +558,18 @@ describe('AppComponent', () => {
       it('should have callout component with "testing" link', () => {
         const callout = compiled.querySelector('app-callout');
         const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+          '.callout-action-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('testing');
+        expect(calloutLinkContent).toContain('Testing');
       });
 
       keyboardCases.forEach(testCase => {
         it(`should navigate to the runtime on keydown ${testCase.name} "Run the Test" link`, fakeAsync(() => {
           const calloutLinkEl = compiled.querySelector(
-            '.message-link'
+            '.callout-action-link'
           ) as HTMLAnchorElement;
 
           calloutLinkEl.dispatchEvent(testCase.event);
