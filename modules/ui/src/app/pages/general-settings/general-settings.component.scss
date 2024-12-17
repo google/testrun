@@ -22,83 +22,34 @@
   flex-direction: column;
   height: 100%;
   flex: 1 0 auto;
-}
-
-.settings-drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 12px 16px 24px;
-
-  &-title {
-    margin: 0;
-    font-size: 22px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 28px;
-    color: colors.$dark-grey;
-  }
-
-  &-button {
-    min-width: 24px;
-    width: 24px;
-    height: 24px;
-    margin: 4px;
-    padding: 8px;
-    box-sizing: content-box;
-    line-height: normal !important;
-
-    .close-button-icon {
-      width: 24px;
-      height: 24px;
-      margin: 0;
-    }
-
-    ::ng-deep * {
-      line-height: inherit !important;
-    }
-  }
+  padding: 6px 22px;
 }
 
 .setting-drawer-content {
-  padding: 0 16px 8px 16px;
-  overflow: hidden;
-  flex: 1;
-
-  form {
-    display: grid;
-    height: 100%;
-  }
+  overflow-y: scroll;
+  height: max-content;
+  max-height: calc(100vh - 260px);
+  padding: 10px;
 
   .setting-drawer-content-form-empty {
     grid-template-rows: repeat(2, auto) 1fr;
   }
 }
 
-.setting-drawer-content-inputs {
-  overflow: auto;
-  margin: 0 -16px;
-  padding: 0 16px;
-}
-
 .error-message-container {
   display: block;
   margin-top: auto;
   padding-bottom: 8px;
-}
-
-.error-message-container + .setting-drawer-footer {
-  margin-top: 0;
+  text-align: center;
 }
 
 .message {
   margin: 0;
-  padding: 6px 0 12px 0;
-  color: colors.$grey-800;
-  font-family: variables.$font-secondary;
+  color: colors.$on-surface-variant;
+  font-family: variables.$font-text;
   font-size: 14px;
   line-height: 20px;
-  letter-spacing: 0.2px;
+  letter-spacing: 0;
 }
 
 .setting-drawer-footer {
@@ -108,17 +59,15 @@
   flex-shrink: 0;
   justify-content: flex-end;
 
-  .close-button,
   .save-button {
     padding: 0 24px;
     font-size: 14px;
     font-weight: 500;
     line-height: 20px;
     letter-spacing: 0.25px;
-  }
-
-  .close-button {
-    margin-right: 10px;
+    &::ng-deep .mat-focus-indicator {
+      display: none;
+    }
   }
 }
 
@@ -149,4 +98,53 @@
 .save-button:not(.mat-mdc-button-disabled) {
   cursor: pointer;
   pointer-events: auto;
+}
+
+.section-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.1fr;
+  gap: 46px;
+  padding: 8px 0;
+
+  p {
+    margin: 0;
+  }
+  .label-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 16px;
+    color: colors.$on-surface-variant;
+    font-family: variables.$font-text;
+  }
+
+  .info-column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 260px;
+    padding: 0 12px;
+  }
+
+  .setting-form-label,
+  .setting-data {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 500;
+    color: colors.$on-surface;
+  }
+
+  .setting-data {
+    display: flex;
+    align-items: center;
+    font-weight: 400;
+  }
+
+  .setting-label-description {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0;
+    color: colors.$on-surface-variant;
+  }
 }

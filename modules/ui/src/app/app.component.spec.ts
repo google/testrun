@@ -72,7 +72,6 @@ import { WifiComponent } from './components/wifi/wifi.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Profile } from './model/profile';
 import { TestrunStatus } from './model/testrun-status';
-import { GeneralSettingsComponent } from './pages/general-settings/general-settings.component';
 import { SpinnerComponent } from './components/spinner/spinner.component';
 import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
 import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
@@ -129,7 +128,6 @@ describe('AppComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [
-        FakeGeneralSettingsComponent,
         AppComponent,
         RouterTestingModule,
         HttpClientTestingModule,
@@ -187,7 +185,6 @@ describe('AppComponent', () => {
     }).overrideComponent(AppComponent, {
       remove: {
         imports: [
-          GeneralSettingsComponent,
           SpinnerComponent,
           ShutdownAppComponent,
           TestingCompleteComponent,
@@ -196,7 +193,6 @@ describe('AppComponent', () => {
       },
       add: {
         imports: [
-          FakeGeneralSettingsComponent,
           FakeSpinnerComponent,
           FakeShutdownAppComponent,
           FakeVersionComponent,
@@ -311,60 +307,6 @@ describe('AppComponent', () => {
     expect(router.url).toBe(Routes.Reports);
   }));
 
-  it('should call toggleSettingsBtn focus when settingsDrawer close on closeSetting', fakeAsync(() => {
-    fixture.detectChanges();
-
-    spyOn(component.settingsDrawer(), 'close').and.returnValue(
-      Promise.resolve('close')
-    );
-    spyOn(component.toggleSettingsBtn(), 'focus');
-
-    component.closeSetting(true);
-    tick();
-
-    component
-      .settingsDrawer()
-      .close()
-      .then(() => {
-        expect(component.toggleSettingsBtn().focus).toHaveBeenCalled();
-      });
-  }));
-
-  it('should call focusFirstElementInContainer if settingsDrawer opened not from toggleBtn', fakeAsync(() => {
-    fixture.detectChanges();
-
-    spyOn(component.settingsDrawer(), 'close').and.returnValue(
-      Promise.resolve('close')
-    );
-
-    component.openGeneralSettings(false, false);
-    tick();
-    component.closeSetting(false);
-    flush();
-
-    component
-      .settingsDrawer()
-      .close()
-      .then(() => {
-        expect(
-          mockFocusManagerService.focusFirstElementInContainer
-        ).toHaveBeenCalled();
-      });
-  }));
-
-  it('should update interfaces and config', () => {
-    fixture.detectChanges();
-
-    const settings = component.settings();
-    spyOn(settings, 'getSystemInterfaces');
-    spyOn(settings, 'getSystemConfig');
-
-    component.openGeneralSettings(false, false);
-
-    expect(settings.getSystemInterfaces).toHaveBeenCalled();
-    expect(settings.getSystemConfig).toHaveBeenCalled();
-  });
-
   it('should navigate to the settings when "settings" button is clicked', fakeAsync(() => {
     fixture.detectChanges();
 
@@ -375,21 +317,6 @@ describe('AppComponent', () => {
     tick();
 
     expect(router.url).toBe(Routes.Settings);
-  }));
-
-  it('should announce settingsDrawer disabled on openSetting and settings are disabled', fakeAsync(() => {
-    fixture.detectChanges();
-
-    spyOn(component.settingsDrawer(), 'open').and.returnValue(
-      Promise.resolve('open')
-    );
-
-    component.openSetting(true);
-    tick();
-
-    expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-      'The settings panel is disabled'
-    );
   }));
 
   it('should have spinner', () => {
@@ -456,20 +383,6 @@ describe('AppComponent', () => {
 
         expect(calloutLinkEl).toBeTruthy();
         expect(calloutLinkContent).toContain('System settings');
-      });
-
-      keyboardCases.forEach(testCase => {
-        it(`should call openSetting on keydown ${testCase.name} "Connection settings" link`, fakeAsync(() => {
-          const spyOpenSetting = spyOn(component, 'openSetting');
-          const calloutLinkEl = compiled.querySelector(
-            '.message-link'
-          ) as HTMLAnchorElement;
-
-          calloutLinkEl.dispatchEvent(testCase.event);
-          flush();
-
-          expect(spyOpenSetting).toHaveBeenCalled();
-        }));
       });
     });
 
@@ -776,19 +689,6 @@ describe('AppComponent', () => {
     });
   });
 
-  it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {
-    fixture.detectChanges();
-
-    spyOn(component.settingsDrawer(), 'close').and.returnValue(
-      Promise.resolve('close')
-    );
-    const spyToggle = spyOn(component.toggleSettingsBtn(), 'focus');
-
-    await component.closeSetting(false);
-
-    expect(spyToggle).toHaveBeenCalledTimes(0);
-  });
-
   it('should set focus to first focusable elem when close callout', fakeAsync(() => {
     component.calloutClosed('mockId');
     tick(100);
@@ -798,17 +698,6 @@ describe('AppComponent', () => {
     ).toHaveBeenCalled();
   }));
 });
-
-@Component({
-  selector: 'app-general-settings',
-  template: '<div></div>',
-})
-class FakeGeneralSettingsComponent {
-  @Input() settingsDisable = false;
-  @Output() closeSettingEvent = new EventEmitter<void>();
-  getSystemInterfaces = () => {};
-  getSystemConfig = () => {};
-}
 
 @Component({
   selector: 'app-spinner',

@@ -23,7 +23,7 @@ import {
 } from '@angular/core';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { StatusOfTestrun } from './model/testrun-status';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { CalloutType } from './model/callout-type';
@@ -32,10 +32,8 @@ import { FocusManagerService } from './services/focus-manager.service';
 import { State, Store } from '@ngrx/store';
 import { AppState } from './store/state';
 import { setIsOpenAddDevice } from './store/actions';
-import { GeneralSettingsComponent } from './pages/general-settings/general-settings.component';
 import { AppStore } from './app.store';
 import { TestRunService } from './services/test-run.service';
-import { CdkTrapFocus, LiveAnnouncer } from '@angular/cdk/a11y';
 import { filter, take } from 'rxjs/operators';
 import { timer } from 'rxjs';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -86,11 +84,9 @@ const QUALIFICATION_URL = '/assets/icons/qualification.svg';
     BypassComponent,
     VersionComponent,
     CalloutComponent,
-    CdkTrapFocus,
     ShutdownAppComponent,
     WifiComponent,
     TestingCompleteComponent,
-    GeneralSettingsComponent,
     RouterModule,
     CommonModule,
   ],
@@ -105,17 +101,12 @@ export class AppComponent implements AfterViewInit {
   private readonly focusManagerService = inject(FocusManagerService);
   private testRunService = inject(TestRunService);
   appStore = inject(AppStore);
-  private liveAnnouncer = inject(LiveAnnouncer);
 
   public readonly CalloutType = CalloutType;
   public readonly StatusOfTestrun = StatusOfTestrun;
   public readonly Routes = Routes;
-  private openedSettingFromToggleBtn = true;
-
-  readonly settingsDrawer = viewChild.required<MatDrawer>('settingsDrawer');
   readonly toggleSettingsBtn =
     viewChild.required<HTMLButtonElement>('toggleSettingsBtn');
-  readonly settings = viewChild.required<GeneralSettingsComponent>('settings');
   viewModel$ = this.appStore.viewModel$;
 
   readonly riskAssessmentLink = viewChild<ElementRef>('riskAssessmentLink');
@@ -206,34 +197,10 @@ export class AppComponent implements AfterViewInit {
     });
   }
 
-  async closeSetting(hasDevices: boolean): Promise<void> {
-    return await this.settingsDrawer()
-      .close()
-      .then(() => {
-        if (hasDevices) {
-          this.toggleSettingsBtn().focus();
-        } // else device create window will be opened
-        if (!this.openedSettingFromToggleBtn) {
-          this.focusManagerService.focusFirstElementInContainer();
-        }
-      });
-  }
-
-  async openSetting(isSettingsDisabled: boolean): Promise<void> {
-    return await this.openGeneralSettings(false, isSettingsDisabled);
-  }
-
-  async openGeneralSettings(
-    openSettingFromToggleBtn: boolean,
-    isSettingsDisabled: boolean
-  ) {
-    this.openedSettingFromToggleBtn = openSettingFromToggleBtn;
-    this.settings().getSystemInterfaces();
-    this.settings().getSystemConfig();
-    await this.settingsDrawer().open();
-    if (isSettingsDisabled) {
-      await this.liveAnnouncer.announce('The settings panel is disabled');
-    }
+  navigateToSettings(): void {
+    this.route.navigate([Routes.Settings]).then(() => {
+      this.appStore.setFocusOnPage();
+    });
   }
   consentShown() {
     this.appStore.setContent();

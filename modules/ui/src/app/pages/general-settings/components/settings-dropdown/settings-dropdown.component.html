@@ -1,12 +1,15 @@
-<label
-  class="setting-form-label {{ key }}-label"
-  id="{{ key }}-label"
-  for="{{ key }}-group">
-  {{ groupLabel }}
-</label>
-<p class="setting-label-description">
-  {{ description }}
-</p>
+<div class="label-column">
+  <label
+    class="setting-form-label {{ key }}-label"
+    id="{{ key }}-label"
+    for="{{ key }}-group">
+    {{ groupLabel }}
+  </label>
+  <p class="setting-label-description">
+    {{ description }}
+  </p>
+</div>
+
 <mat-form-field appearance="outline" class="setting-field">
   <mat-label>{{ label }}</mat-label>
   <mat-select
@@ -35,3 +38,6 @@
     </mat-option>
   </mat-select>
 </mat-form-field>
+<div class="info-column">
+  <ng-content></ng-content>
+</div>

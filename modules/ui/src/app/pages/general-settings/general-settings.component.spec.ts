@@ -23,7 +23,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { Component, Input } from '@angular/core';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
 import SpyObj = jasmine.SpyObj;
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -42,13 +41,13 @@ import { SpinnerComponent } from '../../components/spinner/spinner.component';
 describe('GeneralSettingsComponent', () => {
   let component: GeneralSettingsComponent;
   let fixture: ComponentFixture<GeneralSettingsComponent>;
-  let mockLiveAnnouncer: SpyObj<LiveAnnouncer>;
   let compiled: HTMLElement;
   let mockLoaderService: SpyObj<LoaderService>;
   let mockSettingsStore: SpyObj<GeneralSettingsStore>;
 
   beforeEach(async () => {
-    mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>window).gtag = jasmine.createSpy('gtag');
     mockLoaderService = jasmine.createSpyObj('LoaderService', ['setLoading']);
     mockSettingsStore = jasmine.createSpyObj('SettingsStore', [
       'getInterfaces',
@@ -61,7 +60,6 @@ describe('GeneralSettingsComponent', () => {
 
     await TestBed.configureTestingModule({
       providers: [
-        { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
         { provide: LoaderService, useValue: mockLoaderService },
         { provide: GeneralSettingsStore, useValue: mockSettingsStore },
         provideMockStore(),
@@ -116,6 +114,11 @@ describe('GeneralSettingsComponent', () => {
     component.ngOnInit();
   });
 
+  afterEach(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>window).gtag = undefined;
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -164,44 +167,6 @@ describe('GeneralSettingsComponent', () => {
 
       expect(refreshLink.hasAttribute('aria-disabled')).toBeTrue();
       expect(mockLoaderService.setLoading).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('#closeSetting', () => {
-    beforeEach(() => {
-      component.ngOnInit();
-    });
-
-    it('should emit closeSettingEvent', () => {
-      spyOn(component.closeSettingEvent, 'emit');
-
-      component.closeSetting('Message');
-
-      expect(component.closeSettingEvent.emit).toHaveBeenCalled();
-    });
-
-    it('should call liveAnnouncer with provided message', () => {
-      const mockMessage = 'mock event';
-
-      component.closeSetting(mockMessage);
-
-      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-        `The ${mockMessage} finished. The system settings panel is closed.`
-      );
-    });
-
-    it('should call reset settingForm', () => {
-      spyOn(component.settingForm, 'reset');
-
-      component.closeSetting('Message');
-
-      expect(component.settingForm.reset).toHaveBeenCalled();
-    });
-
-    it('should call setDefaultFormValues', () => {
-      component.closeSetting('Message');
-
-      expect(mockSettingsStore.setDefaultFormValues).toHaveBeenCalled();
     });
   });
 
