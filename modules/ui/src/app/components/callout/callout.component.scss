@@ -77,56 +77,6 @@
   color: inherit;
 }
 
-/*.callout-container.info {
-  margin: 24px 32px;
-  background-color: mat.get-theme-color($light-theme, primary, 95);
-
-  .callout-icon {
-    color: mat.get-theme-color($light-theme, primary, 30);
-  }
-
-  .info-pilot {
-    width: 24px;
-    display: flex;
-    justify-content: center;
-  }
-}
-
-.callout-container.warning_amber {
-  background-color: colors.$yellow-50;
-
-  .callout-icon {
-    color: colors.$orange-700;
-  }
-}
-
-.callout-container.error {
-  margin: 24px 32px;
-}
-
-.callout-container.check_circle {
-  margin: 24px 32px;
-  background-color: colors.$green-50;
-
-  .callout-icon {
-    color: colors.$green-800;
-  }
-}
-
-.callout-container.error_outline {
-  display: flex;
-  align-items: flex-start;
-  background: colors.$color-background-grey;
-
-  .callout-icon {
-    color: colors.$grey-700;
-  }
-
-  .callout-context {
-    font-weight: bold;
-  }
-}*/
-
 .callout-context {
   margin: 0;
   padding: 6px 0;
