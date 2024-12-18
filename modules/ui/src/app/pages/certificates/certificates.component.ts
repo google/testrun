@@ -72,7 +72,7 @@ export class CertificatesComponent implements OnDestroy {
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
+      panelClass: ['simple-dialog', 'delete-certificate'],
     });
 
     dialogRef
