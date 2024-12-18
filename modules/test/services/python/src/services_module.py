@@ -22,7 +22,7 @@ import os
 from jinja2 import Environment, FileSystemLoader
 
 LOG_NAME = 'test_services'
-MODULE_REPORT_FILE_NAME = 'services_report.jinja2'
+MODULE_REPORT_FILE_NAME = 'services_report.j2.html'
 NMAP_SCAN_RESULTS_SCAN_FILE = 'services_scan_results.json'
 LOGGER = None
 REPORT_TEMPLATE_FILE = 'report_template.jinja2'
