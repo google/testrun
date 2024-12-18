@@ -551,7 +551,7 @@ class TestOrchestrator:
     except (FileNotFoundError, PermissionError):
       LOGGER.debug("Test module did not produce a html module report")
     # Get the Jinja report
-    jinja_file = f"{module.container_runtime_dir}/{module.name}_report.jinja2"
+    jinja_file = f"{module.container_runtime_dir}/{module.name}_report.j2.html"
     try:
       with open(jinja_file, "r", encoding="utf-8") as f:
         module_template = f.read()

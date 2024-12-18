@@ -19,7 +19,7 @@ from collections import defaultdict
 from jinja2 import Environment, FileSystemLoader
 
 LOG_NAME = 'test_ntp'
-MODULE_REPORT_FILE_NAME = 'ntp_report.jinja2'
+MODULE_REPORT_FILE_NAME = 'ntp_report.j2.html'
 NTP_SERVER_CAPTURE_FILE = '/runtime/network/ntp.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
