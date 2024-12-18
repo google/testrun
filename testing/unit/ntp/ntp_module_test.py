@@ -26,6 +26,10 @@ TEST_FILES_DIR = 'testing/unit/' + MODULE
 OUTPUT_DIR = os.path.join(TEST_FILES_DIR,'output/')
 REPORTS_DIR = os.path.join(TEST_FILES_DIR,'reports/')
 CAPTURES_DIR = os.path.join(TEST_FILES_DIR,'captures/')
+MODULE_FILES_DIR = 'modules/test/' + MODULE
+TEMPLATE_DIR = os.path.join(TEST_FILES_DIR, 'templates')
+TEMPLATE_FILE = 'report_template.jinja2'
+BASE_TEMPLATE_FILE = 'module_report_base.jinja2'
 
 LOCAL_REPORT = os.path.join(REPORTS_DIR,'ntp_report_local.html')
 LOCAL_REPORT_NO_NTP = os.path.join(REPORTS_DIR,'ntp_report_local_no_ntp.html')
@@ -52,6 +56,8 @@ class NTPModuleTest(unittest.TestCase):
                            ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE,
                            startup_capture_file=STARTUP_CAPTURE_FILE,
                            monitor_capture_file=MONITOR_CAPTURE_FILE)
+    setattr(ntp_module, '_report_template_folder', TEMPLATE_DIR)
+    setattr(ntp_module, '_base_template_file', BASE_TEMPLATE_FILE)
 
     report_out_path = ntp_module.generate_module_report()
 
@@ -67,7 +73,6 @@ class NTPModuleTest(unittest.TestCase):
     new_report_name = 'ntp_local.html'
     new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
     shutil.copy(report_out_path, new_report_path)
-
     self.assertEqual(report_out, report_local)
 
   # Test the module report generation if no DNS traffic
@@ -100,11 +105,14 @@ class NTPModuleTest(unittest.TestCase):
     wrpcap(startup_cap_file, packets_startup)
     wrpcap(monitor_cap_file, packets_monitor)
 
-    ntp_module = NTPModule(module='dns',
+    ntp_module = NTPModule(module=MODULE,
                            results_dir=OUTPUT_DIR,
                            ntp_server_capture_file=ntp_server_cap_file,
                            startup_capture_file=startup_cap_file,
                            monitor_capture_file=monitor_cap_file)
+
+    setattr(ntp_module, '_report_template_folder', TEMPLATE_DIR)
+    setattr(ntp_module, '_base_template_file', BASE_TEMPLATE_FILE)
 
     report_out_path = ntp_module.generate_module_report()
 
@@ -136,4 +144,3 @@ if __name__ == '__main__':
   if not test_result.wasSuccessful():
     sys.exit(1)  # Return a non-zero exit code for failures
   sys.exit(0)  # Return zero for success
-  
