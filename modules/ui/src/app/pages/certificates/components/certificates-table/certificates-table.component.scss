@@ -31,6 +31,10 @@
   );
 }
 
+::ng-deep .delete-certificate app-simple-dialog {
+  width: 329px;
+}
+
 .table-cell-actions {
   text-align: right;
 }
