@@ -20,7 +20,7 @@ from collections import Counter
 from jinja2 import Environment, FileSystemLoader
 
 LOG_NAME = 'test_dns'
-MODULE_REPORT_FILE_NAME = 'dns_report.jinja2'
+MODULE_REPORT_FILE_NAME = 'dns_report.j2.html'
 DNS_SERVER_CAPTURE_FILE = '/runtime/network/dns.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
