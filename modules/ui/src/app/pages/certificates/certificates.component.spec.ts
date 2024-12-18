@@ -113,7 +113,7 @@ describe('CertificatesComponent', () => {
           autoFocus: true,
           hasBackdrop: true,
           disableClose: true,
-          panelClass: 'simple-dialog',
+          panelClass: ['simple-dialog', 'delete-certificate'],
         });
 
         openSpy.calls.reset();
