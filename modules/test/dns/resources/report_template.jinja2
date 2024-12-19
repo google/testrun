@@ -1,7 +1,7 @@
 {% extends base_template %}
 {% block content %}
 {% if module_data %}
-  <table class="module-data" style="width:100%;">
+  <table class="module-data dns-module" style="width:100%;">
     <thead>
       <tr>
         {% for header in module_data_headers %}
@@ -12,13 +12,13 @@
     <tbody>
       {% for row in module_data %}
         <tr>
-              <td>{{ row['src'] }}</td>
-              <td>{{ row['dst'] }}</td>
-              <td>{{ row['res_ip'] }}</td>
-              <td>{{ row['typ'] }}</td>
-              <td>{{ row['dat'] }}</td>
-              <td>{{ row['count'] }}</td>
-            </tr>
+          <td><div>{{ row['src'] }}</div>></td>
+          <td><div>{{ row['dst'] }}</div></td>
+          <td><div>{{ row['res_ip'] }}</div></td>
+          <td><div>{{ row['typ'] }}</div></td>
+          <td><div>{{ row['dat'] }}</div></td>
+          <td class="count-row"><div>{{ row['count'] }}</div></td>
+        </tr>
       {% endfor %}
     </tbody>
   </table>
