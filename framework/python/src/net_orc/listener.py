@@ -19,7 +19,6 @@ from scapy.all import AsyncSniffer, DHCP, get_if_hwaddr
 from scapy.error import Scapy_Exception
 from net_orc.network_event import NetworkEvent
 from common import logger
-import time
 
 LOGGER = logger.get_logger('listener')
 
