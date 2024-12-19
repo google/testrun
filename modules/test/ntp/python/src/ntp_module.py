@@ -14,6 +14,7 @@
 """NTP test module"""
 from test_module import TestModule
 from scapy.all import rdpcap, IP, IPv6, NTP, UDP, Ether
+from scapy.error import Scapy_Exception
 import os
 from collections import defaultdict
 
@@ -185,8 +186,12 @@ class NTPModule(TestModule):
 
     # Read the pcap files
     packets = (rdpcap(self.startup_capture_file) +
-               rdpcap(self.monitor_capture_file) +
-               rdpcap(self.ntp_server_capture_file))
+               rdpcap(self.monitor_capture_file))
+
+    try:
+      packets += rdpcap(self.ntp_server_capture_file)
+    except (FileNotFoundError, Scapy_Exception):
+      LOGGER.error('ntp.pcap not found or empty, ignoring')
 
     # Iterate through NTP packets
     for packet in packets:
