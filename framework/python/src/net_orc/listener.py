@@ -60,18 +60,12 @@ class Listener:
 
   def stop_listener(self):
     """Stop sniffing packets on the device interface."""
-    for _ in range(5):
-      try:
-        if self.is_running():
-          self._sniffer.stop()
-          LOGGER.debug('Stopped the network listener')
-          break
-      except Scapy_Exception as e:
-        LOGGER.error(f'Error stopping the listener: {e}')
-        time.sleep(1)
-    else:
+    try:
       if self.is_running():
-        LOGGER.error('Failed to stop the listener after 5 retries')
+        self._sniffer.stop()
+        LOGGER.debug('Stopped the network listener')
+    except Scapy_Exception as e:
+      LOGGER.error(f'Error stopping the listener: {e}')
 
   def is_running(self):
     """Determine whether the sniffer is running."""

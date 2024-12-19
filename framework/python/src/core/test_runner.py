@@ -19,6 +19,14 @@ Run using the provided command scripts in the cmd folder.
 E.g sudo cmd/start
 """
 
+# Disable warning about TripleDES being removed from cryptography in 48.0.0
+# Scapy 2.5.0 uses TripleDES
+# Scapy 2.6.0 causes a bug in testrun when the device intf is being restarted
+import warnings
+from cryptography.utils import CryptographyDeprecationWarning
+warnings.filterwarnings("ignore", category=CryptographyDeprecationWarning)
+
+# pylint: disable=wrong-import-position
 import argparse
 import sys
 from testrun import Testrun
