@@ -52,6 +52,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatInputModule } from '@angular/material/input';
 import { DeviceItemComponent } from '../../components/device-item/device-item.component';
+import { EmptyPageComponent } from '../../components/empty-page/empty-page.component';
+import { ListLayoutComponent } from '../../components/list-layout/list-layout.component';
 
 export enum FormAction {
   Delete = 'Delete',
@@ -80,6 +82,8 @@ export interface FormResponse {
     MatCheckboxModule,
     MatInputModule,
     DeviceItemComponent,
+    EmptyPageComponent,
+    ListLayoutComponent,
   ],
   providers: [DevicesStore],
 })

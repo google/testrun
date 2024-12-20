@@ -1,0 +1,7 @@
+<ng-container *ngIf="entities().length > 0; else empty"></ng-container>
+<ng-template #empty>
+  <h2 class="title title-empty">{{ title() }}</h2>
+  <div class="content-empty" *ngIf="emptyContent()">
+    <ng-container *ngTemplateOutlet="emptyContent()!"></ng-container>
+  </div>
+</ng-template>

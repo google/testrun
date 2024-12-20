@@ -1,7 +1,12 @@
-<div class="empty-message">
+<div
+  class="empty-message"
+  [ngClass]="isHorizontal() ? 'horizontal' : 'vertical'">
   <div class="empty-message-img">
     <img [src]="image()" alt="empty message image" />
   </div>
-  <span class="empty-message-header">{{ header() }}</span>
-  <span class="empty-message-main">{{ message() }}</span>
+  <span class="empty-message-text">
+    <span class="empty-message-header">{{ header() }}</span>
+    <span class="empty-message-main">{{ message() }}</span>
+  </span>
+  <ng-content></ng-content>
 </div>
