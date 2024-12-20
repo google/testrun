@@ -103,9 +103,7 @@ describe('DevicesComponent', () => {
     });
 
     it('should show only add device button if no device added', () => {
-      const button = compiled.querySelector(
-        '.device-repository-content-empty button'
-      );
+      const button = compiled.querySelector('app-empty-page button');
 
       expect(button).toBeTruthy();
     });
