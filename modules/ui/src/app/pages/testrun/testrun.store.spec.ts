@@ -43,6 +43,7 @@ import {
   MOCK_PROGRESS_DATA_IN_PROGRESS_EMPTY,
   MOCK_PROGRESS_DATA_MONITORING,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
+  MOCK_PROGRESS_DATA_VALIDATING,
   TEST_DATA_RESULT_WITH_RECOMMENDATIONS,
   TEST_DATA_TABLE_RESULT,
 } from '../../mocks/testrun.mock';
@@ -162,6 +163,21 @@ describe('TestrunStore', () => {
           store.overrideSelector(
             selectSystemStatus,
             MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE
+          );
+          store.refreshState();
+
+          testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
+            expect(store.dataSource).toEqual(expectedResult);
+            done();
+          });
+        });
+
+        it('should set value with empty values for status "Validating Network"', done => {
+          const expectedResult = EMPTY_RESULT;
+
+          store.overrideSelector(
+            selectSystemStatus,
+            MOCK_PROGRESS_DATA_VALIDATING
           );
           store.refreshState();
 

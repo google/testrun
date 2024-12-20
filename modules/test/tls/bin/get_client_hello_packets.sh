@@ -15,11 +15,11 @@
 # limitations under the License.
 
 CAPTURE_FILE="$1"
-SRC_IP="$2"
+SRC_MAC="$2"
 TLS_VERSION="$3"
 
 TSHARK_OUTPUT="-T json -e ip.src -e tcp.dstport -e ip.dst"
-TSHARK_FILTER="ssl.handshake.type==1 and ip.src==$SRC_IP"
+TSHARK_FILTER="ssl.handshake.type==1 and eth.src==$SRC_MAC"
 
 if [[ $TLS_VERSION == '1.0' ]]; then
   TSHARK_FILTER="$TSHARK_FILTER and ssl.handshake.version==0x0301"
