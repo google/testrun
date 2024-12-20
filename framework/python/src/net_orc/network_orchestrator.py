@@ -136,10 +136,16 @@ class NetworkOrchestrator:
     self.create_net()
     self.start_network_services()
 
-    if 'validate' in self._session.get_runtime_params():
-      # Start the validator after network is ready
-      self.validator.start()
+    try:
+      if 'validate' in self._session.get_runtime_params():
+        # Start the validator after network is ready
+        self._session.set_status(TestrunStatus.VALIDATING)
+        self.validator.start()
+        self.validator.stop()
+    except Exception as e:
+      LOGGER.error(f'Validation failed {e}')
 
+    self._session.set_status('Waiting for Device')
     # Get network ready (via Network orchestrator)
     LOGGER.debug('Network is ready')
 
@@ -416,9 +422,7 @@ class NetworkOrchestrator:
     # a use case is determined
     #self._create_private_net()
 
-    # Listener may have already been created. Only create if not
-    if self._listener is None:
-      self._listener = Listener(self._session)
+    self._listener = Listener(self._session)
 
     self.get_listener().register_callback(self._device_discovered,
                                           [NetworkEvent.DEVICE_DISCOVERED])

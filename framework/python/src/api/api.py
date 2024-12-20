@@ -277,7 +277,9 @@ class Api:
     if self._testrun.get_session().get_status() in [
         TestrunStatus.IN_PROGRESS,
         TestrunStatus.WAITING_FOR_DEVICE,
-        TestrunStatus.MONITORING
+        TestrunStatus.MONITORING,
+        TestrunStatus.VALIDATING
+
     ]:
       LOGGER.debug("Testrun is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
@@ -338,7 +340,8 @@ class Api:
     if (self._testrun.get_session().get_status()
         not in [TestrunStatus.IN_PROGRESS,
                 TestrunStatus.WAITING_FOR_DEVICE,
-                TestrunStatus.MONITORING]):
+                TestrunStatus.MONITORING,
+                TestrunStatus.VALIDATING]):
       response.status_code = 404
       return self._generate_msg(False, "Testrun is not currently running")
 
@@ -973,6 +976,20 @@ class Api:
         response.status_code = status.HTTP_409_CONFLICT
         return self._generate_msg(
           False, "A certificate with that common name already exists."
+        )
+
+      # Returned when organization name is missing
+      elif str(e) == "Certificate is missing the organization name":
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(
+          False, "The certificate must contain the organization name"
+        )
+
+      # Returned when common name is missing
+      elif str(e) == "Certificate is missing the common name":
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return self._generate_msg(
+          False, "The certificate must contain the common name"
         )
 
       # Returned when unable to load PEM file

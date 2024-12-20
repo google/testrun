@@ -22,6 +22,6 @@ Within the ```python/src``` directory, the below tests are executed.
 | security.services.pop | Check POP ports 109 and 110 are disabled and POP is not running on any port | There is no POP service running on any port | Required |
 | security.services.imap | Check IMAP port 143 is disabled and IMAP is not running on any port | There is no IMAP service running on any port | Required |
 | security.services.snmpv3 | Check SNMP port 161/162 is disabled. If SNMP is an essential service, it should be v3 | Device is unreachable on port 161/162 unless SNMP is essential in which case it is SNMPv3 that is used | Required |
-| security.services.vnc | Check VNS is disabled on any port | Device cannot be accessed via VNC on any port | Required |
+| security.services.vnc | Check VNC is disabled on any port | Device cannot be accessed via VNC on any port | Required |
 | security.services.tftp | Check TFTP port 69 is disabled (UDP) | There is no TFTP service running on any port | Required |
 | ntp.network.ntp_server | Check NTP port 123 is disabled and the device is not acting as an NTP server | The devices does not respond to NTP requests | Required |

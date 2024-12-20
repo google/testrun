@@ -36,6 +36,40 @@ describe('FilterChipsComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  describe('#clearFilter', () => {
+    const MOCK_FILTERS = {
+      deviceInfo: 'Delta',
+      deviceFirmware: '03',
+      results: ['Compliant'],
+      dateRange: { start: '10/2/2024', end: '11/2/2024' },
+    };
+
+    beforeEach(() => {
+      component.filters = MOCK_FILTERS;
+    });
+
+    it(`should clear deviceFirmware filter`, () => {
+      const result = { ...MOCK_FILTERS, deviceFirmware: '' };
+      component.clearFilter('deviceFirmware');
+
+      expect(component.filters).toEqual(result);
+    });
+
+    it(`should clear results filter`, () => {
+      const clearedFilters = { ...MOCK_FILTERS, results: [] };
+      component.clearFilter('results');
+
+      expect(component.filters).toEqual(clearedFilters);
+    });
+
+    it(`should clear dateRange filter`, () => {
+      const clearedFilters = { ...MOCK_FILTERS, dateRange: '' };
+      component.clearFilter('dateRange');
+
+      expect(component.filters).toEqual(clearedFilters);
+    });
+  });
+
   describe('DOM tests', () => {
     describe('"Clear all filters" button', () => {
       it('should exist', () => {

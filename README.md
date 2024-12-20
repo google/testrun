@@ -35,7 +35,7 @@ Testrun provides the network and assistive tools for engineers when manual testi
 ## Hardware
 
 -  PC running Ubuntu LTS 20.04, 22.04, or 24.04 (laptop or desktop)
--  2x USB Ethernet adapter (one may be built-in Ethernet)
+-  2x ethernet ports (USB ethernet adapters work too)
 -  Internet connection
 
 ## Software
@@ -72,7 +72,7 @@ We strongly encourage contributions from the community. Review the requirements 
 
  You can resolve most issues by reinstalling Testrun using these commands:
 - `sudo docker system prune -a`
-- `sudo apt install ./testrun-*.deb`
+- `sudo apt install ./testrun*.deb`
 
 If this doesn't resolve the problem, [raise an issue](https://github.com/google/testrun/issues).
 

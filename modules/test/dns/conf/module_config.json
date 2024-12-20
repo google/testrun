@@ -32,7 +32,7 @@
       },
       {
         "name": "dns.mdns",
-        "test_description": "Does the device has MDNS (or any kind of IP multicast)",
+        "test_description": "Does the device have MDNS (or any kind of IP multicast)",
         "expected_behavior": "Device may send MDNS requests"
       }
     ]

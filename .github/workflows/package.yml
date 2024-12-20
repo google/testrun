@@ -49,6 +49,20 @@ jobs:
       - name: Install package
         shell: bash {0}
         run: sudo apt install ./testrun*.deb
+      - name: Start testrun
+        shell: bash {0}
+        run: sudo testrun > >(tee testrun_output.log) 2>&1 &
+      - name: Verify testrun started
+        shell: bash {0}
+        run: |
+          sleep 5  
+          if grep -q "API waiting for requests" testrun_output.log; then
+            echo "Testrun started successfully."
+          else
+            echo "Testrun did not start correctly."
+            cat testrun_output.log
+            exit 1
+          fi 
 
   install_package_22:
     permissions: {}
@@ -69,6 +83,20 @@ jobs:
       - name: Install package
         shell: bash {0}
         run: sudo apt install ./testrun*.deb
+      - name: Start testrun
+        shell: bash {0}
+        run: sudo testrun > >(tee testrun_output.log) 2>&1 &
+      - name: Verify testrun started
+        shell: bash {0}
+        run: |
+          sleep 5  
+          if grep -q "API waiting for requests" testrun_output.log; then
+            echo "Testrun started successfully."
+          else
+            echo "Testrun did not start correctly."
+            cat testrun_output.log
+            exit 1
+          fi 
 
   install_package_24:
     permissions: {}
@@ -89,3 +117,17 @@ jobs:
       - name: Install package
         shell: bash {0}
         run: sudo apt install ./testrun*.deb
+      - name: Start testrun
+        shell: bash {0}
+        run: sudo testrun > >(tee testrun_output.log) 2>&1 &
+      - name: Verify testrun started
+        shell: bash {0}
+        run: |
+          sleep 5  
+          if grep -q "API waiting for requests" testrun_output.log; then
+            echo "Testrun started successfully."
+          else
+            echo "Testrun did not start correctly."
+            cat testrun_output.log
+            exit 1
+          fi 

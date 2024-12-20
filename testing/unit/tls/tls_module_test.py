@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module run all the TLS related unit tests"""
+from tls_module import TLSModule
 from tls_util import TLSUtil
 import os
 import unittest
@@ -38,9 +39,11 @@ CAPTURES_DIR = os.path.join(TEST_FILES_DIR, 'captures/')
 CERT_DIR = os.path.join(TEST_FILES_DIR, 'certs/')
 ROOT_CERTS_DIR = os.path.join(TEST_FILES_DIR, 'root_certs')
 
-LOCAL_REPORT = os.path.join(REPORTS_DIR, 'tls_report_local.md')
-LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR, 'tls_report_ext_local.md')
-LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR, 'tls_report_no_cert_local.md')
+LOCAL_REPORT = os.path.join(REPORTS_DIR, 'tls_report_local.html')
+LOCAL_REPORT_SINGLE = os.path.join(REPORTS_DIR, 'tls_report_single.html')
+LOCAL_REPORT_EXT = os.path.join(REPORTS_DIR, 'tls_report_ext_local.html')
+LOCAL_REPORT_NO_CERT = os.path.join(REPORTS_DIR,
+                                    'tls_report_no_cert_local.html')
 CONF_FILE = 'modules/test/' + MODULE + '/conf/module_config.json'
 
 INTERNET_IFACE = 'eth0'
@@ -197,6 +200,7 @@ class TLSModuleTest(unittest.TestCase):
     self.assertFalse(test_results[0])
 
     # Test 1.2 server when 1.3 and 1.2 failed connection is established
+
   def security_tls_v1_2_none_server_test(self):
     tls_1_2_results = None, 'No cert'
     tls_1_3_results = None, 'No cert'
@@ -225,7 +229,7 @@ class TLSModuleTest(unittest.TestCase):
     capture_file = os.path.join(CAPTURES_DIR, 'no_tls.pcap')
 
     # Run the client test
-    test_results = TLS_UTIL.validate_tls_client(client_ip='172.27.253.167',
+    test_results = TLS_UTIL.validate_tls_client(client_mac='00:15:5d:0c:86:b9',
                                                 tls_version='1.2',
                                                 capture_files=[capture_file])
     print(str(test_results))
@@ -269,8 +273,8 @@ class TLSModuleTest(unittest.TestCase):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     capture_file = OUTPUT_DIR + '/client_tls.pcap'
 
-    # Resolve the client ip used
-    client_ip = self.get_interface_ip(INTERNET_IFACE)
+    # Resolve the client mac used
+    client_mac = self.get_interface_mac(INTERNET_IFACE)
 
     # Genrate TLS outbound traffic
     if tls_generate is None:
@@ -278,7 +282,7 @@ class TLSModuleTest(unittest.TestCase):
     self.generate_tls_traffic(capture_file, tls_generate, disable_valid_ciphers)
 
     # Run the client test
-    return TLS_UTIL.validate_tls_client(client_ip=client_ip,
+    return TLS_UTIL.validate_tls_client(client_mac=client_mac,
                                         tls_version=tls_version,
                                         capture_files=[capture_file])
 
@@ -287,7 +291,7 @@ class TLSModuleTest(unittest.TestCase):
     capture_file = os.path.join(CAPTURES_DIR, 'monitor.pcap')
 
     # Run the client test
-    test_results = TLS_UTIL.validate_tls_client(client_ip='10.10.10.14',
+    test_results = TLS_UTIL.validate_tls_client(client_mac='70:b3:d5:96:c0:00',
                                                 tls_version='1.2',
                                                 capture_files=[capture_file])
     print(str(test_results))
@@ -300,7 +304,7 @@ class TLSModuleTest(unittest.TestCase):
     capture_file = os.path.join(CAPTURES_DIR, 'unsupported_tls.pcap')
 
     # Run the client test
-    test_results = TLS_UTIL.validate_tls_client(client_ip='172.27.253.167',
+    test_results = TLS_UTIL.validate_tls_client(client_mac='00:15:5d:0c:86:b9',
                                                 tls_version='1.2',
                                                 capture_files=[capture_file])
     print(str(test_results))
@@ -313,83 +317,135 @@ class TLSModuleTest(unittest.TestCase):
     capture_file = os.path.join(CAPTURES_DIR, 'monitor_with_quic.pcap')
 
     # Run the client test
-    test_results = TLS_UTIL.validate_tls_client(client_ip='10.10.10.15',
+    test_results = TLS_UTIL.validate_tls_client(client_mac='e4:5f:01:5f:92:9c',
                                                 tls_version='1.2',
                                                 capture_files=[capture_file])
     print(str(test_results))
     self.assertTrue(test_results[0])
 
-  # Commented out whilst TLS report is recreated
-  # def tls_module_report_test(self):
-  #   print('\ntls_module_report_test')
-  #   os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
-  #   pcap_file = os.path.join(CAPTURES_DIR, 'tls.pcap')
-  #   tls = TLSModule(module=MODULE,
-  #                   log_dir=OUTPUT_DIR,
-  #                   conf_file=CONF_FILE,
-  #                   results_dir=OUTPUT_DIR,
-  #                   startup_capture_file=pcap_file,
-  #                   monitor_capture_file=pcap_file,
-  #                   tls_capture_file=pcap_file)
-  #   report_out_path = tls.generate_module_report()
+  def outbound_connections_test(self):
+    """ Test generation of the outbound connection ips"""
+    print('\noutbound_connections_test')
+    capture_file = os.path.join(CAPTURES_DIR, 'monitor.pcap')
+    ip_dst = TLS_UTIL.get_all_outbound_connections(
+        device_mac='70:b3:d5:96:c0:00', capture_files=[capture_file])
+    print(str(ip_dst))
+    # Expected set of IPs and ports in tuple format
+    expected_ips = {
+        ('216.239.35.0', 123),
+        ('8.8.8.8', 'Unknown'),
+        ('8.8.8.8', 53),
+        ('18.140.82.197', 443),
+        ('18.140.82.197', 22),
+        ('224.0.0.22', 'Unknown'),
+        ('18.140.82.197', 80)
+    }
+    # Compare as sets since returned order is not guaranteed
+    self.assertEqual(
+        set(ip_dst),
+        expected_ips)
 
-  #   with open(report_out_path, 'r', encoding='utf-8') as file:
-  #     report_out = file.read()
+  def outbound_connections_report_test(self):
+    """ Test generation of the outbound connection ips"""
+    print('\noutbound_connections_report_test')
+    capture_file = os.path.join(CAPTURES_DIR, 'monitor.pcap')
+    ip_dst = TLS_UTIL.get_all_outbound_connections(
+        device_mac='70:b3:d5:96:c0:00', capture_files=[capture_file])
+    tls = TLSModule(module=MODULE)
+    gen_html = tls.generate_outbound_connection_table(ip_dst)
+    print(gen_html)
 
-  #   # Read the local good report
-  #   with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
-  #     report_local = file.read()
+  def tls_module_report_multi_page_test(self):
+    print('\ntls_module_report_test')
+    os.environ['DEVICE_MAC'] = '68:5e:1c:cb:6e:cb'
+    startup_pcap_file = os.path.join(CAPTURES_DIR, 'multi_page_startup.pcap')
+    monitor_pcap_file = os.path.join(CAPTURES_DIR, 'multi_page_monitor.pcap')
+    tls_pcap_file = os.path.join(CAPTURES_DIR, 'multi_page_tls.pcap')
+    tls = TLSModule(module=MODULE,
+                    results_dir=OUTPUT_DIR,
+                    startup_capture_file=startup_pcap_file,
+                    monitor_capture_file=monitor_pcap_file,
+                    tls_capture_file=tls_pcap_file)
+    report_out_path = tls.generate_module_report()
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
 
-  #   self.assertEqual(report_out, report_local)
+    # Read the local good report
+    with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
+      report_local = file.read()
 
-  # Commented out whilst TLS report is recreated
-  # def tls_module_report_ext_test(self):
-  #   print('\ntls_module_report_ext_test')
-  #   os.environ['DEVICE_MAC'] = '28:29:86:27:d6:05'
-  #   pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
-  #   tls = TLSModule(module=MODULE,
-  #                   log_dir=OUTPUT_DIR,
-  #                   conf_file=CONF_FILE,
-  #                   results_dir=OUTPUT_DIR,
-  #                   startup_capture_file=pcap_file,
-  #                   monitor_capture_file=pcap_file,
-  #                   tls_capture_file=pcap_file)
-  #   report_out_path = tls.generate_module_report()
+    self.assertEqual(report_out, report_local)
 
-  #   # Read the generated report
-  #   with open(report_out_path, 'r', encoding='utf-8') as file:
-  #     report_out = file.read()
+  def tls_module_report_test(self):
+    print('\ntls_module_report_test')
+    os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
+    pcap_file = os.path.join(CAPTURES_DIR, 'tls.pcap')
+    tls = TLSModule(module=MODULE,
+                    results_dir=OUTPUT_DIR,
+                    startup_capture_file=pcap_file,
+                    monitor_capture_file=pcap_file,
+                    tls_capture_file=pcap_file)
+    report_out_path = tls.generate_module_report()
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
 
-  #   # Read the local good report
-  #   with open(LOCAL_REPORT_EXT, 'r', encoding='utf-8') as file:
-  #     report_local = file.read()
+    # Read the local good report
+    with open(LOCAL_REPORT_SINGLE, 'r', encoding='utf-8') as file:
+      report_local = file.read()
+    self.assertEqual(report_out, report_local)
 
-  #   self.assertEqual(report_out, report_local)
+  def tls_module_report_ext_test(self):
+    print('\ntls_module_report_ext_test')
+    os.environ['DEVICE_MAC'] = '28:29:86:27:d6:05'
+    pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
+    tls = TLSModule(module=MODULE,
+                    results_dir=OUTPUT_DIR,
+                    startup_capture_file=pcap_file,
+                    monitor_capture_file=pcap_file,
+                    tls_capture_file=pcap_file)
+    report_out_path = tls.generate_module_report()
 
-  # Commented out whilst TLS report is recreated
-  # def tls_module_report_no_cert_test(self):
-  #   print('\ntls_module_report_no_cert_test')
-  #   os.environ['DEVICE_MAC'] = ''
-  #   pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
-  #   tls = TLSModule(module=MODULE,
-  #                   log_dir=OUTPUT_DIR,
-  #                   conf_file=CONF_FILE,
-  #                   results_dir=OUTPUT_DIR,
-  #                   startup_capture_file=pcap_file,
-  #                   monitor_capture_file=pcap_file,
-  #                   tls_capture_file=pcap_file)
+    # Read the generated report
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
 
-  #   report_out_path = tls.generate_module_report()
+    # Read the local good report
+    with open(LOCAL_REPORT_EXT, 'r', encoding='utf-8') as file:
+      report_local = file.read()
 
-  #   # Read the generated report
-  #   with open(report_out_path, 'r', encoding='utf-8') as file:
-  #     report_out = file.read()
+    # Copy the generated html report to a new file
+    new_report_name = 'tls_report_ext_local.html'
+    new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
+    shutil.copy(report_out_path, new_report_path)
 
-  #   # Read the local good report
-  #   with open(LOCAL_REPORT_NO_CERT, 'r', encoding='utf-8') as file:
-  #     report_local = file.read()
+    self.assertEqual(report_out, report_local)
 
-  #   self.assertEqual(report_out, report_local)
+  def tls_module_report_no_cert_test(self):
+    print('\ntls_module_report_no_cert_test')
+    os.environ['DEVICE_MAC'] = ''
+    pcap_file = os.path.join(CAPTURES_DIR, 'tls_ext.pcap')
+    tls = TLSModule(module=MODULE,
+                    results_dir=OUTPUT_DIR,
+                    startup_capture_file=pcap_file,
+                    monitor_capture_file=pcap_file,
+                    tls_capture_file=pcap_file)
+
+    report_out_path = tls.generate_module_report()
+
+    # Read the generated report
+    with open(report_out_path, 'r', encoding='utf-8') as file:
+      report_out = file.read()
+
+    # Read the local good report
+    with open(LOCAL_REPORT_NO_CERT, 'r', encoding='utf-8') as file:
+      report_local = file.read()
+
+    # Copy the generated html report to a new file
+    new_report_name = 'tls_report_no_cert_local.html'
+    new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
+    shutil.copy(report_out_path, new_report_path)
+
+    self.assertEqual(report_out, report_local)
 
   def generate_tls_traffic(self,
                            capture_file,
@@ -470,11 +526,11 @@ class TLSModuleTest(unittest.TestCase):
 
     return capture_thread
 
-  def get_interface_ip(self, interface_name):
+  def get_interface_mac(self, interface_name):
     try:
       addresses = netifaces.ifaddresses(interface_name)
-      ipv4 = addresses[netifaces.AF_INET][0]['addr']
-      return ipv4
+      mac = addresses[netifaces.AF_LINK][0]['addr']
+      return mac
     except (ValueError, KeyError) as e:
       print(f'Error: {e}')
       return None
@@ -540,6 +596,7 @@ class TLSModuleTest(unittest.TestCase):
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   suite.addTest(TLSModuleTest('client_hello_packets_test'))
+
   # TLS 1.2 server tests
   suite.addTest(TLSModuleTest('security_tls_v1_2_server_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_3_server_test'))
@@ -553,6 +610,7 @@ if __name__ == '__main__':
 
   # # TLS 1.3 server tests
   suite.addTest(TLSModuleTest('security_tls_v1_3_server_test'))
+
   # TLS client tests
   suite.addTest(TLSModuleTest('security_tls_v1_2_client_test'))
   suite.addTest(TLSModuleTest('security_tls_v1_3_client_test'))
@@ -564,10 +622,11 @@ if __name__ == '__main__':
   # Test the results options for tls server tests
   suite.addTest(TLSModuleTest('security_tls_server_results_test'))
 
-  # # Test various report module outputs
-  # suite.addTest(TLSModuleTest('tls_module_report_test'))
-  # suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
-  # suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
+  # Test various report module outputs
+  suite.addTest(TLSModuleTest('tls_module_report_test'))
+  suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
+  suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
+  suite.addTest(TLSModuleTest('tls_module_report_multi_page_test'))
 
   # Test signature validation methods
   suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
@@ -575,6 +634,9 @@ if __name__ == '__main__':
   suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
 
   suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
+
+  suite.addTest(TLSModuleTest('outbound_connections_test'))
+  suite.addTest(TLSModuleTest('outbound_connections_report_test'))
 
   runner = unittest.TextTestRunner()
   test_result = runner.run(suite)

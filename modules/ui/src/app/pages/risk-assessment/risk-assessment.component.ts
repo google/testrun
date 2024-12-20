@@ -40,6 +40,7 @@ import { SuccessDialogComponent } from './components/success-dialog/success-dial
 export class RiskAssessmentComponent implements OnInit, OnDestroy {
   viewModel$ = this.store.viewModel$;
   isOpenProfileForm = false;
+  isCopyProfile = false;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   constructor(
     private store: RiskAssessmentStore,
@@ -71,6 +72,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   }
 
   async copyProfileAndOpenForm(profile: Profile) {
+    this.isCopyProfile = true;
     await this.openForm(this.getCopyOfProfile(profile));
   }
 
@@ -124,7 +126,10 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.liveAnnouncer.clear();
     if (!selectedProfile) {
       this.saveProfile(profile, this.store.setFocusOnCreateButton);
-    } else if (this.compareProfiles(profile, selectedProfile)) {
+    } else if (
+      this.compareProfiles(profile, selectedProfile) ||
+      this.isCopyProfile
+    ) {
       this.saveProfile(profile, this.store.setFocusOnSelectedProfile);
     } else {
       this.openSaveDialog(
@@ -187,6 +192,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   discard(selectedProfile: Profile | null) {
     this.liveAnnouncer.clear();
     this.isOpenProfileForm = false;
+    this.isCopyProfile = false;
     if (selectedProfile) {
       timer(100).subscribe(() => {
         this.store.setFocusOnSelectedProfile();
@@ -220,6 +226,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       },
     });
     this.isOpenProfileForm = false;
+    this.isCopyProfile = false;
   }
 
   private setFocus(index: number): void {

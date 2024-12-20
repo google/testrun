@@ -7,6 +7,7 @@ This page covers the following topics:
 -  [Prerequisites](#prerequisites)
 -  [Installation](#installation)
 -  [Testing](#testing)
+-  [Additional Configuration Options](#additional-configuration-options)
 -  [Troubleshooting](#troubleshooting)
 -  [Review the report](#review-the-report)
 -  [Uninstall](#uninstall)
@@ -20,7 +21,7 @@ We recommend that you run Testrun on a stand-alone machine that has a fresh inst
 Before you start, ensure you have the following hardware:
 
 -  PC running Ubuntu LTS (laptop or desktop)
--  2x USB Ethernet adapter (one may be a built-in Ethernet port)
+-  2x ethernet ports (USB ethernet adapters work too)
 -  Internet connection
 
 ![Required hardware for Testrun](/docs/ui/getstarted--2dn8vrzsspe.png)
@@ -53,8 +54,6 @@ Follow these steps to install Testrun:
 
 Testrun installs under the `/usr/local/testrun` directory. Testing data is available in the `local/devices/{device}/reports` folders.
 
-Note: Local CA certificates should be uploaded within Testrun to run TLS server testing.
-
 ![Terminal during install](/docs/setup/install.gif)
 
 # Testing
@@ -66,10 +65,10 @@ Follow these steps to start Testrun:
     -  Connect one USB Ethernet adapter to the internet source (e.g., router or switch) using an Ethernet cable.
     -  Connect the other USB Ethernet adapter directly to the IoT device you want to test using an Ethernet cable.
 
-Notes:
-
--  Disable both adapters in the host system (IPv4, IPv6, and general) by opening **Settings**, then **Network**.
--  Keep the DUT powered off until prompted.
+    Notes:
+    
+    -  Disable both adapters in the host system (IPv4, IPv6, and general) by opening **Settings**, then **Network**.
+    -  Keep the DUT powered off until prompted.
 
 1. Start Testrun with the command `sudo testrun`
     -  To run Testrun in network-only mode (without running any tests), use the `--net-only` option.
@@ -83,23 +82,87 @@ Follow these steps to test your IoT device:
 1. Open Testrun by navigating  to [http://localhost:8080](http://localhost:8080/) in your browser.
 2. Select the **Settings** menu in the top-right corner, then select your network interfaces. You can change the settings at any time.  
      ![Settings menu button](/docs/ui/getstarted--7cfvdpdnc5o.png)
-
-3. Select the **device repository** icon on the left panel to add a new device for testing.  
+3. Select the **Certificates** menu in the top-right corner, then upload your local CA certificates for TLS server testing.
+     ![Certificates menu button](/docs/ui/getstarted--j21skepmx1.png)
+5. Select the **Device Repository** icon on the left panel to add a new device for testing.  
      ![Device repository button](/docs/ui/getstarted--q5uw26tfod.png)
-
-4. Select the **Add Device** button.
-5. Enter the MAC address, manufacturer name, and model number.
-6. Select the test modules you want to enable for this device.   
+6. Select the **Add Device** button.
+7. Enter the MAC address, manufacturer name, and model number.
+8. Select the test modules you want to enable for this device.   
 Note: For qualification purposes, you must select all.
-7. Select **Save**.
-8. Select the Testrun progress icon, then select the **Testing** button.![Testing button](/docs/ui/getstarted--w09wecsry3.png)
+9. Select **Save**.
+10. Select the Testrun progress icon, then select the **Testing** button.![Testing button](/docs/ui/getstarted--w09wecsry3.png)
 
-9. Select the device you want to test.
-10. Enter the version number of the firmware running on the device.
-11. Select **Start Testrun**.
+11. Select the device you want to test.
+12. Enter the version number of the firmware running on the device.
+13. Select **Start Testrun**.
 -  If you need to stop Testrun during testing, select **Stop** next to the test name.
 12. Once the Waiting for Device notification appears, power on the device under test. A report appears under the Reports icon once the test sequence is complete.  
      ![Reports button](/docs/ui/getstarted--m4si1otdu5d.png)
+
+# Additional Configuration Options
+
+Some configuration options are available but not exposed through the user interface and requires direct access. 
+Modification of various configuration files is necessary to access these options.
+
+## Override test module timeout at the system level 
+
+Testrun attempts to set reasonable timeouts for test modules to prevent overly long test times but sometimes 
+a device or series of device may require longer than these default values.  These can be overridden at 
+the test module configuration level but is not preferred since these changes will be undone during every 
+version upgrade. To modify these values:
+
+1. Navigate to the testrun installation directory. By default, this will be at:
+    `/usr/local/testrun`
+
+2. Open the system.json file and add the following section:
+    `"test_modules":{}`
+
+3. Add the module name(s) and timeout property into this test_modules section you wish to
+set the timeout property for:
+    ```
+    "test_modules":{
+        "connection":{
+          "timeout": 500
+        }
+      }
+      ```
+
+Before timeout options:
+```
+{
+  "network": {
+    "device_intf": "ens0",
+    "internet_intf": "ens1"
+  },
+  "log_level": "DEBUG",
+  "startup_timeout": 60,
+  "monitor_period": 60,
+  "max_device_reports": 5,
+  "org_name": "",
+  "single_intf": false
+  }
+```
+
+After timeout options:
+```
+{
+  "network": {
+    "device_intf": "ens0",
+    "internet_intf": "ens1"
+  },
+  "log_level": "DEBUG",
+  "startup_timeout": 60,
+  "monitor_period": 60,
+  "max_device_reports": 5,
+  "org_name": "",
+  "single_intf": false,
+  "test_modules":{
+    "connection":{
+      "timeout": 500
+    }
+  }
+```
 
 # Troubleshooting
 

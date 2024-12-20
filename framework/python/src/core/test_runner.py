@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Wrapper for the Testrun that simplifies
 virtual testing procedure by allowing direct calling
 from the command line.
@@ -20,11 +19,20 @@ Run using the provided command scripts in the cmd folder.
 E.g sudo cmd/start
 """
 
+# Disable warning about TripleDES being removed from cryptography in 48.0.0
+# Scapy 2.5.0 uses TripleDES
+# Scapy 2.6.0 causes a bug in testrun when the device intf is being restarted
+import warnings
+from cryptography.utils import CryptographyDeprecationWarning
+warnings.filterwarnings("ignore", category=CryptographyDeprecationWarning)
+
+# pylint: disable=wrong-import-position
 import argparse
 import sys
 from testrun import Testrun
 from common import logger
 import signal
+import io
 
 LOGGER = logger.get_logger("runner")
 
@@ -37,13 +45,17 @@ class TestRunner:
                validate=False,
                net_only=False,
                single_intf=False,
-               no_ui=False):
+               no_ui=False,
+               target=None,
+               firmware=None):
     self._register_exits()
     self._testrun = Testrun(config_file=config_file,
                             validate=validate,
                             net_only=net_only,
                             single_intf=single_intf,
-                            no_ui=no_ui)
+                            no_ui=no_ui,
+                            target_mac=target,
+                            firmware=firmware)
 
   def _register_exits(self):
     signal.signal(signal.SIGINT, self._exit_handler)
@@ -73,8 +85,7 @@ def parse_args():
       "-f",
       "--config-file",
       default=None,
-      help="Define the configuration file for Testrun and Network Orchestrator"
-  )
+      help="Define the configuration file for Testrun and Network Orchestrator")
   parser.add_argument(
       "--validate",
       default=False,
@@ -91,7 +102,38 @@ def parse_args():
                       default=False,
                       action="store_true",
                       help="Do not launch the user interface")
+  parser.add_argument("--target",
+                      default=None,
+                      type=str,
+                      help="MAC address of the target device")
+  parser.add_argument("-fw",
+                      "--firmware",
+                      default=None,
+                      type=str,
+                      help="Firmware version to be tested")
+
   parsed_args = parser.parse_known_args()[0]
+
+  if (parsed_args.no_ui and not parsed_args.net_only
+      and (parsed_args.target is None or parsed_args.firmware is None)):
+    # Capture help text
+    help_text = io.StringIO()
+    parser.print_help(file=help_text)
+
+    # Get help text as lines and find where "Testrun" starts (skip usage)
+    help_lines = help_text.getvalue().splitlines()
+    start_index = next(
+        (i for i, line in enumerate(help_lines) if "Testrun" in line), 0)
+
+    # Join only lines starting from "Testrun" and print without extra newlines
+    help_message = "\n".join(line.rstrip() for line in help_lines[start_index:])
+    print(help_message)
+
+    print(
+        "Error: --target and --firmware are required when --no-ui is specified",
+        file=sys.stderr)
+    sys.exit(1)
+
   return parsed_args
 
 
@@ -101,4 +143,6 @@ if __name__ == "__main__":
                       validate=args.validate,
                       net_only=args.net_only,
                       single_intf=args.single_intf,
-                      no_ui=args.no_ui)
+                      no_ui=args.no_ui,
+                      target=args.target,
+                      firmware=args.firmware)

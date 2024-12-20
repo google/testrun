@@ -17,6 +17,7 @@ import {
   ComponentFixture,
   discardPeriodicTasks,
   fakeAsync,
+  flush,
   TestBed,
   tick,
 } from '@angular/core/testing';
@@ -50,16 +51,49 @@ import { DeviceStatus, TestingType } from '../../../../model/device';
 import { Component, Input } from '@angular/core';
 import { QuestionFormat } from '../../../../model/question';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { selectDevices } from '../../../../store/selectors';
 
 describe('DeviceQualificationFromComponent', () => {
   let component: DeviceQualificationFromComponent;
   let fixture: ComponentFixture<DeviceQualificationFromComponent>;
   let compiled: HTMLElement;
   const testrunServiceMock: jasmine.SpyObj<TestRunService> =
-    jasmine.createSpyObj('testrunServiceMock', ['fetchQuestionnaireFormat']);
+    jasmine.createSpyObj('testrunServiceMock', [
+      'fetchQuestionnaireFormat',
+      'saveDevice',
+    ]);
   const keyboardEvent = new BehaviorSubject<KeyboardEvent>(
     new KeyboardEvent('keydown', { code: '' })
   );
+
+  const MOCK_DEVICE = {
+    status: DeviceStatus.VALID,
+    manufacturer: '',
+    model: '',
+    mac_addr: '',
+    test_pack: TestingType.Qualification,
+    type: '',
+    technology: '',
+    test_modules: {
+      udmi: {
+        enabled: true,
+      },
+      connection: {
+        enabled: true,
+      },
+    },
+    additional_info: [
+      { question: 'What type of device is this?', answer: '' },
+      {
+        question: 'Does your device process any sensitive information? ',
+        answer: '',
+      },
+      {
+        question: 'Please select the technology this device falls into',
+        answer: '',
+      },
+    ],
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -90,7 +124,9 @@ describe('DeviceQualificationFromComponent', () => {
         { provide: MAT_DIALOG_DATA, useValue: {} },
         { provide: TestRunService, useValue: testrunServiceMock },
         provideNgxMask(),
-        provideMockStore({}),
+        provideMockStore({
+          selectors: [{ selector: selectDevices, value: [device, device] }],
+        }),
       ],
     }).compileComponents();
 
@@ -107,6 +143,8 @@ describe('DeviceQualificationFromComponent', () => {
     testrunServiceMock.fetchQuestionnaireFormat.and.returnValue(
       of(DEVICES_FORM)
     );
+
+    testrunServiceMock.saveDevice.and.returnValue(of(true));
   });
 
   it('should create', () => {
@@ -159,6 +197,92 @@ describe('DeviceQualificationFromComponent', () => {
 
     closeSpy.calls.reset();
   }));
+
+  it('should close dialog on submit with "Save" action', fakeAsync(() => {
+    component.device = MOCK_DEVICE;
+    const closeSpy = spyOn(component.dialogRef, 'close');
+    fixture.detectChanges();
+
+    component.submit();
+    tick();
+    flush();
+
+    expect(closeSpy).toHaveBeenCalledWith({
+      action: 'Save',
+      device: MOCK_DEVICE,
+    });
+
+    closeSpy.calls.reset();
+  }));
+
+  it('should close dialog on delete with "Delete" action', fakeAsync(() => {
+    const closeSpy = spyOn(component.dialogRef, 'close');
+    fixture.detectChanges();
+
+    component.delete();
+    tick();
+
+    expect(closeSpy).toHaveBeenCalledWith({
+      action: 'Delete',
+      device: MOCK_DEVICE,
+      index: 0,
+    });
+
+    closeSpy.calls.reset();
+  }));
+
+  describe('#deviceHasNoChanges', () => {
+    const deviceProps = [
+      { manufacturer: 'test' },
+      { model: 'test' },
+      { mac_addr: 'test' },
+      { test_pack: TestingType.Pilot },
+      { type: 'test' },
+      { technology: 'test' },
+      {
+        test_modules: {
+          udmi: {
+            enabled: false,
+          },
+        },
+      },
+      { additional_info: undefined },
+      {
+        additional_info: [
+          { question: 'What type of device is this?', answer: 'test' },
+        ],
+      },
+    ];
+    it('should return true if devices the same', () => {
+      const result = component.deviceHasNoChanges(MOCK_DEVICE, MOCK_DEVICE);
+
+      expect(result).toBeTrue();
+    });
+
+    deviceProps.forEach(item => {
+      it(`should return false if devices have different props`, () => {
+        const MOCK_DEVICE_1 = { ...MOCK_DEVICE, ...item };
+        const result = component.deviceHasNoChanges(MOCK_DEVICE_1, MOCK_DEVICE);
+
+        expect(result).toBeFalse();
+      });
+    });
+  });
+
+  it('should trigger onResize method when window is resized ', () => {
+    fixture.detectChanges();
+    const spyOnResize = spyOn(component, 'onResize');
+    window.dispatchEvent(new Event('resize'));
+    fixture.detectChanges();
+    expect(spyOnResize).toHaveBeenCalled();
+  });
+
+  it('#goToStep should set selected index', () => {
+    fixture.detectChanges();
+    component.goToStep(0);
+
+    expect(component.stepper.selectedIndex).toBe(0);
+  });
 
   it('should close dialog on "cancel" click', () => {
     fixture.detectChanges();

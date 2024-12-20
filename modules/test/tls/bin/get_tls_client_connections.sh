@@ -15,11 +15,11 @@
 # limitations under the License.
 
 CAPTURE_FILE="$1"
-SRC_IP="$2"
+SRC_MAC="$2"
 PROTOCOL=$3
 
 TSHARK_OUTPUT="-T json -e ip.src -e tcp.dstport -e ip.dst"
-TSHARK_FILTER="ip.src == $SRC_IP and tls"
+TSHARK_FILTER="eth.src == $SRC_MAC and tls"
 
 # Add a protocol filter if defined	
 if [ -n "$PROTOCOL" ];then
@@ -29,4 +29,3 @@ fi
 response=$(tshark -r "$CAPTURE_FILE" $TSHARK_OUTPUT $TSHARK_FILTER)
 
 echo "$response"
-  	

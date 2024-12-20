@@ -14,6 +14,7 @@
 """NTP test module"""
 from test_module import TestModule
 from scapy.all import rdpcap, IP, IPv6, NTP, UDP, Ether
+from scapy.error import Scapy_Exception
 import os
 from collections import defaultdict
 
@@ -30,7 +31,6 @@ class NTPModule(TestModule):
 
   def __init__(self,
                module,
-               log_dir=None,
                conf_file=None,
                results_dir=None,
                ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE,
@@ -38,7 +38,6 @@ class NTPModule(TestModule):
                monitor_capture_file=MONITOR_CAPTURE_FILE):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
-                     log_dir=log_dir,
                      conf_file=conf_file,
                      results_dir=results_dir)
     self.ntp_server_capture_file = ntp_server_capture_file
@@ -120,7 +119,7 @@ class NTPModule(TestModule):
 
     if total_requests + total_responses > 0:
       table_content = '''
-        <table class="module-data">
+        <table class="module-data" style="width:100%;">
           <thead>
             <tr>
               <th>Source</th>
@@ -187,8 +186,12 @@ class NTPModule(TestModule):
 
     # Read the pcap files
     packets = (rdpcap(self.startup_capture_file) +
-               rdpcap(self.monitor_capture_file) +
-               rdpcap(self.ntp_server_capture_file))
+               rdpcap(self.monitor_capture_file))
+
+    try:
+      packets += rdpcap(self.ntp_server_capture_file)
+    except (FileNotFoundError, Scapy_Exception):
+      LOGGER.error('ntp.pcap not found or empty, ignoring')
 
     # Iterate through NTP packets
     for packet in packets:
@@ -240,9 +243,15 @@ class NTPModule(TestModule):
 
   def _ntp_network_ntp_support(self):
     LOGGER.info('Running ntp.network.ntp_support')
-    packet_capture = (rdpcap(STARTUP_CAPTURE_FILE) +
-                      rdpcap(MONITOR_CAPTURE_FILE) +
-                      rdpcap(NTP_SERVER_CAPTURE_FILE))
+
+    # Read the pcap files
+    packet_capture = (rdpcap(self.startup_capture_file) +
+               rdpcap(self.monitor_capture_file))
+
+    try:
+      packet_capture += rdpcap(self.ntp_server_capture_file)
+    except (FileNotFoundError, Scapy_Exception):
+      LOGGER.error('ntp.pcap not found or empty, ignoring')
 
     device_sends_ntp4 = False
     device_sends_ntp3 = False
@@ -278,9 +287,15 @@ class NTPModule(TestModule):
 
   def _ntp_network_ntp_dhcp(self):
     LOGGER.info('Running ntp.network.ntp_dhcp')
-    packet_capture = (rdpcap(STARTUP_CAPTURE_FILE) +
-                      rdpcap(MONITOR_CAPTURE_FILE) +
-                      rdpcap(NTP_SERVER_CAPTURE_FILE))
+
+    # Read the pcap files
+    packet_capture = (rdpcap(self.startup_capture_file) +
+               rdpcap(self.monitor_capture_file))
+
+    try:
+      packet_capture += rdpcap(self.ntp_server_capture_file)
+    except (FileNotFoundError, Scapy_Exception):
+      LOGGER.error('ntp.pcap not found or empty, ignoring')
 
     device_sends_ntp = False
     ntp_to_local = False

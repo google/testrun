@@ -16,6 +16,7 @@ from ntp_module import NTPModule
 import unittest
 from scapy.all import rdpcap, NTP, wrpcap
 import os
+import shutil
 import sys
 
 MODULE = 'ntp'
@@ -47,7 +48,6 @@ class NTPModuleTest(unittest.TestCase):
   # Test the module report generation
   def ntp_module_report_test(self):
     ntp_module = NTPModule(module=MODULE,
-                           log_dir=OUTPUT_DIR,
                            results_dir=OUTPUT_DIR,
                            ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE,
                            startup_capture_file=STARTUP_CAPTURE_FILE,
@@ -62,6 +62,11 @@ class NTPModuleTest(unittest.TestCase):
     # Read the local good report
     with open(LOCAL_REPORT, 'r', encoding='utf-8') as file:
       report_local = file.read()
+
+    # Copy the generated html report to a new file
+    new_report_name = 'ntp_local.html'
+    new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
+    shutil.copy(report_out_path, new_report_path)
 
     self.assertEqual(report_out, report_local)
 
@@ -96,7 +101,6 @@ class NTPModuleTest(unittest.TestCase):
     wrpcap(monitor_cap_file, packets_monitor)
 
     ntp_module = NTPModule(module='dns',
-                           log_dir=OUTPUT_DIR,
                            results_dir=OUTPUT_DIR,
                            ntp_server_capture_file=ntp_server_cap_file,
                            startup_capture_file=startup_cap_file,
@@ -111,6 +115,11 @@ class NTPModuleTest(unittest.TestCase):
     # Read the local good report
     with open(LOCAL_REPORT_NO_NTP, 'r', encoding='utf-8') as file:
       report_local = file.read()
+
+    # Copy the generated html report to a new file
+    new_report_name = 'ntp_no_ntp.html'
+    new_report_path = os.path.join(OUTPUT_DIR, new_report_name)
+    shutil.copy(report_out_path, new_report_path)
 
     self.assertEqual(report_out, report_local)
 
