@@ -322,6 +322,7 @@ describe('GeneralSettingsComponent', () => {
         key: MOCK_SYSTEM_CONFIG_WITH_DATA?.network?.internet_intf,
         value: 'value',
       });
+      component.settingForm.markAsDirty();
       fixture.detectChanges();
 
       const saveBtn = compiled.querySelector(
