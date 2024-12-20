@@ -366,6 +366,7 @@ describe('TestRunService', () => {
       StatusOfTestrun.InProgress,
       StatusOfTestrun.WaitingForDevice,
       StatusOfTestrun.Monitoring,
+      StatusOfTestrun.Validating,
     ];
 
     const resultsNotInProgress = [

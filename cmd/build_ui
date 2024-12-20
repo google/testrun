@@ -30,8 +30,8 @@ docker kill tr-ui-build 2> /dev/null || true
 
 echo "Building the user interface"
 
-# Start build container and build the ui dist 
-docker run --rm -v $PWD/modules/ui:/modules/ui testrun/build-ui /bin/sh -c "npm install && npm run build"
+# Start build container and build the ui dist
+docker run --rm -v "$(pwd)"/modules/ui:/modules/ui testrun/build-ui /bin/sh -c "npm install && npm run build"
 
 # Kill the container (Should not be running anymore)
 docker kill tr-ui-build 2> /dev/null || true
