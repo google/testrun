@@ -96,7 +96,10 @@ limitations under the License.
         color="primary"
         (click)="saveSetting()"
         [disabled]="
-          !isFormValues || vm.isLessThanOneInterface || settingsDisable
+          !isFormValues ||
+          vm.isLessThanOneInterface ||
+          settingsDisable ||
+          settingForm.pristine
         ">
         Save
       </button>
