@@ -55,7 +55,11 @@
         {% endif %}
           <div class="summary-box-label">Test Status</div>
           <div class="summary-box-value">Complete</div>
-          <div class="summary-box-label">Test Result</div>
+          {% if json_data['device']['test_pack'] == 'Pilot Assessment' %}
+            <div class="summary-box-label">Pilot Recommendation</div>
+          {% else %}
+            <div class="summary-box-label">Test Result</div>
+          {% endif %}
           <div style="color: white; font-size:24px; font-weight: 700;" class="summary-box-value">{{ test_status }}</div>
           <div class="summary-box-label">Started</div>
           <div class="summary-box-value">{{ json_data['started']}}</div>

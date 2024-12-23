@@ -30,6 +30,8 @@ class TestResult:
   IN_PROGRESS = "In Progress"
   COMPLIANT =  "Compliant"
   NON_COMPLIANT = "Non-Compliant"
+  PROCEED = "Proceed"
+  DO_NOT_PROCEED = "Do Not Proceed"
   ERROR = "Error"
   FEATURE_NOT_DETECTED = "Feature Not Detected"
   INFORMATIONAL = "Informational"
