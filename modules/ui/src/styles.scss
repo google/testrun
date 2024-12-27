@@ -66,6 +66,14 @@
   );
 }
 
+.consent-dialog {
+  @include mat.dialog-overrides(
+    (
+      container-color: colors.$white,
+    )
+  );
+}
+
 .filter-result {
   @include mat.checkbox-overrides(
     (
@@ -116,7 +124,9 @@ body {
 .consent-dialog,
 .device-form-dialog,
 .initiate-test-run-dialog {
-  max-height: 100vh;
+  &.cdk-overlay-pane {
+    max-height: 100vh;
+  }
 }
 
 .device-form-dialog .mat-mdc-dialog-container .mdc-dialog__surface {

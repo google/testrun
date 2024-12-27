@@ -81,16 +81,7 @@ limitations under the License.
       </p>
     </app-callout>
   </section>
-  <section class="section-container-pilot">
-    <app-callout [type]="CalloutType.InfoPilot">
-      <span class="section-title">Pilot Assessment</span>
-      <p class="section-content">
-        Pilot project support is now offered through Testrun. Follow the
-        instructions set out to get your pilot recommendation.
-      </p>
-    </app-callout>
-  </section>
-  <section>
+  <section class="section-container-info">
     <app-callout [type]="CalloutType.Info">
       Testrun uses Google Analytics to learn about how our users use the
       application. By installing and running Testrun, you understand and accept
@@ -114,7 +105,7 @@ limitations under the License.
     (click)="confirm(optOut)"
     class="confirm-button"
     color="primary"
-    mat-raised-button
+    mat-flat-button
     aria-label="OK and Proceed to Testrun"
     type="button">
     OK
