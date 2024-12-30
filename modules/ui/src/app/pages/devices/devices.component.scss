@@ -13,35 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@use 'colors';
 @use 'variables';
-@use 'mixins';
-
-:host {
-  overflow: hidden;
-  flex-direction: column;
-  display: flex;
-}
-
-.device-repository-content-empty {
-  @include mixins.content-empty;
-}
-
-.device-repository-toolbar {
-  gap: 16px;
-  background: colors.$white;
-  height: 74px;
-  padding: 24px 0 8px 32px;
-}
-
-.device-repository-content {
-  align-content: start;
-  padding: 24px 32px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, variables.$device-item-width);
-  gap: 16px;
-  overflow-y: auto;
-}
 
 .device-add-button {
   font-family: variables.$font-text;

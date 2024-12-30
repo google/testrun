@@ -20,7 +20,7 @@ import {
   tick,
 } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { Device } from '../../model/device';
+import { Device, DeviceAction } from '../../model/device';
 
 import { DevicesComponent, FormAction } from './devices.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -95,6 +95,13 @@ describe('DevicesComponent', () => {
         selectedDevice: null,
         deviceInProgress: null,
         testModules: [],
+        actions: [
+          {
+            action: DeviceAction.StartNewTestrun,
+            svgIcon: 'testrun_logo_small',
+          },
+          { action: DeviceAction.Delete, icon: 'delete' },
+        ],
       });
       mockDevicesStore.devices$ = of([]);
       mockDevicesStore.testModules$ = of([]);
@@ -124,6 +131,13 @@ describe('DevicesComponent', () => {
         selectedDevice: device,
         deviceInProgress: device,
         testModules: [],
+        actions: [
+          {
+            action: DeviceAction.StartNewTestrun,
+            svgIcon: 'testrun_logo_small',
+          },
+          { action: DeviceAction.Delete, icon: 'delete' },
+        ],
       });
       fixture.detectChanges();
     });
@@ -141,7 +155,7 @@ describe('DevicesComponent', () => {
       } as MatDialogRef<typeof DeviceQualificationFromComponent>);
       fixture.detectChanges();
       const button = compiled.querySelector(
-        '.device-add-button'
+        '.add-entity-button'
       ) as HTMLButtonElement;
       button?.click();
 
@@ -222,6 +236,13 @@ describe('DevicesComponent', () => {
         selectedDevice: device,
         deviceInProgress: null,
         testModules: [],
+        actions: [
+          {
+            action: DeviceAction.StartNewTestrun,
+            svgIcon: 'testrun_logo_small',
+          },
+          { action: DeviceAction.Delete, icon: 'delete' },
+        ],
       });
       fixture.detectChanges();
     });
@@ -281,6 +302,13 @@ describe('DevicesComponent', () => {
         selectedDevice: device,
         deviceInProgress: null,
         testModules: [],
+        actions: [
+          {
+            action: DeviceAction.StartNewTestrun,
+            svgIcon: 'testrun_logo_small',
+          },
+          { action: DeviceAction.Delete, icon: 'delete' },
+        ],
       });
       fixture.detectChanges();
     });
@@ -290,47 +318,12 @@ describe('DevicesComponent', () => {
         beforeClosed: () => of(true),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openDeleteDialog(
-        [device],
-        MOCK_TEST_MODULES,
-        device,
-        device,
-        false,
-        0,
-        0
-      );
+      component.openDeleteDialog([device], MOCK_TEST_MODULES, device, 0);
 
       const args = mockDevicesStore.deleteDevice.calls.argsFor(0);
       // @ts-expect-error config is in object
       expect(args[0].device).toEqual(device);
       expect(mockDevicesStore.deleteDevice).toHaveBeenCalled();
-    });
-
-    it('should open device dialog when dialog return null', () => {
-      const openDeviceDialogSpy = spyOn(component, 'openDialog');
-      spyOn(component.dialog, 'open').and.returnValue({
-        beforeClosed: () => of(null),
-      } as MatDialogRef<typeof SimpleDialogComponent>);
-
-      component.openDeleteDialog(
-        [device],
-        MOCK_TEST_MODULES,
-        device,
-        device,
-        false,
-        0,
-        0
-      );
-
-      expect(openDeviceDialogSpy).toHaveBeenCalledWith(
-        [device],
-        MOCK_TEST_MODULES,
-        device,
-        device,
-        false,
-        0,
-        0
-      );
     });
   });
 

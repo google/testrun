@@ -13,18 +13,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, input, TemplateRef } from '@angular/core';
+import {
+  Component,
+  computed,
+  input,
+  output,
+  signal,
+  TemplateRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { ListItemComponent } from '../list-item/list-item.component';
+import { EntityAction, EntityActionResult } from '../../model/entity-action';
 
 @Component({
   selector: 'app-list-layout',
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatSidenavModule,
+    MatToolbarModule,
+    MatIconModule,
+    ListItemComponent,
+  ],
   templateUrl: './list-layout.component.html',
   styleUrl: './list-layout.component.scss',
 })
-export class ListLayoutComponent<T> {
+export class ListLayoutComponent<T extends object> {
   title = input<string>('');
+  addEntityText = input<string>('');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   emptyContent = input<TemplateRef<any>>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  content = input<TemplateRef<any>>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  itemTemplate = input<TemplateRef<any>>();
   entities = input<T[]>([]);
+  actions = input<EntityAction[]>([]);
+  searchText = signal<string>('');
+  filtered = computed(() => {
+    return this.entities().filter(this.filter(this.searchText()));
+  });
+  addEntity = output<void>();
+  menuItemClicked = output<EntityActionResult<T>>();
+  updateQuery(e: Event) {
+    this.searchText.set((e.target as HTMLInputElement).value);
+  }
+
+  filter(searchText: string) {
+    return <T extends object>(item: T) => {
+      return Object.values(item).some(value =>
+        typeof value === 'string'
+          ? value.toLowerCase().includes(searchText.toLowerCase())
+          : false
+      );
+    };
+  }
+
+  onMenuItemClick(action: string, entity: T, index: number) {
+    this.menuItemClicked.emit({
+      action,
+      entity,
+      index,
+    });
+  }
 }

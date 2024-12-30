@@ -13,7 +13,53 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container *ngIf="entities().length > 0; else empty"></ng-container>
+<ng-container *ngIf="entities().length > 0; else empty">
+  <mat-drawer-container class="layout-container">
+    <mat-drawer mode="side" opened class="layout-container-left-panel">
+      <mat-toolbar class="layout-container-left-panel-toolbar">
+        <mat-toolbar-row
+          ><h2 class="title">{{ title() }}</h2></mat-toolbar-row
+        >
+        <mat-toolbar-row>
+          <button
+            (click)="addEntity.emit()"
+            [attr.aria-label]="addEntityText()"
+            class="add-entity-button"
+            color="primary"
+            mat-flat-button>
+            <mat-icon>add</mat-icon>
+            {{ addEntityText() }}
+          </button>
+        </mat-toolbar-row>
+        <mat-toolbar-row>
+          <div class="search-field">
+            <input (input)="updateQuery($event)" placeholder="Search" />
+            <mat-icon>search</mat-icon>
+          </div></mat-toolbar-row
+        >
+      </mat-toolbar>
+      <section class="entity-list">
+        <ng-container *ngFor="let entity of filtered(); index as i">
+          <app-list-item
+            [actions]="actions()"
+            (menuItemClicked)="onMenuItemClick($event, entity, i)">
+            <ng-container
+              *ngTemplateOutlet="
+                itemTemplate()!;
+                context: {
+                  entity: entity,
+                }
+              "></ng-container>
+          </app-list-item>
+        </ng-container>
+      </section>
+    </mat-drawer>
+    <mat-drawer-content>
+      <section class="content" *ngIf="content()">
+        <ng-container *ngTemplateOutlet="content()!"></ng-container></section
+    ></mat-drawer-content>
+  </mat-drawer-container>
+</ng-container>
 <ng-template #empty>
   <h2 class="title title-empty">{{ title() }}</h2>
   <div class="content-empty" *ngIf="emptyContent()">

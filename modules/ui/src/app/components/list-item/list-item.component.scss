@@ -1,0 +1,59 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@use 'variables';
+@use 'colors';
+@use '@angular/material' as mat;
+
+// Customize the entire app. Change :root to your selector if you want to scope the styles.
+::ng-deep :root {
+  @include mat.menu-overrides(
+    (
+      item-label-text-color: colors.$on-surface,
+      item-icon-color: colors.$on-surface-variant,
+      container-color: colors.$surface,
+      item-label-text-weight: 400,
+      item-label-text-size: 16px,
+      item-label-text-font: variables.$font-text,
+      item-hover-state-layer-color: colors.$secondary-container,
+      item-with-icon-leading-spacing: 24px,
+      item-with-icon-trailing-spacing: 24px,
+    )
+  );
+}
+
+::ng-deep {
+  .list-item-menu {
+    width: 220px;
+  }
+}
+
+.list-item {
+  border-radius: variables.$corner-large;
+  background-color: colors.$surface-container;
+  height: 92px;
+  padding: 0 24px 0 32px;
+  display: grid;
+  grid-template-columns: auto 40px;
+  align-items: center;
+}
+
+.example-menu {
+  left: 12px;
+}
+
+.list-item-menu-item {
+  padding: 16px 24px;
+}

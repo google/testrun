@@ -19,7 +19,7 @@ import { ComponentStore } from '@ngrx/component-store';
 import { TestRunService } from '../../services/test-run.service';
 import { exhaustMap } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
-import { Device, TestModule } from '../../model/device';
+import { Device, DeviceAction, TestModule } from '../../model/device';
 import { AppState } from '../../store/state';
 import { Store } from '@ngrx/store';
 import {
@@ -35,12 +35,14 @@ import {
 } from '../../store/actions';
 import { TestrunStatus } from '../../model/testrun-status';
 import { DeviceQuestionnaireSection } from '../../model/device';
+import { EntityAction } from '../../model/entity-action';
 
 export interface DevicesComponentState {
   devices: Device[];
   selectedDevice: Device | null;
   testModules: TestModule[];
   questionnaireFormat: DeviceQuestionnaireSection[];
+  actions: EntityAction[];
 }
 
 @Injectable()
@@ -54,12 +56,14 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
   questionnaireFormat$ = this.select(state => state.questionnaireFormat);
   private deviceInProgress$ = this.store.select(selectDeviceInProgress);
   private selectedDevice$ = this.select(state => state.selectedDevice);
+  private actions$ = this.select(state => state.actions);
 
   viewModel$ = this.select({
     devices: this.devices$,
     selectedDevice: this.selectedDevice$,
     deviceInProgress: this.deviceInProgress$,
     testModules: this.testModules$,
+    actions: this.actions$,
   });
 
   selectDevice = this.updater((state, device: Device | null) => ({
@@ -200,6 +204,10 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
       selectedDevice: null,
       testModules: [],
       questionnaireFormat: [],
+      actions: [
+        { action: DeviceAction.StartNewTestrun, svgIcon: 'testrun_logo_small' },
+        { action: DeviceAction.Delete, icon: 'delete' },
+      ],
     });
   }
 }

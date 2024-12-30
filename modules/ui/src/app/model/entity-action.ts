@@ -13,27 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, Input } from '@angular/core';
-import { MatIcon } from '@angular/material/icon';
+export interface EntityAction {
+  action: string;
+  icon?: string;
+  svgIcon?: string;
+}
 
-@Component({
-  selector: 'app-program-type-icon',
-
-  imports: [MatIcon],
-  template: ` <mat-icon [svgIcon]="type" class="icon"></mat-icon> `,
-  styles: `
-    :host {
-      display: inline-flex;
-      align-items: center;
-    }
-    .icon {
-      display: flex;
-      width: 16px;
-      height: 16px;
-      line-height: 16px;
-    }
-  `,
-})
-export class ProgramTypeIconComponent {
-  @Input() type = '';
+export interface EntityActionResult<T> {
+  action: string;
+  entity: T;
+  index: number;
 }

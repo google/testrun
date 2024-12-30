@@ -68,11 +68,9 @@ describe('DeviceItemComponent', () => {
     it('should display information about device', () => {
       const name = compiled.querySelector('.item-name');
       const manufacturer = compiled.querySelector('.item-manufacturer');
-      const mac = compiled.querySelector('.item-mac-address');
 
       expect(name?.textContent?.trim()).toEqual('O3-DIN-CPU');
       expect(manufacturer?.textContent?.trim()).toEqual('Delta');
-      expect(mac?.textContent?.trim()).toEqual('00:1e:42:35:73:c4');
     });
 
     it('should have qualification icon if testing type is qualification', () => {
@@ -122,12 +120,6 @@ describe('DeviceItemComponent', () => {
         expect(status).toBeTruthy();
         expect(status?.textContent?.trim()).toEqual('Outdated');
       });
-
-      it('should disable start buttons', () => {
-        const startBtn = compiled.querySelector('.button-start') as HTMLElement;
-
-        expect(startBtn.getAttribute('disabled')).toBeTruthy();
-      });
     });
 
     it('should emit device on click edit button', () => {
@@ -138,34 +130,22 @@ describe('DeviceItemComponent', () => {
       expect(clickSpy).toHaveBeenCalledWith(component.device);
     });
 
-    it('should emit device on click start button', () => {
-      const clickSpy = spyOn(component.startTestrunClicked, 'emit');
-      const editBtn = compiled.querySelector('.button-start') as HTMLElement;
-      editBtn.click();
-
-      expect(clickSpy).toHaveBeenCalledWith(component.device);
-    });
-
     it('should disable buttons if disable set to true', () => {
       component.disabled = true;
       fixture.detectChanges();
 
-      const startBtn = compiled.querySelector('.button-start') as HTMLElement;
       const editBtn = compiled.querySelector('.button-edit') as HTMLElement;
 
       expect(editBtn.getAttribute('disabled')).not.toBeNull();
-      expect(startBtn.getAttribute('disabled')).toBeTruthy();
     });
 
     it('should not disable buttons if disable set to false', () => {
       component.disabled = false;
       fixture.detectChanges();
 
-      const startBtn = compiled.querySelector('.button-start') as HTMLElement;
       const editBtn = compiled.querySelector('.button-edit') as HTMLElement;
 
       expect(editBtn.getAttribute('disabled')).toBeNull();
-      expect(startBtn.getAttribute('disabled')).toBeFalsy();
     });
   });
 });
