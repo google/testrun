@@ -16,11 +16,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
-  Input,
   OnDestroy,
   OnInit,
-  viewChild,
   inject,
 } from '@angular/core';
 import {
@@ -54,6 +51,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { CalloutComponent } from '../../components/callout/callout.component';
 import { CommonModule } from '@angular/common';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { TestRunService } from '../../services/test-run.service';
+import { Router } from '@angular/router';
+import { Routes } from '../../model/routes';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 declare const gtag: Function;
@@ -95,13 +95,11 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   private settingsStore = inject(GeneralSettingsStore);
   private readonly loaderService = inject(LoaderService);
 
-  readonly reloadSettingLink = viewChild<ElementRef>('reloadSettingLink');
-
   private isSettingsDisable = false;
   get settingsDisable(): boolean {
     return this.isSettingsDisable;
   }
-  @Input() set settingsDisable(value: boolean) {
+  set settingsDisable(value: boolean) {
     this.isSettingsDisable = value;
     if (value) {
       this.disableSettings();
@@ -113,9 +111,12 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   public readonly EventType = EventType;
   public readonly FormKey = FormKey;
   public settingForm!: FormGroup;
+  public readonly Routes = Routes;
   viewModel$ = this.settingsStore.viewModel$;
 
   private destroy$: Subject<boolean> = new Subject<boolean>();
+  private testRunService = inject(TestRunService);
+  private route = inject(Router);
 
   get deviceControl(): FormControl {
     return this.settingForm.get(FormKey.DEVICE) as FormControl;
@@ -154,12 +155,22 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     this.settingsStore.getInterfaces();
     this.getSystemConfig();
     this.setDefaultFormValues();
+    this.settingsStore.systemStatus$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(systemStatus => {
+        if (systemStatus?.status) {
+          this.settingsDisable = this.testRunService.testrunInProgress(
+            systemStatus.status
+          );
+        }
+      });
+  }
+
+  navigateToRuntime(): void {
+    this.route.navigate([Routes.Testing]);
   }
 
   reloadSetting(): void {
-    if (this.settingsDisable) {
-      return;
-    }
     this.showLoading();
     this.getSystemInterfaces();
     this.getSystemConfig();
@@ -177,15 +188,10 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
 
   private disableSettings(): void {
     this.settingForm?.disable();
-    this.reloadSettingLink()?.nativeElement.setAttribute(
-      'aria-disabled',
-      'true'
-    );
   }
 
   private enableSettings(): void {
     this.settingForm?.enable();
-    this.reloadSettingLink()?.nativeElement.removeAttribute('aria-disabled');
   }
 
   private createSettingForm() {

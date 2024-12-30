@@ -14,7 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="setting-drawer-content" *ngIf="viewModel$ | async as vm">
-  <div *ngIf="settingsDisable" class="settings-disabled-overlay"></div>
+  <app-callout
+    [type]="CalloutType.ErrorOutline"
+    *ngIf="settingsDisable"
+    action="Go to Testing tab"
+    (onAction)="navigateToRuntime()">
+    To change settings, you need to stop testing.
+  </app-callout>
   <form
     [formGroup]="settingForm"
     [class.setting-drawer-content-form-empty]="
@@ -40,7 +46,9 @@ limitations under the License.
           label="Device connection port"
           key="device"
           [options]="vm.deviceOptions">
-          <ng-container *ngTemplateOutlet="message"></ng-container>
+          <ng-container *ngIf="!settingsDisable">
+            <ng-container *ngTemplateOutlet="message"></ng-container>
+          </ng-container>
         </app-settings-dropdown>
         <app-settings-dropdown
           [controlName]="FormKey.INTERNET"
@@ -49,10 +57,12 @@ limitations under the License.
           label="Internet connection port"
           key="internet"
           [options]="vm.internetOptions">
-          <ng-container
-            *ngTemplateOutlet="
-              isInternetControlDisabled ? messageDisabled : message
-            "></ng-container>
+          <ng-container *ngIf="!settingsDisable">
+            <ng-container
+              *ngTemplateOutlet="
+                isInternetControlDisabled ? messageDisabled : message
+              "></ng-container>
+          </ng-container>
         </app-settings-dropdown>
       </ng-container>
       <mat-divider></mat-divider>
@@ -179,15 +189,14 @@ limitations under the License.
     </ng-container>
   </ng-template>
   <ng-template #messageReload>
-    <p class="message" [ngClass]="{ disabled: settingsDisable }">
+    <p class="message">
       If a port is missing from this list, you can
       <a
-        #reloadSettingLink
         (click)="reloadSetting()"
         (keydown.enter)="reloadSetting()"
         (keydown.space)="reloadSetting()"
         role="button"
-        [tabindex]="settingsDisable ? -1 : 0"
+        [tabindex]="1"
         class="message-link">
         Refresh
       </a>

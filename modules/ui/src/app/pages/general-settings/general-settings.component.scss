@@ -34,6 +34,9 @@
   .setting-drawer-content-form-empty {
     grid-template-rows: repeat(2, auto) 1fr;
   }
+  ::ng-deep .callout-container {
+    margin: 10px 0;
+  }
 }
 
 .error-message-container {
@@ -71,28 +74,6 @@
   }
 }
 
-.settings-disabled-overlay {
-  position: absolute;
-  width: 100%;
-  left: 0;
-  right: 0;
-  top: 75px;
-  bottom: 45px;
-  background-color: rgba(255, 255, 255, 0.7);
-  z-index: 2;
-}
-
-.disabled {
-  .message-link {
-    cursor: default;
-    pointer-events: none;
-
-    &:focus-visible {
-      outline: none;
-    }
-  }
-}
-
 .settings-drawer-header-button:not(.mat-mdc-button-disabled),
 .close-button:not(.mat-mdc-button-disabled),
 .save-button:not(.mat-mdc-button-disabled) {
@@ -124,6 +105,10 @@
     gap: 6px;
     width: 260px;
     padding: 0 12px;
+  }
+
+  .data-column {
+    display: flex;
   }
 
   .setting-form-label,
