@@ -31,6 +31,7 @@ import { AppState } from '../../store/state';
 import {
   selectAdapters,
   selectHasConnectionSettings,
+  selectSystemStatus,
 } from '../../store/selectors';
 import { FormControl, FormGroup } from '@angular/forms';
 
@@ -79,6 +80,7 @@ export class GeneralSettingsStore extends ComponentStore<SettingsComponentState>
   );
 
   private adapters$ = this.store.select(selectAdapters);
+  systemStatus$ = this.store.select(selectSystemStatus);
   private isSubmitting$ = this.select(state => state.isSubmitting);
   private isLessThanOneInterfaces$ = this.select(
     state => state.isLessThanOneInterface

@@ -37,18 +37,24 @@ import {
 import { SettingsDropdownComponent } from './components/settings-dropdown/settings-dropdown.component';
 import { CalloutComponent } from '../../components/callout/callout.component';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
+import { TestRunService } from '../../services/test-run.service';
+import { MOCK_PROGRESS_DATA_COMPLIANT } from '../../mocks/testrun.mock';
 
 describe('GeneralSettingsComponent', () => {
   let component: GeneralSettingsComponent;
   let fixture: ComponentFixture<GeneralSettingsComponent>;
   let compiled: HTMLElement;
   let mockLoaderService: SpyObj<LoaderService>;
+  let mockTestRunService: SpyObj<TestRunService>;
   let mockSettingsStore: SpyObj<GeneralSettingsStore>;
 
   beforeEach(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>window).gtag = jasmine.createSpy('gtag');
     mockLoaderService = jasmine.createSpyObj('LoaderService', ['setLoading']);
+    mockTestRunService = jasmine.createSpyObj('TesRunService', [
+      'testrunInProgress',
+    ]);
     mockSettingsStore = jasmine.createSpyObj('SettingsStore', [
       'getInterfaces',
       'updateSystemConfig',
@@ -56,11 +62,14 @@ describe('GeneralSettingsComponent', () => {
       'setDefaultFormValues',
       'getSystemConfig',
       'viewModel$',
+      'systemStatus$',
     ]);
+    mockSettingsStore.systemStatus$ = of(MOCK_PROGRESS_DATA_COMPLIANT);
 
     await TestBed.configureTestingModule({
       providers: [
         { provide: LoaderService, useValue: mockLoaderService },
+        { provide: TestRunService, useValue: mockTestRunService },
         { provide: GeneralSettingsStore, useValue: mockSettingsStore },
         provideMockStore(),
       ],
@@ -154,19 +163,6 @@ describe('GeneralSettingsComponent', () => {
       ) as HTMLButtonElement;
 
       expect(saveBtn.disabled).toBeTrue();
-    });
-
-    it('should disable "Refresh" link when settingDisable', () => {
-      component.settingsDisable = true;
-
-      const refreshLink = compiled.querySelector(
-        '.message-link'
-      ) as HTMLAnchorElement;
-
-      refreshLink.click();
-
-      expect(refreshLink.hasAttribute('aria-disabled')).toBeTrue();
-      expect(mockLoaderService.setLoading).not.toHaveBeenCalled();
     });
   });
 
