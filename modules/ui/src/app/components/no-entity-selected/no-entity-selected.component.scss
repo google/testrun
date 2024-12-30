@@ -13,27 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, Input } from '@angular/core';
-import { MatIcon } from '@angular/material/icon';
+@use 'colors';
+@use 'variables';
 
-@Component({
-  selector: 'app-program-type-icon',
+:host {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url(/assets/icons/cornerstone.svg);
+  position: relative;
+}
 
-  imports: [MatIcon],
-  template: ` <mat-icon [svgIcon]="type" class="icon"></mat-icon> `,
-  styles: `
-    :host {
-      display: inline-flex;
-      align-items: center;
-    }
-    .icon {
-      display: flex;
-      width: 16px;
-      height: 16px;
-      line-height: 16px;
-    }
-  `,
-})
-export class ProgramTypeIconComponent {
-  @Input() type = '';
+.dog-image {
+  position: absolute;
+  bottom: 0;
+  right: 26px;
+}
+
+::ng-deep app-empty-message {
+  .empty-message {
+    gap: 16px !important;
+  }
+
+  .empty-message-header {
+    color: colors.$on-surface-variant !important;
+    font-family: variables.$font-secondary !important;
+  }
 }

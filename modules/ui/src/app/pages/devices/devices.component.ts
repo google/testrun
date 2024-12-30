@@ -28,6 +28,7 @@ import {
 } from '@angular/material/dialog';
 import {
   Device,
+  DeviceAction,
   DeviceStatus,
   DeviceView,
   TestModule,
@@ -54,6 +55,8 @@ import { MatInputModule } from '@angular/material/input';
 import { DeviceItemComponent } from '../../components/device-item/device-item.component';
 import { EmptyPageComponent } from '../../components/empty-page/empty-page.component';
 import { ListLayoutComponent } from '../../components/list-layout/list-layout.component';
+import { EntityActionResult } from '../../model/entity-action';
+import { NoEntitySelectedComponent } from '../../components/no-entity-selected/no-entity-selected.component';
 
 export enum FormAction {
   Delete = 'Delete',
@@ -84,6 +87,7 @@ export interface FormResponse {
     DeviceItemComponent,
     EmptyPageComponent,
     ListLayoutComponent,
+    NoEntitySelectedComponent,
   ],
   providers: [DevicesStore],
 })
@@ -134,6 +138,21 @@ export class DevicesComponent
     );
   }
 
+  menuItemClicked(
+    { action, entity, index }: EntityActionResult<Device>,
+    devices: Device[],
+    testModules: TestModule[]
+  ) {
+    switch (action) {
+      case DeviceAction.StartNewTestrun:
+        this.openStartTestrun(entity, devices, testModules);
+        break;
+      case DeviceAction.Delete:
+        this.openDeleteDialog(devices, testModules, entity, index);
+        break;
+    }
+  }
+
   openStartTestrun(
     selectedDevice: Device,
     devices: Device[],
@@ -169,6 +188,37 @@ export class DevicesComponent
           );
         }
       });
+  }
+
+  openDeleteDialog(
+    devices: Device[],
+    testModules: TestModule[],
+    initialDevice: Device,
+    deviceIndex: number
+  ) {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
+      ariaLabel: 'Delete device',
+      data: {
+        title: 'Delete device?',
+        content: `You are about to delete ${
+          initialDevice.manufacturer + ' ' + initialDevice.model
+        }. Are you sure?`,
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: 'simple-dialog',
+    });
+    dialogRef?.beforeClosed().subscribe(deleteDevice => {
+      if (deleteDevice) {
+        this.devicesStore.deleteDevice({
+          device: initialDevice,
+          onDelete: () => {
+            this.focusNextButton(deviceIndex);
+          },
+        });
+      }
+    });
   }
 
   openDialog(
@@ -228,9 +278,6 @@ export class DevicesComponent
             devices,
             testModules,
             initialDevice,
-            response.device,
-            isEditDevice,
-            response.index,
             deviceIndex!
           );
         }
@@ -274,51 +321,6 @@ export class DevicesComponent
         this.focusSelectedButton(deviceIndex);
       } else {
         this.focusManagerService.focusFirstElementInContainer();
-      }
-    });
-  }
-
-  openDeleteDialog(
-    devices: Device[],
-    testModules: TestModule[],
-    initialDevice: Device,
-    device: Device,
-    isEditDevice = false,
-    index = 0,
-    deviceIndex: number
-  ) {
-    const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: 'Delete device',
-      data: {
-        title: 'Delete device?',
-        content: `You are about to delete ${
-          initialDevice.manufacturer + ' ' + initialDevice.model
-        }. Are you sure?`,
-        device: device,
-      },
-      autoFocus: true,
-      hasBackdrop: true,
-      disableClose: true,
-      panelClass: 'simple-dialog',
-    });
-    dialogRef?.beforeClosed().subscribe(deleteDevice => {
-      if (deleteDevice) {
-        this.devicesStore.deleteDevice({
-          device: initialDevice,
-          onDelete: () => {
-            this.focusNextButton(deviceIndex);
-          },
-        });
-      } else {
-        this.openDialog(
-          devices,
-          testModules,
-          initialDevice,
-          device,
-          isEditDevice,
-          index,
-          deviceIndex
-        );
       }
     });
   }

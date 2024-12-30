@@ -14,32 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <ng-container *ngIf="viewModel$ | async as vm">
-  <ng-container *ngIf="vm.devices.length > 0; else emptyPage">
-    <mat-toolbar class="device-repository-toolbar">
-      <h2 class="title" tabindex="-1">Devices</h2>
-      <ng-container *ngTemplateOutlet="addDeviceButton"></ng-container>
-    </mat-toolbar>
-    <div class="device-repository-content">
-      <ng-container *ngFor="let device of vm.devices; index as i">
-        <app-device-item
-          (itemClicked)="
-            openDialog(vm.devices, vm.testModules, $event, $event, true, 0, i)
-          "
-          (startTestrunClicked)="
-            openStartTestrun($event, vm.devices, vm.testModules)
-          "
-          [deviceView]="DeviceView.WithActions"
-          [device]="device"
-          [disabled]="
-            device?.mac_addr === vm.deviceInProgress?.mac_addr
-          "></app-device-item>
-      </ng-container>
-    </div>
-  </ng-container>
+  <app-list-layout
+    title="Devices"
+    addEntityText="Create New Device"
+    [emptyContent]="empty"
+    [content]="content"
+    [itemTemplate]="itemTemplate"
+    [actions]="vm.actions"
+    [entities]="vm.devices"
+    (addEntity)="openDialog(vm.devices, vm.testModules)"
+    (menuItemClicked)="menuItemClicked($event, vm.devices, vm.testModules)">
+  </app-list-layout>
 
-  <ng-template #emptyPage>
-    <app-list-layout title="Devices" [emptyContent]="empty"> </app-list-layout>
+  <ng-template #content>
+    <app-no-entity-selected
+      image="/assets/icons/switch.svg"
+      header="No device selected">
+    </app-no-entity-selected>
   </ng-template>
+
   <ng-template #empty>
     <app-empty-page
       image="/assets/icons/empty-devices.svg"
@@ -59,5 +52,16 @@ limitations under the License.
       <mat-icon>add</mat-icon>
       Create New Device
     </button>
+  </ng-template>
+
+  <ng-template #itemTemplate let-entity="entity">
+    <app-device-item
+      *ngIf="entity"
+      [deviceView]="DeviceView.WithActions"
+      [device]="entity"
+      [disabled]="entity?.mac_addr === vm.deviceInProgress?.mac_addr"
+      (itemClicked)="
+        openDialog(vm.devices, vm.testModules, entity, entity)
+      "></app-device-item>
   </ng-template>
 </ng-container>

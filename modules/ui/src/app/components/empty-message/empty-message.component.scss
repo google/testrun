@@ -35,13 +35,16 @@
   max-width: 764px;
   .empty-message-img {
     grid-row: 1 / 3;
-    width: 288px;
-    height: 199px;
     justify-self: end;
   }
   .empty-message-text {
     align-self: start;
     padding-top: 12px;
+    &.one-line {
+      grid-row: 1 / 3;
+      align-self: center;
+      padding-top: 0;
+    }
   }
   .empty-message-main {
     padding-top: 8px;
@@ -63,9 +66,4 @@
   letter-spacing: 0.1px;
   color: colors.$on-surface-variant;
   display: block;
-}
-
-.empty-message-img {
-  width: 293px;
-  height: 154px;
 }

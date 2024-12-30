@@ -13,27 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, Input } from '@angular/core';
-import { MatIcon } from '@angular/material/icon';
-
+import { Component, input } from '@angular/core';
+import { EmptyMessageComponent } from '../empty-message/empty-message.component';
 @Component({
-  selector: 'app-program-type-icon',
-
-  imports: [MatIcon],
-  template: ` <mat-icon [svgIcon]="type" class="icon"></mat-icon> `,
-  styles: `
-    :host {
-      display: inline-flex;
-      align-items: center;
-    }
-    .icon {
-      display: flex;
-      width: 16px;
-      height: 16px;
-      line-height: 16px;
-    }
-  `,
+  selector: 'app-no-entity-selected',
+  imports: [EmptyMessageComponent],
+  templateUrl: './no-entity-selected.component.html',
+  styleUrl: './no-entity-selected.component.scss',
 })
-export class ProgramTypeIconComponent {
-  @Input() type = '';
+export class NoEntitySelectedComponent {
+  image = input<string>();
+  header = input<string>();
+  message = input<string>();
 }

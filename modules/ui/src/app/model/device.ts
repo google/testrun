@@ -72,3 +72,8 @@ export enum TestingType {
   Pilot = 'Pilot Assessment',
   Qualification = 'Device Qualification',
 }
+
+export enum DeviceAction {
+  StartNewTestrun = 'Start new Testrun',
+  Delete = 'Delete',
+}

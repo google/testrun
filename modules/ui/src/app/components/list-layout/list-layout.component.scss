@@ -17,6 +17,10 @@
 @use 'colors';
 @use 'variables';
 
+.content {
+  height: 100%;
+}
+
 .content-empty {
   @include mixins.content-empty;
 }
@@ -32,4 +36,120 @@
     padding: 24px 0 8px 32px;
     margin: 0;
   }
+}
+
+.add-entity-button {
+  font-family: variables.$font-text;
+  font-size: 16px;
+  border-radius: 16px;
+  width: fit-content;
+  height: 56px;
+  color: colors.$on-secondary-container;
+  background-color: colors.$secondary-container;
+}
+
+.layout-container {
+  height: 100%;
+}
+
+.layout-container-left-panel {
+  background-color: colors.$surface-container-low;
+  width: 435px;
+  padding-right: 16px;
+}
+
+.layout-container-left-panel-toolbar {
+  border-radius: variables.$corner-large;
+  background-color: colors.$surface;
+  padding: 12px 0 8px 16px;
+  ::ng-deep mat-toolbar-row:not(:first-child) {
+    margin-top: 32px;
+  }
+}
+
+.search-field {
+  display: flex;
+  padding: 4px 4px 4px 20px;
+  align-items: center;
+  gap: 4px;
+  flex: 1 0 0;
+  align-self: stretch;
+  border-radius: variables.$corner-extra-large;
+  background-color: colors.$surface-container-high;
+  height: 40px;
+  width: 100%;
+  input {
+    width: calc(100% - #{variables.$icon-size * 2});
+    height: 100%;
+    border: 0;
+    background: inherit;
+    font-size: 16px;
+    font-family: variables.$font-text;
+    color: colors.$on-surface-variant;
+  }
+}
+
+.entity-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.add-entity-button {
+  font-family: variables.$font-text;
+  font-size: 16px;
+  border-radius: 16px;
+  width: fit-content;
+  height: 56px;
+  color: colors.$on-secondary-container;
+  background-color: colors.$secondary-container;
+}
+
+.layout-container {
+  height: 100%;
+}
+
+.layout-container-left-panel {
+  background-color: colors.$surface-container-low;
+  width: 435px;
+  padding-right: 16px;
+}
+
+.layout-container-left-panel-toolbar {
+  border-radius: variables.$corner-large;
+  background-color: colors.$surface;
+  padding: 12px 0 8px 16px;
+  ::ng-deep mat-toolbar-row:not(:first-child) {
+    margin-top: 32px;
+  }
+}
+
+.search-field {
+  display: flex;
+  padding: 4px 4px 4px 20px;
+  align-items: center;
+  gap: 4px;
+  flex: 1 0 0;
+  align-self: stretch;
+  border-radius: variables.$corner-extra-large;
+  background-color: colors.$surface-container-high;
+  height: 40px;
+  width: 100%;
+  input {
+    width: calc(100% - #{variables.$icon-size * 2});
+    height: 100%;
+    border: 0;
+    background: inherit;
+    font-size: 16px;
+    font-family: variables.$font-text;
+    color: colors.$on-surface-variant;
+  }
+}
+
+.entity-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 8px 0;
 }
