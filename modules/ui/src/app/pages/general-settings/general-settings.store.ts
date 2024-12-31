@@ -31,16 +31,17 @@ import { AppState } from '../../store/state';
 import {
   selectAdapters,
   selectHasConnectionSettings,
+  selectInterfaces,
+  selectSystemConfig,
   selectSystemStatus,
 } from '../../store/selectors';
 import { FormControl, FormGroup } from '@angular/forms';
+import { fetchInterfaces, fetchSystemConfig } from '../../store/actions';
 
 export interface SettingsComponentState {
   hasConnectionSettings: boolean;
   isSubmitting: boolean;
-  systemConfig: SystemConfig;
   isLessThanOneInterface: boolean;
-  interfaces: SystemInterfaces;
   deviceOptions: SystemInterfaces;
   internetOptions: SystemInterfaces;
   logLevelOptions: { [key: string]: string };
@@ -74,7 +75,6 @@ export class GeneralSettingsStore extends ComponentStore<SettingsComponentState>
 
   private static readonly DEFAULT_LOG_LEVEL = 'INFO';
   private static readonly DEFAULT_MONITORING_PERIOD = '300';
-  private systemConfig$ = this.select(state => state.systemConfig);
   private hasConnectionSettings$ = this.store.select(
     selectHasConnectionSettings
   );
@@ -85,7 +85,10 @@ export class GeneralSettingsStore extends ComponentStore<SettingsComponentState>
   private isLessThanOneInterfaces$ = this.select(
     state => state.isLessThanOneInterface
   );
-  private interfaces$ = this.select(state => state.interfaces);
+  private interfaces$: Observable<SystemInterfaces> =
+    this.store.select(selectInterfaces);
+  private systemConfig$: Observable<SystemConfig> =
+    this.store.select(selectSystemConfig);
   private deviceOptions$ = this.select(state => state.deviceOptions);
   private internetOptions$ = this.select(state => state.internetOptions);
   private logLevelOptions$ = this.select(state => state.logLevelOptions);
@@ -104,11 +107,6 @@ export class GeneralSettingsStore extends ComponentStore<SettingsComponentState>
     monitoringPeriodOptions: this.monitoringPeriodOptions$,
   });
 
-  setSystemConfig = this.updater((state, systemConfig: SystemConfig) => ({
-    ...state,
-    systemConfig,
-  }));
-
   setIsSubmitting = this.updater((state, isSubmitting: boolean) => ({
     ...state,
     isSubmitting,
@@ -117,36 +115,33 @@ export class GeneralSettingsStore extends ComponentStore<SettingsComponentState>
   setInterfaces = this.updater((state, interfaces: SystemInterfaces) => {
     return {
       ...state,
-      interfaces,
       deviceOptions: interfaces,
       internetOptions: interfaces,
       isLessThanOneInterface: Object.keys(interfaces).length < 1,
     };
   });
 
+  statusLoaded = this.effect(() => {
+    return this.interfaces$.pipe(
+      skip(1),
+      tap(interfaces => {
+        this.setInterfaces(interfaces);
+      })
+    );
+  });
+
   getInterfaces = this.effect(trigger$ => {
     return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunService.getSystemInterfaces().pipe(
-          tap((interfaces: SystemInterfaces) => {
-            this.updateInterfaces(interfaces);
-          })
-        );
+      tap(() => {
+        this.store.dispatch(fetchInterfaces());
       })
     );
   });
 
   getSystemConfig = this.effect(trigger$ => {
     return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunService.getSystemConfig().pipe(
-          tap((systemConfig: SystemConfig) => {
-            this.store.dispatch(
-              AppActions.fetchSystemConfigSuccess({ systemConfig })
-            );
-            this.setSystemConfig(systemConfig);
-          })
-        );
+      tap(() => {
+        this.store.dispatch(fetchSystemConfig());
       })
     );
   });
@@ -164,7 +159,6 @@ export class GeneralSettingsStore extends ComponentStore<SettingsComponentState>
                 systemConfig: trigger.config,
               })
             );
-            this.setSystemConfig(trigger.config);
             trigger.onSystemConfigUpdate();
           })
         );
@@ -335,11 +329,9 @@ export class GeneralSettingsStore extends ComponentStore<SettingsComponentState>
 
   constructor() {
     super({
-      systemConfig: { network: {} },
       hasConnectionSettings: false,
       isSubmitting: false,
       isLessThanOneInterface: false,
-      interfaces: {},
       deviceOptions: {},
       internetOptions: {},
       logLevelOptions: LOG_LEVELS,

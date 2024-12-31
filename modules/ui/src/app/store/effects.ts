@@ -53,6 +53,7 @@ import { Profile } from '../model/profile';
 import { DeviceStatus } from '../model/device';
 import { TestRunMqttService } from '../services/test-run-mqtt.service';
 import { InternetConnection } from '../model/topic';
+import { SystemConfig, SystemInterfaces } from '../model/setting';
 
 const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
@@ -289,6 +290,32 @@ export class AppEffects {
       }),
       map(() =>
         AppActions.fetchSystemStatusSuccess({ systemStatus: IDLE_STATUS })
+      )
+    );
+  });
+
+  onFetchInterfaces$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchInterfaces),
+      switchMap(() =>
+        this.testrunService.getSystemInterfaces().pipe(
+          map((interfaces: SystemInterfaces) => {
+            return AppActions.fetchInterfacesSuccess({ interfaces });
+          })
+        )
+      )
+    );
+  });
+
+  onFetchSystemConfig$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchSystemConfig),
+      switchMap(() =>
+        this.testrunService.getSystemConfig().pipe(
+          map((systemConfig: SystemConfig) => {
+            return AppActions.fetchSystemConfigSuccess({ systemConfig });
+          })
+        )
       )
     );
   });

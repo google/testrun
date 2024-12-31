@@ -70,7 +70,6 @@ $border-radius: 12px;
     width: 230px;
     box-sizing: border-box;
     text-align: start;
-    margin: 0;
   }
 
   .item-mac-address {
@@ -163,6 +162,7 @@ $border-radius: 12px;
   max-width: -webkit-fill-available;
   max-width: -moz-available;
   text-align: left;
+  margin: 0;
 }
 
 app-program-type-icon {

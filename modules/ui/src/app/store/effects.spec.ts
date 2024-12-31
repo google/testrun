@@ -431,4 +431,30 @@ describe('Effects', () => {
       });
     });
   });
+
+  it('onFetchInterfaces$ should call fetchInterfacesSuccess on success', done => {
+    actions$ = of(actions.fetchInterfaces());
+
+    effects.onFetchInterfaces$.subscribe(action => {
+      expect(action).toEqual(
+        actions.fetchInterfacesSuccess({
+          interfaces: {},
+        })
+      );
+      done();
+    });
+  });
+
+  it('onFetchSystemConfig$ should call fetchSystemConfigSuccess on success', done => {
+    actions$ = of(actions.fetchSystemConfig());
+
+    effects.onFetchSystemConfig$.subscribe(action => {
+      expect(action).toEqual(
+        actions.fetchSystemConfigSuccess({
+          systemConfig: { network: {} },
+        })
+      );
+      done();
+    });
+  });
 });
