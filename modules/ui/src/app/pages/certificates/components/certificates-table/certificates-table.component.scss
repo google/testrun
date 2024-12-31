@@ -96,3 +96,28 @@
 .certificates-content-empty {
   height: calc(100vh - 344px);
 }
+
+.empty-data-cell {
+  position: relative;
+}
+
+.callout-container {
+  display: flex;
+  position: absolute;
+  top: 0;
+  width: 100%;
+
+  ::ng-deep .callout-container {
+    margin: 6px 0;
+    padding: 14px 16px;
+  }
+
+  ::ng-deep .callout-context {
+    font-family: variables.$font-text;
+    letter-spacing: 0;
+  }
+}
+
+.results-content-filter-empty {
+  margin-top: 60px;
+}

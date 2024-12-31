@@ -89,7 +89,14 @@ limitations under the License.
     <tr *matHeaderRowDef="displayedColumns(); sticky: true" mat-header-row></tr>
 
     <tr class="mat-row" *matNoDataRow>
-      <td class="mat-cell" [attr.colspan]="displayedColumns().length">
+      <td
+        class="mat-cell empty-data-cell"
+        [attr.colspan]="displayedColumns().length">
+        <div class="callout-container">
+          <app-callout [type]="CalloutType.Info">
+            CA certificates must be uploaded to complete TLS testing
+          </app-callout>
+        </div>
         <div class="results-content-filter-empty">
           <ng-container
             *ngTemplateOutlet="
