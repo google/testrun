@@ -27,12 +27,18 @@ import { skip, take } from 'rxjs';
 import {
   selectAdapters,
   selectHasConnectionSettings,
+  selectInterfaces,
+  selectSystemConfig,
 } from '../../store/selectors';
 import { of } from 'rxjs/internal/observable/of';
-import { fetchSystemConfigSuccess } from '../../store/actions';
+import {
+  fetchInterfaces,
+  fetchSystemConfig,
+  fetchSystemConfigSuccess,
+} from '../../store/actions';
 import { fetchInterfacesSuccess } from '../../store/actions';
 import { FormBuilder, FormControl } from '@angular/forms';
-import { FormKey, SystemConfig } from '../../model/setting';
+import { FormKey } from '../../model/setting';
 import {
   MOCK_ADAPTERS,
   MOCK_DEVICE_VALUE,
@@ -52,11 +58,7 @@ describe('GeneralSettingsStore', () => {
   let fb: FormBuilder;
 
   beforeEach(() => {
-    mockService = jasmine.createSpyObj([
-      'getSystemInterfaces',
-      'createSystemConfig',
-      'getSystemConfig',
-    ]);
+    mockService = jasmine.createSpyObj(['createSystemConfig']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -66,6 +68,8 @@ describe('GeneralSettingsStore', () => {
           selectors: [
             { selector: selectHasConnectionSettings, value: true },
             { selector: selectAdapters, value: {} },
+            { selector: selectInterfaces, value: {} },
+            { selector: selectSystemConfig, value: { network: {} } },
           ],
         }),
         FormBuilder,
@@ -83,28 +87,6 @@ describe('GeneralSettingsStore', () => {
   });
 
   describe('updaters', () => {
-    describe('setSystemConfig', () => {
-      it('should update systemConfig', (done: DoneFn) => {
-        const config = {
-          network: {
-            device_intf: 'enx207bd2620617',
-            internet_intf: 'enx207bd2620618',
-          },
-          log_level: 'INFO',
-          startup_timeout: 60,
-          monitor_period: 60,
-          runtime: 120,
-        } as SystemConfig;
-
-        settingsStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-          expect(store.systemConfig).toEqual(config);
-          done();
-        });
-
-        settingsStore.setSystemConfig(config);
-      });
-    });
-
     it('should update isSubmitting', (done: DoneFn) => {
       settingsStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
         expect(store.isSubmitting).toEqual(true);
@@ -115,8 +97,7 @@ describe('GeneralSettingsStore', () => {
     });
 
     it('should update interfaces', (done: DoneFn) => {
-      settingsStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
-        expect(store.interfaces).toEqual(MOCK_INTERFACES);
+      settingsStore.viewModel$.pipe(skip(2), take(1)).subscribe(store => {
         expect(store.deviceOptions).toEqual(MOCK_INTERFACES);
         expect(store.internetOptions).toEqual({
           mockDeviceKey: 'mockDeviceValue',
@@ -150,52 +131,18 @@ describe('GeneralSettingsStore', () => {
 
   describe('effects', () => {
     describe('getSystemConfig', () => {
-      beforeEach(() => {
-        mockService.getSystemConfig.and.returnValue(of({ network: {} }));
-      });
-
-      it('should dispatch action fetchSystemConfigSuccess', () => {
+      it('should dispatch action fetchSystemConfig', () => {
         settingsStore.getSystemConfig();
 
-        expect(store.dispatch).toHaveBeenCalledWith(
-          fetchSystemConfigSuccess({ systemConfig: { network: {} } })
-        );
-      });
-
-      it('should update store', done => {
-        settingsStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-          expect(store.systemConfig).toEqual({ network: {} });
-          done();
-        });
-
-        settingsStore.getSystemConfig();
+        expect(store.dispatch).toHaveBeenCalledWith(fetchSystemConfig());
       });
     });
 
     describe('getInterfaces', () => {
-      const interfaces = MOCK_INTERFACES;
-
-      beforeEach(() => {
-        mockService.getSystemInterfaces.and.returnValue(of(interfaces));
-      });
-
       it('should dispatch action fetchInterfacesSuccess', () => {
         settingsStore.getInterfaces();
 
-        expect(store.dispatch).toHaveBeenCalledWith(
-          fetchInterfacesSuccess({ interfaces })
-        );
-      });
-
-      it('should update store', done => {
-        settingsStore.viewModel$.pipe(skip(3), take(1)).subscribe(store => {
-          expect(store.interfaces).toEqual(interfaces);
-          expect(store.deviceOptions).toEqual(interfaces);
-          expect(store.internetOptions).toEqual(interfaces);
-          done();
-        });
-
-        settingsStore.getInterfaces();
+        expect(store.dispatch).toHaveBeenCalledWith(fetchInterfaces());
       });
     });
 
@@ -217,20 +164,6 @@ describe('GeneralSettingsStore', () => {
         );
       });
 
-      it('should update store', done => {
-        settingsStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
-          expect(store.systemConfig).toEqual({ network: {} });
-          done();
-        });
-
-        settingsStore.updateSystemConfig(
-          of({
-            onSystemConfigUpdate: () => {},
-            config: { network: {} },
-          })
-        );
-      });
-
       it('should call onSystemConfigUpdate', () => {
         const effectParams = {
           onSystemConfigUpdate: () => {},
@@ -249,8 +182,12 @@ describe('GeneralSettingsStore', () => {
     describe('setDefaultFormValues', () => {
       describe('when values are present', () => {
         beforeEach(() => {
-          settingsStore.setSystemConfig(MOCK_SYSTEM_CONFIG_WITH_DATA);
-          settingsStore.setInterfaces(MOCK_INTERFACES);
+          store.overrideSelector(selectInterfaces, MOCK_INTERFACES);
+          store.overrideSelector(
+            selectSystemConfig,
+            MOCK_SYSTEM_CONFIG_WITH_DATA
+          );
+          store.refreshState();
         });
 
         it('should set default form values', () => {
@@ -279,8 +216,12 @@ describe('GeneralSettingsStore', () => {
 
       describe('with single port mode', () => {
         beforeEach(() => {
-          settingsStore.setSystemConfig(MOCK_SYSTEM_CONFIG_WITH_SINGLE_PORT);
-          settingsStore.setInterfaces(MOCK_INTERFACES);
+          store.overrideSelector(selectInterfaces, MOCK_INTERFACES);
+          store.overrideSelector(
+            selectSystemConfig,
+            MOCK_SYSTEM_CONFIG_WITH_SINGLE_PORT
+          );
+          store.refreshState();
         });
 
         it('should disable internet control', () => {
@@ -300,8 +241,12 @@ describe('GeneralSettingsStore', () => {
 
       describe('when values are empty', () => {
         beforeEach(() => {
-          settingsStore.setSystemConfig(MOCK_SYSTEM_CONFIG_WITH_NO_DATA);
-          settingsStore.setInterfaces(MOCK_INTERFACES);
+          store.overrideSelector(selectInterfaces, MOCK_INTERFACES);
+          store.overrideSelector(
+            selectSystemConfig,
+            MOCK_SYSTEM_CONFIG_WITH_NO_DATA
+          );
+          store.refreshState();
         });
 
         it('should set default form values', () => {
@@ -347,13 +292,14 @@ describe('GeneralSettingsStore', () => {
 
       beforeEach(() => {
         settingsStore.setInterfaces(MOCK_INTERFACES);
+        store.overrideSelector(selectInterfaces, MOCK_INTERFACES);
+        store.refreshState();
       });
 
       it('should update store', done => {
         settingsStore.viewModel$
-          .pipe(skip(3), take(1))
+          .pipe(skip(2), take(1))
           .subscribe(storeValue => {
-            expect(storeValue.interfaces).toEqual(updateInterfaces);
             expect(storeValue.deviceOptions).toEqual(updateInterfaces);
             expect(storeValue.internetOptions).toEqual(updateInternetOptions);
 

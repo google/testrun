@@ -45,6 +45,8 @@ import {
   setDevices,
   updateAdapters,
   setTestModules,
+  fetchSystemConfig,
+  fetchInterfaces,
 } from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -516,6 +518,22 @@ describe('AppStore', () => {
           },
         });
         store.refreshState();
+      });
+    });
+
+    describe('getInterfaces', () => {
+      it('should dispatch action fetchInterfaces', () => {
+        appStore.getInterfaces();
+
+        expect(store.dispatch).toHaveBeenCalledWith(fetchInterfaces());
+      });
+    });
+
+    describe('getSystemConfig', () => {
+      it('should dispatch action fetchSystemConfig', () => {
+        appStore.getSystemConfig();
+
+        expect(store.dispatch).toHaveBeenCalledWith(fetchSystemConfig());
       });
     });
   });

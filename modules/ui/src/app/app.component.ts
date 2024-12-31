@@ -119,6 +119,8 @@ export class AppComponent implements AfterViewInit {
     this.appStore.getReports();
     this.appStore.getTestModules();
     this.appStore.getNetworkAdapters();
+    this.appStore.getInterfaces();
+    this.appStore.getSystemConfig();
     this.matIconRegistry.addSvgIcon(
       'device_run',
       this.domSanitizer.bypassSecurityTrustResourceUrl(DEVICES_RUN_URL)

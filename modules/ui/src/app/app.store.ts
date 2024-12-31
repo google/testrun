@@ -52,6 +52,8 @@ import {
   fetchReports,
   setTestModules,
   updateAdapters,
+  fetchInterfaces,
+  fetchSystemConfig,
 } from './store/actions';
 import { StatusOfTestrun, TestrunStatus } from './model/testrun-status';
 import {
@@ -316,6 +318,22 @@ export class AppStore extends ComponentStore<AppComponentState> {
         window.dataLayer.push({
           event: 'pilot_is_compliant',
         });
+      })
+    );
+  });
+
+  getInterfaces = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        this.store.dispatch(fetchInterfaces());
+      })
+    );
+  });
+
+  getSystemConfig = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        this.store.dispatch(fetchSystemConfig());
       })
     );
   });
