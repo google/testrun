@@ -475,11 +475,11 @@ class TLSUtil():
     ciphers = response[0].split('\n')
     return ciphers
 
-  def get_hello_packets(self, capture_files, src_ip, tls_version):
+  def get_hello_packets(self, capture_files, src_mac, tls_version):
     combined_results = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_client_hello_packets.sh'
-      args = f'"{capture_file}" {src_ip} {tls_version}'
+      args = f'"{capture_file}" {src_mac} {tls_version}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
       packets = response[0].strip()
@@ -501,11 +501,11 @@ class TLSUtil():
     return combined_results
 
   # Resolve all connections from the device that don't use TLS
-  def get_non_tls_packetes(self, client_ip, capture_files):
+  def get_non_tls_packetes(self, client_mac, capture_files):
     combined_packets = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_non_tls_client_connections.sh'
-      args = f'"{capture_file}" {client_ip}'
+      args = f'"{capture_file}" {client_mac}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
       if len(response) > 0:
@@ -515,13 +515,13 @@ class TLSUtil():
 
   # Resolve all connections from the device that use TLS
   def get_tls_client_connection_packetes(self,
-                                         client_ip,
+                                         client_mac,
                                          capture_files,
                                          protocol=None):
     combined_packets = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_tls_client_connections.sh'
-      args = f'"{capture_file}" {client_ip}'
+      args = f'"{capture_file}" {client_mac}'
       if protocol is not None:
         args += f' {protocol}'
       command = f'{bin_file} {args}'
@@ -534,16 +534,17 @@ class TLSUtil():
   # connections are established or any other validation only
   # that there is some level of connection attempt from the device
   # using the TLS version specified.
-  def get_tls_packets(self, capture_files, src_ip, tls_version):
+  def get_tls_packets(self, capture_files, src_mac, tls_version):
     combined_results = []
     for capture_file in capture_files:
       bin_file = self._bin_dir + '/get_tls_packets.sh'
-      args = f'"{capture_file}" {src_ip} {tls_version}'
+      args = f'"{capture_file}" {src_mac} {tls_version}'
       command = f'{bin_file} {args}'
       response = util.run_command(command)
       packets = response[0].strip()
+      parsed_json = json.loads(packets)
       # Parse each packet and append key-value pairs to combined_results
-      result = self.parse_packets(json.loads(packets), capture_file)
+      result = self.parse_packets(parsed_json, capture_file)
       combined_results.extend(result)
     return combined_results
 
@@ -615,16 +616,12 @@ class TLSUtil():
   # we will assume any local connections using the same IP subnet as our
   # local network are approved and only connections to IP addresses outside
   # our network will be flagged.
-  def get_non_tls_client_connection_ips(self, client_ip, capture_files):
+  def get_non_tls_client_connection_ips(self, client_mac, capture_files):
     LOGGER.info('Checking client for non-TLS client connections')
-    packets = self.get_non_tls_packetes(client_ip=client_ip,
+    packets = self.get_non_tls_packetes(client_mac=client_mac,
                                         capture_files=capture_files)
 
     # Extract the subnet from the client IP address
-    src_ip = ipaddress.ip_address(client_ip)
-    src_subnet = ipaddress.ip_network(src_ip, strict=False)
-    subnet_with_mask = ipaddress.ip_network(
-        src_subnet, strict=False).supernet(new_prefix=24)
 
     non_tls_dst_ips = set()  # Store unique destination IPs
     for packet in packets:
@@ -633,6 +630,13 @@ class TLSUtil():
         tcp_flags = packet['_source']['layers']['tcp.flags']
         if 'A' not in tcp_flags and 'S' not in tcp_flags:
           # Packet is not ACK or SYN
+
+          src_ip = ipaddress.ip_address(
+            packet['_source']['layers']['ip.src'][0])
+          src_subnet = ipaddress.ip_network(src_ip, strict=False)
+          subnet_with_mask = ipaddress.ip_network(
+              src_subnet, strict=False).supernet(new_prefix=24)
+
           dst_ip = ipaddress.ip_address(
               packet['_source']['layers']['ip.dst'][0])
           if not dst_ip in subnet_with_mask:
@@ -645,14 +649,14 @@ class TLSUtil():
   # local network are approved and only connections to IP addresses outside
   # our network will be flagged.
   def get_unsupported_tls_ips(self,
-                              client_ip,
+                              client_mac,
                               capture_files,
                               unsupported_versions=None):
     LOGGER.info('Checking client for unsupported TLS client connections')
     unsupported_tls_dst_ips = {}
     if unsupported_versions is not None:
       for unsupported_version in unsupported_versions:
-        tls_packets = self.get_tls_packets(capture_files, client_ip, '1.0')
+        tls_packets = self.get_tls_packets(capture_files, client_mac, '1.0')
         if len(tls_packets) > 0:
           for packet in tls_packets:
             dst_ip = packet['dst_ip']
@@ -673,10 +677,10 @@ class TLSUtil():
 
   # Check if the device has made any outbound connections that use any
   # version of TLS.
-  def get_tls_client_connection_ips(self, client_ip, capture_files):
+  def get_tls_client_connection_ips(self, client_mac, capture_files):
     LOGGER.info('Checking client for TLS client connections')
     packets = self.get_tls_client_connection_packetes(
-        client_ip=client_ip, capture_files=capture_files)
+        client_mac=client_mac, capture_files=capture_files)
 
     tls_dst_ips = set()  # Store unique destination IPs
     for packet in packets:
@@ -686,13 +690,13 @@ class TLSUtil():
 
   # Check if the device has made any outbound connections that use any
   # allowed protocols that do not fit into a direct TLS packet inspection
-  def get_allowed_protocol_client_connection_ips(self, client_ip,
+  def get_allowed_protocol_client_connection_ips(self, client_mac,
                                                  capture_files):
     LOGGER.info('Checking client for TLS Protocol client connections')
     tls_dst_ips = {}  # Store unique destination IPs with the protocol name
     for protocol in self._allowed_protocols:
       packets = self.get_tls_client_connection_packetes(
-          client_ip=client_ip, capture_files=capture_files, protocol=protocol)
+          client_mac=client_mac, capture_files=capture_files, protocol=protocol)
 
       for packet in packets:
         dst_ip = ipaddress.ip_address(packet['_source']['layers']['ip.dst'][0])
@@ -708,18 +712,18 @@ class TLSUtil():
     return False
 
   def validate_tls_client(self,
-                          client_ip,
+                          client_mac,
                           tls_version,
                           capture_files,
                           unsupported_versions=None):
     LOGGER.info('Validating client for TLS: ' + tls_version)
-    hello_packets = self.get_hello_packets(capture_files, client_ip,
+    hello_packets = self.get_hello_packets(capture_files, client_mac,
                                            tls_version)
 
     # Resolve allowed protocol connections that require
     # additional consideration beyond packet inspection
     protocol_client_ips = (self.get_allowed_protocol_client_connection_ips(
-        client_ip, capture_files))
+        client_mac, capture_files))
 
     if len(protocol_client_ips) > 0:
       LOGGER.info(
@@ -790,10 +794,10 @@ class TLSUtil():
 
     # Resolve all non-TLS related client connections
     non_tls_client_ips = self.get_non_tls_client_connection_ips(
-        client_ip, capture_files)
+        client_mac, capture_files)
 
     # Resolve all TLS related client connections
-    tls_client_ips = self.get_tls_client_connection_ips(client_ip,
+    tls_client_ips = self.get_tls_client_connection_ips(client_mac,
                                                         capture_files)
     # Filter out all outbound TLS connections regardless on whether
     # or not they were validated.  If they were not validated,
@@ -814,7 +818,8 @@ class TLSUtil():
           LOGGER.info(f'''TLS connection detected to {ip}.
                        Ignoring non-TLS traffic detected to this IP''')
 
-    unsupported_tls_ips = self.get_unsupported_tls_ips(client_ip, capture_files,
+    unsupported_tls_ips = self.get_unsupported_tls_ips(client_mac,
+                                                       capture_files,
                                                        unsupported_versions)
     if len(unsupported_tls_ips) > 0:
       tls_client_valid = False

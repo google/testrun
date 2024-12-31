@@ -114,7 +114,8 @@ export class TestrunStatusCardComponent {
     return (
       status === StatusOfTestrun.Monitoring ||
       status === StatusOfTestrun.InProgress ||
-      status === StatusOfTestrun.WaitingForDevice
+      status === StatusOfTestrun.WaitingForDevice ||
+      status === StatusOfTestrun.Validating
     );
   }
 

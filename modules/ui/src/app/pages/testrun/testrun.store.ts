@@ -103,6 +103,7 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
       // perform some additional actions
       tap(res => {
         if (
+          res?.status === StatusOfTestrun.Validating ||
           res?.status === StatusOfTestrun.WaitingForDevice ||
           res?.status === StatusOfTestrun.Monitoring ||
           (res?.status === StatusOfTestrun.InProgress &&
@@ -123,6 +124,7 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
       tap(res => {
         const results = (res?.tests as TestsData)?.results || [];
         if (
+          res?.status === StatusOfTestrun.Validating ||
           res?.status === StatusOfTestrun.Monitoring ||
           res?.status === StatusOfTestrun.WaitingForDevice ||
           (res?.status === StatusOfTestrun.Cancelled && !results.length)
@@ -212,7 +214,8 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     return (
       status === StatusOfTestrun.InProgress ||
       status === StatusOfTestrun.WaitingForDevice ||
-      status === StatusOfTestrun.Monitoring
+      status === StatusOfTestrun.Monitoring ||
+      status === StatusOfTestrun.Validating
     );
   }
 

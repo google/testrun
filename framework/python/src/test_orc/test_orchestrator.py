@@ -719,5 +719,6 @@ class TestOrchestrator:
       start_idx = current_test if i == self._current_module else 0
       for j in range(start_idx, len(self._test_modules_running[i].tests)):
         self.get_session().set_test_result_error(
-          self._test_modules_running[i].tests[j]
+          self._test_modules_running[i].tests[j],
+          "Test did not run, the device was disconnected"
           )

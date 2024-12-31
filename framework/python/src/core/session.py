@@ -456,10 +456,12 @@ class TestrunSession():
     if not updated:
       self._results.append(result)
 
-  def set_test_result_error(self, result):
+  def set_test_result_error(self, result, description=None):
     """Set test result error"""
     result.result = TestResult.ERROR
     result.recommendations = None
+    if description is not None:
+      result.description = description
     self._results.append(result)
 
   def add_module_report(self, module_report):

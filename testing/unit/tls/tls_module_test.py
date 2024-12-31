@@ -200,6 +200,7 @@ class TLSModuleTest(unittest.TestCase):
     self.assertFalse(test_results[0])
 
     # Test 1.2 server when 1.3 and 1.2 failed connection is established
+
   def security_tls_v1_2_none_server_test(self):
     tls_1_2_results = None, 'No cert'
     tls_1_3_results = None, 'No cert'
@@ -228,7 +229,7 @@ class TLSModuleTest(unittest.TestCase):
     capture_file = os.path.join(CAPTURES_DIR, 'no_tls.pcap')
 
     # Run the client test
-    test_results = TLS_UTIL.validate_tls_client(client_ip='172.27.253.167',
+    test_results = TLS_UTIL.validate_tls_client(client_mac='00:15:5d:0c:86:b9',
                                                 tls_version='1.2',
                                                 capture_files=[capture_file])
     print(str(test_results))
@@ -272,8 +273,8 @@ class TLSModuleTest(unittest.TestCase):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     capture_file = OUTPUT_DIR + '/client_tls.pcap'
 
-    # Resolve the client ip used
-    client_ip = self.get_interface_ip(INTERNET_IFACE)
+    # Resolve the client mac used
+    client_mac = self.get_interface_mac(INTERNET_IFACE)
 
     # Genrate TLS outbound traffic
     if tls_generate is None:
@@ -281,7 +282,7 @@ class TLSModuleTest(unittest.TestCase):
     self.generate_tls_traffic(capture_file, tls_generate, disable_valid_ciphers)
 
     # Run the client test
-    return TLS_UTIL.validate_tls_client(client_ip=client_ip,
+    return TLS_UTIL.validate_tls_client(client_mac=client_mac,
                                         tls_version=tls_version,
                                         capture_files=[capture_file])
 
@@ -290,7 +291,7 @@ class TLSModuleTest(unittest.TestCase):
     capture_file = os.path.join(CAPTURES_DIR, 'monitor.pcap')
 
     # Run the client test
-    test_results = TLS_UTIL.validate_tls_client(client_ip='10.10.10.14',
+    test_results = TLS_UTIL.validate_tls_client(client_mac='70:b3:d5:96:c0:00',
                                                 tls_version='1.2',
                                                 capture_files=[capture_file])
     print(str(test_results))
@@ -303,7 +304,7 @@ class TLSModuleTest(unittest.TestCase):
     capture_file = os.path.join(CAPTURES_DIR, 'unsupported_tls.pcap')
 
     # Run the client test
-    test_results = TLS_UTIL.validate_tls_client(client_ip='172.27.253.167',
+    test_results = TLS_UTIL.validate_tls_client(client_mac='00:15:5d:0c:86:b9',
                                                 tls_version='1.2',
                                                 capture_files=[capture_file])
     print(str(test_results))
@@ -316,7 +317,7 @@ class TLSModuleTest(unittest.TestCase):
     capture_file = os.path.join(CAPTURES_DIR, 'monitor_with_quic.pcap')
 
     # Run the client test
-    test_results = TLS_UTIL.validate_tls_client(client_ip='10.10.10.15',
+    test_results = TLS_UTIL.validate_tls_client(client_mac='e4:5f:01:5f:92:9c',
                                                 tls_version='1.2',
                                                 capture_files=[capture_file])
     print(str(test_results))
@@ -391,7 +392,6 @@ class TLSModuleTest(unittest.TestCase):
     # Read the local good report
     with open(LOCAL_REPORT_SINGLE, 'r', encoding='utf-8') as file:
       report_local = file.read()
-
     self.assertEqual(report_out, report_local)
 
   def tls_module_report_ext_test(self):
@@ -526,11 +526,11 @@ class TLSModuleTest(unittest.TestCase):
 
     return capture_thread
 
-  def get_interface_ip(self, interface_name):
+  def get_interface_mac(self, interface_name):
     try:
       addresses = netifaces.ifaddresses(interface_name)
-      ipv4 = addresses[netifaces.AF_INET][0]['addr']
-      return ipv4
+      mac = addresses[netifaces.AF_LINK][0]['addr']
+      return mac
     except (ValueError, KeyError) as e:
       print(f'Error: {e}')
       return None
