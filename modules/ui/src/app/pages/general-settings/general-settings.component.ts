@@ -159,9 +159,12 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(systemStatus => {
         if (systemStatus?.status) {
-          this.settingsDisable = this.testRunService.testrunInProgress(
+          const isTestrunInProgress = this.testRunService.testrunInProgress(
             systemStatus.status
           );
+          if (isTestrunInProgress !== this.isSettingsDisable) {
+            this.settingsDisable = isTestrunInProgress;
+          }
         }
       });
   }
@@ -187,11 +190,11 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   }
 
   private disableSettings(): void {
-    this.settingForm?.disable();
+    this.settingsStore.setFormDisable(this.settingForm);
   }
 
   private enableSettings(): void {
-    this.settingForm?.enable();
+    this.settingsStore.setFormEnable(this.settingForm);
   }
 
   private createSettingForm() {

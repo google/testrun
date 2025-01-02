@@ -166,6 +166,26 @@ export class GeneralSettingsStore extends ComponentStore<SettingsComponentState>
     );
   });
 
+  setFormDisable = this.effect((formGroup$: Observable<FormGroup>) => {
+    return formGroup$.pipe(
+      tap(formGroup => {
+        formGroup.disable();
+      })
+    );
+  });
+
+  setFormEnable = this.effect((formGroup$: Observable<FormGroup>) => {
+    return formGroup$.pipe(
+      withLatestFrom(this.systemConfig$),
+      tap(([formGroup, config]) => {
+        formGroup.enable();
+        if (config.single_intf) {
+          this.disableInternetInterface(formGroup);
+        }
+      })
+    );
+  });
+
   setDefaultFormValues = this.effect((formGroup$: Observable<FormGroup>) => {
     return formGroup$.pipe(
       switchMap(formGroup =>
