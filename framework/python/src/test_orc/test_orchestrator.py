@@ -267,7 +267,7 @@ class TestOrchestrator:
         result = TestResult.NON_COMPLIANT
 
       # Change the result if pilot assessment used
-      if (self.get_session().get_target_device().test_pack.name ==
+      if (self.get_session().get_target_device().test_pack ==
           "Pilot Assessment"):
         if result == TestResult.COMPLIANT:
           result = TestResult.PROCEED

@@ -48,10 +48,10 @@
           </div>
           {% endfor %}
         </div>
-        {% if test_status == 'Compliant' %}
-        <div class ="summary-color-box summary-box-compliant">
+        {% if test_status in ['Compliant', 'Proceed'] %}
+          <div class ="summary-color-box summary-box-compliant">
         {% else %}
-        <div class ="summary-color-box summary-box-non-compliant">
+          <div class ="summary-color-box summary-box-non-compliant">
         {% endif %}
           <div class="summary-box-label">Test Status</div>
           <div class="summary-box-value">Complete</div>
