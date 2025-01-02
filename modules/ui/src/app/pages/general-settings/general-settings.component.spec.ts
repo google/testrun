@@ -60,6 +60,8 @@ describe('GeneralSettingsComponent', () => {
       'updateSystemConfig',
       'setIsSubmitting',
       'setDefaultFormValues',
+      'setFormDisable',
+      'setFormEnable',
       'getSystemConfig',
       'viewModel$',
       'systemStatus$',
@@ -140,19 +142,15 @@ describe('GeneralSettingsComponent', () => {
 
   describe('#settingsDisable', () => {
     it('should disable setting form when get settingDisable as true ', () => {
-      spyOn(component.settingForm, 'disable');
-
       component.settingsDisable = true;
 
-      expect(component.settingForm.disable).toHaveBeenCalled();
+      expect(mockSettingsStore.setFormDisable).toHaveBeenCalled();
     });
 
     it('should enable setting form when get settingDisable as false ', () => {
-      spyOn(component.settingForm, 'enable');
-
       component.settingsDisable = false;
 
-      expect(component.settingForm.enable).toHaveBeenCalled();
+      expect(mockSettingsStore.setFormEnable).toHaveBeenCalled();
     });
 
     it('should disable "Save" button when get settingDisable as true', () => {
