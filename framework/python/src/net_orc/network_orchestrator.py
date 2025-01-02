@@ -713,7 +713,8 @@ class NetworkOrchestrator:
     if self.get_session().get_status() not in [
         TestrunStatus.WAITING_FOR_DEVICE,
         TestrunStatus.MONITORING,
-        TestrunStatus.IN_PROGRESS
+        TestrunStatus.IN_PROGRESS,
+        TestrunStatus.STARTING
       ]:
       message['connection'] = None
 
