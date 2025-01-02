@@ -17,7 +17,6 @@ export enum CalloutType {
   Info = 'info',
   InfoPilot = 'info pilot',
   Check = 'check_circle',
-  Warning = 'warning_amber',
+  Warning = 'warning',
   Error = 'error',
-  ErrorOutline = 'error_outline',
 }
