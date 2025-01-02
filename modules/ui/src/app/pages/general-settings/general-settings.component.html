@@ -15,7 +15,7 @@ limitations under the License.
 -->
 <div class="setting-drawer-content" *ngIf="viewModel$ | async as vm">
   <app-callout
-    [type]="CalloutType.ErrorOutline"
+    [type]="CalloutType.Error"
     *ngIf="settingsDisable"
     action="Go to Testing tab"
     (onAction)="navigateToRuntime()">

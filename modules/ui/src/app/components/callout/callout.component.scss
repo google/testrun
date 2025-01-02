@@ -33,28 +33,27 @@
 }
 
 .check_circle {
-  border-color: colors.$on-tertiary-container;
   color: colors.$on-tertiary-container;
   background-color: rgba(20, 108, 46, 0.1);
 }
 
 .info {
-  border-color: colors.$primary;
   color: colors.$primary;
   background-color: rgba(127, 207, 255, 0.16);
 }
 
-.error,
-.error_outline {
-  border-color: colors.$on-error-container;
+.error {
   color: colors.$on-error-container;
   background-color: rgba(179, 38, 30, 0.1);
 }
 
-.warning_amber {
-  border-color: colors.$orange-60;
+.warning {
   color: colors.$orange-40;
   background-color: colors.$orange-98;
+}
+
+.warning .callout-border {
+  color: colors.$orange-60;
 }
 
 .callout-container {
