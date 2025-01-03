@@ -604,12 +604,6 @@ class TestrunSession():
 
     profile_name = profile_json['name']
 
-    # Check if profile name has special characters
-    for char in profile_name:
-      if char in r"\<>?/:;@''][=^!":
-        LOGGER.error('Profile name should not contain special characters')
-        return None
-
     # Add version, timestamp and status
     profile_json['version'] = self.get_version()
     profile_json['created'] = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -688,6 +682,15 @@ class TestrunSession():
     elif len(profile_json.get('name').strip()) == 0:
       LOGGER.error('Name field left empty')
       return False
+
+    # Check if profile name has special characters
+    for field in ['name', 'rename']:
+      profile_name = profile_json.get(field)
+      if profile_name:
+        for char in profile_name:
+          if char in r"\<>?/:;@''][=^":
+            LOGGER.error('Profile name should not contain special characters')
+            return False
 
     # Error handling if 'questions' not in request
     if 'questions' not in profile_json and valid:
