@@ -156,7 +156,7 @@ class TestrunSession():
 
   def start(self):
     self.reset()
-    self._status = TestrunStatus.WAITING_FOR_DEVICE
+    self._status = TestrunStatus.STARTING
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -603,6 +603,12 @@ class TestrunSession():
     The content has already been validated in the API"""
 
     profile_name = profile_json['name']
+
+    # Check if profile name has special characters
+    for char in profile_name:
+      if char in r"\<>?/:;@''][=^!":
+        LOGGER.error('Profile name should not contain special characters')
+        return None
 
     # Add version, timestamp and status
     profile_json['version'] = self.get_version()
