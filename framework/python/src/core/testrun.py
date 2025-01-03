@@ -463,6 +463,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     if device is not None:
       if mac_addr != device.mac_addr:
+        LOGGER.debug(f'Found device with mac addr: {mac_addr} but was ignored')
+        LOGGER.debug(f'Expected device mac address is {device.mac_addr}')
         # Ignore discovered device because it is not the target device
         return
     else:
