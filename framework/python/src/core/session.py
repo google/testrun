@@ -156,7 +156,7 @@ class TestrunSession():
 
   def start(self):
     self.reset()
-    self._status = TestrunStatus.STARTING
+    self._status = TestrunStatus.WAITING_FOR_DEVICE
     self._started = datetime.datetime.now()
 
   def get_started(self):
