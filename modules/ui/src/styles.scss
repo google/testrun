@@ -386,11 +386,39 @@ body #main {
     .setting-drawer-content {
       max-height: calc(100vh - #{variables.$settings-top-with-callout});
     }
+
+    .content-certificates {
+      max-height: calc(
+        100vh - #{variables.$settings-top-with-callout} -
+          #{variables.$certificate-button-height}
+      );
+    }
+
+    .certificates-content-empty {
+      height: calc(
+        100vh - #{variables.$settings-top-with-callout} -
+          #{variables.$certificate-button-height}
+      );
+    }
   }
 
   &:has(.app-callout-container > app-callout + app-callout) {
     .setting-drawer-content {
       max-height: calc(100vh - #{variables.$settings-top-with-two-callouts});
+    }
+
+    .content-certificates {
+      max-height: calc(
+        100vh - #{variables.$settings-top-with-two-callouts} -
+          #{variables.$certificate-button-height}
+      );
+    }
+
+    .certificates-content-empty {
+      height: calc(
+        100vh - #{variables.$settings-top-with-two-callouts} -
+          #{variables.$certificate-button-height}
+      );
     }
   }
 }
@@ -401,6 +429,20 @@ body #main {
       .setting-drawer-content {
         max-height: calc(
           100vh - #{variables.$settings-top-with-callout} - 20px
+        );
+      }
+
+      .content-certificates {
+        max-height: calc(
+          100vh - #{variables.$settings-top-with-callout} -
+            #{variables.$certificate-button-height} - 20px
+        );
+      }
+
+      .certificates-content-empty {
+        height: calc(
+          100vh - #{variables.$settings-top-with-callout} -
+            #{variables.$certificate-button-height} - 20px
         );
       }
     }
@@ -415,6 +457,20 @@ body #main {
           100vh - #{variables.$settings-top-with-two-callouts} - 20px
         );
       }
+
+      .content-certificates {
+        max-height: calc(
+          100vh - #{variables.$settings-top-with-two-callouts} -
+            #{variables.$certificate-button-height} - 20px
+        );
+      }
+
+      .certificates-content-empty {
+        height: calc(
+          100vh - #{variables.$settings-top-with-two-callouts} -
+            #{variables.$certificate-button-height} - 20px
+        );
+      }
     }
   }
 }
@@ -427,12 +483,40 @@ body #main {
           100vh - #{variables.$settings-top-with-callout} - 20px
         );
       }
+
+      .content-certificates {
+        max-height: calc(
+          100vh - #{variables.$settings-top-with-callout} -
+            #{variables.$certificate-button-height} - 20px
+        );
+      }
+
+      .certificates-content-empty {
+        height: calc(
+          100vh - #{variables.$settings-top-with-callout} -
+            #{variables.$certificate-button-height} - 20px
+        );
+      }
     }
 
     &:has(.app-callout-container > app-callout + app-callout) {
       .setting-drawer-content {
         max-height: calc(
           100vh - #{variables.$settings-top-with-two-callouts} - 40px
+        );
+      }
+
+      .content-certificates {
+        max-height: calc(
+          100vh - #{variables.$settings-top-with-two-callouts} -
+            #{variables.$certificate-button-height} - 40px
+        );
+      }
+
+      .certificates-content-empty {
+        height: calc(
+          100vh - #{variables.$settings-top-with-two-callouts} -
+            #{variables.$certificate-button-height} - 40px
         );
       }
     }
