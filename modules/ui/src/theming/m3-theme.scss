@@ -152,7 +152,7 @@ $light-theme: mat.define-theme(
     ),
     typography: (
       brand-family: variables.$font-primary,
-      plain-family: variables.$font-secondary,
+      plain-family: variables.$font-text,
     ),
     density: (
       scale: 0,
