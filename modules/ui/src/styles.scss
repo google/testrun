@@ -375,6 +375,68 @@ body #main {
       width: calc(100% - #{variables.$profiles-drawer-width});
     }
   }
+
+  &:has(app-settings) {
+    .app-callout-container app-callout:last-of-type .callout-container {
+      margin-bottom: 0;
+    }
+  }
+
+  &:has(.app-callout-container > app-callout) {
+    .setting-drawer-content {
+      max-height: calc(100vh - #{variables.$settings-top-with-callout});
+    }
+  }
+
+  &:has(.app-callout-container > app-callout + app-callout) {
+    .setting-drawer-content {
+      max-height: calc(100vh - #{variables.$settings-top-with-two-callouts});
+    }
+  }
+}
+
+@media only screen and (min-width: 880px) and (max-width: 1100px) {
+  body #main {
+    &:has(.app-callout-container > app-callout#outdated_devices_callout) {
+      .setting-drawer-content {
+        max-height: calc(
+          100vh - #{variables.$settings-top-with-callout} - 20px
+        );
+      }
+    }
+
+    &:has(
+        .app-callout-container
+          > app-callout
+          + app-callout#outdated_devices_callout
+      ) {
+      .setting-drawer-content {
+        max-height: calc(
+          100vh - #{variables.$settings-top-with-two-callouts} - 20px
+        );
+      }
+    }
+  }
+}
+
+@media (max-width: 880px) {
+  body #main {
+    &:has(.app-callout-container > app-callout) {
+      .setting-drawer-content {
+        max-height: calc(
+          100vh - #{variables.$settings-top-with-callout} - 20px
+        );
+      }
+    }
+
+    &:has(.app-callout-container > app-callout + app-callout) {
+      .setting-drawer-content {
+        max-height: calc(
+          100vh - #{variables.$settings-top-with-two-callouts} - 40px
+        );
+      }
+    }
+  }
 }
 
 .text-nowrap {

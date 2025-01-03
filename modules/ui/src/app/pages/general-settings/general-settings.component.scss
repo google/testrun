@@ -28,7 +28,7 @@
 .setting-drawer-content {
   overflow-y: scroll;
   height: max-content;
-  max-height: calc(100vh - 260px);
+  max-height: calc(100vh - #{variables.$settings-top});
   padding: 10px;
 
   .setting-drawer-content-form-empty {
