@@ -29,6 +29,10 @@
       row-item-outline-color: colors.$outline-variant,
     )
   );
+
+  ::ng-deep .mdc-data-table__row:last-child .mat-mdc-cell {
+    border-bottom: 1px solid colors.$outline-variant;
+  }
 }
 
 ::ng-deep .delete-certificate app-simple-dialog {
@@ -94,7 +98,9 @@
 }
 
 .certificates-content-empty {
-  height: calc(100vh - 344px);
+  height: calc(
+    100vh - #{variables.$settings-top} - #{variables.$certificate-button-height}
+  );
 }
 
 .empty-data-cell {
