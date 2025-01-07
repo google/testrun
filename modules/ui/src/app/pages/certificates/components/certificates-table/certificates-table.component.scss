@@ -98,9 +98,7 @@
 }
 
 .certificates-content-empty {
-  height: calc(
-    100vh - #{variables.$settings-top} - #{variables.$certificate-button-height}
-  );
+  min-height: 500px;
 }
 
 .empty-data-cell {

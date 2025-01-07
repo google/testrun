@@ -20,17 +20,12 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: 100%;
   flex: 1 0 auto;
 }
 
 .content-certificates {
   margin: 2px 18px 0;
-  overflow-y: scroll;
   height: max-content;
-  max-height: calc(
-    100vh - #{variables.$settings-top} - #{variables.$certificate-button-height}
-  );
   padding: 0 6px 6px;
 }
 
