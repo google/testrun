@@ -20,7 +20,6 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: 100%;
   flex: 1 0 auto;
   padding: 6px 22px;
 }
@@ -28,7 +27,6 @@
 .setting-drawer-content {
   overflow-y: scroll;
   height: max-content;
-  max-height: calc(100vh - #{variables.$settings-top});
   padding: 10px;
 
   .setting-drawer-content-form-empty {
