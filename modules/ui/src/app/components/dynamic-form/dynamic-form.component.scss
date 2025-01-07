@@ -19,12 +19,14 @@
 @use 'variables';
 
 .field-label {
-  margin: 0;
-  color: colors.$grey-800;
-  font-size: 18px;
+  font-family: variables.$font-text;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
   line-height: 24px;
-  padding-top: 24px;
-  padding-bottom: 16px;
+  letter-spacing: 0.1px;
+  color: colors.$on-surface-variant;
+  padding: 20px 20px 8px 16px;
   display: inline-block;
   &:has(+ .field-select-multiple.ng-invalid.ng-dirty) {
     color: mat.get-theme-color($light-theme, error, 40);

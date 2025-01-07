@@ -22,15 +22,21 @@ limitations under the License.
     [itemTemplate]="itemTemplate"
     [actions]="vm.actions"
     [entities]="vm.devices"
-    (addEntity)="openDialog(vm.devices, vm.testModules)"
+    (addEntity)="openForm()"
     (menuItemClicked)="menuItemClicked($event, vm.devices, vm.testModules)">
   </app-list-layout>
 
   <ng-template #content>
     <app-no-entity-selected
+      *ngIf="!isOpenDeviceForm"
       image="/assets/icons/switch.svg"
       header="No device selected">
     </app-no-entity-selected>
+    <app-device-qualification-from
+      *ngIf="isOpenDeviceForm"
+      [devices]="vm.devices"
+      [testModules]="vm.testModules"
+      (discard)="discard()"></app-device-qualification-from>
   </ng-template>
 
   <ng-template #empty>
@@ -44,7 +50,7 @@ limitations under the License.
 
   <ng-template #addDeviceButton>
     <button
-      (click)="openDialog(vm.devices, vm.testModules)"
+      (click)="openForm()"
       aria-label="Create new device"
       class="device-add-button"
       color="primary"
@@ -60,8 +66,6 @@ limitations under the License.
       [deviceView]="DeviceView.WithActions"
       [device]="entity"
       [disabled]="entity?.mac_addr === vm.deviceInProgress?.mac_addr"
-      (itemClicked)="
-        openDialog(vm.devices, vm.testModules, entity, entity)
-      "></app-device-item>
+      (itemClicked)="openForm()"></app-device-item>
   </ng-template>
 </ng-container>

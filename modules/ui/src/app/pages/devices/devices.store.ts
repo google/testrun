@@ -34,14 +34,14 @@ import {
   setIsOpenAddDevice,
 } from '../../store/actions';
 import { TestrunStatus } from '../../model/testrun-status';
-import { DeviceQuestionnaireSection } from '../../model/device';
 import { EntityAction } from '../../model/entity-action';
+import { QuestionFormat } from '../../model/question';
 
 export interface DevicesComponentState {
   devices: Device[];
   selectedDevice: Device | null;
   testModules: TestModule[];
-  questionnaireFormat: DeviceQuestionnaireSection[];
+  questionnaireFormat: QuestionFormat[];
   actions: EntityAction[];
 }
 
@@ -72,7 +72,7 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
   }));
 
   updateQuestionnaireFormat = this.updater(
-    (state, questionnaireFormat: DeviceQuestionnaireSection[]) => ({
+    (state, questionnaireFormat: QuestionFormat[]) => ({
       ...state,
       questionnaireFormat,
     })
@@ -158,7 +158,7 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
     return trigger$.pipe(
       exhaustMap(() => {
         return this.testRunService.fetchQuestionnaireFormat().pipe(
-          tap((questionnaireFormat: DeviceQuestionnaireSection[]) => {
+          tap((questionnaireFormat: QuestionFormat[]) => {
             this.updateQuestionnaireFormat(questionnaireFormat);
           })
         );
