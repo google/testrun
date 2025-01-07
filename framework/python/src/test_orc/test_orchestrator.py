@@ -366,6 +366,7 @@ class TestOrchestrator:
       date_timestamp: datetime.datetime = datetime.strptime(
       timestamp, "%Y-%m-%dT%H:%M:%S")
 
+      # Find the report
       test_report = None
       for report in device.get_reports():
         if report.get_started() == date_timestamp:
@@ -378,12 +379,12 @@ class TestOrchestrator:
       # Copy the original report for comparison
       original_report = copy.deepcopy(test_report)
 
-      # Update the report 'additional_info' field
+      # Update the report with 'additional_info' field
       test_report.update_device_profile(device.additional_info)
 
       # Overwrite report only if additional_info has been updated
       if original_report.to_json() != test_report.to_json():
-        print("Reports have be re-generated")
+
         # Write the json report
         with open(os.path.join(report_path, "report.json"),
                   "w", encoding="utf-8") as f:
