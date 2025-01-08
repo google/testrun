@@ -356,7 +356,7 @@ class TestOrchestrator:
 
     return completed_results_dir
 
-  def zip_results(self, device, timestamp, profile):
+  def zip_results(self, device, timestamp: str, profile):
 
     try:
       LOGGER.debug("Archiving test results")
@@ -364,6 +364,49 @@ class TestOrchestrator:
       src_path = os.path.join(
           LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
           timestamp)
+
+      # Report file path
+      report_path = os.path.join(
+        LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
+        timestamp, "test", device.mac_addr.replace(":", ""))
+
+      # Parse string timestamp
+      date_timestamp: datetime.datetime = datetime.strptime(
+      timestamp, "%Y-%m-%dT%H:%M:%S")
+
+      # Find the report
+      test_report = None
+      for report in device.get_reports():
+        if report.get_started() == date_timestamp:
+          test_report = report
+
+      # This should not happen as the timestamp is checked in api.py first
+      if test_report is None:
+        return None
+
+      # Copy the original report for comparison
+      original_report = copy.deepcopy(test_report)
+
+      # Update the report with 'additional_info' field
+      test_report.update_device_profile(device.additional_info)
+
+      # Overwrite report only if additional_info has been updated
+      if original_report.to_json() != test_report.to_json():
+
+        # Write the json report
+        with open(os.path.join(report_path, "report.json"),
+                  "w", encoding="utf-8") as f:
+          json.dump(test_report.to_json(), f, indent=2)
+
+        # Write the html report
+        with open(os.path.join(report_path, "report.html"),
+                  "w", encoding="utf-8") as f:
+          f.write(test_report.to_html())
+
+        # Write the pdf report
+        with open(os.path.join(report_path, "report.pdf"),
+                  "wb") as f:
+          f.write(test_report.to_pdf().getvalue())
 
       # Define temp directory to store files before zipping
       results_dir = os.path.join(f"/tmp/testrun/{time.time()}")
