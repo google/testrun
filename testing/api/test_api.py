@@ -2901,6 +2901,68 @@ def test_create_profile_invalid_json(empty_profiles_dir, testrun): # pylint: dis
   # Check if "error" key in response
   assert "error" in response
 
+def test_create_profile_invalid_name(empty_profiles_dir, testrun): # pylint: disable=W0613
+  """ Test for create profile invalid name (400) """
+
+  # Load the profile
+  new_profile = load_json("invalid_name.json", directory=PROFILES_PATH)
+
+  # Send the post request
+  r = requests.post(f"{API}/profiles", data=json.dumps(new_profile), timeout=5)
+
+  # Check if status code is 400 (Bad request)
+  assert r.status_code == 400
+
+  # Parse the response
+  response = r.json()
+
+  # Check if "error" key in response
+  assert "error" in response
+
+@pytest.mark.parametrize("add_profiles", [
+  ["valid_profile.json"]
+], indirect=True)
+def test_update_profile_invalid_name(empty_profiles_dir, add_profiles, testrun): # pylint: disable=W0613
+  """ Test for update profile invalid name (400) """
+
+  # Load the profile using load_json utility method
+  new_profile = load_json("valid_profile.json", directory=PROFILES_PATH)
+
+  # Assign the new_profile name
+  profile_name = new_profile["name"]
+
+  # Assign the profile questions
+  profile_questions = new_profile["questions"]
+
+  # Assign the updated_profile name
+  updated_profile_name = r"\<>?/:;@''][=^"
+
+  # Payload with the updated device name
+  updated_profile = {
+    "name": profile_name,
+    "rename" : updated_profile_name,
+    "questions": profile_questions
+    }
+
+  # Exception if the profile does not exists
+  if not profile_exists(profile_name):
+    raise ValueError(f"Profile: {profile_name} does not exists")
+
+  # Send the post request to update the profile
+  r = requests.post(
+      f"{API}/profiles",
+      data=json.dumps(updated_profile),
+      timeout=5)
+
+  # Check if status code is 400 (Bad request)
+  assert r.status_code == 400
+
+  # Parse the response
+  response = r.json()
+
+  # Check if "error" key in response
+  assert "error" in response
+
 @pytest.mark.parametrize("add_profiles", [
   ["valid_profile.json"]
 ], indirect=True)
