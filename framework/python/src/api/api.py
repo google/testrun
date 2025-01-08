@@ -931,7 +931,6 @@ class Api:
   async def get_profile(self, response: Response, profile_name):
 
     profile = self._session.get_profile(profile_name)
-    print(profile)
 
     # If the profile not found return 404
     if profile is None:
