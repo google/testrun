@@ -43,6 +43,7 @@ DEVICE_TECH_KEY = "technology"
 DEVICE_ADDITIONAL_INFO_KEY = "additional_info"
 
 DEVICES_PATH = "local/devices"
+PROFILES_PATH = "local/risk_profiles"
 
 RESOURCES_PATH = "resources"
 DEVICE_FOLDER_PATH = "devices"
@@ -133,6 +134,7 @@ class Api:
     self._router.add_api_route("/profiles",
                                self.delete_profile,
                                methods=["DELETE"])
+    self._router.add_api_route("/profile/{profile_name}", self.get_profile)
 
     # Allow all origins to access the API
     origins = ["*"]
@@ -925,6 +927,29 @@ class Api:
           False, "An error occurred whilst deleting that profile")
 
     return self._generate_msg(True, "Successfully deleted that profile")
+
+  async def get_profile(self, response: Response, profile_name):
+
+    profile = self._session.get_profile(profile_name)
+    print(profile)
+
+    # If the profile not found return 404
+    if profile is None:
+      LOGGER.info("Profile not found, returning 404")
+      response.status_code = 404
+      return self._generate_msg(False, "Profile could not be found")
+
+    # Profile file path
+    profile_path = os.path.join(PROFILES_PATH, f"{profile_name}.json")
+
+    LOGGER.debug(f"Received get profile request for {profile_name}")
+
+    if os.path.isfile(profile_path):
+      return FileResponse(profile_path)
+    else:
+      LOGGER.info("Profile could not be found, returning 404")
+      response.status_code = 404
+      return self._generate_msg(False, "Profile could not be found")
 
   # Certificates
   def get_certs(self):
