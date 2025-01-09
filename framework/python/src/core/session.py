@@ -539,6 +539,9 @@ class TestrunSession():
       for risk_profile_file in os.listdir(
           os.path.join(self._root_dir, PROFILES_DIR)):
 
+        if not risk_profile_file.endswith('.json'):
+          continue
+
         LOGGER.debug(f'Discovered profile {risk_profile_file}')
 
         # Open the risk profile file
