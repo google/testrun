@@ -1602,6 +1602,111 @@
         }
       ],
       "responseMode": null
+    },
+    {
+      "uuid": "af7fdcb0-721d-4198-a8ef-c6d8c4eba8c8",
+      "type": "http",
+      "documentation": "Get a Testrun PDF profile",
+      "method": "get",
+      "endpoint": "report/{profile_name}",
+      "responses": [
+        {
+          "uuid": "9a759f46-4bc4-433a-be86-e456f069c217",
+          "body": "",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Profile found - no device selected",
+          "headers": [],
+          "bodyType": "FILE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "c9a09ae7-3158-4956-93ac-4c8a90dfced8",
+          "body": "",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Profile found - device selected ",
+          "headers": [],
+          "bodyType": "FILE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5f98471e-15b6-47a4-a68d-e98c3a538b40",
+          "body": "{\n    \"error\": \"Profile could not be found\"\n}",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "Profile not found",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "767d9e78-386e-4bf7-bec8-71a005efdce9",
+          "body": "{\n    \"error\": \"A device with that mac address could not be found\"\n}",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "Device not found",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5d76bea0-39c1-45f2-80f1-de6f770cb999",
+          "body": "{\n    \"error\": \"Error retrieving the profile PDF\"\n}",
+          "latency": 0,
+          "statusCode": 500,
+          "label": "Error occured",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
     }
   ],
   "rootChildren": [
@@ -1700,6 +1805,10 @@
     {
       "type": "route",
       "uuid": "26f0f76f-e787-4ebe-a3f8-ea3a6004bc15"
+    },
+    {
+      "type": "route",
+      "uuid": "af7fdcb0-721d-4198-a8ef-c6d8c4eba8c8"
     }
   ],
   "proxyMode": false,

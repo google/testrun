@@ -1348,7 +1348,7 @@
 			]
 		},
 		{
-			"name": "Export",
+			"name": "Export Report",
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -2305,7 +2305,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -2501,7 +2500,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -2578,7 +2576,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -2622,7 +2619,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -2666,7 +2662,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -2741,7 +2736,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -2784,7 +2778,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -2827,7 +2820,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -2972,6 +2964,218 @@
 			]
 		},
 		{
+			"name": "Get Profile",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/profile/{profile_name}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profile",
+						"{profile_name}"
+					]
+				},
+				"description": "Get the PDF report for a specific device and timestamp"
+			},
+			"response": [
+				{
+					"name": "Get Profile No Device (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/profile/Test",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profile",
+								"Test"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/pdf",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{profile_name}.pdf"
+				},
+				{
+					"name": "Get Profile with Device (200))",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"mac_addr\": \"00:1e:42:35:73:c4\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profile/Test",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profile",
+								"Test"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/pdf",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "report.pdf"
+				},
+				{
+					"name": "Profile Not Found (404)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/profile/NonExistingProfile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profile",
+								"NonExistingProfile"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Profile could not be found\"\n}"
+				},
+				{
+					"name": "Device Not Found (404)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"mac_addr\": \"non_existing_mac_addr\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profile/Test",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profile",
+								"Test"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A device with that mac address could not be found\"\n}"
+				},
+				{
+					"name": "Internal Server Error (500) Copy",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/profile/Test",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profile",
+								"Test"
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Error retrieving the profile PDF\"\n}"
+				}
+			]
+		},
+		{
 			"name": "Update Profile",
 			"request": {
 				"method": "POST",
@@ -3006,7 +3210,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]",
+							"raw": "\n{\n    \"name\": \"New Profile\",\n    \"rename\": \"Updated New Profile\",\n    \"version\": \"2.0.1\",\n    \"created\": \"2024-10-08\",\n    \"status\": \"Valid\",\n    \"risk\": \"High\",\n    \"questions\": [\n        {\n            \"question\": \"How will this device be used at Google?\",\n            \"answer\": \"Yes\"\n        },\n        {\n            \"question\": \"Is this device going to be managed by Google or a third party?\",\n            \"answer\": \"Google\",\n            \"risk\": \"Limited\"\n        },\n        {\n            \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n            \"answer\": \"No\",\n            \"risk\": \"Limited\"\n        },\n        {\n            \"question\": \"Which of the following statements are true about this device?\",\n            \"answer\": [\n                0,\n                1,\n                2\n            ],\n            \"risk\": \"High\"\n        },\n        {\n            \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n            \"answer\": \"Yes\",\n            \"risk\": \"Limited\"\n        },\n        {\n            \"question\": \"Click the statements that best describe the characteristics of this device.\",\n            \"answer\": [\n                0\n            ],\n            \"risk\": \"High\"\n        },\n        {\n            \"question\": \"Are any of the following statements true about this device?\",\n            \"answer\": [\n                0\n            ],\n            \"risk\": \"High\"\n        },\n        {\n            \"question\": \"Comments\",\n            \"answer\": \"\"\n        }\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3032,7 +3236,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -3047,7 +3250,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]",
+							"raw": "\n{\n    \"name\": \"New Profile\",\n    \"version\": \"2.0\",\n    \"created\": \"2024-10-08\",\n    \"status\": \"Valid\",\n    \"risk\": \"High\",\n    \"questions\": [\n        {\n            \"question\": \"How will this device be used at Google?\",\n            \"answer\": \"Yes\"\n        },\n        {\n            \"question\": \"Is this device going to be managed by Google or a third party?\",\n            \"answer\": \"Google\",\n            \"risk\": \"Limited\"\n        },\n        {\n            \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n            \"answer\": \"No\",\n            \"risk\": \"Limited\"\n        },\n        {\n            \"question\": \"Which of the following statements are true about this device?\",\n            \"answer\": [\n                0,\n                1,\n                2\n            ],\n            \"risk\": \"High\"\n        },\n        {\n            \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n            \"answer\": \"Yes\",\n            \"risk\": \"Limited\"\n        },\n        {\n            \"question\": \"Click the statements that best describe the characteristics of this device.\",\n            \"answer\": [\n                0\n            ],\n            \"risk\": \"High\"\n        },\n        {\n            \"question\": \"Are any of the following statements true about this device?\",\n            \"answer\": [\n                0\n            ],\n            \"risk\": \"High\"\n        },\n        {\n            \"question\": \"Comments\",\n            \"answer\": \"\"\n        }\n    ]\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3073,7 +3276,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -3114,7 +3316,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -3225,7 +3426,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -3266,7 +3466,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -3307,7 +3506,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
@@ -3348,7 +3546,6 @@
 						{
 							"key": "Content-Type",
 							"value": "application/json",
-							"name": "Content-Type",
 							"description": "",
 							"type": "text"
 						}
