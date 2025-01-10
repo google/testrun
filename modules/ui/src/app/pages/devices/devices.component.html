@@ -22,6 +22,8 @@ limitations under the License.
     [itemTemplate]="itemTemplate"
     [actions]="vm.actions"
     [entities]="vm.devices"
+    [isOpenDeviceForm]="isOpenDeviceForm"
+    [initialDevice]="vm.selectedDevice"
     (addEntity)="openForm()"
     (menuItemClicked)="menuItemClicked($event, vm.devices, vm.testModules)">
   </app-list-layout>
@@ -35,8 +37,9 @@ limitations under the License.
     <app-device-qualification-from
       *ngIf="isOpenDeviceForm"
       [devices]="vm.devices"
+      [initialDevice]="vm.selectedDevice"
       [testModules]="vm.testModules"
-      (discard)="discard()"></app-device-qualification-from>
+      (cancel)="discard()"></app-device-qualification-from>
   </ng-template>
 
   <ng-template #empty>
@@ -63,9 +66,10 @@ limitations under the License.
   <ng-template #itemTemplate let-entity="entity">
     <app-device-item
       *ngIf="entity"
+      [ngClass]="{ selected: entity.mac_addr === vm.selectedDevice?.mac_addr }"
       [deviceView]="DeviceView.WithActions"
       [device]="entity"
       [disabled]="entity?.mac_addr === vm.deviceInProgress?.mac_addr"
-      (itemClicked)="openForm()"></app-device-item>
+      (itemClicked)="openForm(entity)"></app-device-item>
   </ng-template>
 </ng-container>

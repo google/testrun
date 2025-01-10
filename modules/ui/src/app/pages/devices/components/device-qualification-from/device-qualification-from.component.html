@@ -106,7 +106,9 @@ limitations under the License.
     >
     <input matInput style="display: none" />
 
-    <mat-radio-group formControlName="test_pack">
+    <mat-radio-group
+      formControlName="test_pack"
+      class="device-qualification-form-journey">
       <mat-radio-button
         [value]="TestingType.Qualification"
         class="device-qualification-form-journey-button">
@@ -148,4 +150,25 @@ limitations under the License.
       [format]="format"
       [optionKey]="'text'"></app-dynamic-form>
   </section>
+  <div class="device-qualification-form-actions">
+    <div>
+      <button mat-flat-button class="save-button" (click)="onSaveClicked()">
+        Save
+      </button>
+      <button
+        mat-raised-button
+        type="button"
+        class="close-button"
+        (click)="onCancelClicked()">
+        Cancel
+      </button>
+    </div>
+    <button
+      mat-raised-button
+      type="button"
+      class="delete-button"
+      (click)="onDeleteClick()">
+      Delete
+    </button>
+  </div>
 </form>
