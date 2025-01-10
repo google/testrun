@@ -163,7 +163,7 @@ class TLSModuleTest(unittest.TestCase):
                       f'TLS 1.3 validated on port 443: {success_message}')
     result = TLS_UTIL.process_tls_server_results(tls_1_2_results,
                                                  tls_1_3_results,port=443)
-    
+
     self.assertEqual(result, expected)
 
     # TLS 1.2 Pass and TLS 1.3 Fail
