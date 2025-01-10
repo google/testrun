@@ -17,6 +17,12 @@
 @use 'colors';
 @use 'variables';
 
+.entity-list app-list-item:has(.selected) {
+  ::ng-deep .list-item {
+    background-color: colors.$primary-container;
+  }
+}
+
 .content {
   height: 100%;
 }
@@ -105,4 +111,19 @@
   height: 56px;
   color: colors.$on-secondary-container;
   background-color: colors.$secondary-container;
+}
+
+.fake-list-item {
+  border-radius: 16px;
+  background-color: colors.$primary-container;
+  height: 92px;
+  padding: 0 24px 0 32px;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  color: colors.$on-surface;
+  font-weight: 500;
+  font-family: variables.$font-text;
+  font-size: 16px;
+  letter-spacing: 0;
 }

@@ -28,6 +28,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { ListItemComponent } from '../list-item/list-item.component';
 import { EntityAction, EntityActionResult } from '../../model/entity-action';
+import { Device } from '../../model/device';
 
 @Component({
   selector: 'app-list-layout',
@@ -45,6 +46,8 @@ import { EntityAction, EntityActionResult } from '../../model/entity-action';
 export class ListLayoutComponent<T extends object> {
   title = input<string>('');
   addEntityText = input<string>('');
+  isOpenDeviceForm = input<boolean>(false);
+  initialDevice = input<Device | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   emptyContent = input<TemplateRef<any>>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,7 +63,7 @@ export class ListLayoutComponent<T extends object> {
   addEntity = output<void>();
   menuItemClicked = output<EntityActionResult<T>>();
   updateQuery(e: Event) {
-    this.searchText.set((e.target as HTMLInputElement).value);
+    this.searchText.set((e.target as HTMLInputElement).value.trim());
   }
 
   filter(searchText: string) {

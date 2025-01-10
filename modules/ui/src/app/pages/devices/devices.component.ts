@@ -162,7 +162,8 @@ export class DevicesComponent implements OnInit, OnDestroy {
       });
   }
 
-  async openForm() {
+  async openForm(device: Device | null = null) {
+    this.devicesStore.selectDevice(device);
     this.isOpenDeviceForm = true;
     await this.liveAnnouncer.announce('Device qualification form');
     this.focusManagerService.focusFirstElementInContainer(

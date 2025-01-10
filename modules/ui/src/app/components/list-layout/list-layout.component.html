@@ -39,6 +39,12 @@ limitations under the License.
         >
       </mat-toolbar>
       <section class="entity-list">
+        <div
+          *ngIf="isOpenDeviceForm() && !initialDevice()"
+          class="fake-list-item">
+          <mat-icon svgIcon="draft" class="profile-draft-icon"></mat-icon>
+          New device
+        </div>
         <ng-container *ngFor="let entity of filtered(); index as i">
           <app-list-item
             [actions]="actions()"

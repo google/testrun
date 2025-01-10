@@ -19,6 +19,7 @@ import {
   OnInit,
   inject,
   input,
+  effect,
   output,
 } from '@angular/core';
 import {
@@ -100,7 +101,15 @@ export class DeviceQualificationFromComponent implements OnInit, OnDestroy {
   typeQuestion = 0;
   technologyQuestion = 2;
 
-  initialDevice = input<Device | undefined>();
+  initialDevice = input<Device | null>(null);
+
+  initialDeviceEffect = effect(() => {
+    const device = this.initialDevice();
+    if (device && device.mac_addr) {
+      this.fillDeviceForm(this.format, device);
+    }
+  });
+
   devices = input<Device[]>([]);
   testModules = input<TestModule[]>([]);
   isCreate = input<boolean>(true);
