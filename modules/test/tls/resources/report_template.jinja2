@@ -1,0 +1,90 @@
+{% extends base_template %}
+{% block content %}
+{% if cert_info_data and subject_data %}
+  <div style="display:flex;justify-content:space-between;">
+      <div style="margin-right:20px;">
+        <h5>Certificate Information</h5>
+        <table class="module-data">
+          <thead>
+            <tr>
+              {% for header in cert_table_headers%}
+              <th>{{ header }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for k,v in cert_info_data.items() %}
+              <tr>
+                <td>{{ k }}</td>
+                <td>{{ v }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h5>Subject Information</h5>
+        <table class="module-data">
+          <thead>
+            <tr>
+              {% for header in cert_table_headers%}
+              <th>{{ header }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for k,v in subject_data.items() %}
+              <tr>
+                <td>{{ k }}</td>
+                <td>{{ v }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+          </div>
+        </div>
+        {% if cert_ext %}
+          <h5>Certificate Extensions</h5>
+            <table class="module-data" style="margin-bottom:20px;">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for k,v in cert_ext.items()%}
+                 <tr>
+                    <td>{{ k }}</td> 
+                    <td>{{ v }}</td>
+                  </tr> 
+              {% endfor %}
+              </tbody>
+            </table>
+        {% endif %}
+{% elif ountbound_headers %}
+  <h1>Outbound Connections</h1>
+    <table class="module-data">
+      <thead>
+          <tr>
+              {% for header in ountbound_headers%}
+                <th>{{ header }}</th>
+              {% endfor %}
+          </tr>
+      </thead>
+      <tbody>
+      {% for ip, port in outbound_conns%}
+        <tr>
+          <td>{{ip}}</td>
+          <td>{{port}}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+  {# <div class="callout-container info">
+    <div class="icon"></div>
+    No NTP traffic detected from the device
+  </div> #}
+{% endif %}
+{% endblock %}
