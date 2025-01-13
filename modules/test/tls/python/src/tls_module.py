@@ -356,8 +356,8 @@ class TLSModule(TestModule):
     all_packets = []
     # Iterate over each file
     for pcap_file in pcap_files:
-      # Open the capture file
-      packets = pyshark.FileCapture(pcap_file)
+      # Open the capture file and filter by tls
+      packets = pyshark.FileCapture(pcap_file, display_filter='tls')
       try:
         # Iterate over each packet in the file and add it to the list
         for packet in packets:
