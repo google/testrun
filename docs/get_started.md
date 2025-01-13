@@ -73,7 +73,8 @@ Follow these steps to start Testrun:
 1. Start Testrun with the command `sudo testrun`
     -  To run Testrun in network-only mode (without running any tests), use the `--net-only` option.
     -  To run Testrun with just one interface (connected to the device), use the `--single-intf` option.
-
+    
+          **Note**: Any test requiring an internet connection will have an invalid result with this setting.
 
 ## Test your device
 
