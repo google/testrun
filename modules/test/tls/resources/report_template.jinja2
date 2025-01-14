@@ -81,10 +81,10 @@
       {% endfor %}
       </tbody>
     </table>
-
-  {# <div class="callout-container info">
+{% else %}
+  <div class="callout-container info">
     <div class="icon"></div>
-    No NTP traffic detected from the device
-  </div> #}
+    No TLS certificates found on the device
+  </div> 
 {% endif %}
 {% endblock %}
