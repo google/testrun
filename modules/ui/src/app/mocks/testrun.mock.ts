@@ -15,6 +15,7 @@
  */
 import {
   IResult,
+  RequiredResult,
   StatusOfTestrun,
   TestrunStatus,
   TestsData,
@@ -26,17 +27,20 @@ export const TEST_DATA_RESULT: IResult[] = [
     name: 'dns.network.hostname_resolution',
     description: 'The device should resolve hostnames',
     result: 'Compliant',
+    required_result: RequiredResult.Required,
   },
   {
     name: 'dns.network.from_dhcp',
     description:
       'The device should use the DNS server provided by the DHCP server',
     result: 'Non-Compliant',
+    required_result: RequiredResult.Informational,
   },
   {
     name: 'dns.mdns',
     description: 'Does the device has MDNS (or any kind of IP multicast)',
     result: 'Not Started',
+    required_result: RequiredResult.RequiredIfApplicable,
   },
 ];
 
@@ -50,6 +54,7 @@ export const TEST_DATA_RESULT_WITH_RECOMMENDATIONS: IResult[] = [
       'An example of a step to resolve',
       'Disable any running NTP server',
     ],
+    required_result: RequiredResult.Required,
   },
 ];
 
@@ -58,17 +63,20 @@ export const TEST_DATA_RESULT_WITH_ERROR: IResult[] = [
     name: 'dns.network.hostname_resolution',
     description: 'The device should resolve hostnames',
     result: 'Compliant',
+    required_result: RequiredResult.Required,
   },
   {
     name: 'dns.network.from_dhcp',
     description:
       'The device should use the DNS server provided by the DHCP server',
     result: 'Error',
+    required_result: RequiredResult.Required,
   },
   {
     name: 'dns.mdns',
     description: 'Does the device has MDNS (or any kind of IP multicast)',
     result: 'Not Started',
+    required_result: RequiredResult.Required,
   },
 ];
 
