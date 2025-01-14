@@ -31,6 +31,12 @@ export class ProfileValidators {
 
   readonly STRING_FORMAT_REGEXP = new RegExp('^[^"\\\\]*$', 'u');
 
+  // Not allowed symbols: <>?/:;@'"][=^!\#$%&*+{}|()
+  readonly PROFILE_NAME_FORMAT_REGEXP = new RegExp(
+    '^([^<>?:;@\'\\\\"\\[\\]=^!/,.#$%&*+{}|()]{1,28})$',
+    'u'
+  );
+
   public differentProfileName(
     profiles: Profile[],
     profile: Profile | null
@@ -58,6 +64,10 @@ export class ProfileValidators {
       }
       return null;
     };
+  }
+
+  public profileNameFormat(): ValidatorFn {
+    return this.stringFormat(this.PROFILE_NAME_FORMAT_REGEXP);
   }
 
   public multiSelectRequired(g: FormGroup) {
