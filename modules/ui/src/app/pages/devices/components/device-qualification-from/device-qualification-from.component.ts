@@ -107,6 +107,8 @@ export class DeviceQualificationFromComponent implements OnInit, OnDestroy {
     const device = this.initialDevice();
     if (device && device.mac_addr) {
       this.fillDeviceForm(this.format, device);
+    } else {
+      this.deviceQualificationForm.reset();
     }
   });
 
