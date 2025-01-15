@@ -74,7 +74,7 @@ Follow these steps to start Testrun:
     -  To run Testrun in network-only mode (without running any tests), use the `--net-only` option.
     -  To run Testrun with just one interface (connected to the device), use the `--single-intf` option.
     
-          **Note**: Any test requiring an internet connection will have an invalid result with this setting.
+          **Note**: Tests that require an internet connection (e.g TLS client, DNS) will produce a non-compliant result.
 
 ## Test your device
 
