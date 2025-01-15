@@ -97,6 +97,7 @@ export class TestrunStatusCardComponent {
       status === StatusOfTestrun.Monitoring ||
       status === StatusOfTestrun.InProgress ||
       status === StatusOfTestrun.WaitingForDevice ||
+      status === StatusOfTestrun.Starting ||
       status === StatusOfTestrun.Validating
     );
   }

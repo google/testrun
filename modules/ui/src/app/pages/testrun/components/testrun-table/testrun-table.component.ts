@@ -55,6 +55,9 @@ export class TestrunTableComponent {
   }
 
   public getRequiredResultClass(result: string): string {
+    if (!result) {
+      return '';
+    }
     return result.split(' ').join('-').toLowerCase();
   }
 

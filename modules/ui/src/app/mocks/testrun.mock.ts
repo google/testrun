@@ -167,6 +167,12 @@ export const MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE: TestrunStatus = {
   started: null,
 };
 
+export const MOCK_PROGRESS_DATA_STARTING: TestrunStatus = {
+  ...MOCK_PROGRESS_DATA_IN_PROGRESS,
+  status: StatusOfTestrun.Starting,
+  started: null,
+};
+
 export const MOCK_PROGRESS_DATA_VALIDATING: TestrunStatus = {
   ...MOCK_PROGRESS_DATA_IN_PROGRESS,
   status: StatusOfTestrun.Validating,
