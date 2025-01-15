@@ -25,24 +25,26 @@
   {% if module_header %}
     <h4 class="page-heading">{{ module_header }}</h4>
     <table class="module-summary">
-  {% else %}
+  {% elif summary_headers %}
     <table class="module-summary not-first">
   {% endif %}
-    <thead>
-      <tr>
-        {% for header in summary_headers %}
-          <th>{{ header }}</th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        {% for cell in summary_data %}
-          <td>{{ cell }}</td>
-        {% endfor %}
-      </tr>
-    </tbody>
-    </table>
+    {% if summary_headers %}
+      <thead>
+        <tr>
+          {% for header in summary_headers %}
+            <th>{{ header }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {% for cell in summary_data %}
+            <td>{{ cell }}</td>
+          {% endfor %}
+        </tr>
+      </tbody>
+      </table>
+    {% endif %}
   {% block content %}{% endblock content %}
 </div>
 {% raw %}
