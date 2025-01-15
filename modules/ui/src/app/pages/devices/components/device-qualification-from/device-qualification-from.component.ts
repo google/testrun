@@ -108,7 +108,7 @@ export class DeviceQualificationFromComponent implements OnInit, OnDestroy {
     if (device && device.mac_addr) {
       this.fillDeviceForm(this.format, device);
     } else {
-      this.deviceQualificationForm.reset();
+      this.resetForm();
     }
   });
 
@@ -193,6 +193,12 @@ export class DeviceQualificationFromComponent implements OnInit, OnDestroy {
 
   onDeleteClick(): void {
     this.delete.emit(this.initialDevice()!);
+  }
+
+  resetForm() {
+    this.deviceQualificationForm.reset({
+      test_pack: TestingType.Qualification,
+    });
   }
 
   private fillDeviceForm(format: QuestionFormat[], device: Device): void {
