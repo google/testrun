@@ -72,6 +72,7 @@ export enum StatusOfTestrun {
   SmartReady = 'Smart Ready', // used for Completed
   Idle = 'Idle',
   Monitoring = 'Monitoring',
+  Starting = 'Starting',
   Error = 'Error',
   Validating = 'Validating Network',
   Proceed = 'Proceed',
