@@ -253,7 +253,7 @@ class TestReport():
     if (len(optional_steps_to_resolve) > 0
         and json_data['device']['test_pack'] == 'Pilot Assessment'
         ):
-      total_pages += 1
+      total_pages += len(optional_steps_to_resolve)
 
     return template.render(styles=styles,
                            logo=logo,
