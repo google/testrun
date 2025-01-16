@@ -334,7 +334,22 @@ class TestReport():
       if 'optional_recommendations' in test:
         tests_with_recommendations.append(test)
 
-    return tests_with_recommendations
+    return self._split_steps_to_resolve_to_pages(tests_with_recommendations)
+
+  def _split_steps_to_resolve_to_pages(self, steps):
+    # Split steps to resolve to pages.
+    # First page 3 steps, 4 steps on other pages.
+    if len(steps) < 3:
+      return [steps]
+
+    splitted = [steps[:3]]
+
+    index = 3
+    while index < len(steps):
+      splitted.append(steps[index:index + 4])
+      index += 4
+
+    return splitted
 
 
   def _split_module_report_to_pages(self, reports):
