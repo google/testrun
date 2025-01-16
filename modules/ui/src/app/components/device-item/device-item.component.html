@@ -51,16 +51,27 @@ limitations under the License.
 <ng-template #basicView let-editable="editable">
   <span class="visually-hidden">{{ device.test_pack }}</span>
   <app-program-type-icon
-    *ngIf="device.test_pack === TestingType.Qualification"
+    *ngIf="
+      device.status !== DeviceStatus.INVALID &&
+      device.test_pack === TestingType.Qualification
+    "
     [type]="ProgramType.Qualification"
     matTooltip="This device will be tested for Qualification."></app-program-type-icon>
   <app-program-type-icon
-    *ngIf="device.test_pack === TestingType.Pilot"
+    *ngIf="
+      device.status !== DeviceStatus.INVALID &&
+      device.test_pack === TestingType.Pilot
+    "
     [type]="ProgramType.Pilot"
     matTooltip="This device will be tested for the Pilot program."></app-program-type-icon>
   <p class="item-manufacturer" *ngIf="!editable">
     <span>{{ device.manufacturer }}</span>
   </p>
+  <mat-icon
+    *ngIf="device.status === DeviceStatus.INVALID"
+    fontSet="material-symbols-outlined">
+    error
+  </mat-icon>
   <div class="item-manufacturer" *ngIf="editable">
     <p class="item-manufacturer-text">{{ device.manufacturer }}</p>
     <mat-icon
@@ -69,8 +80,13 @@ limitations under the License.
       edit_square</mat-icon
     >
   </div>
-  <div *ngIf="device.status === DeviceStatus.INVALID" class="item-status">
+  <div
+    *ngIf="device.status === DeviceStatus.INVALID"
+    class="item-status item-status-invalid">
     {{ INVALID_DEVICE }}
+  </div>
+  <div *ngIf="disabled" class="item-status item-status-under-test">
+    Under test
   </div>
   <p class="item-name">
     {{ device.model }}
