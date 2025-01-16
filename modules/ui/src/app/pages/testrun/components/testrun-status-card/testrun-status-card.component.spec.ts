@@ -65,11 +65,13 @@ describe('ProgressStatusCardComponent', () => {
         StatusOfTestrun.Compliant,
         StatusOfTestrun.CompliantLimited,
         StatusOfTestrun.CompliantHigh,
+        StatusOfTestrun.Proceed,
       ];
 
       const statusesForCompletedFailedClass = [
         StatusOfTestrun.NonCompliant,
         StatusOfTestrun.Error,
+        StatusOfTestrun.DoNotProceed,
       ];
 
       statusesForProgressClass.forEach(testCase => {

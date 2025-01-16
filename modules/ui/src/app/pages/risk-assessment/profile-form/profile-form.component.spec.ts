@@ -89,6 +89,9 @@ describe('ProfileFormComponent', () => {
         [
           'very long value very long value very long value very long value very long value very long value very long value',
           'as&@3$',
+          'test/',
+          'test[',
+          ':test',
         ].forEach(value => {
           const name: HTMLInputElement = compiled.querySelector(
             '.form-name'

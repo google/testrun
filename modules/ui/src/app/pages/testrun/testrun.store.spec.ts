@@ -46,6 +46,7 @@ import {
   MOCK_PROGRESS_DATA_VALIDATING,
   TEST_DATA_RESULT_WITH_RECOMMENDATIONS,
   TEST_DATA_TABLE_RESULT,
+  MOCK_PROGRESS_DATA_STARTING,
 } from '../../mocks/testrun.mock';
 import { LoaderService } from '../../services/loader.service';
 
@@ -178,6 +179,21 @@ describe('TestrunStore', () => {
           store.overrideSelector(
             selectSystemStatus,
             MOCK_PROGRESS_DATA_VALIDATING
+          );
+          store.refreshState();
+
+          testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
+            expect(store.dataSource).toEqual(expectedResult);
+            done();
+          });
+        });
+
+        it('should set value with empty values for status "Starting"', done => {
+          const expectedResult = EMPTY_RESULT;
+
+          store.overrideSelector(
+            selectSystemStatus,
+            MOCK_PROGRESS_DATA_STARTING
           );
           store.refreshState();
 
