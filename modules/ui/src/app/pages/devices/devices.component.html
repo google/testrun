@@ -67,6 +67,7 @@ limitations under the License.
     <app-device-item
       *ngIf="entity"
       [ngClass]="{ selected: entity.mac_addr === vm.selectedDevice?.mac_addr }"
+      [class.disabled]="entity?.mac_addr === vm.deviceInProgress?.mac_addr"
       [deviceView]="DeviceView.WithActions"
       [device]="entity"
       [disabled]="entity?.mac_addr === vm.deviceInProgress?.mac_addr"
