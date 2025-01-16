@@ -160,40 +160,6 @@
   </div>
   <div style="break-after:page"></div>
   {% endfor %}
-  {# Device profile #}
-  {% set page_index.value = page_index.value+1 %}
-  <div class="page">
-    {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
-    <h4 class="page-heading">Device profile</h4>
-    <div class="device-profile-content">
-      <div class="device-profile-head">
-        <div class="device-profile-head-question">Question</div>
-        <div class="device-profile-head-answer">Answer</div>
-      </div>
-      {% for question in json_data['device']['device_profile'] %}
-      <div class="device-profile-row">
-        <div class="device-profile-number">{{loop.index}}.</div>
-        <div class="device-profile-question">{{ question['question'] }}</div>
-        <div class="device-profile-answer">
-          {% if question['answer'] is string %}
-            {{ question['answer'] }}
-          {% elif question['answer'] is sequence %}
-            <ul style="padding-left: 20px">
-              {% for answer in question['answer'] %}
-                <li>{{ answer }}</li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  <div class="footer">
-    <div class="footer-label">Testrun {{ version }}</div>
-    <div class="footer-label" style="right: 0px">Page {{ page_index.value }}/{{ total_pages }}</div>
-  </div>
-  </div>
-  <div style="break-after:page"></div>
   {# Pilot steps to resolve#}
   {% if json_data['device']['test_pack'] == 'Pilot Assessment' and optional_steps_to_resolve|length > 0 %}
   {% set page_index.value = page_index.value + 1 %}
@@ -241,5 +207,39 @@
     </div>
   </div><div style="break-after:page"></div>
   {% endif %}
+  {# Device profile #}
+  {% set page_index.value = page_index.value+1 %}
+  <div class="page">
+    {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
+    <h4 class="page-heading">Device profile</h4>
+    <div class="device-profile-content">
+      <div class="device-profile-head">
+        <div class="device-profile-head-question">Question</div>
+        <div class="device-profile-head-answer">Answer</div>
+      </div>
+      {% for question in json_data['device']['device_profile'] %}
+      <div class="device-profile-row">
+        <div class="device-profile-number">{{loop.index}}.</div>
+        <div class="device-profile-question">{{ question['question'] }}</div>
+        <div class="device-profile-answer">
+          {% if question['answer'] is string %}
+            {{ question['answer'] }}
+          {% elif question['answer'] is sequence %}
+            <ul style="padding-left: 20px">
+              {% for answer in question['answer'] %}
+                <li>{{ answer }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  <div class="footer">
+    <div class="footer-label">Testrun {{ version }}</div>
+    <div class="footer-label" style="right: 0px">Page {{ page_index.value }}/{{ total_pages }}</div>
+  </div>
+  </div>
+  <div style="break-after:page"></div>
 </body>
 </html>
