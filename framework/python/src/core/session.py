@@ -683,6 +683,15 @@ class TestrunSession():
       LOGGER.error('Name field left empty')
       return False
 
+    # Check if profile name has special characters
+    for field in ['name', 'rename']:
+      profile_name = profile_json.get(field)
+      if profile_name:
+        for char in profile_name:
+          if char in r"\<>?/:;@''][=^":
+            LOGGER.error('Profile name should not contain special characters')
+            return False
+
     # Error handling if 'questions' not in request
     if 'questions' not in profile_json and valid:
       LOGGER.error('Missing "questions" field in profile')
