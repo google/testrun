@@ -134,7 +134,9 @@ class Api:
     self._router.add_api_route("/profiles",
                                self.delete_profile,
                                methods=["DELETE"])
-    self._router.add_api_route("/profile/{profile_name}", self.get_profile)
+    self._router.add_api_route("/profile/{profile_name}",
+                               self.export_profile,
+                               methods=["POST"])
 
     # Allow all origins to access the API
     origins = ["*"]
@@ -930,7 +932,7 @@ class Api:
 
     return self._generate_msg(True, "Successfully deleted that profile")
 
-  async def get_profile(self, request: Request, response: Response,
+  async def export_profile(self, request: Request, response: Response,
                         profile_name):
 
     LOGGER.debug(f"Received get profile request for {profile_name}")
