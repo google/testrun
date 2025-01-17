@@ -255,6 +255,7 @@ class TestReport():
         ):
       total_pages += len(optional_steps_to_resolve)
 
+    is_pilot = json_data['device']['test_pack'] == 'Pilot Assessment'
     return template.render(styles=styles,
                            logo=logo,
                            icon_qualification=icon_qualification,
@@ -275,6 +276,7 @@ class TestReport():
                            total_pages=total_pages,
                            tests_first_page=TESTS_FIRST_PAGE,
                            tests_per_page=TESTS_PER_PAGE,
+                           is_pilot = is_pilot,
                            )
 
   def _pages_num(self, json_data):
