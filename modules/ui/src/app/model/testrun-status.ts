@@ -50,6 +50,13 @@ export interface IResult {
   description: string;
   result: string;
   recommendations?: string[];
+  required_result: RequiredResult;
+}
+
+export enum RequiredResult {
+  Informational = 'Informational',
+  Required = 'Required',
+  RequiredIfApplicable = 'Required if Applicable',
 }
 
 export enum StatusOfTestrun {
@@ -65,8 +72,11 @@ export enum StatusOfTestrun {
   SmartReady = 'Smart Ready', // used for Completed
   Idle = 'Idle',
   Monitoring = 'Monitoring',
+  Starting = 'Starting',
   Error = 'Error',
   Validating = 'Validating Network',
+  Proceed = 'Proceed',
+  DoNotProceed = 'Do Not Proceed',
 }
 
 export enum StatusOfTestResult {
