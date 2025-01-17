@@ -15,6 +15,7 @@
 
 
 class TestrunStatus:
+  """Statuses for overall testing"""
   IDLE = "Idle"
   WAITING_FOR_DEVICE = "Waiting for Device"
   MONITORING = "Monitoring"
@@ -27,6 +28,7 @@ class TestrunStatus:
 
 
 class TestResult:
+  """Statuses for test results"""
   IN_PROGRESS = "In Progress"
   COMPLIANT =  "Compliant"
   NON_COMPLIANT = "Non-Compliant"
