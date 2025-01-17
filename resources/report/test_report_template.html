@@ -56,7 +56,7 @@
         {% endif %}
           <div class="summary-box-label">Test Status</div>
           <div class="summary-box-value">Complete</div>
-          {% if json_data['device']['test_pack'] == 'Pilot Assessment' %}
+          {% if is_pilot %}
             <div class="summary-box-label">Pilot Recommendation</div>
           {% else %}
             <div class="summary-box-label">Test Result</div>
@@ -84,27 +84,41 @@
         <h4 class="result-list-title">Results List <small>({{ successful_tests }}/{{ total_tests }})</small></h4>
         <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
           <div class="result-list-header-label" style="left: .1in">Name</div>
-          <div class="result-list-header-label" style="left: 2.8in">Description</div>
-          <div class="result-list-header-label" style="left: 6.85in">Result</div>
+          <div class="result-list-header-label" style="left: {{ is_pilot and '2.1in' or '2.8in' }}">Description</div>
+          <div class="result-list-header-label" style="left: {{ is_pilot and '5.4in' or '6.85in' }}">Result</div>
+          {% if is_pilot %}
+          <div class="result-list-header-label" style="left: 6.8in">Required result</div>
+          {% endif %}
         </div>
         {% for i in range(results_from, results_to) %}
         <div class="result-line result-line-result">
           <div class="result-test-label" style="left: .1in;">{{ test_results[i]['name'] }}</div>
-          <div class="result-test-label result-test-description" style="left: 2.8in;">{{ test_results[i]['description'] }}</div>
+          <div class="result-test-label result-test-description" style="left: {{ is_pilot and '2.1in' or '2.8in' }};">{{ test_results[i]['description'] }}</div>
+          <div class="result-test-label result-test-result {{ is_pilot and 'result-test-result-pilot' or '' }} 
           {% if test_results[i]['result'] == 'Non-Compliant' %}
-            <div class="result-test-label result-test-result result-test-result-non-compliant">
+            result-test-result-non-compliant">
           {% elif test_results[i]['result'] == 'Compliant' %}
-            <div class="result-test-label result-test-result result-test-result-compliant">
+            result-test-result-compliant">
           {% elif  test_results[i]['result'] == 'Error' %}
-            <div class="result-test-label result-test-result result-test-result-error">
+            result-test-result-error">
           {% elif test_results[i]['result'] == 'Feature Not Detected' %}
-            <div class="result-test-label result-test-result result-test-result-feature-not-detected">
+            result-test-result-feature-not-detected">
           {% elif test_results[i]['result'] == 'Informational' %}
-            <div class="result-test-label result-test-result result-test-result-informational">
+            result-test-result-informational">
           {% else %}
-            <div class="result-test-label result-test-result result-test-result-skipped">
+            result-test-result-skipped">
           {% endif %}
           {{ test_results[i]['result'] }}</div>
+          {# Required resul badges #}
+          {% if is_pilot %}
+            {% if test_results[i]['required_result'] == "Required" %}
+              <div class="result-test-label" style="left: 6.8in;">{{ test_results[i]['required_result'] }}</div>
+            {% elif test_results[i]['required_result'] == "Required if Applicable" %}
+              <div class="result-test-label" style="left: 6.8in;">{{ test_results[i]['required_result'] }}</div>
+            {% else %}
+              <div class="result-test-label" style="left: 6.8in;">{{ test_results[i]['required_result'] }}</div>
+            {% endif %}
+          {% endif %}
         </div>
         {% endfor %}
       </div>
@@ -116,7 +130,7 @@
     <div style="break-after:page"></div>
   {% endfor %}
   {# Steps to resolve Device qualification #}
-  {% if steps_to_resolve|length > 0 and json_data['device']['test_pack'] == 'Device Qualification' %}
+  {% if steps_to_resolve|length > 0 and not is_pilot %}
   {% set page_index.value = page_index.value+1 %}
   <div class="page">
     {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
@@ -147,7 +161,7 @@
   </div><div style="break-after:page"></div>
   {% endif %}
   {# Pilot steps to resolve#}
-  {% if json_data['device']['test_pack'] == 'Pilot Assessment' and optional_steps_to_resolve|length > 0 %}
+  {% if is_pilot and optional_steps_to_resolve|length > 0 %}
     {% for step in optional_steps_to_resolve%}
       {% set page_index.value = page_index.value + 1 %}   
       <div class="page">
