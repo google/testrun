@@ -21,6 +21,7 @@ import {
   TestrunStatus,
   TestsData,
 } from '../../../../model/testrun-status';
+import { TestingType } from '../../../../model/device';
 
 @Component({
   selector: 'app-testrun-status-card',
@@ -32,6 +33,7 @@ export class TestrunStatusCardComponent {
   @Input() systemStatus!: TestrunStatus;
 
   public readonly StatusOfTestrun = StatusOfTestrun;
+  public readonly TestingType = TestingType;
 
   public getClass(status: string): {
     progress: boolean;
@@ -43,11 +45,13 @@ export class TestrunStatusCardComponent {
       progress: this.isProgressStatus(status),
       'completed-success':
         status === StatusOfTestrun.Compliant ||
+        status === StatusOfTestrun.Proceed ||
         status === StatusOfTestrun.CompliantLimited ||
         status === StatusOfTestrun.CompliantHigh ||
         status === StatusOfTestrun.SmartReady,
       'completed-failed':
         status === StatusOfTestrun.NonCompliant ||
+        status === StatusOfTestrun.DoNotProceed ||
         status === StatusOfTestrun.Error,
       canceled:
         status === StatusOfTestrun.Cancelled ||
@@ -93,6 +97,7 @@ export class TestrunStatusCardComponent {
       status === StatusOfTestrun.Monitoring ||
       status === StatusOfTestrun.InProgress ||
       status === StatusOfTestrun.WaitingForDevice ||
+      status === StatusOfTestrun.Starting ||
       status === StatusOfTestrun.Validating
     );
   }

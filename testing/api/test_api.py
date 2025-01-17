@@ -728,9 +728,9 @@ def test_sys_status_cancelled(empty_devices_dir, add_devices, # pylint: disable=
 @pytest.mark.parametrize("add_devices", [
   ["device_1"]
 ],indirect=True)
-def test_sys_status_waiting(empty_devices_dir, add_devices, # pylint: disable=W0613
-                                      testrun, start_test): # pylint: disable=W0613
-  """ Test for system status 'Waiting for Device' (200) """
+def test_sys_status_starting(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                       testrun, start_test): # pylint: disable=W0613
+  """ Test for system status 'Starting' and 'Waiting for Device' (200) """
 
   # Send the get request
   r = requests.get(f"{API}/system/status", timeout=5)
@@ -740,6 +740,27 @@ def test_sys_status_waiting(empty_devices_dir, add_devices, # pylint: disable=W0
 
   # Parse the json response
   response = r.json()
+
+  # Check if system status is 'Starting'
+  assert response["status"] == "Starting"
+
+  # Add max 60 seconds delay to allow for status to change
+  max_retries = 60
+
+  # If status is "Starting" and max_retries didn't reach 0
+  while response["status"] == "Starting" and max_retries != 0:
+
+    # Add 1 second delay
+    time.sleep(1)
+
+    # Subtract 1 from max_retries
+    max_retries -= 1
+
+    # Resend the get request
+    r = requests.get(f"{API}/system/status", timeout=5)
+
+    # Parse the json response
+    response = r.json()
 
   # Check if system status is 'Waiting for Device'
   assert response["status"] == "Waiting for Device"
