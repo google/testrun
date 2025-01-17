@@ -278,7 +278,8 @@ class Api:
         TestrunStatus.IN_PROGRESS,
         TestrunStatus.WAITING_FOR_DEVICE,
         TestrunStatus.MONITORING,
-        TestrunStatus.VALIDATING
+        TestrunStatus.VALIDATING,
+        TestrunStatus.STARTING
 
     ]:
       LOGGER.debug("Testrun is already running. Cannot start another instance")
@@ -341,7 +342,8 @@ class Api:
         not in [TestrunStatus.IN_PROGRESS,
                 TestrunStatus.WAITING_FOR_DEVICE,
                 TestrunStatus.MONITORING,
-                TestrunStatus.VALIDATING]):
+                TestrunStatus.VALIDATING,
+                TestrunStatus.STARTING]):
       response.status_code = 404
       return self._generate_msg(False, "Testrun is not currently running")
 
