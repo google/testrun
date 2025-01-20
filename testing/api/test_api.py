@@ -3150,8 +3150,8 @@ def test_export_profile_not_found(testrun): # pylint: disable=W0613
   # Assign the profile name
   profile_name = "non_existing"
 
-  # Send the get request
-  r = requests.post(f"{API}/report/{profile_name}", timeout=5)
+  # Send the post request
+  r = requests.post(f"{API}/profile/{profile_name}", timeout=5)
 
   # Check if status code is 404 (not found)
   assert r.status_code == 404
