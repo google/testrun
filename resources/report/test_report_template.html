@@ -84,17 +84,17 @@
         <h4 class="result-list-title">Results List <small>({{ successful_tests }}/{{ total_tests }})</small></h4>
         <div class="result-line" style="margin-top: 10px;border-top-left-radius:4px;border-top-right-radius:4px;">
           <div class="result-list-header-label" style="left: .1in">Name</div>
-          <div class="result-list-header-label" style="left: {{ is_pilot and '2.1in' or '2.8in' }}">Description</div>
-          <div class="result-list-header-label" style="left: {{ is_pilot and '5.4in' or '6.85in' }}">Result</div>
+          <div class="result-list-header-label" style="left: 2.1in">Description</div>
+          <div class="result-list-header-label" style="left: 5.4in">Result</div>
           {% if is_pilot %}
-          <div class="result-list-header-label" style="left: 6.8in">Required result</div>
+          <div class="result-list-header-label" style="left: 7in">Required result</div>
           {% endif %}
         </div>
         {% for i in range(results_from, results_to) %}
         <div class="result-line result-line-result">
           <div class="result-test-label" style="left: .1in;">{{ test_results[i]['name'] }}</div>
-          <div class="result-test-label result-test-description" style="left: {{ is_pilot and '2.1in' or '2.8in' }};">{{ test_results[i]['description'] }}</div>
-          <div class="result-test-label result-test-result {{ is_pilot and 'result-test-result-pilot' or '' }} 
+          <div class="result-test-label result-test-description" style="left: 2.1in">{{ test_results[i]['description'] }}</div>
+          <div class="result-test-label result-test-result
           {% if test_results[i]['result'] == 'Non-Compliant' %}
             result-test-result-non-compliant">
           {% elif test_results[i]['result'] == 'Compliant' %}
@@ -110,14 +110,12 @@
           {% endif %}
           {{ test_results[i]['result'] }}</div>
           {# Required resul badges #}
-          {% if is_pilot %}
-            {% if test_results[i]['required_result'] == "Required" %}
-              <div class="result-test-label" style="left: 6.8in;">{{ test_results[i]['required_result'] }}</div>
-            {% elif test_results[i]['required_result'] == "Required if Applicable" %}
-              <div class="result-test-label" style="left: 6.8in;">{{ test_results[i]['required_result'] }}</div>
-            {% else %}
-              <div class="result-test-label" style="left: 6.8in;">{{ test_results[i]['required_result'] }}</div>
-            {% endif %}
+          {% if test_results[i]['required_result'] == "Required" %}
+            <div class="result-test-label" style="left: 7in;">{{ test_results[i]['required_result'] }}</div>
+          {% elif test_results[i]['required_result'] == "Required if Applicable" %}
+            <div class="result-test-label" style="left: 7in;">{{ test_results[i]['required_result'] }}</div>
+          {% else %}
+            <div class="result-test-label" style="left: 7in;">{{ test_results[i]['required_result'] }}</div>
           {% endif %}
         </div>
         {% endfor %}
