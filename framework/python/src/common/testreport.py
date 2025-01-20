@@ -249,7 +249,7 @@ class TestReport():
     pages_num = self._pages_num(json_data)
     total_pages = pages_num + len(module_reports) + 1
     if len(steps_to_resolve) > 0:
-      total_pages += 1
+      total_pages += len(steps_to_resolve)
     if (len(optional_steps_to_resolve) > 0
         and json_data['device']['test_pack'] == 'Pilot Assessment'
         ):
@@ -326,7 +326,7 @@ class TestReport():
       if 'recommendations' in test:
         tests_with_recommendations.append(test)
 
-    return tests_with_recommendations
+    return self._split_steps_to_resolve_to_pages(tests_with_recommendations, 4, 4)
 
   def _get_optional_steps_to_resolve(self, json_data):
     tests_with_recommendations = []
@@ -336,20 +336,20 @@ class TestReport():
       if 'optional_recommendations' in test:
         tests_with_recommendations.append(test)
 
-    return self._split_steps_to_resolve_to_pages(tests_with_recommendations)
+    return self._split_steps_to_resolve_to_pages(tests_with_recommendations, 3, 4)
 
-  def _split_steps_to_resolve_to_pages(self, steps):
+  def _split_steps_to_resolve_to_pages(self, steps, start_page=4, page=4):
     # Split steps to resolve to pages.
-    # First page 3 steps, 4 steps on other pages.
-    if len(steps) < 3:
+    # First <start_page> steps, <page> steps on other pages.
+    if len(steps) < start_page:
       return [steps]
 
     splitted = [steps[:3]]
 
-    index = 3
+    index = start_page
     while index < len(steps):
-      splitted.append(steps[index:index + 4])
-      index += 4
+      splitted.append(steps[index:index + page])
+      index += page
 
     return splitted
 

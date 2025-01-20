@@ -11,6 +11,7 @@
   
 <body>
   {% set page_index = namespace(value=0) %}
+  {% set step_index = namespace(value=0) %}
   {% set opt_step_index = namespace(value=0) %}
   {# Test Results #}
   {% for page in range(pages_num) %}
@@ -129,24 +130,28 @@
   {% endfor %}
   {# Steps to resolve Device qualification #}
   {% if steps_to_resolve|length > 0 and not is_pilot %}
-  {% set page_index.value = page_index.value+1 %}
+  {% for step in steps_to_resolve%}
+      {% set page_index.value = page_index.value + 1 %}
   <div class="page">
     {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
-    <h2 class="page-heading">Non-compliant tests and suggested steps to resolve</h2>
-    {% for step in steps_to_resolve %}
+    {% if loop.first %}
+      <h2 class="page-heading">Non-compliant tests and suggested steps to resolve</h2>
+    {% endif %}
+    {% for line in step %}
+      {% set step_index.value = step_index.value + 1 %}  
     <div class="steps-to-resolve">
       <div class="steps-to-resolve-row">
-        <span class="steps-to-resolve-index">{{ loop.index }}.</span>
+        <span class="steps-to-resolve-index">{{ step_index.value }}.</span>
         <div class="steps-to-resolve-test-name">
-          <span class="steps-to-resolve subtitle">Name</span><br>{{ step['name'] }}
+          <span class="steps-to-resolve subtitle">Name</span><br>{{ line['name'] }}
         </div>
         <div class="steps-to-resolve-description">
-          <span class="steps-to-resolve subtitle">Description</span><br>{{ step["description"] }}
+          <span class="steps-to-resolve subtitle">Description</span><br>{{ line["description"] }}
         </div>
       </div>
       <div class="steps-to-resolve-row content">
         <span class="steps-to-resolve subtitle">Steps to resolve</span>
-        {% for recommedtation in step['recommendations'] %}
+        {% for recommedtation in line['recommendations'] %}
           <br><span style="font-size: 14px">{{ loop.index }}. {{ recommedtation }}</span>
         {% endfor %}
       </div>
@@ -157,11 +162,12 @@
     <div class="footer-label" style="right: 0px">Page {{ page_index.value }}/{{ total_pages }}</div>
   </div>
   </div><div style="break-after:page"></div>
+  {% endfor %}
   {% endif %}
   {# Pilot steps to resolve#}
   {% if is_pilot and optional_steps_to_resolve|length > 0 %}
-    {% for step in optional_steps_to_resolve%}
-      {% set page_index.value = page_index.value + 1 %}   
+      {% for step in optional_steps_to_resolve%}
+        {% set page_index.value = page_index.value + 1 %}   
       <div class="page">
         {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
         {% if loop.first %}
