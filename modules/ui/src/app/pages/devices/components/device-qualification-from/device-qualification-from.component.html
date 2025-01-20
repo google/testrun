@@ -152,11 +152,19 @@ limitations under the License.
   </section>
   <div class="device-qualification-form-actions">
     <div>
-      <button mat-flat-button class="save-button" (click)="onSaveClicked()">
+      <button
+        [disabled]="
+          deviceHasNoChanges(initialDevice(), createDeviceFromForm()) ||
+          ((formIsLoaded$ | async) && !deviceQualificationForm.valid)
+        "
+        mat-flat-button
+        class="save-button"
+        (click)="onSaveClicked()">
         Save
       </button>
       <button
         mat-raised-button
+        [disabled]="deviceHasNoChanges(initialDevice(), createDeviceFromForm())"
         type="button"
         class="close-button"
         (click)="onCancelClicked()">
@@ -165,6 +173,7 @@ limitations under the License.
     </div>
     <button
       mat-raised-button
+      [disabled]="initialDevice() === null"
       type="button"
       class="delete-button"
       (click)="onDeleteClick()">
