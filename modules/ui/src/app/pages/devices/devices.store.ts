@@ -79,7 +79,7 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
   );
   deleteDevice = this.effect<{
     device: Device;
-    onDelete: () => void;
+    onDelete: (idx: number) => void;
   }>(trigger$ => {
     return trigger$.pipe(
       exhaustMap(({ device, onDelete }) => {
@@ -87,8 +87,11 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
           withLatestFrom(this.devices$),
           tap(([deleted, devices]) => {
             if (deleted) {
+              const idx = devices.findIndex(
+                item => device.mac_addr === item.mac_addr
+              );
               this.removeDevice(device, devices);
-              onDelete();
+              onDelete(idx);
             }
           })
         );

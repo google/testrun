@@ -21,6 +21,8 @@ import {
   input,
   effect,
   output,
+  ChangeDetectorRef,
+  AfterViewInit,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -58,6 +60,7 @@ import { DynamicFormComponent } from '../../../../components/dynamic-form/dynami
 import { skip, Subject, takeUntil, timer } from 'rxjs';
 import { Question } from '../../../../model/profile';
 import { FormControlType, QuestionFormat } from '../../../../model/question';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 
 const MAC_ADDRESS_PATTERN =
   '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
@@ -86,14 +89,18 @@ const MAC_ADDRESS_PATTERN =
   templateUrl: './device-qualification-from.component.html',
   styleUrl: './device-qualification-from.component.scss',
 })
-export class DeviceQualificationFromComponent implements OnInit, OnDestroy {
+export class DeviceQualificationFromComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   readonly TestingType = TestingType;
   readonly DeviceView = DeviceView;
 
   private fb = inject(FormBuilder);
+  private cdr = inject(ChangeDetectorRef);
   private deviceValidators = inject(DeviceValidators);
   private profileValidators = inject(ProfileValidators);
   private destroy$: Subject<boolean> = new Subject<boolean>();
+  formIsLoaded$ = new BehaviorSubject<boolean>(false);
   devicesStore = inject(DevicesStore);
 
   deviceQualificationForm: FormGroup = this.fb.group({});
@@ -173,18 +180,25 @@ export class DeviceQualificationFromComponent implements OnInit, OnDestroy {
           if (this.initialDevice()) {
             this.fillDeviceForm(this.format, this.initialDevice()!);
           }
+          this.formIsLoaded$.next(true);
         });
     });
 
     this.devicesStore.getQuestionnaireFormat();
   }
+
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.unsubscribe();
   }
 
+  ngAfterViewInit() {
+    this.cdr.detectChanges();
+  }
+
   onSaveClicked(): void {
     this.save.emit(this.createDeviceFromForm());
+    this.deviceQualificationForm.markAsPristine();
   }
 
   onCancelClicked(): void {
@@ -199,6 +213,143 @@ export class DeviceQualificationFromComponent implements OnInit, OnDestroy {
     this.deviceQualificationForm.reset({
       test_pack: TestingType.Qualification,
     });
+  }
+
+  createDeviceFromForm(): Device {
+    const testModules: { [key: string]: { enabled: boolean } } = {};
+    this.deviceQualificationForm.value.test_modules.forEach(
+      (enabled: boolean, i: number) => {
+        testModules[this.testModules()[i]?.name] = {
+          enabled: enabled,
+        };
+      }
+    );
+
+    const additionalInfo: Question[] = [];
+
+    this.format.forEach((question, index) => {
+      const response: Question = {};
+      response.question = question.question;
+
+      if (question.type === FormControlType.SELECT_MULTIPLE) {
+        const answer: number[] = [];
+        question.options?.forEach((_, idx) => {
+          const value = this.deviceQualificationForm.value[index][idx];
+          if (value) {
+            answer.push(idx);
+          }
+        });
+        response.answer = answer;
+      } else {
+        response.answer = this.deviceQualificationForm.value[index]?.trim();
+      }
+      additionalInfo.push(response);
+    });
+
+    return {
+      status: DeviceStatus.VALID,
+      model: this.model?.value?.trim(),
+      manufacturer: this.manufacturer?.value?.trim(),
+      mac_addr: this.mac_addr?.value?.trim(),
+      test_pack: this.test_pack?.value,
+      test_modules: testModules,
+      type: this.type?.value,
+      technology: this.technology?.value,
+      additional_info: additionalInfo,
+    } as Device;
+  }
+
+  deviceHasNoChanges(device1: Device | null, device2: Device) {
+    return (
+      (device1 === null && this.deviceIsEmpty(device2)) ||
+      (device1 && this.compareDevices(device1, device2))
+    );
+  }
+
+  private deviceIsEmpty(device: Device) {
+    if (device.manufacturer && device.manufacturer !== '') {
+      return false;
+    }
+    if (device.model && device.model !== '') {
+      return false;
+    }
+    if (device.mac_addr && device.mac_addr !== '') {
+      return false;
+    }
+    if (device.type && device.type !== '') {
+      return false;
+    }
+    if (device.technology && device.technology !== '') {
+      return false;
+    }
+    if (device.test_pack !== TestingType.Qualification) {
+      return false;
+    }
+    const keys1 = Object.keys(device.test_modules!);
+
+    for (const key of keys1) {
+      const val1 = device.test_modules![key];
+      if (!val1.enabled) {
+        return false;
+      }
+    }
+
+    if (device.additional_info) {
+      for (const question of device.additional_info) {
+        if (question.answer !== '') {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+    return true;
+  }
+
+  private compareDevices(device1: Device, device2: Device) {
+    if (device1.manufacturer !== device2.manufacturer) {
+      return false;
+    }
+    if (device1.model !== device2.model) {
+      return false;
+    }
+    if (device1.mac_addr !== device2.mac_addr) {
+      return false;
+    }
+    if (device1.type !== device2.type) {
+      return false;
+    }
+    if (device1.technology !== device2.technology) {
+      return false;
+    }
+    if (device1.test_pack !== device2.test_pack) {
+      return false;
+    }
+    const keys1 = Object.keys(device1.test_modules!);
+
+    for (const key of keys1) {
+      const val1 = device1.test_modules![key];
+      const val2 = device2.test_modules![key];
+      if (val1?.enabled !== val2?.enabled) {
+        return false;
+      }
+    }
+
+    if (device1.additional_info) {
+      for (const question of device1.additional_info) {
+        if (
+          question.answer !==
+          device2.additional_info?.find(
+            question2 => question2.question === question.question
+          )?.answer
+        ) {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+    return true;
   }
 
   private fillDeviceForm(format: QuestionFormat[], device: Device): void {
@@ -248,50 +399,6 @@ export class DeviceQualificationFromComponent implements OnInit, OnDestroy {
 
     this.type?.setValue(device.type);
     this.technology?.setValue(device.technology);
-  }
-
-  private createDeviceFromForm(): Device {
-    const testModules: { [key: string]: { enabled: boolean } } = {};
-    this.deviceQualificationForm.value.test_modules.forEach(
-      (enabled: boolean, i: number) => {
-        testModules[this.testModules()[i]?.name] = {
-          enabled: enabled,
-        };
-      }
-    );
-
-    const additionalInfo: Question[] = [];
-
-    this.format.forEach((question, index) => {
-      const response: Question = {};
-      response.question = question.question;
-
-      if (question.type === FormControlType.SELECT_MULTIPLE) {
-        const answer: number[] = [];
-        question.options?.forEach((_, idx) => {
-          const value = this.deviceQualificationForm.value[index][idx];
-          if (value) {
-            answer.push(idx);
-          }
-        });
-        response.answer = answer;
-      } else {
-        response.answer = this.deviceQualificationForm.value[index]?.trim();
-      }
-      additionalInfo.push(response);
-    });
-
-    return {
-      status: DeviceStatus.VALID,
-      model: this.model.value.trim(),
-      manufacturer: this.manufacturer.value.trim(),
-      mac_addr: this.mac_addr.value.trim(),
-      test_pack: this.test_pack.value,
-      test_modules: testModules,
-      type: this.type.value,
-      technology: this.technology.value,
-      additional_info: additionalInfo,
-    } as Device;
   }
 
   private createDeviceForm() {

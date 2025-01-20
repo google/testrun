@@ -39,7 +39,9 @@ limitations under the License.
       [devices]="vm.devices"
       [initialDevice]="vm.selectedDevice"
       [testModules]="vm.testModules"
-      (cancel)="discard()"></app-device-qualification-from>
+      (save)="save($event, vm.selectedDevice)"
+      (cancel)="discard()"
+      (delete)="delete($event)"></app-device-qualification-from>
   </ng-template>
 
   <ng-template #empty>

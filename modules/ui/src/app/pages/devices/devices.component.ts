@@ -111,7 +111,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
   }
 
   menuItemClicked(
-    { action, entity, index }: EntityActionResult<Device>,
+    { action, entity }: EntityActionResult<Device>,
     devices: Device[],
     testModules: TestModule[]
   ) {
@@ -120,7 +120,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
         this.openStartTestrun(entity, devices, testModules);
         break;
       case DeviceAction.Delete:
-        this.openDeleteDialog(entity, index);
+        this.openDeleteDialog(entity);
         break;
     }
   }
@@ -171,12 +171,37 @@ export class DevicesComponent implements OnInit, OnDestroy {
     );
   }
 
+  save(device: Device, initialDevice: Device | null) {
+    this.updateDevice(device, initialDevice, () => {
+      this.devicesStore.selectDevice(device);
+    });
+  }
+
   discard() {
-    this.isOpenDeviceForm = false;
     this.openCloseDialog();
   }
 
-  openDeleteDialog(device: Device, deviceIndex: number) {
+  delete(device: Device) {
+    this.openDeleteDialog(device);
+  }
+
+  private updateDevice(
+    device: Device,
+    initialDevice: Device | null = null,
+    callback: () => void
+  ) {
+    if (initialDevice) {
+      this.devicesStore.editDevice({
+        device,
+        mac_addr: initialDevice.mac_addr,
+        onSuccess: callback,
+      });
+    } else {
+      this.devicesStore.saveDevice({ device, onSuccess: callback });
+    }
+  }
+
+  private openDeleteDialog(device: Device) {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Delete device',
       data: {
@@ -194,7 +219,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
       if (deleteDevice) {
         this.devicesStore.deleteDevice({
           device: device,
-          onDelete: () => {
+          onDelete: (deviceIndex = 0) => {
             this.focusNextButton(deviceIndex);
           },
         });
@@ -217,6 +242,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
 
     dialogRef?.beforeClosed().subscribe(close => {
       if (close) {
+        this.isOpenDeviceForm = false;
         if (deviceIndex !== undefined) {
           this.focusSelectedButton(deviceIndex);
         } else {
@@ -234,6 +260,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
       selected.focus();
     }
   }
+
   private focusNextButton(index: number) {
     this.changeDetectorRef.detectChanges();
     // Try to focus next device item, if exist

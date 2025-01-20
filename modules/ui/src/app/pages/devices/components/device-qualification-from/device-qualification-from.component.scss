@@ -198,7 +198,6 @@ $form-min-width: 285px;
   width: calc(100% - 64px);
   box-sizing: border-box;
   position: sticky;
-  bottom: 20px;
   left: 32px;
   bottom: 25px;
   background: colors.$surface;
@@ -218,6 +217,11 @@ $form-min-width: 285px;
 
   .close-button {
     padding: 0 16px;
+  }
+
+  .delete-button:not(.mat-mdc-button-disabled) {
+    background-color: colors.$error;
+    color: colors.$on-error;
   }
 }
 
