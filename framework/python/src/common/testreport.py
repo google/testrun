@@ -326,7 +326,8 @@ class TestReport():
       if 'recommendations' in test:
         tests_with_recommendations.append(test)
 
-    return self._split_steps_to_resolve_to_pages(tests_with_recommendations, 4, 4)
+    return self._split_steps_to_resolve_to_pages(
+        tests_with_recommendations, 4, 4)
 
   def _get_optional_steps_to_resolve(self, json_data):
     tests_with_recommendations = []
@@ -336,7 +337,8 @@ class TestReport():
       if 'optional_recommendations' in test:
         tests_with_recommendations.append(test)
 
-    return self._split_steps_to_resolve_to_pages(tests_with_recommendations, 3, 4)
+    return self._split_steps_to_resolve_to_pages(
+        tests_with_recommendations, 3, 4)
 
   def _split_steps_to_resolve_to_pages(self, steps, start_page=4, page=4):
     # Split steps to resolve to pages.
