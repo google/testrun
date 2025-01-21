@@ -248,14 +248,14 @@ class TestReport():
     module_reports = self._get_module_pages()
     pages_num = self._pages_num(json_data)
     total_pages = pages_num + len(module_reports) + 1
-    if len(steps_to_resolve) > 0:
-      total_pages += len(steps_to_resolve)
-    if (len(optional_steps_to_resolve) > 0
+    is_pilot = json_data['device']['test_pack'] == 'Pilot Assessment'
+    if is_pilot and (len(optional_steps_to_resolve) > 0
         and json_data['device']['test_pack'] == 'Pilot Assessment'
         ):
       total_pages += len(optional_steps_to_resolve)
+    elif len(steps_to_resolve) > 0:
+      total_pages += len(steps_to_resolve)
 
-    is_pilot = json_data['device']['test_pack'] == 'Pilot Assessment'
     return template.render(styles=styles,
                            logo=logo,
                            icon_qualification=icon_qualification,
