@@ -1607,7 +1607,7 @@
       "uuid": "af7fdcb0-721d-4198-a8ef-c6d8c4eba8c8",
       "type": "http",
       "documentation": "Get a Testrun PDF profile",
-      "method": "get",
+      "method": "post",
       "endpoint": "report/{profile_name}",
       "responses": [
         {

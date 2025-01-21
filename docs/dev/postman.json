@@ -2964,9 +2964,9 @@
 			]
 		},
 		{
-			"name": "Get Profile",
+			"name": "Export Profile",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"url": {
 					"raw": "http://localhost:8000/profile/{profile_name}",
@@ -2986,7 +2986,7 @@
 				{
 					"name": "Get Profile No Device (200)",
 					"originalRequest": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
 						"url": {
 							"raw": "http://localhost:8000/profile/Test",
@@ -3013,12 +3013,12 @@
 						}
 					],
 					"cookie": [],
-					"body": "{profile_name}.pdf"
+					"body": "profile.pdf"
 				},
 				{
 					"name": "Get Profile with Device (200))",
 					"originalRequest": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -3060,12 +3060,12 @@
 						}
 					],
 					"cookie": [],
-					"body": "report.pdf"
+					"body": "profile.pdf"
 				},
 				{
 					"name": "Profile Not Found (404)",
 					"originalRequest": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
 						"url": {
 							"raw": "http://localhost:8000/profile/NonExistingProfile",
@@ -3144,7 +3144,7 @@
 				{
 					"name": "Internal Server Error (500) Copy",
 					"originalRequest": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
 						"url": {
 							"raw": "http://localhost:8000/profile/Test",
@@ -3554,6 +3554,41 @@
 					"body": "{\n    \"error\": \"Invalid request received\"\n}"
 				}
 			]
+		},
+		{
+			"name": "http://localhost:8000/profile/Test",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"mac_addr\": \"non_existing_mac_addr\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/profile/Test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profile",
+						"Test"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
