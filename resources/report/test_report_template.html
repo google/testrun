@@ -91,6 +91,11 @@
           {% endif %}
         </div>
         {% for i in range(results_from, results_to) %}
+        {% if test_results[i]['result'] == 'Non-Compliant' and test_results[i]['required_result'] == "Required" %}
+        <div class="result-line result-line-result result-line-result-non-compliant-required">
+        {% else %}
+        <div class="result-line result-line-result">
+        {% endif %}
         <div class="result-line result-line-result">
           <div class="result-test-label" style="left: .1in;">{{ test_results[i]['name'] }}</div>
           <div class="result-test-label result-test-description" style="left: 2.1in">{{ test_results[i]['description'] }}</div>
@@ -111,11 +116,17 @@
           {{ test_results[i]['result'] }}</div>
           {# Required resul badges #}
           {% if test_results[i]['required_result'] == "Required" %}
-            <div class="result-test-label" style="left: 7in;">{{ test_results[i]['required_result'] }}</div>
+            <div class="result-test-label result-test-required-result result-test-required-result-required" style="left: 7in;">
+              <span class="material-symbols-outlined">asterisk</span>
+              {{ test_results[i]['required_result'] }}</div>
           {% elif test_results[i]['required_result'] == "Required if Applicable" %}
-            <div class="result-test-label" style="left: 7in;">{{ test_results[i]['required_result'] }}</div>
+            <div class="result-test-label result-test-required-result result-test-required-result-required-if-applicable" style="left: 7in;">
+              <span class="material-symbols-outlined">asterisk</span>
+              {{ test_results[i]['required_result'] }}</div>
           {% else %}
-            <div class="result-test-label" style="left: 7in;">{{ test_results[i]['required_result'] }}</div>
+            <div class="result-test-label result-test-required-result result-test-required-result-informational" style="left: 7in;">
+              <span class="material-symbols-outlined">info_i</span>
+              {{ test_results[i]['required_result'] }}</div>
           {% endif %}
         </div>
         {% endfor %}
