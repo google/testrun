@@ -227,7 +227,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
     });
   }
 
-  private openCloseDialog(deviceIndex?: number) {
+  private openCloseDialog() {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Close the Device menu',
       data: {
@@ -243,22 +243,9 @@ export class DevicesComponent implements OnInit, OnDestroy {
     dialogRef?.beforeClosed().subscribe(close => {
       if (close) {
         this.isOpenDeviceForm = false;
-        if (deviceIndex !== undefined) {
-          this.focusSelectedButton(deviceIndex);
-        } else {
-          this.focusManagerService.focusFirstElementInContainer();
-        }
+        this.focusManagerService.focusFirstElementInContainer();
       }
     });
-  }
-
-  private focusSelectedButton(index: number) {
-    const selected = this.element.nativeElement.querySelectorAll(
-      'app-device-item .button-edit'
-    )[index];
-    if (selected) {
-      selected.focus();
-    }
   }
 
   private focusNextButton(index: number) {

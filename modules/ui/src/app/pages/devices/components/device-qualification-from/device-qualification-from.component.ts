@@ -61,6 +61,8 @@ import { skip, Subject, takeUntil, timer } from 'rxjs';
 import { Question } from '../../../../model/profile';
 import { FormControlType, QuestionFormat } from '../../../../model/question';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { SimpleDialogComponent } from '../../../../components/simple-dialog/simple-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 const MAC_ADDRESS_PATTERN =
   '^[\\s]*[a-fA-F0-9]{2}(?:[:][a-fA-F0-9]{2}){5}[\\s]*$';
@@ -85,7 +87,7 @@ const MAC_ADDRESS_PATTERN =
     MatRadioButton,
     DynamicFormComponent,
   ],
-  providers: [provideNgxMask(), DevicesStore],
+  providers: [provideNgxMask()],
   templateUrl: './device-qualification-from.component.html',
   styleUrl: './device-qualification-from.component.scss',
 })
@@ -99,23 +101,36 @@ export class DeviceQualificationFromComponent
   private cdr = inject(ChangeDetectorRef);
   private deviceValidators = inject(DeviceValidators);
   private profileValidators = inject(ProfileValidators);
+  private dialog = inject(MatDialog);
   private destroy$: Subject<boolean> = new Subject<boolean>();
+  private changeDevice = false;
+
   formIsLoaded$ = new BehaviorSubject<boolean>(false);
   devicesStore = inject(DevicesStore);
-
   deviceQualificationForm: FormGroup = this.fb.group({});
   format: QuestionFormat[] = [];
   typeQuestion = 0;
   technologyQuestion = 2;
+  device: Device | null = null;
 
   initialDevice = input<Device | null>(null);
 
   initialDeviceEffect = effect(() => {
-    const device = this.initialDevice();
-    if (device && device.mac_addr) {
-      this.fillDeviceForm(this.format, device);
-    } else {
-      this.resetForm();
+    if (
+      this.changeDevice ||
+      this.deviceHasNoChanges(this.device, this.createDeviceFromForm())
+    ) {
+      this.changeDevice = false;
+      this.device = this.initialDevice();
+      if (this.device && this.device.mac_addr) {
+        this.fillDeviceForm(this.format, this.device);
+      } else {
+        this.resetForm();
+      }
+    } else if (this.device != this.initialDevice()) {
+      // prevent select new device before user confirmation
+      this.devicesStore.selectDevice(this.device);
+      this.openCloseDialog(this.initialDevice());
     }
   });
 
@@ -293,10 +308,9 @@ export class DeviceQualificationFromComponent
         return false;
       }
     }
-
     if (device.additional_info) {
       for (const question of device.additional_info) {
-        if (question.answer !== '') {
+        if (question.answer && question.answer !== '') {
           return false;
         }
       }
@@ -433,6 +447,27 @@ export class DeviceQualificationFromComponent
         this.deviceValidators.testModulesRequired()
       ),
       test_pack: [TestingType.Qualification],
+    });
+  }
+
+  private openCloseDialog(device: Device | null) {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
+      ariaLabel: 'Close the Device menu',
+      data: {
+        title: 'Are you sure?',
+        content: `By closing the device profile you will loose any new changes you have made to the device.`,
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: 'simple-dialog',
+    });
+
+    dialogRef?.beforeClosed().subscribe(close => {
+      if (close) {
+        this.changeDevice = true;
+        this.devicesStore.selectDevice(device);
+      }
     });
   }
 }
