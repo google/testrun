@@ -503,9 +503,10 @@
       direction: ltr;
       text-align: center;
       font-size: 12px;
-      display: inline-flex;
+      display: inline-block;
       width: 14px;
       height: 14px;
+      line-height: 14px;
       flex-direction: column;
       justify-content: center;
       align-items: center;
@@ -519,7 +520,7 @@
 
     .result-test-required-result {
       display: inline-block;
-      max-width: 500px !important;
+      max-width: fit-content;
     }
 
     .result-test-required-result-informational{
