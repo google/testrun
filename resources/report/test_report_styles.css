@@ -24,6 +24,13 @@
       unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
 
+    @font-face {
+      font-family: 'Material Symbols Outlined';
+      font-style: normal;
+      font-weight: 400;
+      src: url(https://fonts.gstatic.com/icon/font?kit=kJF1BvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oDMzByHX9rA6RzaxHMPdY43zj-jCxv3fzvRNU22ZXGJpEpjC_1v-p_4MrImHCIJIZrDCvHOejHdIa31RJq7xr9O779sC3DdMx&skey=b8dc2088854b122f&v=v222) format('woff2');
+    }
+
     /* Define some common body formatting*/
     body {
       font-family: 'Google Sans', sans-serif;
@@ -415,6 +422,10 @@
       border-top: 0;
     }
 
+    .result-line-result-non-compliant-required {
+      background: #FCE8E6;
+    }
+
     .result-list-header-label {
       position: absolute;
       font-size: 12px;
@@ -478,6 +489,63 @@
     .result-test-result-skipped {
       background-color: #e3e3e3;
       color: #393939;
+    }
+
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      text-align: center;
+      font-size: 12px;
+      display: inline-flex;
+      width: 14px;
+      height: 14px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      border-radius: 100%;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .result-test-required-result {
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 6px;
+    }
+
+    .result-test-required-result-informational{
+      color: #0D652D;
+    }
+
+    .result-test-required-result-informational .material-symbols-outlined {
+      background: #0D652D;
+      color: #ffffff;
+    }
+
+    .result-test-required-result-required {
+      color: #000000;
+    }
+
+    .result-test-required-result-required .material-symbols-outlined {
+      background: #000000;
+      color: #ffffff;
+    }
+
+    .result-test-required-result-required-if-applicable {
+      color: #174EA6;
+    }
+
+    .result-test-required-result-required-if-applicable .material-symbols-outlined {
+      background: #174EA6;
+      color: #ffffff;
     }
 
     /* CSS for the footer */
