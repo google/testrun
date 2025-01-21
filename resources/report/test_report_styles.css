@@ -519,7 +519,7 @@
 
     .result-test-required-result {
       display: inline-block;
-      max-width: fit-content;
+      max-width: 500px !important;
     }
 
     .result-test-required-result-informational{
