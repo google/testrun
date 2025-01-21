@@ -513,13 +513,13 @@
       border-radius: 100%;
       -webkit-font-feature-settings: 'liga';
       -webkit-font-smoothing: antialiased;
+      vertical-align: bottom;
+      margin-right: 6px;
     }
 
     .result-test-required-result {
-      display: grid;
-      grid-template-columns: auto auto;
-      gap: 6px;
-      width: fit-content;
+      display: inline-block;
+      max-width: fit-content;
     }
 
     .result-test-required-result-informational{
