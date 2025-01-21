@@ -519,6 +519,7 @@
       display: grid;
       grid-template-columns: auto auto;
       gap: 6px;
+      width: fit-content;
     }
 
     .result-test-required-result-informational{
