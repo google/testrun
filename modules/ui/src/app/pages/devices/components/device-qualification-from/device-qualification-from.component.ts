@@ -30,6 +30,7 @@ import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
+  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { DeviceValidators } from '../device-form/device.validators';
@@ -101,10 +102,11 @@ export class DeviceQualificationFromComponent
   private cdr = inject(ChangeDetectorRef);
   private deviceValidators = inject(DeviceValidators);
   private profileValidators = inject(ProfileValidators);
-  private dialog = inject(MatDialog);
   private destroy$: Subject<boolean> = new Subject<boolean>();
   private changeDevice = false;
+  private macAddressValidator!: ValidatorFn;
 
+  dialog = inject(MatDialog);
   formIsLoaded$ = new BehaviorSubject<boolean>(false);
   devicesStore = inject(DevicesStore);
   deviceQualificationForm: FormGroup = this.fb.group({});
@@ -127,6 +129,7 @@ export class DeviceQualificationFromComponent
       } else {
         this.resetForm();
       }
+      this.updateMacAddressValidator();
     } else if (this.device != this.initialDevice()) {
       // prevent select new device before user confirmation
       this.devicesStore.selectDevice(this.device);
@@ -214,6 +217,7 @@ export class DeviceQualificationFromComponent
   onSaveClicked(): void {
     this.save.emit(this.createDeviceFromForm());
     this.deviceQualificationForm.markAsPristine();
+    this.changeDevice = true;
   }
 
   onCancelClicked(): void {
@@ -416,6 +420,11 @@ export class DeviceQualificationFromComponent
   }
 
   private createDeviceForm() {
+    this.macAddressValidator = this.deviceValidators.differentMACAddress(
+      this.devices(),
+      this.initialDevice()
+    );
+
     this.deviceQualificationForm = this.fb.group({
       model: [
         '',
@@ -436,10 +445,7 @@ export class DeviceQualificationFromComponent
         [
           this.profileValidators.textRequired(),
           Validators.pattern(MAC_ADDRESS_PATTERN),
-          this.deviceValidators.differentMACAddress(
-            this.devices(),
-            this.initialDevice()
-          ),
+          this.macAddressValidator,
         ],
       ],
       test_modules: new FormArray(
@@ -469,5 +475,17 @@ export class DeviceQualificationFromComponent
         this.devicesStore.selectDevice(device);
       }
     });
+  }
+
+  private updateMacAddressValidator() {
+    if (this.mac_addr) {
+      this.mac_addr.removeValidators([this.macAddressValidator]);
+      this.macAddressValidator = this.deviceValidators.differentMACAddress(
+        this.devices(),
+        this.initialDevice()
+      );
+      this.mac_addr.addValidators(this.macAddressValidator);
+      this.mac_addr.updateValueAndValidity();
+    }
   }
 }
