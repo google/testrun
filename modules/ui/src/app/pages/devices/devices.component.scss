@@ -15,6 +15,10 @@
  */
 @use 'variables';
 
+::ng-deep :root {
+  --mat-dialog-container-max-width: 329px !important;
+}
+
 .device-add-button {
   font-family: variables.$font-text;
   margin-bottom: 12px;

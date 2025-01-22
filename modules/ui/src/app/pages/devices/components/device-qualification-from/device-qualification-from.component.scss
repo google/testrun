@@ -20,7 +20,7 @@
 @use 'mixins';
 
 ::ng-deep :root {
-  --mat-dialog-container-max-width: 732px;
+  --mat-dialog-container-max-width: 329px !important;
 }
 
 $form-max-width: var(--mat-dialog-container-max-width);
