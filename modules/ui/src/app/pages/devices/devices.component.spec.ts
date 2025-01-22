@@ -211,7 +211,7 @@ describe('DevicesComponent', () => {
         beforeClosed: () => of(true),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openDeleteDialog(device, 0);
+      component.openDeleteDialog(device);
 
       const args = mockDevicesStore.deleteDevice.calls.argsFor(0);
       // @ts-expect-error config is in object

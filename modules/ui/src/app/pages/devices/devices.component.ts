@@ -201,7 +201,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private openDeleteDialog(device: Device) {
+  openDeleteDialog(device: Device) {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Delete device',
       data: {

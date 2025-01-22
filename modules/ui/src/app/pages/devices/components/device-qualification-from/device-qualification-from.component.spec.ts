@@ -50,6 +50,7 @@ import { Component, Input } from '@angular/core';
 import { QuestionFormat } from '../../../../model/question';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { selectDevices } from '../../../../store/selectors';
+import { SimpleDialogComponent } from '../../../../components/simple-dialog/simple-dialog.component';
 
 describe('DeviceQualificationFromComponent', () => {
   let component: DeviceQualificationFromComponent;
@@ -401,6 +402,79 @@ describe('DeviceQualificationFromComponent', () => {
 
       discardPeriodicTasks();
     }));
+
+    it('should have enabled delete button', () => {
+      fixture.detectChanges();
+      const button = compiled.querySelector(
+        '.delete-button'
+      ) as HTMLButtonElement;
+
+      expect(button.disabled).toBeFalse();
+    });
+
+    it('should open cancel dialog when device is changed', () => {
+      const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+        beforeClosed: () => of(true),
+      } as MatDialogRef<typeof SimpleDialogComponent>);
+      fixture.detectChanges();
+      fixture.componentRef.setInput('initialDevice', {
+        status: DeviceStatus.VALID,
+        manufacturer: 'Alpha',
+        model: 'O3-DIN-CPU',
+        mac_addr: '00:22:42:35:73:c4',
+        test_modules: {
+          udmi: {
+            enabled: true,
+          },
+        },
+      });
+      fixture.detectChanges();
+
+      expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
+        ariaLabel: 'Close the Device menu',
+        data: {
+          title: 'Are you sure?',
+          content: `By closing the device profile you will loose any new changes you have made to the device.`,
+        },
+        autoFocus: true,
+        hasBackdrop: true,
+        disableClose: true,
+        panelClass: 'simple-dialog',
+      });
+
+      openSpy.calls.reset();
+    });
+  });
+
+  describe('when device is null', () => {
+    beforeEach(() => {
+      fixture.componentRef.setInput('testModules', MOCK_TEST_MODULES);
+      fixture.componentRef.setInput('devices', [device]);
+      fixture.componentRef.setInput('isCreate', true);
+      fixture.componentRef.setInput('initialDevice', null);
+    });
+
+    it('should have disabled delete button', () => {
+      fixture.detectChanges();
+      const button = compiled.querySelector(
+        '.delete-button'
+      ) as HTMLButtonElement;
+
+      expect(button.disabled).toBeTrue();
+    });
+  });
+
+  describe('with changes', () => {
+    it('should have enabled cancel button', () => {
+      fixture.detectChanges();
+      component.model.setValue('new value');
+      fixture.detectChanges();
+      const button = compiled.querySelector(
+        '.close-button'
+      ) as HTMLButtonElement;
+
+      expect(button.disabled).toBeFalse();
+    });
   });
 
   describe('onSaveClicked', () => {
