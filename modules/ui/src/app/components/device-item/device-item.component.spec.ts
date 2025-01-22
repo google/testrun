@@ -120,6 +120,21 @@ describe('DeviceItemComponent', () => {
         expect(status).toBeTruthy();
         expect(status?.textContent?.trim()).toEqual('Outdated');
       });
+
+      it('should have error icon', () => {
+        const icon = compiled.querySelector('mat-icon')?.textContent?.trim();
+
+        expect(icon).toEqual('error');
+      });
+    });
+
+    it('should have item status as Under test', () => {
+      component.disabled = true;
+      fixture.detectChanges();
+      const status = compiled.querySelector('.item-status');
+
+      expect(status).toBeTruthy();
+      expect(status?.textContent?.trim()).toEqual('Under test');
     });
 
     it('should emit device on click edit button', () => {

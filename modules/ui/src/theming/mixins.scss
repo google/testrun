@@ -61,3 +61,8 @@
     z-index: -1;
   }
 }
+
+@mixin disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
