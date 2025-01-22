@@ -515,13 +515,13 @@
       -webkit-font-feature-settings: 'liga';
       -webkit-font-smoothing: antialiased;
       vertical-align: bottom;
-      margin-right: 6px;
     }
 
     .result-test-required-result {
       display: flex;
       align-items: center;
       overflow: visible;
+      padding-left: 6px;
     }
 
     .result-test-required-result-text {
