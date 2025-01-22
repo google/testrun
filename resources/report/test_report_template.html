@@ -88,7 +88,7 @@
           <div class="result-list-header-label" style="left: 2.1in">Description</div>
           <div class="result-list-header-label" style="left: 5.4in">Result</div>
           {% if is_pilot %}
-          <div class="result-list-header-label" style="left: 7in">Required result</div>
+          <div class="result-list-header-label" style="left: 6.9in">Required result</div>
           {% endif %}
         </div>
         {% for i in range(results_from, results_to) %}
@@ -116,17 +116,20 @@
           {{ test_results[i]['result'] }}</div>
           {# Required resul badges #}
           {% if test_results[i]['required_result'] == "Required" %}
-            <div class="result-test-label result-test-required-result result-test-required-result-required" style="left: 7in;">
+            <div class="result-test-label result-test-required-result result-test-required-result-required" style="left: 6.9in;">
               <span class="material-symbols-outlined">asterisk</span>
-              {{ test_results[i]['required_result'] }}</div>
+              <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
+            </div>
           {% elif test_results[i]['required_result'] == "Required if Applicable" %}
-            <div class="result-test-label result-test-required-result result-test-required-result-required-if-applicable" style="left: 7in;">
+            <div class="result-test-label result-test-required-result result-test-required-result-required-if-applicable" style="left: 6.9in;">
               <span class="material-symbols-outlined">asterisk</span>
-              {{ test_results[i]['required_result'] }}</div>
+              <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
+            </div>
           {% else %}
-            <div class="result-test-label result-test-required-result result-test-required-result-informational" style="left: 7in;">
+            <div class="result-test-label result-test-required-result result-test-required-result-informational" style="left: 6.9in;">
               <span class="material-symbols-outlined">info_i</span>
-              {{ test_results[i]['required_result'] }}</div>
+              <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
+            </div>
           {% endif %}
         </div>
         {% endfor %}
