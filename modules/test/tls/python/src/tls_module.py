@@ -39,7 +39,7 @@ REPORT_TEMPLATE_FILE = 'report_template.jinja2'
 class TLSModule(TestModule):
   """The TLS testing module."""
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                module,
                conf_file=None,
                results_dir=None,
@@ -60,7 +60,11 @@ class TLSModule(TestModule):
   def generate_module_report(self):
     # Load Jinja2 template
     loader=FileSystemLoader(self._report_template_folder)
-    template = Environment(loader=loader).get_template(REPORT_TEMPLATE_FILE)
+    template = Environment(
+                          loader=loader,
+                          trim_blocks=True,
+                          lstrip_blocks=True
+                          ).get_template(REPORT_TEMPLATE_FILE)
     module_header='TLS Module'
     # Summary table headers
     summary_headers = [
