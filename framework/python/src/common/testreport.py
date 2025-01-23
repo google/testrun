@@ -23,7 +23,6 @@ import os
 from test_orc.test_case import TestCase
 from jinja2 import Environment, FileSystemLoader, BaseLoader
 from collections import OrderedDict
-import re
 from bs4 import BeautifulSoup
 
 
