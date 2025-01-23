@@ -13,12 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { CommonModule } from '@angular/common';
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import {
+  ActivatedRoute,
+  NavigationEnd,
+  Router,
+  RouterModule,
+} from '@angular/router';
 import { Routes } from '../../model/routes';
+import { filter, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-settings',
@@ -27,8 +38,9 @@ import { Routes } from '../../model/routes';
   styleUrls: ['./settings.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit, OnDestroy {
   private routes = [Routes.General, Routes.Certificates];
+  private destroy$: Subject<boolean> = new Subject<boolean>();
   selectedIndex = 0;
   constructor(
     private router: Router,
@@ -37,13 +49,33 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit(): void {
     const currentRoute = this.router.url;
-    this.selectedIndex = this.routes.findIndex(route =>
-      currentRoute.includes(route)
-    );
+    this.setSelectedIndex(currentRoute);
+
+    this.router.events
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(event => event instanceof NavigationEnd)
+      )
+      .subscribe(event => {
+        if (event.url !== currentRoute) {
+          this.setSelectedIndex(event.url);
+        }
+      });
   }
 
   onTabChange(event: MatTabChangeEvent): void {
     const index = event.index;
     this.router.navigate([this.routes[index]], { relativeTo: this.route });
+  }
+
+  private setSelectedIndex(currentRoute: string): void {
+    this.selectedIndex = this.routes.findIndex(route =>
+      currentRoute.includes(route)
+    );
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next(true);
+    this.destroy$.unsubscribe();
   }
 }

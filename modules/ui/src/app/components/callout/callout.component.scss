@@ -87,7 +87,14 @@
 }
 
 .callout-action-container {
+  display: flex;
   margin-left: auto;
+}
+
+@media (max-width: 800px) {
+  .callout-action-container {
+    flex-direction: column;
+  }
 }
 
 .callout-action {
