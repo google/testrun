@@ -56,7 +56,11 @@ class DNSModule(TestModule):
     summary_height = 135
     row_height = 42
     loader=FileSystemLoader(self._report_template_folder)
-    template = Environment(loader=loader).get_template(REPORT_TEMPLATE_FILE)
+    template = Environment(
+                            loader=loader,
+                            trim_blocks=True,
+                            lstrip_blocks=True
+                            ).get_template(REPORT_TEMPLATE_FILE)
     module_header='DNS Module'
     # Summary table headers
     summary_headers = [
