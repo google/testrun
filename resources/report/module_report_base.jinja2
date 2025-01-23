@@ -24,7 +24,9 @@
 <div class="module-page-content">
   {% if module_header %}
     <h4 class="page-heading">{{ module_header }}</h4>
-    <table class="module-summary">
+    {% if summary_headers %}
+      <table class="module-summary">
+    {% endif %}
   {% elif summary_headers %}
     <table class="module-summary not-first">
   {% endif %}
