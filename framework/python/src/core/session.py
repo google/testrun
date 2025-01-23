@@ -156,7 +156,7 @@ class TestrunSession():
 
   def start(self):
     self.reset()
-    self._status = TestrunStatus.WAITING_FOR_DEVICE
+    self._status = TestrunStatus.STARTING
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -682,6 +682,15 @@ class TestrunSession():
     elif len(profile_json.get('name').strip()) == 0:
       LOGGER.error('Name field left empty')
       return False
+
+    # Check if profile name has special characters
+    for field in ['name', 'rename']:
+      profile_name = profile_json.get(field)
+      if profile_name:
+        for char in profile_name:
+          if char in r"\<>?/:;@''][=^":
+            LOGGER.error('Profile name should not contain special characters')
+            return False
 
     # Error handling if 'questions' not in request
     if 'questions' not in profile_json and valid:

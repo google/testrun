@@ -17,6 +17,7 @@
 class TestrunStatus:
   """Statuses for overall testing"""
   IDLE = "Idle"
+  STARTING = "Starting"
   WAITING_FOR_DEVICE = "Waiting for Device"
   MONITORING = "Monitoring"
   IN_PROGRESS = "In Progress"

@@ -375,6 +375,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
           self._device_stable, [NetworkEvent.DEVICE_STABLE])
 
     self.get_net_orc().start_listener()
+    self.get_session().set_status(TestrunStatus.WAITING_FOR_DEVICE)
     LOGGER.info('Waiting for devices on the network...')
 
     # Keep application running until stopped
