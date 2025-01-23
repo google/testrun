@@ -56,7 +56,11 @@ class ServicesModule(TestModule):
   def generate_module_report(self):
     # Load Jinja2 template
     loader=FileSystemLoader(self._report_template_folder)
-    template = Environment(loader=loader).get_template(REPORT_TEMPLATE_FILE)
+    template = Environment(
+                          loader=loader,
+                          trim_blocks=True,
+                          lstrip_blocks=True
+                          ).get_template(REPORT_TEMPLATE_FILE)
     module_header = 'Services Module'
     summary_headers = [
                         'TCP ports open',
