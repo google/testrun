@@ -105,6 +105,7 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
         if (
           res?.status === StatusOfTestrun.Validating ||
           res?.status === StatusOfTestrun.WaitingForDevice ||
+          res?.status === StatusOfTestrun.Starting ||
           res?.status === StatusOfTestrun.Monitoring ||
           (res?.status === StatusOfTestrun.InProgress &&
             this.resultIsEmpty(res.tests))
@@ -127,6 +128,7 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
           res?.status === StatusOfTestrun.Validating ||
           res?.status === StatusOfTestrun.Monitoring ||
           res?.status === StatusOfTestrun.WaitingForDevice ||
+          res?.status === StatusOfTestrun.Starting ||
           (res?.status === StatusOfTestrun.Cancelled && !results.length)
         ) {
           this.setDataSource(EMPTY_RESULT);
@@ -214,6 +216,7 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     return (
       status === StatusOfTestrun.InProgress ||
       status === StatusOfTestrun.WaitingForDevice ||
+      status === StatusOfTestrun.Starting ||
       status === StatusOfTestrun.Monitoring ||
       status === StatusOfTestrun.Validating
     );

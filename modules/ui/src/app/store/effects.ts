@@ -324,6 +324,8 @@ export class AppEffects {
     return (
       status === StatusOfTestrun.Compliant ||
       status === StatusOfTestrun.NonCompliant ||
+      status === StatusOfTestrun.Proceed ||
+      status === StatusOfTestrun.DoNotProceed ||
       status === StatusOfTestrun.Error
     );
   }

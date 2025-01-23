@@ -17,7 +17,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TestrunTableComponent } from './testrun-table.component';
 
-import { IResult, StatusOfTestResult } from '../../../../model/testrun-status';
+import {
+  IResult,
+  RequiredResult,
+  StatusOfTestResult,
+} from '../../../../model/testrun-status';
 import {
   TEST_DATA,
   TEST_DATA_RESULT,
@@ -81,6 +85,20 @@ describe('ProgressTableComponent', () => {
       const result = component.getAriaLabel();
 
       expect(result).toEqual('Expand all rows');
+    });
+
+    it('#getRequiredResultClass should return class', () => {
+      const result1 = component.getRequiredResultClass(
+        RequiredResult.Informational
+      );
+      const result2 = component.getRequiredResultClass(
+        RequiredResult.RequiredIfApplicable
+      );
+      const result3 = component.getRequiredResultClass(RequiredResult.Required);
+
+      expect(result1).toEqual('informational');
+      expect(result2).toEqual('required-if-applicable');
+      expect(result3).toEqual('required');
     });
   });
 

@@ -193,6 +193,7 @@ export class TestRunService {
     return (
       status === StatusOfTestrun.InProgress ||
       status === StatusOfTestrun.WaitingForDevice ||
+      status === StatusOfTestrun.Starting ||
       status === StatusOfTestrun.Monitoring ||
       status === StatusOfTestrun.Validating
     );

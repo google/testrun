@@ -728,9 +728,9 @@ def test_sys_status_cancelled(empty_devices_dir, add_devices, # pylint: disable=
 @pytest.mark.parametrize("add_devices", [
   ["device_1"]
 ],indirect=True)
-def test_sys_status_waiting(empty_devices_dir, add_devices, # pylint: disable=W0613
-                                      testrun, start_test): # pylint: disable=W0613
-  """ Test for system status 'Waiting for Device' (200) """
+def test_sys_status_starting(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                       testrun, start_test): # pylint: disable=W0613
+  """ Test for system status 'Starting' and 'Waiting for Device' (200) """
 
   # Send the get request
   r = requests.get(f"{API}/system/status", timeout=5)
@@ -740,6 +740,27 @@ def test_sys_status_waiting(empty_devices_dir, add_devices, # pylint: disable=W0
 
   # Parse the json response
   response = r.json()
+
+  # Check if system status is 'Starting'
+  assert response["status"] == "Starting"
+
+  # Add max 60 seconds delay to allow for status to change
+  max_retries = 60
+
+  # If status is "Starting" and max_retries didn't reach 0
+  while response["status"] == "Starting" and max_retries != 0:
+
+    # Add 1 second delay
+    time.sleep(1)
+
+    # Subtract 1 from max_retries
+    max_retries -= 1
+
+    # Resend the get request
+    r = requests.get(f"{API}/system/status", timeout=5)
+
+    # Parse the json response
+    response = r.json()
 
   # Check if system status is 'Waiting for Device'
   assert response["status"] == "Waiting for Device"
@@ -2878,6 +2899,68 @@ def test_create_profile_invalid_json(empty_profiles_dir, testrun): # pylint: dis
 
   # Check if status code is 400 (Bad request)
   assert r.status_code == 400
+
+  # Check if "error" key in response
+  assert "error" in response
+
+def test_create_profile_invalid_name(empty_profiles_dir, testrun): # pylint: disable=W0613
+  """ Test for create profile invalid name (400) """
+
+  # Load the profile
+  new_profile = load_json("invalid_name.json", directory=PROFILES_PATH)
+
+  # Send the post request
+  r = requests.post(f"{API}/profiles", data=json.dumps(new_profile), timeout=5)
+
+  # Check if status code is 400 (Bad request)
+  assert r.status_code == 400
+
+  # Parse the response
+  response = r.json()
+
+  # Check if "error" key in response
+  assert "error" in response
+
+@pytest.mark.parametrize("add_profiles", [
+  ["valid_profile.json"]
+], indirect=True)
+def test_update_profile_invalid_name(empty_profiles_dir, add_profiles, testrun): # pylint: disable=W0613
+  """ Test for update profile invalid name (400) """
+
+  # Load the profile using load_json utility method
+  new_profile = load_json("valid_profile.json", directory=PROFILES_PATH)
+
+  # Assign the new_profile name
+  profile_name = new_profile["name"]
+
+  # Assign the profile questions
+  profile_questions = new_profile["questions"]
+
+  # Assign the updated_profile name
+  updated_profile_name = r"\<>?/:;@''][=^"
+
+  # Payload with the updated device name
+  updated_profile = {
+    "name": profile_name,
+    "rename" : updated_profile_name,
+    "questions": profile_questions
+    }
+
+  # Exception if the profile does not exists
+  if not profile_exists(profile_name):
+    raise ValueError(f"Profile: {profile_name} does not exists")
+
+  # Send the post request to update the profile
+  r = requests.post(
+      f"{API}/profiles",
+      data=json.dumps(updated_profile),
+      timeout=5)
+
+  # Check if status code is 400 (Bad request)
+  assert r.status_code == 400
+
+  # Parse the response
+  response = r.json()
 
   # Check if "error" key in response
   assert "error" in response

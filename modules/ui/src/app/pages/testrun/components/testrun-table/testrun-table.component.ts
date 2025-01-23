@@ -78,6 +78,14 @@ export class TestrunTableComponent {
   public getResultClass(result: string): StatusResultClassName {
     return this.testRunService.getResultClass(result);
   }
+
+  public getRequiredResultClass(result: string): string {
+    if (!result) {
+      return '';
+    }
+    return result.split(' ').join('-').toLowerCase();
+  }
+
   public getAriaLabel(): string {
     const action = this.isAllCollapsed ? 'Expand' : 'Collapse';
     const message = this.stepsToResolveCount === 1 ? 'row' : 'all rows';
