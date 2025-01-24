@@ -26,11 +26,3 @@
   width: fit-content;
   height: 56px;
 }
-
-app-device-item.disabled + ::ng-deep * {
-  @include mixins.disabled;
-}
-app-device-item.disabled,
-app-device-item.disabled + ::ng-deep * {
-  cursor: not-allowed;
-}

@@ -48,6 +48,9 @@
   display: grid;
   grid-template-columns: auto 40px;
   align-items: center;
+  &.disabled {
+    cursor: not-allowed;
+  }
 }
 
 .example-menu {
