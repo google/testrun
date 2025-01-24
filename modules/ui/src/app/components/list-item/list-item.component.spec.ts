@@ -26,9 +26,14 @@ import {
   MatMenuItemHarness,
 } from '@angular/material/menu/testing';
 
+interface Entity {
+  id: number;
+  name: string;
+}
+
 describe('ListItemComponent', () => {
-  let component: ListItemComponent;
-  let fixture: ComponentFixture<ListItemComponent>;
+  let component: ListItemComponent<Entity>;
+  let fixture: ComponentFixture<ListItemComponent<Entity>>;
   let compiled: HTMLElement;
   let loader: HarnessLoader;
   const testActions = [
@@ -47,9 +52,10 @@ describe('ListItemComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ListItemComponent);
+    fixture = TestBed.createComponent(ListItemComponent<Entity>);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('actions', testActions);
+    fixture.componentRef.setInput('entity', { id: 1, name: 'test' } as Entity);
     compiled = fixture.nativeElement as HTMLElement;
     loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
