@@ -200,9 +200,9 @@ class ConnectionModule(TestModule):
         ping_success = self._ping(self._device_ipv4_addr)
         LOGGER.debug('Ping success: ' + str(ping_success))
         if ping_success:
-          return True, 'Device responded to leased ip address'
+          return True, 'Device responded to leased IP address'
         else:
-          return False, 'Device did not respond to leased ip address'
+          return False, 'Device did not respond to leased IP address'
       else:
         LOGGER.info('No IP information found in lease: ' + self._device_mac)
         return False, 'No IP information found in lease: ' + self._device_mac
@@ -311,7 +311,7 @@ class ConnectionModule(TestModule):
                                               lease['hw_addr'], ip_address):
           self._dhcp_util.wait_for_lease_expire(lease,
                                                 self._lease_wait_time_sec)
-          LOGGER.info('Checking device accepted new ip')
+          LOGGER.info('Checking device accepted new IP')
           for _ in range(5):
             LOGGER.info('Pinging device at IP: ' + ip_address)
             if self._ping(ip_address):
@@ -513,7 +513,7 @@ class ConnectionModule(TestModule):
                       LOGGER.info('Device interface set to up state')
                       # Confirm device receives a new lease
                       reserved_lease_accepted = False
-                      LOGGER.info('Checking device accepted new ip')
+                      LOGGER.info('Checking device accepted new IP')
                       for _ in range(5):
                         LOGGER.info('Pinging device at IP: ' + ip_address)
                         if self._ping(ip_address):

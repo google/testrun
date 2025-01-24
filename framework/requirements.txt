@@ -5,7 +5,7 @@ requests==2.32.3
 docker==7.1.0
 ipaddress==1.0.23
 netifaces==0.11.0
-scapy==2.6.0
+scapy==2.5.0
 
 # Requirments for the test_orc module
 weasyprint==61.2
@@ -15,7 +15,7 @@ pydyf==0.8.0
 fastapi==0.109.1
 psutil==5.9.8
 uvicorn==0.27.0
-python-multipart==0.0.9
+python-multipart==0.0.19
 pydantic==2.7.1
 
 # Requirements for testing
@@ -28,7 +28,7 @@ responses==0.25.3
 markdown==3.5.2
 
 # Requirements for the session
-cryptography==43.0.1
+cryptography==44.0.0
 pytz==2024.1
 
 # Requirements for the risk profile
@@ -41,5 +41,5 @@ paho-mqtt==2.1.0
 APScheduler==3.10.4
 
 # Requirements for reports generation
-Jinja2==3.1.4
+Jinja2==3.1.5
 beautifulsoup4==4.12.3

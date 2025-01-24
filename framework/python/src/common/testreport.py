@@ -70,6 +70,9 @@ class TestReport():
     self._report_url = ''
     self._cur_page = 0
 
+  def update_device_profile(self, additional_info):
+    self._device['device_profile'] = additional_info
+
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
 

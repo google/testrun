@@ -159,7 +159,7 @@ class TestrunSession():
 
   def start(self):
     self.reset()
-    self._status = TestrunStatus.WAITING_FOR_DEVICE
+    self._status = TestrunStatus.STARTING
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -462,10 +462,12 @@ class TestrunSession():
     if not updated:
       self._results.append(result)
 
-  def set_test_result_error(self, result):
+  def set_test_result_error(self, result, description=None):
     """Set test result error"""
     result.result = TestResult.ERROR
     result.recommendations = None
+    if description is not None:
+      result.description = description
     self._results.append(result)
 
   def add_module_report(self, module_report):
@@ -689,6 +691,15 @@ class TestrunSession():
     elif len(profile_json.get('name').strip()) == 0:
       LOGGER.error('Name field left empty')
       return False
+
+    # Check if profile name has special characters
+    for field in ['name', 'rename']:
+      profile_name = profile_json.get(field)
+      if profile_name:
+        for char in profile_name:
+          if char in r"\<>?/:;@''][=^":
+            LOGGER.error('Profile name should not contain special characters')
+            return False
 
     # Error handling if 'questions' not in request
     if 'questions' not in profile_json and valid:

@@ -277,7 +277,10 @@ class Api:
     if self._testrun.get_session().get_status() in [
         TestrunStatus.IN_PROGRESS,
         TestrunStatus.WAITING_FOR_DEVICE,
-        TestrunStatus.MONITORING
+        TestrunStatus.MONITORING,
+        TestrunStatus.VALIDATING,
+        TestrunStatus.STARTING
+
     ]:
       LOGGER.debug("Testrun is already running. Cannot start another instance")
       response.status_code = status.HTTP_409_CONFLICT
@@ -338,7 +341,9 @@ class Api:
     if (self._testrun.get_session().get_status()
         not in [TestrunStatus.IN_PROGRESS,
                 TestrunStatus.WAITING_FOR_DEVICE,
-                TestrunStatus.MONITORING]):
+                TestrunStatus.MONITORING,
+                TestrunStatus.VALIDATING,
+                TestrunStatus.STARTING]):
       response.status_code = 404
       return self._generate_msg(False, "Testrun is not currently running")
 
