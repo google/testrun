@@ -387,7 +387,12 @@ class TestrunSession():
     return self._status
 
   def set_status(self, status):
-    self._status = status
+    if status == TestResult.PROCEED:
+      self._status = TestrunStatus.COMPLIANT
+    elif status == TestResult.DO_NOT_PROCEED:
+      self._status = TestrunStatus.NON_COMPLIANT
+    else:
+      self._status = status
 
   def set_description(self, desc: str):
     self._description = desc
