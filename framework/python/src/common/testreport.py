@@ -207,7 +207,11 @@ class TestReport():
   def to_html(self):
 
     # Jinja template
-    template_env = Environment(loader=FileSystemLoader(report_resource_dir))
+    template_env = Environment(
+                                loader=FileSystemLoader(report_resource_dir),
+                                trim_blocks=True,
+                                lstrip_blocks=True
+                              )
     template = template_env.get_template(TEST_REPORT_TEMPLATE)
     with open(os.path.join(report_resource_dir,
                            TEST_REPORT_STYLES),
