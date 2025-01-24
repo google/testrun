@@ -17,6 +17,10 @@
 @use 'colors';
 @use 'variables';
 
+:host {
+  position: relative;
+}
+
 .entity-list app-list-item:has(.selected) {
   ::ng-deep .list-item {
     background-color: colors.$primary-container;

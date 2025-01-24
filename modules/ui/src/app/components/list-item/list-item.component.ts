@@ -13,12 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, input, output } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  inject,
+  input,
+  output,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { EntityAction } from '../../model/entity-action';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-list-item',
@@ -30,10 +39,69 @@ import { EntityAction } from '../../model/entity-action';
     MatMenuItem,
     CommonModule,
   ],
+  providers: [MatTooltip],
   templateUrl: './list-item.component.html',
   styleUrl: './list-item.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ListItemComponent {
+export class ListItemComponent<T extends object> implements OnInit {
+  private container?: HTMLElement;
+  entity = input.required<T>();
   actions = input<EntityAction[]>([]);
   menuItemClicked = output<string>();
+  tooltip = inject(MatTooltip);
+  isDisabled = input<(arg: T) => boolean>();
+  tooltipMessage = input<(arg: T) => string>();
+
+  get disabled() {
+    const isDisabledFn = this.isDisabled();
+    if (isDisabledFn) {
+      return isDisabledFn(this.entity());
+    }
+    return false;
+  }
+
+  @HostListener('mouseenter', ['$event'])
+  onEvent(event: MouseEvent): void {
+    this.updateMessage();
+    if (!this.tooltip.message) return;
+    this.tooltip.show(0, { x: event.clientX, y: event.clientY });
+    this.container = document.querySelector(
+      '.mat-mdc-tooltip-panel:has(.list-item-tooltip)'
+    ) as HTMLElement;
+  }
+
+  @HostListener('mousemove', ['$event'])
+  onMoveEvent(event: MouseEvent): void {
+    if (!this.tooltip.message) return;
+    if (!this.container) {
+      this.container = document.querySelector(
+        '.mat-mdc-tooltip-panel:has(.list-item-tooltip)'
+      ) as HTMLElement;
+    }
+
+    this.container.style.top = event.clientY + 'px';
+    this.container.style.left = event.clientX + 'px';
+  }
+
+  @HostListener('mouseleave')
+  outEvent(): void {
+    this.tooltip.hide();
+  }
+
+  ngOnInit() {
+    this.updateMessage();
+    this.tooltip.positionAtOrigin = true;
+    this.tooltip.tooltipClass = 'list-item-tooltip';
+  }
+
+  private updateMessage() {
+    const tooltipMessageFn = this.tooltipMessage();
+    if (tooltipMessageFn) {
+      const tooltipMessage = tooltipMessageFn(this.entity());
+      if (tooltipMessage) {
+        this.tooltip.message = tooltipMessage;
+      }
+    }
+  }
 }

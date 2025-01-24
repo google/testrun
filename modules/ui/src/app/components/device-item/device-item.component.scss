@@ -121,7 +121,7 @@ $border-radius: 12px;
     color: colors.$on-secondary;
   }
   &-invalid {
-    background: colors.$on-error;
+    background: colors.$error-container;
     color: colors.$on-error-container;
   }
 }

@@ -47,7 +47,10 @@ limitations under the License.
         </div>
         <ng-container *ngFor="let entity of filtered(); index as i">
           <app-list-item
+            [entity]="entity"
             [actions]="actions()"
+            [isDisabled]="entityDisabled()"
+            [tooltipMessage]="entityTooltip()"
             (menuItemClicked)="onMenuItemClick($event, entity, i)">
             <ng-container
               *ngTemplateOutlet="

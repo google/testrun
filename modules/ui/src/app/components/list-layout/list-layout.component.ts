@@ -48,6 +48,8 @@ export class ListLayoutComponent<T extends object> {
   readonly LayoutType = LayoutType;
   title = input<string>('');
   addEntityText = input<string>('');
+  entityDisabled = input<(arg: T) => boolean>();
+  entityTooltip = input<(arg: T) => string>();
   isOpenDeviceForm = input<boolean>(false);
   initialDevice = input<Device | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

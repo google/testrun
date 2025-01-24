@@ -229,6 +229,21 @@ export class DevicesComponent implements OnInit, OnDestroy {
     });
   }
 
+  deviceIsDisabled(mac_addr?: string) {
+    return (device: Device) => {
+      return device.mac_addr === mac_addr;
+    };
+  }
+
+  getDeviceTooltip(mac_addr?: string) {
+    return (device: Device) => {
+      if (this.deviceIsDisabled(mac_addr)(device)) {
+        return 'Device under test';
+      }
+      return '';
+    };
+  }
+
   private openCloseDialog() {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Close the Device menu',
