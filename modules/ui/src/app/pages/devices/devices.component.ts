@@ -215,7 +215,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
+      panelClass: ['simple-dialog', 'delete-device'],
     });
     dialogRef?.beforeClosed().subscribe(deleteDevice => {
       if (deleteDevice) {
@@ -254,7 +254,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
+      panelClass: ['simple-dialog', 'close-device'],
     });
 
     dialogRef?.beforeClosed().subscribe(close => {

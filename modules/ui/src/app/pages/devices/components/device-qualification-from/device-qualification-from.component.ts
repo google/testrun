@@ -466,7 +466,7 @@ export class DeviceQualificationFromComponent
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
+      panelClass: ['simple-dialog', 'close-device'],
     });
 
     dialogRef?.beforeClosed().subscribe(close => {
