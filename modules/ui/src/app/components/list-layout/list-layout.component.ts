@@ -29,6 +29,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ListItemComponent } from '../list-item/list-item.component';
 import { EntityAction, EntityActionResult } from '../../model/entity-action';
 import { Device } from '../../model/device';
+import { LayoutType } from '../../model/layout-type';
 
 @Component({
   selector: 'app-list-layout',
@@ -44,6 +45,7 @@ import { Device } from '../../model/device';
   styleUrl: './list-layout.component.scss',
 })
 export class ListLayoutComponent<T extends object> {
+  readonly LayoutType = LayoutType;
   title = input<string>('');
   addEntityText = input<string>('');
   isOpenDeviceForm = input<boolean>(false);
@@ -63,17 +65,33 @@ export class ListLayoutComponent<T extends object> {
   addEntity = output<void>();
   menuItemClicked = output<EntityActionResult<T>>();
   updateQuery(e: Event) {
-    this.searchText.set((e.target as HTMLInputElement).value.trim());
+    const inputValue = (e.target as HTMLInputElement).value.trim();
+    const searchValue = inputValue.length > 2 ? inputValue : '';
+    this.searchText.set(searchValue);
   }
 
   filter(searchText: string) {
     return <T extends object>(item: T) => {
-      return Object.values(item).some(value =>
-        typeof value === 'string'
+      const filterItem = this.getObjectForFilter(item);
+      return Object.values(filterItem).some(value => {
+        return typeof value === 'string'
           ? value.toLowerCase().includes(searchText.toLowerCase())
-          : false
-      );
+          : false;
+      });
     };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getObjectForFilter(item: any) {
+    if (this.title() === LayoutType.Device) {
+      const newObj1 = item as Device;
+      return {
+        model: newObj1.model,
+        manufacturer: newObj1.manufacturer,
+      };
+    } else {
+      return item;
+    }
   }
 
   onMenuItemClick(action: string, entity: T, index: number) {

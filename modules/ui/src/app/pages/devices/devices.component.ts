@@ -29,6 +29,7 @@ import {
   DeviceView,
   TestModule,
 } from '../../model/device';
+import { LayoutType } from '../../model/layout-type';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
@@ -77,6 +78,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 })
 export class DevicesComponent implements OnInit, OnDestroy {
   readonly DeviceView = DeviceView;
+  readonly LayoutType = LayoutType;
   private readonly focusManagerService = inject(FocusManagerService);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
   private readonly liveAnnouncer = inject(LiveAnnouncer);
