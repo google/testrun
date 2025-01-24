@@ -16,7 +16,8 @@
 @use 'variables';
 @use 'mixins';
 
-::ng-deep :root {
+::ng-deep .delete-device app-simple-dialog,
+::ng-deep .close-device app-simple-dialog {
   --mat-dialog-container-max-width: 329px !important;
 }
 
