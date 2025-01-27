@@ -28,7 +28,8 @@ limitations under the License.
     class="testing-result"
     id="testing-result-main-info"
     [class]="
-      data.testrunStatus.status === StatusOfTestrun.Compliant
+      data.testrunStatus.status === StatusOfTestrun.Compliant ||
+      data.testrunStatus.status === StatusOfTestrun.Proceed
         ? 'success-result'
         : 'failed-result'
     ">
