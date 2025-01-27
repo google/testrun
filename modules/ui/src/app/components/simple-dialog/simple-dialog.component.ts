@@ -28,6 +28,7 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 interface DialogData {
   title?: string;
   content?: string;
+  confirmName?: string;
 }
 
 @Component({

@@ -271,10 +271,11 @@ export class DevicesComponent
 
   private openCloseDialog() {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: 'Close the Device menu',
+      ariaLabel: 'Discard the Device changes',
       data: {
-        title: 'Are you sure?',
-        content: `By closing the device profile you will loose any new changes you have made to the device.`,
+        title: 'Discard changes?',
+        content: `You have unsaved changes that would be permanently lost.`,
+        confirmName: 'Discard',
       },
       autoFocus: true,
       hasBackdrop: true,
