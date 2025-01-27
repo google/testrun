@@ -20,6 +20,7 @@ import {
   OnInit,
   ChangeDetectorRef,
   inject,
+  viewChild,
 } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import {
@@ -53,6 +54,9 @@ import { ListLayoutComponent } from '../../components/list-layout/list-layout.co
 import { EntityActionResult } from '../../model/entity-action';
 import { NoEntitySelectedComponent } from '../../components/no-entity-selected/no-entity-selected.component';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { CanComponentDeactivate } from '../../guards/can-deactivate.guard';
+import { Observable } from 'rxjs/internal/Observable';
+import { of } from 'rxjs/internal/observable/of';
 
 @Component({
   selector: 'app-device-repository',
@@ -76,9 +80,12 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
   ],
   providers: [DevicesStore],
 })
-export class DevicesComponent implements OnInit, OnDestroy {
+export class DevicesComponent
+  implements OnInit, OnDestroy, CanComponentDeactivate
+{
   readonly DeviceView = DeviceView;
   readonly LayoutType = LayoutType;
+  readonly form = viewChild(DeviceQualificationFromComponent);
   private readonly focusManagerService = inject(FocusManagerService);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
   private readonly liveAnnouncer = inject(LiveAnnouncer);
@@ -89,6 +96,15 @@ export class DevicesComponent implements OnInit, OnDestroy {
   private destroy$: Subject<boolean> = new Subject<boolean>();
   viewModel$ = this.devicesStore.viewModel$;
   isOpenDeviceForm = false;
+
+  canDeactivate(): Observable<boolean> {
+    const form = this.form();
+    if (form) {
+      return form.close();
+    } else {
+      return of(true);
+    }
+  }
 
   ngOnInit(): void {
     combineLatest([
@@ -164,10 +180,18 @@ export class DevicesComponent implements OnInit, OnDestroy {
       });
   }
 
-  async openForm(device: Device | null = null) {
+  async openForm(
+    device: Device | null = null,
+    selectedDevice: Device | null = null
+  ) {
     this.devicesStore.selectDevice(device);
-    this.isOpenDeviceForm = true;
-    await this.liveAnnouncer.announce('Device qualification form');
+    if (!this.isOpenDeviceForm) {
+      this.isOpenDeviceForm = true;
+      await this.liveAnnouncer.announce('Device qualification form');
+    }
+    if (device === null && selectedDevice === null) {
+      this.form()?.changeDeviceInForm();
+    }
     this.focusManagerService.focusFirstElementInContainer(
       window.document.querySelector('app-device-qualification-from')
     );
