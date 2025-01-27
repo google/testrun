@@ -530,7 +530,7 @@ class Api:
                   ]):
         response.status_code = 403
         return self._generate_msg(
-            False, "Cannot delete this device whilst " + "it is being tested")
+            False, "Cannot delete this device whilst it is being tested")
 
       # Delete device
       self._testrun.delete_device(device)
@@ -544,7 +544,7 @@ class Api:
       LOGGER.error(e)
       response.status_code = 500
       return self._generate_msg(
-          False, "An error occured whilst deleting " + "the device")
+          False, "An error occured whilst deleting the device")
 
   async def save_device(self, request: Request, response: Response):
     LOGGER.debug("Received device post request")
