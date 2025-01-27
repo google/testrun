@@ -15,7 +15,6 @@
  */
 import {
   Component,
-  OnDestroy,
   OnInit,
   inject,
   input,
@@ -58,7 +57,7 @@ import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { ProfileValidators } from '../../../risk-assessment/profile-form/profile.validators';
 import { DevicesStore } from '../../devices.store';
 import { DynamicFormComponent } from '../../../../components/dynamic-form/dynamic-form.component';
-import { skip, Subject, takeUntil, timer } from 'rxjs';
+import { skip, timer } from 'rxjs';
 import { Question } from '../../../../model/profile';
 import { FormControlType, QuestionFormat } from '../../../../model/question';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
@@ -92,9 +91,7 @@ const MAC_ADDRESS_PATTERN =
   templateUrl: './device-qualification-from.component.html',
   styleUrl: './device-qualification-from.component.scss',
 })
-export class DeviceQualificationFromComponent
-  implements OnInit, OnDestroy, AfterViewInit
-{
+export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
   readonly TestingType = TestingType;
   readonly DeviceView = DeviceView;
 
@@ -102,7 +99,6 @@ export class DeviceQualificationFromComponent
   private cdr = inject(ChangeDetectorRef);
   private deviceValidators = inject(DeviceValidators);
   private profileValidators = inject(ProfileValidators);
-  private destroy$: Subject<boolean> = new Subject<boolean>();
   private changeDevice = false;
   private macAddressValidator!: ValidatorFn;
 
@@ -192,22 +188,15 @@ export class DeviceQualificationFromComponent
         }
       });
 
-      timer(0)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => {
-          if (this.initialDevice()) {
-            this.fillDeviceForm(this.format, this.initialDevice()!);
-          }
-          this.formIsLoaded$.next(true);
-        });
+      timer(0).subscribe(() => {
+        if (this.initialDevice()) {
+          this.fillDeviceForm(this.format, this.initialDevice()!);
+        }
+        this.formIsLoaded$.next(true);
+      });
     });
 
     this.devicesStore.getQuestionnaireFormat();
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next(true);
-    this.destroy$.unsubscribe();
   }
 
   ngAfterViewInit() {
@@ -458,10 +447,11 @@ export class DeviceQualificationFromComponent
 
   private openCloseDialog(device: Device | null) {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: 'Close the Device menu',
+      ariaLabel: 'Discard the Device changes',
       data: {
-        title: 'Are you sure?',
-        content: `By closing the device profile you will loose any new changes you have made to the device.`,
+        title: 'Discard changes?',
+        content: `You have unsaved changes that would be permanently lost.`,
+        confirmName: 'Discard',
       },
       autoFocus: true,
       hasBackdrop: true,

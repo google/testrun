@@ -219,6 +219,11 @@ $form-min-width: 285px;
     background-color: colors.$error;
     color: colors.$on-error;
   }
+
+  .close-button:not(.mat-mdc-button-disabled) {
+    background-color: colors.$secondary-container;
+    color: colors.$on-secondary-container;
+  }
 }
 
 .device-qualification-form-summary-info {
