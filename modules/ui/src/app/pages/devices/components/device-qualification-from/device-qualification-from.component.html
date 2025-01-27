@@ -163,16 +163,16 @@ limitations under the License.
         Save
       </button>
       <button
-        mat-raised-button
+        mat-flat-button
         [disabled]="deviceHasNoChanges(initialDevice(), createDeviceFromForm())"
         type="button"
         class="close-button"
         (click)="onCancelClicked()">
-        Cancel
+        Discard
       </button>
     </div>
     <button
-      mat-raised-button
+      mat-flat-button
       [disabled]="initialDevice() === null"
       type="button"
       class="delete-button"
