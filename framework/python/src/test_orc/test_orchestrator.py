@@ -189,9 +189,11 @@ class TestOrchestrator:
     # Default message is empty (better than an error message).
     # This should never be shown
     message: str = ""
-    if report.get_status() == TestrunStatus.COMPLIANT:
+    if report.get_status() in [TestrunStatus.COMPLIANT,
+                               TestrunStatus.PROCEED]:
       message = test_pack.get_message("compliant_description")
-    elif report.get_status() == TestrunStatus.NON_COMPLIANT:
+    elif report.get_status() in [TestrunStatus.NON_COMPLIANT,
+                                 TestrunStatus.DO_NOT_PROCEED]:
       message = test_pack.get_message("non_compliant_description")
 
     self.get_session().set_description(message)
@@ -250,7 +252,8 @@ class TestOrchestrator:
     return report
 
   def _calculate_result(self):
-    result = TestResult.COMPLIANT
+    result = TestrunStatus.COMPLIANT
+
     for test_result in self.get_session().get_test_results():
 
       # Check Required tests
@@ -259,20 +262,20 @@ class TestOrchestrator:
             TestResult.COMPLIANT,
             TestResult.ERROR
           ]):
-        result = TestResult.NON_COMPLIANT
+        result = TestrunStatus.NON_COMPLIANT
 
       # Check Required if Applicable tests
       elif (test_result.required_result.lower() == "required if applicable"
             and test_result.result == TestResult.NON_COMPLIANT):
-        result = TestResult.NON_COMPLIANT
+        result = TestrunStatus.NON_COMPLIANT
 
-      # Change the result if pilot assessment used
-      if (self.get_session().get_target_device().test_pack ==
-          "Pilot Assessment"):
-        if result == TestResult.COMPLIANT:
-          result = TestResult.PROCEED
-        elif result == TestResult.NON_COMPLIANT:
-          result = TestResult.DO_NOT_PROCEED
+    # Change the result if pilot assessment used
+    if (self.get_session().get_target_device().test_pack ==
+        "Pilot Assessment"):
+      if result == TestrunStatus.COMPLIANT:
+        result = TestrunStatus.PROCEED
+      elif result == TestrunStatus.NON_COMPLIANT:
+        result = TestrunStatus.DO_NOT_PROCEED
 
     return result
 

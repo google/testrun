@@ -26,6 +26,8 @@ class TestrunStatus:
   NON_COMPLIANT = "Non-Compliant"
   STOPPING = "Stopping"
   VALIDATING = "Validating Network"
+  PROCEED = "Proceed"
+  DO_NOT_PROCEED = "Do Not Proceed"
 
 
 class TestResult:
@@ -33,8 +35,6 @@ class TestResult:
   IN_PROGRESS = "In Progress"
   COMPLIANT =  "Compliant"
   NON_COMPLIANT = "Non-Compliant"
-  PROCEED = "Proceed"
-  DO_NOT_PROCEED = "Do Not Proceed"
   ERROR = "Error"
   FEATURE_NOT_DETECTED = "Feature Not Detected"
   INFORMATIONAL = "Informational"

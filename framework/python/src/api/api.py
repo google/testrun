@@ -524,7 +524,9 @@ class Api:
           and self._session.get_status()
           not in [TestrunStatus.CANCELLED,
                   TestrunStatus.COMPLIANT,
-                  TestrunStatus.NON_COMPLIANT
+                  TestrunStatus.NON_COMPLIANT,
+                  TestrunStatus.PROCEED,
+                  TestrunStatus.DO_NOT_PROCEED
                   ]):
         response.status_code = 403
         return self._generate_msg(
@@ -647,7 +649,9 @@ class Api:
           and self._session.get_status()
           not in [TestrunStatus.CANCELLED,
                   TestrunStatus.COMPLIANT,
-                  TestrunStatus.NON_COMPLIANT
+                  TestrunStatus.NON_COMPLIANT,
+                  TestrunStatus.PROCEED,
+                  TestrunStatus.DO_NOT_PROCEED
                   ]):
         response.status_code = 403
         return self._generate_msg(
