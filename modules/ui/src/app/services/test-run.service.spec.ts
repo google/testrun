@@ -263,6 +263,7 @@ describe('TestRunService', () => {
 
     const statusesForGreenRes = [
       StatusOfTestResult.Compliant,
+      StatusOfTestrun.Proceed,
       StatusOfTestResult.CompliantLimited,
       StatusOfTestResult.CompliantHigh,
     ];
@@ -276,6 +277,7 @@ describe('TestRunService', () => {
 
     const statusesForRedRes = [
       StatusOfTestResult.NonCompliant,
+      StatusOfTestrun.DoNotProceed,
       StatusOfTestResult.Error,
     ];
 
