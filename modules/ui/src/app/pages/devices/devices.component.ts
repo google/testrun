@@ -222,6 +222,7 @@ export class DevicesComponent implements OnInit, OnDestroy {
         this.devicesStore.deleteDevice({
           device: device,
           onDelete: (deviceIndex = 0) => {
+            this.isOpenDeviceForm = false;
             this.focusNextButton(deviceIndex);
           },
         });
