@@ -16,6 +16,7 @@
 
 from test_module import TestModule
 from tls_util import TLSUtil
+from http_scan import HTTPScan
 import os
 import pyshark
 from binascii import hexlify
@@ -55,6 +56,8 @@ class TLSModule(TestModule):
     global LOGGER
     LOGGER = self._get_logger()
     self._tls_util = TLSUtil(LOGGER)
+    self._http_scan = HTTPScan(LOGGER)
+    self._scan_results = None
 
   def generate_module_report(self):
     html_content = '<h4 class="page-heading">TLS Module</h4>'
@@ -353,8 +356,8 @@ class TLSModule(TestModule):
     all_packets = []
     # Iterate over each file
     for pcap_file in pcap_files:
-      # Open the capture file
-      packets = pyshark.FileCapture(pcap_file)
+      # Open the capture file and filter by tls
+      packets = pyshark.FileCapture(pcap_file, display_filter='tls')
       try:
         # Iterate over each packet in the file and add it to the list
         for packet in packets:
@@ -387,53 +390,102 @@ class TLSModule(TestModule):
 
   def _security_tls_v1_2_server(self):
     LOGGER.info('Running security.tls.v1_2_server')
-    self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
+    self._resolve_device_ip()
+    ports_valid = []
+    ports_invalid = []
+    result = None
+    details = ''
+    description = ''
     if self._device_ipv4_addr is not None:
-      tls_1_2_results = self._tls_util.validate_tls_server(
-          self._device_ipv4_addr, tls_version='1.2')
-      tls_1_3_results = self._tls_util.validate_tls_server(
-          self._device_ipv4_addr, tls_version='1.3')
-      results = self._tls_util.process_tls_server_results(
-          tls_1_2_results, tls_1_3_results)
+      if self._scan_results is None:
+        self._scan_results = self._http_scan.scan_for_http_services(
+            self._device_ipv4_addr)
+      if self._scan_results is not None:
+        for port, service_type in self._scan_results.items():
+          if 'HTTPS' in service_type:
+            LOGGER.info(f'Inspecting Service on port {port}: {service_type}')
+            tls_1_2_results = self._tls_util.validate_tls_server(
+                host=self._device_ipv4_addr, port=port, tls_version='1.2')
+            tls_1_3_results = self._tls_util.validate_tls_server(
+                host=self._device_ipv4_addr, port=port, tls_version='1.3')
+            port_results = self._tls_util.process_tls_server_results(
+                tls_1_2_results, tls_1_3_results, port=port)
+            if port_results is not None:
+              result = port_results[
+                  0] if result is None else result and port_results[0]
+              details += port_results[1]
+              if port_results[0]:
+                ports_valid.append(port)
+              else:
+                ports_invalid.append(port)
+          elif 'HTTP' in service_type:
+            # Any non-HTTPS service detetcted is automatically invalid
+            ports_invalid.append(port)
+            details += f'\nHTTP service detected on port {port}'
+            result = False
+        LOGGER.debug(f'Valid Ports: {ports_valid}')
+        LOGGER.debug(f'Invalid Ports: {ports_invalid}')
       # Determine results and return proper messaging and details
-      description = ''
-      result = results[0]
-      details = results[1]
       if result is None:
         result = 'Feature Not Detected'
         description = 'TLS 1.2 certificate could not be validated'
       elif result:
-        description = 'TLS 1.2 certificate is valid'
+        ports_csv = ','.join(map(str,ports_valid))
+        description = f'TLS 1.2 certificate valid on ports: {ports_csv}'
       else:
-        description = 'TLS 1.2 certificate is invalid'
+        ports_csv = ','.join(map(str,ports_invalid))
+        description = f'TLS 1.2 certificate invalid on ports: {ports_csv}'
       return result, description, details
-
     else:
       LOGGER.error('Could not resolve device IP address. Skipping')
       return 'Error', 'Could not resolve device IP address'
 
   def _security_tls_v1_3_server(self):
     LOGGER.info('Running security.tls.v1_3_server')
-    self._resolve_device_ip()
     # If the ipv4 address wasn't resolved yet, try again
+    self._resolve_device_ip()
+    ports_valid = []
+    ports_invalid = []
+    result = None
+    details = ''
+    description = ''
     if self._device_ipv4_addr is not None:
-      results = self._tls_util.validate_tls_server(self._device_ipv4_addr,
-                                                   tls_version='1.3')
+      if self._scan_results is None:
+        self._scan_results = self._http_scan.scan_for_http_services(
+            self._device_ipv4_addr)
+      if self._scan_results is not None:
+        for port, service_type in self._scan_results.items():
+          if 'HTTPS' in service_type:
+            LOGGER.info(f'Inspecting Service on port {port}: {service_type}')
+            port_results = self._tls_util.validate_tls_server(
+                self._device_ipv4_addr, tls_version='1.3', port=port)
+            if port_results is not None:
+              result = port_results[
+                  0] if result is None else result and port_results[0]
+              details += port_results[1]
+              if port_results[0]:
+                ports_valid.append(port)
+              else:
+                ports_invalid.append(port)
+          elif 'HTTP' in service_type:
+            # Any non-HTTPS service detetcted is automatically invalid
+            ports_invalid.append(port)
+            details += f'\nHTTP service detected on port {port}'
+            result = False
+        LOGGER.debug(f'Valid Ports: {ports_valid}')
+        LOGGER.debug(f'Invalid Ports: {ports_invalid}')
       # Determine results and return proper messaging and details
-      description = ''
-      result = results[0]
-      details = results[1]
-      description = ''
       if result is None:
         result = 'Feature Not Detected'
         description = 'TLS 1.3 certificate could not be validated'
-      elif results[0]:
-        description = 'TLS 1.3 certificate is valid'
+      elif result:
+        ports_csv = ','.join(map(str,ports_valid))
+        description = f'TLS 1.3 certificate valid on ports: {ports_csv}'
       else:
-        description = 'TLS 1.3 certificate is invalid'
+        ports_csv = ','.join(map(str,ports_invalid))
+        description = f'TLS 1.3 certificate invalid on ports: {ports_csv}'
       return result, description, details
-
     else:
       LOGGER.error('Could not resolve device IP address')
       return 'Error', 'Could not resolve device IP address'
@@ -472,14 +524,14 @@ class TLSModule(TestModule):
   def _security_tls_v1_2_client(self):
     LOGGER.info('Running security.tls.v1_2_client')
     return self._validate_tls_client(self._device_mac,
-                                      '1.2',
-                                      unsupported_versions=['1.0', '1.1'])
+                                     '1.2',
+                                     unsupported_versions=['1.0', '1.1'])
 
   def _security_tls_v1_3_client(self):
     LOGGER.info('Running security.tls.v1_3_client')
     return self._validate_tls_client(self._device_mac,
-                                      '1.3',
-                                      unsupported_versions=['1.0', '1.1'])
+                                     '1.3',
+                                     unsupported_versions=['1.0', '1.1'])
 
   def _validate_tls_client(self,
                            client_mac,

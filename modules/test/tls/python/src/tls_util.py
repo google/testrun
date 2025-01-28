@@ -221,11 +221,11 @@ class TLSUtil():
     else:
       return False, 'Key is not RSA or EC type'
 
-  def validate_signature(self, host):
+  def validate_signature(self, host, port):
     # Reconnect to the device but with validate signature option
     # set to true which will check for proper cert chains
     # within the valid CA root certs stored on the server
-    if self.validate_trusted_ca_signature(host):
+    if self.validate_trusted_ca_signature(host, port):
       LOGGER.info('Authorized Certificate Authority signature confirmed')
       return True, 'Authorized Certificate Authority signature confirmed'
     else:
@@ -261,13 +261,14 @@ class TLSUtil():
         LOGGER.error(str(e))
     return False, None
 
-  def validate_trusted_ca_signature(self, host):
+  def validate_trusted_ca_signature(self, host, port):
     # Reconnect to the device but with validate signature option
     # set to true which will check for proper cert chains
     # within the valid CA root certs stored on the server
     LOGGER.info(
         'Checking for valid signature from authorized Certificate Authorities')
-    public_cert = self.get_public_certificate(host,
+    public_cert = self.get_public_certificate(host=host,
+                                              port=port,
                                               validate_cert=True,
                                               tls_version='1.2')
     if public_cert:
@@ -377,34 +378,41 @@ class TLSUtil():
       LOGGER.error(f'Error fetching certificate from URI: {e}')
     return certificate
 
-  def process_tls_server_results(self, tls_1_2_results, tls_1_3_results):
+  def process_tls_server_results(self, tls_1_2_results, tls_1_3_results, port):
     results = ''
     if tls_1_2_results[0] is None and tls_1_3_results[0] is not None:
       # Validate only TLS 1.3 results
-      description = 'TLS 1.3' + (' not' if not tls_1_3_results[0] else
-                                 '') + ' validated: ' + tls_1_3_results[1]
+      description = (f"""TLS 1.3 {'' if tls_1_3_results[0] else 'not '}"""
+                     f"""validated on port {port}: """
+                     f"""{tls_1_3_results[1]}""")
       results = tls_1_3_results[0], description
     elif tls_1_3_results[0] is None and tls_1_2_results[0] is not None:
       # Vaidate only TLS 1.2 results
-      description = 'TLS 1.2' + (' not' if not tls_1_2_results[0] else
-                                 '') + ' validated: ' + tls_1_2_results[1]
+      description = (f"""TLS 1.2 {'' if tls_1_2_results[0] else 'not '}"""
+                     f"""validated on port {port}: """
+                     f"""{tls_1_2_results[1]}""")
       results = tls_1_2_results[0], description
     elif tls_1_3_results[0] is not None and tls_1_2_results[0] is not None:
       # Validate both results
-      description = 'TLS 1.2' + (' not' if not tls_1_2_results[0] else
-                                 '') + ' validated: ' + tls_1_2_results[1]
-      description += '\nTLS 1.3' + (' not' if not tls_1_3_results[0] else
-                                    '') + ' validated: ' + tls_1_3_results[1]
+      description = (f"""TLS 1.2 {'' if tls_1_2_results[0] else 'not '}"""
+                     f"""validated on port {port}: """
+                     f"""{tls_1_2_results[1]}""")
+      description += '\n'+(f"""TLS 1.3 {'' if tls_1_3_results[0] else 'not '}"""
+                     f"""validated on port {port}: """
+                     f"""{tls_1_3_results[1]}""")
       results = tls_1_2_results[0] or tls_1_3_results[0], description
     else:
-      description = f'TLS 1.2 not validated: {tls_1_2_results[1]}'
-      description += f'\nTLS 1.3 not validated: {tls_1_3_results[1]}'
+      description = (f"""TLS 1.2 not validated on port {port}: """
+                     f"""{tls_1_2_results[1]}""")
+      description += '\n'+(f"""TLS 1.3 not validated on port {port}: """
+                      f"""{tls_1_3_results[1]}""")
       results = None, description
     LOGGER.info('TLS server test results: ' + str(results))
     return results
 
-  def validate_tls_server(self, host, tls_version):
-    cert_pem = self.get_public_certificate(host,
+  def validate_tls_server(self, host, tls_version, port=443):
+    cert_pem = self.get_public_certificate(host=host,
+                                           port=port,
                                            validate_cert=False,
                                            tls_version=tls_version)
     if cert_pem:
@@ -430,13 +438,12 @@ class TLSUtil():
       else:
         key_valid = [0]
 
-      sig_valid = self.validate_signature(host)
+      sig_valid = self.validate_signature(host=host, port=port)
 
       # Check results
       cert_valid = tr_valid[0] and key_valid[0] and sig_valid[0]
       test_details = tr_valid[1] + '\n' + key_valid[1] + '\n' + sig_valid[1]
       LOGGER.info('Certificate validated: ' + str(cert_valid))
-      LOGGER.info('Test details:\n' + test_details)
       return cert_valid, test_details
     else:
       LOGGER.info('Failed to resolve public certificate')
@@ -632,7 +639,7 @@ class TLSUtil():
           # Packet is not ACK or SYN
 
           src_ip = ipaddress.ip_address(
-            packet['_source']['layers']['ip.src'][0])
+              packet['_source']['layers']['ip.src'][0])
           src_subnet = ipaddress.ip_network(src_ip, strict=False)
           subnet_with_mask = ipaddress.ip_network(
               src_subnet, strict=False).supernet(new_prefix=24)
