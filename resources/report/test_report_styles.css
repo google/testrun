@@ -27,8 +27,8 @@
     @font-face {
       font-family: 'Material Symbols Outlined';
       font-style: normal;
-      font-weight: 400;
-      src: url(https://fonts.gstatic.com/icon/font?kit=kJF1BvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oDMzByHX9rA6RzaxHMPdY43zj-jCxv3fzvRNU22ZXGJpEpjC_1v-p_4MrImHCIJIZrDCvHOejHdIa31RJq7xr9O779sC3DdMx&skey=b8dc2088854b122f&v=v222) format('woff2');
+      font-weight: 100 700;
+      src: url(https://fonts.gstatic.com/icon/font?kit=kJEhBvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oFsKTDIwram_2pN8sass6hd4ObOPvrgWc3Hc02BrFizbd_1DP&skey=b8dc2088854b122f&v=v225) format('woff2');
     }
 
     /* Define some common body formatting*/
@@ -529,13 +529,23 @@
       padding-left: 8px;
     }
 
-    .result-test-required-result-informational{
+    .result-test-required-result-informational, .result-test-required-result-recommended {
       color: #0D652D;
     }
 
-    .result-test-required-result-informational .material-symbols-outlined {
+    .result-test-required-result-informational .material-symbols-outlined,
+    .result-test-required-result-recommended .material-symbols-outlined {
       background: #0D652D;
       color: #ffffff;
+    }
+
+    .result-test-required-result-recommended .material-symbols-outlined {
+      font-variation-settings:
+          'FILL' 1,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+      font-size: 9px;
     }
 
     .result-test-required-result-required {
@@ -547,11 +557,13 @@
       color: #ffffff;
     }
 
-    .result-test-required-result-required-if-applicable {
+    .result-test-required-result-required-if-applicable,
+    .result-test-required-result-roadmap {
       color: #174EA6;
     }
 
-    .result-test-required-result-required-if-applicable .material-symbols-outlined {
+    .result-test-required-result-required-if-applicable .material-symbols-outlined,
+    .result-test-required-result-roadmap .material-symbols-outlined {
       background: #174EA6;
       color: #ffffff;
     }
