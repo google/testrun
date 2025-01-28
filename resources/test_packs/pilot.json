@@ -1,8 +1,8 @@
 {
     "name": "Pilot Assessment",
     "language": {
-      "compliant_description": "This is a preliminary test result. Please attach the Risk Profile and download the test results. A full evaluation and recommendations will be provided by the lab team.",
-      "non_compliant_description": "This is a preliminary test result. Please attach the Risk Profile and download the test results. A full evaluation and recommendations will be provided by the lab team."
+      "compliant_description": "This is a preliminary test result. Please attach the Risk Profile and download the test results. A full evaluation and recommendation will be provided by the lab team.",
+      "non_compliant_description": "This is a preliminary test result. Please attach the Risk Profile and download the test results. A full evaluation and recommendation will be provided by the lab team."
     },
     "tests": [
       {
