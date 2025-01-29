@@ -206,7 +206,7 @@ class Api:
       nic = addrs[key]
 
       # Ignore any interfaces that are not ethernet
-      if not key.startswith("en") or key.startswith("eth"):
+      if not (key.startswith("en") or key.startswith("eth")):
         continue
 
       ifaces[key] = nic[0].address
