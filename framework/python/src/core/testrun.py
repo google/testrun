@@ -22,6 +22,8 @@ import shutil
 import signal
 import sys
 import time
+
+import docker.errors
 from common import logger, util, mqtt
 from common.device import Device
 from common.testreport import TestReport
@@ -532,6 +534,11 @@ class Testrun:  # pylint: disable=too-few-public-methods
       container = client.containers.get('tr-ui')
       if container is not None:
         container.kill()
+        # If the container has been started without auto-remove flag remove it
+        try:
+          container.remove()
+        except docker.errors.APIError:
+          pass
     except docker.errors.NotFound:
       pass
 
@@ -565,5 +572,11 @@ class Testrun:  # pylint: disable=too-few-public-methods
       container = client.containers.get('tr-ws')
       if container is not None:
         container.kill()
+        # If the container has been started without auto-remove flag remove it
+        try:
+          container.remove()
+        except docker.errors.APIError:
+          pass
+
     except docker.errors.NotFound:
       pass
