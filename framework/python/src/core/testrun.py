@@ -22,8 +22,8 @@ import shutil
 import signal
 import sys
 import time
-
 import docker.errors
+
 from common import logger, util, mqtt
 from common.device import Device
 from common.testreport import TestReport
@@ -33,8 +33,6 @@ from api.api import Api
 from net_orc.listener import NetworkEvent
 from net_orc import network_orchestrator as net_orc
 from test_orc import test_orchestrator as test_orc
-
-from docker.errors import ImageNotFound
 
 LOGGER = logger.get_logger('testrun')
 
@@ -518,7 +516,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
                             hostname='testrun.io',
                             detach=True,
                             ports={'80': 8080})
-    except ImageNotFound as ie:
+    except docker.errors.ImageNotFound as ie:
       LOGGER.error('An error occured whilst starting the UI. ' +
                    'Please investigate and try again.')
       LOGGER.error(ie)
@@ -559,7 +557,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
                                 '9001': 9001,
                                 '1883': 1883
                             })
-    except ImageNotFound as ie:
+    except docker.errors.ImageNotFound as ie:
       LOGGER.error('An error occured whilst starting the websockets server. ' +
                    'Please investigate and try again.')
       LOGGER.error(ie)
