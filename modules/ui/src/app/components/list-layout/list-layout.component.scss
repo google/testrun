@@ -58,6 +58,10 @@
   height: 56px;
   color: colors.$on-secondary-container;
   background-color: colors.$secondary-container;
+  &:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 }
 
 .layout-container {

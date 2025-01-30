@@ -22,7 +22,6 @@ import {
   output,
   ChangeDetectorRef,
   AfterViewInit,
-  viewChild,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -98,7 +97,6 @@ const MAC_ADDRESS_PATTERN =
 export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
   readonly TestingType = TestingType;
   readonly DeviceView = DeviceView;
-  readonly testModulesComponent = viewChild(DeviceTestsComponent);
 
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
@@ -119,10 +117,6 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
   initialDevice = input<Device | null>(null);
 
   initialDeviceEffect = effect(() => {
-    this.changeDeviceInForm();
-  });
-
-  changeDeviceInForm() {
     if (
       this.changeDevice ||
       this.deviceHasNoChanges(this.device, this.createDeviceFromForm())
@@ -135,24 +129,17 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
         this.resetForm();
       }
       this.updateMacAddressValidator();
-    } else if (
-      this.device != this.initialDevice() ||
-      (this.device === null && this.initialDevice() === null)
-    ) {
+    } else if (this.device != this.initialDevice()) {
       // prevent select new device before user confirmation
       this.devicesStore.selectDevice(this.device);
       this.openCloseDialog().subscribe(close => {
         if (close) {
-          if (this.initialDevice() !== null) {
-            this.changeDevice = true;
-            this.devicesStore.selectDevice(this.initialDevice());
-          } else {
-            this.resetForm();
-          }
+          this.changeDevice = true;
+          this.devicesStore.selectDevice(this.initialDevice());
         }
       });
     }
-  }
+  });
 
   devices = input<Device[]>([]);
   testModules = input<TestModule[]>([]);
@@ -242,7 +229,6 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
     this.deviceQualificationForm.reset({
       test_pack: TestingType.Qualification,
     });
-    this.testModulesComponent()?.fillTestModulesFormControls();
   }
 
   createDeviceFromForm(): Device {
@@ -271,8 +257,7 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
         });
         response.answer = answer;
       } else {
-        response.answer =
-          this.deviceQualificationForm.value[index]?.trim() || '';
+        response.answer = this.deviceQualificationForm.value[index]?.trim();
       }
       additionalInfo.push(response);
     });
@@ -284,8 +269,8 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
       mac_addr: this.mac_addr?.value?.trim(),
       test_pack: this.test_pack?.value,
       test_modules: testModules,
-      type: this.type?.value || '',
-      technology: this.technology?.value ?? '',
+      type: this.type?.value,
+      technology: this.technology?.value,
       additional_info: additionalInfo,
     } as Device;
   }

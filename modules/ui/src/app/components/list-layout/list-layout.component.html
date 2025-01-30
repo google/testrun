@@ -26,7 +26,8 @@ limitations under the License.
             [attr.aria-label]="addEntityText()"
             class="add-entity-button"
             color="primary"
-            mat-flat-button>
+            mat-flat-button
+            [disabled]="isOpenDeviceForm() && !initialDevice()">
             <mat-icon>add</mat-icon>
             {{ addEntityText() }}
           </button>
