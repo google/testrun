@@ -190,11 +190,9 @@ class TestOrchestrator:
     # Default message is empty (better than an error message).
     # This should never be shown
     message: str = ""
-    if report.get_status() in [TestrunStatus.COMPLIANT,
-                               TestrunStatus.PROCEED]:
+    if report.get_result() == TestrunResult.COMPLIANT:
       message = test_pack.get_message("compliant_description")
-    elif report.get_status() in [TestrunStatus.NON_COMPLIANT,
-                                 TestrunStatus.DO_NOT_PROCEED]:
+    elif report.get_result() == TestrunResult.NON_COMPLIANT:
       message = test_pack.get_message("non_compliant_description")
 
     self.get_session().set_description(message)
@@ -206,8 +204,6 @@ class TestOrchestrator:
     self._cleanup_old_test_results(device)
 
     LOGGER.debug("Old test results cleaned")
-
-    return report.get_status()
 
   def _write_reports(self, test_report):
 
@@ -277,7 +273,7 @@ class TestOrchestrator:
 
   def _calculate_status(self):
 
-    result = self.get_session.get_result()
+    result = self.get_session().get_result()
     status = TestrunStatus.COMPLETE
 
     if result in [

@@ -17,7 +17,7 @@ from datetime import datetime
 from weasyprint import HTML
 from io import BytesIO
 from common import util
-from common.statuses import TestrunStatus
+from common.statuses import TestrunStatus, TestrunResult, TestResult
 import base64
 import os
 from test_orc.test_case import TestCase
@@ -53,13 +53,14 @@ class TestReport():
   """Represents a previous Testrun report."""
 
   def __init__(self,
-               status=TestrunStatus.NON_COMPLIANT,
+               result=TestrunResult.NON_COMPLIANT,
                started=None,
                finished=None,
                total_tests=0):
     self._device = {}
     self._mac_addr = None
-    self._status: str = status
+    self._status: TestrunStatus = TestrunStatus.COMPLETE
+    self._result: TestrunResult = result
     self._started = started
     self._finished = finished
     self._total_tests = total_tests
@@ -76,6 +77,9 @@ class TestReport():
 
   def get_status(self):
     return self._status
+
+  def get_result(self):
+    return self._result
 
   def get_started(self):
     return self._started
@@ -112,6 +116,7 @@ class TestReport():
     report_json['mac_addr'] = self._mac_addr
     report_json['device'] = self._device
     report_json['status'] = self._status
+    report_json['result'] = self._result
     report_json['started'] = self._started.strftime(DATE_TIME_FORMAT)
     report_json['finished'] = self._finished.strftime(DATE_TIME_FORMAT)
 
@@ -165,6 +170,10 @@ class TestReport():
       self._device['device_profile'] = json_file['device']['additional_info']
 
     self._status = json_file['status']
+
+    if 'result' in json_file:
+      self._result = json_file['result']
+
     self._started = datetime.strptime(json_file['started'], DATE_TIME_FORMAT)
     self._finished = datetime.strptime(json_file['finished'], DATE_TIME_FORMAT)
 
