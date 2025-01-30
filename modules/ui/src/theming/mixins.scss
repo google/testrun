@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use 'variables';
+
 @mixin dialog {
   display: grid;
   overflow: hidden;
@@ -65,4 +67,14 @@
 @mixin disabled {
   opacity: 0.5;
   pointer-events: none;
+}
+
+@mixin add-button {
+  font-family: variables.$font-text;
+  margin-bottom: 12px;
+  width: fit-content;
+  height: 56px;
+  padding-left: 30px;
+  font-size: 16px;
+  font-weight: 500;
 }

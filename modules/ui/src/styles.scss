@@ -436,12 +436,6 @@ body #main {
     gap: 4px !important;
   }
 
-  app-risk-assessment:has(.profiles-drawer) {
-    .risk-assessment-content-empty {
-      width: calc(100% - $profiles-drawer-width-xs) !important;
-    }
-  }
-
   app-risk-assessment .main-content {
     width: auto !important;
     padding: 16px 4px !important;

@@ -25,4 +25,5 @@ export class EmptyPageComponent {
   image = input<string>();
   header = input<string>();
   message = input<string>();
+  messageNext = input<string>();
 }
