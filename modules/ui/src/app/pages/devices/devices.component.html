@@ -26,7 +26,7 @@ limitations under the License.
     [initialEntity]="vm.selectedDevice"
     [entityDisabled]="deviceIsDisabled(vm.deviceInProgress?.mac_addr)"
     [entityTooltip]="getDeviceTooltip(vm.deviceInProgress?.mac_addr)"
-    (addEntity)="openForm(null, vm.selectedDevice)"
+    (addEntity)="openForm()"
     (menuItemClicked)="menuItemClicked($event, vm.devices, vm.testModules)">
   </app-list-layout>
 

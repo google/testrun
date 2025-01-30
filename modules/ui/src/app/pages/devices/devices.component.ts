@@ -180,18 +180,10 @@ export class DevicesComponent
       });
   }
 
-  async openForm(
-    device: Device | null = null,
-    selectedDevice: Device | null = null
-  ) {
+  async openForm(device: Device | null = null) {
     this.devicesStore.selectDevice(device);
-    if (!this.isOpenDeviceForm) {
-      this.isOpenDeviceForm = true;
-      await this.liveAnnouncer.announce('Device qualification form');
-    }
-    if (device === null && selectedDevice === null) {
-      this.form()?.changeDeviceInForm();
-    }
+    this.isOpenDeviceForm = true;
+    await this.liveAnnouncer.announce('Device qualification form');
     this.focusManagerService.focusFirstElementInContainer(
       window.document.querySelector('app-device-qualification-from')
     );
