@@ -273,24 +273,22 @@ body {
 }
 
 .profile-item-risk {
-  display: inline-flex;
-  margin: 0;
-  padding: 0 4px;
-  border-radius: 2px;
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 500;
   line-height: 16px;
   letter-spacing: 0.64px;
   text-transform: uppercase;
-
+  max-width: 100%;
+  border-radius: 200px;
+  padding: 0 7px;
   &.red {
-    background: colors.$red-50;
-    color: colors.$red-700;
+    background: colors.$error-container;
+    color: colors.$on-error-container;
   }
 
   &.cyan {
-    background: colors.$cyan-50;
-    color: colors.$cyan-900;
+    background: colors.$secondary-container;
+    color: colors.$on-secondary-container;
   }
 }
 
@@ -427,13 +425,14 @@ body #main {
 
   .profile-item-container {
     gap: 4px !important;
-    padding: 16px 4px !important;
     grid-template-columns: minmax(100px, 1fr) repeat(2, 24px) !important;
     overflow: hidden;
   }
 
-  .profile-item-info {
-    gap: 4px !important;
+  app-risk-assessment:has(.profiles-drawer) {
+    .risk-assessment-content-empty {
+      width: calc(100% - $profiles-drawer-width-xs) !important;
+    }
   }
 
   app-risk-assessment .main-content {

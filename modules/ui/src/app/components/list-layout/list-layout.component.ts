@@ -50,8 +50,8 @@ export class ListLayoutComponent<T extends object> {
   addEntityText = input<string>('');
   entityDisabled = input<(arg: T) => boolean>();
   entityTooltip = input<(arg: T) => string>();
-  isOpenDeviceForm = input<boolean>(false);
-  initialDevice = input<Device | null>(null);
+  isOpenEntityForm = input<boolean>(false);
+  initialEntity = input<T | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   emptyContent = input<TemplateRef<any>>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,12 +60,22 @@ export class ListLayoutComponent<T extends object> {
   itemTemplate = input<TemplateRef<any>>();
   entities = input<T[]>([]);
   actions = input<EntityAction[]>([]);
+  actionsFn = input<(arg: T) => EntityAction[]>();
   searchText = signal<string>('');
   filtered = computed(() => {
     return this.entities().filter(this.filter(this.searchText()));
   });
   addEntity = output<void>();
   menuItemClicked = output<EntityActionResult<T>>();
+
+  getActions = (entity: T) => {
+    if (this.actionsFn()) {
+      // @ts-expect-error actionsFn is defined
+      return this.actionsFn()(entity);
+    }
+    return this.actions();
+  };
+
   updateQuery(e: Event) {
     const inputValue = (e.target as HTMLInputElement).value.trim();
     const searchValue = inputValue.length > 2 ? inputValue : '';

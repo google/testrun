@@ -23,7 +23,7 @@ $blue-300: mat.get-theme-color($light-theme, primary, 70);
 
 $color-background-grey: mat.get-theme-color($light-theme, secondary, 80);
 $grey-700: mat.get-theme-color($light-theme, secondary, 35);
-$grey-800: mat.get-theme-color($light-theme, secondary, 25);
+$grey-800: #3c4043;
 $grey-900: mat.get-theme-color($light-theme, secondary, 10);
 $grey-100: mat.get-theme-color($light-theme, secondary, 80);
 $light-grey: mat.get-theme-color($light-theme, secondary, 90);

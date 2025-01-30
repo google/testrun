@@ -46,3 +46,8 @@ export interface RiskResultClassName {
   red: boolean;
   cyan: boolean;
 }
+
+export enum ProfileAction {
+  Copy = 'Copy',
+  Delete = 'Delete',
+}
