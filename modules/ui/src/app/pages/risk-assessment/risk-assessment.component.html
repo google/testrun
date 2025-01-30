@@ -14,56 +14,69 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <ng-container *ngIf="viewModel$ | async as vm">
-  <ng-container *ngIf="isOpenProfileForm; else empty">
-    <mat-drawer-container class="risk-assessment-container">
-      <mat-drawer-content class="risk-assessment-content">
-        <mat-toolbar class="risk-assessment-toolbar">
-          <h2 class="title" tabindex="-1">Risk assessment</h2>
-        </mat-toolbar>
-        <div class="main-content">
-          <app-profile-form
-            [selectedProfile]="vm.selectedProfile"
-            [isCopyProfile]="isCopyProfile"
-            [profiles]="vm.profiles"
-            [profileFormat]="vm.profileFormat"
-            (saveProfile)="saveProfileClicked($event, vm.selectedProfile)"
-            (discard)="discard(vm.selectedProfile)"></app-profile-form>
-        </div>
-      </mat-drawer-content>
-    </mat-drawer-container>
-  </ng-container>
-  <mat-drawer
-    mode="side"
-    opened
-    position="end"
-    class="profiles-drawer"
-    *ngIf="vm.profiles.length">
-    <div class="profiles-drawer-header">
-      <h2 class="profiles-drawer-header-title">Saved profiles</h2>
-    </div>
-    <div class="profiles-drawer-content">
-      <app-profile-item
-        *ngFor="let profile of vm.profiles; let i = index; trackBy: trackByName"
-        [profile]="profile"
-        class="profile-item-{{ i }}"
-        [ngClass]="{ selected: profile.name === vm.selectedProfile?.name }"
-        (deleteButtonClicked)="deleteProfile($event, i, vm.selectedProfile)"
-        (profileClicked)="profileClicked($event)"
-        (copyProfileClicked)="copyProfileAndOpenForm($event)">
-      </app-profile-item>
-    </div>
-  </mat-drawer>
+  <app-list-layout
+    [title]="LayoutType.Profile"
+    addEntityText="Create Risk Profile"
+    [emptyContent]="empty">
+  </app-list-layout>
+  <!--  <ng-container *ngIf="isOpenProfileForm; else empty">-->
+  <!--    <mat-drawer-container class="risk-assessment-container">-->
+  <!--      <mat-drawer-content class="risk-assessment-content">-->
+  <!--        <mat-toolbar class="risk-assessment-toolbar">-->
+  <!--          <h2 class="title" tabindex="-1">Risk assessment</h2>-->
+  <!--        </mat-toolbar>-->
+  <!--        <div class="main-content">-->
+  <!--          <app-profile-form-->
+  <!--            [selectedProfile]="vm.selectedProfile"-->
+  <!--            [isCopyProfile]="isCopyProfile"-->
+  <!--            [profiles]="vm.profiles"-->
+  <!--            [profileFormat]="vm.profileFormat"-->
+  <!--            (saveProfile)="saveProfileClicked($event, vm.selectedProfile)"-->
+  <!--            (discard)="discard(vm.selectedProfile)"></app-profile-form>-->
+  <!--        </div>-->
+  <!--      </mat-drawer-content>-->
+  <!--    </mat-drawer-container>-->
+  <!--  </ng-container>-->
+  <!--  <mat-drawer-->
+  <!--    mode="side"-->
+  <!--    opened-->
+  <!--    position="end"-->
+  <!--    class="profiles-drawer"-->
+  <!--    *ngIf="vm.profiles.length">-->
+  <!--    <div class="profiles-drawer-header">-->
+  <!--      <h2 class="profiles-drawer-header-title">Saved profiles</h2>-->
+  <!--    </div>-->
+  <!--    <div class="profiles-drawer-content">-->
+  <!--      <app-profile-item-->
+  <!--        *ngFor="let profile of vm.profiles; let i = index; trackBy: trackByName"-->
+  <!--        [profile]="profile"-->
+  <!--        class="profile-item-{{ i }}"-->
+  <!--        [ngClass]="{ selected: profile.name === vm.selectedProfile?.name }"-->
+  <!--        (deleteButtonClicked)="deleteProfile($event, i, vm.selectedProfile)"-->
+  <!--        (profileClicked)="profileClicked($event)"-->
+  <!--        (copyProfileClicked)="copyProfileAndOpenForm($event)">-->
+  <!--      </app-profile-item>-->
+  <!--    </div>-->
+  <!--  </mat-drawer>-->
 
   <ng-template #empty>
-    <div class="risk-assessment-content-empty">
-      <button
-        (click)="openForm()"
-        aria-label="Add New Risk Assessment"
-        class="risk-assessment-add-button"
-        color="primary"
-        mat-flat-button>
-        New Risk Assessment
-      </button>
-    </div>
+    <app-empty-page
+      image="/assets/icons/empty-profiles.svg"
+      header="Risk assessment!"
+      message="To perform a full review of your device, we request that you complete a brief risk questionnaire. This will help us assess any potential risks associated with the device.">
+      <ng-container *ngTemplateOutlet="addRiskProfileButton"></ng-container>
+    </app-empty-page>
+  </ng-template>
+
+  <ng-template #addRiskProfileButton>
+    <button
+      (click)="openForm()"
+      aria-label="Create Risk Profile"
+      class="risk-assessment-add-button"
+      color="primary"
+      mat-flat-button>
+      <mat-icon>add</mat-icon>
+      Create Risk Profile
+    </button>
   </ng-template>
 </ng-container>

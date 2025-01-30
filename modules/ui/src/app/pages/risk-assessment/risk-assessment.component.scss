@@ -17,19 +17,8 @@
 @use 'variables';
 @use 'mixins';
 
-:host {
-  overflow: hidden;
-  display: flex;
-}
-
-.risk-assessment-content-empty {
-  @include mixins.content-empty;
-}
-
-:host:has(.profiles-drawer) {
-  .risk-assessment-content-empty {
-    width: calc(100% - #{variables.$profiles-drawer-width});
-  }
+.risk-assessment-add-button {
+  @include mixins.add-button;
 }
 
 .risk-assessment-container,

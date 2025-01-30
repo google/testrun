@@ -95,7 +95,7 @@ describe('RiskAssessmentComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('with no data', () => {
+  describe('with no profiles data', () => {
     beforeEach(() => {
       component.viewModel$ = of({
         profiles: [] as Profile[],
@@ -106,7 +106,31 @@ describe('RiskAssessmentComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should have "New Risk Assessment" button', () => {
+    it('should have title', () => {
+      const title = compiled.querySelector('h2.title');
+      const titleContent = title?.innerHTML.trim();
+
+      expect(title).toBeTruthy();
+      expect(titleContent).toContain('Risk Assessment');
+    });
+
+    it('should have empty page with necessary content', () => {
+      const emptyHeader = compiled.querySelector(
+        'app-empty-page .empty-message-header'
+      );
+      const emptyMessage = compiled.querySelector(
+        'app-empty-page .empty-message-main'
+      );
+
+      expect(emptyHeader).toBeTruthy();
+      expect(emptyHeader?.innerHTML).toContain('Risk assessment');
+      expect(emptyMessage).toBeTruthy();
+      expect(emptyMessage?.innerHTML).toContain(
+        'complete a brief risk questionnaire'
+      );
+    });
+
+    it('should have "Create Risk Profile" button', () => {
       const newRiskAssessmentBtn = compiled.querySelector(
         '.risk-assessment-add-button'
       );
@@ -122,21 +146,13 @@ describe('RiskAssessmentComponent', () => {
       newRiskAssessmentBtn.click();
       fixture.detectChanges();
 
-      const toolbarEl = compiled.querySelector('.risk-assessment-toolbar');
       const title = compiled.querySelector('h2.title');
       const titleContent = title?.innerHTML.trim();
-      const profileForm = compiled.querySelectorAll('app-profile-form');
+      // const profileForm = compiled.querySelectorAll('app-profile-form');
 
-      expect(toolbarEl).not.toBeNull();
       expect(title).toBeTruthy();
-      expect(titleContent).toContain('Risk assessment');
-      expect(profileForm).toBeTruthy();
-    });
-
-    it('should not have profiles drawer', () => {
-      const profilesDrawer = compiled.querySelector('.profiles-drawer');
-
-      expect(profilesDrawer).toBeFalsy();
+      expect(titleContent).toContain('Risk Assessment');
+      // expect(profileForm).toBeTruthy();
     });
   });
 
@@ -150,17 +166,12 @@ describe('RiskAssessmentComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should have profiles drawer', () => {
-      const profilesDrawer = compiled.querySelector('.profiles-drawer');
-
-      expect(profilesDrawer).toBeTruthy();
-    });
-
-    it('should have profile items', () => {
-      const profileItems = compiled.querySelectorAll('app-profile-item');
-
-      expect(profileItems.length).toEqual(2);
-    });
+    // TODO: change after profile items are added/updated
+    // it('should have profile items', () => {
+    //   const profileItems = compiled.querySelectorAll('app-profile-item');
+    //
+    //   expect(profileItems.length).toEqual(2);
+    // });
 
     describe('#deleteProfile', () => {
       it('should open delete profile modal', fakeAsync(() => {

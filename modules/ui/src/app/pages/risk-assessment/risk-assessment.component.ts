@@ -42,6 +42,10 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { ProfileFormComponent } from './profile-form/profile-form.component';
+import { MatIconModule } from '@angular/material/icon';
+import { EmptyPageComponent } from '../../components/empty-page/empty-page.component';
+import { ListLayoutComponent } from '../../components/list-layout/list-layout.component';
+import { LayoutType } from '../../model/layout-type';
 
 const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
   hideRequiredMarker: true,
@@ -55,9 +59,12 @@ const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
     CommonModule,
     MatToolbarModule,
     MatButtonModule,
+    MatIconModule,
     ReactiveFormsModule,
     MatInputModule,
     MatSidenavModule,
+    EmptyPageComponent,
+    ListLayoutComponent,
     ProfileFormComponent,
     ProfileItemComponent,
   ],
@@ -71,6 +78,7 @@ const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RiskAssessmentComponent implements OnInit, OnDestroy {
+  readonly LayoutType = LayoutType;
   private store = inject(RiskAssessmentStore);
   dialog = inject(MatDialog);
   private liveAnnouncer = inject(LiveAnnouncer);

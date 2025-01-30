@@ -16,5 +16,5 @@
 
 export enum LayoutType {
   Device = 'Devices',
-  Profile = 'Risk Assessement',
+  Profile = 'Risk Assessment',
 }

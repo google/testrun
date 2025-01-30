@@ -26,5 +26,6 @@ export class EmptyMessageComponent {
   image = input<string>();
   header = input<string>();
   message = input<string>();
+  messageNext = input<string>();
   isHorizontal = input<boolean>(false);
 }
