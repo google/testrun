@@ -21,6 +21,16 @@
   @include mixins.add-button;
 }
 
+.risk-assessment-content-empty {
+  @include mixins.content-empty;
+}
+
+:host:has(.profiles-drawer) {
+  .risk-assessment-content-empty {
+    width: calc(100% - #{variables.$profiles-drawer-width});
+  }
+}
+
 .risk-assessment-container,
 .risk-assessment-content {
   background-color: colors.$white;

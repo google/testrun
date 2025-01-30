@@ -53,9 +53,7 @@ export class ProfileItemComponent {
   public readonly EXPIRED_TOOLTIP =
     'Expired. Please, create a new Risk profile.';
   @Input() profile!: Profile;
-  @Output() deleteButtonClicked = new EventEmitter<string>();
   @Output() profileClicked = new EventEmitter<Profile>();
-  @Output() copyProfileClicked = new EventEmitter<Profile>();
 
   readonly tooltip = viewChild.required<MatTooltip>('tooltip');
 
@@ -86,10 +84,5 @@ export class ProfileItemComponent {
 
   getProfileItemLabel(profile: Profile) {
     return `${profile.status} ${profile.risk} risk ${profile.name} ${this.datePipe.transform(profile.created, 'dd MMM yyyy')}`;
-  }
-
-  delete(event: Event, name: string) {
-    event.preventDefault();
-    this.deleteButtonClicked.emit(name);
   }
 }

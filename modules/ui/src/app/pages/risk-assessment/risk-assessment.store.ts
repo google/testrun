@@ -19,17 +19,19 @@ import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { catchError, delay, EMPTY, exhaustMap, throwError, timer } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
-import { Profile, ProfileFormat } from '../../model/profile';
+import { Profile, ProfileAction, ProfileFormat } from '../../model/profile';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
 import { setRiskProfiles } from '../../store/actions';
+import { EntityAction } from '../../model/entity-action';
 
 export interface AppComponentState {
   selectedProfile: Profile | null;
   profiles: Profile[];
   profileFormat: ProfileFormat[];
+  actions: EntityAction[];
 }
 @Injectable()
 export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
@@ -40,11 +42,13 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
   profiles$ = this.store.select(selectRiskProfiles);
   profileFormat$ = this.select(state => state.profileFormat);
   selectedProfile$ = this.select(state => state.selectedProfile);
+  actions$ = this.select(state => state.actions);
 
   viewModel$ = this.select({
     profiles: this.profiles$,
     profileFormat: this.profileFormat$,
     selectedProfile: this.selectedProfile$,
+    actions: this.actions$,
   });
 
   updateProfileFormat = this.updater(
@@ -181,6 +185,10 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
       profiles: [],
       profileFormat: [],
       selectedProfile: null,
+      actions: [
+        { action: ProfileAction.Copy, icon: 'content_copy' },
+        { action: ProfileAction.Delete, icon: 'delete' },
+      ],
     });
   }
 }

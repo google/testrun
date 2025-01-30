@@ -34,7 +34,7 @@ import {
 } from '../../mocks/profile.mock';
 import { of } from 'rxjs';
 import { Component, Input } from '@angular/core';
-import { Profile, ProfileFormat } from '../../model/profile';
+import { Profile, ProfileAction, ProfileFormat } from '../../model/profile';
 import { MatDialogRef } from '@angular/material/dialog';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { RiskAssessmentStore } from './risk-assessment.store';
@@ -101,6 +101,10 @@ describe('RiskAssessmentComponent', () => {
         profiles: [] as Profile[],
         profileFormat: [],
         selectedProfile: null,
+        actions: [
+          { action: ProfileAction.Copy, icon: 'content_copy' },
+          { action: ProfileAction.Delete, icon: 'delete' },
+        ],
       });
       mockRiskAssessmentStore.profiles$ = of([]);
       fixture.detectChanges();
@@ -162,16 +166,19 @@ describe('RiskAssessmentComponent', () => {
         profiles: [PROFILE_MOCK, PROFILE_MOCK],
         profileFormat: [],
         selectedProfile: null,
+        actions: [
+          { action: ProfileAction.Copy, icon: 'content_copy' },
+          { action: ProfileAction.Delete, icon: 'delete' },
+        ],
       });
       fixture.detectChanges();
     });
 
-    // TODO: change after profile items are added/updated
-    // it('should have profile items', () => {
-    //   const profileItems = compiled.querySelectorAll('app-profile-item');
-    //
-    //   expect(profileItems.length).toEqual(2);
-    // });
+    it('should have profile items', () => {
+      const profileItems = compiled.querySelectorAll('app-profile-item');
+
+      expect(profileItems.length).toEqual(2);
+    });
 
     describe('#deleteProfile', () => {
       it('should open delete profile modal', fakeAsync(() => {

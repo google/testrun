@@ -17,8 +17,18 @@ limitations under the License.
   <app-list-layout
     [title]="LayoutType.Profile"
     addEntityText="Create Risk Profile"
-    [emptyContent]="empty">
+    [emptyContent]="empty"
+    [content]="content"
+    [itemTemplate]="itemTemplate"
+    [actions]="vm.actions"
+    [actionsFn]="actions(vm.actions)"
+    [entities]="vm.profiles"
+    [isOpenEntityForm]="isOpenProfileForm"
+    [initialEntity]="vm.selectedProfile"
+    (addEntity)="openForm()">
   </app-list-layout>
+
+  <!-- TODO to be deleted after Risk Profiles GM3 migration -->
   <!--  <ng-container *ngIf="isOpenProfileForm; else empty">-->
   <!--    <mat-drawer-container class="risk-assessment-container">-->
   <!--      <mat-drawer-content class="risk-assessment-content">-->
@@ -59,6 +69,23 @@ limitations under the License.
   <!--    </div>-->
   <!--  </mat-drawer>-->
 
+  <ng-template #content>
+    <app-no-entity-selected
+      *ngIf="!isOpenProfileForm"
+      image="/assets/icons/score.svg"
+      header="No risk profile selected"
+      message="Select a profile from the list on the left to view or edit the profile.">
+    </app-no-entity-selected>
+    <app-profile-form
+      *ngIf="isOpenProfileForm"
+      [selectedProfile]="vm.selectedProfile"
+      [isCopyProfile]="isCopyProfile"
+      [profiles]="vm.profiles"
+      [profileFormat]="vm.profileFormat"
+      (saveProfile)="saveProfileClicked($event, vm.selectedProfile)"
+      (discard)="discard(vm.selectedProfile)"></app-profile-form>
+  </ng-template>
+
   <ng-template #empty>
     <app-empty-page
       image="/assets/icons/empty-profiles.svg"
@@ -78,5 +105,13 @@ limitations under the License.
       <mat-icon>add</mat-icon>
       Create Risk Profile
     </button>
+  </ng-template>
+
+  <ng-template #itemTemplate let-entity="entity">
+    <app-profile-item
+      [profile]="entity"
+      [ngClass]="{ selected: entity.name === vm.selectedProfile?.name }"
+      (profileClicked)="profileClicked($event)">
+    </app-profile-item>
   </ng-template>
 </ng-container>

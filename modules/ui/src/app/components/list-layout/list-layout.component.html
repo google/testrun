@@ -40,7 +40,7 @@ limitations under the License.
       </mat-toolbar>
       <section class="entity-list">
         <div
-          *ngIf="isOpenDeviceForm() && !initialDevice()"
+          *ngIf="isOpenEntityForm() && !initialEntity()"
           class="fake-list-item">
           <mat-icon svgIcon="draft" class="profile-draft-icon"></mat-icon>
           New device
@@ -48,7 +48,7 @@ limitations under the License.
         <ng-container *ngFor="let entity of filtered(); index as i">
           <app-list-item
             [entity]="entity"
-            [actions]="actions()"
+            [actions]="getActions(entity)"
             [isDisabled]="entityDisabled()"
             [tooltipMessage]="entityTooltip()"
             (menuItemClicked)="onMenuItemClick($event, entity, i)">

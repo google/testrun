@@ -26,7 +26,7 @@ import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dia
 import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { Profile, ProfileStatus } from '../../model/profile';
+import { Profile, ProfileAction, ProfileStatus } from '../../model/profile';
 import { Observable } from 'rxjs/internal/Observable';
 import { DeviceValidators } from '../devices/components/device-form/device.validators';
 import { SuccessDialogComponent } from './components/success-dialog/success-dialog.component';
@@ -46,6 +46,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { EmptyPageComponent } from '../../components/empty-page/empty-page.component';
 import { ListLayoutComponent } from '../../components/list-layout/list-layout.component';
 import { LayoutType } from '../../model/layout-type';
+import { NoEntitySelectedComponent } from '../../components/no-entity-selected/no-entity-selected.component';
+import { EntityAction } from '../../model/entity-action';
 
 const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
   hideRequiredMarker: true,
@@ -67,6 +69,7 @@ const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
     ListLayoutComponent,
     ProfileFormComponent,
     ProfileItemComponent,
+    NoEntitySelectedComponent,
   ],
   providers: [
     RiskAssessmentStore,
@@ -79,6 +82,7 @@ const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
 })
 export class RiskAssessmentComponent implements OnInit, OnDestroy {
   readonly LayoutType = LayoutType;
+  readonly ProfileStatus = ProfileStatus;
   private store = inject(RiskAssessmentStore);
   dialog = inject(MatDialog);
   private liveAnnouncer = inject(LiveAnnouncer);
@@ -246,6 +250,15 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   trackByName = (index: number, item: Profile): string => {
     return item.name;
   };
+
+  actions(actions: EntityAction[]) {
+    return (profile: Profile) => {
+      if (profile.status === ProfileStatus.EXPIRED) {
+        return [{ action: ProfileAction.Delete, icon: 'delete' }];
+      }
+      return actions;
+    };
+  }
 
   private closeFormAfterDelete(name: string, selectedProfile: Profile | null) {
     if (selectedProfile?.name === name) {
