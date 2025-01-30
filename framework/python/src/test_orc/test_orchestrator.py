@@ -22,7 +22,7 @@ import docker
 from datetime import datetime
 from common import logger, util
 from common.testreport import TestReport
-from common.statuses import TestrunStatus, TestResult
+from common.statuses import TestrunStatus, TestrunResult, TestResult
 from core.docker.test_docker_module import TestModule
 from test_orc.test_case import TestCase
 from test_orc.test_pack import TestPack
@@ -37,6 +37,7 @@ RESOURCES_DIR = "resources"
 
 RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR, "test")
 TEST_PACKS_DIR = os.path.join(RESOURCES_DIR, "test_packs")
+TEST_PACK_CONFIG_FILE = "config.json"
 
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
@@ -241,7 +242,8 @@ class TestOrchestrator:
         "%Y-%m-%d %H:%M:%S")
     report["finished"] = self.get_session().get_finished().strftime(
         "%Y-%m-%d %H:%M:%S")
-    report["status"] = self._calculate_result()
+    report["result"] = self._calculate_result()
+    report["status"] = self._calculate_status()
     report["tests"] = self.get_session().get_report_tests()
     report["report"] = (
         self._api_url + "/" + SAVED_DEVICE_REPORTS.replace(
@@ -252,7 +254,7 @@ class TestOrchestrator:
     return report
 
   def _calculate_result(self):
-    result = TestrunStatus.COMPLIANT
+    result = TestrunResult.COMPLIANT
 
     for test_result in self.get_session().get_test_results():
 
@@ -262,22 +264,39 @@ class TestOrchestrator:
             TestResult.COMPLIANT,
             TestResult.ERROR
           ]):
-        result = TestrunStatus.NON_COMPLIANT
+        result = TestrunResult.NON_COMPLIANT
 
       # Check Required if Applicable tests
       elif (test_result.required_result.lower() == "required if applicable"
             and test_result.result == TestResult.NON_COMPLIANT):
-        result = TestrunStatus.NON_COMPLIANT
+        result = TestrunResult.NON_COMPLIANT
+
+    self.get_session().set_result(result)
+
+    return result
+
+  def _calculate_status(self):
+
+    result = self.get_session.get_result()
+    status = TestrunStatus.COMPLETE
+
+    if result in [
+      TestrunResult.COMPLIANT,
+      TestrunResult.NON_COMPLIANT
+    ]:
+      status = TestrunStatus.COMPLETE
 
     # Change the result if pilot assessment used
     if (self.get_session().get_target_device().test_pack ==
         "Pilot Assessment"):
-      if result == TestrunStatus.COMPLIANT:
+      if result == TestrunResult.COMPLIANT:
         result = TestrunStatus.PROCEED
-      elif result == TestrunStatus.NON_COMPLIANT:
+      elif result == TestrunResult.NON_COMPLIANT:
         result = TestrunStatus.DO_NOT_PROCEED
 
-    return result
+    self.get_session().set_status(status)
+
+    return status
 
   def _cleanup_old_test_results(self, device):
 
@@ -649,14 +668,15 @@ class TestOrchestrator:
 
   def _load_test_packs(self):
 
-    for test_pack_file in os.listdir(TEST_PACKS_DIR):
+    for test_pack_folder in os.listdir(TEST_PACKS_DIR):
 
-      LOGGER.debug(f"Loading test pack {test_pack_file}")
+      LOGGER.debug(f"Loading test pack {test_pack_folder}")
 
       with open(os.path.join(
         self._root_path,
         TEST_PACKS_DIR,
-        test_pack_file), encoding="utf-8") as f:
+        test_pack_folder,
+        TEST_PACK_CONFIG_FILE), encoding="utf-8") as f:
         test_pack_json = json.load(f)
 
       test_pack: TestPack = TestPack(

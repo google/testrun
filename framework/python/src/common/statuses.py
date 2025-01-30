@@ -22,13 +22,16 @@ class TestrunStatus:
   MONITORING = "Monitoring"
   IN_PROGRESS = "In Progress"
   CANCELLED = "Cancelled"
-  COMPLIANT =  "Compliant"
-  NON_COMPLIANT = "Non-Compliant"
   STOPPING = "Stopping"
   VALIDATING = "Validating Network"
+  COMPLETE = "Complete"
   PROCEED = "Proceed"
   DO_NOT_PROCEED = "Do Not Proceed"
 
+class TestrunResult:
+  """Statuses for the Testrun result"""
+  COMPLIANT =  "Compliant"
+  NON_COMPLIANT = "Non-Compliant"
 
 class TestResult:
   """Statuses for test results"""
