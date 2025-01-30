@@ -156,7 +156,7 @@ class TestrunSession():
 
   def start(self):
     self.reset()
-    self._status = TestrunStatus.WAITING_FOR_DEVICE
+    self._status = TestrunStatus.STARTING
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -538,6 +538,9 @@ class TestrunSession():
     try:
       for risk_profile_file in os.listdir(
           os.path.join(self._root_dir, PROFILES_DIR)):
+
+        if not risk_profile_file.endswith('.json'):
+          continue
 
         LOGGER.debug(f'Discovered profile {risk_profile_file}')
 

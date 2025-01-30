@@ -728,9 +728,9 @@ def test_sys_status_cancelled(empty_devices_dir, add_devices, # pylint: disable=
 @pytest.mark.parametrize("add_devices", [
   ["device_1"]
 ],indirect=True)
-def test_sys_status_waiting(empty_devices_dir, add_devices, # pylint: disable=W0613
-                                      testrun, start_test): # pylint: disable=W0613
-  """ Test for system status 'Waiting for Device' (200) """
+def test_sys_status_starting(empty_devices_dir, add_devices, # pylint: disable=W0613
+                                       testrun, start_test): # pylint: disable=W0613
+  """ Test for system status 'Starting' and 'Waiting for Device' (200) """
 
   # Send the get request
   r = requests.get(f"{API}/system/status", timeout=5)
@@ -740,6 +740,27 @@ def test_sys_status_waiting(empty_devices_dir, add_devices, # pylint: disable=W0
 
   # Parse the json response
   response = r.json()
+
+  # Check if system status is 'Starting'
+  assert response["status"] == "Starting"
+
+  # Add max 60 seconds delay to allow for status to change
+  max_retries = 60
+
+  # If status is "Starting" and max_retries didn't reach 0
+  while response["status"] == "Starting" and max_retries != 0:
+
+    # Add 1 second delay
+    time.sleep(1)
+
+    # Subtract 1 from max_retries
+    max_retries -= 1
+
+    # Resend the get request
+    r = requests.get(f"{API}/system/status", timeout=5)
+
+    # Parse the json response
+    response = r.json()
 
   # Check if system status is 'Waiting for Device'
   assert response["status"] == "Waiting for Device"
@@ -1264,7 +1285,7 @@ def test_export_report_not_found(empty_devices_dir, add_devices, testrun): # pyl
   # Send the post request to trigger the zipping process
   r = requests.post(f"{API}/export/{device_name}/{timestamp}", timeout=10)
 
-  # Check if status code is 500 (Internal Server Error)
+  # Check if status code is 404 (Not Found)
   assert r.status_code == 404
 
   # Parse the json response
@@ -3101,6 +3122,118 @@ def test_delete_profile_server_error(empty_profiles_dir, add_profiles, # pylint:
 
   # Check if error in response
   assert "error" in response
+
+@pytest.mark.parametrize("add_profiles", [
+  ["valid_profile.json"]
+],indirect=True)
+def test_export_profile_success(empty_profiles_dir, add_profiles, testrun): # pylint: disable=W0613
+  """Test for successfully export profile as PDF (200)"""
+
+  # Assign the profile from the fixture
+  profile = load_json("valid_profile.json", directory=PROFILES_PATH)
+
+  # Assign the profile name to profile_name
+  profile_name = profile["name"]
+
+  # Send the get request
+  r = requests.post(f"{API}/profile/{profile_name}", timeout=5)
+
+  # Check if status code is 200 (ok)
+  assert r.status_code == 200
+
+  # Check if the response is a PDF
+  assert r.headers["Content-Type"] == "application/pdf"
+
+def test_export_profile_not_found(testrun): # pylint: disable=W0613
+  """Test export profile as PDF when profile doesn't exist (404)"""
+
+  # Assign the profile name
+  profile_name = "non_existing"
+
+  # Send the post request
+  r = requests.post(f"{API}/profile/{profile_name}", timeout=5)
+
+  # Check if status code is 404 (not found)
+  assert r.status_code == 404
+
+  # Parse the response json
+  response = r.json()
+
+  # Check if "error" in response
+  assert "error" in response
+
+  # Check if the correct error message returned
+  assert "Profile could not be found" in response["error"]
+
+@pytest.mark.parametrize("add_devices, add_profiles", [
+    (["device_1"], ["valid_profile.json"])
+], indirect=True)
+def test_export_profile_with_device(empty_devices_dir, add_devices, # pylint: disable=W0613
+                               empty_profiles_dir, add_profiles, # pylint: disable=W0613
+                                                       testrun): # pylint: disable=W0613
+  """ Test export profile as PDF with existing device (200)"""
+
+  # Load the profile using load_json utility method
+  profile = load_json("valid_profile.json", directory=PROFILES_PATH)
+
+  # Assign the profile name to profile_name
+  profile_name = profile["name"]
+
+  # Load the device using load_json utility method
+  device = load_json("device_config.json", directory=DEVICE_1_PATH)
+
+  # Assign the device mac address
+  mac_addr = device["mac_addr"]
+
+  # Payload with device mac address
+  payload = {"mac_addr": mac_addr}
+
+  print(payload)
+
+  # Send the post request
+  r = requests.post(f"{API}/profile/{profile_name}",
+                    json=payload,
+                    timeout=5)
+
+  # Check if status code is 200 (OK)
+  assert r.status_code == 200
+
+  # Check if the response is a pdf file
+  assert r.headers["Content-Type"] == "application/pdf"
+
+@pytest.mark.parametrize("add_profiles", [
+  ["valid_profile.json"]
+],indirect=True)
+def test_export_profile_device_not_found(empty_profiles_dir, add_profiles, # pylint: disable=W0613
+                                      testrun): # pylint: disable=W0613
+  """ Test export profile as PDF when device not found (404)"""
+
+  # Load the profile using load_json utility method
+  profile = load_json("valid_profile.json", directory=PROFILES_PATH)
+
+  # Assign the profile name to profile_name
+  profile_name = profile["name"]
+
+  # Assign the device mac address
+  device_mac = {"mac_addr": "non_existing"}
+
+  # Send the post request
+  r = requests.post(f"{API}/profile/{profile_name}",
+                    json=device_mac,
+                    timeout=5)
+
+  # Check if status code is 404 (Not Found)
+  assert r.status_code == 404
+
+  # Parse the response json
+  response = r.json()
+
+  # Check if "error" in response
+  assert "error" in response
+
+  # Check if the correct error message returned
+  error_message = "A device with that mac address could not be found"
+  assert error_message in response["error"]
 
 # Skipped tests currently not working due to blocking during monitoring period
 
