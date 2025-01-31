@@ -100,6 +100,9 @@ class TestrunSession():
     # All historical reports
     self._module_reports = []
 
+    # Module report templates
+    self._module_templates = []
+
     # Parameters specified when starting Testrun
     self._runtime_params = []
 
@@ -398,6 +401,9 @@ class TestrunSession():
   def get_module_reports(self):
     return self._module_reports
 
+  def get_module_templates(self):
+    return self._module_templates
+
   def get_report_tests(self):
     """Returns the current test results in JSON-friendly format
     (in Python dictionary)"""
@@ -466,6 +472,9 @@ class TestrunSession():
 
   def add_module_report(self, module_report):
     self._module_reports.append(module_report)
+
+  def add_module_template(self, module_template):
+    self._module_templates.append(module_template)
 
   def get_all_reports(self):
 
@@ -663,7 +672,7 @@ class TestrunSession():
         valid_questions.append(question)
 
       else:
-        LOGGER.debug(f'Removed unrecognised question: {question["question"]}')
+        LOGGER.debug(f'Removed unrecognised question: {question["question"]}') # pylint: disable=W1405
 
     # Return the list of valid questions
     return valid_questions
@@ -718,7 +727,7 @@ class TestrunSession():
         question.get('question'))
 
       if format_q is None:
-        LOGGER.error(f'Unrecognised question: {question.get("question")}')
+        LOGGER.error(f'Unrecognised question: {question.get("question")}') # pylint: disable=W1405
         # Just ignore additional questions
         continue
 
@@ -803,6 +812,7 @@ question {question.get('question')}''')
     self._report_url = None
     self._total_tests = 0
     self._module_reports = []
+    self._module_templates = []
     self._results = []
     self._started = None
     self._finished = None
