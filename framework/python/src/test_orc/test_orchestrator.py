@@ -254,11 +254,8 @@ class TestOrchestrator:
     for test_result in self.get_session().get_test_results():
 
       # Check Required tests
-      if (test_result.required_result.lower() == "required"
-          and test_result.result not in [
-            TestResult.COMPLIANT,
-            TestResult.ERROR
-          ]):
+      if (test_result.required_result.lower() == "required" and
+          test_result.result not in [TestResult.COMPLIANT, TestResult.ERROR]):
         result = TestResult.NON_COMPLIANT
 
       # Check Required if Applicable tests
@@ -359,12 +356,12 @@ class TestOrchestrator:
 
       # Report file path
       report_path = os.path.join(
-        LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
-        timestamp, "test", device.mac_addr.replace(":", ""))
+          LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
+          timestamp, "test", device.mac_addr.replace(":", ""))
 
       # Parse string timestamp
       date_timestamp: datetime.datetime = datetime.strptime(
-      timestamp, "%Y-%m-%dT%H:%M:%S")
+          timestamp, "%Y-%m-%dT%H:%M:%S")
 
       # Find the report
       test_report = None
@@ -387,17 +384,18 @@ class TestOrchestrator:
 
         # Write the json report
         with open(os.path.join(report_path, "report.json"),
-                  "w", encoding="utf-8") as f:
+                  "w",
+                  encoding="utf-8") as f:
           json.dump(test_report.to_json(), f, indent=2)
 
         # Write the html report
         with open(os.path.join(report_path, "report.html"),
-                  "w", encoding="utf-8") as f:
+                  "w",
+                  encoding="utf-8") as f:
           f.write(test_report.to_html())
 
         # Write the pdf report
-        with open(os.path.join(report_path, "report.pdf"),
-                  "wb") as f:
+        with open(os.path.join(report_path, "report.pdf"), "wb") as f:
           f.write(test_report.to_pdf().getvalue())
 
       # Define temp directory to store files before zipping
@@ -554,14 +552,13 @@ class TestOrchestrator:
         for test_result in module_results:
 
           # Convert dict from json into TestCase object
-          test_case = TestCase(
-              name=test_result["name"],
-              result=test_result["result"],
-              description=test_result["description"])
+          test_case = TestCase(name=test_result["name"],
+                               result=test_result["result"],
+                               description=test_result["description"])
 
           # Add steps to resolve if test is non-compliant
-          if (test_case.result == TestResult.NON_COMPLIANT and
-              "recommendations" in test_result):
+          if (test_case.result == TestResult.NON_COMPLIANT
+              and "recommendations" in test_result):
             test_case.recommendations = test_result["recommendations"]
           else:
             test_case.recommendations = []
@@ -642,17 +639,13 @@ class TestOrchestrator:
 
       LOGGER.debug(f"Loading test pack {test_pack_file}")
 
-      with open(os.path.join(
-        self._root_path,
-        TEST_PACKS_DIR,
-        test_pack_file), encoding="utf-8") as f:
+      with open(os.path.join(self._root_path, TEST_PACKS_DIR, test_pack_file),
+                encoding="utf-8") as f:
         test_pack_json = json.load(f)
 
-      test_pack: TestPack = TestPack(
-        name = test_pack_json["name"],
-        tests = test_pack_json["tests"],
-        language = test_pack_json["language"]
-      )
+      test_pack: TestPack = TestPack(name=test_pack_json["name"],
+                                     tests=test_pack_json["tests"],
+                                     language=test_pack_json["language"])
 
       self._test_packs.append(test_pack)
 
@@ -673,7 +666,8 @@ class TestOrchestrator:
     # so it always runs before connection. Connection may cause too many
     # DHCP changes causing nmap to use wrong IP during scan
     if "services" in module_dirs and "conn" in module_dirs:
-      module_dirs.insert(module_dirs.index("conn"), module_dirs.pop(module_dirs.index("services")))
+      module_dirs.insert(module_dirs.index("conn"),
+                         module_dirs.pop(module_dirs.index("services")))
 
     for module_dir in module_dirs:
 
@@ -704,9 +698,7 @@ class TestOrchestrator:
       module_conf_file = os.path.join(self._root_path, modules_dir, module_dir,
                                       MODULE_CONFIG)
 
-      module = TestModule(module_conf_file,
-                          self,
-                          self.get_session(),
+      module = TestModule(module_conf_file, self, self.get_session(),
                           extra_hosts)
       if module.depends_on is not None:
         self._load_test_module(module.depends_on)
@@ -767,6 +759,5 @@ class TestOrchestrator:
       start_idx = current_test if i == self._current_module else 0
       for j in range(start_idx, len(self._test_modules_running[i].tests)):
         self.get_session().set_test_result_error(
-          self._test_modules_running[i].tests[j],
-          "Test did not run, the device was disconnected"
-          )
+            self._test_modules_running[i].tests[j],
+            "Test did not run, the device was disconnected")
