@@ -669,6 +669,11 @@ class TestOrchestrator:
     # corrupted during DHCP changes in the conn module
     if "protocol" in module_dirs:
       module_dirs.insert(0, module_dirs.pop(module_dirs.index("protocol")))
+    # Check if the directory services exists and move it higher in the index
+    # so it always runs before connection. Connection may cause too many
+    # DHCP changes causing nmap to use wrong IP during scan
+    if "services" in module_dirs and "conn" in module_dirs:
+      module_dirs.insert(module_dirs.index("conn"), module_dirs.pop(module_dirs.index("services")))
 
     for module_dir in module_dirs:
 

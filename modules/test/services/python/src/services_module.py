@@ -156,6 +156,8 @@ class ServicesModule(TestModule):
 
   def _run_nmap(self):
     LOGGER.info('Running nmap')
+    self._device_ipv4_addr = self._get_device_ipv4()
+    LOGGER.info('Resolved device IP: ' + str(self._device_ipv4_addr))
 
     # Run the monitor method asynchronously to keep this method non-blocking
     self._tcp_scan_thread = threading.Thread(target=self._scan_tcp_ports)
@@ -202,7 +204,9 @@ class ServicesModule(TestModule):
       --version-intensity 7 -T4 -oX - {self._ipv4_addr}''')[0]
 
     LOGGER.info('TCP port scan complete')
+    LOGGER.debug(f'TCP Scan results raw: {nmap_results}')
     nmap_results_json = self._nmap_results_to_json(nmap_results)
+    LOGGER.debug(f'TCP Scan results JSON: {nmap_results_json}')
     self._scan_tcp_results = self._process_nmap_json_results(
         nmap_results_json=nmap_results_json)
 
@@ -228,7 +232,9 @@ class ServicesModule(TestModule):
       nmap_results = util.run_command( # pylint: disable=E1120
           f'nmap -sU -sV -p {port_list} -oX - {self._ipv4_addr}')[0]
       LOGGER.info('UDP port scan complete')
+      LOGGER.debug(f'UDP Scan results raw: {nmap_results}')
       nmap_results_json = self._nmap_results_to_json(nmap_results)
+      LOGGER.debug(f'UDP Scan results JSON: {nmap_results_json}')
       self._scan_udp_results = self._process_nmap_json_results(
           nmap_results_json=nmap_results_json)
 
