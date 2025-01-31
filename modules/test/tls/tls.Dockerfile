@@ -51,3 +51,6 @@ RUN pip3 install -r /testrun/python/requirements-test.txt
 
 # Create a directory inside the container to store the root certificates
 RUN mkdir -p /testrun/root_certs
+
+# Copy Jinja template
+COPY $MODULE_DIR/resources/report_template.jinja2 $REPORT_TEMPLATE_PATH/

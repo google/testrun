@@ -80,5 +80,13 @@ COPY --from=builder /usr/local/etc/oui.txt /usr/local/etc/oui.txt
 # Activate the virtual environment by setting the PATH
 ENV PATH="/opt/venv/bin:$PATH"
 
+# Common resource folder 
+ENV REPORT_TEMPLATE_PATH=/testrun/resources
+# Jinja base template 
+ENV BASE_TEMPLATE_FILE=module_report_base.jinja2
+
+# Copy base template
+COPY resources/report/$BASE_TEMPLATE_FILE $REPORT_TEMPLATE_PATH/
+
 # Start the test module
 ENTRYPOINT [ "/testrun/bin/start" ]
