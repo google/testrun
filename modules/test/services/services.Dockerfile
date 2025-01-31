@@ -32,3 +32,6 @@ COPY $MODULE_DIR/bin /testrun/bin
 
 # Copy over all python files
 COPY $MODULE_DIR/python /testrun/python
+
+# Copy Jinja template
+COPY $MODULE_DIR/resources/report_template.jinja2 $REPORT_TEMPLATE_PATH/
