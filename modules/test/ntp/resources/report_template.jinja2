@@ -1,0 +1,31 @@
+{% extends base_template %}
+{% block content %}
+{% if module_data %}
+  <table class="module-data" style="width:100%;">
+    <thead>
+      <tr>
+        {% for header in module_data_headers %}
+          <th>{{ header }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in module_data %}
+        <tr>
+              <td>{{ row['src'] }}</td>
+              <td>{{ row['dst'] }}</td>
+              <td>{{ row['typ'] }}</td>
+              <td>{{ row['version'] }}</td>
+              <td>{{ row['cnt'] }}</td>
+              <td>{{ row['avg_fmt'] }}</td>
+            </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="callout-container info">
+    <div class="icon"></div>
+    No NTP traffic detected from the device
+  </div>
+{% endif %}
+{% endblock %}

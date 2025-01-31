@@ -17,19 +17,21 @@ from scapy.all import rdpcap, IP, IPv6, NTP, UDP, Ether
 from scapy.error import Scapy_Exception
 import os
 from collections import defaultdict
+from jinja2 import Environment, FileSystemLoader
 
 LOG_NAME = 'test_ntp'
-MODULE_REPORT_FILE_NAME = 'ntp_report.html'
+MODULE_REPORT_FILE_NAME = 'ntp_report.j2.html'
 NTP_SERVER_CAPTURE_FILE = '/runtime/network/ntp.pcap'
 STARTUP_CAPTURE_FILE = '/runtime/device/startup.pcap'
 MONITOR_CAPTURE_FILE = '/runtime/device/monitor.pcap'
 LOGGER = None
+REPORT_TEMPLATE_FILE = 'report_template.jinja2'
 
 
 class NTPModule(TestModule):
   """NTP Test module"""
 
-  def __init__(self,
+  def __init__(self, # pylint: disable=R0917
                module,
                conf_file=None,
                results_dir=None,
@@ -50,10 +52,37 @@ class NTPModule(TestModule):
     LOGGER = self._get_logger()
 
   def generate_module_report(self):
+    # Load Jinja2 template
+    page_max_height = 910
+    header_height = 48
+    summary_height = 135
+    row_height = 42
+    loader=FileSystemLoader(self._report_template_folder)
+    template = Environment(
+                          loader=loader,
+                          trim_blocks=True,
+                          lstrip_blocks=True,
+                          ).get_template(REPORT_TEMPLATE_FILE)
+    module_header='NTP Module'
+    # Summary table headers
+    summary_headers = [
+                        'Requests to local NTP server',
+                        'Requests to external NTP servers',
+                        'Total NTP requests',
+                        'Total NTP responses'
+                        ]
+    # Module data Headers
+    module_data_headers = [
+                            'Source',
+                            'Destination',
+                            'Type',
+                            'Version',
+                            'Count',
+                            'Sync Request Average',
+                          ]
+
     # Extract NTP data from the pcap file
     ntp_table_data = self.extract_ntp_data()
-
-    html_content = '<h4 class="page-heading">NTP Module</h4>'
 
     # Set the summary variables
     local_requests = sum(
@@ -67,6 +96,14 @@ class NTPModule(TestModule):
 
     total_responses = sum(1 for row in ntp_table_data
                           if row['Type'] == 'Server')
+
+    # Summary table data
+    summary_data = [
+                    local_requests,
+                    external_requests,
+                    total_requests,
+                    total_responses
+                    ]
 
     # Initialize a dictionary to store timestamps for each unique combination
     timestamps = defaultdict(list)
@@ -95,42 +132,9 @@ class NTPModule(TestModule):
 
       average_time_between_requests[key] = avg_diff
 
-    # Add summary table
-    html_content += (f'''
-      <table class="module-summary">
-        <thead>
-          <tr>
-            <th>Requests to local NTP server</th>
-            <th>Requests to external NTP servers</th>
-            <th>Total NTP requests</th>
-            <th>Total NTP responses</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{local_requests}</td>
-            <td>{external_requests}</td>
-            <td>{total_requests}</td>
-            <td>{total_responses}</td>   
-          </tr>
-        </tbody>
-      </table>
-      ''')
-
+    # Module table data
+    module_table_data = []
     if total_requests + total_responses > 0:
-      table_content = '''
-        <table class="module-data" style="width:100%;">
-          <thead>
-            <tr>
-              <th>Source</th>
-              <th>Destination</th>
-              <th>Type</th>
-              <th>Version</th>
-              <th>Count</th>
-              <th>Sync Request Average</th>
-            </tr>
-          </thead>
-          <tbody>'''
 
       # Generate the HTML table with the count column
       for (src, dst, typ,
@@ -145,37 +149,44 @@ class NTPModule(TestModule):
         else:
           avg_formatted_time = 'N/A'
 
-        table_content += f'''
-            <tr>
-              <td>{src}</td>
-              <td>{dst}</td>
-              <td>{typ}</td>
-              <td>{version}</td>
-              <td>{cnt}</td>
-              <td>{avg_formatted_time}</td>
-            </tr>'''
+        module_table_data.append({
+                                  'src': src,
+                                  'dst': dst,
+                                  'typ': typ,
+                                  'version': version,
+                                  'cnt': cnt,
+                                  'avg_fmt': avg_formatted_time
+                                  })
 
-      table_content += '''
-            </tbody>
-          </table>
-                       '''
-      html_content += table_content
+    # Handling the possible table split
+    table_height = (len(module_table_data) + 1) * row_height
+    page_useful_space = page_max_height - header_height - summary_height
+    pages = table_height // (page_useful_space)
+    rows_on_page = ((page_useful_space) // row_height) - 1
+    start = 0
+    report_html = ''
+    for page in range(pages+1):
+      end = start + min(len(module_table_data), rows_on_page)
+      module_header_repr = module_header if page == 0 else None
+      page_html = template.render(
+                                base_template=self._base_template_file,
+                                module_header=module_header_repr,
+                                summary_headers=summary_headers,
+                                summary_data=summary_data,
+                                module_data_headers=module_data_headers,
+                                module_data=module_table_data[start:end]
+                              )
+      report_html += page_html
+      start = end
 
-    else:
-      html_content += ('''
-        <div class="callout-container info">
-          <div class="icon"></div>
-          No NTP traffic detected from the device
-        </div>''')
-
-    LOGGER.debug('Module report:\n' + html_content)
+    LOGGER.debug('Module report:\n' + report_html)
 
     # Use os.path.join to create the complete file path
     report_path = os.path.join(self._results_dir, MODULE_REPORT_FILE_NAME)
 
     # Write the content to a file
     with open(report_path, 'w', encoding='utf-8') as file:
-      file.write(html_content)
+      file.write(report_html)
 
     LOGGER.info('Module report generated at: ' + str(report_path))
 

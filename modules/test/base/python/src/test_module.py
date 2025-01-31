@@ -42,6 +42,8 @@ class TestModule:
     self._ipv6_subnet = os.environ.get('IPV6_SUBNET', '')
     self._dev_iface_mac = os.environ.get('DEV_IFACE_MAC', '')
     self._device_test_pack = json.loads(os.environ.get('DEVICE_TEST_PACK', ''))
+    self._report_template_folder = os.environ.get('REPORT_TEMPLATE_PATH')
+    self._base_template_file=os.environ.get('BASE_TEMPLATE_FILE')
     self._add_logger(log_name=log_name)
     self._config = self._read_config(
         conf_file=conf_file if conf_file is not None else CONF_FILE)
@@ -137,14 +139,14 @@ class TestModule:
             else:
               result = getattr(self, test_method_name)()
           except Exception as e:  # pylint: disable=W0718
-            LOGGER.error(f'An error occurred whilst running {test["name"]}')
+            LOGGER.error(f'An error occurred whilst running {test["name"]}') # pylint: disable=W1405
             LOGGER.error(e)
             traceback.print_exc()
         else:
-          LOGGER.error(f'Test {test["name"]} has not been implemented')
+          LOGGER.error(f'Test {test["name"]} has not been implemented') # pylint: disable=W1405
           result = TestResult.ERROR, 'This test could not be found'
       else:
-        LOGGER.debug(f'Test {test["name"]} is disabled')
+        LOGGER.debug(f'Test {test["name"]} is disabled') # pylint: disable=W1405
         result = (TestResult.DISABLED,
                   'This test did not run because it is disabled')
 

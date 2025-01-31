@@ -177,6 +177,7 @@ class TestOrchestrator:
     generated_report_json = self._generate_report()
     report.from_json(generated_report_json)
     report.add_module_reports(self.get_session().get_module_reports())
+    report.add_module_templates(self.get_session().get_module_templates())
     device.add_report(report)
 
     self._write_reports(report)
@@ -592,8 +593,17 @@ class TestOrchestrator:
         self.get_session().add_module_report(module_report)
     except (FileNotFoundError, PermissionError):
       LOGGER.debug("Test module did not produce a html module report")
+    # Get the Jinja report
+    jinja_file = f"{module.container_runtime_dir}/{module.name}_report.j2.html"
+    try:
+      with open(jinja_file, "r", encoding="utf-8") as f:
+        module_template = f.read()
+        LOGGER.debug(f"Adding module template for module {module.name}")
+        self.get_session().add_module_template(module_template)
+    except (FileNotFoundError, PermissionError):
+      LOGGER.debug("Test module did not produce a module template")
 
-    LOGGER.info(f"Test module {module.name} has finished")
+    # LOGGER.info(f"Test module {module.name} has finished")
 
   def _get_container_logs(self, log_stream):
     """Resolve all current log data in the containers log_stream
