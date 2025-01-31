@@ -155,7 +155,7 @@
         },
         {
           "name": "security.tls.v1_0_client",
-          "required_result": "Informational"
+          "required_result": "Required if Applicable"
         },
         {
           "name": "security.tls.v1_2_server",

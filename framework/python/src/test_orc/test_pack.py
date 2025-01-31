@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Represents a testing pack."""
+from types import ModuleType
 from typing import List, Dict
 from dataclasses import dataclass, field
 from collections import defaultdict
@@ -26,6 +27,7 @@ class TestPack:  # pylint: disable=too-few-public-methods,too-many-instance-attr
   description: str = ""
   tests: List[dict] = field(default_factory=lambda: [])
   language: Dict = field(default_factory=lambda: defaultdict(dict))
+  pack_logic: ModuleType = None
 
   def get_test(self, test_name: str) -> str:
     """Get details of a test from the test pack"""
@@ -43,6 +45,9 @@ class TestPack:  # pylint: disable=too-few-public-methods,too-many-instance-attr
       return test["required_result"]
 
     return "Informational"
+
+  def get_logic(self):
+    return self.pack_logic
 
   def get_message(self, name: str) -> str:
     if name in self.language:

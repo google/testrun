@@ -26,16 +26,12 @@ def calculate_result(json):
 def calculate_status(result, json): # pylint: disable=unused-argument
   """Provide the status based on the output of testing"""
 
-  status = TestrunStatus.PROCEED
+  status = TestrunStatus.COMPLETE
 
-  required_tests = [
-    "connection.dhcp_address",
-    "security.tls.v1_0_client"
-  ]
-
-  for test_result in json:
-    if (test_result.name.lower() in required_tests
-        and test_result.result != TestResult.COMPLIANT):
-      status = TestrunStatus.DO_NOT_PROCEED
+  if result in [
+    TestrunResult.COMPLIANT,
+    TestrunResult.NON_COMPLIANT
+  ]:
+    status = TestrunStatus.COMPLETE
 
   return status
