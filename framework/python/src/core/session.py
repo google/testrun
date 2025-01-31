@@ -20,7 +20,7 @@ import os
 from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
-from common.statuses import TestrunStatus, TestResult
+from common.statuses import TestrunStatus, TestResult, TestrunResult
 from net_orc.ip_control import IPControl
 
 # Certificate dependencies
@@ -85,6 +85,7 @@ class TestrunSession():
     self._root_dir = root_dir
 
     self._status = TestrunStatus.IDLE
+    self._result = None
     self._description = None
 
     # Target test device
@@ -130,6 +131,7 @@ class TestrunSession():
 
     # System network interfaces
     self._ifaces = {}
+
     # Loading methods
     self._load_version()
     self._load_config()
@@ -383,11 +385,17 @@ class TestrunSession():
   def get_ipv6_subnet(self):
     return self._ipv6_subnet
 
-  def get_status(self):
+  def get_status(self) -> TestrunStatus:
     return self._status
 
-  def set_status(self, status):
+  def set_status(self, status: TestrunStatus):
     self._status = status
+
+  def get_result(self) -> TestrunResult:
+    return self._result
+
+  def set_result(self, result: TestrunResult):
+    self._result = result
 
   def set_description(self, desc: str):
     self._description = desc
@@ -795,6 +803,7 @@ question {question.get('question')}''')
 
   def reset(self):
     self.set_status(TestrunStatus.IDLE)
+    self.set_result(None)
     self.set_description(None)
     self.set_target_device(None)
     self._report_url = None
@@ -824,6 +833,9 @@ question {question.get('question')}''')
         'finished': self.get_finished(),
         'tests': results
     }
+
+    if self.get_result() is not None:
+      session_json['result'] = self.get_result()
 
     if self._report_url is not None:
       session_json['report'] = self.get_report_url()

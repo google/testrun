@@ -18,11 +18,13 @@ import json
 import re
 import time
 import shutil
+import sys
 import docker
+import importlib.util
 from datetime import datetime
 from common import logger, util
 from common.testreport import TestReport
-from common.statuses import TestrunStatus, TestResult
+from common.statuses import TestrunStatus, TestrunResult, TestResult
 from core.docker.test_docker_module import TestModule
 from test_orc.test_case import TestCase
 from test_orc.test_pack import TestPack
@@ -37,6 +39,8 @@ RESOURCES_DIR = "resources"
 
 RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR, "test")
 TEST_PACKS_DIR = os.path.join(RESOURCES_DIR, "test_packs")
+TEST_PACK_CONFIG_FILE = "config.json"
+TEST_PACK_LOGIC_FILE = "test_pack.py"
 
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
@@ -175,6 +179,7 @@ class TestOrchestrator:
     report = TestReport()
 
     generated_report_json = self._generate_report()
+
     report.from_json(generated_report_json)
     report.add_module_reports(self.get_session().get_module_reports())
     device.add_report(report)
@@ -189,11 +194,9 @@ class TestOrchestrator:
     # Default message is empty (better than an error message).
     # This should never be shown
     message: str = ""
-    if report.get_status() in [TestrunStatus.COMPLIANT,
-                               TestrunStatus.PROCEED]:
+    if report.get_result() == TestrunResult.COMPLIANT:
       message = test_pack.get_message("compliant_description")
-    elif report.get_status() in [TestrunStatus.NON_COMPLIANT,
-                                 TestrunStatus.DO_NOT_PROCEED]:
+    elif report.get_result() == TestrunResult.NON_COMPLIANT:
       message = test_pack.get_message("non_compliant_description")
 
     self.get_session().set_description(message)
@@ -205,8 +208,6 @@ class TestOrchestrator:
     self._cleanup_old_test_results(device)
 
     LOGGER.debug("Old test results cleaned")
-
-    return report.get_status()
 
   def _write_reports(self, test_report):
 
@@ -232,52 +233,41 @@ class TestOrchestrator:
 
   def _generate_report(self):
 
+    device = self.get_session().get_target_device()
+    test_pack_name = device.test_pack
+    test_pack = self.get_test_pack(test_pack_name)
+
     report = {}
     report["testrun"] = {"version": self.get_session().get_version()}
 
-    report["mac_addr"] = self.get_session().get_target_device().mac_addr
-    report["device"] = self.get_session().get_target_device().to_dict()
+    report["mac_addr"] = device.mac_addr
+    report["device"] = device.to_dict()
     report["started"] = self.get_session().get_started().strftime(
         "%Y-%m-%d %H:%M:%S")
     report["finished"] = self.get_session().get_finished().strftime(
         "%Y-%m-%d %H:%M:%S")
-    report["status"] = self._calculate_result()
+
+    # Update the result
+    result = test_pack.get_logic().calculate_result(
+      self.get_session().get_test_results())
+    report["result"] = result
+    self.get_session().set_result(result)
+
+    # Update the status
+    status = test_pack.get_logic().calculate_status(
+      result,
+      self.get_session().get_test_results())
+    report["status"] = status
+    self.get_session().set_status(status)
+
     report["tests"] = self.get_session().get_report_tests()
     report["report"] = (
         self._api_url + "/" + SAVED_DEVICE_REPORTS.replace(
             "{device_folder}",
-            self.get_session().get_target_device().device_folder) +
+            device.device_folder) +
         self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S"))
 
     return report
-
-  def _calculate_result(self):
-    result = TestrunStatus.COMPLIANT
-
-    for test_result in self.get_session().get_test_results():
-
-      # Check Required tests
-      if (test_result.required_result.lower() == "required"
-          and test_result.result not in [
-            TestResult.COMPLIANT,
-            TestResult.ERROR
-          ]):
-        result = TestrunStatus.NON_COMPLIANT
-
-      # Check Required if Applicable tests
-      elif (test_result.required_result.lower() == "required if applicable"
-            and test_result.result == TestResult.NON_COMPLIANT):
-        result = TestrunStatus.NON_COMPLIANT
-
-    # Change the result if pilot assessment used
-    if (self.get_session().get_target_device().test_pack ==
-        "Pilot Assessment"):
-      if result == TestrunStatus.COMPLIANT:
-        result = TestrunStatus.PROCEED
-      elif result == TestrunStatus.NON_COMPLIANT:
-        result = TestrunStatus.DO_NOT_PROCEED
-
-    return result
 
   def _cleanup_old_test_results(self, device):
 
@@ -649,23 +639,46 @@ class TestOrchestrator:
 
   def _load_test_packs(self):
 
-    for test_pack_file in os.listdir(TEST_PACKS_DIR):
+    for test_pack_folder in os.listdir(TEST_PACKS_DIR):
 
-      LOGGER.debug(f"Loading test pack {test_pack_file}")
+      LOGGER.debug(f"Loading test pack {test_pack_folder}")
 
-      with open(os.path.join(
+      test_pack_path = os.path.join(
         self._root_path,
         TEST_PACKS_DIR,
-        test_pack_file), encoding="utf-8") as f:
+        test_pack_folder
+      )
+
+      with open(os.path.join(
+        test_pack_path,
+        TEST_PACK_CONFIG_FILE), encoding="utf-8") as f:
         test_pack_json = json.load(f)
 
       test_pack: TestPack = TestPack(
         name = test_pack_json["name"],
         tests = test_pack_json["tests"],
-        language = test_pack_json["language"]
+        language = test_pack_json["language"],
+        pack_logic = self._load_logic(
+          os.path.join(test_pack_path, TEST_PACK_LOGIC_FILE),
+          "test_pack_" + test_pack_folder + "_logic"
+          )
       )
 
       self._test_packs.append(test_pack)
+
+  def _load_logic(self, source, module_name=None):
+    """Reads file source and loads it as a module"""
+
+    spec = importlib.util.spec_from_file_location(module_name, source)
+    module = importlib.util.module_from_spec(spec)
+
+    # Add the module to sys.modules
+    sys.modules[module_name] = module
+
+    # Execute the module
+    spec.loader.exec_module(module)
+
+    return module
 
   def _load_test_modules(self):
     """Load network modules from module_config.json."""
