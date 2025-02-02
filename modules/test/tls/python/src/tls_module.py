@@ -495,7 +495,7 @@ class TLSModule(TestModule):
         result_message = f'TLS {tls_version} client connections invalid'
     else:
       result_state = 'Feature Not Detected'
-      result_message = 'No outbound connections were found'
+      result_message = 'No outbound TLS connections were found'
     return result_state, result_message, result_details, result_tags
 
   def _resolve_device_ip(self):
