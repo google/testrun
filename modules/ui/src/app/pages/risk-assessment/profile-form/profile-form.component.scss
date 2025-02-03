@@ -28,12 +28,13 @@
 
   .name-field-label {
     padding-top: 0;
+    margin: 0;
   }
   .field-container {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 8px 16px 8px 24px;
+    padding: 16px 32px;
   }
 
   .profile-form-field {

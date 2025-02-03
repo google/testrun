@@ -152,11 +152,11 @@ describe('RiskAssessmentComponent', () => {
 
       const title = compiled.querySelector('h2.title');
       const titleContent = title?.innerHTML.trim();
-      // const profileForm = compiled.querySelectorAll('app-profile-form');
+      const profileForm = compiled.querySelectorAll('app-profile-form');
 
       expect(title).toBeTruthy();
       expect(titleContent).toContain('Risk Assessment');
-      // expect(profileForm).toBeTruthy();
+      expect(profileForm).toBeTruthy();
     });
   });
 
