@@ -540,7 +540,9 @@ class TestOrchestrator:
 
           # Update test
           test_copy.result = TestResult.ERROR
-          test_copy.description = "Module timeout exceeded. Try increasing the timeout."
+          test_copy.description = (
+            "Module timeout exceeded. Try increasing the timeout."
+          )
           self.get_session().add_test_result(test_copy)
 
         break
