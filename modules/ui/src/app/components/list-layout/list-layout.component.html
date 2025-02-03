@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container *ngIf="entities().length > 0; else empty">
+<ng-container *ngIf="entities().length > 0 || isOpenEntityForm(); else empty">
   <mat-drawer-container class="layout-container">
     <mat-drawer mode="side" opened class="layout-container-left-panel">
       <mat-toolbar class="layout-container-left-panel-toolbar">
@@ -44,7 +44,9 @@ limitations under the License.
           *ngIf="isOpenEntityForm() && !initialEntity()"
           class="fake-list-item">
           <mat-icon svgIcon="draft" class="profile-draft-icon"></mat-icon>
-          New device
+          {{
+            title() === LayoutType.Device ? 'New device' : 'New risk profile'
+          }}
         </div>
         <ng-container *ngFor="let entity of filtered(); index as i">
           <app-list-item

@@ -28,47 +28,6 @@ limitations under the License.
     (addEntity)="openForm()">
   </app-list-layout>
 
-  <!-- TODO to be deleted after Risk Profiles GM3 migration -->
-  <!--  <ng-container *ngIf="isOpenProfileForm; else empty">-->
-  <!--    <mat-drawer-container class="risk-assessment-container">-->
-  <!--      <mat-drawer-content class="risk-assessment-content">-->
-  <!--        <mat-toolbar class="risk-assessment-toolbar">-->
-  <!--          <h2 class="title" tabindex="-1">Risk assessment</h2>-->
-  <!--        </mat-toolbar>-->
-  <!--        <div class="main-content">-->
-  <!--          <app-profile-form-->
-  <!--            [selectedProfile]="vm.selectedProfile"-->
-  <!--            [isCopyProfile]="isCopyProfile"-->
-  <!--            [profiles]="vm.profiles"-->
-  <!--            [profileFormat]="vm.profileFormat"-->
-  <!--            (saveProfile)="saveProfileClicked($event, vm.selectedProfile)"-->
-  <!--            (discard)="discard(vm.selectedProfile)"></app-profile-form>-->
-  <!--        </div>-->
-  <!--      </mat-drawer-content>-->
-  <!--    </mat-drawer-container>-->
-  <!--  </ng-container>-->
-  <!--  <mat-drawer-->
-  <!--    mode="side"-->
-  <!--    opened-->
-  <!--    position="end"-->
-  <!--    class="profiles-drawer"-->
-  <!--    *ngIf="vm.profiles.length">-->
-  <!--    <div class="profiles-drawer-header">-->
-  <!--      <h2 class="profiles-drawer-header-title">Saved profiles</h2>-->
-  <!--    </div>-->
-  <!--    <div class="profiles-drawer-content">-->
-  <!--      <app-profile-item-->
-  <!--        *ngFor="let profile of vm.profiles; let i = index; trackBy: trackByName"-->
-  <!--        [profile]="profile"-->
-  <!--        class="profile-item-{{ i }}"-->
-  <!--        [ngClass]="{ selected: profile.name === vm.selectedProfile?.name }"-->
-  <!--        (deleteButtonClicked)="deleteProfile($event, i, vm.selectedProfile)"-->
-  <!--        (profileClicked)="profileClicked($event)"-->
-  <!--        (copyProfileClicked)="copyProfileAndOpenForm($event)">-->
-  <!--      </app-profile-item>-->
-  <!--    </div>-->
-  <!--  </mat-drawer>-->
-
   <ng-template #content>
     <app-no-entity-selected
       *ngIf="!isOpenProfileForm"

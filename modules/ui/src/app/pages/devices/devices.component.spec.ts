@@ -20,7 +20,7 @@ import {
   tick,
 } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { Device, DeviceAction } from '../../model/device';
+import { Device, DeviceAction, TestModule } from '../../model/device';
 
 import { DevicesComponent } from './devices.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -35,8 +35,9 @@ import { TestrunInitiateFormComponent } from '../testrun/components/testrun-init
 import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { Component } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../../mocks/testrun.mock';
+import { DeviceQualificationFromComponent } from './components/device-qualification-from/device-qualification-from.component';
 
 describe('DevicesComponent', () => {
   let component: DevicesComponent;
@@ -68,12 +69,22 @@ describe('DevicesComponent', () => {
         MatIconTestingModule,
         DevicesComponent,
         FakeProgressComponent,
+        FakeDeviceQualificationComponent,
       ],
       providers: [
         { provide: DevicesStore, useValue: mockDevicesStore },
         { provide: FocusManagerService, useValue: stateServiceMock },
       ],
-    }).compileComponents();
+    })
+      .overrideComponent(DevicesComponent, {
+        remove: {
+          imports: [DeviceQualificationFromComponent],
+        },
+        add: {
+          imports: [FakeDeviceQualificationComponent],
+        },
+      })
+      .compileComponents();
 
     TestBed.overrideProvider(DevicesStore, { useValue: mockDevicesStore });
 
@@ -104,7 +115,6 @@ describe('DevicesComponent', () => {
       });
       mockDevicesStore.devices$ = of([]);
       mockDevicesStore.testModules$ = of([]);
-      mockDevicesStore.isOpenAddDevice$ = of(true);
       fixture.detectChanges();
     });
 
@@ -115,6 +125,7 @@ describe('DevicesComponent', () => {
     });
 
     it('should open form if isOpenAddDevice$ as true', () => {
+      mockDevicesStore.isOpenAddDevice$ = of(true);
       component.ngOnInit();
 
       expect(component.isOpenDeviceForm).toBeTrue();
@@ -263,3 +274,18 @@ describe('DevicesComponent', () => {
   template: '',
 })
 class FakeProgressComponent {}
+
+@Component({
+  selector: 'app-device-qualification-from',
+  template: '<div></div>',
+})
+class FakeDeviceQualificationComponent {
+  initialDevice = input<Device | null>(null);
+  devices = input<Device[]>([]);
+  testModules = input<TestModule[]>([]);
+  isCreate = input<boolean>(true);
+
+  save = output<Device>();
+  delete = output<Device>();
+  cancel = output<void>();
+}

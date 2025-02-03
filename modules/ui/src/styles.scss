@@ -364,12 +364,6 @@ body #main {
     }
   }
 
-  &:has(app-risk-assessment .profiles-drawer) {
-    .app-callout-container {
-      width: calc(100% - #{variables.$profiles-drawer-width});
-    }
-  }
-
   &:has(app-settings) {
     .app-callout-container app-callout:last-of-type .callout-container {
       margin-bottom: 0;
@@ -427,21 +421,6 @@ body #main {
     gap: 4px !important;
     grid-template-columns: minmax(100px, 1fr) repeat(2, 24px) !important;
     overflow: hidden;
-  }
-
-  app-risk-assessment:has(.profiles-drawer) {
-    .risk-assessment-content-empty {
-      width: calc(100% - $profiles-drawer-width-xs) !important;
-    }
-  }
-
-  app-risk-assessment .main-content {
-    width: auto !important;
-    padding: 16px 4px !important;
-  }
-
-  .risk-assessment-content {
-    padding-right: $profiles-drawer-width-xs !important;
   }
 
   app-dynamic-form {
