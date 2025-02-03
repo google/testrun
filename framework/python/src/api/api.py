@@ -43,6 +43,7 @@ DEVICE_TECH_KEY = "technology"
 DEVICE_ADDITIONAL_INFO_KEY = "additional_info"
 
 DEVICES_PATH = "local/devices"
+PROFILES_PATH = "local/risk_profiles"
 
 RESOURCES_PATH = "resources"
 DEVICE_FOLDER_PATH = "devices"
@@ -133,6 +134,9 @@ class Api:
     self._router.add_api_route("/profiles",
                                self.delete_profile,
                                methods=["DELETE"])
+    self._router.add_api_route("/profile/{profile_name}",
+                               self.export_profile,
+                               methods=["POST"])
 
     # Allow all origins to access the API
     origins = ["*"]
@@ -931,6 +935,93 @@ class Api:
           False, "An error occurred whilst deleting that profile")
 
     return self._generate_msg(True, "Successfully deleted that profile")
+
+  async def export_profile(self, request: Request, response: Response,
+                        profile_name):
+
+    LOGGER.debug(f"Received get profile request for {profile_name}")
+
+    device = None
+
+    try:
+      req_raw = (await request.body()).decode("UTF-8")
+      req_json = json.loads(req_raw)
+
+      # Check if device mac_addr has been specified
+      if "mac_addr" in req_json and len(req_json.get("mac_addr")) > 0:
+        device_mac_addr = req_json.get("mac_addr")
+        device = self.get_session().get_device(device_mac_addr)
+
+        # If device is not found return 404
+        if device is None:
+          response.status_code = status.HTTP_404_NOT_FOUND
+          return self._generate_msg(
+              False, "A device with that mac address could not be found")
+
+    except JSONDecodeError:
+      # Device not specified
+      pass
+
+    # Retrieve the profile
+    profile = self._session.get_profile(profile_name)
+
+    # If the profile not found return 404
+    if profile is None:
+      LOGGER.info("Profile not found, returning 404")
+      response.status_code = 404
+      return self._generate_msg(False, "Profile could not be found")
+
+    # If device has been added into the body
+    if device:
+
+      try:
+
+        # Path where the PDF will be saved
+        profile_pdf_path = os.path.join(PROFILES_PATH, f"{profile_name}.pdf")
+
+        # Write the PDF content
+        with open(profile_pdf_path, "wb") as f:
+          f.write(profile.to_pdf(device).getvalue())
+
+        # Return the pdf file
+        if os.path.isfile(profile_pdf_path):
+          return FileResponse(profile_pdf_path)
+        else:
+          LOGGER.info("Profile could not be found, returning 404")
+          response.status_code = 404
+          return self._generate_msg(False, "Profile could not be found")
+
+      # Exceptions if the PDF creation fails
+      except Exception as e:
+        LOGGER.error(f"Error creating the profile PDF: {e}")
+        response.status_code = 500
+        return self._generate_msg(False, "Error retrieving the profile PDF")
+
+    # If device not added into the body
+    else:
+
+      try:
+
+        # Path where the PDF will be saved
+        profile_pdf_path = os.path.join(PROFILES_PATH, f"{profile_name}.pdf")
+
+        # Write the PDF content
+        with open(profile_pdf_path, "wb") as f:
+          f.write(profile.to_pdf_no_device().getvalue())
+
+        # Return the pdf file
+        if os.path.isfile(profile_pdf_path):
+          return FileResponse(profile_pdf_path)
+        else:
+          LOGGER.info("Profile could not be found, returning 404")
+          response.status_code = 404
+          return self._generate_msg(False, "Profile could not be found")
+
+      # Exceptions if the PDF creation fails
+      except Exception as e:
+        LOGGER.error(f"Error creating the profile PDF: {e}")
+        response.status_code = 500
+        return self._generate_msg(False, "Error retrieving the profile PDF")
 
   # Certificates
   def get_certs(self):
