@@ -531,6 +531,20 @@ class TestOrchestrator:
       if time.time() > test_module_timeout:
         LOGGER.error("Module timeout exceeded, killing module: " + module.name)
         module.stop(kill=True)
+
+        # Update the test description for the tests
+        for test in module.tests:
+
+          # Copy the test so we don't alter the source
+          test_copy = copy.deepcopy(test)
+
+          # Update test
+          test_copy.result = TestResult.ERROR
+          test_copy.description = (
+            "Module timeout exceeded. Try increasing the timeout value."
+          )
+          self.get_session().add_test_result(test_copy)
+
         break
 
     # Save all container logs to file
