@@ -16,14 +16,13 @@
 from datetime import datetime
 from weasyprint import HTML
 from io import BytesIO
-from common import util
-from common.statuses import TestrunStatus, TestrunResult, TestResult
+from common import util, logger
+from common.statuses import TestrunStatus, TestrunResult
 import base64
 import os
 from test_orc.test_case import TestCase
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, BaseLoader
 from collections import OrderedDict
-import re
 from bs4 import BeautifulSoup
 
 
@@ -33,6 +32,8 @@ TESTS_FIRST_PAGE = 11
 TESTS_PER_PAGE = 20
 TEST_REPORT_STYLES = 'test_report_styles.css'
 TEST_REPORT_TEMPLATE = 'test_report_template.html'
+
+LOGGER = logger.get_logger('REPORT')
 
 # Locate parent directory
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -66,6 +67,7 @@ class TestReport():
     self._total_tests = total_tests
     self._results = []
     self._module_reports = []
+    self._module_templates = []
     self._report_url = ''
     self._cur_page = 0
 
@@ -74,6 +76,9 @@ class TestReport():
 
   def add_module_reports(self, module_reports):
     self._module_reports = module_reports
+
+  def add_module_templates(self, module_templates):
+    self._module_templates = module_templates
 
   def get_status(self):
     return self._status
@@ -214,7 +219,11 @@ class TestReport():
   def to_html(self):
 
     # Jinja template
-    template_env = Environment(loader=FileSystemLoader(report_resource_dir))
+    template_env = Environment(
+                                loader=FileSystemLoader(report_resource_dir),
+                                trim_blocks=True,
+                                lstrip_blocks=True
+                              )
     template = template_env.get_template(TEST_REPORT_TEMPLATE)
     with open(os.path.join(report_resource_dir,
                            TEST_REPORT_STYLES),
@@ -254,18 +263,22 @@ class TestReport():
     # Obtain optional recommendations
     optional_steps_to_resolve = self._get_optional_steps_to_resolve(json_data)
 
-    module_reports = self._get_module_pages()
+    module_reports = self._module_reports
+    env_module = Environment(loader=BaseLoader())
     pages_num = self._pages_num(json_data)
-    total_pages = pages_num + len(module_reports) + 1
     is_pilot = json_data['device']['test_pack'] == 'Pilot Assessment'
-    if is_pilot and (len(optional_steps_to_resolve) > 0
-        and json_data['device']['test_pack'] == 'Pilot Assessment'
-        ):
-      total_pages += len(optional_steps_to_resolve)
-    elif len(steps_to_resolve) > 0:
-      total_pages += len(steps_to_resolve)
+    module_templates = [
+        env_module.from_string(s).render(
+          json_data=json_data,
+          device=json_data['device'],
+          logo=logo,
+          icon_qualification=icon_qualification,
+          icon_pilot=icon_pilot,
+          version=self._version,
+      ) for s in self._module_templates
+    ]
 
-    return template.render(styles=styles,
+    return self._add_page_counter(template.render(styles=styles,
                            logo=logo,
                            icon_qualification=icon_qualification,
                            icon_pilot=icon_pilot,
@@ -282,11 +295,20 @@ class TestReport():
                            optional_steps_to_resolve=optional_steps_to_resolve,
                            module_reports=module_reports,
                            pages_num=pages_num,
-                           total_pages=total_pages,
                            tests_first_page=TESTS_FIRST_PAGE,
                            tests_per_page=TESTS_PER_PAGE,
                            is_pilot = is_pilot,
-                           )
+                           module_templates=module_templates
+                           ))
+
+  def _add_page_counter(self, html):
+    # Add page nums and total page
+    soup = BeautifulSoup(html, features='html5lib')
+    page_index_divs = soup.find_all('div', class_='page-index')
+    total_pages = len(page_index_divs)
+    for index, div in enumerate(page_index_divs):
+      div.string = f'Page {index+1}/{total_pages}'
+    return str(soup)
 
   def _pages_num(self, json_data):
 
@@ -363,116 +385,3 @@ class TestReport():
       index += page
 
     return splitted
-
-
-  def _split_module_report_to_pages(self, reports):
-    """Split report to pages by headers"""
-    reports_transformed = []
-
-    for report in reports:
-      if len(re.findall('<table class="module-summary"', report)) > 1:
-        indices = []
-        index = report.find('<table class="module-summary"')
-        while index != -1:
-          indices.append(index)
-          index = report.find('<table class="module-summary"', index + 1)
-        pos = 0
-        for i in indices[1:]:
-          page = report[pos:i].replace(
-            '"module-summary"', '"module-summary not-first"'
-            )
-          reports_transformed.append(page)
-          pos = i
-        page = report[pos:].replace(
-          '"module-summary"', '"module-summary not-first"'
-          )
-        reports_transformed.append(page)
-      else:
-        reports_transformed.append(report)
-
-    return reports_transformed
-
-
-  def _get_module_pages(self):
-    content_max_size = 913
-
-    reports = []
-
-    module_reports = self._split_module_report_to_pages(self._module_reports)
-
-    for module_report in module_reports:
-      # ToDo: Figure out how to make this dynamic
-      # Padding values  from CSS
-      # Element sizes from inspection of rendered report
-      h1_padding = 8
-      module_summary_padding = 50 # 25 top and 25 bottom
-
-      # Reset values for each module report
-      page_content = ''
-      content_size = 0
-
-      # Convert module report to list of html tags
-      soup = BeautifulSoup(module_report, features='html5lib')
-      children = list(
-                      filter(lambda el: el.name is not None, soup.body.children)
-                      )
-
-      for index, el in enumerate(children):
-        current_size = 0
-        if el.name == 'h1':
-          current_size += 40 + h1_padding
-        # Calculating the height of paired tables
-        elif (el.name == 'div'
-              and el.get('id') == 'tls_table'):
-          tables = el.findChildren('table', recursive=True)
-          current_size = max(
-                            map(lambda t: len(
-                              t.findChildren('tr', recursive=True)
-                              ), tables)
-                            ) * 42
-        # Table height
-        elif el.name == 'table':
-          if el['class'] == 'module-summary':
-            current_size = 85 + module_summary_padding
-          else:
-            current_size = len(el.findChildren('tr', recursive=True)) * 42
-        # Other elements height
-        else:
-          current_size = 50
-        # Moving tables to the next page.
-        # Completely transfer tables that are within the maximum
-        # allowable size, while splitting those that exceed the page size.
-        if (content_size + current_size) >= content_max_size:
-          str_el = ''
-          if current_size > (content_max_size - 85 - module_summary_padding):
-            rows = el.findChildren('tr', recursive=True)
-            table_header = str(rows.pop(0))
-            table_1 = table_2 = f'''
-                            <table class="module-data" style="width:100%">
-                            <thead>{table_header}</thead><tbody>'''
-            rows_count = (content_max_size - 85 - module_summary_padding) // 42
-            table_1 += ''.join(map(str, rows[:rows_count-1]))
-            table_1 += '</tbody></table>'
-            table_2 += ''.join(map(str, rows[rows_count-1:]))
-            table_2 += '</tbody></table>'
-            page_content += table_1
-            reports.append(page_content)
-            page_content = table_2
-            current_size = len(rows[rows_count:]) * 42
-          else:
-            if el.name == 'table':
-              el_header = children[index-1]
-              if el_header.name.startswith('h'):
-                page_content = ''.join(page_content.rsplit(str(el_header), 1))
-                str_el = str(el_header) + str(el)
-                content_size = current_size + 50
-              else:
-                str_el = str(el)
-                content_size = current_size
-            reports.append(page_content)
-            page_content = str_el
-        else:
-          page_content += str(el)
-          content_size += current_size
-      reports.append(page_content)
-    return reports
