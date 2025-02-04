@@ -116,7 +116,7 @@ const PROGRESS_DATA_RESPONSE = (
     finished,
     tests,
     report,
-    tags: ['VSA', 'Other tag', 'And one more']
+    tags: ['VSA', 'Other tag', 'And one more'],
   } as TestrunStatus;
   if (result) {
     response.result = result;
