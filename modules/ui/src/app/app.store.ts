@@ -53,7 +53,7 @@ import {
   setTestModules,
   updateAdapters,
 } from './store/actions';
-import { StatusOfTestrun, TestrunStatus } from './model/testrun-status';
+import { ResultOfTestrun, TestrunStatus } from './model/testrun-status';
 import {
   Adapters,
   SettingMissedError,
@@ -333,7 +333,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
       filter(([isTestingComplete]) => isTestingComplete === true),
       filter(
         ([, testrunStatus]) =>
-          testrunStatus?.status === StatusOfTestrun.Compliant &&
+          testrunStatus?.result === ResultOfTestrun.Compliant &&
           testrunStatus?.device.test_pack === TestingType.Pilot
       ),
       tap(() => {
