@@ -92,7 +92,10 @@ describe('ProgressStatusCardComponent', () => {
             'completed-success': true,
           };
 
-          const result = component.getClass(testCase, ResultOfTestrun.Compliant);
+          const result = component.getClass(
+            testCase,
+            ResultOfTestrun.Compliant
+          );
 
           expect(result).toEqual(expectedResult);
         });
@@ -105,7 +108,10 @@ describe('ProgressStatusCardComponent', () => {
             'completed-failed': true,
           };
 
-          const result = component.getClass(testCase, ResultOfTestrun.NonCompliant);
+          const result = component.getClass(
+            testCase,
+            ResultOfTestrun.NonCompliant
+          );
 
           expect(result).toEqual(expectedResult);
         });

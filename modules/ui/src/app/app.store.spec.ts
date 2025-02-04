@@ -53,7 +53,7 @@ import { FocusManagerService } from './services/focus-manager.service';
 import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { MOCK_ADAPTERS } from './mocks/settings.mock';
 import { TestingType } from './model/device';
-import {ResultOfTestrun, StatusOfTestrun} from './model/testrun-status';
+import { ResultOfTestrun, StatusOfTestrun } from './model/testrun-status';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
