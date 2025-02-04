@@ -16,12 +16,13 @@
 import {
   Component,
   computed,
+  inject,
   input,
   output,
   signal,
   TemplateRef,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -30,6 +31,7 @@ import { ListItemComponent } from '../list-item/list-item.component';
 import { EntityAction, EntityActionResult } from '../../model/entity-action';
 import { Device } from '../../model/device';
 import { LayoutType } from '../../model/layout-type';
+import { Profile } from '../../model/profile';
 
 @Component({
   selector: 'app-list-layout',
@@ -41,10 +43,12 @@ import { LayoutType } from '../../model/layout-type';
     MatIconModule,
     ListItemComponent,
   ],
+  providers: [DatePipe],
   templateUrl: './list-layout.component.html',
   styleUrl: './list-layout.component.scss',
 })
 export class ListLayoutComponent<T extends object> {
+  private datePipe = inject(DatePipe);
   readonly LayoutType = LayoutType;
   title = input<string>('');
   addEntityText = input<string>('');
@@ -96,14 +100,27 @@ export class ListLayoutComponent<T extends object> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getObjectForFilter(item: any) {
     if (this.title() === LayoutType.Device) {
-      const newObj1 = item as Device;
+      const device = item as Device;
       return {
-        model: newObj1.model,
-        manufacturer: newObj1.manufacturer,
+        model: device.model,
+        manufacturer: device.manufacturer,
+      };
+    } else if (this.title() === LayoutType.Profile) {
+      const profile = item as Profile;
+      return {
+        name: profile.name,
+        risk: profile.risk,
+        created: this.getFormattedDateString(profile.created),
       };
     } else {
       return item;
     }
+  }
+
+  getFormattedDateString(createdDate: string | undefined) {
+    return createdDate
+      ? this.datePipe.transform(createdDate, 'dd MMM yyyy')
+      : '';
   }
 
   onMenuItemClick(action: string, entity: T, index: number) {
