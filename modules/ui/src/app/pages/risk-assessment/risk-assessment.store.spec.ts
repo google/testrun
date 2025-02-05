@@ -120,7 +120,12 @@ describe('RiskAssessmentStore', () => {
       it('should dispatch setRiskProfiles', () => {
         mockService.deleteProfile.and.returnValue(of(true));
 
-        riskAssessmentStore.deleteProfile(PROFILE_MOCK.name);
+        riskAssessmentStore.deleteProfile({
+          name: PROFILE_MOCK.name,
+          onDelete: (idx: number) => {
+            return idx;
+          },
+        });
 
         expect(store.dispatch).toHaveBeenCalledWith(
           setRiskProfiles({ riskProfiles: [PROFILE_MOCK_2] })

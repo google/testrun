@@ -155,6 +155,34 @@ export const RENAME_PROFILE_MOCK = {
 export const COPY_PROFILE_MOCK: Profile = {
   name: 'Copy of Primary profile',
   status: ProfileStatus.VALID,
+  created: '2024-05-23 12:38:26',
+  questions: [
+    {
+      question: 'What is the email of the device owner(s)?',
+      answer: 'boddey@google.com, cmeredith@google.com',
+    },
+    {
+      question: 'What type of device do you need reviewed?',
+      answer: 'IoT Sensor',
+    },
+    {
+      question: 'Are any of the following statements true about your device?',
+      answer: 'First',
+    },
+    {
+      question: 'What features does the device have?',
+      answer: [0, 1, 2],
+    },
+    {
+      question: 'Comments',
+      answer: 'Yes',
+    },
+  ],
+};
+
+export const DRAFT_COPY_PROFILE_MOCK: Profile = {
+  name: 'Copy of Primary profile',
+  status: ProfileStatus.DRAFT,
   questions: [
     {
       question: 'What is the email of the device owner(s)?',

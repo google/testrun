@@ -27,18 +27,19 @@ import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { MatSidenavModule } from '@angular/material/sidenav';
 import {
-  COPY_PROFILE_MOCK,
+  DRAFT_COPY_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
   NEW_PROFILE_MOCK_DRAFT,
   PROFILE_MOCK,
 } from '../../mocks/profile.mock';
-import { of } from 'rxjs';
+import { of, Subscription } from 'rxjs';
 import { Component, Input } from '@angular/core';
 import { Profile, ProfileAction, ProfileFormat } from '../../model/profile';
 import { MatDialogRef } from '@angular/material/dialog';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { Observable } from 'rxjs/internal/Observable';
 
 describe('RiskAssessmentComponent', () => {
   let component: RiskAssessmentComponent;
@@ -65,6 +66,7 @@ describe('RiskAssessmentComponent', () => {
       'setFocusOnCreateButton',
       'setFocusOnSelectedProfile',
       'setFocusOnProfileForm',
+      'updateProfiles',
     ]);
 
     await TestBed.configureTestingModule({
@@ -187,7 +189,7 @@ describe('RiskAssessmentComponent', () => {
         } as MatDialogRef<typeof SimpleDialogComponent>);
         tick();
 
-        component.deleteProfile(PROFILE_MOCK.name, 0, null);
+        component.deleteProfile(PROFILE_MOCK);
         tick();
 
         expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
@@ -207,9 +209,22 @@ describe('RiskAssessmentComponent', () => {
         spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(true),
         } as MatDialogRef<typeof SimpleDialogComponent>);
+
+        mockRiskAssessmentStore.deleteProfile.and.callFake(
+          (
+            observableOrValue:
+              | { name: string; onDelete: (idx: number) => void }
+              | Observable<{ name: string; onDelete: (idx: number) => void }>
+          ) => {
+            // @ts-expect-error onDelete exist in object
+            observableOrValue?.onDelete(1);
+            return new Subscription();
+          }
+        );
+
         tick();
 
-        component.deleteProfile(PROFILE_MOCK.name, 0, PROFILE_MOCK);
+        component.deleteProfile(PROFILE_MOCK);
         tick();
 
         expect(
@@ -243,7 +258,7 @@ describe('RiskAssessmentComponent', () => {
     describe('#getCopyOfProfile', () => {
       it('should open the form with copy of profile', () => {
         const copy = component.getCopyOfProfile(PROFILE_MOCK);
-        expect(copy).toEqual(COPY_PROFILE_MOCK);
+        expect(copy).toEqual(DRAFT_COPY_PROFILE_MOCK);
       });
     });
 
@@ -259,10 +274,13 @@ describe('RiskAssessmentComponent', () => {
     it('#copyProfileAndOpenForm should call openForm with copy of profile', fakeAsync(() => {
       spyOn(component, 'openForm');
 
-      component.copyProfileAndOpenForm(PROFILE_MOCK);
+      component.copyProfileAndOpenForm(PROFILE_MOCK, [
+        PROFILE_MOCK,
+        PROFILE_MOCK,
+      ]);
       tick();
 
-      expect(component.openForm).toHaveBeenCalledWith(COPY_PROFILE_MOCK);
+      expect(component.openForm).toHaveBeenCalledWith(DRAFT_COPY_PROFILE_MOCK);
     }));
 
     describe('#saveProfile', () => {
