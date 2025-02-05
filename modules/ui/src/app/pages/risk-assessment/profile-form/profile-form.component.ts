@@ -41,7 +41,6 @@ import {
   ValidatorFn,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
-import { DeviceValidators } from '../../devices/components/device-form/device.validators';
 import {
   Profile,
   ProfileFormat,
@@ -74,7 +73,6 @@ import { CdkTrapFocus } from '@angular/cdk/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileFormComponent implements OnInit, AfterViewInit {
-  private deviceValidators = inject(DeviceValidators);
   private profileValidators = inject(ProfileValidators);
   private fb = inject(FormBuilder);
 
@@ -99,6 +97,9 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
   @Input()
   set selectedProfile(profile: Profile | null) {
+    if (this.isCopyProfile && this.profile) {
+      this.deleteCopy.emit(this.profile);
+    }
     this.profile = profile;
     if (profile && this.nameControl) {
       this.updateNameValidator();
@@ -110,6 +111,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   @Output() saveProfile = new EventEmitter<Profile>();
+  @Output() deleteCopy = new EventEmitter<Profile>();
   @Output() discard = new EventEmitter();
   ngOnInit() {
     this.profileForm = this.createProfileForm();

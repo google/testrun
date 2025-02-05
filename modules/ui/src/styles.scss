@@ -281,6 +281,7 @@ body {
   max-width: 100%;
   border-radius: 200px;
   padding: 0 7px;
+  white-space: nowrap;
   &.red {
     background: colors.$error-container;
     color: colors.$on-error-container;

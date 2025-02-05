@@ -19,6 +19,7 @@ import { ProfileFormComponent } from './profile-form.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   COPY_PROFILE_MOCK,
+  DRAFT_COPY_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
   NEW_PROFILE_MOCK_DRAFT,
   OUTDATED_DRAFT_PROFILE_MOCK,
@@ -312,7 +313,7 @@ describe('ProfileFormComponent', () => {
       });
 
       it('should have an error when uses the name of copy profile', () => {
-        component.selectedProfile = COPY_PROFILE_MOCK;
+        component.selectedProfile = DRAFT_COPY_PROFILE_MOCK;
         component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, COPY_PROFILE_MOCK];
 
         expect(

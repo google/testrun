@@ -64,14 +64,19 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     })
   );
 
-  deleteProfile = this.effect<string>(trigger$ => {
+  deleteProfile = this.effect<{
+    name: string;
+    onDelete: (idx: number) => void;
+  }>(trigger$ => {
     return trigger$.pipe(
-      exhaustMap((name: string) => {
+      exhaustMap(({ name, onDelete }) => {
         return this.testRunService.deleteProfile(name).pipe(
           withLatestFrom(this.profiles$),
           tap(([remove, current]) => {
             if (remove) {
+              const idx = current.findIndex(item => name === item.name);
               this.removeProfile(name, current);
+              onDelete(idx);
             }
           })
         );
@@ -171,13 +176,13 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  private removeProfile(name: string, current: Profile[]): void {
-    const profiles = current.filter(profile => profile.name !== name);
-    this.updateProfiles(profiles);
+  updateProfiles(riskProfiles: Profile[]): void {
+    this.store.dispatch(setRiskProfiles({ riskProfiles }));
   }
 
-  private updateProfiles(riskProfiles: Profile[]): void {
-    this.store.dispatch(setRiskProfiles({ riskProfiles }));
+  removeProfile(name: string, current: Profile[]): void {
+    const profiles = current.filter(profile => profile.name !== name);
+    this.updateProfiles(profiles);
   }
 
   constructor() {
