@@ -164,10 +164,12 @@ export class TestRunService {
     return {
       green:
         result === StatusOfTestResult.Compliant ||
+        result === StatusOfTestrun.Proceed ||
         result === StatusOfTestResult.CompliantLimited ||
         result === StatusOfTestResult.CompliantHigh,
       red:
         result === StatusOfTestResult.NonCompliant ||
+        result === StatusOfTestrun.DoNotProceed ||
         result === StatusOfTestResult.Error,
       blue:
         result === StatusOfTestResult.SmartReady ||
