@@ -31,6 +31,7 @@ export interface TestrunStatus {
 export interface HistoryTestrun extends TestrunStatus {
   deviceFirmware: string;
   deviceInfo: string;
+  testResult: string;
   program: string;
   duration: string;
 }
