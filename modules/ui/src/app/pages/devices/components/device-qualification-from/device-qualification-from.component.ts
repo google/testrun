@@ -132,12 +132,7 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
     } else if (this.device != this.initialDevice()) {
       // prevent select new device before user confirmation
       this.devicesStore.selectDevice(this.device);
-      this.openCloseDialog().subscribe(close => {
-        if (close) {
-          this.changeDevice = true;
-          this.devicesStore.selectDevice(this.initialDevice());
-        }
-      });
+      this.openCloseDialogToChangeDevice(this.initialDevice());
     }
   });
 
@@ -462,6 +457,14 @@ export class DeviceQualificationFromComponent implements OnInit, AfterViewInit {
     });
   }
 
+  private openCloseDialogToChangeDevice(device: Device | null) {
+    this.openCloseDialog().subscribe(close => {
+      if (close) {
+        this.changeDevice = true;
+        this.devicesStore.selectDevice(device);
+      }
+    });
+  }
   private openCloseDialog() {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Discard the Device changes',
