@@ -228,7 +228,7 @@ describe('TestRunService', () => {
 
       const reports = [
         {
-          status: 'Completed',
+          status: 'Complete',
           device: device,
           report: 'https://api.testrun.io/report.pdf',
           started: '2023-06-22T10:11:00.123Z',
@@ -375,8 +375,7 @@ describe('TestRunService', () => {
     const resultsNotInProgress = [
       StatusOfTestrun.Idle,
       StatusOfTestrun.Cancelled,
-      StatusOfTestrun.Compliant,
-      StatusOfTestrun.NonCompliant,
+      StatusOfTestrun.Complete,
     ];
 
     resultsInProgress.forEach(testCase => {

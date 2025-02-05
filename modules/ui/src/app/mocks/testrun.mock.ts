@@ -16,6 +16,7 @@
 import {
   IResult,
   RequiredResult,
+  ResultOfTestrun,
   StatusOfTestrun,
   TestrunStatus,
   TestsData,
@@ -95,12 +96,13 @@ export const TEST_DATA: TestsData = {
 };
 
 const PROGRESS_DATA_RESPONSE = (
-  status: string,
+  status: StatusOfTestrun,
   finished: string | null,
   tests: TestsData | IResult[],
-  report: string = ''
+  report: string = '',
+  result?: ResultOfTestrun
 ) => {
-  return {
+  const response = {
     status,
     mac_addr: '01:02:03:04:05:06',
     device: {
@@ -115,7 +117,11 @@ const PROGRESS_DATA_RESPONSE = (
     tests,
     report,
     tags: ['VSA', 'Other tag', 'And one more'],
-  };
+  } as TestrunStatus;
+  if (result) {
+    response.result = result;
+  }
+  return response;
 };
 
 export const MOCK_PROGRESS_DATA_CANCELLING: TestrunStatus =
@@ -126,18 +132,20 @@ export const MOCK_PROGRESS_DATA_IN_PROGRESS_EMPTY: TestrunStatus =
   PROGRESS_DATA_RESPONSE(StatusOfTestrun.InProgress, null, []);
 export const MOCK_PROGRESS_DATA_COMPLIANT: TestrunStatus =
   PROGRESS_DATA_RESPONSE(
-    StatusOfTestrun.Compliant,
+    StatusOfTestrun.Complete,
     '2023-06-22T09:20:00.123Z',
     TEST_DATA_RESULT,
-    'https://api.testrun.io/report.pdf'
+    'https://api.testrun.io/report.pdf',
+    ResultOfTestrun.Compliant
   );
 
 export const MOCK_PROGRESS_DATA_NON_COMPLIANT: TestrunStatus =
   PROGRESS_DATA_RESPONSE(
-    StatusOfTestrun.NonCompliant,
+    StatusOfTestrun.Complete,
     '2023-06-22T09:20:00.123Z',
     TEST_DATA_RESULT,
-    'https://api.testrun.io/report.pdf'
+    'https://api.testrun.io/report.pdf',
+    ResultOfTestrun.NonCompliant
   );
 
 export const MOCK_PROGRESS_DATA_CANCELLED: TestrunStatus =
