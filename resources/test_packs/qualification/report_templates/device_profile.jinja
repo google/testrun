@@ -1,0 +1,26 @@
+{% macro insert(device_profile) %}
+<h4 class="page-heading">Device profile</h4>
+<div class="device-profile-content">
+  <div class="device-profile-head">
+    <div class="device-profile-head-question">Question</div>
+    <div class="device-profile-head-answer">Answer</div>
+  </div>
+  {% for question in device_profile %}
+  <div class="device-profile-row">
+    <div class="device-profile-number">{{loop.index}}.</div>
+    <div class="device-profile-question">{{ question['question'] }}</div>
+    <div class="device-profile-answer">
+      {% if question['answer'] is string %}
+        {{ question['answer'] }}
+      {% elif question['answer'] is sequence %}
+        <ul style="padding-left: 20px">
+          {% for answer in question['answer'] %}
+            <li>{{ answer }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endmacro %}

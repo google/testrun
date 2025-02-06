@@ -35,3 +35,22 @@ def calculate_status(result, json): # pylint: disable=unused-argument
     status = TestrunStatus.COMPLETE
 
   return status
+
+
+def get_steps_to_resolve(json_data):
+  steps = []
+
+  # Collect all tests with recommendations
+  for test in json_data["tests"]["results"]:
+    if "recommendations" in test:
+      steps.append(test)
+
+  if len(steps) < 4:
+    return [steps]
+  splitted = [steps[:4]]
+  index = 4
+  while index < len(steps):
+    splitted.append(steps[index:index + 4])
+    index += 4
+
+  return splitted

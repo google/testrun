@@ -18,6 +18,7 @@ from weasyprint import HTML
 from io import BytesIO
 from common import util, logger
 from common.statuses import TestrunStatus, TestrunResult
+from test_orc import test_pack
 import base64
 import os
 from test_orc.test_case import TestCase
@@ -31,7 +32,10 @@ RESOURCES_DIR = 'resources/report'
 TESTS_FIRST_PAGE = 11
 TESTS_PER_PAGE = 20
 TEST_REPORT_STYLES = 'test_report_styles.css'
-TEST_REPORT_TEMPLATE = 'test_report_template.html'
+TEMPLATES_FOLDER = 'report_templates'
+TEST_REPORT_TEMPLATE = 'report_template.html'
+ICON = 'icon.png'
+
 
 LOGGER = logger.get_logger('REPORT')
 
@@ -218,13 +222,22 @@ class TestReport():
 
   def to_html(self):
 
+    # Obtain test pack
+    current_test_pack = test_pack.TestPack.get_test_pack(
+      self._device['test_pack'])
+    template_folder = os.path.join(current_test_pack.path,
+                                  TEMPLATES_FOLDER)
     # Jinja template
     template_env = Environment(
-                                loader=FileSystemLoader(report_resource_dir),
+                                loader=FileSystemLoader(
+                                              template_folder
+                                              ),
                                 trim_blocks=True,
                                 lstrip_blocks=True
                               )
     template = template_env.get_template(TEST_REPORT_TEMPLATE)
+
+    # Report styles
     with open(os.path.join(report_resource_dir,
                            TEST_REPORT_STYLES),
                            'r',
@@ -236,13 +249,11 @@ class TestReport():
     with open(test_run_img_file, 'rb') as f:
       logo = base64.b64encode(f.read()).decode('utf-8')
 
-    json_data=self.to_json()
+    # Icon
+    with open(os.path.join(template_folder, ICON), 'rb') as f:
+      icon = base64.b64encode(f.read()).decode('utf-8')
 
-    # Icons
-    with open(qualification_icon, 'rb') as f:
-      icon_qualification = base64.b64encode(f.read()).decode('utf-8')
-    with open(pilot_icon, 'rb') as f:
-      icon_pilot = base64.b64encode(f.read()).decode('utf-8')
+    json_data=self.to_json()
 
     # Convert the timestamp strings to datetime objects
     start_time = datetime.strptime(json_data['started'], '%Y-%m-%d %H:%M:%S')
@@ -258,30 +269,27 @@ class TestReport():
         successful_tests += 1
 
     # Obtain the steps to resolve
-    steps_to_resolve = self._get_steps_to_resolve(json_data)
+    logic = current_test_pack.get_logic()
+    steps_to_resolve_ = logic.get_steps_to_resolve(json_data)
 
-    # Obtain optional recommendations
-    optional_steps_to_resolve = self._get_optional_steps_to_resolve(json_data)
+    LOGGER.debug(steps_to_resolve_)
 
     module_reports = self._module_reports
     env_module = Environment(loader=BaseLoader())
     pages_num = self._pages_num(json_data)
-    is_pilot = json_data['device']['test_pack'] == 'Pilot Assessment'
     module_templates = [
         env_module.from_string(s).render(
-          json_data=json_data,
+          name=current_test_pack.name,
           device=json_data['device'],
           logo=logo,
-          icon_qualification=icon_qualification,
-          icon_pilot=icon_pilot,
+          icon=icon,
           version=self._version,
       ) for s in self._module_templates
     ]
 
     return self._add_page_counter(template.render(styles=styles,
                            logo=logo,
-                           icon_qualification=icon_qualification,
-                           icon_pilot=icon_pilot,
+                           icon=icon,
                            version=self._version,
                            json_data=json_data,
                            device=json_data['device'],
@@ -291,13 +299,11 @@ class TestReport():
                            successful_tests=successful_tests,
                            total_tests=self._total_tests,
                            test_results=json_data['tests']['results'],
-                           steps_to_resolve=steps_to_resolve,
-                           optional_steps_to_resolve=optional_steps_to_resolve,
+                           steps_to_resolve=steps_to_resolve_,
                            module_reports=module_reports,
                            pages_num=pages_num,
                            tests_first_page=TESTS_FIRST_PAGE,
                            tests_per_page=TESTS_PER_PAGE,
-                           is_pilot = is_pilot,
                            module_templates=module_templates
                            ))
 
@@ -348,40 +354,3 @@ class TestReport():
                                           reverse=True)
                                   )
     return sorted_modules
-
-  def _get_steps_to_resolve(self, json_data):
-    tests_with_recommendations = []
-
-    # Collect all tests with recommendations
-    for test in json_data['tests']['results']:
-      if 'recommendations' in test:
-        tests_with_recommendations.append(test)
-
-    return self._split_steps_to_resolve_to_pages(
-        tests_with_recommendations, 4, 4)
-
-  def _get_optional_steps_to_resolve(self, json_data):
-    tests_with_recommendations = []
-
-    # Collect all tests with recommendations
-    for test in json_data['tests']['results']:
-      if 'optional_recommendations' in test:
-        tests_with_recommendations.append(test)
-
-    return self._split_steps_to_resolve_to_pages(
-        tests_with_recommendations, 3, 4)
-
-  def _split_steps_to_resolve_to_pages(self, steps, start_page=4, page=4):
-    # Split steps to resolve to pages.
-    # First <start_page> steps, <page> steps on other pages.
-    if len(steps) < start_page:
-      return [steps]
-
-    splitted = [steps[:3]]
-
-    index = start_page
-    while index < len(steps):
-      splitted.append(steps[index:index + page])
-      index += page
-
-    return splitted
