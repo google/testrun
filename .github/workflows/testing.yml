@@ -69,10 +69,6 @@ jobs:
       - name: Install Testrun
         shell: bash {0}
         run: cmd/install -l
-      - name: Build Testrun
-        shell: bash {0}
-        run: cmd/build
-        timeout-minutes: 10
       - name: Run tests for conn module
         shell: bash {0}
         run: bash testing/unit/run_test_module.sh conn captures ethtool output
