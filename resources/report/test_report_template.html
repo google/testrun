@@ -192,7 +192,6 @@
   {# Pilot steps to resolve#}
   {% if is_pilot and optional_steps_to_resolve|length > 0 %}
       {% for step in optional_steps_to_resolve%}
-        {% set page_index.value = page_index.value + 1 %}   
       <div class="page">
         {{ header_macros.header(False, "Testrun report", json_data, device, logo, icon_qualification, icon_pilot)}}
         {% if loop.first %}
