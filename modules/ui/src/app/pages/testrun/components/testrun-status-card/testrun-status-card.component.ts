@@ -16,6 +16,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
   IResult,
+  ResultOfTestrun,
   StatusOfTestResult,
   StatusOfTestrun,
   TestrunStatus,
@@ -35,7 +36,10 @@ export class TestrunStatusCardComponent {
   public readonly StatusOfTestrun = StatusOfTestrun;
   public readonly TestingType = TestingType;
 
-  public getClass(status: string): {
+  public getClass(
+    status: StatusOfTestrun,
+    result?: ResultOfTestrun
+  ): {
     progress: boolean;
     'completed-success': boolean;
     'completed-failed': boolean;
@@ -44,15 +48,17 @@ export class TestrunStatusCardComponent {
     return {
       progress: this.isProgressStatus(status),
       'completed-success':
-        status === StatusOfTestrun.Compliant ||
-        status === StatusOfTestrun.Proceed ||
+        (result === ResultOfTestrun.Compliant &&
+          status === StatusOfTestrun.Complete) ||
         status === StatusOfTestrun.CompliantLimited ||
         status === StatusOfTestrun.CompliantHigh ||
-        status === StatusOfTestrun.SmartReady,
+        status === StatusOfTestrun.SmartReady ||
+        status === StatusOfTestrun.Proceed,
       'completed-failed':
-        status === StatusOfTestrun.NonCompliant ||
-        status === StatusOfTestrun.DoNotProceed ||
-        status === StatusOfTestrun.Error,
+        (result === ResultOfTestrun.NonCompliant &&
+          status === StatusOfTestrun.Complete) ||
+        status === StatusOfTestrun.Error ||
+        status === StatusOfTestrun.DoNotProceed,
       canceled:
         status === StatusOfTestrun.Cancelled ||
         status === StatusOfTestrun.Cancelling,
@@ -90,6 +96,17 @@ export class TestrunStatusCardComponent {
     } else {
       return data.status;
     }
+  }
+
+  public getTestResult(data: TestrunStatus): string {
+    if (
+      data.status === StatusOfTestrun.Complete ||
+      data.status === StatusOfTestrun.Proceed ||
+      data.status === StatusOfTestrun.DoNotProceed
+    ) {
+      return data.result!;
+    }
+    return data.status;
   }
 
   private isProgressStatus(status: string): boolean {
