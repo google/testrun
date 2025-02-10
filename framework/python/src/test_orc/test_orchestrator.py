@@ -203,8 +203,8 @@ class TestOrchestrator:
     self.get_session().set_description(message)
 
     # Set result and status at the end
-    self.get_session().set_status(report.get_status())
     self.get_session().set_result(report.get_result())
+    self.get_session().set_status(report.get_status())
 
     # Move testing output from runtime to local device folder
     self._timestamp_results(device)
