@@ -202,6 +202,10 @@ class TestOrchestrator:
 
     self.get_session().set_description(message)
 
+    # Set result and status at the end
+    self.get_session().set_status(report.get_status())
+    self.get_session().set_result(report.get_result())
+
     # Move testing output from runtime to local device folder
     self._timestamp_results(device)
 
@@ -252,14 +256,12 @@ class TestOrchestrator:
     result = test_pack.get_logic().calculate_result(
       self.get_session().get_test_results())
     report["result"] = result
-    self.get_session().set_result(result)
 
     # Update the status
     status = test_pack.get_logic().calculate_status(
       result,
       self.get_session().get_test_results())
     report["status"] = status
-    self.get_session().set_status(status)
 
     report["tests"] = self.get_session().get_report_tests()
     report["report"] = (
