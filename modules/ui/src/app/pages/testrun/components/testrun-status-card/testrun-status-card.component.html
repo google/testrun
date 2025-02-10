@@ -131,12 +131,12 @@ limitations under the License.
       <span>{{ getTestResult(data) }}</span>
     </p>
   </div>
-  <div *ngIf="data.device.test_pack === TestingType.Pilot">
-    <p
-      class="progress-card-result-title"
-      *ngIf="data.device.test_pack === TestingType.Pilot">
-      Pilot Recommendation
-    </p>
+  <div
+    *ngIf="
+      data.status === StatusOfTestrun.Proceed ||
+      data.status === StatusOfTestrun.DoNotProceed
+    ">
+    <p class="progress-card-result-title">Preliminary Pilot Recommendation</p>
     <p class="progress-card-result-text">
       <span>{{ data.status }}</span>
     </p>
