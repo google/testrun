@@ -20,6 +20,7 @@ import {
   OnInit,
   ViewContainerRef,
   inject,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
@@ -85,6 +86,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   readonly ProfileStatus = ProfileStatus;
   private store = inject(RiskAssessmentStore);
   private liveAnnouncer = inject(LiveAnnouncer);
+  private cd = inject(ChangeDetectorRef);
   private destroy$: Subject<boolean> = new Subject<boolean>();
   dialog = inject(MatDialog);
   element = inject(ViewContainerRef);
@@ -141,6 +143,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       autoFocus: 'dialog',
       hasBackdrop: true,
       disableClose: true,
+      panelClass: ['simple-dialog', 'delete-dialog'],
     });
 
     dialogRef
@@ -186,16 +189,45 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
 
   discard(selectedProfile: Profile | null) {
     this.liveAnnouncer.clear();
-    this.isOpenProfileForm = false;
-    this.isCopyProfile = false;
-    if (selectedProfile) {
-      timer(100).subscribe(() => {
-        this.store.setFocusOnSelectedProfile();
-        this.store.updateSelectedProfile(null);
+    this.openCloseDialog(selectedProfile);
+  }
+
+  copyProfile(profile: Profile, profiles: Profile[]) {
+    this.copyProfileAndOpenForm(profile, profiles);
+  }
+
+  private openCloseDialog(selectedProfile: Profile | null) {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
+      ariaLabel: 'Discard the Risk Assessment changes',
+      data: {
+        title: 'Discard changes?',
+        content: `You have unsaved changes that would be permanently lost.`,
+        confirmName: 'Discard',
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: ['simple-dialog', 'discard-dialog'],
+    });
+
+    dialogRef
+      ?.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(close => {
+        if (close) {
+          if (selectedProfile) {
+            timer(100).subscribe(() => {
+              this.store.setFocusOnSelectedProfile();
+            });
+          } else {
+            this.store.setFocusOnCreateButton();
+          }
+          this.isCopyProfile = false;
+          this.isOpenProfileForm = false;
+          this.store.updateSelectedProfile(null);
+          this.cd.markForCheck();
+        }
       });
-    } else {
-      this.store.setFocusOnCreateButton();
-    }
   }
 
   deleteCopy(copyOfProfile: Profile, profiles: Profile[]) {
@@ -296,9 +328,9 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
         } else {
           focusElement();
         }
+        this.store.updateSelectedProfile(profile);
       },
     });
-    this.isOpenProfileForm = false;
     this.isCopyProfile = false;
   }
 
@@ -332,7 +364,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
 
   private openSuccessDialog(profile: Profile, focusElement: () => void): void {
     const dialogRef = this.dialog.open(SuccessDialogComponent, {
-      ariaLabel: 'Risk Assessment Profile Completed',
+      ariaLabel: 'Risk assessment completed',
       data: {
         profile,
       },
