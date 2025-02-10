@@ -1,0 +1,52 @@
+{% macro insert(json_data, device, modules, duration) %}
+<div class="summary-content">
+  <div class="device-information">
+    <div style="padding-right:0.1in;">
+      <div class="summary-item-label"><h4>Manufacturer</h4></div>
+      <div class="summary-item-value">{{ device['manufacturer']}}</div>
+      <div class="summary-item-space"></div>
+      <div class="summary-item-label"><h4>Model</h4></div>
+      <div class="summary-item-value">{{ device['model'] }}</div>
+      <div class="summary-item-space"></div>
+      <div class="summary-item-label"><h4>Firmware</h4></div>
+      <div class="summary-item-value">{{ device['firmware']}}</div>
+      <div class="summary-item-space"></div>
+      <div class="summary-item-label"><h4>MAC Address</h4></div>
+      <div class="summary-item-value">{{ device['mac_addr'] }}</div>
+    </div>
+  </div>
+    <div class="summary-device-modules">
+      <div class="summary-item-label" style="margin-bottom:10px;">
+        <h4>Device Configuration</h4>
+      </div>
+      {% for module, enabled in modules.items() %}
+      <div class="summary-device-module-label">
+        {% if enabled %}
+          <span style="color:#34a853">✔ </span>
+        {% else %}
+          <span style="color:#ea4335">✖ </span>
+        {% endif %}
+        {{ module }}
+      </div>
+      {% endfor %}
+    </div>
+    {% if test_status == 'Compliant' %}
+      <div class ="summary-color-box summary-box-compliant">
+    {% else %}
+      <div class ="summary-color-box summary-box-non-compliant">
+    {% endif %}
+      <div class="summary-box-label">Test Status</div>
+      <div class="summary-box-value">{{ json_data['status'] }}</div>
+      <div class="summary-box-label">Test Result</div>
+      <div style="color: white; font-size:24px; font-weight: 700;" class="summary-box-value">{{ json_data['result'] }}</div>
+      <div class="summary-box-label">Started</div>
+      <div class="summary-box-value">{{ json_data['started']}}</div>
+      <div class="summary-box-label">Duration</div>
+      <div class="summary-box-value">
+        {% if duration.seconds//3600 > 0 %}{{ duration.seconds//3600 }}h {% endif %}
+        {% if duration.seconds//60 > 0 %}{{ duration.seconds//60 }}m {% endif %}
+        {{ duration.seconds%60 }}s
+      </div>
+  </div>
+</div>
+{% endmacro %}

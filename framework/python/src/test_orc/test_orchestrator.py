@@ -18,9 +18,7 @@ import json
 import re
 import time
 import shutil
-import sys
 import docker
-import importlib.util
 from datetime import datetime
 from common import logger, util
 from common.testreport import TestReport
@@ -665,46 +663,7 @@ class TestOrchestrator:
 
   def _load_test_packs(self):
 
-    for test_pack_folder in os.listdir(TEST_PACKS_DIR):
-
-      LOGGER.debug(f"Loading test pack {test_pack_folder}")
-
-      test_pack_path = os.path.join(
-        self._root_path,
-        TEST_PACKS_DIR,
-        test_pack_folder
-      )
-
-      with open(os.path.join(
-        test_pack_path,
-        TEST_PACK_CONFIG_FILE), encoding="utf-8") as f:
-        test_pack_json = json.load(f)
-
-      test_pack: TestPack = TestPack(
-        name = test_pack_json["name"],
-        tests = test_pack_json["tests"],
-        language = test_pack_json["language"],
-        pack_logic = self._load_logic(
-          os.path.join(test_pack_path, TEST_PACK_LOGIC_FILE),
-          "test_pack_" + test_pack_folder + "_logic"
-          )
-      )
-
-      self._test_packs.append(test_pack)
-
-  def _load_logic(self, source, module_name=None):
-    """Reads file source and loads it as a module"""
-
-    spec = importlib.util.spec_from_file_location(module_name, source)
-    module = importlib.util.module_from_spec(spec)
-
-    # Add the module to sys.modules
-    sys.modules[module_name] = module
-
-    # Execute the module
-    spec.loader.exec_module(module)
-
-    return module
+    self._test_packs = TestPack.get_test_packs()
 
   def _load_test_modules(self):
     """Load network modules from module_config.json."""
@@ -767,10 +726,7 @@ class TestOrchestrator:
     return self._test_packs
 
   def get_test_pack(self, name: str) -> TestPack:
-    for test_pack in self._test_packs:
-      if test_pack.name.lower() == name.lower():
-        return test_pack
-    return None
+    return TestPack.get_test_pack(name, self._test_packs)
 
   def _stop_modules(self, kill=False):
     LOGGER.info("Stopping test modules")
