@@ -17,7 +17,7 @@
 # Must be run from the root directory of Testrun
 
 # Read the JSON file into a variable
-DEVICE_TEST_PACK=$(<resources/test_packs/qualification.json)
+DEVICE_TEST_PACK=$(<resources/test_packs/qualification/config.json)
 
 # Function to run tests inside Docker
 run_test() {

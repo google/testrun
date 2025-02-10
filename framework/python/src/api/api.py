@@ -365,8 +365,9 @@ class Api:
     # Check that Testrun is not currently running
     if (self._session.get_status()
         not in [TestrunStatus.CANCELLED,
-                TestrunStatus.COMPLIANT,
-                TestrunStatus.NON_COMPLIANT,
+                TestrunStatus.PROCEED,
+                TestrunStatus.DO_NOT_PROCEED,
+                TestrunStatus.COMPLETE,
                 TestrunStatus.IDLE
                 ]):
       LOGGER.debug("Unable to shutdown Testrun as Testrun is in progress")
@@ -527,11 +528,11 @@ class Api:
       if (self._session.get_target_device() == device
           and self._session.get_status()
           not in [TestrunStatus.CANCELLED,
-                  TestrunStatus.COMPLIANT,
-                  TestrunStatus.NON_COMPLIANT,
+                  TestrunStatus.COMPLETE,
                   TestrunStatus.PROCEED,
                   TestrunStatus.DO_NOT_PROCEED
                   ]):
+
         response.status_code = 403
         return self._generate_msg(
             False, "Cannot delete this device whilst it is being tested")
@@ -652,8 +653,7 @@ class Api:
       if (self._session.get_target_device() == device
           and self._session.get_status()
           not in [TestrunStatus.CANCELLED,
-                  TestrunStatus.COMPLIANT,
-                  TestrunStatus.NON_COMPLIANT,
+                  TestrunStatus.COMPLETE,
                   TestrunStatus.PROCEED,
                   TestrunStatus.DO_NOT_PROCEED
                   ]):
