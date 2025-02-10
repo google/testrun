@@ -188,22 +188,7 @@ $form-min-width: 285px;
 }
 
 .device-qualification-form-actions {
-  height: 80px;
-  padding: 16px;
-  width: calc(100% - 64px);
-  box-sizing: border-box;
-  position: sticky;
-  left: 32px;
-  bottom: 25px;
-  background: colors.$surface;
-  border-radius: 32px;
-  box-shadow:
-    0px 1px 2px 0px rgba(0, 0, 0, 0.3),
-    0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: space-between;
+  @include mixins.form-actions;
 
   div {
     display: flex;
@@ -215,13 +200,11 @@ $form-min-width: 285px;
   }
 
   .delete-button:not(.mat-mdc-button-disabled) {
-    background-color: colors.$error;
-    color: colors.$on-error;
+    @include mixins.delete-red-button;
   }
 
   .close-button:not(.mat-mdc-button-disabled) {
-    background-color: colors.$secondary-container;
-    color: colors.$on-secondary-container;
+    @include mixins.secondary-button;
   }
 }
 

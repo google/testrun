@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<span class="simple-dialog-title">Risk Assessment Profile Completed</span>
+<span class="simple-dialog-title">Risk assessment completed</span>
 <p class="simple-dialog-content">
-  It has been saved as "{{ data.profile.name }}" and can now be attached to
-  reports.
+  The risk profile has been saved as "{{ data.profile.name }}" and can now be
+  attached to test reports.
 </p>
 <p class="simple-dialog-content">
   <span class="simple-dialog-content-risk"
@@ -26,8 +26,8 @@ limitations under the License.
       class="profile-item-risk"
       [ngClass]="getRiskClass(data.profile.risk!)">
       {{ data.profile.risk }} risk
-    </span></span
-  >
+    </span>
+  </span>
 
   <br />{{ getRiskExplanation(data.profile.risk) }} The full report can be found
   in the zip file. Please share with the lab to validate this profile and

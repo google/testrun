@@ -231,7 +231,7 @@ export class DevicesComponent
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: ['simple-dialog', 'delete-device'],
+      panelClass: ['simple-dialog', 'delete-dialog'],
     });
     dialogRef?.beforeClosed().subscribe(deleteDevice => {
       if (deleteDevice) {
@@ -272,7 +272,7 @@ export class DevicesComponent
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: ['simple-dialog', 'close-device'],
+      panelClass: ['simple-dialog', 'discard-dialog'],
     });
 
     dialogRef?.beforeClosed().subscribe(close => {

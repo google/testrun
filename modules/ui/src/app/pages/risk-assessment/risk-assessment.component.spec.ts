@@ -200,6 +200,7 @@ describe('RiskAssessmentComponent', () => {
           autoFocus: 'dialog',
           hasBackdrop: true,
           disableClose: true,
+          panelClass: ['simple-dialog', 'delete-dialog'],
         });
 
         openSpy.calls.reset();
@@ -387,8 +388,35 @@ describe('RiskAssessmentComponent', () => {
     });
 
     describe('#discard', () => {
+      it('should open discard modal', fakeAsync(() => {
+        const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+          afterClosed: () => of(true),
+        } as MatDialogRef<typeof SimpleDialogComponent>);
+
+        component.discard(null);
+
+        expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
+          ariaLabel: 'Discard the Risk Assessment changes',
+          data: {
+            title: 'Discard changes?',
+            content: `You have unsaved changes that would be permanently lost.`,
+            confirmName: 'Discard',
+          },
+          autoFocus: true,
+          hasBackdrop: true,
+          disableClose: true,
+          panelClass: ['simple-dialog', 'discard-dialog'],
+        });
+
+        openSpy.calls.reset();
+      }));
+
       describe('with no selected profile', () => {
         beforeEach(() => {
+          spyOn(component.dialog, 'open').and.returnValue({
+            afterClosed: () => of(true),
+          } as MatDialogRef<typeof SimpleDialogComponent>);
+
           component.discard(null);
         });
 
@@ -405,6 +433,10 @@ describe('RiskAssessmentComponent', () => {
 
       describe('with selected profile', () => {
         beforeEach(fakeAsync(() => {
+          spyOn(component.dialog, 'open').and.returnValue({
+            afterClosed: () => of(true),
+          } as MatDialogRef<typeof SimpleDialogComponent>);
+
           component.discard(PROFILE_MOCK);
           tick(100);
         }));

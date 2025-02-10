@@ -13,13 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@use 'variables';
 @use 'mixins';
-
-::ng-deep .delete-device app-simple-dialog,
-::ng-deep .close-device app-simple-dialog {
-  --mat-dialog-container-max-width: 329px !important;
-}
 
 .device-add-button {
   @include mixins.add-button;

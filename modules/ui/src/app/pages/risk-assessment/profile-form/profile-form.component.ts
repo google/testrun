@@ -113,6 +113,8 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   @Output() saveProfile = new EventEmitter<Profile>();
   @Output() deleteCopy = new EventEmitter<Profile>();
   @Output() discard = new EventEmitter();
+  @Output() delete = new EventEmitter<Profile>();
+  @Output() copyProfile = new EventEmitter<Profile>();
   ngOnInit() {
     this.profileForm = this.createProfileForm();
   }
@@ -123,8 +125,91 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     }
   }
 
-  get isDraftDisabled(): boolean {
-    return !this.nameControl.valid || this.fieldsHasError;
+  get isDraftDisabled(): boolean | null {
+    return (
+      !this.nameControl.valid ||
+      this.fieldsHasError ||
+      this.profileHasNoChanges()
+    );
+  }
+
+  profileHasNoChanges() {
+    const oldProfile = this.profile;
+    const newProfile = oldProfile
+      ? this.buildResponseFromForm(
+          oldProfile.status as ProfileStatus,
+          oldProfile
+        )
+      : this.buildResponseFromForm('', oldProfile);
+    return (
+      (oldProfile === null && this.profileIsEmpty(newProfile)) ||
+      (oldProfile && this.compareProfiles(oldProfile, newProfile))
+    );
+  }
+
+  private profileIsEmpty(profile: Profile) {
+    if (profile.name && profile.name !== '') {
+      return false;
+    }
+
+    if (profile.questions) {
+      for (const question of profile.questions) {
+        if (question.answer && question.answer !== '') {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+    return true;
+  }
+
+  private compareProfiles(profile1: Profile, profile2: Profile) {
+    if (profile1.name !== profile2.name) {
+      return false;
+    }
+    if (
+      (!profile1.rename &&
+        profile2.rename &&
+        profile2.rename !== profile1.name) ||
+      (profile1.rename &&
+        profile2.rename &&
+        profile1.rename !== profile2.rename)
+    ) {
+      return false;
+    }
+
+    if (profile1.status !== profile2.status) {
+      return false;
+    }
+
+    for (const question of profile1.questions) {
+      const answer1 = question.answer;
+      const answer2 = profile2.questions?.find(
+        question2 => question2.question === question.question
+      )?.answer;
+      if (answer1 !== undefined && answer2 !== undefined) {
+        if (typeof question.answer === 'string') {
+          if (answer1 !== answer2) {
+            return false;
+          }
+        } else {
+          //the type of answer is array
+          if (answer1?.length !== answer2?.length) {
+            return false;
+          }
+          if (
+            (answer1 as number[]).some(
+              answer => !(answer2 as number[]).includes(answer)
+            )
+          )
+            return false;
+        }
+      } else {
+        return !!answer1 == !!answer2;
+      }
+    }
+    return true;
   }
 
   private get fieldsHasError(): boolean {
@@ -167,7 +252,8 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   fillProfileForm(profileFormat: ProfileFormat[], profile: Profile): void {
-    this.nameControl.setValue(profile.name);
+    const profileName = profile.rename ? profile.rename : profile.name;
+    this.nameControl.setValue(profileName);
     profileFormat.forEach((question, index) => {
       const answer = profile.questions.find(
         answers => answers.question === question.question
@@ -189,23 +275,24 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   onSaveClick(status: ProfileStatus) {
-    const response = this.buildResponseFromForm(
-      this.profileFormat,
-      this.profileForm,
-      status,
-      this.selectedProfile
-    );
+    const response = this.buildResponseFromForm(status, this.selectedProfile);
     this.saveProfile.emit(response);
   }
 
   onDiscardClick() {
-    this.discard.emit();
+    this.discard.emit(this.selectedProfile!);
+  }
+
+  onDeleteClick(): void {
+    this.delete.emit(this.selectedProfile!);
+  }
+
+  onCopyClick(): void {
+    this.copyProfile.emit(this.selectedProfile!);
   }
 
   private buildResponseFromForm(
-    initialQuestions: ProfileFormat[],
-    profileForm: FormGroup,
-    status: ProfileStatus,
+    status: ProfileStatus | '',
     profile: Profile | null
   ): Profile {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -220,21 +307,21 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     }
     const questions: Question[] = [];
 
-    initialQuestions.forEach((initialQuestion, index) => {
+    this.profileFormat.forEach((initialQuestion, index) => {
       const question: Question = {};
       question.question = initialQuestion.question;
 
       if (initialQuestion.type === FormControlType.SELECT_MULTIPLE) {
         const answer: number[] = [];
         initialQuestion.options?.forEach((_, idx) => {
-          const value = profileForm.value[index][idx];
+          const value = this.profileForm.value[index][idx];
           if (value) {
             answer.push(idx);
           }
         });
         question.answer = answer;
       } else {
-        question.answer = profileForm.value[index]?.trim();
+        question.answer = this.profileForm.value[index]?.trim();
       }
       questions.push(question);
     });
