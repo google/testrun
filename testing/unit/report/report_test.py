@@ -87,11 +87,28 @@ class ReportTest(unittest.TestCase):
     # Generate a compliant report based on the 'report_compliant.json' file
     self.create_report(os.path.join(TEST_FILES_DIR, 'report_compliant.json'))
 
+  def report_compliant_pilot_test(self):
+    """Generate a report for the compliant test with a pilot device"""
+
+    # Generate a compliant report based on the
+    # 'report_compliant_pilot.json' file
+    self.create_report(os.path.join(TEST_FILES_DIR,
+                                    'report_compliant_pilot.json'))
+
   def report_noncompliant_test(self):
     """Generate a report for the non-compliant test"""
 
     # Generate non-compliant report based on the 'report_noncompliant.json' file
     self.create_report(os.path.join(TEST_FILES_DIR, 'report_noncompliant.json'))
+
+
+  def report_noncompliant_pilot_test(self):
+    """Generate a report for the non-compliant test with a pilot device"""
+
+    # Generate a compliant report based on the
+    # 'report_noncompliant_pilot.json' file
+    self.create_report(os.path.join(TEST_FILES_DIR,
+                                    'report_noncompliant_pilot.json'))
 
   # Generate formatted reports for each report generated from
   # the test containers.
@@ -194,6 +211,8 @@ if __name__ == '__main__':
   suite = unittest.TestSuite()
   suite.addTest(ReportTest('report_compliant_test'))
   suite.addTest(ReportTest('report_noncompliant_test'))
+  suite.addTest(ReportTest('report_compliant_pilot_test'))
+  suite.addTest(ReportTest('report_noncompliant_pilot_test'))
 
   # Create html test reports for each module in 'output' dir
   suite.addTest(ReportTest('report_formatting'))

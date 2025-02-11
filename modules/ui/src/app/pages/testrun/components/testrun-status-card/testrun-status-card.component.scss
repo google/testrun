@@ -32,6 +32,10 @@
   box-sizing: border-box;
   padding: 16px 32px;
 
+  &-pilot {
+    gap: 6px;
+  }
+
   &.progress {
     background-color: mat.m2-get-color-from-palette($color-primary, 700);
   }

@@ -5,7 +5,8 @@ import { DeviceStatus, TestingType } from '../model/device';
 export const HISTORY = [
   {
     mac_addr: '01:02:03:04:05:06',
-    status: 'compliant',
+    status: 'Complete',
+    result: 'Compliant',
     device: {
       status: DeviceStatus.VALID,
       manufacturer: 'Delta',
@@ -20,7 +21,8 @@ export const HISTORY = [
     finished: '2023-06-23T10:17:10.123Z',
   },
   {
-    status: 'compliant',
+    status: 'Complete',
+    result: 'Compliant',
     mac_addr: '01:02:03:04:05:07',
     device: {
       status: DeviceStatus.VALID,
@@ -37,7 +39,8 @@ export const HISTORY = [
   },
   {
     mac_addr: null,
-    status: 'compliant',
+    status: 'Complete',
+    result: 'Compliant',
     device: {
       status: DeviceStatus.VALID,
       manufacturer: 'Delta',
@@ -56,7 +59,8 @@ export const HISTORY = [
 export const HISTORY_AFTER_REMOVE = [
   {
     mac_addr: '01:02:03:04:05:06',
-    status: 'compliant',
+    status: 'Complete',
+    result: 'Compliant',
     device: {
       status: DeviceStatus.VALID,
       manufacturer: 'Delta',
@@ -72,7 +76,8 @@ export const HISTORY_AFTER_REMOVE = [
   },
   {
     mac_addr: null,
-    status: 'compliant',
+    status: 'Complete',
+    result: 'Compliant',
     device: {
       status: DeviceStatus.VALID,
       manufacturer: 'Delta',
@@ -86,11 +91,12 @@ export const HISTORY_AFTER_REMOVE = [
     started: '2023-06-23T10:11:00.123Z',
     finished: '2023-06-23T10:17:10.123Z',
   },
-];
+] as TestrunStatus[];
 
 export const FORMATTED_HISTORY = [
   {
-    status: 'compliant',
+    status: 'Complete',
+    result: 'Compliant',
     mac_addr: '01:02:03:04:05:06',
     device: {
       status: DeviceStatus.VALID,
@@ -106,11 +112,13 @@ export const FORMATTED_HISTORY = [
     finished: '2023-06-23T10:17:10.123Z',
     deviceFirmware: '1.2.2',
     deviceInfo: 'Delta 03-DIN-SRC',
+    testResult: 'Compliant',
     duration: '06m 10s',
     program: 'Device Qualification',
   },
   {
-    status: 'compliant',
+    status: 'Complete',
+    result: 'Compliant',
     mac_addr: '01:02:03:04:05:07',
     device: {
       status: DeviceStatus.VALID,
@@ -126,12 +134,14 @@ export const FORMATTED_HISTORY = [
     finished: '2023-07-23T10:17:10.123Z',
     deviceFirmware: '1.2.3',
     deviceInfo: 'Delta 03-DIN-SRC',
+    testResult: 'Compliant',
     duration: '06m 10s',
     program: 'Device Qualification',
   },
   {
     mac_addr: null,
-    status: 'compliant',
+    status: 'Complete',
+    result: 'Compliant',
     device: {
       status: DeviceStatus.VALID,
       manufacturer: 'Delta',
@@ -146,10 +156,11 @@ export const FORMATTED_HISTORY = [
     finished: '2023-06-23T10:17:10.123Z',
     deviceFirmware: '1.2.2',
     deviceInfo: 'Delta 03-DIN-SRC',
+    testResult: 'Compliant',
     duration: '06m 10s',
     program: 'Device Qualification',
   },
-];
+] as HistoryTestrun[];
 
 export const FILTERS = {
   deviceInfo: 'test',

@@ -1,18 +1,13 @@
-{% macro header(is_first, title, json_data, device, logo, icon_qualification, icon_pilot) %}
+{% macro insert(is_first, device, logo, icon) %}
 {% if is_first %}
   <div class="header first-page">
     <div class="header-info">
       {# Badge #}
       <p class="header-info-badge">
-        {% if json_data['device']['test_pack'] == 'Device Qualification' %}
-          <img src="data:image/png;base64, {{ icon_qualification }}" alt="">
+          <img src="data:image/png;base64, {{ icon }}" alt="">
           <span>Device Qualification</span>
-        {% else %}
-          <img src="data:image/png;base64, {{ icon_pilot }}" alt="">
-          <span>Pilot Assessment</span>
-        {% endif %}
       </p>
-      <h1>{{ title }}</h1>
+      <h1>Testrun report</h1>
     </div>
     <h3 class="header-info-device">
       {{ device['manufacturer'] }}
@@ -23,15 +18,10 @@
     <div class="header-info">
       {# Badge #}
       <p class="header-info-badge">
-        {% if json_data['device']['test_pack'] == 'Device Qualification' %}
-          <img src="data:image/png;base64, {{ icon_qualification }}" alt="">
+          <img src="data:image/png;base64, {{ icon }}" alt="">
           <span>Device Qualification</span>
-        {% else %}
-          <img src="data:image/png;base64, {{ icon_pilot }}" alt="">
-          <span>Pilot Assessment</span>
-        {% endif %}
       </p>
-      <span style="font-weight:600">{{ title }}</span>
+      <span style="font-weight:600">Testrun report</span>
     </div>
     <span style="margin-top:0;max-width:700px;font-size:24px;font-weight:600;"> 
       {{ device['manufacturer'] }}
