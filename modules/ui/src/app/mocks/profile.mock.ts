@@ -59,7 +59,7 @@ export const PROFILE_MOCK_3: Profile = {
 
 export const PROFILE_FORM: ProfileFormat[] = [
   {
-    question: 'Email',
+    question: 'What is the email of the device owner(s)?',
     type: FormControlType.EMAIL_MULTIPLE,
     validation: {
       required: true,
@@ -108,7 +108,10 @@ export const NEW_PROFILE_MOCK = {
   status: ProfileStatus.VALID,
   name: 'New profile',
   questions: [
-    { question: 'Email', answer: 'a@test.te;b@test.te, c@test.te' },
+    {
+      question: 'What is the email of the device owner(s)?',
+      answer: 'a@test.te;b@test.te, c@test.te',
+    },
     {
       question: 'What type of device do you need reviewed?',
       answer: 'test',
@@ -129,7 +132,7 @@ export const NEW_PROFILE_MOCK_DRAFT = {
   status: ProfileStatus.DRAFT,
   name: 'New profile',
   questions: [
-    { question: 'Email', answer: '' },
+    { question: 'What is the email of the device owner(s)?', answer: '' },
     {
       question: 'What type of device do you need reviewed?',
       answer: '',
@@ -217,7 +220,7 @@ export const OUTDATED_DRAFT_PROFILE_MOCK: Profile = {
     },
     {
       question: 'What is the email of the device owner(s)?',
-      answer: 'boddey@google.com, cmeredith@google.com',
+      answer: '',
     },
     {
       question: 'What type of device do you need reviewed?',
