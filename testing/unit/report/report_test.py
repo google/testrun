@@ -84,40 +84,38 @@ class ReportTest(unittest.TestCase):
   def qualification_compliant_test(self):
     """Generate a report for the qualification compliant test"""
 
-    # Generate a compliant report based on the 'report_compliant.json' file
+    # Generate the report
     self.create_report(os.path.join(TEST_FILES_DIR,
                                   'qualification_compliant.json'))
 
   def qualification_noncompliant_test(self):
     """Generate a report for the qualification non-compliant test"""
 
-    # Generate non-compliant report based on the 'report_noncompliant.json' file
+    # Generate the report
     self.create_report(os.path.join(TEST_FILES_DIR,
                                   'qualification_noncompliant.json'))
 
   def pilot_proceed_compliant_test(self):
-    """Generate a report for the compliant test with a pilot device"""
+    """Generate a report for proceed/compliant test with a pilot device"""
 
-    # Generate a compliant report based on the
-    # 'report_compliant_pilot.json' file
+    # Generate the report
     self.create_report(os.path.join(TEST_FILES_DIR,
                                     'pilot_proceed_compliant.json'))
 
   def pilot_proceed_noncompliant_test(self):
-    """Generate a report for the non-compliant test with a pilot device"""
+    """Generate a report for proceed/non-compliant test with a pilot device"""
 
-    # Generate a compliant report based on the
-    # 'report_noncompliant_pilot.json' file
+    # Generate the report
     self.create_report(os.path.join(TEST_FILES_DIR,
                                   'pilot_proceed_noncompliant.json'))
 
   def pilot_do_not_proceed_noncompliant_test(self):
-    """Generate a report for the non-compliant test with a pilot device"""
+    """Report for do not proceed/non-compliant test with a pilot device"""
 
-    # Generate a compliant report based on the
-    # 'report_noncompliant_pilot.json' file
+    # Generate the report
     self.create_report(os.path.join(TEST_FILES_DIR,
                               'pilot_do_not_proceed_noncompliant.json'))
+
   # Generate formatted reports for each report generated from
   # the test containers.
   # Not a unit test but can't run from within the test module container and must
