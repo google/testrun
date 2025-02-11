@@ -159,7 +159,6 @@ class ReportTest(unittest.TestCase):
               # Open the html file in read mode
               with open(report_out_path, 'r', encoding='utf-8') as f:
                 report_out = f.read()
-                print(f'HTML file before formatting: {report_out}')
 
                 # Add the formatting
                 formatted_report = self.add_html_formatting(report_out)
