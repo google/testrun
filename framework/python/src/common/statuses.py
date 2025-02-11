@@ -15,21 +15,26 @@
 
 
 class TestrunStatus:
-  """Enum for all possible Testrun statuses"""
+  """Statuses for overall testing"""
   IDLE = "Idle"
   STARTING = "Starting"
   WAITING_FOR_DEVICE = "Waiting for Device"
   MONITORING = "Monitoring"
   IN_PROGRESS = "In Progress"
   CANCELLED = "Cancelled"
-  COMPLIANT =  "Compliant"
-  NON_COMPLIANT = "Non-Compliant"
   STOPPING = "Stopping"
   VALIDATING = "Validating Network"
+  COMPLETE = "Complete"
+  PROCEED = "Proceed"
+  DO_NOT_PROCEED = "Do Not Proceed"
 
+class TestrunResult:
+  """Statuses for the Testrun result"""
+  COMPLIANT =  "Compliant"
+  NON_COMPLIANT = "Non-Compliant"
 
 class TestResult:
-  """Enum for all possible test results"""
+  """Statuses for test results"""
   IN_PROGRESS = "In Progress"
   COMPLIANT =  "Compliant"
   NON_COMPLIANT = "Non-Compliant"

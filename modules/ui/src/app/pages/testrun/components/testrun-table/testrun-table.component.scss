@@ -88,17 +88,17 @@ $expander-button-size: 28px;
 .tests-item-row {
   min-height: $row-height;
   height: auto;
-  grid-template-columns: 150px 1fr 2.2fr 222px 20px;
+  grid-template-columns: 1fr 2.2fr 150px 226px 20px;
   border-bottom: 1px solid $lighter-grey;
 }
 
 .tests-header-row {
-  grid-template-columns: 150px 1fr 2.2fr 216px $expander-button-size;
+  grid-template-columns: 1fr 2.2fr 150px 220px $expander-button-size;
 }
 
 .expansion-panel-header ::ng-deep.mat-content {
   display: grid;
-  grid-template-columns: 150px 1fr 2.2fr 216px;
+  grid-template-columns: 1fr 2.2fr 150px 220px;
 }
 
 .expansion-panel-header ::ng-deep .mat-expansion-indicator {
@@ -129,8 +129,8 @@ $expander-button-size: 28px;
 
 .expansion-panel-row ::ng-deep.mat-expansion-panel-body {
   display: grid;
-  grid-template-columns: 150px 1fr 2.2fr 216px 20px;
-  grid-template-areas: '. . description . .';
+  grid-template-columns: 1fr 2.2fr 150px 220px 20px;
+  grid-template-areas: '. description . . .';
 }
 
 .cel-description {
@@ -205,6 +205,32 @@ $expander-button-size: 28px;
     &::before {
       font-family: 'Material Symbols Outlined';
       line-height: 14px;
+    }
+  }
+  &.roadmap {
+    color: #00639b;
+    .cell-result-required-icon {
+      background: #00639b;
+      color: #e1e3e1;
+      &::before {
+        content: 'road';
+      }
+    }
+  }
+  &.recommended {
+    color: #146c2e;
+    .cell-result-required-icon {
+      background: #146c2e;
+      color: #ffffff;
+      &::before {
+        font-variation-settings:
+          'FILL' 1,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+        content: 'thumb_up';
+        font-size: 9px;
+      }
     }
   }
   &.informational {

@@ -51,10 +51,10 @@ class DNSModule(TestModule):
 
   def generate_module_report(self):
     # Load Jinja2 template
-    page_max_height = 910
+    page_max_height = 850
     header_height = 48
     summary_height = 135
-    row_height = 42
+    row_height = 44
     loader=FileSystemLoader(self._report_template_folder)
     template = Environment(
                             loader=loader,
