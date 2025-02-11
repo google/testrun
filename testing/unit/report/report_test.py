@@ -228,7 +228,7 @@ if __name__ == '__main__':
   suite.addTest(ReportTest('qualification_compliant_test'))
   suite.addTest(ReportTest('qualification_noncompliant_test'))
   suite.addTest(ReportTest('pilot_proceed_compliant_test'))
-  suite.addTest(ReportTest('pilot_do_not_proceed_noncompliant_test'))
+  suite.addTest(ReportTest('pilot_proceed_noncompliant_test'))
   suite.addTest(ReportTest('pilot_do_not_proceed_noncompliant_test'))
 
   # Create html test reports for each module in 'output' dir
