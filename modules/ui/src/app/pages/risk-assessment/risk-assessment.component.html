@@ -37,6 +37,7 @@ limitations under the License.
       message="Select a profile from the list on the left to view or edit the profile.">
     </app-no-entity-selected>
     <app-profile-form
+      #profileFormComponent
       *ngIf="isOpenProfileForm"
       [selectedProfile]="vm.selectedProfile"
       [isCopyProfile]="isCopyProfile"

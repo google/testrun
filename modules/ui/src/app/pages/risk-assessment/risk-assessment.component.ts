@@ -20,6 +20,7 @@ import {
   OnInit,
   ViewContainerRef,
   inject,
+  viewChild,
   ChangeDetectorRef,
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
@@ -49,6 +50,8 @@ import { ListLayoutComponent } from '../../components/list-layout/list-layout.co
 import { LayoutType } from '../../model/layout-type';
 import { NoEntitySelectedComponent } from '../../components/no-entity-selected/no-entity-selected.component';
 import { EntityAction, EntityActionResult } from '../../model/entity-action';
+import { of } from 'rxjs/internal/observable/of';
+import { CanComponentDeactivate } from '../../guards/can-deactivate.guard';
 
 const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
   hideRequiredMarker: true,
@@ -81,12 +84,15 @@ const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RiskAssessmentComponent implements OnInit, OnDestroy {
+export class RiskAssessmentComponent
+  implements OnInit, OnDestroy, CanComponentDeactivate
+{
   readonly LayoutType = LayoutType;
   readonly ProfileStatus = ProfileStatus;
+  readonly form = viewChild<ProfileFormComponent>('profileFormComponent');
   private store = inject(RiskAssessmentStore);
   private liveAnnouncer = inject(LiveAnnouncer);
-  private cd = inject(ChangeDetectorRef);
+  cd = inject(ChangeDetectorRef);
   private destroy$: Subject<boolean> = new Subject<boolean>();
   dialog = inject(MatDialog);
   element = inject(ViewContainerRef);
@@ -94,6 +100,15 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   viewModel$ = this.store.viewModel$;
   isOpenProfileForm = false;
   isCopyProfile = false;
+
+  canDeactivate(): Observable<boolean> {
+    const form = this.form();
+    if (form) {
+      return form.close();
+    } else {
+      return of(true);
+    }
+  }
 
   ngOnInit() {
     this.store.getProfilesFormat();
@@ -115,6 +130,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.store.updateSelectedProfile(profile);
     await this.liveAnnouncer.announce('Risk assessment questionnaire');
     this.store.setFocusOnProfileForm();
+    this.cd.detectChanges();
   }
 
   async copyProfileAndOpenForm(profile: Profile, profiles: Profile[]) {
@@ -197,21 +213,8 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
   }
 
   private openCloseDialog(selectedProfile: Profile | null) {
-    const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: 'Discard the Risk Assessment changes',
-      data: {
-        title: 'Discard changes?',
-        content: `You have unsaved changes that would be permanently lost.`,
-        confirmName: 'Discard',
-      },
-      autoFocus: true,
-      hasBackdrop: true,
-      disableClose: true,
-      panelClass: ['simple-dialog', 'discard-dialog'],
-    });
-
-    dialogRef
-      ?.afterClosed()
+    this.form()
+      ?.openCloseDialog()
       .pipe(takeUntil(this.destroy$))
       .subscribe(close => {
         if (close) {

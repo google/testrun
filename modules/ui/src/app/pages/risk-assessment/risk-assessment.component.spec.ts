@@ -33,13 +33,16 @@ import {
   PROFILE_MOCK,
 } from '../../mocks/profile.mock';
 import { of, Subscription } from 'rxjs';
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewEncapsulation } from '@angular/core';
 import { Profile, ProfileAction, ProfileFormat } from '../../model/profile';
 import { MatDialogRef } from '@angular/material/dialog';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Observable } from 'rxjs/internal/Observable';
+import { ProfileFormComponent } from './profile-form/profile-form.component';
+import { MatIcon } from '@angular/material/icon';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
 
 describe('RiskAssessmentComponent', () => {
   let component: RiskAssessmentComponent;
@@ -76,13 +79,19 @@ describe('RiskAssessmentComponent', () => {
         MatToolbarModule,
         MatSidenavModule,
         BrowserAnimationsModule,
+        MatIconTestingModule,
+        MatIcon,
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
         { provide: RiskAssessmentStore, useValue: mockRiskAssessmentStore },
         { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
       ],
-    }).compileComponents();
+    })
+      .overrideComponent(RiskAssessmentComponent, {
+        set: { encapsulation: ViewEncapsulation.None },
+      })
+      .compileComponents();
 
     TestBed.overrideProvider(RiskAssessmentStore, {
       useValue: mockRiskAssessmentStore,
@@ -388,35 +397,29 @@ describe('RiskAssessmentComponent', () => {
     });
 
     describe('#discard', () => {
-      it('should open discard modal', fakeAsync(() => {
-        const openSpy = spyOn(component.dialog, 'open').and.returnValue({
-          afterClosed: () => of(true),
-        } as MatDialogRef<typeof SimpleDialogComponent>);
+      beforeEach(async () => {
+        await component.openForm();
+      });
+
+      it('should call openCloseDialog', () => {
+        const openCloseDialogSpy = spyOn(
+          <ProfileFormComponent>component.form(),
+          'openCloseDialog'
+        ).and.returnValue(of(true));
 
         component.discard(null);
 
-        expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
-          ariaLabel: 'Discard the Risk Assessment changes',
-          data: {
-            title: 'Discard changes?',
-            content: `You have unsaved changes that would be permanently lost.`,
-            confirmName: 'Discard',
-          },
-          autoFocus: true,
-          hasBackdrop: true,
-          disableClose: true,
-          panelClass: ['simple-dialog', 'discard-dialog'],
-        });
+        expect(openCloseDialogSpy).toHaveBeenCalled();
 
-        openSpy.calls.reset();
-      }));
+        openCloseDialogSpy.calls.reset();
+      });
 
       describe('with no selected profile', () => {
         beforeEach(() => {
-          spyOn(component.dialog, 'open').and.returnValue({
-            afterClosed: () => of(true),
-          } as MatDialogRef<typeof SimpleDialogComponent>);
-
+          spyOn(
+            <ProfileFormComponent>component.form(),
+            'openCloseDialog'
+          ).and.returnValue(of(true));
           component.discard(null);
         });
 
@@ -433,10 +436,10 @@ describe('RiskAssessmentComponent', () => {
 
       describe('with selected profile', () => {
         beforeEach(fakeAsync(() => {
-          spyOn(component.dialog, 'open').and.returnValue({
-            afterClosed: () => of(true),
-          } as MatDialogRef<typeof SimpleDialogComponent>);
-
+          spyOn(
+            <ProfileFormComponent>component.form(),
+            'openCloseDialog'
+          ).and.returnValue(of(true));
           component.discard(PROFILE_MOCK);
           tick(100);
         }));

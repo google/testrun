@@ -51,6 +51,12 @@ import { FormControlType } from '../../../model/question';
 import { ProfileValidators } from './profile.validators';
 import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { Observable } from 'rxjs/internal/Observable';
+import { of } from 'rxjs/internal/observable/of';
+import { map } from 'rxjs/internal/operators/map';
+import { SimpleDialogComponent } from '../../../components/simple-dialog/simple-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import { RiskAssessmentStore } from '../risk-assessment.store';
 
 @Component({
   selector: 'app-profile-form',
@@ -75,21 +81,23 @@ import { CdkTrapFocus } from '@angular/cdk/a11y';
 export class ProfileFormComponent implements OnInit, AfterViewInit {
   private profileValidators = inject(ProfileValidators);
   private fb = inject(FormBuilder);
-
+  private store = inject(RiskAssessmentStore);
   private profile: Profile | null = null;
   private profileList!: Profile[];
   private injector = inject(Injector);
   private nameValidator!: ValidatorFn;
+  private changeProfile = true;
   public readonly ProfileStatus = ProfileStatus;
   profileForm: FormGroup = this.fb.group({});
+  dialog = inject(MatDialog);
   readonly autosize = viewChildren(CdkTextareaAutosize);
   @Input() profileFormat!: ProfileFormat[];
   @Input() isCopyProfile!: boolean;
   @Input()
   set profiles(profiles: Profile[]) {
     this.profileList = profiles;
-    if (this.nameControl) {
-      this.updateNameValidator();
+    if (this.nameControl && this.profile) {
+      this.updateNameValidator(this.profile);
     }
   }
   get profiles() {
@@ -100,12 +108,20 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     if (this.isCopyProfile && this.profile) {
       this.deleteCopy.emit(this.profile);
     }
-    this.profile = profile;
-    if (profile && this.nameControl) {
-      this.updateNameValidator();
-      this.fillProfileForm(this.profileFormat, profile);
+    if (this.changeProfile || this.profileHasNoChanges()) {
+      this.changeProfile = false;
+      this.profile = profile;
+      if (profile && this.nameControl) {
+        this.updateNameValidator(profile);
+        this.fillProfileForm(this.profileFormat, profile);
+      }
+    } else if (this.profile != profile) {
+      // prevent select profile before user confirmation
+      this.store.updateSelectedProfile(this.profile);
+      this.openCloseDialogToChangeProfile(profile);
     }
   }
+
   get selectedProfile() {
     return this.profile;
   }
@@ -277,6 +293,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   onSaveClick(status: ProfileStatus) {
     const response = this.buildResponseFromForm(status, this.selectedProfile);
     this.saveProfile.emit(response);
+    this.changeProfile = true;
   }
 
   onDiscardClick() {
@@ -291,6 +308,39 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     this.copyProfile.emit(this.selectedProfile!);
   }
 
+  close(): Observable<boolean> {
+    if (this.profileHasNoChanges()) {
+      return of(true);
+    }
+    return this.openCloseDialog().pipe(map(res => !!res));
+  }
+
+  openCloseDialog() {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
+      ariaLabel: 'Discard the Risk Assessment changes',
+      data: {
+        title: 'Discard changes?',
+        content: `You have unsaved changes that would be permanently lost.`,
+        confirmName: 'Discard',
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: ['simple-dialog', 'discard-dialog'],
+    });
+
+    return dialogRef?.afterClosed();
+  }
+
+  private openCloseDialogToChangeProfile(profile: Profile | null) {
+    this.openCloseDialog().subscribe(close => {
+      if (close) {
+        this.changeProfile = true;
+        this.store.updateSelectedProfile(profile);
+      }
+    });
+  }
+
   private buildResponseFromForm(
     status: ProfileStatus | '',
     profile: Profile | null
@@ -301,13 +351,13 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     };
     if (profile && !this.isCopyProfile) {
       request.name = profile.name;
-      request.rename = this.nameControl.value?.trim();
+      request.rename = this.nameControl?.value?.trim();
     } else {
-      request.name = this.nameControl.value?.trim();
+      request.name = this.nameControl?.value?.trim();
     }
     const questions: Question[] = [];
 
-    this.profileFormat.forEach((initialQuestion, index) => {
+    this.profileFormat?.forEach((initialQuestion, index) => {
       const question: Question = {};
       question.question = initialQuestion.question;
 
@@ -342,11 +392,11 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     );
   }
 
-  private updateNameValidator() {
+  private updateNameValidator(profile: Profile) {
     this.nameControl.removeValidators([this.nameValidator]);
     this.nameValidator = this.profileValidators.differentProfileName(
       this.profileList,
-      this.profile
+      profile
     );
     this.nameControl.addValidators(this.nameValidator);
     this.nameControl.updateValueAndValidity();

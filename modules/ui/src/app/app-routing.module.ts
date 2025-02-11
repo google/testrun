@@ -65,6 +65,7 @@ export const routes: Routes = [
   {
     path: 'risk-assessment',
     component: RiskAssessmentComponent,
+    canDeactivate: [CanDeactivateGuard],
     title: 'Testrun - Risk Assessment',
   },
   {
