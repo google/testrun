@@ -30,7 +30,7 @@ OUTPUT_DIR = os.path.join(TEST_FILES_DIR, 'output/')
 REPORT_RESOURCES_DIR = 'resources/report'
 
 CSS_PATH = os.path.join(REPORT_RESOURCES_DIR, 'test_report_styles.css')
-HTML_PATH = os.path.join(REPORT_RESOURCES_DIR, 'test_report_template.html')
+HTML_PATH = 'resources/test_packs/pilot/report_templates/report_template.html'
 
 class ReportTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""
@@ -81,35 +81,43 @@ class ReportTest(unittest.TestCase):
     with open(report_pdf_file, 'wb') as file:
       file.write(report.to_pdf().getvalue())
 
-  def report_compliant_test(self):
-    """Generate a report for the compliant test"""
+  def qualification_compliant_test(self):
+    """Generate a report for the qualification compliant test"""
 
     # Generate a compliant report based on the 'report_compliant.json' file
-    self.create_report(os.path.join(TEST_FILES_DIR, 'report_compliant.json'))
+    self.create_report(os.path.join(TEST_FILES_DIR,
+                                  'qualification_compliant.json'))
 
-  def report_compliant_pilot_test(self):
+  def qualification_noncompliant_test(self):
+    """Generate a report for the qualification non-compliant test"""
+
+    # Generate non-compliant report based on the 'report_noncompliant.json' file
+    self.create_report(os.path.join(TEST_FILES_DIR,
+                                  'qualification_noncompliant.json'))
+
+  def pilot_proceed_compliant_test(self):
     """Generate a report for the compliant test with a pilot device"""
 
     # Generate a compliant report based on the
     # 'report_compliant_pilot.json' file
     self.create_report(os.path.join(TEST_FILES_DIR,
-                                    'report_compliant_pilot.json'))
+                                    'pilot_proceed_compliant.json'))
 
-  def report_noncompliant_test(self):
-    """Generate a report for the non-compliant test"""
-
-    # Generate non-compliant report based on the 'report_noncompliant.json' file
-    self.create_report(os.path.join(TEST_FILES_DIR, 'report_noncompliant.json'))
-
-
-  def report_noncompliant_pilot_test(self):
+  def pilot_proceed_noncompliant_test(self):
     """Generate a report for the non-compliant test with a pilot device"""
 
     # Generate a compliant report based on the
     # 'report_noncompliant_pilot.json' file
     self.create_report(os.path.join(TEST_FILES_DIR,
-                                    'report_noncompliant_pilot.json'))
+                                  'pilot_proceed_noncompliant.json'))
 
+  def pilot_do_not_proceed_noncompliant_test(self):
+    """Generate a report for the non-compliant test with a pilot device"""
+
+    # Generate a compliant report based on the
+    # 'report_noncompliant_pilot.json' file
+    self.create_report(os.path.join(TEST_FILES_DIR,
+                              'pilot_do_not_proceed_noncompliant.json'))
   # Generate formatted reports for each report generated from
   # the test containers.
   # Not a unit test but can't run from within the test module container and must
@@ -135,6 +143,7 @@ class ReportTest(unittest.TestCase):
 
         # Check if output dir exists
         if os.path.isdir(output_dir):
+
           # List all files fro output dir
           output_files = os.listdir(output_dir)
 
@@ -144,12 +153,14 @@ class ReportTest(unittest.TestCase):
             # Chck if is an html file
             if file.endswith('.html'):
 
-              # Construct teh full path of html file
+              # Construct the full path of html file
               report_out_path = os.path.join(output_dir,file)
 
               # Open the html file in read mode
               with open(report_out_path, 'r', encoding='utf-8') as f:
                 report_out = f.read()
+                print(f'HTML file before formatting: {report_out}')
+
                 # Add the formatting
                 formatted_report = self.add_html_formatting(report_out)
 
@@ -169,7 +180,13 @@ class ReportTest(unittest.TestCase):
     with open(CSS_PATH, 'r', encoding='UTF-8') as css_file:
       styles = css_file.read()
 
-    # Load the html file
+    # Add the device details
+    device = {'device': {
+    'manufacturer': 'Testrun',
+    'model': 'Faux'
+    }}
+
+    # Load the report_template.html file
     with open(HTML_PATH, 'r', encoding='UTF-8') as html_file:
       html_content = html_file.read()
 
@@ -188,8 +205,7 @@ class ReportTest(unittest.TestCase):
     # Create a Jinja2 template from the string
     template = Template(html_template)
 
-    # Render the template with css styles
-    return template.render(styles=styles, body=body)
+    return template.render(styles=styles, body=body, device=device)
 
   def get_module_html_report(self, module):
     """Load the HTML report for a specific module"""
@@ -209,10 +225,11 @@ class ReportTest(unittest.TestCase):
 if __name__ == '__main__':
 
   suite = unittest.TestSuite()
-  suite.addTest(ReportTest('report_compliant_test'))
-  suite.addTest(ReportTest('report_noncompliant_test'))
-  suite.addTest(ReportTest('report_compliant_pilot_test'))
-  suite.addTest(ReportTest('report_noncompliant_pilot_test'))
+  suite.addTest(ReportTest('qualification_compliant_test'))
+  suite.addTest(ReportTest('qualification_noncompliant_test'))
+  suite.addTest(ReportTest('pilot_proceed_compliant_test'))
+  suite.addTest(ReportTest('pilot_do_not_proceed_noncompliant_test'))
+  suite.addTest(ReportTest('pilot_do_not_proceed_noncompliant_test'))
 
   # Create html test reports for each module in 'output' dir
   suite.addTest(ReportTest('report_formatting'))

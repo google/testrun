@@ -30,17 +30,17 @@
         </div>
         {% endfor %}
       </div>
-      {% if test_status in ['Compliant', 'Proceed'] %}
+      {% if json_data['status'] == 'Proceed' %}
         <div class ="summary-color-box summary-box-compliant">
       {% else %}
         <div class ="summary-color-box summary-box-non-compliant">
       {% endif %}
         <div class="summary-box-label">Test Status</div>
         <div class="summary-box-value">Complete</div>
-        <div class="summary-box-label">Pilot Recommendation</div>
-        <div class="summary-box-value">{{ json_data['status'] }}</div>
         <div class="summary-box-label">Test Result</div>
-        <div style="color: white; font-size:24px; font-weight: 700;" class="summary-box-value">{{ json_data['result'] }}</div>
+        <div class="summary-box-value">{{ json_data['result'] }}</div>
+        <div class="summary-box-label">Pilot Recommendation</div>
+        <div style="color: white; font-size:24px; font-weight: 700;" class="summary-box-value">{{ json_data['status'] }}</div>
         <div class="summary-box-label">Started</div>
         <div class="summary-box-value">{{ json_data['started']}}</div>
         <div class="summary-box-label">Duration</div>
