@@ -56,45 +56,6 @@ $form-min-width: 285px;
   display: none;
 }
 
-.device-qualification-form-header {
-  position: relative;
-  padding-top: 24px;
-  &-title {
-    margin: 0;
-    font-size: 32px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 40px;
-    color: colors.$grey-800;
-    text-align: center;
-    padding: 38px 0;
-    background-image: url(/assets/icons/create_device_header.svg);
-  }
-
-  &-close-button {
-    position: absolute;
-    right: 0;
-    top: 0;
-    min-width: 24px;
-    width: 24px;
-    height: 24px;
-    box-sizing: content-box;
-    line-height: normal !important;
-    padding: 0;
-    margin: 0;
-
-    .close-button-icon {
-      width: 24px;
-      height: 24px;
-      margin: 0;
-    }
-
-    ::ng-deep * {
-      line-height: inherit !important;
-    }
-  }
-}
-
 .device-qualification-form-journey-label {
   font-family: variables.$font-text;
   font-style: normal;
@@ -123,33 +84,6 @@ $form-min-width: 285px;
   letter-spacing: 0.2px;
 }
 
-.device-qualification-form-step-title {
-  margin: 0;
-  font-style: normal;
-  font-weight: 500;
-  font-size: 22px;
-  line-height: 28px;
-  text-align: center;
-  color: colors.$grey-900;
-  padding: 0 24px;
-  display: inline-block;
-  height: 28px;
-}
-
-.device-qualification-form-step-description {
-  font-family: variables.$font-secondary;
-  text-align: center;
-  color: colors.$grey-800;
-  margin: 0;
-  padding: 8px 16px 0 16px;
-}
-
-.step-link {
-  color: colors.$primary;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
 .device-qualification-form-page {
   display: grid;
   align-content: start;
@@ -159,32 +93,6 @@ $form-min-width: 285px;
 .device-qualification-form-journey {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-}
-
-.device-qualification-form-summary-container {
-  display: grid;
-  align-items: center;
-  justify-content: center;
-  overflow: scroll;
-  ::ng-deep {
-    .device-item,
-    .device-qualification-form-summary-info {
-      width: variables.$device-item-width;
-    }
-  }
-}
-
-.device-qualification-form-summary {
-  border-radius: 12px;
-  background: mat.get-theme-color($light-theme, primary, 95);
-  padding: 24px;
-  width: max-content;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 24px;
-  &-error {
-    background: colors.$red-50;
-  }
 }
 
 .device-qualification-form-actions {
@@ -205,79 +113,6 @@ $form-min-width: 285px;
 
   .close-button:not(.mat-mdc-button-disabled) {
     @include mixins.secondary-button;
-  }
-}
-
-.device-qualification-form-summary-info {
-  margin-top: 16px;
-  border-radius: 12px;
-  padding: 16px 24px;
-  background: #fff;
-  box-sizing: border-box;
-  &-title,
-  &-title-error {
-    font-size: 18px;
-    font-weight: 400;
-    line-height: 24px;
-    text-align: center;
-    color: colors.$grey-900;
-  }
-  &-description {
-    font-family: variables.$font-secondary;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 24px;
-    text-align: center;
-    color: colors.$grey-800;
-  }
-  .info-label {
-    display: block;
-    font-family: variables.$font-secondary;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 20px;
-    text-align: left;
-    color: colors.$secondary;
-  }
-  .info-value {
-    display: block;
-    color: colors.$grey-800;
-    font-family: variables.$font-secondary;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 24px;
-    text-align: left;
-  }
-}
-
-.device-qualification-form-summary-info-title-error {
-  display: flex;
-  align-items: center;
-  height: 48px;
-  margin: auto;
-  justify-content: center;
-  color: colors.$red-800;
-  gap: 14px;
-  ::ng-deep mat-icon {
-    color: colors.$red-800;
-  }
-}
-
-.device-qualification-form-instructions {
-  margin-top: auto;
-  padding-top: 8px;
-  color: colors.$grey-800;
-  text-align: center;
-  font-family: variables.$font-secondary;
-  font-size: 16px;
-  width: 510px;
-  ul {
-    margin-bottom: 0;
-    text-align: left;
-    padding-left: 26px;
-  }
-  li {
-    line-height: 24px;
   }
 }
 
@@ -316,13 +151,6 @@ $form-min-width: 285px;
   padding: 0 24px;
 }
 
-.form-content-summary {
-  display: grid;
-  grid-template-rows: 1fr auto;
-  grid-row-gap: 16px;
-  overflow: hidden;
-}
-
 @container qualification-form (height < 870px) {
   .device-qualification-form-page {
     overflow: scroll;
@@ -335,8 +163,7 @@ $form-min-width: 285px;
 @container qualification-form (height < 580px) {
   .device-qualification-form-page {
     overflow: scroll;
-    .device-qualification-form-step-content,
-    .device-qualification-form-summary-container {
+    .device-qualification-form-step-content {
       overflow: visible;
     }
   }

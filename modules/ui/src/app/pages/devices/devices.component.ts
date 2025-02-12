@@ -278,9 +278,20 @@ export class DevicesComponent
     dialogRef?.beforeClosed().subscribe(close => {
       if (close) {
         this.isOpenDeviceForm = false;
-        this.focusManagerService.focusFirstElementInContainer();
+        this.focusSelectedButton();
       }
     });
+  }
+
+  private focusSelectedButton() {
+    const selectedButton = this.element.nativeElement.querySelector(
+      'app-device-item.selected .button-edit'
+    );
+    if (selectedButton) {
+      selectedButton.focus();
+    } else {
+      this.focusAddButton();
+    }
   }
 
   private focusNextButton(index: number) {
@@ -293,9 +304,13 @@ export class DevicesComponent
       next.focus();
     } else {
       // If next device item doest not exist, add device button should be focused
-      const addButton =
-        this.element.nativeElement.querySelector('.device-add-button');
-      addButton?.focus();
+      this.focusAddButton();
     }
+  }
+
+  private focusAddButton(): void {
+    const addButton =
+      this.element.nativeElement.querySelector('.add-entity-button');
+    addButton?.focus();
   }
 }
