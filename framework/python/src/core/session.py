@@ -50,6 +50,12 @@ PROFILES_DIR = 'local/risk_profiles'
 
 LOGGER = logger.get_logger('session')
 
+STATUSES_COMPLETE = (TestrunStatus.CANCELLED,
+                          TestrunStatus.COMPLETE,
+                          TestrunStatus.DO_NOT_PROCEED,
+                          TestrunStatus.PROCEED,
+                          TestrunStatus.IDLE
+                        )
 
 def session_tracker(method):
   """Session changes tracker."""
@@ -57,11 +63,13 @@ def session_tracker(method):
 
     result = method(self, *args, **kwargs)
 
-    if self.get_status() != TestrunStatus.IDLE:
+    if self.get_status() != TestrunStatus.IDLE and not self.pause_message:
       self.get_mqtt_client().send_message(
                                         STATUS_TOPIC,
                                         jsonable_encoder(self.to_json())
                                         )
+      if self.get_status() in STATUSES_COMPLETE:
+        self.pause_message = True
 
     return result
   return wrapper
@@ -84,6 +92,7 @@ class TestrunSession():
   def __init__(self, root_dir):
     self._root_dir = root_dir
 
+    self.pause_message = False
     self._status = TestrunStatus.IDLE
     self._result = None
     self._description = None
@@ -162,6 +171,7 @@ class TestrunSession():
   def start(self):
     self.reset()
     self._status = TestrunStatus.STARTING
+    self.pause_message = False
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -815,6 +825,7 @@ question {question.get('question')}''')
 
   def reset(self):
     self.set_status(TestrunStatus.IDLE)
+    self.pause_message = False
     self.set_result(None)
     self.set_description(None)
     self.set_target_device(None)
