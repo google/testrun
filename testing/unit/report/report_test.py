@@ -204,6 +204,87 @@ class ReportTest(unittest.TestCase):
 
     return template.render(styles=styles, body=body, device=device)
 
+  # Generate formatted reports for each report generated from
+  # the test containers.
+  # Not a unit test but can't run from within the test module container and must
+  # be done through the venv. Useful for doing visual inspections
+  # of report formatting changes without having to re-run a new device test.
+  def report_formatting(self):
+    """Apply formatting and generate HTML reports for visual inspection"""
+
+     # List of modules for which to generate formatted reports
+    test_modules = ['conn','dns','ntp','protocol','services','tls']
+
+    # List all items from UNIT_TEST_DIR
+    unit_tests = os.listdir(UNIT_TEST_DIR)
+
+    # Loop through each items from UNIT_TEST_DIR
+    for test in unit_tests:
+
+      # If the module name inside the test_modules list
+      if test in test_modules:
+
+        # Construct the module path of outpit dir for the module
+        output_dir = os.path.join(UNIT_TEST_DIR,test,'output')
+
+        # Check if output dir exists
+        if os.path.isdir(output_dir):
+          # List all files fro output dir
+          output_files = os.listdir(output_dir)
+
+          # Loop through each file
+          for file in output_files:
+
+            # Chck if is an html file
+            if file.endswith('.html'):
+
+              # Construct teh full path of html file
+              report_out_path = os.path.join(output_dir,file)
+
+              # Open the html file in read mode
+              with open(report_out_path, 'r', encoding='utf-8') as f:
+                report_out = f.read()
+                # Add the formatting
+                formatted_report = self.add_html_formatting(report_out)
+
+                # Write back the new formatted_report value
+                out_report_dir = os.path.join(OUTPUT_DIR, test)
+                os.makedirs(out_report_dir, exist_ok=True)
+
+                with open(os.path.join(
+                  out_report_dir,file), 'w',
+                  encoding='utf-8') as f:
+                  f.write(formatted_report)
+
+  def add_html_formatting(self, body):
+    """Wrap the raw report inside a complete HTML structure with styles"""
+
+    # Load the css file
+    with open(CSS_PATH, 'r', encoding='UTF-8') as css_file:
+      styles = css_file.read()
+
+    # Load the html file
+    with open(HTML_PATH, 'r', encoding='UTF-8') as html_file:
+      html_content = html_file.read()
+
+      # Search for head content using regex
+      head = re.search(r'<head.*?>.*?</head>', html_content, re.DOTALL).group(0)
+    # Define the html template
+    html_template = f'''
+    <!DOCTYPE html>
+    <html lang="en">
+    {head}
+    <body>
+      {body}
+    </body>
+    </html>
+    '''
+    # Create a Jinja2 template from the string
+    template = Template(html_template)
+
+    # Render the template with css styles
+    return template.render(styles=styles, body=body)
+
   def get_module_html_report(self, module):
     """Load the HTML report for a specific module"""
 
@@ -227,6 +308,9 @@ if __name__ == '__main__':
   suite.addTest(ReportTest('pilot_proceed_compliant_test'))
   suite.addTest(ReportTest('pilot_proceed_noncompliant_test'))
   suite.addTest(ReportTest('pilot_do_not_proceed_noncompliant_test'))
+
+  # Create html test reports for each module in 'output' dir
+  suite.addTest(ReportTest('report_formatting'))
 
   # Create html test reports for each module in 'output' dir
   suite.addTest(ReportTest('report_formatting'))

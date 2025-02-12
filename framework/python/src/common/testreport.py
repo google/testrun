@@ -50,6 +50,8 @@ root_dir = os.path.dirname(
 report_resource_dir = os.path.join(root_dir, RESOURCES_DIR)
 
 test_run_img_file = os.path.join(report_resource_dir, 'testrun.png')
+qualification_icon = os.path.join(report_resource_dir, 'qualification-icon.png')
+pilot_icon = os.path.join(report_resource_dir, 'pilot-icon.png')
 
 
 class TestReport():
