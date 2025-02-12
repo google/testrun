@@ -70,7 +70,7 @@ limitations under the License.
     <button
       mat-flat-button
       class="discard-button"
-      [disabled]="profileForm.pristine"
+      [disabled]="profileHasNoChanges() || profileForm.pristine"
       (click)="onDiscardClick()">
       Discard
     </button>
