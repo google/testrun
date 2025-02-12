@@ -54,7 +54,8 @@
         }
     ]
   },
-  "status": "Compliant",
+  "status": "Complete",
+  "result": "Non-Compliant",
   "started": "2024-04-10 21:21:47",
   "finished": "2024-04-10 21:35:43",
   "tests": {
@@ -83,17 +84,26 @@
       },
       {
         "name": "security.tls.v1_2_server",
-        "description": "TLS 1.2 validated: Certificate has a valid time range\nRSA key length passed: 2048 >= 2048\nDevice signed by cert:/testrun/root_certs/myrootca4132.pem\nTLS 1.3 validated: Certificate has a valid time range\nRSA key length passed: 2048 >= 2048\nDevice signed by cert:/testrun/root_certs/myrootca4132.pem",
+        "description": "TLS 1.2 certificate could not be validated",
         "expected_behavior": "TLS 1.2 certificate is issued to the web browser client when accessed",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Enable TLS 1.2 support in the web server configuration",
+          "Disable TLS 1.0 and 1.1",
+          "Sign the certificate used by the web server"
+        ]
       },
       {
         "name": "security.tls.v1_2_client",
-        "description": "TLS 1.2 client connections valid",
+        "description": "TLS 1.2 client connections invalid",
         "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Disable connections to unsecure services",
+          "Ensure any URLs connected to are secure (https)"
+        ]
       },
       {
         "name": "connection.switch.arp_inspection",
@@ -111,77 +121,112 @@
       },
       {
         "name": "connection.dhcp_address",
-        "description": "Device responded to leased ip address",
+        "description": "No DHCP lease could be found",
         "expected_behavior": "The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Enable DHCP",
+          "Install a DHCP client"
+        ]
       },
       {
         "name": "connection.mac_address",
-        "description": "MAC address found: aa:bb:cc:dd:ee:ff",
+        "description": "No MAC address found",
         "expected_behavior": "N/A",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Ensure that the MAC address is set by hardware only"
+        ]
       },
       {
         "name": "connection.mac_oui",
         "description": "OUI Manufacturer found: Texas Instruments",
         "expected_behavior": "The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database.",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Compliant",
+        "recommendations": [
+          "No OUI Manufacturer found for aa:bb:cc:dd:ee:ff"
+        ]
       },
       {
         "name": "connection.private_address",
-        "description": "All subnets are supported",
+        "description": "Subnet 10.0.0.100-10.0.0.200 failed",
         "expected_behavior": "The device under test accepts IP addresses within all ranges specified in RFC 1918 and communicates using these addresses.  The Internet Assigned Numbers Authority (IANA) has reserved the following three blocks of the IP address space for private internets.  10.0.0.0 - 10.255.255.255.255 (10/8 prefix). 172.16.0.0 - 172.31.255.255 (172.16/12 prefix).  192.168.0.0 - 192.168.255.255 (192.168/16 prefix)",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Install a DHCP client that supports private address space"
+        ]
       },
       {
         "name": "connection.shared_address",
-        "description": "All subnets are supported",
+        "description": "Subnet 100.64.0.1-100.64.255.254 failed",
         "expected_behavior": "The device under test accepts IP addresses within the ranges specified in RFC 6598 and communicates using these addresses",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Install a DHCP client that supports shared address space",
+          "Enable shared address space support in the DHCP client"
+        ]
       },
       {
         "name": "connection.single_ip",
-        "description": "Device is using a single IP address",
+        "description": "Device is using multiple IP addresses",
         "expected_behavior": "The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible.",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Ensure that all ports on the device are isolated",
+          "Ensure only one DHCP client is running"
+        ]
       },
       {
         "name": "connection.target_ping",
-        "description": "Device responds to ping",
+        "description": "Device does not respond to ping",
         "expected_behavior": "The device under test responds to an ICMP echo (ping) request.",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Configure device to allow ICMP requests (ping)",
+          "Create a firewall exception to allow ICMP requests from LAN"
+        ]
       },
       {
         "name": "connection.ipaddr.ip_change",
-        "description": "Device has accepted an IP address change",
+        "description": "Device did not accept IP address change",
         "expected_behavior": "If the lease expires before the client receiveds a DHCPACK, the client moves to INIT state, MUST immediately stop any other network processing and requires network initialization parameters as if the client were uninitialized.  If the client then receives a DHCPACK allocating the client its previous network addres, the client SHOULD continue network processing.  If the client is given a new network address, it MUST NOT continue using the previous network address and SHOULD notify the local users of the problem.",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Install a compliant DHCP client"
+        ]
       },
       {
         "name": "connection.ipaddr.dhcp_failover",
-        "description": "Secondary DHCP server lease confirmed active in device",
+        "description": "Device did not recieve a new lease from secondary DHCP server'",
         "expected_behavior": "",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Install a compliant DHCP client"
+        ]
       },
       {
         "name": "connection.ipv6_slaac",
-        "description": "Device has formed SLAAC address fd10:77be:4186:0:1a62:e4ff:fed7:430a",
+        "description": "Device does not support IPv6 SLAAC",
         "expected_behavior": "The device under test complies with RFC4862 and forms a valid IPv6 SLAAC address",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Install a network manager that supports IPv6",
+          "Disable DHCPv6"
+        ]
       },
       {
         "name": "connection.ipv6_ping",
-        "description": "Device responds to IPv6 ping on fd10:77be:4186:0:1a62:e4ff:fed7:430a",
+        "description": "No IPv6 SLAAC address found. Cannot ping",
         "expected_behavior": "The device responds to the ping as per RFC4443",
         "required_result": "Required",
         "result": "Compliant"
@@ -191,7 +236,11 @@
         "description": "DNS traffic detected from device",
         "expected_behavior": "The device sends DNS requests.",
         "required_result": "Required",
-        "result": "Compliant"
+        "result": "Non-Compliant",
+        "recommendations": [
+          "Enable ping response to IPv6 ICMP requests in network manager settings",
+          "Create a firewall exception to allow ICMPv6 via LAN"
+        ]
       },
       {
         "name": "dns.network.from_dhcp",
