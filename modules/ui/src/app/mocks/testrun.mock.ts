@@ -43,6 +43,11 @@ export const TEST_DATA_RESULT: IResult[] = [
     result: 'Not Started',
     required_result: RequiredResult.RequiredIfApplicable,
   },
+  {
+    name: 'dns.mdns',
+    description: 'Does the device has MDNS (or any kind of IP multicast)',
+    result: 'Not Started',
+  },
 ];
 
 export const TEST_DATA_RESULT_WITH_RECOMMENDATIONS: IResult[] = [
@@ -78,6 +83,25 @@ export const TEST_DATA_RESULT_WITH_ERROR: IResult[] = [
     description: 'Does the device has MDNS (or any kind of IP multicast)',
     result: 'Not Started',
     required_result: RequiredResult.Required,
+  },
+];
+
+export const TEST_DATA_RESULT_WITH_ERROR: IResult[] = [
+  {
+    name: 'dns.network.hostname_resolution',
+    description: 'The device should resolve hostnames',
+    result: 'Compliant',
+  },
+  {
+    name: 'dns.network.from_dhcp',
+    description:
+      'The device should use the DNS server provided by the DHCP server',
+    result: 'Error',
+  },
+  {
+    name: 'dns.mdns',
+    description: 'Does the device has MDNS (or any kind of IP multicast)',
+    result: 'Not Started',
   },
 ];
 

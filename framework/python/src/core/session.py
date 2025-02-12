@@ -134,7 +134,6 @@ class TestrunSession():
 
     # System network interfaces
     self._ifaces = {}
-
     # Loading methods
     self._load_version()
     self._load_config()
