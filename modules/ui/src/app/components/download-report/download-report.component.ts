@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { StatusOfTestrun, TestrunStatus } from '../../model/testrun-status';
+import { ResultOfTestrun, TestrunStatus } from '../../model/testrun-status';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ReportActionComponent } from '../report-action/report-action.component';
@@ -40,16 +40,16 @@ export class DownloadReportComponent extends ReportActionComponent {
     }
     return `${data.device.manufacturer} ${data.device.model} ${
       data.device.firmware
-    } ${data.status} ${this.getFormattedDateString(data.started)}`
+    } ${data.result ? data.result : data.status} ${this.getFormattedDateString(data.started)}`
       .replace(/ /g, '_')
       .toLowerCase();
   }
 
   getClass(data: TestrunStatus) {
-    if (data.status === StatusOfTestrun.Compliant) {
+    if (data.result === ResultOfTestrun.Compliant) {
       return `${this.class}-compliant`;
     }
-    if (data.status === StatusOfTestrun.NonCompliant) {
+    if (data.result === ResultOfTestrun.NonCompliant) {
       return `${this.class}-non-compliant`;
     }
     return this.class;

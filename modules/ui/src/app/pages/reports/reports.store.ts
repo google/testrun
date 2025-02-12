@@ -12,6 +12,7 @@ import { selectReports, selectRiskProfiles } from '../../store/selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
 import { fetchReports, setReports } from '../../store/actions';
+import { TestingType } from '../../model/device';
 
 export interface ReportsComponentState {
   displayedColumns: string[];
@@ -256,10 +257,22 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
         ...item,
         deviceFirmware: item.device.firmware,
         deviceInfo: item.device.manufacturer + ' ' + item.device.model,
+        testResult: this.getTestResult(item),
         duration: this.getDuration(item.started, item.finished),
         program: item.device.test_pack ?? '',
       };
     });
+  }
+
+  private getTestResult(item: TestrunStatus): string {
+    let result = '';
+    if (item.device.test_pack === TestingType.Qualification) {
+      result = item.result ? item.result : item.status;
+    }
+    if (item.device.test_pack === TestingType.Pilot) {
+      result = item.status;
+    }
+    return result;
   }
 
   private getDuration(started: string | null, finished: string | null): string {
@@ -294,7 +307,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
 
       const isIncludeStatus =
         searchString.results?.length === 0 ||
-        searchString.results?.includes(data.status);
+        searchString.results?.includes(data.testResult);
       const isIncludeStartedDate = this.filterStartedDateRange(
         data.started,
         searchString

@@ -16,9 +16,9 @@ limitations under the License.
 <ng-container *ngIf="dataSource">
   <mat-accordion displayMode="flat" multi class="tests-container" tabindex="0">
     <section class="tests-header-row">
-      <span class="tests-header-cell">Result</span>
       <span class="tests-header-cell">Name</span>
       <span class="tests-header-cell">Description</span>
+      <span class="tests-header-cell">Result</span>
       <span class="tests-header-cell">Required result</span>
       <span class="tests-header-cell expander-button-cell">
         <button
@@ -73,13 +73,13 @@ limitations under the License.
 </ng-container>
 
 <ng-template #ItemData let-item="item">
+  <span class="tests-item-cell">{{ item.name }}</span>
+  <span class="tests-item-cell">{{ item.description }}</span>
   <span class="tests-item-cell tests-item-cell-result">
     <span class="cell-result-text" [ngClass]="getResultClass(item.result)">
       <span>{{ item.result }}</span>
     </span>
   </span>
-  <span class="tests-item-cell">{{ item.name }}</span>
-  <span class="tests-item-cell">{{ item.description }}</span>
   <span
     class="tests-item-cell tests-item-cell-required-result"
     [ngClass]="getRequiredResultClass(item.required_result)">

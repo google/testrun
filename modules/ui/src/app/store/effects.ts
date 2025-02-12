@@ -322,8 +322,7 @@ export class AppEffects {
 
   private isTestrunFinished(status: string) {
     return (
-      status === StatusOfTestrun.Compliant ||
-      status === StatusOfTestrun.NonCompliant ||
+      status === StatusOfTestrun.Complete ||
       status === StatusOfTestrun.Proceed ||
       status === StatusOfTestrun.DoNotProceed ||
       status === StatusOfTestrun.Error

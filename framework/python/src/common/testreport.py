@@ -17,7 +17,8 @@ from datetime import datetime
 from weasyprint import HTML
 from io import BytesIO
 from common import util, logger
-from common.statuses import TestrunStatus
+from common.statuses import TestrunStatus, TestrunResult
+from test_orc import test_pack
 import base64
 import os
 from test_orc.test_case import TestCase
@@ -31,7 +32,10 @@ RESOURCES_DIR = 'resources/report'
 TESTS_FIRST_PAGE = 11
 TESTS_PER_PAGE = 20
 TEST_REPORT_STYLES = 'test_report_styles.css'
-TEST_REPORT_TEMPLATE = 'test_report_template.html'
+TEMPLATES_FOLDER = 'report_templates'
+TEST_REPORT_TEMPLATE = 'report_template.html'
+ICON = 'icon.png'
+
 
 LOGGER = logger.get_logger('REPORT')
 
@@ -46,21 +50,20 @@ root_dir = os.path.dirname(
 report_resource_dir = os.path.join(root_dir, RESOURCES_DIR)
 
 test_run_img_file = os.path.join(report_resource_dir, 'testrun.png')
-qualification_icon = os.path.join(report_resource_dir, 'qualification-icon.png')
-pilot_icon = os.path.join(report_resource_dir, 'pilot-icon.png')
 
 
 class TestReport():
   """Represents a previous Testrun report."""
 
   def __init__(self,
-               status=TestrunStatus.NON_COMPLIANT,
+               result=TestrunResult.NON_COMPLIANT,
                started=None,
                finished=None,
                total_tests=0):
     self._device = {}
     self._mac_addr = None
-    self._status: str = status
+    self._status: TestrunStatus = TestrunStatus.COMPLETE
+    self._result: TestrunResult = result
     self._started = started
     self._finished = finished
     self._total_tests = total_tests
@@ -81,6 +84,9 @@ class TestReport():
 
   def get_status(self):
     return self._status
+
+  def get_result(self):
+    return self._result
 
   def get_started(self):
     return self._started
@@ -117,6 +123,7 @@ class TestReport():
     report_json['mac_addr'] = self._mac_addr
     report_json['device'] = self._device
     report_json['status'] = self._status
+    report_json['result'] = self._result
     report_json['started'] = self._started.strftime(DATE_TIME_FORMAT)
     report_json['finished'] = self._finished.strftime(DATE_TIME_FORMAT)
 
@@ -170,6 +177,10 @@ class TestReport():
       self._device['device_profile'] = json_file['device']['additional_info']
 
     self._status = json_file['status']
+
+    if 'result' in json_file:
+      self._result = json_file['result']
+
     self._started = datetime.strptime(json_file['started'], DATE_TIME_FORMAT)
     self._finished = datetime.strptime(json_file['finished'], DATE_TIME_FORMAT)
 
@@ -209,13 +220,22 @@ class TestReport():
 
   def to_html(self):
 
+    # Obtain test pack
+    current_test_pack = test_pack.TestPack.get_test_pack(
+      self._device['test_pack'])
+    template_folder = os.path.join(current_test_pack.path,
+                                  TEMPLATES_FOLDER)
     # Jinja template
     template_env = Environment(
-                                loader=FileSystemLoader(report_resource_dir),
+                                loader=FileSystemLoader(
+                                              template_folder
+                                              ),
                                 trim_blocks=True,
                                 lstrip_blocks=True
                               )
     template = template_env.get_template(TEST_REPORT_TEMPLATE)
+
+    # Report styles
     with open(os.path.join(report_resource_dir,
                            TEST_REPORT_STYLES),
                            'r',
@@ -227,13 +247,11 @@ class TestReport():
     with open(test_run_img_file, 'rb') as f:
       logo = base64.b64encode(f.read()).decode('utf-8')
 
-    json_data=self.to_json()
+    # Icon
+    with open(os.path.join(template_folder, ICON), 'rb') as f:
+      icon = base64.b64encode(f.read()).decode('utf-8')
 
-    # Icons
-    with open(qualification_icon, 'rb') as f:
-      icon_qualification = base64.b64encode(f.read()).decode('utf-8')
-    with open(pilot_icon, 'rb') as f:
-      icon_pilot = base64.b64encode(f.read()).decode('utf-8')
+    json_data=self.to_json()
 
     # Convert the timestamp strings to datetime objects
     start_time = datetime.strptime(json_data['started'], '%Y-%m-%d %H:%M:%S')
@@ -249,29 +267,27 @@ class TestReport():
         successful_tests += 1
 
     # Obtain the steps to resolve
-    steps_to_resolve = self._get_steps_to_resolve(json_data)
+    logic = current_test_pack.get_logic()
+    steps_to_resolve_ = logic.get_steps_to_resolve(json_data)
 
-    # Obtain optional recommendations
-    optional_steps_to_resolve = self._get_optional_steps_to_resolve(json_data)
+    LOGGER.debug(steps_to_resolve_)
 
     module_reports = self._module_reports
     env_module = Environment(loader=BaseLoader())
     pages_num = self._pages_num(json_data)
     module_templates = [
         env_module.from_string(s).render(
-          json_data=json_data,
+          name=current_test_pack.name,
           device=json_data['device'],
           logo=logo,
-          icon_qualification=icon_qualification,
-          icon_pilot=icon_pilot,
+          icon=icon,
           version=self._version,
       ) for s in self._module_templates
     ]
 
     return self._add_page_counter(template.render(styles=styles,
                            logo=logo,
-                           icon_qualification=icon_qualification,
-                           icon_pilot=icon_pilot,
+                           icon=icon,
                            version=self._version,
                            json_data=json_data,
                            device=json_data['device'],
@@ -281,8 +297,7 @@ class TestReport():
                            successful_tests=successful_tests,
                            total_tests=self._total_tests,
                            test_results=json_data['tests']['results'],
-                           steps_to_resolve=steps_to_resolve,
-                           optional_steps_to_resolve=optional_steps_to_resolve,
+                           steps_to_resolve=steps_to_resolve_,
                            module_reports=module_reports,
                            pages_num=pages_num,
                            tests_first_page=TESTS_FIRST_PAGE,
@@ -297,7 +312,7 @@ class TestReport():
     total_pages = len(page_index_divs)
     for index, div in enumerate(page_index_divs):
       div.string = f'Page {index+1}/{total_pages}'
-    return soup.prettify()
+    return str(soup)
 
   def _pages_num(self, json_data):
 
@@ -337,23 +352,3 @@ class TestReport():
                                           reverse=True)
                                   )
     return sorted_modules
-
-  def _get_steps_to_resolve(self, json_data):
-    tests_with_recommendations = []
-
-    # Collect all tests with recommendations
-    for test in json_data['tests']['results']:
-      if 'recommendations' in test:
-        tests_with_recommendations.append(test)
-
-    return tests_with_recommendations
-
-  def _get_optional_steps_to_resolve(self, json_data):
-    tests_with_recommendations = []
-
-    # Collect all tests with recommendations
-    for test in json_data['tests']['results']:
-      if 'optional_recommendations' in test:
-        tests_with_recommendations.append(test)
-
-    return tests_with_recommendations

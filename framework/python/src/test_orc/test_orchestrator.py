@@ -22,7 +22,7 @@ import docker
 from datetime import datetime
 from common import logger, util
 from common.testreport import TestReport
-from common.statuses import TestrunStatus, TestResult
+from common.statuses import TestrunStatus, TestrunResult, TestResult
 from core.docker.test_docker_module import TestModule
 from test_orc.test_case import TestCase
 from test_orc.test_pack import TestPack
@@ -37,6 +37,8 @@ RESOURCES_DIR = "resources"
 
 RUNTIME_TEST_DIR = os.path.join(RUNTIME_DIR, "test")
 TEST_PACKS_DIR = os.path.join(RESOURCES_DIR, "test_packs")
+TEST_PACK_CONFIG_FILE = "config.json"
+TEST_PACK_LOGIC_FILE = "test_pack.py"
 
 TEST_MODULES_DIR = "modules/test"
 MODULE_CONFIG = "conf/module_config.json"
@@ -175,6 +177,7 @@ class TestOrchestrator:
     report = TestReport()
 
     generated_report_json = self._generate_report()
+
     report.from_json(generated_report_json)
     report.add_module_reports(self.get_session().get_module_reports())
     report.add_module_templates(self.get_session().get_module_templates())
@@ -190,12 +193,16 @@ class TestOrchestrator:
     # Default message is empty (better than an error message).
     # This should never be shown
     message: str = ""
-    if report.get_status() == TestrunStatus.COMPLIANT:
+    if report.get_result() == TestrunResult.COMPLIANT:
       message = test_pack.get_message("compliant_description")
-    elif report.get_status() == TestrunStatus.NON_COMPLIANT:
+    elif report.get_result() == TestrunResult.NON_COMPLIANT:
       message = test_pack.get_message("non_compliant_description")
 
     self.get_session().set_description(message)
+
+    # Set result and status at the end
+    self.get_session().set_result(report.get_result())
+    self.get_session().set_status(report.get_status())
 
     # Move testing output from runtime to local device folder
     self._timestamp_results(device)
@@ -204,8 +211,6 @@ class TestOrchestrator:
     self._cleanup_old_test_results(device)
 
     LOGGER.debug("Old test results cleaned")
-
-    return report.get_status()
 
   def _write_reports(self, test_report):
 
@@ -231,43 +236,39 @@ class TestOrchestrator:
 
   def _generate_report(self):
 
+    device = self.get_session().get_target_device()
+    test_pack_name = device.test_pack
+    test_pack = self.get_test_pack(test_pack_name)
+
     report = {}
     report["testrun"] = {"version": self.get_session().get_version()}
 
-    report["mac_addr"] = self.get_session().get_target_device().mac_addr
-    report["device"] = self.get_session().get_target_device().to_dict()
+    report["mac_addr"] = device.mac_addr
+    report["device"] = device.to_dict()
     report["started"] = self.get_session().get_started().strftime(
         "%Y-%m-%d %H:%M:%S")
     report["finished"] = self.get_session().get_finished().strftime(
         "%Y-%m-%d %H:%M:%S")
-    report["status"] = self._calculate_result()
+
+    # Update the result
+    result = test_pack.get_logic().calculate_result(
+      self.get_session().get_test_results())
+    report["result"] = result
+
+    # Update the status
+    status = test_pack.get_logic().calculate_status(
+      result,
+      self.get_session().get_test_results())
+    report["status"] = status
+
     report["tests"] = self.get_session().get_report_tests()
     report["report"] = (
         self._api_url + "/" + SAVED_DEVICE_REPORTS.replace(
             "{device_folder}",
-            self.get_session().get_target_device().device_folder) +
+            device.device_folder) +
         self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S"))
 
     return report
-
-  def _calculate_result(self):
-    result = TestResult.COMPLIANT
-    for test_result in self.get_session().get_test_results():
-
-      # Check Required tests
-      if (test_result.required_result.lower() == "required"
-          and test_result.result not in [
-            TestResult.COMPLIANT,
-            TestResult.ERROR
-          ]):
-        result = TestResult.NON_COMPLIANT
-
-      # Check Required if Applicable tests
-      elif (test_result.required_result.lower() == "required if applicable"
-            and test_result.result == TestResult.NON_COMPLIANT):
-        result = TestResult.NON_COMPLIANT
-
-    return result
 
   def _cleanup_old_test_results(self, device):
 
@@ -360,12 +361,12 @@ class TestOrchestrator:
 
       # Report file path
       report_path = os.path.join(
-        LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
-        timestamp, "test", device.mac_addr.replace(":", ""))
+          LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
+          timestamp, "test", device.mac_addr.replace(":", ""))
 
       # Parse string timestamp
       date_timestamp: datetime.datetime = datetime.strptime(
-      timestamp, "%Y-%m-%dT%H:%M:%S")
+          timestamp, "%Y-%m-%dT%H:%M:%S")
 
       # Find the report
       test_report = None
@@ -388,17 +389,18 @@ class TestOrchestrator:
 
         # Write the json report
         with open(os.path.join(report_path, "report.json"),
-                  "w", encoding="utf-8") as f:
+                  "w",
+                  encoding="utf-8") as f:
           json.dump(test_report.to_json(), f, indent=2)
 
         # Write the html report
         with open(os.path.join(report_path, "report.html"),
-                  "w", encoding="utf-8") as f:
+                  "w",
+                  encoding="utf-8") as f:
           f.write(test_report.to_html())
 
         # Write the pdf report
-        with open(os.path.join(report_path, "report.pdf"),
-                  "wb") as f:
+        with open(os.path.join(report_path, "report.pdf"), "wb") as f:
           f.write(test_report.to_pdf().getvalue())
 
       # Define temp directory to store files before zipping
@@ -569,14 +571,13 @@ class TestOrchestrator:
         for test_result in module_results:
 
           # Convert dict from json into TestCase object
-          test_case = TestCase(
-              name=test_result["name"],
-              result=test_result["result"],
-              description=test_result["description"])
+          test_case = TestCase(name=test_result["name"],
+                               result=test_result["result"],
+                               description=test_result["description"])
 
           # Add steps to resolve if test is non-compliant
-          if (test_case.result == TestResult.NON_COMPLIANT and
-              "recommendations" in test_result):
+          if (test_case.result == TestResult.NON_COMPLIANT
+              and "recommendations" in test_result):
             test_case.recommendations = test_result["recommendations"]
           else:
             test_case.recommendations = []
@@ -662,23 +663,7 @@ class TestOrchestrator:
 
   def _load_test_packs(self):
 
-    for test_pack_file in os.listdir(TEST_PACKS_DIR):
-
-      LOGGER.debug(f"Loading test pack {test_pack_file}")
-
-      with open(os.path.join(
-        self._root_path,
-        TEST_PACKS_DIR,
-        test_pack_file), encoding="utf-8") as f:
-        test_pack_json = json.load(f)
-
-      test_pack: TestPack = TestPack(
-        name = test_pack_json["name"],
-        tests = test_pack_json["tests"],
-        language = test_pack_json["language"]
-      )
-
-      self._test_packs.append(test_pack)
+    self._test_packs = TestPack.get_test_packs()
 
   def _load_test_modules(self):
     """Load network modules from module_config.json."""
@@ -693,6 +678,12 @@ class TestOrchestrator:
     # corrupted during DHCP changes in the conn module
     if "protocol" in module_dirs:
       module_dirs.insert(0, module_dirs.pop(module_dirs.index("protocol")))
+    # Check if the directory services exists and move it higher in the index
+    # so it always runs before connection. Connection may cause too many
+    # DHCP changes causing nmap to use wrong IP during scan
+    if "services" in module_dirs and "conn" in module_dirs:
+      module_dirs.insert(module_dirs.index("conn"),
+                         module_dirs.pop(module_dirs.index("services")))
 
     for module_dir in module_dirs:
 
@@ -723,9 +714,7 @@ class TestOrchestrator:
       module_conf_file = os.path.join(self._root_path, modules_dir, module_dir,
                                       MODULE_CONFIG)
 
-      module = TestModule(module_conf_file,
-                          self,
-                          self.get_session(),
+      module = TestModule(module_conf_file, self, self.get_session(),
                           extra_hosts)
       if module.depends_on is not None:
         self._load_test_module(module.depends_on)
@@ -737,10 +726,7 @@ class TestOrchestrator:
     return self._test_packs
 
   def get_test_pack(self, name: str) -> TestPack:
-    for test_pack in self._test_packs:
-      if test_pack.name.lower() == name.lower():
-        return test_pack
-    return None
+    return TestPack.get_test_pack(name, self._test_packs)
 
   def _stop_modules(self, kill=False):
     LOGGER.info("Stopping test modules")
@@ -786,6 +772,5 @@ class TestOrchestrator:
       start_idx = current_test if i == self._current_module else 0
       for j in range(start_idx, len(self._test_modules_running[i].tests)):
         self.get_session().set_test_result_error(
-          self._test_modules_running[i].tests[j],
-          "Test did not run, the device was disconnected"
-          )
+            self._test_modules_running[i].tests[j],
+            "Test did not run, the device was disconnected")

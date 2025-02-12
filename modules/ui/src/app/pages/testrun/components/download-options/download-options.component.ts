@@ -27,7 +27,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import {
-  StatusOfTestrun,
+  ResultOfTestrun,
   TestrunStatus,
 } from '../../../../model/testrun-status';
 import { MatOptionSelectionChange } from '@angular/material/core';
@@ -115,9 +115,9 @@ export class DownloadOptionsComponent {
 
   sendGAEvent(data: TestrunStatus, type: string) {
     let event = `download_report_${type === DownloadOption.PDF ? 'pdf' : 'zip'}`;
-    if (data.status === StatusOfTestrun.Compliant) {
+    if (data.result === ResultOfTestrun.Compliant) {
       event += '_compliant';
-    } else if (data.status === StatusOfTestrun.NonCompliant) {
+    } else if (data.result === ResultOfTestrun.NonCompliant) {
       event += '_non_compliant';
     }
     // @ts-expect-error data layer is not null

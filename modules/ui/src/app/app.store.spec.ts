@@ -55,6 +55,7 @@ import { FocusManagerService } from './services/focus-manager.service';
 import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { MOCK_ADAPTERS } from './mocks/settings.mock';
 import { TestingType } from './model/device';
+import { ResultOfTestrun, StatusOfTestrun } from './model/testrun-status';
 
 const mock = (() => {
   let store: { [key: string]: string } = {};
@@ -499,7 +500,8 @@ describe('AppStore', () => {
 
         store.overrideSelector(selectIsTestingComplete, true);
         store.overrideSelector(selectSystemStatus, {
-          status: 'Compliant',
+          result: ResultOfTestrun.Compliant,
+          status: StatusOfTestrun.Complete,
           mac_addr: '00:1e:42:35:73:c4',
           device: {
             manufacturer: 'Delta',

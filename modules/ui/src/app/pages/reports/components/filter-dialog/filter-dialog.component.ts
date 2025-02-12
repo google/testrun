@@ -58,7 +58,10 @@ import {
   DateRange as LocalDateRange,
 } from '../../../../model/filters';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
-import { StatusOfTestResult } from '../../../../model/testrun-status';
+import {
+  ResultOfTestrun,
+  StatusOfTestrun,
+} from '../../../../model/testrun-status';
 import { DeviceValidators } from '../../../devices/components/device-form/device.validators';
 
 interface DialogData {
@@ -103,8 +106,10 @@ export class FilterDialogComponent
   private fb = inject(FormBuilder);
 
   resultList = [
-    { value: StatusOfTestResult.Compliant, enabled: false },
-    { value: StatusOfTestResult.NonCompliant, enabled: false },
+    { value: ResultOfTestrun.Compliant, enabled: false },
+    { value: ResultOfTestrun.NonCompliant, enabled: false },
+    { value: StatusOfTestrun.Proceed, enabled: false },
+    { value: StatusOfTestrun.DoNotProceed, enabled: false },
   ];
   filterForm!: FormGroup;
   selectedRangeValue!: DateRange<Date> | undefined;

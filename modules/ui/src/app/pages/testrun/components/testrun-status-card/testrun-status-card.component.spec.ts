@@ -17,6 +17,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TestrunStatusCardComponent } from './testrun-status-card.component';
 import {
+  ResultOfTestrun,
   StatusOfTestrun,
   TestrunStatus,
 } from '../../../../model/testrun-status';
@@ -61,14 +62,14 @@ describe('ProgressStatusCardComponent', () => {
       ];
 
       const statusesForCompletedSuccessClass = [
-        StatusOfTestrun.Compliant,
+        StatusOfTestrun.Complete,
         StatusOfTestrun.CompliantLimited,
         StatusOfTestrun.CompliantHigh,
         StatusOfTestrun.Proceed,
       ];
 
       const statusesForCompletedFailedClass = [
-        StatusOfTestrun.NonCompliant,
+        StatusOfTestrun.Complete,
         StatusOfTestrun.Error,
         StatusOfTestrun.DoNotProceed,
       ];
@@ -90,7 +91,10 @@ describe('ProgressStatusCardComponent', () => {
             'completed-success': true,
           };
 
-          const result = component.getClass(testCase);
+          const result = component.getClass(
+            testCase,
+            ResultOfTestrun.Compliant
+          );
 
           expect(result).toEqual(expectedResult);
         });
@@ -103,7 +107,10 @@ describe('ProgressStatusCardComponent', () => {
             'completed-failed': true,
           };
 
-          const result = component.getClass(testCase);
+          const result = component.getClass(
+            testCase,
+            ResultOfTestrun.NonCompliant
+          );
 
           expect(result).toEqual(expectedResult);
         });

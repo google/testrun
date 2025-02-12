@@ -127,9 +127,9 @@ limitations under the License.
           </app-filter-header>
           <td *matCellDef="let data" mat-cell>
             <span
-              [ngClass]="getResultClass(data.status)"
+              [ngClass]="getResultClass(data.testResult)"
               class="cell-result-text">
-              {{ data.status }}
+              {{ data.testResult }}
             </span>
           </td>
         </ng-container>

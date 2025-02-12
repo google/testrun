@@ -25,7 +25,11 @@ import { MatOptionModule } from '@angular/material/core';
 import { TestRunService } from '../../services/test-run.service';
 import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
-import { TestrunStatus, StatusOfTestrun } from '../../model/testrun-status';
+import {
+  TestrunStatus,
+  StatusOfTestrun,
+  ResultOfTestrun,
+} from '../../model/testrun-status';
 import { DownloadReportComponent } from '../download-report/download-report.component';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { FocusManagerService } from '../../services/focus-manager.service';
@@ -85,6 +89,7 @@ export class DownloadZipModalComponent
   } as Profile;
   public readonly Routes = Routes;
   public readonly StatusOfTestrun = StatusOfTestrun;
+  public readonly ResultOfTestrun = ResultOfTestrun;
   profiles: Profile[] = [];
   selectedProfile: Profile;
   constructor() {
@@ -168,6 +173,13 @@ export class DownloadZipModalComponent
 
   public getRiskClass(riskResult: string): RiskResultClassName {
     return this.testRunService.getRiskClass(riskResult);
+  }
+
+  public getTestingResult(data: TestrunStatus): string {
+    if (data.status === StatusOfTestrun.Complete && data.result) {
+      return data.result;
+    }
+    return data.status;
   }
 
   private getZipLink(reportURL: string): string {
