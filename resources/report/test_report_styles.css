@@ -457,7 +457,7 @@
       position: absolute;
       font-size: 12px;
       margin-top: 12px;
-      max-width: 300px;
+      max-width: 185px;
       font-weight: normal;
       align-items: center;
       text-overflow: ellipsis;
@@ -466,7 +466,7 @@
     }
 
     .result-test-description {
-      max-width: 380px;
+      max-width: 300px;
     }
 
     .result-test-result-error {
