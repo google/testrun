@@ -21,6 +21,7 @@ import {
   output,
   OnInit,
   ChangeDetectionStrategy,
+  NgZone,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -46,6 +47,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 })
 export class ListItemComponent<T extends object> implements OnInit {
   private container?: HTMLElement;
+  private zone = inject(NgZone);
   entity = input.required<T>();
   actions = input<EntityAction[]>([]);
   menuItemClicked = output<string>();
@@ -63,25 +65,29 @@ export class ListItemComponent<T extends object> implements OnInit {
 
   @HostListener('mouseenter', ['$event'])
   onEvent(event: MouseEvent): void {
-    this.updateMessage();
-    if (!this.tooltip.message) return;
-    this.tooltip.show(0, { x: event.clientX, y: event.clientY });
-    this.container = document.querySelector(
-      '.mat-mdc-tooltip-panel:has(.list-item-tooltip)'
-    ) as HTMLElement;
+    this.zone.run(() => {
+      this.updateMessage();
+      if (!this.tooltip.message) return;
+      this.tooltip.show(0, { x: event.clientX, y: event.clientY });
+      this.container = document.querySelector(
+        '.mat-mdc-tooltip-panel:has(.list-item-tooltip)'
+      ) as HTMLElement;
+    });
   }
 
   @HostListener('mousemove', ['$event'])
   onMoveEvent(event: MouseEvent): void {
-    if (!this.tooltip.message) return;
-    if (!this.container) {
-      this.container = document.querySelector(
-        '.mat-mdc-tooltip-panel:has(.list-item-tooltip)'
-      ) as HTMLElement;
-    }
+    this.zone.run(() => {
+      if (!this.tooltip.message) return;
+      if (!this.container) {
+        this.container = document.querySelector(
+          '.mat-mdc-tooltip-panel:has(.list-item-tooltip)'
+        ) as HTMLElement;
+      }
 
-    this.container.style.top = event.clientY + 'px';
-    this.container.style.left = event.clientX + 'px';
+      this.container.style.top = event.clientY + 'px';
+      this.container.style.left = event.clientX + 'px';
+    });
   }
 
   @HostListener('mouseleave')
@@ -93,6 +99,10 @@ export class ListItemComponent<T extends object> implements OnInit {
     this.updateMessage();
     this.tooltip.positionAtOrigin = true;
     this.tooltip.tooltipClass = 'list-item-tooltip';
+  }
+
+  trackByAction(index: number, item: EntityAction) {
+    return item.action;
   }
 
   private updateMessage() {

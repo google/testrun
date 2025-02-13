@@ -30,7 +30,7 @@ limitations under the License.
   <button
     class="list-item-menu-item"
     mat-menu-item
-    *ngFor="let action of actions()"
+    *ngFor="let action of actions(); trackBy: trackByAction"
     (click)="menuItemClicked.emit(action.action)">
     <mat-icon *ngIf="action.icon" fontSet="material-symbols-outlined">{{
       action.icon

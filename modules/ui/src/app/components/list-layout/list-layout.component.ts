@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -46,6 +47,7 @@ import { Profile } from '../../model/profile';
   providers: [DatePipe],
   templateUrl: './list-layout.component.html',
   styleUrl: './list-layout.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListLayoutComponent<T extends object> {
   private datePipe = inject(DatePipe);
