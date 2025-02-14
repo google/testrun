@@ -415,46 +415,23 @@ describe('RiskAssessmentComponent', () => {
         openCloseDialogSpy.calls.reset();
       });
 
-      describe('with no selected profile', () => {
+      describe('after dialog closed with discard selected', () => {
         beforeEach(() => {
           spyOn(
             <ProfileFormComponent>component.form(),
             'openCloseDialog'
           ).and.returnValue(of(true));
-          component.discard(null, []);
+          component.discard();
         });
-
-        it('should call setFocusOnCreateButton', () => {
-          expect(
-            mockRiskAssessmentStore.setFocusOnCreateButton
-          ).toHaveBeenCalled();
-        });
-
-        it('should close the form', () => {
-          expect(component.isOpenProfileForm).toBeFalse();
-        });
-      });
-
-      describe('with selected profile', () => {
-        beforeEach(fakeAsync(() => {
-          spyOn(
-            <ProfileFormComponent>component.form(),
-            'openCloseDialog'
-          ).and.returnValue(of(true));
-          component.discard(PROFILE_MOCK, []);
-          tick(100);
-        }));
-
-        it('should call setFocusOnCreateButton', fakeAsync(() => {
-          expect(
-            mockRiskAssessmentStore.setFocusOnSelectedProfile
-          ).toHaveBeenCalled();
-        }));
 
         it('should update selected profile', () => {
           expect(
             mockRiskAssessmentStore.updateSelectedProfile
           ).toHaveBeenCalledWith(null);
+        });
+
+        it('should close the form', () => {
+          expect(component.isOpenProfileForm).toBeFalse();
         });
       });
 
