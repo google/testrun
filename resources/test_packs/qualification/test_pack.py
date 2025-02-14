@@ -21,6 +21,16 @@ def calculate_result(json):
           and test_result.result == TestResult.NON_COMPLIANT):
       result = TestrunResult.NON_COMPLIANT
 
+    # Check Recommended tests
+    elif (test_result.required_result.lower() == "recommended"
+          and test_result.result == TestResult.NON_COMPLIANT):
+      result = TestrunResult.NON_COMPLIANT
+
+    # Check Roadmap tests
+    elif (test_result.required_result.lower() == "roadmap"
+          and test_result.result == TestResult.NON_COMPLIANT):
+      result = TestrunResult.NON_COMPLIANT
+
   return result
 
 def calculate_status(result, json): # pylint: disable=unused-argument
