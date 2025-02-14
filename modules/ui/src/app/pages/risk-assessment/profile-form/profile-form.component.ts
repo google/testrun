@@ -128,7 +128,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
 
   @Output() saveProfile = new EventEmitter<Profile>();
   @Output() deleteCopy = new EventEmitter<Profile>();
-  @Output() discard = new EventEmitter();
+  @Output() discard = new EventEmitter<Profile>();
   @Output() delete = new EventEmitter<Profile>();
   @Output() copyProfile = new EventEmitter<Profile>();
   ngOnInit() {
@@ -297,7 +297,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   onDiscardClick() {
-    this.discard.emit();
+    this.discard.emit(this.selectedProfile!);
   }
 
   onDeleteClick(): void {
