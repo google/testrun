@@ -141,6 +141,8 @@ $border-radius: 12px;
   padding-right: variables.$icon-size;
 
   .item-manufacturer-text {
+    width: 210px;
+    max-width: 240px;
     margin: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -187,5 +189,8 @@ mat-icon {
   .item-name,
   mat-icon {
     color: colors.$on-error-container;
+  }
+  .item-manufacturer-text {
+    max-width: 150px;
   }
 }
