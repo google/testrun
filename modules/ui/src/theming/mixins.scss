@@ -95,11 +95,11 @@
   left: 32px;
   bottom: 25px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   justify-content: space-between;
   width: calc(100% - 64px);
-  height: 80px;
   padding: 16px;
   box-sizing: border-box;
   background: colors.$surface;
