@@ -203,25 +203,33 @@ export class RiskAssessmentComponent
     }
   }
 
-  discard(selectedProfile: Profile | null) {
+  discard(selectedProfile: Profile | null, profiles: Profile[]) {
     this.liveAnnouncer.clear();
-    this.openCloseDialog(selectedProfile);
+    this.openCloseDialog(selectedProfile, profiles);
   }
 
   copyProfile(profile: Profile, profiles: Profile[]) {
     this.copyProfileAndOpenForm(profile, profiles);
   }
 
-  private openCloseDialog(selectedProfile: Profile | null) {
+  private openCloseDialog(
+    selectedProfile: Profile | null,
+    profiles: Profile[]
+  ) {
     this.form()
       ?.openCloseDialog()
       .pipe(takeUntil(this.destroy$))
       .subscribe(close => {
         if (close) {
           if (selectedProfile) {
-            timer(100).subscribe(() => {
-              this.store.setFocusOnSelectedProfile();
-            });
+            if (this.isCopyProfile) {
+              this.deleteCopy(selectedProfile, profiles);
+              this.store.setFocusOnCreateButton();
+            } else {
+              timer(100).subscribe(() => {
+                this.store.setFocusOnSelectedProfile();
+              });
+            }
           } else {
             this.store.setFocusOnCreateButton();
           }

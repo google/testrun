@@ -70,6 +70,7 @@ describe('RiskAssessmentComponent', () => {
       'setFocusOnSelectedProfile',
       'setFocusOnProfileForm',
       'updateProfiles',
+      'removeProfile',
     ]);
 
     await TestBed.configureTestingModule({
@@ -407,7 +408,7 @@ describe('RiskAssessmentComponent', () => {
           'openCloseDialog'
         ).and.returnValue(of(true));
 
-        component.discard(null);
+        component.discard(null, []);
 
         expect(openCloseDialogSpy).toHaveBeenCalled();
 
@@ -420,7 +421,7 @@ describe('RiskAssessmentComponent', () => {
             <ProfileFormComponent>component.form(),
             'openCloseDialog'
           ).and.returnValue(of(true));
-          component.discard(null);
+          component.discard(null, []);
         });
 
         it('should call setFocusOnCreateButton', () => {
@@ -440,7 +441,7 @@ describe('RiskAssessmentComponent', () => {
             <ProfileFormComponent>component.form(),
             'openCloseDialog'
           ).and.returnValue(of(true));
-          component.discard(PROFILE_MOCK);
+          component.discard(PROFILE_MOCK, []);
           tick(100);
         }));
 
@@ -454,6 +455,22 @@ describe('RiskAssessmentComponent', () => {
           expect(
             mockRiskAssessmentStore.updateSelectedProfile
           ).toHaveBeenCalledWith(null);
+        });
+      });
+
+      describe('with selected copy profile', () => {
+        beforeEach(fakeAsync(() => {
+          spyOn(
+            <ProfileFormComponent>component.form(),
+            'openCloseDialog'
+          ).and.returnValue(of(true));
+          component.isCopyProfile = true;
+          component.discard(DRAFT_COPY_PROFILE_MOCK, [DRAFT_COPY_PROFILE_MOCK]);
+          tick(100);
+        }));
+
+        it('should remove copy if not saved', () => {
+          expect(mockRiskAssessmentStore.removeProfile).toHaveBeenCalled();
         });
       });
     });
