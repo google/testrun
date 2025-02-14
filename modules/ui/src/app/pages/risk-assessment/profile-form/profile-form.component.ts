@@ -297,7 +297,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   onDiscardClick() {
-    this.discard.emit(this.selectedProfile!);
+    this.discard.emit();
   }
 
   onDeleteClick(): void {
