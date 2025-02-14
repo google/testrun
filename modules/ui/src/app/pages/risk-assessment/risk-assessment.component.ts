@@ -22,6 +22,7 @@ import {
   inject,
   viewChild,
   ChangeDetectorRef,
+  ElementRef,
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
@@ -93,6 +94,7 @@ export class RiskAssessmentComponent
   private store = inject(RiskAssessmentStore);
   private liveAnnouncer = inject(LiveAnnouncer);
   cd = inject(ChangeDetectorRef);
+  private elementRef = inject(ElementRef);
   private destroy$: Subject<boolean> = new Subject<boolean>();
   dialog = inject(MatDialog);
   element = inject(ViewContainerRef);
@@ -171,7 +173,9 @@ export class RiskAssessmentComponent
             name: profileName,
             onDelete: (idx = 0) => {
               this.closeFormAfterDelete(profileName, profile);
-              this.setFocus(idx);
+              timer(100).subscribe(() => {
+                this.setFocus(idx);
+              });
             },
           });
         } else {
@@ -203,34 +207,47 @@ export class RiskAssessmentComponent
     }
   }
 
-  discard(selectedProfile: Profile | null) {
+  discard() {
     this.liveAnnouncer.clear();
-    this.openCloseDialog(selectedProfile);
+    this.openCloseDialog();
   }
 
   copyProfile(profile: Profile, profiles: Profile[]) {
     this.copyProfileAndOpenForm(profile, profiles);
   }
 
-  private openCloseDialog(selectedProfile: Profile | null) {
+  private openCloseDialog() {
     this.form()
       ?.openCloseDialog()
       .pipe(takeUntil(this.destroy$))
       .subscribe(close => {
         if (close) {
-          if (selectedProfile) {
-            timer(100).subscribe(() => {
-              this.store.setFocusOnSelectedProfile();
-            });
-          } else {
-            this.store.setFocusOnCreateButton();
-          }
           this.isCopyProfile = false;
           this.isOpenProfileForm = false;
           this.store.updateSelectedProfile(null);
           this.cd.markForCheck();
+          timer(100).subscribe(() => {
+            this.focusSelectedButton();
+          });
         }
       });
+  }
+
+  private focusSelectedButton() {
+    const selectedButton = this.elementRef.nativeElement.querySelector(
+      'app-profile-item.selected .profile-item-container'
+    );
+    if (selectedButton) {
+      selectedButton.focus();
+    } else {
+      this.focusAddButton();
+    }
+  }
+
+  private focusAddButton(): void {
+    const addButton =
+      this.elementRef.nativeElement.querySelector('.add-entity-button');
+    addButton?.focus();
   }
 
   deleteCopy(copyOfProfile: Profile, profiles: Profile[]) {
@@ -338,14 +355,15 @@ export class RiskAssessmentComponent
   }
 
   private setFocus(index: number): void {
-    const nextItem = window.document.querySelector(
-      `.profile-item-${index + 1}`
-    ) as HTMLElement;
-    const firstItem = window.document.querySelector(
-      `.profile-item-0`
-    ) as HTMLElement;
+    const nextItem = this.elementRef.nativeElement.querySelectorAll(
+      'app-profile-item .profile-item-info'
+    )[index];
 
-    this.store.setFocus({ nextItem, firstItem });
+    if (nextItem) {
+      nextItem.focus();
+    } else {
+      this.focusAddButton();
+    }
   }
 
   private openSaveDialog(
