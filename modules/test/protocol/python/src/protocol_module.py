@@ -76,6 +76,7 @@ class ProtocolModule(TestModule):
             self._bacnet.validate_protocol_version(device[2], device[3])
           break
         else:
+
           LOGGER.debug('Device does not match expected IP address, skipping')
 
     LOGGER.info(result_description)

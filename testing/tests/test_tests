@@ -20,6 +20,7 @@ TEST_DIR=/tmp/results
 MATRIX=testing/tests/test_tests.json
 COMPLIANT_IMAGE="testrun/compliant"
 NON_COMPLIANT_IMAGE="testrun/non_compliant"
+BACNET_IMAGE="testrun/bacnet"
 
 # Remove and recreate results directory
 rm -rf $TEST_DIR/
@@ -41,8 +42,9 @@ sudo docker network create -d macvlan -o parent=endev0b endev0
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 # Build the Test Containers (Compliant and Non-Compliant)
-sudo docker build ./testing/docker/ci_test_device1/compliant -t $COMPLIANT_IMAGE -f ./testing/docker/ci_test_device1/compliant/Dockerfile
-sudo docker build ./testing/docker/ci_test_device1/non_compliant -t $NON_COMPLIANT_IMAGE -f ./testing/docker/ci_test_device1/non_compliant/Dockerfile
+# sudo docker build ./testing/docker/ci_test_device1/compliant -t $COMPLIANT_IMAGE -f ./testing/docker/ci_test_device1/compliant/Dockerfile
+# sudo docker build ./testing/docker/ci_test_device1/non_compliant -t $NON_COMPLIANT_IMAGE -f ./testing/docker/ci_test_device1/non_compliant/Dockerfile
+sudo docker build ./testing/docker/ci_test_device1/bacnet -t $BACNET_IMAGE -f ./testing/docker/ci_test_device1/bacnet/Dockerfile
 
 # Copy configuration to testrun
 sudo cp testing/tests/system.json local/system.json
@@ -61,7 +63,7 @@ for tester in $TESTERS; do
   # Extract details from JSON
   image=$(jq -r .$tester.image $MATRIX)
   ethmac=$(jq -r .$tester.ethmac $MATRIX)
- 
+
   # Start the testrun
   touch $testrun_log
   sudo timeout 2400 bin/testrun --single-intf --no-ui --target $ethmac -fw 1.0 > $testrun_log 2>&1 &

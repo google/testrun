@@ -10,7 +10,7 @@
       "enabled": false
     },
     "services": {
-      "enabled": true
+      "enabled": false
     },
     "ntp": {
       "enabled": false
@@ -22,7 +22,7 @@
       "enabled": false
     },
     "dns": {
-      "enabled": true
+      "enabled": false
     }
   },
   "additional_info": [
