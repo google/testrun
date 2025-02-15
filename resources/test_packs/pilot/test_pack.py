@@ -4,9 +4,13 @@ from common.statuses import TestrunStatus, TestrunResult, TestResult
 
 def calculate_result(json):
   """Provide the testing result based on the output of testing"""
+
   result = TestrunResult.COMPLIANT
 
   for test_result in json:
+
+    # Values for 'required_result' from config.json
+    json_result = ["required if applicable", "recommended", "roadmap" ]
 
     # Check Required tests
     if (test_result.required_result.lower() == "required"
@@ -16,18 +20,8 @@ def calculate_result(json):
         ]):
       result = TestrunResult.NON_COMPLIANT
 
-    # Check Required if Applicable tests
-    elif (test_result.required_result.lower() == "required if applicable"
-          and test_result.result == TestResult.NON_COMPLIANT):
-      result = TestrunResult.NON_COMPLIANT
-
-    # Check Recommended tests
-    elif (test_result.required_result.lower() == "recommended"
-          and test_result.result == TestResult.NON_COMPLIANT):
-      result = TestrunResult.NON_COMPLIANT
-
-    # Check Roadmap tests
-    elif (test_result.required_result.lower() == "roadmap"
+    # Check 'Required if Applicable', 'Recommended' and 'Roadmap' tests
+    elif (test_result.required_result.lower() in json_result
           and test_result.result == TestResult.NON_COMPLIANT):
       result = TestrunResult.NON_COMPLIANT
 
