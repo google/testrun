@@ -70,6 +70,7 @@ describe('RiskAssessmentComponent', () => {
       'setFocusOnSelectedProfile',
       'setFocusOnProfileForm',
       'updateProfiles',
+      'removeProfile',
     ]);
 
     await TestBed.configureTestingModule({
@@ -407,7 +408,7 @@ describe('RiskAssessmentComponent', () => {
           'openCloseDialog'
         ).and.returnValue(of(true));
 
-        component.discard();
+        component.discard(null, []);
 
         expect(openCloseDialogSpy).toHaveBeenCalled();
 
@@ -420,7 +421,7 @@ describe('RiskAssessmentComponent', () => {
             <ProfileFormComponent>component.form(),
             'openCloseDialog'
           ).and.returnValue(of(true));
-          component.discard();
+          component.discard(null, []);
         });
 
         it('should update selected profile', () => {
@@ -431,6 +432,22 @@ describe('RiskAssessmentComponent', () => {
 
         it('should close the form', () => {
           expect(component.isOpenProfileForm).toBeFalse();
+        });
+      });
+
+      describe('with selected copy profile', () => {
+        beforeEach(fakeAsync(() => {
+          spyOn(
+            <ProfileFormComponent>component.form(),
+            'openCloseDialog'
+          ).and.returnValue(of(true));
+          component.isCopyProfile = true;
+          component.discard(DRAFT_COPY_PROFILE_MOCK, [DRAFT_COPY_PROFILE_MOCK]);
+          tick(100);
+        }));
+
+        it('should remove copy if not saved', () => {
+          expect(mockRiskAssessmentStore.removeProfile).toHaveBeenCalled();
         });
       });
     });

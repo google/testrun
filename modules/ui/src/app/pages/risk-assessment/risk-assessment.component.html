@@ -47,7 +47,7 @@ limitations under the License.
       (deleteCopy)="deleteCopy($event, vm.profiles)"
       (delete)="deleteProfile($event)"
       (copyProfile)="copyProfile($event, vm.profiles)"
-      (discard)="discard()"></app-profile-form>
+      (discard)="discard($event, vm.profiles)"></app-profile-form>
   </ng-template>
 
   <ng-template #empty>
