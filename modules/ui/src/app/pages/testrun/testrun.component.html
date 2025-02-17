@@ -92,14 +92,21 @@ limitations under the License.
 
   <ng-template #empty>
     <div class="progress-content-empty">
-      <ng-container
-        *ngTemplateOutlet="
-          startNewTestrunButton;
-          context: {
-            hasDevices: vm.hasDevices,
-            isAllDevicesOutdated: vm.isAllDevicesOutdated,
-          }
-        "></ng-container>
+      <div class="empty-content">
+        <p class="empty-content-heading">Testrun is ready!</p>
+        <p class="empty-content-info">
+          Click the button below to configure you testing task
+        </p>
+
+        <ng-container
+          *ngTemplateOutlet="
+            startNewTestrunButton;
+            context: {
+              hasDevices: vm.hasDevices,
+              isAllDevicesOutdated: vm.isAllDevicesOutdated,
+            }
+          "></ng-container>
+      </div>
     </div>
   </ng-template>
 
@@ -120,7 +127,8 @@ limitations under the License.
       "
       (click)="openTestRunModal(vm.testModules)"
       mat-flat-button>
-      Start New Testrun
+      <mat-icon>add</mat-icon>
+      Start Testing
     </button>
   </ng-template>
 </ng-container>

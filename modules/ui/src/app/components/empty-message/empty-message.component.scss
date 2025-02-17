@@ -15,6 +15,7 @@
  */
 @use 'variables';
 @use 'colors';
+@use 'mixins';
 
 .empty-message.vertical {
   display: flex;
@@ -52,10 +53,7 @@
 }
 
 .empty-message-header {
-  font-weight: 400;
-  line-height: 32px;
-  font-size: 24px;
-  color: colors.$on-surface;
+  @include mixins.headline-small;
 }
 
 .empty-message-main {
