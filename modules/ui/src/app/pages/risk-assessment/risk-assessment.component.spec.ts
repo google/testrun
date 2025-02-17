@@ -421,7 +421,7 @@ describe('RiskAssessmentComponent', () => {
             <ProfileFormComponent>component.form(),
             'openCloseDialog'
           ).and.returnValue(of(true));
-          component.discard();
+          component.discard(null, []);
         });
 
         it('should update selected profile', () => {
