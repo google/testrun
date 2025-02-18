@@ -107,7 +107,8 @@ class TestModule(Module):
         'IPV4_SUBNET': self.get_session().get_ipv4_subnet(),
         'IPV6_SUBNET': self.get_session().get_ipv6_subnet(),
         'DEV_IFACE': self.get_session().get_device_interface(),
-        'DEV_IFACE_MAC': self.get_session().get_device_interface_mac_addr()
+        'DEV_IFACE_MAC': self.get_session().get_device_interface_mac_addr(),
+        'LOG_LEVEL': self.log_level
     }
     return environment
 
@@ -155,3 +156,4 @@ class TestModule(Module):
       # Ignore errors, just use default
       timeout = DEFAULT_TIMEOUT
     return timeout # pylint: disable=W0150
+    

@@ -64,6 +64,8 @@ class ProtocolModule(TestModule):
     result_status = 'Feature Not Detected'
     result_description = 'Device did not respond to BACnet discovery'
 
+    LOGGER.debug(f'BACnet supported: {self._supports_bacnet}')
+
     # Do not run test if device does not support BACnet
     if not self._supports_bacnet:
       return result_status, result_description
