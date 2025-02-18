@@ -165,6 +165,63 @@ After timeout options:
   }
 ```
 
+## Override test module log level at the system level 
+
+Test modules default to the log level info to prevent unecessary logging. These can be overridden at the test module configuration level but is not preferred since these changes will be undone during every version upgrade. To modify these values:
+
+1. Navigate to the testrun installation directory. By default, this will be at:
+    `/usr/local/testrun`
+
+2. Open the system.json file and add the following section:
+    `"test_modules":{}`
+
+3. Add the module name(s) and log_level property into this test_modules section you wish to
+set the log_level property for:
+    ```
+    "test_modules":{
+        "connection":{
+          "log_level": "DEGUG"
+        }
+      }
+      ```
+  Log level values follow the python logging standards: INFO, DEBUG, WARNING, ERROR.
+
+Before log_level options:
+```
+{
+  "network": {
+    "device_intf": "ens0",
+    "internet_intf": "ens1"
+  },
+  "log_level": "DEBUG",
+  "startup_timeout": 60,
+  "monitor_period": 60,
+  "max_device_reports": 5,
+  "org_name": "",
+  "single_intf": false
+  }
+```
+
+After log_level options:
+```
+{
+  "network": {
+    "device_intf": "ens0",
+    "internet_intf": "ens1"
+  },
+  "log_level": "DEBUG",
+  "startup_timeout": 60,
+  "monitor_period": 60,
+  "max_device_reports": 5,
+  "org_name": "",
+  "single_intf": false,
+  "test_modules":{
+    "connection":{
+      "log_level": "DEBUG"
+    }
+  }
+```
+
 # Troubleshooting
 
 If you encounter any issues, try the following:
