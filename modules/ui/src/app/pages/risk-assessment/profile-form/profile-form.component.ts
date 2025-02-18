@@ -114,6 +114,8 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
       if (profile && this.nameControl) {
         this.updateNameValidator(profile);
         this.fillProfileForm(this.profileFormat, profile);
+      } else {
+        this.profileForm.reset();
       }
     } else if (this.profile != profile) {
       // prevent select profile before user confirmation
