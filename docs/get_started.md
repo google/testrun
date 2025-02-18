@@ -184,7 +184,7 @@ set the log_level property for:
         }
       }
       ```
-  Log level values follow the python logging standards: INFO, DEBUG, WARNING, ERROR.
+Valid options for modifying the log level are: INFO, DEBUG, WARNING, ERROR.
 
 Before log_level options:
 ```
