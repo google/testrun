@@ -25,17 +25,6 @@ limitations under the License.
       <mat-toolbar class="progress-toolbar">
         <div class="toolbar-col-left">
           <div class="toolbar-row top">
-            <ng-container
-              *ngTemplateOutlet="
-                startNewTestrunButton;
-                context: {
-                  hasDevices: vm.hasDevices,
-                  systemStatus: vm.systemStatus,
-                  isAllDevicesOutdated: vm.isAllDevicesOutdated,
-                }
-              "></ng-container>
-          </div>
-          <div class="toolbar-row bottom">
             <h2
               class="title progress-title"
               tabindex="-1"
@@ -56,34 +45,37 @@ limitations under the License.
                 >{{ tag }}</span
               >
             </span>
-            <button
-              *ngIf="isTestrunInProgress(data.status)"
-              (click)="openStopTestrunDialog(vm.systemStatus)"
-              class="stop-button"
-              aria-label="Stop testrun"
-              color="warn"
-              mat-flat-button>
-              Stop
-            </button>
+          </div>
+          <div class="toolbar-row bottom">
             <app-download-options
               *ngIf="data.report"
               [data]="data"
               [profiles]="vm.profiles"></app-download-options>
+            <app-testrun-status-card [systemStatus]="vm.systemStatus">
+            </app-testrun-status-card>
           </div>
         </div>
-        <app-testrun-status-card [systemStatus]="vm.systemStatus">
-        </app-testrun-status-card>
       </mat-toolbar>
       <section
+        *ngIf="!resultIsEmpty(data.tests)"
         class="progress-table"
         [class.progress-table-progress-empty]="
-          isTestrunInProgress(data.status) && resultIsEmpty(data.tests)
+          isTestrunInProgress(data.status)
         ">
         <app-testrun-table
           [dataSource]="vm.dataSource"
           [stepsToResolveCount]="vm.stepsToResolveCount"></app-testrun-table>
         <app-spinner></app-spinner>
       </section>
+      <button
+        *ngIf="isTestrunInProgress(data.status)"
+        (click)="openStopTestrunDialog(vm.systemStatus)"
+        class="stop-button"
+        aria-label="Stop testrun"
+        color="warn"
+        mat-flat-button>
+        Stop
+      </button>
     </ng-container>
     <ng-container *ngIf="!data.started">
       <ng-container *ngTemplateOutlet="empty"></ng-container>

@@ -450,12 +450,12 @@ describe('TestrunComponent', () => {
         expect(openDialogSpy).toHaveBeenCalled();
       });
 
-      it('should have disabled "Start" button', () => {
+      it('should not have "Start" button', () => {
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
 
-        expect(startBtn.disabled).toBeTrue();
+        expect(startBtn).toBeNull();
       });
 
       it('should not have "Download" options', () => {
@@ -490,12 +490,12 @@ describe('TestrunComponent', () => {
         expect(stopBtn).toBeNull();
       });
 
-      it('should have enabled "Start" button', () => {
+      it('should not have "Start" button', () => {
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
 
-        expect(startBtn.disabled).toBeFalse();
+        expect(startBtn).toBeNull();
       });
 
       it('should have "Download" options', () => {
@@ -515,12 +515,12 @@ describe('TestrunComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have enabled "Start" button', () => {
+      it('should not have "Start" button', () => {
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
 
-        expect(startBtn.disabled).toBeFalse();
+        expect(startBtn).toBeNull();
       });
 
       it('should not have "Download" options', () => {
@@ -566,12 +566,12 @@ describe('TestrunComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have disabled "Start" button', () => {
+      it('should not have "Start" button', () => {
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
 
-        expect(startBtn.disabled).toBeTrue();
+        expect(startBtn).toBeNull();
       });
     });
 
@@ -586,12 +586,12 @@ describe('TestrunComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have disabled "Start" button', () => {
+      it('should not have "Start" button', () => {
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
 
-        expect(startBtn.disabled).toBeTrue();
+        expect(startBtn).toBeNull();
       });
 
       it('should have "Stop" button', () => {

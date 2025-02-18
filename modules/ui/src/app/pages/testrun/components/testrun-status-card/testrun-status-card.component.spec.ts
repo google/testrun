@@ -162,7 +162,7 @@ describe('ProgressStatusCardComponent', () => {
       });
 
       it('should return empty string if no data', () => {
-        const expectedResult = '';
+        const expectedResult = '-/-';
 
         const result = component.getTestsResult({} as TestrunStatus);
 
@@ -289,7 +289,7 @@ describe('ProgressStatusCardComponent', () => {
 
       it('should have progress card status text as "Incomplete"', () => {
         const progressCardStatusText = compiled.querySelector(
-          '.progress-card-status-text > span'
+          '.progress-card-info-status .progress-card-info-text > span'
         );
 
         expect(progressCardStatusText).not.toBeNull();
@@ -325,7 +325,7 @@ describe('ProgressStatusCardComponent', () => {
 
       it('should have progress card status text as "In Progress"', () => {
         const progressCardStatusText = compiled.querySelector(
-          '.progress-card-status-text > span'
+          '.progress-card-info-status .progress-card-info-text > span'
         );
 
         expect(progressCardStatusText).not.toBeNull();
@@ -382,7 +382,7 @@ describe('ProgressStatusCardComponent', () => {
 
       it('should have progress card status text as "Waiting for Device"', () => {
         const progressCardStatusText = compiled.querySelector(
-          '.progress-card-status-text > span'
+          '.progress-card-info-status .progress-card-info-text > span'
         );
 
         expect(progressCardStatusText).not.toBeNull();
@@ -421,9 +421,9 @@ describe('ProgressStatusCardComponent', () => {
         );
       });
 
-      it('should have progress card status text as "Waiting for Device"', () => {
+      it('should have progress card status text as "Monitoring"', () => {
         const progressCardStatusText = compiled.querySelector(
-          '.progress-card-status-text > span'
+          '.progress-card-info-status .progress-card-info-text > span'
         );
 
         expect(progressCardStatusText).not.toBeNull();

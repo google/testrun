@@ -84,6 +84,7 @@ $on-tertiary-fixed-variant: mat.get-theme-color($light-theme, tertiary, 30);
 
 $surface-dim: #d3dbe5;
 $surface: mat.get-theme-color($light-theme, neutral, 100);
+$surface-variant: mat.get-theme-color($light-theme, neutral-variant, 90);
 $surface-bright: mat.get-theme-color($light-theme, neutral, 100);
 $surface-container-lowest: mat.get-theme-color($light-theme, neutral, 100);
 $surface-container-low: #f8fafd;
