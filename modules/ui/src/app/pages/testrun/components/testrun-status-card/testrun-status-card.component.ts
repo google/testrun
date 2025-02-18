@@ -107,7 +107,7 @@ export class TestrunStatusCardComponent {
         }`;
       }
     }
-    return '';
+    return '-/-';
   }
 
   public getTestStatus(data: TestrunStatus): string {
