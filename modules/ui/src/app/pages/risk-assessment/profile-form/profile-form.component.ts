@@ -373,7 +373,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
         });
         question.answer = answer;
       } else {
-        question.answer = this.profileForm.value[index]?.trim();
+        question.answer = this.profileForm.value[index]?.trim() || '';
       }
       questions.push(question);
     });
