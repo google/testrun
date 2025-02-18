@@ -54,7 +54,7 @@ class TestModule:
   def _add_logger(self, log_name):
     global LOGGER
     LOGGER = logger.get_logger(name=log_name)
-    if self._log_level is not None: 
+    if self._log_level is not None:
       LOGGER.setLevel(self._log_level)
 
   def generate_module_report(self):
