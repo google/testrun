@@ -49,6 +49,7 @@ import { AppState } from '../../../../store/state';
 import { selectDevices } from '../../../../store/selectors';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { TestrunStatus } from '../../../../model/testrun-status';
+import { CalloutType } from '../../../../model/callout-type';
 import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -60,6 +61,7 @@ import { DeviceItemComponent } from '../../../../components/device-item/device-i
 import { SpinnerComponent } from '../../../../components/spinner/spinner.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
+import { CalloutComponent } from '../../../../components/callout/callout.component';
 
 interface DialogData {
   device?: Device;
@@ -83,6 +85,7 @@ interface DialogData {
     ReactiveFormsModule,
     DeviceTestsComponent,
     SpinnerComponent,
+    CalloutComponent,
     MatTooltipModule,
   ],
 })
@@ -107,6 +110,7 @@ export class TestrunInitiateFormComponent
   setFirmwareFocus = false;
   readonly DeviceStatus = DeviceStatus;
   readonly DeviceView = DeviceView;
+  public readonly CalloutType = CalloutType;
   error$: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(
     null
   );

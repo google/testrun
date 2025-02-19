@@ -109,11 +109,21 @@
     0px 1px 3px 1px rgba(0, 0, 0, 0.15);
 }
 
-@mixin headline-small {
-  font-size: 24px;
-  line-height: 32px;
+@mixin headline {
   color: colors.$on-surface;
   font-family: variables.$font-primary;
   font-weight: 400;
   letter-spacing: 0;
+}
+
+@mixin headline-large {
+  font-size: 32px;
+  line-height: 40px;
+  @include headline;
+}
+
+@mixin headline-small {
+  font-size: 24px;
+  line-height: 32px;
+  @include headline;
 }
