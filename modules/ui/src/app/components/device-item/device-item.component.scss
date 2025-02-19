@@ -51,8 +51,8 @@ $border-radius: 12px;
   }
 
   &.non-interactive {
+    background: colors.$primary-container;
     &:hover {
-      background: colors.$surface-container;
       cursor: default;
     }
   }
