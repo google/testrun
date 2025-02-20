@@ -113,11 +113,12 @@ export class TestrunComponent implements OnInit, OnDestroy {
         title: `Stop testrun ${this.getTestRunName(systemStatus)}?`,
         content:
           'Are you sure you would like to stop testrun without a report generation?',
+        confirmName: 'Stop',
       },
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
+      panelClass: ['simple-dialog', 'stop-testrun'],
     });
 
     dialogRef

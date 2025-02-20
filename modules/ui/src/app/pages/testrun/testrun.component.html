@@ -72,8 +72,10 @@ limitations under the License.
         (click)="openStopTestrunDialog(vm.systemStatus)"
         class="stop-button"
         aria-label="Stop testrun"
-        color="warn"
         mat-flat-button>
+        <mat-icon fontSet="material-symbols-outlined" class="filled">
+          cancel
+        </mat-icon>
         Stop
       </button>
     </ng-container>
