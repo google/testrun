@@ -27,8 +27,6 @@ LOGGER = None
 BAC0_LOG = '/root/.BAC0/BAC0.log'
 DEFAULT_CAPTURES_DIR = '/runtime/output'
 DEFAULT_CAPTURE_FILE = 'protocol.pcap'
-MONITOR_CAPTURE_DIR = '/runtime/device'
-MONITOR_CAPTURE_FILE = 'monitor.pcap'
 DEFAULT_BIN_DIR = '/testrun/bin'
 
 class BACnet():
@@ -38,8 +36,6 @@ class BACnet():
                log,
                captures_dir=DEFAULT_CAPTURES_DIR,
                capture_file=DEFAULT_CAPTURE_FILE,
-               monitor_dir=MONITOR_CAPTURE_DIR,
-               monitor_file=MONITOR_CAPTURE_FILE,
                bin_dir=DEFAULT_BIN_DIR,
                device_hw_addr=None):
     # Set the log
@@ -53,8 +49,6 @@ class BACnet():
 
     self._captures_dir = captures_dir
     self._capture_file = capture_file
-    self._monitor_dir = monitor_dir
-    self._monitor_file = monitor_file
     self._bin_dir = bin_dir
     self.device_hw_addr = device_hw_addr
     self.devices = []
@@ -99,8 +93,6 @@ class BACnet():
       LOGGER.info(description)
     except Exception: # pylint: disable=W0718
       LOGGER.error('Error occured when validating device', exc_info=True)
-    print(f'validate_device result is {result}')
-    print(f'description is {description}')
     return result, description
 
 
@@ -129,12 +121,9 @@ class BACnet():
       valid = None
       capture_file = os.path.join(self._captures_dir, self._capture_file)
       packets = self.get_bacnet_packets(capture_file, object_id)
-      print(f'packets are {packets}')
-      # If no packets are found in protocol.pcap check monitor.pcap
+      # If no packets are found in protocol.pcap
       if not packets:
-        capture_file = os.path.join(self._captures_dir, self._capture_file)
-        packets = self.get_bacnet_packets(capture_file, object_id)
-        valid = False
+        LOGGER.debug(f'No bacnet packets found for object id {object_id}')
       for packet in packets:
         if object_id in packet['_source']['layers']['bacapp.instance_number']:
           if device_hw_addr.lower() in packet['_source']['layers']['eth.src']:
