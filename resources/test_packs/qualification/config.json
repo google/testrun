@@ -154,8 +154,12 @@
           "required_result": "Required"
         },
         {
-          "name": "security.tls.v1_0_client",
+          "name": "protocol.services.bacnet",
           "required_result": "Informational"
+        },
+        {
+          "name": "security.tls.v1_0_client",
+          "required_result": "Required if Applicable"
         },
         {
           "name": "security.tls.v1_2_server",

@@ -22,6 +22,8 @@ import shutil
 import signal
 import sys
 import time
+import docker.errors
+
 from common import logger, util, mqtt
 from common.device import Device
 from common.testreport import TestReport
@@ -31,8 +33,6 @@ from api.api import Api
 from net_orc.listener import NetworkEvent
 from net_orc import network_orchestrator as net_orc
 from test_orc import test_orchestrator as test_orc
-
-from docker.errors import ImageNotFound
 
 LOGGER = logger.get_logger('testrun')
 
@@ -375,6 +375,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
           self._device_stable, [NetworkEvent.DEVICE_STABLE])
 
     self.get_net_orc().start_listener()
+    self.get_session().set_status(TestrunStatus.WAITING_FOR_DEVICE)
     LOGGER.info('Waiting for devices on the network...')
 
     # Keep application running until stopped
@@ -463,6 +464,8 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     if device is not None:
       if mac_addr != device.mac_addr:
+        LOGGER.info(f'Found device with mac addr: {mac_addr} but was ignored')
+        LOGGER.info(f'Expected device mac address is {device.mac_addr}')
         # Ignore discovered device because it is not the target device
         return
     else:
@@ -485,10 +488,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
     LOGGER.info(f'Device with mac address {mac_addr} is ready for testing.')
     self._set_status(TestrunStatus.IN_PROGRESS)
-    result = self._test_orc.run_test_modules()
-
-    if result is not None:
-      self._set_status(result)
+    self._test_orc.run_test_modules()
 
     self._stop_network()
 
@@ -513,7 +513,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
                             hostname='testrun.io',
                             detach=True,
                             ports={'80': 8080})
-    except ImageNotFound as ie:
+    except docker.errors.ImageNotFound as ie:
       LOGGER.error('An error occured whilst starting the UI. ' +
                    'Please investigate and try again.')
       LOGGER.error(ie)
@@ -529,6 +529,11 @@ class Testrun:  # pylint: disable=too-few-public-methods
       container = client.containers.get('tr-ui')
       if container is not None:
         container.kill()
+        # If the container has been started without auto-remove flag remove it
+        try:
+          container.remove()
+        except docker.errors.APIError:
+          pass
     except docker.errors.NotFound:
       pass
 
@@ -549,7 +554,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
                                 '9001': 9001,
                                 '1883': 1883
                             })
-    except ImageNotFound as ie:
+    except docker.errors.ImageNotFound as ie:
       LOGGER.error('An error occured whilst starting the websockets server. ' +
                    'Please investigate and try again.')
       LOGGER.error(ie)
@@ -562,5 +567,11 @@ class Testrun:  # pylint: disable=too-few-public-methods
       container = client.containers.get('tr-ws')
       if container is not None:
         container.kill()
+        # If the container has been started without auto-remove flag remove it
+        try:
+          container.remove()
+        except docker.errors.APIError:
+          pass
+
     except docker.errors.NotFound:
       pass

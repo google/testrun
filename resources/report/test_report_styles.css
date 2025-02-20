@@ -24,6 +24,13 @@
       unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
 
+    @font-face {
+      font-family: 'Material Symbols Outlined';
+      font-style: normal;
+      font-weight: 100 700;
+      src: url(https://fonts.gstatic.com/icon/font?kit=kJEhBvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oFsKTDIwram_2pN8sass6hd4ObOPvrgWc3Hc02BrFizbd_1DP&skey=b8dc2088854b122f&v=v225) format('woff2');
+    }
+
     /* Define some common body formatting*/
     body {
       font-family: 'Google Sans', sans-serif;
@@ -222,6 +229,24 @@
       word-break: break-word;
     }
 
+    .module-data.dns-module thead tr th,
+    .module-data.dns-module tbody tr td {
+      padding: 12px 16px;
+    }
+
+    .module-data.dns-module tbody tr td {
+      max-width: 1px;
+    }
+
+    .module-data.dns-module tbody tr td.count-row {
+      width: 1px;
+    }
+
+    .module-data.dns-module tbody tr td div {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
     div.steps-to-resolve {
       background-color: #F8F9FA;
       margin-bottom: 30px;
@@ -415,6 +440,10 @@
       border-top: 0;
     }
 
+    .result-line-result-non-compliant-required {
+      background: #FCE8E6;
+    }
+
     .result-list-header-label {
       position: absolute;
       font-size: 12px;
@@ -428,7 +457,7 @@
       position: absolute;
       font-size: 12px;
       margin-top: 12px;
-      max-width: 300px;
+      max-width: 185px;
       font-weight: normal;
       align-items: center;
       text-overflow: ellipsis;
@@ -437,7 +466,7 @@
     }
 
     .result-test-description {
-      max-width: 380px;
+      max-width: 300px;
     }
 
     .result-test-result-error {
@@ -467,7 +496,7 @@
       margin-top: 8px;
       padding: 4px 4px 7px 5px;
       border-radius: 2px;
-      left: 6.85in;
+      left: 5.4in;
     }
 
     .result-test-result-compliant {
@@ -478,6 +507,83 @@
     .result-test-result-skipped {
       background-color: #e3e3e3;
       color: #393939;
+    }
+
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      text-align: center;
+      font-size: 12px;
+      display: inline-flex;
+      width: 14px;
+      height: 14px;
+      line-height: 14px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      border-radius: 100%;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+      vertical-align: bottom;
+    }
+
+    .result-test-required-result {
+      display: flex;
+      align-items: center;
+      overflow: visible;
+    }
+
+    .result-test-required-result-text {
+      line-height: 14px;
+      flex: 0 0 120px;
+      padding-left: 8px;
+    }
+
+    .result-test-required-result-informational, .result-test-required-result-recommended {
+      color: #0D652D;
+    }
+
+    .result-test-required-result-informational .material-symbols-outlined,
+    .result-test-required-result-recommended .material-symbols-outlined {
+      background: #0D652D;
+      color: #ffffff;
+    }
+
+    .result-test-required-result-recommended .material-symbols-outlined {
+      font-variation-settings:
+          'FILL' 1,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+      font-size: 9px;
+    }
+
+    .result-test-required-result-required {
+      color: #000000;
+    }
+
+    .result-test-required-result-required .material-symbols-outlined {
+      background: #000000;
+      color: #ffffff;
+    }
+
+    .result-test-required-result-required-if-applicable,
+    .result-test-required-result-roadmap {
+      color: #174EA6;
+    }
+
+    .result-test-required-result-required-if-applicable .material-symbols-outlined,
+    .result-test-required-result-roadmap .material-symbols-outlined {
+      background: #174EA6;
+      color: #ffffff;
     }
 
     /* CSS for the footer */

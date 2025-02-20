@@ -17,9 +17,8 @@ limitations under the License.
   <div class="testing-result-heading">
     <p class="testing-result-title">
       {{ data.testrunStatus.device.manufacturer }}
-      {{ data.testrunStatus.device.model }} v{{
-        data.testrunStatus.device.firmware
-      }}
+      {{ data.testrunStatus.device.model }}
+      {{ data.testrunStatus.device.firmware }}
     </p>
     <p class="testing-result-subtitle">
       {{ data.testrunStatus.device.test_pack }} testing has just finished
@@ -29,11 +28,15 @@ limitations under the License.
     class="testing-result"
     id="testing-result-main-info"
     [class]="
-      data.testrunStatus.status === StatusOfTestrun.Compliant
+      (data.testrunStatus.result === ResultOfTestrun.Compliant &&
+        data.testrunStatus.status === StatusOfTestrun.Complete) ||
+      data.testrunStatus.status === StatusOfTestrun.Proceed
         ? 'success-result'
         : 'failed-result'
     ">
-    <p class="testing-result-status">{{ data.testrunStatus.status }}</p>
+    <p class="testing-result-status">
+      {{ getTestingResult(data.testrunStatus) }}
+    </p>
     <p class="testing-result-description">
       {{ data.testrunStatus.description }}
     </p>

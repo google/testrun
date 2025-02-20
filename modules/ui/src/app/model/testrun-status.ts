@@ -17,7 +17,8 @@ import { Device } from './device';
 
 export interface TestrunStatus {
   mac_addr: string | null;
-  status: string;
+  status: StatusOfTestrun;
+  result?: ResultOfTestrun;
   description?: string;
   device: IDevice;
   started: string | null;
@@ -30,6 +31,7 @@ export interface TestrunStatus {
 export interface HistoryTestrun extends TestrunStatus {
   deviceFirmware: string;
   deviceInfo: string;
+  testResult: string;
   program: string;
   duration: string;
 }
@@ -50,6 +52,18 @@ export interface IResult {
   description: string;
   result: string;
   recommendations?: string[];
+  required_result: RequiredResult;
+}
+
+export enum RequiredResult {
+  Informational = 'Informational',
+  Required = 'Required',
+  RequiredIfApplicable = 'Required if Applicable',
+}
+
+export enum ResultOfTestrun {
+  Compliant = 'Compliant', // used for Completed
+  NonCompliant = 'Non-Compliant', // used for Completed
 }
 
 export enum StatusOfTestrun {
@@ -58,15 +72,17 @@ export enum StatusOfTestrun {
   Cancelled = 'Cancelled',
   Cancelling = 'Cancelling',
   Failed = 'Failed',
-  Compliant = 'Compliant', // used for Completed
   CompliantLimited = 'Compliant (Limited)',
   CompliantHigh = 'Compliant (High)',
-  NonCompliant = 'Non-Compliant', // used for Completed
-  SmartReady = 'Smart Ready', // used for Completed
+  SmartReady = 'Smart Ready',
   Idle = 'Idle',
   Monitoring = 'Monitoring',
+  Starting = 'Starting',
   Error = 'Error',
   Validating = 'Validating Network',
+  Complete = 'Complete', // device qualification
+  Proceed = 'Proceed', // pilot assessment
+  DoNotProceed = 'Do Not Proceed', // pilot assessment
 }
 
 export enum StatusOfTestResult {

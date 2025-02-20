@@ -16,11 +16,13 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
   IResult,
+  ResultOfTestrun,
   StatusOfTestResult,
   StatusOfTestrun,
   TestrunStatus,
   TestsData,
 } from '../../../../model/testrun-status';
+import { TestingType } from '../../../../model/device';
 
 @Component({
   selector: 'app-testrun-status-card',
@@ -32,8 +34,12 @@ export class TestrunStatusCardComponent {
   @Input() systemStatus!: TestrunStatus;
 
   public readonly StatusOfTestrun = StatusOfTestrun;
+  public readonly TestingType = TestingType;
 
-  public getClass(status: string): {
+  public getClass(
+    status: StatusOfTestrun,
+    result?: ResultOfTestrun
+  ): {
     progress: boolean;
     'completed-success': boolean;
     'completed-failed': boolean;
@@ -42,13 +48,17 @@ export class TestrunStatusCardComponent {
     return {
       progress: this.isProgressStatus(status),
       'completed-success':
-        status === StatusOfTestrun.Compliant ||
+        (result === ResultOfTestrun.Compliant &&
+          status === StatusOfTestrun.Complete) ||
         status === StatusOfTestrun.CompliantLimited ||
         status === StatusOfTestrun.CompliantHigh ||
-        status === StatusOfTestrun.SmartReady,
+        status === StatusOfTestrun.SmartReady ||
+        status === StatusOfTestrun.Proceed,
       'completed-failed':
-        status === StatusOfTestrun.NonCompliant ||
-        status === StatusOfTestrun.Error,
+        (result === ResultOfTestrun.NonCompliant &&
+          status === StatusOfTestrun.Complete) ||
+        status === StatusOfTestrun.Error ||
+        status === StatusOfTestrun.DoNotProceed,
       canceled:
         status === StatusOfTestrun.Cancelled ||
         status === StatusOfTestrun.Cancelling,
@@ -88,11 +98,23 @@ export class TestrunStatusCardComponent {
     }
   }
 
+  public getTestResult(data: TestrunStatus): string {
+    if (
+      data.status === StatusOfTestrun.Complete ||
+      data.status === StatusOfTestrun.Proceed ||
+      data.status === StatusOfTestrun.DoNotProceed
+    ) {
+      return data.result!;
+    }
+    return data.status;
+  }
+
   private isProgressStatus(status: string): boolean {
     return (
       status === StatusOfTestrun.Monitoring ||
       status === StatusOfTestrun.InProgress ||
       status === StatusOfTestrun.WaitingForDevice ||
+      status === StatusOfTestrun.Starting ||
       status === StatusOfTestrun.Validating
     );
   }

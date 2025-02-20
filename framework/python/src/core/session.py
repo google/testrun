@@ -20,7 +20,7 @@ import os
 from fastapi.encoders import jsonable_encoder
 from common import util, logger, mqtt
 from common.risk_profile import RiskProfile
-from common.statuses import TestrunStatus, TestResult
+from common.statuses import TestrunStatus, TestResult, TestrunResult
 from net_orc.ip_control import IPControl
 
 # Certificate dependencies
@@ -85,6 +85,7 @@ class TestrunSession():
     self._root_dir = root_dir
 
     self._status = TestrunStatus.IDLE
+    self._result = None
     self._description = None
 
     # Target test device
@@ -99,6 +100,9 @@ class TestrunSession():
 
     # All historical reports
     self._module_reports = []
+
+    # Module report templates
+    self._module_templates = []
 
     # Parameters specified when starting Testrun
     self._runtime_params = []
@@ -156,7 +160,7 @@ class TestrunSession():
 
   def start(self):
     self.reset()
-    self._status = TestrunStatus.WAITING_FOR_DEVICE
+    self._status = TestrunStatus.STARTING
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -383,11 +387,17 @@ class TestrunSession():
   def get_ipv6_subnet(self):
     return self._ipv6_subnet
 
-  def get_status(self):
+  def get_status(self) -> TestrunStatus:
     return self._status
 
-  def set_status(self, status):
+  def set_status(self, status: TestrunStatus):
     self._status = status
+
+  def get_result(self) -> TestrunResult:
+    return self._result
+
+  def set_result(self, result: TestrunResult):
+    self._result = result
 
   def set_description(self, desc: str):
     self._description = desc
@@ -397,6 +407,9 @@ class TestrunSession():
 
   def get_module_reports(self):
     return self._module_reports
+
+  def get_module_templates(self):
+    return self._module_templates
 
   def get_report_tests(self):
     """Returns the current test results in JSON-friendly format
@@ -466,6 +479,9 @@ class TestrunSession():
 
   def add_module_report(self, module_report):
     self._module_reports.append(module_report)
+
+  def add_module_template(self, module_template):
+    self._module_templates.append(module_template)
 
   def get_all_reports(self):
 
@@ -538,6 +554,9 @@ class TestrunSession():
     try:
       for risk_profile_file in os.listdir(
           os.path.join(self._root_dir, PROFILES_DIR)):
+
+        if not risk_profile_file.endswith('.json'):
+          continue
 
         LOGGER.debug(f'Discovered profile {risk_profile_file}')
 
@@ -660,7 +679,7 @@ class TestrunSession():
         valid_questions.append(question)
 
       else:
-        LOGGER.debug(f'Removed unrecognised question: {question["question"]}')
+        LOGGER.debug(f'Removed unrecognised question: {question["question"]}') # pylint: disable=W1405
 
     # Return the list of valid questions
     return valid_questions
@@ -682,6 +701,15 @@ class TestrunSession():
     elif len(profile_json.get('name').strip()) == 0:
       LOGGER.error('Name field left empty')
       return False
+
+    # Check if profile name has special characters
+    for field in ['name', 'rename']:
+      profile_name = profile_json.get(field)
+      if profile_name:
+        for char in profile_name:
+          if char in r"\<>?/:;@''][=^":
+            LOGGER.error('Profile name should not contain special characters')
+            return False
 
     # Error handling if 'questions' not in request
     if 'questions' not in profile_json and valid:
@@ -706,7 +734,7 @@ class TestrunSession():
         question.get('question'))
 
       if format_q is None:
-        LOGGER.error(f'Unrecognised question: {question.get("question")}')
+        LOGGER.error(f'Unrecognised question: {question.get("question")}') # pylint: disable=W1405
         # Just ignore additional questions
         continue
 
@@ -786,11 +814,13 @@ question {question.get('question')}''')
 
   def reset(self):
     self.set_status(TestrunStatus.IDLE)
+    self.set_result(None)
     self.set_description(None)
     self.set_target_device(None)
     self._report_url = None
     self._total_tests = 0
     self._module_reports = []
+    self._module_templates = []
     self._results = []
     self._started = None
     self._finished = None
@@ -815,6 +845,9 @@ question {question.get('question')}''')
         'finished': self.get_finished(),
         'tests': results
     }
+
+    if self.get_result() is not None:
+      session_json['result'] = self.get_result()
 
     if self._report_url is not None:
       session_json['report'] = self.get_report_url()

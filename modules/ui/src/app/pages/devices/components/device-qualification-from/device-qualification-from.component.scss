@@ -22,7 +22,6 @@ $form-min-width: 732px;
 :host {
   container-type: size;
   container-name: qualification-form;
-
   display: grid;
   grid-template-rows: 1fr;
   overflow: auto;

@@ -19,6 +19,7 @@ limitations under the License.
       <span class="tests-header-cell">Name</span>
       <span class="tests-header-cell">Description</span>
       <span class="tests-header-cell">Result</span>
+      <span class="tests-header-cell">Required result</span>
       <span class="tests-header-cell expander-button-cell">
         <button
           *ngIf="stepsToResolveCount"
@@ -75,6 +76,14 @@ limitations under the License.
   <span class="tests-item-cell tests-item-cell-result">
     <span class="cell-result-text" [ngClass]="getResultClass(item.result)">
       <span>{{ item.result }}</span>
+    </span>
+  </span>
+  <span
+    class="tests-item-cell tests-item-cell-required-result"
+    [ngClass]="getRequiredResultClass(item.required_result)">
+    <span class="cell-result-required-icon"></span>
+    <span class="cell-result-required-text">
+      {{ item.required_result }}
     </span>
   </span>
 </ng-template>

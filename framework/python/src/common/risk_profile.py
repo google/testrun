@@ -351,7 +351,7 @@ class RiskProfile():
       logo_img_b64 = base64.b64encode(f.read()).decode('utf-8')
 
     self._device = self._format_device_profile(device)
-    pages = self._generate_report_pages()
+    pages = self._generate_report_pages(device)
     return self._template.render(
                                 styles=self._template_styles,
                                 manufacturer=self._device.manufacturer,
@@ -366,7 +366,33 @@ class RiskProfile():
                                 created_at=self.created.strftime('%d.%m.%Y')
                                 )
 
-  def _generate_report_pages(self):
+  def to_html_no_device(self):
+    """Returns the risk profile in HTML format without device info"""
+
+    high_risk_message = '''The device has been assessed to be high
+                               risk due to the nature of the answers provided
+                                 about the device functionality.'''
+    limited_risk_message = '''The device has been assessed to be limited risk
+                               due to the nature of the answers provided about
+                                 the device functionality.'''
+
+    with open(test_run_img_file, 'rb') as f:
+      logo_img_b64 = base64.b64encode(f.read()).decode('utf-8')
+
+    pages = self._generate_report_pages()
+    return self._template.render(
+                                styles=self._template_styles,
+                                logo=logo_img_b64,
+                                risk=self.risk,
+                                high_risk_message=high_risk_message,
+                                limited_risk_message=limited_risk_message,
+                                pages=pages,
+                                total_pages=len(pages),
+                                version=self.version,
+                                created_at=self.created.strftime('%d.%m.%Y')
+                                )
+
+  def _generate_report_pages(self, device=None):
 
     # Text block heght
     block_height = 18
@@ -391,8 +417,11 @@ class RiskProfile():
     current_page = []
     index = 1
 
-    questions = deepcopy(self._device.additional_info)
-    questions.extend(self.questions)
+    questions = deepcopy(self.questions)
+
+    if device:
+      questions = deepcopy(self._device.additional_info)
+      questions.extend(self.questions)
 
     for question in questions:
 
@@ -450,6 +479,17 @@ class RiskProfile():
 
     # Resolve the data as html first
     html = self.to_html(device)
+
+    # Convert HTML to PDF in memory using weasyprint
+    pdf_bytes = BytesIO()
+    HTML(string=html).write_pdf(pdf_bytes)
+    return pdf_bytes
+
+  def to_pdf_no_device(self):
+    """Returns the risk profile in PDF format without device info"""
+
+    # Resolve the data as html first
+    html = self.to_html_no_device()
 
     # Convert HTML to PDF in memory using weasyprint
     pdf_bytes = BytesIO()

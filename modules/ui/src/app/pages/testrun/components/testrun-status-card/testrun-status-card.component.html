@@ -16,7 +16,8 @@ limitations under the License.
 <ng-container *ngIf="systemStatus as data">
   <div
     class="progress-card"
-    [ngClass]="getClass(data.status)"
+    [class.progress-card-pilot]="data.device.test_pack === TestingType.Pilot"
+    [ngClass]="getClass(data.status, data.result)"
     aria-live="assertive"
     role="alert">
     <div>
@@ -126,6 +127,16 @@ limitations under the License.
 <ng-template #Finished let-data="data">
   <div>
     <p class="progress-card-result-title">Test result</p>
+    <p class="progress-card-result-text">
+      <span>{{ getTestResult(data) }}</span>
+    </p>
+  </div>
+  <div
+    *ngIf="
+      data.status === StatusOfTestrun.Proceed ||
+      data.status === StatusOfTestrun.DoNotProceed
+    ">
+    <p class="progress-card-result-title">Preliminary Pilot Recommendation</p>
     <p class="progress-card-result-text">
       <span>{{ data.status }}</span>
     </p>

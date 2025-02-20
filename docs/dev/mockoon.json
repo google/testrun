@@ -605,7 +605,7 @@
       "responses": [
         {
           "uuid": "9536ff4c-f97f-4880-b9fc-f477686ad6b8",
-          "body": "[\n  {\n    \"mac_addr\": \"00:1e:42:35:73:c6\",\n    \"device\": {\n        \"mac_addr\": \"00:1e:42:35:73:c4\",\n        \"manufacturer\": \"Teltonika\",\n        \"model\": \"TRB140\",\n        \"firmware\": \"1.2.3\",\n        \"test_modules\": {\n            \"connection\": {\n                \"enabled\": false\n            },\n            \"ntp\": {\n                \"enabled\": true\n            },\n            \"dns\": {\n                \"enabled\": true\n            },\n            \"services\": {\n                \"enabled\": true\n            },\n            \"tls\": {\n                \"enabled\": true\n            },\n            \"protocol\": {\n                \"enabled\": true\n            }\n        }\n    },\n    \"status\": \"Non-Compliant\",\n    \"started\": \"2024-05-03 12:09:59\",\n    \"finished\": \"2024-05-03 12:15:51\",\n    \"tests\": {\n        \"total\": 20,\n        \"results\": [\n            {\n                \"name\": \"protocol.valid_bacnet\",\n                \"description\": \"BACnet discovery could not resolve any devices\",\n                \"expected_behavior\": \"BACnet traffic can be seen on the network and packets are valid and not malformed\",\n                \"required_result\": \"Recommended\",\n                \"result\": \"Skipped\"\n            },\n            {\n                \"name\": \"protocol.bacnet.version\",\n                \"description\": \"No BACnet devices discovered.\",\n                \"expected_behavior\": \"The BACnet client implements an up to date version of BACnet\",\n                \"required_result\": \"Recommended\",\n                \"result\": \"Skipped\"\n            },\n            {\n                \"name\": \"protocol.valid_modbus\",\n                \"description\": \"Failed to establish Modbus connection to device\",\n                \"expected_behavior\": \"Any Modbus functionality works as expected and valid Modbus traffic can be observed\",\n                \"required_result\": \"Recommended\",\n                \"result\": \"Non-Compliant\"\n            },\n            {\n                \"name\": \"ntp.network.ntp_support\",\n                \"description\": \"Device sent NTPv3 packets. NTPv3 is not allowed.\",\n                \"expected_behavior\": \"The device sends an NTPv4 request to the configured NTP server.\",\n                \"required_result\": \"Required\",\n                \"result\": \"Non-Compliant\"\n            },\n            {\n                \"name\": \"ntp.network.ntp_dhcp\",\n                \"description\": \"Device sent NTP request to non-DHCP provided server\",\n                \"expected_behavior\": \"Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)\",\n                \"required_result\": \"Roadmap\",\n                \"result\": \"Non-Compliant\"\n            },\n            {\n                \"name\": \"security.services.ftp\",\n                \"description\": \"No FTP server found\",\n                \"expected_behavior\": \"There is no FTP service running on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.ssh.version\",\n                \"description\": \"SSH server found running  protocol 2.0\",\n                \"expected_behavior\": \"SSH server is not running or server is SSHv2\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.telnet\",\n                \"description\": \"No telnet server found\",\n                \"expected_behavior\": \"There is no Telnet service running on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.smtp\",\n                \"description\": \"No SMTP server found\",\n                \"expected_behavior\": \"There is no SMTP service running on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.http\",\n                \"description\": \"Found HTTP server running on port 80/tcp\",\n                \"expected_behavior\": \"Device is unreachable on port 80 (or any other port) and only responds to HTTPS requests on port 443 (or any other port if HTTP is used at all)\",\n                \"required_result\": \"Required\",\n                \"result\": \"Non-Compliant\"\n            },\n            {\n                \"name\": \"security.services.pop\",\n                \"description\": \"No POP server found\",\n                \"expected_behavior\": \"There is no POP service running on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.imap\",\n                \"description\": \"No IMAP server found\",\n                \"expected_behavior\": \"There is no IMAP service running on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.snmpv3\",\n                \"description\": \"No SNMP server found\",\n                \"expected_behavior\": \"Device is unreachable on port 161 (or any other port) and device is unreachable on port 162 (or any other port) unless SNMP is essential in which case it is SNMPv3 is used.\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.vnc\",\n                \"description\": \"No VNC server found\",\n                \"expected_behavior\": \"Device cannot be accessed / connected to via VNC on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.tftp\",\n                \"description\": \"No TFTP server found\",\n                \"expected_behavior\": \"There is no TFTP service running on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"ntp.network.ntp_server\",\n                \"description\": \"No NTP server found\",\n                \"expected_behavior\": \"The device does not respond to NTP requests when it's IP is set as the NTP server on another device\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"dns.network.hostname_resolution\",\n                \"description\": \"DNS traffic detected from device\",\n                \"expected_behavior\": \"The device sends DNS requests.\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"dns.network.from_dhcp\",\n                \"description\": \"DNS traffic detected only to DHCP provided server\",\n                \"expected_behavior\": \"The device sends DNS requests to the DNS server provided by the DHCP server\",\n                \"required_result\": \"Roadmap\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.tls.v1_2_server\",\n                \"description\": \"TLS 1.2 not validated: Certificate has expired\\nEC key length passed: 256 >= 224\\nDevice certificate has not been signed\\nTLS 1.3 not validated: Certificate has expired\\nEC key length passed: 256 >= 224\\nDevice certificate has not been signed\",\n                \"expected_behavior\": \"TLS 1.2 certificate is issued to the web browser client when accessed\",\n                \"required_result\": \"Required\",\n                \"result\": \"Non-Compliant\"\n            },\n            {\n                \"name\": \"security.tls.v1_2_client\",\n                \"description\": \"No outbound connections were found.\",\n                \"expected_behavior\": \"The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers\",\n                \"required_result\": \"Required\",\n                \"result\": \"Skipped\"\n            }\n        ]\n    },\n    \"report\": \"http://localhost:8000/report/123 123/2024-05-03T12:09:59\"\n  }\n]",
+          "body": "[\n  {\n    \"mac_addr\": \"00:1e:42:35:73:c6\",\n    \"device\": {\n        \"mac_addr\": \"00:1e:42:35:73:c4\",\n        \"manufacturer\": \"Teltonika\",\n        \"model\": \"TRB140\",\n        \"firmware\": \"1.2.3\",\n        \"test_modules\": {\n            \"connection\": {\n                \"enabled\": false\n            },\n            \"ntp\": {\n                \"enabled\": true\n            },\n            \"dns\": {\n                \"enabled\": true\n            },\n            \"services\": {\n                \"enabled\": true\n            },\n            \"tls\": {\n                \"enabled\": true\n            },\n            \"protocol\": {\n                \"enabled\": true\n            }\n        }\n    },\n    \"status\": \"Non-Compliant\",\n    \"started\": \"2024-05-03 12:09:59\",\n    \"finished\": \"2024-05-03 12:15:51\",\n    \"tests\": {\n        \"total\": 20,\n        \"results\": [\n            {\n                \"name\": \"protocol.valid_bacnet\",\n                \"description\": \"BACnet discovery could not resolve any devices\",\n                \"expected_behavior\": \"BACnet traffic can be seen on the network and packets are valid and not malformed\",\n                \"required_result\": \"Recommended\",\n                \"result\": \"Skipped\"\n            },\n            {\n                \"name\": \"protocol.bacnet.version\",\n                \"description\": \"No BACnet devices discovered.\",\n                \"expected_behavior\": \"The BACnet client implements an up to date version of BACnet\",\n                \"required_result\": \"Recommended\",\n                \"result\": \"Skipped\"\n            },\n            {\n                \"name\": \"protocol.valid_modbus\",\n                \"description\": \"Failed to establish Modbus connection to device\",\n                \"expected_behavior\": \"Any Modbus functionality works as expected and valid Modbus traffic can be observed\",\n                \"required_result\": \"Recommended\",\n                \"result\": \"Non-Compliant\"\n            },\n            {\n                \"name\": \"ntp.network.ntp_support\",\n                \"description\": \"Device sent NTPv3 packets. NTPv3 is not allowed.\",\n                \"expected_behavior\": \"The device sends an NTPv4 request to the configured NTP server.\",\n                \"required_result\": \"Required\",\n                \"result\": \"Non-Compliant\"\n            },\n            {\n                \"name\": \"ntp.network.ntp_dhcp\",\n                \"description\": \"Device sent NTP request to non-DHCP provided server\",\n                \"expected_behavior\": \"Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)\",\n                \"required_result\": \"Roadmap\",\n                \"result\": \"Non-Compliant\"\n            },\n            {\n                \"name\": \"security.services.ftp\",\n                \"description\": \"No FTP server found\",\n                \"expected_behavior\": \"There is no FTP service running on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.ssh.version\",\n                \"description\": \"SSH server found running  protocol 2.0\",\n                \"expected_behavior\": \"SSH server is not running or server is SSHv2\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.telnet\",\n                \"description\": \"No telnet server found\",\n                \"expected_behavior\": \"There is no Telnet service running on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.smtp\",\n                \"description\": \"No SMTP server found\",\n                \"expected_behavior\": \"There is no SMTP service running on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.http\",\n                \"description\": \"Found HTTP server running on port 80/tcp\",\n                \"expected_behavior\": \"Device is unreachable on port 80 (or any other port) and only responds to HTTPS requests on port 443 (or any other port if HTTP is used at all)\",\n                \"required_result\": \"Required\",\n                \"result\": \"Non-Compliant\"\n            },\n            {\n                \"name\": \"security.services.pop\",\n                \"description\": \"No POP server found\",\n                \"expected_behavior\": \"There is no POP service running on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.imap\",\n                \"description\": \"No IMAP server found\",\n                \"expected_behavior\": \"There is no IMAP service running on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.snmpv3\",\n                \"description\": \"No SNMP server found\",\n                \"expected_behavior\": \"Device is unreachable on port 161 (or any other port) and device is unreachable on port 162 (or any other port) unless SNMP is essential in which case it is SNMPv3 is used.\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.vnc\",\n                \"description\": \"No VNC server found\",\n                \"expected_behavior\": \"Device cannot be accessed / connected to via VNC on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.services.tftp\",\n                \"description\": \"No TFTP server found\",\n                \"expected_behavior\": \"There is no TFTP service running on any port\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"ntp.network.ntp_server\",\n                \"description\": \"No NTP server found\",\n                \"expected_behavior\": \"The device does not respond to NTP requests when it's IP is set as the NTP server on another device\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"dns.network.hostname_resolution\",\n                \"description\": \"DNS traffic detected from device\",\n                \"expected_behavior\": \"The device sends DNS requests.\",\n                \"required_result\": \"Required\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"dns.network.from_dhcp\",\n                \"description\": \"DNS traffic detected only to DHCP provided server\",\n                \"expected_behavior\": \"The device sends DNS requests to the DNS server provided by the DHCP server\",\n                \"required_result\": \"Roadmap\",\n                \"result\": \"Compliant\"\n            },\n            {\n                \"name\": \"security.tls.v1_2_server\",\n                \"description\": \"TLS 1.2 not validated: Certificate has expired\\nEC key length passed: 256 >= 224\\nDevice certificate has not been signed\\nTLS 1.3 not validated: Certificate has expired\\nEC key length passed: 256 >= 224\\nDevice certificate has not been signed\",\n                \"expected_behavior\": \"TLS 1.2 certificate is issued to the web browser client when accessed\",\n                \"required_result\": \"Required\",\n                \"result\": \"Non-Compliant\"\n            },\n            {\n                \"name\": \"security.tls.v1_2_client\",\n                \"description\": \"No outbound TLS connections were found.\",\n                \"expected_behavior\": \"The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers\",\n                \"required_result\": \"Required\",\n                \"result\": \"Skipped\"\n            }\n        ]\n    },\n    \"report\": \"http://localhost:8000/report/123 123/2024-05-03T12:09:59\"\n  }\n]",
           "latency": 0,
           "statusCode": 200,
           "label": "",
@@ -1602,6 +1602,111 @@
         }
       ],
       "responseMode": null
+    },
+    {
+      "uuid": "af7fdcb0-721d-4198-a8ef-c6d8c4eba8c8",
+      "type": "http",
+      "documentation": "Get a Testrun PDF profile",
+      "method": "post",
+      "endpoint": "report/{profile_name}",
+      "responses": [
+        {
+          "uuid": "9a759f46-4bc4-433a-be86-e456f069c217",
+          "body": "",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Profile found - no device selected",
+          "headers": [],
+          "bodyType": "FILE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "c9a09ae7-3158-4956-93ac-4c8a90dfced8",
+          "body": "",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Profile found - device selected ",
+          "headers": [],
+          "bodyType": "FILE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5f98471e-15b6-47a4-a68d-e98c3a538b40",
+          "body": "{\n    \"error\": \"Profile could not be found\"\n}",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "Profile not found",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "767d9e78-386e-4bf7-bec8-71a005efdce9",
+          "body": "{\n    \"error\": \"A device with that mac address could not be found\"\n}",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "Device not found",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5d76bea0-39c1-45f2-80f1-de6f770cb999",
+          "body": "{\n    \"error\": \"Error retrieving the profile PDF\"\n}",
+          "latency": 0,
+          "statusCode": 500,
+          "label": "Error occured",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
     }
   ],
   "rootChildren": [
@@ -1700,6 +1805,10 @@
     {
       "type": "route",
       "uuid": "26f0f76f-e787-4ebe-a3f8-ea3a6004bc15"
+    },
+    {
+      "type": "route",
+      "uuid": "af7fdcb0-721d-4198-a8ef-c6d8c4eba8c8"
     }
   ],
   "proxyMode": false,

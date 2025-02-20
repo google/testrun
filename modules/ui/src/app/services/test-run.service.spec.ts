@@ -228,7 +228,7 @@ describe('TestRunService', () => {
 
       const reports = [
         {
-          status: 'Completed',
+          status: 'Complete',
           device: device,
           report: 'https://api.testrun.io/report.pdf',
           started: '2023-06-22T10:11:00.123Z',
@@ -263,6 +263,7 @@ describe('TestRunService', () => {
 
     const statusesForGreenRes = [
       StatusOfTestResult.Compliant,
+      StatusOfTestrun.Proceed,
       StatusOfTestResult.CompliantLimited,
       StatusOfTestResult.CompliantHigh,
     ];
@@ -276,6 +277,7 @@ describe('TestRunService', () => {
 
     const statusesForRedRes = [
       StatusOfTestResult.NonCompliant,
+      StatusOfTestrun.DoNotProceed,
       StatusOfTestResult.Error,
     ];
 
@@ -365,6 +367,7 @@ describe('TestRunService', () => {
     const resultsInProgress = [
       StatusOfTestrun.InProgress,
       StatusOfTestrun.WaitingForDevice,
+      StatusOfTestrun.Starting,
       StatusOfTestrun.Monitoring,
       StatusOfTestrun.Validating,
     ];
@@ -372,8 +375,7 @@ describe('TestRunService', () => {
     const resultsNotInProgress = [
       StatusOfTestrun.Idle,
       StatusOfTestrun.Cancelled,
-      StatusOfTestrun.Compliant,
-      StatusOfTestrun.NonCompliant,
+      StatusOfTestrun.Complete,
     ];
 
     resultsInProgress.forEach(testCase => {

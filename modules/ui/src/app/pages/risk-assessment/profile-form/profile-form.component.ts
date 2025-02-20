@@ -156,7 +156,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
 
     group['name'] = new FormControl('', [
       this.profileValidators.textRequired(),
-      this.deviceValidators.deviceStringFormat(),
+      this.profileValidators.profileNameFormat(),
       this.nameValidator,
     ]);
 

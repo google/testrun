@@ -88,17 +88,17 @@ $expander-button-size: 28px;
 .tests-item-row {
   min-height: $row-height;
   height: auto;
-  grid-template-columns: 1fr 2.2fr 160px 20px;
+  grid-template-columns: 1fr 2.2fr 150px 226px 20px;
   border-bottom: 1px solid $lighter-grey;
 }
 
 .tests-header-row {
-  grid-template-columns: 1fr 2.2fr 150px $expander-button-size;
+  grid-template-columns: 1fr 2.2fr 150px 220px $expander-button-size;
 }
 
 .expansion-panel-header ::ng-deep.mat-content {
   display: grid;
-  grid-template-columns: 1fr 2.2fr 154px;
+  grid-template-columns: 1fr 2.2fr 150px 220px;
 }
 
 .expansion-panel-header ::ng-deep .mat-expansion-indicator {
@@ -129,8 +129,8 @@ $expander-button-size: 28px;
 
 .expansion-panel-row ::ng-deep.mat-expansion-panel-body {
   display: grid;
-  grid-template-columns: 1fr 2.2fr 160px 20px;
-  grid-template-areas: '. description . .';
+  grid-template-columns: 1fr 2.2fr 150px 220px 20px;
+  grid-template-areas: '. description . . .';
 }
 
 .cel-description {
@@ -189,4 +189,81 @@ $expander-button-size: 28px;
 .tests-container .expansion-panel-row {
   border-radius: 0;
   box-shadow: none;
+}
+
+.tests-item-cell-required-result {
+  display: flex;
+  align-items: center;
+  .cell-result-required-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    &::before {
+      font-family: 'Material Symbols Outlined';
+      line-height: 14px;
+    }
+  }
+  &.roadmap {
+    color: #00639b;
+    .cell-result-required-icon {
+      background: #00639b;
+      color: #e1e3e1;
+      &::before {
+        content: 'road';
+      }
+    }
+  }
+  &.recommended {
+    color: #146c2e;
+    .cell-result-required-icon {
+      background: #146c2e;
+      color: #ffffff;
+      &::before {
+        font-variation-settings:
+          'FILL' 1,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+        content: 'thumb_up';
+        font-size: 9px;
+      }
+    }
+  }
+  &.informational {
+    color: #146c2e;
+    .cell-result-required-icon {
+      background: #146c2e;
+      color: #ffffff;
+      &::before {
+        content: 'info_i';
+      }
+    }
+  }
+  &.required {
+    color: #1f1f1f;
+    .cell-result-required-icon {
+      background: #1f1f1f;
+      color: #e1e3e1;
+      &::before {
+        content: 'asterisk';
+      }
+    }
+  }
+  &.required-if-applicable {
+    color: #00639b;
+    .cell-result-required-icon {
+      background: #00639b;
+      color: #e1e3e1;
+      &::before {
+        content: 'asterisk';
+      }
+    }
+  }
+  .cell-result-required-text {
+    padding-left: 8px;
+  }
 }
