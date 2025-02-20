@@ -3,9 +3,7 @@
 # Display network interfaces
 ip a
 
-# Set paths and servers
-NTP_SERVER=10.10.10.5
-DNS_SERVER="nonexistent.dns.server"
+# Set interface
 INTF=eth0
 
 # Check if the interface is up
@@ -64,16 +62,9 @@ echo "Starting TFTP on port 69 "
 echo "Starting NTP service"
 service ntp start
 
-# DNS MODULE
-
-# Test DNS resolution
-echo "Sending DNS request to $DNS_SERVER"
-dig @$DNS_SERVER +short www.google.com || echo "DNS resolution failed"
-
 # Keep network monitoring
 (while true; do arping 10.10.10.1; sleep 10; done) &
 (while true; do ip a | cat; sleep 10; done) &
 
 # Keep the script running
 tail -f /dev/null
-

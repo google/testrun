@@ -1,0 +1,54 @@
+{
+  "mac_addr": "02:42:aa:00:00:05",
+  "manufacturer": "Google",
+  "model": "Sevices Non Compliant",
+  "type": "IoT Gateway",
+  "technology": "Hardware - Access Control",
+  "test_pack": "Pilot Assessment",
+  "additional_info": [
+    {
+      "question": "What type of device is this?",
+      "answer": "IoT Gateway"
+    },
+    {
+      "question": "Please select the technology this device falls into",
+      "answer": "Hardware - Access Control"
+    },
+    {
+      "question": "Does your device process any sensitive information?",
+      "answer": "Yes"
+    },
+    {
+      "question": "Can all non-essential services be disabled on your device?",
+      "answer": "Yes"
+    },
+    {
+      "question": "Is there a second IP port on the device?",
+      "answer": "Yes"
+    },
+    {
+      "question": "Can the second IP port on your device be disabled?",
+      "answer": "Yes"
+    }
+  ],
+  "test_modules": {
+    "protocol": {
+      "enabled": false
+    },
+    "services": {
+      "enabled": true
+    },
+    "ntp": {
+      "enabled": false
+    },
+    "tls": {
+      "enabled": false
+    },
+    "connection": {
+      "enabled": false
+    },
+    "dns": {
+      "enabled": false
+    }  
+  }
+}

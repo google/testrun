@@ -4,11 +4,13 @@
 ip a
 
 # Set paths and servers
-NTP_SERVER=10.10.10.5
-DNS_SERVER=8.8.8.8
+DNS_SERVER="nonexistent.dns.server"
 INTF=eth0
 
-# DHCP
+# Check if the interface is up
+ip link show $INTF | grep "state UP" || echo "Warning: $INTF is not up"
+
+# DHCP setup
 ip addr flush dev $INTF
 PID_FILE=/var/run/dhclient.pid
 if [ -f $PID_FILE ]; then
@@ -19,18 +21,13 @@ dhclient -v $INTF
 DHCP_TPID=$!
 echo $DHCP_TPID
 
-# SERVICES MODULE
-
-# No FTP, SSH, Telnet, SMTP, HTTP, POP, IMAP services
-echo "FTP, SSH, Telnet, SMTP, HTTP, POP, IMAP, SNMP, VNC, TFTP, NTP services not running"
-
 # DNS MODULE
 
 # Test DNS resolution
 echo "Sending DNS request to $DNS_SERVER"
-dig @$DNS_SERVER +short www.google.com
+dig @$DNS_SERVER +short www.google.com || echo "DNS resolution failed"
 
-# Keep network monitoring (can refactor later for other network modules)
+# Keep network monitoring
 (while true; do arping 10.10.10.1; sleep 10; done) &
 (while true; do ip a | cat; sleep 10; done) &
 

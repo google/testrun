@@ -1,10 +1,10 @@
 {
-  "mac_addr": "02:42:aa:00:00:02",
+  "mac_addr": "02:42:aa:00:00:03",
   "manufacturer": "Google",
-  "model": "Tester 2",
+  "model": "Dns Non Compliant",
   "type": "IoT Gateway",
   "technology": "Hardware - Access Control",
-  "test_pack": "Device Qualification",
+  "test_pack": "Pilot Assessment",
   "additional_info": [
     {
       "question": "What type of device is this?",
@@ -48,7 +48,7 @@
       "enabled": false
     },
     "dns": {
-      "enabled": false
+      "enabled": true
     }  
   }
 }
