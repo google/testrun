@@ -78,14 +78,21 @@ $border-radius: 12px;
   }
 }
 
+.button-edit:has(.item-status) {
+  grid-template-columns: min-content auto min-content;
+  grid-template-areas:
+    'icon manufacturer status'
+    'icon name name';
+}
+
 .button-edit {
   width: 100%;
   height: 100%;
   background: inherit;
-  grid-template-columns: auto auto 1fr;
+  grid-template-columns: min-content auto;
   grid-template-areas:
-    'icon manufacturer status'
-    'icon name name';
+    'icon manufacturer'
+    'icon name';
 
   &:hover {
     cursor: pointer;
@@ -104,9 +111,10 @@ $border-radius: 12px;
 }
 
 .item-status {
+  align-self: end;
+  white-space: nowrap;
   grid-area: status;
   justify-self: start;
-  align-self: center;
   font-size: 11px;
   font-weight: 500;
   line-height: 16px;
@@ -115,7 +123,6 @@ $border-radius: 12px;
   max-width: 100%;
   border-radius: 200px;
   padding: 0 7px;
-  margin-left: -20px;
   &-under-test {
     background: colors.$on-secondary-container;
     color: colors.$on-secondary;
@@ -141,7 +148,6 @@ $border-radius: 12px;
   padding-right: variables.$icon-size;
 
   .item-manufacturer-text {
-    width: 210px;
     max-width: 240px;
     margin: 0;
     text-overflow: ellipsis;
