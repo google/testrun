@@ -123,7 +123,7 @@ class BACnet():
       valid = None
       # If no packets are found in protocol.pcap
       if not packets:
-        LOGGER.debug(f'No bacnet packets found for object id {object_id}')
+        LOGGER.info(f'No BACnet packets found for object id {object_id}')
       for packet in packets:
         if object_id in packet['_source']['layers']['bacapp.instance_number']:
           if device_hw_addr.lower() in packet['_source']['layers']['eth.src']:

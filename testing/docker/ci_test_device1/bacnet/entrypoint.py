@@ -16,7 +16,7 @@ def start_bacnet_device():
 
   bacnet = BAC0.lite(deviceId=999)
 
-  # bacnet.iam()
+  bacnet.iam()
 
   while True:
     time.sleep(10)
