@@ -77,7 +77,7 @@ limitations under the License.
   </div>
   <button
     mat-flat-button
-    [disabled]="selectedProfile === null"
+    [disabled]="selectedProfile === null || isCopyProfile"
     (click)="onDeleteClick()"
     class="delete-button">
     Delete
