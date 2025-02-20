@@ -139,15 +139,22 @@
 }
 
 .stop-button {
-  // styles to be updated
   position: absolute;
-  right: 24px;
-  bottom: 24px;
+  right: 40px;
+  bottom: 32px;
+  background-color: colors.$error;
+  padding: 26px;
+  border-radius: variables.$corner-large;
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 28px;
+  height: 80px;
 }
 
-.stop-button {
-  letter-spacing: 0.25px;
-  padding: 0 24px;
+.stop-button mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
 }
 
 .progress-table {
@@ -160,4 +167,8 @@
 .progress-table-progress-empty {
   position: relative;
   overflow-y: hidden;
+}
+
+::ng-deep .stop-testrun app-simple-dialog {
+  width: 329px;
 }

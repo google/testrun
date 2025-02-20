@@ -28,8 +28,7 @@
 }
 
 .simple-dialog-title {
-  font-size: 18px;
-  line-height: 24px;
+  @include mixins.headline-small();
   padding: 0;
   text-align: center;
   color: colors.$on-surface;

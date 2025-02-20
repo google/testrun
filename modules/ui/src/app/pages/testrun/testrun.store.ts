@@ -41,7 +41,6 @@ import {
   TestsData,
   TestsResponse,
 } from '../../model/testrun-status';
-import { FocusManagerService } from '../../services/focus-manager.service';
 import { LoaderService } from '../../services/loader.service';
 import { TestModule } from '../../model/device';
 
@@ -56,7 +55,6 @@ export interface TestrunComponentState {
 @Injectable()
 export class TestrunStore extends ComponentStore<TestrunComponentState> {
   private store = inject<Store<AppState>>(Store);
-  private readonly focusManagerService = inject(FocusManagerService);
   private readonly loaderService = inject(LoaderService);
 
   private dataSource$ = this.select(state => state.dataSource);
