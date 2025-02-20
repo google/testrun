@@ -118,9 +118,9 @@ class BACnet():
   def validate_bacnet_source(self, object_id, device_hw_addr):
     try:
       LOGGER.info(f'Checking BACnet traffic for object id {object_id}')
-      valid = None
       capture_file = os.path.join(self._captures_dir, self._capture_file)
       packets = self.get_bacnet_packets(capture_file, object_id)
+      valid = None
       # If no packets are found in protocol.pcap
       if not packets:
         LOGGER.debug(f'No bacnet packets found for object id {object_id}')
