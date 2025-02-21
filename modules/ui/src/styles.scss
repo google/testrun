@@ -361,7 +361,6 @@ body:has(.filter-dialog-content)
 body #main {
   &:has(.device-repository-content-empty),
   &:has(.results-content-empty),
-  &:has(.progress-content-empty),
   &:has(.risk-assessment-content-empty) {
     .app-callout-container {
       position: absolute;
