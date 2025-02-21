@@ -24,7 +24,11 @@ import {
   ChangeDetectorRef,
   ElementRef,
 } from '@angular/core';
-import { RiskAssessmentStore } from './risk-assessment.store';
+import {
+  COPY_ACTION,
+  DElETE_ACTION,
+  RiskAssessmentStore,
+} from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
@@ -264,7 +268,10 @@ export class RiskAssessmentComponent
   actions(actions: EntityAction[]) {
     return (profile: Profile) => {
       if (profile.status === ProfileStatus.EXPIRED) {
-        return [{ action: ProfileAction.Delete, icon: 'delete' }];
+        return [DElETE_ACTION];
+      }
+      if (!profile.created) {
+        return [COPY_ACTION];
       }
       return actions;
     };

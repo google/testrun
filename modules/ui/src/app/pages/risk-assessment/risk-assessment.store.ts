@@ -27,6 +27,8 @@ import { selectRiskProfiles } from '../../store/selectors';
 import { setRiskProfiles } from '../../store/actions';
 import { EntityAction } from '../../model/entity-action';
 
+export const COPY_ACTION = { action: ProfileAction.Copy, icon: 'content_copy' };
+export const DElETE_ACTION = { action: ProfileAction.Delete, icon: 'delete' };
 export interface AppComponentState {
   selectedProfile: Profile | null;
   profiles: Profile[];
@@ -190,10 +192,7 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
       profiles: [],
       profileFormat: [],
       selectedProfile: null,
-      actions: [
-        { action: ProfileAction.Copy, icon: 'content_copy' },
-        { action: ProfileAction.Delete, icon: 'delete' },
-      ],
+      actions: [COPY_ACTION, DElETE_ACTION],
     });
   }
 }
