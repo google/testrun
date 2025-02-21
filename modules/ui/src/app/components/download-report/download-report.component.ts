@@ -23,7 +23,7 @@ import { ReportActionComponent } from '../report-action/report-action.component'
   selector: 'app-download-report',
   templateUrl: './download-report.component.html',
   styleUrls: ['./download-report.component.scss'],
-  standalone: true,
+
   imports: [CommonModule, MatTooltipModule],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,

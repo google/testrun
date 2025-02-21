@@ -18,19 +18,16 @@ import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-program-type-icon',
-  standalone: true,
+
   imports: [MatIcon],
   template: ` <mat-icon [svgIcon]="type" class="icon"></mat-icon> `,
   styles: `
     :host {
       display: inline-flex;
       align-items: center;
-      padding-right: 4px;
     }
     .icon {
       display: flex;
-      width: 16px;
-      height: 16px;
       line-height: 16px;
     }
   `,

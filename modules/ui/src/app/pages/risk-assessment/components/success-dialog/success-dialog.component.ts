@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -37,16 +37,20 @@ interface DialogData {
   selector: 'app-success-dialog',
   templateUrl: './success-dialog.component.html',
   styleUrls: ['./success-dialog.component.scss'],
-  standalone: true,
+
   imports: [MatDialogModule, MatButtonModule, CommonModule],
 })
 export class SuccessDialogComponent extends EscapableDialogComponent {
-  constructor(
-    private readonly testRunService: TestRunService,
-    public override dialogRef: MatDialogRef<SuccessDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
-  ) {
-    super(dialogRef);
+  private readonly testRunService = inject(TestRunService);
+  override dialogRef: MatDialogRef<SuccessDialogComponent>;
+  data = inject<DialogData>(MAT_DIALOG_DATA);
+
+  constructor() {
+    const dialogRef =
+      inject<MatDialogRef<SuccessDialogComponent>>(MatDialogRef);
+
+    super();
+    this.dialogRef = dialogRef;
   }
 
   confirm() {

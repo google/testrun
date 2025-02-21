@@ -64,7 +64,10 @@ export class DeviceValidators {
     };
   }
 
-  public differentMACAddress(devices: Device[], device?: Device): ValidatorFn {
+  public differentMACAddress(
+    devices: Device[],
+    device: Device | null
+  ): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value?.trim();
       if (value && (!device || device?.mac_addr !== value)) {

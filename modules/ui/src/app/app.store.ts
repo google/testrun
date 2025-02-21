@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
-import { tap, withLatestFrom } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import {
   selectHasConnectionSettings,
   selectHasDevices,
@@ -52,6 +52,8 @@ import {
   fetchReports,
   setTestModules,
   updateAdapters,
+  fetchInterfaces,
+  fetchSystemConfig,
 } from './store/actions';
 import { ResultOfTestrun, TestrunStatus } from './model/testrun-status';
 import {
@@ -72,15 +74,16 @@ export interface AppComponentState {
   isStatusLoaded: boolean;
   systemStatus: TestrunStatus | null;
   calloutState: Map<string, boolean>;
-  isMenuOpen: boolean;
-  /**
-   * Indicates, if side menu should be focused on keyboard navigation after menu is opened
-   */
-  focusNavigation: boolean;
   settingMissedError: SettingMissedError | null;
 }
 @Injectable()
 export class AppStore extends ComponentStore<AppComponentState> {
+  private store = inject<Store<AppState>>(Store);
+  private testRunService = inject(TestRunService);
+  private testRunMqttService = inject(TestRunMqttService);
+  private focusManagerService = inject(FocusManagerService);
+  private notificationService = inject(NotificationService);
+
   private consentShown$ = this.select(state => state.consentShown);
   private calloutState$ = this.select(state => state.calloutState);
   private isStatusLoaded$ = this.select(state => state.isStatusLoaded);
@@ -93,8 +96,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
   private hasConnectionSetting$ = this.store.select(
     selectHasConnectionSettings
   );
-  private isMenuOpened$ = this.select(state => state.isMenuOpen);
-  private focusNavigation$ = this.select(state => state.focusNavigation);
   private interfaces$: Observable<SystemInterfaces> =
     this.store.select(selectInterfaces);
   private systemConfig$: Observable<SystemConfig> =
@@ -122,12 +123,10 @@ export class AppStore extends ComponentStore<AppComponentState> {
     isTestingComplete: this.isTestingComplete$,
     riskProfiles: this.riskProfiles$,
     hasConnectionSettings: this.hasConnectionSetting$,
-    isMenuOpen: this.isMenuOpened$,
     interfaces: this.interfaces$,
     settingMissedError: this.settingMissedError$,
     calloutState: this.calloutState$,
     hasInternetConnection: this.hasInternetConnection$,
-    focusNavigation: this.focusNavigation$,
   });
 
   updateConsent = this.updater((state, consentShown: boolean) => ({
@@ -149,16 +148,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
   updateIsStatusLoaded = this.updater((state, isStatusLoaded: boolean) => ({
     ...state,
     isStatusLoaded,
-  }));
-
-  updateFocusNavigation = this.updater((state, focusNavigation: boolean) => ({
-    ...state,
-    focusNavigation,
-  }));
-
-  updateIsMenuOpened = this.updater((state, isMenuOpen: boolean) => ({
-    ...state,
-    isMenuOpen,
   }));
 
   updateSettingMissedError = this.updater(
@@ -293,18 +282,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  toggleMenu = this.effect(trigger$ => {
-    return trigger$.pipe(
-      withLatestFrom(this.isMenuOpened$),
-      tap(([, opened]) => {
-        this.updateIsMenuOpened(!opened);
-        if (!opened) {
-          this.updateFocusNavigation(true);
-        }
-      })
-    );
-  });
-
   checkInterfacesInConfig = this.effect(() => {
     return combineLatest([
       this.interfaces$.pipe(skip(1)),
@@ -345,13 +322,23 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  constructor(
-    private store: Store<AppState>,
-    private testRunService: TestRunService,
-    private testRunMqttService: TestRunMqttService,
-    private focusManagerService: FocusManagerService,
-    private notificationService: NotificationService
-  ) {
+  getInterfaces = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        this.store.dispatch(fetchInterfaces());
+      })
+    );
+  });
+
+  getSystemConfig = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        this.store.dispatch(fetchSystemConfig());
+      })
+    );
+  });
+
+  constructor() {
     // @ts-expect-error get object is defined in index.html
     const calloutState = sessionStorage.getObject(CALLOUT_STATE_KEY);
 
@@ -362,8 +349,6 @@ export class AppStore extends ComponentStore<AppComponentState> {
       calloutState: calloutState
         ? new Map(Object.entries(calloutState))
         : new Map(),
-      isMenuOpen: false,
-      focusNavigation: false,
       settingMissedError: null,
     });
   }

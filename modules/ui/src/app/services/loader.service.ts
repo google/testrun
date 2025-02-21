@@ -1,4 +1,4 @@
-import { Inject, Injectable, Optional } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, delay, Observable, of, switchMap } from 'rxjs';
 import { LOADER_TIMEOUT_CONFIG_TOKEN } from './loaderConfig';
 
@@ -6,13 +6,10 @@ import { LOADER_TIMEOUT_CONFIG_TOKEN } from './loaderConfig';
   providedIn: 'root',
 })
 export class LoaderService {
-  private loading$ = new BehaviorSubject<boolean>(false);
+  private timeout =
+    inject(LOADER_TIMEOUT_CONFIG_TOKEN, { optional: true }) ?? 1000;
 
-  constructor(
-    @Optional()
-    @Inject(LOADER_TIMEOUT_CONFIG_TOKEN)
-    private timeout: number = 1000
-  ) {}
+  private loading$ = new BehaviorSubject<boolean>(false);
 
   setLoading(loading: boolean) {
     this.loading$.next(loading);

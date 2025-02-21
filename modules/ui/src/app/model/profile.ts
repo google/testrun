@@ -29,6 +29,7 @@ export type ProfileFormat = QuestionFormat;
 export interface Question {
   question?: string;
   answer?: string | number[];
+  default?: string | number[];
 }
 
 export enum ProfileRisk {
@@ -45,4 +46,9 @@ export enum ProfileStatus {
 export interface RiskResultClassName {
   red: boolean;
   cyan: boolean;
+}
+
+export enum ProfileAction {
+  Copy = 'Copy',
+  Delete = 'Delete',
 }

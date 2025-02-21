@@ -29,7 +29,7 @@ describe('CalloutComponent', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(CalloutComponent);
     component = fixture.componentInstance;
-    component.type = 'mockValue';
+    fixture.componentRef.setInput('type', 'mockValue');
     compiled = fixture.nativeElement as HTMLElement;
     fixture.detectChanges();
   });
@@ -62,6 +62,29 @@ describe('CalloutComponent', () => {
         '.callout-close-button'
       ) as HTMLButtonElement;
       closeButton?.click();
+
+      expect(calloutClosedSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('action', () => {
+    beforeEach(() => {
+      fixture.componentRef.setInput('action', 'action');
+      fixture.detectChanges();
+    });
+
+    it('should have action link', () => {
+      const closeButton = compiled.querySelector('.callout-action-link');
+
+      expect(closeButton).toBeTruthy();
+    });
+
+    it('should emit event', () => {
+      const calloutClosedSpy = spyOn(component.onAction, 'emit');
+      const actionLink = compiled.querySelector(
+        '.callout-action-link'
+      ) as HTMLAnchorElement;
+      actionLink?.click();
 
       expect(calloutClosedSpy).toHaveBeenCalled();
     });

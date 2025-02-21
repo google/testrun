@@ -1,8 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { TestRunMqttService } from './test-run-mqtt.service';
-import { IMqttMessage, MqttModule, MqttService } from 'ngx-mqtt';
-import { MQTT_SERVICE_OPTIONS } from '../app.module';
+import { IMqttMessage, MqttService } from 'ngx-mqtt';
 import SpyObj = jasmine.SpyObj;
 import { of } from 'rxjs';
 import { MOCK_ADAPTERS } from '../mocks/settings.mock';
@@ -21,7 +20,6 @@ describe('TestRunMqttService', () => {
     testRunServiceMock = jasmine.createSpyObj(['changeReportURL']);
 
     TestBed.configureTestingModule({
-      imports: [MqttModule.forRoot(MQTT_SERVICE_OPTIONS)],
       providers: [
         { provide: MqttService, useValue: mockService },
         { provide: TestRunService, useValue: testRunServiceMock },

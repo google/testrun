@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import '../../../theming/colors';
-@import '../../../theming/variables';
+@use 'colors';
+@use 'variables';
 
 .form-container {
   height: 100%;
@@ -50,15 +50,15 @@
 }
 
 .form-step {
-  border: 2px solid $lighter-grey;
+  border: 2px solid colors.$lighter-grey;
   width: 4px;
   height: 4px;
   display: inline-block;
   border-radius: 100%;
   margin: 0 8px;
   &.step-active {
-    border-color: $secondary;
-    background: $secondary;
+    border-color: colors.$secondary;
+    background: colors.$secondary;
   }
 }
 
@@ -72,16 +72,16 @@
 
 .form-button-back,
 .form-button-forward {
-  height: $icon-size;
-  width: $icon-size;
-  min-width: $icon-size;
+  height: variables.$icon-size;
+  width: variables.$icon-size;
+  min-width: variables.$icon-size;
   margin: 0;
   padding: 0;
   & mat-icon {
-    color: $secondary;
-    width: $icon-size;
-    height: $icon-size;
-    font-size: $icon-size;
+    color: colors.$secondary;
+    width: variables.$icon-size;
+    height: variables.$icon-size;
+    font-size: variables.$icon-size;
     margin: 0;
   }
 

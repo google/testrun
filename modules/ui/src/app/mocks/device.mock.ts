@@ -13,13 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  Device,
-  DeviceStatus,
-  DeviceQuestionnaireSection,
-} from '../model/device';
+import { Device, DeviceStatus } from '../model/device';
 import { ProfileRisk } from '../model/profile';
-import { FormControlType } from '../model/question';
+import { FormControlType, QuestionFormat } from '../model/question';
 
 export const device = {
   status: DeviceStatus.VALID,
@@ -71,55 +67,45 @@ export const MOCK_TEST_MODULES = [
 
 export const MOCK_MODULES = ['Connection', 'Udmi'];
 
-export const DEVICES_FORM: DeviceQuestionnaireSection[] = [
+export const DEVICES_FORM: QuestionFormat[] = [
   {
-    step: 1,
-    title: 'Step 1 title',
-    description: 'Step 1 description',
-    questions: [
+    question: 'What type of device is this?',
+    type: FormControlType.SELECT,
+    options: [
+      {
+        text: 'Building Automation Gateway',
+        risk: ProfileRisk.HIGH,
+        id: 1,
+      },
+      {
+        text: 'IoT Gateway',
+        risk: ProfileRisk.LIMITED,
+        id: 2,
+      },
+    ],
+  },
+  {
+    question: 'Does your device process any sensitive information? ',
+    type: FormControlType.SELECT,
+    options: [
       {
         id: 1,
-        question: 'What type of device is this?',
-        type: FormControlType.SELECT,
-        options: [
-          {
-            text: 'Building Automation Gateway',
-            risk: ProfileRisk.HIGH,
-            id: 1,
-          },
-          {
-            text: 'IoT Gateway',
-            risk: ProfileRisk.LIMITED,
-            id: 2,
-          },
-        ],
+        text: 'Yes',
+        risk: ProfileRisk.LIMITED,
       },
       {
         id: 2,
-        question: 'Does your device process any sensitive information? ',
-        type: FormControlType.SELECT,
-        options: [
-          {
-            id: 1,
-            text: 'Yes',
-            risk: ProfileRisk.LIMITED,
-          },
-          {
-            id: 2,
-            text: 'No',
-            risk: ProfileRisk.HIGH,
-          },
-        ],
+        text: 'No',
+        risk: ProfileRisk.HIGH,
       },
-      {
-        id: 3,
-        question: 'Please select the technology this device falls into',
-        type: FormControlType.SELECT,
-        options: [
-          { text: 'Hardware - Access Control' },
-          { text: 'Hardware - Air quality' },
-        ],
-      },
+    ],
+  },
+  {
+    question: 'Please select the technology this device falls into',
+    type: FormControlType.SELECT,
+    options: [
+      { text: 'Hardware - Access Control' },
+      { text: 'Hardware - Air quality' },
     ],
   },
 ];

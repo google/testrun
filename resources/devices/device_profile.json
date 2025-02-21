@@ -1,419 +1,405 @@
 [
   {
-    "step": 1,
-    "title": "Select device type & technology",
-    "description": "Before your device can go through testing, tell us more about your device and its functionality. It is important that we fully understand your device before a thorough assessment can be made.",
-    "questions": [
+    "id": 1,
+    "question": "What type of device is this?",
+    "validation": {
+      "required": true
+    },
+    "type": "select",
+    "options": [
       {
-        "id": 1,
-        "question": "What type of device is this?",
-        "validation": {
-          "required": true
-        },
-        "type": "select",
-        "options": [
-          {
-            "text": "Building Automation Gateway",
-            "risk": "High",
-            "id": 1
-          },
-          {
-            "text": "IoT Gateway",
-            "risk": "High",
-            "id": 2
-          },
-          {
-            "text": "Controller - AHU",
-            "risk": "High",
-            "id": 3
-          },
-          {
-            "text": "Controller - Boiler",
-            "risk": "High",
-            "id": 4
-          },
-          {
-            "text": "Controller - Chiller",
-            "risk": "High",
-            "id": 5
-          },
-          {
-            "text": "Controller - FCU",
-            "risk": "Limited",
-            "id": 6
-          },
-          {
-            "text": "Controller - Pump",
-            "risk": "Limited",
-            "id": 7
-          },
-          {
-            "text": "Controller - CRAC",
-            "risk": "High",
-            "id": 8
-          },
-          {
-            "text": "Controller - VAV",
-            "risk": "Limited",
-            "id": 9
-          },
-          {
-            "text": "Controller - VRF",
-            "risk": "Limited",
-            "id": 10
-          },
-          {
-            "text": "Controller - Multiple",
-            "risk": "High",
-            "id": 11
-          },
-          {
-            "text": "Controller - Other",
-            "risk": "High",
-            "id": 12
-          },
-          {
-            "text": "Controller - Lighting",
-            "risk": "Limited",
-            "id": 13
-          },
-          {
-            "text": "Controller - Blinds/Facades",
-            "risk": "High",
-            "id": 14
-          },
-          {
-            "text": "Controller - Lifts/Elevators",
-            "risk": "High",
-            "id": 15
-          },
-          {
-            "text": "Controller - UPS",
-            "risk": "High",
-            "id": 16
-          },
-          {
-            "text": "Sensor - Air Quality",
-            "risk": "Limited",
-            "id": 17
-          },
-          {
-            "text": "Sensor - Vibration",
-            "risk": "Limited",
-            "id": 18
-          },
-          {
-            "text": "Sensor - Humidity",
-            "risk": "Limited",
-            "id": 19
-          },
-          {
-            "text": "Sensor - Water",
-            "risk": "Limited",
-            "id": 20
-          },
-          {
-            "text": "Sensor - Occupancy",
-            "risk": "High",
-            "id": 21
-          },
-          {
-            "text": "Sensor - Volume",
-            "risk": "Limited",
-            "id": 22
-          },
-          {
-            "text": "Sensor - Weight",
-            "risk": "Limited",
-            "id": 23
-          },
-          {
-            "text": "Sensor - Weather",
-            "risk": "Limited",
-            "id": 24
-          },
-          {
-            "text": "Sensor - Steam",
-            "risk": "High",
-            "id": 25
-          },
-          {
-            "text": "Sensor - Air Flow",
-            "risk": "Limited",
-            "id": 26
-          },
-          {
-            "text": "Sensor - Lighting",
-            "risk": "Limited",
-            "id": 27
-          },
-          {
-            "text": "Sensor - Other",
-            "risk": "High",
-            "id": 28
-          },
-          {
-            "text": "Sensor - Air Quality",
-            "risk": "Limited",
-            "id": 29
-          },
-          {
-            "text": "Monitoring - Fire System",
-            "risk": "Limited",
-            "id": 30
-          },
-          {
-            "text": "Monitoring - Emergency Lighting",
-            "risk": "Limited",
-            "id": 31
-          },
-          {
-            "text": "Monitoring - Other",
-            "risk": "High",
-            "id": 32
-          },
-          {
-            "text": "Monitoring - UPS",
-            "risk": "Limited",
-            "id": 33
-          },
-          {
-            "text": "Meter - Water",
-            "risk": "Limited",
-            "id": 34
-          },
-          {
-            "text": "Meter - Gas",
-            "risk": "Limited",
-            "id": 35
-          },
-          {
-            "text": "Meter - Electricity",
-            "risk": "Limited",
-            "id": 36
-          },
-          {
-            "text": "Meter - Other",
-            "risk": "High",
-            "id": 37
-          },
-          {
-            "text": "Other",
-            "risk": "High",
-            "id": 38
-          },
-          {
-            "text": "Data - Storage",
-            "risk": "High",
-            "id": 39
-          },
-          {
-            "text": "Data - Processing",
-            "risk": "High",
-            "id": 40
-          },
-          {
-            "text": "Tablet",
-            "risk": "High",
-            "id": 41
-          }
-        ]
+        "text": "Building Automation Gateway",
+        "risk": "High",
+        "id": 1
       },
       {
-        "id": 2,
-        "question": "Please select the technology this device falls into",
-        "validation": {
-          "required": true
-        },
-        "type": "select",
-        "options": [
-          {
-            "id": 1,
-            "text": "Hardware - Access Control"
-          },
-          {
-            "id": 2,
-            "text": "Hardware - Air quality"
-          },
-          {
-            "id": 3,
-            "text": "Hardware - Asset location tracking"
-          },
-          {
-            "id": 4,
-            "text": "Hardware - Audio Visual"
-          },
-          {
-            "id": 5,
-            "text": "Hardware - Blinds/Facade"
-          },
-          {
-            "id": 6,
-            "text": "Hardware - Cameras"
-          },
-          {
-            "id": 7,
-            "text": "Hardware - Catering"
-          },
-          {
-            "id": 8,
-            "text": "Hardware - Data Ingestion/Managment"
-          },
-          {
-            "id": 9,
-            "text": "Hardware - EV Charging"
-          },
-          {
-            "id": 10,
-            "text": "Hardware - Fitness"
-          },
-          {
-            "id": 11,
-            "text": "Hardware - HVAC"
-          },
-          {
-            "id": 12,
-            "text": "Hardware - Irrigation"
-          },
-          {
-            "id": 13,
-            "text": "Hardware - Leak Detection"
-          },
-          {
-            "id": 14,
-            "text": "Hardware - Lifts/Elevators"
-          },
-          {
-            "id": 15,
-            "text": "Hardware - Lighting"
-          },
-          {
-            "id": 16,
-            "text": "Hardware - Metering"
-          },
-          {
-            "id": 17,
-            "text": "Hardware - Monitoring"
-          },
-          {
-            "id": 18,
-            "text": "Hardware - Occupancy"
-          },
-          {
-            "id": 19,
-            "text": "Hardware - System Integration"
-          },
-          {
-            "id": 20,
-            "text": "Hardware - Time Management"
-          },
-          {
-            "id": 21,
-            "text": "Hardware - UPS"
-          },
-          {
-            "id": 22,
-            "text": "Hardware - Waste Management"
-          },
-          {
-            "id": 23,
-            "text": "Building Automation"
-          },
-          {
-            "id": 24,
-            "text": "Other"
-          }
-        ]
+        "text": "IoT Gateway",
+        "risk": "High",
+        "id": 2
       },
       {
-        "id": 3,
-        "question": "Does your device process any sensitive information? ",
-        "validation": {
-          "required": true
-        },
-        "type": "select",
-        "options": [
-          {
-            "id": 1,
-            "text": "Yes",
-            "risk": "High"
-          },
-          {
-            "id": 2,
-            "text": "No",
-            "risk": "Limited"
-          },
-          {
-            "id": 3,
-            "text": "I don't know",
-            "risk": "High"
-          }
-        ]
+        "text": "Controller - AHU",
+        "risk": "High",
+        "id": 3
+      },
+      {
+        "text": "Controller - Boiler",
+        "risk": "High",
+        "id": 4
+      },
+      {
+        "text": "Controller - Chiller",
+        "risk": "High",
+        "id": 5
+      },
+      {
+        "text": "Controller - FCU",
+        "risk": "Limited",
+        "id": 6
+      },
+      {
+        "text": "Controller - Pump",
+        "risk": "Limited",
+        "id": 7
+      },
+      {
+        "text": "Controller - CRAC",
+        "risk": "High",
+        "id": 8
+      },
+      {
+        "text": "Controller - VAV",
+        "risk": "Limited",
+        "id": 9
+      },
+      {
+        "text": "Controller - VRF",
+        "risk": "Limited",
+        "id": 10
+      },
+      {
+        "text": "Controller - Multiple",
+        "risk": "High",
+        "id": 11
+      },
+      {
+        "text": "Controller - Other",
+        "risk": "High",
+        "id": 12
+      },
+      {
+        "text": "Controller - Lighting",
+        "risk": "Limited",
+        "id": 13
+      },
+      {
+        "text": "Controller - Blinds/Facades",
+        "risk": "High",
+        "id": 14
+      },
+      {
+        "text": "Controller - Lifts/Elevators",
+        "risk": "High",
+        "id": 15
+      },
+      {
+        "text": "Controller - UPS",
+        "risk": "High",
+        "id": 16
+      },
+      {
+        "text": "Sensor - Air Quality",
+        "risk": "Limited",
+        "id": 17
+      },
+      {
+        "text": "Sensor - Vibration",
+        "risk": "Limited",
+        "id": 18
+      },
+      {
+        "text": "Sensor - Humidity",
+        "risk": "Limited",
+        "id": 19
+      },
+      {
+        "text": "Sensor - Water",
+        "risk": "Limited",
+        "id": 20
+      },
+      {
+        "text": "Sensor - Occupancy",
+        "risk": "High",
+        "id": 21
+      },
+      {
+        "text": "Sensor - Volume",
+        "risk": "Limited",
+        "id": 22
+      },
+      {
+        "text": "Sensor - Weight",
+        "risk": "Limited",
+        "id": 23
+      },
+      {
+        "text": "Sensor - Weather",
+        "risk": "Limited",
+        "id": 24
+      },
+      {
+        "text": "Sensor - Steam",
+        "risk": "High",
+        "id": 25
+      },
+      {
+        "text": "Sensor - Air Flow",
+        "risk": "Limited",
+        "id": 26
+      },
+      {
+        "text": "Sensor - Lighting",
+        "risk": "Limited",
+        "id": 27
+      },
+      {
+        "text": "Sensor - Other",
+        "risk": "High",
+        "id": 28
+      },
+      {
+        "text": "Sensor - Air Quality",
+        "risk": "Limited",
+        "id": 29
+      },
+      {
+        "text": "Monitoring - Fire System",
+        "risk": "Limited",
+        "id": 30
+      },
+      {
+        "text": "Monitoring - Emergency Lighting",
+        "risk": "Limited",
+        "id": 31
+      },
+      {
+        "text": "Monitoring - Other",
+        "risk": "High",
+        "id": 32
+      },
+      {
+        "text": "Monitoring - UPS",
+        "risk": "Limited",
+        "id": 33
+      },
+      {
+        "text": "Meter - Water",
+        "risk": "Limited",
+        "id": 34
+      },
+      {
+        "text": "Meter - Gas",
+        "risk": "Limited",
+        "id": 35
+      },
+      {
+        "text": "Meter - Electricity",
+        "risk": "Limited",
+        "id": 36
+      },
+      {
+        "text": "Meter - Other",
+        "risk": "High",
+        "id": 37
+      },
+      {
+        "text": "Other",
+        "risk": "High",
+        "id": 38
+      },
+      {
+        "text": "Data - Storage",
+        "risk": "High",
+        "id": 39
+      },
+      {
+        "text": "Data - Processing",
+        "risk": "High",
+        "id": 40
+      },
+      {
+        "text": "Tablet",
+        "risk": "High",
+        "id": 41
       }
     ]
   },
   {
-    "step": 2,
-    "title": "Tell us more about your device",
-    "description": "Before your device can go through testing, tell us more about your device and its functionality. It is important that we fully understand your device before a thorough assessment can be made.",
-    "questions": [
+    "id": 2,
+    "question": "Please select the technology this device falls into",
+    "validation": {
+      "required": true
+    },
+    "type": "select",
+    "options": [
       {
         "id": 1,
-        "question": "Can all non-essential services be disabled on your device?",
-        "validation": {
-          "required": true
-        },
-        "type": "select",
-        "options": [
-          {
-            "text": "Yes",
-            "id": 1
-          },
-          {
-            "text": "No",
-            "id": 2
-          }
-        ]
+        "text": "Hardware - Access Control"
       },
       {
         "id": 2,
-        "question": "Is there a second IP port on the device?",
-        "validation": {
-          "required": true
-        },
-        "type": "select",
-        "options": [
-          {
-            "text": "Yes",
-            "id": 1
-          },
-          {
-            "text": "No",
-            "id": 2
-          }
-        ]
+        "text": "Hardware - Air quality"
       },
       {
         "id": 3,
-        "question": "Can the second IP port on your device be disabled?",
-        "validation": {
-          "required": true
-        },
-        "type": "select",
-        "options": [
-          {
-            "text": "Yes",
-            "id": 1
-          },
-          {
-            "text": "No",
-            "id": 2
-          },
-          {
-            "text": "N/A",
-            "id": 3
-          }
-        ]
+        "text": "Hardware - Asset location tracking"
+      },
+      {
+        "id": 4,
+        "text": "Hardware - Audio Visual"
+      },
+      {
+        "id": 5,
+        "text": "Hardware - Blinds/Facade"
+      },
+      {
+        "id": 6,
+        "text": "Hardware - Cameras"
+      },
+      {
+        "id": 7,
+        "text": "Hardware - Catering"
+      },
+      {
+        "id": 8,
+        "text": "Hardware - Data Ingestion/Managment"
+      },
+      {
+        "id": 9,
+        "text": "Hardware - EV Charging"
+      },
+      {
+        "id": 10,
+        "text": "Hardware - Fitness"
+      },
+      {
+        "id": 11,
+        "text": "Hardware - HVAC"
+      },
+      {
+        "id": 12,
+        "text": "Hardware - Irrigation"
+      },
+      {
+        "id": 13,
+        "text": "Hardware - Leak Detection"
+      },
+      {
+        "id": 14,
+        "text": "Hardware - Lifts/Elevators"
+      },
+      {
+        "id": 15,
+        "text": "Hardware - Lighting"
+      },
+      {
+        "id": 16,
+        "text": "Hardware - Metering"
+      },
+      {
+        "id": 17,
+        "text": "Hardware - Monitoring"
+      },
+      {
+        "id": 18,
+        "text": "Hardware - Occupancy"
+      },
+      {
+        "id": 19,
+        "text": "Hardware - System Integration"
+      },
+      {
+        "id": 20,
+        "text": "Hardware - Time Management"
+      },
+      {
+        "id": 21,
+        "text": "Hardware - UPS"
+      },
+      {
+        "id": 22,
+        "text": "Hardware - Waste Management"
+      },
+      {
+        "id": 23,
+        "text": "Building Automation"
+      },
+      {
+        "id": 24,
+        "text": "Other"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "question": "Does your device process any sensitive information? ",
+    "validation": {
+      "required": true
+    },
+    "type": "select",
+    "options": [
+      {
+        "id": 1,
+        "text": "Yes",
+        "risk": "High"
+      },
+      {
+        "id": 2,
+        "text": "No",
+        "risk": "Limited"
+      },
+      {
+        "id": 3,
+        "text": "I don't know",
+        "risk": "High"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "question": "Can all non-essential services be disabled on your device?",
+    "validation": {
+      "required": true
+    },
+    "type": "select",
+    "options": [
+      {
+        "text": "Yes",
+        "id": 1
+      },
+      {
+        "text": "No",
+        "id": 2
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "question": "Is there a second IP port on the device?",
+    "validation": {
+      "required": true
+    },
+    "type": "select",
+    "options": [
+      {
+        "text": "Yes",
+        "id": 1
+      },
+      {
+        "text": "No",
+        "id": 2
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "question": "Can the second IP port on your device be disabled?",
+    "validation": {
+      "required": true
+    },
+    "type": "select",
+    "options": [
+      {
+        "text": "Yes",
+        "id": 1
+      },
+      {
+        "text": "No",
+        "id": 2
+      },
+      {
+        "text": "N/A",
+        "id": 3
       }
     ]
   }

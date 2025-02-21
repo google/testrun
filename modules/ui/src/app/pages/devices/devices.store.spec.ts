@@ -33,6 +33,7 @@ import {
 import { selectDevices, selectIsOpenAddDevice } from '../../store/selectors';
 import { DevicesStore } from './devices.store';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from '../../mocks/testrun.mock';
+import { DeviceAction } from '../../model/device';
 
 describe('DevicesStore', () => {
   let devicesStore: DevicesStore;
@@ -92,6 +93,13 @@ describe('DevicesStore', () => {
           selectedDevice: null,
           deviceInProgress: device,
           testModules: [],
+          actions: [
+            {
+              action: DeviceAction.StartNewTestrun,
+              svgIcon: 'testrun_logo_small',
+            },
+            { action: DeviceAction.Delete, icon: 'delete' },
+          ],
         });
         done();
       });

@@ -14,160 +14,152 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
-import { ComponentStore } from '@ngrx/component-store';
-import { switchMap, tap, withLatestFrom } from 'rxjs/operators';
-import { catchError, EMPTY, exhaustMap, of, throwError } from 'rxjs';
+import { computed, inject } from '@angular/core';
+import { signalStore } from '@ngrx/signals';
+import { switchMap, tap } from 'rxjs/operators';
+import { catchError, EMPTY, exhaustMap, throwError } from 'rxjs';
 import { Certificate } from '../../model/certificate';
 import { TestRunService } from '../../services/test-run.service';
 import { NotificationService } from '../../services/notification.service';
 import { DatePipe } from '@angular/common';
 import { FILE_NAME_LENGTH, getValidationErrors } from './certificate.validator';
-
-export interface AppComponentState {
-  certificates: Certificate[];
-  selectedCertificate: string;
-}
+import {
+  withState,
+  withHooks,
+  withMethods,
+  patchState,
+  withComputed,
+} from '@ngrx/signals';
+import { tapResponse } from '@ngrx/operators';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { MatTableDataSource } from '@angular/material/table';
 
 const SYMBOLS_PER_SECOND = 9.5;
-@Injectable()
-export class CertificatesStore extends ComponentStore<AppComponentState> {
-  private certificates$ = this.select(state => state.certificates);
-  private selectedCertificate$ = this.select(
-    state => state.selectedCertificate
-  );
 
-  viewModel$ = this.select({
-    certificates: this.certificates$,
-    selectedCertificate: this.selectedCertificate$,
-  });
-
-  updateCertificates = this.updater((state, certificates: Certificate[]) => ({
-    ...state,
-    certificates,
-  }));
-
-  selectCertificate = this.updater((state, selectedCertificate: string) => ({
-    ...state,
-    selectedCertificate,
-  }));
-
-  getCertificates = this.effect(trigger$ => {
-    return trigger$.pipe(
-      exhaustMap(() => {
-        return this.testRunService.fetchCertificates().pipe(
-          tap((certificates: Certificate[]) => {
-            this.updateCertificates(certificates);
-          })
+export const CertificatesStore = signalStore(
+  withState({
+    certificates: [] as Certificate[],
+    selectedCertificate: '',
+    displayedColumns: ['name', 'organisation', 'expires', 'status', 'actions'],
+    dataLoaded: false,
+  }),
+  withComputed(({ certificates }) => ({
+    dataSource: computed(() => new MatTableDataSource(certificates())),
+  })),
+  withMethods(
+    (
+      store,
+      testRunService = inject(TestRunService),
+      notificationService = inject(NotificationService),
+      datePipe = inject(DatePipe)
+    ) => {
+      function removeCertificate(name: string) {
+        patchState(store, {
+          certificates: store
+            .certificates()
+            .filter(certificate => certificate.name !== name),
+        });
+      }
+      function addCertificate(name: string, certificates: Certificate[]) {
+        const certificate = { name, uploading: true } as Certificate;
+        patchState(store, {
+          certificates: [certificate, ...certificates],
+        });
+      }
+      function notify(message: string) {
+        notificationService.notify(
+          message,
+          0,
+          'certificate-notification',
+          Math.ceil(message.length / SYMBOLS_PER_SECOND) * 1000,
+          window.document.querySelector('.certificates-drawer-content')
         );
-      })
-    );
-  });
-
-  uploadCertificate = this.effect<File>(trigger$ => {
-    return trigger$.pipe(
-      withLatestFrom(this.certificates$),
-      switchMap(res => {
-        const [file] = res;
-        const errors = getValidationErrors(file);
-        if (errors.length > 0) {
-          errors.unshift(
-            `File "${this.getShortCertificateName(file.name)}" is not added.`
-          );
-          this.notify(errors.join('\n'));
-          return EMPTY;
-        }
-        return of(res);
-      }),
-      tap(res => {
-        const [file, certificates] = res;
-        this.addCertificate(file.name, certificates);
-      }),
-      exhaustMap(([file, certificates]) => {
-        return this.testRunService.uploadCertificate(file).pipe(
-          exhaustMap(uploaded => {
-            if (uploaded) {
-              return this.testRunService.fetchCertificates();
+      }
+      function getShortCertificateName(name: string) {
+        return name.length <= FILE_NAME_LENGTH
+          ? name
+          : `${name.substring(0, FILE_NAME_LENGTH)}...`;
+      }
+      return {
+        getShortCertificateName,
+        selectCertificate: (certificate: string) => {
+          patchState(store, {
+            selectedCertificate: certificate,
+          });
+        },
+        getCertificates: rxMethod<void>(
+          switchMap(() =>
+            testRunService.fetchCertificates().pipe(
+              tapResponse({
+                next: certificates =>
+                  patchState(store, { certificates, dataLoaded: true }),
+                error: () => patchState(store, { certificates: [] }),
+              })
+            )
+          )
+        ),
+        deleteCertificate: rxMethod<string>(
+          switchMap((certificate: string) =>
+            testRunService.deleteCertificate(certificate).pipe(
+              tapResponse({
+                next: remove => {
+                  if (remove) {
+                    removeCertificate(certificate);
+                  }
+                },
+                error: () =>
+                  patchState(store, { certificates: store.certificates() }),
+              })
+            )
+          )
+        ),
+        uploadCertificate: rxMethod<File>(
+          switchMap((file: File) => {
+            const errors = getValidationErrors(file);
+            if (errors.length > 0) {
+              errors.unshift(
+                `File "${getShortCertificateName(file.name)}" is not added.`
+              );
+              notify(errors.join('\n'));
+              return EMPTY;
             }
-            return throwError('Failed to upload certificate');
-          }),
-          tap(newCertificates => {
-            const uploadedCertificate = newCertificates.filter(
-              certificate =>
-                !certificates.some(cert => cert.name === certificate.name)
-            )[0];
-            this.updateCertificates(newCertificates);
-            // @ts-expect-error data layer is not null
-            window.dataLayer.push({
-              event: 'successful_saving_certificate',
-            });
-            this.notify(
-              `Certificate successfully added.\n${uploadedCertificate.name} by ${uploadedCertificate.organisation} valid until ${this.datePipe.transform(uploadedCertificate.expires, 'dd MMM yyyy')}`
+            addCertificate(file.name, store.certificates());
+            return testRunService.uploadCertificate(file).pipe(
+              exhaustMap(uploaded => {
+                if (uploaded) {
+                  return testRunService.fetchCertificates();
+                }
+                return throwError('Failed to upload certificate');
+              }),
+              tap(newCertificates => {
+                const uploadedCertificate = newCertificates.filter(
+                  certificate =>
+                    !store
+                      .certificates()
+                      .some(cert => cert.name === certificate.name)
+                )[0];
+                patchState(store, { certificates: newCertificates });
+                // @ts-expect-error data layer is not null
+                window.dataLayer.push({
+                  event: 'successful_saving_certificate',
+                });
+                notify(
+                  `Certificate successfully added.\n${uploadedCertificate.name} by ${uploadedCertificate.organisation} valid until ${datePipe.transform(uploadedCertificate.expires, 'dd MMM yyyy')}`
+                );
+              }),
+              catchError(() => {
+                removeCertificate(file.name);
+                return EMPTY;
+              })
             );
-          }),
-          catchError(() => {
-            this.removeCertificate(file.name, certificates);
-            return EMPTY;
           })
-        );
-      })
-    );
-  });
-
-  addCertificate(name: string, certificates: Certificate[]) {
-    const certificate = { name, uploading: true } as Certificate;
-    this.updateCertificates([certificate, ...certificates]);
-  }
-
-  deleteCertificate = this.effect<string>(trigger$ => {
-    return trigger$.pipe(
-      withLatestFrom(this.certificates$),
-      exhaustMap(([certificate, current]) => {
-        return this.testRunService.deleteCertificate(certificate).pipe(
-          tap(remove => {
-            if (remove) {
-              this.removeCertificate(certificate, current);
-            }
-          }),
-          catchError(() => {
-            return EMPTY;
-          })
-        );
-      })
-    );
-  });
-
-  getShortCertificateName(name: string) {
-    return name.length <= FILE_NAME_LENGTH
-      ? name
-      : `${name.substring(0, FILE_NAME_LENGTH)}...`;
-  }
-
-  private notify(message: string) {
-    this.notificationService.notify(
-      message,
-      0,
-      'certificate-notification',
-      Math.ceil(message.length / SYMBOLS_PER_SECOND) * 1000,
-      window.document.querySelector('.certificates-drawer-content')
-    );
-  }
-
-  private removeCertificate(name: string, current: Certificate[]) {
-    const certificates = current.filter(
-      certificate => certificate.name !== name
-    );
-    this.updateCertificates(certificates);
-  }
-
-  constructor(
-    private testRunService: TestRunService,
-    private notificationService: NotificationService,
-    private datePipe: DatePipe
-  ) {
-    super({
-      certificates: [],
-      selectedCertificate: '',
-    });
-  }
-}
+        ),
+      };
+    }
+  ),
+  withHooks({
+    onInit({ getCertificates }) {
+      getCertificates();
+    },
+  })
+);

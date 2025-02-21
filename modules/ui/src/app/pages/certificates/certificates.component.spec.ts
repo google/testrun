@@ -75,20 +75,6 @@ describe('CertificatesComponent', () => {
   });
 
   describe('DOM tests', () => {
-    it('should emit closeSettingEvent when header button clicked', () => {
-      const headerCloseButton = fixture.nativeElement.querySelector(
-        '.certificates-drawer-header-button'
-      ) as HTMLButtonElement;
-      spyOn(component.closeCertificatedEvent, 'emit');
-
-      headerCloseButton.click();
-
-      expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-        'The certificates panel is closed.'
-      );
-      expect(component.closeCertificatedEvent.emit).toHaveBeenCalled();
-    });
-
     it('should have upload file button', () => {
       const uploadCertificatesButton = fixture.nativeElement.querySelector(
         '.browse-files-button'
@@ -99,9 +85,8 @@ describe('CertificatesComponent', () => {
 
     describe('with certificates', () => {
       it('should have certificates list', () => {
-        const certificateList = fixture.nativeElement.querySelectorAll(
-          'app-certificate-item'
-        );
+        const certificateList =
+          fixture.nativeElement.querySelectorAll('.cdk-row');
 
         expect(certificateList.length).toEqual(2);
       });
@@ -128,7 +113,7 @@ describe('CertificatesComponent', () => {
           autoFocus: true,
           hasBackdrop: true,
           disableClose: true,
-          panelClass: 'simple-dialog',
+          panelClass: ['simple-dialog', 'delete-certificate'],
         });
 
         openSpy.calls.reset();
@@ -137,12 +122,10 @@ describe('CertificatesComponent', () => {
 
     describe('#focusNextButton', () => {
       it('should focus next active element if exist', fakeAsync(() => {
-        const row = window.document.querySelector(
-          'app-certificate-item'
-        ) as HTMLElement;
+        const row = window.document.querySelector('.cdk-row') as HTMLElement;
         row.classList.add('certificate-selected');
         const nextButton = window.document.querySelector(
-          '.certificate-selected + app-certificate-item .certificate-item-delete'
+          '.certificate-selected + .cdk-row .certificate-item-delete'
         ) as HTMLButtonElement;
         const buttonFocusSpy = spyOn(nextButton, 'focus');
 
@@ -152,9 +135,9 @@ describe('CertificatesComponent', () => {
         flush();
       }));
 
-      it('should focus navigation close button if next active element does not exist', fakeAsync(() => {
+      it('should focus upload button if next active element does not exist', fakeAsync(() => {
         const nextButton = window.document.querySelector(
-          '.certificates-drawer-header .certificates-drawer-header-button'
+          '.browse-files-button'
         ) as HTMLButtonElement;
         const buttonFocusSpy = spyOn(nextButton, 'focus');
 

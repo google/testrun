@@ -42,7 +42,7 @@ describe('ProgressTableComponent', () => {
   describe('Class tests', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
-        declarations: [TestrunTableComponent],
+        imports: [TestrunTableComponent],
         providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
       });
       fixture = TestBed.createComponent(TestrunTableComponent);
@@ -107,9 +107,14 @@ describe('ProgressTableComponent', () => {
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        declarations: [TestrunTableComponent, FakeCalloutComponent],
+        declarations: [FakeCalloutComponent],
         providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
-        imports: [BrowserAnimationsModule, MatExpansionModule, MatIconModule],
+        imports: [
+          BrowserAnimationsModule,
+          MatExpansionModule,
+          MatIconModule,
+          TestrunTableComponent,
+        ],
       }).compileComponents();
 
       fixture = TestBed.createComponent(TestrunTableComponent);
@@ -182,6 +187,7 @@ describe('ProgressTableComponent', () => {
 @Component({
   selector: 'app-callout',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeCalloutComponent {
   @Input() type = '';

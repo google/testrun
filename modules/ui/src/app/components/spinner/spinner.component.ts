@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { LoaderService } from '../../services/loader.service';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs/internal/Observable';
@@ -7,13 +7,13 @@ import { Observable } from 'rxjs/internal/Observable';
   selector: 'app-spinner',
   templateUrl: './spinner.component.html',
   styleUrls: ['./spinner.component.scss'],
-  standalone: true,
+
   imports: [CommonModule],
 })
 export class SpinnerComponent implements OnInit {
-  loader$!: Observable<boolean>;
+  loaderService = inject(LoaderService);
 
-  constructor(public loaderService: LoaderService) {}
+  loader$!: Observable<boolean>;
 
   ngOnInit() {
     this.loader$ = this.loaderService.getLoading();

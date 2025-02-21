@@ -16,18 +16,28 @@ limitations under the License.
 <ng-container *ngIf="systemStatus as data">
   <div
     class="progress-card"
-    [class.progress-card-pilot]="data.device.test_pack === TestingType.Pilot"
     [ngClass]="getClass(data.status, data.result)"
+    [class.progress-card-pilot]="data.device.test_pack === TestingType.Pilot"
     aria-live="assertive"
     role="alert">
-    <div>
-      <p class="progress-card-status-title">Test status</p>
-      <p class="progress-card-status-text">
-        <span>{{ getTestStatus(data) }}</span>
+    <div class="progress-card-info progress-card-info-tests">
+      <p class="progress-card-info-title">Tests executed</p>
+      <p class="progress-card-info-text">
         <span>{{ getTestsResult(data) }}</span>
       </p>
     </div>
-    <div *ngIf="!data.finished" [ngSwitch]="data.status">
+
+    <div class="progress-card-info progress-card-info-status">
+      <p class="progress-card-info-title">Status</p>
+      <p class="progress-card-info-text">
+        <span>{{ getTestStatus(data) }}</span>
+      </p>
+    </div>
+
+    <div
+      *ngIf="!data.finished"
+      class="progress-card-status"
+      [ngSwitch]="data.status">
       <ng-container
         *ngSwitchCase="StatusOfTestrun.Validating"
         [ngTemplateOutlet]="Validating">
@@ -63,6 +73,7 @@ limitations under the License.
           "></ng-container
       ></ng-container>
     </div>
+
     <ng-container *ngIf="data.finished">
       <ng-container *ngIf="data.status !== StatusOfTestrun.InProgress">
         <ng-container
@@ -85,6 +96,7 @@ limitations under the License.
     </ng-container>
   </div>
 </ng-container>
+
 <ng-template #InProgress let-data="data">
   <mat-progress-bar
     class="progress-bar"
@@ -103,23 +115,42 @@ limitations under the License.
 </ng-template>
 
 <ng-template #WaitingForDevice>
-  <div>
-    <p class="progress-card-result-title">
-      Please connect and power on your device
-    </p>
-  </div>
+  <ng-container
+    *ngTemplateOutlet="
+      Spinner;
+      context: {
+        text: 'Please connect and power on your device',
+      }
+    "></ng-container>
 </ng-template>
 
 <ng-template #Validating>
-  <div>
-    <p class="progress-card-result-title">Validating virtual network</p>
-  </div>
+  <ng-container
+    *ngTemplateOutlet="
+      Spinner;
+      context: {
+        text: 'Validating virtual network',
+      }
+    "></ng-container>
 </ng-template>
 
 <ng-template #Monitoring>
-  <div>
+  <ng-container
+    *ngTemplateOutlet="
+      Spinner;
+      context: {
+        text: 'Please wait, this could take a few minutes',
+      }
+    "></ng-container>
+</ng-template>
+
+<ng-template #Spinner let-text="text">
+  <div class="progress-card-result-loading">
+    <div class="spinner-container">
+      <span class="loader"></span>
+    </div>
     <p class="progress-card-result-title">
-      Please wait, this could take a few minutes
+      {{ text }}
     </p>
   </div>
 </ng-template>

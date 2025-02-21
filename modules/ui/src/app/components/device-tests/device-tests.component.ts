@@ -16,6 +16,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  effect,
+  input,
   Input,
   OnInit,
 } from '@angular/core';
@@ -31,7 +33,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-device-tests',
-  standalone: true,
+
   imports: [CommonModule, MatCheckboxModule, ReactiveFormsModule],
   templateUrl: './device-tests.component.html',
   styleUrls: ['./device-tests.component.scss'],
@@ -39,10 +41,14 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 })
 export class DeviceTestsComponent implements OnInit {
   @Input() deviceForm!: FormGroup;
-  @Input() deviceTestModules?: TestModules | null;
   @Input() testModules: TestModule[] = [];
   // For initiate test run form tests should be displayed and disabled for change
   @Input() disabled = false;
+
+  deviceTestModules = input<TestModules | undefined>();
+  deviceTestModulesEffect = effect(() => {
+    this.fillTestModulesFormControls();
+  });
 
   get test_modules() {
     return this.deviceForm?.controls['test_modules'] as FormArray;
@@ -54,11 +60,12 @@ export class DeviceTestsComponent implements OnInit {
 
   fillTestModulesFormControls() {
     this.test_modules.controls = [];
-    if (this.deviceTestModules) {
+    if (this.deviceTestModules()) {
       this.testModules.forEach(test => {
         this.test_modules.push(
           new FormControl(
-            (this.deviceTestModules as TestModules)[test.name]?.enabled || false
+            (this.deviceTestModules() as TestModules)[test.name]?.enabled ||
+              false
           )
         );
       });

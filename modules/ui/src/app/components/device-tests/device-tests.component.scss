@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import '../../../theming/colors';
-@import '../../../theming/variables';
+@use 'colors';
+@use 'variables';
+@use 'mixins';
 
 :host {
   overflow: hidden;
@@ -27,24 +28,23 @@
 }
 
 .disabled {
-  pointer-events: none;
-  opacity: 0.6;
+  @include mixins.disabled;
 }
 
 .device-tests-title {
   margin: 20px 0 8px;
   font-size: 18px;
   line-height: 24px;
-  color: $grey-800;
+  color: colors.$on-surface-variant;
 }
 
 .device-tests-description {
   margin: 0;
-  font-family: $font-secondary;
+  font-family: variables.$font-text;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
-  color: $grey-800;
+  color: colors.$on-surface-variant;
 }
 
 .device-form-test-modules {

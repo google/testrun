@@ -30,6 +30,7 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
 import { setRiskProfiles } from '../../store/actions';
+import { ProfileAction } from '../../model/profile';
 
 describe('RiskAssessmentStore', () => {
   let riskAssessmentStore: RiskAssessmentStore;
@@ -104,6 +105,10 @@ describe('RiskAssessmentStore', () => {
           profiles: [PROFILE_MOCK, PROFILE_MOCK_2],
           profileFormat: [],
           selectedProfile: null,
+          actions: [
+            { action: ProfileAction.Copy, icon: 'content_copy' },
+            { action: ProfileAction.Delete, icon: 'delete' },
+          ],
         });
         done();
       });
@@ -115,7 +120,12 @@ describe('RiskAssessmentStore', () => {
       it('should dispatch setRiskProfiles', () => {
         mockService.deleteProfile.and.returnValue(of(true));
 
-        riskAssessmentStore.deleteProfile(PROFILE_MOCK.name);
+        riskAssessmentStore.deleteProfile({
+          name: PROFILE_MOCK.name,
+          onDelete: (idx: number) => {
+            return idx;
+          },
+        });
 
         expect(store.dispatch).toHaveBeenCalledWith(
           setRiskProfiles({ riskProfiles: [PROFILE_MOCK_2] })

@@ -17,13 +17,12 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { DownloadReportComponent } from '../download-report/download-report.component';
 import { ReportActionComponent } from '../report-action/report-action.component';
-import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-download-report-pdf',
   templateUrl: './download-report-pdf.component.html',
-  standalone: true,
-  imports: [CommonModule, DownloadReportComponent, MatIcon],
+
+  imports: [CommonModule, DownloadReportComponent],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

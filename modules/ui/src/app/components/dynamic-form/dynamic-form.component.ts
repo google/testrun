@@ -53,7 +53,7 @@ import { ProfileValidators } from '../../pages/risk-assessment/profile-form/prof
 import { DomSanitizer } from '@angular/platform-browser';
 @Component({
   selector: 'app-dynamic-form',
-  standalone: true,
+
   imports: [
     MatFormField,
     MatOption,
@@ -78,6 +78,11 @@ import { DomSanitizer } from '@angular/platform-browser';
   encapsulation: ViewEncapsulation.None,
 })
 export class DynamicFormComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private deviceValidators = inject(DeviceValidators);
+  private profileValidators = inject(ProfileValidators);
+  private domSanitizer = inject(DomSanitizer);
+
   public readonly FormControlType = FormControlType;
 
   @Input() format: QuestionFormat[] = [];
@@ -87,13 +92,6 @@ export class DynamicFormComponent implements OnInit {
   get formGroup() {
     return this.parentContainer.control as FormGroup;
   }
-
-  constructor(
-    private fb: FormBuilder,
-    private deviceValidators: DeviceValidators,
-    private profileValidators: ProfileValidators,
-    private domSanitizer: DomSanitizer
-  ) {}
   getControl(name: string | number) {
     return this.formGroup.get(name.toString()) as AbstractControl;
   }

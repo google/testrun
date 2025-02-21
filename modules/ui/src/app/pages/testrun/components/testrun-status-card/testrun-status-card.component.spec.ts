@@ -29,7 +29,6 @@ import {
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
   MOCK_PROGRESS_DATA_WITH_ERROR,
 } from '../../../../mocks/testrun.mock';
-import { TestrunModule } from '../../testrun.module';
 
 describe('ProgressStatusCardComponent', () => {
   let component: TestrunStatusCardComponent;
@@ -38,7 +37,7 @@ describe('ProgressStatusCardComponent', () => {
   describe('Class tests', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
-        declarations: [TestrunStatusCardComponent],
+        imports: [TestrunStatusCardComponent],
       });
       fixture = TestBed.createComponent(TestrunStatusCardComponent);
       component = fixture.componentInstance;
@@ -163,7 +162,7 @@ describe('ProgressStatusCardComponent', () => {
       });
 
       it('should return empty string if no data', () => {
-        const expectedResult = '';
+        const expectedResult = '-/-';
 
         const result = component.getTestsResult({} as TestrunStatus);
 
@@ -234,8 +233,7 @@ describe('ProgressStatusCardComponent', () => {
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        declarations: [TestrunStatusCardComponent],
-        imports: [TestrunModule],
+        imports: [TestrunStatusCardComponent],
       }).compileComponents();
 
       fixture = TestBed.createComponent(TestrunStatusCardComponent);
@@ -291,7 +289,7 @@ describe('ProgressStatusCardComponent', () => {
 
       it('should have progress card status text as "Incomplete"', () => {
         const progressCardStatusText = compiled.querySelector(
-          '.progress-card-status-text > span'
+          '.progress-card-info-status .progress-card-info-text > span'
         );
 
         expect(progressCardStatusText).not.toBeNull();
@@ -327,7 +325,7 @@ describe('ProgressStatusCardComponent', () => {
 
       it('should have progress card status text as "In Progress"', () => {
         const progressCardStatusText = compiled.querySelector(
-          '.progress-card-status-text > span'
+          '.progress-card-info-status .progress-card-info-text > span'
         );
 
         expect(progressCardStatusText).not.toBeNull();
@@ -384,7 +382,7 @@ describe('ProgressStatusCardComponent', () => {
 
       it('should have progress card status text as "Waiting for Device"', () => {
         const progressCardStatusText = compiled.querySelector(
-          '.progress-card-status-text > span'
+          '.progress-card-info-status .progress-card-info-text > span'
         );
 
         expect(progressCardStatusText).not.toBeNull();
@@ -423,9 +421,9 @@ describe('ProgressStatusCardComponent', () => {
         );
       });
 
-      it('should have progress card status text as "Waiting for Device"', () => {
+      it('should have progress card status text as "Monitoring"', () => {
         const progressCardStatusText = compiled.querySelector(
-          '.progress-card-status-text > span'
+          '.progress-card-info-status .progress-card-info-text > span'
         );
 
         expect(progressCardStatusText).not.toBeNull();

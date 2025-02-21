@@ -25,6 +25,7 @@ import SpyObj = jasmine.SpyObj;
   template:
     '<app-bypass></app-bypass>' +
     '<div id="main"><button id="test-button"></button></div>',
+  standalone: false,
 })
 class TestBypassComponent {}
 

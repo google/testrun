@@ -14,145 +14,145 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import '../../../theming/colors';
-@import '../../../theming/variables';
+@use 'm3-theme' as *;
+@use 'colors';
+@use 'variables';
+@use 'mixins';
 
 $icon-width: 80px;
 $border-radius: 12px;
 
 .device-item {
   display: grid;
-  width: $device-item-width;
-  height: 80px;
-  border-radius: $border-radius;
-  border: 1px solid $blue-300;
-  background: $white;
+  grid-column-gap: 24px;
   box-sizing: border-box;
-  grid-template-columns: 1fr 1fr;
-  padding: 0;
-  grid-column-gap: 8px;
-  grid-row-gap: 4px;
-  font-family: $font-primary;
+  font-family: variables.$font-primary;
+  border-radius: variables.$corner-large;
+  align-items: center;
+  border: none;
+}
+
+.device-item-basic {
+  padding: 0 24px 0 32px;
+  width: variables.$device-item-width;
+  height: 92px;
+  box-shadow:
+    0px 1px 2px 0px rgba(0, 0, 0, 0.3),
+    0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+  background: colors.$surface-container;
+  grid-template-columns: auto 1fr;
   grid-template-areas:
-    'manufacturer manufacturer'
-    'name address';
+    'icon manufacturer'
+    'icon name';
 
   &:hover {
     cursor: pointer;
+    background: colors.$primary-container;
   }
 
   &.non-interactive {
+    background: colors.$primary-container;
     &:hover {
       cursor: default;
     }
   }
-}
 
-.device-item-with-actions {
-  display: grid;
-  width: $device-item-width;
-  min-height: calc($icon-width - 2px);
-  border-radius: $border-radius;
-  border: 1px solid $blue-300;
-  background: $white;
-  box-sizing: border-box;
-  grid-template-columns: 1fr $icon-width;
-  grid-column-gap: 1px;
-  padding: 0;
-  font-family: $font-primary;
-  grid-template-areas: 'edit start';
+  .item-manufacturer {
+    display: block;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: 0;
+  }
 
-  &.device-item-outdated {
-    border-color: $red-300;
+  .item-name {
+    width: 230px;
+    box-sizing: border-box;
+    text-align: start;
+  }
+
+  .item-mac-address {
+    margin: 0;
   }
 }
 
-.button-edit {
-  display: grid;
-  grid-area: edit;
-  background: $white;
-  box-sizing: border-box;
-  grid-template-columns: 1fr 1fr;
-  padding: 0 6px 0 0;
-  grid-column-gap: 8px;
-  grid-row-gap: 4px;
-  font-family: $font-primary;
+.button-edit:has(.item-status) {
+  grid-template-columns: min-content auto min-content;
   grid-template-areas:
-    'manufacturer status'
-    'name address';
-  border-radius: $border-radius 0 0 $border-radius;
-  border: none;
+    'icon manufacturer status'
+    'icon name name';
+}
+
+.button-edit {
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  grid-template-columns: min-content auto;
+  grid-template-areas:
+    'icon manufacturer'
+    'icon name';
 
   &:hover {
     cursor: pointer;
 
-    .item-manufacturer-text {
-      max-width: 82px;
-    }
-
     .item-manufacturer-icon {
+      position: absolute;
+      right: 0;
       visibility: visible;
       width: 24px;
     }
   }
 
   &:disabled {
-    pointer-events: none;
-    opacity: 0.5;
+    @include mixins.disabled;
   }
 }
 
-.device-item:not(.non-interective):hover {
-  border-color: mat.m2-get-color-from-palette($color-primary, 600);
-}
-
-.device-item-with-actions:not(.device-item-outdated):has(
-    .button-edit:not(:disabled):hover
-  ) {
-  border-color: mat.m2-get-color-from-palette($color-primary, 600);
-}
-
-.device-item-with-actions:not(.device-item-outdated):has(
-    .button-start:not(:disabled):hover
-  ) {
-  border-color: mat.m2-get-color-from-palette($color-primary, 600);
-}
-
 .item-status {
-  margin-right: 16px;
-  grid-area: status;
-  justify-self: end;
   align-self: end;
-  font-size: 8px;
+  white-space: nowrap;
+  grid-area: status;
+  justify-self: start;
+  font-size: 11px;
+  font-weight: 500;
   line-height: 16px;
   letter-spacing: 0.64px;
   text-transform: uppercase;
   max-width: 100%;
-  border-radius: 2px;
-  background: $red-700;
-  color: $white;
-  padding: 0px 4px;
+  border-radius: 200px;
+  padding: 0 7px;
+  &-under-test {
+    background: colors.$on-secondary-container;
+    color: colors.$on-secondary;
+  }
+  &-invalid {
+    background: colors.$error-container;
+    color: colors.$on-error-container;
+  }
 }
 
 .item-manufacturer {
   display: flex;
-  padding: 0 0 0 16px;
   grid-area: manufacturer;
   justify-self: start;
   align-self: end;
-  color: #1f1f1f;
+  color: colors.$on-surface;
   justify-content: flex-start;
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;
   text-align: start;
+  position: relative;
+  padding-right: variables.$icon-size;
 
   .item-manufacturer-text {
+    max-width: 240px;
     margin: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
-    max-width: 106px;
   }
 
   .item-manufacturer-icon {
@@ -166,10 +166,10 @@ $border-radius: 12px;
 }
 
 .item-name {
-  padding: 0 2px 0 16px;
+  align-self: start;
   grid-area: name;
   justify-self: start;
-  color: $grey-800;
+  color: colors.$on-surface-variant;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -181,68 +181,22 @@ $border-radius: 12px;
   max-width: -webkit-fill-available;
   max-width: -moz-available;
   text-align: left;
-}
-
-.item-mac-address {
-  padding-right: 16px;
-  grid-area: address;
-  justify-self: end;
-  color: $grey-700;
-  font-family: Roboto, sans-serif;
-  font-size: 12px;
-  padding-top: 2px;
-  line-height: 20px;
-  max-width: 100%;
-}
-
-.button-start {
-  grid-area: start;
-  width: $icon-width;
-  height: 100%;
-  background-color: mat.m2-get-color-from-palette($color-primary, 50);
-  justify-self: end;
-  border-radius: 0 $border-radius $border-radius 0;
-
-  &:hover,
-  &:focus-visible {
-    background-color: mat.m2-get-color-from-palette($color-primary, 600);
-
-    .button-start-icon {
-      color: $white;
-    }
-  }
-  &:disabled {
-    pointer-events: none;
-    background: rgba(60, 64, 67, 0.12);
-  }
-}
-
-.button-start-icon {
   margin: 0;
-  width: 30px;
-  height: 24px;
 }
 
-.device-item {
-  .item-manufacturer {
-    display: block;
-    max-width: 100%;
-    box-sizing: border-box;
-    padding: 0 16px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    margin: 0;
-  }
+app-program-type-icon,
+mat-icon {
+  grid-area: icon;
+}
 
-  .item-name {
-    width: 230px;
-    box-sizing: border-box;
-    text-align: start;
-    margin: 0;
+.device-item-outdated {
+  height: 100%;
+  .item-manufacturer,
+  .item-name,
+  mat-icon {
+    color: colors.$on-error-container;
   }
-
-  .item-mac-address {
-    margin: 0;
+  .item-manufacturer-text {
+    max-width: 150px;
   }
 }

@@ -69,29 +69,6 @@ describe('ProfileItemComponent', () => {
     expect(date?.textContent?.trim()).toEqual('23 May 2024');
   });
 
-  it('should have profile name as part of buttons aria-label', () => {
-    const deleteButton = fixture.nativeElement.querySelector(
-      '.profile-item-button.delete'
-    );
-    const copyButton = fixture.nativeElement.querySelector(
-      '.profile-item-button.copy'
-    );
-
-    expect(deleteButton?.ariaLabel?.trim()).toContain(PROFILE_MOCK.name);
-    expect(copyButton?.ariaLabel?.trim()).toContain(PROFILE_MOCK.name);
-  });
-
-  it('should emit delete event on delete button clicked', () => {
-    const deleteSpy = spyOn(component.deleteButtonClicked, 'emit');
-    const deleteButton = fixture.nativeElement.querySelector(
-      '.profile-item-button.delete'
-    ) as HTMLButtonElement;
-
-    deleteButton.click();
-
-    expect(deleteSpy).toHaveBeenCalledWith(PROFILE_MOCK.name);
-  });
-
   it('should emit click event on profile name clicked', () => {
     const profileClickedSpy = spyOn(component.profileClicked, 'emit');
     const profileName = fixture.nativeElement.querySelector(
@@ -110,7 +87,7 @@ describe('ProfileItemComponent', () => {
     fixture.nativeElement.dispatchEvent(new Event('focusout'));
     tick();
 
-    expect(component.tooltip.message).toEqual(
+    expect(component.tooltip().message).toEqual(
       'Expired. Please, create a new Risk profile.'
     );
   }));
@@ -135,7 +112,7 @@ describe('ProfileItemComponent', () => {
     });
 
     it('should change tooltip on enterProfileItem', () => {
-      expect(component.tooltip.message).toEqual(
+      expect(component.tooltip().message).toEqual(
         'This risk profile is outdated. Please create a new risk profile.'
       );
     });

@@ -1,0 +1,43 @@
+@use 'node_modules/@angular/material/index' as mat;
+@use 'src/theming/m3-theme' as *;
+@use 'colors';
+@use 'variables';
+
+:host {
+  display: contents;
+}
+
+th {
+  height: var(--mat-table-header-container-height);
+  vertical-align: middle;
+}
+
+.filter-button {
+  display: flex;
+  width: variables.$reports-table-header-size;
+  height: variables.$reports-table-header-size;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 8px;
+  padding: 0;
+  border: none;
+  background: colors.$white;
+  cursor: pointer;
+  border-radius: 50%;
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  &:active,
+  &.active {
+    background-color: colors.$secondary-container;
+    color: colors.$on-secondary-container;
+    &:hover {
+      filter: brightness(90%);
+    }
+  }
+}
+
+.filter-button.active .mat-icon {
+  color: mat.get-theme-color($light-theme, primary, 35);
+}

@@ -52,18 +52,19 @@ limitations under the License.
       <mat-icon
         *ngIf="profile.status === ProfileStatus.EXPIRED"
         class="profile-item-icon"
-        fontIcon="error">
+        fontSet="material-symbols-outlined">
+        error
       </mat-icon>
     </span>
-    <p
+    <p class="profile-item-name">
+      {{ profile.name }}
+    </p>
+    <div
       *ngIf="profile.risk"
       class="profile-item-risk"
       [ngClass]="getRiskClass(profile.risk)">
       {{ profile.risk }} risk
-    </p>
-    <p class="profile-item-name">
-      {{ profile.name }}
-    </p>
+    </div>
     <p class="profile-item-created">
       <ng-container *ngIf="profile.status === ProfileStatus.EXPIRED">
         Outdated ({{ profile.created | date: 'dd MMM yyyy' }})
@@ -73,25 +74,4 @@ limitations under the License.
       </ng-container>
     </p>
   </div>
-  <button
-    *ngIf="profile.status !== ProfileStatus.EXPIRED"
-    class="profile-item-button copy"
-    mat-icon-button
-    attr.aria-label="Copy {{ profile.name }}"
-    matTooltip="Copy {{ profile.name }}"
-    (click)="copyProfileClicked.emit(profile)"
-    (keydown.enter)="copyProfileClicked.emit(profile)"
-    (keydown.space)="copyProfileClicked.emit(profile)">
-    <mat-icon fontSet="material-symbols-outlined"> content_copy </mat-icon>
-  </button>
-  <button
-    class="profile-item-button delete"
-    mat-icon-button
-    attr.aria-label="Delete {{ profile.name }}"
-    matTooltip="Delete {{ profile.name }}"
-    (click)="delete($event, profile.name)"
-    (keydown.enter)="delete($event, profile.name)"
-    (keydown.space)="delete($event, profile.name)">
-    <mat-icon fontSet="material-symbols-outlined"> delete </mat-icon>
-  </button>
 </div>

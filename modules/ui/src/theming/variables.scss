@@ -13,10 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-$device-item-width: 352px;
+$device-item-width: 100%;
 $profiles-drawer-width: 320px;
 $form-max-width: 732px;
 $icon-size: 24px;
+$corner-large: 16px;
+$corner-extra-large: 28px;
+$corner-extra-extra-large: 48px;
+$corner-medium: 12px;
+$reports-table-header-size: 32px;
+
+// nav variables
+$nav-button-height: 32px;
 
 $font-primary: 'Google Sans', sans-serif;
-$font-secondary: 'Roboto';
+$font-secondary: 'Roboto', sans-serif;
+$font-text: 'Google Sans Text', sans-serif;
+$font-symbols: 'Google Symbols';

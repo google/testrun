@@ -1,0 +1,13 @@
+<button
+  mat-flat-button
+  class="browse-files-button"
+  (click)="file_input.click()">
+  Browse Files to Add CA certificate
+</button>
+
+<input
+  #file_input
+  id="default-file-input"
+  type="file"
+  accept=".cert,.crt,.pem,.cer"
+  (change)="fileChange($event)" />

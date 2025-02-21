@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import '../../../theming/colors';
+@use 'colors';
+@use 'variables';
 
 .snack-bar-container {
   display: flex;
@@ -22,8 +23,9 @@
     margin: 0;
   }
 
-  .snack-bar-actions button.action-btn {
-    color: $blue-300;
+  .snack-bar-actions button.action-btn.stop {
+    font-family: variables.$font-text;
+    color: colors.$inverse-primary;
     font-weight: 500;
     line-height: 20px;
     letter-spacing: 0.25px;

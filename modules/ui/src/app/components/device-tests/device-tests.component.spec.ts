@@ -65,14 +65,14 @@ describe('DeviceTestsComponent', () => {
     });
 
     it('should fill tests with device test values if device not present', () => {
-      component.deviceTestModules = {
+      fixture.componentRef.setInput('deviceTestModules', {
         connection: {
           enabled: false,
         },
         dns: {
           enabled: true,
         },
-      };
+      });
       component.ngOnInit();
 
       expect(component.test_modules.controls[0].value).toEqual(false);

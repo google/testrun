@@ -18,85 +18,77 @@ limitations under the License.
   [tabIndex]="tabIndex"
   (click)="itemClick()"
   [attr.aria-label]="label"
-  class="device-item"
+  class="device-item device-item-basic"
   type="button">
-  <ng-container *ngTemplateOutlet="basicView"></ng-container>
+  <ng-container
+    *ngTemplateOutlet="basicView; context: { editable: false }"></ng-container>
 </button>
 
 <div
   *ngIf="deviceView === DeviceView.Basic && tabIndex !== 0"
   [attr.aria-label]="label"
-  class="device-item non-interactive">
-  <ng-container *ngTemplateOutlet="basicView"></ng-container>
+  class="device-item device-item-basic non-interactive">
+  <ng-container
+    *ngTemplateOutlet="basicView; context: { editable: false }"></ng-container>
 </div>
 
-<ng-template #basicView>
-  <p class="item-manufacturer">
-    <span class="visually-hidden">{{ device.test_pack }}</span>
-    <app-program-type-icon
-      *ngIf="device.test_pack === TestingType.Qualification"
-      [type]="ProgramType.Qualification"
-      matTooltip="This device will be tested for Qualification."></app-program-type-icon>
-    <app-program-type-icon
-      *ngIf="device.test_pack === TestingType.Pilot"
-      [type]="ProgramType.Pilot"
-      matTooltip="This device will be tested for the Pilot program."></app-program-type-icon>
-    <span>{{ device.manufacturer }}</span>
-  </p>
-  <p class="item-name">
-    {{ device.model }}
-  </p>
-  <p class="item-mac-address">
-    {{ device.mac_addr }}
-  </p>
-</ng-template>
-
 <div
+  style="height: 100%"
   *ngIf="deviceView === DeviceView.WithActions"
-  [class.device-item-outdated]="device.status === DeviceStatus.INVALID"
-  class="device-item-with-actions">
+  [class.device-item-outdated]="device.status === DeviceStatus.INVALID">
   <button
     [disabled]="disabled"
     [tabIndex]="tabIndex"
     (click)="itemClick()"
     attr.aria-label="Edit device {{ label }}"
-    class="button-edit"
+    class="device-item button-edit"
     type="button">
-    <div class="item-manufacturer">
-      <app-program-type-icon
-        *ngIf="device.test_pack === TestingType.Qualification"
-        [type]="ProgramType.Qualification"
-        matTooltip="This device will be tested for Qualification."
-        aria-label="This device will be tested for Qualification."></app-program-type-icon>
-      <app-program-type-icon
-        *ngIf="device.test_pack === TestingType.Pilot"
-        [type]="ProgramType.Pilot"
-        matTooltip="This device will be tested for the Pilot program."
-        aria-label="This device will be tested for the Pilot program."></app-program-type-icon>
-      <p class="item-manufacturer-text">{{ device.manufacturer }}</p>
-      <mat-icon
-        class="item-manufacturer-icon"
-        fontSet="material-symbols-outlined">
-        edit_square</mat-icon
-      >
-    </div>
-    <div *ngIf="device.status === DeviceStatus.INVALID" class="item-status">
-      {{ INVALID_DEVICE }}
-    </div>
-    <div class="item-name">
-      {{ device.model }}
-    </div>
-    <div class="item-mac-address">
-      {{ device.mac_addr }}
-    </div>
-  </button>
-  <button
-    [disabled]="disabled || device.status === DeviceStatus.INVALID"
-    (click)="startTestrunClick()"
-    attr.aria-label="Start new testrun for device {{ label }}"
-    matTooltip="Test device"
-    class="button-start"
-    mat-flat-button>
-    <mat-icon class="button-start-icon" [svgIcon]="'device_run'"></mat-icon>
+    <ng-container
+      *ngTemplateOutlet="basicView; context: { editable: true }"></ng-container>
   </button>
 </div>
+
+<ng-template #basicView let-editable="editable">
+  <span class="visually-hidden">{{ device.test_pack }}</span>
+  <app-program-type-icon
+    *ngIf="
+      device.status !== DeviceStatus.INVALID &&
+      device.test_pack === TestingType.Qualification
+    "
+    [type]="ProgramType.Qualification"
+    matTooltip="This device will be tested for Qualification."></app-program-type-icon>
+  <app-program-type-icon
+    *ngIf="
+      device.status !== DeviceStatus.INVALID &&
+      device.test_pack === TestingType.Pilot
+    "
+    [type]="ProgramType.Pilot"
+    matTooltip="This device will be tested for the Pilot program."></app-program-type-icon>
+  <p class="item-manufacturer" *ngIf="!editable">
+    <span>{{ device.manufacturer }}</span>
+  </p>
+  <mat-icon
+    *ngIf="device.status === DeviceStatus.INVALID"
+    fontSet="material-symbols-outlined">
+    error
+  </mat-icon>
+  <div class="item-manufacturer" *ngIf="editable">
+    <p class="item-manufacturer-text">{{ device.manufacturer }}</p>
+    <mat-icon
+      class="item-manufacturer-icon"
+      fontSet="material-symbols-outlined">
+      edit_square</mat-icon
+    >
+  </div>
+  <div
+    *ngIf="device.status === DeviceStatus.INVALID"
+    class="item-status item-status-invalid">
+    {{ INVALID_DEVICE }}
+  </div>
+  <div *ngIf="disabled" class="item-status item-status-under-test">
+    Under test
+  </div>
+  <p class="item-name">
+    {{ device.model }}
+  </p>
+</ng-template>

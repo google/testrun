@@ -13,40 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import '../../../../../theming/colors';
-@import '../../../../../theming/variables';
+@use 'colors';
+@use 'variables';
+@use 'mixins';
+
+::ng-deep :root {
+  --mat-dialog-container-max-width: 560px;
+}
 
 :host {
-  display: grid;
-  overflow: hidden;
-  width: 570px;
-  padding: 24px 0 8px 0;
+  @include mixins.dialog;
+  padding: 24px 0 16px 0;
+  gap: 16px;
   > * {
-    padding: 0 16px 0 24px;
+    padding: 0 24px;
   }
 }
 
 .simple-dialog-title {
-  font-family: $font-primary;
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 24px;
-  text-align: left;
-}
-
-.simple-dialog-title + .simple-dialog-content {
-  margin-top: 0;
-  padding-top: 0;
-  border-bottom: 1px solid $lighter-grey;
+  font-family: variables.$font-primary;
+  font-size: 24px;
+  line-height: 32px;
+  text-align: center;
+  color: colors.$on-surface;
 }
 
 .simple-dialog-content {
-  font-family: Roboto, sans-serif;
+  font-family: variables.$font-text;
   font-size: 14px;
   line-height: 20px;
-  letter-spacing: 0.2px;
-  color: $grey-800;
-  padding: 16px 16px 16px 24px;
+  letter-spacing: 0;
+  color: colors.$on-surface-variant;
   margin: 0;
 }
 
@@ -66,7 +63,7 @@
   align-items: center;
   height: 20px;
   margin-left: 2px;
-  font-family: $font-secondary;
+  font-family: variables.$font-secondary;
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.3px;

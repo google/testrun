@@ -16,7 +16,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { StepperComponent } from './stepper.component';
-import { Component, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, viewChild, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CdkStep } from '@angular/cdk/stepper';
 import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
@@ -26,7 +26,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 @Component({
   selector: 'app-stepper-bypass',
-  standalone: true,
+
   imports: [
     CdkStep,
     StepperComponent,
@@ -39,11 +39,13 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
   templateUrl: './stepper-test.component.html',
 })
 class TestStepperComponent {
-  @ViewChild('stepper') public stepper!: StepperComponent;
+  private fb = inject(FormBuilder);
+
+  readonly stepper = viewChild.required<StepperComponent>('stepper');
   testForm;
   firstStep;
   secondStep;
-  constructor(private fb: FormBuilder) {
+  constructor() {
     this.firstStep = this.fb.group({
       firstControl: ['', [Validators.required]],
     });
@@ -85,7 +87,7 @@ describe('StepperComponent', () => {
   });
 
   it('should not mark selected step touched if not interacted', () => {
-    component.stepper.nextClick();
+    component.stepper().nextClick();
 
     expect(component.firstStep.touched).toBeFalse();
   });

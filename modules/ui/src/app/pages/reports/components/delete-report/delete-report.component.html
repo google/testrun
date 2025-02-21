@@ -18,6 +18,7 @@ limitations under the License.
     class="delete-report-button"
     href="#"
     matTooltip="Delete report for Testrun # {{ getTestRunId(data) }}"
+    [attr.aria-label]="'Delete report for Testrun # {{ getTestRunId(data) }}'"
     (click)="deleteReport($event)"
     (keydown.enter)="deleteReport($event)"
     (keydown.space)="deleteReport($event)">

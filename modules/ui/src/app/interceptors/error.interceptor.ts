@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   HttpErrorResponse,
   HttpEvent,
@@ -38,8 +38,9 @@ const SYSTEM_STOP_TIMEOUT_MS = 60 * 1000;
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
+  private notificationService = inject(NotificationService);
+
   private isTestrunStop = false;
-  constructor(private notificationService: NotificationService) {}
   intercept(
     request: HttpRequest<unknown>,
     next: HttpHandler,

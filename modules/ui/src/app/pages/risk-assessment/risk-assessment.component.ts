@@ -19,35 +19,98 @@ import {
   OnDestroy,
   OnInit,
   ViewContainerRef,
+  inject,
+  viewChild,
+  ChangeDetectorRef,
+  ElementRef,
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { Profile, ProfileStatus } from '../../model/profile';
+import { Profile, ProfileAction, ProfileStatus } from '../../model/profile';
 import { Observable } from 'rxjs/internal/Observable';
 import { DeviceValidators } from '../devices/components/device-form/device.validators';
 import { SuccessDialogComponent } from './components/success-dialog/success-dialog.component';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { ProfileItemComponent } from './profile-item/profile-item.component';
+import {
+  MAT_FORM_FIELD_DEFAULT_OPTIONS,
+  MatFormFieldDefaultOptions,
+} from '@angular/material/form-field';
+import { CommonModule } from '@angular/common';
+import { MatInputModule } from '@angular/material/input';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { ProfileFormComponent } from './profile-form/profile-form.component';
+import { MatIconModule } from '@angular/material/icon';
+import { EmptyPageComponent } from '../../components/empty-page/empty-page.component';
+import { ListLayoutComponent } from '../../components/list-layout/list-layout.component';
+import { LayoutType } from '../../model/layout-type';
+import { NoEntitySelectedComponent } from '../../components/no-entity-selected/no-entity-selected.component';
+import { EntityAction, EntityActionResult } from '../../model/entity-action';
+import { of } from 'rxjs/internal/observable/of';
+import { CanComponentDeactivate } from '../../guards/can-deactivate.guard';
+
+const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
+  hideRequiredMarker: true,
+};
 
 @Component({
   selector: 'app-risk-assessment',
   templateUrl: './risk-assessment.component.html',
   styleUrl: './risk-assessment.component.scss',
-  providers: [RiskAssessmentStore],
+  imports: [
+    CommonModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
+    ReactiveFormsModule,
+    MatInputModule,
+    MatSidenavModule,
+    EmptyPageComponent,
+    ListLayoutComponent,
+    ProfileFormComponent,
+    ProfileItemComponent,
+    NoEntitySelectedComponent,
+  ],
+  providers: [
+    RiskAssessmentStore,
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: matFormFieldDefaultOptions,
+    },
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RiskAssessmentComponent implements OnInit, OnDestroy {
+export class RiskAssessmentComponent
+  implements OnInit, OnDestroy, CanComponentDeactivate
+{
+  readonly LayoutType = LayoutType;
+  readonly ProfileStatus = ProfileStatus;
+  readonly form = viewChild<ProfileFormComponent>('profileFormComponent');
+  private store = inject(RiskAssessmentStore);
+  private liveAnnouncer = inject(LiveAnnouncer);
+  cd = inject(ChangeDetectorRef);
+  private elementRef = inject(ElementRef);
+  private destroy$: Subject<boolean> = new Subject<boolean>();
+  dialog = inject(MatDialog);
+  element = inject(ViewContainerRef);
+
   viewModel$ = this.store.viewModel$;
   isOpenProfileForm = false;
   isCopyProfile = false;
-  private destroy$: Subject<boolean> = new Subject<boolean>();
-  constructor(
-    private store: RiskAssessmentStore,
-    public dialog: MatDialog,
-    private liveAnnouncer: LiveAnnouncer,
-    public element: ViewContainerRef
-  ) {}
+
+  canDeactivate(): Observable<boolean> {
+    const form = this.form();
+    if (form) {
+      return form.close();
+    } else {
+      return of(true);
+    }
+  }
 
   ngOnInit() {
     this.store.getProfilesFormat();
@@ -69,35 +132,27 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     this.store.updateSelectedProfile(profile);
     await this.liveAnnouncer.announce('Risk assessment questionnaire');
     this.store.setFocusOnProfileForm();
+    this.cd.detectChanges();
   }
 
-  async copyProfileAndOpenForm(profile: Profile) {
+  async copyProfileAndOpenForm(profile: Profile, profiles: Profile[]) {
     this.isCopyProfile = true;
-    await this.openForm(this.getCopyOfProfile(profile));
+    const copyOfProfile = this.getCopyOfProfile(profile);
+    this.store.updateProfiles([copyOfProfile, ...profiles]);
+    await this.openForm(copyOfProfile);
   }
 
   getCopyOfProfile(profile: Profile): Profile {
     const copyOfProfile = { ...profile };
     copyOfProfile.name = this.getCopiedProfileName(profile.name);
     delete copyOfProfile.created; // new profile is not create yet
+    delete copyOfProfile.risk;
+    copyOfProfile.status = ProfileStatus.DRAFT;
     return copyOfProfile;
   }
 
-  private getCopiedProfileName(name: string): string {
-    name = `Copy of ${name}`;
-    if (name.length > DeviceValidators.STRING_FORMAT_MAX_LENGTH) {
-      name =
-        name.substring(0, DeviceValidators.STRING_FORMAT_MAX_LENGTH - 3) +
-        '...';
-    }
-    return name;
-  }
-
-  deleteProfile(
-    profileName: string,
-    index: number,
-    selectedProfile: Profile | null
-  ): void {
+  deleteProfile(profile: Profile): void {
+    const profileName = profile.name;
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
       data: {
         title: 'Delete risk profile?',
@@ -106,6 +161,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       autoFocus: 'dialog',
       hasBackdrop: true,
       disableClose: true,
+      panelClass: ['simple-dialog', 'delete-dialog'],
     });
 
     dialogRef
@@ -113,9 +169,15 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(deleteProfile => {
         if (deleteProfile) {
-          this.store.deleteProfile(profileName);
-          this.closeFormAfterDelete(profileName, selectedProfile);
-          this.setFocus(index);
+          this.store.deleteProfile({
+            name: profileName,
+            onDelete: (idx = 0) => {
+              this.closeFormAfterDelete(profileName, profile);
+              timer(100).subscribe(() => {
+                this.setFocus(idx);
+              });
+            },
+          });
         } else {
           this.store.setFocusOnSelectedProfile();
         }
@@ -143,6 +205,93 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
           }
         });
     }
+  }
+
+  discard(selectedProfile: Profile | null, profiles: Profile[]) {
+    this.liveAnnouncer.clear();
+    this.openCloseDialog(selectedProfile, profiles);
+  }
+
+  copyProfile(profile: Profile, profiles: Profile[]) {
+    this.copyProfileAndOpenForm(profile, profiles);
+  }
+
+  private openCloseDialog(
+    selectedProfile: Profile | null,
+    profiles: Profile[]
+  ) {
+    this.form()
+      ?.openCloseDialog()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(close => {
+        if (close) {
+          if (selectedProfile && this.isCopyProfile) {
+            this.deleteCopy(selectedProfile, profiles);
+          }
+          this.isCopyProfile = false;
+          this.isOpenProfileForm = false;
+          this.store.updateSelectedProfile(null);
+          this.cd.markForCheck();
+          timer(100).subscribe(() => {
+            this.focusSelectedButton();
+          });
+        }
+      });
+  }
+
+  private focusSelectedButton() {
+    const selectedButton = this.elementRef.nativeElement.querySelector(
+      'app-profile-item.selected .profile-item-container'
+    );
+    if (selectedButton) {
+      selectedButton.focus();
+    } else {
+      this.focusAddButton();
+    }
+  }
+
+  private focusAddButton(): void {
+    const addButton =
+      this.elementRef.nativeElement.querySelector('.add-entity-button');
+    addButton?.focus();
+  }
+
+  deleteCopy(copyOfProfile: Profile, profiles: Profile[]) {
+    this.isCopyProfile = false;
+    this.store.removeProfile(copyOfProfile.name, profiles);
+  }
+
+  actions(actions: EntityAction[]) {
+    return (profile: Profile) => {
+      if (profile.status === ProfileStatus.EXPIRED) {
+        return [{ action: ProfileAction.Delete, icon: 'delete' }];
+      }
+      return actions;
+    };
+  }
+
+  menuItemClicked(
+    { action, entity }: EntityActionResult<Profile>,
+    profiles: Profile[]
+  ) {
+    switch (action) {
+      case ProfileAction.Copy:
+        this.copyProfileAndOpenForm(entity, profiles);
+        break;
+      case ProfileAction.Delete:
+        this.deleteProfile(entity);
+        break;
+    }
+  }
+
+  private getCopiedProfileName(name: string): string {
+    name = `Copy of ${name}`;
+    if (name.length > DeviceValidators.STRING_FORMAT_MAX_LENGTH) {
+      name =
+        name.substring(0, DeviceValidators.STRING_FORMAT_MAX_LENGTH - 3) +
+        '...';
+    }
+    return name;
   }
 
   private compareProfiles(profile1: Profile, profile2: Profile) {
@@ -189,24 +338,6 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
     return true;
   }
 
-  discard(selectedProfile: Profile | null) {
-    this.liveAnnouncer.clear();
-    this.isOpenProfileForm = false;
-    this.isCopyProfile = false;
-    if (selectedProfile) {
-      timer(100).subscribe(() => {
-        this.store.setFocusOnSelectedProfile();
-        this.store.updateSelectedProfile(null);
-      });
-    } else {
-      this.store.setFocusOnCreateButton();
-    }
-  }
-
-  trackByName = (index: number, item: Profile): string => {
-    return item.name;
-  };
-
   private closeFormAfterDelete(name: string, selectedProfile: Profile | null) {
     if (selectedProfile?.name === name) {
       this.isOpenProfileForm = false;
@@ -223,21 +354,22 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
         } else {
           focusElement();
         }
+        this.store.updateSelectedProfile(profile);
       },
     });
-    this.isOpenProfileForm = false;
     this.isCopyProfile = false;
   }
 
   private setFocus(index: number): void {
-    const nextItem = window.document.querySelector(
-      `.profile-item-${index + 1}`
-    ) as HTMLElement;
-    const firstItem = window.document.querySelector(
-      `.profile-item-0`
-    ) as HTMLElement;
+    const nextItem = this.elementRef.nativeElement.querySelectorAll(
+      'app-profile-item .profile-item-info'
+    )[index];
 
-    this.store.setFocus({ nextItem, firstItem });
+    if (nextItem) {
+      nextItem.focus();
+    } else {
+      this.focusAddButton();
+    }
   }
 
   private openSaveDialog(
@@ -259,7 +391,7 @@ export class RiskAssessmentComponent implements OnInit, OnDestroy {
 
   private openSuccessDialog(profile: Profile, focusElement: () => void): void {
     const dialogRef = this.dialog.open(SuccessDialogComponent, {
-      ariaLabel: 'Risk Assessment Profile Completed',
+      ariaLabel: 'Risk assessment completed',
       data: {
         profile,
       },

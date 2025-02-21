@@ -40,15 +40,16 @@ limitations under the License.
     </mat-chip-row>
   </ng-container>
   <mat-chip-row class="filter-chip-clear-all">
-    <a
-      class="clear-all"
+    <button
       type="button"
       (click)="clearAllFilters()"
       (keydown.enter)="clearAllFilters()"
       (keydown.space)="clearAllFilters()"
       aria-label="Clear all filters"
       tabindex="0"
-      >Clear all filters</a
-    >
+      class="clear-button"
+      mat-button>
+      Clear all filters
+    </button>
   </mat-chip-row>
 </mat-chip-set>

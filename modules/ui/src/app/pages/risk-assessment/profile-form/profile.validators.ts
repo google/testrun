@@ -50,7 +50,11 @@ export class ProfileValidators {
           !profile.created ||
           (profile.created && profile?.name.toLowerCase() !== value))
       ) {
-        const isSameProfileName = this.hasSameProfileName(value, profiles);
+        const isSameProfileName = this.hasSameProfileName(
+          value,
+          profiles,
+          profile?.created
+        );
         return isSameProfileName ? { has_same_profile_name: true } : null;
       }
       return null;
@@ -98,11 +102,15 @@ export class ProfileValidators {
 
   private hasSameProfileName(
     profileName: string,
-    profiles: Profile[]
+    profiles: Profile[],
+    created?: string
   ): boolean {
     return (
-      profiles.some(profile => profile.name.toLowerCase() === profileName) ||
-      false
+      profiles.some(
+        profile =>
+          profile.name.toLowerCase() === profileName &&
+          profile.created !== created
+      ) || false
     );
   }
 }

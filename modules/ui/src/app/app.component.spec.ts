@@ -31,7 +31,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { AppRoutingModule } from './app-routing.module';
 import SpyObj = jasmine.SpyObj;
 import { BypassComponent } from './components/bypass/bypass.component';
 import { CalloutComponent } from './components/callout/callout.component';
@@ -63,7 +62,6 @@ import {
   selectSystemStatus,
 } from './store/selectors';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { CertificatesComponent } from './pages/certificates/certificates.component';
 import { of } from 'rxjs';
 import { WINDOW } from './providers/window.provider';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
@@ -74,6 +72,10 @@ import { WifiComponent } from './components/wifi/wifi.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Profile } from './model/profile';
 import { TestrunStatus } from './model/testrun-status';
+import { SpinnerComponent } from './components/spinner/spinner.component';
+import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
+import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
+import { VersionComponent } from './components/version/version.component';
 
 const windowMock = {
   location: {
@@ -115,11 +117,9 @@ describe('AppComponent', () => {
       'getTestModules',
       'testrunInProgress',
       'fetchProfiles',
-      'fetchCertificates',
       'getHistory',
     ]);
 
-    mockService.fetchCertificates.and.returnValue(of([]));
     mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
       'focusFirstElementInContainer',
     ]);
@@ -128,9 +128,9 @@ describe('AppComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [
+        AppComponent,
         RouterTestingModule,
         HttpClientTestingModule,
-        AppRoutingModule,
         MatButtonModule,
         BrowserAnimationsModule,
         MatIconModule,
@@ -139,9 +139,18 @@ describe('AppComponent', () => {
         BypassComponent,
         CalloutComponent,
         MatIconTestingModule,
-        CertificatesComponent,
         WifiComponent,
         MatTooltipModule,
+        FakeSpinnerComponent,
+        FakeShutdownAppComponent,
+        FakeVersionComponent,
+        FakeTestingCompleteComponent,
+        RouterTestingModule.withRoutes([
+          { path: 'devices', children: [] },
+          { path: 'settings', children: [] },
+          { path: 'testing', children: [] },
+          { path: 'reports', children: [] },
+        ]),
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
@@ -173,14 +182,23 @@ describe('AppComponent', () => {
         { provide: FocusManagerService, useValue: mockFocusManagerService },
         { provide: WINDOW, useValue: windowMock },
       ],
-      declarations: [
-        AppComponent,
-        FakeGeneralSettingsComponent,
-        FakeSpinnerComponent,
-        FakeShutdownAppComponent,
-        FakeVersionComponent,
-        FakeTestingCompleteComponent,
-      ],
+    }).overrideComponent(AppComponent, {
+      remove: {
+        imports: [
+          SpinnerComponent,
+          ShutdownAppComponent,
+          TestingCompleteComponent,
+          VersionComponent,
+        ],
+      },
+      add: {
+        imports: [
+          FakeSpinnerComponent,
+          FakeShutdownAppComponent,
+          FakeVersionComponent,
+          FakeTestingCompleteComponent,
+        ],
+      },
     });
 
     mockMqttService.getNetworkAdapters.and.returnValue(of(MOCK_ADAPTERS));
@@ -289,143 +307,17 @@ describe('AppComponent', () => {
     expect(router.url).toBe(Routes.Reports);
   }));
 
-  it('should call toggleSettingsBtn focus when settingsDrawer close on closeSetting', fakeAsync(() => {
+  it('should navigate to the settings when "settings" button is clicked', fakeAsync(() => {
     fixture.detectChanges();
 
-    spyOn(component.settingsDrawer, 'close').and.returnValue(
-      Promise.resolve('close')
-    );
-    spyOn(component.toggleSettingsBtn, 'focus');
-
-    component.closeSetting(true);
-    tick();
-
-    component.settingsDrawer.close().then(() => {
-      expect(component.toggleSettingsBtn.focus).toHaveBeenCalled();
-    });
-  }));
-
-  it('should call focusFirstElementInContainer if settingsDrawer opened not from toggleBtn', fakeAsync(() => {
-    fixture.detectChanges();
-
-    spyOn(component.settingsDrawer, 'close').and.returnValue(
-      Promise.resolve('close')
-    );
-
-    component.openGeneralSettings(false, false);
-    tick();
-    component.closeSetting(false);
-    flush();
-
-    component.settingsDrawer.close().then(() => {
-      expect(
-        mockFocusManagerService.focusFirstElementInContainer
-      ).toHaveBeenCalled();
-    });
-  }));
-
-  it('should update interfaces and config', () => {
-    fixture.detectChanges();
-
-    spyOn(component.settings, 'getSystemInterfaces');
-    spyOn(component.settings, 'getSystemConfig');
-
-    component.openGeneralSettings(false, false);
-
-    expect(component.settings.getSystemInterfaces).toHaveBeenCalled();
-    expect(component.settings.getSystemConfig).toHaveBeenCalled();
-  });
-
-  it('should call settingsDrawer open on openSetting', fakeAsync(() => {
-    fixture.detectChanges();
-    spyOn(component.settingsDrawer, 'open');
-
-    component.openSetting(false);
-    tick();
-
-    expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
-  }));
-
-  it('should announce settingsDrawer disabled on openSetting and settings are disabled', fakeAsync(() => {
-    fixture.detectChanges();
-
-    spyOn(component.settingsDrawer, 'open').and.returnValue(
-      Promise.resolve('open')
-    );
-
-    component.openSetting(true);
-    tick();
-
-    expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-      'The settings panel is disabled'
-    );
-  }));
-
-  it('should call settingsDrawer open on click settings button', () => {
-    fixture.detectChanges();
-
-    const settingsBtn = compiled.querySelector(
+    const settingsButton = compiled.querySelector(
       '.app-toolbar-button-general-settings'
     ) as HTMLButtonElement;
-    spyOn(component.settingsDrawer, 'open');
+    settingsButton?.click();
+    tick();
 
-    settingsBtn.click();
-
-    expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
-  });
-
-  describe('menu button', () => {
-    beforeEach(() => {
-      mockFocusManagerService.focusFirstElementInContainer.calls.reset();
-      store.overrideSelector(selectHasDevices, false);
-      fixture.detectChanges();
-    });
-
-    it('should dispatch toggleMenu action', () => {
-      spyOn(component.appStore, 'toggleMenu');
-
-      const menuBtn = compiled.querySelector(
-        '.app-toolbar-button-menu'
-      ) as HTMLButtonElement;
-
-      menuBtn.click();
-
-      expect(component.appStore.toggleMenu).toHaveBeenCalled();
-    });
-
-    it('should focus navigation on tab press if menu button was clicked', () => {
-      component.appStore.updateFocusNavigation(true);
-      fixture.detectChanges();
-      spyOn(component.appStore, 'updateFocusNavigation');
-      const menuBtn = compiled.querySelector(
-        '.app-toolbar-button-menu'
-      ) as HTMLButtonElement;
-
-      menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
-      const navigation = compiled.querySelector('.app-sidebar');
-
-      expect(component.appStore.updateFocusNavigation).toHaveBeenCalledWith(
-        false
-      );
-      expect(
-        mockFocusManagerService.focusFirstElementInContainer
-      ).toHaveBeenCalledWith(navigation);
-    });
-
-    it('should not focus navigation button on tab press if menu button was not clicked', () => {
-      component.appStore.updateFocusNavigation(false);
-      fixture.detectChanges();
-      const menuBtn = compiled.querySelector(
-        '.app-toolbar-button-menu'
-      ) as HTMLButtonElement;
-
-      menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
-
-      expect(
-        mockFocusManagerService.focusFirstElementInContainer
-      ).not.toHaveBeenCalled();
-    });
-  });
+    expect(router.url).toBe(Routes.Settings);
+  }));
 
   it('should have spinner', () => {
     const spinner = compiled.querySelector('app-spinner');
@@ -485,26 +377,12 @@ describe('AppComponent', () => {
 
       it('should have callout content with "System settings" link ', () => {
         const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+          '.callout-action-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(calloutLinkEl).toBeTruthy();
         expect(calloutLinkContent).toContain('System settings');
-      });
-
-      keyboardCases.forEach(testCase => {
-        it(`should call openSetting on keydown ${testCase.name} "Connection settings" link`, fakeAsync(() => {
-          const spyOpenSetting = spyOn(component, 'openSetting');
-          const calloutLinkEl = compiled.querySelector(
-            '.message-link'
-          ) as HTMLAnchorElement;
-
-          calloutLinkEl.dispatchEvent(testCase.event);
-          flush();
-
-          expect(spyOpenSetting).toHaveBeenCalled();
-        }));
       });
     });
 
@@ -560,12 +438,12 @@ describe('AppComponent', () => {
       it('should have callout component with "Risk Assessment" link', () => {
         const callout = compiled.querySelector('app-callout');
         const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+          '.callout-action-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Risk Assessment');
+        expect(calloutLinkContent).toContain('Create risk Assessment');
       });
     });
 
@@ -592,12 +470,12 @@ describe('AppComponent', () => {
       it('should have callout component with "Risk Assessment" link', () => {
         const callout = compiled.querySelector('app-callout');
         const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+          '.callout-action-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Risk Assessment');
+        expect(calloutLinkContent).toContain('Create risk Assessment');
       });
     });
 
@@ -623,18 +501,18 @@ describe('AppComponent', () => {
 
       it('should have callout content with "Create a Device" link ', () => {
         const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+          '.callout-action-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(calloutLinkEl).toBeTruthy();
-        expect(calloutLinkContent).toContain('Create a Device');
+        expect(calloutLinkContent).toContain('Devices');
       });
 
       keyboardCases.forEach(testCase => {
         it(`should navigate to the device-repository on keydown ${testCase.name} "Create a Device" link`, fakeAsync(() => {
           const calloutLinkEl = compiled.querySelector(
-            '.message-link'
+            '.callout-action-link'
           ) as HTMLAnchorElement;
 
           calloutLinkEl.dispatchEvent(testCase.event);
@@ -646,7 +524,7 @@ describe('AppComponent', () => {
 
       it('should navigate to the device-repository on click "Create a Device" link', fakeAsync(() => {
         const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+          '.callout-action-link'
         ) as HTMLAnchorElement;
 
         calloutLinkEl.click();
@@ -680,18 +558,18 @@ describe('AppComponent', () => {
       it('should have callout component with "testing" link', () => {
         const callout = compiled.querySelector('app-callout');
         const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+          '.callout-action-link'
         ) as HTMLAnchorElement;
         const calloutLinkContent = calloutLinkEl.innerHTML.trim();
 
         expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('testing');
+        expect(calloutLinkContent).toContain('Testing');
       });
 
       keyboardCases.forEach(testCase => {
         it(`should navigate to the runtime on keydown ${testCase.name} "Run the Test" link`, fakeAsync(() => {
           const calloutLinkEl = compiled.querySelector(
-            '.message-link'
+            '.callout-action-link'
           ) as HTMLAnchorElement;
 
           calloutLinkEl.dispatchEvent(testCase.event);
@@ -811,40 +689,6 @@ describe('AppComponent', () => {
     });
   });
 
-  it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {
-    fixture.detectChanges();
-
-    spyOn(component.settingsDrawer, 'close').and.returnValue(
-      Promise.resolve('close')
-    );
-    const spyToggle = spyOn(component.toggleSettingsBtn, 'focus');
-
-    await component.closeSetting(false);
-
-    expect(spyToggle).toHaveBeenCalledTimes(0);
-  });
-
-  it('should render certificates button', () => {
-    const generalSettingsButton = compiled.querySelector(
-      '.app-toolbar-button-certificates'
-    );
-
-    expect(generalSettingsButton).toBeDefined();
-  });
-
-  it('should call certificates open on click certificates button', () => {
-    fixture.detectChanges();
-
-    const settingsBtn = compiled.querySelector(
-      '.app-toolbar-button-certificates'
-    ) as HTMLButtonElement;
-    spyOn(component.certDrawer, 'open');
-
-    settingsBtn.click();
-
-    expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
-  });
-
   it('should set focus to first focusable elem when close callout', fakeAsync(() => {
     component.calloutClosed('mockId');
     tick(100);
@@ -854,17 +698,6 @@ describe('AppComponent', () => {
     ).toHaveBeenCalled();
   }));
 });
-
-@Component({
-  selector: 'app-settings',
-  template: '<div></div>',
-})
-class FakeGeneralSettingsComponent {
-  @Input() settingsDisable = false;
-  @Output() closeSettingEvent = new EventEmitter<void>();
-  getSystemInterfaces = () => {};
-  getSystemConfig = () => {};
-}
 
 @Component({
   selector: 'app-spinner',

@@ -13,75 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import 'src/theming/colors';
-@import 'src/theming/variables';
+@use 'colors';
+@use 'variables';
+@use 'mixins';
 
 :host {
-  overflow: hidden;
-  display: flex;
+  overflow: auto;
+}
+
+.risk-assessment-add-button {
+  @include mixins.add-button;
 }
 
 .risk-assessment-content-empty {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: calc(100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-:host:has(.profiles-drawer) {
-  .risk-assessment-content-empty {
-    width: calc(100% - $profiles-drawer-width);
-  }
-}
-
-.risk-assessment-container,
-.risk-assessment-content {
-  background-color: $white;
-}
-
-.risk-assessment-container {
-  flex: 1;
-}
-
-.risk-assessment-content {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  box-sizing: border-box;
-  padding-right: 94px;
-  overflow: hidden;
-}
-
-.risk-assessment-toolbar {
-  height: 74px;
-  padding: 24px 0 8px 32px;
-  background: $white;
-}
-
-.main-content {
-  padding: 16px 32px;
-  overflow: hidden;
-  width: calc(100% - $profiles-drawer-width);
-}
-
-.profiles-drawer {
-  width: $profiles-drawer-width;
-  box-shadow: none;
-  border-left: 1px solid $light-grey;
-}
-
-.profiles-drawer-header {
-  padding: 12px 12px 16px 24px;
-}
-
-.profiles-drawer-header-title {
-  margin: 0;
-  font-size: 22px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 28px;
-  color: $dark-grey;
+  @include mixins.content-empty;
 }

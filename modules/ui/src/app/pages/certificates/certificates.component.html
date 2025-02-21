@@ -13,31 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container *ngIf="viewModel$ | async as vm">
-  <div class="certificates-drawer-header">
-    <h2 class="certificates-drawer-header-title">Certificates</h2>
-    <button
-      (click)="closeCertificates()"
-      aria-label="close"
-      id="setting-panel-close-button"
-      class="certificates-drawer-header-button"
-      mat-button>
-      <mat-icon class="close-button-icon" svgIcon="close"></mat-icon>
-    </button>
-  </div>
-  <div class="certificates-drawer-content">
-    <app-certificate-upload-button
-      (fileChanged)="uploadFile($event)"></app-certificate-upload-button>
-    <section class="content-certificates">
-      <app-certificate-item
-        *ngFor="let certificate of vm.certificates"
-        [class.certificate-selected]="
-          certificate.name === vm.selectedCertificate
-        "
-        [certificate]="certificate"
-        (deleteButtonClicked)="
-          deleteCertificate($event)
-        "></app-certificate-item>
-    </section>
-  </div>
-</ng-container>
+<section class="certificates-button-container">
+  <app-certificate-upload-button
+    (fileChanged)="uploadFile($event)"></app-certificate-upload-button>
+</section>
+<section class="content-certificates">
+  <app-certificates-table
+    [dataSource]="store.dataSource()"
+    [dataLoaded]="store.dataLoaded()"
+    [displayedColumns]="store.displayedColumns()"
+    [selectedCertificate]="store.selectedCertificate()"
+    (deleteButtonClicked)="deleteCertificate($event)">
+  </app-certificates-table>
+</section>

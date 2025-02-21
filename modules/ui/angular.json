@@ -24,9 +24,27 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": ["src/favicon.ico", "src/assets"],
-            "styles": ["src/styles.scss"],
+            "styles": [
+              "src/styles.scss",
+              "src/theming/m3-theme.scss",
+              "src/theming/colors.scss"
+            ],
             "scripts": [],
-            "allowedCommonJsDependencies": ["mqtt-browser"]
+            "allowedCommonJsDependencies": ["mqtt-browser"],
+            "stylePreprocessorOptions": {
+              "includePaths": ["src/theming/"]
+            },
+            "optimization": {
+              "scripts": true,
+              "styles": true,
+              "fonts": true
+            },
+            "sourceMap": {
+              "scripts": true,
+              "styles": false,
+              "hidden": true,
+              "vendor": true
+            }
           },
           "configurations": {
             "production": {
@@ -34,12 +52,12 @@
                 {
                   "type": "initial",
                   "maximumWarning": "1500kb",
-                  "maximumError": "3000kb"
+                  "maximumError": "4000kb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "7kb"
+                  "maximumWarning": "60kb",
+                  "maximumError": "65kb"
                 }
               ],
               "outputHashing": "all"
@@ -57,12 +75,15 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "buildTarget": "test-run-ui:build"
+          },
           "configurations": {
             "production": {
-              "browserTarget": "test-run-ui:build:production"
+              "buildTarget": "test-run-ui:build:production"
             },
             "development": {
-              "browserTarget": "test-run-ui:build:development"
+              "buildTarget": "test-run-ui:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -70,7 +91,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "test-run-ui:build"
+            "buildTarget": "test-run-ui:build"
           }
         },
         "test": {
@@ -82,7 +103,10 @@
             "assets": ["src/favicon.ico", "src/assets"],
             "styles": ["src/styles.scss"],
             "scripts": [],
-            "karmaConfig": "karma.conf.js"
+            "karmaConfig": "karma.conf.js",
+            "stylePreprocessorOptions": {
+              "includePaths": ["src/theming/"]
+            }
           }
         },
         "lint": {
