@@ -24,7 +24,6 @@ import requests
 import signal
 import threading
 import uvicorn
-from urllib.parse import urlparse
 
 from core import tasks
 from common import logger
@@ -437,15 +436,13 @@ class Api:
     LOGGER.debug("Received reports list request")
     # Resolve the server IP from the request so we
     # can fix the report URL
-    client_origin = request.headers.get("Origin")
-    parsed_url = urlparse(client_origin)
-    server_ip = parsed_url.hostname  # This will give you the IP address
-
     reports = self._session.get_all_reports()
     for report in reports:
       # report URL is currently hard coded as localhost so we can
       # replace that to fix the IP dynamically from the requester
-      report["report"] = report["report"].replace("localhost", server_ip)
+      report["report"] = report["report"].replace(
+        "localhost", request.client.host)
+      report["export"] = report["report"].replace("report", "export")
     return reports
 
   async def delete_report(self, request: Request, response: Response):
