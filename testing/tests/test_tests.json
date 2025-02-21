@@ -48,7 +48,7 @@
 
     "services_non_compliant": {
         "image": "testrun/services_non_compliant",
-        "ethmac": "02:42:aa:00:00:02",
+        "ethmac": "02:42:aa:00:00:05",
         "expected_results": {
             "security.services.ftp": "Non-Compliant",
             "security.services.telnet": "Non-Compliant",
