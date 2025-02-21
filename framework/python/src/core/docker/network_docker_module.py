@@ -68,7 +68,8 @@ class NetworkModule(Module):
   def get_environment(self, device=None):  # pylint: disable=W0613
     environment = {
         'TZ': self.get_session().get_timezone(),
-        'HOST_USER': self.get_session().get_host_user()
+        'HOST_USER': self.get_session().get_host_user(),
+        'LOG_LEVEL': self.log_level
     }
     return environment
 
