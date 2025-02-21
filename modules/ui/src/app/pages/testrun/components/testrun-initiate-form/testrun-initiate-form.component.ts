@@ -93,6 +93,7 @@ export class TestrunInitiateFormComponent
   extends EscapableDialogComponent
   implements OnInit, AfterViewChecked
 {
+  private startRequestSent = new BehaviorSubject(false);
   override dialogRef: MatDialogRef<TestrunInitiateFormComponent>;
   data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly testRunService = inject(TestRunService);
@@ -204,7 +205,8 @@ export class TestrunInitiateFormComponent
       }
     );
 
-    if (this.selectedDevice) {
+    if (this.selectedDevice && !this.startRequestSent.value) {
+      this.startRequestSent.next(true);
       this.testRunService.fetchVersion();
       this.testRunService
         .startTestrun({
@@ -213,8 +215,13 @@ export class TestrunInitiateFormComponent
           test_modules: testModules,
         })
         .pipe(take(1))
-        .subscribe(status => {
-          this.cancel(status);
+        .subscribe({
+          next: status => {
+            this.cancel(status);
+          },
+          error: () => {
+            this.startRequestSent.next(false);
+          },
         });
     }
   }

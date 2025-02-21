@@ -3586,9 +3586,661 @@
 						"profile",
 						"Test"
 					]
-				}
+				},
+				"description": "Delete a root CA certificate"
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Delete Certificate (200)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"GTS Root R1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully deleted the certificate\"\n}"
+				},
+				{
+					"name": "Not Found (404)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"non-existing name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A certificate with that name could not be found\"\n}"
+				},
+				{
+					"name": "Invalid JSON (400)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Received a bad request\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Get Profile Format",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/profiles/format",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profiles",
+						"format"
+					]
+				},
+				"description": "Obtain the current format of the risk assessment questionnaire"
+			},
+			"response": [
+				{
+					"name": "Get Profile Format (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/profiles/format",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles",
+								"format"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": ""
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"question\": \"How will this device be used at Google?\",\n        \"description\": \"Desribe your use case. Add links to user journey diagrams and TDD if available.\",\n        \"type\": \"text-long\",\n        \"validation\": {\n            \"max\": \"512\",\n            \"required\": true\n        }\n    },\n    {\n        \"question\": \"Is this device going to be managed by Google or a third party?\",\n        \"description\": \"A manufacturer or supplier is considered third party in this case\",\n        \"type\": \"select\",\n        \"options\": [\n            \"Google\",\n            \"Third Party\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n        \"type\": \"select\",\n        \"options\": [\n            \"Yes\",\n            \"No\",\n            \"N/A\"\n        ],\n        \"default\": \"N/A\",\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"category\": \"Data Transmission\",\n        \"question\": \"Which of the following statements are true about this device?\",\n        \"description\": \"This tells us about the types of data that are transmitted from this device and how the transmission is performed from a technical standpoint.\",\n        \"type\": \"select-multiple\",\n        \"options\": [\n            \"PII/PHI, confidential/sensitive business data, Intellectual Property and Trade Secrets, Critical Infrastructure and Identity Assets to a domain outside Alphabet's ownership\",\n            \"Data transmission occurs across less-trusted networks (e.g. the internet).\",\n            \"A failure in data transmission would likely have a substantial negative impact (https://www.rra.rocks/docs/standard_levels#levels-definitions)\",\n            \"A confidentiality breach during transmission would have a substantial negative impact\",\n            \"The device does not encrypt data during transmission\",\n            \"None of the above\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"category\": \"Data Transmission\",\n        \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n        \"type\": \"select\",\n        \"options\": [\n            \"Yes\",\n            \"No\",\n            \"I don't know\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"category\": \"Remote Operation\",\n        \"question\": \"Click the statements that best describe the characteristics of this device.\",\n        \"description\": \"This tells us about how this device is managed remotely.\",\n        \"type\": \"select-multiple\",\n        \"options\": [\n            \"PII/PHI, or confidential business data is accessible from the device without authentication\",\n            \"Unrecoverable actions (e.g. disk wipe) can be performed remotely\",\n            \"Authentication is not required for remote access\",\n            \"The management interface is accessible from the public internet\",\n            \"Static credentials are used for administration\",\n            \"None of the above\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"category\": \"Operating Environment\",\n        \"question\": \"Are any of the following statements true about this device?\",\n        \"description\": \"This informs us about what other systems and processes this device is a part of.\",\n        \"type\": \"select-multiple\",\n        \"options\": [\n            \"The device monitors an environment for active risks to human life.\",\n            \"The device is used to convey people, or critical property.\",\n            \"The device controls robotics in human-accessible spaces.\",\n            \"The device controls physical access systems.\",\n            \"The device is involved in processes required by regulations, or compliance. (ex. privacy, security, safety regulations)\",\n            \"The device's failure would cause faults in other high-criticality processes.\",\n            \"None of the above\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"question\": \"Comments\",\n        \"description\": \"Anything else to share?\",\n        \"type\": \"text-long\",\n        \"validation\": {\n            \"max\": \"512\"\n        }\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "List Profiles",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/profiles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profiles"
+					]
+				},
+				"description": "Get a list of risk assessment profiles saved by the user"
+			},
+			"response": [
+				{
+					"name": "List Profiles (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": ""
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]"
+				},
+				{
+					"name": "No Profiles (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": ""
+						}
+					],
+					"cookie": [],
+					"body": "[\n    \n]"
+				}
+			]
+		},
+		{
+			"name": "Update Profile",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Testing\",\n    \"status\": \"Valid\",\n    \"questions\": [\n        {\n            \"question\": \"What type of device is this?\",\n            \"answer\": \"IoT Gateway\"\n        },\n        {\n            \"question\": \"How will this device be used at Google?\",\n            \"answer\": \"asdasd\"\n        },\n        {\n            \"question\": \"Is this device going to be managed by Google or a third party?\",\n            \"answer\": \"Google\"\n        },\n        {\n            \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n            \"answer\": \"N/A\"\n        },\n        {\n            \"question\": \"Are any of the following statements true about your device?\",\n            \"answer\": [\n                3\n            ]\n        },\n        {\n            \"question\": \"Which of the following statements are true about this device?\",\n            \"answer\": [\n                5\n            ]\n        },\n        {\n            \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n            \"answer\": \"Yes\"\n        },\n        {\n            \"question\": \"Click the statements that best describe the characteristics of this device.\",\n            \"answer\": [\n                5\n            ]\n        },\n        {\n            \"question\": \"Are any of the following statements true about this device?\",\n            \"answer\": [\n                6\n            ]\n        },\n        {\n            \"question\": \"Comments\",\n            \"answer\": \"\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/profiles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profiles"
+					]
+				},
+				"description": "Create or update a risk assessment questionnaire response"
+			},
+			"response": [
+				{
+					"name": "Update Profile (200)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully updated that profile\"\n}"
+				},
+				{
+					"name": "Create Profile (201)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully created a new profile\"\n}"
+				},
+				{
+					"name": "Invalid JSON (400)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Invalid request received\"\n}"
+				},
+				{
+					"name": "Not Implemented (501)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Not Implemented",
+					"code": 501,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Risk profiles are not available right now\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Delete Profile",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"New Profile\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/profiles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profiles"
+					]
+				},
+				"description": "Delete an existing risk assessment questionaire response"
+			},
+			"response": [
+				{
+					"name": "Delete Profile (200)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"New Profile\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully deleted that profile\"\n}"
+				},
+				{
+					"name": "Not Found (404)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"non-existing profile\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A profile with that name could not be found\"\n}"
+				},
+				{
+					"name": "Internal Serves Error (500)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"non-existing profile\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"An error occurred whilst deleting that profile\"\n}"
+				},
+				{
+					"name": "Invalid JSON (400)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Invalid request received\"\n}"
+				}
+			]
 		}
 	]
 }
