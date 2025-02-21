@@ -46,7 +46,7 @@ sudo /usr/share/openvswitch/scripts/ovs-ctl start
 # Build the Test Containers
 sudo docker build ./testing/docker/ci_test_device1/bacnet_compliant -t $BACNET_COMPLIANT_IMG -f ./testing/docker/ci_test_device1/bacnet_compliant/Dockerfile
 sudo docker build ./testing/docker/ci_test_device1/dns_compliant -t $DNS_COMPLIANT_IMG -f ./testing/docker/ci_test_device1/dns_compliant/Dockerfile
-sudo docker build ./testing/docker/ci_test_device1/dns_non_compliant -t $DNS_NO_COMPLIANT_IMG -f ./testing/docker/ci_test_device1/dns_non_compliant/Dockerfile
+sudo docker build ./testing/docker/ci_test_device1/dns_non_compliant -t $DNS_NON_COMPLIANT_IMG -f ./testing/docker/ci_test_device1/dns_non_compliant/Dockerfile
 sudo docker build ./testing/docker/ci_test_device1/services_compliant -t $SERVICES_COMPLIANT_IMG -f ./testing/docker/ci_test_device1/services_compliant/Dockerfile
 sudo docker build ./testing/docker/ci_test_device1/services_non_compliant -t $SERVICES_NON_COMPLIANT_IMG -f ./testing/docker/ci_test_device1/services_non_compliant/Dockerfile
 
