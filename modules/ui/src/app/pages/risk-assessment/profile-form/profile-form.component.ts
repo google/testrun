@@ -172,13 +172,41 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
 
     if (profile.questions) {
       for (const question of profile.questions) {
-        if (question.answer && question.answer !== '') {
+        if (this.isAnswerFilled(question)) {
           return false;
         }
       }
     } else {
       return false;
     }
+    return true;
+  }
+
+  private isAnswerFilled(question: Question): boolean {
+    if (
+      !question.answer ||
+      (Array.isArray(question.answer) && question.answer.length === 0)
+    ) {
+      return false;
+    }
+
+    if (typeof question.answer === 'string') {
+      return (
+        question.answer.trim() !== '' && question.answer !== question.default
+      );
+    }
+
+    if (Array.isArray(question.answer)) {
+      if (!Array.isArray(question.default) && question.answer.length === 0) {
+        return true;
+      }
+
+      return (
+        question.answer.length > 0 &&
+        JSON.stringify(question.answer) !== JSON.stringify(question.default)
+      );
+    }
+
     return true;
   }
 
@@ -311,7 +339,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   close(): Observable<boolean> {
-    if (this.profileHasNoChanges()) {
+    if (this.profileHasNoChanges() || this.profileForm.pristine) {
       return of(true);
     }
     return this.openCloseDialog().pipe(map(res => !!res));
@@ -362,6 +390,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     this.profileFormat?.forEach((initialQuestion, index) => {
       const question: Question = {};
       question.question = initialQuestion.question;
+      question.default = initialQuestion.default;
 
       if (initialQuestion.type === FormControlType.SELECT_MULTIPLE) {
         const answer: number[] = [];

@@ -29,6 +29,7 @@ export type ProfileFormat = QuestionFormat;
 export interface Question {
   question?: string;
   answer?: string | number[];
+  default?: string | number[];
 }
 
 export enum ProfileRisk {
