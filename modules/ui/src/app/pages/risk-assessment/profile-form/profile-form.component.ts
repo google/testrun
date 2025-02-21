@@ -390,8 +390,9 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     this.profileFormat?.forEach((initialQuestion, index) => {
       const question: Question = {};
       question.question = initialQuestion.question;
-      question.default = initialQuestion.default;
-
+      if (initialQuestion.default) {
+        question.default = initialQuestion.default;
+      }
       if (initialQuestion.type === FormControlType.SELECT_MULTIPLE) {
         const answer: number[] = [];
         initialQuestion.options?.forEach((_, idx) => {
