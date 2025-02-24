@@ -23,7 +23,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
   padding: 0 32px;
   position: relative;
 }
@@ -140,7 +140,7 @@
 }
 
 .stop-button {
-  position: absolute;
+  position: fixed;
   right: 40px;
   bottom: 32px;
   background-color: colors.$error;
@@ -156,18 +156,6 @@
   font-size: 28px;
   width: 28px;
   height: 28px;
-}
-
-.progress-table {
-  overflow-y: auto;
-  margin: 10px 0;
-  border-radius: 4px;
-  border: 1px solid colors.$lighter-grey;
-}
-
-.progress-table-progress-empty {
-  position: relative;
-  overflow-y: hidden;
 }
 
 ::ng-deep .stop-testrun app-simple-dialog {

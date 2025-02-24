@@ -45,7 +45,6 @@ import {
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
   MOCK_PROGRESS_DATA_VALIDATING,
   TEST_DATA_RESULT_WITH_RECOMMENDATIONS,
-  TEST_DATA_TABLE_RESULT,
   MOCK_PROGRESS_DATA_STARTING,
 } from '../../mocks/testrun.mock';
 import { LoaderService } from '../../services/loader.service';
@@ -94,7 +93,6 @@ describe('TestrunStore', () => {
           isAllDevicesOutdated: false,
           systemStatus: null,
           dataSource: [],
-          stepsToResolveCount: 0,
           profiles: [],
           testModules: [],
         });
@@ -104,12 +102,11 @@ describe('TestrunStore', () => {
   });
 
   describe('updaters', () => {
-    it('should update dataSource and stepsToResolveCount', (done: DoneFn) => {
+    it('should update dataSource', (done: DoneFn) => {
       const dataSource = [...TEST_DATA_RESULT_WITH_RECOMMENDATIONS];
 
-      testrunStore.viewModel$.pipe(skip(2), take(1)).subscribe(store => {
+      testrunStore.viewModel$.pipe(skip(1), take(1)).subscribe(store => {
         expect(store.dataSource).toEqual(dataSource);
-        expect(store.stepsToResolveCount).toEqual(1);
         done();
       });
 
@@ -128,21 +125,6 @@ describe('TestrunStore', () => {
 
     describe('getStatus', () => {
       describe('dataSource', () => {
-        it('should set value with empty values if result length < total for status "In Progress"', done => {
-          const expectedResult = TEST_DATA_TABLE_RESULT;
-
-          store.overrideSelector(
-            selectSystemStatus,
-            MOCK_PROGRESS_DATA_IN_PROGRESS
-          );
-          store.refreshState();
-
-          testrunStore.viewModel$.pipe(take(1)).subscribe(store => {
-            expect(store.dataSource).toEqual(expectedResult);
-            done();
-          });
-        });
-
         it('should set value with empty values for status "Monitoring"', done => {
           const expectedResult = EMPTY_RESULT;
 

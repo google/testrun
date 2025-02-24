@@ -244,36 +244,36 @@ body {
   font-family: #{variables.$font-text};
   font-weight: 500;
   margin: 0;
-  padding: 6px 16px;
+  padding: 6px 12px;
   border-radius: 8px;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: 0.3px;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.1px;
   white-space: nowrap;
 
   &.green {
-    background: mat.get-theme-color($light-theme, tertiary, 90);
-    color: mat.get-theme-color($light-theme, tertiary, 30);
+    background: colors.$tertiary-container;
+    color: colors.$on-tertiary-container;
   }
 
   &.red {
-    background-color: mat.get-theme-color($light-theme, error, 90);
-    color: mat.get-theme-color($light-theme, error, 35);
+    background-color: colors.$error-container;
+    color: colors.$on-error-container;
   }
 
   &.blue {
-    background-color: mat.get-theme-color($light-theme, primary, 95);
-    color: mat.get-theme-color($light-theme, primary, 25);
+    background: colors.$secondary-container;
+    color: colors.$on-secondary-container;
   }
 
   &.cyan {
-    background: colors.$cyan-50;
-    color: colors.$cyan-900;
+    background: colors.$tertiary-95;
+    color: colors.$on-tertiary-container;
   }
 
   &.grey {
-    background: colors.$color-background-grey;
-    color: colors.$grey-800;
+    background: colors.$surface-container-high;
+    color: colors.$on-surface-variant;
   }
 }
 
