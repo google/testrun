@@ -48,7 +48,6 @@ const EMPTY_RESULT = new Array(100).fill(null).map(() => ({}) as IResult);
 
 export interface TestrunComponentState {
   dataSource: IResult[] | undefined;
-  stepsToResolveCount: number;
   testModules: TestModule[];
 }
 
@@ -58,9 +57,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   private readonly loaderService = inject(LoaderService);
 
   private dataSource$ = this.select(state => state.dataSource);
-  private stepsToResolveCount$ = this.select(
-    state => state.stepsToResolveCount
-  );
   private hasDevices$ = this.store.select(selectHasDevices);
   private isAllDevicesOutdated$ = this.store.select(selectIsAllDevicesOutdated);
   private profiles$ = this.store.select(selectRiskProfiles);
@@ -73,17 +69,13 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
     isAllDevicesOutdated: this.isAllDevicesOutdated$,
     systemStatus: this.systemStatus$,
     dataSource: this.dataSource$,
-    stepsToResolveCount: this.stepsToResolveCount$,
     profiles: this.profiles$,
     testModules: this.testModules$,
   });
 
   setDataSource = this.updater((state, dataSource: IResult[] | undefined) => {
-    const stepsToResolveCount =
-      dataSource?.filter(result => result.recommendations).length || 0;
     return {
       ...state,
-      stepsToResolveCount,
       dataSource,
     };
   });
@@ -130,20 +122,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
           (res?.status === StatusOfTestrun.Cancelled && !results.length)
         ) {
           this.setDataSource(EMPTY_RESULT);
-          return;
-        }
-
-        const total = (res?.tests as TestsData)?.total || 100;
-        if (
-          res?.status === StatusOfTestrun.InProgress &&
-          results.length < total
-        ) {
-          this.setDataSource([
-            ...results,
-            ...new Array(total - results.length)
-              .fill(null)
-              .map(() => ({}) as IResult),
-          ]);
           return;
         }
 
@@ -227,7 +205,6 @@ export class TestrunStore extends ComponentStore<TestrunComponentState> {
   constructor() {
     super({
       dataSource: undefined,
-      stepsToResolveCount: 0,
       testModules: [],
     });
   }

@@ -62,9 +62,7 @@ limitations under the License.
         [class.progress-table-progress-empty]="
           isTestrunInProgress(data.status)
         ">
-        <app-testrun-table
-          [dataSource]="vm.dataSource"
-          [stepsToResolveCount]="vm.stepsToResolveCount"></app-testrun-table>
+        <app-testrun-table [dataSource]="vm.dataSource"></app-testrun-table>
         <app-spinner></app-spinner>
       </section>
       <button

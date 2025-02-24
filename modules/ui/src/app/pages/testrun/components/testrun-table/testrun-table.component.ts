@@ -17,15 +17,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  viewChild,
-  viewChildren,
   inject,
 } from '@angular/core';
-import {
-  MatAccordion,
-  MatExpansionModule,
-  MatExpansionPanel,
-} from '@angular/material/expansion';
 import {
   IResult,
   StatusResultClassName,
@@ -37,11 +30,13 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { CalloutComponent } from '../../../../components/callout/callout.component';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTableModule } from '@angular/material/table';
+import { MatRippleModule } from '@angular/material/core';
+import { SimpleDialogComponent } from '../../../../components/simple-dialog/simple-dialog.component';
 
 @Component({
   selector: 'app-testrun-table',
@@ -56,24 +51,42 @@ import { MatButtonModule } from '@angular/material/button';
     MatProgressBarModule,
     MatDialogModule,
     MatInputModule,
-    MatExpansionModule,
+    MatTableModule,
+    MatRippleModule,
     ReactiveFormsModule,
-    CalloutComponent,
     MatTooltipModule,
   ],
 })
 export class TestrunTableComponent {
   private readonly testRunService = inject(TestRunService);
-
-  readonly accordion = viewChild.required(MatAccordion);
-  readonly panels = viewChildren(MatExpansionPanel);
   public readonly CalloutType = CalloutType;
   @Input() dataSource!: IResult[] | undefined;
-  @Input() stepsToResolveCount = 0;
-  isAllCollapsed!: boolean;
-  public checkAllCollapsed(): void {
-    this.isAllCollapsed = this.panels().every(panel => !panel.expanded);
+  dialog = inject(MatDialog);
+
+  displayedColumns: string[] = [
+    'name',
+    'description',
+    'result',
+    'requiredResult',
+    'clickableIcon',
+  ];
+
+  onRowSelected(row: IResult) {
+    // TODO: Will be updated. Testing modal will be implemented in the next ticket
+    this.dialog.open(SimpleDialogComponent, {
+      ariaLabel: 'Selected test will be updated',
+      data: {
+        title: `${row.name}`,
+        content: `Selected test info will be updated`,
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: ['simple-dialog'],
+    });
   }
+
+  isClickableRow = (i: number, row: IResult) => row.recommendations;
 
   public getResultClass(result: string): StatusResultClassName {
     return this.testRunService.getResultClass(result);
@@ -84,12 +97,6 @@ export class TestrunTableComponent {
       return '';
     }
     return result.split(' ').join('-').toLowerCase();
-  }
-
-  public getAriaLabel(): string {
-    const action = this.isAllCollapsed ? 'Expand' : 'Collapse';
-    const message = this.stepsToResolveCount === 1 ? 'row' : 'all rows';
-    return `${action} ${message}`;
   }
 
   public trackTest(index: number, item: IResult) {

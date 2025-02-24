@@ -81,11 +81,6 @@ export const TEST_DATA_RESULT_WITH_ERROR: IResult[] = [
   },
 ];
 
-export const TEST_DATA_TABLE_RESULT: IResult[] = [
-  ...TEST_DATA_RESULT,
-  ...new Array(23).fill(null).map(() => ({}) as IResult),
-];
-
 export const EMPTY_RESULT = new Array(100)
   .fill(null)
   .map(() => ({}) as IResult);
