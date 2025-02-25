@@ -225,7 +225,7 @@ describe('TestrunComponent', () => {
         afterClosed: () => of(true),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openStopTestrunDialog(MOCK_PROGRESS_DATA_CANCELLING);
+      component.openStopTestrunDialog();
 
       expect(stopTestrunSpy).toHaveBeenCalled();
     });

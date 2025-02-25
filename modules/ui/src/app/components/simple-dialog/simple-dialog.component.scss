@@ -27,6 +27,10 @@
   gap: 10px;
 }
 
+.simple-dialog-icon {
+  text-align: center;
+}
+
 .simple-dialog-title {
   @include mixins.headline-small();
   padding: 0;
