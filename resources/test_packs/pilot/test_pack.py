@@ -46,7 +46,7 @@ def get_steps_to_resolve(json_data):
 
   # Collect all tests with recommendations
   for test in json_data["tests"]["results"]:
-    if "optional_recommendations" in test:
+    if "recommendations" in test:
       steps.append(test)
 
   if len(steps) < 3:
