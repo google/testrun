@@ -48,8 +48,9 @@ def get_steps_to_resolve(json_data):
   for test in json_data["tests"]["results"]:
     if "recommendations" in test:
       steps.append(test)
-
-  if len(steps) < 3:
+  if not steps:
+    return steps
+  elif len(steps) < 3:
     return [steps]
   splitted = [steps[:3]]
   index = 3
