@@ -106,13 +106,14 @@ export class TestrunComponent implements OnInit, OnDestroy {
     return this.testRunService.testrunInProgress(status);
   }
 
-  public openStopTestrunDialog(systemStatus: TestrunStatus) {
+  public openStopTestrunDialog() {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: `Stop testrun ${this.getTestRunName(systemStatus)}`,
+      ariaLabel: `Stop Testrun`,
       data: {
-        title: `Stop testrun ${this.getTestRunName(systemStatus)}?`,
+        icon: 'stop_circle',
+        title: `Stop Testrun?`,
         content:
-          'Are you sure you would like to stop testrun without a report generation?',
+          'Testrun will be stopped without any track records and report generation.',
         confirmName: 'Stop',
       },
       autoFocus: true,

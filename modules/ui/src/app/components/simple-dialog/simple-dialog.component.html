@@ -13,6 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<span *ngIf="data.icon" class="simple-dialog-icon"
+  ><mat-icon fontSet="material-symbols-outlined">{{
+    data.icon
+  }}</mat-icon></span
+>
 <span class="simple-dialog-title">{{ data.title }}</span>
 <p class="simple-dialog-content">
   {{ data.content }}
