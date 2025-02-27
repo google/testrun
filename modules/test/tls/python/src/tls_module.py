@@ -37,6 +37,7 @@ GATEWAY_CAPTURE_FILE = '/runtime/network/gateway.pcap'
 LOGGER = None
 REPORT_TEMPLATE_FILE = 'report_template.jinja2'
 
+
 class TLSModule(TestModule):
   """The TLS testing module."""
 
