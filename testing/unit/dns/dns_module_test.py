@@ -14,7 +14,6 @@
 """Module run all the DNS related unit tests"""
 from dns_module import DNSModule
 import unittest
-from scapy.all import rdpcap, DNS, wrpcap
 import os
 import sys
 
