@@ -226,15 +226,15 @@ class DNSModule(TestModule):
 
   def _has_dns_traffic(self, tcpdump_filter):
     dns_server_queries = self._exec_tcpdump(tcpdump_filter,
-                                            DNS_SERVER_CAPTURE_FILE)
+                                            self.dns_server_capture_file)
     LOGGER.info('DNS Server queries found: ' + str(len(dns_server_queries)))
 
     dns_startup_queries = self._exec_tcpdump(tcpdump_filter,
-                                             STARTUP_CAPTURE_FILE)
+                                             self.startup_capture_file)
     LOGGER.info('Startup DNS queries found: ' + str(len(dns_startup_queries)))
 
     dns_monitor_queries = self._exec_tcpdump(tcpdump_filter,
-                                             MONITOR_CAPTURE_FILE)
+                                             self.monitor_capture_file)
     LOGGER.info('Monitor DNS queries found: ' + str(len(dns_monitor_queries)))
 
     num_query_dns = len(dns_server_queries) + len(dns_startup_queries) + len(
@@ -242,6 +242,10 @@ class DNSModule(TestModule):
     LOGGER.info('DNS queries found: ' + str(num_query_dns))
 
     return num_query_dns > 0
+
+  # Added to access the method for dns unittests
+  def dns_network_from_dhcp(self):
+    return self._dns_network_from_dhcp()
 
   def _dns_network_from_dhcp(self):
     LOGGER.info('Running dns.network.from_dhcp')
@@ -255,10 +259,9 @@ class DNSModule(TestModule):
     dns_packets_local = self._has_dns_traffic(tcpdump_filter=tcpdump_filter)
 
     # Check if the device sends any DNS traffic to non-DHCP provided server
-    tcpdump_filter = (f'dst port 53 and dst not host {self._dns_server} ' +
-                      'ether src {self._device_mac}')
+    tcpdump_filter = (f'dst port 53 and not dst host {self._dns_server} ' +
+                      f'and ether src {self._device_mac}')
     dns_packets_not_local = self._has_dns_traffic(tcpdump_filter=tcpdump_filter)
-
     if dns_packets_local or dns_packets_not_local:
       if dns_packets_not_local:
         description = 'DNS traffic detected to non-DHCP provided server'
