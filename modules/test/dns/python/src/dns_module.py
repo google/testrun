@@ -13,7 +13,7 @@
 # limitations under the License.
 """DNS test module"""
 import subprocess
-from scapy.all import rdpcap, DNS, IP, Ether
+from scapy.all import rdpcap, DNS, IP, Ether, DNSRR
 from test_module import TestModule
 import os
 from collections import Counter
@@ -165,7 +165,7 @@ class DNSModule(TestModule):
       if DNS in packet and packet.haslayer(IP):
 
         # Check if either source or destination MAC matches the device
-        if self._device_mac in (packet[Ether].src, packet[Ether].dst):
+        if self._device_mac in [packet[Ether].src, packet[Ether].dst]:
           source_ip = packet[IP].src
           destination_ip = packet[IP].dst
           dns_layer = packet[DNS]
@@ -184,15 +184,17 @@ class DNSModule(TestModule):
           if dns_layer.qr == 1 and hasattr(dns_layer,
                                            'an') and dns_layer.ancount > 0:
             # Loop through all answers in the DNS response
-            for i in range(dns_layer.ancount):
+            for i in range(min(dns_layer.ancount, len(dns_layer.an))):
               answer = dns_layer.an[i]
-              # Check for IPv4 (A record) or IPv6 (AAAA record)
-              if answer.type == 1:  # Indicates an A record (IPv4 address)
-                resolved_ip = answer.rdata  # Extract IPv4 address
-                break  # Stop after finding the first valid resolved IP
-              elif answer.type == 28:  # Indicates an AAAA record (IPv6 address)
-                resolved_ip = answer.rdata  # Extract IPv6 address
-                break  # Stop after finding the first valid resolved IP
+              # Check if the answer is of type DNSRR
+              if isinstance(answer, DNSRR):
+                # Check for IPv4 (A record) or IPv6 (AAAA record)
+                if answer.type == 1:  # Indicates an A record (IPv4 address)
+                  resolved_ip = answer.rdata  # Extract IPv4 address
+                  break  # Stop after finding the first valid resolved IP
+                elif answer.type == 28: # Indicates AAAA record (IPv6 address)
+                  resolved_ip = answer.rdata  # Extract IPv6 address
+                  break  # Stop after finding the first valid resolved IP
 
           dns_data.append({
               'Timestamp': float(packet.time),  # Timestamp of the DNS packet

@@ -34,8 +34,7 @@ DNS_SERVER_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'dns.pcap')
 STARTUP_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'startup.pcap')
 MONITOR_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'monitor.pcap')
 
-
-class TLSModuleTest(unittest.TestCase):
+class DNSModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning DNS behaviors"""
 
   @classmethod
@@ -45,7 +44,6 @@ class TLSModuleTest(unittest.TestCase):
 
     # Set the MAC address for device in capture files
     os.environ['DEVICE_MAC'] = '38:d1:35:01:17:fe'
-
   # Test the module report generation
   def dns_module_report_test(self):
     dns_module = DNSModule(module=MODULE,
@@ -114,11 +112,25 @@ class TLSModuleTest(unittest.TestCase):
 
     self.assertEqual(report_out, report_local)
 
+  # Test the extraction of DNS data
+  def extract_dns_data_test(self):
+    dns_module = DNSModule(module=MODULE,
+                           results_dir=OUTPUT_DIR,
+                           dns_server_capture_file=DNS_SERVER_CAPTURE_FILE,
+                           startup_capture_file=STARTUP_CAPTURE_FILE,
+                           monitor_capture_file=MONITOR_CAPTURE_FILE)
+
+    dns_data = dns_module.extract_dns_data()
+    self.assertTrue(len(dns_data) > 0)
+
 if __name__ == '__main__':
   suite = unittest.TestSuite()
   # Module report test
-  suite.addTest(TLSModuleTest('dns_module_report_test'))
-  suite.addTest(TLSModuleTest('dns_module_report_no_dns_test'))
+  suite.addTest(DNSModuleTest('dns_module_report_test'))
+  suite.addTest(DNSModuleTest('dns_module_report_no_dns_test'))
+  suite.addTest(DNSModuleTest('extract_dns_data_test'))
+
+  # Run the tests
 
   runner = unittest.TextTestRunner()
   test_result = runner.run(suite)
