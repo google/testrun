@@ -277,8 +277,6 @@ class TestReport():
     logic = current_test_pack.get_logic()
     steps_to_resolve_ = logic.get_steps_to_resolve(json_data)
 
-    LOGGER.debug(steps_to_resolve_)
-
     module_reports = self._module_reports
     env_module = Environment(loader=BaseLoader())
     pages_num = self._pages_num(json_data)

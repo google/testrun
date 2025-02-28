@@ -177,7 +177,6 @@ class TestOrchestrator:
     report = TestReport()
 
     generated_report_json = self._generate_report()
-
     report.from_json(generated_report_json)
     report.add_module_reports(self.get_session().get_module_reports())
     report.add_module_templates(self.get_session().get_module_templates())
