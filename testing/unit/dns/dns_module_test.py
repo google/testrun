@@ -167,7 +167,7 @@ class DNSModuleTest(unittest.TestCase):
     self.assertEqual(expected_result, result)
 
   # Test dns.network.from_dhcp when no traffic is detected
-  def no_dns_traffic_test(self):
+  def dns_no_dns_traffic_test(self):
 
     # Create a DNSModule instance
     dns_module = DNSModule(module=MODULE,
@@ -195,7 +195,7 @@ if __name__ == '__main__':
   suite.addTest(DNSModuleTest('extract_dns_data_test'))
   suite.addTest(DNSModuleTest('dns_traffic_to_dhcp_provided_server_test'))
   suite.addTest(DNSModuleTest('dns_traffic_to_non_dhcp_server_test'))
-  suite.addTest(DNSModuleTest('no_dns_traffic_test'))
+  suite.addTest(DNSModuleTest('dns_no_dns_traffic_test'))
 
   # Run the tests
   runner = unittest.TextTestRunner()
