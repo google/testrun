@@ -14,6 +14,7 @@
 """DNS test module"""
 import subprocess
 from scapy.all import rdpcap, DNS, IP, Ether, DNSRR
+from scapy.error import Scapy_Exception
 from test_module import TestModule
 import os
 from collections import Counter
@@ -156,9 +157,15 @@ class DNSModule(TestModule):
   def extract_dns_data(self):
     dns_data = []
 
-    # Read the pcap file
-    packets = rdpcap(self.dns_server_capture_file) + rdpcap(
-        self.startup_capture_file) + rdpcap(self.monitor_capture_file)
+    # Read the startup and monitor pcap files
+    packets = (rdpcap(self.startup_capture_file) +
+               rdpcap(self.monitor_capture_file))
+
+    # Read the dns.pcap file
+    try:
+      packets += rdpcap(self.dns_server_capture_file)
+    except (FileNotFoundError, Scapy_Exception):
+      LOGGER.error('dns.pcap not found or empty, ignoring')
 
     # Iterate through DNS packets
     for packet in packets:
