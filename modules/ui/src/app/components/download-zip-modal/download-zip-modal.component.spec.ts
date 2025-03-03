@@ -64,7 +64,8 @@ describe('DownloadZipModalComponent', () => {
           provide: MAT_DIALOG_DATA,
           useValue: {
             profiles: [PROFILE_MOCK_2, PROFILE_MOCK],
-            url: 'localhost:8080',
+            report: 'localhost:8080',
+            export: 'localhost:8080',
           },
         },
         { provide: TestRunService, useValue: testRunServiceMock },
@@ -78,7 +79,8 @@ describe('DownloadZipModalComponent', () => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
         useValue: {
           profiles: [PROFILE_MOCK_2, PROFILE_MOCK, PROFILE_MOCK_3],
-          url: 'localhost:8080',
+          report: 'localhost:8080',
+          export: 'localhost:8080',
           isPilot: true,
         },
       });
@@ -220,7 +222,8 @@ describe('DownloadZipModalComponent', () => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
         useValue: {
           profiles: [],
-          url: 'localhost:8080',
+          report: 'localhost:8080',
+          export: 'localhost:8080',
         },
       });
 
