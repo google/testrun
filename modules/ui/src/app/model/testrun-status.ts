@@ -25,6 +25,7 @@ export interface TestrunStatus {
   finished: string | null;
   tests?: TestsResponse;
   report: string;
+  export: string;
   tags: string[] | null;
 }
 
@@ -114,6 +115,7 @@ export const IDLE_STATUS = {
   started: null,
   finished: null,
   report: '',
+  export: '',
   mac_addr: '',
   tests: {
     total: 0,
