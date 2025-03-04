@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
 import { TestrunTableComponent } from './testrun-table.component';
 
@@ -31,6 +36,9 @@ import { TestRunService } from '../../../../services/test-run.service';
 import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { of } from 'rxjs';
+import { MatDialogRef } from '@angular/material/dialog';
+import { TestResultDialogComponent } from '../test-result-dialog/test-result-dialog.component';
 
 describe('ProgressTableComponent', () => {
   let component: TestrunTableComponent;
@@ -156,6 +164,30 @@ describe('ProgressTableComponent', () => {
 
         expect(clickableRow).not.toBeNull();
       });
+
+      it('#onRowSelected should open test result modal', fakeAsync(() => {
+        const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+          afterClosed: () => of(true),
+        } as MatDialogRef<typeof TestResultDialogComponent>);
+        tick();
+
+        const testResult = TEST_DATA_RESULT_WITH_RECOMMENDATIONS[0];
+        component.onRowSelected(testResult);
+        tick();
+
+        expect(openSpy).toHaveBeenCalledWith(TestResultDialogComponent, {
+          ariaLabel: 'Test result information',
+          data: {
+            testResult,
+          },
+          autoFocus: true,
+          hasBackdrop: true,
+          disableClose: true,
+          panelClass: ['simple-dialog'],
+        });
+
+        openSpy.calls.reset();
+      }));
     });
   });
 });

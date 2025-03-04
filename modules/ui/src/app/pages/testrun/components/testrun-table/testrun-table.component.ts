@@ -36,7 +36,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatRippleModule } from '@angular/material/core';
-import { SimpleDialogComponent } from '../../../../components/simple-dialog/simple-dialog.component';
+import { TestResultDialogComponent } from '../test-result-dialog/test-result-dialog.component';
 
 @Component({
   selector: 'app-testrun-table',
@@ -71,13 +71,11 @@ export class TestrunTableComponent {
     'clickableIcon',
   ];
 
-  onRowSelected(row: IResult) {
-    // TODO: Will be updated. Testing modal will be implemented in the next ticket
-    this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: 'Selected test will be updated',
+  onRowSelected(testResult: IResult) {
+    this.dialog.open(TestResultDialogComponent, {
+      ariaLabel: 'Test result information',
       data: {
-        title: `${row.name}`,
-        content: `Selected test info will be updated`,
+        testResult,
       },
       autoFocus: true,
       hasBackdrop: true,
