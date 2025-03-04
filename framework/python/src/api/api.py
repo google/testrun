@@ -495,7 +495,7 @@ class Api:
       return self._generate_msg(True, "Deleted report")
 
     response.status_code = 500
-    return self._generate_msg(False, "Error occured whilst deleting report")
+    return self._generate_msg(False, "Error occurred whilst deleting report")
 
   async def delete_device(self, request: Request, response: Response):
 
@@ -546,7 +546,7 @@ class Api:
       LOGGER.error(e)
       response.status_code = 500
       return self._generate_msg(
-          False, "An error occured whilst deleting the device")
+          False, "An error occurred whilst deleting the device")
 
   async def save_device(self, request: Request, response: Response):
     LOGGER.debug("Received device post request")

@@ -93,7 +93,7 @@ class BACnet():
         description = 'BACnet device could not be discovered'
       LOGGER.info(description)
     except Exception: # pylint: disable=W0718
-      LOGGER.error('Error occured when validating device', exc_info=True)
+      LOGGER.error('Error occurred when validating device', exc_info=True)
     return result, description
 
 
@@ -141,7 +141,7 @@ class BACnet():
             valid = False
       return valid
     except Exception: # pylint: disable=W0718
-      LOGGER.error('Error occured when validating source', exc_info=True)
+      LOGGER.error('Error occurred when validating source', exc_info=True)
       return False
 
   def get_bacnet_packets(self, capture_file, object_id):
