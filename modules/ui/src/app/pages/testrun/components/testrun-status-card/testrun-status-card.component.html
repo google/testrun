@@ -28,7 +28,7 @@ limitations under the License.
     </div>
 
     <div class="progress-card-info progress-card-info-status">
-      <p class="progress-card-info-title">Status</p>
+      <p class="progress-card-info-title">{{ getTestStatusText(data) }}</p>
       <p class="progress-card-info-text">
         <span>{{ getTestStatus(data) }}</span>
       </p>
@@ -50,61 +50,28 @@ limitations under the License.
         *ngSwitchCase="StatusOfTestrun.Monitoring"
         [ngTemplateOutlet]="Monitoring">
       </ng-container>
-      <ng-container *ngSwitchCase="StatusOfTestrun.InProgress">
-        <ng-container
-          *ngTemplateOutlet="
-            InProgress;
-            context: {
-              data: data,
-            }
-          "></ng-container
-      ></ng-container>
       <ng-container
         *ngSwitchCase="StatusOfTestrun.Cancelling"
         [ngTemplateOutlet]="Cancelling">
       </ng-container>
-      <ng-container *ngSwitchCase="StatusOfTestrun.Cancelled">
-        <ng-container
-          *ngTemplateOutlet="
-            Finished;
-            context: {
-              data: data,
-            }
-          "></ng-container
-      ></ng-container>
     </div>
 
-    <ng-container *ngIf="data.finished">
-      <ng-container *ngIf="data.status !== StatusOfTestrun.InProgress">
-        <ng-container
-          *ngTemplateOutlet="
-            Finished;
-            context: {
-              data: data,
-            }
-          "></ng-container>
-      </ng-container>
-      <ng-container *ngIf="data.status === StatusOfTestrun.InProgress">
-        <ng-container
-          *ngTemplateOutlet="
-            InProgress;
-            context: {
-              data: data,
-            }
-          "></ng-container
-      ></ng-container>
+    <ng-container
+      *ngIf="
+        data.finished ||
+        data.status === StatusOfTestrun.InProgress ||
+        data.status === StatusOfTestrun.Cancelled
+      ">
+      <ng-container
+        *ngTemplateOutlet="
+          WithProgressBar;
+          context: {
+            data: data,
+          }
+        "></ng-container>
     </ng-container>
   </div>
 </ng-container>
-
-<ng-template #InProgress let-data="data">
-  <mat-progress-bar
-    class="progress-bar"
-    mode="determinate"
-    [value]="getProgressValue(data)"
-    [attr.aria-label]="data.status + ' ' + getProgressValue(data) + '%'">
-  </mat-progress-bar>
-</ng-template>
 
 <ng-template #Cancelling>
   <div>
@@ -155,21 +122,13 @@ limitations under the License.
   </div>
 </ng-template>
 
-<ng-template #Finished let-data="data">
-  <div>
-    <p class="progress-card-result-title">Test result</p>
-    <p class="progress-card-result-text">
-      <span>{{ getTestResult(data) }}</span>
-    </p>
-  </div>
-  <div
-    *ngIf="
-      data.status === StatusOfTestrun.Proceed ||
-      data.status === StatusOfTestrun.DoNotProceed
-    ">
-    <p class="progress-card-result-title">Preliminary Pilot Recommendation</p>
-    <p class="progress-card-result-text">
-      <span>{{ data.status }}</span>
-    </p>
+<ng-template #WithProgressBar let-data="data">
+  <div class="progress-card-status">
+    <mat-progress-bar
+      class="progress-bar"
+      mode="determinate"
+      [value]="getProgressValue(data)"
+      [attr.aria-label]="data.status + ' ' + getProgressValue(data) + '%'">
+    </mat-progress-bar>
   </div>
 </ng-template>

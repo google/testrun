@@ -46,7 +46,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { ReactiveFormsModule } from '@angular/forms';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
-import { DownloadOptionsComponent } from './components/download-options/download-options.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TestrunTableComponent } from './components/testrun-table/testrun-table.component';
 import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
@@ -67,7 +66,6 @@ import { TestrunStatusCardComponent } from './components/testrun-status-card/tes
     MatExpansionModule,
     ReactiveFormsModule,
     SpinnerComponent,
-    DownloadOptionsComponent,
     MatTooltipModule,
     TestrunTableComponent,
     TestrunStatusCardComponent,
@@ -79,6 +77,7 @@ import { TestrunStatusCardComponent } from './components/testrun-status-card/tes
   ],
 })
 export class TestrunComponent implements OnInit, OnDestroy {
+  isOpenDownloadOptions: boolean = false;
   private readonly testRunService = inject(TestRunService);
   private readonly notificationService = inject(NotificationService);
   dialog = inject(MatDialog);
@@ -196,5 +195,9 @@ export class TestrunComponent implements OnInit, OnDestroy {
 
   resultIsEmpty(tests: TestsResponse | undefined) {
     return this.testrunStore.resultIsEmpty(tests);
+  }
+
+  openDownloadOptions(): void {
+    this.isOpenDownloadOptions = !this.isOpenDownloadOptions;
   }
 }

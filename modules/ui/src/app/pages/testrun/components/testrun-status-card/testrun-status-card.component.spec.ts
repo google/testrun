@@ -26,6 +26,7 @@ import {
   MOCK_PROGRESS_DATA_COMPLIANT,
   MOCK_PROGRESS_DATA_IN_PROGRESS,
   MOCK_PROGRESS_DATA_MONITORING,
+  MOCK_PROGRESS_DATA_PROCEED,
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
   MOCK_PROGRESS_DATA_WITH_ERROR,
 } from '../../../../mocks/testrun.mock';
@@ -170,29 +171,55 @@ describe('ProgressStatusCardComponent', () => {
       });
     });
 
+    describe('#getTestStatusText should return status text as', () => {
+      it('"Status" if not finished', () => {
+        const expectedText = 'Status';
+
+        const result = component.getTestStatusText(
+          MOCK_PROGRESS_DATA_MONITORING
+        );
+
+        expect(result).toEqual(expectedText);
+      });
+
+      it('"Result" if finished and not Pilot statuses', () => {
+        const expectedText = 'Result';
+
+        const result = component.getTestStatusText(
+          MOCK_PROGRESS_DATA_COMPLIANT
+        );
+
+        expect(result).toEqual(expectedText);
+      });
+
+      it('"Preliminary Pilot Recommendation" if finished and Pilot statuses', () => {
+        const expectedText = 'Preliminary Pilot Recommendation';
+
+        const result = component.getTestStatusText(MOCK_PROGRESS_DATA_PROCEED);
+
+        expect(result).toEqual(expectedText);
+      });
+    });
+
     describe('#getTestStatus', () => {
-      it('should return test status "Complete" if testrun is finished', () => {
-        const expectedResult = 'Complete';
+      it('should return test result if testrun has status "Complete"', () => {
+        const expectedResult = MOCK_PROGRESS_DATA_COMPLIANT.result as string;
 
         const result = component.getTestStatus(MOCK_PROGRESS_DATA_COMPLIANT);
 
         expect(result).toEqual(expectedResult);
       });
 
-      it('should return test status "Incomplete" if status "Cancelled"', () => {
-        const expectedResult = 'Incomplete';
-
+      it('should return test status "Cancelled" if status "Cancelled"', () => {
         const result = component.getTestStatus(MOCK_PROGRESS_DATA_CANCELLED);
 
-        expect(result).toEqual(expectedResult);
+        expect(result).toEqual(StatusOfTestrun.Cancelled);
       });
 
       it('should return test status "In Progress" if status "In Progress"', () => {
-        const expectedResult = 'In Progress';
-
         const result = component.getTestStatus(MOCK_PROGRESS_DATA_IN_PROGRESS);
 
-        expect(result).toEqual(expectedResult);
+        expect(result).toEqual(StatusOfTestrun.InProgress);
       });
 
       it('should return test status "Monitoring" if finished with status "Monitoring"', () => {
@@ -272,28 +299,19 @@ describe('ProgressStatusCardComponent', () => {
         expect(progressCardEl?.classList).toContain('canceled');
       });
 
-      it('should not have progress bar element', () => {
+      it('should have progress bar element', () => {
         const progressBarEl = compiled.querySelector('.progress-bar');
 
-        expect(progressBarEl).toBeNull();
+        expect(progressBarEl).not.toBeNull();
       });
 
-      it('should have progress card result', () => {
-        const progressCardResultEl = compiled.querySelector(
-          '.progress-card-result-text span'
-        );
-
-        expect(progressCardResultEl).not.toBeNull();
-        expect(progressCardResultEl?.textContent).toEqual('Cancelled');
-      });
-
-      it('should have progress card status text as "Incomplete"', () => {
+      it('should have progress card status text as "Cancelled"', () => {
         const progressCardStatusText = compiled.querySelector(
           '.progress-card-info-status .progress-card-info-text > span'
         );
 
         expect(progressCardStatusText).not.toBeNull();
-        expect(progressCardStatusText?.textContent).toEqual('Incomplete');
+        expect(progressCardStatusText?.textContent).toEqual('Cancelled');
       });
     });
 

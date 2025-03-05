@@ -143,6 +143,14 @@ export const MOCK_PROGRESS_DATA_NON_COMPLIANT: TestrunStatus =
     ResultOfTestrun.NonCompliant
   );
 
+export const MOCK_PROGRESS_DATA_PROCEED: TestrunStatus = PROGRESS_DATA_RESPONSE(
+  StatusOfTestrun.Proceed,
+  '2023-06-22T09:20:00.123Z',
+  TEST_DATA_RESULT,
+  'https://api.testrun.io/report.pdf',
+  ResultOfTestrun.Compliant
+);
+
 export const MOCK_PROGRESS_DATA_CANCELLED: TestrunStatus =
   PROGRESS_DATA_RESPONSE(StatusOfTestrun.Cancelled, null, TEST_DATA);
 
