@@ -34,7 +34,6 @@ import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../../services/loaderConfig';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { TestrunStore } from './testrun.store';
 import { TestRunService } from '../../services/test-run.service';
-import { NotificationService } from '../../services/notification.service';
 import { TestModule } from '../../model/device';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { CommonModule } from '@angular/common';
@@ -79,7 +78,6 @@ import { TestrunStatusCardComponent } from './components/testrun-status-card/tes
 export class TestrunComponent implements OnInit, OnDestroy {
   isOpenDownloadOptions: boolean = false;
   private readonly testRunService = inject(TestRunService);
-  private readonly notificationService = inject(NotificationService);
   dialog = inject(MatDialog);
   private readonly focusManagerService = inject(FocusManagerService);
   testrunStore = inject(TestrunStore);

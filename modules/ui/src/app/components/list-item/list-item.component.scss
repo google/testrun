@@ -17,23 +17,6 @@
 @use 'colors';
 @use '@angular/material' as mat;
 
-// Customize the entire app. Change :root to your selector if you want to scope the styles.
-::ng-deep :root {
-  @include mat.menu-overrides(
-    (
-      item-label-text-color: colors.$on-surface,
-      item-icon-color: colors.$on-surface-variant,
-      container-color: colors.$surface,
-      item-label-text-weight: 400,
-      item-label-text-size: 16px,
-      item-label-text-font: variables.$font-text,
-      item-hover-state-layer-color: colors.$secondary-container,
-      item-with-icon-leading-spacing: 24px,
-      item-with-icon-trailing-spacing: 24px,
-    )
-  );
-}
-
 ::ng-deep {
   .list-item-menu {
     width: 220px;

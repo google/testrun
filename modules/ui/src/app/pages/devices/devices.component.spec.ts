@@ -59,6 +59,7 @@ describe('DevicesComponent', () => {
       'getTestModules',
       'deleteDevice',
     ]);
+    mockDevicesStore.isOpenAddDevice$ = of(false);
 
     await TestBed.configureTestingModule({
       imports: [

@@ -29,9 +29,9 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { CalloutType } from './model/callout-type';
 import { Routes } from './model/routes';
 import { FocusManagerService } from './services/focus-manager.service';
-import { State, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { AppState } from './store/state';
-import { setIsOpenAddDevice } from './store/actions';
+import { setIsOpenAddDevice, setIsOpenProfile } from './store/actions';
 import { AppStore } from './app.store';
 import { TestRunService } from './services/test-run.service';
 import { filter, take } from 'rxjs/operators';
@@ -54,6 +54,18 @@ import { MatRadioModule } from '@angular/material/radio';
 import { CalloutComponent } from './components/callout/callout.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { SideButtonMenuComponent } from './components/side-button-menu/side-button-menu.component';
+import { Observable } from 'rxjs/internal/Observable';
+import { of } from 'rxjs/internal/observable/of';
+
+export interface AddMenuItem {
+  icon?: string;
+  svgIcon?: string;
+  label: string;
+  description?: string;
+  onClick: () => void;
+  disabled$: Observable<boolean>;
+}
 
 const DEVICES_RUN_URL = '/assets/icons/device_run.svg';
 const TESTRUN_LOGO_URL = '/assets/icons/testrun_logo_small.svg';
@@ -89,6 +101,7 @@ const QUALIFICATION_URL = '/assets/icons/qualification.svg';
     TestingCompleteComponent,
     RouterModule,
     CommonModule,
+    SideButtonMenuComponent,
   ],
   providers: [AppStore],
 })
@@ -97,7 +110,6 @@ export class AppComponent implements AfterViewInit {
   private domSanitizer = inject(DomSanitizer);
   private route = inject(Router);
   private store = inject<Store<AppState>>(Store);
-  private state = inject<State<AppState>>(State);
   private readonly focusManagerService = inject(FocusManagerService);
   private testRunService = inject(TestRunService);
   appStore = inject(AppStore);
@@ -105,12 +117,47 @@ export class AppComponent implements AfterViewInit {
   public readonly CalloutType = CalloutType;
   public readonly StatusOfTestrun = StatusOfTestrun;
   public readonly Routes = Routes;
-  readonly toggleSettingsBtn =
-    viewChild.required<HTMLButtonElement>('toggleSettingsBtn');
   viewModel$ = this.appStore.viewModel$;
 
   readonly riskAssessmentLink = viewChild<ElementRef>('riskAssessmentLink');
   private skipCount = 0;
+
+  navigateToRuntime = () => {
+    this.route.navigate([Routes.Testing]);
+    this.appStore.setIsOpenStartTestrun();
+  };
+
+  navigateToAddDevice = () => {
+    this.route.navigate([Routes.Devices]);
+    this.store.dispatch(setIsOpenAddDevice({ isOpenAddDevice: true }));
+  };
+
+  navigateToAddRiskAssessment = () => {
+    this.route.navigate([Routes.RiskAssessment]);
+    this.store.dispatch(setIsOpenProfile({ isOpenCreateProfile: true }));
+  };
+
+  menuItems: AddMenuItem[] = [
+    {
+      svgIcon: 'testrun_logo_small',
+      label: 'Create new Testrun',
+      description: 'Configure your testing tasks',
+      onClick: this.navigateToRuntime,
+      disabled$: this.appStore.testrunButtonDisabled$,
+    },
+    {
+      icon: 'home_iot_device',
+      label: 'Create new device',
+      onClick: this.navigateToAddDevice,
+      disabled$: of(false),
+    },
+    {
+      icon: 'rule',
+      label: 'Create new profile',
+      onClick: this.navigateToAddRiskAssessment,
+      disabled$: of(false),
+    },
+  ];
 
   constructor() {
     this.appStore.getDevices();
@@ -182,15 +229,6 @@ export class AppComponent implements AfterViewInit {
 
   navigateToDeviceRepository(): void {
     this.route.navigate([Routes.Devices]);
-  }
-  navigateToAddDevice(): void {
-    this.route.navigate([Routes.Devices]);
-    this.store.dispatch(setIsOpenAddDevice({ isOpenAddDevice: true }));
-  }
-
-  navigateToRuntime(): void {
-    this.route.navigate([Routes.Testing]);
-    this.appStore.setIsOpenStartTestrun();
   }
 
   navigateToRiskAssessment(): void {
