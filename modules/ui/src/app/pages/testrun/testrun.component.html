@@ -47,10 +47,6 @@ limitations under the License.
             </span>
           </div>
           <div class="toolbar-row bottom">
-            <app-download-options
-              *ngIf="data.report"
-              [data]="data"
-              [profiles]="vm.profiles"></app-download-options>
             <app-testrun-status-card [systemStatus]="vm.systemStatus">
             </app-testrun-status-card>
           </div>
@@ -75,6 +71,28 @@ limitations under the License.
           cancel
         </mat-icon>
         Stop
+      </button>
+      <button
+        *ngIf="data.report"
+        (click)="openDownloadOptions()"
+        class="download-button"
+        [class.download-button-opened]="isOpenDownloadOptions"
+        color="primary"
+        aria-label="Stop testrun"
+        mat-flat-button>
+        <mat-icon
+          *ngIf="!isOpenDownloadOptions"
+          fontSet="material-symbols-outlined"
+          class="filled">
+          download
+        </mat-icon>
+        <mat-icon
+          *ngIf="isOpenDownloadOptions"
+          fontSet="material-symbols-outlined"
+          class="filled">
+          close
+        </mat-icon>
+        {{ isOpenDownloadOptions ? '' : 'Download' }}
       </button>
     </ng-container>
     <ng-container *ngIf="!data.started">

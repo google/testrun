@@ -110,22 +110,22 @@ export class TestrunStatusCardComponent {
     return '-/-';
   }
 
-  public getTestStatus(data: TestrunStatus): string {
-    if (data.status === StatusOfTestrun.Cancelled) {
-      return 'Incomplete';
-    } else if (data.finished && !this.isProgressStatus(data.status)) {
-      return 'Complete';
+  public getTestStatusText(data: TestrunStatus): string {
+    if (!data.finished) {
+      return 'Status';
+    } else if (
+      data.finished &&
+      (data.status === StatusOfTestrun.Proceed ||
+        data.status === StatusOfTestrun.DoNotProceed)
+    ) {
+      return 'Preliminary Pilot Recommendation';
     } else {
-      return data.status;
+      return 'Result';
     }
   }
 
-  public getTestResult(data: TestrunStatus): string {
-    if (
-      data.status === StatusOfTestrun.Complete ||
-      data.status === StatusOfTestrun.Proceed ||
-      data.status === StatusOfTestrun.DoNotProceed
-    ) {
+  public getTestStatus(data: TestrunStatus): string {
+    if (data.status === StatusOfTestrun.Complete) {
       return data.result!;
     }
     return data.status;

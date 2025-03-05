@@ -65,6 +65,26 @@
 
   .progress-bar {
     padding-bottom: 28px;
+    width: 460px;
+    border-radius: 45%;
+  }
+
+  @include mat.progress-bar-overrides(
+    (
+      active-indicator-color: colors.$primary,
+      track-color: colors.$secondary-container,
+      active-indicator-height: 12px,
+      track-height: 12px,
+    )
+  );
+
+  &.canceled {
+    @include mat.progress-bar-overrides(
+      (
+        active-indicator-color: colors.$on-surface,
+        track-color: colors.$surface-variant,
+      )
+    );
   }
 
   &.progress .progress-card-info-status {
@@ -72,15 +92,15 @@
   }
 
   &.completed-success .progress-card-info-status {
-    background-color: #188038; /* TODO update with variable*/
+    background-color: colors.$on-tertiary-container;
   }
 
   &.completed-failed .progress-card-info-status {
-    background-color: colors.$red-800;
+    background-color: colors.$on-error-container;
   }
 
   &.canceled .progress-card-info-status {
-    background-color: colors.$secondary;
+    background-color: colors.$on-surface;
   }
 }
 
@@ -103,7 +123,6 @@
     colors.$on-primary
   );
   justify-self: start;
-  width: 343px;
 
   &-pilot {
     gap: 6px;
@@ -115,6 +134,7 @@
   grid-area: 2/1/2/3;
   max-width: max-content;
   white-space: normal;
+  justify-self: center;
 }
 
 .progress-card-result-loading {
