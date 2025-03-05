@@ -55,7 +55,11 @@ import {
   fetchInterfaces,
   fetchSystemConfig,
 } from './store/actions';
-import { ResultOfTestrun, TestrunStatus } from './model/testrun-status';
+import {
+  ResultOfTestrun,
+  StatusOfTestrun,
+  TestrunStatus,
+} from './model/testrun-status';
 import {
   Adapters,
   SettingMissedError,
@@ -66,6 +70,7 @@ import { FocusManagerService } from './services/focus-manager.service';
 import { TestRunMqttService } from './services/test-run-mqtt.service';
 import { NotificationService } from './services/notification.service';
 import { Profile } from './model/profile';
+import { map } from 'rxjs/internal/operators/map';
 
 export const CONSENT_SHOWN_KEY = 'CONSENT_SHOWN';
 export const CALLOUT_STATE_KEY = 'CALLOUT_STATE';
@@ -109,6 +114,32 @@ export class AppStore extends ComponentStore<AppComponentState> {
     selectIsTestingComplete
   );
   riskProfiles$: Observable<Profile[]> = this.store.select(selectRiskProfiles);
+
+  testrunButtonDisabled$ = combineLatest([
+    this.hasDevices$,
+    this.isAllDevicesOutdated$,
+    this.isStatusLoaded$,
+    this.systemStatus$,
+    this.hasConnectionSetting$,
+  ]).pipe(
+    map(
+      ([
+        hasDevices,
+        isAllDevicesOutdated,
+        isStatusLoaded,
+        systemStatus,
+        hasConnectionSettings,
+      ]) => {
+        return !(
+          hasConnectionSettings === true &&
+          hasDevices &&
+          (!systemStatus || systemStatus === StatusOfTestrun.Idle) &&
+          isStatusLoaded === true &&
+          !isAllDevicesOutdated
+        );
+      }
+    )
+  );
 
   viewModel$ = this.select({
     consentShown: this.consentShown$,

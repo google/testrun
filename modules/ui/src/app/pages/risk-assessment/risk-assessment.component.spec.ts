@@ -71,7 +71,11 @@ describe('RiskAssessmentComponent', () => {
       'setFocusOnProfileForm',
       'updateProfiles',
       'removeProfile',
+      'isOpenCreateProfile$',
+      'profileFormat$',
     ]);
+
+    mockRiskAssessmentStore.profileFormat$ = of([]);
 
     await TestBed.configureTestingModule({
       declarations: [FakeProfileItemComponent, FakeProfileFormComponent],
@@ -105,6 +109,14 @@ describe('RiskAssessmentComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should open form if isOpenAddDevice$ as true', () => {
+    mockRiskAssessmentStore.profileFormat$ = of([], []);
+    mockRiskAssessmentStore.isOpenCreateProfile$ = of(true);
+    component.ngOnInit();
+
+    expect(component.isOpenProfileForm).toBeTrue();
   });
 
   describe('with no profiles data', () => {

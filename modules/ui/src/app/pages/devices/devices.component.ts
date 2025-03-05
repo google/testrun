@@ -26,14 +26,12 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import {
   Device,
   DeviceAction,
-  DeviceStatus,
   DeviceView,
   TestModule,
 } from '../../model/device';
 import { LayoutType } from '../../model/layout-type';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
-import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Routes } from '../../model/routes';
 import { Router } from '@angular/router';
@@ -107,17 +105,10 @@ export class DevicesComponent
   }
 
   ngOnInit(): void {
-    combineLatest([
-      this.devicesStore.devices$,
-      this.devicesStore.isOpenAddDevice$,
-    ])
+    this.devicesStore.isOpenAddDevice$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([devices, isOpenAddDevice]) => {
-        if (
-          !devices?.filter(device => device.status === DeviceStatus.VALID)
-            .length &&
-          isOpenAddDevice
-        ) {
+      .subscribe(isOpenAddDevice => {
+        if (isOpenAddDevice) {
           this.openForm();
         }
       });

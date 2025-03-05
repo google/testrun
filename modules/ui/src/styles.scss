@@ -64,6 +64,20 @@
       color: colors.$outline-variant,
     )
   );
+
+  @include mat.menu-overrides(
+    (
+      item-label-text-color: colors.$on-surface,
+      item-icon-color: colors.$on-surface-variant,
+      container-color: colors.$surface,
+      item-label-text-weight: 400,
+      item-label-text-size: 16px,
+      item-label-text-font: variables.$font-text,
+      item-hover-state-layer-color: colors.$secondary-container,
+      item-with-icon-leading-spacing: 24px,
+      item-with-icon-trailing-spacing: 24px,
+    )
+  );
 }
 
 .consent-dialog {
@@ -533,4 +547,12 @@ button:not(.mat-mdc-button-disabled) {
 
 .mat-mdc-snackbar-surface {
   padding-right: 0 !important;
+}
+
+.side-add-menu {
+  @include mat.menu-overrides(
+    (
+      item-hover-state-layer-color: rgba(31, 31, 31, 0.08),
+    )
+  );
 }

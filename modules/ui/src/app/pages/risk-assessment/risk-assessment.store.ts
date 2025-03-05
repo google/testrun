@@ -23,7 +23,10 @@ import { Profile, ProfileAction, ProfileFormat } from '../../model/profile';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
-import { selectRiskProfiles } from '../../store/selectors';
+import {
+  selectIsOpenCreateProfile,
+  selectRiskProfiles,
+} from '../../store/selectors';
 import { setRiskProfiles } from '../../store/actions';
 import { EntityAction } from '../../model/entity-action';
 
@@ -43,7 +46,7 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
   profileFormat$ = this.select(state => state.profileFormat);
   selectedProfile$ = this.select(state => state.selectedProfile);
   actions$ = this.select(state => state.actions);
-
+  isOpenCreateProfile$ = this.store.select(selectIsOpenCreateProfile);
   viewModel$ = this.select({
     profiles: this.profiles$,
     profileFormat: this.profileFormat$,

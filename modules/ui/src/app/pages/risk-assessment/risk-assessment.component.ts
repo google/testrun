@@ -26,11 +26,10 @@ import {
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
-import { Subject, takeUntil, timer } from 'rxjs';
+import { Subject, takeUntil, timer, Observable } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Profile, ProfileAction, ProfileStatus } from '../../model/profile';
-import { Observable } from 'rxjs/internal/Observable';
 import { DeviceValidators } from '../devices/components/device-form/device.validators';
 import { SuccessDialogComponent } from './components/success-dialog/success-dialog.component';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -51,8 +50,8 @@ import { ListLayoutComponent } from '../../components/list-layout/list-layout.co
 import { LayoutType } from '../../model/layout-type';
 import { NoEntitySelectedComponent } from '../../components/no-entity-selected/no-entity-selected.component';
 import { EntityAction, EntityActionResult } from '../../model/entity-action';
-import { of } from 'rxjs/internal/observable/of';
 import { CanComponentDeactivate } from '../../guards/can-deactivate.guard';
+import { of, combineLatest, skip } from 'rxjs';
 
 const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
   hideRequiredMarker: true,
@@ -114,6 +113,17 @@ export class RiskAssessmentComponent
 
   ngOnInit() {
     this.store.getProfilesFormat();
+
+    combineLatest([
+      this.store.isOpenCreateProfile$,
+      this.store.profileFormat$.pipe(skip(1)),
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([isOpenCreateProfile]) => {
+        if (isOpenCreateProfile) {
+          this.openForm();
+        }
+      });
   }
 
   ngOnDestroy() {
