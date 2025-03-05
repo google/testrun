@@ -92,7 +92,7 @@ class BACnet():
         description = 'BACnet device could not be discovered'
       LOGGER.info(description)
     except Exception: # pylint: disable=W0718
-      LOGGER.error('Error occured when validating device', exc_info=True)
+      LOGGER.error('Error occurred when validating device', exc_info=True)
     return result, description
 
 
@@ -121,6 +121,9 @@ class BACnet():
       capture_file = os.path.join(self._captures_dir, self._capture_file)
       packets = self.get_bacnet_packets(capture_file, object_id)
       valid = None
+      # If no packets are found in protocol.pcap
+      if not packets:
+        LOGGER.debug(f'No BACnet packets found for object id {object_id}')
       for packet in packets:
         if object_id in packet['_source']['layers']['bacapp.instance_number']:
           if device_hw_addr.lower() in packet['_source']['layers']['eth.src']:
@@ -137,7 +140,7 @@ class BACnet():
             valid = False
       return valid
     except Exception: # pylint: disable=W0718
-      LOGGER.error('Error occured when validating source', exc_info=True)
+      LOGGER.error('Error occurred when validating source', exc_info=True)
       return False
 
   def get_bacnet_packets(self, capture_file, object_id):

@@ -125,6 +125,9 @@ class TestrunSession():
     # Direct url for PDF report
     self._report_url = None
 
+    # Export URL
+    self._export_url = None
+
     # Version
     self._load_version()
 
@@ -143,7 +146,6 @@ class TestrunSession():
 
     # System network interfaces
     self._ifaces = {}
-
     # Loading methods
     self._load_version()
     self._load_config()
@@ -516,6 +518,12 @@ class TestrunSession():
   def set_report_url(self, url):
     self._report_url = url
 
+  def get_export_url(self):
+    return self._export_url
+
+  def set_export_url(self, url):
+    self._export_url = url
+
   def set_subnets(self, ipv4_subnet, ipv6_subnet):
     self._ipv4_subnet = ipv4_subnet
     self._ipv6_subnet = ipv6_subnet
@@ -863,9 +871,10 @@ question {question.get('question')}''')
 
     if self._report_url is not None:
       session_json['report'] = self.get_report_url()
+    if self._export_url is not None:
+      session_json['export'] = self.get_export_url()
 
-    if self._description is not None:
-      session_json['description'] = self._description
+    session_json['description'] = self._description
 
     return session_json
 

@@ -59,6 +59,7 @@ export class TestrunInitiateFormComponent
   extends EscapableDialogComponent
   implements OnInit, AfterViewChecked
 {
+  private startRequestSent = new BehaviorSubject(false);
   @ViewChild('firmwareInput') firmwareInput!: ElementRef;
   initiateForm!: FormGroup;
   devices$ = this.store.select(selectDevices);
@@ -165,7 +166,8 @@ export class TestrunInitiateFormComponent
       }
     );
 
-    if (this.selectedDevice) {
+    if (this.selectedDevice && !this.startRequestSent.value) {
+      this.startRequestSent.next(true);
       this.testRunService.fetchVersion();
       this.testRunService
         .startTestrun({
@@ -174,8 +176,13 @@ export class TestrunInitiateFormComponent
           test_modules: testModules,
         })
         .pipe(take(1))
-        .subscribe(status => {
-          this.cancel(status);
+        .subscribe({
+          next: status => {
+            this.cancel(status);
+          },
+          error: () => {
+            this.startRequestSent.next(false);
+          },
         });
     }
   }

@@ -167,7 +167,8 @@ limitations under the License.
               <app-download-report-zip
                 *ngIf="data?.device"
                 [data]="data"
-                [url]="data.report"
+                [report]="data.report"
+                [export]="data.export"
                 [profiles]="vm.profiles">
                 <span class="download-report-zip-icon-container">
                   <mat-icon
