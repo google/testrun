@@ -222,10 +222,10 @@ describe('AppComponent', () => {
     expect(sideBar).toBeDefined();
   });
 
-  it('should render menu button', () => {
-    const button = compiled.querySelector('.app-sidebar-button-menu');
+  it('should render side button menu', () => {
+    const sideButtonMenu = compiled.querySelector('app-side-button-menu');
 
-    expect(button).toBeDefined();
+    expect(sideButtonMenu).toBeDefined();
   });
 
   it('should render runtime button', () => {

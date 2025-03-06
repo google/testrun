@@ -55,11 +55,7 @@ import {
   fetchInterfaces,
   fetchSystemConfig,
 } from './store/actions';
-import {
-  ResultOfTestrun,
-  StatusOfTestrun,
-  TestrunStatus,
-} from './model/testrun-status';
+import { ResultOfTestrun, TestrunStatus } from './model/testrun-status';
 import {
   Adapters,
   SettingMissedError,
@@ -133,7 +129,8 @@ export class AppStore extends ComponentStore<AppComponentState> {
         return !(
           hasConnectionSettings === true &&
           hasDevices &&
-          (!systemStatus || systemStatus === StatusOfTestrun.Idle) &&
+          (!systemStatus ||
+            !this.testRunService.testrunInProgress(systemStatus)) &&
           isStatusLoaded === true &&
           !isAllDevicesOutdated
         );
