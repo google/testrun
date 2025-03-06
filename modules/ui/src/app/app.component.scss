@@ -37,19 +37,21 @@ $nav-width: 96px;
   flex-direction: column;
   background-color: colors.$surface-container-low;
   height: 100%;
-  gap: 8px;
+  gap: 40px;
   width: $nav-width;
   align-items: center;
+  box-sizing: border-box;
+  padding-top: 104px;
 }
 
 .nav-items-container {
-  height: calc(100% - #{variables.$nav-button-height});
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: start;
   gap: 4px;
+  flex-grow: 1;
 }
 
 .app-sidebar-button {
@@ -208,7 +210,6 @@ $nav-width: 96px;
 }
 
 app-version {
-  margin-top: auto;
   margin-bottom: 16px;
   max-width: 100%;
   width: $nav-width;
@@ -216,7 +217,16 @@ app-version {
   justify-content: center;
 }
 
-app-side-button-menu {
-  position: absolute;
-  top: 104px;
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  container-type: size;
+  container-name: app-root;
+}
+@container app-root (height < 600px) {
+  .app-sidebar {
+    gap: 4px;
+    padding-top: 82px;
+  }
 }
