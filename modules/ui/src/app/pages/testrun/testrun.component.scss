@@ -116,24 +116,30 @@
   align-self: flex-start;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   margin-left: 10px;
   position: absolute;
   left: 100%;
+  bottom: 30px;
 }
 
 .toolbar-tag {
-  background-color: colors.$primary;
-  color: colors.$white;
-  font-family: variables.$font-primary;
-  font-size: 8px;
+  display: flex;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 6px 16px;
+  justify-content: center;
+  align-items: center;
+  color: colors.$on-surface;
+  background: colors.$white;
+  border: 1px solid colors.$outline-variant;
+  border-radius: 8px;
+  font-family: variables.$font-text;
+  font-size: 14px;
   font-weight: 500;
-  height: 16px;
-  line-height: 16px;
-  letter-spacing: 0.6px;
-  text-align: center;
-  padding: 0 4px 0 4px;
-  border-radius: 2px;
+  line-height: 20px;
+  letter-spacing: 0;
+
   &:hover {
     cursor: pointer;
   }
