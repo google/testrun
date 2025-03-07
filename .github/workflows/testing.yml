@@ -30,7 +30,7 @@ jobs:
         if: ${{ always() }}
         with:
           if-no-files-found: error
-          name: reports_${{ github.run_id }}
+          name: test_tests_reports_${{ github.run_id }}
           path: local/devices
 
   testrun_baseline:
@@ -124,7 +124,7 @@ jobs:
         if: ${{ always() }}
         with:
           if-no-files-found: error
-          name: reports_${{ github.run_id }}
+          name: unit_reports_${{ github.run_id }}
           path: testing/unit/report/output
 
   pylint:
