@@ -47,7 +47,8 @@ export class DownloadReportZipComponent
   tooltip = inject(MatTooltip);
 
   @Input() profiles: Profile[] = [];
-  @Input() url: string | null | undefined = null;
+  @Input() report: string | null | undefined = null;
+  @Input() export: string | null | undefined = null;
 
   @HostListener('click', ['$event'])
   @HostListener('keydown.enter', ['$event'])
@@ -60,7 +61,8 @@ export class DownloadReportZipComponent
       ariaLabel: 'Download zip',
       data: {
         profiles: this.profiles,
-        url: this.url,
+        report: this.report,
+        export: this.export,
         isPilot: this.data?.device.test_pack === TestingType.Pilot,
       },
       autoFocus: true,

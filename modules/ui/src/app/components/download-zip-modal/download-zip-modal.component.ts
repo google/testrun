@@ -38,7 +38,8 @@ interface DialogData {
   profiles: Profile[];
   testrunStatus?: TestrunStatus;
   isTestingComplete?: boolean;
-  url: string | null;
+  report: string | null;
+  export: string | null;
   isPilot?: boolean;
 }
 
@@ -128,9 +129,12 @@ export class DownloadZipModalComponent
           );
           return;
         }
-        if (this.data.url != null && typeof result.profile === 'string') {
+        if (
+          (this.data.report != null || this.data.export != null) &&
+          typeof result.profile === 'string'
+        ) {
           this.testRunService.downloadZip(
-            this.getZipLink(this.data.url),
+            this.getZipLink(this.data),
             result.profile
           );
           if (this.data.isPilot) {
@@ -182,7 +186,7 @@ export class DownloadZipModalComponent
     return data.status;
   }
 
-  private getZipLink(reportURL: string): string {
-    return reportURL.replace('report', 'export');
+  private getZipLink(data: DialogData): string {
+    return data.export || data.report!.replace('report', 'export');
   }
 }

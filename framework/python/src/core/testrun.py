@@ -279,7 +279,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
 
       # Check if the report.json file exists
       if not os.path.isfile(report_json_file_path):
-        # Some error may have occured during this test run
+        # Some error may have occurred during this test run
         continue
 
       with open(report_json_file_path, encoding='utf-8') as report_json_file:
@@ -514,7 +514,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
                             detach=True,
                             ports={'80': 8080})
     except docker.errors.ImageNotFound as ie:
-      LOGGER.error('An error occured whilst starting the UI. ' +
+      LOGGER.error('An error occurred whilst starting the UI. ' +
                    'Please investigate and try again.')
       LOGGER.error(ie)
       sys.exit(1)
@@ -555,7 +555,7 @@ class Testrun:  # pylint: disable=too-few-public-methods
                                 '1883': 1883
                             })
     except docker.errors.ImageNotFound as ie:
-      LOGGER.error('An error occured whilst starting the websockets server. ' +
+      LOGGER.error('An error occurred whilst starting the websockets server. ' +
                    'Please investigate and try again.')
       LOGGER.error(ie)
       sys.exit(1)

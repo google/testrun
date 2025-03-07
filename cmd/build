@@ -45,7 +45,7 @@ fi
 if docker build -t testrun/ui -f modules/ui/ui.Dockerfile . ; then
   echo Successully built the user interface
 else
-  echo An error occured whilst building the user interface
+  echo An error occurred whilst building the user interface
   exit 1
 fi
 
@@ -54,7 +54,7 @@ echo Building websockets server
 if docker build -t testrun/ws -f modules/ws/ws.Dockerfile . ; then
   echo Successully built the web sockets server
 else
-  echo An error occured whilst building the websockets server
+  echo An error occurred whilst building the websockets server
   exit 1
 fi
 
@@ -66,7 +66,7 @@ for dir in modules/network/* ; do
   if docker build -f modules/network/$module/$module.Dockerfile -t testrun/$module . ; then
     echo Successfully built container for network $module
   else
-    echo An error occured whilst building container for network module $module
+    echo An error occurred whilst building container for network module $module
     exit 1
   fi
 done
@@ -79,7 +79,7 @@ for dir in modules/devices/* ; do
   if docker build -f modules/devices/$module/$module.Dockerfile -t testrun/$module . ; then
     echo Successfully built container for device module $module
   else
-    echo An error occured whilst building container for device module $module
+    echo An error occurred whilst building container for device module $module
     exit 1
   fi
 done
@@ -92,7 +92,7 @@ for dir in modules/test/* ; do
   if docker build -f modules/test/$module/$module.Dockerfile -t testrun/$module-test . ; then
     echo Successfully built container for test module $module
   else
-    echo An error occured whilst building container for test module $module
+    echo An error occurred whilst building container for test module $module
     exit 1
   fi
 done
