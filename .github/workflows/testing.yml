@@ -2,6 +2,7 @@ name: Testrun test suite
 permissions: {}
 
 on:
+  push:
   pull_request:
   schedule:
     - cron: '0 13 * * *'
@@ -25,6 +26,13 @@ jobs:
       - name: Run tests
         shell: bash {0}
         run: testing/tests/test_tests
+      - name: Upload test reports
+        uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
+        if: ${{ always() }}
+        with:
+          if-no-files-found: error
+          name: reports_${{ github.run_id }}
+          path: local/devices
 
   testrun_baseline:
     permissions: {}
