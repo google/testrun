@@ -128,7 +128,7 @@ def test_tests(results, test_matrix):
 def test_list_tests(capsys, results, test_matrix):
   """ List all tests done and categorise based on compliance """
 
-  # Collect all actual test results 9
+  # Collect all actual test results 10
   all_tests = set(
       itertools.chain.from_iterable(
           [collect_actual_results(results[x]) for x in results.keys()]))
