@@ -17,79 +17,75 @@
 @use 'node_modules/@angular/material/index' as mat;
 @use 'm3-theme' as *;
 @use 'colors';
+@use 'variables';
 
-$option-width: 170px;
-$option-height: 36px;
+.download-actions {
+  position: fixed;
+  right: 40px;
+  bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 4px;
+}
 
-.download-options-field {
-  width: $option-width;
-  background: mat.get-theme-color($light-theme, primary, 95);
+.download-button {
+  padding: 26px;
+  border-radius: variables.$corner-large;
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 28px;
+  height: 80px;
+  margin-top: 4px;
 
-  ::ng-deep.mat-mdc-text-field-wrapper {
-    padding: 0 16px;
+  mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
   }
+}
 
-  ::ng-deep.mat-mdc-form-field-subscript-wrapper {
-    display: none;
-  }
+.download-button.download-button-opened {
+  min-width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  padding: 16px;
 
-  ::ng-deep.mat-mdc-form-field-infix {
-    padding: 6px 0;
-    width: $option-width;
-    min-height: $option-height;
-  }
-
-  ::ng-deep.mat-mdc-select-placeholder {
-    color: mat.get-theme-color($light-theme, primary, 30);
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 20px;
-    letter-spacing: 0.25px;
-  }
-
-  ::ng-deep.mat-mdc-select-arrow {
-    color: mat.get-theme-color($light-theme, primary, 30);
-  }
-
-  ::ng-deep .mat-mdc-text-field-wrapper .mdc-notched-outline > * {
-    border-color: mat.get-theme-color($light-theme, primary, 95);
-  }
-
-  ::ng-deep
-    .mat-mdc-text-field-wrapper.mdc-text-field--focused
-    .mdc-notched-outline
-    > * {
-    border-color: #000000de;
-  }
-
-  &:has(.download-options-select[aria-expanded='true'])
-    ::ng-deep
-    .mat-mdc-text-field-wrapper.mdc-text-field--focused
-    .mdc-notched-outline
-    > * {
-    border: none;
-  }
-
-  ::ng-deep
-    .mat-mdc-text-field-wrapper.mdc-text-field--outlined:hover
-    .mdc-notched-outline
-    > * {
-    border: none;
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    margin: 0;
   }
 }
 
 .download-option {
-  ::ng-deep .mat-mdc-focus-indicator {
-    display: none;
+  display: flex;
+  height: 56px;
+  box-sizing: border-box;
+  padding: 16px 24px;
+  justify-content: flex-end;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 8px;
+  border-radius: 28px;
+  background: colors.$primary-container;
+  color: colors.$on-primary-container;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+
+  mat-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+    margin: 0;
   }
 }
 
-.download-option {
-  min-height: 32px;
-  color: colors.$grey-800;
-  &.zip app-download-report-zip {
-    display: flex;
-    align-items: center;
+button {
+  ::ng-deep .mat-focus-indicator {
+    display: none;
   }
 }

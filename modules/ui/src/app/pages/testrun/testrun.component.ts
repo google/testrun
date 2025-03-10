@@ -48,6 +48,7 @@ import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TestrunTableComponent } from './components/testrun-table/testrun-table.component';
 import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
+import { DownloadOptionsComponent } from './components/download-options/download-options.component';
 
 @Component({
   selector: 'app-progress',
@@ -68,6 +69,7 @@ import { TestrunStatusCardComponent } from './components/testrun-status-card/tes
     MatTooltipModule,
     TestrunTableComponent,
     TestrunStatusCardComponent,
+    DownloadOptionsComponent,
   ],
   providers: [
     LoaderService,
@@ -76,7 +78,6 @@ import { TestrunStatusCardComponent } from './components/testrun-status-card/tes
   ],
 })
 export class TestrunComponent implements OnInit, OnDestroy {
-  isOpenDownloadOptions: boolean = false;
   private readonly testRunService = inject(TestRunService);
   dialog = inject(MatDialog);
   private readonly focusManagerService = inject(FocusManagerService);
@@ -193,9 +194,5 @@ export class TestrunComponent implements OnInit, OnDestroy {
 
   resultIsEmpty(tests: TestsResponse | undefined) {
     return this.testrunStore.resultIsEmpty(tests);
-  }
-
-  openDownloadOptions(): void {
-    this.isOpenDownloadOptions = !this.isOpenDownloadOptions;
   }
 }

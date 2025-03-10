@@ -498,10 +498,12 @@ describe('TestrunComponent', () => {
         expect(startBtn).toBeNull();
       });
 
-      it('should have "Download" button', () => {
-        const downloadButton = compiled.querySelector('.download-button');
+      it('should have "Download" options', () => {
+        const downloadOptionsComp = compiled.querySelector(
+          'app-download-options'
+        );
 
-        expect(downloadButton).not.toBeNull();
+        expect(downloadOptionsComp).not.toBeNull();
       });
     });
 
