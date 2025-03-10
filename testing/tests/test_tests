@@ -47,7 +47,7 @@ sudo docker network create -d macvlan -o parent=endev0b endev0
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 # Build the Test Containers
-for container in $TEST_CONTAINERS; do
+for container in "${TEST_CONTAINERS[@]}"; do
   sudo docker build ./testing/docker/ci_test_device1/$container -t testrun/$container -f ./testing/docker/ci_test_device1/$container/Dockerfile
 done
 
