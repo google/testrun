@@ -72,28 +72,10 @@ limitations under the License.
         </mat-icon>
         Stop
       </button>
-      <button
+      <app-download-options
         *ngIf="data.report"
-        (click)="openDownloadOptions()"
-        class="download-button"
-        [class.download-button-opened]="isOpenDownloadOptions"
-        color="primary"
-        aria-label="Stop testrun"
-        mat-flat-button>
-        <mat-icon
-          *ngIf="!isOpenDownloadOptions"
-          fontSet="material-symbols-outlined"
-          class="filled">
-          download
-        </mat-icon>
-        <mat-icon
-          *ngIf="isOpenDownloadOptions"
-          fontSet="material-symbols-outlined"
-          class="filled">
-          close
-        </mat-icon>
-        {{ isOpenDownloadOptions ? '' : 'Download' }}
-      </button>
+        [data]="data"
+        [profiles]="vm.profiles"></app-download-options>
     </ng-container>
     <ng-container *ngIf="!data.started">
       <ng-container *ngTemplateOutlet="empty"></ng-container>
