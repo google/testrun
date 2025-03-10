@@ -18,11 +18,14 @@ set +o xtrace
 ip a
 TEST_DIR=/tmp/results
 MATRIX=testing/tests/test_tests.json
-BACNET_COMPLIANT_IMG="testrun/bacnet_compliant"
-DNS_COMPLIANT_IMG="testrun/dns_compliant"
-DNS_NON_COMPLIANT_IMG="testrun/dns_non_compliant"
-SERVICES_COMPLIANT_IMG="testrun/services_compliant"
-SERVICES_NON_COMPLIANT_IMG="testrun/services_non_compliant"
+
+TEST_CONTAINERS=(
+  bacnet_compliant
+  dns_compliant
+  dns_non_compliant
+  services_compliant
+  services_non_compliant
+)
 
 # Remove and recreate results directory
 rm -rf $TEST_DIR/
@@ -44,11 +47,9 @@ sudo docker network create -d macvlan -o parent=endev0b endev0
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 # Build the Test Containers
-sudo docker build ./testing/docker/ci_test_device1/bacnet_compliant -t $BACNET_COMPLIANT_IMG -f ./testing/docker/ci_test_device1/bacnet_compliant/Dockerfile
-sudo docker build ./testing/docker/ci_test_device1/dns_compliant -t $DNS_COMPLIANT_IMG -f ./testing/docker/ci_test_device1/dns_compliant/Dockerfile
-sudo docker build ./testing/docker/ci_test_device1/dns_non_compliant -t $DNS_NON_COMPLIANT_IMG -f ./testing/docker/ci_test_device1/dns_non_compliant/Dockerfile
-sudo docker build ./testing/docker/ci_test_device1/services_compliant -t $SERVICES_COMPLIANT_IMG -f ./testing/docker/ci_test_device1/services_compliant/Dockerfile
-sudo docker build ./testing/docker/ci_test_device1/services_non_compliant -t $SERVICES_NON_COMPLIANT_IMG -f ./testing/docker/ci_test_device1/services_non_compliant/Dockerfile
+for container in $TEST_CONTAINERS; do
+  sudo docker build ./testing/docker/ci_test_device1/$container -t testrun/$container -f ./testing/docker/ci_test_device1/$container/Dockerfile
+done
 
 # Copy configuration to testrun
 sudo cp testing/tests/system.json local/system.json
