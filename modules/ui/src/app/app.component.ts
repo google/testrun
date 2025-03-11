@@ -140,7 +140,7 @@ export class AppComponent implements AfterViewInit {
   menuItems: AddMenuItem[] = [
     {
       svgIcon: 'testrun_logo_small',
-      label: 'Create new Testrun',
+      label: 'Start Testing',
       description: 'Configure your testing tasks',
       onClick: this.navigateToRuntime,
       disabled$: this.appStore.testrunButtonDisabled$,
@@ -153,7 +153,7 @@ export class AppComponent implements AfterViewInit {
     },
     {
       icon: 'rule',
-      label: 'Create new profile',
+      label: 'Create new Risk profile',
       onClick: this.navigateToAddRiskAssessment,
       disabled$: of(false),
     },
