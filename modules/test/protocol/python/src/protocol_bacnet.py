@@ -97,13 +97,13 @@ class BACnet():
     return result, description
 
 
-  def validate_protocol_version(self, device_ip, device_id):
+  def validate_protocol_version(self, device_addr, device_id):
     LOGGER.info(f'Resolving protocol version for BACnet device: {device_id}')
     try:
       version = self.bacnet.read(
-          f'{device_ip} device {device_id} protocolVersion')
+          f'{device_addr} device {device_id} protocolVersion')
       revision = self.bacnet.read(
-          f'{device_ip} device {device_id} protocolRevision')
+          f'{device_addr} device {device_id} protocolRevision')
       protocol_version = f'{version}.{revision}'
       result = True
       result_description = f'Device uses BACnet version {protocol_version}'
