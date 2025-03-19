@@ -33,27 +33,27 @@
         {# Required result badges #}
         {% if test_results[i]['required_result'] == "Required" %}
           <div class="result-test-label result-test-required-result result-test-required-result-required" style="left: 7in;">
-            <span class="material-symbols-outlined">asterisk</span>
+            <span class="material-symbols-outlined"></span>
             <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
           </div>
         {% elif test_results[i]['required_result'] == "Required if Applicable" %}
           <div class="result-test-label result-test-required-result result-test-required-result-required-if-applicable" style="left: 7in;">
-            <span class="material-symbols-outlined">asterisk</span>
+            <span class="material-symbols-outlined"></span>
             <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
           </div>
         {% elif test_results[i]['required_result'] == "Informational" %}
           <div class="result-test-label result-test-required-result result-test-required-result-informational" style="left: 7in;">
-            <span class="material-symbols-outlined">info_i</span>
+            <span class="material-symbols-outlined"></span>
             <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
           </div>
         {% elif test_results[i]['required_result'] == "Roadmap" %}
           <div class="result-test-label result-test-required-result result-test-required-result-roadmap" style="left: 7in;">
-            <span class="material-symbols-outlined">road</span>
+            <span class="material-symbols-outlined"></span>
             <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
           </div>
         {% elif test_results[i]['required_result'] == "Recommended" %}
           <div class="result-test-label result-test-required-result result-test-required-result-recommended" style="left: 7in;">
-            <span class="material-symbols-outlined">thumb_up</span>
+            <span class="material-symbols-outlined"></span>
             <span class="result-test-required-result-text">{{ test_results[i]['required_result'] }}</span>
           </div>
         {% else %}
