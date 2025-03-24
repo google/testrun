@@ -50,7 +50,7 @@ export class HelpTipComponent implements OnInit {
     this.updateTipPosition(this.target());
   }
 
-  private updateTipPosition(target: HTMLElement | undefined | null) {
+  updateTipPosition(target: HTMLElement | undefined | null) {
     if (!target) {
       return;
     }

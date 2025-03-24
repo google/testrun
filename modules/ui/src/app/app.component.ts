@@ -20,7 +20,8 @@ import {
   ElementRef,
   viewChild,
   inject,
-  ViewChild, ChangeDetectorRef,
+  ViewChild,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -116,6 +117,7 @@ export class AppComponent implements AfterViewInit {
   private store = inject<Store<AppState>>(Store);
   private readonly focusManagerService = inject(FocusManagerService);
   private testRunService = inject(TestRunService);
+  private cdr = inject(ChangeDetectorRef);
   appStore = inject(AppStore);
 
   public readonly CalloutType = CalloutType;
@@ -168,7 +170,7 @@ export class AppComponent implements AfterViewInit {
     },
   ];
 
-  constructor(private cdr: ChangeDetectorRef) {
+  constructor() {
     this.appStore.getDevices();
     this.appStore.getRiskProfiles();
     this.appStore.getSystemStatus();
@@ -215,12 +217,6 @@ export class AppComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // setTimeout(() => {
-    //   this.settingTipTarget = this.settingButton._elementRef.nativeElement;
-    //   this.deviceTipTarget = document.querySelector(
-    //     '.app-sidebar-button.app-sidebar-button-devices'
-    //   ) as HTMLElement;
-    // }, 0);
     this.settingTipTarget = this.settingButton._elementRef.nativeElement;
     this.deviceTipTarget = document.querySelector(
       '.app-sidebar-button.app-sidebar-button-devices'

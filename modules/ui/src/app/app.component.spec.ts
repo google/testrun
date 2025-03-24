@@ -76,7 +76,7 @@ import { SpinnerComponent } from './components/spinner/spinner.component';
 import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
 import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
 import { VersionComponent } from './components/version/version.component';
-import {device, MOCK_MODULES} from './mocks/device.mock';
+import { MOCK_MODULES } from './mocks/device.mock';
 
 const windowMock = {
   location: {
@@ -84,7 +84,7 @@ const windowMock = {
   },
 };
 
-fdescribe('AppComponent', () => {
+describe('AppComponent', () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
   let compiled: HTMLElement;
@@ -367,32 +367,92 @@ fdescribe('AppComponent', () => {
     });
   });
 
-  describe('Callout component visibility', () => {
+  describe('Help tip component visibility', () => {
     describe('with no connection settings', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasConnectionSettings, false);
         fixture.detectChanges();
       });
 
-      it('should have callout component with "Step 1" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
+      it('should have help tip component with "Step 1" text', () => {
+        const helpTip = compiled.querySelector('app-help-tip');
+        const helpTipTitle = compiled.querySelector('app-help-tip .title');
+        const helpTipContent = helpTipTitle?.innerHTML.trim();
 
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('Step 1');
+        expect(helpTip).toBeTruthy();
+        expect(helpTipContent).toContain('Step 1');
       });
 
-      it('should have callout content with "System settings" link ', () => {
-        const calloutLinkEl = compiled.querySelector(
-          '.callout-action-link'
+      it('should have help tip content with "Go to Settings" link ', () => {
+        const helpTipLinkEl = compiled.querySelector(
+          '.tip-action-link'
         ) as HTMLAnchorElement;
-        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+        const helpTipLinkContent = helpTipLinkEl.innerHTML.trim();
 
-        expect(calloutLinkEl).toBeTruthy();
-        expect(calloutLinkContent).toContain('System settings');
+        expect(helpTipLinkEl).toBeTruthy();
+        expect(helpTipLinkContent).toContain('Go to Settings');
       });
     });
 
+    describe('with no devices set', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasDevices, false);
+        fixture.detectChanges();
+      });
+
+      it('should have helpTip component', () => {
+        const helpTip = compiled.querySelector('app-help-tip');
+
+        expect(helpTip).toBeTruthy();
+      });
+
+      it('should have help tip component with "Step 2" text', () => {
+        const helpTipTitle = compiled.querySelector('app-help-tip .title');
+        const helpTipTitleContent = helpTipTitle?.innerHTML.trim();
+
+        expect(helpTipTitleContent).toContain('Step 2');
+      });
+
+      it('should have help tip content with "Create Device" link ', () => {
+        const helpTipLinkEl = compiled.querySelector(
+          '.tip-action-link'
+        ) as HTMLAnchorElement;
+        const helpTipLinkContent = helpTipLinkEl.innerHTML.trim();
+
+        expect(helpTipLinkEl).toBeTruthy();
+        expect(helpTipLinkContent).toContain('Device');
+      });
+
+      keyboardCases.forEach(testCase => {
+        it(`should navigate to the device-repository on keydown ${testCase.name} "Create Device" link`, fakeAsync(() => {
+          const helpTipLinkEl = compiled.querySelector(
+            '.tip-action-link'
+          ) as HTMLAnchorElement;
+
+          helpTipLinkEl.dispatchEvent(testCase.event);
+          flush();
+
+          expect(router.url).toBe(Routes.Devices);
+        }));
+      });
+
+      it('should navigate to the device-repository on click "Create a Device" link', fakeAsync(() => {
+        const helpTipLinkEl = compiled.querySelector(
+          '.tip-action-link'
+        ) as HTMLAnchorElement;
+
+        helpTipLinkEl.click();
+        flush();
+
+        expect(router.url).toBe(Routes.Devices);
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setIsOpenAddDevice({ isOpenAddDevice: true })
+        );
+      }));
+    });
+  });
+
+  describe('Callout component visibility', () => {
     describe('with system status as "Idle"', () => {
       beforeEach(() => {
         component.appStore.updateIsStatusLoaded(true);
@@ -484,64 +544,6 @@ fdescribe('AppComponent', () => {
         expect(callout).toBeTruthy();
         expect(calloutLinkContent).toContain('Create risk Assessment');
       });
-    });
-
-    describe('with no devices setted', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectHasDevices, false);
-        fixture.detectChanges();
-      });
-
-      it('should have callout component', () => {
-        const callout = compiled.querySelector('app-callout');
-
-        expect(callout).toBeTruthy();
-      });
-
-      it('should have callout component with "Step 2" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('Step 2');
-      });
-
-      it('should have callout content with "Create a Device" link ', () => {
-        const calloutLinkEl = compiled.querySelector(
-          '.callout-action-link'
-        ) as HTMLAnchorElement;
-        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
-
-        expect(calloutLinkEl).toBeTruthy();
-        expect(calloutLinkContent).toContain('Devices');
-      });
-
-      keyboardCases.forEach(testCase => {
-        it(`should navigate to the device-repository on keydown ${testCase.name} "Create a Device" link`, fakeAsync(() => {
-          const calloutLinkEl = compiled.querySelector(
-            '.callout-action-link'
-          ) as HTMLAnchorElement;
-
-          calloutLinkEl.dispatchEvent(testCase.event);
-          flush();
-
-          expect(router.url).toBe(Routes.Devices);
-        }));
-      });
-
-      it('should navigate to the device-repository on click "Create a Device" link', fakeAsync(() => {
-        const calloutLinkEl = compiled.querySelector(
-          '.callout-action-link'
-        ) as HTMLAnchorElement;
-
-        calloutLinkEl.click();
-        flush();
-
-        expect(router.url).toBe(Routes.Devices);
-        expect(store.dispatch).toHaveBeenCalledWith(
-          setIsOpenAddDevice({ isOpenAddDevice: true })
-        );
-      }));
     });
 
     describe('with devices setted but without systemStatus data', () => {

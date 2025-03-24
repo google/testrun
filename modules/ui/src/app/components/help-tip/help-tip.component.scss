@@ -28,7 +28,7 @@
 .tip-container {
   position: relative;
   border-radius: 28px;
-  background: #0b57d0;
+  background: colors.$primary;
   color: colors.$white;
   box-shadow:
     0px 4px 8px 3px rgba(0, 0, 0, 0.15),
@@ -45,7 +45,7 @@
   border-radius: 4px;
   height: 20px;
   width: 20px;
-  background: #0b57d0;
+  background: colors.$primary;
   box-sizing: border-box;
   transform: rotate(45deg) translate(-50%);
 }
@@ -68,7 +68,7 @@
 }
 
 .title {
-  font-family: 'Google Sans Text';
+  font-family: variables.$font-text;
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;
@@ -84,7 +84,7 @@
 
 .tip-content {
   padding: 0 24px;
-  font-family: 'Google Sans Text';
+  font-family: variables.$font-text;
   font-size: 14px;
   line-height: 20px;
 }
@@ -99,7 +99,7 @@
     padding: 10px 24px;
     text-decoration: none;
     cursor: pointer;
-    font-family: 'Google Sans Text';
+    font-family: variables.$font-text;
     font-size: 14px;
     font-weight: 500;
     line-height: 20px;
