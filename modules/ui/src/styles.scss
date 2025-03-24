@@ -206,7 +206,8 @@ body {
   }
 }
 
-.app-toolbar-button.app-sidebar-button-active {
+.app-toolbar-button.app-sidebar-button-active,
+body:has(app-help-tip) .app-toolbar-button-help-tips {
   .mat-mdc-button-persistent-ripple::before {
     opacity: 1;
     background: colors.$light-grey;

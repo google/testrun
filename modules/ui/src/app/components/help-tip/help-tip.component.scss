@@ -1,0 +1,107 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@use '@angular/material' as mat;
+@use 'm3-theme' as *;
+@use 'colors';
+@use 'variables';
+
+.tip {
+  position: absolute;
+  z-index: 100;
+  width: 256px;
+  box-sizing: border-box;
+}
+
+.tip-container {
+  position: relative;
+  border-radius: 28px;
+  background: colors.$primary;
+  color: colors.$white;
+  box-shadow:
+    0px 4px 8px 3px rgba(0, 0, 0, 0.15),
+    0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+
+  p {
+    margin: 0;
+  }
+}
+
+.tip-container::before {
+  content: '';
+  position: absolute;
+  border-radius: 4px;
+  height: 20px;
+  width: 20px;
+  background: colors.$primary;
+  box-sizing: border-box;
+  transform: rotate(45deg) translate(-50%);
+}
+
+.tip-container.top::before {
+  top: 0;
+  left: 50%;
+}
+
+.tip-container.left::before {
+  top: 50%;
+  left: 0;
+}
+
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 4px 4px 0 24px;
+}
+
+.title {
+  font-family: variables.$font-text;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.close-button {
+  margin-bottom: 4px;
+
+  mat-icon {
+    color: colors.$white;
+  }
+}
+
+.tip-content {
+  padding: 0 24px;
+  font-family: variables.$font-text;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.tip-action-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 12px 14px 24px;
+
+  .tip-action-link {
+    display: inline-block;
+    padding: 10px 24px;
+    text-decoration: none;
+    cursor: pointer;
+    font-family: variables.$font-text;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+  }
+}

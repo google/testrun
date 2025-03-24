@@ -20,6 +20,8 @@ import {
   ElementRef,
   viewChild,
   inject,
+  ViewChild,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -46,7 +48,7 @@ import { BypassComponent } from './components/bypass/bypass.component';
 import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
 import { SpinnerComponent } from './components/spinner/spinner.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatButtonModule } from '@angular/material/button';
+import { MatButton, MatButtonModule } from '@angular/material/button';
 import { VersionComponent } from './components/version/version.component';
 import { MatSelectModule } from '@angular/material/select';
 import { WifiComponent } from './components/wifi/wifi.component';
@@ -57,6 +59,8 @@ import { CommonModule } from '@angular/common';
 import { SideButtonMenuComponent } from './components/side-button-menu/side-button-menu.component';
 import { Observable } from 'rxjs/internal/Observable';
 import { of } from 'rxjs/internal/observable/of';
+import { HelpTipComponent } from './components/help-tip/help-tip.component';
+import { HelpTips } from './model/tip-config';
 
 export interface AddMenuItem {
   icon?: string;
@@ -96,6 +100,7 @@ const QUALIFICATION_URL = '/assets/icons/qualification.svg';
     BypassComponent,
     VersionComponent,
     CalloutComponent,
+    HelpTipComponent,
     ShutdownAppComponent,
     WifiComponent,
     TestingCompleteComponent,
@@ -112,15 +117,21 @@ export class AppComponent implements AfterViewInit {
   private store = inject<Store<AppState>>(Store);
   private readonly focusManagerService = inject(FocusManagerService);
   private testRunService = inject(TestRunService);
+  private cdr = inject(ChangeDetectorRef);
   appStore = inject(AppStore);
 
   public readonly CalloutType = CalloutType;
   public readonly StatusOfTestrun = StatusOfTestrun;
+  public readonly HelpTips = HelpTips;
   public readonly Routes = Routes;
   viewModel$ = this.appStore.viewModel$;
 
   readonly riskAssessmentLink = viewChild<ElementRef>('riskAssessmentLink');
   private skipCount = 0;
+  @ViewChild('settingButton', { static: false }) settingButton!: MatButton;
+  settingTipTarget!: HTMLElement;
+  deviceTipTarget!: HTMLElement;
+  isClosedTip = false;
 
   navigateToRuntime = () => {
     this.route.navigate([Routes.Testing]);
@@ -206,6 +217,11 @@ export class AppComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.settingTipTarget = this.settingButton._elementRef.nativeElement;
+    this.deviceTipTarget = document.querySelector(
+      '.app-sidebar-button.app-sidebar-button-devices'
+    ) as HTMLElement;
+
     this.viewModel$
       .pipe(
         filter(({ isStatusLoaded }) => isStatusLoaded === true),
@@ -217,6 +233,8 @@ export class AppComponent implements AfterViewInit {
           this.skipCount = 1;
         }
       });
+
+    this.cdr.detectChanges();
   }
 
   get isRiskAssessmentRoute(): boolean {
@@ -241,6 +259,10 @@ export class AppComponent implements AfterViewInit {
     this.route.navigate([Routes.Settings]).then(() => {
       this.appStore.setFocusOnPage();
     });
+  }
+
+  onCLoseTip(isClosed: boolean): void {
+    this.isClosedTip = isClosed;
   }
   consentShown() {
     this.appStore.setContent();

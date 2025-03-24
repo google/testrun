@@ -84,6 +84,15 @@ limitations under the License.
         <span class="spacer"></span>
         <div class="app-bar-buttons">
           <button
+            class="app-toolbar-button app-toolbar-button-help-tips"
+            mat-icon-button
+            aria-label="Help tips"
+            matTooltip="Help tips"
+            (click)="onCLoseTip(false)">
+            <mat-icon>help</mat-icon>
+          </button>
+          <button
+            #settingButton
             class="app-toolbar-button app-toolbar-button-general-settings"
             mat-icon-button
             aria-label="System settings"
@@ -131,6 +140,21 @@ limitations under the License.
     *ngIf="vm.isTestingComplete"
     [data]="vm.testrunStatus"
     [profiles]="vm.riskProfiles"></app-testing-complete>
+  <ng-container
+    *ngTemplateOutlet="
+      tips;
+      context: {
+        systemStatus: vm.systemStatus,
+        calloutState: vm.calloutState,
+        hasConnectionSettings: vm.hasConnectionSettings,
+        hasRiskProfiles: vm.hasRiskProfiles,
+        isAllDevicesOutdated: vm.isAllDevicesOutdated,
+        isStatusLoaded: vm.isStatusLoaded,
+        reports: vm.reports,
+        hasDevices: vm.hasDevices,
+      }
+    ">
+  </ng-container>
 </ng-container>
 
 <ng-template
@@ -204,26 +228,6 @@ limitations under the License.
     </app-callout>
     <app-callout
       [type]="CalloutType.Info"
-      *ngIf="hasConnectionSettings === false"
-      action="System settings"
-      (onAction)="navigateToSettings()">
-      Step 1: To perform a device test, please, select ports in System settings
-      panel.
-    </app-callout>
-    <app-callout
-      [type]="CalloutType.Info"
-      *ngIf="
-        hasConnectionSettings === true &&
-        (hasDevices === false ||
-          (!!calloutState.get('outdated_devices_callout') &&
-            isAllDevicesOutdated))
-      "
-      action="Devices"
-      (onAction)="navigateToAddDevice()">
-      Step 2: To perform a device test please Create a Device first.
-    </app-callout>
-    <app-callout
-      [type]="CalloutType.Info"
       *ngIf="
         hasConnectionSettings === true &&
         hasDevices &&
@@ -252,5 +256,40 @@ limitations under the License.
       The device is now being tested. Why not take the time to complete the
       device Risk Assessment questionnaire?
     </app-callout>
+  </div>
+</ng-template>
+
+<ng-template
+  #tips
+  let-systemStatus="systemStatus"
+  let-calloutState="calloutState"
+  let-hasConnectionSettings="hasConnectionSettings"
+  let-isAllDevicesOutdated="isAllDevicesOutdated"
+  let-isStatusLoaded="isStatusLoaded"
+  let-reports="reports"
+  let-hasRiskProfiles="hasRiskProfiles"
+  let-hasDevices="hasDevices">
+  <div class="tips-container">
+    <app-help-tip
+      *ngIf="hasConnectionSettings === false"
+      [class.closed-tip]="isClosedTip"
+      [data]="HelpTips.step1"
+      [target]="settingTipTarget"
+      (onCLoseTip)="onCLoseTip($event)"
+      (onAction)="navigateToSettings()">
+    </app-help-tip>
+    <app-help-tip
+      *ngIf="
+        hasConnectionSettings === true &&
+        (hasDevices === false ||
+          (!!calloutState.get('outdated_devices_callout') &&
+            isAllDevicesOutdated))
+      "
+      [class.closed-tip]="isClosedTip"
+      [data]="HelpTips.step2"
+      [target]="deviceTipTarget"
+      (onCLoseTip)="onCLoseTip($event)"
+      (onAction)="navigateToAddDevice()">
+    </app-help-tip>
   </div>
 </ng-template>
