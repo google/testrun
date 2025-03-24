@@ -333,17 +333,24 @@ describe('AppComponent', () => {
 
   it('should have version', () => {
     fixture.detectChanges();
+    component.ngAfterViewInit();
+    fixture.detectChanges();
     const version = compiled.querySelector('app-version');
+    fixture.detectChanges();
 
     expect(version).toBeTruthy();
   });
 
-  it('should internet icon', () => {
+  it('should internet icon', fakeAsync(() => {
+    tick(200);
     fixture.detectChanges();
+    // await fixture.whenStable();
+    tick(200);
+    // await component.ngAfterViewInit();
     const internet = compiled.querySelector('app-wifi');
 
     expect(internet).toBeTruthy();
-  });
+  }));
 
   describe('Testing complete', () => {
     beforeEach(() => {

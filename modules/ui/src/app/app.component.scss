@@ -105,7 +105,8 @@ $nav-width: 96px;
   min-width: 24px;
 }
 
-.app-sidebar-button-active {
+.app-sidebar-button-active,
+:host:has(app-help-tip) .app-toolbar-button-help-tips {
   .material-symbols-outlined {
     font-variation-settings:
       'FILL' 1,
@@ -229,4 +230,8 @@ app-version {
     gap: 4px;
     padding-top: 82px;
   }
+}
+
+.closed-tip {
+  display: none;
 }
