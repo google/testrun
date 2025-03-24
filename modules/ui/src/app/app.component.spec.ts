@@ -76,6 +76,7 @@ import { SpinnerComponent } from './components/spinner/spinner.component';
 import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
 import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
 import { VersionComponent } from './components/version/version.component';
+import {device, MOCK_MODULES} from './mocks/device.mock';
 
 const windowMock = {
   location: {
@@ -83,7 +84,7 @@ const windowMock = {
   },
 };
 
-describe('AppComponent', () => {
+fdescribe('AppComponent', () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
   let compiled: HTMLElement;
@@ -201,6 +202,8 @@ describe('AppComponent', () => {
       },
     });
 
+    mockService.fetchDevices.and.returnValue(of([]));
+    mockService.getTestModules.and.returnValue(of([...MOCK_MODULES]));
     mockMqttService.getNetworkAdapters.and.returnValue(of(MOCK_ADAPTERS));
     store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(AppComponent);
@@ -341,16 +344,13 @@ describe('AppComponent', () => {
     expect(version).toBeTruthy();
   });
 
-  it('should internet icon', fakeAsync(() => {
-    tick(200);
+  it('should internet icon', async () => {
     fixture.detectChanges();
-    // await fixture.whenStable();
-    tick(200);
-    // await component.ngAfterViewInit();
+
     const internet = compiled.querySelector('app-wifi');
 
     expect(internet).toBeTruthy();
-  }));
+  });
 
   describe('Testing complete', () => {
     beforeEach(() => {

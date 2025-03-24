@@ -20,7 +20,7 @@ import {
   ElementRef,
   viewChild,
   inject,
-  ViewChild,
+  ViewChild, ChangeDetectorRef,
 } from '@angular/core';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -168,7 +168,7 @@ export class AppComponent implements AfterViewInit {
     },
   ];
 
-  constructor() {
+  constructor(private cdr: ChangeDetectorRef) {
     this.appStore.getDevices();
     this.appStore.getRiskProfiles();
     this.appStore.getSystemStatus();
@@ -237,6 +237,8 @@ export class AppComponent implements AfterViewInit {
           this.skipCount = 1;
         }
       });
+
+    this.cdr.detectChanges();
   }
 
   get isRiskAssessmentRoute(): boolean {
