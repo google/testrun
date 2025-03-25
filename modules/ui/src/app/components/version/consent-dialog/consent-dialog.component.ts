@@ -26,7 +26,6 @@ import { CalloutType } from '../../../model/callout-type';
 import { NgIf } from '@angular/common';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
-import { FocusManagerService } from '../../../services/focus-manager.service';
 import { timer } from 'rxjs';
 
 type DialogData = {
@@ -48,7 +47,6 @@ type DialogData = {
   styleUrl: './consent-dialog.component.scss',
 })
 export class ConsentDialogComponent {
-  private readonly focusManagerService = inject(FocusManagerService);
   dialogRef = inject<MatDialogRef<ConsentDialogComponent>>(MatDialogRef);
   data = inject<DialogData>(MAT_DIALOG_DATA);
 
@@ -62,7 +60,12 @@ export class ConsentDialogComponent {
     };
     this.dialogRef.close(dialogResult);
     timer(100).subscribe(() => {
-      this.focusManagerService.focusFirstElementInContainer();
+      const versionButton = window.document.querySelector(
+        '.version-content'
+      ) as HTMLButtonElement;
+      if (versionButton) {
+        versionButton.focus();
+      }
     });
   }
 }
