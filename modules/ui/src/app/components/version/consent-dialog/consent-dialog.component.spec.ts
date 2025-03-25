@@ -30,20 +30,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { of } from 'rxjs';
 import { NEW_VERSION, VERSION } from '../../../mocks/version.mock';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { FocusManagerService } from '../../../services/focus-manager.service';
-import SpyObj = jasmine.SpyObj;
 
 describe('ConsentDialogComponent', () => {
   let component: ConsentDialogComponent;
   let fixture: ComponentFixture<ConsentDialogComponent>;
   let compiled: HTMLElement;
-  let mockFocusManagerService: SpyObj<FocusManagerService>;
 
   beforeEach(() => {
-    mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
-      'focusFirstElementInContainer',
-    ]);
-
     TestBed.configureTestingModule({
       imports: [
         ConsentDialogComponent,
@@ -60,7 +53,6 @@ describe('ConsentDialogComponent', () => {
           },
         },
         { provide: MAT_DIALOG_DATA, useValue: {} },
-        { provide: FocusManagerService, useValue: mockFocusManagerService },
       ],
     });
     fixture = TestBed.createComponent(ConsentDialogComponent);
@@ -117,12 +109,19 @@ describe('ConsentDialogComponent', () => {
   });
 
   it('should set focus to first focusable elem when close dialog', fakeAsync(() => {
+    const button = document.createElement('BUTTON');
+    button.classList.add('version-content');
+    document.querySelector('body')?.appendChild(button);
+
+    const versionButton = window.document.querySelector(
+      '.version-content'
+    ) as HTMLButtonElement;
+    const buttonFocusSpy = spyOn(versionButton, 'focus');
+
     component.confirm(true);
     tick(100);
 
-    expect(
-      mockFocusManagerService.focusFirstElementInContainer
-    ).toHaveBeenCalled();
+    expect(buttonFocusSpy).toHaveBeenCalled();
   }));
 
   describe('with new version available', () => {
