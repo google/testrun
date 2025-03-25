@@ -557,3 +557,18 @@ button:not(.mat-mdc-button-disabled) {
     )
   );
 }
+button.mat-mdc-icon-button,
+button.mat-mdc-button,
+button.mdc-button--unelevated,
+button.mat-mdc-fab {
+  .mat-focus-indicator {
+    display: none;
+  }
+}
+
+button.mat-mdc-fab {
+  &:focus-visible {
+    outline: none;
+    border: 1px solid black;
+  }
+}
