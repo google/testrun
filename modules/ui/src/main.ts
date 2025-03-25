@@ -45,7 +45,7 @@ bootstrapApplication(AppComponent, {
   providers: [
     importProvidersFrom(
       NoopAnimationsModule,
-      RouterModule.forRoot(routes),
+      RouterModule.forRoot(routes, { useHash: true }),
       StoreModule.forRoot({ [appFeatureKey]: rootReducer }),
       EffectsModule.forRoot([AppEffects]),
       MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
