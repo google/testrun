@@ -49,7 +49,7 @@ export const routes: Routes = [
   {
     path: 'testing',
     component: TestrunComponent,
-    title: 'Testrun',
+    title: 'Testrun - Testing',
   },
   {
     path: 'devices',
