@@ -38,6 +38,7 @@ import { QuestionFormat } from '../model/question';
 
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
+export const EXPORT = '/export';
 
 export const UNAVAILABLE_VERSION = {
   installed_version: 'v?.?',
