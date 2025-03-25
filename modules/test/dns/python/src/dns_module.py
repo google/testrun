@@ -269,8 +269,10 @@ class DNSModule(TestModule):
         LOGGER.info('DNS traffic detected only to configured DHCP DNS server')
         description = 'DNS traffic detected only to DHCP provided server'
     else:
-      LOGGER.info('No DNS traffic detected from the device to the DHCP DNS server')
-      description = 'No DNS traffic detected from the device to the DHCP DNS server'
+      LOGGER.info(
+        'No DNS traffic detected from the device to the DHCP DNS server')
+      description = '' \
+      'No DNS traffic detected from the device to the DHCP DNS server'
     return 'Informational', description
 
   def _dns_network_hostname_resolution(self):
