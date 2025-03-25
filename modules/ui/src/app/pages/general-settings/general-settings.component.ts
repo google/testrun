@@ -186,6 +186,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       this.settingForm.markAllAsTouched();
     } else {
       this.createSystemConfig();
+      this.settingForm.markAsPristine();
     }
   }
 
