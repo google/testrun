@@ -257,12 +257,14 @@ class ServicesModule(TestModule):
     port['number'] = port_json['@portid']
     port['tcp_udp'] = port_json['@protocol']
     port['state'] = port_json['state']['@state']
-    port['service'] = port_json['service']['@name']
+    port['service'] = 'unknown'
     port['version'] = ''
-    if '@version' in port_json['service']:
-      port['version'] += port_json['service']['@version']
-    if '@extrainfo' in port_json['service']:
-      port['version'] += ' ' + port_json['service']['@extrainfo']
+    if 'service' in port_json:
+      port['service'] = port_json['service']['@name']
+      if '@version' in port_json['service']:
+        port['version'] += port_json['service']['@version']
+      if '@extrainfo' in port_json['service']:
+        port['version'] += ' ' + port_json['service']['@extrainfo']
     port_result = {port_json['@portid'] + port['tcp_udp']: port}
     return port_result
 

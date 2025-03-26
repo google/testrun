@@ -14,12 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o xtrace
+set +o xtrace
 ip a
 TEST_DIR=/tmp/results
-TESTRUN_DIR=/usr/local/testrun
 MATRIX=testing/tests/test_tests.json
 
+TEST_CONTAINERS=(
+  bacnet_compliant
+  dns_compliant
+  dns_non_compliant
+  services_compliant
+  services_non_compliant
+)
+
+# Remove and recreate results directory
 rm -rf $TEST_DIR/
 mkdir -p $TEST_DIR
 
@@ -27,9 +35,6 @@ mkdir -p $TEST_DIR
 sudo apt-get update
 sudo apt-get install -y openvswitch-common openvswitch-switch tcpdump jq moreutils coreutils isc-dhcp-client
 
-pip3 install pytest==7.4.4
-
-# Start OVS
 # Setup device network
 sudo ip link add dev xyz type dummy
 sudo ip link add dev endev0a type veth peer name endev0b
@@ -38,35 +43,39 @@ sudo ip link set dev endev0b up
 sudo docker network remove endev0
 sudo docker network create -d macvlan -o parent=endev0b endev0
 
+# Start OVS
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
-# Build Test Container
-sudo docker build ./testing/docker/ci_test_device1 -t ci_test_device1 -f  ./testing/docker/ci_test_device1/Dockerfile
+# Build the Test Containers
+for container in "${TEST_CONTAINERS[@]}"; do
+  sudo docker build ./testing/docker/ci_test_device1/$container -t testrun/$container -f ./testing/docker/ci_test_device1/$container/Dockerfile
+done
 
 # Copy configuration to testrun
-sudo cp testing/tests/system.json $TESTRUN_DIR/local/system.json
+sudo cp testing/tests/system.json local/system.json
 
 # Copy device configs to testrun
-sudo cp -r testing/device_configs/* $TESTRUN_DIR/local/devices
+sudo cp -r testing/device_configs/* local/devices
 
+# Extract tester information from the JSON file
 TESTERS=$(jq -r 'keys[]' $MATRIX)
 for tester in $TESTERS; do
-  if [ -n $1 ] && [ $1 != $tester ]; then
-    continue
-  fi
+
+  # Log file paths
   testrun_log=$TEST_DIR/${tester}_testrun.log
   device_log=$TEST_DIR/${tester}_device.log
 
+  # Extract details from JSON
   image=$(jq -r .$tester.image $MATRIX)
   ethmac=$(jq -r .$tester.ethmac $MATRIX)
-  args=$(jq -r .$tester.args $MATRIX)
 
+  # Start the testrun
   touch $testrun_log
-  sudo timeout 900 testrun --single-intf --no-ui > $testrun_log 2>&1 &
+  sudo timeout 2400 bin/testrun --single-intf --no-ui --target $ethmac -fw 1.0 > $testrun_log 2>&1 &
   TPID=$!
 
   # Time to wait for testrun to be ready
-  WAITING=700
+  WAITING=750
 
   for i in `seq 1 $WAITING`; do
     tail -1 $testrun_log
@@ -76,7 +85,7 @@ for tester in $TESTERS; do
 
       if [[ ! -d /proc/$TPID ]]; then
           cat $testrun_log
-          echo "Error encountered starting test run"
+          echo "Error encountered starting testrun"
           exit 1
       fi
     
@@ -89,10 +98,14 @@ for tester in $TESTERS; do
       exit 1
   fi
 
-  # helps unclean exits when running locally
-  sudo docker stop $tester && sudo docker rm $tester
-  
-  # Load Test Container
+  # Check if container is running before trying to stop and remove it
+  if sudo docker ps -a --format '{{.Names}}' | grep -Eq "^${tester}\$"; then
+    sudo docker stop $tester && sudo docker rm $tester
+  fi
+
+  echo Running container $tester
+
+  # Run the test container
   sudo docker run -d \
     --network=endev0 \
     --mac-address=$ethmac \
@@ -100,8 +113,9 @@ for tester in $TESTERS; do
     -v /tmp:/out \
     --privileged \
     --name=$tester \
-    ci_test_device1 $args
+    $image
   
+  # Wait for test completion
   WAITING=600
   for i in `seq 1 $WAITING`; do
     tail -1 $testrun_log
@@ -117,22 +131,17 @@ for tester in $TESTERS; do
       sleep 1
     done
 
-
-  # Following line indicates that tests are completed but wait till it exits
-  # Completed running test modules on device with mac addr 7e:41:12:d2:35:6a
-  # Change this line! - LOGGER.info(f"""Completed running test modules on device
-  #          with mac addr {device.mac_addr}""")
-
-  #more runtime/network/*.log | cat 
   sudo docker logs $tester | cat 
   sudo docker kill $tester && sudo docker rm $tester
+  echo Stopping container $tester
 
-  cp $TESTRUN_DIR/runtime/test/${ethmac//:/}/report.json $TEST_DIR/$tester.json
+  cp runtime/test/${ethmac//:/}/report.json $TEST_DIR/$tester.json
   more $TEST_DIR/$tester.json | cat 
   more $testrun_log | cat 
 
 done
 
-pytest -v testing/tests/test_tests.py
+# Needs to be sudo because this invokes bin/testrun 
+sudo venv/bin/python3 -m pytest -v testing/tests/test_tests.py
 
 exit $?
