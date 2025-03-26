@@ -109,7 +109,8 @@ limitations under the License.
           !isFormValues ||
           vm.isLessThanOneInterface ||
           settingsDisable ||
-          settingForm.pristine
+          (settingForm.pristine &&
+            (analyticsForm.pristine || !optOutHasChanges))
         ">
         Save
       </button>
@@ -171,8 +172,8 @@ limitations under the License.
     </p>
   </ng-template>
   <ng-template #analyticsData>
-    <p class="setting-data">
-      <mat-checkbox [(ngModel)]="optOut" class="consent-actions-opt-out">
+    <p class="setting-data" [formGroup]="analyticsForm">
+      <mat-checkbox class="consent-actions-opt-out" formControlName="optOut">
         Opt out from Google Analytics
       </mat-checkbox>
     </p>
