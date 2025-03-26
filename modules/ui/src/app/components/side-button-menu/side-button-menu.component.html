@@ -3,7 +3,8 @@
     class="side-add-button"
     mat-fab
     (click)="menuTrigger.openMenu()"
-    aria-label="Actions">
+    aria-label="Actions"
+    matTooltip="Actions">
     <mat-icon>add</mat-icon>
   </button>
   <div
@@ -31,42 +32,22 @@
         fill="white" />
     </svg>
   </div>
-  <ng-container
-    *ngFor="let item of menuItems()"
-    [ngTemplateOutlet]="menuItem"
-    [ngTemplateOutletContext]="{
-      svgIcon: item.svgIcon,
-      icon: item.icon,
-      label: item.label,
-      description: item.description,
-      onClick: item.onClick,
-      disabled$: item.disabled$,
-    }"></ng-container>
-</mat-menu>
-
-<ng-template
-  #menuItem
-  let-icon="icon"
-  let-svgIcon="svgIcon"
-  let-label="label"
-  let-description="description"
-  let-onClick="onClick"
-  let-disabled$="disabled$">
   <button
+    *ngFor="let item of menuItems()"
     mat-menu-item
     class="side-add-menu-button"
-    [class.with-description]="description !== null"
-    (click)="onClick()"
-    [disabled]="disabled$ | async">
-    <mat-icon *ngIf="svgIcon" svgIcon="{{ svgIcon }}"></mat-icon>
+    [class.with-description]="item.description !== null"
+    (click)="item.onClick()"
+    [disabled]="item.disabled$ | async">
+    <mat-icon *ngIf="item.svgIcon" svgIcon="{{ item.svgIcon }}"></mat-icon>
     <mat-icon
-      *ngIf="icon"
+      *ngIf="item.icon"
       class="material-symbols-outlined side-add-menu-button-icon"
-      >{{ icon }}</mat-icon
+      >{{ item.icon }}</mat-icon
     >
-    <div class="side-add-menu-button-label">{{ label }}</div>
-    <div *ngIf="description" class="side-add-menu-button-description">
-      {{ description }}
+    <div class="side-add-menu-button-label">{{ item.label }}</div>
+    <div *ngIf="item.description" class="side-add-menu-button-description">
+      {{ item.description }}
     </div>
   </button>
-</ng-template>
+</mat-menu>
