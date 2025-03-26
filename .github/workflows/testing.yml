@@ -7,6 +7,25 @@ on:
     - cron: '0 13 * * *'
 
 jobs:
+  testrun_tests:
+    permissions: {}
+    name:  Tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Install dependencies
+        shell: bash {0}
+        run: cmd/prepare
+      - name: Install Testrun
+        shell: bash {0}
+        run: TESTRUN_DIR=. cmd/install
+        timeout-minutes: 30
+      - name: Run tests
+        shell: bash {0}
+        run: testing/tests/test_tests
+
   testrun_baseline:
     permissions: {}
     name:  Baseline
@@ -98,7 +117,7 @@ jobs:
         if: ${{ always() }}
         with:
           if-no-files-found: error
-          name: reports_${{ github.run_id }}
+          name: unit_reports_${{ github.run_id }}
           path: testing/unit/report/output
 
   pylint:
