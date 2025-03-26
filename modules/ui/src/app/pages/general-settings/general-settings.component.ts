@@ -30,7 +30,6 @@ import {
 import { Subject, takeUntil, tap } from 'rxjs';
 import { OnlyDifferentValuesValidator } from './only-different-values.validator';
 import { CalloutType } from '../../model/callout-type';
-import { EventType } from '../../model/event-type';
 import { FormKey, SystemConfig } from '../../model/setting';
 import { GeneralSettingsStore } from './general-settings.store';
 import { LoaderService } from '../../services/loader.service';
@@ -87,7 +86,6 @@ declare const gtag: Function;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GeneralSettingsComponent implements OnInit, OnDestroy {
-  optOut = false;
   private readonly fb = inject(FormBuilder);
   private readonly onlyDifferentValuesValidator = inject(
     OnlyDifferentValuesValidator
@@ -108,9 +106,9 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     }
   }
   public readonly CalloutType = CalloutType;
-  public readonly EventType = EventType;
   public readonly FormKey = FormKey;
   public settingForm!: FormGroup;
+  public analyticsForm!: FormGroup;
   public readonly Routes = Routes;
   viewModel$ = this.settingsStore.viewModel$;
 
@@ -124,14 +122,6 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
 
   get internetControl(): FormControl {
     return this.settingForm.get(FormKey.INTERNET) as FormControl;
-  }
-
-  get logLevel(): FormControl {
-    return this.settingForm.get(FormKey.LOG_LEVEL) as FormControl;
-  }
-
-  get monitorPeriod(): FormControl {
-    return this.settingForm.get(FormKey.MONITOR_PERIOD) as FormControl;
   }
 
   get isFormValues(): boolean {
@@ -149,8 +139,13 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     return this.settingForm.hasError('hasSameValues');
   }
 
+  get optOutHasChanges(): boolean {
+    return this.analyticsForm.value.optOut;
+  }
+
   ngOnInit() {
     this.createSettingForm();
+    this.createAnalyticsForm();
     this.cleanFormErrorMessage();
     this.settingsStore.getInterfaces();
     this.getSystemConfig();
@@ -187,6 +182,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     } else {
       this.createSystemConfig();
       this.settingForm.markAsPristine();
+      this.analyticsForm.markAsPristine();
     }
   }
 
@@ -211,6 +207,12 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
         updateOn: 'change',
       }
     );
+  }
+
+  private createAnalyticsForm() {
+    this.analyticsForm = this.fb.group({
+      optOut: new FormControl(false),
+    });
   }
 
   private setDefaultFormValues() {
@@ -244,12 +246,8 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       config: data,
     });
     gtag('consent', 'update', {
-      analytics_storage: this.optOut ? 'denied' : 'granted',
+      analytics_storage: this.analyticsForm.value.optOut ? 'denied' : 'granted',
     });
-  }
-
-  private resetForm(): void {
-    this.settingForm.reset();
   }
 
   ngOnDestroy() {
