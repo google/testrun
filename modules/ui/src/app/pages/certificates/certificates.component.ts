@@ -22,7 +22,6 @@ import {
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { CertificatesStore } from './certificates.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { Subject, takeUntil } from 'rxjs';
@@ -39,7 +38,6 @@ import { CertificateUploadButtonComponent } from './components/certificate-uploa
     CertificatesTableComponent,
   ],
   providers: [CertificatesStore, DatePipe],
-  hostDirectives: [CdkTrapFocus],
   templateUrl: './certificates.component.html',
   styleUrl: './certificates.component.scss',
 })
