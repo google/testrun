@@ -124,6 +124,14 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     return this.settingForm.get(FormKey.INTERNET) as FormControl;
   }
 
+  get logLevel(): FormControl {
+    return this.settingForm.get(FormKey.LOG_LEVEL) as FormControl;
+  }
+
+  get monitorPeriod(): FormControl {
+    return this.settingForm.get(FormKey.MONITOR_PERIOD) as FormControl;
+  }
+
   get isFormValues(): boolean {
     return (
       this.deviceControl?.value?.value &&
