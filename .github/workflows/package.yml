@@ -34,7 +34,7 @@ jobs:
     permissions: {}
     needs: create_package
     name: Install on Ubuntu 20.04
-    runs-on: ubuntu-20.04
+    runs-on: 'ubuntu-24.04'
     timeout-minutes: 15
     steps:
       - name: Checkout source
