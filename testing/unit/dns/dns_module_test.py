@@ -179,7 +179,8 @@ class DNSModuleTest(unittest.TestCase):
     result = dns_module.dns_network_from_dhcp()
 
     # Assign the expected test result
-    description = 'No DNS traffic detected from the device'
+    description =''\
+      'No DNS traffic detected from the device to the DHCP DNS server'
     expected_result = ('Informational', description)
 
     # Assert that the actual result matches the expected result.
