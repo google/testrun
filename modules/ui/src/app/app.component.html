@@ -16,7 +16,12 @@ limitations under the License.
 <app-bypass></app-bypass>
 <ng-container *ngIf="viewModel$ | async as vm">
   <mat-drawer-container hasBackdrop="false" class="app-container" autosize>
-    <mat-drawer mode="side" role="navigation" opened cdkFocusInitial>
+    <mat-drawer
+      mode="side"
+      role="navigation"
+      opened
+      cdkFocusInitial
+      [disableClose]="true">
       <div class="app-sidebar" #navigation>
         <app-side-button-menu [menuItems]="menuItems"> </app-side-button-menu>
         <div class="nav-items-container">
