@@ -15,7 +15,11 @@ limitations under the License.
 -->
 <ng-container *ngIf="entities().length > 0 || isOpenEntityForm(); else empty">
   <mat-drawer-container class="layout-container">
-    <mat-drawer mode="side" opened class="layout-container-left-panel">
+    <mat-drawer
+      mode="side"
+      opened
+      class="layout-container-left-panel"
+      [disableClose]="true">
       <mat-toolbar class="layout-container-left-panel-toolbar">
         <mat-toolbar-row
           ><h2 class="title">{{ title() }}</h2></mat-toolbar-row
