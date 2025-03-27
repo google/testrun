@@ -121,7 +121,7 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     return trigger$.pipe(
       tap(() => {
         this.focusManagerService.focusFirstElementInContainer(
-          window.document.querySelector('.profiles-drawer-content .selected')
+          window.document.querySelector('.entity-list .selected')
         );
       })
     );
