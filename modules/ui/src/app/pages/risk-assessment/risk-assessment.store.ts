@@ -111,7 +111,7 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
       delay(10),
       tap(() => {
         this.focusManagerService.focusFirstElementInContainer(
-          window.document.querySelector('.risk-assessment-content-empty')
+          window.document.querySelector('.content-empty')
         );
       })
     );
