@@ -46,6 +46,17 @@
   grid-template-columns: min-content auto;
 }
 
+::ng-deep .using-mouse .side-add-menu-button {
+  &.cdk-mouse-focused,
+  &.cdk-program-focused {
+    background: inherit !important;
+  }
+  &.cdk-mouse-focused::before,
+  &.cdk-program-focused::before {
+    content: none;
+  }
+}
+
 .side-add-menu-button-description {
   color: colors.$on-surface-variant;
   font-family: variables.$font-text;

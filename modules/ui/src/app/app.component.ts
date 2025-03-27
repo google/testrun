@@ -22,6 +22,8 @@ import {
   inject,
   ViewChild,
   ChangeDetectorRef,
+  Renderer2,
+  HostListener,
 } from '@angular/core';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -119,6 +121,7 @@ export class AppComponent implements AfterViewInit {
   private testRunService = inject(TestRunService);
   private cdr = inject(ChangeDetectorRef);
   appStore = inject(AppStore);
+  private renderer = inject(Renderer2);
 
   public readonly CalloutType = CalloutType;
   public readonly StatusOfTestrun = StatusOfTestrun;
@@ -132,6 +135,16 @@ export class AppComponent implements AfterViewInit {
   settingTipTarget!: HTMLElement;
   deviceTipTarget!: HTMLElement;
   isClosedTip = false;
+
+  @HostListener('mousedown')
+  onMousedown() {
+    this.renderer.addClass(document.body as HTMLElement, 'using-mouse');
+  }
+
+  @HostListener('keydown')
+  onKeydown() {
+    this.renderer.removeClass(document.body as HTMLElement, 'using-mouse');
+  }
 
   navigateToRuntime = () => {
     this.route.navigate([Routes.Testing]);

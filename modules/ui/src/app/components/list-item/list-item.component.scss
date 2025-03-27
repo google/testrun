@@ -42,4 +42,7 @@
 
 .list-item-menu-item {
   padding: 16px 24px;
+  &.cdk-mouse-focused::before {
+    content: none;
+  }
 }

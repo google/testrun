@@ -106,6 +106,10 @@
   }
 }
 
+::ng-deep .using-mouse .search-field input:focus {
+  outline: none;
+}
+
 .entity-list {
   display: grid;
   grid-template-columns: 1fr;

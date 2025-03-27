@@ -15,12 +15,18 @@ limitations under the License.
 -->
 <form [formGroup]="profileForm" class="profile-form">
   <div class="field-container">
-    <p class="field-label name-field-label">Profile name *</p>
+    <label class="field-label name-field-label" for="name-field"
+      >Profile name *</label
+    >
     <mat-form-field
       appearance="outline"
       floatLabel="always"
       class="profile-form-field">
-      <input class="form-name" formControlName="name" matInput />
+      <input
+        id="name-field"
+        class="form-name"
+        formControlName="name"
+        matInput />
       <mat-hint>Required for saving a profile</mat-hint>
       <mat-error
         *ngIf="nameControl.hasError('invalid_format')"
