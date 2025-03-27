@@ -79,10 +79,11 @@
       color: colors.$primary;
     }
   }
+}
 
-  .message-link {
-    color: colors.$primary;
-  }
+::ng-deep .message-link {
+  color: colors.$primary;
+  text-decoration: underline;
 }
 
 .section-container {
