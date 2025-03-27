@@ -186,7 +186,7 @@ describe('RiskAssessmentStore', () => {
 
     describe('setFocusOnCreateButton', () => {
       const container = document.createElement('div') as HTMLElement;
-      container.classList.add('risk-assessment-content-empty');
+      container.classList.add('content-empty');
       document.querySelector('body')?.appendChild(container);
 
       it('should call focusFirstElementInContainer', fakeAsync(() => {
@@ -201,7 +201,7 @@ describe('RiskAssessmentStore', () => {
 
     describe('setFocusOnSelectedProfile', () => {
       const container = document.createElement('div') as HTMLElement;
-      container.classList.add('profiles-drawer-content');
+      container.classList.add('entity-list');
       const inner = document.createElement('div') as HTMLElement;
       inner.classList.add('selected');
       container.appendChild(inner);
