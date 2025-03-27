@@ -99,28 +99,29 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
     );
   });
 
-  saveDevice = this.effect<{ device: Device; onSuccess: () => void }>(
-    trigger$ => {
-      return trigger$.pipe(
-        exhaustMap(({ device, onSuccess }) => {
-          return this.testRunService.saveDevice(device).pipe(
-            withLatestFrom(this.devices$),
-            tap(([added, devices]) => {
-              if (added) {
-                this.addDevice(device, devices);
-                onSuccess();
-              }
-            })
-          );
-        })
-      );
-    }
-  );
+  saveDevice = this.effect<{
+    device: Device;
+    onSuccess: (idx: number) => void;
+  }>(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap(({ device, onSuccess }) => {
+        return this.testRunService.saveDevice(device).pipe(
+          withLatestFrom(this.devices$),
+          tap(([added, devices]) => {
+            if (added) {
+              this.addDevice(device, devices);
+              onSuccess(devices.length);
+            }
+          })
+        );
+      })
+    );
+  });
 
   editDevice = this.effect<{
     device: Device;
     mac_addr: string;
-    onSuccess: () => void;
+    onSuccess: (idx: number) => void;
   }>(trigger$ => {
     return trigger$.pipe(
       exhaustMap(({ device, mac_addr, onSuccess }) => {
@@ -128,8 +129,11 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
           withLatestFrom(this.devices$),
           tap(([edited, devices]) => {
             if (edited) {
+              const idx = devices.findIndex(
+                item => device.mac_addr === item.mac_addr
+              );
               this.updateDevice(device, mac_addr, devices);
-              onSuccess();
+              onSuccess(idx);
             }
           })
         );

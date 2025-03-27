@@ -110,6 +110,10 @@
   outline: none;
 }
 
+.entity-list-container {
+  overflow-y: auto;
+}
+
 .entity-list {
   display: grid;
   grid-template-columns: 1fr;
@@ -140,4 +144,10 @@
   font-family: variables.$font-text;
   font-size: 16px;
   letter-spacing: 0;
+}
+
+::ng-deep .mat-drawer-inner-container {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: max-content 1fr;
 }
