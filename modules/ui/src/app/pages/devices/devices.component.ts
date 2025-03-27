@@ -181,8 +181,9 @@ export class DevicesComponent
   }
 
   save(device: Device, initialDevice: Device | null) {
-    this.updateDevice(device, initialDevice, () => {
+    this.updateDevice(device, initialDevice, (index: number) => {
       this.devicesStore.selectDevice(device);
+      this.focusDevice(index);
     });
   }
 
@@ -197,7 +198,7 @@ export class DevicesComponent
   private updateDevice(
     device: Device,
     initialDevice: Device | null = null,
-    callback: () => void
+    callback: (idx: number) => void
   ) {
     if (initialDevice) {
       this.devicesStore.editDevice({
@@ -269,6 +270,7 @@ export class DevicesComponent
     dialogRef?.beforeClosed().subscribe(close => {
       if (close) {
         this.isOpenDeviceForm = false;
+        this.devicesStore.selectDevice(null);
         this.focusSelectedButton();
       }
     });
@@ -299,9 +301,21 @@ export class DevicesComponent
     }
   }
 
+  private focusDevice(index: number) {
+    this.changeDetectorRef.detectChanges();
+    const device = this.element.nativeElement.querySelectorAll(
+      'app-device-item .button-edit'
+    )[index];
+    device?.focus();
+  }
+
   private focusAddButton(): void {
-    const addButton =
+    let addButton =
       this.element.nativeElement.querySelector('.add-entity-button');
+    if (!addButton) {
+      addButton =
+        this.element.nativeElement.querySelector('.device-add-button');
+    }
     addButton?.focus();
   }
 }

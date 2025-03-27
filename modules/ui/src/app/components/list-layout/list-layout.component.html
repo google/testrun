@@ -43,37 +43,40 @@ limitations under the License.
           </div></mat-toolbar-row
         >
       </mat-toolbar>
-      <section class="entity-list">
-        <div
-          *ngIf="isOpenEntityForm() && !initialEntity()"
-          class="fake-list-item">
-          <mat-icon svgIcon="draft" class="profile-draft-icon"></mat-icon>
-          {{
-            title() === LayoutType.Device ? 'New device' : 'New risk profile'
-          }}
-        </div>
-        <ng-container *ngFor="let entity of filtered(); index as i">
-          <app-list-item
-            [entity]="entity"
-            [actions]="getActions(entity)"
-            [isDisabled]="entityDisabled()"
-            [tooltipMessage]="entityTooltip()"
-            (menuItemClicked)="onMenuItemClick($event, entity, i)">
-            <ng-container
-              *ngTemplateOutlet="
-                itemTemplate()!;
-                context: {
-                  entity: entity,
-                }
-              "></ng-container>
-          </app-list-item>
-        </ng-container>
-      </section>
+      <div class="entity-list-container">
+        <section class="entity-list">
+          <div
+            *ngIf="isOpenEntityForm() && !initialEntity()"
+            class="fake-list-item">
+            <mat-icon svgIcon="draft" class="profile-draft-icon"></mat-icon>
+            {{
+              title() === LayoutType.Device ? 'New device' : 'New risk profile'
+            }}
+          </div>
+          <ng-container *ngFor="let entity of filtered(); index as i">
+            <app-list-item
+              [entity]="entity"
+              [actions]="getActions(entity)"
+              [isDisabled]="entityDisabled()"
+              [tooltipMessage]="entityTooltip()"
+              (menuItemClicked)="onMenuItemClick($event, entity, i)">
+              <ng-container
+                *ngTemplateOutlet="
+                  itemTemplate()!;
+                  context: {
+                    entity: entity,
+                  }
+                "></ng-container>
+            </app-list-item>
+          </ng-container>
+        </section>
+      </div>
     </mat-drawer>
     <mat-drawer-content>
       <section class="content" *ngIf="content()">
-        <ng-container *ngTemplateOutlet="content()!"></ng-container></section
-    ></mat-drawer-content>
+        <ng-container *ngTemplateOutlet="content()!"></ng-container>
+      </section>
+    </mat-drawer-content>
   </mat-drawer-container>
 </ng-container>
 <ng-template #empty>
