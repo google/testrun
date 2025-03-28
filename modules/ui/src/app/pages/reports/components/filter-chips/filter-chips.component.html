@@ -48,8 +48,19 @@ limitations under the License.
       aria-label="Clear all filters"
       tabindex="0"
       class="clear-button"
-      mat-button>
+      mat-chip-row>
       Clear all filters
     </button>
   </mat-chip-row>
+  <button
+    type="button"
+    (click)="clearAllFilters()"
+    (keydown.enter)="clearAllFilters()"
+    (keydown.space)="clearAllFilters()"
+    aria-label="Clear all filters"
+    tabindex="0"
+    class="clear-button"
+    mat-button>
+    Clear all filters
+  </button>
 </mat-chip-set>
