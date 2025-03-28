@@ -262,14 +262,16 @@ export class AppStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  setFocusOnPage = this.effect(trigger$ => {
-    return trigger$.pipe(
-      delay(100),
-      tap(() => {
-        this.focusManagerService.focusFirstElementInContainer();
-      })
-    );
-  });
+  setFocusOnPage = this.effect<Document | Element | null | undefined>(
+    trigger$ => {
+      return trigger$.pipe(
+        delay(100),
+        tap(element => {
+          this.focusManagerService.focusFirstElementInContainer(element);
+        })
+      );
+    }
+  );
 
   getReports = this.effect(trigger$ => {
     return trigger$.pipe(

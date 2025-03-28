@@ -264,13 +264,19 @@ export class AppComponent implements AfterViewInit {
 
   navigateToRiskAssessment(): void {
     this.route.navigate([Routes.RiskAssessment]).then(() => {
-      this.appStore.setFocusOnPage();
+      this.appStore.setFocusOnPage(
+        window.document.querySelector('app-risk-assessment')
+      );
     });
   }
 
   navigateToSettings(): void {
     this.route.navigate([Routes.Settings]).then(() => {
-      this.appStore.setFocusOnPage();
+      timer(100).subscribe(() => {
+        this.appStore.setFocusOnPage(
+          window.document.querySelector('app-general-settings')
+        );
+      });
     });
   }
 
@@ -292,7 +298,7 @@ export class AppComponent implements AfterViewInit {
         take(1)
       )
       .subscribe(() => {
-        this.appStore.setFocusOnPage();
+        this.appStore.setFocusOnPage(null);
       });
   }
 

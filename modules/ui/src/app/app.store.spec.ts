@@ -262,7 +262,7 @@ describe('AppStore', () => {
 
     describe('setFocusOnPage', () => {
       it('should call focusFirstElementInContainer', fakeAsync(() => {
-        appStore.setFocusOnPage();
+        appStore.setFocusOnPage(null);
 
         tick(101);
 
