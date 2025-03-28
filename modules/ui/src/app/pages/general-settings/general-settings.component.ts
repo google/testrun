@@ -53,6 +53,7 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { TestRunService } from '../../services/test-run.service';
 import { Router } from '@angular/router';
 import { Routes } from '../../model/routes';
+import { FocusManagerService } from '../../services/focus-manager.service';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 declare const gtag: Function;
@@ -92,6 +93,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   );
   private settingsStore = inject(GeneralSettingsStore);
   private readonly loaderService = inject(LoaderService);
+  private readonly focusManagerService = inject(FocusManagerService);
 
   private isSettingsDisable = false;
   get settingsDisable(): boolean {
@@ -191,6 +193,9 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       this.createSystemConfig();
       this.settingForm.markAsPristine();
       this.analyticsForm.markAsPristine();
+      this.focusManagerService.focusFirstElementInContainer(
+        window.document.querySelector('app-settings')
+      );
     }
   }
 
