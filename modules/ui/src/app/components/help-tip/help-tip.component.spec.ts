@@ -7,15 +7,32 @@ import {
 
 import { HelpTipComponent } from './help-tip.component';
 import { HelpTips } from '../../model/tip-config';
+import SpyObj = jasmine.SpyObj;
+import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { FocusManagerService } from '../../services/focus-manager.service';
 
 describe('HelpTipComponent', () => {
   let component: HelpTipComponent;
   let fixture: ComponentFixture<HelpTipComponent>;
   let compiled: HTMLElement;
 
+  const mockLiveAnnouncer: SpyObj<LiveAnnouncer> = jasmine.createSpyObj([
+    'announce',
+    'clear',
+  ]);
+
+  const mockFocusManagerService: SpyObj<FocusManagerService> =
+    jasmine.createSpyObj('mockFocusManagerService', [
+      'focusFirstElementInContainer',
+    ]);
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HelpTipComponent],
+      providers: [
+        { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
+        { provide: FocusManagerService, useValue: mockFocusManagerService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HelpTipComponent);
@@ -28,6 +45,15 @@ describe('HelpTipComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should set focus to first focusable elem', fakeAsync(() => {
+    component.ngOnInit();
+    tick(200);
+
+    expect(
+      mockFocusManagerService.focusFirstElementInContainer
+    ).toHaveBeenCalled();
+  }));
 
   it('should have provided data', () => {
     const tipTitle = compiled.querySelector('.tip-container .title');

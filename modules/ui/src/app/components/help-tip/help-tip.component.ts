@@ -17,6 +17,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   HostListener,
+  inject,
   input,
   OnInit,
   output,
@@ -25,6 +26,9 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { TipConfig } from '../../model/tip-config';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { FocusManagerService } from '../../services/focus-manager.service';
+import { timer } from 'rxjs/internal/observable/timer';
 
 @Component({
   selector: 'app-help-tip',
@@ -40,6 +44,8 @@ export class HelpTipComponent implements OnInit {
   onAction = output<void>();
   onCLoseTip = output<boolean>();
   tipPosition = { top: 0, left: 0 };
+  private readonly liveAnnouncer = inject(LiveAnnouncer);
+  private readonly focusManagerService = inject(FocusManagerService);
 
   @HostListener('window:resize')
   onResize() {
@@ -48,6 +54,17 @@ export class HelpTipComponent implements OnInit {
 
   ngOnInit() {
     this.updateTipPosition(this.target());
+    this.liveAnnouncer.announce(
+      `${this.data()?.title} ${this.data()?.content}`
+    );
+    this.setFocus();
+  }
+
+  private setFocus(): void {
+    const helpTipEl = window.document.querySelector('.tip');
+    timer(200).subscribe(() => {
+      this.focusManagerService.focusFirstElementInContainer(helpTipEl);
+    });
   }
 
   updateTipPosition(target: HTMLElement | undefined | null) {
