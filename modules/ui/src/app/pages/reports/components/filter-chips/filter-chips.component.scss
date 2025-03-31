@@ -49,8 +49,41 @@
   }
 }
 
+.clear-button:has(.clear-button-label:focus),
+.clear-button.cdk-keyboard-focused {
+  outline: colors.$black solid 2px;
+}
+
+.clear-button-label:focus {
+  border: none;
+}
+
+.clear-button {
+  height: var(--mdc-text-button-container-height);
+  border-radius: var(--mdc-text-button-container-shape);
+  margin: 0 0 0 8px !important;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-button .clear-button-label {
+  color: colors.$primary !important;
+  border: none;
+  outline: none;
+}
+
 .clear-button ::ng-deep .mat-focus-indicator {
   display: none;
+}
+
+.clear-button
+  ::ng-deep
+  .mdc-evolution-chip__action--primary:not(
+    .mdc-evolution-chip__action--presentational
+  ):not(.mdc-ripple-upgraded):focus::before {
+  border: none;
 }
 
 .filter-chip .filter-chip-remove {
