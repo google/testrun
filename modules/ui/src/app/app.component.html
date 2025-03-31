@@ -232,20 +232,6 @@ limitations under the License.
       </ng-container>
     </app-callout>
     <app-callout
-      [type]="CalloutType.Info"
-      *ngIf="
-        hasConnectionSettings === true &&
-        hasDevices &&
-        (!systemStatus || systemStatus === StatusOfTestrun.Idle) &&
-        isStatusLoaded === true &&
-        !reports.length &&
-        !isAllDevicesOutdated
-      "
-      action="Testing"
-      (onAction)="navigateToRuntime()">
-      Step 3: Once device is created, you are able to start testing.
-    </app-callout>
-    <app-callout
       role="alert"
       aria-live="assertive"
       [type]="CalloutType.Check"
@@ -295,6 +281,21 @@ limitations under the License.
       [target]="deviceTipTarget"
       (onCLoseTip)="onCLoseTip($event)"
       (onAction)="navigateToAddDevice()">
+    </app-help-tip>
+    <app-help-tip
+      *ngIf="
+        hasConnectionSettings === true &&
+        hasDevices &&
+        (!systemStatus || systemStatus === StatusOfTestrun.Idle) &&
+        isStatusLoaded === true &&
+        !reports.length &&
+        !isAllDevicesOutdated
+      "
+      [class.closed-tip]="isClosedTip"
+      [data]="HelpTips.step3"
+      [target]="testingTipTarget"
+      (onCLoseTip)="onCLoseTip($event)"
+      (onAction)="navigateToRuntime()">
     </app-help-tip>
   </div>
 </ng-template>

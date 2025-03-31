@@ -38,4 +38,11 @@ export const HelpTips = {
     position: 'right',
     arrowPosition: 'left',
   } as TipConfig,
+  step3: {
+    title: 'Step 3:',
+    content: 'You can now start your first test attempt your new device.',
+    action: 'Start Testrun',
+    position: 'right',
+    arrowPosition: 'left',
+  } as TipConfig,
 };

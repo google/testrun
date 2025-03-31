@@ -134,6 +134,7 @@ export class AppComponent implements AfterViewInit {
   @ViewChild('settingButton', { static: false }) settingButton!: MatButton;
   settingTipTarget!: HTMLElement;
   deviceTipTarget!: HTMLElement;
+  testingTipTarget!: HTMLElement;
   isClosedTip = false;
 
   @HostListener('mousedown')
@@ -234,6 +235,9 @@ export class AppComponent implements AfterViewInit {
     this.deviceTipTarget = document.querySelector(
       '.app-sidebar-button.app-sidebar-button-devices'
     ) as HTMLElement;
+    this.testingTipTarget = document.querySelector(
+      '.app-sidebar-button.app-sidebar-button-testrun'
+    ) as HTMLElement;
 
     this.viewModel$
       .pipe(
@@ -282,6 +286,17 @@ export class AppComponent implements AfterViewInit {
 
   onCLoseTip(isClosed: boolean): void {
     this.isClosedTip = isClosed;
+    const helpTipButton = window.document.querySelector(
+      '.app-toolbar-button-help-tips'
+    ) as HTMLButtonElement;
+    const helpTipEl = window.document.querySelector('app-help-tip');
+    timer(100).subscribe(() => {
+      if (isClosed) {
+        helpTipButton.focus();
+      } else {
+        this.focusManagerService.focusFirstElementInContainer(helpTipEl);
+      }
+    });
   }
   consentShown() {
     this.appStore.setContent();

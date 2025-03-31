@@ -77,6 +77,7 @@ import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.com
 import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
 import { VersionComponent } from './components/version/version.component';
 import { MOCK_MODULES } from './mocks/device.mock';
+import { HelpTips } from './model/tip-config';
 
 const windowMock = {
   location: {
@@ -446,9 +447,7 @@ describe('AppComponent', () => {
         );
       }));
     });
-  });
 
-  describe('Callout component visibility', () => {
     describe('with system status as "Idle"', () => {
       beforeEach(() => {
         component.appStore.updateIsStatusLoaded(true);
@@ -459,90 +458,25 @@ describe('AppComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have callout component with "Step 3" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
+      it('should have help tip with "Step 3" title', () => {
+        const helpTipTitle = compiled.querySelector('app-help-tip .title');
+        const helpTipTitleContent = helpTipTitle?.innerHTML.trim();
 
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('Step 3');
+        expect(helpTipTitleContent).toContain('Step 3');
       });
 
-      it('should NOT have callout component with "Step 3" if has reports', () => {
+      it('should NOT have help tip with "Step 3" if has reports', () => {
         store.overrideSelector(selectReports, [...HISTORY]);
         store.refreshState();
         fixture.detectChanges();
 
-        const callout = compiled.querySelector('app-callout');
+        const helpTip = compiled.querySelector('app-help-tip');
 
-        expect(callout).toBeFalsy();
+        expect(helpTip).toBeFalsy();
       });
     });
 
-    describe('with systemStatus data IN Progress and without riskProfiles', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectHasConnectionSettings, true);
-        store.overrideSelector(selectHasDevices, true);
-        store.overrideSelector(selectHasRiskProfiles, false);
-        store.overrideSelector(
-          selectStatus,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.status
-        );
-        fixture.detectChanges();
-      });
-
-      it('should have callout component with "The device is now being tested" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('The device is now being tested');
-      });
-
-      it('should have callout component with "Risk Assessment" link', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutLinkEl = compiled.querySelector(
-          '.callout-action-link'
-        ) as HTMLAnchorElement;
-        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Create risk Assessment');
-      });
-    });
-
-    describe('with systemStatus data IN Progress and without riskProfiles', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectHasConnectionSettings, true);
-        store.overrideSelector(selectHasDevices, true);
-        store.overrideSelector(selectHasRiskProfiles, false);
-        store.overrideSelector(
-          selectStatus,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.status
-        );
-        fixture.detectChanges();
-      });
-
-      it('should have callout component with "The device is now being tested" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('The device is now being tested');
-      });
-
-      it('should have callout component with "Risk Assessment" link', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutLinkEl = compiled.querySelector(
-          '.callout-action-link'
-        ) as HTMLAnchorElement;
-        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Create risk Assessment');
-      });
-    });
-
-    describe('with devices setted but without systemStatus data', () => {
+    describe('with devices set but without systemStatus data', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
         component.appStore.updateIsStatusLoaded(true);
@@ -552,32 +486,30 @@ describe('AppComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have callout component with "Step 3" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
+      it('should have help tip with "Step 3" text', () => {
+        const helpTipTitle = compiled.querySelector('app-help-tip .title');
+        const helpTipTitleContent = helpTipTitle?.innerHTML.trim();
 
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('Step 3');
+        expect(helpTipTitleContent).toContain('Step 3');
       });
 
-      it('should have callout component with "testing" link', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutLinkEl = compiled.querySelector(
-          '.callout-action-link'
+      it('should have help tip with "Start Testrun" link', () => {
+        const helpTipLinkEl = compiled.querySelector(
+          '.tip-action-link'
         ) as HTMLAnchorElement;
-        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+        const helpTipLinkContent = helpTipLinkEl.innerHTML.trim();
 
-        expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Testing');
+        expect(helpTipLinkEl).toBeTruthy();
+        expect(helpTipLinkContent).toContain(HelpTips.step3.action);
       });
 
       keyboardCases.forEach(testCase => {
-        it(`should navigate to the runtime on keydown ${testCase.name} "Run the Test" link`, fakeAsync(() => {
-          const calloutLinkEl = compiled.querySelector(
-            '.callout-action-link'
+        it(`should navigate to the testing on keydown ${testCase.name} "Start Testrun" link`, fakeAsync(() => {
+          const helpTipLinkEl = compiled.querySelector(
+            '.tip-action-link'
           ) as HTMLAnchorElement;
 
-          calloutLinkEl.dispatchEvent(testCase.event);
+          helpTipLinkEl.dispatchEvent(testCase.event);
           flush();
 
           expect(router.url).toBe(Routes.Testing);
@@ -585,20 +517,7 @@ describe('AppComponent', () => {
       });
     });
 
-    describe('with devices setted, without systemStatus data, but run the tests', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectHasDevices, true);
-        fixture.detectChanges();
-      });
-
-      it('should not have callout component', () => {
-        const callout = compiled.querySelector('app-callout');
-
-        expect(callout).toBeNull();
-      });
-    });
-
-    describe('with devices setted and systemStatus data', () => {
+    describe('with devices set and systemStatus data', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
         store.overrideSelector(
@@ -608,10 +527,76 @@ describe('AppComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should not have callout component', () => {
-        const callout = compiled.querySelector('app-callout');
+      it('should not have help tip', () => {
+        const helpTip = compiled.querySelector('app-help-tip');
 
-        expect(callout).toBeNull();
+        expect(helpTip).toBeNull();
+      });
+    });
+  });
+
+  describe('Callout component visibility', () => {
+    describe('with systemStatus data IN Progress and without riskProfiles', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasConnectionSettings, true);
+        store.overrideSelector(selectHasDevices, true);
+        store.overrideSelector(selectHasRiskProfiles, false);
+        store.overrideSelector(
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
+        );
+        fixture.detectChanges();
+      });
+
+      it('should have callout component with "The device is now being tested" text', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutContent = callout?.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutContent).toContain('The device is now being tested');
+      });
+
+      it('should have callout component with "Risk Assessment" link', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutLinkEl = compiled.querySelector(
+          '.callout-action-link'
+        ) as HTMLAnchorElement;
+        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutLinkContent).toContain('Create risk Assessment');
+      });
+    });
+
+    describe('with systemStatus data IN Progress and without riskProfiles', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasConnectionSettings, true);
+        store.overrideSelector(selectHasDevices, true);
+        store.overrideSelector(selectHasRiskProfiles, false);
+        store.overrideSelector(
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
+        );
+        fixture.detectChanges();
+      });
+
+      it('should have callout component with "The device is now being tested" text', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutContent = callout?.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutContent).toContain('The device is now being tested');
+      });
+
+      it('should have callout component with "Risk Assessment" link', () => {
+        const callout = compiled.querySelector('app-callout');
+        const calloutLinkEl = compiled.querySelector(
+          '.callout-action-link'
+        ) as HTMLAnchorElement;
+        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+
+        expect(callout).toBeTruthy();
+        expect(calloutLinkContent).toContain('Create risk Assessment');
       });
     });
 
