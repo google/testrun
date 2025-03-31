@@ -23,6 +23,12 @@
   display: block;
 }
 
+:host ::ng-deep .mat-drawer-inner-container {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: max-content 1fr;
+}
+
 .entity-list app-list-item:has(.selected) {
   ::ng-deep .list-item {
     background-color: colors.$primary-container;
@@ -144,10 +150,4 @@
   font-family: variables.$font-text;
   font-size: 16px;
   letter-spacing: 0;
-}
-
-::ng-deep .mat-drawer-inner-container {
-  overflow: hidden;
-  display: grid;
-  grid-template-rows: max-content 1fr;
 }
