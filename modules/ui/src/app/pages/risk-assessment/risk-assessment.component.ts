@@ -15,18 +15,26 @@
  */
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
+  ElementRef,
+  inject,
   OnDestroy,
   OnInit,
-  ViewContainerRef,
-  inject,
   viewChild,
-  ChangeDetectorRef,
-  ElementRef,
+  ViewContainerRef,
 } from '@angular/core';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
-import { Subject, takeUntil, timer, Observable } from 'rxjs';
+import {
+  combineLatest,
+  Observable,
+  of,
+  skip,
+  Subject,
+  takeUntil,
+  timer,
+} from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Profile, ProfileAction, ProfileStatus } from '../../model/profile';
@@ -51,7 +59,6 @@ import { LayoutType } from '../../model/layout-type';
 import { NoEntitySelectedComponent } from '../../components/no-entity-selected/no-entity-selected.component';
 import { EntityAction, EntityActionResult } from '../../model/entity-action';
 import { CanComponentDeactivate } from '../../guards/can-deactivate.guard';
-import { of, combineLatest, skip } from 'rxjs';
 
 const matFormFieldDefaultOptions: MatFormFieldDefaultOptions = {
   hideRequiredMarker: true,
@@ -280,7 +287,11 @@ export class RiskAssessmentComponent
 
   actions(actions: EntityAction[]) {
     return (profile: Profile) => {
-      if (profile.status === ProfileStatus.EXPIRED) {
+      // expired profiles or unsaved copy of profile can only be removed
+      if (
+        profile.status === ProfileStatus.EXPIRED ||
+        (profile.status === ProfileStatus.DRAFT && !profile.created)
+      ) {
         return [{ action: ProfileAction.Delete, icon: 'delete' }];
       }
       return actions;
