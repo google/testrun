@@ -23,6 +23,10 @@
   z-index: 100;
   width: 256px;
   box-sizing: border-box;
+
+  &.left {
+    width: 276px;
+  }
 }
 
 .tip-container {
@@ -50,12 +54,12 @@
   transform: rotate(45deg) translate(-50%);
 }
 
-.tip-container.top::before {
+.top .tip-container::before {
   top: 0;
   left: 50%;
 }
 
-.tip-container.left::before {
+.left .tip-container::before {
   top: 50%;
   left: 0;
 }

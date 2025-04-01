@@ -18,8 +18,9 @@ limitations under the License.
   aria-label="Help tips"
   class="tip"
   [style.top.px]="tipPosition.top"
-  [style.left.px]="tipPosition.left">
-  <div class="tip-container" *ngIf="data()" [ngClass]="data()?.arrowPosition">
+  [style.left.px]="tipPosition.left"
+  [ngClass]="data()?.arrowPosition">
+  <div class="tip-container" *ngIf="data()">
     <div class="heading">
       <p class="title">{{ data()?.title }}</p>
       <button
