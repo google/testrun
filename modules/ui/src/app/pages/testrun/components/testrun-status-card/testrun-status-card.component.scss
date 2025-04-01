@@ -102,6 +102,10 @@
   &.canceled .progress-card-info-status {
     background-color: colors.$on-surface;
   }
+
+  &.error .progress-card-info-status {
+    background-color: colors.$on-surface-variant;
+  }
 }
 
 .progress-card-info-tests {
