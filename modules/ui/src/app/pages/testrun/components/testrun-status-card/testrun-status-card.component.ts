@@ -66,6 +66,7 @@ export class TestrunStatusCardComponent {
     'completed-success': boolean;
     'completed-failed': boolean;
     canceled: boolean;
+    error: boolean;
   } {
     return {
       progress: this.isProgressStatus(status),
@@ -79,11 +80,11 @@ export class TestrunStatusCardComponent {
       'completed-failed':
         (result === ResultOfTestrun.NonCompliant &&
           status === StatusOfTestrun.Complete) ||
-        status === StatusOfTestrun.Error ||
         status === StatusOfTestrun.DoNotProceed,
       canceled:
         status === StatusOfTestrun.Cancelled ||
         status === StatusOfTestrun.Cancelling,
+      error: status === StatusOfTestrun.Error,
     };
   }
 
