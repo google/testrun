@@ -54,6 +54,7 @@ describe('ProgressStatusCardComponent', () => {
         'completed-success': false,
         'completed-failed': false,
         canceled: false,
+        error: false,
       };
 
       const statusesForProgressClass = [
@@ -71,7 +72,6 @@ describe('ProgressStatusCardComponent', () => {
 
       const statusesForCompletedFailedClass = [
         StatusOfTestrun.Complete,
-        StatusOfTestrun.Error,
         StatusOfTestrun.DoNotProceed,
       ];
 
@@ -124,6 +124,17 @@ describe('ProgressStatusCardComponent', () => {
         };
 
         const result = component.getClass(StatusOfTestrun.Cancelled);
+
+        expect(result).toEqual(expectedResult);
+      });
+
+      it('should have class "error" if status "Error"', () => {
+        const expectedResult = {
+          ...availableClasses,
+          error: true,
+        };
+
+        const result = component.getClass(StatusOfTestrun.Error);
 
         expect(result).toEqual(expectedResult);
       });
