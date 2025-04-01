@@ -259,10 +259,6 @@ export class AppComponent implements AfterViewInit {
     this.cdr.detectChanges();
   }
 
-  get isRiskAssessmentRoute(): boolean {
-    return this.route.url === Routes.RiskAssessment;
-  }
-
   get isDevicesRoute(): boolean {
     return this.route.url === Routes.Devices;
   }
