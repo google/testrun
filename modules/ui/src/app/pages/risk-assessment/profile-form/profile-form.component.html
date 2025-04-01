@@ -70,7 +70,7 @@ limitations under the License.
       mat-flat-button
       class="copy-button"
       (click)="onCopyClick()"
-      [disabled]="selectedProfile === null">
+      [disabled]="selectedProfile === null || isCopyProfile">
       Copy
     </button>
     <button
