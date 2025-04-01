@@ -64,9 +64,9 @@ describe('HelpTipComponent', () => {
   });
 
   it('should have class provided from arrowPosition', () => {
-    const tipContainerEl = compiled.querySelector('.tip-container');
+    const tipEl = compiled.querySelector('.tip');
 
-    expect(tipContainerEl?.classList).toContain('top');
+    expect(tipEl?.classList).toContain('top');
   });
 
   describe('#updateTipPosition', () => {

@@ -123,16 +123,9 @@ limitations under the License.
           *ngTemplateOutlet="
             callouts;
             context: {
-              systemStatus: vm.systemStatus,
               error: vm.settingMissedError,
               hasExpiredDevices: vm.hasExpiredDevices,
               calloutState: vm.calloutState,
-              hasConnectionSettings: vm.hasConnectionSettings,
-              hasRiskProfiles: vm.hasRiskProfiles,
-              isAllDevicesOutdated: vm.isAllDevicesOutdated,
-              isStatusLoaded: vm.isStatusLoaded,
-              reports: vm.reports,
-              hasDevices: vm.hasDevices,
             }
           ">
         </ng-container>
@@ -187,16 +180,9 @@ limitations under the License.
 
 <ng-template
   #callouts
-  let-systemStatus="systemStatus"
   let-error="error"
   let-hasExpiredDevices="hasExpiredDevices"
-  let-calloutState="calloutState"
-  let-hasConnectionSettings="hasConnectionSettings"
-  let-isAllDevicesOutdated="isAllDevicesOutdated"
-  let-isStatusLoaded="isStatusLoaded"
-  let-reports="reports"
-  let-hasRiskProfiles="hasRiskProfiles"
-  let-hasDevices="hasDevices">
+  let-calloutState="calloutState">
   <div class="app-callout-container">
     <app-callout
       [type]="CalloutType.Error"
@@ -230,22 +216,6 @@ limitations under the License.
       <ng-container *ngIf="!isDevicesRoute"
         >Please update your Devices to continue testing.
       </ng-container>
-    </app-callout>
-    <app-callout
-      role="alert"
-      aria-live="assertive"
-      [type]="CalloutType.Check"
-      *ngIf="
-        hasConnectionSettings === true &&
-        hasDevices === true &&
-        hasRiskProfiles === false &&
-        systemStatus === StatusOfTestrun.InProgress &&
-        isRiskAssessmentRoute === false
-      "
-      action="Create risk Assessment"
-      (onAction)="navigateToRiskAssessment()">
-      The device is now being tested. Why not take the time to complete the
-      device Risk Assessment questionnaire?
     </app-callout>
   </div>
 </ng-template>
@@ -296,6 +266,20 @@ limitations under the License.
       [target]="testingTipTarget"
       (onCLoseTip)="onCLoseTip($event)"
       (onAction)="navigateToRuntime()">
+    </app-help-tip>
+    <app-help-tip
+      *ngIf="
+        hasConnectionSettings === true &&
+        hasDevices === true &&
+        hasRiskProfiles === false &&
+        systemStatus === StatusOfTestrun.InProgress &&
+        isRiskAssessmentRoute === false
+      "
+      [class.closed-tip]="isClosedTip"
+      [data]="HelpTips.step4"
+      [target]="riskAssessmentTipTarget"
+      (onCLoseTip)="onCLoseTip($event)"
+      (onAction)="navigateToRiskAssessment()">
     </app-help-tip>
   </div>
 </ng-template>

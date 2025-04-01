@@ -45,4 +45,12 @@ export const HelpTips = {
     position: 'right',
     arrowPosition: 'left',
   } as TipConfig,
+  step4: {
+    title: 'Risk Assessment:',
+    content:
+      'Whilst testing is in progress, create a risk profile for the device.',
+    action: 'Create risk profile',
+    position: 'right',
+    arrowPosition: 'left',
+  } as TipConfig,
 };

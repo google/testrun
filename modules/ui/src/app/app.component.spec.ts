@@ -533,73 +533,39 @@ describe('AppComponent', () => {
         expect(helpTip).toBeNull();
       });
     });
+
+    describe('with systemStatus data IN Progress and without riskProfiles', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasConnectionSettings, true);
+        store.overrideSelector(selectHasDevices, true);
+        store.overrideSelector(selectHasRiskProfiles, false);
+        store.overrideSelector(
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
+        );
+        fixture.detectChanges();
+      });
+
+      it('should have help tip with "Risk Assessment" title', () => {
+        const helpTipTitle = compiled.querySelector('app-help-tip .title');
+        const helpTipTitleContent = helpTipTitle?.innerHTML.trim();
+
+        expect(helpTipTitleContent).toContain('Risk Assessment');
+      });
+
+      it('should have help tip with "Create risk profile" link', () => {
+        const helpTipLinkEl = compiled.querySelector(
+          '.tip-action-link'
+        ) as HTMLAnchorElement;
+        const helpTipLinkContent = helpTipLinkEl.innerHTML.trim();
+
+        expect(helpTipLinkEl).toBeTruthy();
+        expect(helpTipLinkContent).toContain(HelpTips.step4.action);
+      });
+    });
   });
 
   describe('Callout component visibility', () => {
-    describe('with systemStatus data IN Progress and without riskProfiles', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectHasConnectionSettings, true);
-        store.overrideSelector(selectHasDevices, true);
-        store.overrideSelector(selectHasRiskProfiles, false);
-        store.overrideSelector(
-          selectStatus,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.status
-        );
-        fixture.detectChanges();
-      });
-
-      it('should have callout component with "The device is now being tested" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('The device is now being tested');
-      });
-
-      it('should have callout component with "Risk Assessment" link', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutLinkEl = compiled.querySelector(
-          '.callout-action-link'
-        ) as HTMLAnchorElement;
-        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Create risk Assessment');
-      });
-    });
-
-    describe('with systemStatus data IN Progress and without riskProfiles', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectHasConnectionSettings, true);
-        store.overrideSelector(selectHasDevices, true);
-        store.overrideSelector(selectHasRiskProfiles, false);
-        store.overrideSelector(
-          selectStatus,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.status
-        );
-        fixture.detectChanges();
-      });
-
-      it('should have callout component with "The device is now being tested" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('The device is now being tested');
-      });
-
-      it('should have callout component with "Risk Assessment" link', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutLinkEl = compiled.querySelector(
-          '.callout-action-link'
-        ) as HTMLAnchorElement;
-        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Create risk Assessment');
-      });
-    });
-
     describe('error', () => {
       describe('with settingMissedError with one port is missed', () => {
         beforeEach(() => {

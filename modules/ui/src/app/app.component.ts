@@ -135,6 +135,7 @@ export class AppComponent implements AfterViewInit {
   settingTipTarget!: HTMLElement;
   deviceTipTarget!: HTMLElement;
   testingTipTarget!: HTMLElement;
+  riskAssessmentTipTarget!: HTMLElement;
   isClosedTip = false;
 
   @HostListener('mousedown')
@@ -237,6 +238,10 @@ export class AppComponent implements AfterViewInit {
     ) as HTMLElement;
     this.testingTipTarget = document.querySelector(
       '.app-sidebar-button.app-sidebar-button-testrun'
+    ) as HTMLElement;
+
+    this.riskAssessmentTipTarget = document.querySelector(
+      '.app-sidebar-button.app-sidebar-button-risk-assessment'
     ) as HTMLElement;
 
     this.viewModel$
