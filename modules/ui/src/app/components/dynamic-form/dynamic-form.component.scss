@@ -53,6 +53,8 @@ mat-form-field {
 }
 
 .field-select-multiple {
+  margin-bottom: 16px;
+
   .field-select-checkbox {
     &:has(::ng-deep .mat-mdc-checkbox-checked) {
       background: mat.get-theme-color($light-theme, primary, 95);
