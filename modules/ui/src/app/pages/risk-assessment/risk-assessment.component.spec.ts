@@ -211,7 +211,7 @@ describe('RiskAssessmentComponent', () => {
         } as MatDialogRef<typeof SimpleDialogComponent>);
         tick();
 
-        component.deleteProfile(PROFILE_MOCK, [PROFILE_MOCK]);
+        component.deleteProfile(PROFILE_MOCK, [PROFILE_MOCK], PROFILE_MOCK);
         tick();
 
         expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
@@ -247,7 +247,7 @@ describe('RiskAssessmentComponent', () => {
 
         tick();
 
-        component.deleteProfile(PROFILE_MOCK, [PROFILE_MOCK]);
+        component.deleteProfile(PROFILE_MOCK, [PROFILE_MOCK], PROFILE_MOCK);
         tick();
 
         expect(
@@ -261,7 +261,11 @@ describe('RiskAssessmentComponent', () => {
           afterClosed: () => of(true),
         } as MatDialogRef<typeof SimpleDialogComponent>);
         component.isCopyProfile = true;
-        component.deleteProfile(PROFILE_MOCK, [PROFILE_MOCK]);
+        component.deleteProfile(
+          DRAFT_COPY_PROFILE_MOCK,
+          [DRAFT_COPY_PROFILE_MOCK, PROFILE_MOCK],
+          DRAFT_COPY_PROFILE_MOCK
+        );
         tick();
 
         expect(mockRiskAssessmentStore.removeProfile).toHaveBeenCalled();
