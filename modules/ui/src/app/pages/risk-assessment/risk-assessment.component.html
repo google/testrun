@@ -26,7 +26,9 @@ limitations under the License.
     [isOpenEntityForm]="isOpenProfileForm"
     [initialEntity]="vm.selectedProfile"
     (addEntity)="openForm()"
-    (menuItemClicked)="menuItemClicked($event, vm.profiles)">
+    (menuItemClicked)="
+      menuItemClicked($event, vm.profiles, vm.selectedProfile)
+    ">
   </app-list-layout>
 
   <ng-template #content>
@@ -45,7 +47,7 @@ limitations under the License.
       [profileFormat]="vm.profileFormat"
       (saveProfile)="saveProfileClicked($event, vm.selectedProfile)"
       (deleteCopy)="deleteCopy($event, vm.profiles)"
-      (delete)="deleteProfile($event, vm.profiles)"
+      (delete)="deleteProfile($event, vm.profiles, vm.selectedProfile)"
       (copyProfile)="copyProfile($event, vm.profiles)"
       (discard)="discard($event, vm.profiles)"></app-profile-form>
   </ng-template>

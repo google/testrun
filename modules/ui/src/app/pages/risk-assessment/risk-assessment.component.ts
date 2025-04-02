@@ -168,7 +168,11 @@ export class RiskAssessmentComponent
     return copyOfProfile;
   }
 
-  deleteProfile(profile: Profile, profiles: Profile[]): void {
+  deleteProfile(
+    profile: Profile,
+    profiles: Profile[],
+    selectedProfile: Profile | null
+  ): void {
     const profileName = profile.name;
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
       data: {
@@ -186,16 +190,20 @@ export class RiskAssessmentComponent
       .pipe(takeUntil(this.destroy$))
       .subscribe(deleteProfile => {
         if (deleteProfile) {
-          if (profile && this.isCopyProfile) {
+          if (
+            profile &&
+            profile.status === ProfileStatus.DRAFT &&
+            !profile.created
+          ) {
             this.deleteCopy(profile, profiles);
-            this.closeFormAfterDelete(profile.name, profile);
+            this.closeFormAfterDelete(profile.name, selectedProfile);
             this.focusAddButton();
             return;
           } else {
             this.store.deleteProfile({
               name: profileName,
               onDelete: (idx = 0) => {
-                this.closeFormAfterDelete(profileName, profile);
+                this.closeFormAfterDelete(profileName, selectedProfile);
                 timer(100).subscribe(() => {
                   this.setFocus(idx);
                 });
@@ -300,14 +308,15 @@ export class RiskAssessmentComponent
 
   menuItemClicked(
     { action, entity }: EntityActionResult<Profile>,
-    profiles: Profile[]
+    profiles: Profile[],
+    selectedProfile: Profile | null
   ) {
     switch (action) {
       case ProfileAction.Copy:
         this.copyProfileAndOpenForm(entity, profiles);
         break;
       case ProfileAction.Delete:
-        this.deleteProfile(entity, profiles);
+        this.deleteProfile(entity, profiles, selectedProfile);
         break;
     }
   }
