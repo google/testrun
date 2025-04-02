@@ -58,6 +58,7 @@
   box-sizing: border-box;
   gap: 16px;
   padding: 16px 0;
+  grid-template-columns: min-content 1fr;
 
   p {
     margin: 0;
@@ -65,8 +66,17 @@
 
   .progress-bar {
     padding-bottom: 28px;
-    width: 460px;
-    border-radius: 45%;
+    width: 100%;
+    border-radius: variables.$corner-large;
+  }
+
+  .progress-bar {
+    ::ng-deep .mdc-linear-progress__bar-inner {
+      border-top-right-radius: variables.$corner-large 12px;
+      border-bottom-right-radius: variables.$corner-large 12px;
+      border-top-left-radius: variables.$corner-large 12px;
+      border-bottom-left-radius: variables.$corner-large 12px;
+    }
   }
 
   @include mat.progress-bar-overrides(
@@ -75,6 +85,7 @@
       track-color: colors.$secondary-container,
       active-indicator-height: 12px,
       track-height: 12px,
+      track-shape: 16px,
     )
   );
 
@@ -116,7 +127,6 @@
     colors.$on-surface
   );
   justify-self: end;
-  width: 213px;
 }
 
 .progress-card-info-status {
@@ -126,6 +136,8 @@
     colors.$primary-container,
     colors.$on-primary
   );
+  flex-direction: row;
+  gap: 32px;
   justify-self: start;
 
   &-pilot {
@@ -133,12 +145,19 @@
   }
 }
 
+.progress-card-pilot {
+  .progress-card-info-tests,
+  .progress-card-info-status {
+    padding: 32px;
+  }
+}
+
 .progress-card-status {
   overflow: hidden;
   grid-area: 2/1/2/3;
-  max-width: max-content;
   white-space: normal;
   justify-self: center;
+  width: 100%;
 }
 
 .progress-card-result-loading {

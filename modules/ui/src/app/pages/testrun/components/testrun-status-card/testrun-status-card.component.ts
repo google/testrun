@@ -114,19 +114,17 @@ export class TestrunStatusCardComponent {
   public getTestStatusText(data: TestrunStatus): string {
     if (!data.finished) {
       return 'Status';
-    } else if (
-      data.finished &&
-      (data.status === StatusOfTestrun.Proceed ||
-        data.status === StatusOfTestrun.DoNotProceed)
-    ) {
-      return 'Preliminary Pilot Recommendation';
     } else {
       return 'Result';
     }
   }
 
   public getTestStatus(data: TestrunStatus): string {
-    if (data.status === StatusOfTestrun.Complete) {
+    if (
+      data.status === StatusOfTestrun.Complete ||
+      data.status === StatusOfTestrun.Proceed ||
+      data.status === StatusOfTestrun.DoNotProceed
+    ) {
       return data.result!;
     }
     return data.status;

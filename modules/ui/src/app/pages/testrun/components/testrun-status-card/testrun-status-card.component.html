@@ -28,10 +28,23 @@ limitations under the License.
     </div>
 
     <div class="progress-card-info progress-card-info-status">
-      <p class="progress-card-info-title">{{ getTestStatusText(data) }}</p>
-      <p class="progress-card-info-text">
-        <span>{{ getTestStatus(data) }}</span>
-      </p>
+      <div>
+        <p class="progress-card-info-title">{{ getTestStatusText(data) }}</p>
+        <p class="progress-card-info-text">
+          <span>{{ getTestStatus(data) }}</span>
+        </p>
+      </div>
+      <div
+        *ngIf="
+          data.finished &&
+          (data.status === StatusOfTestrun.Proceed ||
+            data.status === StatusOfTestrun.DoNotProceed)
+        ">
+        <p class="progress-card-info-title">Preliminary Pilot Recommendation</p>
+        <p class="progress-card-info-text">
+          <span>{{ data.status }}</span>
+        </p>
+      </div>
     </div>
 
     <div
