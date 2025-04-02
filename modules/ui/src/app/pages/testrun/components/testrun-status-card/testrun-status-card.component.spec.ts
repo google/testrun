@@ -202,14 +202,6 @@ describe('ProgressStatusCardComponent', () => {
 
         expect(result).toEqual(expectedText);
       });
-
-      it('"Preliminary Pilot Recommendation" if finished and Pilot statuses', () => {
-        const expectedText = 'Preliminary Pilot Recommendation';
-
-        const result = component.getTestStatusText(MOCK_PROGRESS_DATA_PROCEED);
-
-        expect(result).toEqual(expectedText);
-      });
     });
 
     describe('#getTestStatus', () => {
@@ -457,6 +449,37 @@ describe('ProgressStatusCardComponent', () => {
 
         expect(progressCardStatusText).not.toBeNull();
         expect(progressCardStatusText?.textContent).toEqual('Monitoring');
+      });
+    });
+
+    describe('with available systemStatus$ data, as "Proceed"', () => {
+      beforeEach(() => {
+        component.systemStatus = MOCK_PROGRESS_DATA_PROCEED;
+        fixture.detectChanges();
+      });
+
+      it('should have status', () => {
+        const titleEl = compiled.querySelectorAll(
+          '.progress-card-info-status .progress-card-info-title'
+        )[0];
+        const textEl = compiled.querySelectorAll(
+          '.progress-card-info-status .progress-card-info-text'
+        )[0];
+
+        expect(titleEl.textContent).toEqual('Result');
+        expect(textEl.textContent).toEqual('Compliant');
+      });
+
+      it('should have Pilot recommendations', () => {
+        const titleEl = compiled.querySelectorAll(
+          '.progress-card-info-status .progress-card-info-title'
+        )[1];
+        const textEl = compiled.querySelectorAll(
+          '.progress-card-info-status .progress-card-info-text'
+        )[1];
+
+        expect(titleEl.textContent).toEqual('Preliminary Pilot Recommendation');
+        expect(textEl.textContent).toEqual('Proceed');
       });
     });
   });
