@@ -267,14 +267,6 @@ export class AppComponent implements AfterViewInit {
     this.route.navigate([Routes.Devices]);
   }
 
-  navigateToRiskAssessment(): void {
-    this.route.navigate([Routes.RiskAssessment]).then(() => {
-      this.appStore.setFocusOnPage(
-        window.document.querySelector('app-risk-assessment')
-      );
-    });
-  }
-
   navigateToSettings(): void {
     this.route.navigate([Routes.Settings]).then(() => {
       timer(100).subscribe(() => {
