@@ -372,6 +372,12 @@ body:has(.filter-dialog-content)
   .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
   opacity: 0;
 }
+// Hide the help tip when the actions menu opens
+body:has(.side-add-menu-backdrop.cdk-overlay-backdrop-showing) {
+  app-help-tip {
+    display: none;
+  }
+}
 
 body #main {
   &:has(.device-repository-content-empty),
