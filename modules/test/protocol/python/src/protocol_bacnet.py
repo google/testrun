@@ -29,7 +29,6 @@ DEFAULT_CAPTURES_DIR = '/runtime/output'
 DEFAULT_CAPTURE_FILE = 'protocol.pcap'
 DEFAULT_BIN_DIR = '/testrun/bin'
 
-
 class BACnet():
   """BACnet Test module"""
 

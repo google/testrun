@@ -1,24 +1,37 @@
 {
-    "tester1": {
-        "image": "test-run/ci_test1",
-        "args": "oddservices dns_static",
+    "bacnet_compliant": {
+        "image": "testrun/bacnet_compliant",
         "ethmac": "02:42:aa:00:00:01",
         "expected_results": {
-            "dns.network.hostname_resolution": "Non-Compliant",
-            "security.services.ftp": "Non-Compliant",
-            "security.services.tftp": "Non-Compliant",
-            "security.services.smtp": "Non-Compliant",
-            "security.services.pop": "Non-Compliant",
-            "security.services.imap": "Non-Compliant",
-            "ntp.network.ntp_support": "Non-Compliant",
-            "ntp.network.ntp_dhcp": "Non-Compliant"
+            "protocol.valid_bacnet": "Compliant",
+            "protocol.bacnet.version": "Compliant",
+            "protocol.valid_modbus": "Feature Not Detected"
         }
     },
-    "tester2": {
-        "description": "expected to pass most things",
-        "image": "test-run/ci_test1",
-        "args": "ntpv4_dhcp dns_dhcp",
+
+    "dns_compliant": {
+        "image": "testrun/dns_compliant",
         "ethmac": "02:42:aa:00:00:02",
+        "expected_results": {
+            "dns.network.hostname_resolution": "Compliant",
+            "dns.network.from_dhcp": "Informational",
+            "dns.mdns": "Informational"
+        }
+    },
+
+    "dns_non_compliant": {
+        "image": "testrun/dns_non_compliant",
+        "ethmac": "02:42:aa:00:00:03",
+        "expected_results": {
+            "dns.network.hostname_resolution": "Non-Compliant",
+            "dns.network.from_dhcp": "Informational",
+            "dns.mdns": "Informational"
+        }
+    },
+
+    "services_compliant": {
+        "image": "testrun/services_compliant",
+        "ethmac": "02:42:aa:00:00:04",
         "expected_results": {
             "security.services.ftp": "Compliant",
             "security.ssh.version": "Compliant",
@@ -29,15 +42,23 @@
             "security.services.imap": "Compliant",
             "security.services.snmpv3": "Compliant",
             "security.services.vnc": "Compliant",
-            "security.services.tftp": "Compliant",
-            "ntp.network.ntp_server": "Compliant",
-            "connection.shared_address": "Compliant",
-            "connection.dhcp_address": "Compliant",
-            "connection.mac_address": "Compliant",
-            "connection.target_ping": "Compliant",
-            "connection.single_ip": "Compliant",
-            "connection.ipaddr.ip_change": "Compliant"
+            "security.services.tftp": "Compliant"
+        }
+    },
+
+    "services_non_compliant": {
+        "image": "testrun/services_non_compliant",
+        "ethmac": "02:42:aa:00:00:05",
+        "expected_results": {
+            "security.services.ftp": "Non-Compliant",
+            "security.services.telnet": "Non-Compliant",
+            "security.services.smtp": "Non-Compliant",
+            "security.services.http": "Non-Compliant",
+            "security.services.pop": "Non-Compliant",
+            "security.services.imap": "Non-Compliant",
+            "security.services.snmpv3": "Non-Compliant",
+            "security.services.tftp": "Non-Compliant"
         }
     }
-    
+
 }
