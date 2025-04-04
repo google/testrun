@@ -105,8 +105,13 @@ $nav-width: 96px;
   min-width: 24px;
 }
 
+.app-toolbar-button-help-tips {
+  display: none;
+}
+
 .app-sidebar-button-active,
 :host:has(app-help-tip) .app-toolbar-button-help-tips {
+  display: block;
   .material-symbols-outlined {
     font-variation-settings:
       'FILL' 1,

@@ -208,6 +208,7 @@ body {
 
 .app-toolbar-button.app-sidebar-button-active,
 body:has(app-help-tip) .app-toolbar-button-help-tips {
+  display: block;
   .mat-mdc-button-persistent-ripple::before {
     opacity: 1;
     background: colors.$light-grey;
