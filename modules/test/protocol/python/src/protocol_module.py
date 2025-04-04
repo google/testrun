@@ -71,9 +71,10 @@ class ProtocolModule(TestModule):
     if len(self._bacnet.devices) > 0:
       for device in self._bacnet.devices:
         LOGGER.debug(f'Checking BACnet version for device: {device}')
+        device_addr = device[2]
+        device_id = device[3]
         result_status, result_description = \
-          self._bacnet.validate_protocol_version(self._device_ipv4_addr,
-            device[3])
+          self._bacnet.validate_protocol_version(device_addr,device_id)
         break
 
     LOGGER.info(result_description)
