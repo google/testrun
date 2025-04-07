@@ -111,7 +111,6 @@ $nav-width: 96px;
 
 .app-sidebar-button-active,
 :host:has(app-help-tip) .app-toolbar-button-help-tips {
-  display: block;
   .material-symbols-outlined {
     font-variation-settings:
       'FILL' 1,
@@ -131,6 +130,10 @@ $nav-width: 96px;
     opacity: 1;
     background: colors.$secondary-fixed;
   }
+}
+
+:host:has(app-help-tip) .app-toolbar-button-help-tips {
+  display: block;
 }
 
 .logo-link {
