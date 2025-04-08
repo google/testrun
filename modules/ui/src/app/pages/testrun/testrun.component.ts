@@ -146,8 +146,9 @@ export class TestrunComponent implements OnInit, OnDestroy {
   }
   private setCancellingStatus() {
     this.testrunStore.setCancellingStatus();
+    const testrunContainer = window.document.querySelector('app-progress');
     timer(2000).subscribe(() => {
-      this.focusManagerService.focusFirstElementInContainer();
+      this.focusManagerService.focusFirstElementInContainer(testrunContainer);
     });
   }
   private showLoading() {
