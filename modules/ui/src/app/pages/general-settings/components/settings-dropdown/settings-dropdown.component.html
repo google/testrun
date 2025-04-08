@@ -11,12 +11,12 @@
 </div>
 
 <mat-form-field appearance="outline" class="setting-field">
-  <mat-label>{{ label }}</mat-label>
   <mat-select
     aria-labelledby="{{ key }}-group-label"
     id="{{ key }}-group"
     ngDefaultControl
     class="setting-radio-group"
+    [placeholder]="label"
     [compareWith]="compare"
     [formControlName]="controlName">
     <mat-select-trigger>

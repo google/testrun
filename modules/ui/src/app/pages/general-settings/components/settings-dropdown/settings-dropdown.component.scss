@@ -94,10 +94,11 @@
   font-family: variables.$font-text;
 }
 
-.info-column {
+::ng-deep .info-column {
   display: flex;
   flex-direction: column;
   gap: 6px;
   width: 260px;
   padding: 0 12px;
+  justify-content: center;
 }

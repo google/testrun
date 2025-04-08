@@ -21,13 +21,13 @@
   display: flex;
   flex-direction: column;
   flex: 1 0 auto;
-  padding: 6px 22px;
+  padding-top: 4px;
 }
 
 .setting-drawer-content {
   overflow-y: scroll;
   height: max-content;
-  padding: 10px;
+  padding: 8px 32px;
 
   .setting-drawer-content-form-empty {
     grid-template-rows: repeat(2, auto) 1fr;
@@ -54,7 +54,7 @@
 }
 
 .setting-drawer-footer {
-  padding: 0 8px;
+  padding: 16px 40px;
   margin-top: auto;
   display: flex;
   flex-shrink: 0;
@@ -80,6 +80,7 @@
 }
 
 .section-item {
+  height: 88px;
   display: grid;
   grid-template-columns: 1fr 1fr 1.1fr;
   gap: 46px;
@@ -88,6 +89,7 @@
   p {
     margin: 0;
   }
+
   .label-column {
     display: flex;
     flex-direction: column;
@@ -95,14 +97,6 @@
     padding: 0 16px;
     color: colors.$on-surface-variant;
     font-family: variables.$font-text;
-  }
-
-  .info-column {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    width: 260px;
-    padding: 0 12px;
   }
 
   .data-column {
