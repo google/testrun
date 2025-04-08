@@ -150,34 +150,34 @@ limitations under the License.
       [format]="format"
       [optionKey]="'text'"></app-dynamic-form>
   </section>
-  <div class="device-qualification-form-actions">
-    <div>
-      <button
-        [disabled]="
-          deviceHasNoChanges(initialDevice(), createDeviceFromForm()) ||
-          ((formIsLoaded$ | async) && !deviceQualificationForm.valid)
-        "
-        mat-flat-button
-        class="save-button"
-        (click)="onSaveClicked()">
-        Save
-      </button>
-      <button
-        mat-flat-button
-        [disabled]="deviceHasNoChanges(initialDevice(), createDeviceFromForm())"
-        type="button"
-        class="close-button"
-        (click)="onCancelClicked()">
-        Discard
-      </button>
-    </div>
+</form>
+<div class="device-qualification-form-actions">
+  <div>
+    <button
+      [disabled]="
+        deviceHasNoChanges(initialDevice(), createDeviceFromForm()) ||
+        ((formIsLoaded$ | async) && !deviceQualificationForm.valid)
+      "
+      mat-flat-button
+      class="save-button"
+      (click)="onSaveClicked()">
+      Save
+    </button>
     <button
       mat-flat-button
-      [disabled]="initialDevice() === null"
+      [disabled]="deviceHasNoChanges(initialDevice(), createDeviceFromForm())"
       type="button"
-      class="delete-button"
-      (click)="onDeleteClick()">
-      Delete
+      class="close-button"
+      (click)="onCancelClicked()">
+      Discard
     </button>
   </div>
-</form>
+  <button
+    mat-flat-button
+    [disabled]="initialDevice() === null"
+    type="button"
+    class="delete-button"
+    (click)="onDeleteClick()">
+    Delete
+  </button>
+</div>
