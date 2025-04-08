@@ -91,9 +91,8 @@
 }
 
 @mixin form-actions {
-  position: sticky;
-  left: 32px;
-  bottom: 25px;
+  margin-left: 32px;
+  margin-bottom: 25px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
