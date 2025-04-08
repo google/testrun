@@ -25,7 +25,7 @@
 }
 
 .profile-form {
-  overflow: scroll;
+  overflow-y: scroll;
 
   .name-field-label {
     margin: 0;
@@ -34,7 +34,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 16px 32px 32px;
+    padding: 16px 32px 11px 32px;
   }
 
   .profile-form-field {
