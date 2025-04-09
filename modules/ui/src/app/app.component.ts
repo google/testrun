@@ -81,6 +81,20 @@ const DRAFT_URL = '/assets/icons/draft.svg';
 const PILOT_URL = '/assets/icons/pilot.svg';
 const QUALIFICATION_URL = '/assets/icons/qualification.svg';
 
+const navKeys = [
+  'Tab',
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'Home',
+  'End',
+  'PageUp',
+  'PageDown',
+  'Escape',
+  'Enter',
+];
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -143,9 +157,11 @@ export class AppComponent implements AfterViewInit {
     this.renderer.addClass(document.body as HTMLElement, 'using-mouse');
   }
 
-  @HostListener('keydown')
-  onKeydown() {
-    this.renderer.removeClass(document.body as HTMLElement, 'using-mouse');
+  @HostListener('keydown', ['$event'])
+  onKeydown(e: KeyboardEvent) {
+    if (navKeys.includes(e.key)) {
+      this.renderer.removeClass(document.body as HTMLElement, 'using-mouse');
+    }
   }
 
   navigateToRuntime = () => {

@@ -83,9 +83,15 @@ export class ListLayoutComponent<T extends object> {
   };
 
   updateQuery(e: Event) {
-    const inputValue = (e.target as HTMLInputElement).value.trim();
-    const searchValue = inputValue.length > 2 ? inputValue : '';
-    this.searchText.set(searchValue);
+    const input = e.target as HTMLInputElement;
+    const value = input.value;
+    if (value.trim() === '') {
+      input.value = '';
+    } else {
+      const inputValue = value.trim();
+      const searchValue = inputValue.length > 2 ? inputValue : '';
+      this.searchText.set(searchValue);
+    }
   }
 
   filter(searchText: string) {
