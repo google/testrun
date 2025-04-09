@@ -478,8 +478,10 @@ describe('ProgressStatusCardComponent', () => {
           '.progress-card-info-status .progress-card-info-text'
         )[1];
 
-        expect(titleEl.textContent).toEqual('Preliminary Pilot Recommendation');
-        expect(textEl.textContent).toEqual('Proceed');
+        expect(titleEl.textContent?.trim()).toEqual(
+          'Preliminary Pilot Recommendation'
+        );
+        expect(textEl.textContent?.trim()).toEqual('Proceed');
       });
     });
   });
