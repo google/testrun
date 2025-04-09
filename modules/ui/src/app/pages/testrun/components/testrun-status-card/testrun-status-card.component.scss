@@ -51,17 +51,21 @@
 
 .progress-card {
   display: grid;
-  grid-template-areas:
-    'tests status'
-    '. .';
   width: fit-content;
   box-sizing: border-box;
   gap: 16px;
   padding: 16px 0;
-  grid-template-columns: min-content 1fr;
+  justify-items: center;
 
   p {
     margin: 0;
+  }
+
+  .progress-card-header {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    column-gap: 16px;
   }
 
   .progress-bar {
@@ -120,17 +124,14 @@
 }
 
 .progress-card-info-tests {
-  grid-area: tests;
   @include progress-card-info(
     colors.$surface-variant,
     colors.$on-surface-variant,
     colors.$on-surface
   );
-  justify-self: end;
 }
 
 .progress-card-info-status {
-  grid-area: status;
   @include progress-card-info(
     colors.$primary,
     colors.$primary-container,
@@ -138,7 +139,6 @@
   );
   flex-direction: row;
   gap: 32px;
-  justify-self: start;
 
   &-pilot {
     gap: 6px;
@@ -154,10 +154,10 @@
 
 .progress-card-status {
   overflow: hidden;
-  grid-area: 2/1/2/3;
   white-space: normal;
-  justify-self: center;
-  width: 100%;
+  &-bar {
+    width: 100%;
+  }
 }
 
 .progress-card-result-loading {
