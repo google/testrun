@@ -61,6 +61,7 @@ describe('ProgressStatusCardComponent', () => {
         StatusOfTestrun.InProgress,
         StatusOfTestrun.WaitingForDevice,
         StatusOfTestrun.Monitoring,
+        StatusOfTestrun.Cancelling,
       ];
 
       const statusesForCompletedSuccessClass = [
