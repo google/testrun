@@ -170,7 +170,7 @@ describe('GeneralSettingsComponent', () => {
     });
 
     it('should have form error if form has the same value', () => {
-      const mockSameValue = 'sameValue';
+      const mockSameValue = { key: 'sameValue' };
       component.deviceControl.setValue(mockSameValue);
       component.internetControl.setValue(mockSameValue);
 
