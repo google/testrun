@@ -110,7 +110,9 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     return trigger$.pipe(
       delay(10),
       tap(() => {
-        this.focusManagerService.focusFirstElementInContainer();
+        this.focusManagerService.focusFirstElementInContainer(
+          window.document.querySelector('app-risk-assessment')
+        );
       })
     );
   });

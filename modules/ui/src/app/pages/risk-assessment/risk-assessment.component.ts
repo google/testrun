@@ -442,7 +442,6 @@ export class RiskAssessmentComponent
       ?.afterClosed()
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        console.log('111111');
         focusElement();
       });
   }
