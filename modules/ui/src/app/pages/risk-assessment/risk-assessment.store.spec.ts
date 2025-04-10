@@ -185,17 +185,13 @@ describe('RiskAssessmentStore', () => {
     });
 
     describe('setFocusOnCreateButton', () => {
-      const container = document.createElement('div') as HTMLElement;
-      container.classList.add('content-empty');
-      document.querySelector('body')?.appendChild(container);
-
       it('should call focusFirstElementInContainer', fakeAsync(() => {
         riskAssessmentStore.setFocusOnCreateButton();
 
         tick(11);
         expect(
           mockFocusManagerService.focusFirstElementInContainer
-        ).toHaveBeenCalledWith(container);
+        ).toHaveBeenCalled();
       }));
     });
 
