@@ -36,9 +36,9 @@ limitations under the License.
     </p>
     <div class="tip-action-container">
       <a
-        (click)="onAction.emit()"
-        (keydown.enter)="onAction.emit()"
-        (keydown.space)="onAction.emit()"
+        (click)="onActionClick($event)"
+        (keydown.enter)="onActionClick($event)"
+        (keydown.space)="onActionClick($event)"
         tabindex="0"
         role="link"
         class="tip-action-link"
