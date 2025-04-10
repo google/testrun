@@ -113,4 +113,10 @@ export class HelpTipComponent implements OnInit {
 
     this.tipPosition = { top, left };
   }
+
+  onActionClick(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.onAction.emit();
+  }
 }
