@@ -158,7 +158,7 @@ export const RENAME_PROFILE_MOCK = {
 export const COPY_PROFILE_MOCK: Profile = {
   name: 'Copy of Primary profile',
   status: ProfileStatus.VALID,
-  created: '2024-05-23 12:38:26',
+  created: '2025-05-23 12:38:26',
   questions: [
     {
       question: 'What is the email of the device owner(s)?',
