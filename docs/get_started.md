@@ -7,7 +7,7 @@ This page covers the following topics:
 -  [Prerequisites](#prerequisites)
 -  [Installation](#installation)
 -  [Testing](#testing)
--  [Additional Configuration Options](/docs/additional_config.md')
+-  [Additional Configuration Options](/docs/additional_config.md)
 -  [Troubleshooting](#troubleshooting)
 -  [Review the report](#review-the-report)
 -  [Uninstall](#uninstall)
