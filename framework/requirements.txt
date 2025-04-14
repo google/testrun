@@ -28,7 +28,7 @@ responses==0.25.3
 markdown==3.5.2
 
 # Requirements for the session
-cryptography==44.0.0
+cryptography==44.0.1
 pytz==2024.1
 
 # Requirements for the risk profile
@@ -41,5 +41,5 @@ paho-mqtt==2.1.0
 APScheduler==3.10.4
 
 # Requirements for reports generation
-Jinja2==3.1.5
+Jinja2==3.1.6
 beautifulsoup4==4.12.3

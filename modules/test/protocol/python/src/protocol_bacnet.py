@@ -29,7 +29,6 @@ DEFAULT_CAPTURES_DIR = '/runtime/output'
 DEFAULT_CAPTURE_FILE = 'protocol.pcap'
 DEFAULT_BIN_DIR = '/testrun/bin'
 
-
 class BACnet():
   """BACnet Test module"""
 
@@ -93,17 +92,17 @@ class BACnet():
         description = 'BACnet device could not be discovered'
       LOGGER.info(description)
     except Exception: # pylint: disable=W0718
-      LOGGER.error('Error occured when validating device', exc_info=True)
+      LOGGER.error('Error occurred when validating device', exc_info=True)
     return result, description
 
 
-  def validate_protocol_version(self, device_ip, device_id):
+  def validate_protocol_version(self, device_addr, device_id):
     LOGGER.info(f'Resolving protocol version for BACnet device: {device_id}')
     try:
       version = self.bacnet.read(
-          f'{device_ip} device {device_id} protocolVersion')
+          f'{device_addr} device {device_id} protocolVersion')
       revision = self.bacnet.read(
-          f'{device_ip} device {device_id} protocolRevision')
+          f'{device_addr} device {device_id} protocolRevision')
       protocol_version = f'{version}.{revision}'
       result = True
       result_description = f'Device uses BACnet version {protocol_version}'
@@ -141,7 +140,7 @@ class BACnet():
             valid = False
       return valid
     except Exception: # pylint: disable=W0718
-      LOGGER.error('Error occured when validating source', exc_info=True)
+      LOGGER.error('Error occurred when validating source', exc_info=True)
       return False
 
   def get_bacnet_packets(self, capture_file, object_id):

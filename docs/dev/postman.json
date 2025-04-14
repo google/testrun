@@ -1068,7 +1068,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "[\n    {\n        \"testrun\": {\n            \"version\": \"2.0\"\n        },\n        \"mac_addr\": \"00:1e:42:28:9e:4a\",\n        \"device\": {\n            \"mac_addr\": \"00:1e:42:28:9e:4a\",\n            \"manufacturer\": \"Teltonika\",\n            \"model\": \"TRB140\",\n            \"firmware\": \"test\",\n            \"test_modules\": {\n                \"protocol\": {\n                    \"enabled\": true\n                },\n                \"services\": {\n                    \"enabled\": true\n                },\n                \"ntp\": {\n                    \"enabled\": true\n                },\n                \"tls\": {\n                    \"enabled\": true\n                },\n                \"connection\": {\n                    \"enabled\": true\n                },\n                \"dns\": {\n                    \"enabled\": true\n                }\n            }\n        },\n        \"status\": \"Non-Compliant\",\n        \"started\": \"2000-01-01 00:00:00\",\n        \"finished\": \"2000-01-01 00:30:00\",\n        \"tests\": {\n            \"total\": 40,\n            \"results\": [\n                {\n                    \"name\": \"protocol.valid_bacnet\",\n                    \"description\": \"BACnet device could not be discovered\",\n                    \"expected_behavior\": \"BACnet traffic can be seen on the network and packets are valid and not malformed\",\n                    \"required_result\": \"Recommended\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"protocol.bacnet.version\",\n                    \"description\": \"Device did not respond to BACnet discovery\",\n                    \"expected_behavior\": \"The BACnet client implements an up to date version of BACnet\",\n                    \"required_result\": \"Recommended\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"protocol.valid_modbus\",\n                    \"description\": \"Device did not respond to Modbus connection\",\n                    \"expected_behavior\": \"Any Modbus functionality works as expected and valid Modbus traffic can be observed\",\n                    \"required_result\": \"Recommended\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"security.services.ftp\",\n                    \"description\": \"No FTP server found\",\n                    \"expected_behavior\": \"There is no FTP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.ssh.version\",\n                    \"description\": \"SSH server found running  protocol 2.0\",\n                    \"expected_behavior\": \"SSH server is not running or server is SSHv2\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.telnet\",\n                    \"description\": \"No telnet server found\",\n                    \"expected_behavior\": \"There is no Telnet service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.smtp\",\n                    \"description\": \"No SMTP server found\",\n                    \"expected_behavior\": \"There is no SMTP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.http\",\n                    \"description\": \"Found HTTP server running on port 80/tcp\",\n                    \"expected_behavior\": \"Device is unreachable on port 80 (or any other port) and only responds to HTTPS requests on port 443 (or any other port if HTTP is used at all)\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Disable all unsecure HTTP servers\",\n                        \"Setup TLS on the web server\"\n                    ]\n                },\n                {\n                    \"name\": \"security.services.pop\",\n                    \"description\": \"No POP server found\",\n                    \"expected_behavior\": \"There is no POP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.imap\",\n                    \"description\": \"No IMAP server found\",\n                    \"expected_behavior\": \"There is no IMAP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.snmpv3\",\n                    \"description\": \"No SNMP server found\",\n                    \"expected_behavior\": \"Device is unreachable on port 161 (or any other port) and device is unreachable on port 162 (or any other port) unless SNMP is essential in which case it is SNMPv3 is used.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.vnc\",\n                    \"description\": \"No VNC server found\",\n                    \"expected_behavior\": \"Device cannot be accessed / connected to via VNC on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.tftp\",\n                    \"description\": \"No TFTP server found\",\n                    \"expected_behavior\": \"There is no TFTP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"ntp.network.ntp_server\",\n                    \"description\": \"No NTP server found\",\n                    \"expected_behavior\": \"The device does not respond to NTP requests when it's IP is set as the NTP server on another device\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.port_link\",\n                    \"description\": \"No port errors detected\",\n                    \"expected_behavior\": \"When the etherent cable is connected to the port, the device triggers the port to its enabled \\\"Link UP\\\" (LEDs illuminate on device and switch ports if present) state, and the switch shows no errors with the LEDs and when interrogated with a \\\"show interface\\\" command on most network switches.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.port_speed\",\n                    \"description\": \"Succesfully auto-negotiated speeds above 10 Mbps\",\n                    \"expected_behavior\": \"When the ethernet cable is connected to the port, the device autonegotiates a speed that can be checked with the \\\"show interface\\\" command on most network switches.  The output of this command must also show that the \\\"configured speed\\\" is set to \\\"auto\\\".\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.port_duplex\",\n                    \"description\": \"Succesfully auto-negotiated full duplex\",\n                    \"expected_behavior\": \"When the ethernet cable is connected to the port, the device autonegotiates a full-duplex connection.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.switch.arp_inspection\",\n                    \"description\": \"Device uses ARP\",\n                    \"expected_behavior\": \"Device continues to operate correctly when ARP inspection is enabled on the switch.  No functionality is lost with ARP inspection enabled.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.switch.dhcp_snooping\",\n                    \"description\": \"Device does not act as a DHCP server\",\n                    \"expected_behavior\": \"Device continues to operate correctly when DHCP snooping is enabled on the switch.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.dhcp_address\",\n                    \"description\": \"Device responded to leased ip address\",\n                    \"expected_behavior\": \"The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.mac_address\",\n                    \"description\": \"MAC address found: 00:1e:42:28:9e:4a\",\n                    \"expected_behavior\": \"N/A\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.mac_oui\",\n                    \"description\": \"OUI Manufacturer found: Teltonika\",\n                    \"expected_behavior\": \"The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.private_address\",\n                    \"description\": \"All subnets are supported\",\n                    \"expected_behavior\": \"The device under test accepts IP addresses within all ranges specified in RFC 1918 and communicates using these addresses.  The Internet Assigned Numbers Authority (IANA) has reserved the following three blocks of the IP address space for private internets.  10.0.0.0 - 10.255.255.255.255 (10/8 prefix). 172.16.0.0 - 172.31.255.255 (172.16/12 prefix).  192.168.0.0 - 192.168.255.255 (192.168/16 prefix)\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.shared_address\",\n                    \"description\": \"All subnets are supported\",\n                    \"expected_behavior\": \"The device under test accepts IP addresses within the ranges specified in RFC 6598 and communicates using these addresses\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.dhcp_disconnect\",\n                    \"description\": \"An error occured whilst running this test\",\n                    \"expected_behavior\": \"A client SHOULD use DHCP to reacquire or verify its IP address and network parameters whenever the local network parameters may have changed; e.g., at system boot time or after a disconnection from the local network, as the local network configuration may change without the client's or user's knowledge. If a client has knowledge ofa  previous network address and is unable to contact a local DHCP server, the client may continue to use the previous network addres until the lease for that address expires.  If the lease expires before the client can contact a DHCP server, the client must immediately discontinue use of the previous network address and may inform local users of the problem.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Error\"\n                },\n                {\n                    \"name\": \"connection.single_ip\",\n                    \"description\": \"Device is using multiple IP addresses\",\n                    \"expected_behavior\": \"The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Ensure that all ports on the device are isolated\",\n                        \"Ensure only one DHCP client is running\"\n                    ]\n                },\n                {\n                    \"name\": \"connection.target_ping\",\n                    \"description\": \"Device responds to ping\",\n                    \"expected_behavior\": \"The device under test responds to an ICMP echo (ping) request.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.ipaddr.ip_change\",\n                    \"description\": \"Device has accepted an IP address change\",\n                    \"expected_behavior\": \"If the lease expires before the client receiveds a DHCPACK, the client moves to INIT state, MUST immediately stop any other network processing and requires network initialization parameters as if the client were uninitialized.  If the client then receives a DHCPACK allocating the client its previous network addres, the client SHOULD continue network processing.  If the client is given a new network address, it MUST NOT continue using the previous network address and SHOULD notify the local users of the problem.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.ipaddr.dhcp_failover\",\n                    \"description\": \"Secondary DHCP server lease confirmed active in device\",\n                    \"expected_behavior\": \"\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.ipv6_slaac\",\n                    \"description\": \"Device does not support IPv6 SLAAC\",\n                    \"expected_behavior\": \"The device under test complies with RFC4862 and forms a valid IPv6 SLAAC address\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Install a network manager that supports IPv6\",\n                        \"Disable DHCPv6\"\n                    ]\n                },\n                {\n                    \"name\": \"connection.ipv6_ping\",\n                    \"description\": \"No IPv6 SLAAC address found. Cannot ping\",\n                    \"expected_behavior\": \"The device responds to the ping as per RFC4443\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Enable ping response to IPv6 ICMP requests in network manager settings\",\n                        \"Create a firewall exception to allow ICMPv6 via LAN\"\n                    ]\n                },\n                {\n                    \"name\": \"security.tls.v1_2_server\",\n                    \"description\": \"TLS 1.2 certificate is invalid\",\n                    \"expected_behavior\": \"TLS 1.2 certificate is issued to the web browser client when accessed\",\n                    \"required_result\": \"Required if Applicable\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Enable TLS 1.2 support in the web server configuration\",\n                        \"Disable TLS 1.0 and 1.1\",\n                        \"Sign the certificate used by the web server\"\n                    ]\n                },\n                {\n                    \"name\": \"security.tls.v1_2_client\",\n                    \"description\": \"No outbound TLS connections were found\",\n                    \"expected_behavior\": \"The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers\",\n                    \"required_result\": \"Required if Applicable\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"security.tls.v1_3_server\",\n                    \"description\": \"TLS 1.3 certificate is invalid\",\n                    \"expected_behavior\": \"TLS 1.3 certificate is issued to the web browser client when accessed\",\n                    \"required_result\": \"Informational\",\n                    \"result\": \"Informational\"\n                },\n                {\n                    \"name\": \"security.tls.v1_3_client\",\n                    \"description\": \"No outbound TLS connections were found\",\n                    \"expected_behavior\": \"The packet indicates a TLS connection with at least TLS 1.3\",\n                    \"required_result\": \"Informational\",\n                    \"result\": \"Informational\"\n                },\n                {\n                    \"name\": \"ntp.network.ntp_support\",\n                    \"description\": \"Device has not sent any NTP requests\",\n                    \"expected_behavior\": \"The device sends an NTPv4 request to the configured NTP server.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Set the NTP version to v4 in the NTP client\",\n                        \"Install an NTP client that supports NTPv4\"\n                    ]\n                },\n                {\n                    \"name\": \"ntp.network.ntp_dhcp\",\n                    \"description\": \"Device has not sent any NTP requests\",\n                    \"expected_behavior\": \"Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)\",\n                    \"required_result\": \"Roadmap\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"dns.network.hostname_resolution\",\n                    \"description\": \"DNS traffic detected from device\",\n                    \"expected_behavior\": \"The device sends DNS requests.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"dns.network.from_dhcp\",\n                    \"description\": \"DNS traffic detected only to DHCP provided server\",\n                    \"expected_behavior\": \"The device sends DNS requests to the DNS server provided by the DHCP server\",\n                    \"required_result\": \"Informational\",\n                    \"result\": \"Informational\"\n                },\n                {\n                    \"name\": \"dns.mdns\",\n                    \"description\": \"No MDNS traffic detected from the device\",\n                    \"expected_behavior\": \"Device may send MDNS requests\",\n                    \"required_result\": \"Informational\",\n                    \"result\": \"Informational\"\n                }\n            ]\n        },\n        \"report\": \"http://localhost:8000/report/Teltonika TRB140/2024-09-10T13:19:24\"\n    }\n]"
+					"body": "[\n    {\n        \"testrun\": {\n            \"version\": \"2.0\"\n        },\n        \"mac_addr\": \"00:1e:42:28:9e:4a\",\n        \"device\": {\n            \"mac_addr\": \"00:1e:42:28:9e:4a\",\n            \"manufacturer\": \"Teltonika\",\n            \"model\": \"TRB140\",\n            \"firmware\": \"test\",\n            \"test_modules\": {\n                \"protocol\": {\n                    \"enabled\": true\n                },\n                \"services\": {\n                    \"enabled\": true\n                },\n                \"ntp\": {\n                    \"enabled\": true\n                },\n                \"tls\": {\n                    \"enabled\": true\n                },\n                \"connection\": {\n                    \"enabled\": true\n                },\n                \"dns\": {\n                    \"enabled\": true\n                }\n            }\n        },\n        \"status\": \"Non-Compliant\",\n        \"started\": \"2000-01-01 00:00:00\",\n        \"finished\": \"2000-01-01 00:30:00\",\n        \"tests\": {\n            \"total\": 40,\n            \"results\": [\n                {\n                    \"name\": \"protocol.valid_bacnet\",\n                    \"description\": \"BACnet device could not be discovered\",\n                    \"expected_behavior\": \"BACnet traffic can be seen on the network and packets are valid and not malformed\",\n                    \"required_result\": \"Recommended\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"protocol.bacnet.version\",\n                    \"description\": \"Device did not respond to BACnet discovery\",\n                    \"expected_behavior\": \"The BACnet client implements an up to date version of BACnet\",\n                    \"required_result\": \"Recommended\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"protocol.valid_modbus\",\n                    \"description\": \"Device did not respond to Modbus connection\",\n                    \"expected_behavior\": \"Any Modbus functionality works as expected and valid Modbus traffic can be observed\",\n                    \"required_result\": \"Recommended\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"security.services.ftp\",\n                    \"description\": \"No FTP server found\",\n                    \"expected_behavior\": \"There is no FTP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.ssh.version\",\n                    \"description\": \"SSH server found running  protocol 2.0\",\n                    \"expected_behavior\": \"SSH server is not running or server is SSHv2\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.telnet\",\n                    \"description\": \"No telnet server found\",\n                    \"expected_behavior\": \"There is no Telnet service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.smtp\",\n                    \"description\": \"No SMTP server found\",\n                    \"expected_behavior\": \"There is no SMTP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.http\",\n                    \"description\": \"Found HTTP server running on port 80/tcp\",\n                    \"expected_behavior\": \"Device is unreachable on port 80 (or any other port) and only responds to HTTPS requests on port 443 (or any other port if HTTP is used at all)\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Disable all unsecure HTTP servers\",\n                        \"Setup TLS on the web server\"\n                    ]\n                },\n                {\n                    \"name\": \"security.services.pop\",\n                    \"description\": \"No POP server found\",\n                    \"expected_behavior\": \"There is no POP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.imap\",\n                    \"description\": \"No IMAP server found\",\n                    \"expected_behavior\": \"There is no IMAP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.snmpv3\",\n                    \"description\": \"No SNMP server found\",\n                    \"expected_behavior\": \"Device is unreachable on port 161 (or any other port) and device is unreachable on port 162 (or any other port) unless SNMP is essential in which case it is SNMPv3 is used.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.vnc\",\n                    \"description\": \"No VNC server found\",\n                    \"expected_behavior\": \"Device cannot be accessed / connected to via VNC on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"security.services.tftp\",\n                    \"description\": \"No TFTP server found\",\n                    \"expected_behavior\": \"There is no TFTP service running on any port\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"ntp.network.ntp_server\",\n                    \"description\": \"No NTP server found\",\n                    \"expected_behavior\": \"The device does not respond to NTP requests when it's IP is set as the NTP server on another device\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.port_link\",\n                    \"description\": \"No port errors detected\",\n                    \"expected_behavior\": \"When the etherent cable is connected to the port, the device triggers the port to its enabled \\\"Link UP\\\" (LEDs illuminate on device and switch ports if present) state, and the switch shows no errors with the LEDs and when interrogated with a \\\"show interface\\\" command on most network switches.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.port_speed\",\n                    \"description\": \"Succesfully auto-negotiated speeds above 10 Mbps\",\n                    \"expected_behavior\": \"When the ethernet cable is connected to the port, the device autonegotiates a speed that can be checked with the \\\"show interface\\\" command on most network switches.  The output of this command must also show that the \\\"configured speed\\\" is set to \\\"auto\\\".\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.port_duplex\",\n                    \"description\": \"Succesfully auto-negotiated full duplex\",\n                    \"expected_behavior\": \"When the ethernet cable is connected to the port, the device autonegotiates a full-duplex connection.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.switch.arp_inspection\",\n                    \"description\": \"Device uses ARP\",\n                    \"expected_behavior\": \"Device continues to operate correctly when ARP inspection is enabled on the switch.  No functionality is lost with ARP inspection enabled.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.switch.dhcp_snooping\",\n                    \"description\": \"Device does not act as a DHCP server\",\n                    \"expected_behavior\": \"Device continues to operate correctly when DHCP snooping is enabled on the switch.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.dhcp_address\",\n                    \"description\": \"Device responded to leased ip address\",\n                    \"expected_behavior\": \"The device is not setup with a static IP address.  The device accepts an IP address from a DHCP server (RFC 2131) and responds succesfully to an ICMP echo (ping) request.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.mac_address\",\n                    \"description\": \"MAC address found: 00:1e:42:28:9e:4a\",\n                    \"expected_behavior\": \"N/A\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.mac_oui\",\n                    \"description\": \"OUI Manufacturer found: Teltonika\",\n                    \"expected_behavior\": \"The MAC address prefix is registered in the IEEE Organizationally Unique Identifier database.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.private_address\",\n                    \"description\": \"All subnets are supported\",\n                    \"expected_behavior\": \"The device under test accepts IP addresses within all ranges specified in RFC 1918 and communicates using these addresses.  The Internet Assigned Numbers Authority (IANA) has reserved the following three blocks of the IP address space for private internets.  10.0.0.0 - 10.255.255.255.255 (10/8 prefix). 172.16.0.0 - 172.31.255.255 (172.16/12 prefix).  192.168.0.0 - 192.168.255.255 (192.168/16 prefix)\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.shared_address\",\n                    \"description\": \"All subnets are supported\",\n                    \"expected_behavior\": \"The device under test accepts IP addresses within the ranges specified in RFC 6598 and communicates using these addresses\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.dhcp_disconnect\",\n                    \"description\": \"An error occurred whilst running this test\",\n                    \"expected_behavior\": \"A client SHOULD use DHCP to reacquire or verify its IP address and network parameters whenever the local network parameters may have changed; e.g., at system boot time or after a disconnection from the local network, as the local network configuration may change without the client's or user's knowledge. If a client has knowledge ofa  previous network address and is unable to contact a local DHCP server, the client may continue to use the previous network addres until the lease for that address expires.  If the lease expires before the client can contact a DHCP server, the client must immediately discontinue use of the previous network address and may inform local users of the problem.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Error\"\n                },\n                {\n                    \"name\": \"connection.single_ip\",\n                    \"description\": \"Device is using multiple IP addresses\",\n                    \"expected_behavior\": \"The device under test does not behave as a network switch and only requets one IP address.  This test is to avoid that devices implement network switches that allow connecting strings of daisy chained devices to one single network port, as this would not make 802.1x port based authentication possible.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Ensure that all ports on the device are isolated\",\n                        \"Ensure only one DHCP client is running\"\n                    ]\n                },\n                {\n                    \"name\": \"connection.target_ping\",\n                    \"description\": \"Device responds to ping\",\n                    \"expected_behavior\": \"The device under test responds to an ICMP echo (ping) request.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.ipaddr.ip_change\",\n                    \"description\": \"Device has accepted an IP address change\",\n                    \"expected_behavior\": \"If the lease expires before the client receiveds a DHCPACK, the client moves to INIT state, MUST immediately stop any other network processing and requires network initialization parameters as if the client were uninitialized.  If the client then receives a DHCPACK allocating the client its previous network addres, the client SHOULD continue network processing.  If the client is given a new network address, it MUST NOT continue using the previous network address and SHOULD notify the local users of the problem.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.ipaddr.dhcp_failover\",\n                    \"description\": \"Secondary DHCP server lease confirmed active in device\",\n                    \"expected_behavior\": \"\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"connection.ipv6_slaac\",\n                    \"description\": \"Device does not support IPv6 SLAAC\",\n                    \"expected_behavior\": \"The device under test complies with RFC4862 and forms a valid IPv6 SLAAC address\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Install a network manager that supports IPv6\",\n                        \"Disable DHCPv6\"\n                    ]\n                },\n                {\n                    \"name\": \"connection.ipv6_ping\",\n                    \"description\": \"No IPv6 SLAAC address found. Cannot ping\",\n                    \"expected_behavior\": \"The device responds to the ping as per RFC4443\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Enable ping response to IPv6 ICMP requests in network manager settings\",\n                        \"Create a firewall exception to allow ICMPv6 via LAN\"\n                    ]\n                },\n                {\n                    \"name\": \"security.tls.v1_2_server\",\n                    \"description\": \"TLS 1.2 certificate is invalid\",\n                    \"expected_behavior\": \"TLS 1.2 certificate is issued to the web browser client when accessed\",\n                    \"required_result\": \"Required if Applicable\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Enable TLS 1.2 support in the web server configuration\",\n                        \"Disable TLS 1.0 and 1.1\",\n                        \"Sign the certificate used by the web server\"\n                    ]\n                },\n                {\n                    \"name\": \"security.tls.v1_2_client\",\n                    \"description\": \"No outbound TLS connections were found\",\n                    \"expected_behavior\": \"The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers\",\n                    \"required_result\": \"Required if Applicable\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"security.tls.v1_3_server\",\n                    \"description\": \"TLS 1.3 certificate is invalid\",\n                    \"expected_behavior\": \"TLS 1.3 certificate is issued to the web browser client when accessed\",\n                    \"required_result\": \"Informational\",\n                    \"result\": \"Informational\"\n                },\n                {\n                    \"name\": \"security.tls.v1_3_client\",\n                    \"description\": \"No outbound TLS connections were found\",\n                    \"expected_behavior\": \"The packet indicates a TLS connection with at least TLS 1.3\",\n                    \"required_result\": \"Informational\",\n                    \"result\": \"Informational\"\n                },\n                {\n                    \"name\": \"ntp.network.ntp_support\",\n                    \"description\": \"Device has not sent any NTP requests\",\n                    \"expected_behavior\": \"The device sends an NTPv4 request to the configured NTP server.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Non-Compliant\",\n                    \"recommendations\": [\n                        \"Set the NTP version to v4 in the NTP client\",\n                        \"Install an NTP client that supports NTPv4\"\n                    ]\n                },\n                {\n                    \"name\": \"ntp.network.ntp_dhcp\",\n                    \"description\": \"Device has not sent any NTP requests\",\n                    \"expected_behavior\": \"Device can accept NTP server address, provided by the DHCP server (DHCP OFFER PACKET)\",\n                    \"required_result\": \"Roadmap\",\n                    \"result\": \"Feature Not Detected\"\n                },\n                {\n                    \"name\": \"dns.network.hostname_resolution\",\n                    \"description\": \"DNS traffic detected from device\",\n                    \"expected_behavior\": \"The device sends DNS requests.\",\n                    \"required_result\": \"Required\",\n                    \"result\": \"Compliant\"\n                },\n                {\n                    \"name\": \"dns.network.from_dhcp\",\n                    \"description\": \"DNS traffic detected only to DHCP provided server\",\n                    \"expected_behavior\": \"The device sends DNS requests to the DNS server provided by the DHCP server\",\n                    \"required_result\": \"Informational\",\n                    \"result\": \"Informational\"\n                },\n                {\n                    \"name\": \"dns.mdns\",\n                    \"description\": \"No MDNS traffic detected from the device\",\n                    \"expected_behavior\": \"Device may send MDNS requests\",\n                    \"required_result\": \"Informational\",\n                    \"result\": \"Informational\"\n                }\n            ]\n        },\n        \"report\": \"http://localhost:8000/report/Teltonika TRB140/2024-09-10T13:19:24\",\n        \"export\": \"http://localhost:8000/export/Teltonika TRB140/2024-09-10T13:19:24\"\n    }\n]"
 				},
 				{
 					"name": "No Test Reports (200)",
@@ -3586,9 +3586,661 @@
 						"profile",
 						"Test"
 					]
-				}
+				},
+				"description": "Delete a root CA certificate"
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Delete Certificate (200)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"GTS Root R1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully deleted the certificate\"\n}"
+				},
+				{
+					"name": "Not Found (404)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"non-existing name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A certificate with that name could not be found\"\n}"
+				},
+				{
+					"name": "Invalid JSON (400)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/system/config/certs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"system",
+								"config",
+								"certs"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Received a bad request\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Get Profile Format",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/profiles/format",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profiles",
+						"format"
+					]
+				},
+				"description": "Obtain the current format of the risk assessment questionnaire"
+			},
+			"response": [
+				{
+					"name": "Get Profile Format (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/profiles/format",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles",
+								"format"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": ""
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"question\": \"How will this device be used at Google?\",\n        \"description\": \"Desribe your use case. Add links to user journey diagrams and TDD if available.\",\n        \"type\": \"text-long\",\n        \"validation\": {\n            \"max\": \"512\",\n            \"required\": true\n        }\n    },\n    {\n        \"question\": \"Is this device going to be managed by Google or a third party?\",\n        \"description\": \"A manufacturer or supplier is considered third party in this case\",\n        \"type\": \"select\",\n        \"options\": [\n            \"Google\",\n            \"Third Party\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n        \"type\": \"select\",\n        \"options\": [\n            \"Yes\",\n            \"No\",\n            \"N/A\"\n        ],\n        \"default\": \"N/A\",\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"category\": \"Data Transmission\",\n        \"question\": \"Which of the following statements are true about this device?\",\n        \"description\": \"This tells us about the types of data that are transmitted from this device and how the transmission is performed from a technical standpoint.\",\n        \"type\": \"select-multiple\",\n        \"options\": [\n            \"PII/PHI, confidential/sensitive business data, Intellectual Property and Trade Secrets, Critical Infrastructure and Identity Assets to a domain outside Alphabet's ownership\",\n            \"Data transmission occurs across less-trusted networks (e.g. the internet).\",\n            \"A failure in data transmission would likely have a substantial negative impact (https://www.rra.rocks/docs/standard_levels#levels-definitions)\",\n            \"A confidentiality breach during transmission would have a substantial negative impact\",\n            \"The device does not encrypt data during transmission\",\n            \"None of the above\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"category\": \"Data Transmission\",\n        \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n        \"type\": \"select\",\n        \"options\": [\n            \"Yes\",\n            \"No\",\n            \"I don't know\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"category\": \"Remote Operation\",\n        \"question\": \"Click the statements that best describe the characteristics of this device.\",\n        \"description\": \"This tells us about how this device is managed remotely.\",\n        \"type\": \"select-multiple\",\n        \"options\": [\n            \"PII/PHI, or confidential business data is accessible from the device without authentication\",\n            \"Unrecoverable actions (e.g. disk wipe) can be performed remotely\",\n            \"Authentication is not required for remote access\",\n            \"The management interface is accessible from the public internet\",\n            \"Static credentials are used for administration\",\n            \"None of the above\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"category\": \"Operating Environment\",\n        \"question\": \"Are any of the following statements true about this device?\",\n        \"description\": \"This informs us about what other systems and processes this device is a part of.\",\n        \"type\": \"select-multiple\",\n        \"options\": [\n            \"The device monitors an environment for active risks to human life.\",\n            \"The device is used to convey people, or critical property.\",\n            \"The device controls robotics in human-accessible spaces.\",\n            \"The device controls physical access systems.\",\n            \"The device is involved in processes required by regulations, or compliance. (ex. privacy, security, safety regulations)\",\n            \"The device's failure would cause faults in other high-criticality processes.\",\n            \"None of the above\"\n        ],\n        \"validation\": {\n            \"required\": true\n        }\n    },\n    {\n        \"question\": \"Comments\",\n        \"description\": \"Anything else to share?\",\n        \"type\": \"text-long\",\n        \"validation\": {\n            \"max\": \"512\"\n        }\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "List Profiles",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/profiles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profiles"
+					]
+				},
+				"description": "Get a list of risk assessment profiles saved by the user"
+			},
+			"response": [
+				{
+					"name": "List Profiles (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": ""
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]"
+				},
+				{
+					"name": "No Profiles (200)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": ""
+						}
+					],
+					"cookie": [],
+					"body": "[\n    \n]"
+				}
+			]
+		},
+		{
+			"name": "Update Profile",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Testing\",\n    \"status\": \"Valid\",\n    \"questions\": [\n        {\n            \"question\": \"What type of device is this?\",\n            \"answer\": \"IoT Gateway\"\n        },\n        {\n            \"question\": \"How will this device be used at Google?\",\n            \"answer\": \"asdasd\"\n        },\n        {\n            \"question\": \"Is this device going to be managed by Google or a third party?\",\n            \"answer\": \"Google\"\n        },\n        {\n            \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n            \"answer\": \"N/A\"\n        },\n        {\n            \"question\": \"Are any of the following statements true about your device?\",\n            \"answer\": [\n                3\n            ]\n        },\n        {\n            \"question\": \"Which of the following statements are true about this device?\",\n            \"answer\": [\n                5\n            ]\n        },\n        {\n            \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n            \"answer\": \"Yes\"\n        },\n        {\n            \"question\": \"Click the statements that best describe the characteristics of this device.\",\n            \"answer\": [\n                5\n            ]\n        },\n        {\n            \"question\": \"Are any of the following statements true about this device?\",\n            \"answer\": [\n                6\n            ]\n        },\n        {\n            \"question\": \"Comments\",\n            \"answer\": \"\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/profiles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profiles"
+					]
+				},
+				"description": "Create or update a risk assessment questionnaire response"
+			},
+			"response": [
+				{
+					"name": "Update Profile (200)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully updated that profile\"\n}"
+				},
+				{
+					"name": "Create Profile (201)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully created a new profile\"\n}"
+				},
+				{
+					"name": "Invalid JSON (400)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Invalid request received\"\n}"
+				},
+				{
+					"name": "Not Implemented (501)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"name\": \"New Profile\",\n        \"version\": \"2.0\",\n        \"created\": \"2024-10-08\",\n        \"status\": \"Valid\",\n        \"risk\": \"High\",\n        \"questions\": [\n            {\n                \"question\": \"How will this device be used at Google?\",\n                \"answer\": \"Yes\"\n            },\n            {\n                \"question\": \"Is this device going to be managed by Google or a third party?\",\n                \"answer\": \"Google\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Will the third-party device administrator be able to grant access to authorized Google personnel upon request?\",\n                \"answer\": \"No\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Which of the following statements are true about this device?\",\n                \"answer\": [\n                    0,\n                    1,\n                    2\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Does the network protocol assure server-to-client identity verification?\",\n                \"answer\": \"Yes\",\n                \"risk\": \"Limited\"\n            },\n            {\n                \"question\": \"Click the statements that best describe the characteristics of this device.\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Are any of the following statements true about this device?\",\n                \"answer\": [\n                    0\n                ],\n                \"risk\": \"High\"\n            },\n            {\n                \"question\": \"Comments\",\n                \"answer\": \"\"\n            }\n        ]\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Not Implemented",
+					"code": 501,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Risk profiles are not available right now\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Delete Profile",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"New Profile\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/profiles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"profiles"
+					]
+				},
+				"description": "Delete an existing risk assessment questionaire response"
+			},
+			"response": [
+				{
+					"name": "Delete Profile (200)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"New Profile\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"success\": \"Successfully deleted that profile\"\n}"
+				},
+				{
+					"name": "Not Found (404)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"non-existing profile\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"A profile with that name could not be found\"\n}"
+				},
+				{
+					"name": "Internal Serves Error (500)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"non-existing profile\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"An error occurred whilst deleting that profile\"\n}"
+				},
+				{
+					"name": "Invalid JSON (400)",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/profiles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json",
+							"name": "Content-Type",
+							"description": "",
+							"type": "text"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"error\": \"Invalid request received\"\n}"
+				}
+			]
 		}
 	]
 }

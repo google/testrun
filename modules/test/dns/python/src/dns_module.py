@@ -13,7 +13,8 @@
 # limitations under the License.
 """DNS test module"""
 import subprocess
-from scapy.all import rdpcap, DNS, IP, Ether
+from scapy.all import rdpcap, DNS, IP, Ether, DNSRR
+from scapy.error import Scapy_Exception
 from test_module import TestModule
 import os
 from collections import Counter
@@ -156,16 +157,22 @@ class DNSModule(TestModule):
   def extract_dns_data(self):
     dns_data = []
 
-    # Read the pcap file
-    packets = rdpcap(self.dns_server_capture_file) + rdpcap(
-        self.startup_capture_file) + rdpcap(self.monitor_capture_file)
+    # Read the startup and monitor pcap files
+    packets = (rdpcap(self.startup_capture_file) +
+               rdpcap(self.monitor_capture_file))
+
+    # Read the dns.pcap file
+    try:
+      packets += rdpcap(self.dns_server_capture_file)
+    except (FileNotFoundError, Scapy_Exception):
+      LOGGER.error('dns.pcap not found or empty, ignoring')
 
     # Iterate through DNS packets
     for packet in packets:
       if DNS in packet and packet.haslayer(IP):
 
         # Check if either source or destination MAC matches the device
-        if self._device_mac in (packet[Ether].src, packet[Ether].dst):
+        if self._device_mac in [packet[Ether].src, packet[Ether].dst]:
           source_ip = packet[IP].src
           destination_ip = packet[IP].dst
           dns_layer = packet[DNS]
@@ -184,15 +191,17 @@ class DNSModule(TestModule):
           if dns_layer.qr == 1 and hasattr(dns_layer,
                                            'an') and dns_layer.ancount > 0:
             # Loop through all answers in the DNS response
-            for i in range(dns_layer.ancount):
+            for i in range(min(dns_layer.ancount, len(dns_layer.an))):
               answer = dns_layer.an[i]
-              # Check for IPv4 (A record) or IPv6 (AAAA record)
-              if answer.type == 1:  # Indicates an A record (IPv4 address)
-                resolved_ip = answer.rdata  # Extract IPv4 address
-                break  # Stop after finding the first valid resolved IP
-              elif answer.type == 28:  # Indicates an AAAA record (IPv6 address)
-                resolved_ip = answer.rdata  # Extract IPv6 address
-                break  # Stop after finding the first valid resolved IP
+              # Check if the answer is of type DNSRR
+              if isinstance(answer, DNSRR):
+                # Check for IPv4 (A record) or IPv6 (AAAA record)
+                if answer.type == 1:  # Indicates an A record (IPv4 address)
+                  resolved_ip = answer.rdata  # Extract IPv4 address
+                  break  # Stop after finding the first valid resolved IP
+                elif answer.type == 28: # Indicates AAAA record (IPv6 address)
+                  resolved_ip = answer.rdata  # Extract IPv6 address
+                  break  # Stop after finding the first valid resolved IP
 
           dns_data.append({
               'Timestamp': float(packet.time),  # Timestamp of the DNS packet
@@ -217,15 +226,15 @@ class DNSModule(TestModule):
 
   def _has_dns_traffic(self, tcpdump_filter):
     dns_server_queries = self._exec_tcpdump(tcpdump_filter,
-                                            DNS_SERVER_CAPTURE_FILE)
+                                            self.dns_server_capture_file)
     LOGGER.info('DNS Server queries found: ' + str(len(dns_server_queries)))
 
     dns_startup_queries = self._exec_tcpdump(tcpdump_filter,
-                                             STARTUP_CAPTURE_FILE)
+                                             self.startup_capture_file)
     LOGGER.info('Startup DNS queries found: ' + str(len(dns_startup_queries)))
 
     dns_monitor_queries = self._exec_tcpdump(tcpdump_filter,
-                                             MONITOR_CAPTURE_FILE)
+                                             self.monitor_capture_file)
     LOGGER.info('Monitor DNS queries found: ' + str(len(dns_monitor_queries)))
 
     num_query_dns = len(dns_server_queries) + len(dns_startup_queries) + len(
@@ -233,6 +242,10 @@ class DNSModule(TestModule):
     LOGGER.info('DNS queries found: ' + str(num_query_dns))
 
     return num_query_dns > 0
+
+  # Added to access the method for dns unittests
+  def dns_network_from_dhcp(self):
+    return self._dns_network_from_dhcp()
 
   def _dns_network_from_dhcp(self):
     LOGGER.info('Running dns.network.from_dhcp')
@@ -246,10 +259,9 @@ class DNSModule(TestModule):
     dns_packets_local = self._has_dns_traffic(tcpdump_filter=tcpdump_filter)
 
     # Check if the device sends any DNS traffic to non-DHCP provided server
-    tcpdump_filter = (f'dst port 53 and dst not host {self._dns_server} ' +
-                      'ether src {self._device_mac}')
+    tcpdump_filter = (f'dst port 53 and not dst host {self._dns_server} ' +
+                      f'and ether src {self._device_mac}')
     dns_packets_not_local = self._has_dns_traffic(tcpdump_filter=tcpdump_filter)
-
     if dns_packets_local or dns_packets_not_local:
       if dns_packets_not_local:
         description = 'DNS traffic detected to non-DHCP provided server'
@@ -257,8 +269,10 @@ class DNSModule(TestModule):
         LOGGER.info('DNS traffic detected only to configured DHCP DNS server')
         description = 'DNS traffic detected only to DHCP provided server'
     else:
-      LOGGER.info('No DNS traffic detected from the device')
-      description = 'No DNS traffic detected from the device'
+      LOGGER.info(
+        'No DNS traffic detected from the device to the DHCP DNS server')
+      description = '' \
+      'No DNS traffic detected from the device to the DHCP DNS server'
     return 'Informational', description
 
   def _dns_network_hostname_resolution(self):

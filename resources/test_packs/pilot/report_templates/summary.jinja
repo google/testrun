@@ -39,14 +39,14 @@
         <div class="summary-box-value">Complete</div>
         <div class="summary-box-label">Test Result</div>
         <div class="summary-box-value">{{ json_data['result'] }}</div>
-        <div class="summary-box-label">Preliminary Pilot Recommendation</div>
+        <div class="summary-box-label">Pilot Recommendation</div>
         <div style="color: white; font-size:24px; font-weight: 700;" class="summary-box-value">{{ json_data['status'] }}</div>
         <div class="summary-box-label">Started</div>
         <div class="summary-box-value">{{ json_data['started']}}</div>
         <div class="summary-box-label">Duration</div>
         <div class="summary-box-value">
           {% if duration.seconds//3600 > 0 %}{{ duration.seconds//3600 }}h {% endif %}
-          {% if duration.seconds//60 > 0 %}{{ duration.seconds//60 }}m {% endif %}
+          {% if (duration.seconds % 3600) // 60 > 0 %}{{ (duration.seconds % 3600) // 60 }}m {% endif %}
           {{ duration.seconds%60 }}s
         </div>
     </div>

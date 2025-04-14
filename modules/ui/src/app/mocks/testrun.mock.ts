@@ -116,6 +116,7 @@ const PROGRESS_DATA_RESPONSE = (
     finished,
     tests,
     report,
+    export: '',
     tags: ['VSA', 'Other tag', 'And one more'],
   } as TestrunStatus;
   if (result) {

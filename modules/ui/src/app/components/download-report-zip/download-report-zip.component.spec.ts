@@ -43,7 +43,8 @@ describe('DownloadReportZipComponent', () => {
     fixture = TestBed.createComponent(DownloadReportZipComponent);
     compiled = fixture.nativeElement as HTMLElement;
     component = fixture.componentInstance;
-    component.url = 'localhost:8080';
+    component.report = 'localhost:8080';
+    component.export = 'localhost:8080';
     component.data = MOCK_PROGRESS_DATA_COMPLIANT;
   });
 
@@ -64,7 +65,8 @@ describe('DownloadReportZipComponent', () => {
           ariaLabel: 'Download zip',
           data: {
             profiles: [],
-            url: 'localhost:8080',
+            report: 'localhost:8080',
+            export: 'localhost:8080',
             isPilot: false,
           },
           autoFocus: true,

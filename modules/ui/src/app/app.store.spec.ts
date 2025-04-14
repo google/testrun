@@ -513,6 +513,7 @@ describe('AppStore', () => {
           started: '2023-06-22T09:20:00.123Z',
           finished: '2023-06-22T09:26:00.123Z',
           report: 'https://api.testrun.io/report.pdf',
+          export: 'https://api.testrun.io/export.pdf',
           tags: [],
           tests: {
             total: 3,

@@ -32,7 +32,8 @@ limitations under the License.
     <app-download-report-zip
       id="downloadReportZip"
       class="download-option zip"
-      [url]="data.report"
+      [report]="data.report"
+      [export]="data.export"
       [profiles]="profiles">
       <mat-option
         (onSelectionChange)="onZipSelected($event)"

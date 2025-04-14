@@ -123,11 +123,11 @@ version upgrade. To modify these values:
 set the timeout property for:
     ```
     "test_modules":{
-        "connection":{
-          "timeout": 500
-        }
+      "connection":{
+        "timeout": 500
       }
-      ```
+    }
+    ```
 
 Before timeout options:
 ```
@@ -163,6 +163,7 @@ After timeout options:
       "timeout": 500
     }
   }
+}
 ```
 
 ## Override test module log level at the system level 

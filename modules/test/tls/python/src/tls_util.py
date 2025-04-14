@@ -158,6 +158,9 @@ class TLSUtil():
     except socket.timeout:
       LOGGER.info('Socket timeout error')
       return None
+    except OSError as e:
+      LOGGER.error(e)
+      return None
 
     return cert_pem
 

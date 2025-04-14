@@ -37,6 +37,7 @@ import {
 
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
+export const EXPORT = '/export';
 
 export const UNAVAILABLE_VERSION = {
   installed_version: 'v?.?',
@@ -58,7 +59,7 @@ export class TestRunService {
       return '';
     }
     // replace url part before '/report' from static to dynamic API URL
-    return url.replace(/^.*(?=\/report)/, `${API_URL}`);
+    return url.replace(/^.*(?=\/report|\/export)/, `${API_URL}`);
   }
 
   fetchDevices(): Observable<Device[]> {
@@ -83,6 +84,7 @@ export class TestRunService {
     return this.http.get<TestrunStatus>(`${API_URL}/system/status`).pipe(
       map(result => {
         result.report = this.changeReportURL(result.report);
+        result.export = this.changeReportURL(result.export);
         return result;
       }),
       catchError(() => {
@@ -152,9 +154,10 @@ export class TestRunService {
   getHistory(): Observable<TestrunStatus[] | null> {
     return this.http.get<TestrunStatus[]>(`${API_URL}/reports`).pipe(
       map(result => {
-        result.forEach(
-          item => (item.report = this.changeReportURL(item.report))
-        );
+        result.forEach(item => {
+          item.report = this.changeReportURL(item.report);
+          item.export = this.changeReportURL(item.export);
+        });
         return result;
       })
     );

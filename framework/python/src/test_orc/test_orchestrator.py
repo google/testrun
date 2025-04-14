@@ -177,7 +177,6 @@ class TestOrchestrator:
     report = TestReport()
 
     generated_report_json = self._generate_report()
-
     report.from_json(generated_report_json)
     report.add_module_reports(self.get_session().get_module_reports())
     report.add_module_templates(self.get_session().get_module_templates())
@@ -186,6 +185,7 @@ class TestOrchestrator:
     self._write_reports(report)
     self._test_in_progress = False
     self.get_session().set_report_url(report.get_report_url())
+    self.get_session().set_export_url(report.get_export_url())
 
     # Set testing description
     test_pack: TestPack = self.get_test_pack(device.test_pack)
@@ -267,6 +267,7 @@ class TestOrchestrator:
             "{device_folder}",
             device.device_folder) +
         self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S"))
+    report["export"] = report["report"].replace("report", "export")
 
     return report
 

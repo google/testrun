@@ -86,14 +86,14 @@ export class DownloadOptionsComponent {
     }
     const link = document.createElement('a');
     link.href =
-      type === DownloadOption.PDF ? data.report : this.getZipLink(data.report);
+      type === DownloadOption.PDF ? data.report : this.getZipLink(data);
     link.target = '_blank';
     link.download = this.getReportTitle(data);
     link.dispatchEvent(new MouseEvent('click'));
   }
 
-  getZipLink(reportURL: string): string {
-    return reportURL.replace('report', 'export');
+  getZipLink(data: TestrunStatus): string {
+    return data.export || data.report.replace('report', 'export');
   }
 
   getReportTitle(data: TestrunStatus) {

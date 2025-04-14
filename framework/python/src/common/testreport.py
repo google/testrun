@@ -71,6 +71,7 @@ class TestReport():
     self._module_reports = []
     self._module_templates = []
     self._report_url = ''
+    self._export_url = ''
     self._cur_page = 0
 
   def update_device_profile(self, additional_info):
@@ -109,6 +110,9 @@ class TestReport():
 
   def get_report_url(self):
     return self._report_url
+
+  def get_export_url(self):
+    return self._export_url
 
   def set_mac_addr(self, mac_addr):
     self._mac_addr = mac_addr
@@ -186,6 +190,9 @@ class TestReport():
 
     if 'report' in json_file:
       self._report_url = json_file['report']
+    if 'export' in json_file:
+      self._export_url = json_file['export']
+
     self._total_tests = json_file['tests']['total']
 
     # Loop through test results
@@ -269,8 +276,6 @@ class TestReport():
     # Obtain the steps to resolve
     logic = current_test_pack.get_logic()
     steps_to_resolve_ = logic.get_steps_to_resolve(json_data)
-
-    LOGGER.debug(steps_to_resolve_)
 
     module_reports = self._module_reports
     env_module = Environment(loader=BaseLoader())

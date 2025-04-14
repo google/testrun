@@ -28,6 +28,7 @@ export class TestRunMqttService {
     return this.topic<TestrunStatus>(Topic.Status).pipe(
       map(result => {
         result.report = this.testrunService.changeReportURL(result.report);
+        result.export = this.testrunService.changeReportURL(result.export);
         return result;
       })
     );

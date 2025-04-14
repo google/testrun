@@ -935,7 +935,8 @@ def test_get_reports(empty_devices_dir, add_devices, # pylint: disable=W0613
     "started",
     "finished",
     "tests",
-    "report"
+    "report",
+    "export"
   ]
 
   # Iterate through the expected_keys

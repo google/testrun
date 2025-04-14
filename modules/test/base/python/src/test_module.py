@@ -168,7 +168,7 @@ class TestModule:
             if len(result) > 1:
               test['description'] = result[1]
             else:
-              test['description'] = 'An error occured whilst running this test'
+              test['description'] = 'An error occurred whilst running this test'
 
           # Compliant / Non-Compliant result
           elif isinstance(result[0], bool):
@@ -197,7 +197,7 @@ class TestModule:
       else:
         LOGGER.debug('No result was returned from the test module')
         test['result'] = TestResult.ERROR
-        test['description'] = 'An error occured whilst running this test'
+        test['description'] = 'An error occurred whilst running this test'
 
       # Remove the steps to resolve if compliant already
       if (test['result'] == TestResult.COMPLIANT and 'recommendations' in test):

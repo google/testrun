@@ -21,7 +21,7 @@ echo Building the ui builder
 if docker build -t testrun/build-ui -f modules/ui/build.Dockerfile . ; then
   echo Successully built the ui builder
 else
-  echo An error occured whilst building the ui builder
+  echo An error occurred whilst building the ui builder
   exit 1
 fi
 
