@@ -14,12 +14,17 @@
 """Module that contains various methods for validating the Port statistics """
 
 import os
+import re
 
 ETHTOOL_CONN_STATS_FILE = 'runtime/network/ethtool_conn_stats.txt'
 ETHTOOL_PORT_STATS_PRE_FILE = (
     'runtime/network/ethtool_port_stats_pre_monitor.txt')
 ETHTOOL_PORT_STATS_POST_FILE = (
     'runtime/network/ethtool_port_stats_post_monitor.txt')
+IFCONFIG_PORT_STATS_PRE_FILE = (
+    'runtime/network/ifconfig_port_stats_pre_monitor.txt')
+IFCONFIG_PORT_STATS_POST_FILE = (
+    'runtime/network/ifconfig_port_stats_post_monitor.txt')
 
 LOG_NAME = 'port_stats_util'
 LOGGER = None
@@ -32,10 +37,14 @@ class PortStatsUtil():
                logger,
                ethtool_conn_stats_file=ETHTOOL_CONN_STATS_FILE,
                ethtool_port_stats_pre_file=ETHTOOL_PORT_STATS_PRE_FILE,
-               ethtool_port_stats_post_file=ETHTOOL_PORT_STATS_POST_FILE):
+               ethtool_port_stats_post_file=ETHTOOL_PORT_STATS_POST_FILE,
+               ifconfig_port_stats_pre_file=IFCONFIG_PORT_STATS_PRE_FILE,
+               ifconfig_port_stats_post_file=IFCONFIG_PORT_STATS_POST_FILE):
     self.ethtool_conn_stats_file = ethtool_conn_stats_file
     self.ethtool_port_stats_pre_file = ethtool_port_stats_pre_file
     self.ethtool_port_stats_post_file = ethtool_port_stats_post_file
+    self.ifconfig_port_stats_pre_file = ifconfig_port_stats_pre_file
+    self.ifconfig_port_stats_post_file = ifconfig_port_stats_post_file
     global LOGGER
     LOGGER = logger
     self.conn_stats = self._read_stats_file(self.ethtool_conn_stats_file)
@@ -48,16 +57,13 @@ class PortStatsUtil():
       auto_negotiation = 'on' in auto_negotiation_status
     return auto_negotiation
 
-  def connection_port_link_test(self):
+  def ethtool_port_link_test(self):
     stats_pre = self._read_stats_file(self.ethtool_port_stats_pre_file)
     stats_post = self._read_stats_file(self.ethtool_port_stats_post_file)
     result = None
     description = ''
     details = ''
-    if stats_pre is None or stats_pre is None:
-      result = 'Error'
-      description = 'Port stats not available'
-    else:
+    if stats_pre is not None and stats_pre is not None:
       tx_errors_pre = self._get_stat_option(stats=stats_pre,
                                             option='tx_errors:')
       tx_errors_post = self._get_stat_option(stats=stats_post,
@@ -68,11 +74,8 @@ class PortStatsUtil():
                                              option='rx_errors:')
 
       # Check that the above have been resolved correctly
-      if (tx_errors_pre is None or tx_errors_post is None or
-        rx_errors_pre is None or rx_errors_post is None):
-        result = 'Error'
-        description = 'Port stats not available'
-      else:
+      if (tx_errors_pre is not None and tx_errors_post is not None and
+        rx_errors_pre is not None and rx_errors_post is not None):
         tx_errors = int(tx_errors_post) - int(tx_errors_pre)
         rx_errors = int(rx_errors_post) - int(rx_errors_pre)
         if tx_errors > 0 or rx_errors > 0:
@@ -83,6 +86,41 @@ class PortStatsUtil():
           result = True
           description = 'No port errors detected'
     return result, description, details
+
+  def ifconfig_port_link_test(self):
+    stats_pre = self._read_stats_file(self.ifconfig_port_stats_pre_file)
+    stats_post = self._read_stats_file(self.ifconfig_port_stats_post_file)
+    result = None
+    description = ''
+    details = ''
+    if stats_pre is not None and stats_pre is not None:
+      rx_errors_pre, tx_errors_pre = self.extract_rx_tx_error_counts(stats_pre)
+      rx_errors_post, tx_errors_post = self.extract_rx_tx_error_counts(stats_post)
+
+      # Check that the above have been resolved correctly
+      if (tx_errors_pre is not None and tx_errors_post is not None and
+        rx_errors_pre is not None and rx_errors_post is not None):
+        tx_errors = int(tx_errors_post) - int(tx_errors_pre)
+        rx_errors = int(rx_errors_post) - int(rx_errors_pre)
+        if tx_errors > 0 or rx_errors > 0:
+          result = False
+          description = 'Port errors detected'
+          details = f'TX errors: {tx_errors}, RX errors: {rx_errors}'
+        else:
+          result = True
+          description = 'No port errors detected'
+    return result, description, details
+
+  def connection_port_link_test(self):
+    port_results = self.ethtool_port_link_test()
+    if port_results[0] is None:
+      port_results = self.ifconfig_port_link_test()
+    if port_results[0] is None:
+      result = 'Error'
+      description = 'Port stats not available'
+      details = ''
+      port_results = result, description, details
+    return port_results
 
   def connection_port_duplex_test(self):
     auto_negotiation = self.is_autonegotiate()
@@ -132,11 +170,19 @@ class PortStatsUtil():
         details = f'Speed negotiated: {speed}'
     return result, description, details
 
+  def extract_rx_tx_error_counts(self,ifconfig):
+    rx_match = re.search(r'^\s*RX errors (\d+)', ifconfig, re.MULTILINE)
+    tx_match = re.search(r'^\s*TX errors (\d+)', ifconfig, re.MULTILINE)
+
+    if rx_match and tx_match:
+        return int(rx_match.group(1)), int(tx_match.group(1))
+    else:
+        return None, None
+
   def _get_stat_option(self, stats, option):
     """Extract the requested parameter from the ethtool result"""
     value = None
     for line in stats.split('\n'):
-      #LOGGER.info(f'Checking option: {line}')
       if line.startswith(f'{option}'):
         value = line.split(':')[1].strip()
         break

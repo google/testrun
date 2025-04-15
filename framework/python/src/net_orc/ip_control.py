@@ -99,9 +99,17 @@ class IPControl:
           return addr_info.address
     return None
 
-  def get_iface_port_stats(self, iface):
+  def get_iface_ethtool_port_stats(self, iface):
     """Extract information about packets connection"""
     response = util.run_command(f'ethtool -S {iface}')
+    if len(response[1]) == 0:
+      return response[0]
+    else:
+      return None
+
+  def get_iface_ifconfig_port_stats(self, iface):
+    """Extract information about packets connection"""
+    response = util.run_command(f'ifconfig -a {iface}')
     if len(response[1]) == 0:
       return response[0]
     else:
