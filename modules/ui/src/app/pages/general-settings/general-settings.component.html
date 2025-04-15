@@ -166,8 +166,11 @@ limitations under the License.
     </div>
   </ng-template>
   <ng-template #portData>
-    <p class="setting-data">
-      {{ vm.systemConfig.single_intf ? 'Single port' : 'Two ports' }}
+    <p class="setting-data" *ngIf="vm.systemConfig?.single_intf === true">
+      Single port
+    </p>
+    <p class="setting-data" *ngIf="vm.systemConfig?.single_intf === false">
+      Two ports
     </p>
   </ng-template>
   <ng-template #analyticsData>
