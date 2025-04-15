@@ -29,7 +29,7 @@ export class CanActivateGuard implements CanActivate {
   private store = inject<Store<AppState>>(Store);
   private readonly router = inject(Router);
 
-  canActivate(): Observable<boolean> | Promise<boolean> | boolean {
+  canActivate(): Observable<boolean> {
     return this.store.select(selectSystemConfig).pipe(
       filter(config => config.network?.device_intf !== undefined),
       tap(config => {
