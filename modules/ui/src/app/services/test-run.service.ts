@@ -243,7 +243,16 @@ export class TestRunService {
   }
 
   fetchProfiles(): Observable<Profile[]> {
-    return this.http.get<Profile[]>(`${API_URL}/profiles`);
+    return this.http
+      .get<Required<Profile>[]>(`${API_URL}/profiles`)
+      .pipe(
+        map(items =>
+          items.sort(
+            (a, b) =>
+              new Date(b.created).getTime() - new Date(a.created).getTime()
+          )
+        )
+      );
   }
 
   deleteProfile(name: string): Observable<boolean> {
