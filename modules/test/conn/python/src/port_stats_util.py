@@ -74,8 +74,8 @@ class PortStatsUtil():
                                              option='rx_errors:')
 
       # Check that the above have been resolved correctly
-      if (tx_errors_pre is not None and tx_errors_post is not None and
-        rx_errors_pre is not None and rx_errors_post is not None):
+      if (tx_errors_pre is not None and tx_errors_post is not None
+          and rx_errors_pre is not None and rx_errors_post is not None):
         tx_errors = int(tx_errors_post) - int(tx_errors_pre)
         rx_errors = int(rx_errors_post) - int(rx_errors_pre)
         if tx_errors > 0 or rx_errors > 0:
@@ -95,11 +95,12 @@ class PortStatsUtil():
     details = ''
     if stats_pre is not None and stats_pre is not None:
       rx_errors_pre, tx_errors_pre = self.extract_rx_tx_error_counts(stats_pre)
-      rx_errors_post, tx_errors_post = self.extract_rx_tx_error_counts(stats_post)
+      rx_errors_post, tx_errors_post = self.extract_rx_tx_error_counts(
+          stats_post)
 
       # Check that the above have been resolved correctly
-      if (tx_errors_pre is not None and tx_errors_post is not None and
-        rx_errors_pre is not None and rx_errors_post is not None):
+      if (tx_errors_pre is not None and tx_errors_post is not None
+          and rx_errors_pre is not None and rx_errors_post is not None):
         tx_errors = int(tx_errors_post) - int(tx_errors_pre)
         rx_errors = int(rx_errors_post) - int(rx_errors_pre)
         if tx_errors > 0 or rx_errors > 0:
@@ -170,14 +171,14 @@ class PortStatsUtil():
         details = f'Speed negotiated: {speed}'
     return result, description, details
 
-  def extract_rx_tx_error_counts(self,ifconfig):
+  def extract_rx_tx_error_counts(self, ifconfig):
     rx_match = re.search(r'^\s*RX errors (\d+)', ifconfig, re.MULTILINE)
     tx_match = re.search(r'^\s*TX errors (\d+)', ifconfig, re.MULTILINE)
 
     if rx_match and tx_match:
-        return int(rx_match.group(1)), int(tx_match.group(1))
+      return int(rx_match.group(1)), int(tx_match.group(1))
     else:
-        return None, None
+      return None, None
 
   def _get_stat_option(self, stats, option):
     """Extract the requested parameter from the ethtool result"""
