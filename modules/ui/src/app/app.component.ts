@@ -136,6 +136,7 @@ export class AppComponent implements AfterViewInit {
   private cdr = inject(ChangeDetectorRef);
   appStore = inject(AppStore);
   private renderer = inject(Renderer2);
+  private el = inject(ElementRef);
 
   public readonly CalloutType = CalloutType;
   public readonly StatusOfTestrun = StatusOfTestrun;
@@ -298,11 +299,14 @@ export class AppComponent implements AfterViewInit {
     const helpTipButton = window.document.querySelector(
       '.app-toolbar-button-help-tips'
     ) as HTMLButtonElement;
-    const helpTipEl = window.document.querySelector('app-help-tip');
+    const helpTipEl = this.el.nativeElement.querySelector('app-help-tip');
+
     timer(100).subscribe(() => {
       if (isClosed) {
+        this.renderer.addClass(helpTipEl, 'closed-tip');
         helpTipButton.focus();
       } else {
+        this.renderer.removeClass(helpTipEl, 'closed-tip');
         this.focusManagerService.focusFirstElementInContainer(helpTipEl);
       }
     });
