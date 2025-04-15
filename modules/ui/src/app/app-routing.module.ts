@@ -22,6 +22,7 @@ import { RiskAssessmentComponent } from './pages/risk-assessment/risk-assessment
 import { CertificatesComponent } from './pages/certificates/certificates.component';
 import { SettingsComponent } from './pages/settings/settings.component';
 import { GeneralSettingsComponent } from './pages/general-settings/general-settings.component';
+import { CanActivateGuard } from './guards/can-activate.guard';
 
 export const routes: Routes = [
   {
@@ -70,7 +71,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'devices',
-    pathMatch: 'full',
+    canActivate: [CanActivateGuard],
+    component: DevicesComponent,
   },
 ];
