@@ -233,7 +233,6 @@ limitations under the License.
   <div class="tips-container">
     <app-help-tip
       *ngIf="hasConnectionSettings === false"
-      [class.closed-tip]="isClosedTip"
       [data]="HelpTips.step1"
       [target]="settingTipTarget"
       (onCLoseTip)="onCLoseTip($event)"
@@ -246,7 +245,6 @@ limitations under the License.
           (!!calloutState.get('outdated_devices_callout') &&
             isAllDevicesOutdated))
       "
-      [class.closed-tip]="isClosedTip"
       [data]="HelpTips.step2"
       [target]="deviceTipTarget"
       (onCLoseTip)="onCLoseTip($event)"
@@ -261,7 +259,6 @@ limitations under the License.
         !reports.length &&
         !isAllDevicesOutdated
       "
-      [class.closed-tip]="isClosedTip"
       [data]="HelpTips.step3"
       [target]="testingTipTarget"
       (onCLoseTip)="onCLoseTip($event)"
@@ -274,7 +271,6 @@ limitations under the License.
         hasRiskProfiles === false &&
         systemStatus === StatusOfTestrun.InProgress
       "
-      [class.closed-tip]="isClosedTip"
       [data]="HelpTips.step4"
       [target]="riskAssessmentTipTarget"
       (onCLoseTip)="onCLoseTip($event)"
