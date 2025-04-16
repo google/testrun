@@ -371,7 +371,7 @@ class TLSModule(TestModule):
         description = 'TLS 1.2 certificate could not be validated'
         details = 'TLS 1.2 certificate could not be validated'
       # If TLS 1.2 cert is not valid but TLS 1.3 is valid test is Compliant
-      elif result and not tls_1_2_results[0]:
+      elif result and not tls_1_2_results[0] and tls_1_3_results[0]:
         ports_csv = ','.join(map(str,ports_valid))
         description = 'TLS 1.2 certificate invalid and '
         description += f'TLS 1.3 certificate valid on ports: {ports_csv}'
