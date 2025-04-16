@@ -395,7 +395,7 @@ class TLSUtil():
                      f"""validated on port {port}: """
                      f"""{tls_1_2_results[1]}""")
       results = tls_1_2_results[0], description
-    elif tls_1_3_results[0] is not None and tls_1_2_results[0] is not None:
+    elif tls_1_2_results[0] is not None and tls_1_3_results[0] is not None:
       # Validate both results
       description = (f"""TLS 1.2 {'' if tls_1_2_results[0] else 'not '}"""
                      f"""validated on port {port}: """
