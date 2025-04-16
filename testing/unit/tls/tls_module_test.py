@@ -864,7 +864,7 @@ class TLSModuleTest(unittest.TestCase):
 
 if __name__ == '__main__':
   suite = unittest.TestSuite()
-  # suite.addTest(TLSModuleTest('client_hello_packets_test'))
+  suite.addTest(TLSModuleTest('client_hello_packets_test'))
 
   # TLS 1.2 server tests
   suite.addTest(TLSModuleTest('security_tls_v1_2_server_no_ip_test'))
