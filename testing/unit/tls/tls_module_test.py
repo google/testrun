@@ -883,44 +883,44 @@ if __name__ == '__main__':
       'security_tls_v1_2_server_non_compliant_invalid_1_2_and_1_3_cert_test'
     )
   )
-  # suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_3_server_test'))
-  # suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_2_and_1_3_server_test'))
-  # suite.addTest(
-  #     TLSModuleTest('security_tls_v1_2_for_1_2_and_1_3_fail_server_test'))
-  # suite.addTest(
-  #     TLSModuleTest('security_tls_v1_2_for_1_3_and_1_2_fail_server_test'))
-  # suite.addTest(TLSModuleTest('security_tls_v1_2_fail_server_test'))
-  # suite.addTest(TLSModuleTest('security_tls_v1_2_none_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_3_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_for_1_2_and_1_3_server_test'))
+  suite.addTest(
+      TLSModuleTest('security_tls_v1_2_for_1_2_and_1_3_fail_server_test'))
+  suite.addTest(
+      TLSModuleTest('security_tls_v1_2_for_1_3_and_1_2_fail_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_fail_server_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_none_server_test'))
 
-  # # TLS 1.3 server tests
-  # suite.addTest(TLSModuleTest('security_tls_v1_3_server_test'))
+  # TLS 1.3 server tests
+  suite.addTest(TLSModuleTest('security_tls_v1_3_server_test'))
 
-  # # TLS client tests
-  # suite.addTest(TLSModuleTest('security_tls_v1_2_client_test'))
-  # suite.addTest(TLSModuleTest('security_tls_v1_3_client_test'))
-  # suite.addTest(TLSModuleTest('security_tls_client_skip_test'))
-  # suite.addTest(TLSModuleTest('security_tls_v1_2_client_cipher_fail_test'))
-  # suite.addTest(TLSModuleTest('test_client_tls_with_non_tls_client'))
-  # suite.addTest(TLSModuleTest('security_tls_client_unsupported_tls_client'))
+  # TLS client tests
+  suite.addTest(TLSModuleTest('security_tls_v1_2_client_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_3_client_test'))
+  suite.addTest(TLSModuleTest('security_tls_client_skip_test'))
+  suite.addTest(TLSModuleTest('security_tls_v1_2_client_cipher_fail_test'))
+  suite.addTest(TLSModuleTest('test_client_tls_with_non_tls_client'))
+  suite.addTest(TLSModuleTest('security_tls_client_unsupported_tls_client'))
 
-  # # Test the results options for tls server tests
-  # suite.addTest(TLSModuleTest('security_tls_server_results_test'))
+  # Test the results options for tls server tests
+  suite.addTest(TLSModuleTest('security_tls_server_results_test'))
 
-  # # Test various report module outputs
-  # suite.addTest(TLSModuleTest('tls_module_report_test'))
-  # suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
-  # suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
-  # suite.addTest(TLSModuleTest('tls_module_report_multi_page_test'))
+  # Test various report module outputs
+  suite.addTest(TLSModuleTest('tls_module_report_test'))
+  suite.addTest(TLSModuleTest('tls_module_report_ext_test'))
+  suite.addTest(TLSModuleTest('tls_module_report_no_cert_test'))
+  suite.addTest(TLSModuleTest('tls_module_report_multi_page_test'))
 
-  # # Test signature validation methods
-  # suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
-  # suite.addTest(TLSModuleTest('tls_module_local_ca_cert_test'))
-  # suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
+  # Test signature validation methods
+  suite.addTest(TLSModuleTest('tls_module_trusted_ca_cert_chain_test'))
+  suite.addTest(TLSModuleTest('tls_module_local_ca_cert_test'))
+  suite.addTest(TLSModuleTest('tls_module_ca_cert_spaces_test'))
 
-  # suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
+  suite.addTest(TLSModuleTest('security_tls_client_allowed_protocols_test'))
 
-  # suite.addTest(TLSModuleTest('outbound_connections_test'))
-  # suite.addTest(TLSModuleTest('outbound_connections_report_test'))
+  suite.addTest(TLSModuleTest('outbound_connections_test'))
+  suite.addTest(TLSModuleTest('outbound_connections_report_test'))
 
   runner = unittest.TextTestRunner()
   test_result = runner.run(suite)
