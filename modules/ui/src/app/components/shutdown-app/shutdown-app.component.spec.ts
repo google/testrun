@@ -27,7 +27,7 @@ import SpyObj = jasmine.SpyObj;
 import { of } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { WINDOW } from '../../providers/window.provider';
-import {SimpleDialogComponent} from '../simple-dialog/simple-dialog.component';
+import { SimpleDialogComponent } from '../simple-dialog/simple-dialog.component';
 
 describe('ShutdownAppComponent', () => {
   let component: ShutdownAppComponent;
