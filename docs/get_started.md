@@ -4,23 +4,30 @@
 
 This page covers the following topics:
 
--  [Prerequisites](#prerequisites)
--  [Installation](#installation)
--  [Testing](#testing)
--  [Additional Configuration Options](#additional-configuration-options)
--  [Troubleshooting](#troubleshooting)
--  [Review the report](#review-the-report)
--  [Uninstall](#uninstall)
+- [Get started](#get-started)
+- [Prerequisites](#prerequisites)
+  - [Hardware](#hardware)
+  - [Software](#software)
+  - [Device](#device)
+- [Installation](#installation)
+- [Testing](#testing)
+  - [Start Testrun](#start-testrun)
+  - [Test your device](#test-your-device)
+- [Additional Configuration Options](#additional-configuration-options)
+  - [Override test module timeout at the system level](#override-test-module-timeout-at-the-system-level)
+- [Troubleshooting](#troubleshooting)
+- [Review the report](#review-the-report)
+- [Uninstall](#uninstall)
 
 # Prerequisites
 
-We recommend that you run Testrun on a stand-alone machine that has a fresh install of Ubuntu 20.04, 22.04, or 24.04 LTS (laptop or desktop).
+We recommend that you run Testrun on a stand-alone machine that has a fresh install of Ubuntu 22.04 or 24.04 LTS (laptop or desktop).
 
 ## Hardware
 
 Before you start, ensure you have the following hardware:
 
--  PC running Ubuntu LTS (laptop or desktop)
+-  PC running Ubuntu 22.04 or 24.04 LTS (laptop or desktop)
 -  2x ethernet ports (USB ethernet adapters work too)
 -  Internet connection
 
