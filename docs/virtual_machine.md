@@ -18,7 +18,7 @@ Before you start with Testrun, ensure you have the following hardware:
 
 Ensure you have VirtualBox installed on the host PC. Then, install the following software on your virtual machine:
 
--  Ubuntu LTS (22.04 or 20.04)
+-  Ubuntu LTS (22.04 or 24.04)
 -  Docker
     -  Refer to the [installation guide](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) as needed. 
 

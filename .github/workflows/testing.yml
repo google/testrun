@@ -90,7 +90,7 @@ jobs:
         run: cmd/install -l
       - name: Run tests for conn module
         shell: bash {0}
-        run: bash testing/unit/run_test_module.sh conn captures ethtool output
+        run: bash testing/unit/run_test_module.sh conn captures ethtool ifconfig output
       - name: Run tests for dns module
         shell: bash {0}
         run: bash testing/unit/run_test_module.sh dns captures reports output

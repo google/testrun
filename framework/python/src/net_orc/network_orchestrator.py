@@ -142,7 +142,7 @@ class NetworkOrchestrator:
         self._session.set_status(TestrunStatus.VALIDATING)
         self.validator.start()
         self.validator.stop()
-    except Exception as e:
+    except Exception as e:  # pylint: disable=W0703
       LOGGER.error(f'Validation failed {e}')
 
     self._session.set_status('Waiting for Device')
@@ -257,14 +257,21 @@ class NetworkOrchestrator:
   def _get_port_stats(self, pre_monitor=True):
     """ Extract information about the port statistics
     and store it to a file for the conn test module to access"""
+    suffix = 'pre_monitor' if pre_monitor else 'post_monitor'
     dev_int = self._session.get_device_interface()
-    port_stats = self._ip_ctrl.get_iface_port_stats(dev_int)
-    if port_stats is not None:
-      suffix = 'pre_monitor' if pre_monitor else 'post_monitor'
-      eth_out_file = os.path.join(NET_DIR, f'ethtool_port_stats_{suffix}.txt')
-      with open(eth_out_file, 'w', encoding='utf-8') as f:
-        f.write(port_stats)
-    else:
+    ethtool_port_stats = self._ip_ctrl.get_iface_ethtool_port_stats(dev_int)
+    ifconfig_port_stats = self._ip_ctrl.get_iface_ifconfig_port_stats(dev_int)
+    if ethtool_port_stats is not None:
+      ethtool_out_file = os.path.join(NET_DIR,
+                                      f'ethtool_port_stats_{suffix}.txt')
+      with open(ethtool_out_file, 'w', encoding='utf-8') as f:
+        f.write(ethtool_port_stats)
+    if ifconfig_port_stats is not None:
+      ifconfig_out_file = os.path.join(NET_DIR,
+                                       f'ifconfig_port_stats_{suffix}.txt')
+      with open(ifconfig_out_file, 'w', encoding='utf-8') as f:
+        f.write(ifconfig_port_stats)
+    if ethtool_port_stats is None and ifconfig_port_stats is None:
       LOGGER.error('Failed to generate port stats')
 
   def monitor_in_progress(self):
@@ -307,10 +314,8 @@ class NetworkOrchestrator:
       time.sleep(1)
 
       # Check Testrun hasn't been cancelled
-      if self._session.get_status() in (
-                                        TestrunStatus.STOPPING,
-                                        TestrunStatus.CANCELLED
-                                        ):
+      if self._session.get_status() in (TestrunStatus.STOPPING,
+                                        TestrunStatus.CANCELLED):
         sniffer.stop()
         return
 
@@ -438,8 +443,8 @@ class NetworkOrchestrator:
 
     for module_dir in os.listdir(net_modules_dir):
 
-      if (self._get_network_module(module_dir) is None and
-          module_dir != 'template'):
+      if (self._get_network_module(module_dir) is None
+          and module_dir != 'template'):
         loaded_module = self._load_network_module(module_dir)
         loaded_modules += loaded_module.dir_name + ' '
 
@@ -700,8 +705,7 @@ class NetworkOrchestrator:
   def is_device_connected(self):
     """Check if device connected"""
     return self._ip_ctrl.check_interface_status(
-        self._session.get_device_interface()
-      )
+        self._session.get_device_interface())
 
   def internet_conn_checker(self, mqtt_client: mqtt.MQTT, topic: str):
     """Checks internet connection and sends a status to frontend"""
@@ -711,11 +715,9 @@ class NetworkOrchestrator:
 
     # Only check if Testrun is running
     if self.get_session().get_status() not in [
-        TestrunStatus.WAITING_FOR_DEVICE,
-        TestrunStatus.MONITORING,
-        TestrunStatus.IN_PROGRESS,
-        TestrunStatus.STARTING
-      ]:
+        TestrunStatus.WAITING_FOR_DEVICE, TestrunStatus.MONITORING,
+        TestrunStatus.IN_PROGRESS, TestrunStatus.STARTING
+    ]:
       message['connection'] = None
 
     # Only run if single intf mode not used
@@ -733,6 +735,7 @@ class NetworkOrchestrator:
 
       # Broadcast via MQTT client
       mqtt_client.send_message(topic, message)
+
 
 class NetworkConfig:
   """Define all the properties of the network configuration"""
