@@ -326,7 +326,8 @@ export class AppComponent implements AfterViewInit {
         take(1)
       )
       .subscribe(() => {
-        this.appStore.setFocusOnPage(null);
+        const mainContainer = window.document.querySelector('#main');
+        this.appStore.setFocusOnPage(mainContainer);
       });
   }
 
