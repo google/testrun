@@ -316,6 +316,8 @@ export class DevicesComponent
       addButton =
         this.element.nativeElement.querySelector('.device-add-button');
     }
-    addButton?.focus();
+    timer(100).subscribe(() => {
+      addButton?.focus();
+    });
   }
 }
