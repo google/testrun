@@ -6,7 +6,7 @@
   "log_level": "INFO",
   "startup_timeout": 60,
   "monitor_period": 300,
-  "allow_disconnect": True,
+  "allow_disconnect": false,
   "max_device_reports": 0,
   "org_name": ""
 }
