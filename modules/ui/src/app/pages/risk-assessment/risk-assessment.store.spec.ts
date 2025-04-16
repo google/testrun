@@ -185,9 +185,7 @@ describe('RiskAssessmentStore', () => {
     });
 
     describe('setFocusOnCreateButton', () => {
-      const container = document.createElement('div') as HTMLElement;
-      container.classList.add('content-empty');
-      document.querySelector('body')?.appendChild(container);
+      const container = window.document.querySelector('app-risk-assessment');
 
       it('should call focusFirstElementInContainer', fakeAsync(() => {
         riskAssessmentStore.setFocusOnCreateButton();

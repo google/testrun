@@ -110,7 +110,7 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
           tap(([added, devices]) => {
             if (added) {
               this.addDevice(device, devices);
-              onSuccess(devices.length);
+              onSuccess(0);
             }
           })
         );
@@ -174,7 +174,7 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
   });
 
   private addDevice(device: Device, devices: Device[]): void {
-    this.updateDevices(devices.concat([device]));
+    this.updateDevices([device, ...devices]);
   }
 
   private updateDevice(

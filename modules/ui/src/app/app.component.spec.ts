@@ -515,6 +515,34 @@ describe('AppComponent', () => {
           expect(router.url).toBe(Routes.Testing);
         }));
       });
+
+      it('should add "closed-tip" class to the tip on click "close" button on tip', fakeAsync(() => {
+        const helpTipEl = compiled.querySelector('app-help-tip') as HTMLElement;
+        const helpTipCloseBtn = compiled.querySelector(
+          'app-help-tip .close-button'
+        ) as HTMLButtonElement;
+
+        helpTipCloseBtn.click();
+        tick(100);
+
+        expect(helpTipEl.classList.contains('closed-tip')).toBeTrue();
+      }));
+
+      it('should remove "closed-tip" class from the tip on click toolbar "help tips" button', fakeAsync(() => {
+        const helpTipEl = compiled.querySelector('app-help-tip') as HTMLElement;
+        helpTipEl.classList.add('closed-tip');
+        const helpTipsBtn = compiled.querySelector(
+          '.app-toolbar-button-help-tips'
+        ) as HTMLButtonElement;
+
+        helpTipsBtn.click();
+        tick(100);
+
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalledWith(helpTipEl);
+        expect(helpTipEl.classList.contains('closed-tip')).toBeFalse();
+      }));
     });
 
     describe('with devices set and systemStatus data', () => {

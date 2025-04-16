@@ -20,34 +20,30 @@ limitations under the License.
     [class.progress-card-pilot]="data.device.test_pack === TestingType.Pilot"
     aria-live="assertive"
     role="alert">
-    <div class="progress-card-header">
-      <div class="progress-card-info progress-card-info-tests">
-        <p class="progress-card-info-title">Tests executed</p>
+    <div class="progress-card-info progress-card-info-tests">
+      <p class="progress-card-info-title">Tests executed</p>
+      <p class="progress-card-info-text">
+        <span>{{ getTestsResult(data) }}</span>
+      </p>
+    </div>
+
+    <div class="progress-card-info progress-card-info-status">
+      <div>
+        <p class="progress-card-info-title">{{ getTestStatusText(data) }}</p>
         <p class="progress-card-info-text">
-          <span>{{ getTestsResult(data) }}</span>
+          <span>{{ getTestStatus(data) }}</span>
         </p>
       </div>
-
-      <div class="progress-card-info progress-card-info-status">
-        <div>
-          <p class="progress-card-info-title">{{ getTestStatusText(data) }}</p>
-          <p class="progress-card-info-text">
-            <span>{{ getTestStatus(data) }}</span>
-          </p>
-        </div>
-        <div
-          *ngIf="
-            data.finished &&
-            (data.status === StatusOfTestrun.Proceed ||
-              data.status === StatusOfTestrun.DoNotProceed)
-          ">
-          <p class="progress-card-info-title">
-            Preliminary Pilot Recommendation
-          </p>
-          <p class="progress-card-info-text">
-            <span>{{ data.status }}</span>
-          </p>
-        </div>
+      <div
+        *ngIf="
+          data.finished &&
+          (data.status === StatusOfTestrun.Proceed ||
+            data.status === StatusOfTestrun.DoNotProceed)
+        ">
+        <p class="progress-card-info-title">Preliminary Pilot Recommendation</p>
+        <p class="progress-card-info-text">
+          <span>{{ data.status }}</span>
+        </p>
       </div>
     </div>
     <div
@@ -143,7 +139,7 @@ limitations under the License.
 <ng-template #WithProgressBar let-data="data">
   <div class="progress-card-status progress-card-status-bar">
     <mat-progress-bar
-      class="progress-bar"
+      class="progress-bar progress-value-{{ getProgressValue(data) }}"
       mode="determinate"
       [value]="getProgressValue(data)"
       [attr.aria-label]="data.status + ' ' + getProgressValue(data) + '%'">
