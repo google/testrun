@@ -24,11 +24,11 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
-import { ShutdownAppModalComponent } from '../shutdown-app-modal/shutdown-app-modal.component';
 import { Subject, takeUntil } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
 import { WINDOW } from '../../providers/window.provider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { SimpleDialogComponent } from '../simple-dialog/simple-dialog.component';
 
 @Component({
   selector: 'app-shutdown-app',
@@ -47,16 +47,19 @@ export class ShutdownAppComponent implements OnDestroy {
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
   openShutdownModal() {
-    const dialogRef = this.dialog.open(ShutdownAppModalComponent, {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
       ariaLabel: 'Shutdown Testrun',
       data: {
-        title: 'Shutdown Testrun',
-        content: 'Do you want to stop Testrun?',
+        icon: 'power_settings_new',
+        title: 'Shutdown Testrun?',
+        content:
+          'Testrun will shutdown and all testing processes will be stopped.',
+        confirmName: 'Stop Server & Quit',
       },
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'shutdown-app-dialog',
+      panelClass: ['simple-dialog', 'shutdown-app-dialog'],
     });
 
     dialogRef

@@ -143,6 +143,7 @@ body {
   }
 }
 
+.shutdown-app-dialog app-simple-dialog,
 .delete-dialog app-simple-dialog,
 .discard-dialog app-simple-dialog {
   --mat-dialog-container-max-width: 329px;
