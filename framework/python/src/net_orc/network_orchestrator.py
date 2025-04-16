@@ -318,16 +318,16 @@ class NetworkOrchestrator:
                                         TestrunStatus.CANCELLED):
         sniffer.stop()
         return
-
-      if not self._ip_ctrl.check_interface_status(
-          self._session.get_device_interface()):
-        try:
-          sniffer.stop()
-        except Scapy_Exception:
-          LOGGER.error('Device adapter disconnected whilst monitoring.')
-        finally:
-          self._session.set_status(TestrunStatus.CANCELLED)
-          LOGGER.error('Device interface disconnected, cancelling Testrun')
+      if not self._session.get_allow_disconnect():
+        if not self._ip_ctrl.check_interface_status(
+            self._session.get_device_interface()):
+          try:
+            sniffer.stop()
+          except Scapy_Exception:
+            LOGGER.error('Device adapter disconnected whilst monitoring.')
+          finally:
+            self._session.set_status(TestrunStatus.CANCELLED)
+            LOGGER.error('Device interface disconnected, cancelling Testrun')
 
     LOGGER.debug('Writing packets to monitor.pcap')
     wrpcap(os.path.join(device_runtime_dir, 'monitor.pcap'),
