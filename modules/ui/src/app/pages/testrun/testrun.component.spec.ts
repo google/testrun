@@ -200,12 +200,6 @@ describe('TestrunComponent', () => {
     });
 
     describe('#stopTestrun', () => {
-      it('should show loader', () => {
-        component.stopTestrun();
-
-        expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(true);
-      });
-
       it('should update system status to Cancelling', () => {
         store.overrideSelector(
           selectSystemStatus,

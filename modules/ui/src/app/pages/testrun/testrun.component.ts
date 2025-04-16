@@ -131,7 +131,6 @@ export class TestrunComponent implements OnInit, OnDestroy {
   }
 
   public stopTestrun(): void {
-    this.showLoading();
     this.setCancellingStatus();
     this.sendCloseRequest();
   }
@@ -151,9 +150,7 @@ export class TestrunComponent implements OnInit, OnDestroy {
       this.focusManagerService.focusFirstElementInContainer(testrunContainer);
     });
   }
-  private showLoading() {
-    this.testrunStore.showLoading();
-  }
+
   private sendCloseRequest() {
     this.testrunStore.stopTestrun();
   }
