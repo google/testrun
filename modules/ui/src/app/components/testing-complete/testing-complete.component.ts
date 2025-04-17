@@ -20,7 +20,6 @@ import { TestingType } from '../../model/device';
 
 @Component({
   selector: 'app-testing-complete',
-
   imports: [],
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -52,7 +51,8 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
         profiles: this.profiles,
         testrunStatus: this.data,
         isTestingComplete: true,
-        url: this.data?.report,
+        report: this.data?.report,
+        export: this.data?.export,
         isPilot: this.data?.device.test_pack === TestingType.Pilot,
       },
       autoFocus: 'first-tabbable',
