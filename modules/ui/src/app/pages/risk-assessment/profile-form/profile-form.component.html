@@ -66,26 +66,12 @@ limitations under the License.
       (click)="onSaveClick(ProfileStatus.DRAFT)">
       Save Draft
     </button>
-    <button
-      mat-flat-button
-      class="copy-button"
-      (click)="onCopyClick()"
-      [disabled]="selectedProfile === null || isCopyProfile">
-      Copy
-    </button>
-    <button
-      mat-flat-button
-      class="discard-button"
-      [disabled]="profileHasNoChanges() || profileForm.pristine"
-      (click)="onDiscardClick()">
-      Discard
-    </button>
   </div>
   <button
     mat-flat-button
-    [disabled]="selectedProfile === null"
-    (click)="onDeleteClick()"
-    class="delete-button">
-    Delete
+    class="discard-button"
+    [disabled]="profileHasNoChanges() || profileForm.pristine"
+    (click)="onDiscardClick()">
+    Discard
   </button>
 </div>

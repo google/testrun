@@ -244,10 +244,6 @@ export class RiskAssessmentComponent
     this.openCloseDialog(selectedProfile, profiles);
   }
 
-  copyProfile(profile: Profile, profiles: Profile[]) {
-    this.copyProfileAndOpenForm(profile, profiles);
-  }
-
   private openCloseDialog(
     selectedProfile: Profile | null,
     profiles: Profile[]
