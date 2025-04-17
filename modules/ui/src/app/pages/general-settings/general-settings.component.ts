@@ -54,6 +54,7 @@ import { TestRunService } from '../../services/test-run.service';
 import { Router } from '@angular/router';
 import { Routes } from '../../model/routes';
 import { FocusManagerService } from '../../services/focus-manager.service';
+import { LocalStorageService } from '../../services/local-storage.service';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 declare const gtag: Function;
@@ -94,6 +95,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
   private settingsStore = inject(GeneralSettingsStore);
   private readonly loaderService = inject(LoaderService);
   private readonly focusManagerService = inject(FocusManagerService);
+  private readonly localStorageService = inject(LocalStorageService);
 
   private isSettingsDisable = false;
   get settingsDisable(): boolean {
@@ -147,10 +149,6 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
 
   get isFormError(): boolean {
     return this.settingForm.hasError('hasSameValues');
-  }
-
-  get optOutHasChanges(): boolean {
-    return this.analyticsForm.value.optOut;
   }
 
   ngOnInit() {
@@ -224,7 +222,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
 
   private createAnalyticsForm() {
     this.analyticsForm = this.fb.group({
-      optOut: new FormControl(false),
+      optOut: new FormControl(!this.localStorageService.getGAConsent()),
     });
   }
 
@@ -261,6 +259,7 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
     gtag('consent', 'update', {
       analytics_storage: this.analyticsForm.value.optOut ? 'denied' : 'granted',
     });
+    this.localStorageService.setGAConsent(!this.analyticsForm.value.optOut);
   }
 
   ngOnDestroy() {

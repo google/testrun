@@ -57,7 +57,7 @@ describe('ConsentDialogComponent', () => {
     });
     fixture = TestBed.createComponent(ConsentDialogComponent);
     component = fixture.componentInstance;
-    component.data = { version: NEW_VERSION };
+    component.data = { version: NEW_VERSION, optOut: false };
     component.optOut = false;
     fixture.detectChanges();
     compiled = fixture.nativeElement as HTMLElement;
@@ -126,7 +126,7 @@ describe('ConsentDialogComponent', () => {
 
   describe('with new version available', () => {
     beforeEach(() => {
-      component.data = { version: NEW_VERSION };
+      component.data = { version: NEW_VERSION, optOut: false };
       fixture.detectChanges();
     });
 
@@ -149,7 +149,7 @@ describe('ConsentDialogComponent', () => {
 
   describe('with no new version available', () => {
     beforeEach(() => {
-      component.data = { version: VERSION };
+      component.data = { version: VERSION, optOut: false };
       fixture.detectChanges();
     });
 
