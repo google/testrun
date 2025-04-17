@@ -51,12 +51,14 @@ limitations under the License.
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-XCDFEHN64Z"></script>
     <script>
+      const consent = localStorage.getItem('GA_CONSENT');
+
       window.dataLayer = window.dataLayer || [];
       function gtag() {
         dataLayer.push(arguments);
       }
       gtag('consent', 'default', {
-        analytics_storage: 'granted',
+        analytics_storage: consent === 'true' ? 'granted' : 'denied',
       });
       gtag('js', new Date());
       gtag('config', 'G-XCDFEHN64Z');

@@ -30,6 +30,7 @@ import { timer } from 'rxjs';
 
 type DialogData = {
   version: Version;
+  optOut: boolean;
 };
 
 @Component({
@@ -51,7 +52,7 @@ export class ConsentDialogComponent {
   data = inject<DialogData>(MAT_DIALOG_DATA);
 
   public readonly CalloutType = CalloutType;
-  optOut = false;
+  optOut = this.data.optOut;
 
   confirm(optOut: boolean) {
     // dialog should be closed with opposite value to grant or deny access to GA
