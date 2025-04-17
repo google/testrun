@@ -39,6 +39,7 @@ API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 ORG_NAME_KEY = 'org_name'
 TEST_CONFIG_KEY = 'test_modules'
+ALLOW_DISCONNECT_KEY='allow_disconnect'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 STATUS_TOPIC = 'status'
@@ -203,6 +204,7 @@ class TestrunSession():
         'log_level': 'INFO',
         'startup_timeout': 60,
         'monitor_period': 30,
+        'allow_disconnect': False,
         'max_device_reports': 0,
         'api_url': 'http://localhost',
         'api_port': 8000,
@@ -240,6 +242,10 @@ class TestrunSession():
       if MONITOR_PERIOD_KEY in config_file_json:
         self._config[MONITOR_PERIOD_KEY] = config_file_json.get(
             MONITOR_PERIOD_KEY)
+
+      if ALLOW_DISCONNECT_KEY in config_file_json:
+        self._config[ALLOW_DISCONNECT_KEY] = config_file_json.get(
+            ALLOW_DISCONNECT_KEY)
 
       if LOG_LEVEL_KEY in config_file_json:
         self._config[LOG_LEVEL_KEY] = config_file_json.get(LOG_LEVEL_KEY)
@@ -508,6 +514,10 @@ class TestrunSession():
 
   def add_total_tests(self, no_tests):
     self._total_tests += no_tests
+
+
+  def get_allow_disconnect(self):
+    return self._config.get(ALLOW_DISCONNECT_KEY)
 
   def get_total_tests(self):
     return self._total_tests
