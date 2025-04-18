@@ -27,7 +27,7 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Subject, takeUntil, tap } from 'rxjs';
+import { Subject, takeUntil, tap, timer } from 'rxjs';
 import { OnlyDifferentValuesValidator } from './only-different-values.validator';
 import { CalloutType } from '../../model/callout-type';
 import { FormKey, SystemConfig } from '../../model/setting';
@@ -191,10 +191,21 @@ export class GeneralSettingsComponent implements OnInit, OnDestroy {
       this.createSystemConfig();
       this.settingForm.markAsPristine();
       this.analyticsForm.markAsPristine();
-      this.focusManagerService.focusFirstElementInContainer(
-        window.document.querySelector('app-settings')
-      );
+      this.setFocus();
     }
+  }
+
+  private setFocus(): void {
+    timer(200).subscribe(() => {
+      const helpTip = window.document.querySelector(
+        'app-help-tip:not(.closed-tip)'
+      );
+      const focusableContainer = helpTip
+        ? helpTip
+        : window.document.querySelector('app-settings');
+
+      this.focusManagerService.focusFirstElementInContainer(focusableContainer);
+    });
   }
 
   private disableSettings(): void {
