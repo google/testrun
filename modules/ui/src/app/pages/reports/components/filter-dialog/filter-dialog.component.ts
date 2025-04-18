@@ -36,7 +36,9 @@ import {
   FormBuilder,
   FormControl,
   FormGroup,
+  FormGroupDirective,
   FormsModule,
+  NgForm,
   NgModel,
   ReactiveFormsModule,
 } from '@angular/forms';
@@ -52,7 +54,7 @@ import {
   MatDatepickerInputEvent,
   MatDatepickerModule,
 } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { ErrorStateMatcher, MatNativeDateModule } from '@angular/material/core';
 import {
   FilterName,
   DateRange as LocalDateRange,
@@ -63,6 +65,22 @@ import {
   StatusOfTestrun,
 } from '../../../../model/testrun-status';
 import { DeviceValidators } from '../../../devices/components/device-form/device.validators';
+
+class DateErrorStateMatcher implements ErrorStateMatcher {
+  isErrorState(
+    control: FormControl | null,
+    form: FormGroupDirective | NgForm | null
+  ): boolean {
+    const isSubmitted = form && form.submitted;
+    return !!(
+      control &&
+      control.errors &&
+      control.errors['matDatepickerParse'].text.trim().length > 0 &&
+      control.invalid &&
+      (control.touched || isSubmitted)
+    );
+  }
+}
 
 interface DialogData {
   trigger: ElementRef;
@@ -243,6 +261,8 @@ export class FilterDialogComponent
   cancel(): void {
     this.dialogRef.close();
   }
+
+  dateMatcher = new DateErrorStateMatcher();
 
   startDateChanged(event: MatDatepickerInputEvent<Date>) {
     const date = event.value;

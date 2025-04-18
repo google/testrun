@@ -81,12 +81,14 @@ limitations under the License.
       <mat-label>Dates</mat-label>
       <mat-date-range-input>
         <input
+          [errorStateMatcher]="dateMatcher"
           matStartDate
           placeholder="mm/dd/yyyy"
           [(ngModel)]="range.start"
           #startDate="ngModel"
           (dateChange)="startDateChanged($event)" />
         <input
+          [errorStateMatcher]="dateMatcher"
           matEndDate
           placeholder="mm/dd/yyyy"
           [(ngModel)]="range.end"
@@ -94,10 +96,7 @@ limitations under the License.
           (dateChange)="endDateChanged($event)" />
       </mat-date-range-input>
       <mat-error
-        *ngIf="
-          (startDate.invalid && (startDate.dirty || startDate.touched)) ||
-          (endDate.invalid && (endDate.dirty || endDate.touched))
-        "
+        *ngIf="startDate.invalid || endDate.invalid"
         role="alert"
         aria-live="assertive">
         <span>Please, select the correct date range in mm/dd/yyyy format.</span>
