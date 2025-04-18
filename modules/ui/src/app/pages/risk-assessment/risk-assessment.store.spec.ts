@@ -197,7 +197,7 @@ describe('RiskAssessmentStore', () => {
       }));
     });
 
-    describe('setFocusOnSelectedProfile', () => {
+    describe('with selected profile', () => {
       const container = document.createElement('div') as HTMLElement;
       container.classList.add('entity-list');
       const inner = document.createElement('div') as HTMLElement;
@@ -205,12 +205,19 @@ describe('RiskAssessmentStore', () => {
       container.appendChild(inner);
       document.querySelector('body')?.appendChild(container);
 
-      it('should call focusFirstElementInContainer', () => {
+      it('setFocusOnSelectedProfile should call focusFirstElementInContainer', () => {
         riskAssessmentStore.setFocusOnSelectedProfile();
 
         expect(
           mockFocusManagerService.focusFirstElementInContainer
         ).toHaveBeenCalledWith(inner);
+      });
+
+      it('scrollToSelectedProfile should call focusFirstElementInContainer', () => {
+        const scrollSpy = spyOn(inner, 'scrollIntoView');
+        riskAssessmentStore.scrollToSelectedProfile();
+
+        expect(scrollSpy).toHaveBeenCalled();
       });
     });
 

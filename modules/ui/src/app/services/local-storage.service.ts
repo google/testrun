@@ -8,7 +8,6 @@ export class LocalStorageService {
 
   getGAConsent() {
     const consent = this.getItem(this.GA_CONSENT_KEY);
-    console.log(window.localStorage.getItem(this.GA_CONSENT_KEY));
     return consent !== null ? consent === 'true' : true;
   }
 
