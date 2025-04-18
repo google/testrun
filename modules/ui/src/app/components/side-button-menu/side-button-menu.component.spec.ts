@@ -89,6 +89,27 @@ describe('SideButtonMenuComponent', () => {
       expect(onClickSpy).toHaveBeenCalled();
     });
 
+    ['Escape', 'Tab'].forEach((key: string) => {
+      it(`should focus side button on ${key} press`, async () => {
+        const button = document.querySelector(
+          '.side-add-button'
+        ) as HTMLButtonElement;
+        const buttonFocusSpy = spyOn(button, 'focus');
+        const firstItemElement = await items[0].host();
+        await firstItemElement.dispatchEvent('keydown', { key: key });
+
+        expect(buttonFocusSpy).toHaveBeenCalled();
+      });
+
+      it(`should close menu on ${key} press`, async () => {
+        const closeMenuSpy = spyOn(component.menuTrigger(), 'closeMenu');
+        const firstItemElement = await items[0].host();
+        await firstItemElement.dispatchEvent('keydown', { key: key });
+
+        expect(closeMenuSpy).toHaveBeenCalled();
+      });
+    });
+
     it('should display the correct icons for actions', async () => {
       const text0 = await items[0].getText();
       const text1 = await items[1].getText();

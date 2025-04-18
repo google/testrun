@@ -1,5 +1,6 @@
 <div class="side-add-button-container">
   <button
+    #actionsButton
     class="side-add-button"
     mat-fab
     (click)="menuTrigger.openMenu()"
@@ -38,6 +39,8 @@
     class="side-add-menu-button"
     [class.with-description]="item.description !== null"
     (click)="item.onClick()"
+    (keydown.tab)="focusButton($event)"
+    (keydown.escape)="focusButton($event)"
     [disabled]="item.disabled$ | async">
     <mat-icon *ngIf="item.svgIcon" svgIcon="{{ item.svgIcon }}"></mat-icon>
     <mat-icon
