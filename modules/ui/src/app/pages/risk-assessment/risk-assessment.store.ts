@@ -127,6 +127,16 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     );
   });
 
+  scrollToSelectedProfile = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        window.document
+          .querySelector('.entity-list .selected')
+          ?.scrollIntoView();
+      })
+    );
+  });
+
   setFocusOnProfileForm = this.effect(trigger$ => {
     return trigger$.pipe(
       tap(() => {

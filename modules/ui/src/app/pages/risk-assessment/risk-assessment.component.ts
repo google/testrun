@@ -219,7 +219,10 @@ export class RiskAssessmentComponent
   saveProfileClicked(profile: Profile, selectedProfile: Profile | null): void {
     this.liveAnnouncer.clear();
     if (!selectedProfile) {
-      this.saveProfile(profile, this.store.setFocusOnCreateButton);
+      this.saveProfile(profile, () => {
+        this.store.setFocusOnCreateButton();
+        this.store.scrollToSelectedProfile();
+      });
     } else if (
       this.compareProfiles(profile, selectedProfile) ||
       this.isCopyProfile
