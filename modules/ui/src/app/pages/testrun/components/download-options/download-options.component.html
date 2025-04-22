@@ -44,7 +44,9 @@ limitations under the License.
     class="download-button"
     [class.download-button-opened]="isOpenDownloadOptions"
     color="primary"
-    aria-label="Download options"
+    [attr.aria-label]="
+      isOpenDownloadOptions ? 'Hide download options' : 'Show download options'
+    "
     mat-flat-button>
     <mat-icon
       *ngIf="!isOpenDownloadOptions"
