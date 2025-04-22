@@ -34,7 +34,7 @@ Testrun provides the network and assistive tools for engineers when manual testi
 
 ## Hardware
 
--  PC running Ubuntu LTS 20.04, 22.04, or 24.04 (laptop or desktop)
+-  PC running Ubuntu LTS 22.04 or 24.04 (laptop or desktop)
 -  2x ethernet ports (USB ethernet adapters work too)
 -  Internet connection
 

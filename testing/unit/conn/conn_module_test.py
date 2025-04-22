@@ -40,11 +40,20 @@ ETHTOOL_PORT_STATS_POST_NONCOMPLIANT_FILE = os.path.join(
     TEST_FILES_DIR, 'ethtool',
     'ethtool_port_stats_post_monitor_noncompliant.txt')
 
+IFCONFIG_PORT_STATS_PRE_FILE = os.path.join(
+    TEST_FILES_DIR, 'ifconfig', 'ifconfig_port_stats_pre_monitor.txt')
+IFCONFIG_PORT_STATS_POST_FILE = os.path.join(
+    TEST_FILES_DIR, 'ifconfig', 'ifconfig_port_stats_post_monitor.txt')
+IFCONFIG_PORT_STATS_POST_NONCOMPLIANT_FILE = os.path.join(
+    TEST_FILES_DIR, 'ifconfig',
+    'ifconfig_port_stats_post_noncompliant_monitor.txt')
+
 # Define the capture files to be used for the test
 STARTUP_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'startup.pcap')
 MONITOR_CAPTURE_FILE = os.path.join(CAPTURES_DIR, 'monitor.pcap')
 
 LOGGER = None
+
 
 class ConnectionModuleTest(unittest.TestCase):
   """Contains and runs all the unit tests concerning Connection 
@@ -69,6 +78,29 @@ class ConnectionModuleTest(unittest.TestCase):
     result = p_stats.connection_port_link_test()
     LOGGER.info(result)
     self.assertEqual(result[0], True)
+
+  def connection_port_link_ifconfig_compliant_test(self):
+    LOGGER.info('connection_port_link_ifconfig_compliant_test')
+    p_stats = PortStatsUtil(
+        logger=LOGGER,
+        ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE,
+        ifconfig_port_stats_pre_file=IFCONFIG_PORT_STATS_PRE_FILE,
+        ifconfig_port_stats_post_file=IFCONFIG_PORT_STATS_POST_FILE)
+    result = p_stats.connection_port_link_test()
+    LOGGER.info(result)
+    self.assertEqual(result[0], True)
+
+  def connection_port_link_ifconfig_noncompliant_test(self):
+    LOGGER.info('connection_port_link_ifconfig_noncompliant_test')
+    p_stats = PortStatsUtil(
+        logger=LOGGER,
+        ethtool_conn_stats_file=ETHTOOL_RESULTS_COMPLIANT_FILE,
+        ifconfig_port_stats_pre_file=IFCONFIG_PORT_STATS_PRE_FILE,
+        ifconfig_port_stats_post_file=IFCONFIG_PORT_STATS_POST_NONCOMPLIANT_FILE
+    )
+    result = p_stats.connection_port_link_test()
+    LOGGER.info(result)
+    self.assertEqual(result[0], False)
 
   # Test the port duplex setting
   def connection_port_duplex_compliant_test(self):
@@ -174,11 +206,15 @@ if __name__ == '__main__':
 
   # Compliant port stats tests
   suite.addTest(ConnectionModuleTest('connection_port_link_compliant_test'))
+  suite.addTest(
+      ConnectionModuleTest('connection_port_link_ifconfig_compliant_test'))
   suite.addTest(ConnectionModuleTest('connection_port_duplex_compliant_test'))
   suite.addTest(ConnectionModuleTest('connection_port_speed_compliant_test'))
 
   # Non-compliant port stats tests
   suite.addTest(ConnectionModuleTest('connection_port_link_noncompliant_test'))
+  suite.addTest(
+      ConnectionModuleTest('connection_port_link_ifconfig_noncompliant_test'))
   suite.addTest(
       ConnectionModuleTest('connection_port_duplex_noncompliant_test'))
   suite.addTest(ConnectionModuleTest('connection_port_speed_noncompliant_test'))
