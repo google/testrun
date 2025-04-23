@@ -83,12 +83,12 @@ export class HelpTipComponent implements OnInit {
 
     switch (this.data()?.position) {
       case 'left':
-        top = targetRect.top + window.scrollY + targetRect.height / 2; // Center tip vertically
+        top = targetRect.top + window.scrollY + targetRect.height / 2;
         left = targetRect.left + window.scrollX - tipWidth - arrowOffset;
         break;
       case 'right':
         top =
-          targetRect.top + window.scrollY - topOffset + targetRect.height / 2; // Center tip vertically
+          targetRect.top + window.scrollY - topOffset + targetRect.height / 2;
         left = targetRect.right + window.scrollX;
         break;
       case 'top':
