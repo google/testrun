@@ -80,7 +80,7 @@
 }
 
 .section-item {
-  height: 88px;
+  min-height: 88px;
   display: grid;
   grid-template-columns: 1fr 1fr 1.1fr;
   gap: 46px;

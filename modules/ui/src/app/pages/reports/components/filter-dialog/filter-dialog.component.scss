@@ -51,7 +51,6 @@
 
 .date-calendar {
   flex-grow: 1;
-  overflow: auto;
   min-height: 2em;
 
   &::ng-deep .mat-calendar-body-label {
