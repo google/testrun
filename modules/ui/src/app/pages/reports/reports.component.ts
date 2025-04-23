@@ -108,6 +108,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   openFilter({ event, filter, title, filterOpened }: OpenFilterEvent) {
+    event.preventDefault();
     event.stopPropagation();
     const target = new ElementRef(event.currentTarget);
 
