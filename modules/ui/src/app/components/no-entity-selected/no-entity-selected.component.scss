@@ -29,6 +29,9 @@
   position: absolute;
   bottom: 0;
   right: 26px;
+  width: 20%;
+  height: auto;
+  display: block;
 }
 
 ::ng-deep app-empty-message {

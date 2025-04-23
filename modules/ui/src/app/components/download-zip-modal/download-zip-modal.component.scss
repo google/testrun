@@ -26,6 +26,7 @@
   @include mixins.dialog;
   padding: 24px 24px 16px 24px;
   gap: 10px;
+  overflow: auto;
 }
 
 .risk-profile-select-form-title {
