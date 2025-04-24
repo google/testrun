@@ -48,6 +48,11 @@ mat-header-cell,
   border-bottom-color: colors.$white;
 }
 
+mat-cell {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
 mat-header-cell {
   font-weight: 700;
 }
