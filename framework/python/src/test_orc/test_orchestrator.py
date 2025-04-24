@@ -410,9 +410,8 @@ class TestOrchestrator:
                   with open(os.path.join(dir_path, filename), "r",
                             encoding="utf-8") as f:
                     reload_templates.append(f.read())
-                  LOGGER.info(f'Loaded {dir_path}')
               except Exception as e:
-                LOGGER.debug(f'Could not read the file: {e}')
+                LOGGER.debug(f"Could not read the file: {e}")
 
         # Add the jinja templates to the report
         test_report.add_module_templates(reload_templates)
