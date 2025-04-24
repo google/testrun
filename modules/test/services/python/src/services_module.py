@@ -187,10 +187,10 @@ class ServicesModule(TestModule):
       self._scan_results.update(self._scan_udp_results)
 
   def _scan_tcp_ports(self):
-    LOGGER.info('Running nmap TCP port scan')
+    LOGGER.info(f'Running nmap TCP port scan for {self._device_ipv4_addr}')
     nmap_results = util.run_command( # pylint: disable=E1120
         f'''nmap --open -sT -sV -Pn -v -p 1-65535
-      --version-intensity 7 -T4 -oX - {self._ipv4_addr}''')[0]
+      --version-intensity 7 -T4 -oX - {self._device_ipv4_addr}''')[0]
 
     LOGGER.info('TCP port scan complete')
     LOGGER.debug(f'TCP Scan results raw: {nmap_results}')
@@ -216,10 +216,10 @@ class ServicesModule(TestModule):
 
     if len(ports) > 0:
       port_list = ','.join(ports)
-      LOGGER.info('Running nmap UDP port scan')
+      LOGGER.info(f'Running nmap UDP port scan for {self._device_ipv4_addr}')
       LOGGER.info('UDP ports: ' + str(port_list))
       nmap_results = util.run_command( # pylint: disable=E1120
-          f'nmap -sU -sV -p {port_list} -oX - {self._ipv4_addr}')[0]
+          f'nmap -sU -sV -p {port_list} -oX - {self._device_ipv4_addr}')[0]
       LOGGER.info('UDP port scan complete')
       LOGGER.debug(f'UDP Scan results raw: {nmap_results}')
       nmap_results_json = self._nmap_results_to_json(nmap_results)
