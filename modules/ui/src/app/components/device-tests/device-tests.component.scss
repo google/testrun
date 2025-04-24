@@ -17,10 +17,6 @@
 @use 'variables';
 @use 'mixins';
 
-:host {
-  overflow: hidden;
-}
-
 .device-tests-form {
   height: 100%;
   display: grid;
@@ -45,8 +41,4 @@
   line-height: 20px;
   letter-spacing: 0.2px;
   color: colors.$on-surface-variant;
-}
-
-.device-form-test-modules {
-  overflow: auto;
 }
