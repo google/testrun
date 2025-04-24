@@ -190,7 +190,7 @@ export class DynamicFormComponent implements OnInit {
     );
   }
 
-  private adjustSubscriptWrapperHeights(): void {
+  adjustSubscriptWrapperHeights(): void {
     this.formFields().forEach(formField => {
       const matFormField = formField._elementRef.nativeElement;
       if (matFormField) {

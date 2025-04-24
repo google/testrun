@@ -236,4 +236,15 @@ describe('DynamicFormComponent', () => {
       });
     }
   });
+
+  describe('adjustSubscriptWrapperHeights', () => {
+    it('should set height for hint wrapper', () => {
+      component.adjustSubscriptWrapperHeights();
+
+      const wrapper = compiled.querySelector(
+        '.mat-mdc-form-field-subscript-wrapper'
+      );
+      expect(wrapper?.clientHeight).toEqual(20);
+    });
+  });
 });
