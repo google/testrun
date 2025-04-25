@@ -21,7 +21,7 @@ import json
 IMAGE_PREFIX = 'testrun/'
 CONTAINER_PREFIX = 'tr-ct'
 DEFAULT_NETWORK = 'bridge'
-
+DEFAULT_LOG_LEVEL = 'INFO'
 
 class Module:
   """Represents the base module."""
@@ -33,6 +33,7 @@ class Module:
                extra_hosts=None):
     self._session = session
     self.extra_hosts = extra_hosts
+    self.log_level=DEFAULT_LOG_LEVEL
 
     # Read the config file into a json object
     with open(module_config_file, encoding='UTF-8') as config_file:
@@ -66,7 +67,15 @@ class Module:
         'enable_container', True)
     self.container: Container = None
 
+    # Configure the module logger
     self._add_logger(log_name=self.name, module_name=self.name)
+    try:
+      self.log_level = self._get_module_log_level(module_json)
+      self.logger.setLevel(self.log_level)
+    except Exception as error:
+      self.logger.error('Could not set defined log level')
+      self.logger.error(error)
+
     self.setup_module(module_json)
 
   def _add_logger(self, log_name, module_name, log_dir=None):
@@ -113,6 +122,22 @@ class Module:
 
   def get_environment(self, device=None):  # pylint: disable=W0613
     return {}
+
+  def _get_module_log_level(self, module_json):
+    log_level = DEFAULT_LOG_LEVEL
+    try:
+      test_modules = self.get_session().get_config().get('test_modules', {})
+      test_config = test_modules.get(self.name, {})
+      sys_log_level = test_config.get('log_level', None)
+
+      if sys_log_level is not None:
+        log_level = sys_log_level
+      elif 'log_level' in module_json['config']:
+        log_level = module_json['config']['log_level']
+    except Exception: # pylint: disable=W0718
+      # Ignore errors, just use default
+      log_level = DEFAULT_LOG_LEVEL
+    return log_level # pylint: disable=W0150
 
   def setup_module(self, module_json):
     pass
