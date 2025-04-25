@@ -13,104 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="settings-drawer-header">
-  <h2 class="settings-drawer-header-title">System settings</h2>
-  <button
-    (click)="closeSetting(EventType.Close)"
-    aria-label="close"
-    id="setting-panel-close-button"
-    class="settings-drawer-header-button"
-    mat-button>
-    <mat-icon class="close-button-icon" svgIcon="close"></mat-icon>
-  </button>
-</div>
-<div class="setting-drawer-content" *ngIf="viewModel$ | async as vm">
-  <div *ngIf="settingsDisable" class="settings-disabled-overlay"></div>
-  <form
-    [formGroup]="settingForm"
-    [class.setting-drawer-content-form-empty]="
-      (vm.interfaces | keyvalue).length === 0
-    ">
-    <section class="setting-drawer-content-inputs">
-      <ng-container
-        *ngIf="(vm.interfaces | keyvalue).length > 0; else warning_message">
-        <app-settings-dropdown
-          [controlName]="FormKey.DEVICE"
-          groupLabel="Device port"
-          description="Port where IoT device is connected for testing"
-          label="Device connection port"
-          key="device"
-          [options]="vm.deviceOptions">
-        </app-settings-dropdown>
-        <app-settings-dropdown
-          [controlName]="FormKey.INTERNET"
-          groupLabel="Internet port"
-          description="Port used for internet connection"
-          label="Internet connection port"
-          key="internet"
-          [options]="vm.internetOptions">
-        </app-settings-dropdown>
-      </ng-container>
-      <p class="message" [ngClass]="{ disabled: settingsDisable }">
-        If a port is missing from this list, you can
-        <a
-          #reloadSettingLink
-          (click)="reloadSetting()"
-          (keydown.enter)="reloadSetting()"
-          (keydown.space)="reloadSetting()"
-          role="button"
-          [tabindex]="settingsDisable ? -1 : 0"
-          class="message-link">
-          Refresh
-        </a>
-        the System settings
-      </p>
-      <app-settings-dropdown
-        [controlName]="FormKey.LOG_LEVEL"
-        groupLabel="Log level"
-        description="Logging level of details"
-        label="Log level"
-        key="log-level"
-        [options]="vm.logLevelOptions">
-      </app-settings-dropdown>
-      <app-settings-dropdown
-        [controlName]="FormKey.MONITOR_PERIOD"
-        groupLabel="Monitoring Time"
-        description="Time period for Testrun to observe the device before starting tests"
-        label="Monitoring period"
-        key="monitoring-period"
-        [options]="vm.monitoringPeriodOptions">
-      </app-settings-dropdown>
-    </section>
-    <mat-error
-      *ngIf="vm.isSubmitting && isFormError"
-      class="error-message-container">
-      <span>Both interfaces must have different values</span>
-    </mat-error>
-    <div class="setting-drawer-footer">
-      <button
-        mat-flat-button
-        (click)="closeSetting(EventType.Close)"
-        [disabled]="!isFormValues || vm.hasConnectionSettings !== true"
-        class="close-button">
-        Cancel
-      </button>
-      <button
-        mat-raised-button
-        class="save-button"
-        color="primary"
-        (click)="saveSetting()"
-        [disabled]="
-          !isFormValues || vm.isLessThanOneInterface || settingsDisable
-        ">
-        Save
-      </button>
-    </div>
-  </form>
-  <ng-template #warning_message>
-    <app-callout [type]="CalloutType.Warning">
-      Warning! No ports detected.
-    </app-callout>
-  </ng-template>
-</div>
-<app-spinner class="connection-settings-spinner"></app-spinner>
+<mat-toolbar class="toolbar">
+  <h2 class="title" tabindex="-1">Settings</h2>
+</mat-toolbar>
+
+<mat-tab-group
+  mat-stretch-tabs="false"
+  mat-align-tabs="start"
+  class="tab-group"
+  (selectedTabChange)="onTabChange($event)"
+  [selectedIndex]="selectedIndex">
+  <mat-tab label="General" class="tab-item"></mat-tab>
+  <mat-tab label="Certificates" class="tab-item"></mat-tab>
+</mat-tab-group>
+<router-outlet></router-outlet>

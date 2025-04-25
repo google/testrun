@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 
 import { TestrunTableComponent } from './testrun-table.component';
 
@@ -28,10 +33,12 @@ import {
   TEST_DATA_RESULT_WITH_RECOMMENDATIONS,
 } from '../../../../mocks/testrun.mock';
 import { TestRunService } from '../../../../services/test-run.service';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { of } from 'rxjs';
+import { MatDialogRef } from '@angular/material/dialog';
+import { TestResultDialogComponent } from '../test-result-dialog/test-result-dialog.component';
 
 describe('ProgressTableComponent', () => {
   let component: TestrunTableComponent;
@@ -42,7 +49,7 @@ describe('ProgressTableComponent', () => {
   describe('Class tests', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
-        declarations: [TestrunTableComponent],
+        imports: [TestrunTableComponent],
         providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
       });
       fixture = TestBed.createComponent(TestrunTableComponent);
@@ -79,14 +86,6 @@ describe('ProgressTableComponent', () => {
       );
     });
 
-    it('#getAriaLabel should return valid message', () => {
-      component.isAllCollapsed = true;
-
-      const result = component.getAriaLabel();
-
-      expect(result).toEqual('Expand all rows');
-    });
-
     it('#getRequiredResultClass should return class', () => {
       const result1 = component.getRequiredResultClass(
         RequiredResult.Informational
@@ -107,9 +106,13 @@ describe('ProgressTableComponent', () => {
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        declarations: [TestrunTableComponent, FakeCalloutComponent],
+        declarations: [FakeCalloutComponent],
         providers: [{ provide: TestRunService, useValue: testRunServiceMock }],
-        imports: [BrowserAnimationsModule, MatExpansionModule, MatIconModule],
+        imports: [
+          BrowserAnimationsModule,
+          MatIconModule,
+          TestrunTableComponent,
+        ],
       }).compileComponents();
 
       fixture = TestBed.createComponent(TestrunTableComponent);
@@ -124,7 +127,7 @@ describe('ProgressTableComponent', () => {
       });
 
       it('should be unavailable', () => {
-        const tests = compiled.querySelector('.tests-container');
+        const tests = compiled.querySelector('mat-table');
 
         expect(tests).toBeNull();
       });
@@ -137,44 +140,54 @@ describe('ProgressTableComponent', () => {
       });
 
       it('should be available', () => {
-        const tests = compiled.querySelector('.tests-container');
+        const tests = compiled.querySelector('mat-table');
 
         expect(tests).not.toBeNull();
       });
 
       it('should have rows as provided from data', () => {
         const expectedRowsLength = (TEST_DATA.results as IResult[]).length;
-        const testsRows = compiled.querySelectorAll('.tests-row');
+        const testsRows = compiled.querySelectorAll('mat-row');
 
         expect(testsRows.length).toBe(expectedRowsLength);
-      });
-
-      it('should not have expand/collapse button', () => {
-        const button = compiled.querySelector('.expander-button');
-
-        expect(button).toBeNull();
       });
     });
 
     describe('with recommendations', () => {
       beforeEach(() => {
         component.dataSource = TEST_DATA_RESULT_WITH_RECOMMENDATIONS;
-        component.stepsToResolveCount = 1;
         fixture.detectChanges();
       });
 
-      it('should have expand/collapse button', () => {
-        const button = compiled.querySelector('.expander-button');
+      it('should have clickable row', () => {
+        const clickableRow = compiled.querySelector('mat-row.clickable-row');
 
-        expect(button).not.toBeNull();
-        expect(button?.ariaLabel).toBe('Collapse row');
+        expect(clickableRow).not.toBeNull();
       });
 
-      it('#checkAllCollapsed should return isAllCollapsed', () => {
-        component.checkAllCollapsed();
+      it('#onRowSelected should open test result modal', fakeAsync(() => {
+        const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+          afterClosed: () => of(true),
+        } as MatDialogRef<typeof TestResultDialogComponent>);
+        tick();
 
-        expect(component.isAllCollapsed).toBeFalse();
-      });
+        const testResult = TEST_DATA_RESULT_WITH_RECOMMENDATIONS[0];
+        component.onRowSelected(testResult);
+        tick();
+
+        expect(openSpy).toHaveBeenCalledWith(TestResultDialogComponent, {
+          ariaLabel: 'Test result information',
+          data: {
+            testResult,
+          },
+          autoFocus: true,
+          hasBackdrop: true,
+          disableClose: true,
+          panelClass: ['simple-dialog'],
+        });
+
+        openSpy.calls.reset();
+      }));
     });
   });
 });
@@ -182,6 +195,7 @@ describe('ProgressTableComponent', () => {
 @Component({
   selector: 'app-callout',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeCalloutComponent {
   @Input() type = '';

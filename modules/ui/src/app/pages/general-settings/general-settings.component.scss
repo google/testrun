@@ -1,0 +1,127 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@use '@angular/material' as mat;
+@use 'colors';
+@use 'variables';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  padding-top: 4px;
+}
+
+.setting-drawer-content {
+  overflow-y: scroll;
+  height: max-content;
+  padding: 8px 32px;
+
+  .setting-drawer-content-form-empty {
+    grid-template-rows: repeat(2, auto) 1fr;
+  }
+  ::ng-deep .callout-container {
+    margin: 10px 0;
+  }
+}
+
+.error-message-container {
+  display: block;
+  margin-top: auto;
+  padding-bottom: 8px;
+  text-align: center;
+}
+
+.message {
+  margin: 0;
+  color: colors.$on-surface-variant;
+  font-family: variables.$font-text;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0;
+}
+
+.setting-drawer-footer {
+  padding: 16px 40px;
+  margin-top: auto;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+
+  .save-button {
+    padding: 0 24px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0.25px;
+    &::ng-deep .mat-focus-indicator {
+      display: none;
+    }
+  }
+}
+
+.settings-drawer-header-button:not(.mat-mdc-button-disabled),
+.close-button:not(.mat-mdc-button-disabled),
+.save-button:not(.mat-mdc-button-disabled) {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.section-item {
+  min-height: 88px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.1fr;
+  gap: 46px;
+  padding: 8px 0;
+
+  p {
+    margin: 0;
+  }
+
+  .label-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 16px;
+    color: colors.$on-surface-variant;
+    font-family: variables.$font-text;
+  }
+
+  .data-column {
+    display: flex;
+  }
+
+  .setting-form-label,
+  .setting-data {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 500;
+    color: colors.$on-surface;
+  }
+
+  .setting-data {
+    display: flex;
+    align-items: center;
+    font-weight: 400;
+  }
+
+  .setting-label-description {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0;
+    color: colors.$on-surface-variant;
+  }
+}

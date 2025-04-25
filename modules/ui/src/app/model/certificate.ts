@@ -15,7 +15,7 @@
  */
 export interface Certificate {
   name: string;
-  status?: string;
+  status?: CertificateStatus;
   organisation?: string;
   expires?: string;
   uploading?: boolean;

@@ -30,6 +30,7 @@ import { FocusManagerService } from '../../services/focus-manager.service';
 import { AppState } from '../../store/state';
 import { selectRiskProfiles } from '../../store/selectors';
 import { setRiskProfiles } from '../../store/actions';
+import { ProfileAction } from '../../model/profile';
 
 describe('RiskAssessmentStore', () => {
   let riskAssessmentStore: RiskAssessmentStore;
@@ -104,6 +105,10 @@ describe('RiskAssessmentStore', () => {
           profiles: [PROFILE_MOCK, PROFILE_MOCK_2],
           profileFormat: [],
           selectedProfile: null,
+          actions: [
+            { action: ProfileAction.Copy, icon: 'content_copy' },
+            { action: ProfileAction.Delete, icon: 'delete' },
+          ],
         });
         done();
       });
@@ -115,7 +120,12 @@ describe('RiskAssessmentStore', () => {
       it('should dispatch setRiskProfiles', () => {
         mockService.deleteProfile.and.returnValue(of(true));
 
-        riskAssessmentStore.deleteProfile(PROFILE_MOCK.name);
+        riskAssessmentStore.deleteProfile({
+          name: PROFILE_MOCK.name,
+          onDelete: (idx: number) => {
+            return idx;
+          },
+        });
 
         expect(store.dispatch).toHaveBeenCalledWith(
           setRiskProfiles({ riskProfiles: [PROFILE_MOCK_2] })
@@ -175,9 +185,7 @@ describe('RiskAssessmentStore', () => {
     });
 
     describe('setFocusOnCreateButton', () => {
-      const container = document.createElement('div') as HTMLElement;
-      container.classList.add('risk-assessment-content-empty');
-      document.querySelector('body')?.appendChild(container);
+      const container = window.document.querySelector('app-risk-assessment');
 
       it('should call focusFirstElementInContainer', fakeAsync(() => {
         riskAssessmentStore.setFocusOnCreateButton();
@@ -189,20 +197,27 @@ describe('RiskAssessmentStore', () => {
       }));
     });
 
-    describe('setFocusOnSelectedProfile', () => {
+    describe('with selected profile', () => {
       const container = document.createElement('div') as HTMLElement;
-      container.classList.add('profiles-drawer-content');
+      container.classList.add('entity-list');
       const inner = document.createElement('div') as HTMLElement;
       inner.classList.add('selected');
       container.appendChild(inner);
       document.querySelector('body')?.appendChild(container);
 
-      it('should call focusFirstElementInContainer', () => {
+      it('setFocusOnSelectedProfile should call focusFirstElementInContainer', () => {
         riskAssessmentStore.setFocusOnSelectedProfile();
 
         expect(
           mockFocusManagerService.focusFirstElementInContainer
         ).toHaveBeenCalledWith(inner);
+      });
+
+      it('scrollToSelectedProfile should call focusFirstElementInContainer', () => {
+        const scrollSpy = spyOn(inner, 'scrollIntoView');
+        riskAssessmentStore.scrollToSelectedProfile();
+
+        expect(scrollSpy).toHaveBeenCalled();
       });
     });
 

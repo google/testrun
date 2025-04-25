@@ -63,7 +63,6 @@ describe('ProgressInitiateFormComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [TestrunInitiateFormComponent],
       providers: [
         { provide: TestRunService, useValue: testRunServiceMock },
         {
@@ -82,6 +81,7 @@ describe('ProgressInitiateFormComponent', () => {
         }),
       ],
       imports: [
+        TestrunInitiateFormComponent,
         MatDialogModule,
         DeviceItemComponent,
         ReactiveFormsModule,
@@ -240,7 +240,7 @@ describe('ProgressInitiateFormComponent', () => {
         component.selectedDevice = device;
         component.setFirmwareFocus = true;
         const firmwareSpy = spyOn(
-          component.firmwareInput.nativeElement,
+          component.firmwareInput().nativeElement,
           'focus'
         );
         component.ngAfterViewChecked();

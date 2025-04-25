@@ -1,0 +1,210 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="setting-drawer-content" *ngIf="viewModel$ | async as vm">
+  <app-callout
+    [type]="CalloutType.Error"
+    *ngIf="settingsDisable"
+    action="Go to Testing tab"
+    (onAction)="navigateToRuntime()">
+    To change settings, you need to stop testing.
+  </app-callout>
+  <form
+    [formGroup]="settingForm"
+    [class.setting-drawer-content-form-empty]="
+      (vm.interfaces | keyvalue).length === 0
+    ">
+    <section class="setting-drawer-content-inputs">
+      <ng-container
+        *ngTemplateOutlet="
+          section;
+          context: {
+            label: 'Ports mode',
+            description: 'This parameter is set by default',
+            data: 'port',
+          }
+        "></ng-container>
+      <mat-divider></mat-divider>
+      <ng-container
+        *ngIf="(vm.interfaces | keyvalue).length > 0; else warning_message">
+        <app-settings-dropdown
+          [controlName]="FormKey.DEVICE"
+          groupLabel="Device port"
+          description="Port where IoT device is connected for testing"
+          label="Device connection port"
+          key="device"
+          [options]="vm.deviceOptions">
+          <ng-container *ngIf="!settingsDisable">
+            <ng-container *ngTemplateOutlet="message"></ng-container>
+          </ng-container>
+        </app-settings-dropdown>
+        <app-settings-dropdown
+          [controlName]="FormKey.INTERNET"
+          groupLabel="Internet port"
+          description="Port used for internet connection"
+          label="Internet connection port"
+          key="internet"
+          [options]="vm.internetOptions">
+          <ng-container *ngIf="!settingsDisable">
+            <ng-container
+              *ngTemplateOutlet="
+                isInternetControlDisabled ? messageDisabled : message
+              "></ng-container>
+          </ng-container>
+        </app-settings-dropdown>
+      </ng-container>
+      <mat-divider></mat-divider>
+      <app-settings-dropdown
+        [controlName]="FormKey.LOG_LEVEL"
+        groupLabel="Log level"
+        description="Logging level of details"
+        label="Log level"
+        key="log-level"
+        [options]="vm.logLevelOptions">
+      </app-settings-dropdown>
+      <app-settings-dropdown
+        [controlName]="FormKey.MONITOR_PERIOD"
+        groupLabel="Monitoring Time"
+        description="Time period for Testrun to observe the device before starting tests"
+        label="Monitoring period"
+        key="monitoring-period"
+        [options]="vm.monitoringPeriodOptions">
+      </app-settings-dropdown>
+      <mat-divider></mat-divider>
+      <ng-container
+        *ngTemplateOutlet="
+          section;
+          context: {
+            label: 'Google analytics',
+            description:
+              'Testrun uses Google Analytics to learn about how our users use the application.',
+            data: 'analytics',
+          }
+        "></ng-container>
+      <mat-divider></mat-divider>
+    </section>
+    <mat-error
+      *ngIf="vm.isSubmitting && isFormError"
+      class="error-message-container">
+      <span>Both interfaces must have different values</span>
+    </mat-error>
+    <div class="setting-drawer-footer">
+      <button
+        mat-flat-button
+        class="save-button"
+        color="primary"
+        (click)="saveSetting()"
+        [disabled]="
+          settingsDisable ||
+          (vm.isSubmitting && isFormError) ||
+          (settingForm.pristine && analyticsForm.pristine)
+        ">
+        Save
+      </button>
+    </div>
+  </form>
+  <ng-template #warning_message>
+    <div class="section-item">
+      <div class="label-column"></div>
+      <div class="data-column">
+        <app-callout [type]="CalloutType.Warning">
+          Warning! No ports detected.
+        </app-callout>
+      </div>
+      <div class="info-column">
+        <ng-container *ngTemplateOutlet="messageReload"></ng-container>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template
+    #section
+    let-label="label"
+    let-description="description"
+    let-data="data"
+    let-info="info">
+    <div class="section-item">
+      <div class="label-column">
+        <p class="setting-form-label">{{ label }}</p>
+        <p class="setting-label-description">
+          {{ description }}
+        </p>
+      </div>
+      <div class="data-column">
+        <ng-container *ngIf="data === 'port'">
+          <ng-container *ngTemplateOutlet="portData"></ng-container>
+        </ng-container>
+        <ng-container *ngIf="data === 'analytics'">
+          <ng-container *ngTemplateOutlet="analyticsData"></ng-container>
+        </ng-container>
+      </div>
+      <div class="info-column">
+        <p *ngIf="data === 'analytics'" class="message">
+          By installing and running Testrun, you understand and accept the Terms
+          of Service found
+          <a
+            href="https://policies.google.com/technologies/partner-sites"
+            target="_blank"
+            class="message-link"
+            aria-label="here on Google Privacy & Terms page"
+            >here</a
+          >
+        </p>
+      </div>
+    </div>
+  </ng-template>
+  <ng-template #portData>
+    <p class="setting-data" *ngIf="vm.systemConfig?.single_intf === true">
+      Single port
+    </p>
+    <p class="setting-data" *ngIf="vm.systemConfig?.single_intf === false">
+      Two ports
+    </p>
+  </ng-template>
+  <ng-template #analyticsData>
+    <p class="setting-data" [formGroup]="analyticsForm">
+      <mat-checkbox class="consent-actions-opt-out" formControlName="optOut">
+        Opt out from Google Analytics
+      </mat-checkbox>
+    </p>
+  </ng-template>
+  <ng-template #messageDisabled>
+    <p class="message">
+      Internet port is disabled because you selected single port mode
+    </p>
+  </ng-template>
+  <ng-template #message>
+    <ng-container>
+      <p class="message">This port is required</p>
+      <ng-container *ngTemplateOutlet="messageReload"></ng-container>
+    </ng-container>
+  </ng-template>
+  <ng-template #messageReload>
+    <p class="message">
+      If a port is missing from this list, you can
+      <a
+        (click)="reloadSetting()"
+        (keydown.enter)="reloadSetting()"
+        (keydown.space)="reloadSetting()"
+        role="button"
+        [tabindex]="0"
+        class="message-link">
+        Refresh
+      </a>
+      the System settings
+    </p>
+  </ng-template>
+</div>
+<app-spinner class="connection-settings-spinner"></app-spinner>

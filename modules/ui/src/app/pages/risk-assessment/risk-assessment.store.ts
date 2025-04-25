@@ -14,33 +14,44 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { catchError, delay, EMPTY, exhaustMap, throwError, timer } from 'rxjs';
 import { TestRunService } from '../../services/test-run.service';
-import { Profile, ProfileFormat } from '../../model/profile';
+import { Profile, ProfileAction, ProfileFormat } from '../../model/profile';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../store/state';
-import { selectRiskProfiles } from '../../store/selectors';
+import {
+  selectIsOpenCreateProfile,
+  selectRiskProfiles,
+} from '../../store/selectors';
 import { setRiskProfiles } from '../../store/actions';
+import { EntityAction } from '../../model/entity-action';
 
 export interface AppComponentState {
   selectedProfile: Profile | null;
   profiles: Profile[];
   profileFormat: ProfileFormat[];
+  actions: EntityAction[];
 }
 @Injectable()
 export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
+  private testRunService = inject(TestRunService);
+  private store = inject<Store<AppState>>(Store);
+  private focusManagerService = inject(FocusManagerService);
+
   profiles$ = this.store.select(selectRiskProfiles);
   profileFormat$ = this.select(state => state.profileFormat);
   selectedProfile$ = this.select(state => state.selectedProfile);
-
+  actions$ = this.select(state => state.actions);
+  isOpenCreateProfile$ = this.store.select(selectIsOpenCreateProfile);
   viewModel$ = this.select({
     profiles: this.profiles$,
     profileFormat: this.profileFormat$,
     selectedProfile: this.selectedProfile$,
+    actions: this.actions$,
   });
 
   updateProfileFormat = this.updater(
@@ -56,14 +67,19 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     })
   );
 
-  deleteProfile = this.effect<string>(trigger$ => {
+  deleteProfile = this.effect<{
+    name: string;
+    onDelete: (idx: number) => void;
+  }>(trigger$ => {
     return trigger$.pipe(
-      exhaustMap((name: string) => {
+      exhaustMap(({ name, onDelete }) => {
         return this.testRunService.deleteProfile(name).pipe(
           withLatestFrom(this.profiles$),
           tap(([remove, current]) => {
             if (remove) {
+              const idx = current.findIndex(item => name === item.name);
               this.removeProfile(name, current);
+              onDelete(idx);
             }
           })
         );
@@ -95,7 +111,7 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
       delay(10),
       tap(() => {
         this.focusManagerService.focusFirstElementInContainer(
-          window.document.querySelector('.risk-assessment-content-empty')
+          window.document.querySelector('app-risk-assessment')
         );
       })
     );
@@ -105,8 +121,18 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     return trigger$.pipe(
       tap(() => {
         this.focusManagerService.focusFirstElementInContainer(
-          window.document.querySelector('.profiles-drawer-content .selected')
+          window.document.querySelector('.entity-list .selected')
         );
+      })
+    );
+  });
+
+  scrollToSelectedProfile = this.effect(trigger$ => {
+    return trigger$.pipe(
+      tap(() => {
+        window.document
+          .querySelector('.entity-list .selected')
+          ?.scrollIntoView();
       })
     );
   });
@@ -163,24 +189,24 @@ export class RiskAssessmentStore extends ComponentStore<AppComponentState> {
     );
   });
 
-  private removeProfile(name: string, current: Profile[]): void {
+  updateProfiles(riskProfiles: Profile[]): void {
+    this.store.dispatch(setRiskProfiles({ riskProfiles }));
+  }
+
+  removeProfile(name: string, current: Profile[]): void {
     const profiles = current.filter(profile => profile.name !== name);
     this.updateProfiles(profiles);
   }
 
-  private updateProfiles(riskProfiles: Profile[]): void {
-    this.store.dispatch(setRiskProfiles({ riskProfiles }));
-  }
-
-  constructor(
-    private testRunService: TestRunService,
-    private store: Store<AppState>,
-    private focusManagerService: FocusManagerService
-  ) {
+  constructor() {
     super({
       profiles: [],
       profileFormat: [],
       selectedProfile: null,
+      actions: [
+        { action: ProfileAction.Copy, icon: 'content_copy' },
+        { action: ProfileAction.Delete, icon: 'delete' },
+      ],
     });
   }
 }

@@ -61,6 +61,7 @@ describe('Selectors', () => {
     internetConnection: null,
     interfaces: {},
     systemConfig: { network: {} },
+    isOpenCreateProfile: false,
   };
 
   it('should select interfaces', () => {

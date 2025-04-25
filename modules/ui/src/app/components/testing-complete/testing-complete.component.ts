@@ -4,6 +4,7 @@ import {
   Input,
   OnDestroy,
   OnInit,
+  inject,
 } from '@angular/core';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
@@ -19,20 +20,17 @@ import { TestingType } from '../../model/device';
 
 @Component({
   selector: 'app-testing-complete',
-  standalone: true,
   imports: [],
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TestingCompleteComponent implements OnDestroy, OnInit {
+  dialog = inject(MatDialog);
+  private focusManagerService = inject(FocusManagerService);
+
   @Input() profiles: Profile[] = [];
   @Input() data!: TestrunStatus | null;
   private destroy$: Subject<boolean> = new Subject<boolean>();
-
-  constructor(
-    public dialog: MatDialog,
-    private focusManagerService: FocusManagerService
-  ) {}
 
   ngOnInit() {
     timer(1000)
@@ -53,7 +51,8 @@ export class TestingCompleteComponent implements OnDestroy, OnInit {
         profiles: this.profiles,
         testrunStatus: this.data,
         isTestingComplete: true,
-        url: this.data?.report,
+        report: this.data?.report,
+        export: this.data?.export,
         isPilot: this.data?.device.test_pack === TestingType.Pilot,
       },
       autoFocus: 'first-tabbable',

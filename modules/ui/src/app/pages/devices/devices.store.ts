@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { TestRunService } from '../../services/test-run.service';
 import { exhaustMap } from 'rxjs';
 import { tap, withLatestFrom } from 'rxjs/operators';
-import { Device, TestModule } from '../../model/device';
+import { Device, DeviceAction, TestModule } from '../../model/device';
 import { AppState } from '../../store/state';
 import { Store } from '@ngrx/store';
 import {
@@ -34,29 +34,36 @@ import {
   setIsOpenAddDevice,
 } from '../../store/actions';
 import { TestrunStatus } from '../../model/testrun-status';
-import { DeviceQuestionnaireSection } from '../../model/device';
+import { EntityAction } from '../../model/entity-action';
+import { QuestionFormat } from '../../model/question';
 
 export interface DevicesComponentState {
   devices: Device[];
   selectedDevice: Device | null;
   testModules: TestModule[];
-  questionnaireFormat: DeviceQuestionnaireSection[];
+  questionnaireFormat: QuestionFormat[];
+  actions: EntityAction[];
 }
 
 @Injectable()
 export class DevicesStore extends ComponentStore<DevicesComponentState> {
+  private testRunService = inject(TestRunService);
+  private store = inject<Store<AppState>>(Store);
+
   devices$ = this.store.select(selectDevices);
   isOpenAddDevice$ = this.store.select(selectIsOpenAddDevice);
   testModules$ = this.store.select(selectTestModules);
   questionnaireFormat$ = this.select(state => state.questionnaireFormat);
   private deviceInProgress$ = this.store.select(selectDeviceInProgress);
   private selectedDevice$ = this.select(state => state.selectedDevice);
+  private actions$ = this.select(state => state.actions);
 
   viewModel$ = this.select({
     devices: this.devices$,
     selectedDevice: this.selectedDevice$,
     deviceInProgress: this.deviceInProgress$,
     testModules: this.testModules$,
+    actions: this.actions$,
   });
 
   selectDevice = this.updater((state, device: Device | null) => ({
@@ -65,14 +72,14 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
   }));
 
   updateQuestionnaireFormat = this.updater(
-    (state, questionnaireFormat: DeviceQuestionnaireSection[]) => ({
+    (state, questionnaireFormat: QuestionFormat[]) => ({
       ...state,
       questionnaireFormat,
     })
   );
   deleteDevice = this.effect<{
     device: Device;
-    onDelete: () => void;
+    onDelete: (idx: number) => void;
   }>(trigger$ => {
     return trigger$.pipe(
       exhaustMap(({ device, onDelete }) => {
@@ -80,8 +87,11 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
           withLatestFrom(this.devices$),
           tap(([deleted, devices]) => {
             if (deleted) {
+              const idx = devices.findIndex(
+                item => device.mac_addr === item.mac_addr
+              );
               this.removeDevice(device, devices);
-              onDelete();
+              onDelete(idx);
             }
           })
         );
@@ -89,28 +99,29 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
     );
   });
 
-  saveDevice = this.effect<{ device: Device; onSuccess: () => void }>(
-    trigger$ => {
-      return trigger$.pipe(
-        exhaustMap(({ device, onSuccess }) => {
-          return this.testRunService.saveDevice(device).pipe(
-            withLatestFrom(this.devices$),
-            tap(([added, devices]) => {
-              if (added) {
-                this.addDevice(device, devices);
-                onSuccess();
-              }
-            })
-          );
-        })
-      );
-    }
-  );
+  saveDevice = this.effect<{
+    device: Device;
+    onSuccess: (idx: number) => void;
+  }>(trigger$ => {
+    return trigger$.pipe(
+      exhaustMap(({ device, onSuccess }) => {
+        return this.testRunService.saveDevice(device).pipe(
+          withLatestFrom(this.devices$),
+          tap(([added, devices]) => {
+            if (added) {
+              this.addDevice(device, devices);
+              onSuccess(0);
+            }
+          })
+        );
+      })
+    );
+  });
 
   editDevice = this.effect<{
     device: Device;
     mac_addr: string;
-    onSuccess: () => void;
+    onSuccess: (idx: number) => void;
   }>(trigger$ => {
     return trigger$.pipe(
       exhaustMap(({ device, mac_addr, onSuccess }) => {
@@ -118,8 +129,11 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
           withLatestFrom(this.devices$),
           tap(([edited, devices]) => {
             if (edited) {
+              const idx = devices.findIndex(
+                item => device.mac_addr === item.mac_addr
+              );
               this.updateDevice(device, mac_addr, devices);
-              onSuccess();
+              onSuccess(idx);
             }
           })
         );
@@ -151,7 +165,7 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
     return trigger$.pipe(
       exhaustMap(() => {
         return this.testRunService.fetchQuestionnaireFormat().pipe(
-          tap((questionnaireFormat: DeviceQuestionnaireSection[]) => {
+          tap((questionnaireFormat: QuestionFormat[]) => {
             this.updateQuestionnaireFormat(questionnaireFormat);
           })
         );
@@ -160,7 +174,7 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
   });
 
   private addDevice(device: Device, devices: Device[]): void {
-    this.updateDevices(devices.concat([device]));
+    this.updateDevices([device, ...devices]);
   }
 
   private updateDevice(
@@ -191,15 +205,16 @@ export class DevicesStore extends ComponentStore<DevicesComponentState> {
     this.store.dispatch(setDevices({ devices }));
   }
 
-  constructor(
-    private testRunService: TestRunService,
-    private store: Store<AppState>
-  ) {
+  constructor() {
     super({
       devices: [],
       selectedDevice: null,
       testModules: [],
       questionnaireFormat: [],
+      actions: [
+        { action: DeviceAction.StartNewTestrun, svgIcon: 'testrun_logo_small' },
+        { action: DeviceAction.Delete, icon: 'delete' },
+      ],
     });
   }
 }

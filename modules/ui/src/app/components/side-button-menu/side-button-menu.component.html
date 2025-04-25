@@ -1,0 +1,56 @@
+<div class="side-add-button-container">
+  <button
+    #actionsButton
+    class="side-add-button"
+    mat-fab
+    (click)="menuTrigger.openMenu()"
+    aria-label="Actions"
+    matTooltip="Actions">
+    <mat-icon>add</mat-icon>
+  </button>
+  <div
+    aria-hidden="true"
+    class="side-add-menu-trigger"
+    #menuTrigger="matMenuTrigger"
+    [matMenuTriggerFor]="menu"></div>
+</div>
+
+<mat-menu
+  #menu="matMenu"
+  class="side-add-menu"
+  backdropClass="side-add-menu-backdrop">
+  <div class="side-add-menu-triangle">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="12"
+      height="20"
+      viewBox="0 0 12 20"
+      fill="none">
+      <path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M1.9923 13.3282C-0.382636 11.7449 -0.382632 8.25509 1.9923 6.6718L12 0L12 20L1.9923 13.3282Z"
+        fill="white" />
+    </svg>
+  </div>
+  <button
+    *ngFor="let item of menuItems()"
+    mat-menu-item
+    class="side-add-menu-button"
+    [class.with-description]="item.description !== null"
+    (click)="item.onClick()"
+    (keydown.tab)="focusButton($event)"
+    (keydown.escape)="focusButton($event)"
+    [disabled]="item.disabled$ | async">
+    <mat-icon *ngIf="item.svgIcon" svgIcon="{{ item.svgIcon }}"></mat-icon>
+    <mat-icon
+      *ngIf="item.icon"
+      class="material-symbols-outlined side-add-menu-button-icon"
+      >{{ item.icon }}</mat-icon
+    >
+    <div class="side-add-menu-button-label">{{ item.label }}</div>
+    <div *ngIf="item.description" class="side-add-menu-button-description">
+      {{ item.description }}
+    </div>
+  </button>
+</mat-menu>

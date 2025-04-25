@@ -1,0 +1,41 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="list-item" [class.disabled]="disabled">
+  <ng-content></ng-content>
+  <button
+    [disabled]="disabled"
+    fontSet="material-symbols-outlined"
+    mat-icon-button
+    aria-label="Actions"
+    matTooltip="Actions"
+    [matMenuTriggerFor]="menu">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+</div>
+
+<mat-menu #menu="matMenu" class="list-item-menu">
+  <button
+    class="list-item-menu-item"
+    mat-menu-item
+    *ngFor="let action of actions(); trackBy: trackByAction"
+    (click)="menuItemClicked.emit(action.action)">
+    <mat-icon *ngIf="action.icon" fontSet="material-symbols-outlined">{{
+      action.icon
+    }}</mat-icon>
+    <mat-icon *ngIf="action.svgIcon" svgIcon="{{ action.svgIcon }}"></mat-icon>
+    <span>{{ action.action }}</span>
+  </button>
+</mat-menu>

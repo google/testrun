@@ -1,0 +1,128 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@use 'variables';
+@use 'colors';
+
+@mixin dialog {
+  display: grid;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: var(--mat-dialog-container-max-width);
+}
+
+@mixin content-empty {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin report-action {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px;
+  z-index: 1;
+  width: var(--mdc-icon-button-state-layer-size);
+  height: var(--mdc-icon-button-state-layer-size);
+  &:hover:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    opacity: var(
+      --mat-icon-button-hover-state-layer-opacity,
+      var(--mat-app-hover-state-layer-opacity)
+    );
+    background-color: var(
+      --mat-icon-button-state-layer-color,
+      var(--mat-app-on-surface-variant)
+    );
+    z-index: -1;
+  }
+}
+
+@mixin disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@mixin add-button {
+  font-family: variables.$font-text;
+  margin-bottom: 12px;
+  width: fit-content;
+  height: 56px;
+  padding-left: 30px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+@mixin delete-red-button {
+  background-color: colors.$error;
+  color: colors.$on-error;
+}
+
+@mixin secondary-button {
+  background-color: colors.$secondary-container;
+  color: colors.$on-secondary-container;
+}
+
+@mixin form-actions {
+  margin-left: 32px;
+  margin-bottom: 25px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  width: calc(100% - 64px);
+  padding: 16px;
+  box-sizing: border-box;
+  background: colors.$surface;
+  border-radius: 32px;
+  box-shadow:
+    0px 1px 2px 0px rgba(0, 0, 0, 0.3),
+    0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+}
+
+@mixin headline {
+  color: colors.$on-surface;
+  font-family: variables.$font-primary;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+@mixin headline-large {
+  font-size: 32px;
+  line-height: 40px;
+  @include headline;
+}
+
+@mixin headline-small {
+  font-size: 24px;
+  line-height: 32px;
+  @include headline;
+}

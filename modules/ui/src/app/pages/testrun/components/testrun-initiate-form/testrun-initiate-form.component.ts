@@ -18,11 +18,15 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  Inject,
   OnInit,
-  ViewChild,
+  viewChild,
+  inject,
 } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { TestRunService } from '../../../../services/test-run.service';
 import {
   Device,
@@ -35,6 +39,7 @@ import {
   FormArray,
   FormBuilder,
   FormGroup,
+  ReactiveFormsModule,
 } from '@angular/forms';
 import { DeviceValidators } from '../../../devices/components/device-form/device.validators';
 import { EscapableDialogComponent } from '../../../../components/escapable-dialog/escapable-dialog.component';
@@ -44,6 +49,19 @@ import { AppState } from '../../../../store/state';
 import { selectDevices } from '../../../../store/selectors';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { TestrunStatus } from '../../../../model/testrun-status';
+import { CalloutType } from '../../../../model/callout-type';
+import { CommonModule } from '@angular/common';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { DeviceTestsComponent } from '../../../../components/device-tests/device-tests.component';
+import { DeviceItemComponent } from '../../../../components/device-item/device-item.component';
+import { SpinnerComponent } from '../../../../components/spinner/spinner.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonModule } from '@angular/material/button';
+import { CalloutComponent } from '../../../../components/callout/callout.component';
 
 interface DialogData {
   device?: Device;
@@ -54,13 +72,37 @@ interface DialogData {
   selector: 'app-testrun-initiate-form',
   templateUrl: './testrun-initiate-form.component.html',
   styleUrls: ['./testrun-initiate-form.component.scss'],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatProgressBarModule,
+    MatDialogModule,
+    DeviceItemComponent,
+    MatInputModule,
+    MatExpansionModule,
+    ReactiveFormsModule,
+    DeviceTestsComponent,
+    SpinnerComponent,
+    CalloutComponent,
+    MatTooltipModule,
+  ],
 })
 export class TestrunInitiateFormComponent
   extends EscapableDialogComponent
   implements OnInit, AfterViewChecked
 {
   private startRequestSent = new BehaviorSubject(false);
-  @ViewChild('firmwareInput') firmwareInput!: ElementRef;
+  override dialogRef: MatDialogRef<TestrunInitiateFormComponent>;
+  data = inject<DialogData>(MAT_DIALOG_DATA);
+  private readonly testRunService = inject(TestRunService);
+  private fb = inject(FormBuilder);
+  private deviceValidators = inject(DeviceValidators);
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
+  private store = inject<Store<AppState>>(Store);
+
+  readonly firmwareInput = viewChild.required<ElementRef>('firmwareInput');
   initiateForm!: FormGroup;
   devices$ = this.store.select(selectDevices);
   selectedDevice: Device | null = null;
@@ -69,20 +111,17 @@ export class TestrunInitiateFormComponent
   setFirmwareFocus = false;
   readonly DeviceStatus = DeviceStatus;
   readonly DeviceView = DeviceView;
+  public readonly CalloutType = CalloutType;
   error$: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(
     null
   );
 
-  constructor(
-    public override dialogRef: MatDialogRef<TestrunInitiateFormComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData,
-    private readonly testRunService: TestRunService,
-    private fb: FormBuilder,
-    private deviceValidators: DeviceValidators,
-    private readonly changeDetectorRef: ChangeDetectorRef,
-    private store: Store<AppState>
-  ) {
-    super(dialogRef);
+  constructor() {
+    const dialogRef =
+      inject<MatDialogRef<TestrunInitiateFormComponent>>(MatDialogRef);
+
+    super();
+    this.dialogRef = dialogRef;
   }
 
   get firmware() {
@@ -129,7 +168,7 @@ export class TestrunInitiateFormComponent
     }
     if (this.setFirmwareFocus) {
       timer(100).subscribe(() => {
-        this.firmwareInput?.nativeElement.focus();
+        this.firmwareInput()?.nativeElement.focus();
         this.setFirmwareFocus = false;
         this.changeDetectorRef.detectChanges();
       });

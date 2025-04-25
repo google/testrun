@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Observable } from 'rxjs/internal/Observable';
-import { Device, DeviceQuestionnaireSection } from '../model/device';
+import { Device } from '../model/device';
 import { catchError, map, of, retry } from 'rxjs';
 import { SystemConfig, SystemInterfaces } from '../model/setting';
 import {
@@ -34,6 +34,7 @@ import {
   ProfileRisk,
   RiskResultClassName,
 } from '../model/profile';
+import { QuestionFormat } from '../model/question';
 
 const API_URL = `http://${window.location.hostname}:8000`;
 export const SYSTEM_STOP = '/system/stop';
@@ -50,9 +51,9 @@ export const UNAVAILABLE_VERSION = {
   providedIn: 'root',
 })
 export class TestRunService {
-  private version = new BehaviorSubject<Version | null>(null);
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {}
+  private version = new BehaviorSubject<Version | null>(null);
 
   changeReportURL(url: string): string {
     if (!url) {
@@ -242,7 +243,16 @@ export class TestRunService {
   }
 
   fetchProfiles(): Observable<Profile[]> {
-    return this.http.get<Profile[]>(`${API_URL}/profiles`);
+    return this.http
+      .get<Required<Profile>[]>(`${API_URL}/profiles`)
+      .pipe(
+        map(items =>
+          items.sort(
+            (a, b) =>
+              new Date(b.created).getTime() - new Date(a.created).getTime()
+          )
+        )
+      );
   }
 
   deleteProfile(name: string): Observable<boolean> {
@@ -306,10 +316,8 @@ export class TestRunService {
     return this.http.get<ProfileFormat[]>(`${API_URL}/profiles/format`);
   }
 
-  fetchQuestionnaireFormat(): Observable<DeviceQuestionnaireSection[]> {
-    return this.http.get<DeviceQuestionnaireSection[]>(
-      `${API_URL}/devices/format`
-    );
+  fetchQuestionnaireFormat(): Observable<QuestionFormat[]> {
+    return this.http.get<QuestionFormat[]>(`${API_URL}/devices/format`);
   }
 
   saveProfile(profile: Profile): Observable<boolean> {

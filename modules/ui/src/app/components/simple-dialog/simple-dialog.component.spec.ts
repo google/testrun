@@ -48,6 +48,7 @@ describe('DeleteFormComponent', () => {
     fixture = TestBed.createComponent(SimpleDialogComponent);
     component = fixture.componentInstance;
     component.data = {
+      icon: 'favorite',
       title: 'title?',
       content: 'content',
     };
@@ -57,6 +58,12 @@ describe('DeleteFormComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should has icon', () => {
+    const title = compiled.querySelector('mat-icon') as HTMLElement;
+
+    expect(title.innerHTML).toEqual('favorite');
   });
 
   it('should has title', () => {
