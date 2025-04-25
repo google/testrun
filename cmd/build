@@ -58,15 +58,6 @@ else
   exit 1
 fi
 
-# Build websockets server
-echo Building websockets server
-if docker build -t testrun/ws -f modules/ws/ws.Dockerfile . ; then
-  echo Successully built the web sockets server
-else
-  echo An error occured whilst building the websockets server
-  exit 1
-fi
-
 # Build network modules
 echo Building network modules
 for dir in modules/network/* ; do
