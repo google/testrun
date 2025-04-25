@@ -13,39 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@import '../../../theming/colors';
 
-:host {
-  overflow: auto;
-}
+$icon-size: 24px;
 
-.toolbar {
-  height: auto;
-  padding: 22px 0px 18px 32px;
-}
-.title {
-  padding: 24px 0 16px;
-}
-
-.tab-item {
-  display: flex;
-  padding: 0px 32px;
-  align-items: center;
-  gap: 32px;
-}
-.tab-group {
-  ::ng-deep .mat-mdc-tab-labels {
-    gap: 16px;
-    padding: 0 12px;
-  }
-
-  ::ng-deep.mat-mdc-tab {
-    padding: 0px 8px;
+.app-toolbar-button {
+  border-radius: 20px;
+  border: 1px solid transparent;
+  min-width: 48px;
+  padding: 0;
+  box-sizing: border-box;
+  height: 34px;
+  margin: 11px 0;
+  line-height: 50% !important;
+  &.disabled {
+    opacity: 0.6;
   }
 }
 
-.settings-drawer-header-button:not(.mat-mdc-button-disabled),
-.close-button:not(.mat-mdc-button-disabled),
-.save-button:not(.mat-mdc-button-disabled) {
-  cursor: pointer;
-  pointer-events: auto;
+.wifi-icon {
+  margin-right: 0;
+  width: $icon-size;
+  font-size: $icon-size;
+  color: $dark-grey;
+  height: $icon-size;
 }

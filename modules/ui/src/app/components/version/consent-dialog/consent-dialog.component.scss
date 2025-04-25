@@ -142,6 +142,17 @@
   }
 }
 
+.section-container-pilot {
+  .section-title {
+    font-weight: 500;
+    letter-spacing: 0.25px;
+  }
+  .section-content {
+    margin: 0;
+    padding-top: 9px;
+  }
+}
+
 .consent-actions {
   border-top: 1px solid colors.$outline-variant;
   padding: 16px 0 0;
