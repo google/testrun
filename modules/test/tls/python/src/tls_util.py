@@ -132,7 +132,6 @@ class TLSUtil():
         context.verify_mode = ssl.CERT_REQUIRED
 
       # Set the correct TLS version
-      context.options |= ssl.PROTOCOL_TLS
       context.options |= ssl.OP_NO_TLSv1  # Disable TLS 1.0
       context.options |= ssl.OP_NO_TLSv1_1  # Disable TLS 1.1
       if tls_version == '1.3':
