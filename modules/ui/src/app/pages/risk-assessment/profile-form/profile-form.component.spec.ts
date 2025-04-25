@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 
 import { ProfileFormComponent } from './profile-form.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   COPY_PROFILE_MOCK,
+  DRAFT_COPY_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
   NEW_PROFILE_MOCK_DRAFT,
   OUTDATED_DRAFT_PROFILE_MOCK,
@@ -29,15 +30,31 @@ import {
   RENAME_PROFILE_MOCK,
 } from '../../../mocks/profile.mock';
 import { ProfileStatus } from '../../../model/profile';
+import { RiskAssessmentStore } from '../risk-assessment.store';
+import { TestRunService } from '../../../services/test-run.service';
+import { provideMockStore } from '@ngrx/store/testing';
+import { of } from 'rxjs';
+import { MatDialogRef } from '@angular/material/dialog';
+import { SimpleDialogComponent } from '../../../components/simple-dialog/simple-dialog.component';
 
 describe('ProfileFormComponent', () => {
   let component: ProfileFormComponent;
   let fixture: ComponentFixture<ProfileFormComponent>;
   let compiled: HTMLElement;
+  const testrunServiceMock: jasmine.SpyObj<TestRunService> =
+    jasmine.createSpyObj('testrunServiceMock', [
+      'fetchQuestionnaireFormat',
+      'saveDevice',
+    ]);
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProfileFormComponent, BrowserAnimationsModule],
+      providers: [
+        RiskAssessmentStore,
+        { provide: TestRunService, useValue: testrunServiceMock },
+        provideMockStore({}),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfileFormComponent);
@@ -311,14 +328,15 @@ describe('ProfileFormComponent', () => {
         ).toBeTrue();
       });
 
-      it('should have an error when uses the name of copy profile', () => {
-        component.selectedProfile = COPY_PROFILE_MOCK;
+      it('should have an error when uses the name of copy profile', fakeAsync(() => {
+        component.selectedProfile = DRAFT_COPY_PROFILE_MOCK;
         component.profiles = [PROFILE_MOCK, PROFILE_MOCK_2, COPY_PROFILE_MOCK];
+        fixture.detectChanges();
 
         expect(
           component.nameControl.hasError('has_same_profile_name')
         ).toBeTrue();
-      });
+      }));
     });
 
     describe('with no profile', () => {
@@ -334,6 +352,31 @@ describe('ProfileFormComponent', () => {
 
         expect(emitSpy).toHaveBeenCalledWith(NEW_PROFILE_MOCK);
       });
+    });
+
+    describe('openCloseDialog', () => {
+      it('should open discard modal', fakeAsync(() => {
+        const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+          afterClosed: () => of(true),
+        } as MatDialogRef<typeof SimpleDialogComponent>);
+
+        component.openCloseDialog();
+
+        expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
+          ariaLabel: 'Discard the Risk Assessment changes',
+          data: {
+            title: 'Discard changes?',
+            content: `You have unsaved changes that would be permanently lost.`,
+            confirmName: 'Discard',
+          },
+          autoFocus: true,
+          hasBackdrop: true,
+          disableClose: true,
+          panelClass: ['simple-dialog', 'discard-dialog'],
+        });
+
+        openSpy.calls.reset();
+      }));
     });
   });
 

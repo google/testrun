@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
@@ -53,11 +53,18 @@ import { Profile } from '../model/profile';
 import { DeviceStatus } from '../model/device';
 import { TestRunMqttService } from '../services/test-run-mqtt.service';
 import { InternetConnection } from '../model/topic';
+import { SystemConfig, SystemInterfaces } from '../model/setting';
 
 const WAIT_TO_OPEN_SNACKBAR_MS = 60 * 1000;
 
 @Injectable()
 export class AppEffects {
+  private actions$ = inject(Actions);
+  private testrunService = inject(TestRunService);
+  private testrunMqttService = inject(TestRunMqttService);
+  private store = inject<Store<AppState>>(Store);
+  private notificationService = inject(NotificationService);
+
   private isSinglePortMode: boolean | undefined = false;
   private statusSubscription: Subscription | undefined;
   private internetSubscription: Subscription | undefined;
@@ -287,6 +294,32 @@ export class AppEffects {
     );
   });
 
+  onFetchInterfaces$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchInterfaces),
+      switchMap(() =>
+        this.testrunService.getSystemInterfaces().pipe(
+          map((interfaces: SystemInterfaces) => {
+            return AppActions.fetchInterfacesSuccess({ interfaces });
+          })
+        )
+      )
+    );
+  });
+
+  onFetchSystemConfig$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AppActions.fetchSystemConfig),
+      switchMap(() =>
+        this.testrunService.getSystemConfig().pipe(
+          map((systemConfig: SystemConfig) => {
+            return AppActions.fetchSystemConfigSuccess({ systemConfig });
+          })
+        )
+      )
+    );
+  });
+
   private isTestrunFinished(status: string) {
     return (
       status === StatusOfTestrun.Complete ||
@@ -344,12 +377,4 @@ export class AppEffects {
         });
     }
   }
-
-  constructor(
-    private actions$: Actions,
-    private testrunService: TestRunService,
-    private testrunMqttService: TestRunMqttService,
-    private store: Store<AppState>,
-    private notificationService: NotificationService
-  ) {}
 }

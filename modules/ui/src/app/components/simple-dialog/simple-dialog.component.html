@@ -13,12 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<span *ngIf="data.icon" class="simple-dialog-icon"
+  ><mat-icon fontSet="material-symbols-outlined">{{
+    data.icon
+  }}</mat-icon></span
+>
 <span class="simple-dialog-title">{{ data.title }}</span>
 <p class="simple-dialog-content">
   {{ data.content }}
 </p>
 
-<mat-dialog-actions align="end" class="delete-form-actions">
+<mat-dialog-actions align="end" class="simple-dialog-actions">
   <button
     cdkFocusInitial
     aria-label="Cancel"
@@ -35,6 +40,6 @@ limitations under the License.
     color="primary"
     mat-button
     type="button">
-    Confirm
+    {{ data.confirmName ? data.confirmName : 'Confirm' }}
   </button>
 </mat-dialog-actions>

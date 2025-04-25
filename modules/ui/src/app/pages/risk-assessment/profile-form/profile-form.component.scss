@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import 'src/theming/colors';
-@import 'src/theming/variables';
+@use 'colors';
+@use 'variables';
+@use 'mixins';
 
 :host {
   height: 100%;
@@ -24,16 +25,16 @@
 }
 
 .profile-form {
-  overflow: scroll;
+  overflow-y: scroll;
 
   .name-field-label {
-    padding-top: 0;
+    margin: 0;
   }
   .field-container {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 8px 16px 8px 24px;
+    padding: 16px 32px 11px 32px;
   }
 
   .profile-form-field {
@@ -46,14 +47,22 @@
 }
 
 .form-actions {
-  display: flex;
-  gap: 16px;
-  padding: 8px 24px 24px 24px;
-}
+  @include mixins.form-actions;
 
-.save-draft-button:not(.mat-mdc-button-disabled),
-.discard-button:not(.mat-mdc-button-disabled) {
-  color: $primary;
+  div {
+    display: flex;
+    gap: 12px;
+  }
+
+  .save-draft-button:not(.mat-mdc-button-disabled),
+  .copy-button:not(.mat-mdc-button-disabled),
+  .discard-button:not(.mat-mdc-button-disabled) {
+    @include mixins.secondary-button;
+  }
+
+  .delete-button:not(.mat-mdc-button-disabled) {
+    @include mixins.delete-red-button;
+  }
 }
 
 .save-profile-button:not(.mat-mdc-button-disabled),

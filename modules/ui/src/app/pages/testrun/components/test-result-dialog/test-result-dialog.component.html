@@ -1,0 +1,46 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<span mat-dialog-title class="dialog-title">{{ data.testResult.name }}</span>
+<mat-dialog-content class="content-container">
+  <section class="result-info-main">
+    <div>
+      <p class="info-label">Description</p>
+      <p class="info-main-data">{{ data.testResult.description }}</p>
+    </div>
+    <div>
+      <p class="info-label">Test result</p>
+      <p class="info-result">{{ data.testResult.result }}</p>
+      <p class="info-required-result">{{ data.testResult.required_result }}</p>
+    </div>
+  </section>
+  <section class="result-info-steps">
+    <p class="info-label steps">Steps to resolve</p>
+    <ul class="info-steps-list">
+      <li *ngFor="let point of data.testResult.recommendations">{{ point }}</li>
+    </ul>
+  </section>
+</mat-dialog-content>
+<mat-dialog-actions align="end" class="actions-container">
+  <button
+    mat-dialog-close
+    class="close-button"
+    color="primary"
+    mat-flat-button
+    aria-label="Close dialog"
+    type="button">
+    Close
+  </button>
+</mat-dialog-actions>

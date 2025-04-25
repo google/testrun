@@ -18,13 +18,20 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { CommonModule, KeyValuePipe } from '@angular/common';
 import { DateRange, FilterName, Filters } from '../../../../model/filters';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-filter-chips',
   templateUrl: './filter-chips.component.html',
   styleUrls: ['./filter-chips.component.scss'],
-  standalone: true,
-  imports: [MatIconModule, MatChipsModule, KeyValuePipe, CommonModule],
+
+  imports: [
+    MatIconModule,
+    MatChipsModule,
+    MatButtonModule,
+    KeyValuePipe,
+    CommonModule,
+  ],
 })
 export class FilterChipsComponent {
   @Input() filters!: Filters;

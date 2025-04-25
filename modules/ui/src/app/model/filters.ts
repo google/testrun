@@ -21,6 +21,13 @@ export enum FilterName {
   DateRange = 'dateRange',
 }
 
+export enum FilterTitle {
+  DeviceInfo = 'Enter device name',
+  DeviceFirmware = 'Enter firmware name',
+  Results = 'Select status',
+  Started = 'Select dates',
+}
+
 export interface ReportFilters {
   deviceInfo: string;
   deviceFirmware: string;

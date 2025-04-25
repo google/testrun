@@ -18,7 +18,8 @@ import {
   ElementRef,
   OnDestroy,
   OnInit,
-  ViewChild,
+  viewChild,
+  inject,
 } from '@angular/core';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { TestRunService } from '../../services/test-run.service';
@@ -26,45 +27,75 @@ import {
   StatusResultClassName,
   TestrunStatus,
 } from '../../model/testrun-status';
-import { DatePipe } from '@angular/common';
-import { MatSort, Sort } from '@angular/material/sort';
+import { CommonModule, DatePipe } from '@angular/common';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { Subject, takeUntil, timer } from 'rxjs';
-import { MatRow } from '@angular/material/table';
-import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
+import { MatRow, MatTableModule } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { tap } from 'rxjs/internal/operators/tap';
-import { FilterName, Filters } from '../../model/filters';
+import { FilterName, FilterTitle, Filters } from '../../model/filters';
 import { ReportsStore } from './reports.store';
+import {
+  FilterHeaderComponent,
+  OpenFilterEvent,
+} from './components/filter-header/filter-header.component';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { FilterChipsComponent } from './components/filter-chips/filter-chips.component';
+import { DownloadReportZipComponent } from '../../components/download-report-zip/download-report-zip.component';
+import { DownloadReportPdfComponent } from '../../components/download-report-pdf/download-report-pdf.component';
+import { DeleteReportComponent } from './components/delete-report/delete-report.component';
+import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
+import { EmptyMessageComponent } from '../../components/empty-message/empty-message.component';
 
 @Component({
   selector: 'app-history',
   templateUrl: './reports.component.html',
   styleUrls: ['./reports.component.scss'],
-  providers: [ReportsStore],
+  imports: [
+    CommonModule,
+    MatTableModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatSortModule,
+    FilterChipsComponent,
+    DeleteReportComponent,
+    DownloadReportZipComponent,
+    DownloadReportPdfComponent,
+    FilterHeaderComponent,
+    EmptyMessageComponent,
+  ],
+  providers: [ReportsStore, DatePipe],
 })
 export class ReportsComponent implements OnInit, OnDestroy {
+  private testRunService = inject(TestRunService);
+  private datePipe = inject(DatePipe);
+  private liveAnnouncer = inject(LiveAnnouncer);
+  dialog = inject(MatDialog);
+  private store = inject(ReportsStore);
+
   public readonly FilterName = FilterName;
+  public readonly FilterTitle = FilterTitle;
   private destroy$: Subject<boolean> = new Subject<boolean>();
-  @ViewChild(MatSort, { static: false }) sort!: MatSort;
+  sort = viewChild(MatSort);
   viewModel$ = this.store.viewModel$;
-  constructor(
-    private testRunService: TestRunService,
-    private datePipe: DatePipe,
-    private liveAnnouncer: LiveAnnouncer,
-    public dialog: MatDialog,
-    private store: ReportsStore
-  ) {}
 
   ngOnInit() {
     this.store.getReports();
-    this.store.updateSort(this.sort);
+    const sort = this.sort();
+    if (sort) {
+      this.store.updateSort(sort);
+    }
   }
 
   getFormattedDateString(date: string | null) {
     return date ? this.datePipe.transform(date, 'd MMM y H:mm') : '';
   }
   sortData(sortState: Sort) {
-    this.store.updateSort(this.sort);
+    const sort = this.sort();
+    if (sort) {
+      this.store.updateSort(sort);
+    }
     if (sortState.direction) {
       this.liveAnnouncer.announce(`Sorted ${sortState.direction}ending`);
     } else {
@@ -76,22 +107,28 @@ export class ReportsComponent implements OnInit, OnDestroy {
     return this.testRunService.getResultClass(status);
   }
 
-  openFilter(event: Event, filter: string, filterOpened: boolean) {
+  openFilter({ event, filter, title, filterOpened }: OpenFilterEvent) {
+    event.preventDefault();
     event.stopPropagation();
     const target = new ElementRef(event.currentTarget);
 
     if (!filterOpened) {
-      this.openFilterDialog(target, filter);
+      this.openFilterDialog(target, filter, title);
     }
   }
 
-  openFilterDialog(target: ElementRef<EventTarget | null>, filter: string) {
+  openFilterDialog(
+    target: ElementRef<EventTarget | null>,
+    filter: string,
+    title: string
+  ) {
     this.store.setFilterOpened(true);
     this.store.setActiveFiler(filter);
     const dialogRef = this.dialog.open(FilterDialogComponent, {
       ariaLabel: 'Filters',
       data: {
         filter,
+        title,
         trigger: target,
       },
       autoFocus: true,

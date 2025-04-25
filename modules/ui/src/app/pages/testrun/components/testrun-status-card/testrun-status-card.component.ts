@@ -23,12 +23,34 @@ import {
   TestsData,
 } from '../../../../model/testrun-status';
 import { TestingType } from '../../../../model/device';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-testrun-status-card',
   templateUrl: './testrun-status-card.component.html',
   styleUrls: ['./testrun-status-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatProgressBarModule,
+    MatDialogModule,
+    MatInputModule,
+    MatExpansionModule,
+    ReactiveFormsModule,
+    MatTooltipModule,
+  ],
 })
 export class TestrunStatusCardComponent {
   @Input() systemStatus!: TestrunStatus;
@@ -44,9 +66,11 @@ export class TestrunStatusCardComponent {
     'completed-success': boolean;
     'completed-failed': boolean;
     canceled: boolean;
+    error: boolean;
   } {
     return {
-      progress: this.isProgressStatus(status),
+      progress:
+        this.isProgressStatus(status) || status === StatusOfTestrun.Cancelling,
       'completed-success':
         (result === ResultOfTestrun.Compliant &&
           status === StatusOfTestrun.Complete) ||
@@ -57,11 +81,9 @@ export class TestrunStatusCardComponent {
       'completed-failed':
         (result === ResultOfTestrun.NonCompliant &&
           status === StatusOfTestrun.Complete) ||
-        status === StatusOfTestrun.Error ||
         status === StatusOfTestrun.DoNotProceed,
-      canceled:
-        status === StatusOfTestrun.Cancelled ||
-        status === StatusOfTestrun.Cancelling,
+      canceled: status === StatusOfTestrun.Cancelled,
+      error: status === StatusOfTestrun.Error,
     };
   }
 
@@ -85,20 +107,18 @@ export class TestrunStatusCardComponent {
         }`;
       }
     }
-    return '';
+    return '-/-';
   }
 
-  public getTestStatus(data: TestrunStatus): string {
-    if (data.status === StatusOfTestrun.Cancelled) {
-      return 'Incomplete';
-    } else if (data.finished && !this.isProgressStatus(data.status)) {
-      return 'Complete';
+  public getTestStatusText(data: TestrunStatus): string {
+    if (!data.finished) {
+      return 'Status';
     } else {
-      return data.status;
+      return 'Result';
     }
   }
 
-  public getTestResult(data: TestrunStatus): string {
+  public getTestStatus(data: TestrunStatus): string {
     if (
       data.status === StatusOfTestrun.Complete ||
       data.status === StatusOfTestrun.Proceed ||

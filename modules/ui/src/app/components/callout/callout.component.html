@@ -13,25 +13,39 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="callout-container" [ngClass]="type">
+<div class="callout-container" [ngClass]="type()">
   <mat-icon
-    *ngIf="type !== CalloutType.InfoPilot"
+    *ngIf="type() !== CalloutType.InfoPilot"
     class="callout-icon"
-    fontSet="material-icons-outlined"
-    color="primary">
-    {{ type }}
+    fontSet="material-symbols-outlined">
+    {{ type() }}
   </mat-icon>
-  <span *ngIf="type === CalloutType.InfoPilot" class="callout-icon info-pilot">
+  <span
+    *ngIf="type() === CalloutType.InfoPilot"
+    class="callout-icon info-pilot">
     <app-program-type-icon [type]="ProgramType.Pilot"></app-program-type-icon
   ></span>
   <p class="callout-context">
     <ng-content></ng-content>
   </p>
-  <button
-    *ngIf="closable"
-    class="callout-close-button"
-    mat-button
-    (click)="calloutClosed.emit(id)">
-    Dismiss
-  </button>
+  <div class="callout-action-container">
+    <a
+      *ngIf="action()"
+      (click)="onAction.emit()"
+      (keydown.enter)="onAction.emit()"
+      (keydown.space)="onAction.emit()"
+      tabindex="0"
+      role="link"
+      class="callout-action callout-action-link"
+      >{{ action() }}</a
+    >
+    <button
+      *ngIf="closable()"
+      class="callout-action callout-close-button"
+      mat-button
+      (click)="calloutClosed.emit(id())">
+      Dismiss
+    </button>
+  </div>
+  <div class="callout-border"></div>
 </div>

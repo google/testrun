@@ -14,31 +14,33 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import 'src/theming/colors';
-@import 'src/theming/variables';
+@use 'm3-theme' as *;
+@use 'colors';
+@use 'variables';
 
 .field-label {
-  margin: 0;
-  color: $grey-800;
-  font-size: 18px;
+  font-family: variables.$font-text;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
   line-height: 24px;
-  padding-top: 24px;
-  padding-bottom: 16px;
+  letter-spacing: 0.1px;
+  color: colors.$on-surface-variant;
+  padding: 8px 16px;
   display: inline-block;
   &:has(+ .field-select-multiple.ng-invalid.ng-dirty) {
-    color: mat.m2-get-color-from-palette($color-warn, 700);
+    color: mat.get-theme-color($light-theme, error, 40);
   }
 }
 mat-form-field {
   width: 100%;
 }
 .field-hint {
-  font-family: $font-secondary;
+  font-family: variables.$font-secondary;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
   text-align: left;
-  padding-top: 8px;
 }
 
 .form-field {
@@ -50,9 +52,11 @@ mat-form-field {
 }
 
 .field-select-multiple {
+  margin-bottom: 16px;
+
   .field-select-checkbox {
     &:has(::ng-deep .mat-mdc-checkbox-checked) {
-      background: mat.m2-get-color-from-palette($color-primary, 50);
+      background: mat.get-theme-color($light-theme, primary, 95);
     }
     ::ng-deep .mdc-checkbox__ripple {
       display: none;

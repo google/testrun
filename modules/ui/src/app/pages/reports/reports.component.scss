@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 @use 'node_modules/@angular/material/index' as mat;
-@import 'src/theming/colors';
-@import 'src/theming/variables';
+@use 'm3-theme' as *;
+@use 'colors';
+@use 'mixins';
+@use 'variables';
 
 :host {
   overflow: hidden;
@@ -25,7 +27,7 @@
 
 .history-toolbar {
   gap: 10px;
-  background: $white;
+  background: colors.$white;
   height: 74px;
   padding: 24px 0 8px 32px;
 }
@@ -33,8 +35,6 @@
 .history-content {
   margin: 10px 32px 39px 32px;
   overflow-y: auto;
-  border-radius: 4px;
-  border: 1px solid $lighter-grey;
   height: -webkit-max-content;
   height: -moz-max-content;
   height: max-content;
@@ -52,20 +52,16 @@
 }
 
 .history-content table {
-  th {
-    font-weight: 700;
-  }
+  --mat-table-header-headline-font: #{variables.$font-text};
+  --mat-table-row-item-label-text-font: #{variables.$font-text};
+  --mat-table-background-color: #{colors.$surface};
+  --mat-table-header-headline-color: #{colors.$on-surface-variant};
+  --mat-table-row-item-label-text-color: #{colors.$on-surface-variant};
+  --mat-table-row-item-outline-color: #{colors.$outline-variant};
 
-  td {
-    font-weight: 400;
-  }
-
-  th,
-  td {
-    font-family: Roboto, sans-serif;
-    font-size: 14px;
-    line-height: 20px;
-    letter-spacing: 0.2px;
+  .table-cell-actions-container {
+    display: flex;
+    gap: 8px;
   }
 
   .table-cell-actions {
@@ -80,10 +76,10 @@
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
-    margin: 0 2px 0 8px;
+    margin: 0 2px 0 12px;
     padding: 0;
     border: none;
-    background: $white;
+    background: colors.$white;
     cursor: pointer;
     &:hover {
       background-color: rgba(0, 0, 0, 0.04);
@@ -94,7 +90,7 @@
   }
 
   .filter-button.active .mat-icon {
-    color: mat.m2-get-color-from-palette($color-primary, 600);
+    color: mat.get-theme-color($light-theme, primary, 35);
   }
 }
 
@@ -127,10 +123,7 @@
 }
 
 .results-content-empty {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 100%;
+  @include mixins.content-empty;
 }
 
 .results-content-empty-message {
@@ -144,11 +137,11 @@
   font-weight: 400;
   line-height: 28px;
   font-size: 22px;
-  color: $black;
+  color: colors.$black;
 }
 
 .results-content-empty-message-main {
-  font-family: Roboto, sans-serif;
+  font-family: variables.$font-secondary;
   font-weight: 400;
   font-size: 16px;
   line-height: 24px;
@@ -158,7 +151,7 @@
 
 ::ng-deep .download-report-icon,
 .delete-report-icon {
-  color: $dark-grey;
+  color: var(--mat-table-row-item-label-text-color);
 }
 
 .hidden {
@@ -177,6 +170,10 @@
 }
 
 .download-report-zip-icon-container {
-  display: inline-block;
-  padding-top: 5px;
+  @include mixins.report-action;
+}
+
+::ng-deep .mat-sort-header-container {
+  padding-bottom: 4px;
+  height: variables.$reports-table-header-size;
 }

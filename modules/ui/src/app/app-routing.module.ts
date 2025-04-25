@@ -13,45 +13,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
+import { ReportsComponent } from './pages/reports/reports.component';
+import { DevicesComponent } from './pages/devices/devices.component';
+import { CanDeactivateGuard } from './guards/can-deactivate.guard';
+import { TestrunComponent } from './pages/testrun/testrun.component';
+import { RiskAssessmentComponent } from './pages/risk-assessment/risk-assessment.component';
+import { CertificatesComponent } from './pages/certificates/certificates.component';
+import { SettingsComponent } from './pages/settings/settings.component';
+import { GeneralSettingsComponent } from './pages/general-settings/general-settings.component';
+import { CanActivateGuard } from './guards/can-activate.guard';
 
-const routes: Routes = [
+export const routes: Routes = [
+  {
+    path: 'settings',
+    component: SettingsComponent,
+    title: 'Testrun - Settings',
+    children: [
+      {
+        path: '',
+        redirectTo: 'general',
+        pathMatch: 'full',
+      },
+      {
+        path: 'certificates',
+        component: CertificatesComponent,
+        title: 'Testrun - Certificates',
+      },
+      {
+        path: 'general',
+        component: GeneralSettingsComponent,
+        title: 'Testrun - General Settings',
+      },
+    ],
+  },
   {
     path: 'testing',
-    loadChildren: () =>
-      import('./pages/testrun/testrun.module').then(m => m.TestrunModule),
-    title: 'Testrun',
+    component: TestrunComponent,
+    title: 'Testrun - Testing',
   },
   {
     path: 'devices',
-    loadChildren: () =>
-      import('./pages/devices/devices.module').then(m => m.DevicesModule),
+    component: DevicesComponent,
+    canDeactivate: [CanDeactivateGuard],
     title: 'Testrun - Devices',
   },
   {
     path: 'reports',
-    loadChildren: () =>
-      import('./pages/reports/reports.module').then(m => m.ReportsModule),
+    component: ReportsComponent,
     title: 'Testrun - Reports',
   },
   {
     path: 'risk-assessment',
-    loadChildren: () =>
-      import('./pages/risk-assessment/risk-assessment.module').then(
-        m => m.RiskAssessmentModule
-      ),
+    component: RiskAssessmentComponent,
+    canDeactivate: [CanDeactivateGuard],
     title: 'Testrun - Risk Assessment',
   },
   {
     path: '',
-    redirectTo: 'devices',
-    pathMatch: 'full',
+    canActivate: [CanActivateGuard],
+    component: DevicesComponent,
   },
 ];
-
-@NgModule({
-  imports: [RouterModule.forRoot(routes, { useHash: true })],
-  exports: [RouterModule],
-})
-export class AppRoutingModule {}
