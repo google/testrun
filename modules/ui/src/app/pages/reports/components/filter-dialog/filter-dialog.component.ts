@@ -18,9 +18,9 @@ import {
   Component,
   ElementRef,
   HostListener,
-  Inject,
   OnInit,
-  ViewChild,
+  viewChild,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -36,7 +36,9 @@ import {
   FormBuilder,
   FormControl,
   FormGroup,
+  FormGroupDirective,
   FormsModule,
+  NgForm,
   NgModel,
   ReactiveFormsModule,
 } from '@angular/forms';
@@ -52,7 +54,7 @@ import {
   MatDatepickerInputEvent,
   MatDatepickerModule,
 } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { ErrorStateMatcher, MatNativeDateModule } from '@angular/material/core';
 import {
   FilterName,
   DateRange as LocalDateRange,
@@ -64,14 +66,31 @@ import {
 } from '../../../../model/testrun-status';
 import { DeviceValidators } from '../../../devices/components/device-form/device.validators';
 
+class DateErrorStateMatcher implements ErrorStateMatcher {
+  isErrorState(
+    control: FormControl | null,
+    form: FormGroupDirective | NgForm | null
+  ): boolean {
+    const isSubmitted = form && form.submitted;
+    return !!(
+      control &&
+      control.errors &&
+      control.errors['matDatepickerParse'].text.trim().length > 0 &&
+      control.invalid &&
+      (control.touched || isSubmitted)
+    );
+  }
+}
+
 interface DialogData {
   trigger: ElementRef;
   filter: string;
+  title: string;
 }
 
 @Component({
   selector: 'app-filter-dialog',
-  standalone: true,
+
   imports: [
     CommonModule,
     MatDialogModule,
@@ -99,6 +118,11 @@ export class FilterDialogComponent
   extends EscapableDialogComponent
   implements OnInit
 {
+  override dialogRef: MatDialogRef<FilterDialogComponent>;
+  private deviceValidators = inject(DeviceValidators);
+  data = inject<DialogData>(MAT_DIALOG_DATA);
+  private fb = inject(FormBuilder);
+
   resultList = [
     { value: ResultOfTestrun.Compliant, enabled: false },
     { value: ResultOfTestrun.NonCompliant, enabled: false },
@@ -113,6 +137,7 @@ export class FilterDialogComponent
   range: LocalDateRange = new LocalDateRange();
 
   topPosition = 0;
+  dialogTitle = 110;
 
   today = new Date();
 
@@ -123,17 +148,15 @@ export class FilterDialogComponent
     this.setDialogView();
   }
 
-  @ViewChild(MatCalendar) calendar!: MatCalendar<Date>;
-  @ViewChild('startDate') startDate!: NgModel;
-  @ViewChild('endDate') endDate!: NgModel;
+  readonly calendar = viewChild(MatCalendar);
+  readonly startDate = viewChild<NgModel>('startDate');
+  readonly endDate = viewChild<NgModel>('endDate');
 
-  constructor(
-    public override dialogRef: MatDialogRef<FilterDialogComponent>,
-    private deviceValidators: DeviceValidators,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData,
-    private fb: FormBuilder
-  ) {
-    super(dialogRef);
+  constructor() {
+    const dialogRef = inject<MatDialogRef<FilterDialogComponent>>(MatDialogRef);
+
+    super();
+    this.dialogRef = dialogRef;
   }
 
   get deviceInfo() {
@@ -154,12 +177,21 @@ export class FilterDialogComponent
     const rect = this.data.trigger?.nativeElement.getBoundingClientRect();
 
     matDialogConfig.position = {
-      left: `${rect.left - 80}px`,
-      top: `${rect.bottom + 0}px`,
+      left:
+        this.data.filter === FilterName.Results
+          ? `${rect.left - 240}px`
+          : `${rect.left}px`,
+      top: `${rect.bottom + 14}px`,
     };
 
     this.topPosition = rect.bottom + this.dialog_actions_height;
-    matDialogConfig.width = this.data.filter === 'results' ? '240px' : '328px';
+    if (this.data.filter === FilterName.Started) {
+      matDialogConfig.width = '360px';
+    } else if (this.data.filter === FilterName.Results) {
+      matDialogConfig.width = '240px';
+    } else {
+      matDialogConfig.width = '328px';
+    }
 
     this.dialogRef.updateSize(matDialogConfig.width);
     this.dialogRef.updatePosition(matDialogConfig.position);
@@ -196,8 +228,8 @@ export class FilterDialogComponent
   confirm(): void {
     if (
       this.filterForm?.invalid ||
-      this.startDate?.invalid ||
-      this.endDate?.invalid
+      this.startDate()?.invalid ||
+      this.endDate()?.invalid
     ) {
       return;
     }
@@ -230,6 +262,8 @@ export class FilterDialogComponent
     this.dialogRef.close();
   }
 
+  dateMatcher = new DateErrorStateMatcher();
+
   startDateChanged(event: MatDatepickerInputEvent<Date>) {
     const date = event.value;
     if (date && date.getFullYear() > this.today.getFullYear()) {
@@ -241,8 +275,11 @@ export class FilterDialogComponent
       this.selectedRangeValue?.end || null
     );
     if (this.selectedRangeValue.start) {
-      this.calendar.activeDate = this.selectedRangeValue.start;
-      this.calendar.updateTodaysDate();
+      const calendar = this.calendar();
+      if (calendar) {
+        calendar.activeDate = this.selectedRangeValue.start;
+        calendar.updateTodaysDate();
+      }
     }
   }
 
@@ -257,8 +294,11 @@ export class FilterDialogComponent
       event.value
     );
     if (this.selectedRangeValue?.end) {
-      this.calendar.activeDate = this.selectedRangeValue.end;
-      this.calendar.updateTodaysDate();
+      const calendar = this.calendar();
+      if (calendar) {
+        calendar.activeDate = this.selectedRangeValue.end;
+        calendar.updateTodaysDate();
+      }
     }
   }
 }

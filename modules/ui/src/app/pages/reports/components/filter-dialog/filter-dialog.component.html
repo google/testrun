@@ -13,10 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<h2 class="filter-dialog-title" mat-dialog-title>{{ data.title }}</h2>
+
 <mat-dialog-content
   class="filter-dialog-content"
-  [ngStyle]="{ 'max-height': 'calc(100vh - ' + topPosition + 'px)' }">
-  <form [formGroup]="filterForm">
+  [ngStyle]="{
+    'max-height': 'calc(100vh - ' + (topPosition + dialogTitle) + 'px)',
+  }">
+  <form [formGroup]="filterForm" class="filter-form">
     <mat-form-field
       appearance="outline"
       class="text-field"
@@ -27,7 +31,6 @@ limitations under the License.
         formControlName="deviceInfo"
         matInput
         aria-label="device name" />
-      <mat-hint>Please enter device model name</mat-hint>
       <mat-error
         *ngIf="deviceInfo.hasError('invalid_format')"
         role="alert"
@@ -49,7 +52,6 @@ limitations under the License.
         formControlName="deviceFirmware"
         matInput
         aria-label="device firmware" />
-      <mat-hint>Please enter firmware name</mat-hint>
       <mat-error
         *ngIf="deviceFirmware.hasError('invalid_format')"
         role="alert"
@@ -60,7 +62,10 @@ limitations under the License.
         >
       </mat-error>
     </mat-form-field>
-    <div formArrayName="results" *ngIf="data.filter === FilterName.Results">
+    <div
+      class="filter-result"
+      formArrayName="results"
+      *ngIf="data.filter === FilterName.Results">
       <p
         *ngFor="let result of results.controls; let i = index"
         class="filter-result-item">
@@ -73,30 +78,28 @@ limitations under the License.
 
   <ng-container *ngIf="data.filter === FilterName.Started">
     <mat-form-field appearance="outline" class="date-field">
-      <mat-label>Started date</mat-label>
+      <mat-label>Dates</mat-label>
       <mat-date-range-input>
         <input
+          [errorStateMatcher]="dateMatcher"
           matStartDate
-          placeholder="MM/DD/YYYY"
+          placeholder="mm/dd/yyyy"
           [(ngModel)]="range.start"
           #startDate="ngModel"
           (dateChange)="startDateChanged($event)" />
         <input
+          [errorStateMatcher]="dateMatcher"
           matEndDate
-          placeholder="MM/DD/YYYY"
+          placeholder="mm/dd/yyyy"
           [(ngModel)]="range.end"
           #endDate="ngModel"
           (dateChange)="endDateChanged($event)" />
       </mat-date-range-input>
-      <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
       <mat-error
-        *ngIf="
-          (startDate.invalid && (startDate.dirty || startDate.touched)) ||
-          (endDate.invalid && (endDate.dirty || endDate.touched))
-        "
+        *ngIf="startDate.invalid || endDate.invalid"
         role="alert"
         aria-live="assertive">
-        <span>Please, select the correct date range in MM/DD/YYYY format.</span>
+        <span>Please, select the correct date range in mm/dd/yyyy format.</span>
       </mat-error>
     </mat-form-field>
 
@@ -109,8 +112,6 @@ limitations under the License.
   </ng-container>
 </mat-dialog-content>
 <mat-dialog-actions align="end" class="filter-dialog-actions">
-  <button (click)="cancel()" class="cancel-button" mat-flat-button>
-    Cancel
-  </button>
-  <button (click)="confirm()" class="confirm-button" mat-flat-button>Ok</button>
+  <button (click)="cancel()" class="cancel-button" mat-button>Cancel</button>
+  <button (click)="confirm()" class="confirm-button" mat-button>Ok</button>
 </mat-dialog-actions>

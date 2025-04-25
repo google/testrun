@@ -31,7 +31,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { AppRoutingModule } from './app-routing.module';
 import SpyObj = jasmine.SpyObj;
 import { BypassComponent } from './components/bypass/bypass.component';
 import { CalloutComponent } from './components/callout/callout.component';
@@ -63,7 +62,6 @@ import {
   selectSystemStatus,
 } from './store/selectors';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { CertificatesComponent } from './pages/certificates/certificates.component';
 import { of } from 'rxjs';
 import { WINDOW } from './providers/window.provider';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
@@ -74,6 +72,12 @@ import { WifiComponent } from './components/wifi/wifi.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Profile } from './model/profile';
 import { TestrunStatus } from './model/testrun-status';
+import { SpinnerComponent } from './components/spinner/spinner.component';
+import { ShutdownAppComponent } from './components/shutdown-app/shutdown-app.component';
+import { TestingCompleteComponent } from './components/testing-complete/testing-complete.component';
+import { VersionComponent } from './components/version/version.component';
+import { MOCK_MODULES } from './mocks/device.mock';
+import { HelpTips } from './model/tip-config';
 
 const windowMock = {
   location: {
@@ -115,11 +119,9 @@ describe('AppComponent', () => {
       'getTestModules',
       'testrunInProgress',
       'fetchProfiles',
-      'fetchCertificates',
       'getHistory',
     ]);
 
-    mockService.fetchCertificates.and.returnValue(of([]));
     mockFocusManagerService = jasmine.createSpyObj('mockFocusManagerService', [
       'focusFirstElementInContainer',
     ]);
@@ -128,9 +130,9 @@ describe('AppComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [
+        AppComponent,
         RouterTestingModule,
         HttpClientTestingModule,
-        AppRoutingModule,
         MatButtonModule,
         BrowserAnimationsModule,
         MatIconModule,
@@ -139,9 +141,18 @@ describe('AppComponent', () => {
         BypassComponent,
         CalloutComponent,
         MatIconTestingModule,
-        CertificatesComponent,
         WifiComponent,
         MatTooltipModule,
+        FakeSpinnerComponent,
+        FakeShutdownAppComponent,
+        FakeVersionComponent,
+        FakeTestingCompleteComponent,
+        RouterTestingModule.withRoutes([
+          { path: 'devices', children: [] },
+          { path: 'settings', children: [] },
+          { path: 'testing', children: [] },
+          { path: 'reports', children: [] },
+        ]),
       ],
       providers: [
         { provide: TestRunService, useValue: mockService },
@@ -173,16 +184,27 @@ describe('AppComponent', () => {
         { provide: FocusManagerService, useValue: mockFocusManagerService },
         { provide: WINDOW, useValue: windowMock },
       ],
-      declarations: [
-        AppComponent,
-        FakeGeneralSettingsComponent,
-        FakeSpinnerComponent,
-        FakeShutdownAppComponent,
-        FakeVersionComponent,
-        FakeTestingCompleteComponent,
-      ],
+    }).overrideComponent(AppComponent, {
+      remove: {
+        imports: [
+          SpinnerComponent,
+          ShutdownAppComponent,
+          TestingCompleteComponent,
+          VersionComponent,
+        ],
+      },
+      add: {
+        imports: [
+          FakeSpinnerComponent,
+          FakeShutdownAppComponent,
+          FakeVersionComponent,
+          FakeTestingCompleteComponent,
+        ],
+      },
     });
 
+    mockService.fetchDevices.and.returnValue(of([]));
+    mockService.getTestModules.and.returnValue(of([...MOCK_MODULES]));
     mockMqttService.getNetworkAdapters.and.returnValue(of(MOCK_ADAPTERS));
     store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(AppComponent);
@@ -204,10 +226,10 @@ describe('AppComponent', () => {
     expect(sideBar).toBeDefined();
   });
 
-  it('should render menu button', () => {
-    const button = compiled.querySelector('.app-sidebar-button-menu');
+  it('should render side button menu', () => {
+    const sideButtonMenu = compiled.querySelector('app-side-button-menu');
 
-    expect(button).toBeDefined();
+    expect(sideButtonMenu).toBeDefined();
   });
 
   it('should render runtime button', () => {
@@ -289,143 +311,17 @@ describe('AppComponent', () => {
     expect(router.url).toBe(Routes.Reports);
   }));
 
-  it('should call toggleSettingsBtn focus when settingsDrawer close on closeSetting', fakeAsync(() => {
+  it('should navigate to the settings when "settings" button is clicked', fakeAsync(() => {
     fixture.detectChanges();
 
-    spyOn(component.settingsDrawer, 'close').and.returnValue(
-      Promise.resolve('close')
-    );
-    spyOn(component.toggleSettingsBtn, 'focus');
-
-    component.closeSetting(true);
-    tick();
-
-    component.settingsDrawer.close().then(() => {
-      expect(component.toggleSettingsBtn.focus).toHaveBeenCalled();
-    });
-  }));
-
-  it('should call focusFirstElementInContainer if settingsDrawer opened not from toggleBtn', fakeAsync(() => {
-    fixture.detectChanges();
-
-    spyOn(component.settingsDrawer, 'close').and.returnValue(
-      Promise.resolve('close')
-    );
-
-    component.openGeneralSettings(false, false);
-    tick();
-    component.closeSetting(false);
-    flush();
-
-    component.settingsDrawer.close().then(() => {
-      expect(
-        mockFocusManagerService.focusFirstElementInContainer
-      ).toHaveBeenCalled();
-    });
-  }));
-
-  it('should update interfaces and config', () => {
-    fixture.detectChanges();
-
-    spyOn(component.settings, 'getSystemInterfaces');
-    spyOn(component.settings, 'getSystemConfig');
-
-    component.openGeneralSettings(false, false);
-
-    expect(component.settings.getSystemInterfaces).toHaveBeenCalled();
-    expect(component.settings.getSystemConfig).toHaveBeenCalled();
-  });
-
-  it('should call settingsDrawer open on openSetting', fakeAsync(() => {
-    fixture.detectChanges();
-    spyOn(component.settingsDrawer, 'open');
-
-    component.openSetting(false);
-    tick();
-
-    expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
-  }));
-
-  it('should announce settingsDrawer disabled on openSetting and settings are disabled', fakeAsync(() => {
-    fixture.detectChanges();
-
-    spyOn(component.settingsDrawer, 'open').and.returnValue(
-      Promise.resolve('open')
-    );
-
-    component.openSetting(true);
-    tick();
-
-    expect(mockLiveAnnouncer.announce).toHaveBeenCalledWith(
-      'The settings panel is disabled'
-    );
-  }));
-
-  it('should call settingsDrawer open on click settings button', () => {
-    fixture.detectChanges();
-
-    const settingsBtn = compiled.querySelector(
+    const settingsButton = compiled.querySelector(
       '.app-toolbar-button-general-settings'
     ) as HTMLButtonElement;
-    spyOn(component.settingsDrawer, 'open');
+    settingsButton?.click();
+    tick();
 
-    settingsBtn.click();
-
-    expect(component.settingsDrawer.open).toHaveBeenCalledTimes(1);
-  });
-
-  describe('menu button', () => {
-    beforeEach(() => {
-      mockFocusManagerService.focusFirstElementInContainer.calls.reset();
-      store.overrideSelector(selectHasDevices, false);
-      fixture.detectChanges();
-    });
-
-    it('should dispatch toggleMenu action', () => {
-      spyOn(component.appStore, 'toggleMenu');
-
-      const menuBtn = compiled.querySelector(
-        '.app-toolbar-button-menu'
-      ) as HTMLButtonElement;
-
-      menuBtn.click();
-
-      expect(component.appStore.toggleMenu).toHaveBeenCalled();
-    });
-
-    it('should focus navigation on tab press if menu button was clicked', () => {
-      component.appStore.updateFocusNavigation(true);
-      fixture.detectChanges();
-      spyOn(component.appStore, 'updateFocusNavigation');
-      const menuBtn = compiled.querySelector(
-        '.app-toolbar-button-menu'
-      ) as HTMLButtonElement;
-
-      menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
-      const navigation = compiled.querySelector('.app-sidebar');
-
-      expect(component.appStore.updateFocusNavigation).toHaveBeenCalledWith(
-        false
-      );
-      expect(
-        mockFocusManagerService.focusFirstElementInContainer
-      ).toHaveBeenCalledWith(navigation);
-    });
-
-    it('should not focus navigation button on tab press if menu button was not clicked', () => {
-      component.appStore.updateFocusNavigation(false);
-      fixture.detectChanges();
-      const menuBtn = compiled.querySelector(
-        '.app-toolbar-button-menu'
-      ) as HTMLButtonElement;
-
-      menuBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
-
-      expect(
-        mockFocusManagerService.focusFirstElementInContainer
-      ).not.toHaveBeenCalled();
-    });
-  });
+    expect(router.url).toBe(Routes.Settings);
+  }));
 
   it('should have spinner', () => {
     const spinner = compiled.querySelector('app-spinner');
@@ -468,44 +364,88 @@ describe('AppComponent', () => {
     });
   });
 
-  describe('Callout component visibility', () => {
+  describe('Help tip component visibility', () => {
     describe('with no connection settings', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasConnectionSettings, false);
         fixture.detectChanges();
       });
 
-      it('should have callout component with "Step 1" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
+      it('should have help tip component with "Step 1" text', () => {
+        const helpTip = compiled.querySelector('app-help-tip');
+        const helpTipTitle = compiled.querySelector('app-help-tip .title');
+        const helpTipContent = helpTipTitle?.innerHTML.trim();
 
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('Step 1');
+        expect(helpTip).toBeTruthy();
+        expect(helpTipContent).toContain('Step 1');
       });
 
-      it('should have callout content with "System settings" link ', () => {
-        const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+      it('should have help tip content with "Go to Settings" link ', () => {
+        const helpTipLinkEl = compiled.querySelector(
+          '.tip-action-link'
         ) as HTMLAnchorElement;
-        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+        const helpTipLinkContent = helpTipLinkEl.innerHTML.trim();
 
-        expect(calloutLinkEl).toBeTruthy();
-        expect(calloutLinkContent).toContain('System settings');
+        expect(helpTipLinkEl).toBeTruthy();
+        expect(helpTipLinkContent).toContain('Go to Settings');
+      });
+    });
+
+    describe('with no devices set', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasDevices, false);
+        fixture.detectChanges();
+      });
+
+      it('should have helpTip component', () => {
+        const helpTip = compiled.querySelector('app-help-tip');
+
+        expect(helpTip).toBeTruthy();
+      });
+
+      it('should have help tip component with "Step 2" text', () => {
+        const helpTipTitle = compiled.querySelector('app-help-tip .title');
+        const helpTipTitleContent = helpTipTitle?.innerHTML.trim();
+
+        expect(helpTipTitleContent).toContain('Step 2');
+      });
+
+      it('should have help tip content with "Create Device" link ', () => {
+        const helpTipLinkEl = compiled.querySelector(
+          '.tip-action-link'
+        ) as HTMLAnchorElement;
+        const helpTipLinkContent = helpTipLinkEl.innerHTML.trim();
+
+        expect(helpTipLinkEl).toBeTruthy();
+        expect(helpTipLinkContent).toContain('Device');
       });
 
       keyboardCases.forEach(testCase => {
-        it(`should call openSetting on keydown ${testCase.name} "Connection settings" link`, fakeAsync(() => {
-          const spyOpenSetting = spyOn(component, 'openSetting');
-          const calloutLinkEl = compiled.querySelector(
-            '.message-link'
+        it(`should navigate to the device-repository on keydown ${testCase.name} "Create Device" link`, fakeAsync(() => {
+          const helpTipLinkEl = compiled.querySelector(
+            '.tip-action-link'
           ) as HTMLAnchorElement;
 
-          calloutLinkEl.dispatchEvent(testCase.event);
+          helpTipLinkEl.dispatchEvent(testCase.event);
           flush();
 
-          expect(spyOpenSetting).toHaveBeenCalled();
+          expect(router.url).toBe(Routes.Devices);
         }));
       });
+
+      it('should navigate to the device-repository on click "Create a Device" link', fakeAsync(() => {
+        const helpTipLinkEl = compiled.querySelector(
+          '.tip-action-link'
+        ) as HTMLAnchorElement;
+
+        helpTipLinkEl.click();
+        flush();
+
+        expect(router.url).toBe(Routes.Devices);
+        expect(store.dispatch).toHaveBeenCalledWith(
+          setIsOpenAddDevice({ isOpenAddDevice: true })
+        );
+      }));
     });
 
     describe('with system status as "Idle"', () => {
@@ -518,148 +458,25 @@ describe('AppComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have callout component with "Step 3" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
+      it('should have help tip with "Step 3" title', () => {
+        const helpTipTitle = compiled.querySelector('app-help-tip .title');
+        const helpTipTitleContent = helpTipTitle?.innerHTML.trim();
 
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('Step 3');
+        expect(helpTipTitleContent).toContain('Step 3');
       });
 
-      it('should NOT have callout component with "Step 3" if has reports', () => {
+      it('should NOT have help tip with "Step 3" if has reports', () => {
         store.overrideSelector(selectReports, [...HISTORY]);
         store.refreshState();
         fixture.detectChanges();
 
-        const callout = compiled.querySelector('app-callout');
+        const helpTip = compiled.querySelector('app-help-tip');
 
-        expect(callout).toBeFalsy();
+        expect(helpTip).toBeFalsy();
       });
     });
 
-    describe('with systemStatus data IN Progress and without riskProfiles', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectHasConnectionSettings, true);
-        store.overrideSelector(selectHasDevices, true);
-        store.overrideSelector(selectHasRiskProfiles, false);
-        store.overrideSelector(
-          selectStatus,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.status
-        );
-        fixture.detectChanges();
-      });
-
-      it('should have callout component with "The device is now being tested" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('The device is now being tested');
-      });
-
-      it('should have callout component with "Risk Assessment" link', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutLinkEl = compiled.querySelector(
-          '.message-link'
-        ) as HTMLAnchorElement;
-        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Risk Assessment');
-      });
-    });
-
-    describe('with systemStatus data IN Progress and without riskProfiles', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectHasConnectionSettings, true);
-        store.overrideSelector(selectHasDevices, true);
-        store.overrideSelector(selectHasRiskProfiles, false);
-        store.overrideSelector(
-          selectStatus,
-          MOCK_PROGRESS_DATA_IN_PROGRESS.status
-        );
-        fixture.detectChanges();
-      });
-
-      it('should have callout component with "The device is now being tested" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('The device is now being tested');
-      });
-
-      it('should have callout component with "Risk Assessment" link', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutLinkEl = compiled.querySelector(
-          '.message-link'
-        ) as HTMLAnchorElement;
-        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('Risk Assessment');
-      });
-    });
-
-    describe('with no devices setted', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectHasDevices, false);
-        fixture.detectChanges();
-      });
-
-      it('should have callout component', () => {
-        const callout = compiled.querySelector('app-callout');
-
-        expect(callout).toBeTruthy();
-      });
-
-      it('should have callout component with "Step 2" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
-
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('Step 2');
-      });
-
-      it('should have callout content with "Create a Device" link ', () => {
-        const calloutLinkEl = compiled.querySelector(
-          '.message-link'
-        ) as HTMLAnchorElement;
-        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
-
-        expect(calloutLinkEl).toBeTruthy();
-        expect(calloutLinkContent).toContain('Create a Device');
-      });
-
-      keyboardCases.forEach(testCase => {
-        it(`should navigate to the device-repository on keydown ${testCase.name} "Create a Device" link`, fakeAsync(() => {
-          const calloutLinkEl = compiled.querySelector(
-            '.message-link'
-          ) as HTMLAnchorElement;
-
-          calloutLinkEl.dispatchEvent(testCase.event);
-          flush();
-
-          expect(router.url).toBe(Routes.Devices);
-        }));
-      });
-
-      it('should navigate to the device-repository on click "Create a Device" link', fakeAsync(() => {
-        const calloutLinkEl = compiled.querySelector(
-          '.message-link'
-        ) as HTMLAnchorElement;
-
-        calloutLinkEl.click();
-        flush();
-
-        expect(router.url).toBe(Routes.Devices);
-        expect(store.dispatch).toHaveBeenCalledWith(
-          setIsOpenAddDevice({ isOpenAddDevice: true })
-        );
-      }));
-    });
-
-    describe('with devices setted but without systemStatus data', () => {
+    describe('with devices set but without systemStatus data', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
         component.appStore.updateIsStatusLoaded(true);
@@ -669,53 +486,66 @@ describe('AppComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have callout component with "Step 3" text', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutContent = callout?.innerHTML.trim();
+      it('should have help tip with "Step 3" text', () => {
+        const helpTipTitle = compiled.querySelector('app-help-tip .title');
+        const helpTipTitleContent = helpTipTitle?.innerHTML.trim();
 
-        expect(callout).toBeTruthy();
-        expect(calloutContent).toContain('Step 3');
+        expect(helpTipTitleContent).toContain('Step 3');
       });
 
-      it('should have callout component with "testing" link', () => {
-        const callout = compiled.querySelector('app-callout');
-        const calloutLinkEl = compiled.querySelector(
-          '.message-link'
+      it('should have help tip with "Start Testrun" link', () => {
+        const helpTipLinkEl = compiled.querySelector(
+          '.tip-action-link'
         ) as HTMLAnchorElement;
-        const calloutLinkContent = calloutLinkEl.innerHTML.trim();
+        const helpTipLinkContent = helpTipLinkEl.innerHTML.trim();
 
-        expect(callout).toBeTruthy();
-        expect(calloutLinkContent).toContain('testing');
+        expect(helpTipLinkEl).toBeTruthy();
+        expect(helpTipLinkContent).toContain(HelpTips.step3.action);
       });
 
       keyboardCases.forEach(testCase => {
-        it(`should navigate to the runtime on keydown ${testCase.name} "Run the Test" link`, fakeAsync(() => {
-          const calloutLinkEl = compiled.querySelector(
-            '.message-link'
+        it(`should navigate to the testing on keydown ${testCase.name} "Start Testrun" link`, fakeAsync(() => {
+          const helpTipLinkEl = compiled.querySelector(
+            '.tip-action-link'
           ) as HTMLAnchorElement;
 
-          calloutLinkEl.dispatchEvent(testCase.event);
+          helpTipLinkEl.dispatchEvent(testCase.event);
           flush();
 
           expect(router.url).toBe(Routes.Testing);
         }));
       });
+
+      it('should add "closed-tip" class to the tip on click "close" button on tip', fakeAsync(() => {
+        const helpTipEl = compiled.querySelector('app-help-tip') as HTMLElement;
+        const helpTipCloseBtn = compiled.querySelector(
+          'app-help-tip .close-button'
+        ) as HTMLButtonElement;
+
+        helpTipCloseBtn.click();
+        tick(100);
+
+        expect(helpTipEl.classList.contains('closed-tip')).toBeTrue();
+      }));
+
+      it('should remove "closed-tip" class from the tip on click toolbar "help tips" button', fakeAsync(() => {
+        const helpTipEl = compiled.querySelector('app-help-tip') as HTMLElement;
+        helpTipEl.classList.add('closed-tip');
+        const helpTipsBtn = compiled.querySelector(
+          '.app-toolbar-button-help-tips'
+        ) as HTMLButtonElement;
+
+        helpTipsBtn.click();
+        tick(100);
+
+        expect(
+          mockFocusManagerService.focusFirstElementInContainer
+        ).toHaveBeenCalledWith(helpTipEl);
+        expect(helpTipEl.classList.contains('closed-tip')).toBeFalse();
+      }));
     });
 
-    describe('with devices setted, without systemStatus data, but run the tests', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectHasDevices, true);
-        fixture.detectChanges();
-      });
-
-      it('should not have callout component', () => {
-        const callout = compiled.querySelector('app-callout');
-
-        expect(callout).toBeNull();
-      });
-    });
-
-    describe('with devices setted and systemStatus data', () => {
+    describe('with devices set and systemStatus data', () => {
       beforeEach(() => {
         store.overrideSelector(selectHasDevices, true);
         store.overrideSelector(
@@ -725,13 +555,45 @@ describe('AppComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should not have callout component', () => {
-        const callout = compiled.querySelector('app-callout');
+      it('should not have help tip', () => {
+        const helpTip = compiled.querySelector('app-help-tip');
 
-        expect(callout).toBeNull();
+        expect(helpTip).toBeNull();
       });
     });
 
+    describe('with systemStatus data IN Progress and without riskProfiles', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectHasConnectionSettings, true);
+        store.overrideSelector(selectHasDevices, true);
+        store.overrideSelector(selectHasRiskProfiles, false);
+        store.overrideSelector(
+          selectStatus,
+          MOCK_PROGRESS_DATA_IN_PROGRESS.status
+        );
+        fixture.detectChanges();
+      });
+
+      it('should have help tip with "Risk Assessment" title', () => {
+        const helpTipTitle = compiled.querySelector('app-help-tip .title');
+        const helpTipTitleContent = helpTipTitle?.innerHTML.trim();
+
+        expect(helpTipTitleContent).toContain('Risk Assessment');
+      });
+
+      it('should have help tip with "Create risk profile" link', () => {
+        const helpTipLinkEl = compiled.querySelector(
+          '.tip-action-link'
+        ) as HTMLAnchorElement;
+        const helpTipLinkContent = helpTipLinkEl.innerHTML.trim();
+
+        expect(helpTipLinkEl).toBeTruthy();
+        expect(helpTipLinkContent).toContain(HelpTips.step4.action);
+      });
+    });
+  });
+
+  describe('Callout component visibility', () => {
     describe('error', () => {
       describe('with settingMissedError with one port is missed', () => {
         beforeEach(() => {
@@ -811,40 +673,6 @@ describe('AppComponent', () => {
     });
   });
 
-  it('should not call toggleSettingsBtn focus on closeSetting when device length is 0', async () => {
-    fixture.detectChanges();
-
-    spyOn(component.settingsDrawer, 'close').and.returnValue(
-      Promise.resolve('close')
-    );
-    const spyToggle = spyOn(component.toggleSettingsBtn, 'focus');
-
-    await component.closeSetting(false);
-
-    expect(spyToggle).toHaveBeenCalledTimes(0);
-  });
-
-  it('should render certificates button', () => {
-    const generalSettingsButton = compiled.querySelector(
-      '.app-toolbar-button-certificates'
-    );
-
-    expect(generalSettingsButton).toBeDefined();
-  });
-
-  it('should call certificates open on click certificates button', () => {
-    fixture.detectChanges();
-
-    const settingsBtn = compiled.querySelector(
-      '.app-toolbar-button-certificates'
-    ) as HTMLButtonElement;
-    spyOn(component.certDrawer, 'open');
-
-    settingsBtn.click();
-
-    expect(component.certDrawer.open).toHaveBeenCalledTimes(1);
-  });
-
   it('should set focus to first focusable elem when close callout', fakeAsync(() => {
     component.calloutClosed('mockId');
     tick(100);
@@ -854,17 +682,6 @@ describe('AppComponent', () => {
     ).toHaveBeenCalled();
   }));
 });
-
-@Component({
-  selector: 'app-settings',
-  template: '<div></div>',
-})
-class FakeGeneralSettingsComponent {
-  @Input() settingsDisable = false;
-  @Output() closeSettingEvent = new EventEmitter<void>();
-  getSystemInterfaces = () => {};
-  getSystemConfig = () => {};
-}
 
 @Component({
   selector: 'app-spinner',

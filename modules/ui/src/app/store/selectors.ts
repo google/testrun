@@ -122,3 +122,8 @@ export const selectSystemConfig = createSelector(
   selectAppState,
   (state: AppState) => state.systemConfig
 );
+
+export const selectIsOpenCreateProfile = createSelector(
+  selectAppState,
+  (state: AppState) => state.isOpenCreateProfile
+);

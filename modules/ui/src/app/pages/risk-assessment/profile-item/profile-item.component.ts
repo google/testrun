@@ -20,7 +20,8 @@ import {
   HostListener,
   Input,
   Output,
-  ViewChild,
+  viewChild,
+  inject,
 } from '@angular/core';
 import {
   Profile,
@@ -36,7 +37,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-profile-item',
-  standalone: true,
+
   imports: [MatIcon, MatButtonModule, CommonModule, MatTooltipModule],
   providers: [MatTooltip, DatePipe],
   templateUrl: './profile-item.component.html',
@@ -44,28 +45,24 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileItemComponent {
+  private readonly testRunService = inject(TestRunService);
+  private liveAnnouncer = inject(LiveAnnouncer);
+  private datePipe = inject(DatePipe);
+
   public readonly ProfileStatus = ProfileStatus;
   public readonly EXPIRED_TOOLTIP =
     'Expired. Please, create a new Risk profile.';
   @Input() profile!: Profile;
-  @Output() deleteButtonClicked = new EventEmitter<string>();
   @Output() profileClicked = new EventEmitter<Profile>();
-  @Output() copyProfileClicked = new EventEmitter<Profile>();
 
-  @ViewChild('tooltip') tooltip!: MatTooltip;
+  readonly tooltip = viewChild.required<MatTooltip>('tooltip');
 
   @HostListener('focusout', ['$event'])
   outEvent(): void {
     if (this.profile.status === ProfileStatus.EXPIRED) {
-      this.tooltip.message = this.EXPIRED_TOOLTIP;
+      this.tooltip().message = this.EXPIRED_TOOLTIP;
     }
   }
-
-  constructor(
-    private readonly testRunService: TestRunService,
-    private liveAnnouncer: LiveAnnouncer,
-    private datePipe: DatePipe
-  ) {}
 
   public getRiskClass(riskResult: string): RiskResultClassName {
     return this.testRunService.getRiskClass(riskResult);
@@ -73,9 +70,10 @@ export class ProfileItemComponent {
 
   public async enterProfileItem(profile: Profile) {
     if (profile.status === ProfileStatus.EXPIRED) {
-      this.tooltip.message =
+      const tooltip = this.tooltip();
+      tooltip.message =
         'This risk profile is outdated. Please create a new risk profile.';
-      this.tooltip.show();
+      tooltip.show();
       await this.liveAnnouncer.announce(
         'This risk profile is outdated. Please create a new risk profile.'
       );
@@ -86,10 +84,5 @@ export class ProfileItemComponent {
 
   getProfileItemLabel(profile: Profile) {
     return `${profile.status} ${profile.risk} risk ${profile.name} ${this.datePipe.transform(profile.created, 'dd MMM yyyy')}`;
-  }
-
-  delete(event: Event, name: string) {
-    event.preventDefault();
-    this.deleteButtonClicked.emit(name);
   }
 }

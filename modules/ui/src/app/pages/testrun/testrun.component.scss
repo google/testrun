@@ -14,24 +14,50 @@
  * limitations under the License.
  */
 @use 'node_modules/@angular/material/index' as mat;
-@import 'src/theming/colors';
-@import 'src/theming/variables';
+@use 'm3-theme' as *;
+
+@use 'colors';
+@use 'mixins';
+@use 'variables';
 
 :host {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
   padding: 0 32px;
+  position: relative;
 }
 
 .progress-content-empty {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 100%;
+  @include mixins.content-empty;
+  background-image: url(/assets/icons/empty-testrun.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.empty-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+
+  .empty-content-heading {
+    @include mixins.headline-small;
+    margin: 0;
+  }
+
+  .empty-content-info {
+    margin: 12px 0 32px;
+    font-size: 16px;
+    line-height: 24px;
+    font-family: variables.$font-text;
+    color: colors.$on-surface-variant;
+    background: colors.$white;
+  }
+
+  .start-button {
+    @include mixins.add-button;
+  }
 }
 
 .progress-toolbar {
@@ -39,7 +65,7 @@
   justify-content: space-between;
   height: auto;
   padding: 0;
-  background: $white;
+  background: colors.$white;
 
   ::ng-deep .download-report-link {
     display: inline-block;
@@ -50,9 +76,11 @@
   .toolbar-col-left {
     display: flex;
     flex-direction: column;
+    align-items: center;
     flex: 1;
     min-width: 0;
-    padding: 0 32px 0 0;
+    padding: 48px 20px 32px 20px;
+    gap: 12px;
   }
 
   .toolbar-row {
@@ -61,32 +89,23 @@
 
     &.top {
       gap: 15px;
-      padding: 10px 0;
-
+      position: relative;
       button {
         flex-shrink: 0;
       }
     }
 
     &.bottom {
-      gap: 16px;
-      padding: 24px 0 8px;
-
       p {
         margin: 0;
       }
     }
   }
-
-  .vertical-divider {
-    width: 1px;
-    height: 35px;
-    background-color: $lighter-grey;
-    flex-shrink: 0;
-  }
 }
 
 .progress-title {
+  font-size: 45px !important;
+  line-height: 52px !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -97,50 +116,54 @@
   align-self: flex-start;
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-left: -10px;
+  gap: 10px;
+  margin-left: 10px;
+  position: absolute;
+  left: 100%;
+  bottom: 30px;
 }
 
 .toolbar-tag {
-  background-color: mat.m2-get-color-from-palette($color-primary, 800);
-  color: $white;
-  font-family: $font-primary;
-  font-size: 8px;
+  display: flex;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 6px 16px;
+  justify-content: center;
+  align-items: center;
+  color: colors.$on-surface;
+  background: colors.$white;
+  border: 1px solid colors.$outline-variant;
+  border-radius: 8px;
+  font-family: variables.$font-text;
+  font-size: 14px;
   font-weight: 500;
-  height: 16px;
-  line-height: 16px;
-  letter-spacing: 0.6px;
-  text-align: center;
-  padding: 0 4px 0 4px;
-  border-radius: 2px;
+  line-height: 20px;
+  letter-spacing: 0;
+
   &:hover {
     cursor: pointer;
   }
 }
 
-.report-button,
-.stop-button,
-.start-button {
-  letter-spacing: 0.25px;
-  padding: 0 24px;
-}
+.stop-button {
+  position: fixed;
+  right: 40px;
+  bottom: 32px;
+  background-color: colors.$error;
+  padding: 26px;
+  border-radius: variables.$corner-large;
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 28px;
+  height: 80px;
 
-.report-button {
-  background-color: mat.m2-get-color-from-palette($color-primary, 50);
-  color: mat.m2-get-color-from-palette($color-primary, 700);
-  & ::ng-deep .mat-mdc-button-touch-target {
-    height: auto;
+  mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
   }
 }
 
-.progress-table {
-  overflow-y: auto;
-  margin: 10px 0;
-  border-radius: 4px;
-  border: 1px solid $lighter-grey;
-}
-
-.progress-table-progress-empty {
-  position: relative;
-  overflow-y: hidden;
+::ng-deep .stop-testrun app-simple-dialog {
+  width: 329px;
 }

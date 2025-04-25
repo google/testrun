@@ -16,9 +16,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  Input,
-  Output,
+  input,
+  output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,15 +35,17 @@ import { ProgramTypeIconComponent } from '../program-type-icon/program-type-icon
     ProgramTypeIconComponent,
   ],
   selector: 'app-callout',
-  standalone: true,
+
   styleUrls: ['./callout.component.scss'],
   templateUrl: './callout.component.html',
 })
 export class CalloutComponent {
   readonly CalloutType = CalloutType;
   readonly ProgramType = ProgramType;
-  @Input() id: string | null = null;
-  @Input() type = '';
-  @Input() closable = false;
-  @Output() calloutClosed = new EventEmitter<string | null>();
+  id = input<string | null>(null);
+  type = input<string>('');
+  closable = input<boolean>(false);
+  action = input<string>();
+  calloutClosed = output<string | null>();
+  onAction = output<void>();
 }

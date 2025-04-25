@@ -15,17 +15,13 @@
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {
-  DownloadOption,
-  DownloadOptionsComponent,
-} from './download-options.component';
+import { DownloadOptionsComponent } from './download-options.component';
 import {
   MOCK_PROGRESS_DATA_CANCELLED,
   MOCK_PROGRESS_DATA_COMPLIANT,
   MOCK_PROGRESS_DATA_NON_COMPLIANT,
 } from '../../../../mocks/testrun.mock';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatOptionSelectionChange } from '@angular/material/core';
 import { TestRunService } from '../../../../services/test-run.service';
 
 interface GAEvent {
@@ -63,43 +59,33 @@ describe('DownloadOptionsComponent', () => {
     expect(downloadReportZipComponent).toBeDefined();
   });
 
-  it('#onSelected should call getReportTitle', () => {
+  it('#downloadPdf should call getReportTitle', () => {
     const spyGetReportTitle = spyOn(component, 'getReportTitle');
 
-    const mockEvent = {
-      source: {},
-      isUserInput: true,
-    } as MatOptionSelectionChange;
-
-    component.onSelected(
-      mockEvent,
-      MOCK_PROGRESS_DATA_COMPLIANT,
-      DownloadOption.PDF
-    );
+    component.downloadPdf(MOCK_PROGRESS_DATA_COMPLIANT);
 
     expect(spyGetReportTitle).toHaveBeenCalled();
   });
 
-  it('#onSelected should call getZipLink when using for zip report', () => {
-    const spyGetZipLink = spyOn(component, 'getZipLink');
+  it('#getReportTitle should return data for title of link', () => {
+    const expectedResult = 'delta_03-din-cpu_1.2.2_complete_22_jun_2023_9:20';
 
-    const mockEvent = {
-      source: {},
-      isUserInput: true,
-    } as MatOptionSelectionChange;
+    const result = component.getReportTitle(MOCK_PROGRESS_DATA_COMPLIANT);
 
-    component.onSelected(
-      mockEvent,
-      MOCK_PROGRESS_DATA_COMPLIANT,
-      DownloadOption.ZIP
-    );
+    expect(result).toEqual(expectedResult);
+  });
 
-    expect(spyGetZipLink).toHaveBeenCalled();
+  it('#openDownloadOptions should change isOpenDownloadOptions', () => {
+    component.openDownloadOptions();
+    expect(component.isOpenDownloadOptions).toBeTrue();
+
+    component.openDownloadOptions();
+    expect(component.isOpenDownloadOptions).toBeFalse();
   });
 
   describe('#sendGAEvent', () => {
     it('should send download_report_pdf when type is pdf', () => {
-      component.sendGAEvent(MOCK_PROGRESS_DATA_CANCELLED, DownloadOption.PDF);
+      component.sendGAEvent(MOCK_PROGRESS_DATA_CANCELLED);
 
       expect(
         // @ts-expect-error data layer should be defined
@@ -109,8 +95,8 @@ describe('DownloadOptionsComponent', () => {
       ).toBeTruthy();
     });
 
-    it('should send download_report_pdf_compliant when type is pdf and status is compliant', () => {
-      component.sendGAEvent(MOCK_PROGRESS_DATA_COMPLIANT, DownloadOption.PDF);
+    it('should send download_report_pdf_compliant when status is compliant', () => {
+      component.sendGAEvent(MOCK_PROGRESS_DATA_COMPLIANT);
 
       expect(
         // @ts-expect-error data layer should be defined
@@ -120,52 +106,13 @@ describe('DownloadOptionsComponent', () => {
       ).toBeTruthy();
     });
 
-    it('should send download_report_pdf_non_compliant when type is pdf and status is not compliant', () => {
-      component.sendGAEvent(
-        MOCK_PROGRESS_DATA_NON_COMPLIANT,
-        DownloadOption.PDF
-      );
+    it('should send download_report_pdf_non_compliant when status is not compliant', () => {
+      component.sendGAEvent(MOCK_PROGRESS_DATA_NON_COMPLIANT);
 
       expect(
         // @ts-expect-error data layer should be defined
         window.dataLayer.some(
           (item: GAEvent) => item.event === 'download_report_pdf_non_compliant'
-        )
-      ).toBeTruthy();
-    });
-
-    it('should send download_report_zip when type is zip', () => {
-      component.sendGAEvent(MOCK_PROGRESS_DATA_CANCELLED, DownloadOption.ZIP);
-
-      expect(
-        // @ts-expect-error data layer should be defined
-        window.dataLayer.some(
-          (item: GAEvent) => item.event === 'download_report_zip'
-        )
-      ).toBeTruthy();
-    });
-
-    it('should send download_report_zip_compliant when type is pdf and status is compliant', () => {
-      component.sendGAEvent(MOCK_PROGRESS_DATA_COMPLIANT, DownloadOption.ZIP);
-
-      expect(
-        // @ts-expect-error data layer should be defined
-        window.dataLayer.some(
-          (item: GAEvent) => item.event === 'download_report_zip_compliant'
-        )
-      ).toBeTruthy();
-    });
-
-    it('should send download_report_zip_non_compliant when type is zip and status is not compliant', () => {
-      component.sendGAEvent(
-        MOCK_PROGRESS_DATA_NON_COMPLIANT,
-        DownloadOption.ZIP
-      );
-
-      expect(
-        // @ts-expect-error data layer should be defined
-        window.dataLayer.some(
-          (item: GAEvent) => item.event === 'download_report_zip_non_compliant'
         )
       ).toBeTruthy();
     });

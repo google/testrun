@@ -69,7 +69,7 @@ describe('DeleteReportComponent', () => {
         autoFocus: true,
         hasBackdrop: true,
         disableClose: true,
-        panelClass: 'simple-dialog',
+        panelClass: ['simple-dialog', 'delete-dialog'],
       });
       openSpy.calls.reset();
     });

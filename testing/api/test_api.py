@@ -2168,15 +2168,8 @@ def test_get_devices_format(testrun): # pylint: disable=W0613
   # Check if the response is a list
   assert isinstance(response, list)
 
-  # Store the expected main keys and types
+  # Store the item expected keys and types
   response_keys = {
-    "step": int,
-    "title": str, 
-    "questions": list
-  }
-
-  # Store the 'questions' field expected keys and types
-  questions_keys = {
     "id": int,
     "question": str,
     "type": str,
@@ -2194,18 +2187,6 @@ def test_get_devices_format(testrun): # pylint: disable=W0613
 
       # Check if the key has the expected data type
       assert isinstance(item[key], key_type)
-
-      # Iterate over the 'questions' field
-      for questions in item["questions"]:
-
-        # Iterate over the 'questions_keys' dict keys and values
-        for key, key_type in questions_keys.items():
-
-          # Check if the key is in 'questions' field
-          assert key in questions
-
-          # Check if the key has the expected data type
-          assert isinstance(questions[key], key_type)
 
 def test_sys_testpacks(testrun): # pylint: disable=W0613
   """ Test for system testpack endpoint (200) """

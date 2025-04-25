@@ -16,18 +16,40 @@ limitations under the License.
 <ng-container *ngIf="systemStatus as data">
   <div
     class="progress-card"
-    [class.progress-card-pilot]="data.device.test_pack === TestingType.Pilot"
     [ngClass]="getClass(data.status, data.result)"
+    [class.progress-card-pilot]="data.device.test_pack === TestingType.Pilot"
     aria-live="assertive"
     role="alert">
-    <div>
-      <p class="progress-card-status-title">Test status</p>
-      <p class="progress-card-status-text">
-        <span>{{ getTestStatus(data) }}</span>
+    <div class="progress-card-info progress-card-info-tests">
+      <p class="progress-card-info-title">Tests executed</p>
+      <p class="progress-card-info-text">
         <span>{{ getTestsResult(data) }}</span>
       </p>
     </div>
-    <div *ngIf="!data.finished" [ngSwitch]="data.status">
+
+    <div class="progress-card-info progress-card-info-status">
+      <div>
+        <p class="progress-card-info-title">{{ getTestStatusText(data) }}</p>
+        <p class="progress-card-info-text">
+          <span>{{ getTestStatus(data) }}</span>
+        </p>
+      </div>
+      <div
+        *ngIf="
+          data.finished &&
+          (data.status === StatusOfTestrun.Proceed ||
+            data.status === StatusOfTestrun.DoNotProceed)
+        ">
+        <p class="progress-card-info-title">Preliminary Pilot Recommendation</p>
+        <p class="progress-card-info-text">
+          <span>{{ data.status }}</span>
+        </p>
+      </div>
+    </div>
+    <div
+      *ngIf="!data.finished && data.status !== StatusOfTestrun.InProgress"
+      class="progress-card-status"
+      [ngSwitch]="data.status">
       <ng-container
         *ngSwitchCase="StatusOfTestrun.Validating"
         [ngTemplateOutlet]="Validating">
@@ -40,105 +62,87 @@ limitations under the License.
         *ngSwitchCase="StatusOfTestrun.Monitoring"
         [ngTemplateOutlet]="Monitoring">
       </ng-container>
-      <ng-container *ngSwitchCase="StatusOfTestrun.InProgress">
-        <ng-container
-          *ngTemplateOutlet="
-            InProgress;
-            context: {
-              data: data,
-            }
-          "></ng-container
-      ></ng-container>
       <ng-container
         *ngSwitchCase="StatusOfTestrun.Cancelling"
         [ngTemplateOutlet]="Cancelling">
       </ng-container>
-      <ng-container *ngSwitchCase="StatusOfTestrun.Cancelled">
-        <ng-container
-          *ngTemplateOutlet="
-            Finished;
-            context: {
-              data: data,
-            }
-          "></ng-container
-      ></ng-container>
     </div>
-    <ng-container *ngIf="data.finished">
-      <ng-container *ngIf="data.status !== StatusOfTestrun.InProgress">
-        <ng-container
-          *ngTemplateOutlet="
-            Finished;
-            context: {
-              data: data,
-            }
-          "></ng-container>
-      </ng-container>
-      <ng-container *ngIf="data.status === StatusOfTestrun.InProgress">
-        <ng-container
-          *ngTemplateOutlet="
-            InProgress;
-            context: {
-              data: data,
-            }
-          "></ng-container
-      ></ng-container>
+
+    <ng-container
+      *ngIf="
+        data.finished ||
+        data.status === StatusOfTestrun.InProgress ||
+        data.status === StatusOfTestrun.Cancelled
+      ">
+      <ng-container
+        *ngTemplateOutlet="
+          WithProgressBar;
+          context: {
+            data: data,
+          }
+        "></ng-container>
     </ng-container>
   </div>
 </ng-container>
-<ng-template #InProgress let-data="data">
-  <mat-progress-bar
-    class="progress-bar"
-    mode="determinate"
-    [value]="getProgressValue(data)"
-    [attr.aria-label]="data.status + ' ' + getProgressValue(data) + '%'">
-  </mat-progress-bar>
-</ng-template>
 
 <ng-template #Cancelling>
-  <div>
-    <p class="progress-card-result-title">
-      Please wait, this operation could take up to a minute
-    </p>
-  </div>
+  <ng-container
+    *ngTemplateOutlet="
+      Spinner;
+      context: {
+        text: 'Please wait, this operation could take up to a minute',
+      }
+    "></ng-container>
 </ng-template>
 
 <ng-template #WaitingForDevice>
-  <div>
-    <p class="progress-card-result-title">
-      Please connect and power on your device
-    </p>
-  </div>
+  <ng-container
+    *ngTemplateOutlet="
+      Spinner;
+      context: {
+        text: 'Please connect and power on your device',
+      }
+    "></ng-container>
 </ng-template>
 
 <ng-template #Validating>
-  <div>
-    <p class="progress-card-result-title">Validating virtual network</p>
-  </div>
+  <ng-container
+    *ngTemplateOutlet="
+      Spinner;
+      context: {
+        text: 'Validating virtual network',
+      }
+    "></ng-container>
 </ng-template>
 
 <ng-template #Monitoring>
-  <div>
+  <ng-container
+    *ngTemplateOutlet="
+      Spinner;
+      context: {
+        text: 'Please wait, this could take a few minutes',
+      }
+    "></ng-container>
+</ng-template>
+
+<ng-template #Spinner let-text="text">
+  <div class="progress-card-result-loading">
+    <div class="spinner-container">
+      <span class="loader"></span>
+    </div>
     <p class="progress-card-result-title">
-      Please wait, this could take a few minutes
+      {{ text }}
     </p>
   </div>
 </ng-template>
 
-<ng-template #Finished let-data="data">
-  <div>
-    <p class="progress-card-result-title">Test result</p>
-    <p class="progress-card-result-text">
-      <span>{{ getTestResult(data) }}</span>
-    </p>
-  </div>
-  <div
-    *ngIf="
-      data.status === StatusOfTestrun.Proceed ||
-      data.status === StatusOfTestrun.DoNotProceed
-    ">
-    <p class="progress-card-result-title">Preliminary Pilot Recommendation</p>
-    <p class="progress-card-result-text">
-      <span>{{ data.status }}</span>
-    </p>
+<ng-template #WithProgressBar let-data="data">
+  <div class="progress-card-status progress-card-status-bar">
+    <mat-progress-bar
+      class="progress-bar progress-value-{{ getProgressValue(data) }}"
+      mode="determinate"
+      [value]="getProgressValue(data)"
+      [attr.aria-label]="data.status + ' ' + getProgressValue(data) + '%'">
+    </mat-progress-bar>
   </div>
 </ng-template>

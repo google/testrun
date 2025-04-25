@@ -20,6 +20,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -36,26 +37,26 @@ import { Subject } from 'rxjs/internal/Subject';
 import { takeUntil } from 'rxjs/internal/operators/takeUntil';
 import { filter, timer } from 'rxjs';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
+import { LocalStorageService } from '../../services/local-storage.service';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 declare const gtag: Function;
 @Component({
   selector: 'app-version',
-  standalone: true,
+
   imports: [CommonModule, MatButtonModule, MatDialogModule],
   templateUrl: './version.component.html',
   styleUrls: ['./version.component.scss'],
 })
 export class VersionComponent implements OnInit, OnDestroy {
+  private testRunService = inject(TestRunService);
+  private localStorageService = inject(LocalStorageService);
+  dialog = inject(MatDialog);
+
   @Input() consentShown!: boolean;
   @Output() consentShownEvent = new EventEmitter<void>();
   version$!: Observable<Version | null>;
   private destroy$: Subject<boolean> = new Subject<boolean>();
-
-  constructor(
-    private testRunService: TestRunService,
-    public dialog: MatDialog
-  ) {}
 
   ngOnInit() {
     this.testRunService.fetchVersion();
@@ -92,7 +93,10 @@ export class VersionComponent implements OnInit, OnDestroy {
   }
 
   openConsentDialog(version: Version) {
-    const dialogData = { version };
+    const dialogData = {
+      version,
+      optOut: !this.localStorageService.getGAConsent(),
+    };
     const dialogRef = this.dialog.open(ConsentDialogComponent, {
       ariaLabel: 'Welcome to Testrun modal window',
       data: dialogData,
@@ -112,6 +116,7 @@ export class VersionComponent implements OnInit, OnDestroy {
         gtag('consent', 'update', {
           analytics_storage: dialogResult.grant ? 'granted' : 'denied',
         });
+        this.localStorageService.setGAConsent(dialogResult.grant);
       });
   }
 

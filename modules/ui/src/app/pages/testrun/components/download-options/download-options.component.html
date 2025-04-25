@@ -13,38 +13,53 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<mat-form-field
-  appearance="outline"
-  *ngIf="data"
-  class="download-options-field">
-  <mat-select placeholder="Download" class="download-options-select">
-    <mat-option
-      class="download-option pdf"
-      (onSelectionChange)="onSelected($event, data, DownloadOption.PDF)">
-      <mat-icon
-        matSuffix
-        class="download-report-icon"
-        fontSet="material-symbols-outlined">
-        lab_profile
-      </mat-icon>
-      <span>{{ DownloadOption.PDF }}</span>
-    </mat-option>
-    <app-download-report-zip
-      id="downloadReportZip"
-      class="download-option zip"
-      [report]="data.report"
-      [export]="data.export"
-      [profiles]="profiles">
-      <mat-option
-        (onSelectionChange)="onZipSelected($event)"
-        (click)="$event.stopPropagation()">
-        <mat-icon
-          class="download-report-icon"
-          fontSet="material-symbols-outlined">
-          archive
-        </mat-icon>
-        <span>{{ DownloadOption.ZIP }}</span>
-      </mat-option>
-    </app-download-report-zip>
-  </mat-select>
-</mat-form-field>
+<div class="download-actions" *ngIf="data">
+  <button
+    *ngIf="isOpenDownloadOptions"
+    (click)="downloadPdf(data)"
+    class="download-option"
+    aria-label="Download PDF report"
+    mat-flat-button>
+    <mat-icon fontSet="material-symbols-outlined" class="filled">
+      lab_profile
+    </mat-icon>
+    {{ DownloadOption.PDF }}
+  </button>
+  <app-download-report-zip
+    *ngIf="isOpenDownloadOptions"
+    class="download-option"
+    [report]="data.report"
+    [export]="data.export"
+    [profiles]="profiles">
+    <mat-icon
+      class="download-report-icon"
+      fontSet="material-symbols-outlined"
+      class="filled">
+      archive
+    </mat-icon>
+    <span>{{ DownloadOption.ZIP }}</span>
+  </app-download-report-zip>
+  <button
+    (click)="openDownloadOptions()"
+    class="download-button"
+    [class.download-button-opened]="isOpenDownloadOptions"
+    color="primary"
+    [attr.aria-label]="
+      isOpenDownloadOptions ? 'Hide download options' : 'Show download options'
+    "
+    mat-flat-button>
+    <mat-icon
+      *ngIf="!isOpenDownloadOptions"
+      fontSet="material-symbols-outlined"
+      class="filled">
+      download
+    </mat-icon>
+    <mat-icon
+      *ngIf="isOpenDownloadOptions"
+      fontSet="material-symbols-outlined"
+      class="filled">
+      close
+    </mat-icon>
+    {{ isOpenDownloadOptions ? '' : 'Download' }}
+  </button>
+</div>

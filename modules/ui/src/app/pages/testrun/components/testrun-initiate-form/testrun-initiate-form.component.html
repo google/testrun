@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <form [formGroup]="initiateForm" class="progress-initiate-form">
-  <span class="progress-initiate-form-title">Start New Testrun</span>
+  <span class="progress-initiate-form-title">Start new Testrun</span>
 
   <section
     *ngIf="devices$ | async as devices"
@@ -32,6 +32,7 @@ limitations under the License.
     <app-device-item
       *ngIf="selectedDevice !== null"
       [deviceView]="DeviceView.Basic"
+      class="selected-device"
       [tabIndex]="-1"
       [device]="selectedDevice"></app-device-item>
     <mat-form-field
@@ -64,9 +65,14 @@ limitations under the License.
         [testModules]="testModules">
       </app-device-tests>
     </ng-container>
-    <mat-error *ngIf="error$ | async">
+    <mat-error *ngIf="error$ | async" class="device-tests-error">
       <span>{{ error$ | async }}</span>
     </mat-error>
+    <ng-container *ngIf="selectedDevice !== null">
+      <app-callout [type]="CalloutType.Info">
+        Top Tip: Your device must be powered off before starting Testrun
+      </app-callout>
+    </ng-container>
   </section>
 
   <mat-dialog-actions class="progress-initiate-form-actions">
@@ -89,7 +95,7 @@ limitations under the License.
       color="primary"
       mat-flat-button
       type="button">
-      Start Testrun
+      Start new Testrun
     </button>
   </mat-dialog-actions>
 

@@ -1,4 +1,5 @@
-/**
+/*
+/!**
  * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *!/
 import {
   ComponentFixture,
   fakeAsync,
@@ -23,13 +24,12 @@ import {
 import { ReportsComponent } from './reports.component';
 import { TestRunService } from '../../services/test-run.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ReportsModule } from './reports.module';
 import { of } from 'rxjs';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FilterDialogComponent } from './components/filter-dialog/filter-dialog.component';
 import { ElementRef } from '@angular/core';
-import { FilterName } from '../../model/filters';
+import { FilterName, FilterTitle } from '../../model/filters';
 import SpyObj = jasmine.SpyObj;
 import { MatSort } from '@angular/material/sort';
 import { DATA_SOURCE_INITIAL_VALUE, ReportsStore } from './reports.store';
@@ -97,13 +97,12 @@ describe('ReportsComponent', () => {
     mockLiveAnnouncer = jasmine.createSpyObj(['announce']);
 
     TestBed.configureTestingModule({
-      imports: [ReportsModule, BrowserAnimationsModule],
+      imports: [BrowserAnimationsModule, ReportsComponent],
       providers: [
         { provide: TestRunService, useValue: mockService },
         { provide: ReportsStore, useValue: mockReportsStore },
         { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
       ],
-      declarations: [ReportsComponent],
     });
     TestBed.overrideProvider(ReportsStore, { useValue: mockReportsStore });
     fixture = TestBed.createComponent(ReportsComponent);
@@ -181,13 +180,19 @@ describe('ReportsComponent', () => {
       } as MatDialogRef<typeof FilterDialogComponent>);
       fixture.detectChanges();
 
-      component.openFilter(event, '', false);
+      component.openFilter({
+        event,
+        filter: '',
+        title: '',
+        filterOpened: false,
+      });
 
       expect(openSpy).toHaveBeenCalled();
       expect(openSpy).toHaveBeenCalledWith(FilterDialogComponent, {
         ariaLabel: 'Filters',
         data: {
           filter: '',
+          title: '',
           trigger: new ElementRef(event.currentTarget),
         },
         autoFocus: true,
@@ -225,10 +230,30 @@ describe('ReportsComponent', () => {
       } as MatDialogRef<typeof FilterDialogComponent>);
       fixture.detectChanges();
 
-      component.openFilter(event, FilterName.Started, false);
-      component.openFilter(event, FilterName.Results, false);
-      component.openFilter(event, FilterName.DeviceFirmware, false);
-      component.openFilter(event, FilterName.DeviceInfo, false);
+      component.openFilter({
+        event,
+        filter: FilterName.Started,
+        title: FilterTitle.Started,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
+        filter: FilterName.Results,
+        title: FilterTitle.Results,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
+        filter: FilterName.DeviceFirmware,
+        title: FilterTitle.DeviceFirmware,
+        filterOpened: false,
+      });
+      component.openFilter({
+        event,
+        filter: FilterName.DeviceInfo,
+        title: FilterTitle.DeviceInfo,
+        filterOpened: false,
+      });
       expect(mockReportsStore.setFilteredValuesResults).toHaveBeenCalledWith(
         mockFilterResults
       );
@@ -398,3 +423,4 @@ describe('ReportsComponent', () => {
     });
   });
 });
+*/

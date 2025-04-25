@@ -15,148 +15,129 @@ limitations under the License.
 -->
 <ng-container *ngIf="viewModel$ | async as vm">
   <ng-container *ngIf="vm.dataLoaded">
-    <ng-container *ngIf="vm.dataSource?.data?.length; else empty">
-      <mat-toolbar class="history-toolbar">
-        <h2 class="title" tabindex="-1">Reports</h2>
-      </mat-toolbar>
+    <mat-toolbar class="history-toolbar">
+      <h2 class="title" tabindex="-1">Reports</h2>
+    </mat-toolbar>
 
-      <div
-        class="history-content"
-        [class.history-content-empty]="vm.dataSource.filteredData.length === 0">
-        <table
-          (matSortChange)="sortData($event)"
-          [dataSource]="vm.dataSource"
-          [trackBy]="trackByStarted"
-          mat-table
-          matSort
-          tabindex="0">
-          <!-- Started Column -->
-          <ng-container matColumnDef="started">
-            <th
-              *matHeaderCellDef
-              mat-header-cell
-              mat-sort-header
-              sortActionDescription="Sort by started date">
-              Started
-              <ng-container
-                *ngTemplateOutlet="
-                  filterButton;
-                  context: {
-                    name: FilterName.Started,
-                    filterOpened: vm.filterOpened,
-                    activeFilter: vm.activeFilter,
-                  }
-                ">
-              </ng-container>
-            </th>
-            <td *matCellDef="let data" class="text-nowrap" mat-cell>
-              {{ getFormattedDateString(data.started) }}
-            </td>
-          </ng-container>
+    <div
+      class="history-content"
+      [class.history-content-empty]="
+        vm.dataSource.filteredData.length === 0 ||
+        vm.dataSource.data.length === 0
+      ">
+      <table
+        (matSortChange)="sortData($event)"
+        [dataSource]="vm.dataSource"
+        [trackBy]="trackByStarted"
+        mat-table
+        matSort
+        [matSortActive]="FilterName.Started"
+        matSortDirection="desc"
+        tabindex="0">
+        <!-- Started Column -->
+        <ng-container matColumnDef="started">
+          <app-filter-header
+            *matHeaderCellDef
+            sortActionDescription="Sort by started date"
+            headerText="Started"
+            [filterName]="FilterName.Started"
+            [filterTitle]="FilterTitle.Started"
+            [filterOpened]="vm.filterOpened"
+            [activeFilter]="vm.activeFilter"
+            [filtered]="!!vm.filteredValues.dateRange"
+            (emitOpenFilter)="openFilter($event)">
+          </app-filter-header>
+          <td *matCellDef="let data" class="text-nowrap" mat-cell>
+            {{ getFormattedDateString(data.started) }}
+          </td>
+        </ng-container>
 
-          <!-- Duration Column -->
-          <ng-container matColumnDef="duration">
-            <th
-              *matHeaderCellDef
-              mat-header-cell
-              mat-sort-header
-              sortActionDescription="Sort by duration time">
-              Duration
-            </th>
-            <td *matCellDef="let data" class="text-nowrap" mat-cell>
-              {{ data.duration }}
-            </td>
-          </ng-container>
+        <!-- Duration Column -->
+        <ng-container matColumnDef="duration">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header
+            sortActionDescription="Sort by duration time">
+            Duration
+          </th>
+          <td *matCellDef="let data" class="text-nowrap" mat-cell>
+            {{ data.duration }}
+          </td>
+        </ng-container>
 
-          <!-- Device Column -->
-          <ng-container matColumnDef="deviceInfo">
-            <th
-              *matHeaderCellDef
-              mat-header-cell
-              mat-sort-header
-              sortActionDescription="Sort by device">
-              Device
-              <ng-container
-                *ngTemplateOutlet="
-                  filterButton;
-                  context: {
-                    name: FilterName.DeviceInfo,
-                    filterOpened: vm.filterOpened,
-                    activeFilter: vm.activeFilter,
-                  }
-                ">
-              </ng-container>
-            </th>
-            <td *matCellDef="let data" mat-cell>{{ data.deviceInfo }}</td>
-          </ng-container>
+        <!-- Device Column -->
+        <ng-container matColumnDef="deviceInfo">
+          <app-filter-header
+            *matHeaderCellDef
+            sortActionDescription="Sort by device"
+            headerText="Device"
+            [filterName]="FilterName.DeviceInfo"
+            [filterTitle]="FilterTitle.DeviceInfo"
+            [filterOpened]="vm.filterOpened"
+            [activeFilter]="vm.activeFilter"
+            [filtered]="!!vm.filteredValues.deviceInfo"
+            (emitOpenFilter)="openFilter($event)">
+          </app-filter-header>
+          <td *matCellDef="let data" mat-cell>{{ data.deviceInfo }}</td>
+        </ng-container>
 
-          <!-- Firmware Column -->
-          <ng-container matColumnDef="deviceFirmware">
-            <th
-              *matHeaderCellDef
-              mat-header-cell
-              mat-sort-header
-              sortActionDescription="Sort by firmware">
-              Firmware
-              <ng-container
-                *ngTemplateOutlet="
-                  filterButton;
-                  context: {
-                    name: FilterName.DeviceFirmware,
-                    filterOpened: vm.filterOpened,
-                    activeFilter: vm.activeFilter,
-                  }
-                ">
-              </ng-container>
-            </th>
-            <td *matCellDef="let data" mat-cell>{{ data.deviceFirmware }}</td>
-          </ng-container>
+        <!-- Firmware Column -->
+        <ng-container matColumnDef="deviceFirmware">
+          <app-filter-header
+            *matHeaderCellDef
+            sortActionDescription="Sort by firmware"
+            headerText="Firmware"
+            [filterName]="FilterName.DeviceFirmware"
+            [filterTitle]="FilterTitle.DeviceFirmware"
+            [filterOpened]="vm.filterOpened"
+            [activeFilter]="vm.activeFilter"
+            [filtered]="!!vm.filteredValues.deviceFirmware"
+            (emitOpenFilter)="openFilter($event)">
+          </app-filter-header>
+          <td *matCellDef="let data" mat-cell>{{ data.deviceFirmware }}</td>
+        </ng-container>
 
-          <!-- Assessment type Column -->
-          <ng-container matColumnDef="program">
-            <th
-              *matHeaderCellDef
-              mat-header-cell
-              mat-sort-header
-              sortActionDescription="Sort by assessment type">
-              Assessment type
-            </th>
-            <td *matCellDef="let data" mat-cell>
-              {{ data.program }}
-            </td>
-          </ng-container>
+        <!-- Assessment type Column -->
+        <ng-container matColumnDef="program">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header
+            sortActionDescription="Sort by assessment type">
+            Assessment type
+          </th>
+          <td *matCellDef="let data" mat-cell>
+            {{ data.program }}
+          </td>
+        </ng-container>
 
-          <!-- Result Column -->
-          <ng-container matColumnDef="status">
-            <th
-              *matHeaderCellDef
-              mat-header-cell
-              mat-sort-header
-              sortActionDescription="Sort by result">
-              Result
-              <ng-container
-                *ngTemplateOutlet="
-                  filterButton;
-                  context: {
-                    name: FilterName.Results,
-                    filterOpened: vm.filterOpened,
-                    activeFilter: vm.activeFilter,
-                  }
-                ">
-              </ng-container>
-            </th>
-            <td *matCellDef="let data" mat-cell>
-              <span
-                [ngClass]="getResultClass(data.testResult)"
-                class="cell-result-text">
-                {{ data.testResult }}
-              </span>
-            </td>
-          </ng-container>
+        <!-- Result Column -->
+        <ng-container matColumnDef="status">
+          <app-filter-header
+            *matHeaderCellDef
+            sortActionDescription="Sort by result"
+            headerText="Result"
+            [filterName]="FilterName.Results"
+            [filterTitle]="FilterTitle.Results"
+            [filterOpened]="vm.filterOpened"
+            [activeFilter]="vm.activeFilter"
+            [filtered]="!!vm.filteredValues.results.length"
+            (emitOpenFilter)="openFilter($event)">
+          </app-filter-header>
+          <td *matCellDef="let data" mat-cell>
+            <span
+              [ngClass]="getResultClass(data.testResult)"
+              class="cell-result-text">
+              {{ data.testResult }}
+            </span>
+          </td>
+        </ng-container>
 
-          <ng-container matColumnDef="report">
-            <th *matHeaderCellDef mat-header-cell>Actions</th>
-            <td *matCellDef="let data" class="table-cell-actions" mat-cell>
+        <ng-container matColumnDef="report">
+          <th *matHeaderCellDef mat-header-cell>Actions</th>
+          <td *matCellDef="let data" class="table-cell-actions" mat-cell>
+            <div class="table-cell-actions-container">
               <app-download-report-pdf *ngIf="data?.device" [data]="data">
                 <mat-icon
                   class="download-report-icon"
@@ -188,96 +169,66 @@ limitations under the License.
                   delete
                 </mat-icon>
               </app-delete-report>
-            </td>
-          </ng-container>
+            </div>
+          </td>
+        </ng-container>
 
-          <ng-container matColumnDef="chips">
-            <th
-              *matHeaderCellDef
-              [attr.colspan]="vm.displayedColumns.length"
-              mat-header-cell>
-              <div>
-                <app-filter-chips
-                  [filters]="vm.filteredValues"
-                  (filterCleared)="filterCleared($event)"></app-filter-chips>
-              </div>
-            </th>
-          </ng-container>
+        <ng-container matColumnDef="chips">
+          <th
+            *matHeaderCellDef
+            [attr.colspan]="vm.displayedColumns.length"
+            mat-header-cell>
+            <div>
+              <app-filter-chips
+                [filters]="vm.filteredValues"
+                (filterCleared)="filterCleared($event)"></app-filter-chips>
+            </div>
+          </th>
+        </ng-container>
 
-          <tr *matHeaderRowDef="vm.displayedColumns" mat-header-row></tr>
-          <tr
-            *matHeaderRowDef="vm.chips"
-            mat-header-row
-            [class.hidden]="vm.isFiltersEmpty"></tr>
+        <tr *matHeaderRowDef="vm.displayedColumns" mat-header-row></tr>
+        <tr
+          *matHeaderRowDef="vm.chips"
+          mat-header-row
+          [class.hidden]="vm.isFiltersEmpty"></tr>
 
-          <tr class="mat-row" *matNoDataRow>
-            <td class="mat-cell" [attr.colspan]="vm.displayedColumns.length">
-              <div class="results-content-filter-empty">
-                <ng-container
-                  *ngTemplateOutlet="
-                    emptyMessage;
-                    context: {
-                      header:
-                        'Sorry, there are no reports matching the search criteria.',
-                      message: 'Please consider change or clear filters.',
-                    }
-                  "></ng-container>
-              </div>
-            </td>
-          </tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="vm.displayedColumns.length">
+            <div class="results-content-filter-empty">
+              <ng-container
+                *ngTemplateOutlet="
+                  emptyMessage;
+                  context: {
+                    header:
+                      vm.dataSource.data.length === 0
+                        ? 'Sorry, there are no reports yet!'
+                        : 'Sorry, there are no reports matching the search criteria.',
+                    message:
+                      vm.dataSource.data.length === 0
+                        ? 'Reports will automatically generate following a test attempt completion.'
+                        : 'Please consider change or clear filters.',
+                  }
+                "></ng-container>
+            </div>
+          </td>
+        </tr>
 
-          <tr
-            *matRowDef="let row; columns: vm.displayedColumns"
-            mat-row
-            #rowElement
-            [class.report-selected]="rowElement === vm.selectedRow"
-            (click)="selectRow(rowElement)"
-            (keydown.enter)="selectRow(rowElement)"
-            (keydown.space)="selectRow(rowElement)"></tr>
-        </table>
-      </div>
-    </ng-container>
+        <tr
+          *matRowDef="let row; columns: vm.displayedColumns"
+          mat-row
+          #rowElement
+          [class.report-selected]="rowElement === vm.selectedRow"
+          (click)="selectRow(rowElement)"
+          (keydown.enter)="selectRow(rowElement)"
+          (keydown.space)="selectRow(rowElement)"></tr>
+      </table>
+    </div>
   </ng-container>
 </ng-container>
-
-<ng-template #empty>
-  <div class="results-content-empty">
-    <ng-container
-      *ngTemplateOutlet="
-        emptyMessage;
-        context: {
-          header: 'Sorry, there are no reports yet!',
-          message:
-            'Reports will automatically generate following a test attempt completion.',
-        }
-      "></ng-container>
-  </div>
-</ng-template>
-
-<ng-template
-  #filterButton
-  let-name="name"
-  let-filterOpened="filterOpened"
-  let-activeFilter="activeFilter">
-  <button
-    mat-button
-    (click)="openFilter($event, name, filterOpened)"
-    (keydown.enter)="openFilter($event, name, filterOpened)"
-    (keydown.space)="openFilter($event, name, filterOpened)"
-    class="filter-button filter-button-{{ name }}"
-    [ngClass]="filterOpened && activeFilter === name ? 'active' : ''"
-    attr.aria-label="filter by {{ name }}"
-    mat-button>
-    <mat-icon fontSet="material-icons-outlined" class="filter-icon"
-      >filter_list</mat-icon
-    >
-  </button>
-</ng-template>
-
 <ng-template #emptyMessage let-header="header" let-message="message">
-  <div class="results-content-empty-message">
-    <div class="results-content-empty-message-img"></div>
-    <span class="results-content-empty-message-header">{{ header }}</span>
-    <span class="results-content-empty-message-main">{{ message }}</span>
-  </div>
+  <app-empty-message
+    image="/assets/icons/desktop.svg"
+    [header]="header"
+    [message]="message">
+  </app-empty-message>
 </ng-template>

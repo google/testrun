@@ -1,0 +1,127 @@
+<!--
+Copyright 2023 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<ng-container *ngIf="dataLoaded()">
+  <table
+    [dataSource]="dataSource()"
+    [trackBy]="trackByName"
+    mat-table
+    tabindex="0"
+    [class.certificates-content-empty]="dataSource().data.length === 0">
+    <ng-container matColumnDef="name">
+      <th *matHeaderCellDef mat-header-cell>Certificate Name</th>
+      <td *matCellDef="let data" class="text-nowrap" mat-cell>
+        {{ data.name }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="organisation">
+      <th
+        *matHeaderCellDef
+        mat-header-cell
+        mat-sort-header
+        sortActionDescription="Sort by duration time">
+        Organisation
+      </th>
+      <td *matCellDef="let data" class="text-nowrap" mat-cell>
+        {{ data.organisation }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="expires">
+      <th
+        *matHeaderCellDef
+        mat-header-cell
+        mat-sort-header
+        sortActionDescription="Sort by duration time">
+        Expires
+      </th>
+      <td *matCellDef="let data" class="text-nowrap" mat-cell>
+        {{ data.expires | date: 'dd MMM yyyy' }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th
+        *matHeaderCellDef
+        mat-header-cell
+        mat-sort-header
+        sortActionDescription="Sort by duration time">
+        Status
+      </th>
+      <td *matCellDef="let data" class="text-nowrap" mat-cell>
+        <span [ngClass]="data.status?.toLowerCase()" class="cell-result">
+          {{ data.status }}
+        </span>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="actions">
+      <th *matHeaderCellDef mat-header-cell></th>
+      <td
+        *matCellDef="let data"
+        class="table-cell-actions"
+        mat-cell
+        align="right">
+        <button
+          [disabled]="data.uploading"
+          class="certificate-item-delete"
+          mat-icon-button
+          attr.aria-label="Delete {{ data.name }} certificate"
+          (click)="deleteButtonClicked.emit(data.name)">
+          <mat-icon fontSet="material-symbols-outlined"> delete </mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr *matHeaderRowDef="displayedColumns(); sticky: true" mat-header-row></tr>
+
+    <tr class="mat-row" *matNoDataRow>
+      <td
+        class="mat-cell empty-data-cell"
+        [attr.colspan]="displayedColumns().length">
+        <div class="callout-container">
+          <app-callout [type]="CalloutType.Info">
+            CA certificates must be uploaded to complete TLS testing
+          </app-callout>
+        </div>
+        <div class="results-content-filter-empty">
+          <ng-container
+            *ngTemplateOutlet="
+              emptyMessage;
+              context: {
+                header: 'There are no certificates added.',
+                message: 'Please upload certificates.',
+              }
+            "></ng-container>
+        </div>
+      </td>
+    </tr>
+
+    <tr
+      *matRowDef="let row; columns: displayedColumns()"
+      mat-row
+      [class.uploading]="row.uploading"
+      [class.certificate-selected]="row.name === selectedCertificate()"></tr>
+  </table>
+</ng-container>
+
+<ng-template #emptyMessage let-header="header" let-message="message">
+  <app-empty-message
+    image="/assets/icons/desktop-new.svg"
+    [header]="header"
+    [message]="message">
+  </app-empty-message>
+</ng-template>
