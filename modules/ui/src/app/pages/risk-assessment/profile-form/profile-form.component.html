@@ -15,13 +15,18 @@ limitations under the License.
 -->
 <form [formGroup]="profileForm" class="profile-form">
   <div class="field-container">
-    <p class="field-label name-field-label">Profile name *</p>
+    <label class="field-label name-field-label" for="name-field"
+      >Profile name *</label
+    >
     <mat-form-field
       appearance="outline"
       floatLabel="always"
       class="profile-form-field">
-      <mat-label>Specify risk assessment profile name</mat-label>
-      <input class="form-name" formControlName="name" matInput />
+      <input
+        id="name-field"
+        class="form-name"
+        formControlName="name"
+        matInput />
       <mat-hint>Required for saving a profile</mat-hint>
       <mat-error
         *ngIf="nameControl.hasError('invalid_format')"
@@ -45,34 +50,28 @@ limitations under the License.
   </div>
 </form>
 <div class="form-actions">
+  <div>
+    <button
+      mat-flat-button
+      color="primary"
+      class="save-profile-button"
+      [disabled]="profileHasNoChanges() || !profileForm.valid"
+      (click)="onSaveClick(ProfileStatus.VALID)">
+      Save
+    </button>
+    <button
+      mat-flat-button
+      class="save-draft-button"
+      [disabled]="isDraftDisabled"
+      (click)="onSaveClick(ProfileStatus.DRAFT)">
+      Save Draft
+    </button>
+  </div>
   <button
     mat-flat-button
-    color="primary"
-    class="save-profile-button"
-    [disabled]="!profileForm.valid"
-    (click)="onSaveClick(ProfileStatus.VALID)">
-    Save Profile
-  </button>
-  <button
-    mat-button
-    class="save-draft-button"
-    [disabled]="isDraftDisabled"
-    (click)="onSaveClick(ProfileStatus.DRAFT)">
-    Save Draft
-  </button>
-  <button
-    *ngIf="selectedProfile?.status !== ProfileStatus.EXPIRED"
-    mat-button
     class="discard-button"
-    [disabled]="profileForm.pristine"
+    [disabled]="profileHasNoChanges() || profileForm.pristine"
     (click)="onDiscardClick()">
     Discard
-  </button>
-  <button
-    *ngIf="selectedProfile?.status === ProfileStatus.EXPIRED"
-    mat-button
-    class="discard-button"
-    (click)="onDiscardClick()">
-    Close
   </button>
 </div>

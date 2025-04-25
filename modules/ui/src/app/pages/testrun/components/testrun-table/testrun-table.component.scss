@@ -13,187 +13,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import 'src/theming/colors';
-@import 'src/theming/variables';
+@use 'colors';
+@use 'variables';
 
-$header-row-height: 56px;
-$row-height: 48px;
-$row-horizontal-padding: 16px;
-$expander-button-size: 28px;
+mat-row,
+mat-header-row {
+  min-height: 60px;
+  display: grid;
+  height: auto;
+  grid-template-columns: 1fr 2.2fr 170px 190px 60px;
+  border-radius: 8px;
+}
 
-.tests-container {
-  display: block;
+.clickable-row {
+  background: colors.$error-container;
+  cursor: pointer;
+}
 
-  &:focus-visible {
-    outline: none;
-    border: 1px solid $black;
-    border-radius: 4px;
-  }
-
-  & > :last-child {
-    border-bottom: none;
+.clickable-row:has(.cell-result-text.red) {
+  .cell-result-text.red {
+    color: colors.$white;
+    background: colors.$on-error-container;
   }
 }
 
-.tests-header-row {
-  height: 57px;
-  min-height: $header-row-height;
-}
-
-.tests-item-cell,
-.tests-header-cell {
-  font-family: $font-secondary;
-  font-size: 14px;
-  line-height: 20px;
+mat-cell,
+mat-header-cell,
+.item-cell {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
   overflow: hidden;
   word-wrap: break-word;
+  border-bottom-color: colors.$white;
 }
 
-.tests-header-cell {
-  font-weight: 500;
-  letter-spacing: 0.25px;
-  padding: 16px;
+mat-cell {
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
-.tests-item-cell {
-  padding: 16px;
-  letter-spacing: 0.2px;
-  vertical-align: top;
-  font-weight: 400;
+mat-header-cell {
+  font-weight: 700;
 }
 
-.tests-item-cell-result {
-  min-width: 140px;
-  width: 140px;
-  flex: 0;
-}
-
-.expansion-panel-header,
-.expansion-panel-header.mat-expansion-panel-header.mat-expanded {
-  min-height: $row-height;
-  height: auto;
-
-  &:focus-visible {
-    outline: 0;
-  }
-}
-
-.tests-item-row,
-.tests-header-row {
-  display: grid;
-  padding: 0 $row-horizontal-padding;
-  align-items: center;
-}
-
-.tests-item-row {
-  min-height: $row-height;
-  height: auto;
-  grid-template-columns: 1fr 2.2fr 150px 226px 20px;
-  border-bottom: 1px solid $lighter-grey;
-}
-
-.tests-header-row {
-  grid-template-columns: 1fr 2.2fr 150px 220px $expander-button-size;
-}
-
-.expansion-panel-header ::ng-deep.mat-content {
-  display: grid;
-  grid-template-columns: 1fr 2.2fr 150px 220px;
-}
-
-.expansion-panel-header ::ng-deep .mat-expansion-indicator {
-  margin-right: 6px;
-  margin-left: 10px;
-  margin-top: 10px;
-
-  &::after {
-    border-width: 0 3px 3px 0;
-    padding: 3.5px;
-    color: $dark-grey;
-  }
-}
-
-.expansion-panel-header.mat-expanded ::ng-deep .mat-expansion-indicator {
-  margin-top: 16px;
-}
-
-.tests-container {
-  .expander-button:hover,
-  .expansion-panel-row:not(.mat-expanded)
-    .expansion-panel-header:not([aria-disabled='true']):hover,
-  .expansion-panel-header:hover,
-  .expansion-panel-header:hover + ::ng-deep.mat-expansion-panel-content {
-    background: $color-background-grey;
-  }
-}
-
-.expansion-panel-row ::ng-deep.mat-expansion-panel-body {
-  display: grid;
-  grid-template-columns: 1fr 2.2fr 150px 220px 20px;
-  grid-template-areas: '. description . . .';
-}
-
-.cel-description {
-  grid-area: description;
-}
-
-.expander-button,
-.expander-button-cell {
+.clickable-icon {
   display: flex;
-  padding: 0;
-  width: $expander-button-size;
-  height: $expander-button-size;
-  align-items: center;
-  justify-content: center;
-}
-
-.expander-button {
-  mat-icon {
-    width: $expander-button-size;
-    height: $expander-button-size;
-    font-size: $expander-button-size;
-    color: $dark-grey;
-  }
-}
-
-.tests-container .tests-header-cell.expander-button-cell {
-  padding: 2px;
-}
-
-.cel-description-list {
-  padding: 0 0 0 20px;
-  margin: 4px 0 0 0;
-  font-weight: normal;
-}
-
-.expansion-panel-header.mat-focus-indicator:focus::before {
-  content: none;
-}
-
-.expansion-panel-header.mat-focus-indicator:focus-visible::before {
-  content: '';
-}
-
-.expansion-panel-header {
-  display: flex;
-  align-items: flex-start;
-  padding: 0 $row-horizontal-padding;
-  box-sizing: border-box;
-}
-
-.tests-header-row,
-.expansion-panel-row {
-  border-bottom: 1px solid $lighter-grey;
-}
-
-.tests-container .expansion-panel-row {
-  border-radius: 0;
-  box-shadow: none;
+  flex-shrink: 0;
 }
 
 .tests-item-cell-required-result {
   display: flex;
   align-items: center;
+  font-size: 12px;
   .cell-result-required-icon {
     display: inline-flex;
     align-items: center;
@@ -208,20 +80,20 @@ $expander-button-size: 28px;
     }
   }
   &.roadmap {
-    color: #00639b;
+    color: colors.$secondary;
     .cell-result-required-icon {
-      background: #00639b;
-      color: #e1e3e1;
+      background: colors.$secondary;
+      color: colors.$surface-variant;
       &::before {
         content: 'road';
       }
     }
   }
   &.recommended {
-    color: #146c2e;
+    color: colors.$tertiary;
     .cell-result-required-icon {
-      background: #146c2e;
-      color: #ffffff;
+      background: colors.$tertiary;
+      color: colors.$white;
       &::before {
         font-variation-settings:
           'FILL' 1,
@@ -234,30 +106,30 @@ $expander-button-size: 28px;
     }
   }
   &.informational {
-    color: #146c2e;
+    color: colors.$tertiary;
     .cell-result-required-icon {
-      background: #146c2e;
-      color: #ffffff;
+      background: colors.$tertiary;
+      color: colors.$white;
       &::before {
         content: 'info_i';
       }
     }
   }
   &.required {
-    color: #1f1f1f;
+    color: colors.$on-surface;
     .cell-result-required-icon {
-      background: #1f1f1f;
-      color: #e1e3e1;
+      background: colors.$on-surface;
+      color: colors.$surface-variant;
       &::before {
         content: 'asterisk';
       }
     }
   }
   &.required-if-applicable {
-    color: #00639b;
+    color: colors.$secondary;
     .cell-result-required-icon {
-      background: #00639b;
-      color: #e1e3e1;
+      background: colors.$secondary;
+      color: colors.$surface-variant;
       &::before {
         content: 'asterisk';
       }

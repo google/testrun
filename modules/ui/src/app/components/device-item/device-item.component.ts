@@ -31,7 +31,7 @@ import { ProgramType } from '../../model/program-type';
   selector: 'app-device-item',
   templateUrl: './device-item.component.html',
   styleUrls: ['./device-item.component.scss'],
-  standalone: true,
+
   imports: [
     CommonModule,
     MatButtonModule,
@@ -50,14 +50,10 @@ export class DeviceItemComponent {
   @Input() deviceView!: string;
   @Input() disabled = false;
   @Output() itemClicked = new EventEmitter<Device>();
-  @Output() startTestrunClicked = new EventEmitter<Device>();
   readonly DeviceView = DeviceView;
 
   itemClick(): void {
     this.itemClicked.emit(this.device);
-  }
-  startTestrunClick(): void {
-    this.startTestrunClicked.emit(this.device);
   }
 
   get label() {

@@ -17,7 +17,6 @@ import {
   ComponentFixture,
   discardPeriodicTasks,
   fakeAsync,
-  flush,
   TestBed,
   tick,
 } from '@angular/core/testing';
@@ -31,7 +30,7 @@ import {
 import { of } from 'rxjs';
 import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 import { MatButtonModule } from '@angular/material/button';
-import { FormArray, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -46,12 +45,12 @@ import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { TestRunService } from '../../../../services/test-run.service';
 import { DevicesStore } from '../../devices.store';
 import { provideMockStore } from '@ngrx/store/testing';
-import { FormAction } from '../../devices.component';
 import { DeviceStatus, TestingType } from '../../../../model/device';
 import { Component, Input } from '@angular/core';
 import { QuestionFormat } from '../../../../model/question';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { selectDevices } from '../../../../store/selectors';
+import { SimpleDialogComponent } from '../../../../components/simple-dialog/simple-dialog.component';
 
 describe('DeviceQualificationFromComponent', () => {
   let component: DeviceQualificationFromComponent;
@@ -68,9 +67,9 @@ describe('DeviceQualificationFromComponent', () => {
 
   const MOCK_DEVICE = {
     status: DeviceStatus.VALID,
-    manufacturer: '',
-    model: '',
-    mac_addr: '',
+    manufacturer: 'manufacturer',
+    model: 'model',
+    mac_addr: '01:01:01:01:01:01',
     test_pack: TestingType.Qualification,
     type: '',
     technology: '',
@@ -134,12 +133,10 @@ describe('DeviceQualificationFromComponent', () => {
     component = fixture.componentInstance;
     compiled = fixture.nativeElement as HTMLElement;
 
-    component.data = {
-      testModules: MOCK_TEST_MODULES,
-      devices: [],
-      index: 0,
-      isCreate: true,
-    };
+    fixture.componentRef.setInput('testModules', MOCK_TEST_MODULES);
+    fixture.componentRef.setInput('devices', []);
+    fixture.componentRef.setInput('isCreate', true);
+
     testrunServiceMock.fetchQuestionnaireFormat.and.returnValue(
       of(DEVICES_FORM)
     );
@@ -160,178 +157,13 @@ describe('DeviceQualificationFromComponent', () => {
   });
 
   it('should fetch devices format', () => {
-    fixture.detectChanges();
     const getQuestionnaireFormatSpy = spyOn(
       component.devicesStore,
       'getQuestionnaireFormat'
     );
-    component.ngOnInit();
     fixture.detectChanges();
 
     expect(getQuestionnaireFormatSpy).toHaveBeenCalled();
-  });
-
-  it('should close dialog on "cancel" click with do data if form has no changes', () => {
-    fixture.detectChanges();
-    const closeSpy = spyOn(component.dialogRef, 'close');
-    const closeButton = compiled.querySelector(
-      '.device-qualification-form-header-close-button'
-    ) as HTMLButtonElement;
-
-    closeButton?.click();
-
-    expect(closeSpy).toHaveBeenCalledWith();
-
-    closeSpy.calls.reset();
-  });
-
-  it('should close dialog on escape', fakeAsync(() => {
-    const closeSpy = spyOn(component.dialogRef, 'close');
-    fixture.detectChanges();
-
-    keyboardEvent.next(new KeyboardEvent('keydown', { code: 'Escape' }));
-
-    tick();
-
-    expect(closeSpy).toHaveBeenCalledWith();
-
-    closeSpy.calls.reset();
-  }));
-
-  it('should close dialog on submit with "Save" action', fakeAsync(() => {
-    component.device = MOCK_DEVICE;
-    const closeSpy = spyOn(component.dialogRef, 'close');
-    fixture.detectChanges();
-
-    component.submit();
-    tick();
-    flush();
-
-    expect(closeSpy).toHaveBeenCalledWith({
-      action: 'Save',
-      device: MOCK_DEVICE,
-    });
-
-    closeSpy.calls.reset();
-  }));
-
-  it('should close dialog on delete with "Delete" action', fakeAsync(() => {
-    const closeSpy = spyOn(component.dialogRef, 'close');
-    fixture.detectChanges();
-
-    component.delete();
-    tick();
-
-    expect(closeSpy).toHaveBeenCalledWith({
-      action: 'Delete',
-      device: MOCK_DEVICE,
-      index: 0,
-    });
-
-    closeSpy.calls.reset();
-  }));
-
-  describe('#deviceHasNoChanges', () => {
-    const deviceProps = [
-      { manufacturer: 'test' },
-      { model: 'test' },
-      { mac_addr: 'test' },
-      { test_pack: TestingType.Pilot },
-      { type: 'test' },
-      { technology: 'test' },
-      {
-        test_modules: {
-          udmi: {
-            enabled: false,
-          },
-        },
-      },
-      { additional_info: undefined },
-      {
-        additional_info: [
-          { question: 'What type of device is this?', answer: 'test' },
-        ],
-      },
-    ];
-    it('should return true if devices the same', () => {
-      const result = component.deviceHasNoChanges(MOCK_DEVICE, MOCK_DEVICE);
-
-      expect(result).toBeTrue();
-    });
-
-    deviceProps.forEach(item => {
-      it(`should return false if devices have different props`, () => {
-        const MOCK_DEVICE_1 = { ...MOCK_DEVICE, ...item };
-        const result = component.deviceHasNoChanges(MOCK_DEVICE_1, MOCK_DEVICE);
-
-        expect(result).toBeFalse();
-      });
-    });
-  });
-
-  it('should trigger onResize method when window is resized ', () => {
-    fixture.detectChanges();
-    const spyOnResize = spyOn(component, 'onResize');
-    window.dispatchEvent(new Event('resize'));
-    fixture.detectChanges();
-    expect(spyOnResize).toHaveBeenCalled();
-  });
-
-  it('#goToStep should set selected index', () => {
-    fixture.detectChanges();
-    component.goToStep(0);
-
-    expect(component.stepper.selectedIndex).toBe(0);
-  });
-
-  it('should close dialog on "cancel" click', () => {
-    fixture.detectChanges();
-    component.manufacturer.setValue('test');
-    (
-      component.deviceQualificationForm.get('steps') as FormArray
-    ).controls.forEach(control => control.markAsDirty());
-    fixture.detectChanges();
-    const closeSpy = spyOn(component.dialogRef, 'close');
-    const closeButton = compiled.querySelector(
-      '.device-qualification-form-header-close-button'
-    ) as HTMLButtonElement;
-
-    closeButton?.click();
-
-    expect(closeSpy).toHaveBeenCalledWith({
-      action: FormAction.Close,
-      index: 0,
-      device: {
-        status: DeviceStatus.VALID,
-        manufacturer: 'test',
-        model: '',
-        mac_addr: '',
-        test_pack: 'Device Qualification',
-        type: '',
-        technology: '',
-        test_modules: {
-          udmi: {
-            enabled: true,
-          },
-          connection: {
-            enabled: true,
-          },
-        },
-        additional_info: [
-          { question: 'What type of device is this?', answer: '' },
-          {
-            question: 'Does your device process any sensitive information? ',
-            answer: '',
-          },
-          {
-            question: 'Please select the technology this device falls into',
-            answer: '',
-          },
-        ],
-      },
-    });
-
-    closeSpy.calls.reset();
   });
 
   describe('test modules', () => {
@@ -463,15 +295,13 @@ describe('DeviceQualificationFromComponent', () => {
   });
 
   describe('mac address', () => {
-    beforeEach(() => {
-      fixture.detectChanges();
-    });
-
     it('should not be disabled', () => {
+      fixture.detectChanges();
       expect(component.mac_addr.disabled).toBeFalse();
     });
 
     it('should not contain errors when input is correct', () => {
+      fixture.detectChanges();
       const macAddress: HTMLInputElement = compiled.querySelector(
         '.device-qualification-form-mac-address'
       ) as HTMLInputElement;
@@ -488,6 +318,7 @@ describe('DeviceQualificationFromComponent', () => {
     });
 
     it('should have "pattern" error when field does not satisfy pattern', () => {
+      fixture.detectChanges();
       ['value', 'q01e423573c4'].forEach(value => {
         const macAddress: HTMLInputElement = compiled.querySelector(
           '.device-qualification-form-mac-address'
@@ -508,13 +339,10 @@ describe('DeviceQualificationFromComponent', () => {
     });
 
     it('should have "has_same_mac_address" error when MAC address is already used', () => {
-      component.data = {
-        testModules: MOCK_TEST_MODULES,
-        devices: [device],
-        index: 0,
-        isCreate: true,
-      };
-      component.ngOnInit();
+      fixture.componentRef.setInput('testModules', MOCK_TEST_MODULES);
+      fixture.componentRef.setInput('devices', [device]);
+      fixture.componentRef.setInput('isCreate', true);
+
       fixture.detectChanges();
 
       const macAddress: HTMLInputElement = compiled.querySelector(
@@ -537,23 +365,20 @@ describe('DeviceQualificationFromComponent', () => {
 
   describe('when device is present', () => {
     beforeEach(() => {
-      component.data = {
-        devices: [device],
-        testModules: MOCK_TEST_MODULES,
-        device: {
-          status: DeviceStatus.VALID,
-          manufacturer: 'Delta',
-          model: 'O3-DIN-CPU',
-          mac_addr: '00:1e:42:35:73:c4',
-          test_modules: {
-            udmi: {
-              enabled: true,
-            },
+      fixture.componentRef.setInput('testModules', MOCK_TEST_MODULES);
+      fixture.componentRef.setInput('devices', [device]);
+      fixture.componentRef.setInput('isCreate', false);
+      fixture.componentRef.setInput('initialDevice', {
+        status: DeviceStatus.VALID,
+        manufacturer: 'Delta',
+        model: 'O3-DIN-CPU',
+        mac_addr: '00:1e:42:35:73:c4',
+        test_modules: {
+          udmi: {
+            enabled: true,
           },
         },
-        isCreate: false,
-        index: 0,
-      };
+      });
     });
 
     it('should fill form values with device values', fakeAsync(() => {
@@ -577,299 +402,93 @@ describe('DeviceQualificationFromComponent', () => {
 
       discardPeriodicTasks();
     }));
+
+    it('should have enabled delete button', () => {
+      fixture.detectChanges();
+      const button = compiled.querySelector(
+        '.delete-button'
+      ) as HTMLButtonElement;
+
+      expect(button.disabled).toBeFalse();
+    });
+
+    it('should open cancel dialog when device is changed', () => {
+      const openSpy = spyOn(component.dialog, 'open').and.returnValue({
+        beforeClosed: () => of(true),
+      } as MatDialogRef<typeof SimpleDialogComponent>);
+      fixture.detectChanges();
+      fixture.componentRef.setInput('initialDevice', {
+        status: DeviceStatus.VALID,
+        manufacturer: 'Alpha',
+        model: 'O3-DIN-CPU',
+        mac_addr: '00:22:42:35:73:c4',
+        test_modules: {
+          udmi: {
+            enabled: true,
+          },
+        },
+      });
+      fixture.detectChanges();
+
+      expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
+        ariaLabel: 'Discard the Device changes',
+        data: {
+          title: 'Discard changes?',
+          content: `You have unsaved changes that would be permanently lost.`,
+          confirmName: 'Discard',
+        },
+        autoFocus: true,
+        hasBackdrop: true,
+        disableClose: true,
+        panelClass: ['simple-dialog', 'close-device'],
+      });
+
+      openSpy.calls.reset();
+    });
   });
 
-  describe('steps', () => {
+  describe('when device is null', () => {
     beforeEach(() => {
+      fixture.componentRef.setInput('testModules', MOCK_TEST_MODULES);
+      fixture.componentRef.setInput('devices', [device]);
+      fixture.componentRef.setInput('isCreate', true);
+      fixture.componentRef.setInput('initialDevice', null);
+    });
+
+    it('should have disabled delete button', () => {
       fixture.detectChanges();
-    });
-
-    describe('with questionnaire', () => {
-      it('should have steps', () => {
-        expect(
-          (component.deviceQualificationForm.get('steps') as FormArray).controls
-            .length
-        ).toEqual(3);
-      });
-    });
-
-    it('should not save data when fields are empty', () => {
-      const forwardButton = compiled.querySelector(
-        '.form-button-forward'
+      const button = compiled.querySelector(
+        '.delete-button'
       ) as HTMLButtonElement;
-      const model: HTMLInputElement = compiled.querySelector(
-        '.device-qualification-form-model'
-      ) as HTMLInputElement;
-      const manufacturer: HTMLInputElement = compiled.querySelector(
-        '.device-qualification-form-manufacturer'
-      ) as HTMLInputElement;
-      const macAddress: HTMLInputElement = compiled.querySelector(
-        '.device-qualification-form-mac-address'
-      ) as HTMLInputElement;
 
-      ['', '                     '].forEach(value => {
-        model.value = value;
-        model.dispatchEvent(new Event('input'));
-        manufacturer.value = value;
-        manufacturer.dispatchEvent(new Event('input'));
-        macAddress.value = value;
-        macAddress.dispatchEvent(new Event('input'));
-        forwardButton?.click();
-        fixture.detectChanges();
-
-        const requiredErrors = compiled.querySelectorAll('mat-error');
-        expect(requiredErrors?.length).toEqual(3);
-
-        requiredErrors.forEach(error => {
-          expect(error?.innerHTML).toContain('required');
-        });
-      });
+      expect(button.disabled).toBeTrue();
     });
+  });
 
-    describe('happy flow', () => {
-      beforeEach(() => {
-        component.model.setValue('model');
-        component.manufacturer.setValue('manufacturer');
-        component.mac_addr.setValue('07:07:07:07:07:07');
-        component.test_modules.setValue([true, true]);
-      });
+  describe('with changes', () => {
+    it('should have enabled cancel button', () => {
+      fixture.detectChanges();
+      component.model.setValue('new value');
+      fixture.detectChanges();
+      const button = compiled.querySelector(
+        '.close-button'
+      ) as HTMLButtonElement;
 
-      it('should save device when step is changed', () => {
-        const forwardButton = compiled.querySelector(
-          '.form-button-forward'
-        ) as HTMLButtonElement;
-        forwardButton.click();
-
-        expect(component.device).toEqual({
-          status: DeviceStatus.VALID,
-          manufacturer: 'manufacturer',
-          model: 'model',
-          mac_addr: '07:07:07:07:07:07',
-          test_pack: TestingType.Qualification,
-          type: '',
-          technology: '',
-          test_modules: {
-            udmi: {
-              enabled: true,
-            },
-            connection: {
-              enabled: true,
-            },
-          },
-          additional_info: [
-            { question: 'What type of device is this?', answer: '' },
-            {
-              question: 'Does your device process any sensitive information? ',
-              answer: '',
-            },
-            {
-              question: 'Please select the technology this device falls into',
-              answer: '',
-            },
-          ],
-        });
-      });
-
-      describe('summary', () => {
-        beforeEach(() => {
-          const forwardButton = compiled.querySelector(
-            '.form-button-forward'
-          ) as HTMLButtonElement;
-          forwardButton.click(); // will redirect to 2 step
-          fixture.detectChanges();
-
-          const nextForwardButton = compiled.querySelector(
-            '.form-button-forward'
-          ) as HTMLButtonElement;
-          nextForwardButton.click(); //will redirect to summary
-
-          fixture.detectChanges();
-        });
-
-        it('should have device item', () => {
-          const item = compiled.querySelector('app-device-item');
-          expect(item).toBeTruthy();
-        });
-
-        it('should have instructions', () => {
-          const instructions = compiled.querySelector(
-            '.device-qualification-form-instructions'
-          );
-          expect(instructions).toBeTruthy();
-        });
-
-        it('should not have instructions when device is editing', () => {
-          component.data = {
-            devices: [device],
-            testModules: MOCK_TEST_MODULES,
-            device: {
-              status: DeviceStatus.VALID,
-              manufacturer: 'Delta',
-              model: 'O3-DIN-CPU',
-              mac_addr: '00:1e:42:35:73:c4',
-              test_modules: {
-                udmi: {
-                  enabled: true,
-                },
-              },
-            },
-            isCreate: false,
-            index: 0,
-          };
-          fixture.detectChanges();
-
-          const instructions = compiled.querySelector(
-            '.device-qualification-form-instructions'
-          );
-          expect(instructions).toBeNull();
-        });
-
-        it('should save device', () => {
-          const saveSpy = spyOn(component.devicesStore, 'saveDevice');
-
-          component.submit();
-
-          const args = saveSpy.calls.argsFor(0);
-          // @ts-expect-error config is in object
-          expect(args[0].device).toEqual({
-            status: DeviceStatus.VALID,
-            manufacturer: 'manufacturer',
-            model: 'model',
-            mac_addr: '07:07:07:07:07:07',
-            test_pack: 'Device Qualification',
-            type: '',
-            technology: '',
-            test_modules: {
-              connection: {
-                enabled: true,
-              },
-              udmi: {
-                enabled: true,
-              },
-            },
-            additional_info: [
-              { question: 'What type of device is this?', answer: '' },
-              {
-                question:
-                  'Does your device process any sensitive information? ',
-                answer: '',
-              },
-              {
-                question: 'Please select the technology this device falls into',
-                answer: '',
-              },
-            ],
-          });
-          expect(saveSpy).toHaveBeenCalled();
-        });
-
-        it('should edit device', () => {
-          component.data = {
-            devices: [device],
-            testModules: MOCK_TEST_MODULES,
-            device: {
-              status: DeviceStatus.VALID,
-              manufacturer: 'Delta',
-              model: 'O3-DIN-CPU',
-              mac_addr: '00:1e:42:35:73:c4',
-              test_modules: {
-                udmi: {
-                  enabled: true,
-                },
-              },
-            },
-            isCreate: false,
-            index: 0,
-          };
-          fixture.detectChanges();
-          const editSpy = spyOn(component.devicesStore, 'editDevice');
-
-          component.submit();
-
-          const args = editSpy.calls.argsFor(0);
-          // @ts-expect-error config is in object
-          expect(args[0].device).toEqual({
-            status: DeviceStatus.VALID,
-            manufacturer: 'manufacturer',
-            model: 'model',
-            mac_addr: '07:07:07:07:07:07',
-            test_pack: 'Device Qualification',
-            type: '',
-            technology: '',
-            test_modules: {
-              connection: {
-                enabled: true,
-              },
-              udmi: {
-                enabled: true,
-              },
-            },
-            additional_info: [
-              { question: 'What type of device is this?', answer: '' },
-              {
-                question:
-                  'Does your device process any sensitive information? ',
-                answer: '',
-              },
-              {
-                question: 'Please select the technology this device falls into',
-                answer: '',
-              },
-            ],
-          });
-          expect(editSpy).toHaveBeenCalled();
-        });
-      });
+      expect(button.disabled).toBeFalse();
     });
+  });
 
-    describe('with errors', () => {
-      beforeEach(() => {
-        component.data = {
-          devices: [device],
-          testModules: MOCK_TEST_MODULES,
-          device: {
-            status: DeviceStatus.VALID,
-            manufacturer: 'Delta',
-            model: 'O3-DIN-CPU',
-            mac_addr: '00:1e:42:35:73:c4',
-            test_modules: {
-              udmi: {
-                enabled: true,
-              },
-            },
-          },
-          isCreate: false,
-          index: 0,
-        };
-        component.model.setValue('');
+  describe('onSaveClicked', () => {
+    it('should emit device', () => {
+      fixture.detectChanges();
+      const saveSpy = spyOn(component.save, 'emit');
+      component.manufacturer.setValue('manufacturer');
+      component.model.setValue('model');
+      component.mac_addr.setValue('01:01:01:01:01:01');
+      component.deviceQualificationForm.markAsDirty();
 
-        fixture.detectChanges();
-      });
-
-      describe('summary', () => {
-        beforeEach(() => {
-          const forwardButton = compiled.querySelector(
-            '.form-button-forward'
-          ) as HTMLButtonElement;
-          forwardButton.click(); // will redirect to 2 step
-          fixture.detectChanges();
-
-          const nextForwardButton = compiled.querySelector(
-            '.form-button-forward'
-          ) as HTMLButtonElement;
-          nextForwardButton.click(); //will redirect to summary
-          fixture.detectChanges();
-        });
-
-        it('should have error message', () => {
-          const error = compiled.querySelector(
-            '.device-qualification-form-summary-info-description'
-          );
-          expect(error?.textContent?.trim()).toEqual(
-            'Please go back and correct the errors on Step 1.'
-          );
-        });
-      });
+      component.onSaveClicked();
+      expect(saveSpy).toHaveBeenCalledWith(MOCK_DEVICE);
     });
   });
 });
@@ -877,6 +496,7 @@ describe('DeviceQualificationFromComponent', () => {
 @Component({
   selector: 'app-dynamic-form',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeDynamicFormComponent {
   @Input() format: QuestionFormat[] = [];

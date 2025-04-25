@@ -16,22 +16,18 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   Input,
-  ViewChild,
+  inject,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import {
   ResultOfTestrun,
   TestrunStatus,
 } from '../../../../model/testrun-status';
-import { MatOptionSelectionChange } from '@angular/material/core';
 import { DownloadReportZipComponent } from '../../../../components/download-report-zip/download-report-zip.component';
 import { Profile } from '../../../../model/profile';
+import { MatButtonModule } from '@angular/material/button';
 
 export enum DownloadOption {
   PDF = 'PDF Report',
@@ -41,59 +37,36 @@ export enum DownloadOption {
   selector: 'app-download-options',
   templateUrl: './download-options.component.html',
   styleUrl: './download-options.component.scss',
-  standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    MatButtonModule,
     MatIconModule,
-    MatFormFieldModule,
-    MatSelectModule,
     DownloadReportZipComponent,
   ],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DownloadOptionsComponent {
-  @ViewChild('downloadReportZip') downloadReportZip!: ElementRef;
+  private datePipe = inject(DatePipe);
+  isOpenDownloadOptions: boolean = false;
   @Input() profiles: Profile[] = [];
   @Input() data!: TestrunStatus;
   DownloadOption = DownloadOption;
-  constructor(private datePipe: DatePipe) {}
 
-  onSelected(
-    event: MatOptionSelectionChange,
-    data: TestrunStatus,
-    type: string
-  ) {
-    if (event.isUserInput) {
-      this.createLink(data, type);
-      this.sendGAEvent(data, type);
-    }
+  downloadPdf(data: TestrunStatus) {
+    this.createLink(data);
+    this.sendGAEvent(data);
   }
 
-  onZipSelected(event: MatOptionSelectionChange) {
-    if (event.isUserInput) {
-      const uploadCertificatesButton = document.querySelector(
-        '#downloadReportZip'
-      ) as HTMLElement;
-      uploadCertificatesButton.dispatchEvent(new MouseEvent('click'));
-    }
-  }
-
-  createLink(data: TestrunStatus, type: string) {
+  createLink(data: TestrunStatus) {
     if (!data.report) {
       return;
     }
     const link = document.createElement('a');
-    link.href =
-      type === DownloadOption.PDF ? data.report : this.getZipLink(data);
+    link.href = data.report;
     link.target = '_blank';
     link.download = this.getReportTitle(data);
     link.dispatchEvent(new MouseEvent('click'));
-  }
-
-  getZipLink(data: TestrunStatus): string {
-    return data.export || data.report.replace('report', 'export');
   }
 
   getReportTitle(data: TestrunStatus) {
@@ -111,8 +84,8 @@ export class DownloadOptionsComponent {
     return date ? this.datePipe.transform(date, 'd MMM y H:mm') : '';
   }
 
-  sendGAEvent(data: TestrunStatus, type: string) {
-    let event = `download_report_${type === DownloadOption.PDF ? 'pdf' : 'zip'}`;
+  sendGAEvent(data: TestrunStatus) {
+    let event = 'download_report_pdf';
     if (data.result === ResultOfTestrun.Compliant) {
       event += '_compliant';
     } else if (data.result === ResultOfTestrun.NonCompliant) {
@@ -122,5 +95,9 @@ export class DownloadOptionsComponent {
     window.dataLayer.push({
       event: event,
     });
+  }
+
+  openDownloadOptions(): void {
+    this.isOpenDownloadOptions = !this.isOpenDownloadOptions;
   }
 }

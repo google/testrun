@@ -25,9 +25,9 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { of } from 'rxjs';
-import { ShutdownAppModalComponent } from '../shutdown-app-modal/shutdown-app-modal.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { WINDOW } from '../../providers/window.provider';
+import { SimpleDialogComponent } from '../simple-dialog/simple-dialog.component';
 
 describe('ShutdownAppComponent', () => {
   let component: ShutdownAppComponent;
@@ -71,7 +71,7 @@ describe('ShutdownAppComponent', () => {
     mockService.shutdownTestrun.and.returnValue(of(false));
     spyOn(component.dialog, 'open').and.returnValue({
       afterClosed: () => of(true),
-    } as MatDialogRef<typeof ShutdownAppModalComponent>);
+    } as MatDialogRef<typeof SimpleDialogComponent>);
     tick();
 
     component.openShutdownModal();
@@ -83,7 +83,7 @@ describe('ShutdownAppComponent', () => {
     mockService.shutdownTestrun.and.returnValue(of(true));
     spyOn(component.dialog, 'open').and.returnValue({
       afterClosed: () => of(true),
-    } as MatDialogRef<typeof ShutdownAppModalComponent>);
+    } as MatDialogRef<typeof SimpleDialogComponent>);
     tick();
 
     component.openShutdownModal();

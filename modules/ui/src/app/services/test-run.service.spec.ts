@@ -35,6 +35,7 @@ import { AppState } from '../store/state';
 import { Certificate } from '../model/certificate';
 import { certificate } from '../mocks/certificate.mock';
 import {
+  COPY_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
   PROFILE_FORM,
   PROFILE_MOCK,
@@ -521,9 +522,9 @@ describe('TestRunService', () => {
     req.flush(true);
   });
 
-  it('fetchProfiles should return profiles', () => {
+  it('fetchProfiles should return sorted list of profiles', () => {
     service.fetchProfiles().subscribe(res => {
-      expect(res).toEqual([PROFILE_MOCK]);
+      expect(res).toEqual([COPY_PROFILE_MOCK, PROFILE_MOCK]);
     });
 
     const req = httpTestingController.expectOne(
@@ -532,7 +533,7 @@ describe('TestRunService', () => {
 
     expect(req.request.method).toBe('GET');
 
-    req.flush([PROFILE_MOCK]);
+    req.flush([PROFILE_MOCK, COPY_PROFILE_MOCK]);
   });
 
   it('deleteProfile should delete profile', () => {

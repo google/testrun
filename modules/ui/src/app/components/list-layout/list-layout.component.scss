@@ -1,0 +1,153 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@use 'mixins';
+@use 'colors';
+@use 'variables';
+
+:host {
+  position: relative;
+  height: 100%;
+  display: block;
+}
+
+:host ::ng-deep .mat-drawer-inner-container {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: max-content 1fr;
+}
+
+.entity-list app-list-item:has(.selected) {
+  ::ng-deep .list-item {
+    background-color: colors.$primary-container;
+  }
+}
+
+.content {
+  height: 100%;
+}
+
+.content-empty {
+  @include mixins.content-empty;
+}
+
+.title {
+  color: colors.$on-surface;
+  font-family: variables.$font-primary;
+  font-size: 32px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 40px;
+  &-empty {
+    padding: 24px 0 8px 32px;
+    margin: 0;
+  }
+}
+
+.add-entity-button {
+  font-family: variables.$font-text;
+  font-size: 16px;
+  border-radius: 16px;
+  width: fit-content;
+  height: 56px;
+  color: colors.$on-secondary-container;
+  background-color: colors.$secondary-container;
+  &:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.layout-container {
+  height: 100%;
+}
+
+.layout-container-left-panel {
+  background-color: colors.$surface-container-low;
+  width: 435px;
+  padding-right: 16px;
+  overflow: hidden;
+}
+
+.layout-container-left-panel-toolbar {
+  border-radius: variables.$corner-large;
+  background-color: colors.$surface;
+  padding: 12px 0 8px 16px;
+  ::ng-deep mat-toolbar-row:not(:first-child) {
+    margin-top: 32px;
+  }
+}
+
+.search-field {
+  display: flex;
+  padding: 4px 4px 4px 20px;
+  align-items: center;
+  gap: 4px;
+  flex: 1 0 0;
+  align-self: stretch;
+  border-radius: variables.$corner-extra-large;
+  background-color: colors.$surface-container-high;
+  height: 40px;
+  width: 100%;
+  input {
+    width: calc(100% - #{variables.$icon-size * 2});
+    height: 100%;
+    border: 0;
+    background: inherit;
+    font-size: 16px;
+    font-family: variables.$font-text;
+    color: colors.$on-surface-variant;
+  }
+}
+
+::ng-deep .using-mouse .search-field input:focus {
+  outline: none;
+}
+
+.entity-list-container {
+  overflow-y: auto;
+}
+
+.entity-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.add-entity-button {
+  font-family: variables.$font-text;
+  font-size: 16px;
+  border-radius: 16px;
+  width: fit-content;
+  height: 56px;
+  color: colors.$on-secondary-container;
+  background-color: colors.$secondary-container;
+}
+
+.fake-list-item {
+  border-radius: 16px;
+  background-color: colors.$primary-container;
+  height: 92px;
+  padding: 0 24px 0 32px;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  color: colors.$on-surface;
+  font-weight: 500;
+  font-family: variables.$font-text;
+  font-size: 16px;
+  letter-spacing: 0;
+}

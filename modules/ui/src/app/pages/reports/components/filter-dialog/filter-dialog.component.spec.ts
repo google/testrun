@@ -33,7 +33,7 @@ import {
   MatDatepickerModule,
 } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { DateRange, FilterName } from '../../../../model/filters';
+import { DateRange, FilterName, FilterTitle } from '../../../../model/filters';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 
@@ -84,6 +84,7 @@ describe('FilterDialogComponent', () => {
     component.data = {
       trigger: mockClientRest,
       filter: FilterName.DeviceInfo,
+      title: FilterTitle.DeviceInfo,
     };
     component.data.trigger.nativeElement = {
       getBoundingClientRect: () => mockData,
@@ -152,6 +153,7 @@ describe('FilterDialogComponent', () => {
       component.data = {
         trigger: mockClientRest,
         filter: FilterName.DeviceFirmware,
+        title: FilterTitle.DeviceFirmware,
       };
       fixture.detectChanges();
 
@@ -178,6 +180,7 @@ describe('FilterDialogComponent', () => {
       component.data = {
         trigger: mockClientRest,
         filter: FilterName.Started,
+        title: FilterTitle.Started,
       };
       fixture.detectChanges();
     });
@@ -246,7 +249,9 @@ describe('FilterDialogComponent', () => {
     });
 
     it('should max date as today', () => {
-      expect(component.calendar.maxDate?.getDate()).toBe(new Date().getDate());
+      expect(component.calendar()?.maxDate?.getDate()).toBe(
+        new Date().getDate()
+      );
     });
   });
 });

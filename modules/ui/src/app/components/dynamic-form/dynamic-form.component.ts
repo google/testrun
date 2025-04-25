@@ -15,9 +15,12 @@
  */
 import {
   Component,
+  HostListener,
   inject,
   Input,
   OnInit,
+  Renderer2,
+  viewChildren,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -48,12 +51,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TextFieldModule } from '@angular/cdk/text-field';
-import { DeviceValidators } from '../../pages/devices/components/device-form/device.validators';
 import { ProfileValidators } from '../../pages/risk-assessment/profile-form/profile.validators';
 import { DomSanitizer } from '@angular/platform-browser';
 @Component({
   selector: 'app-dynamic-form',
-  standalone: true,
+
   imports: [
     MatFormField,
     MatOption,
@@ -78,22 +80,26 @@ import { DomSanitizer } from '@angular/platform-browser';
   encapsulation: ViewEncapsulation.None,
 })
 export class DynamicFormComponent implements OnInit {
+  readonly formFields = viewChildren(MatFormField);
+
+  private fb = inject(FormBuilder);
+  private profileValidators = inject(ProfileValidators);
+  private domSanitizer = inject(DomSanitizer);
+  private renderer = inject(Renderer2);
+
   public readonly FormControlType = FormControlType;
 
   @Input() format: QuestionFormat[] = [];
   @Input() optionKey: string | undefined;
+  @HostListener('window:resize')
+  onResize() {
+    this.adjustSubscriptWrapperHeights();
+  }
 
   parentContainer = inject(ControlContainer);
   get formGroup() {
     return this.parentContainer.control as FormGroup;
   }
-
-  constructor(
-    private fb: FormBuilder,
-    private deviceValidators: DeviceValidators,
-    private profileValidators: ProfileValidators,
-    private domSanitizer: DomSanitizer
-  ) {}
   getControl(name: string | number) {
     return this.formGroup.get(name.toString()) as AbstractControl;
   }
@@ -182,5 +188,26 @@ export class DynamicFormComponent implements OnInit {
     return this.domSanitizer.bypassSecurityTrustHtml(
       this.getOptionValue(option)
     );
+  }
+
+  adjustSubscriptWrapperHeights(): void {
+    this.formFields().forEach(formField => {
+      const matFormField = formField._elementRef.nativeElement;
+      if (matFormField) {
+        const subscriptWrapper = matFormField.querySelector(
+          '.mat-mdc-form-field-subscript-wrapper'
+        ) as HTMLElement;
+        const hint = matFormField.querySelector(
+          '.mat-mdc-form-field-hint'
+        ) as HTMLElement;
+        if (subscriptWrapper && hint) {
+          this.renderer.setStyle(
+            subscriptWrapper,
+            'height',
+            `${hint.offsetHeight}px`
+          );
+        }
+      }
+    });
   }
 }

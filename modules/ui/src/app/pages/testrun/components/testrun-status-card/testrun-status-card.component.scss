@@ -14,75 +14,172 @@
  * limitations under the License.
  */
 @use 'node_modules/@angular/material/index' as mat;
-@import 'src/theming/colors';
+@use 'm3-theme' as *;
+@use 'colors';
+@use 'variables';
 
 :host {
   height: auto;
   min-height: 152px;
 }
 
-.progress-card {
+@mixin progress-card-info($background-color, $title-color, $text-color) {
+  border-radius: variables.$corner-extra-large;
+  padding: 32px 56px 32px 56px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-width: 295px;
-  width: fit-content;
-  height: 100%;
-  min-height: 152px;
+  align-items: start;
+  background-color: $background-color;
   box-sizing: border-box;
-  padding: 16px 32px;
 
-  &-pilot {
-    gap: 6px;
+  .progress-card-info-title {
+    font-family: variables.$font-text;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+    color: $title-color;
   }
 
-  &.progress {
-    background-color: mat.m2-get-color-from-palette($color-primary, 700);
+  .progress-card-info-text {
+    font-family: variables.$font-primary;
+    font-size: 28px;
+    line-height: 36px;
+    font-weight: 400;
+    color: $text-color;
   }
+}
 
-  &.completed-success {
-    background-color: mat.m2-get-color-from-palette($color-accent, 700);
-  }
-
-  &.completed-failed {
-    background-color: $red-800;
-  }
-
-  &.canceled {
-    background-color: $secondary;
-  }
+.progress-card {
+  display: grid;
+  grid-template-areas:
+    'tests status'
+    'bar bar';
+  width: fit-content;
+  box-sizing: border-box;
+  gap: 16px;
+  padding: 16px 0;
+  grid-template-columns: min-content 1fr;
 
   p {
     margin: 0;
   }
 
-  .progress-card-status-title,
-  .progress-card-result-title {
-    color: $white;
-    font-size: 14px;
-    line-height: 20px;
-    white-space: normal;
-  }
-
-  .progress-card-result-title {
-    width: 295px;
-  }
-
-  .progress-card-status-text,
-  .progress-card-result-text {
-    display: flex;
-    justify-content: space-between;
-    color: $white;
-    font-size: 24px;
-    font-weight: 400;
-    line-height: 32px;
-  }
-
-  .progress-card-status-text {
-    gap: 12px;
+  .progress-bar {
+    padding-bottom: 28px;
+    width: 100%;
+    border-radius: variables.$corner-large;
   }
 
   .progress-bar {
-    padding-bottom: 28px;
+    ::ng-deep .mdc-linear-progress__bar-inner {
+      border-top-right-radius: variables.$corner-large 12px;
+      border-bottom-right-radius: variables.$corner-large 12px;
+      border-top-left-radius: variables.$corner-large 12px;
+      border-bottom-left-radius: variables.$corner-large 12px;
+    }
+  }
+
+  @include mat.progress-bar-overrides(
+    (
+      active-indicator-color: colors.$primary,
+      track-color: colors.$secondary-container,
+      active-indicator-height: 12px,
+      track-height: 12px,
+      track-shape: 16px,
+    )
+  );
+
+  &.canceled {
+    @include mat.progress-bar-overrides(
+      (
+        active-indicator-color: colors.$on-surface,
+        track-color: colors.$surface-variant,
+      )
+    );
+  }
+
+  &.progress .progress-card-info-status {
+    background-color: colors.$primary;
+  }
+
+  &.completed-success .progress-card-info-status {
+    background-color: colors.$on-tertiary-container;
+  }
+
+  &.completed-failed .progress-card-info-status {
+    background-color: colors.$on-error-container;
+  }
+
+  &.canceled .progress-card-info-status {
+    background-color: colors.$on-surface;
+  }
+
+  &.error .progress-card-info-status {
+    background-color: colors.$on-surface-variant;
+  }
+}
+
+.progress-card-info-tests {
+  grid-area: tests;
+  @include progress-card-info(
+    colors.$surface-variant,
+    colors.$on-surface-variant,
+    colors.$on-surface
+  );
+  justify-self: end;
+}
+
+.progress-card-info-status {
+  grid-area: status;
+  @include progress-card-info(
+    colors.$primary,
+    colors.$primary-container,
+    colors.$on-primary
+  );
+  flex-direction: row;
+  gap: 32px;
+  justify-self: stretch;
+
+  &-pilot {
+    gap: 6px;
+  }
+}
+
+.progress-card-pilot {
+  .progress-card-info-tests,
+  .progress-card-info-status {
+    padding: 32px;
+  }
+}
+
+.progress-card-status {
+  overflow: hidden;
+  grid-area: bar;
+  white-space: normal;
+  &-bar {
+    width: 100%;
+  }
+}
+
+.progress-card-result-loading {
+  border-radius: variables.$corner-extra-extra-large;
+  padding: 32px 48px 32px 48px;
+  background-color: colors.$secondary-container;
+  color: colors.$on-secondary-container;
+  display: flex;
+  align-items: center;
+  .loader {
+    width: 40px;
+    height: 40px;
+  }
+  .progress-card-result-title {
+    margin-left: 32px;
+  }
+}
+
+@for $i from 1 through 100 {
+  .progress-value-#{$i} ::ng-deep .mdc-linear-progress__primary-bar {
+    transform: scaleX(1) !important;
+    width: #{$i * 1%};
   }
 }

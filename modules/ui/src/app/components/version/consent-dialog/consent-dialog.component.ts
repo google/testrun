@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -26,16 +26,16 @@ import { CalloutType } from '../../../model/callout-type';
 import { NgIf } from '@angular/common';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
-import { FocusManagerService } from '../../../services/focus-manager.service';
 import { timer } from 'rxjs';
 
 type DialogData = {
   version: Version;
+  optOut: boolean;
 };
 
 @Component({
   selector: 'app-consent-dialog',
-  standalone: true,
+
   imports: [
     MatDialogModule,
     MatButtonModule,
@@ -48,13 +48,11 @@ type DialogData = {
   styleUrl: './consent-dialog.component.scss',
 })
 export class ConsentDialogComponent {
+  dialogRef = inject<MatDialogRef<ConsentDialogComponent>>(MatDialogRef);
+  data = inject<DialogData>(MAT_DIALOG_DATA);
+
   public readonly CalloutType = CalloutType;
-  optOut = false;
-  constructor(
-    private readonly focusManagerService: FocusManagerService,
-    public dialogRef: MatDialogRef<ConsentDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
-  ) {}
+  optOut = this.data.optOut;
 
   confirm(optOut: boolean) {
     // dialog should be closed with opposite value to grant or deny access to GA
@@ -63,7 +61,12 @@ export class ConsentDialogComponent {
     };
     this.dialogRef.close(dialogResult);
     timer(100).subscribe(() => {
-      this.focusManagerService.focusFirstElementInContainer();
+      const versionButton = window.document.querySelector(
+        '.version-content'
+      ) as HTMLButtonElement;
+      if (versionButton) {
+        versionButton.focus();
+      }
     });
   }
 }

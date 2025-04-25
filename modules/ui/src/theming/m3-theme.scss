@@ -1,0 +1,165 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'sass:map';
+@use '@angular/material' as mat;
+@use 'variables';
+
+@include mat.core();
+@include mat.strong-focus-indicators(
+  (
+    border-width: 2px,
+  )
+);
+
+// Note: Color palettes are generated from primary: #1967d2, secondary: #5f6368, tertiary: #8ab4f8, neutral: #ffffff
+$_palettes: (
+  primary: (
+    0: #000000,
+    10: #041e49,
+    20: #062e6f,
+    25: #062e6f,
+    30: #0842a0,
+    35: #0842a0,
+    40: #0b57d0,
+    50: #1b6ef3,
+    60: #4c8df6,
+    70: #7cacf8,
+    80: #a8c7fa,
+    90: #d3e3fd,
+    95: #ecf3fe,
+    98: #f9f9ff,
+    99: #fafbff,
+    100: #ffffff,
+  ),
+  secondary: (
+    0: #000000,
+    10: #001d35,
+    20: #003355,
+    25: #003355,
+    30: #004a77,
+    35: #004a77,
+    40: #00639b,
+    50: #047db7,
+    60: #3998d3,
+    70: #5ab3f0,
+    80: #7fcfff,
+    90: #c2e7ff,
+    95: #dff3ff,
+    98: #f7fcff,
+    99: #f7fcff,
+    100: #ffffff,
+  ),
+  tertiary: (
+    0: #000000,
+    10: #072711,
+    20: #0a3818,
+    25: #0a3818,
+    30: #0f5223,
+    35: #0f5223,
+    40: #146c2e,
+    50: #198639,
+    60: #1ea446,
+    70: #37be5f,
+    80: #6dd58c,
+    90: #c4eed0,
+    95: #e7f8ed,
+    98: #f2ffee,
+    99: #f2ffee,
+    100: #ffffff,
+  ),
+  neutral: (
+    0: #000000,
+    10: #1f1f1f,
+    20: #303030,
+    30: #474747,
+    40: #5e5e5e,
+    50: #757575,
+    60: #8f8f8f,
+    70: #ababab,
+    80: #c7c7c7,
+    90: #e3e3e3,
+    95: #f2f2f2,
+    99: #fdfcfb,
+    100: #ffffff,
+  ),
+  neutral-variant: (
+    0: #000000,
+    10: #191d1c,
+    25: #2d312f,
+    20: #2d312f,
+    35: #444746,
+    30: #444746,
+    40: #5c5f5e,
+    50: #747775,
+    60: #8e918f,
+    70: #a9acaa,
+    80: #c4c7c5,
+    90: #e1e3e1,
+    95: #eff2ef,
+    98: #eff2ef,
+    99: #eff2ef,
+    100: #ffffff,
+  ),
+  error: (
+    0: #000000,
+    10: #410e0b,
+    20: #601410,
+    25: #601410,
+    30: #8c1d18,
+    35: #8c1d18,
+    40: #b3261e,
+    50: #dc362e,
+    60: #e46962,
+    70: #ec928e,
+    80: #f2b8b5,
+    90: #f9dedc,
+    95: #fceeee,
+    98: #fffbf9,
+    99: #fffbf9,
+    100: #ffffff,
+  ),
+);
+
+$_rest: (
+  secondary: map.get($_palettes, secondary),
+  neutral: map.get($_palettes, neutral),
+  neutral-variant: map.get($_palettes, neutral-variant),
+  error: map.get($_palettes, error),
+);
+$_primary: map.merge(map.get($_palettes, primary), $_rest);
+$_tertiary: map.merge(map.get($_palettes, tertiary), $_rest);
+
+$light-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: $_primary,
+      tertiary: $_tertiary,
+    ),
+    typography: (
+      brand-family: variables.$font-primary,
+      plain-family: variables.$font-text,
+    ),
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+html {
+  @include mat.all-component-themes($light-theme);
+}
