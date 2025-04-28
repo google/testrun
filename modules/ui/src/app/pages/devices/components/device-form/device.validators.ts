@@ -22,6 +22,8 @@ import { Device } from '../../../../model/device';
  * Validator uses for Device Name and Device Manufacturer inputs
  */
 export class DeviceValidators {
+  static readonly STRING_FORMAT_MAX_LENGTH = 28;
+
   // Not allowed symbols: <>?/:;@'"][=^!\#$%&*+{}|()
   readonly STRING_FORMAT_REGEXP = new RegExp(
     '^([^<>?:;@\'\\\\"\\[\\]=^!/,.#$%&*+{}|()]{1,28})$',
