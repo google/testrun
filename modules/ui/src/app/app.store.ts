@@ -188,7 +188,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
   setContent = this.effect<void>(trigger$ => {
     return trigger$.pipe(
       tap(() => {
-        sessionStorage.setItem(CONSENT_SHOWN_KEY, 'shown');
+        localStorage.setItem(CONSENT_SHOWN_KEY, 'shown');
         this.updateConsent(true);
       })
     );
@@ -373,7 +373,7 @@ export class AppStore extends ComponentStore<AppComponentState> {
     const calloutState = sessionStorage.getObject(CALLOUT_STATE_KEY);
 
     super({
-      consentShown: sessionStorage.getItem(CONSENT_SHOWN_KEY) !== null,
+      consentShown: localStorage.getItem(CONSENT_SHOWN_KEY) !== null,
       isStatusLoaded: false,
       systemStatus: null,
       calloutState: calloutState
