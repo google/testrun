@@ -74,7 +74,7 @@ Follow these steps to start Testrun:
     Notes:
     
     -  Disable both adapters in the host system (IPv4, IPv6, and general) by opening **Settings**, then **Network**.
-    -  Keep the DUT powered off until prompted.
+    -  Keep the DUT powered off until prompted. Otherwise, Testrun will not be able to fully capture the device behavior during startup - resulting in inaccurate test results.
 
 1. Start Testrun with the command `sudo testrun`
     -  To run Testrun in network-only mode (without running any tests), use the `--net-only` option.
