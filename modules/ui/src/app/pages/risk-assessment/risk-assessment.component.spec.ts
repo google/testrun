@@ -27,18 +27,22 @@ import { TestRunService } from '../../services/test-run.service';
 import SpyObj = jasmine.SpyObj;
 import { MatSidenavModule } from '@angular/material/sidenav';
 import {
-  COPY_PROFILE_MOCK,
+  DRAFT_COPY_PROFILE_MOCK,
   NEW_PROFILE_MOCK,
   NEW_PROFILE_MOCK_DRAFT,
   PROFILE_MOCK,
 } from '../../mocks/profile.mock';
-import { of } from 'rxjs';
-import { Component, Input } from '@angular/core';
-import { Profile, ProfileFormat } from '../../model/profile';
+import { of, Subscription } from 'rxjs';
+import { Component, Input, ViewEncapsulation } from '@angular/core';
+import { Profile, ProfileAction, ProfileFormat } from '../../model/profile';
 import { MatDialogRef } from '@angular/material/dialog';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { RiskAssessmentStore } from './risk-assessment.store';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { Observable } from 'rxjs/internal/Observable';
+import { ProfileFormComponent } from './profile-form/profile-form.component';
+import { MatIcon } from '@angular/material/icon';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
 
 describe('RiskAssessmentComponent', () => {
   let component: RiskAssessmentComponent;
@@ -65,21 +69,34 @@ describe('RiskAssessmentComponent', () => {
       'setFocusOnCreateButton',
       'setFocusOnSelectedProfile',
       'setFocusOnProfileForm',
+      'updateProfiles',
+      'removeProfile',
+      'isOpenCreateProfile$',
+      'profileFormat$',
     ]);
 
+    mockRiskAssessmentStore.profileFormat$ = of([]);
+
     await TestBed.configureTestingModule({
-      declarations: [
+      declarations: [FakeProfileItemComponent, FakeProfileFormComponent],
+      imports: [
         RiskAssessmentComponent,
-        FakeProfileItemComponent,
-        FakeProfileFormComponent,
+        MatToolbarModule,
+        MatSidenavModule,
+        BrowserAnimationsModule,
+        MatIconTestingModule,
+        MatIcon,
       ],
-      imports: [MatToolbarModule, MatSidenavModule, BrowserAnimationsModule],
       providers: [
         { provide: TestRunService, useValue: mockService },
         { provide: RiskAssessmentStore, useValue: mockRiskAssessmentStore },
         { provide: LiveAnnouncer, useValue: mockLiveAnnouncer },
       ],
-    }).compileComponents();
+    })
+      .overrideComponent(RiskAssessmentComponent, {
+        set: { encapsulation: ViewEncapsulation.None },
+      })
+      .compileComponents();
 
     TestBed.overrideProvider(RiskAssessmentStore, {
       useValue: mockRiskAssessmentStore,
@@ -94,18 +111,54 @@ describe('RiskAssessmentComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('with no data', () => {
+  it('should open form if isOpenAddDevice$ as true', () => {
+    mockRiskAssessmentStore.profileFormat$ = of([], []);
+    mockRiskAssessmentStore.isOpenCreateProfile$ = of(true);
+    component.ngOnInit();
+
+    expect(component.isOpenProfileForm).toBeTrue();
+  });
+
+  describe('with no profiles data', () => {
     beforeEach(() => {
       component.viewModel$ = of({
         profiles: [] as Profile[],
         profileFormat: [],
         selectedProfile: null,
+        actions: [
+          { action: ProfileAction.Copy, icon: 'content_copy' },
+          { action: ProfileAction.Delete, icon: 'delete' },
+        ],
       });
       mockRiskAssessmentStore.profiles$ = of([]);
       fixture.detectChanges();
     });
 
-    it('should have "New Risk Assessment" button', () => {
+    it('should have title', () => {
+      const title = compiled.querySelector('h2.title');
+      const titleContent = title?.innerHTML.trim();
+
+      expect(title).toBeTruthy();
+      expect(titleContent).toContain('Risk Assessment');
+    });
+
+    it('should have empty page with necessary content', () => {
+      const emptyHeader = compiled.querySelector(
+        'app-empty-page .empty-message-header'
+      );
+      const emptyMessage = compiled.querySelector(
+        'app-empty-page .empty-message-main'
+      );
+
+      expect(emptyHeader).toBeTruthy();
+      expect(emptyHeader?.innerHTML).toContain('Risk assessment');
+      expect(emptyMessage).toBeTruthy();
+      expect(emptyMessage?.innerHTML).toContain(
+        'complete a brief risk questionnaire'
+      );
+    });
+
+    it('should have "Create Risk Profile" button', () => {
       const newRiskAssessmentBtn = compiled.querySelector(
         '.risk-assessment-add-button'
       );
@@ -121,21 +174,13 @@ describe('RiskAssessmentComponent', () => {
       newRiskAssessmentBtn.click();
       fixture.detectChanges();
 
-      const toolbarEl = compiled.querySelector('.risk-assessment-toolbar');
       const title = compiled.querySelector('h2.title');
       const titleContent = title?.innerHTML.trim();
       const profileForm = compiled.querySelectorAll('app-profile-form');
 
-      expect(toolbarEl).not.toBeNull();
       expect(title).toBeTruthy();
-      expect(titleContent).toContain('Risk assessment');
+      expect(titleContent).toContain('Risk Assessment');
       expect(profileForm).toBeTruthy();
-    });
-
-    it('should not have profiles drawer', () => {
-      const profilesDrawer = compiled.querySelector('.profiles-drawer');
-
-      expect(profilesDrawer).toBeFalsy();
     });
   });
 
@@ -145,14 +190,12 @@ describe('RiskAssessmentComponent', () => {
         profiles: [PROFILE_MOCK, PROFILE_MOCK],
         profileFormat: [],
         selectedProfile: null,
+        actions: [
+          { action: ProfileAction.Copy, icon: 'content_copy' },
+          { action: ProfileAction.Delete, icon: 'delete' },
+        ],
       });
       fixture.detectChanges();
-    });
-
-    it('should have profiles drawer', () => {
-      const profilesDrawer = compiled.querySelector('.profiles-drawer');
-
-      expect(profilesDrawer).toBeTruthy();
     });
 
     it('should have profile items', () => {
@@ -168,7 +211,7 @@ describe('RiskAssessmentComponent', () => {
         } as MatDialogRef<typeof SimpleDialogComponent>);
         tick();
 
-        component.deleteProfile(PROFILE_MOCK.name, 0, null);
+        component.deleteProfile(PROFILE_MOCK, [PROFILE_MOCK], PROFILE_MOCK);
         tick();
 
         expect(openSpy).toHaveBeenCalledWith(SimpleDialogComponent, {
@@ -179,6 +222,7 @@ describe('RiskAssessmentComponent', () => {
           autoFocus: 'dialog',
           hasBackdrop: true,
           disableClose: true,
+          panelClass: ['simple-dialog', 'delete-dialog'],
         });
 
         openSpy.calls.reset();
@@ -188,11 +232,43 @@ describe('RiskAssessmentComponent', () => {
         spyOn(component.dialog, 'open').and.returnValue({
           afterClosed: () => of(true),
         } as MatDialogRef<typeof SimpleDialogComponent>);
+
+        mockRiskAssessmentStore.deleteProfile.and.callFake(
+          (
+            observableOrValue:
+              | { name: string; onDelete: (idx: number) => void }
+              | Observable<{ name: string; onDelete: (idx: number) => void }>
+          ) => {
+            // @ts-expect-error onDelete exist in object
+            observableOrValue?.onDelete(1);
+            return new Subscription();
+          }
+        );
+
         tick();
 
-        component.deleteProfile(PROFILE_MOCK.name, 0, PROFILE_MOCK);
+        component.deleteProfile(PROFILE_MOCK, [PROFILE_MOCK], PROFILE_MOCK);
         tick();
 
+        expect(
+          mockRiskAssessmentStore.updateSelectedProfile
+        ).toHaveBeenCalledWith(null);
+        expect(component.isOpenProfileForm).toBeFalse();
+      }));
+
+      it('should remove copy and close form when unsaved copy is deleted', fakeAsync(() => {
+        spyOn(component.dialog, 'open').and.returnValue({
+          afterClosed: () => of(true),
+        } as MatDialogRef<typeof SimpleDialogComponent>);
+        component.isCopyProfile = true;
+        component.deleteProfile(
+          DRAFT_COPY_PROFILE_MOCK,
+          [DRAFT_COPY_PROFILE_MOCK, PROFILE_MOCK],
+          DRAFT_COPY_PROFILE_MOCK
+        );
+        tick();
+
+        expect(mockRiskAssessmentStore.removeProfile).toHaveBeenCalled();
         expect(
           mockRiskAssessmentStore.updateSelectedProfile
         ).toHaveBeenCalledWith(null);
@@ -224,7 +300,7 @@ describe('RiskAssessmentComponent', () => {
     describe('#getCopyOfProfile', () => {
       it('should open the form with copy of profile', () => {
         const copy = component.getCopyOfProfile(PROFILE_MOCK);
-        expect(copy).toEqual(COPY_PROFILE_MOCK);
+        expect(copy).toEqual(DRAFT_COPY_PROFILE_MOCK);
       });
     });
 
@@ -240,10 +316,13 @@ describe('RiskAssessmentComponent', () => {
     it('#copyProfileAndOpenForm should call openForm with copy of profile', fakeAsync(() => {
       spyOn(component, 'openForm');
 
-      component.copyProfileAndOpenForm(PROFILE_MOCK);
+      component.copyProfileAndOpenForm(PROFILE_MOCK, [
+        PROFILE_MOCK,
+        PROFILE_MOCK,
+      ]);
       tick();
 
-      expect(component.openForm).toHaveBeenCalledWith(COPY_PROFILE_MOCK);
+      expect(component.openForm).toHaveBeenCalledWith(DRAFT_COPY_PROFILE_MOCK);
     }));
 
     describe('#saveProfile', () => {
@@ -350,15 +429,36 @@ describe('RiskAssessmentComponent', () => {
     });
 
     describe('#discard', () => {
-      describe('with no selected profile', () => {
+      beforeEach(async () => {
+        await component.openForm();
+      });
+
+      it('should call openCloseDialog', () => {
+        const openCloseDialogSpy = spyOn(
+          <ProfileFormComponent>component.form(),
+          'openCloseDialog'
+        ).and.returnValue(of(true));
+
+        component.discard(null, []);
+
+        expect(openCloseDialogSpy).toHaveBeenCalled();
+
+        openCloseDialogSpy.calls.reset();
+      });
+
+      describe('after dialog closed with discard selected', () => {
         beforeEach(() => {
-          component.discard(null);
+          spyOn(
+            <ProfileFormComponent>component.form(),
+            'openCloseDialog'
+          ).and.returnValue(of(true));
+          component.discard(null, []);
         });
 
-        it('should call setFocusOnCreateButton', () => {
+        it('should update selected profile', () => {
           expect(
-            mockRiskAssessmentStore.setFocusOnCreateButton
-          ).toHaveBeenCalled();
+            mockRiskAssessmentStore.updateSelectedProfile
+          ).toHaveBeenCalledWith(null);
         });
 
         it('should close the form', () => {
@@ -366,22 +466,19 @@ describe('RiskAssessmentComponent', () => {
         });
       });
 
-      describe('with selected profile', () => {
+      describe('with selected copy profile', () => {
         beforeEach(fakeAsync(() => {
-          component.discard(PROFILE_MOCK);
+          spyOn(
+            <ProfileFormComponent>component.form(),
+            'openCloseDialog'
+          ).and.returnValue(of(true));
+          component.isCopyProfile = true;
+          component.discard(DRAFT_COPY_PROFILE_MOCK, [DRAFT_COPY_PROFILE_MOCK]);
           tick(100);
         }));
 
-        it('should call setFocusOnCreateButton', fakeAsync(() => {
-          expect(
-            mockRiskAssessmentStore.setFocusOnSelectedProfile
-          ).toHaveBeenCalled();
-        }));
-
-        it('should update selected profile', () => {
-          expect(
-            mockRiskAssessmentStore.updateSelectedProfile
-          ).toHaveBeenCalledWith(null);
+        it('should remove copy if not saved', () => {
+          expect(mockRiskAssessmentStore.removeProfile).toHaveBeenCalled();
         });
       });
     });
@@ -391,6 +488,7 @@ describe('RiskAssessmentComponent', () => {
 @Component({
   selector: 'app-profile-item',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeProfileItemComponent {
   @Input() profile!: Profile;
@@ -399,6 +497,7 @@ class FakeProfileItemComponent {
 @Component({
   selector: 'app-profile-form',
   template: '<div></div>',
+  standalone: false,
 })
 class FakeProfileFormComponent {
   @Input() profiles!: Profile[];

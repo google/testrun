@@ -13,32 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import '../../../theming/colors';
+@use 'colors';
+@use 'variables';
+@use 'mixins';
+
+::ng-deep :root {
+  --mat-dialog-container-max-width: 570px;
+}
 
 :host {
-  display: grid;
-  overflow: hidden;
-  width: 570px;
-  padding: 24px 16px 8px 24px;
+  @include mixins.dialog;
+  padding: 24px;
   gap: 10px;
 }
 
+.simple-dialog-icon {
+  text-align: center;
+}
+
 .simple-dialog-title {
-  color: $grey-900;
-  font-size: 18px;
-  line-height: 24px;
+  @include mixins.headline-small();
   padding: 0;
+  text-align: center;
+  color: colors.$on-surface;
+  font-family: variables.$font-primary;
 }
 
 .simple-dialog-content {
-  font-family: Roboto, sans-serif;
+  font-family: variables.$font-text;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
-  color: $grey-800;
+  color: colors.$on-surface-variant;
 }
 
 .simple-dialog-actions {
   padding: 0;
   min-height: 30px;
+  button {
+    font-family: variables.$font-text;
+  }
 }

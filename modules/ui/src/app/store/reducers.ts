@@ -136,7 +136,13 @@ export const sharedReducer = createReducer(
   on(Actions.fetchSystemConfigSuccess, (state, { systemConfig }) => ({
     ...state,
     systemConfig,
-  }))
+  })),
+  on(Actions.setIsOpenProfile, (state, { isOpenCreateProfile }) => {
+    return {
+      ...state,
+      isOpenCreateProfile,
+    };
+  })
 );
 
 export const rootReducer = sharedReducer;

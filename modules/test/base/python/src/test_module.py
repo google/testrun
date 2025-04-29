@@ -44,6 +44,7 @@ class TestModule:
     self._device_test_pack = json.loads(os.environ.get('DEVICE_TEST_PACK', ''))
     self._report_template_folder = os.environ.get('REPORT_TEMPLATE_PATH')
     self._base_template_file=os.environ.get('BASE_TEMPLATE_FILE')
+    self._log_level = os.environ.get('LOG_LEVEL', None)
     self._add_logger(log_name=log_name)
     self._config = self._read_config(
         conf_file=conf_file if conf_file is not None else CONF_FILE)
@@ -53,6 +54,8 @@ class TestModule:
   def _add_logger(self, log_name):
     global LOGGER
     LOGGER = logger.get_logger(name=log_name)
+    if self._log_level is not None:
+      LOGGER.setLevel(self._log_level)
 
   def generate_module_report(self):
     pass
@@ -165,7 +168,7 @@ class TestModule:
             if len(result) > 1:
               test['description'] = result[1]
             else:
-              test['description'] = 'An error occured whilst running this test'
+              test['description'] = 'An error occurred whilst running this test'
 
           # Compliant / Non-Compliant result
           elif isinstance(result[0], bool):
@@ -194,7 +197,7 @@ class TestModule:
       else:
         LOGGER.debug('No result was returned from the test module')
         test['result'] = TestResult.ERROR
-        test['description'] = 'An error occured whilst running this test'
+        test['description'] = 'An error occurred whilst running this test'
 
       # Remove the steps to resolve if compliant already
       if (test['result'] == TestResult.COMPLIANT and 'recommendations' in test):

@@ -14,76 +14,80 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <ng-container *ngIf="dataSource">
-  <mat-accordion displayMode="flat" multi class="tests-container" tabindex="0">
-    <section class="tests-header-row">
-      <span class="tests-header-cell">Name</span>
-      <span class="tests-header-cell">Description</span>
-      <span class="tests-header-cell">Result</span>
-      <span class="tests-header-cell">Required result</span>
-      <span class="tests-header-cell expander-button-cell">
-        <button
-          *ngIf="stepsToResolveCount"
-          mat-icon-button
-          class="expander-button"
-          [attr.aria-label]="getAriaLabel()"
-          (click)="isAllCollapsed ? accordion.openAll() : accordion.closeAll()">
-          <mat-icon fontSet="material-icons-outlined">
-            {{ isAllCollapsed ? 'keyboard_arrow_down' : 'keyboard_arrow_up' }}
-          </mat-icon>
-        </button>
-      </span>
-    </section>
-
-    <ng-container *ngFor="let item of dataSource; trackBy: trackTest">
-      <mat-expansion-panel
-        *ngIf="item.recommendations; else simpleRow"
-        [expanded]="true"
-        (afterCollapse)="checkAllCollapsed()"
-        (afterExpand)="checkAllCollapsed()"
-        class="expansion-panel-row tests-row">
-        <mat-expansion-panel-header class="expansion-panel-header">
-          <ng-container
-            *ngTemplateOutlet="
-              ItemData;
-              context: { item: item }
-            "></ng-container>
-        </mat-expansion-panel-header>
-        <div class="expansion-panel-content cel-description">
-          <app-callout [type]="CalloutType.ErrorOutline">
-            Steps to resolve
-            <ul class="cel-description-list">
-              <li *ngFor="let point of item.recommendations">{{ point }}</li>
-            </ul>
-          </app-callout>
-        </div>
-      </mat-expansion-panel>
-      <ng-template #simpleRow>
-        <div class="tests-item-row tests-row">
-          <ng-container
-            *ngTemplateOutlet="
-              ItemData;
-              context: { item: item }
-            "></ng-container>
-        </div>
-      </ng-template>
+  <mat-table [dataSource]="dataSource" [trackBy]="trackTest">
+    <ng-container matColumnDef="name">
+      <mat-header-cell mat-header-cell *matHeaderCellDef>
+        Name
+      </mat-header-cell>
+      <mat-cell mat-cell *matCellDef="let element">
+        <span class="item-cell">{{ element.name }}</span>
+      </mat-cell>
     </ng-container>
-  </mat-accordion>
-</ng-container>
 
-<ng-template #ItemData let-item="item">
-  <span class="tests-item-cell">{{ item.name }}</span>
-  <span class="tests-item-cell">{{ item.description }}</span>
-  <span class="tests-item-cell tests-item-cell-result">
-    <span class="cell-result-text" [ngClass]="getResultClass(item.result)">
-      <span>{{ item.result }}</span>
-    </span>
-  </span>
-  <span
-    class="tests-item-cell tests-item-cell-required-result"
-    [ngClass]="getRequiredResultClass(item.required_result)">
-    <span class="cell-result-required-icon"></span>
-    <span class="cell-result-required-text">
-      {{ item.required_result }}
-    </span>
-  </span>
-</ng-template>
+    <ng-container matColumnDef="description">
+      <mat-header-cell mat-header-cell *matHeaderCellDef>
+        Description
+      </mat-header-cell>
+      <mat-cell mat-cell *matCellDef="let element">
+        {{ element.description }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="result">
+      <mat-header-cell mat-header-cell *matHeaderCellDef>
+        Result
+      </mat-header-cell>
+      <mat-cell mat-cell *matCellDef="let element">
+        <span
+          class="cell-result-text"
+          [ngClass]="getResultClass(element.result)">
+          <span>{{ element.result }}</span>
+        </span>
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="requiredResult">
+      <mat-header-cell mat-header-cell *matHeaderCellDef>
+        Required Result
+      </mat-header-cell>
+      <mat-cell
+        mat-cell
+        *matCellDef="let element"
+        class="tests-item-cell-required-result"
+        [ngClass]="getRequiredResultClass(element.required_result)">
+        <span class="cell-result-required-icon"></span>
+        <span class="cell-result-required-text">
+          {{ element.required_result }}
+        </span>
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="clickableIcon">
+      <mat-header-cell mat-header-cell *matHeaderCellDef> </mat-header-cell>
+      <mat-cell mat-cell *matCellDef="let element">
+        <mat-icon
+          *ngIf="element.recommendations"
+          class="clickable-icon"
+          fontSet="material-symbols-outlined">
+          info
+        </mat-icon>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row
+      *matRowDef="
+        let row;
+        columns: displayedColumns;
+        when: !isClickableRow
+      "></mat-row>
+    <mat-row
+      matRipple
+      *matRowDef="let row; columns: displayedColumns; when: isClickableRow"
+      class="clickable-row"
+      tabindex="0"
+      (click)="onRowSelected(row)"
+      (keydown.enter)="onRowSelected(row)"
+      (keydown.space)="onRowSelected(row)"></mat-row>
+  </mat-table>
+</ng-container>

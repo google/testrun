@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { MatRow, MatTableDataSource } from '@angular/material/table';
 import { HistoryTestrun, TestrunStatus } from '../../model/testrun-status';
@@ -32,6 +32,10 @@ export const DATA_SOURCE_INITIAL_VALUE = new MatTableDataSource<HistoryTestrun>(
 );
 @Injectable()
 export class ReportsStore extends ComponentStore<ReportsComponentState> {
+  private store = inject<Store<AppState>>(Store);
+  private testRunService = inject(TestRunService);
+  private datePipe = inject(DatePipe);
+
   private displayedColumns$ = this.select(state => state.displayedColumns);
   private chips$ = this.select(state => state.chips);
   private dataSource$ = this.select(state => state.dataSource);
@@ -370,11 +374,7 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
       return value.length === 0;
     });
   }
-  constructor(
-    private store: Store<AppState>,
-    private testRunService: TestRunService,
-    private datePipe: DatePipe
-  ) {
+  constructor() {
     super({
       displayedColumns: [
         'started',

@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import '../../../../theming/colors';
+@use 'colors';
+@use 'mixins';
+@use 'variables';
+
+::ng-deep :root {
+  --mat-dialog-container-max-width: 570px;
+}
 
 :host {
-  display: grid;
-  overflow: hidden;
-  width: 570px;
+  @include mixins.dialog;
   padding: 16px;
   gap: 16px;
 }
@@ -32,7 +36,7 @@
   align-items: start !important;
 
   &.check_circle,
-  &.warning_amber {
+  &.warning {
     padding-top: 16px;
   }
 }
@@ -54,30 +58,66 @@
 }
 
 .consent-main-content {
-  padding: 0 66px 16px 66px;
-  font-family: Roboto, sans-serif;
+  padding: 0 34px 16px 54px;
+  font-family: variables.$font-text;
   font-size: 14px;
   line-height: 20px;
-  letter-spacing: 0.2px;
-  color: $grey-800;
+  letter-spacing: 0;
+  color: colors.$on-surface;
 
   h2 {
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
   }
 
   ul {
     padding-inline-start: 24px;
     margin-bottom: 0;
+
+    li::marker {
+      color: colors.$primary;
+    }
   }
 }
 
+::ng-deep .message-link {
+  color: colors.$primary;
+  text-decoration: underline;
+}
+
 .section-container {
-  .section-title {
-    font-size: 18px;
+  ::ng-deep .callout-context {
+    padding: 0 0 4px;
   }
+
+  .section-title {
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0;
+    font-weight: 500;
+    font-family: variables.$font-text;
+  }
+
+  .section-content {
+    margin: 0;
+    font-family: variables.$font-text;
+  }
+
   .section-action-container {
     text-align: end;
-    margin-bottom: 0;
+    margin: 12px 0 0;
+  }
+
+  .download-link {
+    color: colors.$orange-40;
+    font-family: variables.$font-text;
+    font-size: 14px;
+    margin-right: -2px;
+
+    ::ng-deep .mat-focus-indicator {
+      display: none;
+    }
   }
 }
 
@@ -92,14 +132,47 @@
   }
 }
 
+.section-container-info {
+  ::ng-deep .callout-container {
+    padding: 10px 16px 14px 16px;
+  }
+
+  ::ng-deep .callout-icon {
+    padding: 6px 0;
+  }
+}
+
 .consent-actions {
-  border-top: 1px solid $lighter-grey;
-  margin: 0 -16px;
-  padding: 16px 16px 0 16px;
+  border-top: 1px solid colors.$outline-variant;
+  padding: 16px 0 0;
+  margin: 0;
   min-height: 30px;
   justify-content: space-between;
 }
 
-.consent-actions-opt-out ::ng-deep label {
-  font-weight: 500;
+.consent-actions-opt-out {
+  ::ng-deep label {
+    font-family: variables.$font-text;
+  }
+
+  ::ng-deep .mdc-checkbox__native-control:focus ~ .mat-focus-indicator::before {
+    content: none;
+  }
+
+  ::ng-deep
+    .mdc-checkbox__native-control:focus-visible
+    ~ .mat-focus-indicator::before {
+    content: '';
+  }
+}
+
+.confirm-button {
+  border-radius: 12px;
+  padding: 0 6px;
+  min-width: 54px;
+  margin-right: 24px;
+
+  ::ng-deep .mat-focus-indicator {
+    display: none;
+  }
 }

@@ -1,0 +1,46 @@
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@use 'colors';
+@use 'variables';
+
+:host {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url(/assets/icons/cornerstone.svg);
+  position: relative;
+}
+
+.dog-image {
+  position: absolute;
+  bottom: 0;
+  right: 26px;
+  width: 20%;
+  height: auto;
+  display: block;
+}
+
+::ng-deep app-empty-message {
+  .empty-message {
+    gap: 16px !important;
+  }
+
+  .empty-message-header {
+    color: colors.$on-surface-variant !important;
+    font-family: variables.$font-secondary !important;
+  }
+}

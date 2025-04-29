@@ -65,6 +65,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService } from '../../services/notification.service';
 import { Profile } from '../../model/profile';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { DownloadOptionsComponent } from './components/download-options/download-options.component';
+import { TestrunTableComponent } from './components/testrun-table/testrun-table.component';
+import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
 
 describe('TestrunComponent', () => {
   let component: TestrunComponent;
@@ -103,12 +106,6 @@ describe('TestrunComponent', () => {
       window.dataLayer = window.dataLayer || [];
       testRunServiceMock.stopTestrun.and.returnValue(of(true));
       TestBed.configureTestingModule({
-        declarations: [
-          TestrunComponent,
-          FakeProgressStatusCardComponent,
-          FakeProgressTableComponent,
-          FakeDownloadOptionsComponent,
-        ],
         providers: [
           TestrunStore,
           { provide: TestRunService, useValue: testRunServiceMock },
@@ -136,6 +133,10 @@ describe('TestrunComponent', () => {
           }),
         ],
         imports: [
+          TestrunComponent,
+          FakeProgressStatusCardComponent,
+          FakeProgressTableComponent,
+          FakeDownloadOptionsComponent,
           MatButtonModule,
           MatIconModule,
           MatToolbarModule,
@@ -149,6 +150,22 @@ describe('TestrunComponent', () => {
           set: {
             providers: [
               { provide: LoaderService, useValue: loaderServiceMock },
+            ],
+          },
+        })
+        .overrideComponent(TestrunComponent, {
+          remove: {
+            imports: [
+              TestrunStatusCardComponent,
+              TestrunTableComponent,
+              DownloadOptionsComponent,
+            ],
+          },
+          add: {
+            imports: [
+              FakeProgressStatusCardComponent,
+              FakeProgressTableComponent,
+              FakeDownloadOptionsComponent,
             ],
           },
         })
@@ -183,12 +200,6 @@ describe('TestrunComponent', () => {
     });
 
     describe('#stopTestrun', () => {
-      it('should show loader', () => {
-        component.stopTestrun();
-
-        expect(loaderServiceMock.setLoading).toHaveBeenCalledWith(true);
-      });
-
       it('should update system status to Cancelling', () => {
         store.overrideSelector(
           selectSystemStatus,
@@ -208,7 +219,7 @@ describe('TestrunComponent', () => {
         afterClosed: () => of(true),
       } as MatDialogRef<typeof SimpleDialogComponent>);
 
-      component.openStopTestrunDialog(MOCK_PROGRESS_DATA_CANCELLING);
+      component.openStopTestrunDialog();
 
       expect(stopTestrunSpy).toHaveBeenCalled();
     });
@@ -222,12 +233,6 @@ describe('TestrunComponent', () => {
       window.dataLayer = window.dataLayer || [];
 
       await TestBed.configureTestingModule({
-        declarations: [
-          TestrunComponent,
-          FakeProgressStatusCardComponent,
-          FakeProgressTableComponent,
-          FakeDownloadOptionsComponent,
-        ],
         providers: [
           TestrunStore,
           { provide: TestRunService, useValue: testRunServiceMock },
@@ -256,6 +261,10 @@ describe('TestrunComponent', () => {
           }),
         ],
         imports: [
+          TestrunComponent,
+          FakeProgressStatusCardComponent,
+          FakeProgressTableComponent,
+          FakeDownloadOptionsComponent,
           MatButtonModule,
           MatIconModule,
           MatToolbarModule,
@@ -269,6 +278,22 @@ describe('TestrunComponent', () => {
           set: {
             providers: [
               { provide: LoaderService, useValue: loaderServiceMock },
+            ],
+          },
+        })
+        .overrideComponent(TestrunComponent, {
+          remove: {
+            imports: [
+              TestrunStatusCardComponent,
+              TestrunTableComponent,
+              DownloadOptionsComponent,
+            ],
+          },
+          add: {
+            imports: [
+              FakeProgressStatusCardComponent,
+              FakeProgressTableComponent,
+              FakeDownloadOptionsComponent,
             ],
           },
         })
@@ -419,12 +444,12 @@ describe('TestrunComponent', () => {
         expect(openDialogSpy).toHaveBeenCalled();
       });
 
-      it('should have disabled "Start" button', () => {
+      it('should not have "Start" button', () => {
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
 
-        expect(startBtn.disabled).toBeTrue();
+        expect(startBtn).toBeNull();
       });
 
       it('should not have "Download" options', () => {
@@ -459,18 +484,20 @@ describe('TestrunComponent', () => {
         expect(stopBtn).toBeNull();
       });
 
-      it('should have enabled "Start" button', () => {
+      it('should not have "Start" button', () => {
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
 
-        expect(startBtn.disabled).toBeFalse();
+        expect(startBtn).toBeNull();
       });
 
       it('should have "Download" options', () => {
-        const downloadComp = compiled.querySelector('app-download-options');
+        const downloadOptionsComp = compiled.querySelector(
+          'app-download-options'
+        );
 
-        expect(downloadComp).not.toBeNull();
+        expect(downloadOptionsComp).not.toBeNull();
       });
     });
 
@@ -484,12 +511,12 @@ describe('TestrunComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have enabled "Start" button', () => {
+      it('should not have "Start" button', () => {
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
 
-        expect(startBtn.disabled).toBeFalse();
+        expect(startBtn).toBeNull();
       });
 
       it('should not have "Download" options', () => {
@@ -535,12 +562,12 @@ describe('TestrunComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have disabled "Start" button', () => {
+      it('should not have "Start" button', () => {
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
 
-        expect(startBtn.disabled).toBeTrue();
+        expect(startBtn).toBeNull();
       });
     });
 
@@ -555,12 +582,12 @@ describe('TestrunComponent', () => {
         fixture.detectChanges();
       });
 
-      it('should have disabled "Start" button', () => {
+      it('should not have "Start" button', () => {
         const startBtn = compiled.querySelector(
           '.start-button'
         ) as HTMLButtonElement;
 
-        expect(startBtn.disabled).toBeTrue();
+        expect(startBtn).toBeNull();
       });
 
       it('should have "Stop" button', () => {

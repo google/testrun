@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 @use '@angular/material' as mat;
-@import '../../../theming/colors';
-@import '../../../theming/variables';
+@use 'm3-theme' as *;
+@use 'colors';
+@use 'variables';
 
 :host {
   width: 100%;
@@ -31,89 +32,90 @@
   }
 }
 
+.check_circle {
+  color: colors.$on-tertiary-container;
+  background-color: rgba(20, 108, 46, 0.1);
+}
+
+.info {
+  color: colors.$primary;
+  background-color: rgba(127, 207, 255, 0.16);
+}
+
+.error {
+  color: colors.$on-error-container;
+  background-color: rgba(179, 38, 30, 0.1);
+}
+
+.warning {
+  color: colors.$orange-40;
+  background-color: colors.$orange-98;
+}
+
+.warning .callout-border {
+  color: colors.$orange-60;
+}
+
 .callout-container {
+  position: relative;
+  overflow: hidden;
   display: flex;
   box-sizing: border-box;
   height: auto;
   min-height: 48px;
-  padding: 6px 24px;
-  border-radius: 8px;
+  padding: 6px 6px 6px 16px;
+  border-radius: variables.$corner-medium;
   align-items: center;
   gap: 16px;
+  margin: 24px 32px;
 }
 
 .callout-icon {
   flex-shrink: 0;
   padding: 4px 0;
-}
-
-.callout-container.info {
-  margin: 24px 32px;
-  background-color: mat.m2-get-color-from-palette($color-primary, 50);
-
-  .callout-icon {
-    color: mat.m2-get-color-from-palette($color-primary, 700);
-  }
-
-  .info-pilot {
-    width: 24px;
-    display: flex;
-    justify-content: center;
-  }
-}
-
-.callout-container.warning_amber {
-  background-color: $yellow-50;
-
-  .callout-icon {
-    color: $orange-700;
-  }
-}
-
-.callout-container.error {
-  margin: 24px 32px;
-  background-color: $red-50;
-
-  .callout-icon {
-    color: $red-700;
-  }
-}
-
-.callout-container.check_circle {
-  margin: 24px 32px;
-  background-color: $green-50;
-
-  .callout-icon {
-    color: $green-800;
-  }
-}
-
-.callout-container.error_outline {
-  display: flex;
-  align-items: flex-start;
-  background: $color-background-grey;
-
-  .callout-icon {
-    color: $grey-700;
-  }
-
-  .callout-context {
-    font-weight: bold;
-  }
+  color: inherit;
 }
 
 .callout-context {
   margin: 0;
   padding: 6px 0;
-  color: $grey-800;
-  font-family: $font-secondary;
+  color: colors.$on-surface-variant;
+  font-family: variables.$font-secondary;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0.2px;
 }
 
-.callout-close-button {
+.callout-action-container {
+  display: flex;
   margin-left: auto;
-  margin-right: -20px;
-  color: $warn;
+}
+
+@media (max-width: 800px) {
+  .callout-action-container {
+    flex-direction: column;
+  }
+}
+
+.callout-action {
+  color: inherit;
+  padding: 10px 16px;
+}
+
+.callout-action-link {
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: var(--mdc-text-button-label-text-size);
+  font-family: var(--mdc-text-button-label-text-font);
+}
+
+.callout-border {
+  display: block;
+  height: 3px;
+  border-bottom: 3px solid;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  margin-left: -16px;
 }

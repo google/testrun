@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   HttpErrorResponse,
   HttpEvent,
@@ -30,25 +30,30 @@ import {
 } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
 
-import { SYSTEM_STOP } from '../services/test-run.service';
+import { SYSTEM_STOP, EXPORT } from '../services/test-run.service';
 import { finalize } from 'rxjs/operators';
 
 const DEFAULT_TIMEOUT_MS = 5000;
 const SYSTEM_STOP_TIMEOUT_MS = 60 * 1000;
+const EXPORT_ZIP_TIMEOUT_MS = 60 * 1000;
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
+  private notificationService = inject(NotificationService);
+
   private isTestrunStop = false;
-  constructor(private notificationService: NotificationService) {}
   intercept(
     request: HttpRequest<unknown>,
     next: HttpHandler,
     timeoutMs = DEFAULT_TIMEOUT_MS
   ): Observable<HttpEvent<unknown>> {
-    const timeoutValue =
-      request.url.includes(SYSTEM_STOP) || this.isTestrunStop
-        ? SYSTEM_STOP_TIMEOUT_MS
-        : timeoutMs;
+    let timeoutValue = timeoutMs;
+    if (request.url.includes(SYSTEM_STOP) || this.isTestrunStop) {
+      timeoutValue = SYSTEM_STOP_TIMEOUT_MS;
+    }
+    if (request.url.includes(EXPORT)) {
+      timeoutValue = EXPORT_ZIP_TIMEOUT_MS;
+    }
     if (request.url.includes(SYSTEM_STOP)) {
       this.isTestrunStop = true;
     }

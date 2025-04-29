@@ -47,6 +47,7 @@ export interface AppState {
   testModules: TestModule[];
   adapters: Adapters;
   internetConnection: boolean | null;
+  isOpenCreateProfile: boolean;
 }
 
 export const initialState: AppState = {
@@ -71,4 +72,5 @@ export const initialState: AppState = {
   internetConnection: null,
   interfaces: {},
   systemConfig: { network: {} },
+  isOpenCreateProfile: false,
 };

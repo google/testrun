@@ -83,7 +83,7 @@
       },
       {
         "name": "security.tls.v1_2_client",
-        "description": "An error occured whilst running this test",
+        "description": "An error occurred whilst running this test",
         "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.2 and support for ECDH and ECDSA ciphers",
         "required_result": "Required if Applicable",
         "result": "Error"
@@ -102,7 +102,7 @@
       },
       {
         "name": "security.tls.v1_3_client",
-        "description": "An error occured whilst running this test",
+        "description": "An error occurred whilst running this test",
         "expected_behavior": "The packet indicates a TLS connection with at least TLS 1.3",
         "required_result": "Informational",
         "result": "Error"

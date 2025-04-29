@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { IMqttMessage, MqttService } from 'ngx-mqtt';
 import { catchError, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -11,10 +11,8 @@ import { TestRunService } from './test-run.service';
   providedIn: 'root',
 })
 export class TestRunMqttService {
-  constructor(
-    private mqttService: MqttService,
-    private testrunService: TestRunService
-  ) {}
+  private mqttService = inject(MqttService);
+  private testrunService = inject(TestRunService);
 
   getNetworkAdapters(): Observable<Adapters> {
     return this.topic<Adapters>(Topic.NetworkAdapters);
@@ -28,6 +26,7 @@ export class TestRunMqttService {
     return this.topic<TestrunStatus>(Topic.Status).pipe(
       map(result => {
         result.report = this.testrunService.changeReportURL(result.report);
+        result.export = this.testrunService.changeReportURL(result.export);
         return result;
       })
     );

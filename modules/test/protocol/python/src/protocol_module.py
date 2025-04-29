@@ -29,7 +29,7 @@ class ProtocolModule(TestModule):
     super().__init__(module_name=module, log_name=LOG_NAME)
     global LOGGER
     LOGGER = self._get_logger()
-    self._bacnet = BACnet(log=LOGGER,device_hw_addr=self._device_mac)
+    self._bacnet = BACnet(log=LOGGER, device_hw_addr=self._device_mac)
 
   def _protocol_valid_bacnet(self):
     LOGGER.info('Running protocol.valid_bacnet')
@@ -64,19 +64,20 @@ class ProtocolModule(TestModule):
     result_status = 'Feature Not Detected'
     result_description = 'Device did not respond to BACnet discovery'
 
+    LOGGER.debug(f'BACnet supported: {self._supports_bacnet}')
+
     # Do not run test if device does not support BACnet
     if not self._supports_bacnet:
       return result_status, result_description
 
     if len(self._bacnet.devices) > 0:
       for device in self._bacnet.devices:
-        if self._device_ipv4_addr in device[2]:
-          LOGGER.debug(f'Checking BACnet version for device: {device}')
-          result_status, result_description = \
-            self._bacnet.validate_protocol_version(device[2], device[3])
-          break
-        else:
-          LOGGER.debug('Device does not match expected IP address, skipping')
+        LOGGER.debug(f'Checking BACnet version for device: {device}')
+        device_addr = device[2]
+        device_id = device[3]
+        result_status, result_description = \
+          self._bacnet.validate_protocol_version(device_addr,device_id)
+        break
 
     LOGGER.info(result_description)
     return result_status, result_description

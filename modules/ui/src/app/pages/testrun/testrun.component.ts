@@ -18,6 +18,7 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  inject,
 } from '@angular/core';
 import {
   StatusOfTestrun,
@@ -25,7 +26,7 @@ import {
   TestsResponse,
 } from '../../model/testrun-status';
 import { Subject, takeUntil, timer } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { TestrunInitiateFormComponent } from './components/testrun-initiate-form/testrun-initiate-form.component';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { LoaderService } from '../../services/loader.service';
@@ -33,15 +34,43 @@ import { LOADER_TIMEOUT_CONFIG_TOKEN } from '../../services/loaderConfig';
 import { FocusManagerService } from '../../services/focus-manager.service';
 import { TestrunStore } from './testrun.store';
 import { TestRunService } from '../../services/test-run.service';
-import { NotificationService } from '../../services/notification.service';
 import { TestModule } from '../../model/device';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatInputModule } from '@angular/material/input';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { ReactiveFormsModule } from '@angular/forms';
+import { SpinnerComponent } from '../../components/spinner/spinner.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { TestrunTableComponent } from './components/testrun-table/testrun-table.component';
+import { TestrunStatusCardComponent } from './components/testrun-status-card/testrun-status-card.component';
+import { DownloadOptionsComponent } from './components/download-options/download-options.component';
 
 @Component({
   selector: 'app-progress',
   templateUrl: './testrun.component.html',
   styleUrls: ['./testrun.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatProgressBarModule,
+    MatDialogModule,
+    MatInputModule,
+    MatExpansionModule,
+    ReactiveFormsModule,
+    SpinnerComponent,
+    MatTooltipModule,
+    TestrunTableComponent,
+    TestrunStatusCardComponent,
+    DownloadOptionsComponent,
+  ],
   providers: [
     LoaderService,
     { provide: LOADER_TIMEOUT_CONFIG_TOKEN, useValue: 0 },
@@ -49,17 +78,14 @@ import { combineLatest } from 'rxjs/internal/observable/combineLatest';
   ],
 })
 export class TestrunComponent implements OnInit, OnDestroy {
+  private readonly testRunService = inject(TestRunService);
+  dialog = inject(MatDialog);
+  private readonly focusManagerService = inject(FocusManagerService);
+  testrunStore = inject(TestrunStore);
+
   public readonly StatusOfTestrun = StatusOfTestrun;
   private destroy$: Subject<boolean> = new Subject<boolean>();
   viewModel$ = this.testrunStore.viewModel$;
-
-  constructor(
-    private readonly testRunService: TestRunService,
-    private readonly notificationService: NotificationService,
-    public dialog: MatDialog,
-    private readonly focusManagerService: FocusManagerService,
-    public testrunStore: TestrunStore
-  ) {}
 
   ngOnInit(): void {
     combineLatest([
@@ -78,18 +104,20 @@ export class TestrunComponent implements OnInit, OnDestroy {
     return this.testRunService.testrunInProgress(status);
   }
 
-  public openStopTestrunDialog(systemStatus: TestrunStatus) {
+  public openStopTestrunDialog() {
     const dialogRef = this.dialog.open(SimpleDialogComponent, {
-      ariaLabel: `Stop testrun ${this.getTestRunName(systemStatus)}`,
+      ariaLabel: `Stop Testrun`,
       data: {
-        title: `Stop testrun ${this.getTestRunName(systemStatus)}?`,
+        icon: 'stop_circle',
+        title: `Stop Testrun?`,
         content:
-          'Are you sure you would like to stop testrun without a report generation?',
+          'Testrun will be stopped without any track records and report generation.',
+        confirmName: 'Stop',
       },
       autoFocus: true,
       hasBackdrop: true,
       disableClose: true,
-      panelClass: 'simple-dialog',
+      panelClass: ['simple-dialog', 'stop-testrun'],
     });
 
     dialogRef
@@ -103,7 +131,6 @@ export class TestrunComponent implements OnInit, OnDestroy {
   }
 
   public stopTestrun(): void {
-    this.showLoading();
     this.setCancellingStatus();
     this.sendCloseRequest();
   }
@@ -118,13 +145,12 @@ export class TestrunComponent implements OnInit, OnDestroy {
   }
   private setCancellingStatus() {
     this.testrunStore.setCancellingStatus();
+    const actionsButton = window.document.querySelector('app-side-button-menu');
     timer(2000).subscribe(() => {
-      this.focusManagerService.focusFirstElementInContainer();
+      this.focusManagerService.focusFirstElementInContainer(actionsButton);
     });
   }
-  private showLoading() {
-    this.testrunStore.showLoading();
-  }
+
   private sendCloseRequest() {
     this.testrunStore.stopTestrun();
   }

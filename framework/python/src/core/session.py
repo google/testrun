@@ -39,6 +39,7 @@ API_PORT_KEY = 'api_port'
 MAX_DEVICE_REPORTS_KEY = 'max_device_reports'
 ORG_NAME_KEY = 'org_name'
 TEST_CONFIG_KEY = 'test_modules'
+ALLOW_DISCONNECT_KEY='allow_disconnect'
 CERTS_PATH = 'local/root_certs'
 CONFIG_FILE_PATH = 'local/system.json'
 STATUS_TOPIC = 'status'
@@ -50,6 +51,12 @@ PROFILES_DIR = 'local/risk_profiles'
 
 LOGGER = logger.get_logger('session')
 
+STATUSES_COMPLETE = (TestrunStatus.CANCELLED,
+                          TestrunStatus.COMPLETE,
+                          TestrunStatus.DO_NOT_PROCEED,
+                          TestrunStatus.PROCEED,
+                          TestrunStatus.IDLE
+                        )
 
 def session_tracker(method):
   """Session changes tracker."""
@@ -57,11 +64,13 @@ def session_tracker(method):
 
     result = method(self, *args, **kwargs)
 
-    if self.get_status() != TestrunStatus.IDLE:
+    if self.get_status() != TestrunStatus.IDLE and not self.pause_message:
       self.get_mqtt_client().send_message(
                                         STATUS_TOPIC,
                                         jsonable_encoder(self.to_json())
                                         )
+      if self.get_status() in STATUSES_COMPLETE:
+        self.pause_message = True
 
     return result
   return wrapper
@@ -84,6 +93,7 @@ class TestrunSession():
   def __init__(self, root_dir):
     self._root_dir = root_dir
 
+    self.pause_message = False
     self._status = TestrunStatus.IDLE
     self._result = None
     self._description = None
@@ -115,6 +125,9 @@ class TestrunSession():
 
     # Direct url for PDF report
     self._report_url = None
+
+    # Export URL
+    self._export_url = None
 
     # Version
     self._load_version()
@@ -161,6 +174,7 @@ class TestrunSession():
   def start(self):
     self.reset()
     self._status = TestrunStatus.STARTING
+    self.pause_message = False
     self._started = datetime.datetime.now()
 
   def get_started(self):
@@ -190,6 +204,7 @@ class TestrunSession():
         'log_level': 'INFO',
         'startup_timeout': 60,
         'monitor_period': 30,
+        'allow_disconnect': False,
         'max_device_reports': 0,
         'api_url': 'http://localhost',
         'api_port': 8000,
@@ -227,6 +242,10 @@ class TestrunSession():
       if MONITOR_PERIOD_KEY in config_file_json:
         self._config[MONITOR_PERIOD_KEY] = config_file_json.get(
             MONITOR_PERIOD_KEY)
+
+      if ALLOW_DISCONNECT_KEY in config_file_json:
+        self._config[ALLOW_DISCONNECT_KEY] = config_file_json.get(
+            ALLOW_DISCONNECT_KEY)
 
       if LOG_LEVEL_KEY in config_file_json:
         self._config[LOG_LEVEL_KEY] = config_file_json.get(LOG_LEVEL_KEY)
@@ -496,6 +515,10 @@ class TestrunSession():
   def add_total_tests(self, no_tests):
     self._total_tests += no_tests
 
+
+  def get_allow_disconnect(self):
+    return self._config.get(ALLOW_DISCONNECT_KEY)
+
   def get_total_tests(self):
     return self._total_tests
 
@@ -504,6 +527,12 @@ class TestrunSession():
 
   def set_report_url(self, url):
     self._report_url = url
+
+  def get_export_url(self):
+    return self._export_url
+
+  def set_export_url(self, url):
+    self._export_url = url
 
   def set_subnets(self, ipv4_subnet, ipv6_subnet):
     self._ipv4_subnet = ipv4_subnet
@@ -814,6 +843,7 @@ question {question.get('question')}''')
 
   def reset(self):
     self.set_status(TestrunStatus.IDLE)
+    self.pause_message = False
     self.set_result(None)
     self.set_description(None)
     self.set_target_device(None)
@@ -851,9 +881,10 @@ question {question.get('question')}''')
 
     if self._report_url is not None:
       session_json['report'] = self.get_report_url()
+    if self._export_url is not None:
+      session_json['export'] = self.get_export_url()
 
-    if self._description is not None:
-      session_json['description'] = self._description
+    session_json['description'] = self._description
 
     return session_json
 

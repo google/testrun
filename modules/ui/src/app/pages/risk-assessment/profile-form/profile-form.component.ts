@@ -25,8 +25,7 @@ import {
   Input,
   OnInit,
   Output,
-  QueryList,
-  ViewChildren,
+  viewChildren,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatError, MatFormFieldModule } from '@angular/material/form-field';
@@ -42,7 +41,6 @@ import {
   ValidatorFn,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
-import { DeviceValidators } from '../../devices/components/device-form/device.validators';
 import {
   Profile,
   ProfileFormat,
@@ -52,11 +50,15 @@ import {
 import { FormControlType } from '../../../model/question';
 import { ProfileValidators } from './profile.validators';
 import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';
-import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { Observable } from 'rxjs/internal/Observable';
+import { of } from 'rxjs/internal/observable/of';
+import { map } from 'rxjs/internal/operators/map';
+import { SimpleDialogComponent } from '../../../components/simple-dialog/simple-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import { RiskAssessmentStore } from '../risk-assessment.store';
 
 @Component({
   selector: 'app-profile-form',
-  standalone: true,
   imports: [
     MatButtonModule,
     CommonModule,
@@ -71,25 +73,28 @@ import { CdkTrapFocus } from '@angular/cdk/a11y';
   ],
   templateUrl: './profile-form.component.html',
   styleUrl: './profile-form.component.scss',
-  hostDirectives: [CdkTrapFocus],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileFormComponent implements OnInit, AfterViewInit {
+  private profileValidators = inject(ProfileValidators);
+  private fb = inject(FormBuilder);
+  private store = inject(RiskAssessmentStore);
   private profile: Profile | null = null;
   private profileList!: Profile[];
   private injector = inject(Injector);
   private nameValidator!: ValidatorFn;
+  private changeProfile = true;
   public readonly ProfileStatus = ProfileStatus;
   profileForm: FormGroup = this.fb.group({});
-  @ViewChildren(CdkTextareaAutosize)
-  autosize!: QueryList<CdkTextareaAutosize>;
+  dialog = inject(MatDialog);
+  readonly autosize = viewChildren(CdkTextareaAutosize);
   @Input() profileFormat!: ProfileFormat[];
   @Input() isCopyProfile!: boolean;
   @Input()
   set profiles(profiles: Profile[]) {
     this.profileList = profiles;
-    if (this.nameControl) {
-      this.updateNameValidator();
+    if (this.nameControl && this.profile) {
+      this.updateNameValidator(this.profile);
     }
   }
   get profiles() {
@@ -97,23 +102,32 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
   @Input()
   set selectedProfile(profile: Profile | null) {
-    this.profile = profile;
-    if (profile && this.nameControl) {
-      this.updateNameValidator();
-      this.fillProfileForm(this.profileFormat, profile);
+    if (this.isCopyProfile && this.profile) {
+      this.deleteCopy.emit(this.profile);
+    }
+    if (this.changeProfile || this.profileHasNoChanges()) {
+      this.changeProfile = false;
+      this.profile = profile;
+      if (profile && this.nameControl) {
+        this.updateNameValidator(profile);
+        this.fillProfileForm(this.profileFormat, profile);
+      } else {
+        this.profileForm.reset();
+      }
+    } else if (this.profile != profile) {
+      // prevent select profile before user confirmation
+      this.store.updateSelectedProfile(this.profile);
+      this.openCloseDialogToChangeProfile(profile);
     }
   }
+
   get selectedProfile() {
     return this.profile;
   }
 
   @Output() saveProfile = new EventEmitter<Profile>();
+  @Output() deleteCopy = new EventEmitter<Profile>();
   @Output() discard = new EventEmitter();
-  constructor(
-    private deviceValidators: DeviceValidators,
-    private profileValidators: ProfileValidators,
-    private fb: FormBuilder
-  ) {}
   ngOnInit() {
     this.profileForm = this.createProfileForm();
   }
@@ -124,8 +138,119 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     }
   }
 
-  get isDraftDisabled(): boolean {
-    return !this.nameControl.valid || this.fieldsHasError;
+  get isDraftDisabled(): boolean | null {
+    return (
+      !this.nameControl.valid ||
+      this.fieldsHasError ||
+      this.profileHasNoChanges()
+    );
+  }
+
+  profileHasNoChanges() {
+    const oldProfile = this.profile;
+    const newProfile = oldProfile
+      ? this.buildResponseFromForm(
+          oldProfile.status as ProfileStatus,
+          oldProfile
+        )
+      : this.buildResponseFromForm('', oldProfile);
+    return (
+      (oldProfile === null && this.profileIsEmpty(newProfile)) ||
+      (oldProfile && this.compareProfiles(oldProfile, newProfile))
+    );
+  }
+
+  private profileIsEmpty(profile: Profile) {
+    if (profile.name && profile.name !== '') {
+      return false;
+    }
+
+    if (profile.questions) {
+      for (const question of profile.questions) {
+        if (this.isAnswerFilled(question)) {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+    return true;
+  }
+
+  private isAnswerFilled(question: Question): boolean {
+    if (
+      !question.answer ||
+      (Array.isArray(question.answer) && question.answer.length === 0)
+    ) {
+      return false;
+    }
+
+    if (typeof question.answer === 'string') {
+      return (
+        question.answer.trim() !== '' && question.answer !== question.default
+      );
+    }
+
+    if (Array.isArray(question.answer)) {
+      if (!Array.isArray(question.default) && question.answer.length === 0) {
+        return true;
+      }
+
+      return (
+        question.answer.length > 0 &&
+        JSON.stringify(question.answer) !== JSON.stringify(question.default)
+      );
+    }
+
+    return true;
+  }
+
+  private compareProfiles(profile1: Profile, profile2: Profile) {
+    if (profile1.name !== profile2.name) {
+      return false;
+    }
+    if (
+      (!profile1.rename &&
+        profile2.rename &&
+        profile2.rename !== profile1.name) ||
+      (profile1.rename &&
+        profile2.rename &&
+        profile1.rename !== profile2.rename)
+    ) {
+      return false;
+    }
+
+    if (profile1.status !== profile2.status) {
+      return false;
+    }
+
+    for (const question of profile1.questions) {
+      const answer1 = question.answer;
+      const answer2 = profile2.questions?.find(
+        question2 => question2.question === question.question
+      )?.answer;
+      if (answer1 !== undefined && answer2 !== undefined) {
+        if (typeof question.answer === 'string') {
+          if (answer1 !== answer2) {
+            return false;
+          }
+        } else {
+          //the type of answer is array
+          if (answer1?.length !== answer2?.length) {
+            return false;
+          }
+          if (
+            (answer1 as number[]).some(
+              answer => !(answer2 as number[]).includes(answer)
+            )
+          )
+            return false;
+        }
+      } else {
+        return !!answer1 == !!answer2;
+      }
+    }
+    return true;
   }
 
   private get fieldsHasError(): boolean {
@@ -168,7 +293,8 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   fillProfileForm(profileFormat: ProfileFormat[], profile: Profile): void {
-    this.nameControl.setValue(profile.name);
+    const profileName = profile.rename ? profile.rename : profile.name;
+    this.nameControl.setValue(profileName);
     profileFormat.forEach((question, index) => {
       const answer = profile.questions.find(
         answers => answers.question === question.question
@@ -190,23 +316,50 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
   }
 
   onSaveClick(status: ProfileStatus) {
-    const response = this.buildResponseFromForm(
-      this.profileFormat,
-      this.profileForm,
-      status,
-      this.selectedProfile
-    );
+    const response = this.buildResponseFromForm(status, this.selectedProfile);
     this.saveProfile.emit(response);
+    this.changeProfile = true;
   }
 
   onDiscardClick() {
-    this.discard.emit();
+    this.discard.emit(this.selectedProfile!);
+  }
+
+  close(): Observable<boolean> {
+    if (this.profileHasNoChanges() || this.profileForm.pristine) {
+      return of(true);
+    }
+    return this.openCloseDialog().pipe(map(res => !!res));
+  }
+
+  openCloseDialog() {
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
+      ariaLabel: 'Discard the Risk Assessment changes',
+      data: {
+        title: 'Discard changes?',
+        content: `You have unsaved changes that would be permanently lost.`,
+        confirmName: 'Discard',
+      },
+      autoFocus: true,
+      hasBackdrop: true,
+      disableClose: true,
+      panelClass: ['simple-dialog', 'discard-dialog'],
+    });
+
+    return dialogRef?.afterClosed();
+  }
+
+  private openCloseDialogToChangeProfile(profile: Profile | null) {
+    this.openCloseDialog().subscribe(close => {
+      if (close) {
+        this.changeProfile = true;
+        this.store.updateSelectedProfile(profile);
+      }
+    });
   }
 
   private buildResponseFromForm(
-    initialQuestions: ProfileFormat[],
-    profileForm: FormGroup,
-    status: ProfileStatus,
+    status: ProfileStatus | '',
     profile: Profile | null
   ): Profile {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -215,27 +368,29 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     };
     if (profile && !this.isCopyProfile) {
       request.name = profile.name;
-      request.rename = this.nameControl.value?.trim();
+      request.rename = this.nameControl?.value?.trim();
     } else {
-      request.name = this.nameControl.value?.trim();
+      request.name = this.nameControl?.value?.trim();
     }
     const questions: Question[] = [];
 
-    initialQuestions.forEach((initialQuestion, index) => {
+    this.profileFormat?.forEach((initialQuestion, index) => {
       const question: Question = {};
       question.question = initialQuestion.question;
-
+      if (initialQuestion.default) {
+        question.default = initialQuestion.default;
+      }
       if (initialQuestion.type === FormControlType.SELECT_MULTIPLE) {
         const answer: number[] = [];
         initialQuestion.options?.forEach((_, idx) => {
-          const value = profileForm.value[index][idx];
+          const value = this.profileForm.value[index][idx];
           if (value) {
             answer.push(idx);
           }
         });
         question.answer = answer;
       } else {
-        question.answer = profileForm.value[index]?.trim();
+        question.answer = this.profileForm.value[index]?.trim() || '';
       }
       questions.push(question);
     });
@@ -248,7 +403,7 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     // Wait for content to render, then trigger textarea resize.
     afterNextRender(
       () => {
-        this.autosize?.forEach(item => item.resizeToFitContent(true));
+        this.autosize()?.forEach(item => item.resizeToFitContent(true));
       },
       {
         injector: this.injector,
@@ -256,11 +411,11 @@ export class ProfileFormComponent implements OnInit, AfterViewInit {
     );
   }
 
-  private updateNameValidator() {
+  private updateNameValidator(profile: Profile) {
     this.nameControl.removeValidators([this.nameValidator]);
     this.nameValidator = this.profileValidators.differentProfileName(
       this.profileList,
-      this.profile
+      profile
     );
     this.nameControl.addValidators(this.nameValidator);
     this.nameControl.updateValueAndValidity();

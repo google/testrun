@@ -14,12 +14,35 @@
  * limitations under the License.
  */
 @use 'node_modules/@angular/material/index' as mat;
-@import 'src/theming/colors';
+@use 'm3-theme' as *;
+@use 'colors';
+@use 'variables';
+
+.filter-dialog-title {
+  padding: 24px 12px 16px 24px;
+  display: flex;
+  border-bottom: 1px solid colors.$outline-variant;
+  &:before {
+    height: 0;
+  }
+}
 
 .filter-dialog-content {
   display: flex;
   flex-direction: column;
-  padding: 16px 16px 0 16px;
+  padding: 0 4px;
+
+  &:has(.text-field) {
+    padding: 0 24px 16px;
+  }
+
+  &:has(.filter-result-item) {
+    padding: 0 16px;
+  }
+}
+
+.filter-form {
+  padding-top: 16px;
 }
 
 .date-field {
@@ -28,51 +51,100 @@
 
 .date-calendar {
   flex-grow: 1;
-  overflow: auto;
   min-height: 2em;
+
+  &::ng-deep .mat-calendar-body-label {
+    visibility: hidden;
+  }
+  &::ng-deep .mat-calendar-body-label[colspan='7'] {
+    display: none;
+  }
+
+  &::ng-deep mat-year-view .mat-calendar-body-label[colspan='4'] {
+    display: none;
+  }
+
+  &::ng-deep .mat-calendar-header {
+    padding-top: 0;
+  }
+
+  ::ng-deep .mat-calendar-header button .mat-focus-indicator {
+    display: none;
+  }
+
+  ::ng-deep.mat-calendar-body-cell:focus .mat-focus-indicator::before {
+    content: none;
+  }
+
+  ::ng-deep.mat-calendar-body-cell:focus-visible .mat-focus-indicator::before {
+    content: '';
+  }
 }
 
 .filter-dialog-actions {
-  border-top: 1px solid $lighter-grey;
-  gap: 16px;
+  padding: 8px 12px 24px;
+  font-family: variables.$font-text;
+  gap: 8px;
 
   button {
     min-width: 38px;
     margin: 0;
-    padding: 0 8px;
-    color: mat.m2-get-color-from-palette($color-primary, 600);
+    padding: 0 16px;
     font-weight: 500;
     line-height: 20px;
-    letter-spacing: 0.25px;
-  }
-}
 
-.text-field,
-.date-field {
-  width: 100%;
-}
-
-.filter-result-item {
-  padding: 4px 0;
-  margin: 0;
-
-  &:first-child {
-    padding-top: 0;
-  }
-
-  &:last-child {
-    padding-bottom: 20px;
+    ::ng-deep .mat-focus-indicator {
+      display: none;
+    }
   }
 }
 
 .text-field {
-  padding-bottom: 10px;
+  width: 100%;
+}
 
+.date-field {
+  margin: 0 12px;
+}
+
+.filter-result {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  ::ng-deep .mdc-checkbox__native-control:focus ~ .mat-focus-indicator::before {
+    content: none;
+  }
+
+  ::ng-deep
+    .mdc-checkbox__native-control:focus-visible
+    ~ .mat-focus-indicator::before {
+    content: '';
+  }
+}
+
+.filter-result-item {
+  padding: 8px 0;
+  margin: 0;
+}
+
+.date-field,
+.text-field {
+  &::ng-deep.mat-mdc-form-field-subscript-wrapper {
+    display: none;
+  }
+
+  &::ng-deep.mat-mdc-form-field-subscript-wrapper:has(mat-error) {
+    display: block;
+  }
+}
+
+.text-field {
   &::ng-deep.mat-mdc-form-field-subscript-wrapper:has(mat-error) {
     height: 60px;
   }
 
-  &::ng-deep.mat-mdc-form-field-hint-wrapper,
   &::ng-deep.mat-mdc-form-field-error-wrapper {
     padding: 0 10px;
   }

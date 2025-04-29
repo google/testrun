@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import '../../../theming/colors';
+@use 'colors';
+@use 'variables';
 
 :host {
   position: relative;
@@ -22,11 +23,11 @@
 .version-content,
 .version-content-update {
   min-width: 48px;
-  height: 34px;
+  height: variables.$nav-button-height;
   max-width: 100%;
-  background: $color-background-grey;
   border-radius: 20px;
   cursor: pointer;
+  color: colors.$on-surface-variant;
   & ::ng-deep .mdc-button__label {
     text-overflow: ellipsis;
     overflow: hidden;
@@ -39,7 +40,7 @@
   width: 8px;
   height: 8px;
   border-radius: 100%;
-  background: $red-800;
+  background: colors.$red-700;
   top: 3px;
   right: 3px;
 }

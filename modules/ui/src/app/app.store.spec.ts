@@ -45,6 +45,8 @@ import {
   setDevices,
   updateAdapters,
   setTestModules,
+  fetchSystemConfig,
+  fetchInterfaces,
 } from './store/actions';
 import { MOCK_PROGRESS_DATA_IN_PROGRESS } from './mocks/testrun.mock';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -185,9 +187,7 @@ describe('AppStore', () => {
           isTestingComplete: false,
           riskProfiles: [],
           hasConnectionSettings: true,
-          isMenuOpen: false,
           interfaces: {},
-          focusNavigation: false,
           settingMissedError: null,
           calloutState: new Map(),
           hasInternetConnection: false,
@@ -262,7 +262,7 @@ describe('AppStore', () => {
 
     describe('setFocusOnPage', () => {
       it('should call focusFirstElementInContainer', fakeAsync(() => {
-        appStore.setFocusOnPage();
+        appStore.setFocusOnPage(null);
 
         tick(101);
 
@@ -513,6 +513,7 @@ describe('AppStore', () => {
           started: '2023-06-22T09:20:00.123Z',
           finished: '2023-06-22T09:26:00.123Z',
           report: 'https://api.testrun.io/report.pdf',
+          export: 'https://api.testrun.io/export.pdf',
           tags: [],
           tests: {
             total: 3,
@@ -520,6 +521,22 @@ describe('AppStore', () => {
           },
         });
         store.refreshState();
+      });
+    });
+
+    describe('getInterfaces', () => {
+      it('should dispatch action fetchInterfaces', () => {
+        appStore.getInterfaces();
+
+        expect(store.dispatch).toHaveBeenCalledWith(fetchInterfaces());
+      });
+    });
+
+    describe('getSystemConfig', () => {
+      it('should dispatch action fetchSystemConfig', () => {
+        appStore.getSystemConfig();
+
+        expect(store.dispatch).toHaveBeenCalledWith(fetchSystemConfig());
       });
     });
   });

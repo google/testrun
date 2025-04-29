@@ -20,6 +20,7 @@ import {
   HostListener,
   Input,
   OnInit,
+  inject,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Profile } from '../../model/profile';
@@ -33,7 +34,7 @@ import { TestingType } from '../../model/device';
   selector: 'app-download-report-zip',
   templateUrl: './download-report-zip.component.html',
   styleUrl: './download-report-zip.component.scss',
-  standalone: true,
+
   imports: [CommonModule, MatTooltipModule],
   providers: [DatePipe, MatTooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,8 +43,12 @@ export class DownloadReportZipComponent
   extends ReportActionComponent
   implements OnInit
 {
+  dialog = inject(MatDialog);
+  tooltip = inject(MatTooltip);
+
   @Input() profiles: Profile[] = [];
-  @Input() url: string | null | undefined = null;
+  @Input() report: string | null | undefined = null;
+  @Input() export: string | null | undefined = null;
 
   @HostListener('click', ['$event'])
   @HostListener('keydown.enter', ['$event'])
@@ -56,7 +61,8 @@ export class DownloadReportZipComponent
       ariaLabel: 'Download zip',
       data: {
         profiles: this.profiles,
-        url: this.url,
+        report: this.report,
+        export: this.export,
         isPilot: this.data?.device.test_pack === TestingType.Pilot,
       },
       autoFocus: true,
@@ -87,11 +93,7 @@ export class DownloadReportZipComponent
     }
   }
 
-  constructor(
-    datePipe: DatePipe,
-    public dialog: MatDialog,
-    public tooltip: MatTooltip
-  ) {
-    super(datePipe);
+  constructor() {
+    super();
   }
 }

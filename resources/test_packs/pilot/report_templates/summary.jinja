@@ -46,7 +46,7 @@
         <div class="summary-box-label">Duration</div>
         <div class="summary-box-value">
           {% if duration.seconds//3600 > 0 %}{{ duration.seconds//3600 }}h {% endif %}
-          {% if duration.seconds//60 > 0 %}{{ duration.seconds//60 }}m {% endif %}
+          {% if (duration.seconds % 3600) // 60 > 0 %}{{ (duration.seconds % 3600) // 60 }}m {% endif %}
           {{ duration.seconds%60 }}s
         </div>
     </div>

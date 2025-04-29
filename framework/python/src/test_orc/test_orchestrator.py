@@ -185,6 +185,7 @@ class TestOrchestrator:
     self._write_reports(report)
     self._test_in_progress = False
     self.get_session().set_report_url(report.get_report_url())
+    self.get_session().set_export_url(report.get_export_url())
 
     # Set testing description
     test_pack: TestPack = self.get_test_pack(device.test_pack)
@@ -266,6 +267,7 @@ class TestOrchestrator:
             "{device_folder}",
             device.device_folder) +
         self.get_session().get_started().strftime("%Y-%m-%dT%H:%M:%S"))
+    report["export"] = report["report"].replace("report", "export")
 
     return report
 
@@ -363,6 +365,9 @@ class TestOrchestrator:
           LOCAL_DEVICE_REPORTS.replace("{device_folder}", device.device_folder),
           timestamp, "test", device.mac_addr.replace(":", ""))
 
+      # report.json path
+      report_json_path = os.path.join(report_path, "report.json")
+
       # Parse string timestamp
       date_timestamp: datetime.datetime = datetime.strptime(
           timestamp, "%Y-%m-%dT%H:%M:%S")
@@ -377,28 +382,53 @@ class TestOrchestrator:
       if test_report is None:
         return None
 
+      # Load the report.json into TestReport
+      if os.path.exists(report_json_path):
+        with open(report_json_path, "r", encoding="utf-8") as report_json_file:
+          report_json = json.load(report_json_file)
+          test_report = TestReport()
+          test_report.from_json(report_json)
+
       # Copy the original report for comparison
-      original_report = copy.deepcopy(test_report)
+      test_report_copy = copy.deepcopy(test_report)
 
       # Update the report with 'additional_info' field
       test_report.update_device_profile(device.additional_info)
 
       # Overwrite report only if additional_info has been updated
-      if original_report.to_json() != test_report.to_json():
+      if test_report.to_json() != test_report_copy.to_json():
 
-        # Write the json report
+        # Store the jinja templates
+        reload_templates = []
+
+        # Load the jinja templates
+        if os.path.isdir(report_path):
+          for dir_path, _, filenames in os.walk(report_path):
+            for filename in filenames:
+              try:
+                if filename.endswith(".j2.html"):
+                  with open(os.path.join(dir_path, filename), "r",
+                            encoding="utf-8") as f:
+                    reload_templates.append(f.read())
+              except Exception as e:
+                LOGGER.debug(f"Could not read the file: {e}")
+
+        # Add the jinja templates to the report
+        test_report.add_module_templates(reload_templates)
+
+        # Rewrite the json report
         with open(os.path.join(report_path, "report.json"),
                   "w",
                   encoding="utf-8") as f:
           json.dump(test_report.to_json(), f, indent=2)
 
-        # Write the html report
+        # Rewrite the html report
         with open(os.path.join(report_path, "report.html"),
                   "w",
                   encoding="utf-8") as f:
           f.write(test_report.to_html())
 
-        # Write the pdf report
+        # Rewrite the pdf report
         with open(os.path.join(report_path, "report.pdf"), "wb") as f:
           f.write(test_report.to_pdf().getvalue())
 
