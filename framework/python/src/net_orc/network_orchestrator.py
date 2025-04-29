@@ -524,7 +524,10 @@ class NetworkOrchestrator:
       if not net_module.enable_container:
         continue
 
-      self._start_network_service(net_module)
+      if net_module.enabled:
+        self._start_network_service(net_module)
+      else:
+        LOGGER.debug(f'Not starting disabled network module {net_module.name}')
 
     LOGGER.info('All network services are running')
     self._check_network_services()

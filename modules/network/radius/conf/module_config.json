@@ -1,5 +1,6 @@
 {
   "config": {
+    "enabled": false,
     "meta": {
       "name": "radius",
       "display_name": "Radius",
