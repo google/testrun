@@ -75,7 +75,7 @@
         "ethmac": "02:42:aa:00:00:07",
         "expected_results": {
             "ntp.network.ntp_support": "Non-Compliant",
-            "ntp.network.ntp_dhcp": "Non-Compliant"
+            "ntp.network.ntp_dhcp": "Feature Not Detected"
         }
     }
 
