@@ -25,6 +25,8 @@ TEST_CONTAINERS=(
   dns_non_compliant
   services_compliant
   services_non_compliant
+  ntp_non_compliant
+  ntp_compliant
 )
 
 # Remove and recreate results directory
