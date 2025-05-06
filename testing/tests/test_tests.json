@@ -59,6 +59,24 @@
             "security.services.snmpv3": "Non-Compliant",
             "security.services.tftp": "Non-Compliant"
         }
+    },
+
+    "ntp_compliant": {
+        "image": "testrun/ntp_compliant",
+        "ethmac": "02:42:aa:00:00:06",
+        "expected_results": {
+            "ntp.network.ntp_support": "Compliant",
+            "ntp.network.ntp_dhcp": "Compliant"
+        }
+    },
+
+    "ntp_non_compliant": {
+        "image": "testrun/ntp_non_compliant",
+        "ethmac": "02:42:aa:00:00:07",
+        "expected_results": {
+            "ntp.network.ntp_support": "Non-Compliant",
+            "ntp.network.ntp_dhcp": "Feature Not Detected"
+        }
     }
 
 }
