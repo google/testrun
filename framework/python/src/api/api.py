@@ -700,6 +700,9 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Device not found")
 
+    # Regenerate the pdf if the device profile has been updated
+    self._get_testrun().get_test_orc().regenerate_pdf(device, timestamp)
+
     # 1.3 file path
     file_path = os.path.join(
       DEVICES_PATH,
