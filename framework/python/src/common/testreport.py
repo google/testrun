@@ -180,6 +180,11 @@ class TestReport():
     if 'additional_info' in json_file['device']:
       self._device['device_profile'] = json_file['device']['additional_info']
 
+    # Used for regenerating the report since after initial report creation the
+    # 'additional_info' field is changed to 'device_profile' in the report
+    if 'device_profile' in json_file['device']:
+      self._device['device_profile'] = json_file['device']['device_profile']
+
     self._status = json_file['status']
 
     if 'result' in json_file:
