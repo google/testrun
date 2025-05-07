@@ -1,7 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { MatRow, MatTableDataSource } from '@angular/material/table';
-import { HistoryTestrun, TestrunStatus } from '../../model/testrun-status';
+import {
+  HistoryTestrun,
+  StatusOfTestrun,
+  TestrunStatus,
+} from '../../model/testrun-status';
 import { DateRange, Filters } from '../../model/filters';
 import { TestRunService } from '../../services/test-run.service';
 import { exhaustMap } from 'rxjs';
@@ -267,7 +271,15 @@ export class ReportsStore extends ComponentStore<ReportsComponentState> {
   private getTestResult(item: TestrunStatus): string {
     let result = '';
     if (item.device.test_pack === TestingType.Qualification) {
-      result = item.result ? item.result : item.status;
+      if (
+        item.status &&
+        item.status === StatusOfTestrun.Complete &&
+        item.result
+      ) {
+        result = item.result;
+      } else {
+        result = item.status;
+      }
     }
     if (item.device.test_pack === TestingType.Pilot) {
       result = item.status;
