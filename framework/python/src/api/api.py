@@ -15,6 +15,7 @@
 from fastapi import (FastAPI, APIRouter, Response, Request, status, UploadFile)
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+import asyncio
 from datetime import datetime
 import json
 from json import JSONDecodeError
@@ -350,9 +351,17 @@ class Api:
       response.status_code = 404
       return self._generate_msg(False, "Testrun is not currently running")
 
-    self._testrun.stop()
+    # Launch stop in the background
+    asyncio.create_task(self._run_stop())
 
-    return self._generate_msg(True, "Testrun stopped")
+    # Return response immediately
+    return self._generate_msg(True, "Testrun stop initiated")
+
+  async def _run_stop(self):
+    try:
+      await self._testrun.stop()  # Assuming .stop is async
+    except Exception as e:
+      LOGGER.exception("Error while stopping testrun: %s", e)
 
   async def get_status(self):
     return self._testrun.get_session().to_json()
