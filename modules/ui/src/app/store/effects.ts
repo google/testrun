@@ -163,7 +163,6 @@ export class AppEffects {
       return this.actions$.pipe(
         ofType(AppActions.setIsStopTestrun),
         switchMap(() => {
-          this.store.dispatch(stopInterval());
           return this.testrunService.stopTestrun().pipe(
             map(stopped => {
               if (stopped) {
@@ -200,7 +199,10 @@ export class AppEffects {
               isTestingComplete: this.isTestrunFinished(systemStatus.status),
             })
           );
-          if (this.testrunService.testrunInProgress(systemStatus.status)) {
+          if (
+            this.testrunService.testrunInProgress(systemStatus.status) ||
+            systemStatus.status === StatusOfTestrun.Cancelling
+          ) {
             this.pullingSystemStatusData();
             this.fetchInternetConnection();
           } else if (
