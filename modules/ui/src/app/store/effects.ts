@@ -38,7 +38,6 @@ import {
   TestrunStatus,
 } from '../model/testrun-status';
 import {
-  fetchSystemStatus,
   fetchSystemStatusSuccess,
   setIsTestingComplete,
   setReports,
@@ -163,13 +162,7 @@ export class AppEffects {
       return this.actions$.pipe(
         ofType(AppActions.setIsStopTestrun),
         switchMap(() => {
-          return this.testrunService.stopTestrun().pipe(
-            map(stopped => {
-              if (stopped) {
-                this.store.dispatch(fetchSystemStatus());
-              }
-            })
-          );
+          return this.testrunService.stopTestrun();
         })
       );
     },
