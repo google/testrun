@@ -16,4 +16,4 @@ Within the ```python/src``` directory, the below tests are executed.
 |---|---|---|---|
 | dns.network.hostname_resolution | Verifies that the device resolves hostnames | The device sends DNS requests | Required |
 | dns.network.from_dhcp | Verifies that the device allows for a DNS server to be provided by the DHCP server | The device sends DNS requests to the DNS server provided by the DHCP server | Informational |
-| dns.mdns | Does the device has MDNS (or any kind of IP multicast) | Device may send MDNS requests | Informational |
+| dns.mdns | Does the device has MDNS | Device may send MDNS requests | Informational |
