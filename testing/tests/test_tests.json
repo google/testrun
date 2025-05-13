@@ -5,7 +5,7 @@
         "expected_results": {
             "protocol.valid_bacnet": "Compliant",
             "protocol.bacnet.version": "Compliant",
-            "protocol.valid_modbus": "Feature Not Detected"
+            "protocol.valid_modbus": "Compliant"
         }
     },
 
