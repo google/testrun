@@ -13,11 +13,12 @@
 # limitations under the License.
 """NTP test module"""
 from test_module import TestModule
-from scapy.all import rdpcap, IP, IPv6, NTP, UDP, Ether
+from scapy.all import rdpcap, IP, IPv6, NTP
 from scapy.error import Scapy_Exception
 import os
 from collections import defaultdict
 from jinja2 import Environment, FileSystemLoader
+import pyshark
 
 LOG_NAME = 'test_ntp'
 MODULE_REPORT_FILE_NAME = 'ntp_report.j2.html'
@@ -31,13 +32,14 @@ REPORT_TEMPLATE_FILE = 'report_template.jinja2'
 class NTPModule(TestModule):
   """NTP Test module"""
 
-  def __init__(self, # pylint: disable=R0917
-               module,
-               conf_file=None,
-               results_dir=None,
-               ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE,
-               startup_capture_file=STARTUP_CAPTURE_FILE,
-               monitor_capture_file=MONITOR_CAPTURE_FILE):
+  def __init__(
+      self,  # pylint: disable=R0917
+      module,
+      conf_file=None,
+      results_dir=None,
+      ntp_server_capture_file=NTP_SERVER_CAPTURE_FILE,
+      startup_capture_file=STARTUP_CAPTURE_FILE,
+      monitor_capture_file=MONITOR_CAPTURE_FILE):
     super().__init__(module_name=module,
                      log_name=LOG_NAME,
                      conf_file=conf_file,
@@ -57,32 +59,35 @@ class NTPModule(TestModule):
     header_height = 48
     summary_height = 135
     row_height = 42
-    loader=FileSystemLoader(self._report_template_folder)
+    loader = FileSystemLoader(self._report_template_folder)
     template = Environment(
-                          loader=loader,
-                          trim_blocks=True,
-                          lstrip_blocks=True,
-                          ).get_template(REPORT_TEMPLATE_FILE)
-    module_header='NTP Module'
+        loader=loader,
+        trim_blocks=True,
+        lstrip_blocks=True,
+    ).get_template(REPORT_TEMPLATE_FILE)
+    module_header = 'NTP Module'
     # Summary table headers
     summary_headers = [
-                        'Requests to local NTP server',
-                        'Requests to external NTP servers',
-                        'Total NTP requests',
-                        'Total NTP responses'
-                        ]
+        'Requests to local NTP server', 'Requests to external NTP servers',
+        'Total NTP requests', 'Total NTP responses'
+    ]
     # Module data Headers
     module_data_headers = [
-                            'Source',
-                            'Destination',
-                            'Type',
-                            'Version',
-                            'Count',
-                            'Sync Request Average',
-                          ]
+        'Source',
+        'Destination',
+        'Type',
+        'Version',
+        'Count',
+        'Sync Request Average',
+    ]
 
+    # List of capture files to scan
+    pcap_files = [
+        self.startup_capture_file, self.monitor_capture_file,
+        self.ntp_server_capture_file
+    ]
     # Extract NTP data from the pcap file
-    ntp_table_data = self.extract_ntp_data()
+    ntp_table_data = self.extract_ntp_data(pcap_files)
 
     # Set the summary variables
     local_requests = sum(
@@ -99,11 +104,8 @@ class NTPModule(TestModule):
 
     # Summary table data
     summary_data = [
-                    local_requests,
-                    external_requests,
-                    total_requests,
-                    total_responses
-                    ]
+        local_requests, external_requests, total_requests, total_responses
+    ]
 
     # Initialize a dictionary to store timestamps for each unique combination
     timestamps = defaultdict(list)
@@ -150,13 +152,13 @@ class NTPModule(TestModule):
           avg_formatted_time = 'N/A'
 
         module_table_data.append({
-                                  'src': src,
-                                  'dst': dst,
-                                  'typ': typ,
-                                  'version': version,
-                                  'cnt': cnt,
-                                  'avg_fmt': avg_formatted_time
-                                  })
+            'src': src,
+            'dst': dst,
+            'typ': typ,
+            'version': version,
+            'cnt': cnt,
+            'avg_fmt': avg_formatted_time
+        })
 
     # Handling the possible table split
     table_height = (len(module_table_data) + 1) * row_height
@@ -165,17 +167,15 @@ class NTPModule(TestModule):
     rows_on_page = ((page_useful_space) // row_height) - 1
     start = 0
     report_html = ''
-    for page in range(pages+1):
+    for page in range(pages + 1):
       end = start + min(len(module_table_data), rows_on_page)
       module_header_repr = module_header if page == 0 else None
-      page_html = template.render(
-                                base_template=self._base_template_file,
-                                module_header=module_header_repr,
-                                summary_headers=summary_headers,
-                                summary_data=summary_data,
-                                module_data_headers=module_data_headers,
-                                module_data=module_table_data[start:end]
-                              )
+      page_html = template.render(base_template=self._base_template_file,
+                                  module_header=module_header_repr,
+                                  summary_headers=summary_headers,
+                                  summary_data=summary_data,
+                                  module_data_headers=module_data_headers,
+                                  module_data=module_table_data[start:end])
       report_html += page_html
       start = end
 
@@ -192,51 +192,51 @@ class NTPModule(TestModule):
 
     return report_path
 
-  def extract_ntp_data(self):
+  def extract_ntp_data(self, pcap_files):
+    all_packets = []
+    for pcap_file in pcap_files:
+      packets = pyshark.FileCapture(pcap_file, display_filter='ntp')
+      try:
+        for packet in packets:
+          all_packets.append(packet)
+      finally:
+        packets.close()
+
     ntp_data = []
+    for packet in all_packets:
+      try:
+        if not hasattr(packet, 'eth') or not (hasattr(packet, 'ip')
+                                              or hasattr(packet, 'ipv6')):
+          continue
 
-    # Read the pcap files
-    packets = (rdpcap(self.startup_capture_file) +
-               rdpcap(self.monitor_capture_file))
+        source_mac = getattr(packet.eth, 'src', None)
+        destination_mac = getattr(packet.eth, 'dst', None)
 
-    try:
-      packets += rdpcap(self.ntp_server_capture_file)
-    except (FileNotFoundError, Scapy_Exception):
-      LOGGER.error('ntp.pcap not found or empty, ignoring')
+        if self._device_mac not in (source_mac, destination_mac):
+          continue
 
-    # Iterate through NTP packets
-    for packet in packets:
-      if packet.haslayer(UDP) and packet.haslayer(NTP) and packet.haslayer(IP):
-        source_mac = packet[Ether].src
-        destination_mac = packet[Ether].dst
+        if hasattr(packet, 'ip'):
+          source_ip = packet.ip.src
+          dest_ip = packet.ip.dst
+        else:
+          source_ip = packet.ipv6.src
+          dest_ip = packet.ipv6.dst
 
-        # Local NTP server syncs to external servers so we need to filter only
-        # for traffic to/from the device
-        if self._device_mac in (source_mac, destination_mac):
+        ntp_mode_value = int(packet.ntp.flags_mode)
+        ntp_mode = 'Client' if ntp_mode_value == 3 else 'Server'
+        ntp_version = packet.ntp.flags_vn
 
-          source_ip = None
-          dest_ip = None
+        ntp_data.append({
+            'Source': source_ip,
+            'Destination': dest_ip,
+            'Type': ntp_mode,
+            'Version': str(ntp_version),
+            'Timestamp': packet.sniff_time.timestamp(),
+        })
 
-          if IP in packet:
-            source_ip = packet[IP].src
-            dest_ip = packet[IP].dst
-          elif IPv6 in packet:
-            source_ip = packet[IPv6].src
-            dest_ip = packet[IPv6].dst
-
-          # 'Mode' field indicates client (3) or server (4)
-          ntp_mode = 'Client' if packet[NTP].mode == 3 else 'Server'
-
-          # 'VN' field indicates NTP version
-          ntp_version = packet[NTP].version
-
-          ntp_data.append({
-              'Source': source_ip,
-              'Destination': dest_ip,
-              'Type': ntp_mode,
-              'Version': str(ntp_version),
-              'Timestamp': float(packet.time),
-          })
+      except Exception as e: # pylint: disable=W0718
+        LOGGER.exception(f'Unexpected error while parsing packet: {e}')
+        continue
 
     # Filter unique entries based on 'Timestamp'
     # NTP Server will duplicate messages caught by
@@ -257,7 +257,7 @@ class NTPModule(TestModule):
 
     # Read the pcap files
     packet_capture = (rdpcap(self.startup_capture_file) +
-               rdpcap(self.monitor_capture_file))
+                      rdpcap(self.monitor_capture_file))
 
     try:
       packet_capture += rdpcap(self.ntp_server_capture_file)
@@ -301,7 +301,7 @@ class NTPModule(TestModule):
 
     # Read the pcap files
     packet_capture = (rdpcap(self.startup_capture_file) +
-               rdpcap(self.monitor_capture_file))
+                      rdpcap(self.monitor_capture_file))
 
     try:
       packet_capture += rdpcap(self.ntp_server_capture_file)
