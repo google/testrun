@@ -1,11 +1,11 @@
 {
-    "bacnet_compliant": {
-        "image": "testrun/bacnet_compliant",
+    "protocol_compliant": {
+        "image": "testrun/protocol_compliant",
         "ethmac": "02:42:aa:00:00:01",
         "expected_results": {
             "protocol.valid_bacnet": "Compliant",
             "protocol.bacnet.version": "Compliant",
-            "protocol.valid_modbus": "Feature Not Detected"
+            "protocol.valid_modbus": "Compliant"
         }
     },
 
