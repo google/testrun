@@ -70,7 +70,9 @@ export class TestrunStatusCardComponent {
   } {
     return {
       progress:
-        this.isProgressStatus(status) || status === StatusOfTestrun.Cancelling,
+        this.isProgressStatus(status) ||
+        status === StatusOfTestrun.Cancelling ||
+        status === StatusOfTestrun.Stopping,
       'completed-success':
         (result === ResultOfTestrun.Compliant &&
           status === StatusOfTestrun.Complete) ||
@@ -92,6 +94,7 @@ export class TestrunStatusCardComponent {
       data.status === StatusOfTestrun.InProgress ||
       data.status === StatusOfTestrun.Cancelled ||
       data.status === StatusOfTestrun.Cancelling ||
+      data.status === StatusOfTestrun.Stopping ||
       data.finished
     ) {
       if (
@@ -125,6 +128,9 @@ export class TestrunStatusCardComponent {
       data.status === StatusOfTestrun.DoNotProceed
     ) {
       return data.result!;
+    }
+    if (data.status === StatusOfTestrun.Stopping) {
+      return StatusOfTestrun.Cancelling;
     }
     return data.status;
   }

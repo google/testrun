@@ -136,7 +136,8 @@ export class AppEffects {
       map(({ systemStatus }) => {
         const isInProgressDevice =
           this.testrunService.testrunInProgress(systemStatus?.status) ||
-          systemStatus.status === StatusOfTestrun.Cancelling;
+          systemStatus.status === StatusOfTestrun.Cancelling ||
+          systemStatus.status === StatusOfTestrun.Stopping;
         return AppActions.setDeviceInProgress({
           device: isInProgressDevice ? systemStatus.device : null,
         });
