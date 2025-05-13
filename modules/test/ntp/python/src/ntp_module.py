@@ -195,7 +195,8 @@ class NTPModule(TestModule):
   def extract_ntp_data(self, pcap_files):
     all_packets = []
     for pcap_file in pcap_files:
-      packets = pyshark.FileCapture(pcap_file, display_filter='ntp and not icmp')
+      packets = pyshark.FileCapture(pcap_file,
+                                    display_filter='ntp and not icmp')
       try:
         for packet in packets:
           all_packets.append(packet)
@@ -234,7 +235,7 @@ class NTPModule(TestModule):
             'Timestamp': float(packet.sniff_time.timestamp()),
         })
 
-      except Exception as e: # pylint: disable=W0718
+      except Exception as e:  # pylint: disable=W0718
         LOGGER.exception(f'Unexpected error while parsing packet: {e}')
         continue
 
