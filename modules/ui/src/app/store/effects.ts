@@ -194,7 +194,7 @@ export class AppEffects {
           );
           if (
             this.testrunService.testrunInProgress(systemStatus.status) ||
-            systemStatus.status === StatusOfTestrun.Cancelling
+            systemStatus.status === StatusOfTestrun.Stopping
           ) {
             this.pullingSystemStatusData();
             this.fetchInternetConnection();
