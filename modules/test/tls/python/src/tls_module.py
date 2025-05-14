@@ -194,7 +194,7 @@ class TLSModule(TestModule):
         device_mac=self._device_mac, capture_files=pcap_files)
 
     if outbound_conns:
-      # Splitting Outbound Coonestions table to pages 
+      # Splitting Outbound Coonestions table to pages
       pages = len(outbound_conns) // OUTBOUND_CONNS_PER_PAGE
       if pages * OUTBOUND_CONNS_PER_PAGE < len(outbound_conns):
         pages += 1
