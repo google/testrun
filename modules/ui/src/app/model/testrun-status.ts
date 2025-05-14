@@ -72,6 +72,7 @@ export enum StatusOfTestrun {
   WaitingForDevice = 'Waiting for Device',
   Cancelled = 'Cancelled',
   Cancelling = 'Cancelling',
+  Stopping = 'Stopping',
   Failed = 'Failed',
   CompliantLimited = 'Compliant (Limited)',
   CompliantHigh = 'Compliant (High)',

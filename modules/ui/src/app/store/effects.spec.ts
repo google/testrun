@@ -37,7 +37,6 @@ import {
   MOCK_PROGRESS_DATA_WAITING_FOR_DEVICE,
 } from '../mocks/testrun.mock';
 import {
-  fetchSystemStatus,
   fetchSystemStatusSuccess,
   setReports,
   setStatus,
@@ -339,7 +338,6 @@ describe('Effects', () => {
 
       effects.onStopTestrun$.subscribe(() => {
         expect(testRunServiceMock.stopTestrun).toHaveBeenCalled();
-        expect(dispatchSpy).toHaveBeenCalledWith(fetchSystemStatus());
         done();
       });
     });
