@@ -1,7 +1,7 @@
 {
   "mac_addr": "02:42:aa:00:00:01",
   "manufacturer": "Google",
-  "model": "BACnet Compliant",
+  "model": "Protocol Compliant",
   "type": "IoT Gateway",
   "technology": "Hardware - Access Control",
   "test_pack": "Pilot Assessment",

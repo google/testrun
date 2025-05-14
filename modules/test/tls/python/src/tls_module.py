@@ -165,9 +165,6 @@ class TLSModule(TestModule):
                                             signed_by
                                           ]
 
-      outbound_conns = self._tls_util.get_all_outbound_connections(
-          device_mac=self._device_mac, capture_files=pcap_files)
-
     report_jinja = ''
     if pages:
       for num,page in pages.items():
@@ -185,18 +182,24 @@ class TLSModule(TestModule):
                                   ountbound_headers=outbound_headers,
                                 )
         report_jinja += page_html
-      if outbound_conns:
-        out_page = template.render(
-                            base_template=self._base_template_file,
-                            ountbound_headers=outbound_headers,
-                            outbound_conns=outbound_conns
-                          )
-        report_jinja += out_page
+
     else:
       report_jinja = template.render(
                                     base_template=self._base_template_file,
                                     module_header = module_header,
                                     )
+
+    outbound_conns = self._tls_util.get_all_outbound_connections(
+        device_mac=self._device_mac, capture_files=pcap_files)
+
+    if outbound_conns:
+      out_page = template.render(
+                          base_template=self._base_template_file,
+                          ountbound_headers=outbound_headers,
+                          outbound_conns=outbound_conns
+                        )
+      report_jinja += out_page
+
     LOGGER.debug('Module report:\n' + report_jinja)
 
     # Use os.path.join to create the complete file path

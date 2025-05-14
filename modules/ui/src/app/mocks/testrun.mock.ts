@@ -39,7 +39,7 @@ export const TEST_DATA_RESULT: IResult[] = [
   },
   {
     name: 'dns.mdns',
-    description: 'Does the device has MDNS (or any kind of IP multicast)',
+    description: 'Does the device has MDNS',
     result: 'Not Started',
     required_result: RequiredResult.RequiredIfApplicable,
   },
@@ -75,7 +75,7 @@ export const TEST_DATA_RESULT_WITH_ERROR: IResult[] = [
   },
   {
     name: 'dns.mdns',
-    description: 'Does the device has MDNS (or any kind of IP multicast)',
+    description: 'Does the device has MDNS ',
     result: 'Not Started',
     required_result: RequiredResult.Required,
   },

@@ -10,7 +10,7 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies (BAC0)
-RUN pip install BAC0==23.7.3 pytz==2024.2 netifaces==0.11.0
+RUN pip install BAC0==23.7.3 pytz==2024.2 netifaces==0.11.0 pymodbus==3.0.0 pyserial pyserial-asyncio
 
 # Copy scripts
 WORKDIR /app

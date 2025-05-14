@@ -20,7 +20,7 @@ TEST_DIR=/tmp/results
 MATRIX=testing/tests/test_tests.json
 
 TEST_CONTAINERS=(
-  bacnet_compliant
+  protocol_compliant
   dns_compliant
   dns_non_compliant
   services_compliant
