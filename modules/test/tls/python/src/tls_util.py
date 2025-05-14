@@ -400,15 +400,16 @@ class TLSUtil():
       description = (f"""TLS 1.2 {'' if tls_1_2_results[0] else 'not '}"""
                      f"""validated on port {port}: """
                      f"""{tls_1_2_results[1]}""")
-      description += '\n'+(f"""TLS 1.3 {'' if tls_1_3_results[0] else 'not '}"""
-                     f"""validated on port {port}: """
-                     f"""{tls_1_3_results[1]}""")
+      description += '\n' + (
+          f"""TLS 1.3 {'' if tls_1_3_results[0] else 'not '}"""
+          f"""validated on port {port}: """
+          f"""{tls_1_3_results[1]}""")
       results = tls_1_2_results[0] or tls_1_3_results[0], description
     else:
       description = (f"""TLS 1.2 not validated on port {port}: """
                      f"""{tls_1_2_results[1]}""")
-      description += '\n'+(f"""TLS 1.3 not validated on port {port}: """
-                      f"""{tls_1_3_results[1]}""")
+      description += '\n' + (f"""TLS 1.3 not validated on port {port}: """
+                             f"""{tls_1_3_results[1]}""")
       results = None, description
     LOGGER.info('TLS server test results: ' + str(results))
     return results
