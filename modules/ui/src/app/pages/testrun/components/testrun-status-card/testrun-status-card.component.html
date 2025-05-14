@@ -66,6 +66,10 @@ limitations under the License.
         *ngSwitchCase="StatusOfTestrun.Cancelling"
         [ngTemplateOutlet]="Cancelling">
       </ng-container>
+      <ng-container
+        *ngSwitchCase="StatusOfTestrun.Stopping"
+        [ngTemplateOutlet]="Cancelling">
+      </ng-container>
     </div>
 
     <ng-container
